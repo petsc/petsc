@@ -19,7 +19,7 @@ PetscLogEvent MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymboli
 PetscLogEvent MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
 PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetOrdering, MAT_GetRedundantMatrix, MAT_GetSeqNonzeroStructure;
 PetscLogEvent MAT_IncreaseOverlap, MAT_Partitioning, MAT_Coarsen, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
-PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
+PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction, MAT_GetSubMatrix;
 PetscLogEvent MAT_TransposeColoringCreate;
 PetscLogEvent MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 PetscLogEvent MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;
@@ -7399,6 +7399,29 @@ PetscErrorCode  MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newm
   MatCheckPreallocated(mat,1);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
 
+  if (!iscol || isrow == iscol) {
+    PetscBool stride;
+    ierr = PetscObjectTypeCompare((PetscObject)isrow,ISSTRIDE,&stride);CHKERRQ(ierr);
+    if (stride) {
+      PetscInt first,step,n,rstart,rend;
+      ierr = ISStrideGetInfo(isrow,&first,&step);CHKERRQ(ierr);
+      if (step == 1) {
+        ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
+        if (rstart == first) {
+          ierr = ISGetLocalSize(isrow,&n);CHKERRQ(ierr);
+          if (n == rend-rstart) {
+            /* special case grabbing all rows; NEED to do a global reduction to make sure all processes are doing this */
+            if (cll == MAT_INITIAL_MATRIX) {
+              *newmat = mat;
+              ierr    = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+            }
+            PetscFunctionReturn(0);
+          }
+        }
+      }
+    }
+  }
+
   if (!iscol) {
     ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),mat->cmap->n,mat->cmap->rstart,1,&iscoltmp);CHKERRQ(ierr);
   } else {
@@ -7418,6 +7441,7 @@ PetscErrorCode  MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newm
     PetscFunctionReturn(0);
   } else if (!mat->ops->getsubmatrix) {
     /* Create a new matrix type that implements the operation using the full matrix */
+    ierr = PetscLogEventBegin(MAT_GetSubMatrix,mat,0,0,0);CHKERRQ(ierr);
     switch (cll) {
     case MAT_INITIAL_MATRIX:
       ierr = MatCreateSubMatrix(mat,isrow,iscoltmp,newmat);CHKERRQ(ierr);
@@ -7427,12 +7451,15 @@ PetscErrorCode  MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newm
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Invalid MatReuse, must be either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX");
     }
+    ierr = PetscLogEventEnd(MAT_GetSubMatrix,mat,0,0,0);CHKERRQ(ierr);
     if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
 
   if (!mat->ops->getsubmatrix) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  ierr = PetscLogEventBegin(MAT_GetSubMatrix,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->getsubmatrix)(mat,isrow,iscoltmp,cll,newmat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetSubMatrix,mat,0,0,0);CHKERRQ(ierr);
   if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
   if (*newmat && cll == MAT_INITIAL_MATRIX) {ierr = PetscObjectStateIncrease((PetscObject)*newmat);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

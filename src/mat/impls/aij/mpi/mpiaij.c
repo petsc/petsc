@@ -171,6 +171,40 @@ PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatFindOffBlockDiagonalEntries_MPIAIJ"
+PetscErrorCode MatFindOffBlockDiagonalEntries_MPIAIJ(Mat A,IS *is)
+{
+  Mat_MPIAIJ      *a  = (Mat_MPIAIJ*)A->data;
+  IS              sis,gis;
+  PetscErrorCode  ierr;
+  const PetscInt  *isis,*igis;
+  PetscInt        n,*iis,nsis,ngis,rstart,i;
+
+  PetscFunctionBegin;
+  ierr = MatFindOffBlockDiagonalEntries(a->A,&sis);CHKERRQ(ierr);
+  ierr = MatFindNonzeroRows(a->B,&gis);CHKERRQ(ierr);
+  ierr = ISGetSize(gis,&ngis);CHKERRQ(ierr);
+  ierr = ISGetSize(sis,&nsis);CHKERRQ(ierr);
+  ierr = ISGetIndices(sis,&isis);CHKERRQ(ierr);
+  ierr = ISGetIndices(gis,&igis);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(ngis+nsis,&iis);CHKERRQ(ierr);
+  ierr = PetscMemcpy(iis,igis,ngis*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(iis+ngis,isis,nsis*sizeof(PetscInt));CHKERRQ(ierr);
+  n    = ngis + nsis;
+  ierr = PetscSortRemoveDupsInt(&n,iis);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,NULL);CHKERRQ(ierr);
+  for (i=0; i<n; i++) iis[i] += rstart;
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A),n,iis,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+
+  ierr = ISRestoreIndices(sis,&isis);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(gis,&igis);CHKERRQ(ierr);
+  ierr = ISDestroy(&sis);CHKERRQ(ierr);
+  ierr = ISDestroy(&gis);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDistribute_MPIAIJ"
 /*
     Distributes a SeqAIJ matrix across a set of processes. Code stolen from
@@ -3202,7 +3236,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                 /*139*/0,
                                        0,
                                        0,
-                                       MatFDColoringSetUp_MPIXAIJ
+                                       MatFDColoringSetUp_MPIXAIJ,
+                                       MatFindOffBlockDiagonalEntries_MPIAIJ
 };
 
 /* ----------------------------------------------------------------------------------------*/

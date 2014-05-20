@@ -422,6 +422,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = MatGetOwnershipRange(pc->mat,&nmin,&nmax);CHKERRQ(ierr);
         ierr = MatFindOffBlockDiagonalEntries(pc->mat,&coupling);CHKERRQ(ierr);
         ierr = ISCreateStride(PetscObjectComm((PetscObject)pc->mat),nmax-nmin,nmin,1,&rest);CHKERRQ(ierr);
+        ierr = ISSetIdentity(rest);CHKERRQ(ierr);
         if (jac->reset) {
           jac->head->is       = coupling;
           jac->head->next->is = rest;
@@ -603,16 +604,26 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   if (jac->type != PC_COMPOSITE_ADDITIVE  && jac->type != PC_COMPOSITE_SCHUR) {
     /* extract the rows of the matrix associated with each field: used for efficient computation of residual inside algorithm */
     ilink = jac->head;
-    if (!jac->Afield) {
-      ierr = PetscMalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
-      for (i=0; i<nsplit; i++) {
-        ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
-        ilink = ilink->next;
+    if (nsplit == 2 && jac->type == PC_COMPOSITE_MULTIPLICATIVE) {
+      /* special case need where Afield[0] is not needed and only certain columns of Afield[1] are needed since update is only on those rows of the solution */
+      if (!jac->Afield) {
+        ierr = PetscCalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
+        ierr  = MatGetSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_INITIAL_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
+      } else {
+        ierr  = MatGetSubMatrix(pc->mat,ilink->next->is,ilink->is,MAT_REUSE_MATRIX,&jac->Afield[1]);CHKERRQ(ierr);
       }
     } else {
-      for (i=0; i<nsplit; i++) {
-        ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
-        ilink = ilink->next;
+      if (!jac->Afield) {
+        ierr = PetscMalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
+        for (i=0; i<nsplit; i++) {
+          ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+          ilink = ilink->next;
+        }
+      } else {
+        for (i=0; i<nsplit; i++) {
+          ierr  = MatGetSubMatrix(pc->mat,ilink->is,NULL,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+          ilink = ilink->next;
+        }
       }
     }
   }
@@ -910,6 +921,26 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
         ilink = ilink->next;
       }
     }
+  } else if (jac->type == PC_COMPOSITE_MULTIPLICATIVE && jac->nsplits == 2) {
+    ierr = VecSet(y,0.0);CHKERRQ(ierr);
+    /* solve on first block for first block variables */
+    ierr = VecScatterBegin(ilink->sctx,x,ilink->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(ilink->sctx,x,ilink->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+    ierr = VecScatterBegin(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+
+    /* compute the residual only onto second block variables using first block variables */
+    ierr = MatMult(jac->Afield[1],ilink->y,ilink->next->x);CHKERRQ(ierr);
+    ilink = ilink->next;
+    ierr = VecScale(ilink->x,-1.0);CHKERRQ(ierr);
+    ierr = VecScatterBegin(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+    /* solve on second block variables */
+    ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+    ierr = VecScatterBegin(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (jac->type == PC_COMPOSITE_MULTIPLICATIVE || jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
     if (!jac->w1) {
       ierr = VecDuplicate(x,&jac->w1);CHKERRQ(ierr);
