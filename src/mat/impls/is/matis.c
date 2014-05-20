@@ -633,10 +633,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  b->A   = 0;
-  b->ctx = 0;
-  b->x   = 0;
-  b->y   = 0;
+  b->A       = 0;
+  b->ctx     = 0;
+  b->x       = 0;
+  b->y       = 0;
+  b->mapping = 0;
   ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
   ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",MatISSetLocalMat_IS);CHKERRQ(ierr);
   ierr   = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
