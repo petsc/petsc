@@ -47,17 +47,18 @@ function buildTree(matInfo, numberOfLevels, detailed)
     }
 
     function cleanMatInfo() {//remove all the -1 elements (these get generated when something is deleted)
-        for(var i=0; i<matInfo.length; i++) {
 
+        for(var i=0; i<matInfo.length; i++) {
             if(matInfo[i].id=="-1") {
 
                 //shift everything down
                 for(var j=i; j<matInfo.length-1; j++)
                     matInfo[j]=matInfo[j+1];
 
-                i--;//there might be two in a row. we wouldnt want to skip over any
+                i--;//there might be two in a row
 
                 delete matInfo[matInfo.length-1];//remove garbage value
+                matInfo.length--;//after deletion, there will be an "undefined" value there so we need this line to actually shrink the array
             }
         }
 
