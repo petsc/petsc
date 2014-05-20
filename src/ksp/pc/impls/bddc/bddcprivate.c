@@ -2258,7 +2258,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
     if (pcbddc->n_ISForDofs) { /* need to convert from global to local and remove references to global dofs splitting */
       ierr = PetscMalloc1(pcbddc->n_ISForDofs,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
       for (i=0;i<pcbddc->n_ISForDofs;i++) {
-        ierr = PCBDDCGlobalToLocal(pc,matis->ctx,pcbddc->ISForDofs[i],&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
+        ierr = PCBDDCGlobalToLocal(matis->ctx,pcis->vec1_global,pcis->vec1_N,pcbddc->ISForDofs[i],&pcbddc->ISForDofsLocal[i]);CHKERRQ(ierr);
         ierr = ISDestroy(&pcbddc->ISForDofs[i]);CHKERRQ(ierr);
       }
       pcbddc->n_ISForDofsLocal = pcbddc->n_ISForDofs;
@@ -2279,10 +2279,10 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 
   /* Setup of Graph */
   if (!pcbddc->DirichletBoundariesLocal && pcbddc->DirichletBoundaries) { /* need to convert from global to local */
-    ierr = PCBDDCGlobalToLocal(pc,matis->ctx,pcbddc->DirichletBoundaries,&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
+    ierr = PCBDDCGlobalToLocal(matis->ctx,pcis->vec1_global,pcis->vec1_N,pcbddc->DirichletBoundaries,&pcbddc->DirichletBoundariesLocal);CHKERRQ(ierr);
   }
   if (!pcbddc->NeumannBoundariesLocal && pcbddc->NeumannBoundaries) { /* need to convert from global to local */
-    ierr = PCBDDCGlobalToLocal(pc,matis->ctx,pcbddc->NeumannBoundaries,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
+    ierr = PCBDDCGlobalToLocal(matis->ctx,pcis->vec1_global,pcis->vec1_N,pcbddc->NeumannBoundaries,&pcbddc->NeumannBoundariesLocal);CHKERRQ(ierr);
   }
   ierr = PCBDDCGraphSetUp(pcbddc->mat_graph,vertex_size,pcbddc->NeumannBoundariesLocal,pcbddc->DirichletBoundariesLocal,pcbddc->n_ISForDofsLocal,pcbddc->ISForDofsLocal,pcbddc->user_primal_vertices);
 
@@ -3803,6 +3803,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = KSPSetComputeSingularValues(check_ksp,compute_eigs);CHKERRQ(ierr);
       ierr = KSPSetComputeEigenvalues(check_ksp,compute_eigs);CHKERRQ(ierr);
       ierr = KSPGMRESSetRestart(check_ksp,pcbddc->coarse_size+1);CHKERRQ(ierr);
+      ierr = KSPGetOptionsPrefix(pcbddc->coarse_ksp,&prefix);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(check_ksp,prefix);CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(check_ksp,"check_");CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(check_ksp);CHKERRQ(ierr);
       ierr = KSPSetUp(check_ksp);CHKERRQ(ierr);
       ierr = KSPGetPC(pcbddc->coarse_ksp,&check_pc);CHKERRQ(ierr);
       ierr = KSPSetPC(check_ksp,check_pc);CHKERRQ(ierr);
@@ -3814,10 +3818,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = MatNullSpaceRemove(CoarseNullSpace,check_vec);CHKERRQ(ierr);
       }
       ierr = MatMult(coarse_mat,check_vec,coarse_vec);CHKERRQ(ierr);
-      ierr = KSPGetOptionsPrefix(pcbddc->coarse_ksp,&prefix);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(check_ksp,prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(check_ksp,"check_");CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(check_ksp);CHKERRQ(ierr);
       /* solve coarse problem */
       ierr = KSPSolve(check_ksp,coarse_vec,coarse_vec);CHKERRQ(ierr);
       if (CoarseNullSpace) {
@@ -3957,45 +3957,46 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGlobalToLocal"
-PetscErrorCode PCBDDCGlobalToLocal(PC pc,VecScatter ctx,IS globalis,IS* localis)
+PetscErrorCode PCBDDCGlobalToLocal(VecScatter g2l_ctx,Vec gwork, Vec lwork, IS globalis, IS* localis)
 {
-  PC_IS*         pcis = (PC_IS*)pc->data;
   IS             localis_t;
-  PetscInt       i,lsize,*idxs;
+  PetscInt       i,lsize,*idxs,n;
   PetscScalar    *vals;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* get dirichlet indices in local ordering exploiting local to global map */
+  /* get indices in local ordering exploiting local to global map */
   ierr = ISGetLocalSize(globalis,&lsize);CHKERRQ(ierr);
   ierr = PetscMalloc(lsize*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
   for (i=0;i<lsize;i++) vals[i] = 1.0;
   ierr = ISGetIndices(globalis,(const PetscInt**)&idxs);CHKERRQ(ierr);
-  ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
+  ierr = VecSet(gwork,0.0);CHKERRQ(ierr);
+  ierr = VecSet(lwork,0.0);CHKERRQ(ierr);
   if (idxs) { /* multilevel guard */
-    ierr = VecSetValues(pcis->vec1_global,lsize,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValues(gwork,lsize,idxs,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(pcis->vec1_global);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(gwork);CHKERRQ(ierr);
   ierr = ISRestoreIndices(globalis,(const PetscInt**)&idxs);CHKERRQ(ierr);
   ierr = PetscFree(vals);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(pcis->vec1_global);CHKERRQ(ierr);
-  /* now compute dirichlet set in local ordering */
-  ierr = VecScatterBegin(ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(pcis->vec1_N,(const PetscScalar**)&vals);CHKERRQ(ierr);
-  for (i=0,lsize=0;i<pcis->n;i++) {
-    if (vals[i] == 1.0) {
+  ierr = VecAssemblyEnd(gwork);CHKERRQ(ierr);
+  /* now compute set in local ordering */
+  ierr = VecScatterBegin(g2l_ctx,gwork,lwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(g2l_ctx,gwork,lwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(lwork,(const PetscScalar**)&vals);CHKERRQ(ierr);
+  ierr = VecGetSize(lwork,&n);CHKERRQ(ierr);
+  for (i=0,lsize=0;i<n;i++) {
+    if (vals[i] > 0.5) {
       lsize++;
     }
   }
   ierr = PetscMalloc(lsize*sizeof(PetscInt),&idxs);CHKERRQ(ierr);
-  for (i=0,lsize=0;i<pcis->n;i++) {
-    if (vals[i] == 1.0) {
+  for (i=0,lsize=0;i<n;i++) {
+    if (vals[i] > 0.5) {
       idxs[lsize++] = i;
     }
   }
-  ierr = VecRestoreArrayRead(pcis->vec1_N,(const PetscScalar**)&vals);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),lsize,idxs,PETSC_OWN_POINTER,&localis_t);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(lwork,(const PetscScalar**)&vals);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)gwork),lsize,idxs,PETSC_OWN_POINTER,&localis_t);CHKERRQ(ierr);
   *localis = localis_t;
   PetscFunctionReturn(0);
 }
