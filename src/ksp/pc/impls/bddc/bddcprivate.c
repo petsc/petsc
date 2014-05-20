@@ -2234,7 +2234,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   }
 
   /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
-  if (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy) {
+  if (pcbddc->use_local_adj && (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy)) {
     Mat mat_adj;
     const PetscInt *xadj,*adjncy;
     PetscBool flg_row=PETSC_TRUE;

@@ -831,45 +831,46 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   }
   ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
 
-  /* mark local periodic nodes (if any) and adapt CSR graph TODO: what if CSR graph is not present? */
+  /* mark local periodic nodes (if any) and adapt CSR graph (if any) */
   if (graph->mirrors) {
-    PetscInt *new_xadj,*new_adjncy;
-
     for (i=0;i<graph->nvtxs;i++)
       if (graph->mirrors[i])
         graph->special_dof[i] = LOCAL_PERIODIC_MARK;
 
-    /* sort CSR graph */
-    for (i=0;i<graph->nvtxs;i++)
-      ierr = PetscSortInt(graph->xadj[i+1]-graph->xadj[i],&graph->adjncy[graph->xadj[i]]);CHKERRQ(ierr);
+    if (graph->xadj && graph->adjncy) {
+      PetscInt *new_xadj,*new_adjncy;
+      /* sort CSR graph */
+      for (i=0;i<graph->nvtxs;i++)
+        ierr = PetscSortInt(graph->xadj[i+1]-graph->xadj[i],&graph->adjncy[graph->xadj[i]]);CHKERRQ(ierr);
 
-    /* adapt local CSR graph in case of local periodicity */
-    k=0;
-    for (i=0;i<graph->nvtxs;i++)
-      for (j=graph->xadj[i];j<graph->xadj[i+1];j++)
-        k += graph->mirrors[graph->adjncy[j]];
+      /* adapt local CSR graph in case of local periodicity */
+      k=0;
+      for (i=0;i<graph->nvtxs;i++)
+        for (j=graph->xadj[i];j<graph->xadj[i+1];j++)
+          k += graph->mirrors[graph->adjncy[j]];
 
-    ierr = PetscMalloc1((graph->nvtxs+1),&new_xadj);CHKERRQ(ierr);
-    ierr = PetscMalloc1((k+graph->xadj[graph->nvtxs]),&new_adjncy);CHKERRQ(ierr);
-    new_xadj[0]=0;
-    for (i=0;i<graph->nvtxs;i++) {
-      k = graph->xadj[i+1]-graph->xadj[i];
-      ierr = PetscMemcpy(&new_adjncy[new_xadj[i]],&graph->adjncy[graph->xadj[i]],k*sizeof(PetscInt));CHKERRQ(ierr);
-      new_xadj[i+1]=new_xadj[i]+k;
-      for (j=graph->xadj[i];j<graph->xadj[i+1];j++) {
-        k = graph->mirrors[graph->adjncy[j]];
-        ierr = PetscMemcpy(&new_adjncy[new_xadj[i+1]],graph->mirrors_set[graph->adjncy[j]],k*sizeof(PetscInt));CHKERRQ(ierr);
-        new_xadj[i+1]+=k;
+      ierr = PetscMalloc1((graph->nvtxs+1),&new_xadj);CHKERRQ(ierr);
+      ierr = PetscMalloc1((k+graph->xadj[graph->nvtxs]),&new_adjncy);CHKERRQ(ierr);
+      new_xadj[0]=0;
+      for (i=0;i<graph->nvtxs;i++) {
+        k = graph->xadj[i+1]-graph->xadj[i];
+        ierr = PetscMemcpy(&new_adjncy[new_xadj[i]],&graph->adjncy[graph->xadj[i]],k*sizeof(PetscInt));CHKERRQ(ierr);
+        new_xadj[i+1]=new_xadj[i]+k;
+        for (j=graph->xadj[i];j<graph->xadj[i+1];j++) {
+          k = graph->mirrors[graph->adjncy[j]];
+          ierr = PetscMemcpy(&new_adjncy[new_xadj[i+1]],graph->mirrors_set[graph->adjncy[j]],k*sizeof(PetscInt));CHKERRQ(ierr);
+          new_xadj[i+1]+=k;
+        }
+        k = new_xadj[i+1]-new_xadj[i];
+        ierr = PetscSortRemoveDupsInt(&k,&new_adjncy[new_xadj[i]]);CHKERRQ(ierr);
+        new_xadj[i+1]=new_xadj[i]+k;
       }
-      k = new_xadj[i+1]-new_xadj[i];
-      ierr = PetscSortRemoveDupsInt(&k,&new_adjncy[new_xadj[i]]);CHKERRQ(ierr);
-      new_xadj[i+1]=new_xadj[i]+k;
+      /* set new CSR into graph */
+      ierr = PetscFree(graph->xadj);CHKERRQ(ierr);
+      ierr = PetscFree(graph->adjncy);CHKERRQ(ierr);
+      graph->xadj = new_xadj;
+      graph->adjncy = new_adjncy;
     }
-    /* set new CSR into graph */
-    ierr = PetscFree(graph->xadj);CHKERRQ(ierr);
-    ierr = PetscFree(graph->adjncy);CHKERRQ(ierr);
-    graph->xadj = new_xadj;
-    graph->adjncy = new_adjncy;
   }
 
   /* mark special nodes -> each will become a single node equivalence class */
