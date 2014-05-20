@@ -24,14 +24,16 @@ function formSet(current)//-1 input for current means that program has finished
     if(current == "0")//special case for first node since no defaults were set yet
         return;
 
-    //fill in the form according to defaults set by matTreeGetNextNode
-    if (matInfo[getMatIndex(current)].symm) {//if symmetric
-        $("#posdefRow").show();
-        $("#symm").prop("checked", "true");
-    }
-    //if posdef, fill in bubble
-    if (matInfo[getMatIndex(current)].posdef) {
-        $("#posdef").prop("checked", "true");
+    //fill in defaults (from parent)
+    var parent = getMatIndex(current.substring(0,current.length-1));
+    if(parent != -1) {//has a parent
+        if(matInfo[getMatIndex(parent)].symm) {//if parent is symmetric
+            $("#posdefRow").show();
+            $("#symm").prop("checked", "true");
+        }
+        if (matInfo[getMatIndex(parent)].posdef) {//if parent is posdef
+            $("#posdef").prop("checked", "true");
+        }
     }
 }
 
@@ -58,26 +60,13 @@ function matTreeGetNextNode(current)
     var possibleChild = current+""+(currentBlocks-1);
 
     //case 1: current node needs more child nodes
-
-    if (matInfo[getMatIndex(current)].logstruc && currentBlocks!=0 && getMatIndex(possibleChild)==-1) {//CHECK TO MAKE SURE CHILDREN DON'T ALREADY EXIST
-        //todo: ALL THIS DEFAULT SETTING SHOULD BE DONE ELSEWHERE
-        /*var writeLoc = matInfo.length;
-        matInfo[writeLoc]        = new Object();
-        matInfo[writeLoc].symm   = matInfo[getMatIndex(current)].symm;//set defaults for the new node
-        matInfo[writeLoc].posdef = matInfo[getMatIndex(current)].posdef;*/
-
+    if (matInfo[getMatIndex(current)].logstruc && currentBlocks!=0 && getMatIndex(possibleChild)==-1) {//check to make sure children don't already exist
         return current+"0";//move onto first child
     }
 
     //case 2: current node's child nodes completed. move on to sister nodes if any
-
     if (current!="0" && lastDigit+1 < matInfo[getMatIndex(parentID)].blocks) {
-        /*var writeLoc = matInfo.length;
-        matInfo[writeLoc]        = new Object();
-        matInfo[writeLoc].symm   = matInfo[getMatIndex(current)].symm;//set defaults for the new node
-        matInfo[writeLoc].posdef = matInfo[getMatIndex(current)].posdef;*/
         var newEnding            = parseInt(lastDigit)+1;
-
         return ""+parentID+newEnding;
     }
 

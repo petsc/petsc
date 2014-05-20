@@ -1,6 +1,6 @@
 function addEventHandlers() {
 
-//When "Continue" button is clicked ...
+    //When "Continue" button is clicked ...
     //----------------------------------------
     $("#continueButton").click(function(){
 
@@ -71,7 +71,7 @@ function addEventHandlers() {
     });
 
 
-$(function() { //needed for jqueryUI tool tip to override native javascript tooltip
+    $(function() { //needed for jqueryUI tool tip to override native javascript tooltip
         $(document).tooltip();
     });
 
@@ -177,7 +177,5 @@ $(function() { //needed for jqueryUI tool tip to override native javascript tool
     $("#clearTree").click(function(){
         $("#tree").remove();
     });
-
-
 
 }
