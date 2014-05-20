@@ -3786,6 +3786,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       PetscBool compute_eigs;
       PetscReal *eigs_r,*eigs_c;
       PetscInt  neigs;
+      const char *prefix;
 
       /* Create ksp object suitable for estimation of extreme eigenvalues */
       ierr = KSPCreate(PetscObjectComm((PetscObject)pcbddc->coarse_ksp),&check_ksp);CHKERRQ(ierr);
@@ -3813,6 +3814,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = MatNullSpaceRemove(CoarseNullSpace,check_vec);CHKERRQ(ierr);
       }
       ierr = MatMult(coarse_mat,check_vec,coarse_vec);CHKERRQ(ierr);
+      ierr = KSPGetOptionsPrefix(pcbddc->coarse_ksp,&prefix);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(check_ksp,prefix);CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(check_ksp,"check_");CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(check_ksp);CHKERRQ(ierr);
       /* solve coarse problem */
       ierr = KSPSolve(check_ksp,coarse_vec,coarse_vec);CHKERRQ(ierr);
       if (CoarseNullSpace) {
