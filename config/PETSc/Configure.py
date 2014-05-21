@@ -339,8 +339,13 @@ prepend-path PATH %s
       self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
     else:
       self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
-    self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS)
     self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
+    if self.framework.argDB['prefix']:
+      installdir = self.framework.argDB['prefix']
+      lib_basic = self.PETSC_EXTERNAL_LIB_BASIC.replace(self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(installdir,'lib'))
+    else:
+      lib_basic = self.PETSC_EXTERNAL_LIB_BASIC
+    self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',lib_basic)
     self.allincludes = self.headers.toStringNoDupes(includes)
     self.addMakeMacro('PETSC_CC_INCLUDES',self.allincludes)
     self.PETSC_CC_INCLUDES = self.allincludes
