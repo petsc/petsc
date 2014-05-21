@@ -8,6 +8,7 @@
 <script src="http://www.mcs.anl.gov/research/projects/saws/js/jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js"></script>
 <script src="js/finalTex.js"></script>
 <script src="js/tex2.js"></script>
+<script src="js/matrixTex.js"></script>
 <script src="js/main.js"></script>
 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="js/tree.js"></script>
@@ -23,32 +24,13 @@
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
 <style type="text/css">
-/*used to make the tree; centers multiple div elements */
-#matrixButtons{
-	overflow:hidden;
-	margin:0 0 0 10%;
- text-align:center;
-}
-#matrixButtons l1 {
-	float:left;
-	margin:auto;
-	padding:0;
-	list-style:none;
-	position:relative;
-	left:50%;
-}
-#matrixButtons l1 u1 {
-	display:-moz-inline-box;/* older gecko*/
-	display:inline-block;
-	position:relative;
-	left:-50%;
-}
+
 body
 {
 background-color: #E8E8E8;
 }
 
-nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;} 
+nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;}
 </style>
 </head>
 
@@ -98,12 +80,8 @@ nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;}
 </div> <!-- endof div id="parameters" -->
 
 <br><br><br><br><br><br>
-<!--
-<div id="matrixButtons"style="width:740px;height:120px;padding:5px">Your
-  matrix block structure: <br>
-	<l1></l1>
-</div>
--->
+
+
 <br>
 <!--min-width allows for expandable div but with a minimum width -->
 
@@ -112,7 +90,7 @@ nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;}
     <INPUT type=button value="Clear Options" id="clearOutput">
     <INPUT TYPE=button value="Solver Tree (detailed)" id="solverTreeButtonDetailed">
     <INPUT TYPE=button value="Clear Tree" id="clearTree">
-  
+
     <div id="treeContainer"><h3>Your Solver Options: </h3></div>
 
     <!-- put table here for A-divs and oCmdOptions -->
@@ -120,7 +98,7 @@ nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;}
     <!-- th=header (center+bold by default) td=standard cell (left+normal by default) -->
 
   </div> <!-- endof div id="results" -->
-  
+
 </div> <!-- endof div id="outside" -->
 </body>
 </html>
