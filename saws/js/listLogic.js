@@ -327,7 +327,7 @@ $(document).on('change', '.pcLists', function(){
                 id:       newChild
 	    }
 
-            if(newChild.length == 2) {//todo
+            if(newChild.length == 2 && fieldsplitKeywords.length > parseInt(newChild.substring(1,2))) {
                 var idx = parseInt(newChild.substring(1,2));//get the second (aka last) character
                 var fsText = fieldsplitKeywords[idx];
                 $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + newChild + " Fieldsplit: " + fsText + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
@@ -437,8 +437,15 @@ $(document).on('change', '.fieldsplitBlocks', function() {
             $("#row"+lastBlock).after("<tr id='row"+parent+i+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ parent+i + "\"> </div></td> <td> <div id=\"oCmdOptions" + parent+i + "\"></div> </td> </tr>");
 
             //Create drop-down lists. '&nbsp;' indicates a space
-            $("#A" + parent+i).append("<br><b id='matrixText"+parent+i+"'>A" + parent+i + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
-	    $("#A" + parent+i).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+i +"\"></select>");
+            var newChild = parent + i;
+            if(newChild.length == 2 && fieldsplitKeywords.length > parseInt(newChild.substring(1,2))) {
+                var idx = parseInt(newChild.substring(1,2));//get the second (aka last) character
+                var fsText = fieldsplitKeywords[idx];
+                $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + newChild + " Fieldsplit: " + fsText + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
+            }
+            else
+                $("#A" + parent+i).append("<br><b id='matrixText"+parent+i+"'>A" + parent+i + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
+	       $("#A" + parent+i).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+i +"\"></select>");
 	    $("#A" + parent+i).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+i +"\"></select>");
 
 
