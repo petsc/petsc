@@ -1377,6 +1377,34 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceDuplicate"
+/*@
+  PetscDualSpaceDuplicate - Creates a duplicate PetscDualSpace object, however it is not setup.
+
+  Collective on PetscDualSpace
+
+  Input Parameter:
+. sp - The original PetscDualSpace
+
+  Output Parameter:
+. spNew - The duplicate PetscDualSpace
+
+  Level: beginner
+
+.seealso: PetscDualSpaceCreate(), PetscDualSpaceSetType()
+@*/
+PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(spNew, 2);
+  ierr = (*sp->ops->duplicate)(sp, spNew);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetDM"
 PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace sp, DM *dm)
 {
@@ -1828,6 +1856,24 @@ PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceDuplicate_Lagrange"
+PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpace *spNew)
+{
+  PetscInt       order;
+  PetscBool      cont;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) sp), spNew);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetType(*spNew, PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetOrder(sp, &order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetOrder(*spNew, order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeGetContinuity(sp, &cont);CHKERRQ(ierr);
+  ierr = PetscDualSpaceLagrangeSetContinuity(*spNew, cont);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceSetFromOptions_Lagrange"
 PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscDualSpace sp)
 {
@@ -1972,6 +2018,7 @@ PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
   sp->ops->setup          = PetscDualSpaceSetUp_Lagrange;
   sp->ops->view           = NULL;
   sp->ops->destroy        = PetscDualSpaceDestroy_Lagrange;
+  sp->ops->duplicate      = PetscDualSpaceDuplicate_Lagrange;
   sp->ops->getdimension   = PetscDualSpaceGetDimension_Lagrange;
   sp->ops->getnumdof      = PetscDualSpaceGetNumDof_Lagrange;
   PetscFunctionReturn(0);
@@ -6642,12 +6689,11 @@ PetscErrorCode PetscFEIntegrateBdIFunction(PetscFE fem, PetscInt Ne, PetscInt Nf
 @*/
 PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
 {
-  PetscSpaceType   tname;
   PetscSpace       P, Pref;
   PetscDualSpace   Q, Qref;
   DM               K, Kref;
   PetscQuadrature  q, qref;
-  PetscInt         dim, order, numComp;
+  PetscInt         numComp;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -6656,23 +6702,13 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDM(Q, &K);CHKERRQ(ierr);
   /* Create space */
-  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) fe), &Pref);CHKERRQ(ierr);
-  ierr = PetscObjectGetType((PetscObject) P, &tname);CHKERRQ(ierr);
-  ierr = PetscSpaceSetType(Pref, tname);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialGetNumVariables(P, &dim);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialSetNumVariables(Pref, dim);CHKERRQ(ierr);
-  ierr = PetscSpaceGetOrder(P,   &order);CHKERRQ(ierr);
-  ierr = PetscSpaceSetOrder(Pref, order);CHKERRQ(ierr);
-  ierr = PetscSpaceSetUp(Pref);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) P);CHKERRQ(ierr);
+  Pref = P;
   /* Create dual space */
-  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fe), &Qref);CHKERRQ(ierr);
-  ierr = PetscObjectGetType((PetscObject) Q, &tname);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetType(Qref, tname);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDuplicate(Q, &Qref);CHKERRQ(ierr);
   ierr = DMRefine(K, PetscObjectComm((PetscObject) fe), &Kref);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Qref, Kref);CHKERRQ(ierr);
   ierr = DMDestroy(&Kref);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetOrder(Q,   &order);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetOrder(Qref, order);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Qref);CHKERRQ(ierr);
   /* Create element */
   ierr = PetscFECreate(PetscObjectComm((PetscObject) fe), feRef);CHKERRQ(ierr);
