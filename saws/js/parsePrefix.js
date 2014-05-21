@@ -52,7 +52,7 @@ function parsePrefixForEndtag(SAWs_prefix, index) {
 
         SAWs_prefix=SAWs_prefix.substring(indexFirstUnderscore+1, SAWs_prefix.length);//dont include the underscore
 
-        if(chunk=="mg_coarse" && SAWs_prefix=="")//new mg coarse
+        if((chunk=="mg_coarse" || chunk=="mg_levels_0") && SAWs_prefix=="")//new mg coarse
             mgLevelLocation=endtag+"0";
 
         if(chunk=="ksp" || chunk=="sub" || chunk=="mg_coarse" || chunk=="redundant")
@@ -60,8 +60,10 @@ function parsePrefixForEndtag(SAWs_prefix, index) {
         else if(chunk.substring(0,10)=="mg_levels_")
             endtag+=chunk.substring(10,11);//can only be 1 character long for now
 
-        if(chunk.substring(0,10)=="mg_levels_" && SAWs_prefix=="")//new mg levels. it's okay to assume memory was already allocated b/c levels is after coarse
+        if(chunk.substring(0,10)=="mg_levels_" && SAWs_prefix=="") {//new mg levels. it's not okay to assume memory was already allocated b/c mg_coarse is sometimes written as mg_levels_0
+            allocateMemory(parsePrefixForFieldsplit(SAWs_prefix), mgLevelLocation, index);
             sawsInfo[index].data[getSawsDataIndex(index, mgLevelLocation)].mg_levels=parseInt(chunk.substring(10,11))+1;
+        }
     }
 
     return endtag;

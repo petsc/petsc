@@ -445,7 +445,7 @@ $(document).on('change', '.fieldsplitBlocks', function() {
             }
             else
                 $("#A" + parent+i).append("<br><b id='matrixText"+parent+i+"'>A" + parent+i + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
-	       $("#A" + parent+i).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+i +"\"></select>");
+	    $("#A" + parent+i).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+i +"\"></select>");
 	    $("#A" + parent+i).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+i +"\"></select>");
 
 
