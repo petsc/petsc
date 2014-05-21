@@ -1804,7 +1804,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
                 ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
                 for (d = 0; d < dim; ++d) {
                   qpoints[d] = v0[d];
-                  for (d2 = 0; d2 < dim; ++d2) qpoints[d] += J[d*dim+d2]*((tup[d]+1)*dx);
+                  for (d2 = 0; d2 < dim; ++d2) qpoints[d] += J[d*dim+d2]*((tup[d2]+1)*dx);
                 }
                 qweights[0] = 1.0;
                 ++f;
