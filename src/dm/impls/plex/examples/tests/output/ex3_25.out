@@ -1,6 +1,6 @@
 Function tests pass for order 0 at tolerance 1e-10
 Function tests pass for order 0 derivatives at tolerance 1e-10
-Interpolation tests FAIL for order 0 at tolerance 1e-10 error 1.58114
+Interpolation tests pass for order 0 at tolerance 1e-10
 Interpolation tests pass for order 0 derivatives at tolerance 1e-10
 Interpolation tests pass for order 0 at tolerance 1e-10
 Interpolation tests pass for order 0 derivatives at tolerance 1e-10
@@ -10,6 +10,3 @@ Function   convergence rate at refinement 1: 2
 Derivative convergence rate at refinement 1: 0.99
 Function   convergence rate at refinement 2: 2
 Derivative convergence rate at refinement 2: 1
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-continuous value: 0

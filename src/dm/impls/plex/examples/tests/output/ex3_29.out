@@ -1,5 +1,2 @@
 Function tests pass for order 1 at tolerance 1e-10
 Function tests pass for order 1 derivatives at tolerance 1e-10
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-continuous value: 0

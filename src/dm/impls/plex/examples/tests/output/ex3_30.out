@@ -1,5 +1,2 @@
 Function tests FAIL for order 2 at tolerance 1e-10 error 0.00982093
 Function tests FAIL for order 2 derivatives at tolerance 1e-10 error 0.166667
-WARNING! There are options you set that were not used!
-WARNING! could be spelling mistake, etc!
-Option left: name:-continuous value: 0
