@@ -193,17 +193,8 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
 #define __FUNCT__ "PCBDDCGraphComputeConnectedComponents"
 PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
 {
-  PetscInt    adapt_interface,adapt_interface_reduced;
-  MPI_Comm    interface_comm;
-  MPI_Request *send_requests;
-  MPI_Request *recv_requests;
-  PetscInt    *aux_new_xadj,*new_xadj,*new_adjncy,**temp_buffer;
-  PetscInt    i,j,k,s,sum_requests,buffer_size,size_of_recv,temp_buffer_size;
-  PetscMPIInt rank,neigh,tag,mpi_buffer_size;
-  PetscInt    *cum_recv_counts,*subset_to_nodes_indices,*recv_buffer_subset,*nodes_to_temp_buffer_indices;
-  PetscInt    *send_buffer,*recv_buffer,*queue_in_global_numbering,*sizes_of_sends,*add_to_subset;
-  PetscInt    start_of_recv,start_of_send,size_of_send,global_subset_counter,ins_val;
-  PetscBool   *subset_cc_adapt,same_set;
+  PetscInt       i,adapt_interface,adapt_interface_reduced;
+  MPI_Comm       interface_comm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -224,6 +215,17 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
   ierr = MPI_Allreduce(&adapt_interface,&adapt_interface_reduced,1,MPIU_INT,MPI_LOR,interface_comm);CHKERRQ(ierr);
 
   if (graph->n_subsets && adapt_interface_reduced) {
+    MPI_Request *send_requests;
+    MPI_Request *recv_requests;
+    PetscInt    *aux_new_xadj,*new_xadj,*new_adjncy,**temp_buffer;
+    PetscInt    *old_xadj,*old_adjncy;
+    PetscInt    j,k,s,sum_requests,buffer_size,size_of_recv,temp_buffer_size;
+    PetscMPIInt rank,neigh,tag,mpi_buffer_size;
+    PetscInt    *cum_recv_counts,*subset_to_nodes_indices,*recv_buffer_subset,*nodes_to_temp_buffer_indices;
+    PetscInt    *send_buffer,*recv_buffer,*queue_in_global_numbering,*sizes_of_sends,*add_to_subset;
+    PetscInt    start_of_recv,start_of_send,size_of_send,global_subset_counter,ins_val;
+    PetscBool   *subset_cc_adapt,same_set;
+
     /* Retrict adjacency graph using information from previously computed connected components */
     ierr = PetscMalloc1(graph->nvtxs,&aux_new_xadj);CHKERRQ(ierr);
     for (i=0;i<graph->nvtxs;i++) {
@@ -255,9 +257,9 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         ierr = PetscMemcpy(&new_adjncy[new_xadj[graph->queue[graph->cptr[i]+j]]],&graph->queue[graph->cptr[i]],k*sizeof(PetscInt));CHKERRQ(ierr);
       }
     }
-    /* set new CSR into graph */
-    ierr = PetscFree(graph->xadj);CHKERRQ(ierr);
-    ierr = PetscFree(graph->adjncy);CHKERRQ(ierr);
+    /* set temporarly new CSR into graph */
+    old_xadj = graph->xadj;
+    old_adjncy = graph->adjncy;
     graph->xadj = new_xadj;
     graph->adjncy = new_adjncy;
     /* allocate some space */
@@ -525,6 +527,11 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       /* refine connected components locally */
       ierr = PCBDDCGraphComputeConnectedComponentsLocal(graph);CHKERRQ(ierr);
     }
+    /* restore original CSR graph of dofs */
+    ierr = PetscFree(new_xadj);CHKERRQ(ierr);
+    ierr = PetscFree(new_adjncy);CHKERRQ(ierr);
+    graph->xadj = old_xadj;
+    graph->adjncy = old_adjncy;
     ierr = PetscFree(queue_in_global_numbering);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
