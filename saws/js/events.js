@@ -75,10 +75,8 @@ function addEventHandlers() {
 
         formSet(currentAsk); //reset the form
 
-        if(currentAsk != "-1") {
-            $("#matrixPic").html("<center>" + "\\(" + getMatrixTex("0") + "\\)" + "</center>");
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-        }
+        $("#matrixPic").html("<center>" + "\\(" + getMatrixTex("0") + "\\)" + "</center>");
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
     });
 
 

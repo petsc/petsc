@@ -42,6 +42,10 @@ $(document).on('change', '.pcLists', function(){
 
     if (parent == "-1") return; //endtag for o-1 and other oparent are not consistent yet???
 
+    //update specific matrix Tex whenever a pc is changed
+    $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex(parent,"") + "\\)" + "</center>");
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+
     var newDiv=generateDivName(this.id,parent,"mg");//remove the divs that could have been generated
     $("#"+newDiv).remove();
     newDiv=generateDivName(this.id,parent,"redundant");
