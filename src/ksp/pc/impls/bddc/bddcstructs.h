@@ -4,6 +4,12 @@
 #include <petscksp.h>
 #include <petscbt.h>
 
+/* special marks for interface graph: they cannot be enums, since special marks should in principle range from -4 to -max_int */
+#define PCBDDCGRAPH_NEUMANN_MARK -1
+#define PCBDDCGRAPH_DIRICHLET_MARK -2
+#define PCBDDCGRAPH_LOCAL_PERIODIC_MARK -3
+#define PCBDDCGRAPH_SPECIAL_MARK -4
+
 /* Structure for local graph partitioning */
 struct _PCBDDCGraph {
   ISLocalToGlobalMapping l2gmap;

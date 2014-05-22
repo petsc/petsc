@@ -2,12 +2,6 @@
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 #include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
-/* special marks: they cannot be enums, since special marks should in principle range from -4 to -max_int */
-#define NEUMANN_MARK -1
-#define DIRICHLET_MARK -2
-#define LOCAL_PERIODIC_MARK -3
-#define SPECIAL_MARK -4
-
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGraphASCIIView"
 PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level, PetscViewer viewer)
@@ -113,7 +107,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
   twodim_flag = PETSC_FALSE;
   for (i=0;i<graph->ncc;i++) {
     if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
-      if (graph->count[graph->queue[graph->cptr[i]]] == 1 && graph->special_dof[graph->queue[graph->cptr[i]]] != NEUMANN_MARK) {
+      if (graph->count[graph->queue[graph->cptr[i]]] == 1 && graph->special_dof[graph->queue[graph->cptr[i]]] != PCBDDCGRAPH_NEUMANN_MARK) {
         nfc++;
       } else { /* note that nec will be zero in 2d */
         nec++;
@@ -145,7 +139,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
   nec = 0;
   for (i=0;i<graph->ncc;i++) {
     if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
-      if (graph->count[graph->queue[graph->cptr[i]]] == 1 && graph->special_dof[graph->queue[graph->cptr[i]]] != NEUMANN_MARK) {
+      if (graph->count[graph->queue[graph->cptr[i]]] == 1 && graph->special_dof[graph->queue[graph->cptr[i]]] != PCBDDCGRAPH_NEUMANN_MARK) {
         if (twodim_flag) {
           if (use_edges) {
             ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_COPY_VALUES,&ISForEdges[nec]);CHKERRQ(ierr);
@@ -558,7 +552,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   ierr = PetscBTMemzero(graph->nvtxs,graph->touched);CHKERRQ(ierr);
   graph->n_subsets = 0;
   for (i=0;i<graph->nvtxs;i++) {
-    if (graph->special_dof[i] == DIRICHLET_MARK || !graph->count[i]) {
+    if (graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK || !graph->count[i]) {
       ierr = PetscBTSet(graph->touched,i);CHKERRQ(ierr);
       graph->subset[i] = 0;
     }
@@ -798,7 +792,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
   for (i=0;i<graph->nvtxs;i++) {
     if (PetscRealPart(array[i]) > 0.0) {
-      graph->special_dof[i] = NEUMANN_MARK;
+      graph->special_dof[i] = PCBDDCGRAPH_NEUMANN_MARK;
     }
   }
   ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
@@ -833,7 +827,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     if (PetscRealPart(array[i]) > 0.0) {
       ierr = PetscBTSet(graph->touched,i);CHKERRQ(ierr);
       graph->subset[i] = 0; /* dirichlet nodes treated as internal -> is it ok? */
-      graph->special_dof[i] = DIRICHLET_MARK;
+      graph->special_dof[i] = PCBDDCGRAPH_DIRICHLET_MARK;
     }
   }
   ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
@@ -842,7 +836,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   if (graph->mirrors) {
     for (i=0;i<graph->nvtxs;i++)
       if (graph->mirrors[i])
-        graph->special_dof[i] = LOCAL_PERIODIC_MARK;
+        graph->special_dof[i] = PCBDDCGRAPH_LOCAL_PERIODIC_MARK;
 
     if (graph->xadj && graph->adjncy) {
       PetscInt *new_xadj,*new_adjncy;
@@ -885,7 +879,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = ISGetLocalSize(custom_primal_vertices,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(custom_primal_vertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++) {
-      graph->special_dof[is_indices[i]] = SPECIAL_MARK-i;
+      graph->special_dof[is_indices[i]] = PCBDDCGRAPH_SPECIAL_MARK-i;
     }
     ierr = ISRestoreIndices(custom_primal_vertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
   }
