@@ -9,7 +9,6 @@ function formSet(current)//-1 input for current means that program has finished
 {
     if (current=="-1") {//finished asking
         $("#questions").hide();
-        finishedAsking=true;
         return;
     }
 
@@ -21,8 +20,8 @@ function formSet(current)//-1 input for current means that program has finished
     $("#posdef").removeAttr("checked");
     $("#logstruc").removeAttr("checked");
 
-    if(current == "0")//special case for first node since no defaults were set yet
-        return;
+    if(current == "0") //special case for first node since no defaults were set yet
+         return;
 
     //fill in defaults (from parent)
     var parent = getMatIndex(current.substring(0,current.length-1));

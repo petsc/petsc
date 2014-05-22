@@ -2,7 +2,6 @@
 var matInfo = [];
 var currentAsk = "0";//start at id=0. then 00 01, then 000 001 010 011 etc if splitting two every time.
 var askedA0 = false;//a one-way flag to record if A0 was asked
-var finishedAsking = false;//whether input form has finished (when finished, stop pulling default options from sawsInfo?)
 
 //variables used to collect saws information
 var sawsInfo = [];
@@ -18,10 +17,6 @@ $(document).ready(function(){
 
     //reset the form
     formSet(currentAsk);
-
-    //hide at first
-    $("#fieldsplitBlocks_text").hide();
-    $("#fieldsplitBlocks").hide();
 
     //must define these parameters before setting default pcVal, see populatePcList() and listLogic.js!
     matInfo[-1] = {

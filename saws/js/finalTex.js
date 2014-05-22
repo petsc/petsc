@@ -1,6 +1,6 @@
-//This array stores the tex, and MathJax interprets it on the fly. Each arrqy element refers to one
+//This array stores the tex, and MathJax interprets it on the fly. Each array element refers to one
 // specific matrix, highlighting and all.
-function finalTex(matInfo, recursionCounter)
+function finalTex()
 {
 
     //TeX can be typed in as normal except for a few things while insde the " ":
@@ -13,35 +13,37 @@ function finalTex(matInfo, recursionCounter)
     //escape the character.
 
 
+    if(currentAsk == "-1")
+        return "";
 
     //Switch on matrix level
 
     //level 0 has only one option
-    if(matGetLevel(recursionCounter) == 0)
-	return 	"<h1>\\begin{bmatrix} A \\end{bmatrix}</h1>"
+    if(currentAsk.length == 1)// "0"
+	return 	"<h1>\\begin{bmatrix} A \\end{bmatrix}</h1>";
 
     //level 1 has one options
-    if(matGetLevel(recursionCounter) == 1)
+    else if(currentAsk.length == 2)// "00" or "01"
     {
-	return "<h3>\\begin{bmatrix} A_{1} & * \\\\ * & A_{2} \\end{bmatrix}</h3>"
+	return "<h3>\\begin{bmatrix} A_{1} & * \\\\ * & A_{2} \\end{bmatrix}</h3>";
     }
 
     //level 2 has three options (from the various possibilities)
-    if(matGetLevel(recursionCounter) == 2)
+    else if(currentAsk.length == 3)
     {
 	//A1 (index 1) is logstruc and A2 is not logstruc
-	if(matInfo[1].logstruc && !matInfo[2].logstruc)
+	if(matInfo[getMatIndex("00")].logstruc && !matInfo[getMatIndex("01")].logstruc)
 	    return "\\(\\left[ \
 \\begin{array}{c@{}c@{}c} \
 \\left[\\begin{array}{cc} \
 A_{1_{1}} & * \\\\ \
 * & A_{1_{2}} \\\\ \  							\\end{array}\\right] & * \\\\ \
 * &  A_{2} \\\\ \
-\\end{array}\\right]\\)"
-	
+\\end{array}\\right]\\)";
+
 
 	//A2 (index 2) is logstruc and A1 is not logstruc
-	if(matInfo[2].logstruc && !matInfo[1].logstruc)
+	if(matInfo[getMatIndex("01")].logstruc && !matInfo[getMatIndex("00")].logstruc)
 	    return "\\(\\left[ \
 \\begin{array}{c@{}c@{}c} \
 A_{1} & * \\\\ \
@@ -49,12 +51,11 @@ A_{1} & * \\\\ \
 A_{2_{1}} & * \\\\ \
 * & A_{2_{2}} \\\\ \
 \\end{array}\\right] \\\\ \
-\\end{array}\\right]\\)"
+\\end{array}\\right]\\)";
 
-	
 
 	//A2 (index 2) is logstruc and A1 is also logstruc
-	if(matInfo[2].logstruc && matInfo[1].logstruc)
+	if(matInfo[getMatIndex("01")].logstruc && matInfo[getMatIndex("00")].logstruc)
 	    return "\\(\\left[ \
 \\begin{array}{c@{}c@{}c} \
 \\left[\\begin{array}{cc} \
@@ -65,18 +66,17 @@ A_{1_{1}} & * \\\\ \
 A_{2_{1}} & * \\\\ \
 * & A_{2_{2}} \\\\ \
 \\end{array}\\right] \\\\ \
-\\end{array}\\right]\\)"
-
+\\end{array}\\right]\\)";
     }
 
     //level 3 has *many* *many* options (from the various possibilities
-    if(matGetLevel(recursionCounter) == 3)
+    if(currentAsk.length == 4)
     {
 	//A1 (index 1) is logstruc and A2 is not logstruc
-	if(matInfo[1].logstruc && !matInfo[2].logstruc)
+	if(matInfo[getMatIndex("00")].logstruc && !matInfo[getMatIndex("01")].logstruc)
 	{
 	    //A11 (index 3) is log struc and A12 (index 4) is not log struc
-	    if(matInfo[3].logstruc && !matInfo[4].logstruc)
+	    if(matInfo[getMatIndex("000")].logstruc && !matInfo[getMatIndex("001")].logstruc)
 		return "\\(\\left[ \
 \\begin{array}{c@{}c@{}c} \
 \\left[\\begin{array}{cc} \
@@ -87,10 +87,10 @@ A_{1_{1_{1}}} & * \\\\ \
 * &  A_{1_{2}} \\\\ \
 \\end{array}\\right] & * \\\\ \
 * &  A_{2} \\\\ \
-\\end{array}\\right]\\)"
+\\end{array}\\right]\\)";
 
 	    //A12 (index 4) is log struc and A11 (index 3) is not log struc
-	    if(matInfo[4].logstruc && !matInfo[3].logstruc)
+	    if(matInfo[getMatIndex("001")].logstruc && !matInfo[getMatIndex("000")].logstruc)
 		return "\\(\\left[ \
 \\begin{array}{c@{}c@{}c} \
 \\left[\\begin{array}{cc} \
@@ -101,10 +101,10 @@ A_{1_{2_{1}}} & * \\\\ \
 \\end{array}\\right] \\\\ \
 \\end{array}\\right] & * \\\\ \
 * &  A_{2} \\\\ \
-\\end{array}\\right]\\)"
+\\end{array}\\right]\\)";
 
 	    //A11 (index 3) is log struc and A12 (index 4) is also log struc
-	    if(matInfo[3].logstruc && matInfo[4].logstruc)
+	    if(matInfo[getMatIndex("000")].logstruc && matInfo[getMatIndex("001")].logstruc)
 		return "\\(\\left[ \
 \\begin{array}{c@{}c@{}c} \
 \\left[\\begin{array}{cc} \
@@ -118,16 +118,16 @@ A_{1_{2_{1}}} & * \\\\ \
 \\end{array}\\right] \\\\ \
 \\end{array}\\right] & * \\\\ \
 * &  A_{2} \\\\ \
-\\end{array}\\right]\\)"
+\\end{array}\\right]\\)";
 
 	}
 
-	
+
 	//A2 (index 2) is logstruc and A1 (index 1) is not logstruc
-	if(matInfo[2].logstruc && !matInfo[1].logstruc)
+	if(matInfo[getMatIndex("01")].logstruc && !matInfo[getMatIndex("00")].logstruc)
 	{
 	    //A21 (index 5) is log struc and A22 (index 6) is not log struc
-	    if(matInfo[5].logstruc && !matInfo[6].logstruc)
+	    if(matInfo[getMatIndex("010")].logstruc && !matInfo[getMatIndex("011")].logstruc)
 		return "\\(\\left[ \
 \\begin{array}{c@{}c@{}c} \
 A_{1} & * \\\\ \
@@ -138,10 +138,10 @@ A_{2_{1_{1}}} & * \\\\ \
 \\end{array}\\right] & * \\\\ \
 * &  A_{2_{2}} \\\\ \
 \\end{array}\\right]\\\\ \
-\\end{array}\\right]\\)"
+\\end{array}\\right]\\)";
 	    
 	    //A22 (index 6) is log struc and A21 (index 5) is not log struc
-	    if(matInfo[6].logstruc && !matInfo[5].logstruc)
+	    if(matInfo[getMatIndex("011")].logstruc && !matInfo[getMatIndex("010")].logstruc)
 		return "\\(\\left[ \
 \\begin{array}{c@{}c@{}c} \
 A_{1} & * \\\\ \
@@ -152,11 +152,11 @@ A_{2_{2_{1}}} & * \\\\ \
 * & A_{2_{2_{2}}} \\\\ \
 \\end{array}\\right] \\\\ \
 \\end{array}\\right]\\\\ \
-\\end{array}\\right]\\)"
+\\end{array}\\right]\\)";
 
 
 	    //A21 (index 5) is log struc and A22 (index 6) is also log struc
-	    if(matInfo[5].logstruc && matInfo[6].logstruc)
+	    if(matInfo[getMatIndex("010")].logstruc && matInfo[getMatIndex("011")].logstruc)
 		return "\\(\\left[ \
 \\begin{array}{c@{}c@{}c} \
 A_{1} & * \\\\ \
@@ -170,12 +170,12 @@ A_{2_{2_{1}}} & * \\\\ \
 * & A_{2_{2_{2}}} \\\\ \
 \\end{array}\\right] \\\\ \
 \\end{array}\\right]\\\\ \
-\\end{array}\\right]\\)"
+\\end{array}\\right]\\)";
 
 	}
 
 	//A2 (index 2) is logstruc and A1 (index 1) is also logstruc
-	if(matInfo[2].logstruc && matInfo[1].logstruc)
+	if(matInfo[getMatIndex("01")].logstruc && matInfo[getMatIndex("00")].logstruc)
 	{
 	    
 	    //A11 (index 3) is log struc and A12 (index 4), A21 (index 5), and A22 (index 6) are not log struc
