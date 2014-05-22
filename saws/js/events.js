@@ -203,4 +203,14 @@ function addEventHandlers() {
         }
     });
 
+    $("#selectedMatrix").on("change", function() {
+
+        var val = $(this).val();
+        if(getMatIndex(val) == -1) //invalid matrix
+            return;
+
+        $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex(val,"") + "\\)" + "</center>");
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    });
+
 }

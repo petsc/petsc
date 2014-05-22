@@ -1,12 +1,13 @@
 $(document).on("keyup", '.processorInput', function() {
     if ($(this).val().match(/[^0-9]/) || $(this).val()==0) {//problem is that integer only bubble still displays when nothing is entered
-	$(this).attr("title","hello");//set a random title (this will be overwritten)
+	$(this).attr("title","");//set a random title (this will be overwritten)
 	$(this).tooltip();//create a tooltip from jquery UI
 	$(this).tooltip({ content: "Integer only!" });//edit displayed text
 	$(this).tooltip("open");//manually open once
     } else {
 	$(this).removeAttr("title");//remove title attribute
-	$(this).tooltip("destroy");
+	$(this).tooltip();//create so that we dont call destroy on nothing
+        $(this).tooltip("destroy");
     }
 });
 
@@ -41,10 +42,6 @@ $(document).on('change', '.pcLists', function(){
     parent = parent.substring(1, parent.length);
 
     if (parent == "-1") return; //endtag for o-1 and other oparent are not consistent yet???
-
-    //update specific matrix Tex whenever a pc is changed
-    $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex(parent,"") + "\\)" + "</center>");
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 
     var newDiv=generateDivName(this.id,parent,"mg");//remove the divs that could have been generated
     $("#"+newDiv).remove();
