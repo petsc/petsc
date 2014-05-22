@@ -71,15 +71,14 @@ function addEventHandlers() {
         if($("#pcList"+currentAsk).val()!="fieldsplit")//but DON'T trigger change on fieldsplit because that would append the required A divs twice
 	    $("#pcList"+currentAsk).trigger("change");
 
-        if(currentAsk != "-1") {
-            $("#matrixPic").html("<center>" + "\\(" + getMatrixTex("0") + "\\)" + "</center>");
-            alert("retrieved tex: " + getMatrixTex("0"));
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-        }
-
         currentAsk = matTreeGetNextNode(currentAsk);
 
         formSet(currentAsk); //reset the form
+
+        if(currentAsk != "-1") {
+            $("#matrixPic").html("<center>" + "\\(" + getMatrixTex("0") + "\\)" + "</center>");
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+        }
     });
 
 

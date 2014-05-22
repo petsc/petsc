@@ -9,17 +9,14 @@ function getMatrixTex(currentMatrix) {//weird because the longer the string is, 
     if(currentAsk == "-1")//this function shouldn't be called when currentAsk is -1
         return "";
 
-    if(getMatIndex(currentMatrix) == -1)
-        return "";
-
     //case 1: not logstruc. base case.
     if(!matInfo[getMatIndex(currentMatrix)].logstruc) {
         //return the appropriate tex
 
         if(currentMatrix == currentAsk) //make red and bold
-            return "\\begin{bmatrix} \\color{red}{\\mathbf{A_{" + currentMatrix +" } }} \\end{bmatrix}";
+            return "\\color{red}{\\mathbf{A_{" + currentMatrix +" } }}";
         else //return black text
-            return "\\begin{bmatrix} A_{" + currentMatrix + "} \\end{bmatrix}";
+            return "A_{" + currentMatrix + "}";
     }
 
     //case 2: has more children. recursive case.

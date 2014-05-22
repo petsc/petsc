@@ -37,5 +37,9 @@ $(document).ready(function(){
     // get and display SAWs options
     SAWsGetAndDisplayDirectory("","#variablesInfo");//this #variablesInfo variable only appears here
 
+    //display matrix pic. manually add square braces the first time
+    $("#matrixPic").html("<center>" + "\\(\\left[" + getMatrixTex("0") + "\\right]\\)" + "</center>");
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+
     addEventHandlers();
 });
