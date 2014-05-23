@@ -45,7 +45,6 @@ PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
     ierr = VecDestroy(&dm->globalin[i]);CHKERRQ(ierr);
   }
   ierr = ISLocalToGlobalMappingDestroy(&dm->ltogmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&dm->ltogmapb);CHKERRQ(ierr);
 
   *done = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -68,7 +67,6 @@ PetscErrorCode  DMDestroy_DA(DM da)
     ierr = PetscFree(dd->startin[i]);CHKERRQ(ierr);
   }
 
-  ierr = VecScatterDestroy(&dd->ltog);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dd->gtol);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dd->ltol);CHKERRQ(ierr);
   ierr = VecDestroy(&dd->natural);CHKERRQ(ierr);

@@ -1111,7 +1111,7 @@ PetscErrorCode MatNestSetSubMats(Mat A,PetscInt nr,const IS is_row[],PetscInt nc
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestCreateAggregateL2G_Private"
-static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const IS islocal[],const IS isglobal[],PetscBool colflg,ISLocalToGlobalMapping *ltog,ISLocalToGlobalMapping *ltogb)
+static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const IS islocal[],const IS isglobal[],PetscBool colflg,ISLocalToGlobalMapping *ltog)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -1174,11 +1174,9 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
       ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
       m   += mi;
     }
-    ierr   = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),m,ix,PETSC_OWN_POINTER,ltog);CHKERRQ(ierr);
-    *ltogb = NULL;
+    ierr   = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,m,ix,PETSC_OWN_POINTER,ltog);CHKERRQ(ierr);
   } else {
     *ltog  = NULL;
-    *ltogb = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -1315,15 +1313,12 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
 
   /* Set up the aggregate ISLocalToGlobalMapping */
   {
-    ISLocalToGlobalMapping rmap,rmapb,cmap,cmapb;
-    ierr = MatNestCreateAggregateL2G_Private(A,vs->nr,vs->islocal.row,vs->isglobal.row,PETSC_FALSE,&rmap,&rmapb);CHKERRQ(ierr);
-    ierr = MatNestCreateAggregateL2G_Private(A,vs->nc,vs->islocal.col,vs->isglobal.col,PETSC_TRUE,&cmap,&cmapb);CHKERRQ(ierr);
+    ISLocalToGlobalMapping rmap,cmap;
+    ierr = MatNestCreateAggregateL2G_Private(A,vs->nr,vs->islocal.row,vs->isglobal.row,PETSC_FALSE,&rmap);CHKERRQ(ierr);
+    ierr = MatNestCreateAggregateL2G_Private(A,vs->nc,vs->islocal.col,vs->isglobal.col,PETSC_TRUE,&cmap);CHKERRQ(ierr);
     if (rmap && cmap) {ierr = MatSetLocalToGlobalMapping(A,rmap,cmap);CHKERRQ(ierr);}
-    if (rmapb && cmapb) {ierr = MatSetLocalToGlobalMappingBlock(A,rmapb,cmapb);CHKERRQ(ierr);}
     ierr = ISLocalToGlobalMappingDestroy(&rmap);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&rmapb);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&cmap);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&cmapb);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_USE_DEBUG)

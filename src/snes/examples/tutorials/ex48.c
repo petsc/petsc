@@ -1379,14 +1379,13 @@ static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,Mat *J)
   PetscErrorCode         ierr;
   Mat                    A;
   PetscInt               xm,ym,zm,dim,dof = 2,starts[3],dims[3];
-  ISLocalToGlobalMapping ltog,ltogb;
+  ISLocalToGlobalMapping ltog;
 
   PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,&dim, 0,0,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   if (dim != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected DMDA to be 3D");
   ierr = DMDAGetCorners(da,0,0,0,&zm,&ym,&xm);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)da),&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,dof*xm*ym*zm,dof*xm*ym*zm,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A,da->mattype);CHKERRQ(ierr);
@@ -1398,7 +1397,6 @@ static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,Mat *J)
   ierr = MatSeqSBAIJSetPreallocation(A,2,2,NULL);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(A,2,2,NULL,0,NULL);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(A,ltog,ltog);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMappingBlock(A,ltogb,ltogb);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
   ierr = MatSetStencil(A,dim,dims,starts,dof);CHKERRQ(ierr);
   *J   = A;

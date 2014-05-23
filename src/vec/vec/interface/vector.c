@@ -70,7 +70,7 @@ PetscErrorCode  VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,Pets
    Concepts: vector^setting values with local numbering
 
 seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
-           VecSetLocalToGlobalMappingBlock(), VecSetValuesBlockedLocal()
+           VecSetLocalToGlobalMapping(), VecSetValuesBlockedLocal()
 @*/
 PetscErrorCode  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 {
@@ -85,41 +85,6 @@ PetscErrorCode  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
   } else {
     ierr = PetscLayoutSetISLocalToGlobalMapping(x->map,mapping);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecSetLocalToGlobalMappingBlock"
-/*@
-   VecSetLocalToGlobalMappingBlock - Sets a local numbering to global numbering used
-   by the routine VecSetValuesBlockedLocal() to allow users to insert vector entries
-   using a local (per-processor) numbering.
-
-   Logically Collective on Vec
-
-   Input Parameters:
-+  x - vector
--  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
-
-   Notes:
-   All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
-
-   Level: intermediate
-
-   Concepts: vector^setting values blocked with local numbering
-
-.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
-           VecSetLocalToGlobalMapping(), VecSetValuesBlockedLocal()
-@*/
-PetscErrorCode  VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping mapping)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
-
-  ierr = PetscLayoutSetISLocalToGlobalMappingBlock(x->map,mapping);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -150,36 +115,6 @@ PetscErrorCode VecGetLocalToGlobalMapping(Vec X,ISLocalToGlobalMapping *mapping)
   PetscValidType(X,1);
   PetscValidPointer(mapping,2);
   *mapping = X->map->mapping;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecGetLocalToGlobalMappingBlock"
-/*@
-   VecGetLocalToGlobalMappingBlock - Gets the local-to-global numbering set by VecSetLocalToGlobalMappingBlock()
-
-   Not Collective
-
-   Input Parameters:
-.  X - the vector
-
-   Output Parameters:
-.  mapping - the mapping
-
-   Level: advanced
-
-   Concepts: vectors^local to global mapping blocked
-   Concepts: local to global mapping^for vectors, blocked
-
-.seealso:  VecSetValuesBlockedLocal(), VecGetLocalToGlobalMapping()
-@*/
-PetscErrorCode VecGetLocalToGlobalMappingBlock(Vec X,ISLocalToGlobalMapping *mapping)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
-  PetscValidType(X,1);
-  PetscValidPointer(mapping,2);
-  *mapping = X->map->bmapping;
   PetscFunctionReturn(0);
 }
 
@@ -1402,7 +1337,7 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
 
    Level: advanced
 
-.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlock(), VecGetBlockSize()
+.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMapping(), VecGetBlockSize()
 
   Concepts: block size^vectors
 @*/
@@ -1438,7 +1373,7 @@ PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
 
    Level: advanced
 
-.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlock(), VecSetBlockSize()
+.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMapping(), VecSetBlockSize()
 
    Concepts: vector^block size
    Concepts: block^vector

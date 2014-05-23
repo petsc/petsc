@@ -1813,8 +1813,7 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
 
    Input Parameters:
 +  x - the matrix
-.  rmapping - row mapping created with ISLocalToGlobalMappingCreate()
-             or ISLocalToGlobalMappingCreateIS()
+.  rmapping - row mapping created with ISLocalToGlobalMappingCreate()   or ISLocalToGlobalMappingCreateIS()
 - cmapping - column mapping
 
    Level: intermediate
@@ -1843,43 +1842,6 @@ PetscErrorCode  MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetLocalToGlobalMappingBlock"
-/*@
-   MatSetLocalToGlobalMappingBlock - Sets a local-to-global numbering for use
-   by the routine MatSetValuesBlockedLocal() to allow users to insert matrix
-   entries using a local (per-processor) numbering.
-
-   Not Collective
-
-   Input Parameters:
-+  x - the matrix
-. rmapping - row mapping created with ISLocalToGlobalMappingCreate() or
-             ISLocalToGlobalMappingCreateIS()
-- cmapping - column mapping
-
-   Level: intermediate
-
-   Concepts: matrices^local to global mapping blocked
-   Concepts: local to global mapping^for matrices, blocked
-
-.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal(),
-           MatSetValuesBlocked(), MatSetValuesLocal()
-@*/
-PetscErrorCode  MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,MAT_CLASSID,1);
-  PetscValidType(x,1);
-  PetscValidHeaderSpecific(rmapping,IS_LTOGM_CLASSID,2);
-  PetscValidHeaderSpecific(cmapping,IS_LTOGM_CLASSID,3);
-
-  ierr = PetscLayoutSetISLocalToGlobalMappingBlock(x->rmap,rmapping);CHKERRQ(ierr);
-  ierr = PetscLayoutSetISLocalToGlobalMappingBlock(x->cmap,cmapping);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetLocalToGlobalMapping"
@@ -1911,39 +1873,6 @@ PetscErrorCode  MatGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmappin
   if (cmapping) PetscValidPointer(cmapping,3);
   if (rmapping) *rmapping = A->rmap->mapping;
   if (cmapping) *cmapping = A->cmap->mapping;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatGetLocalToGlobalMappingBlock"
-/*@
-   MatGetLocalToGlobalMappingBlock - Gets the local-to-global numbering set by MatSetLocalToGlobalMappingBlock()
-
-   Not Collective
-
-   Input Parameters:
-.  A - the matrix
-
-   Output Parameters:
-+ rmapping - row mapping
-- cmapping - column mapping
-
-   Level: advanced
-
-   Concepts: matrices^local to global mapping blocked
-   Concepts: local to global mapping^for matrices, blocked
-
-.seealso:  MatSetValuesBlockedLocal(), MatGetLocalToGlobalMapping()
-@*/
-PetscErrorCode  MatGetLocalToGlobalMappingBlock(Mat A,ISLocalToGlobalMapping *rmapping,ISLocalToGlobalMapping *cmapping)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidType(A,1);
-  if (rmapping) PetscValidPointer(rmapping,2);
-  if (cmapping) PetscValidPointer(cmapping,3);
-  if (rmapping) *rmapping = A->rmap->bmapping;
-  if (cmapping) *cmapping = A->cmap->bmapping;
   PetscFunctionReturn(0);
 }
 
@@ -2090,7 +2019,7 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
    If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatXXXXSetPreallocation() or
       MatSetUp() before using this routine
 
-   If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatSetBlockSize() and MatSetLocalToGlobalMappingBlock()
+   If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatSetBlockSize() and MatSetLocalToGlobalMapping()
       before using this routineBefore calling MatSetValuesLocal(), the user must first set the
 
    Calls to MatSetValuesBlockedLocal() with the INSERT_VALUES and ADD_VALUES
@@ -2104,8 +2033,8 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
 
    Concepts: matrices^putting blocked values in with local numbering
 
-.seealso:  MatSetBlockSize(), MatSetLocalToGlobalMappingBlock(), MatAssemblyBegin(), MatAssemblyEnd(),
-           MatSetValuesLocal(), MatSetLocalToGlobalMappingBlock(), MatSetValuesBlocked()
+.seealso:  MatSetBlockSize(), MatSetLocalToGlobalMapping(), MatAssemblyBegin(), MatAssemblyEnd(),
+           MatSetValuesLocal(),  MatSetValuesBlocked()
 @*/
 PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
@@ -2137,35 +2066,16 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
     ierr = (*mat->ops->setvaluesblockedlocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
   } else {
     PetscInt buf[8192],*bufr=0,*bufc=0,*irowm,*icolm;
-    if (mat->rmap->bmapping && mat->cmap->bmapping) {
-      if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
-        irowm = buf; icolm = buf + nrow;
-      } else {
-        ierr  = PetscMalloc2(nrow,&bufr,ncol,&bufc);CHKERRQ(ierr);
-        irowm = bufr; icolm = bufc;
-      }
-      ierr = ISLocalToGlobalMappingApply(mat->rmap->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingApply(mat->cmap->bmapping,ncol,icol,icolm);CHKERRQ(ierr);
-      ierr = MatSetValuesBlocked(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
-      ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
+    if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
+      irowm = buf; icolm = buf + nrow;
     } else {
-      PetscInt i,j,bs,cbs;
-      ierr = MatGetBlockSizes(mat,&bs,&cbs);CHKERRQ(ierr);
-      if (nrow*bs+ncol*cbs <=(PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
-        irowm = buf; icolm = buf + nrow;
-      } else {
-        ierr  = PetscMalloc2(nrow*bs,&bufr,ncol*cbs,&bufc);CHKERRQ(ierr);
-        irowm = bufr; icolm = bufc;
-      }
-      for (i=0; i<nrow; i++) {
-        for (j=0; j<bs; j++) irowm[i*bs+j] = irow[i]*bs+j;
-      }
-      for (i=0; i<ncol; i++) {
-        for (j=0; j<cbs; j++) icolm[i*cbs+j] = icol[i]*cbs+j;
-      }
-      ierr = MatSetValuesLocal(mat,nrow*bs,irowm,ncol*cbs,icolm,y,addv);CHKERRQ(ierr);
-      ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
+      ierr  = PetscMalloc2(nrow,&bufr,ncol,&bufc);CHKERRQ(ierr);
+      irowm = bufr; icolm = bufc;
     }
+    ierr = ISLocalToGlobalMappingApplyBlock(mat->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApplyBlock(mat->cmap->mapping,ncol,icol,icolm);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+    ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)

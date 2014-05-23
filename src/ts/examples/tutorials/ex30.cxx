@@ -554,8 +554,8 @@ PetscErrorCode create_matrix(_User &user, DM &dm, Mat *J)
   PetscInt               *gindices = new PetscInt[range.size()];
   merr = user.pcomm->get_moab()->tag_get_data(ltog_tag, range, gindices);MBERRNM(merr);
 
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, range.size(), gindices,PETSC_COPY_VALUES, &ltog);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMappingBlock(*J,ltog,ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, 2,range.size(), gindices,PETSC_COPY_VALUES, &ltog);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*J,ltog,ltog);CHKERRQ(ierr);
 
   // Clean up:
   ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);

@@ -1535,6 +1535,7 @@ PETSC_EXTERN PetscErrorCode PetscClassIdRegister(const char[],PetscClassId *);
 PETSC_EXTERN PetscErrorCode PetscMemoryGetCurrentUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMemoryGetMaximumUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMemorySetGetMaximumUsage(void);
+PETSC_EXTERN PetscErrorCode PetscMemoryTrace(const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscInfoAllow(PetscBool ,const char []);
 PETSC_EXTERN PetscErrorCode PetscSleep(PetscReal);

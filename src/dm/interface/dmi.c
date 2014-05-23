@@ -33,7 +33,6 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
   ierr = VecSetType(*vec,dm->vectype);CHKERRQ(ierr);
   ierr = VecSetDM(*vec, dm);CHKERRQ(ierr);
   /* ierr = VecSetLocalToGlobalMapping(*vec, dm->ltogmap);CHKERRQ(ierr); */
-  /* ierr = VecSetLocalToGlobalMappingBlock(*vec, dm->ltogmapb);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 

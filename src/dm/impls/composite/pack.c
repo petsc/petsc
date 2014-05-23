@@ -788,7 +788,7 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
       idx[i] = subi - suboff[lo] + next->grstarts[lo];
     }
     ierr = ISLocalToGlobalMappingRestoreIndices(ltog,&indices);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm),n,idx,PETSC_OWN_POINTER,&(*ltogs)[cnt]);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm),1,n,idx,PETSC_OWN_POINTER,&(*ltogs)[cnt]);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr);
     next = next->next;
     cnt++;
