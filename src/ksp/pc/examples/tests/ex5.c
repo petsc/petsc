@@ -72,7 +72,7 @@ int main(int Argc,char **Args)
   ierr = PCMGSetType(pcmg,am);CHKERRQ(ierr);
 
   ierr = PCMGGetCoarseSolve(pcmg,&cksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(cksp,cmat,cmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(cksp,cmat,cmat);CHKERRQ(ierr);
   ierr = KSPGetPC(cksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
   ierr = KSPSetType(cksp,KSPPREONLY);CHKERRQ(ierr);
@@ -96,7 +96,7 @@ int main(int Argc,char **Args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"level=%D, PCShell name is %s\n",i,shellname);CHKERRQ(ierr);
 
     /* this is a dummy! since KSP requires a matrix passed in  */
-    ierr = KSPSetOperators(ksp[i],mat[i],mat[i],DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp[i],mat[i],mat[i]);CHKERRQ(ierr);
     /*
         We override the matrix passed in by forcing it to use Richardson with
         a user provided application. This is non-standard and this practice
@@ -137,7 +137,7 @@ int main(int Argc,char **Args)
   /* create matrix multiply for finest level */
   ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void*)0,&fmat);CHKERRQ(ierr);
   ierr = MatShellSetOperation(fmat,MATOP_MULT,(void (*)(void))amult);CHKERRQ(ierr);
-  ierr = KSPSetOperators(kspmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(kspmg,fmat,fmat);CHKERRQ(ierr);
 
   ierr = CalculateSolution(N[0],&solution);CHKERRQ(ierr);
   ierr = CalculateRhs(B[levels-1]);CHKERRQ(ierr);
@@ -145,13 +145,13 @@ int main(int Argc,char **Args)
 
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %G max error %G resi %G\n",e[0],e[1],e[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",(double)e[0],(double)e[1],(double)e[2]);CHKERRQ(ierr);
 
   ierr = KSPSolve(kspmg,B[levels-1],X[levels-1]);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(kspmg,&its);CHKERRQ(ierr);
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"its %D l_2 error %G max error %G resi %G\n",its,e[0],e[1],e[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"its %D l_2 error %g max error %g resi %g\n",its,(double)e[0],(double)e[1],(double)e[2]);CHKERRQ(ierr);
 
   ierr = PetscFree(N);CHKERRQ(ierr);
   ierr = VecDestroy(&solution);CHKERRQ(ierr);

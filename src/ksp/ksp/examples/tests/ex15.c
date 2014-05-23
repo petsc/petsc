@@ -57,7 +57,7 @@ int main(int argc,char **args)
 
   /* Create KSP context; set operators and options; solve linear system */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
   /* Insure that preconditioner has same null space as matrix */
   /* currently does not do anything */
@@ -71,7 +71,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
 
   /* Free work space */
   ierr = VecDestroy(&x);CHKERRQ(ierr);ierr = VecDestroy(&u);CHKERRQ(ierr);

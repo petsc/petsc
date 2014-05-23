@@ -30,6 +30,7 @@ Use the options
      -da_processors_y <MY> number of processors in x direction
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -44,7 +45,7 @@ int main(int argc,char **argv)
   PetscViewer      viewer;
   Vec              local,global;
   PetscScalar      value;
-  DMDABoundaryType bx    = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE;
+  DMBoundaryType   bx    = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscViewer mviewer;

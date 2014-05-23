@@ -21,14 +21,13 @@ PETSC_EXTERN PetscErrorCode PCCreate_NN(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC);
-PETSC_EXTERN PetscErrorCode PCCreate_HMPI(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC);
-PETSC_EXTERN PetscErrorCode PCCreate_ASA(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_CP(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Kaczmarz(PC);
 
 #if defined(PETSC_HAVE_ML)
 PETSC_EXTERN PetscErrorCode PCCreate_ML(PC);
@@ -103,13 +102,12 @@ PetscErrorCode  PCRegisterAll(void)
   ierr = PCRegister(PCFIELDSPLIT   ,PCCreate_FieldSplit);CHKERRQ(ierr);
   ierr = PCRegister(PCGALERKIN     ,PCCreate_Galerkin);CHKERRQ(ierr);
   ierr = PCRegister(PCEXOTIC       ,PCCreate_Exotic);CHKERRQ(ierr);
-  ierr = PCRegister(PCHMPI         ,PCCreate_HMPI);CHKERRQ(ierr);
-  ierr = PCRegister(PCASA          ,PCCreate_ASA);CHKERRQ(ierr);
   ierr = PCRegister(PCCP           ,PCCreate_CP);CHKERRQ(ierr);
   ierr = PCRegister(PCLSC          ,PCCreate_LSC);CHKERRQ(ierr);
   ierr = PCRegister(PCREDISTRIBUTE ,PCCreate_Redistribute);CHKERRQ(ierr);
   ierr = PCRegister(PCSVD          ,PCCreate_SVD);CHKERRQ(ierr);
   ierr = PCRegister(PCGAMG         ,PCCreate_GAMG);CHKERRQ(ierr);
+  ierr = PCRegister(PCKACZMARZ     ,PCCreate_Kaczmarz);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ML)
   ierr = PCRegister(PCML           ,PCCreate_ML);CHKERRQ(ierr);
 #endif

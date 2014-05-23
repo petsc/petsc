@@ -1,3 +1,5 @@
+DM Object:Mesh 1 MPI processes
+  type: plex
 Mesh 'Mesh':
 Max sizes cone: 3 support: 8
 orientation is missing
@@ -290,7 +292,7 @@ Vec Object: 1 MPI processes
 1.15625
 1.5625
 Initial guess
-Vec Object: 1 MPI processes
+Vec Object:potential 1 MPI processes
   type: seq
 0
 0.25

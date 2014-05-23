@@ -50,7 +50,7 @@ static PetscErrorCode RoberFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 
 #undef __FUNCT__
 #define __FUNCT__ "RoberJacobian"
-static PetscErrorCode RoberJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
+static PetscErrorCode RoberJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       rowcol[] = {0,1,2};
@@ -62,17 +62,16 @@ static PetscErrorCode RoberJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a
   J[0][0] = a + 0.04;     J[0][1] = -1e4*x[2];                   J[0][2] = -1e4*x[1];
   J[1][0] = -0.04;        J[1][1] = a + 1e4*x[2] + 3e7*2*x[1];   J[1][2] = 1e4*x[1];
   J[2][0] = 0;            J[2][1] = -3e7*2*x[1];                 J[2][2] = a;
-  ierr    = MatSetValues(*B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = MatSetValues(B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr    = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -139,9 +138,9 @@ static PetscErrorCode CEFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ct
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = xdot[0] + l*(x[0] - cos(t));
+  f[0] = xdot[0] + l*(x[0] - PetscCosReal(t));
 #if 0
-  ierr = PetscPrintf(PETSC_COMM_WORLD," f(t=%G,x=%G,xdot=%G) = %G\n",t,x[0],xdot[0],f[0]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," f(t=%g,x=%g,xdot=%g) = %g\n",(double)t,(double)x[0],(double)xdot[0],(double)f[0]);CHKERRQ(ierr);
 #endif
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
@@ -151,7 +150,7 @@ static PetscErrorCode CEFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ct
 
 #undef __FUNCT__
 #define __FUNCT__ "CEJacobian"
-static PetscErrorCode CEJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
+static PetscErrorCode CEJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscReal      l = ((CECtx*)ctx)->lambda;
   PetscErrorCode ierr;
@@ -162,17 +161,16 @@ static PetscErrorCode CEJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Ma
   ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr    = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   J[0][0] = a + l;
-  ierr    = MatSetValues(*B,1,rowcol,1,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = MatSetValues(B,1,rowcol,1,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr    = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -186,7 +184,7 @@ static PetscErrorCode CESolution(PetscReal t,Vec X,void *ctx)
 
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  x[0] = l/(l*l+1)*(l*cos(t)+sin(t)) - l*l/(l*l+1)*exp(-l*t);
+  x[0] = l/(l*l+1)*(l*PetscCosReal(t)+PetscSinReal(t)) - l*l/(l*l+1)*PetscExpReal(-l*t);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -244,7 +242,7 @@ static PetscErrorCode OregoFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 
 #undef __FUNCT__
 #define __FUNCT__ "OregoJacobian"
-static PetscErrorCode OregoJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
+static PetscErrorCode OregoJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       rowcol[] = {0,1,2};
@@ -262,17 +260,16 @@ static PetscErrorCode OregoJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a
   J[2][0] = -0.161;
   J[2][1] = 0;
   J[2][2] = a + 0.161;
-  ierr    = MatSetValues(*B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = MatSetValues(B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr    = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -334,7 +331,7 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
   ierr = VecAYPX(mon->x,-1,x);CHKERRQ(ierr);
   ierr = VecNorm(mon->x,NORM_2,&nrm_diff);CHKERRQ(ierr);
   ierr = TSGetTimeStep(ts,&h);CHKERRQ(ierr);
-  ierr = PetscPrintf(mon->comm,"step %4D t=%12.8e h=% 8.2e  |x|=%9.2e  |x_e|=%9.2e  |x-x_e|=%9.2e\n",step,t,h,nrm_x,nrm_exact,nrm_diff);CHKERRQ(ierr);
+  ierr = PetscPrintf(mon->comm,"step %4D t=%12.8e h=% 8.2e  |x|=%9.2e  |x_e|=%9.2e  |x-x_e|=%9.2e\n",step,(double)t,(double)h,(double)nrm_x,(double)nrm_exact,(double)nrm_diff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -443,7 +440,7 @@ int main(int argc,char **argv)
   ierr = TSGetStepRejections(ts,&rejects);CHKERRQ(ierr);
   ierr = TSGetSNESIterations(ts,&nonlinits);CHKERRQ(ierr);
   ierr = TSGetKSPIterations(ts,&linits);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D (%D rejected, %D SNES fails), ftime %G, nonlinits %D, linits %D\n",steps,rejects,snesfails,ftime,nonlinits,linits);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D (%D rejected, %D SNES fails), ftime %g, nonlinits %D, linits %D\n",steps,rejects,snesfails,(double)ftime,nonlinits,linits);CHKERRQ(ierr);
   if (problem->hasexact) {
     ierr = MonitorError(ts,steps,ftime,x,&mon);CHKERRQ(ierr);
   }

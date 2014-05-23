@@ -1,4 +1,4 @@
-
+#define PETSC_DESIRE_FEATURE_TEST_MACROS /* for drand48 with c89 */
 #include <../src/sys/classes/random/randomimpl.h>
 
 #undef __FUNCT__

@@ -211,6 +211,7 @@ PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscFree(pc_gamg->subctx);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1209,6 +1210,7 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   ierr = PetscFree(flid_fgid);CHKERRQ(ierr);
 
   *a_P_out = Prol;  /* out */
+
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventEnd(PC_GAMGProlongator_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -1293,7 +1295,7 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,const Mat Amat,Mat *a_P)
       ierr = KSPSetFromOptions(eksp);CHKERRQ(ierr);
 
       ierr = KSPSetInitialGuessNonzero(eksp, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = KSPSetOperators(eksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(eksp, Amat, Amat);CHKERRQ(ierr);
       ierr = KSPSetComputeSingularValues(eksp,PETSC_TRUE);CHKERRQ(ierr);
 
       ierr = KSPGetPC(eksp, &epc);CHKERRQ(ierr);

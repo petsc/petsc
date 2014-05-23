@@ -25,6 +25,7 @@
 #include <finclude/petscmat.h>
 #include <finclude/petscpc.h>
 #include <finclude/petscksp.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
       PetscErrorCode   ierr
       DM               da
@@ -39,8 +40,8 @@
       i3 = -3
       i1 = 1
       call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
-      call DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,            &
-     &    DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,                               &
+      call DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,              &
+     &    DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,                               &
      &    DMDA_STENCIL_STAR,i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,                        &
      &    PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
      &                PETSC_NULL_INTEGER,da,ierr)
@@ -63,6 +64,7 @@
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       PetscErrorCode  ierr
@@ -87,12 +89,13 @@
       end
 
 
-      subroutine ComputeMatrix(ksp,JJ,jac,str,ctx,ierr)
+      subroutine ComputeMatrix(ksp,JJ,jac,ctx,ierr)
       implicit none
 
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
 #include <finclude/petscmat.h>
+#include <finclude/petscdm.h>
 #include <finclude/petscdmda.h>
 
       Mat          jac,JJ
@@ -105,7 +108,6 @@
       PetscScalar  HxHydHz,HyHzdHx
       PetscScalar  HxHzdHy
       MatStencil   row(4),col(4,7)
-      MatStructure str
       PetscInt     ctx
       i1 = 1
       i7 = 7

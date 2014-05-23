@@ -59,20 +59,13 @@ PetscErrorCode  PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscSc
 PetscErrorCode  PFDestroy(PF *pf)
 {
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (!*pf) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*pf),PF_CLASSID,1);
   if (--((PetscObject)(*pf))->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsGetBool(((PetscObject)(*pf))->prefix,"-pf_view",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)(*pf))->comm,&viewer);CHKERRQ(ierr);
-    ierr = PFView((*pf),viewer);CHKERRQ(ierr);
-  }
-
+  ierr = PFViewFromOptions(*pf,NULL,"-pf_view");CHKERRQ(ierr);
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)*pf);CHKERRQ(ierr);
 

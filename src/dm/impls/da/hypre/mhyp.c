@@ -389,7 +389,7 @@ static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
   PetscErrorCode   ierr;
   Mat_HYPREStruct  *ex = (Mat_HYPREStruct*) mat->data;
   PetscInt         dim,dof,sw[3],nx,ny,nz,ilower[3],iupper[3],ssize,i;
-  DMDABoundaryType px,py,pz;
+  DMBoundaryType   px,py,pz;
   DMDAStencilType  st;
 
   PetscFunctionBegin;
@@ -482,7 +482,7 @@ static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   ierr        = MatGetOwnershipRange(mat,&ex->rstart,NULL);CHKERRQ(ierr);
-  ierr        = DMDAGetGlobalIndices(ex->da,NULL,&ex->gindices);CHKERRQ(ierr);
+  ierr        = DMDAGetGlobalIndices(ex->da,NULL, (const PetscInt **) &ex->gindices);CHKERRQ(ierr);
   ierr        = DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,0);CHKERRQ(ierr);
   ex->gnxgny *= ex->gnx;
   ierr        = DMDAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,0);CHKERRQ(ierr);
@@ -824,7 +824,7 @@ static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
   PetscInt         dim,dof,sw[3],nx,ny,nz;
   PetscInt         ilower[3],iupper[3],ssize,i;
-  DMDABoundaryType px,py,pz;
+  DMBoundaryType   px,py,pz;
   DMDAStencilType  st;
   PetscInt         nparts= 1;  /* assuming only one part */
   PetscInt         part  = 0;
@@ -960,7 +960,7 @@ static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   ierr = MatGetOwnershipRange(mat,&ex->rstart,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(ex->da,NULL,&ex->gindices);CHKERRQ(ierr);
+  ierr = DMDAGetGlobalIndices(ex->da,NULL,(const PetscInt **) &ex->gindices);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,&ex->gnxgnygnz);CHKERRQ(ierr);
 
   ex->gnxgny    *= ex->gnx;

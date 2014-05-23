@@ -133,7 +133,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   if (snes->pc && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-    ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
@@ -156,7 +156,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     }
   }
   if (snes->pc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
-      ierr = SNESApplyPC(snes,X,F,&fnorm,Y);CHKERRQ(ierr);
+      ierr = SNESApplyNPC(snes,X,F,Y);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
@@ -226,11 +226,11 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
     if (snes->pc) {
       if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-        ierr = SNESApplyPC(snes,X,NULL,NULL,Y);CHKERRQ(ierr);
+        ierr = SNESApplyNPC(snes,X,NULL,Y);CHKERRQ(ierr);
         ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
         ierr = VecCopy(Y,F);CHKERRQ(ierr);
       } else {
-        ierr = SNESApplyPC(snes,X,F,&fnorm,Y);CHKERRQ(ierr);
+        ierr = SNESApplyNPC(snes,X,F,Y);CHKERRQ(ierr);
       }
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
@@ -259,7 +259,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
   Notes: If no inner nonlinear preconditioner is provided then solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda
             (F(x^n) - b) where lambda is obtained either SNESLineSearchSetDamping(), -snes_damping or a line search.  If
-            an inner nonlinear preconditioner is provided (either with -npc_snes_type or SNESSetPC()) then the inner
+            an inner nonlinear preconditioner is provided (either with -npc_snes_type or SNESSetNPC()) then the inner
             solver is called an initial solution x^n and the nonlinear Richardson uses x^{n+1} = x^{n} + lambda d^{n}
             where d^{n} = \hat{x}^{n} - x^{n} where \hat{x}^{n} is the solution returned from the inner solver.
 

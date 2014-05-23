@@ -50,7 +50,7 @@ PetscErrorCode  DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
   if (mode == ADD_VALUES) {
     ierr = VecScatterBegin(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
-    ierr = VecScatterBegin(dd->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(dd->gtol,l,g,INSERT_VALUES,SCATTER_REVERSE_LOCAL);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented");
   PetscFunctionReturn(0);
 }
@@ -69,7 +69,7 @@ PetscErrorCode  DMLocalToGlobalEnd_DA(DM da,Vec l,InsertMode mode,Vec g)
   if (mode == ADD_VALUES) {
     ierr = VecScatterEnd(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
-    ierr = VecScatterEnd(dd->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(dd->gtol,l,g,INSERT_VALUES,SCATTER_REVERSE_LOCAL);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented");
   PetscFunctionReturn(0);
 }

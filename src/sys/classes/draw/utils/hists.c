@@ -421,6 +421,7 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
   if (!viewer){
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)hist),&viewer);CHKERRQ(ierr);
   }
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)hist,viewer);CHKERRQ(ierr);
   xmax      = hist->xmax;
   xmin      = hist->xmin;
   numValues = hist->numValues;
@@ -480,7 +481,7 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
     mean /= numValues;
     if (numValues > 1) var = (var - numValues*mean*mean) / (numValues-1);
     else var = 0.0;
-    ierr = PetscViewerASCIIPrintf(viewer, "Mean: %G  Var: %G\n", (double)mean, (double)var);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Mean: %g  Var: %g\n", (double)mean, (double)var);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Total: %D\n", numValues);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

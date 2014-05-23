@@ -12,8 +12,8 @@ Runtime options include:\n\
 ./ex63 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11 -snes_converged_reason -ksp_converged_reason   -snes_linesearch_monitor -VG 10000000 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9 -snes_linesearch_type basic -T .0020 -P_casc .0005 -snes_monitor_solution -da_refine 10
  */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */
@@ -34,7 +34,7 @@ PetscErrorCode GetParams(AppCtx*);
 PetscErrorCode SetVariableBounds(DM,Vec,Vec);
 PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
 PetscErrorCode Update_q(AppCtx*);
 PetscErrorCode Update_u(Vec,AppCtx*);
@@ -63,13 +63,13 @@ int main(int argc, char **argv)
   ierr = GetParams(&user);CHKERRQ(ierr);
 
   if (user.periodic) {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 3, 1,NULL,&user.da1);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 3, 1,NULL,&user.da1_clone);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 1, 1,NULL,&user.da2);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, -4, 3, 1,NULL,&user.da1);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, -4, 3, 1,NULL,&user.da1_clone);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, -4, 1, 1,NULL,&user.da2);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE, -4, 3, 1,NULL,&user.da1);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE, -4, 3, 1,NULL,&user.da1_clone);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE, -4, 1, 1,NULL,&user.da2);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, -4, 3, 1,NULL,&user.da1);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, -4, 3, 1,NULL,&user.da1_clone);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, -4, 1, 1,NULL,&user.da2);CHKERRQ(ierr);
 
   }
   /* Set Element type (triangular) */
@@ -451,16 +451,15 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ctx)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
   PetscFunctionBeginUser;
-  *flg = SAME_NONZERO_PATTERN;
-  ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatCopy(user->M,J,*flg);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -480,10 +479,10 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
 
   for (i=xs; i < xs+xm; i++) {
-    l[i][0] = -SNES_VI_INF;
+    l[i][0] = -PETSC_INFINITY;
     l[i][1] = 0.0;
     l[i][2] = 0.0;
-    u[i][0] = SNES_VI_INF;
+    u[i][0] = PETSC_INFINITY;
     u[i][1] = 1.0;
     u[i][2] = 1.0;
   }

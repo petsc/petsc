@@ -311,8 +311,7 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
   N->ops->scale            = MatScale_SubMatrix;
   N->ops->diagonalscale    = MatDiagonalScale_SubMatrix;
 
-  ierr = PetscLayoutSetBlockSize(N->rmap,A->rmap->bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(N->cmap,A->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(N,A,A);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(N->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(N->cmap);CHKERRQ(ierr);
 

@@ -37,7 +37,6 @@ int main(int argc,char **argv)
   v    = 4.0;
   i    = 3; j = 0;
   ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -109,9 +108,14 @@ int main(int argc,char **argv)
   ierr = PetscViewerASCIIPrintf(viewer,"RCM + NonzeroDiagonal() column permutation\n");CHKERRQ(ierr);
   ierr = ISView(iscol,viewer);CHKERRQ(ierr);
 
+  /* Test MatLUFactor(); set diagonal as zeros as requested by PETSc matrix factorization */
+  for (i=0; i<4; i++) { 
+    v = 0.0;
+    ierr = MatSetValues(mat,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatLUFactor(mat,isrow,iscol,NULL);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Factored matrix permuted by RCM + NonzeroDiagonal()\n");CHKERRQ(ierr);
-  ierr = MatView(mat,viewer);CHKERRQ(ierr);
 
   /* Free data structures */
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);

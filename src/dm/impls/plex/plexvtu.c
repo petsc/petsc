@@ -313,8 +313,8 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         ierr = VecRestoreArrayRead(coords,&x);CHKERRQ(ierr);
       }
       {                           /* Connectivity, offsets, types */
-        PetscVTKInt  *connectivity = NULL,*offsets;
-        PetscVTKType *types;
+        PetscVTKInt  *connectivity = NULL, *offsets = NULL;
+        PetscVTKType *types = NULL;
         ierr = DMPlexGetVTKConnectivity(dm,&piece,&connectivity,&offsets,&types);CHKERRQ(ierr);
         ierr = TransferWrite(viewer,fp,r,0,connectivity,buffer,piece.nconn,PETSC_INT32,tag);CHKERRQ(ierr);
         ierr = TransferWrite(viewer,fp,r,0,offsets,buffer,piece.ncells,PETSC_INT32,tag);CHKERRQ(ierr);

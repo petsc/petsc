@@ -102,7 +102,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",flg,&flg,NULL);CHKERRQ(ierr);
-  ((PC_Factor*)ilu)->info.diagonal_fill = (double) flg;
+  ((PC_Factor*)ilu)->info.diagonal_fill = (PetscReal) flg;
   /*
   dt[0] = ((PC_Factor*)ilu)->info.dt;
   dt[1] = ((PC_Factor*)ilu)->info.dtcol;
@@ -188,6 +188,8 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
 
     ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);CHKERRQ(ierr);
     ((PC_Factor*)ilu)->fact = pc->pmat;
+    /* must update the pc record of the matrix state or the PC will attempt to run PCSetUp() yet again */
+    ierr = PetscObjectStateGet((PetscObject)pc->pmat,&pc->matstate);CHKERRQ(ierr);
   } else {
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */

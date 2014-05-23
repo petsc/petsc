@@ -86,14 +86,14 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
     ierr = SNESGetFunction(next->snes,&FSub,NULL,NULL);CHKERRQ(ierr);
     ierr = VecCopy(FSub,F);CHKERRQ(ierr);
     if (fnorm) {
-      ierr = SNESGetFunctionNorm(next->snes,fnorm);CHKERRQ(ierr);
+      ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);
       if (PetscIsInfOrNanReal(*fnorm)) {
         snes->reason = SNES_DIVERGED_FNORM_NAN;
         PetscFunctionReturn(0);
       }
     }
   } else if (snes->normschedule == SNES_NORM_ALWAYS) {
-    SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
@@ -374,7 +374,6 @@ static PetscErrorCode SNESReset_Composite(SNES snes)
   ierr = PetscFree(jac->beta);CHKERRQ(ierr);
   ierr = PetscFree(jac->work);CHKERRQ(ierr);
   ierr = PetscFree(jac->rwork);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

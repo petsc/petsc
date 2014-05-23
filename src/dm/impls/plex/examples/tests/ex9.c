@@ -21,7 +21,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
-PetscErrorCode ProcessOptions(AppCtx *options)
+static PetscErrorCode ProcessOptions(AppCtx *options)
 {
   PetscInt       len;
   PetscBool      flg;
@@ -71,7 +71,7 @@ PetscErrorCode ProcessOptions(AppCtx *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateSimplex_2D"
-PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
+static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
 {
   DM             dm;
   PetscInt       numPoints[2]        = {4, 2};
@@ -98,7 +98,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateSimplex_3D"
-PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
+static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
 {
   DM             dm;
   PetscInt       numPoints[2]        = {5, 2};
@@ -125,7 +125,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateQuad_2D"
-PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
+static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
 {
   DM             dm;
   PetscInt       numPoints[2]        = {6, 2};
@@ -152,7 +152,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateHex_3D"
-PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
+static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
 {
   DM             dm;
   PetscInt       numPoints[2]         = {12, 2};
@@ -181,7 +181,7 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
 {
   PetscInt       dim         = user->dim;
   PetscBool      cellSimplex = user->cellSimplex;
@@ -219,7 +219,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
     *newdm = rdm;
   }
   if (user->interpolate) {
-    DM idm;
+    DM idm = NULL;
     const char *name;
 
     ierr = DMPlexInterpolate(*newdm, &idm);CHKERRQ(ierr);
@@ -234,7 +234,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestCone"
-PetscErrorCode TestCone(DM dm, AppCtx *user)
+static PetscErrorCode TestCone(DM dm, AppCtx *user)
 {
   PetscInt           numRuns, cStart, cEnd, c, i;
   PetscReal          maxTimePerRun = user->maxConeTime;
@@ -276,7 +276,7 @@ PetscErrorCode TestCone(DM dm, AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestTransitiveClosure"
-PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
+static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
 {
   PetscInt           numRuns, cStart, cEnd, c, i;
   PetscReal          maxTimePerRun = user->maxClosureTime;
@@ -320,7 +320,7 @@ PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestVecClosure"
-PetscErrorCode TestVecClosure(DM dm, AppCtx *user)
+static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, AppCtx *user)
 {
   PetscSection       s;
   Vec                v;
@@ -336,11 +336,17 @@ PetscErrorCode TestVecClosure(DM dm, AppCtx *user)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogStageRegister("DMPlex Vector Closure Test", &stage);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecClosure", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
+  if (useIndex) {
+    ierr = PetscLogStageRegister("DMPlex Vector Closure with Index Test", &stage);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("VecClosureInd", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
+  } else {
+    ierr = PetscLogStageRegister("DMPlex Vector Closure Test", &stage);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("VecClosure", PETSC_OBJECT_CLASSID, &event);CHKERRQ(ierr);
+  }
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
-  ierr = DMPlexCreateSection(dm, user->dim, user->numFields, user->numComponents, user->numDof, 0, NULL, NULL, &s);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, user->dim, user->numFields, user->numComponents, user->numDof, 0, NULL, NULL, NULL, &s);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, s);CHKERRQ(ierr);
+  if (useIndex) {ierr = DMPlexCreateClosureIndex(dm, s);CHKERRQ(ierr);}
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &v);CHKERRQ(ierr);
@@ -373,7 +379,7 @@ PetscErrorCode TestVecClosure(DM dm, AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "CleanupContext"
-PetscErrorCode CleanupContext(AppCtx *user)
+static PetscErrorCode CleanupContext(AppCtx *user)
 {
   PetscErrorCode ierr;
 
@@ -397,7 +403,8 @@ int main(int argc, char **argv)
   ierr = CreateMesh(PETSC_COMM_SELF, &user, &dm);CHKERRQ(ierr);
   ierr = TestCone(dm, &user);CHKERRQ(ierr);
   ierr = TestTransitiveClosure(dm, &user);CHKERRQ(ierr);
-  ierr = TestVecClosure(dm, &user);CHKERRQ(ierr);
+  ierr = TestVecClosure(dm, PETSC_FALSE, &user);CHKERRQ(ierr);
+  ierr = TestVecClosure(dm, PETSC_TRUE,  &user);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = CleanupContext(&user);CHKERRQ(ierr);
   ierr = PetscFinalize();

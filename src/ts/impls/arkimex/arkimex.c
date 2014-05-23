@@ -666,21 +666,44 @@ unavailable:
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSRollBack_ARKIMEX"
+static PetscErrorCode TSRollBack_ARKIMEX(TS ts)
+{
+  TS_ARKIMEX      *ark = (TS_ARKIMEX*)ts->data;
+  ARKTableau      tab  = ark->tableau;
+  const PetscInt  s    = tab->s;
+  const PetscReal *bt = tab->bt,*b = tab->b;
+  PetscScalar     *w   = ark->work;
+  Vec             *YdotI = ark->YdotI,*YdotRHS = ark->YdotRHS;
+  PetscInt        j;
+  PetscReal       h=ts->time_step;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  for (j=0; j<s; j++) w[j] = -h*bt[j];
+  ierr = VecMAXPY(ts->vec_sol,s,w,YdotI);CHKERRQ(ierr);
+  for (j=0; j<s; j++) w[j] = -h*b[j];
+  ierr = VecMAXPY(ts->vec_sol,s,w,YdotRHS);CHKERRQ(ierr);
+  ark->status   = TS_STEP_INCOMPLETE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSStep_ARKIMEX"
 static PetscErrorCode TSStep_ARKIMEX(TS ts)
 {
   TS_ARKIMEX      *ark = (TS_ARKIMEX*)ts->data;
   ARKTableau      tab  = ark->tableau;
   const PetscInt  s    = tab->s;
-  const PetscReal *At  = tab->At,*A = tab->A,*bt = tab->bt,*b = tab->b,*ct = tab->ct,*c = tab->c;
+  const PetscReal *At  = tab->At,*A = tab->A,*ct = tab->ct,*c = tab->c;
   PetscScalar     *w   = ark->work;
   Vec             *Y   = ark->Y,*YdotI = ark->YdotI,*YdotRHS = ark->YdotRHS,Ydot = ark->Ydot,Ydot0 = ark->Ydot0,W = ark->Work,Z = ark->Z;
   PetscBool       init_guess_extrp = ark->init_guess_extrp;
   TSAdapt         adapt;
   SNES            snes;
   PetscInt        i,j,its,lits,reject,next_scheme;
-  PetscReal       next_time_step;
   PetscReal       t;
+  PetscReal       next_time_step;
   PetscBool       accept;
   PetscErrorCode  ierr;
 
@@ -688,11 +711,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   if (ts->equation_type >= TS_EQ_IMPLICIT && tab->explicit_first_stage) {
     PetscReal valid_time;
     PetscBool isvalid;
-    ierr = PetscObjectComposedDataGetReal((PetscObject)ts->vec_sol,
-                                          explicit_stage_time_id,
-                                          valid_time,
-                                          isvalid);
-    CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataGetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,valid_time,isvalid);CHKERRQ(ierr);
     if (!isvalid || valid_time != ts->ptime) {
       TS        ts_start;
       SNES      snes_start;
@@ -735,8 +754,8 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   }
 
   ierr           = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  next_time_step = ts->time_step;
   t              = ts->ptime;
+  next_time_step = ts->time_step;
   accept         = PETSC_TRUE;
   ark->status    = TS_STEP_INCOMPLETE;
 
@@ -774,7 +793,6 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
           ierr        = VecCopy(i>0 ? Y[i-1] : ts->vec_sol,Y[i]);CHKERRQ(ierr);
         }
         ierr          = SNESSolve(snes,W,Y[i]);CHKERRQ(ierr);
-        ierr          = (ts->ops->snesfunction)(snes,Y[i],W,ts);CHKERRQ(ierr);
         ierr          = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr          = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
@@ -836,12 +854,9 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       }
       break;
     } else {                    /* Roll back the current step */
-      for (j=0; j<s; j++) w[j] = -h*bt[j];
-      ierr = VecMAXPY(ts->vec_sol,s,w,ark->YdotI);CHKERRQ(ierr);
-      for (j=0; j<s; j++) w[j] = -h*b[j];
-      ierr = VecMAXPY(ts->vec_sol,s,w,ark->YdotRHS);CHKERRQ(ierr);
-      ts->time_step = next_time_step;
-      ark->status   = TS_STEP_INCOMPLETE;
+      ts->ptime += next_time_step; /* This will be undone in rollback */
+      ark->status = TS_STEP_INCOMPLETE;
+      ierr = TSRollBack(ts);CHKERRQ(ierr);
     }
 reject_step: continue;
   }
@@ -1038,7 +1053,7 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes,Vec X,Vec F,TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_ARKIMEX"
-static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat A,Mat B,TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
   DM             dm,dmsave;
@@ -1053,7 +1068,7 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat *A,Mat *B,M
   dmsave = ts->dm;
   ts->dm = dm;
 
-  ierr = TSComputeIJacobian(ts,ark->stage_time,X,Ydot,shift,A,B,str,ark->imex);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,ark->stage_time,X,Ydot,shift,A,B,ark->imex);CHKERRQ(ierr);
 
   ts->dm = dmsave;
   ierr   = TSARKIMEXRestoreVecs(ts,dm,NULL,&Ydot);CHKERRQ(ierr);
@@ -1421,6 +1436,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
   ts->ops->step           = TSStep_ARKIMEX;
   ts->ops->interpolate    = TSInterpolate_ARKIMEX;
   ts->ops->evaluatestep   = TSEvaluateStep_ARKIMEX;
+  ts->ops->rollback       = TSRollBack_ARKIMEX;
   ts->ops->setfromoptions = TSSetFromOptions_ARKIMEX;
   ts->ops->snesfunction   = SNESTSFormFunction_ARKIMEX;
   ts->ops->snesjacobian   = SNESTSFormJacobian_ARKIMEX;

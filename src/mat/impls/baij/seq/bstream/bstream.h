@@ -1,5 +1,5 @@
 
-#include "../src/mat/impls/baij/seq/baij.h"
+#include <../src/mat/impls/baij/seq/baij.h>
 
 typedef struct {
   PetscInt  nz;

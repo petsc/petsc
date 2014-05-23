@@ -61,6 +61,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     }
   }
   aij->B->cmap->n = aij->B->cmap->N = ec;
+  aij->B->cmap->bs = 1;
 
   ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
   ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
@@ -94,6 +95,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     }
   }
   aij->B->cmap->n = aij->B->cmap->N = ec;
+  aij->B->cmap->bs = 1;
 
   ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
@@ -172,7 +174,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   }
   ierr = MatCreate(PETSC_COMM_SELF,&Bnew);CHKERRQ(ierr);
   ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(Bnew,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(Bnew,A,A);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Bnew,0,nz);CHKERRQ(ierr);
 

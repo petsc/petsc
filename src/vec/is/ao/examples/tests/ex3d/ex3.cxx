@@ -11,8 +11,7 @@ static char help[] = "AO test contributed by Sebastian Steiger <steiger@purdue.e
 #include <fstream>
 #include <vector>
 #include <assert.h>
-#include <petscao.h>
-#include <mpi.h>
+#include <petsc.h>
 
 using namespace std;
 
@@ -28,7 +27,7 @@ int main(int argc, char** argv)
   int size=-1;   MPI_Comm_size(PETSC_COMM_WORLD, &size);
   int myrank=-1; MPI_Comm_rank(PETSC_COMM_WORLD, &myrank);
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-datafiles",datafiles,sizeof(datafiles),&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-datafiles",datafiles,sizeof(datafiles),&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -datafiles ${DATAFILESPATH}/ao");
 
   // read in application indices

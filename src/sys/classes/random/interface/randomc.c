@@ -255,6 +255,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 #endif
   if (iascii) {
     PetscMPIInt rank;
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)rnd,viewer);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)rnd),&rank);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%D] Random type %s, seed %D\n",rank,((PetscObject)rnd)->type_name,rnd->seed);CHKERRQ(ierr);
@@ -275,45 +276,6 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
       PetscStackCallSAWs(SAWs_Register,(dir,&rnd->low,1,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef  __FUNCT__
-#define __FUNCT__ "PetscRandomViewFromOptions"
-/*
-  PetscRandomViewFromOptions - This function visualizes the type and the seed of the generated random numbers based upon user options.
-
-  Collective on PetscRandom
-
-  Input Parameters:
-+ rnd   - The random number generator context
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: PetscRandom, view, options, database
-.seealso: PetscRandomSetFromOptions()
-*/
-PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, const char prefix[], const char optionname[])
-{
-  PetscBool         flg;
-  PetscViewer       viewer;
-  PetscErrorCode    ierr;
-  PetscViewerFormat format;
-
-  PetscFunctionBegin;
-  if (prefix) {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)rnd),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  } else {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)rnd),((PetscObject)rnd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  }
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = PetscRandomView(rnd,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

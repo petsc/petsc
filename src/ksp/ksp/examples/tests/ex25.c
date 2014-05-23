@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,u_tmp);CHKERRQ(ierr);
   ierr = VecAXPY(u_tmp,none,b);CHKERRQ(ierr);
   ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Accuracy of the loading data: | b - A*u |_2 : %G \n",res_norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Accuracy of the loading data: | b - A*u |_2 : %g \n",(double)res_norm);CHKERRQ(ierr);
   */
 
   /* Setup and solve for system */
@@ -53,16 +53,16 @@ int main(int argc,char **args)
     if (k == 0) {                              /* CG  */
       ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n CG: \n");CHKERRQ(ierr);
     } else if (k == 1) {                       /* MINRES */
       ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPMINRES);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MINRES: \n");CHKERRQ(ierr);
     } else {                                 /* SYMMLQ */
       ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPSYMMLQ);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n SYMMLQ: \n");CHKERRQ(ierr);
     }
@@ -94,8 +94,8 @@ int main(int argc,char **args)
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm: %G;",res_norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm: %G.\n",err_norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm: %g;",(double)res_norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm: %g.\n",(double)err_norm);CHKERRQ(ierr);
 
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   }

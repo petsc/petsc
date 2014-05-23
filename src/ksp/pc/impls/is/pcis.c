@@ -1,5 +1,5 @@
 
-#include "../src/ksp/pc/impls/is/pcis.h" /*I "petscpc.h" I*/
+#include <../src/ksp/pc/impls/is/pcis.h> /*I "petscpc.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCISSetUseStiffnessScaling_IS"
@@ -223,6 +223,7 @@ PetscErrorCode  PCISSetUp(PC pc)
   ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n-pcis->n_B,&pcis->vec1_D);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_D,&pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_D,&pcis->vec3_D);CHKERRQ(ierr);
+  ierr = VecDuplicate(pcis->vec1_D,&pcis->vec4_D);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n_B,&pcis->vec1_B);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_B,&pcis->vec2_B);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_B,&pcis->vec3_B);CHKERRQ(ierr);
@@ -266,7 +267,7 @@ PetscErrorCode  PCISSetUp(PC pc)
     /* Dirichlet */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_D);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcis->ksp_D,(PetscObject)pc,1);CHKERRQ(ierr);
-    ierr = KSPSetOperators(pcis->ksp_D,pcis->A_II,pcis->A_II,SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOperators(pcis->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(pcis->ksp_D,"is_localD_");CHKERRQ(ierr);
     ierr = KSPGetPC(pcis->ksp_D,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCLU);CHKERRQ(ierr);
@@ -277,7 +278,7 @@ PetscErrorCode  PCISSetUp(PC pc)
     /* Neumann */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_N);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcis->ksp_N,(PetscObject)pc,1);CHKERRQ(ierr);
-    ierr = KSPSetOperators(pcis->ksp_N,matis->A,matis->A,SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOperators(pcis->ksp_N,matis->A,matis->A);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(pcis->ksp_N,"is_localN_");CHKERRQ(ierr);
     ierr = KSPGetPC(pcis->ksp_N,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCLU);CHKERRQ(ierr);
@@ -367,6 +368,7 @@ PetscErrorCode  PCISDestroy(PC pc)
   ierr = VecDestroy(&pcis->vec1_D);CHKERRQ(ierr);
   ierr = VecDestroy(&pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecDestroy(&pcis->vec3_D);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcis->vec4_D);CHKERRQ(ierr);
   ierr = VecDestroy(&pcis->vec1_B);CHKERRQ(ierr);
   ierr = VecDestroy(&pcis->vec2_B);CHKERRQ(ierr);
   ierr = VecDestroy(&pcis->vec3_B);CHKERRQ(ierr);

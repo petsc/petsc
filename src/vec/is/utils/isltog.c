@@ -5,6 +5,7 @@
 
 PetscClassId IS_LTOGM_CLASSID;
 
+
 #undef __FUNCT__
 #define __FUNCT__ "ISG2LMapApply"
 PetscErrorCode ISG2LMapApply(ISLocalToGlobalMapping mapping,PetscInt n,const PetscInt in[],PetscInt out[])
@@ -90,9 +91,10 @@ PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscV
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mapping),&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)mapping,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     for (i=0; i<mapping->n; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d %d\n",rank,i,mapping->indices[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i,mapping->indices[i]);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
@@ -114,6 +116,7 @@ PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscV
     Output Parameter:
 .   mapping - new mapping data structure
 
+    Notes: the block size of the IS determines the block size of the mapping
     Level: advanced
 
     Concepts: mapping^local to global
@@ -123,9 +126,10 @@ PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscV
 PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
-  PetscInt       n;
+  PetscInt       n,bs;
   const PetscInt *indices;
   MPI_Comm       comm;
+  PetscBool      isblock;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
@@ -133,9 +137,17 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreate(comm,n,indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)is,ISBLOCK,&isblock);CHKERRQ(ierr);
+  ierr = ISGetBlockSize(is,&bs);CHKERRQ(ierr);
+  /*  if (!isblock) { */
+    ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(comm,1,n,indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
+    /*  } else {
+    ierr = ISBlockGetIndices(is,&indices);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(comm,bs,n,indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
+    ierr = ISBlockRestoreIndices(is,&indices);CHKERRQ(ierr);
+     }*/
   PetscFunctionReturn(0);
 }
 
@@ -183,8 +195,35 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
   for (i=0; i<maxlocal; i++) ltog[i] = -1;
   ierr = PetscSFBcastBegin(sf,MPIU_INT,globals,ltog);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf,MPIU_INT,globals,ltog);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreate(comm,maxlocal,ltog,PETSC_OWN_POINTER,mapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,1,maxlocal,ltog,PETSC_OWN_POINTER,mapping);CHKERRQ(ierr);
   ierr = PetscFree(globals);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingGetBlockSize"
+/*@
+    ISLocalToGlobalMappingGetBlockSize - Gets the blocksize of the mapping
+    ordering and a global parallel ordering.
+
+    Not Collective
+
+    Input Parameters:
+.   mapping - mapping data structure
+
+    Output Parameter:
+.   bs - the blocksize
+
+    Level: advanced
+
+    Concepts: mapping^local to global
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mapping,PetscInt *bs)
+{
+  PetscFunctionBegin;
+  *bs = mapping->bs;
   PetscFunctionReturn(0);
 }
 
@@ -198,20 +237,22 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf,PetscInt start,ISLocalT
 
     Input Parameters:
 +   comm - MPI communicator
+.   bs - the block size
 .   n - the number of local elements
-.   indices - the global index for each local element, these do not need to be in increasing order (sorted)
+.   indices - the global index for each local element, these do not need to be in increasing order (sorted), these values should not be scaled by the blocksize bs
 -   mode - see PetscCopyMode
 
     Output Parameter:
 .   mapping - new mapping data structure
 
+    Notes: There is one integer value in indices per block and it represents the actual indices bs*idx + j, where j=0,..,bs-1
     Level: advanced
 
     Concepts: mapping^local to global
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
 @*/
-PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscInt indices[],PetscCopyMode mode,ISLocalToGlobalMapping *mapping)
+PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt bs,PetscInt n,const PetscInt indices[],PetscCopyMode mode,ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
   PetscInt       *in;
@@ -225,7 +266,8 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscI
 
   ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_CLASSID,"ISLocalToGlobalMapping","Local to global mapping","IS",
                            cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);
-  (*mapping)->n = n;
+  (*mapping)->n  = n;
+  (*mapping)->bs = bs;
   /*
     Do not create the global to local mapping. This is only created if
     ISGlobalToLocalMapping() is called
@@ -234,94 +276,13 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscI
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc1(n,&in);CHKERRQ(ierr);
     ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
     (*mapping)->indices = in;
-  } else if (mode == PETSC_OWN_POINTER) (*mapping)->indices = (PetscInt*)indices;
+    ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
+  } else if (mode == PETSC_OWN_POINTER) {
+    (*mapping)->indices = (PetscInt*)indices;
+    ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
+  }
   else SETERRQ(cm,PETSC_ERR_SUP,"Cannot currently use PETSC_USE_POINTER");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingBlock"
-/*@
-    ISLocalToGlobalMappingBlock - Creates a blocked index version of an
-       ISLocalToGlobalMapping that is appropriate for MatSetLocalToGlobalMappingBlock()
-       and VecSetLocalToGlobalMappingBlock().
-
-    Not Collective, but communicator may have more than one process
-
-    Input Parameters:
-+    inmap - original point-wise mapping
--    bs - block size
-
-    Output Parameter:
-.   outmap - block based mapping; the indices are relative to BLOCKS, not individual vector or matrix entries.
-
-    Level: advanced
-
-    Concepts: mapping^local to global
-
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingCreateIS()
-@*/
-PetscErrorCode  ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,PetscInt bs,ISLocalToGlobalMapping *outmap)
-{
-  PetscErrorCode ierr;
-  PetscInt       *ii,i,n;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(inmap,IS_LTOGM_CLASSID,1);
-  PetscValidPointer(outmap,3);
-  if (bs > 1) {
-    n = inmap->n/bs;
-    if (n*bs != inmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Pointwise mapping length is not divisible by block size");
-    ierr = PetscMalloc1(n,&ii);CHKERRQ(ierr);
-    for (i=0; i<n; i++) ii[i] = inmap->indices[bs*i]/bs;
-    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)inmap),n,ii,PETSC_OWN_POINTER,outmap);CHKERRQ(ierr);
-  } else {
-    ierr    = PetscObjectReference((PetscObject)inmap);CHKERRQ(ierr);
-    *outmap = inmap;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingUnBlock"
-/*@
-    ISLocalToGlobalMappingUnBlock - Creates a scalar index version of a blocked
-       ISLocalToGlobalMapping
-
-    Not Collective, but communicator may have more than one process
-
-    Input Parameter:
-+ inmap - block based mapping; the indices are relative to BLOCKS, not individual vector or matrix entries.
-- bs - block size
-
-    Output Parameter:
-.   outmap - pointwise mapping
-
-    Level: advanced
-
-    Concepts: mapping^local to global
-
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingBlock()
-@*/
-PetscErrorCode  ISLocalToGlobalMappingUnBlock(ISLocalToGlobalMapping inmap,PetscInt bs,ISLocalToGlobalMapping *outmap)
-{
-  PetscErrorCode ierr;
-  PetscInt       *ii,i,n;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(inmap,IS_LTOGM_CLASSID,1);
-  PetscValidPointer(outmap,2);
-  if (bs > 1) {
-    n    = inmap->n*bs;
-    ierr = PetscMalloc1(n,&ii);CHKERRQ(ierr);
-    for (i=0; i<n; i++) ii[i] = inmap->indices[i/bs]*bs + (i%bs);
-    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)inmap),n,ii,PETSC_OWN_POINTER,outmap);CHKERRQ(ierr);
-  } else {
-    ierr    = PetscObjectReference((PetscObject)inmap);CHKERRQ(ierr);
-    *outmap = inmap;
-  }
   PetscFunctionReturn(0);
 }
 
@@ -395,11 +356,11 @@ PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS 
 
   ierr = PetscMalloc1(n,&idxout);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    if (idxin[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %d too large %d (max) at %d",idxin[i],Nmax-1,i);
+    if (idxin[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",idxin[i],Nmax-1,i);
     idxout[i] = idxmap[idxin[i]];
   }
   ierr = ISRestoreIndices(is,&idxin);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idxout,PETSC_OWN_POINTER,newis);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is),n,idxout,PETSC_OWN_POINTER,newis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -424,13 +385,67 @@ PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS 
 
    Level: advanced
 
-.seealso: ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy(),
+.seealso: ISLocalToGlobalMappingApplyBlock(), ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy(),
           ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc(),
           AOPetscToApplication(), ISGlobalToLocalMappingApply()
 
     Concepts: mapping^local to global
 @*/
 PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
+{
+  PetscInt       i,Nmax = mapping->n,bs = mapping->bs;
+  const PetscInt *idx = mapping->indices;
+
+  PetscFunctionBegin;
+  if (bs == 1) {
+    for (i=0; i<N; i++) {
+      if (in[i] < 0) {
+        out[i] = in[i];
+        continue;
+      }
+      if (in[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",in[i],Nmax,i);
+      out[i] = idx[in[i]];
+    }
+  } else {
+    for (i=0; i<N; i++) {
+      if (in[i] < 0) {
+        out[i] = in[i];
+        continue;
+      }
+      if (in[i] >= bs*Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",in[i],Nmax,i);
+      out[i] = idx[in[i]/bs]*bs + (in[i] % bs);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingApplyBlock"
+/*@
+   ISLocalToGlobalMappingApplyBlock - Takes a list of integers in a local numbering  and converts them to the global numbering.
+
+   Not collective
+
+   Input Parameters:
++  mapping - the local to global mapping context
+.  N - number of integers
+-  in - input indices in local numbering
+
+   Output Parameter:
+.  out - indices in global numbering
+
+   Notes:
+   The in and out array parameters may be identical.
+
+   Level: advanced
+
+.seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy(),
+          ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc(),
+          AOPetscToApplication(), ISGlobalToLocalMappingApply()
+
+    Concepts: mapping^local to global
+@*/
+PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
 {
   PetscInt       i,Nmax = mapping->n;
   const PetscInt *idx = mapping->indices;
@@ -441,7 +456,7 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscI
       out[i] = in[i];
       continue;
     }
-    if (in[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",in[i],Nmax,i);
+    if (in[i] >= Nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local block index %D too large %D (max) at %D",in[i]*mapping->bs,Nmax,i);
     out[i] = idx[in[i]];
   }
   PetscFunctionReturn(0);
@@ -678,11 +693,11 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
     nprocs[2*proc]++;                     /* count of how many that processor globally owns of ours */
   }
   nsends = 0; for (i=0; i<size; i++) nsends += nprocs[2*i+1];
-  ierr = PetscInfo1(mapping,"Number of global owners for my local data %d\n",nsends);CHKERRQ(ierr);
+  ierr = PetscInfo1(mapping,"Number of global owners for my local data %D\n",nsends);CHKERRQ(ierr);
 
   /* inform other processors of number of messages and max length*/
   ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
-  ierr = PetscInfo1(mapping,"Number of local owners for my global data %d\n",nrecvs);CHKERRQ(ierr);
+  ierr = PetscInfo1(mapping,"Number of local owners for my global data %D\n",nrecvs);CHKERRQ(ierr);
 
   /* post receives for owned rows */
   ierr = PetscMalloc1((2*nrecvs+1)*(nmax+1),&recvs);CHKERRQ(ierr);
@@ -767,9 +782,9 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
     }
     for (i=0; i<ng; i++) {
       if (nownedsenders[i] > 1) {
-        ierr = PetscSynchronizedPrintf(comm,"[%d] global node %d local owner processors: ",rank,i+rstart);CHKERRQ(ierr);
+        ierr = PetscSynchronizedPrintf(comm,"[%d] global node %D local owner processors: ",rank,i+rstart);CHKERRQ(ierr);
         for (j=0; j<nownedsenders[i]; j++) {
-          ierr = PetscSynchronizedPrintf(comm,"%d ",ownedsenders[starts[i]+j]);CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(comm,"%D ",ownedsenders[starts[i]+j]);CHKERRQ(ierr);
         }
         ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
       }
@@ -888,9 +903,9 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
     for (i=0; i<nrecvs2; i++) {
       nt = recvs2[cnt++];
       for (j=0; j<nt; j++) {
-        ierr = PetscSynchronizedPrintf(comm,"[%d] local node %d number of subdomains %d: ",rank,recvs2[cnt],recvs2[cnt+1]);CHKERRQ(ierr);
+        ierr = PetscSynchronizedPrintf(comm,"[%d] local node %D number of subdomains %D: ",rank,recvs2[cnt],recvs2[cnt+1]);CHKERRQ(ierr);
         for (k=0; k<recvs2[cnt+1]; k++) {
-          ierr = PetscSynchronizedPrintf(comm,"%d ",recvs2[cnt+2+k]);CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(comm,"%D ",recvs2[cnt+2+k]);CHKERRQ(ierr);
         }
         cnt += 2 + recvs2[cnt+1];
         ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
@@ -953,9 +968,9 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
   if (debug) { /* -----------------------------------  */
     nt = *nproc;
     for (i=0; i<nt; i++) {
-      ierr = PetscSynchronizedPrintf(comm,"[%d] subdomain %d number of indices %d: ",rank,(*procs)[i],(*numprocs)[i]);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(comm,"[%d] subdomain %D number of indices %D: ",rank,(*procs)[i],(*numprocs)[i]);CHKERRQ(ierr);
       for (j=0; j<(*numprocs)[i]; j++) {
-        ierr = PetscSynchronizedPrintf(comm,"%d ",(*indices)[i][j]);CHKERRQ(ierr);
+        ierr = PetscSynchronizedPrintf(comm,"%D ",(*indices)[i][j]);CHKERRQ(ierr);
       }
       ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
     }
@@ -1064,7 +1079,21 @@ PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,con
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
   PetscValidPointer(array,2);
-  *array = ltog->indices;
+  if (ltog->bs == 1) {
+    *array = ltog->indices;
+  } else {
+    PetscInt       *jj,k,i,j,n = ltog->n, bs = ltog->bs;
+    const PetscInt *ii;
+    PetscErrorCode ierr;
+
+    ierr = PetscMalloc1(bs*n,&jj);CHKERRQ(ierr);
+    *array = jj;
+    k    = 0;
+    ii   = ltog->indices;
+    for (i=0; i<n; i++)
+      for (j=0; j<bs; j++)
+        jj[k++] = bs*ii[i] + j;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1084,6 +1113,61 @@ PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,con
 .seealso: ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingGetIndices()
 @*/
 PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,const PetscInt **array)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
+  PetscValidPointer(array,2);
+  if (ltog->bs == 1 && *array != ltog->indices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Trying to return mismatched pointer");
+
+  if (ltog->bs > 1) {
+    PetscErrorCode ierr;
+    ierr = PetscFree(*(void**)array);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingGetBlockIndices"
+/*@C
+   ISLocalToGlobalMappingGetBlockIndices - Get global indices for every local block
+
+   Not Collective
+
+   Input Arguments:
+. ltog - local to global mapping
+
+   Output Arguments:
+. array - array of indices
+
+   Level: advanced
+
+.seealso: ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingRestoreBlockIndices()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog,const PetscInt **array)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
+  PetscValidPointer(array,2);
+  *array = ltog->indices;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingRestoreBlockIndices"
+/*@C
+   ISLocalToGlobalMappingRestoreBlockIndices - Restore indices obtained with ISLocalToGlobalMappingGetBlockIndices()
+
+   Not Collective
+
+   Input Arguments:
++ ltog - local to global mapping
+- array - array of indices
+
+   Level: advanced
+
+.seealso: ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingGetIndices()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping ltog,const PetscInt **array)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
@@ -1135,6 +1219,8 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm,PetscInt n,const 
     ierr = ISLocalToGlobalMappingRestoreIndices(ltogs[i],&subidx);CHKERRQ(ierr);
     cnt += m;
   }
-  ierr = ISLocalToGlobalMappingCreate(comm,cnt,idx,PETSC_OWN_POINTER,ltogcat);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,1,cnt,idx,PETSC_OWN_POINTER,ltogcat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+

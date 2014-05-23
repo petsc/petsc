@@ -896,7 +896,7 @@ extern PetscErrorCode VecScatterCreate_StoP(PetscInt,const PetscInt*,PetscInt,co
    Blocksizes we have optimized scatters for
 */
 
-#define VecScatterOptimizedBS(mbs) ((2 <= mbs && mbs <= 8) || mbs == 12)
+#define VecScatterOptimizedBS(mbs) (2 <= mbs)
 
 PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
 {
@@ -1003,8 +1003,6 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   MPI_Comm          comm,ycomm;
   PetscBool         totalv,ixblock,iyblock,iystride,islocal,cando,flag;
   IS                tix = 0,tiy = 0;
-  PetscViewer       viewer;
-  PetscViewerFormat format;
 
   PetscFunctionBegin;
   if (!ix && !iy) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_SUP,"Cannot pass default in for both input and output indices");
@@ -1610,14 +1608,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   *newctx = ctx;
   ierr = ISDestroy(&tix);CHKERRQ(ierr);
   ierr = ISDestroy(&tiy);CHKERRQ(ierr);
-
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ctx),((PetscObject)ctx)->prefix,"-vecscatter_view",&viewer,&format,&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = VecScatterView(ctx,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = VecScatterViewFromOptions(ctx,NULL,"-vecscatter_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

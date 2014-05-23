@@ -34,6 +34,8 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
   PetscValidPointer(g,2);
   if (da->defaultSection) {
     ierr = DMCreateGlobalVector_Section_Private(da,g);CHKERRQ(ierr);
+    /* The view and load functions break for general layouts */
+    PetscFunctionReturn(0);
   } else {
     ierr = VecCreate(PetscObjectComm((PetscObject)da),g);CHKERRQ(ierr);
     ierr = VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -41,7 +43,6 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
     ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
     ierr = VecSetDM(*g, da);CHKERRQ(ierr);
     ierr = VecSetLocalToGlobalMapping(*g,da->ltogmap);CHKERRQ(ierr);
-    ierr = VecSetLocalToGlobalMappingBlock(*g,da->ltogmapb);CHKERRQ(ierr);
   }
   ierr = VecSetOperation(*g,VECOP_VIEW,(void (*)(void))VecView_MPI_DA);CHKERRQ(ierr);
   ierr = VecSetOperation(*g,VECOP_LOAD,(void (*)(void))VecLoad_Default_DA);CHKERRQ(ierr);

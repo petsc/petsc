@@ -16,7 +16,7 @@ T*/
 */
 #include <petscsnes.h>
 
-extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormJacobian1(SNES,Vec,Mat,Mat,void*);
 extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*);
 
 #undef __FUNCT__
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
      report the reason if the iteration did not converge so that the tests are
      reproducible.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s number of SNES iterations = %D\n\n",reason>0 ? "CONVERGED" : SNESConvergedReasons[reason],its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s number of SNES iterations = %D\n",reason>0 ? "CONVERGED" : SNESConvergedReasons[reason],its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -162,7 +162,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
+PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   PetscScalar    *xx,A[4];
   PetscErrorCode ierr;
@@ -182,8 +182,7 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   A[1]  = -400.0*xx[0];
   A[2]  = -400.0*xx[0];
   A[3]  = 200;
-  ierr  = MatSetValues(*B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
-  *flag = SAME_NONZERO_PATTERN;
+  ierr  = MatSetValues(B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
 
   /*
      Restore vector
@@ -193,11 +192,11 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   /*
      Assemble matrix
   */
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*jac != *B) {
-    ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (jac != B) {
+    ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   return 0;
 }

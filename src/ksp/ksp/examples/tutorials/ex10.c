@@ -8,6 +8,7 @@ is the system of interest).  See the 'Performance Hints' chapter of the\n\
 users manual for a discussion of preloading.  Input parameters include\n\
   -f0 <input_file> : first file to load (small system)\n\
   -f1 <input_file> : second file to load (larger system)\n\n\
+  -nearnulldim <0> : number of vectors in the near-null space immediately following matrix\n\n\
   -trans  : solve transpose system instead\n\n";
 /*
   This code can be used to test PETSc interface to other packages.\n\
@@ -47,7 +48,7 @@ int main(int argc,char **args)
   PetscBool      table     =PETSC_FALSE,flg,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
   PetscBool      outputSoln=PETSC_FALSE;
   PetscErrorCode ierr;
-  PetscInt       its,num_numfac,m,n,M;
+  PetscInt       its,num_numfac,m,n,M,nearnulldim = 0;
   PetscReal      norm;
   PetscBool      preload=PETSC_TRUE,isSymmetric,cknorm=PETSC_FALSE,initialguessfile = PETSC_FALSE;
   PetscMPIInt    rank;
@@ -60,6 +61,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,"-initialguess",&initialguess,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-output_solution",&outputSoln,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,"-initialguessfilename",initialguessfilename,PETSC_MAX_PATH_LEN,&initialguessfile);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-nearnulldim",&nearnulldim,NULL);CHKERRQ(ierr);
 
   /*
      Determine files from which we read the two linear systems
@@ -106,12 +108,27 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  if (nearnulldim) {
+    MatNullSpace nullsp;
+    Vec *nullvecs;
+    PetscInt i;
+    ierr = PetscMalloc(nearnulldim*sizeof(nullvecs[0]),&nullvecs);CHKERRQ(ierr);
+    for (i=0; i<nearnulldim; i++) {
+      ierr = VecCreate(PETSC_COMM_WORLD,&nullvecs[i]);CHKERRQ(ierr);
+      ierr = VecLoad(nullvecs[i],fd);CHKERRQ(ierr);
+    }
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_FALSE,nearnulldim,nullvecs,&nullsp);CHKERRQ(ierr);
+    ierr = MatSetNearNullSpace(A,nullsp);CHKERRQ(ierr);
+    for (i=0; i<nearnulldim; i++) {ierr = VecDestroy(&nullvecs[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(nullvecs);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+  }
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetString(NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   if (flg) {   /* rhs is stored in a separate file */
-    if (file[2][0] == '0') {
+    if (file[2][0] == '0' || file[2][0] == 0) {
       PetscInt    m;
       PetscScalar one = 1.0;
       ierr = PetscInfo(0,"Using vector of ones for RHS\n");CHKERRQ(ierr);
@@ -240,15 +257,15 @@ int main(int argc,char **args)
     }
     ierr = VecView(max, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     ierr = VecMax(max, &idx, &val);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest max row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest max row element %g at row %D\n", (double)val, idx);CHKERRQ(ierr);
     ierr = VecView(min, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     ierr = VecMin(min, &idx, &val);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest min row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest min row element %g at row %D\n", (double)val, idx);CHKERRQ(ierr);
     ierr = VecMin(max, &idx, &val);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest max row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest max row element %g at row %D\n", (double)val, idx);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(max, max, min);CHKERRQ(ierr);
     ierr = VecMax(max, &idx, &val);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %G at row %d\n", val, idx);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %g at row %D\n", (double)val, idx);CHKERRQ(ierr);
     ierr = VecView(max, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     ierr = VecDestroy(&max);CHKERRQ(ierr);
     ierr = VecDestroy(&min);CHKERRQ(ierr);
@@ -280,10 +297,10 @@ int main(int argc,char **args)
     if (lsqr) {
       Mat BtB;
       ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,4,&BtB);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,BtB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,BtB);CHKERRQ(ierr);
       ierr = MatDestroy(&BtB);CHKERRQ(ierr);
     } else {
-      ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     }
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -328,7 +345,7 @@ int main(int argc,char **args)
         if (norm < 1.e-12) {
           ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
         } else {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %G\n",norm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %g\n",(double)norm);CHKERRQ(ierr);
         }
       }
     }   /* while (num_rhs--) */
@@ -374,7 +391,7 @@ int main(int argc,char **args)
       if (norm < 1.e-12) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm < 1.e-12\n");CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
       }
     }
     ierr = PetscOptionsGetString(NULL,"-solution",file[3],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -388,7 +405,7 @@ int main(int argc,char **args)
       ierr = VecLoad(xstar,viewer);CHKERRQ(ierr);
       ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
       ierr = VecNorm(xstar, NORM_2, &norm);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %G\n", norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %g\n", (double)norm);CHKERRQ(ierr);
       ierr = VecDestroy(&xstar);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }

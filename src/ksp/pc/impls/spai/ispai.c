@@ -19,13 +19,13 @@
 */
 
 #include <petsc-private/pcimpl.h>        /*I "petscpc.h" I*/
-#include "petscspai.h"
+#include <../src/ksp/pc/impls/spai/petscspai.h>
 
 /*
     These are the SPAI include files
 */
 EXTERN_C_BEGIN
-#define MPI /* required for setting SPAI_Comm correctly in basics.h */
+#define SPAI_USE_MPI /* required for setting SPAI_Comm correctly in basics.h */
 #include <spai.h>
 #include <matrix.h>
 EXTERN_C_END
@@ -156,7 +156,7 @@ static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"    SPAI preconditioner\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    epsilon %G\n",   ispai->epsilon);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    epsilon %g\n",   (double)ispai->epsilon);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    nbsteps %d\n",   ispai->nbsteps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    max %d\n",       ispai->max);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    maxnew %d\n",    ispai->maxnew);CHKERRQ(ierr);
@@ -652,7 +652,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   PetscErrorCode          ierr;
   const int               *cols;
   const double            *vals;
-  int                     *num_ptr,n,mnl,nnl,nz,rstart,rend;
+  int                     n,mnl,nnl,nz,rstart,rend;
   PetscMPIInt             size,rank;
   struct compressed_lines *rows;
 
@@ -713,37 +713,18 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
     local_indx++;
   }
 
-
-  ierr = PetscMalloc1(mnl,&num_ptr);CHKERRQ(ierr);
-
   /*********************************************************/
   /************** Set up the row structure *****************/
   /*********************************************************/
 
-  /* count number of nonzeros in every row */
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) {
-    ierr = MatGetRow(A,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
-  }
-
-  /* allocate buffers */
-  len = 0;
-  for (i=0; i<mnl; i++) {
-    if (len < num_ptr[i]) len = num_ptr[i];
-  }
-
-  for (i=rstart; i<rend; i++) {
-    row_indx             = i-rstart;
-    len                  = num_ptr[row_indx];
-    rows->ptrs[row_indx] = (int*)malloc(len*sizeof(int));
-    rows->A[row_indx]    = (double*)malloc(len*sizeof(double));
-  }
-
-  /* copy the matrix */
   for (i=rstart; i<rend; i++) {
     row_indx = i - rstart;
     ierr     = MatGetRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
+    /* allocate buffers */
+    rows->ptrs[row_indx] = (int*)malloc(nz*sizeof(int));
+    rows->A[row_indx]    = (double*)malloc(nz*sizeof(double));
+    /* copy the matrix */
     for (j=0; j<nz; j++) {
       col = cols[j];
       len = rows->len[row_indx]++;
@@ -763,29 +744,12 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 
   if (AT) {
 
-    /* count number of nonzeros in every column */
-    for (i=rstart; i<rend; i++) {
-      ierr = MatGetRow(AT,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
-      ierr = MatRestoreRow(AT,i,&num_ptr[i-rstart],NULL,NULL);CHKERRQ(ierr);
-    }
-
-    /* allocate buffers */
-    len = 0;
-    for (i=0; i<mnl; i++) {
-      if (len < num_ptr[i]) len = num_ptr[i];
-    }
-
-    for (i=rstart; i<rend; i++) {
-      row_indx = i-rstart;
-      len      = num_ptr[row_indx];
-
-      rows->rptrs[row_indx] = (int*)malloc(len*sizeof(int));
-    }
-
-    /* copy the matrix (i.e., the structure) */
     for (i=rstart; i<rend; i++) {
       row_indx = i - rstart;
       ierr     = MatGetRow(AT,i,&nz,&cols,&vals);CHKERRQ(ierr);
+      /* allocate buffers */
+      rows->rptrs[row_indx] = (int*)malloc(nz*sizeof(int));
+      /* copy the matrix (i.e., the structure) */
       for (j=0; j<nz; j++) {
         col = cols[j];
         len = rows->rlen[row_indx]++;
@@ -796,7 +760,6 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
     }
   }
 
-  ierr = PetscFree(num_ptr);CHKERRQ(ierr);
   ierr = PetscFree(mapping);CHKERRQ(ierr);
 
   order_pointers(M);

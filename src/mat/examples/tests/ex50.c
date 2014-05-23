@@ -1,15 +1,19 @@
 
+#include <petscmat.h>
+
+#if !defined(PETSC_USE_64BIT_INDICES)
 static char help[] = "Reads in a matrix and vector in ASCII format. Writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
   -fin <filename> : input file\n\
   -fout <filename> : output file\n\n";
+#endif
 
-#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
+#if !defined(PETSC_USE_64BIT_INDICES)
   Mat            A;
   Vec            b;
   char           filein[PETSC_MAX_PATH_LEN],finname[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN];
@@ -66,6 +70,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
+#endif
   return 0;
 }
 

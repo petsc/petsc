@@ -15,24 +15,28 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,Ma
   Mat            B;
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i;
-  PetscInt       *rows;
-  MatScalar      *aa = a->v;
+  PetscInt       i, j;
+  PetscInt       *rows, *nnz;
+  MatScalar      *aa = a->v, *vals;
 
   PetscFunctionBegin;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,A->cmap->n,NULL);CHKERRQ(ierr);
-
-  ierr = PetscMalloc1(A->rmap->n,&rows);CHKERRQ(ierr);
-  for (i=0; i<A->rmap->n; i++) rows[i] = i;
-
-  for (i=0; i<A->cmap->n; i++) {
-    ierr = MatSetValues(B,A->rmap->n,rows,1,&i,aa,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = PetscCalloc3(A->rmap->n,&rows,A->rmap->n,&nnz,A->rmap->n,&vals);CHKERRQ(ierr);
+  for (j=0; j<A->cmap->n; j++) {
+    for (i=0; i<A->rmap->n; i++) if (aa[i] != 0.0 || i == j) ++nnz[i];
+    aa += a->lda;
+  }
+  ierr = MatSeqAIJSetPreallocation(B,PETSC_DETERMINE,nnz);CHKERRQ(ierr);
+  aa = a->v;
+  for (j=0; j<A->cmap->n; j++) {
+    PetscInt numRows = 0;
+    for (i=0; i<A->rmap->n; i++) if (aa[i] != 0.0 || i == j) {rows[numRows] = i; vals[numRows++] = aa[i];}
+    ierr = MatSetValues(B,numRows,rows,1,&j,vals,INSERT_VALUES);CHKERRQ(ierr);
     aa  += a->lda;
   }
-  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = PetscFree3(rows,nnz,vals);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -66,6 +70,7 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
   } else {
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&N,&oalpha,x->v,&one,y->v,&one));
   }
+  ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   ierr = PetscLogFlops(PetscMax(2*N-1,0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -713,7 +718,6 @@ PetscErrorCode MatSetValues_SeqDense(Mat A,PetscInt m,const PetscInt indexm[],Pe
   PetscInt     i,j,idx=0;
 
   PetscFunctionBegin;
-  if (v) PetscValidScalarPointer(v,6);
   if (!mat->roworiented) {
     if (addv == INSERT_VALUES) {
       for (j=0; j<n; j++) {
@@ -889,7 +893,7 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
   PetscScalar       *v;
   PetscViewerFormat format;
 #if defined(PETSC_USE_COMPLEX)
-  PetscBool allreal = PETSC_TRUE;
+  PetscBool         allreal = PETSC_TRUE;
 #endif
 
   PetscFunctionBegin;
@@ -898,20 +902,19 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
     PetscFunctionReturn(0);  /* do nothing for now */
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer);CHKERRQ(ierr);
     for (i=0; i<A->rmap->n; i++) {
       v    = a->v + i;
       ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
       for (j=0; j<A->cmap->n; j++) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscRealPart(*v) != 0.0 && PetscImaginaryPart(*v) != 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",j,PetscRealPart(*v),PetscImaginaryPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i) ",j,(double)PetscRealPart(*v),(double)PetscImaginaryPart(*v));CHKERRQ(ierr);
         } else if (PetscRealPart(*v)) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",j,PetscRealPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",j,(double)PetscRealPart(*v));CHKERRQ(ierr);
         }
 #else
         if (*v) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",j,*v);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",j,(double)*v);CHKERRQ(ierr);
         }
 #endif
         v += a->lda;
@@ -933,8 +936,6 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"%% Size = %D %D \n",A->rmap->n,A->cmap->n);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"%s = zeros(%D,%D);\n",name,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",name);CHKERRQ(ierr);
-    } else {
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer);CHKERRQ(ierr);
     }
 
     for (i=0; i<A->rmap->n; i++) {
@@ -2198,7 +2199,7 @@ PetscErrorCode  MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
 
   if (!data) { /* petsc-allocated storage */
     if (!b->user_alloc) { ierr = PetscFree(b->v);CHKERRQ(ierr); }
-    ierr = PetscCalloc1(b->lda*b->Nmax,&b->v);CHKERRQ(ierr);
+    ierr = PetscCalloc1((size_t)b->lda*b->Nmax,&b->v);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)B,b->lda*b->Nmax*sizeof(PetscScalar));CHKERRQ(ierr);
 
     b->user_alloc = PETSC_FALSE;

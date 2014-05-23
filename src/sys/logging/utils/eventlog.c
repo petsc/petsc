@@ -222,7 +222,7 @@ PetscErrorCode EventPerfLogEnsureSize(PetscEventPerfLog eventLog, int size)
 }
 
 #if defined(PETSC_HAVE_MPE)
-#include "mpe.h"
+#include <mpe.h>
 PETSC_INTERN PetscErrorCode PetscLogMPEGetRGBColor(const char*[]);
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogEventBeginMPE"

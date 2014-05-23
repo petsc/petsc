@@ -59,6 +59,45 @@ PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ISColoringViewFromOptions"
+/*
+  ISColoringViewFromOptions - Processes command line options to determine if/how an ISColoring object is to be viewed. 
+
+  Collective on ISColoring
+
+  Input Parameters:
++ obj   - the ISColoring object
+. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+  Developer Note: This cannot use PetscObjectViewFromOptions() because ISColoring is not a PetscObject
+
+*/
+PetscErrorCode ISColoringViewFromOptions(ISColoring obj,const char prefix[],const char optionname[])
+{
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscBool         flg;
+  static PetscBool  incall = PETSC_FALSE;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  if (incall) PetscFunctionReturn(0);
+  incall = PETSC_TRUE;
+  ierr   = PetscOptionsGetViewer(obj->comm,prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = ISColoringView(obj,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  incall = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISColoringView"
 /*@C
    ISColoringView - Views a coloring context.
@@ -90,9 +129,12 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     MPI_Comm    comm;
-    PetscMPIInt rank;
+    PetscMPIInt size,rank;
+
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"ISColoring Object: %d MPI processes\n",size);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of colors %d\n",rank,iscoloring->n);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -237,7 +279,6 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   PetscMPIInt    size,rank,tag;
   PetscInt       base,top,i;
   PetscInt       nc,ncwork;
-  PetscBool      flg = PETSC_FALSE;
   MPI_Status     status;
 
   PetscFunctionBegin;
@@ -279,13 +320,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   (*iscoloring)->N      = n;
   (*iscoloring)->refct  = 1;
   (*iscoloring)->ctype  = IS_COLORING_GLOBAL;
-
-  ierr = PetscOptionsGetBool(NULL,"-is_coloring_view",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout((*iscoloring)->comm,&viewer);CHKERRQ(ierr);
-    ierr = ISColoringView(*iscoloring,viewer);CHKERRQ(ierr);
-  }
+  ierr = ISColoringViewFromOptions(*iscoloring,NULL,"-is_coloring_view");CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Number of colors %D\n",nc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

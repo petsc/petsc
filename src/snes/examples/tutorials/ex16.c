@@ -47,6 +47,7 @@ T*/
   ------------------------------------------------------------------------F*/
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #define QP0 0.2113248654051871
@@ -72,7 +73,7 @@ typedef PetscScalar CoordField[3];
 typedef PetscScalar JacField[9];
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field***,Field***,void*);
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *,Field ***,Mat,Mat,MatStructure *,void *);
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *,Field ***,Mat,Mat,void *);
 PetscErrorCode DisplayLine(SNES,Vec);
 PetscErrorCode FormElements();
 
@@ -114,10 +115,10 @@ int main(int argc,char **argv)
   ierr = FormElements();CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-21,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-21,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
 
-  ierr = SNESSetGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
+  ierr = SNESSetNGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
@@ -163,7 +164,7 @@ int main(int argc,char **argv)
   ierr = InitialGuess(da,&user,x);CHKERRQ(ierr);
   ierr = FormRHS(da,&user,b);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(comm,"lambda: %f mu: %f\n",user.lambda,user.mu);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"lambda: %f mu: %f\n",(double)user.lambda,(double)user.mu);CHKERRQ(ierr);
 
   /* show a cross-section of the initial state */
   if (viewline) {
@@ -245,7 +246,7 @@ void InvertTensor(PetscScalar *t, PetscScalar *ti,PetscReal *dett)
     const PetscScalar F = -(a*h - b*g);
     const PetscScalar G = (b*f - c*e);
     const PetscScalar H = -(a*f - c*d);
-    const PetscScalar I = (a*e - b*d);
+    const PetscScalar II = (a*e - b*d);
     ti[0] = di*A;
     ti[1] = di*D;
     ti[2] = di*G;
@@ -254,7 +255,7 @@ void InvertTensor(PetscScalar *t, PetscScalar *ti,PetscReal *dett)
     ti[5] = di*H;
     ti[6] = di*C;
     ti[7] = di*F;
-    ti[8] = di*I;
+    ti[8] = di*II;
   }
   if (dett) *dett = det;
 }
@@ -629,7 +630,7 @@ void ApplyBCsElement(PetscInt mx,PetscInt my, PetscInt mz, PetscInt i, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat jac,MatStructure *flg,void *ptr)
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat jac,void *ptr)
 {
   /* values for each basis function at each quadrature point */
   AppCtx      *user = (AppCtx*)ptr;
@@ -842,11 +843,11 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
   Field          ***x,***b;
   PetscInt       sweeps,its;
   PetscReal      atol,rtol,stol;
-  PetscReal      fnorm0,fnorm,ynorm,xnorm;
+  PetscReal      fnorm0 = 0.0,fnorm,ynorm,xnorm = 0.0;
 
   PetscFunctionBegin;
-  ierr    = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
-  ierr    = SNESGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
+  ierr    = SNESNGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
+  ierr    = SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
 
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&Xl);CHKERRQ(ierr);
@@ -1056,7 +1057,7 @@ PetscErrorCode DisplayLine(SNES snes,Vec X)
     if (rank == r) {
       if (j >= ys && j < ys+ym && k >= zs && k < zs+zm) {
         for (i=xs; i<xs+xm; i++) {
-          PetscPrintf(PETSC_COMM_SELF,"%d %d %d: %f %f %f\n",i,0,0,PetscRealPart(c[k][j][i][0] + x[k][j][i][0]),PetscRealPart(c[k][j][i][1] + x[k][j][i][1]),PetscRealPart(c[k][j][i][2] + x[k][j][i][2]));
+          ierr = PetscPrintf(PETSC_COMM_SELF,"%D %d %d: %f %f %f\n",i,0,0,(double)PetscRealPart(c[k][j][i][0] + x[k][j][i][0]),(double)PetscRealPart(c[k][j][i][1] + x[k][j][i][1]),(double)PetscRealPart(c[k][j][i][2] + x[k][j][i][2]));CHKERRQ(ierr);
         }
       }
     }

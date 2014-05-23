@@ -28,6 +28,9 @@ PetscInt main(PetscInt argc,char **args)
 
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
+#endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 

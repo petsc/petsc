@@ -1,5 +1,5 @@
 /* Defines the basic SNES object */
-#include <../src/snes/impls/fas/fasimpls.h>    /*I  "petscsnesfas.h"  I*/
+#include <../src/snes/impls/fas/fasimpls.h>    /*I  "petscsnes.h"  I*/
 
 const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","SNESFASType","SNES_FAS",0};
 
@@ -110,7 +110,11 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   ierr = MatDestroy(&fas->interpolate);CHKERRQ(ierr);
   ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
   ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
-  if (fas->next) ierr = SNESReset(fas->next);CHKERRQ(ierr);
+  if (fas->galerkin) {
+    ierr = VecDestroy(&fas->Xg);CHKERRQ(ierr);
+    ierr = VecDestroy(&fas->Fg);CHKERRQ(ierr);
+  }
+  if (fas->next) {ierr = SNESReset(fas->next);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -503,7 +507,7 @@ PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscRe
   }
   ierr = SNESGetFunction(smoothd, &FPC, NULL, NULL);CHKERRQ(ierr);
   ierr = VecCopy(FPC, F);CHKERRQ(ierr);
-  ierr = SNESGetFunctionNorm(smoothd, fnorm);CHKERRQ(ierr);
+  if (fnorm) {ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -534,7 +538,7 @@ PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscReal
   }
   ierr = SNESGetFunction(smoothu, &FPC, NULL, NULL);CHKERRQ(ierr);
   ierr = VecCopy(FPC, F);CHKERRQ(ierr);
-  ierr = SNESGetFunctionNorm(smoothu, fnorm);CHKERRQ(ierr);
+  if (fnorm) {ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -611,10 +615,10 @@ PetscErrorCode SNESFASRestrict(SNES fine,Vec Xfine,Vec Xcoarse)
 
 Performs the FAS coarse correction as:
 
-fine problem: F(x) = 0
-coarse problem: F^c(x) = b^c
+fine problem:   F(x) = b
+coarse problem: F^c(x^c) = b^c
 
-b^c = F^c(I^c_fx^f - I^c_fF(x))
+b^c = F^c(Rx) - R(F(x) - b)
 
  */
 PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
@@ -774,10 +778,10 @@ PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
 
 Defines the FAS cycle as:
 
-fine problem: F(x) = 0
+fine problem: F(x) = b
 coarse problem: F^c(x) = b^c
 
-b^c = F^c(I^c_fx^f - I^c_fF(x))
+b^c = F^c(Rx) - R(F(x) - b)
 
 correction:
 
@@ -875,7 +879,6 @@ PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
 #define __FUNCT__ "SNESFASCycle_Kaskade"
 PetscErrorCode SNESFASCycle_Kaskade(SNES snes, Vec X)
 {
-
   PetscErrorCode ierr;
   Vec            F,B;
   SNES           next;
@@ -893,9 +896,17 @@ PetscErrorCode SNESFASCycle_Kaskade(SNES snes, Vec X)
   PetscFunctionReturn(0);
 }
 
+PetscBool SNEScite = PETSC_FALSE;
+const char SNESCitation[] = "@techreport{pbmkbsxt2012,\n"
+                            "  title = {Composing Scalable Nonlinear Algebraic Solvers},\n"
+                            "  author = {Peter Brune and Mathew Knepley and Barry Smith and Xuemin Tu},\n"
+                            "  year = 2013,\n"
+                            "  type = Preprint,\n"
+                            "  number = {ANL/MCS-P2010-0112},\n"
+                            "  institution = {Argonne National Laboratory}\n}\n";
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESSolve_FAS"
-
 PetscErrorCode SNESSolve_FAS(SNES snes)
 {
   PetscErrorCode ierr;
@@ -907,6 +918,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
   PetscBool      isFine;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   maxits       = snes->max_its;      /* maximum number of iterations */
   snes->reason = SNES_CONVERGED_ITERATING;
   X            = snes->vec_sol;

@@ -345,11 +345,6 @@ def run_DMComplex(ex, name, opts, args, sizes, times, events, log=True):
 
   for numBlock in [2**i for i in map(int, args.blockExp)]:
     opts['gpu_blocks'] = numBlock
-    # Generate new block size
-    cmd = os.environ.get('PETSC_DIR', '.')
-    cmd += '/bin/pythonscripts/PetscGenerateFEMQuadrature.py %d %d %d %d %s %s.h' % (args.dim, args.order, numComp, numBlock, args.operator, os.path.splitext(source[0])[0])
-    print(cmd)
-    ret = os.system('python '+cmd)
     args.files = ['['+','.join(source)+']']
     buildExample(args)
     sizes[name][numBlock]  = []

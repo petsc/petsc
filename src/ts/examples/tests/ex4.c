@@ -31,7 +31,7 @@ typedef struct
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode Initial(Vec,void*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode PostStep(TS);
 
 #undef __FUNCT__
@@ -45,7 +45,6 @@ int main(int argc,char **argv)
   PetscReal      dt,ftime,ftime_original;
   TS             ts;
   PetscViewer    viewfile;
-  MatStructure   J_structure;
   Mat            J = 0;
   Vec            x;
   Data           data;
@@ -129,7 +128,7 @@ int main(int argc,char **argv)
         /* Fill the structure using the expensive SNESComputeJacobianDefault. Temporarily set up the TS so we can call this function */
         ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
         ierr = TSSetUp(ts);CHKERRQ(ierr);
-        ierr = SNESComputeJacobianDefault(snes,x,&J,&J,&J_structure,ts);CHKERRQ(ierr);
+        ierr = SNESComputeJacobianDefault(snes,x,J,J,ts);CHKERRQ(ierr);
       }
 
       /* create coloring context */
@@ -193,8 +192,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRQ(ierr);
     ierr = PCView(pc,viewer);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s TSType, %s Preconditioner\n",
-                       size,tsinfo,pcinfo);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s TSType, %s Preconditioner\n",size,tsinfo,pcinfo);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
@@ -214,7 +212,7 @@ PetscReal f_ini(PetscReal x,PetscReal y)
 {
   PetscReal f;
 
-  f=exp(-20.0*(pow(x-0.5,2.0)+pow(y-0.5,2.0)));
+  f=PetscExpReal(-20.0*(PetscPowRealInt(x-0.5,2)+PetscPowRealInt(y-0.5,2)));
   return f;
 }
 
@@ -294,7 +292,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecScatterEnd(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   ierr = VecGetArray(tmp_vec,&tmp);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t[%d] =%14.2e u= %14.2e at the center \n",nsteps,time,PetscRealPart(tmp[n/2]));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t[%D] =%14.2e u= %14.2e at the center \n",nsteps,(double)time,(double)PetscRealPart(tmp[n/2]));CHKERRQ(ierr);
   ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRQ(ierr);
 
   ierr = PetscFree(idx);CHKERRQ(ierr);
@@ -307,10 +305,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
-PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat A,Mat BB,void *ptr)
 {
   Data           *data = (Data*)ptr;
-  Mat            A     = *AA;
   PetscScalar    v[5];
   PetscInt       idx[5],i,j,row;
   PetscErrorCode ierr;
@@ -389,8 +386,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* *flag = SAME_NONZERO_PATTERN; */
-  *flag = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -504,6 +499,6 @@ PetscErrorCode PostStep(TS ts)
 
   PetscFunctionBeginUser;
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",t);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",(double)t);
   PetscFunctionReturn(0);
 }

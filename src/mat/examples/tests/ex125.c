@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Mat            A,RHS,C,F,X;
   Vec            u,x,b;
   PetscErrorCode ierr;
-  PetscMPIInt    rank,nproc;
+  PetscMPIInt    rank,size;
   PetscInt       i,m,n,nfact,nsolve,nrhs,ipack=0;
   PetscScalar    *array,rval;
   PetscReal      norm,tol=1.e-12;
@@ -24,7 +24,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &nproc);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
 
   /* Determine file from which we read the matrix A */
   ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -85,8 +85,15 @@ int main(int argc,char **args)
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
       /* test mumps options */
-      PetscInt icntl_7 = 5;
-      ierr = MatMumpsSetIcntl(F,7,icntl_7);CHKERRQ(ierr);
+      PetscInt    icntl;   
+      PetscReal   cntl; 
+     
+      icntl = 2;        /* sequential matrix ordering */
+      ierr = MatMumpsSetIcntl(F,7,icntl);CHKERRQ(ierr);
+
+      cntl = 1.e-6; /* threshhold for row pivot detection */
+      ierr = MatMumpsSetIcntl(F,24,1);CHKERRQ(ierr);
+      ierr = MatMumpsSetCntl(F,3,cntl);CHKERRQ(ierr);
     }
     break;
 #endif
@@ -95,9 +102,10 @@ int main(int argc,char **args)
     ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   }
 
-  info.fill = 5.0;
+  ierr           = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+  info.fill      = 5.0;
   info.shifttype = (PetscReal) MAT_SHIFT_NONE;
-  ierr      = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
+  ierr           = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 2; nfact++) {
     if (!rank) printf(" %d-the LU numfactorization \n",nfact);
@@ -150,8 +158,8 @@ int main(int argc,char **args)
         ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
         ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
         if (norm > tol) {
-          ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
           PetscReal resi;
+          ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
           ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
           ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
           if (!rank) {

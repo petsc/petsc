@@ -88,7 +88,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 #endif
     if (ctx->packtogether || to->use_alltoallv || to->use_window) {
       /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
-      PETSCMAP1(Pack)(sstarts[nsends],indices,xv,svalues);
+      PETSCMAP1(Pack)(sstarts[nsends],indices,xv,svalues,bs);
       if (to->use_alltoallv) {
         ierr = MPI_Alltoallv(to->values,to->counts,to->displs,MPIU_SCALAR,from->values,from->counts,from->displs,MPIU_SCALAR,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
@@ -107,7 +107,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
     } else {
       /* this version packs and sends one at a time */
       for (i=0; i<nsends; i++) {
-        PETSCMAP1(Pack)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,svalues + bs*sstarts[i]);
+        PETSCMAP1(Pack)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,svalues + bs*sstarts[i],bs);
         ierr = MPI_Start_isend(sstarts[i+1]-sstarts[i],swaits+i);CHKERRQ(ierr);
       }
     }
@@ -123,7 +123,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
     if (to->local.is_copy && addv == INSERT_VALUES) {
       ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
     } else {
-      ierr = PETSCMAP1(Scatter)(to->local.n,to->local.vslots,xv,from->local.vslots,yv,addv);CHKERRQ(ierr);
+      ierr = PETSCMAP1(Scatter)(to->local.n,to->local.vslots,xv,from->local.vslots,yv,addv,bs);CHKERRQ(ierr);
     }
   }
 #if defined(PETSC_HAVE_CUSP)
@@ -182,7 +182,7 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
     else
 #endif
     if (nrecvs && !to->use_alltoallv) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
-    ierr = PETSCMAP1(UnPack)(from->starts[from->n],from->values,indices,yv,addv);CHKERRQ(ierr);
+    ierr = PETSCMAP1(UnPack)(from->starts[from->n],from->values,indices,yv,addv,bs);CHKERRQ(ierr);
   } else if (!to->use_alltoallw) {
     /* unpack one at a time */
     count = nrecvs;
@@ -194,7 +194,7 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
         ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
       }
       /* unpack receives into our local space */
-      ierr = PETSCMAP1(UnPack)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv);CHKERRQ(ierr);
+      ierr = PETSCMAP1(UnPack)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv,bs);CHKERRQ(ierr);
       count--;
     }
   }

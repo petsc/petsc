@@ -2,6 +2,7 @@
 static char help[] = "Tests error message in DMCreateColoring() with periodic boundary conditions. \n\n";
 
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscmat.h>
 
@@ -19,7 +20,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-5,-5,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,-5,-5,
                       PETSC_DECIDE,PETSC_DECIDE,1,2,0,0,&da);CHKERRQ(ierr);
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);

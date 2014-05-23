@@ -199,6 +199,7 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
       ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
       if (!tvalue) {
         *a = re;
+        ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
       ierr = PetscStrlen(tvalue,&len);CHKERRQ(ierr);
@@ -206,7 +207,6 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
       tvalue[len-1] = 0;
       ierr = PetscOptionsStringToReal(tvalue,&im);CHKERRQ(ierr);
       if (negim) im = -im;
-      ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
     } else {
       ierr = PetscStrstr(name,"i",&tvalue);CHKERRQ(ierr);
       if (tvalue) {
@@ -216,6 +216,7 @@ PetscErrorCode  PetscOptionsStringToScalar(const char name[],PetscScalar *a)
         ierr = PetscOptionsStringToReal(name,&re);CHKERRQ(ierr);
       }
     }
+    ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
     *a = re + im*PETSC_i;
 #else
@@ -328,10 +329,10 @@ PetscErrorCode  PetscOptionsValidKey(const char in_str[],PetscBool  *key)
   if (!in_str) PetscFunctionReturn(0);
   if (in_str[0] != '-') PetscFunctionReturn(0);
   if (in_str[1] == '-') in_str++;
-  if (!isalpha(in_str[1])) PetscFunctionReturn(0);
+  if (!isalpha((int)(in_str[1]))) PetscFunctionReturn(0);
   ierr = PetscStrncmp(in_str+1,"inf",3,&inf);CHKERRQ(ierr);
   ierr = PetscStrncmp(in_str+1,"INF",3,&INF);CHKERRQ(ierr);
-  if ((inf || INF) && !(in_str[4] == '_' || isalnum(in_str[4]))) PetscFunctionReturn(0);
+  if ((inf || INF) && !(in_str[4] == '_' || isalnum((int)(in_str[4])))) PetscFunctionReturn(0);
   *key = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -2346,8 +2347,7 @@ PetscErrorCode  PetscOptionsCreate(void)
 .  -options_monitor_cancel - cancel all options database monitors
 
    Notes:
-   To see all options, run your program with the -help option or consult
-   the <A href="../../docs/manual.pdf">users manual</A>..
+   To see all options, run your program with the -help option or consult Users-Manual: sec_gettingstarted
 
    Level: intermediate
 
@@ -2490,5 +2490,46 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
     }
   }
   options->numbermonitors = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectViewFromOptions"
+/*@C
+  PetscObjectViewFromOptions - Processes command line options to determine if/how a PetscObject is to be viewed. 
+
+  Collective on PetscObject
+
+  Input Parameters:
++ obj   - the object
+. prefix - prefix to use for viewing, or NULL to use the prefix of obj
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+@*/
+PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,const char prefix[],const char optionname[])
+{
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscBool         flg;
+  static PetscBool  incall = PETSC_FALSE;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  if (incall) PetscFunctionReturn(0);
+  incall = PETSC_TRUE;
+  if (prefix) {
+    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),((PetscObject)obj)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
+  if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = PetscObjectView(obj,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

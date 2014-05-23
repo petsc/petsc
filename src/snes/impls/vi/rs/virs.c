@@ -318,7 +318,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   ierr = KSPSetType(kspnew,((PetscObject)snesksp)->type_name);CHKERRQ(ierr);
   ierr = KSPGetPC(kspnew,&pcnew);CHKERRQ(ierr);
   ierr = PCSetType(kspnew->pc,((PetscObject)snesksp->pc)->type_name);CHKERRQ(ierr);
-  ierr = PCSetOperators(kspnew->pc,Amat,Pmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = PCSetOperators(kspnew->pc,Amat,Pmat);CHKERRQ(ierr);
   ierr = PCFactorGetMatSolverPackage(snesksp->pc,&stype);CHKERRQ(ierr);
   ierr = PCFactorSetMatSolverPackage(kspnew->pc,stype);CHKERRQ(ierr);
   ierr = KSPDestroy(&snesksp);CHKERRQ(ierr);
@@ -339,7 +339,6 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   PetscErrorCode     ierr;
   PetscInt           maxits,i,lits;
   PetscBool          lssucceed;
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal          fnorm,gnorm,xnorm=0,ynorm;
   Vec                Y,X,F;
   KSPConvergedReason kspreason;
@@ -399,7 +398,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
 
 
     /* Create active and inactive index sets */
@@ -495,7 +494,6 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ierr = ISEqual(vi->IS_inact_prev,IS_inact,&isequal);CHKERRQ(ierr);
     if (!isequal) {
       ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
-      flg  = DIFFERENT_NONZERO_PATTERN;
     }
 
     /*      ierr = ISView(IS_inact,0);CHKERRQ(ierr); */
@@ -504,7 +502,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
 
 
-    ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact,flg);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
     ierr = KSPSetUp(snes->ksp);CHKERRQ(ierr);
     {
       PC        pc;

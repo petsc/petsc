@@ -788,7 +788,7 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
       idx[i] = subi - suboff[lo] + next->grstarts[lo];
     }
     ierr = ISLocalToGlobalMappingRestoreIndices(ltog,&indices);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm),n,idx,PETSC_OWN_POINTER,&(*ltogs)[cnt]);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm),1,n,idx,PETSC_OWN_POINTER,&(*ltogs)[cnt]);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr);
     next = next->next;
     cnt++;
@@ -896,11 +896,11 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
       Mat          pmat;
 
       if (cnt >= dm->numFields) continue;
-      ierr = PetscObjectQuery(dm->fields[cnt], "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
+      ierr = PetscObjectQuery((PetscObject) dm->fields[cnt], "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
       if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nullspace", (PetscObject) space);CHKERRQ(ierr);}
-      ierr = PetscObjectQuery(dm->fields[cnt], "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
+      ierr = PetscObjectQuery((PetscObject) dm->fields[cnt], "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
       if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nearnullspace", (PetscObject) space);CHKERRQ(ierr);}
-      ierr = PetscObjectQuery(dm->fields[cnt], "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
+      ierr = PetscObjectQuery((PetscObject) dm->fields[cnt], "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
       if (pmat) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "pmat", (PetscObject) pmat);CHKERRQ(ierr);}
     }
     cnt++;
@@ -1379,8 +1379,6 @@ PetscErrorCode  DMGlobalToLocalEnd_Composite(DM dm,Vec gvec,InsertMode mode,Vec 
 
 /*MC
    DMCOMPOSITE = "composite" - A DM object that is used to manage data for a collection of DMs
-
-
 
   Level: intermediate
 

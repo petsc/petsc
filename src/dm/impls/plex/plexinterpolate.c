@@ -307,13 +307,14 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexInterpolate"
-/*@
+/*@C
   DMPlexInterpolate - Take in a cell-vertex mesh and return one with all intermediate faces, edges, etc.
 
   Collective on DM
 
-  Input Parameter:
-. dm - The DMPlex object with only cells and vertices
+  Input Parameters:
++ dm - The DMPlex object with only cells and vertices
+- dmInt - If NULL a new DM is created, otherwise the interpolated DM is put into the given DM
 
   Output Parameter:
 . dmInt - The complete DMPlex object
@@ -339,7 +340,8 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   }
   for (d = 1; d < dim; ++d) {
     /* Create interpolated mesh */
-    ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);
+    if ((d == dim-1) && *dmInt) {idm  = *dmInt;}
+    else                        {ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);}
     ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
     ierr = DMPlexSetDimension(idm, dim);CHKERRQ(ierr);
     if (depth > 0) {ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);}
@@ -369,7 +371,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   Note: This is typically used when adding pieces other than vertices to a mesh
 
 .keywords: mesh
-.seealso: DMCopyLabels(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMPlexGetCoordinateSection()
+.seealso: DMCopyLabels(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
 @*/
 PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 {
@@ -384,8 +386,8 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = DMPlexGetDepthStratum(dmA, 0, &vStartA, &vEndA);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmB, 0, &vStartB, &vEndB);CHKERRQ(ierr);
   if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
-  ierr = DMPlexGetCoordinateSection(dmA, &coordSectionA);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dmB, &coordSectionB);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dmA, &coordSectionA);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dmB, &coordSectionB);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSectionB, 1);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldComponents(coordSectionA, 0, &spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSectionB, 0, spaceDim);CHKERRQ(ierr);
@@ -433,7 +435,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   Note: This is typically used when interpolating or otherwise adding to a mesh
 
 .keywords: mesh
-.seealso: DMCopyCoordinates(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMPlexGetCoordinateSection()
+.seealso: DMCopyCoordinates(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
 @*/
 PetscErrorCode DMPlexCopyLabels(DM dmA, DM dmB)
 {

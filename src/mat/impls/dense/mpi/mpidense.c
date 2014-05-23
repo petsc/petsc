@@ -105,7 +105,6 @@ PetscErrorCode MatSetValues_MPIDense(Mat mat,PetscInt m,const PetscInt idxm[],Pe
   PetscBool      roworiented = A->roworiented;
 
   PetscFunctionBegin;
-  if (v) PetscValidScalarPointer(v,6);
   for (i=0; i<m; i++) {
     if (idxm[i] < 0) continue;
     if (idxm[i] >= mat->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
@@ -332,7 +331,7 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   Mat_MPIDense      *l = (Mat_MPIDense*)A->data;
   PetscErrorCode    ierr;
   PetscInt          i,*owners = A->rmap->range;
-  PetscInt          *nprocs,j,idx,nsends;
+  PetscInt          *sizes,j,idx,nsends;
   PetscInt          nmax,*svalues,*starts,*owner,nrecvs;
   PetscInt          *rvalues,tag = ((PetscObject)A)->tag,count,base,slen,*source;
   PetscInt          *lens,*lrows,*values;
@@ -349,24 +348,23 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   if (A->rmap->N != A->cmap->N) SETERRQ(comm,PETSC_ERR_SUP,"Only handles square matrices");
   if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only handles matrices with identical column and row ownership");
   /*  first count number of contributors to each processor */
-  ierr = PetscMalloc1(2*size,&nprocs);CHKERRQ(ierr);
-  ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc1((N+1),&owner);CHKERRQ(ierr);  /* see note*/
+  ierr = PetscCalloc1(2*size,&sizes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N+1,&owner);CHKERRQ(ierr);  /* see note*/
   for (i=0; i<N; i++) {
     idx   = rows[i];
     found = PETSC_FALSE;
     for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; found = PETSC_TRUE; break;
+        sizes[2*j]++; sizes[2*j+1] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
     if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index out of range");
   }
   nsends = 0;
-  for (i=0; i<size; i++) nsends += nprocs[2*i+1];
+  for (i=0; i<size; i++) nsends += sizes[2*i+1];
 
   /* inform other processors of number of messages and max length*/
-  ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
+  ierr = PetscMaxSum(comm,sizes,&nmax,&nrecvs);CHKERRQ(ierr);
 
   /* post receives:   */
   ierr = PetscMalloc1((nrecvs+1)*(nmax+1),&rvalues);CHKERRQ(ierr);
@@ -384,15 +382,15 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   ierr = PetscMalloc1((size+1),&starts);CHKERRQ(ierr);
 
   starts[0] = 0;
-  for (i=1; i<size; i++) starts[i] = starts[i-1] + nprocs[2*i-2];
+  for (i=1; i<size; i++) starts[i] = starts[i-1] + sizes[2*i-2];
   for (i=0; i<N; i++) svalues[starts[owner[i]]++] = rows[i];
 
   starts[0] = 0;
-  for (i=1; i<size+1; i++) starts[i] = starts[i-1] + nprocs[2*i-2];
+  for (i=1; i<size+1; i++) starts[i] = starts[i-1] + sizes[2*i-2];
   count = 0;
   for (i=0; i<size; i++) {
-    if (nprocs[2*i+1]) {
-      ierr = MPI_Isend(svalues+starts[i],nprocs[2*i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
+    if (sizes[2*i+1]) {
+      ierr = MPI_Isend(svalues+starts[i],sizes[2*i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(starts);CHKERRQ(ierr);
@@ -427,7 +425,7 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   ierr = PetscFree(rvalues);CHKERRQ(ierr);
   ierr = PetscFree2(lens,source);CHKERRQ(ierr);
   ierr = PetscFree(owner);CHKERRQ(ierr);
-  ierr = PetscFree(nprocs);CHKERRQ(ierr);
+  ierr = PetscFree(sizes);CHKERRQ(ierr);
 
   /* fix right hand side if needed */
   if (x && b) {
@@ -648,6 +646,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatView_SeqDense(Mat,PetscViewer);
 #include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "MatView_MPIDense_ASCIIorDraworSocket"
@@ -655,7 +654,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
 {
   Mat_MPIDense      *mdn = (Mat_MPIDense*)mat->data;
   PetscErrorCode    ierr;
-  PetscMPIInt       size = mdn->size,rank = mdn->rank;
+  PetscMPIInt       rank = mdn->rank;
   PetscViewerType   vtype;
   PetscBool         iascii,isdraw;
   PetscViewer       sviewer;
@@ -688,9 +687,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     if (isnull) PetscFunctionReturn(0);
   }
 
-  if (size == 1) {
-    ierr = MatView(mdn->A,viewer);CHKERRQ(ierr);
-  } else {
+  {
     /* assemble the entire matrix onto first processor. */
     Mat         A;
     PetscInt    M = mat->rmap->N,N = mat->cmap->N,m,row,i,nz;
@@ -725,10 +722,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
-      ierr = PetscObjectSetName((PetscObject)((Mat_MPIDense*)(A->data))->A,((PetscObject)mat)->name);CHKERRQ(ierr);
-      /* Set the type name to MATMPIDense so that the correct type can be printed out by PetscObjectPrintClassNamePrefixType() in MatView_SeqDense_ASCII()*/
-      PetscStrcpy(((PetscObject)((Mat_MPIDense*)(A->data))->A)->type_name,MATMPIDENSE);
-      ierr = MatView(((Mat_MPIDense*)(A->data))->A,sviewer);CHKERRQ(ierr);
+        ierr = MatView_SeqDense(((Mat_MPIDense*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -999,6 +993,7 @@ PetscErrorCode MatAXPY_MPIDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
 
   PetscFunctionBegin;
   ierr = MatAXPY(A->A,alpha,B->A,str);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

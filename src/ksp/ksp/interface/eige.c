@@ -64,7 +64,7 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   }
   ierr = MatSetOption(*mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCGetOperators(ksp->pc,&A,NULL,NULL);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
 
   for (i=0; i<M; i++) {
 
@@ -102,8 +102,8 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 -  n - size of arrays r and c
 
    Output Parameters:
-+  r - real part of computed eigenvalues
--  c - complex part of computed eigenvalues
++  r - real part of computed eigenvalues, provided by user with a dimension at least of n
+-  c - complex part of computed eigenvalues, provided by user with a dimension at least of n
 
    Notes:
    This approach is very slow but will generally provide accurate eigenvalue
@@ -125,7 +125,7 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
 .seealso: KSPComputeEigenvalues(), KSPMonitorSingularValue(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
 @*/
-PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c)
+PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal r[],PetscReal c[])
 {
   Mat               BA;
   PetscErrorCode    ierr;

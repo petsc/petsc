@@ -8,7 +8,7 @@ configure_options = [
   '--with-blas-lapack-dir=/home/sbalay/soft/borland-f2cblas',
   '--download-f2cblaslapack=1',
   '--with-mpi=0',
-  'DATAFILESPATH=/home/sbalay/datafiles',
+  'DATAFILESPATH=c:/cygwin/home/sbalay/datafiles',
   ]
 
 if __name__ == '__main__':

@@ -17,10 +17,12 @@ struct _ISOps {
   PetscErrorCode (*restoreindices)(IS,const PetscInt*[]);
   PetscErrorCode (*invertpermutation)(IS,PetscInt,IS*);
   PetscErrorCode (*sort)(IS);
+  PetscErrorCode (*sortremovedups)(IS);
   PetscErrorCode (*sorted)(IS,PetscBool*);
   PetscErrorCode (*duplicate)(IS,IS*);
   PetscErrorCode (*destroy)(IS);
   PetscErrorCode (*view)(IS,PetscViewer);
+  PetscErrorCode (*load)(IS,PetscViewer);
   PetscErrorCode (*identity)(IS,PetscBool*);
   PetscErrorCode (*copy)(IS,IS);
   PetscErrorCode (*togeneral)(IS);
@@ -31,9 +33,9 @@ struct _ISOps {
 
 struct _p_IS {
   PETSCHEADER(struct _ISOps);
+  PetscLayout  map;
   PetscBool    isperm;          /* if is a permutation */
   PetscInt     max,min;         /* range of possible values */
-  PetscInt     bs;              /* block size */
   void         *data;
   PetscBool    isidentity;
   PetscInt     *total, *nonlocal;   /* local representation of ALL indices across the comm as well as the nonlocal part. */
@@ -41,9 +43,12 @@ struct _p_IS {
   IS           complement;          /* IS wrapping nonlocal indices. */
 };
 
+extern PetscErrorCode ISLoad_Default(IS, PetscViewer);
+
 struct _p_ISLocalToGlobalMapping{
   PETSCHEADER(int);
   PetscInt n;                  /* number of local indices */
+  PetscInt bs;                 /* blocksize; there is one index per block */
   PetscInt *indices;           /* global index of each local index */
   PetscInt globalstart;        /* first global referenced in indices */
   PetscInt globalend;          /* last + 1 global referenced in indices */
@@ -51,16 +56,10 @@ struct _p_ISLocalToGlobalMapping{
 };
 
 /* ----------------------------------------------------------------------------*/
-typedef struct _n_PetscUniformSection *PetscUniformSection;
-struct _n_PetscUniformSection {
-  MPI_Comm comm;
-  PetscInt pStart, pEnd; /* The chart: all points are contained in [pStart, pEnd) */
-  PetscInt numDof;       /* Describes layout of storage, point --> (constant # of values, (p - pStart)*constant # of values) */
-};
-
 struct _p_PetscSection {
   PETSCHEADER(int);
-  struct _n_PetscUniformSection atlasLayout;  /* Layout for the atlas */
+  PetscInt                      pStart, pEnd; /* The chart: all points are contained in [pStart, pEnd) */
+  IS                            perm;         /* A permutation of [0, pEnd-pStart) */
   PetscInt                     *atlasDof;     /* Describes layout of storage, point --> # of values */
   PetscInt                     *atlasOff;     /* Describes layout of storage, point --> offset into storage */
   PetscInt                      maxDof;       /* Maximum dof on any point */
@@ -73,9 +72,9 @@ struct _p_PetscSection {
   PetscInt                     *numFieldComponents; /* The number of components in each field */
   PetscSection                 *field;        /* A section describing the layout and constraints for each field */
 
-  PetscObject                   clObj;        /* Key forthe closure (right now we only have one) */
-  PetscSection                  clSection;    /* Section for the closure index */
-  IS                            clIndices;    /* Indices for the closure index */
+  PetscObject                   clObj;        /* Key for the closure (right now we only have one) */
+  PetscSection                  clSection;    /* Section giving the number of points in each closure */
+  IS                            clPoints;     /* Points in each closure */
 };
 
 

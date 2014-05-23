@@ -63,11 +63,10 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 {
   KSP_FGMRES     *fgmres = (KSP_FGMRES*)(ksp->data);
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   /* put A*x into VEC_TEMP */
   ierr = MatMult(Amat,ksp->vec_sol,VEC_TEMP);CHKERRQ(ierr);
@@ -108,7 +107,6 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
   PetscInt       loc_it;                /* local count of # of dir. in Krylov space */
   PetscInt       max_k = fgmres->max_k; /* max # of directions Krylov space */
   Mat            Amat,Pmat;
-  MatStructure   pflag;
 
   PetscFunctionBegin;
   /* Number of pseudo iterations since last restart is the number
@@ -169,7 +167,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
        preconditioned vectors in prevec */
     ierr = KSP_PCApply(ksp,VEC_VV(loc_it),PREVEC(loc_it));CHKERRQ(ierr);
 
-    ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
     /* Multiply preconditioned vector by operator - put in VEC_VV(loc_it+1) */
     ierr = MatMult(Amat,PREVEC(loc_it),VEC_VV(1+loc_it));CHKERRQ(ierr);
 
@@ -223,7 +221,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res_norm);
+        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",(double)res_norm);
         else {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           break;

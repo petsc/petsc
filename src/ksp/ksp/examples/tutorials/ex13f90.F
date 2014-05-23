@@ -67,7 +67,7 @@
       PetscScalar,ALLOCATABLE :: solution(:,:)
       PetscScalar,ALLOCATABLE :: rho(:,:)
 
-      double precision hx2,hy2
+      PetscReal hx2,hy2
       common /param/ hx2,hy2
 
       tmax = 2
@@ -146,9 +146,8 @@
          cnorm = 0.0
          do 90 j=1,n
             do 80 i=1,m
-               cnorm = cnorm +                                           &
-     &    PetscConj(solution(i,j)-userx(i,j))*                                            &
-     &                             (solution(i,j)-userx(i,j))
+              cnorm = cnorm +                                              &
+     &    PetscConj(solution(i,j)-userx(i,j))*(solution(i,j)-userx(i,j))
  80         continue
  90      continue
          enorm =  PetscRealPart(cnorm*hx*hy)
@@ -181,7 +180,7 @@
       PetscFortranAddr userctx(*)
 
       common /param/ hx2,hy2
-      double precision hx2,hy2
+      PetscReal hx2,hy2
 
 !  Local variable declararions
       Mat     A
@@ -251,7 +250,7 @@
 
 
       common /param/ hx2,hy2
-      double precision hx2,hy2
+      PetscReal hx2,hy2
 
       PC   pc
       KSP ksp
@@ -323,7 +322,7 @@
 !     will have the same nonzero pattern here, we indicate this so the
 !     linear solvers can take advantage of this.
 !
-      call KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,ierr)
 
 !
 !     Set linear solver defaults for this problem (optional).

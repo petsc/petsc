@@ -330,7 +330,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 #define __FUNCT__ "CreateSimplex_2D"
 PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm;
+  DM             idm = NULL;
   PetscInt       p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -381,8 +381,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
   ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
   ierr = DMPlexCopyLabels(*dm, idm);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(idm, "in_", "-dm_view");CHKERRQ(ierr);
   ierr = DMDestroy(dm);CHKERRQ(ierr);
   *dm  = idm;
   PetscFunctionReturn(0);
@@ -454,7 +453,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
 #define __FUNCT__ "CreateQuad_2D"
 PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm;
+  DM             idm = NULL;
   PetscInt       p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -514,8 +513,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
   ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
   ierr = DMPlexCopyLabels(*dm, idm);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(idm, "in_", "-dm_view");CHKERRQ(ierr);
   ierr = DMDestroy(dm);CHKERRQ(ierr);
   *dm  = idm;
   PetscFunctionReturn(0);
@@ -525,7 +523,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
 #define __FUNCT__ "CreateHex_3D"
 PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
-  DM             idm;
+  DM             idm   = NULL;
   PetscInt       depth = 3, p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -621,8 +619,7 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
     ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
     ierr = DMPlexCreateLabel(idm, "fault");CHKERRQ(ierr);
   }
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(idm, "in_", "-dm_view");CHKERRQ(ierr);
   ierr = DMDestroy(dm);CHKERRQ(ierr);
   *dm  = idm;
   PetscFunctionReturn(0);
@@ -681,8 +678,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM      dmHybrid = NULL;
     DMLabel faultLabel, hybridLabel;
 
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
-    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+    ierr = DMViewFromOptions(*dm, "orig_", "-dm_view");CHKERRQ(ierr);
     ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
     ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
     ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
@@ -700,6 +696,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
+      ierr = DMViewFromOptions(distributedMesh, NULL, "-dm_view");CHKERRQ(ierr);
       ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
       ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -707,7 +704,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = DMPlexCheckSymmetry(*dm);CHKERRQ(ierr);
   ierr = DMPlexCheckSkeleton(*dm, user->cellSimplex, 0);CHKERRQ(ierr);
   ierr = DMPlexCheckFaces(*dm, user->cellSimplex, 0);CHKERRQ(ierr);

@@ -492,7 +492,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
         else cl = PETSC_DRAW_BLACK+i;
         ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
         if (lg->use_dots) {
-          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[(j-1)*dim+i],cl,"x");CHKERRQ(ierr);
+          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl,"x");CHKERRQ(ierr);
         }
       }
     }
@@ -554,6 +554,7 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
   if (!viewer){
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)lg),&viewer);CHKERRQ(ierr);
   }
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)lg,viewer);CHKERRQ(ierr);
   for (i = 0; i < dim; i++) {
     ierr = PetscViewerASCIIPrintf(viewer, "Line %D>\n", i);CHKERRQ(ierr);
     for (j = 0; j < nopts; j++) {
@@ -571,7 +572,6 @@ PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
     Collective over PetscDrawLG
 
     Options Database:
-.
 
     Level: intermediate
 

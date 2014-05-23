@@ -15,6 +15,7 @@ struct _DMOps {
   PetscErrorCode (*clone)(DM,DM*);
   PetscErrorCode (*setfromoptions)(DM);
   PetscErrorCode (*setup)(DM);
+  PetscErrorCode (*createdefaultsection)(DM);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   PetscErrorCode (*createlocalvector)(DM,Vec*);
   PetscErrorCode (*getlocaltoglobalmapping)(DM);
@@ -117,7 +118,7 @@ struct _p_DM {
   VecType                 vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
   MatType                 mattype;  /* type of matrix created with DMCreateMatrix() */
   PetscInt                bs;
-  ISLocalToGlobalMapping  ltogmap,ltogmapb;
+  ISLocalToGlobalMapping  ltogmap;
   PetscBool               prealloc_only; /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
   PetscInt                levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
   PetscBool               setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
@@ -137,12 +138,16 @@ struct _p_DM {
   DM                      coordinateDM;         /* Layout for coordinates (default section) */
   Vec                     coordinates;          /* Coordinate values in global vector */
   Vec                     coordinatesLocal;     /* Coordinate values in local  vector */
+  PetscReal              *L, *maxCell;          /* Size of periodic box and max cell size for determining periodicity */
   /* Null spaces -- of course I should make this have a variable number of fields */
   /*   I now believe this might not be the right way: see below */
   NullSpaceFunc           nullspaceConstructors[10];
   /* Fields are represented by objects */
   PetscInt                numFields;
-  PetscObject             *fields;
+  PetscFE                *fields;
+  /* Output structures */
+  DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
+  PetscInt                outputSequenceNum;    /* The current sequence number for output */
 
   PetscObject             dmksp,dmsnes,dmts;
 };

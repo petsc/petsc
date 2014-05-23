@@ -1,14 +1,13 @@
 #if !defined(__VIENNACLVECIMPL)
 #define __VIENNACLVECIMPL
 
+#include <petscviennacl.h>
 #include <petsc-private/vecimpl.h>
 
 #include <algorithm>
 #include <vector>
 #include <string>
 #include <exception>
-
-#define VIENNACL_WITH_OPENCL
 
 #include "viennacl/vector.hpp"
 
@@ -54,82 +53,6 @@ struct Vec_ViennaCL {
   viennacl::vector<PetscScalar> *GPUarray;        // this always holds the GPU data
 };
 
-
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLGetArrayReadWrite"
-PETSC_STATIC_INLINE PetscErrorCode VecViennaCLGetArrayReadWrite(Vec v, ViennaCLVector **a)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  *a   = 0;
-  ierr = VecViennaCLCopyToGPU(v);CHKERRQ(ierr);
-  *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
-  ViennaCLWaitForGPU();
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLRestoreArrayReadWrite"
-PETSC_STATIC_INLINE PetscErrorCode VecViennaCLRestoreArrayReadWrite(Vec v, ViennaCLVector **a)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  v->valid_GPU_array = PETSC_VIENNACL_GPU;
-
-  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLGetArrayRead"
-PETSC_STATIC_INLINE PetscErrorCode VecViennaCLGetArrayRead(Vec v, const ViennaCLVector **a)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  *a   = 0;
-  ierr = VecViennaCLCopyToGPU(v);CHKERRQ(ierr);
-  *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
-  ViennaCLWaitForGPU();
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLRestoreArrayRead"
-PETSC_STATIC_INLINE PetscErrorCode VecViennaCLRestoreArrayRead(Vec v, const ViennaCLVector **a)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLGetArrayWrite"
-PETSC_STATIC_INLINE PetscErrorCode VecViennaCLGetArrayWrite(Vec v, ViennaCLVector **a)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  *a   = 0;
-  ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
-  *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
-  ViennaCLWaitForGPU();
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLRestoreArrayWrite"
-PETSC_STATIC_INLINE PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector **a)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  v->valid_GPU_array = PETSC_VIENNACL_GPU;
-
-  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 
 #endif

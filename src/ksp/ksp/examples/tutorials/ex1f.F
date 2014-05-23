@@ -156,7 +156,7 @@
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,ierr)
 
 !  Set linear solver defaults for this problem (optional).
 !   - By extracting the KSP and PC contexts from the KSP context,
@@ -169,8 +169,8 @@
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCJACOBI,ierr)
       tol = 1.d-7
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,     &
-     &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                         &
+     &     PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
 
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>

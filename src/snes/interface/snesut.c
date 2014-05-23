@@ -160,11 +160,10 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   Vec            X;
   Mat            J,dJ,dJdense;
   PetscErrorCode ierr;
-  PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*func)(SNES,Vec,Mat,Mat,void*);
   PetscInt       n,i;
   PetscBLASInt   nb,lwork;
   PetscReal      *eigr,*eigi;
-  MatStructure   flg = DIFFERENT_NONZERO_PATTERN;
   PetscScalar    *work;
   PetscScalar    *a;
 
@@ -172,9 +171,9 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   if (it == 0) PetscFunctionReturn(0);
   /* create the difference between the current update and the current jacobian */
   ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes,&J,NULL,&func,NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,NULL,&J,&func,NULL);CHKERRQ(ierr);
   ierr = MatDuplicate(J,MAT_COPY_VALUES,&dJ);CHKERRQ(ierr);
-  ierr = SNESComputeJacobian(snes,X,&dJ,&dJ,&flg);CHKERRQ(ierr);
+  ierr = SNESComputeJacobian(snes,X,dJ,dJ);CHKERRQ(ierr);
   ierr = MatAXPY(dJ,-1.0,J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* compute the spectrum directly */
@@ -199,7 +198,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
 #endif
   PetscPrintf(PetscObjectComm((PetscObject)snes),"Eigenvalues of J_%d - J_%d:\n",it,it-1);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
-    PetscPrintf(PetscObjectComm((PetscObject)snes),"%5d: %20.5g + %20.5gi\n",i,eigr[i],eigi[i]);CHKERRQ(ierr);
+    PetscPrintf(PetscObjectComm((PetscObject)snes),"%5d: %20.5g + %20.5gi\n",i,(double)eigr[i],(double)eigi[i]);CHKERRQ(ierr);
   }
   ierr = MatDenseRestoreArray(dJdense,&a);CHKERRQ(ierr);
   ierr = MatDestroy(&dJ);CHKERRQ(ierr);
@@ -274,7 +273,7 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dum
   rel  = (prev - rnorm)/prev;
   prev = rnorm;
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)100.0*perc,(double)rel,(double)rel/perc);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)(100.0*perc),(double)rel,(double)(rel/perc));CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -400,9 +399,9 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
   PetscFunctionBegin;
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   if (fgnorm > 1.e-9) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %G \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %g \n",its,(double)fgnorm);CHKERRQ(ierr);
   } else if (fgnorm > 1.e-11) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %5.3e \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %5.3e \n",its,(double)fgnorm);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
   }

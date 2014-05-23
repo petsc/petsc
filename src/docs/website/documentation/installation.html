@@ -76,7 +76,7 @@
 
       Invoke the following commands from the top level PETSc directory: <br>
       <ul class="code">
-        <li>./configure --with-cc=gcc --with-fc=gfortran --download-f-blas-lapack --download-mpich</li>
+        <li>./configure --with-cc=gcc --with-fc=gfortran --download-fblaslapack --download-mpich</li>
         <li>make all test</li>
       </ul>
 
@@ -130,7 +130,7 @@
             installed <code>./configure</code> will download &amp; install BLAS,
             LAPACK, MPICH if they are not already installed on the system):
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=gfortran --download-f-blas-lapack --download-mpich</li>
+              <li>./configure --with-cc=gcc --with-fc=gfortran --download-fblaslapack --download-mpich</li>
             </ul>
           </li>
 
@@ -167,7 +167,7 @@
             (add the option <code>--with-fortran-kernels=generic</code> to get
             possibly faster complex number performance on some systems):
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --download-f-blas-lapack --download-mpich --with-scalar-type=complex --with-clanguage=cxx</li>
+              <li>./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --download-fblaslapack --download-mpich --with-scalar-type=complex --with-clanguage=cxx</li>
             </ul>
           </li>
 
@@ -278,10 +278,11 @@
               <li>--with-cc=gcc --with-fc=gfortran</li>
               <li>--with-cc=gcc --with-cxx=g++ --with-fc=gfortran --with-clanguage=cxx</li>
             </ul>
+            Note that --with-clanguage=cxx means that the PETSc source code is compiled with the C++ compiler. This is not normally needed and we don't recommend it unless you are using complex numbers (--with-scalar-type=complex) and programming yourself in C++.
           </li>
 
           <li>
-            If fortran compiler is not available - then disabling using fortran
+            If fortran compiler is not available or not needed - then disabling using fortran
             <ul>
               <li>--with-fc=0</li>
             </ul>
@@ -361,7 +362,7 @@
             <span class="def">--download-PACKAGENAME</span>: Download specified
             package and install it. Then configure PETSc to use this package.
             <ul>
-              <li>--download-f-blas-lapack --download-mpich</li>
+              <li>--download-fblaslapack --download-mpich</li>
               <li>--download-scalapack --download-mumps</li>
             </ul>
           </li>
@@ -392,6 +393,7 @@
             <ul>
               <li>--with-mpi-dir=/home/petsc/software/mpich2-1.0.4p1</li>
             </ul>
+            Note that except for MPI we hightly recommend you have PETSc download and install the external packages rather than you installing them separately first.
           </li>
 
           <li>
@@ -402,7 +404,7 @@
 
             <ul>
               <li>
-                --with-superlu-include=/home/petsc/software/suerplu/include
+                --with-superlu-include=/home/petsc/software/superlu/include
                 --with-superlu-lib=/home/petsc/software/superlu/lib/libsuperlu.a
               </li>
 
@@ -512,7 +514,7 @@
           <li>
             One can use the following options to let configure download/install blas/lapack automatically.
             <ul>
-              <li>--download-f-blas-lapack [when fortran compiler is present]</li>
+              <li>--download-fblaslapack [when fortran compiler is present]</li>
               <li>--download-f2cblaslapack [when configuring without a fortran compiler - i.e --with-fc=0]</li>
             </ul>
           </li>
@@ -543,7 +545,7 @@
             Sadly, IBM's ESSL does not have all the routines of BLAS and LAPACK
             that some packages, such as SuperLU expect; in particular slamch,
             dlamch and xerbla. In this case instead of using ESSL we suggest
-            <code>--download-f-blas-lapack</code>. If you really want to use ESSL,
+            <code>--download-fblaslapack</code>. If you really want to use ESSL,
             see <a href="http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBLAS-build">http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBLAS-build</a>.
           </li>
         </ul>
@@ -732,7 +734,7 @@
         </p>
 
         <ul>
-          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe ifort' --with-cxx='win32fe cl' --download-f-blas-lapack</code></li>
+          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe ifort' --with-cxx='win32fe cl' --download-fblaslapack</code></li>
         </ul>
 
         <p>If fortran usage is not required, use:</p>
@@ -746,7 +748,7 @@
         <p>Using Microsoft C/C++ 6.0 &amp; Compaq Fortran 6.0 with MPICH2 configure command to use:</p>
 
         <ul>
-          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe f90' --download-f-blas-lapack</code></li>
+          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe f90' --download-fblaslapack</code></li>
         </ul>
 
         <p>
@@ -976,7 +978,7 @@
             Thrust has been included in CUDA since the 4.0 release - so a separate install is not needed.
           </li>
 
-          <li>Currently using CUDA-4.1 or CUDA-4.2 with Cusp-v0.3.1</li>
+          <li>Currently using CUDA-4.1 or CUDA-4.2 with Cusp-v0.3.1 or CUDA-5 with Cusp-v0.4.0.</li>
 
           <li>
             On Linux - make sure you have  compatible <a href="http://developer.nvidia.com/cuda-downloads"> NVidia driver</a>
@@ -992,6 +994,32 @@
 
         <a href="#" target="_top">Return to Installation Instructions</a>
       </div> <!-- #cuda -->
+
+      <hr>
+
+      <div>
+        <h3><a name="cuda">Installing PETSc to use GPUs and accelerators via OpenCL (NVIDIA, AMD, Intel MIC)</a></h3>
+
+        <ul>
+          <li>
+            Requires <a href="http://viennacl.sourceforge.net/">ViennaCL</a> and the OpenCL shared library, which is shipped in the vendor graphics driver.
+            Make sure the OpenCL headers are available on your system by e.g. downloading them from the <a href="https://www.khronos.org/opencl/">Khronos Group</a> directly.
+            Package managers on Linux provide these headers through a package named 'opencl-headers' or similar.
+          </li>
+
+          <li>
+            Always make sure you have the latest GPU driver installed. There are several known issues with older driver versions.
+          </li>
+
+          <li>check <code>config/examples/arch-viennacl.py</code> for example usage.</li>
+        </ul>
+
+        <p>
+          OpenCL/ViennaCL builds of PETSc currently work on Apple OSX, Linux, and Microsoft Windows. OpenCL is less a burden on the build system than CUDA, so installation is often easier and works with any host compiler.
+        </p>
+
+        <a href="#" target="_top">Return to Installation Instructions</a>
+      </div> <!-- #opencl -->
 
       <hr>
 

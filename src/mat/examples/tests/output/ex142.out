@@ -1,0 +1,12 @@
+
+ 1-D: FFTW on vector of size 10 
+DIM: 1, N 10, Ny 12
+
+ 2-D: FFTW on vector of size 100 
+DIM: 2, N 100, Ny 120
+
+ 3-D: FFTW on vector of size 1000 
+DIM: 3, N 1000, Ny 1200
+
+ 4-D: FFTW on vector of size 10000 
+DIM: 4, N 10000, Ny 12000

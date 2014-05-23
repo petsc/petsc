@@ -839,8 +839,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 
 /*
       a setupcall of 0 indicates never setup,
-                     1 needs to be resetup,
-                     2 does not need any changes.
+                     1 indicates has been previously setup
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp"
@@ -860,23 +859,38 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
 @*/
 PetscErrorCode  PCSetUp(PC pc)
 {
-  PetscErrorCode ierr;
-  const char     *def;
+  PetscErrorCode   ierr;
+  const char       *def;
+  PetscObjectState matstate, matnonzerostate;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!pc->mat) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");
 
-  if (pc->setupcalled > 1) {
-    ierr = PetscInfo(pc,"Setting PC with identical preconditioner\n");CHKERRQ(ierr);
+  if (pc->setupcalled && pc->reusepreconditioner) {
+    ierr = PetscInfo(pc,"Leaving PC with identical preconditioner since reuse preconditioner is set\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  } else if (!pc->setupcalled) {
-    ierr = PetscInfo(pc,"Setting up new PC\n");CHKERRQ(ierr);
-  } else if (pc->flag == SAME_NONZERO_PATTERN) {
-    ierr = PetscInfo(pc,"Setting up PC with same nonzero pattern\n");CHKERRQ(ierr);
-  } else {
-    ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
   }
+
+  ierr = PetscObjectStateGet((PetscObject)pc->pmat,&matstate);CHKERRQ(ierr);
+  ierr = MatGetNonzeroState(pc->pmat,&matnonzerostate);CHKERRQ(ierr);
+  if (!pc->setupcalled) {
+    ierr            = PetscInfo(pc,"Setting up PC for first time");CHKERRQ(ierr);
+    pc->flag        = DIFFERENT_NONZERO_PATTERN;
+  } else if (matstate == pc->matstate) {
+    ierr = PetscInfo(pc,"Leaving PC with identical preconditioner since operator is unchanged\n");CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } else {
+    if (matnonzerostate > pc->matnonzerostate) {
+       ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
+       pc->flag            = DIFFERENT_NONZERO_PATTERN;
+    } else {
+      ierr = PetscInfo(pc,"Setting up PC with same nonzero pattern\n");CHKERRQ(ierr);
+      pc->flag            = SAME_NONZERO_PATTERN;
+    }
+  }
+  pc->matstate        = matstate;
+  pc->matnonzerostate = matnonzerostate;
 
   if (!((PetscObject)pc)->type_name) {
     ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
@@ -887,9 +901,8 @@ PetscErrorCode  PCSetUp(PC pc)
   if (pc->ops->setup) {
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
   }
-  pc->setupcalled = 2;
-
   ierr = PetscLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
+  pc->setupcalled = 1;
   PetscFunctionReturn(0);
 }
 
@@ -1037,44 +1050,14 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
    Input Parameters:
 +  pc - the preconditioner context
 .  Amat - the matrix that defines the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
--  flag - flag indicating information about the preconditioner matrix structure
-   during successive linear solves.  This flag is ignored the first time a
-   linear system is solved, and thus is irrelevant when solving just one linear
-   system.
+-  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 
    Notes:
-   The flag can be used to eliminate unnecessary work in the preconditioner
-   during the repeated solution of linear systems of the same size.  The
-   available options are
-+    SAME_PRECONDITIONER -
-       Pmat is identical during successive linear solves.
-       This option is intended for folks who are using
-       different Amat and Pmat matrices and wish to reuse the
-       same preconditioner matrix.  For example, this option
-       saves work by not recomputing incomplete factorization
-       for ILU/ICC preconditioners.
-.     SAME_NONZERO_PATTERN -
-       Pmat has the same nonzero structure during
-       successive linear solves.
--     DIFFERENT_NONZERO_PATTERN -
-       Pmat does not have the same nonzero structure.
-
     Passing a NULL for Amat or Pmat removes the matrix that is currently used.
 
     If you wish to replace either Amat or Pmat but leave the other one untouched then
     first call KSPGetOperators() to get the one you wish to keep, call PetscObjectReference()
     on it and then pass it back in in your call to KSPSetOperators().
-
-   Caution:
-   If you specify SAME_NONZERO_PATTERN, PETSc believes your assertion
-   and does not check the structure of the matrix.  If you erroneously
-   claim that the structure is the same when it actually is not, the new
-   preconditioner will not function correctly.  Thus, use this optimization
-   feature carefully!
-
-   If in doubt about whether your preconditioner matrix has changed
-   structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
    More Notes about Repeated Solution of Linear Systems:
    PETSc does NOT reset the matrix entries of either Amat or Pmat
@@ -1088,10 +1071,10 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
 
 .seealso: PCGetOperators(), MatZeroEntries()
  @*/
-PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
+PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat)
 {
-  PetscErrorCode ierr;
-  PetscInt       m1,n1,m2,n2;
+  PetscErrorCode   ierr;
+  PetscInt         m1,n1,m2,n2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -1099,13 +1082,19 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   if (Pmat) PetscValidHeaderSpecific(Pmat,MAT_CLASSID,3);
   if (Amat) PetscCheckSameComm(pc,1,Amat,2);
   if (Pmat) PetscCheckSameComm(pc,1,Pmat,3);
-  if (pc->setupcalled && Amat && Pmat) {
+  if (pc->setupcalled && pc->mat && pc->pmat && Amat && Pmat) {
     ierr = MatGetLocalSize(Amat,&m1,&n1);CHKERRQ(ierr);
     ierr = MatGetLocalSize(pc->mat,&m2,&n2);CHKERRQ(ierr);
     if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Amat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
     ierr = MatGetLocalSize(Pmat,&m1,&n1);CHKERRQ(ierr);
     ierr = MatGetLocalSize(pc->pmat,&m2,&n2);CHKERRQ(ierr);
     if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Pmat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
+  }
+
+  if (Pmat != pc->pmat) {
+    /* changing the operator that defines the preconditioner thus reneed to clear current states so new preconditioner is built */
+    pc->matnonzerostate = -1;
+    pc->matstate        = -1;
   }
 
   /* reference first in case the matrices are the same */
@@ -1115,11 +1104,27 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   ierr     = MatDestroy(&pc->pmat);CHKERRQ(ierr);
   pc->mat  = Amat;
   pc->pmat = Pmat;
+  PetscFunctionReturn(0);
+}
 
-  if (pc->setupcalled == 2 && flag != SAME_PRECONDITIONER) {
-    pc->setupcalled = 1;
-  }
-  pc->flag = flag;
+#undef __FUNCT__
+#define __FUNCT__ "PCSetReusePreconditioner"
+/*@
+   PCSetReusePreconditioner - reuse the current preconditioner even if the operator in the preconditioner has changed.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
+
+.seealso: PCGetOperators(), MatZeroEntries()
+ @*/
+PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  pc->reusepreconditioner = flag;
   PetscFunctionReturn(0);
 }
 
@@ -1136,9 +1141,7 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 
    Output Parameters:
 +  Amat - the matrix defining the linear system
-.  Pmat - the matrix from which the preconditioner is constructed, usually the same as Amat.
--  flag - flag indicating information about the preconditioner
-          matrix structure.  See PCSetOperators() for details.
+-  Pmat - the matrix from which the preconditioner is constructed, usually the same as Amat.
 
    Level: intermediate
 
@@ -1152,22 +1155,22 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
       The user must set the sizes of the returned matrices and their type etc just
       as if the user created them with MatCreate(). For example,
 
-$         KSP/PCGetOperators(ksp/pc,&Amat,NULL,NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&Amat,NULL); is equivalent to
 $           set size, type, etc of Amat
 
 $         MatCreate(comm,&mat);
-$         KSP/PCSetOperators(ksp/pc,Amat,Amat,SAME_NONZERO_PATTERN);
+$         KSP/PCSetOperators(ksp/pc,Amat,Amat);
 $         PetscObjectDereference((PetscObject)mat);
 $           set size, type, etc of Amat
 
      and
 
-$         KSP/PCGetOperators(ksp/pc,&Amat,&Pmat,NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&Amat,&Pmat); is equivalent to
 $           set size, type, etc of Amat and Pmat
 
 $         MatCreate(comm,&Amat);
 $         MatCreate(comm,&Pmat);
-$         KSP/PCSetOperators(ksp/pc,Amat,Pmat,SAME_NONZERO_PATTERN);
+$         KSP/PCSetOperators(ksp/pc,Amat,Pmat);
 $         PetscObjectDereference((PetscObject)Amat);
 $         PetscObjectDereference((PetscObject)Pmat);
 $           set size, type, etc of Amat and Pmat
@@ -1186,7 +1189,7 @@ $           set size, type, etc of Amat and Pmat
 
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperatorsSet()
 @*/
-PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat,MatStructure *flag)
+PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat)
 {
   PetscErrorCode ierr;
 
@@ -1222,7 +1225,6 @@ PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat,MatStructure *flag)
     }
     *Pmat = pc->pmat;
   }
-  if (flag) *flag = pc->flag;
   PetscFunctionReturn(0);
 }
 
@@ -1702,7 +1704,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
    Notes:
     This is a weird function. Since PC's are linear operators on the right hand side they
     CANNOT use an initial guess. This function is for the "pass-through" preconditioners
-    PCKSP, PCREDUNDANT and PCHMPI and causes the inner KSP object to use the nonzero
+    PCKSP and PCREDUNDANT  and causes the inner KSP object to use the nonzero
     initial guess. Not currently working for PCREDUNDANT, that has to be rewritten to use KSP.
 
 

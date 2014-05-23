@@ -269,7 +269,7 @@ static PetscErrorCode PetscDrawLineSetWidth_Win32(PetscDraw draw,PetscReal width
   PetscFunctionBegin;
   GetClientRect(windraw->hWnd,&rect);
   averagesize = ((rect.right - rect.left)+(rect.bottom - rect.top))/2;
-  finalwidth  = (int)floor(averagesize*width);
+  finalwidth  = (int)PetscFloorReal(averagesize*width);
   if (finalwidth < 1) finalwidth = 1; /* minimum size PetscDrawLine can except */
 
   windraw->linewidth = finalwidth;
@@ -331,7 +331,7 @@ static PetscErrorCode PetscDrawPointSetSize_Win32(PetscDraw draw,PetscReal width
   PetscFunctionBegin;
   GetClientRect(windraw->hWnd,&rect);
   averagesize = ((rect.right - rect.left)+(rect.bottom - rect.top))/2;
-  diameter    = (int)floor(averagesize*width);
+  diameter    = (int)PetscFloorReal(averagesize*width);
   if (diameter < 1) diameter = 1;
   windraw->pointdiameter = diameter;
   PetscFunctionReturn(0);

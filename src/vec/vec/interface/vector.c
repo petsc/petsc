@@ -70,7 +70,7 @@ PetscErrorCode  VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,Pets
    Concepts: vector^setting values with local numbering
 
 seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
-           VecSetLocalToGlobalMappingBlock(), VecSetValuesBlockedLocal()
+           VecSetLocalToGlobalMapping(), VecSetValuesBlockedLocal()
 @*/
 PetscErrorCode  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 {
@@ -85,41 +85,6 @@ PetscErrorCode  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
   } else {
     ierr = PetscLayoutSetISLocalToGlobalMapping(x->map,mapping);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecSetLocalToGlobalMappingBlock"
-/*@
-   VecSetLocalToGlobalMappingBlock - Sets a local numbering to global numbering used
-   by the routine VecSetValuesBlockedLocal() to allow users to insert vector entries
-   using a local (per-processor) numbering.
-
-   Logically Collective on Vec
-
-   Input Parameters:
-+  x - vector
--  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
-
-   Notes:
-   All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
-
-   Level: intermediate
-
-   Concepts: vector^setting values blocked with local numbering
-
-.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
-           VecSetLocalToGlobalMapping(), VecSetValuesBlockedLocal()
-@*/
-PetscErrorCode  VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping mapping)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
-
-  ierr = PetscLayoutSetISLocalToGlobalMappingBlock(x->map,mapping);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -154,36 +119,6 @@ PetscErrorCode VecGetLocalToGlobalMapping(Vec X,ISLocalToGlobalMapping *mapping)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecGetLocalToGlobalMappingBlock"
-/*@
-   VecGetLocalToGlobalMappingBlock - Gets the local-to-global numbering set by VecSetLocalToGlobalMappingBlock()
-
-   Not Collective
-
-   Input Parameters:
-.  X - the vector
-
-   Output Parameters:
-.  mapping - the mapping
-
-   Level: advanced
-
-   Concepts: vectors^local to global mapping blocked
-   Concepts: local to global mapping^for vectors, blocked
-
-.seealso:  VecSetValuesBlockedLocal(), VecGetLocalToGlobalMapping()
-@*/
-PetscErrorCode VecGetLocalToGlobalMappingBlock(Vec X,ISLocalToGlobalMapping *mapping)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,VEC_CLASSID,1);
-  PetscValidType(X,1);
-  PetscValidPointer(mapping,2);
-  *mapping = X->map->bmapping;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "VecAssemblyBegin"
 /*@
    VecAssemblyBegin - Begins assembling the vector.  This routine should
@@ -203,64 +138,17 @@ PetscErrorCode VecGetLocalToGlobalMappingBlock(Vec X,ISLocalToGlobalMapping *map
 PetscErrorCode  VecAssemblyBegin(Vec vec)
 {
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidType(vec,1);
-
-  ierr = PetscOptionsGetBool(((PetscObject)vec)->prefix,"-vec_view_stash",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec),&viewer);CHKERRQ(ierr);
-    ierr = VecStashView(vec,viewer);CHKERRQ(ierr);
-  }
-
+  ierr = VecStashViewFromOptions(vec,NULL,"-vec_view_stash");CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VEC_AssemblyBegin,vec,0,0,0);CHKERRQ(ierr);
   if (vec->ops->assemblybegin) {
     ierr = (*vec->ops->assemblybegin)(vec);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_AssemblyBegin,vec,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecViewFromOptions"
-/*
-  VecViewFromOptions - Processes command line options to determine if/how a vector is to be viewed. Called from higher level packages.
-
-  Collective on Vec
-
-  Input Parameters:
-+ vec   - the vector
-. prefix - prefix to use for viewing, or NULL to use prefix of 'vec'
-- optionname - option to activate viewing
-
-  Level: intermediate
-
-.keywords: Vec, view, options, database
-.seealso: MatViewFromOptions()
-*/
-PetscErrorCode  VecViewFromOptions(Vec vec,const char prefix[],const char optionname[])
-{
-  PetscErrorCode    ierr;
-  PetscBool         flg;
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-
-  PetscFunctionBegin;
-  if (prefix) {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)vec),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  } else {
-    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)vec),((PetscObject)vec)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  }
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = VecView(vec,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -300,11 +188,7 @@ PetscErrorCode  VecAssemblyEnd(Vec vec)
     ierr = (*vec->ops->assemblyend)(vec);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
-  if (vec->viewonassembly) {
-    ierr = PetscViewerPushFormat(vec->viewonassembly,vec->viewformatonassembly);CHKERRQ(ierr);
-    ierr = VecView(vec,vec->viewonassembly);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(vec->viewonassembly);CHKERRQ(ierr);
-  }
+  ierr = VecViewFromOptions(vec,NULL,"-vec_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -541,7 +425,6 @@ PetscErrorCode  VecDestroy(Vec *v)
   if (--((PetscObject)(*v))->refct > 0) {*v = 0; PetscFunctionReturn(0);}
 
   ierr = PetscObjectSAWsViewOff((PetscObject)*v);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&(*v)->viewonassembly);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*v)->ops->destroy) {
     ierr = (*(*v)->ops->destroy)(*v);CHKERRQ(ierr);
@@ -701,9 +584,9 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
   if (iascii) {
     PetscInt rows,bs;
 
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)vec,viewer);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)vec,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = VecGetSize(vec,&rows);CHKERRQ(ierr);
       ierr = VecGetBlockSize(vec,&bs);CHKERRQ(ierr);
@@ -1387,8 +1270,6 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
   ierr = PetscObjectOptionsBegin((PetscObject)vec);CHKERRQ(ierr);
   /* Handle vector type options */
   ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&vec->viewonassembly);CHKERRQ(ierr);
-  ierr = PetscOptionsViewer("-vec_view","Display vector with the viewer on VecAssemblyEnd()","VecView",&vec->viewonassembly,&vec->viewformatonassembly,NULL);CHKERRQ(ierr);
 
   /* Handle specific vector options */
   if (vec->ops->setfromoptions) {
@@ -1456,7 +1337,7 @@ PetscErrorCode  VecSetSizes(Vec v, PetscInt n, PetscInt N)
 
    Level: advanced
 
-.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlock(), VecGetBlockSize()
+.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMapping(), VecGetBlockSize()
 
   Concepts: block size^vectors
 @*/
@@ -1466,7 +1347,7 @@ PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  if (bs == v->map->bs) PetscFunctionReturn(0);
+  if (bs < 0 || bs == v->map->bs) PetscFunctionReturn(0);
   PetscValidLogicalCollectiveInt(v,bs,2);
   ierr = PetscLayoutSetBlockSize(v->map,bs);CHKERRQ(ierr);
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
@@ -1492,7 +1373,7 @@ PetscErrorCode  VecSetBlockSize(Vec v,PetscInt bs)
 
    Level: advanced
 
-.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlock(), VecSetBlockSize()
+.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMapping(), VecSetBlockSize()
 
    Concepts: vector^block size
    Concepts: block^vector
@@ -1793,6 +1674,45 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
     }
   }
   ierr = PetscLogEventEnd(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecStashViewFromOptions"
+/*
+  VecStashViewFromOptions - Processes command line options to determine if/how an VecStash object is to be viewed. 
+
+  Collective on VecStash
+
+  Input Parameters:
++ obj   - the VecStash object
+. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+  Developer Note: This cannot use PetscObjectViewFromOptions() because it takes a Vec as an argument but does not use VecView
+
+*/
+PetscErrorCode VecStashViewFromOptions(Vec obj,const char prefix[],const char optionname[])
+{
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscBool         flg;
+  static PetscBool  incall = PETSC_FALSE;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  if (incall) PetscFunctionReturn(0);
+  incall = PETSC_TRUE;
+  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = VecStashView(obj,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

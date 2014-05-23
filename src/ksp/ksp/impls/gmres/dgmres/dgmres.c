@@ -7,7 +7,7 @@
 
  */
 
-#include "../src/ksp/ksp/impls/gmres/dgmres/dgmresimpl.h"       /*I  "petscksp.h"  I*/
+#include <../src/ksp/ksp/impls/gmres/dgmres/dgmresimpl.h>       /*I  "petscksp.h"  I*/
 
 PetscLogEvent KSP_DGMRESComputeDeflationData, KSP_DGMRESApplyDeflation;
 
@@ -226,7 +226,7 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
     hapbnd = PetscAbsScalar(tt / *GRS(it));
     if (hapbnd > dgmres->haptol) hapbnd = dgmres->haptol;
     if (tt < hapbnd) {
-      ierr   = PetscInfo2(ksp,"Detected happy breakdown, current hapbnd = %G tt = %G\n",hapbnd,tt);CHKERRQ(ierr);
+      ierr   = PetscInfo2(ksp,"Detected happy breakdown, current hapbnd = %g tt = %g\n",(double)hapbnd,(double)tt);CHKERRQ(ierr);
       hapend = PETSC_TRUE;
     }
     ierr = KSPDGMRESUpdateHessenberg(ksp,it,hapend,&res);CHKERRQ(ierr);
@@ -242,7 +242,7 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
+        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",(double)res);
         else {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           break;
@@ -268,7 +268,7 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /* Compute data for the deflation to be used during the next restart */
   if (!ksp->reason && ksp->its < ksp->max_it) {
-    test = max_k *log(ksp->rtol/res) /log(res/res_old);
+    test = max_k *PetscLogReal(ksp->rtol/res) /PetscLogReal(res/res_old);
     /* Compute data for the deflation if the residual rtol will not be reached in the remaining number of steps allowed  */
     if ((test > dgmres->smv*(ksp->max_it-ksp->its)) || dgmres->force) {
       ierr =  KSPDGMRESComputeDeflationData(ksp);CHKERRQ(ierr);
@@ -282,10 +282,9 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
 PetscErrorCode KSPSolve_DGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscInt       its,itcount;
+  PetscInt       i,its,itcount;
   KSP_DGMRES     *dgmres    = (KSP_DGMRES*) ksp->data;
   PetscBool      guess_zero = ksp->guess_zero;
-  PetscBool      flag;
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !dgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
@@ -317,17 +316,11 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
 
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_dgmres_view_deflation_vecs",&flag);CHKERRQ(ierr);
-  if (flag) {
-    PetscInt i;
-
-    for (i = 0; i < dgmres->r; i++) {
-      ierr = VecViewFromOptions(UU[i],((PetscObject)ksp)->prefix,"-ksp_dgmres_view_deflation_vecs");CHKERRQ(ierr);
-    }
+  for (i = 0; i < dgmres->r; i++) {
+    ierr = VecViewFromOptions(UU[i],((PetscObject)ksp)->prefix,"-ksp_dgmres_view_deflation_vecs");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_DGMRES"
@@ -400,7 +393,7 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP k
     ierr = VecCopy(vs,vdest);CHKERRQ(ierr);     /* VecCopy() is smart, exists immediately if vguess == vdest */
     PetscFunctionReturn(0);
   }
-  if (*HH(it,it) == 0.0) SETERRQ2(PetscObjectComm((PetscObject)ksp), PETSC_ERR_CONV_FAILED,"Likely your matrix is the zero operator. HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
+  if (*HH(it,it) == 0.0) SETERRQ2(PetscObjectComm((PetscObject)ksp), PETSC_ERR_CONV_FAILED,"Likely your matrix is the zero operator. HH(it,it) is identically zero; it = %D GRS(it) = %g",it,(double)PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) nrs[it] = *GRS(it) / *HH(it,it);
   else nrs[it] = 0.0;
 

@@ -255,7 +255,9 @@ class Configure(script.Script):
             break
         if found: break
     if not found:
-      for d in self.framework.argDB['search-dirs']:
+      dirs = self.framework.argDB['search-dirs']
+      if not isinstance(dirs, list): dirs = [dirs]
+      for d in dirs:
         for name in names:
           name, options, varName = getNames(name, resultName)
           if self.checkExecutable(d, name):
