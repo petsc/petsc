@@ -302,7 +302,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   PetscBool         iascii;
   PetscViewerFormat format;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool         isams;
+  PetscBool         issaws;
 #endif
 
   PetscFunctionBegin;
@@ -316,7 +316,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -332,7 +332,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_SAWS)
-  } else if (isams) {
+  } else if (issaws) {
     if (!((PetscObject)v)->amsmem) {
       ierr = PetscObjectViewSAWs((PetscObject)v,viewer);CHKERRQ(ierr);
       if (v->ops->view) {
