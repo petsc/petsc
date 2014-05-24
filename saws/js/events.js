@@ -203,14 +203,40 @@ function addEventHandlers() {
         }
     });
 
-    $("#selectedMatrix").on("change", function() {
+    $("#selectedMatrix").on("keyup", function() {
 
         var val = $(this).val();
         if(getMatIndex(val) == -1) //invalid matrix
             return;
 
-        $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex(val,"") + "\\)" + "</center>");
+        $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex(val,"") + getSpecificMatrixTex2(0) + "\\)" + "</center>");
         MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    });
+
+    $(document).on("keyup", '.processorInput', function() {
+        if ($(this).val().match(/[^0-9]/) || $(this).val()==0) {//integer only bubble still displays when nothing is entered
+	    $(this).attr("title","");//set a random title (this will be overwritten)
+	    $(this).tooltip();//create a tooltip from jquery UI
+	    $(this).tooltip({ content: "Integer only!" });//edit displayed text
+	    $(this).tooltip("open");//manually open once
+        } else {
+	    $(this).removeAttr("title");//remove title attribute
+	    $(this).tooltip();//create so that we dont call destroy on nothing
+            $(this).tooltip("destroy");
+        }
+    });
+
+    $(document).on("keyup", '.fieldsplitBlocks', function() {//alerts user with a tooltip when an invalid input is provided
+        if ($(this).val().match(/[^0-9]/) || $(this).val()==0 || $(this).val()==1) {
+	    $(this).attr("title","");//set a random title (this will be overwritten)
+	    $(this).tooltip();//create a tooltip from jquery UI
+	    $(this).tooltip({content: "At least 2 blocks!"});//edit displayed text
+	    $(this).tooltip("open");//manually open once
+        } else {
+	    $(this).removeAttr("title");//remove title attribute
+            $(this).tooltip();//create so that we dont call destroy on nothing
+	    $(this).tooltip("destroy");
+        }
     });
 
 }

@@ -56,7 +56,7 @@ function getMatrixTex(currentMatrix) {//weird because the longer the string is, 
 
 }
 
-
+var bjacobiSplits = [];//global variable that keeps track of how the bjacobi blocks were split
 
 
 //this function generates the appropriate tex for the given matrix
@@ -66,6 +66,11 @@ function getMatrixTex(currentMatrix) {//weird because the longer the string is, 
 //matrix refers to the id of the matrix. for example, "01"
 //this function is recursive and should always be called with an empty string in the second parameter like so: getSpecificMatrixTex(matrix, "")
 function getSpecificMatrixTex(matrix, endtag) {
+
+    if(endtag == "") {//reset bjacobi splits data
+        delete bjacobiSplits;
+        bjacobiSplits.length=0;
+    }
 
     var ret = "";//returned value
 
@@ -110,10 +115,15 @@ function getSpecificMatrixTex(matrix, endtag) {
         //bjacobi is a composite pc so there will be more options
 
         var blocks = $("#bjacobiBlocks"+matrix+"_"+endtag).val();
+
         if(blocks == "np")
             blocks = 2;
         else
             blocks = parseInt(blocks);
+
+        //record that we split
+        var idx = bjacobiSplits.length;
+        bjacobiSplits[idx] = blocks;
 
         var childTex = getSpecificMatrixTex(matrix, endtag);
         for(var i=0; i<blocks; i++)
@@ -123,4 +133,56 @@ function getSpecificMatrixTex(matrix, endtag) {
     }
 
     return ret;
+}
+
+//this function generates the corresponding matrix for the specific matrix diagram
+//this function is recursive and should always be called with parameter 0 like so: getSpecificMatrixTex2(0)
+function getSpecificMatrixTex2(index) {
+
+    //case 1: matrix was not split
+    if(bjacobiSplits.length == 0) {
+        return "\\left[ \\begin{array}{c} * \\end{array}\\right]";
+    }
+
+    //case 2: base case
+    else if(index >= bjacobiSplits.length) {
+        return "\\left[ \\begin{array}{c} * \\end{array}\\right]";
+    }
+
+    //case 3: recursive case
+    else {
+        var ret = "";
+
+        var blocks = bjacobiSplits[index];
+        var innerTex = "";
+
+        var justify = "";
+        for(var i=0; i<blocks-1; i++) {
+            justify += "c@{}";
+        }
+        justify += "c";
+
+        ret += "\\left[ \\begin{array}{"+justify+"}";//begin the matrix
+
+        innerTex = getSpecificMatrixTex2(index+1);
+
+        for(var i=0; i<blocks; i++) {//iterate thru entire square matrix row by row
+            for(var j=0; j<i; j++) {//add the stars that go BEFORE the diagonal element
+                ret += "* & ";
+            }
+
+            ret += innerTex;
+
+            for(var j=i+1; j<blocks; j++) {//add the stars that go AFTER the diagonal element
+                ret += "& *";
+            }
+            ret += "\\\\"; //add the backslash indicating the next matrix row
+        }
+
+        ret += "\\end{array}\\right]";//close the matrix
+
+        return ret;
+    }
+
+
 }

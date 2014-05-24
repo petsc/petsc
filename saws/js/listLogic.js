@@ -1,28 +1,3 @@
-$(document).on("keyup", '.processorInput', function() {
-    if ($(this).val().match(/[^0-9]/) || $(this).val()==0) {//problem is that integer only bubble still displays when nothing is entered
-	$(this).attr("title","");//set a random title (this will be overwritten)
-	$(this).tooltip();//create a tooltip from jquery UI
-	$(this).tooltip({ content: "Integer only!" });//edit displayed text
-	$(this).tooltip("open");//manually open once
-    } else {
-	$(this).removeAttr("title");//remove title attribute
-	$(this).tooltip();//create so that we dont call destroy on nothing
-        $(this).tooltip("destroy");
-    }
-});
-
-$(document).on("keyup", '.fieldsplitBlocks', function() {//alerts user with a tooltip when an invalid input is provided
-    if ($(this).val().match(/[^0-9]/) || $(this).val()==0 || $(this).val()==1) {
-	$(this).attr("title","hello");//set a random title (this will be overwritten)
-	$(this).tooltip();//create a tooltip from jquery UI
-	$(this).tooltip({content: "At least 2 blocks!"});//edit displayed text
-	$(this).tooltip("open");//manually open once
-    } else {
-	$(this).removeAttr("title");//remove title attribute
-	$(this).tooltip("destroy");
-    }
-});
-
 /*
   This function is called when the drop-down menu of .pcLists is excuted
 */
