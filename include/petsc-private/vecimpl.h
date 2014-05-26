@@ -83,6 +83,8 @@ struct _VecOps {
   PetscErrorCode (*restoresubvector)(Vec,IS,Vec*);
   PetscErrorCode (*getarrayread)(Vec,const PetscScalar**);
   PetscErrorCode (*restorearrayread)(Vec,const PetscScalar**);
+  PetscErrorCode (*stridesubsetgather)(Vec,PetscInt,const PetscInt[],const PetscInt[],Vec,InsertMode);
+  PetscErrorCode (*stridesubsetscatter)(Vec,PetscInt,const PetscInt[],const PetscInt[],Vec,InsertMode);
 };
 
 /*
@@ -327,6 +329,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash
 PETSC_INTERN PetscErrorCode VecStrideGather_Default(Vec,PetscInt,Vec,InsertMode);
 PETSC_INTERN PetscErrorCode VecStrideScatter_Default(Vec,PetscInt,Vec,InsertMode);
 PETSC_INTERN PetscErrorCode VecReciprocal_Default(Vec);
+PETSC_INTERN PetscErrorCode VecStrideSubSetGather_Default(Vec,PetscInt,const PetscInt[],const PetscInt[],Vec,InsertMode);
+PETSC_INTERN PetscErrorCode VecStrideSubSetScatter_Default(Vec,PetscInt,const PetscInt[],const PetscInt[],Vec,InsertMode);
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
