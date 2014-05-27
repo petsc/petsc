@@ -725,7 +725,7 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
    This mapping can then be used by VecSetLocalToGlobalMapping() or
    MatSetLocalToGlobalMapping().
 
-.seealso: DMCreateLocalVector(), DMGetLocalToGlobalMappingBlock()
+.seealso: DMCreateLocalVector()
 @*/
 PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 {
@@ -782,7 +782,7 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
 
    Level: intermediate
 
-.seealso: ISCreateBlock(), VecSetBlockSize(), MatSetBlockSize(), DMGetLocalToGlobalMappingBlock()
+.seealso: ISCreateBlock(), VecSetBlockSize(), MatSetBlockSize(), DMGetLocalToGlobalMapping()
 @*/
 PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 {

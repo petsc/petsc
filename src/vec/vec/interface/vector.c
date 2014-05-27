@@ -106,7 +106,7 @@ PetscErrorCode  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
    Concepts: vectors^local to global mapping
    Concepts: local to global mapping^for vectors
 
-.seealso:  VecSetValuesLocal(), VecGetLocalToGlobalMappingBlock()
+.seealso:  VecSetValuesLocal()
 @*/
 PetscErrorCode VecGetLocalToGlobalMapping(Vec X,ISLocalToGlobalMapping *mapping)
 {

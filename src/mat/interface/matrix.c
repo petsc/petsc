@@ -1862,7 +1862,7 @@ PetscErrorCode  MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping
    Concepts: matrices^local to global mapping
    Concepts: local to global mapping^for matrices
 
-.seealso:  MatSetValuesLocal(), MatGetLocalToGlobalMappingBlock()
+.seealso:  MatSetValuesLocal()
 @*/
 PetscErrorCode  MatGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmapping,ISLocalToGlobalMapping *cmapping)
 {
