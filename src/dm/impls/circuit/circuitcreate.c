@@ -66,7 +66,6 @@ PetscErrorCode DMInitialize_Circuit(DM dm)
   dm->ops->createglobalvector              = DMCreateGlobalVector_Circuit;
   dm->ops->createlocalvector               = DMCreateLocalVector_Circuit;
   dm->ops->getlocaltoglobalmapping         = NULL;
-  dm->ops->getlocaltoglobalmappingblock    = NULL;
   dm->ops->createfieldis                   = NULL;
   dm->ops->createcoordinatedm              = NULL;
   dm->ops->getcoloring                     = 0;

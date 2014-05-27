@@ -1404,7 +1404,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
   p->ops->createglobalvector              = DMCreateGlobalVector_Composite;
   p->ops->createlocalvector               = DMCreateLocalVector_Composite;
   p->ops->getlocaltoglobalmapping         = DMGetLocalToGlobalMapping_Composite;
-  p->ops->getlocaltoglobalmappingblock    = 0;
   p->ops->createfieldis                   = DMCreateFieldIS_Composite;
   p->ops->createfielddecomposition        = DMCreateFieldDecomposition_Composite;
   p->ops->refine                          = DMRefine_Composite;

@@ -941,7 +941,6 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->createglobalvector              = DMCreateGlobalVector_Plex;
   dm->ops->createlocalvector               = DMCreateLocalVector_Plex;
   dm->ops->getlocaltoglobalmapping         = NULL;
-  dm->ops->getlocaltoglobalmappingblock    = NULL;
   dm->ops->createfieldis                   = NULL;
   dm->ops->createcoordinatedm              = DMCreateCoordinateDM_Plex;
   dm->ops->getcoloring                     = NULL;
