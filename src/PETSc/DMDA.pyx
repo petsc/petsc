@@ -391,12 +391,10 @@ cdef class DMDA(DM):
     def getScatter(self):
         cdef Scatter l2g = Scatter()
         cdef Scatter g2l = Scatter()
-        cdef Scatter l2l = Scatter()
-        CHKERR( DMDAGetScatter(self.dm, &l2g.sct, &g2l.sct, &l2l.sct) )
+        CHKERR( DMDAGetScatter(self.dm, &l2g.sct, &g2l.sct) )
         PetscINCREF(l2g.obj)
         PetscINCREF(g2l.obj)
-        PetscINCREF(l2l.obj)
-        return (l2g, g2l, l2l)
+        return (l2g, g2l)
 
     #
 

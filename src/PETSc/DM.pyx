@@ -124,12 +124,6 @@ cdef class DM(Object):
         PetscINCREF(lgm.obj)
         return lgm
 
-    def getLGMapBlock(self):
-        cdef LGMap lgm = LGMap()
-        CHKERR( DMGetLocalToGlobalMappingBlock(self.dm, &lgm.lgm) )
-        PetscINCREF(lgm.obj)
-        return lgm
-
     #
 
     def getCoordinateDM(self):

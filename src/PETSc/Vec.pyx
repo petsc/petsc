@@ -637,9 +637,6 @@ cdef class Vec(Object):
     def setValuesLocal(self, indices, values, addv=None):
         vecsetvalues(self.vec, indices, values, addv, 0, 1)
 
-    def setLGMapBlock(self, LGMap lgmap not None):
-        CHKERR( VecSetLocalToGlobalMappingBlock(self.vec, lgmap.lgm) )
-
     def setValuesBlockedLocal(self, indices, values, addv=None):
         vecsetvalues(self.vec, indices, values, addv, 1, 1)
 

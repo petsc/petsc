@@ -193,8 +193,6 @@ cdef extern from * nogil:
     int MatSetValuesBlocked(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
 
     int MatSetLocalToGlobalMapping(PetscMat,PetscLGMap,PetscLGMap)
-    int MatSetLocalToGlobalMappingBlock(PetscMat,PetscLGMap,PetscLGMap)
-
     int MatSetValueLocal(PetscMat,PetscInt,PetscInt,PetscScalar,PetscInsertMode)
     int MatSetValuesLocal(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
     int MatSetValuesBlockedLocal(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)

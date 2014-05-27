@@ -68,7 +68,7 @@ cdef extern from * nogil:
     int DMDANaturalToGlobalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
 
     int DMDAGetAO(PetscDM,PetscAO*)
-    int DMDAGetScatter(PetscDM,PetscScatter*,PetscScatter*,PetscScatter*)
+    int DMDAGetScatter(PetscDM,PetscScatter*,PetscScatter*)
 
     int DMDASetRefinementFactor(PetscDM,PetscInt,PetscInt,PetscInt)
     int DMDAGetRefinementFactor(PetscDM,PetscInt*,PetscInt*,PetscInt*)

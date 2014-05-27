@@ -61,20 +61,21 @@ cdef extern from * nogil:
         IS_GTOLM_MASK
         IS_GTOLM_DROP
 
-    int ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt[],PetscCopyMode,PetscLGMap*)
+    int ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscCopyMode,PetscLGMap*)
     int ISLocalToGlobalMappingCreateIS(PetscIS,PetscLGMap*)
-    int ISLocalToGlobalMappingBlock(PetscLGMap,PetscInt,PetscLGMap*)
-    int ISLocalToGlobalMappingUnBlock(PetscLGMap,PetscInt,PetscLGMap*)
     int ISLocalToGlobalMappingView(PetscLGMap,PetscViewer)
     int ISLocalToGlobalMappingDestroy(PetscLGMap*)
-    int ISLocalToGlobalMappingApplyIS(PetscLGMap,PetscIS,PetscIS*)
     int ISLocalToGlobalMappingGetSize(PetscLGMap,PetscInt*)
+    int ISLocalToGlobalMappingGetBlockSize(PetscLGMap,PetscInt*)
     int ISLocalToGlobalMappingGetIndices(PetscLGMap,const_PetscInt*[])
     int ISLocalToGlobalMappingRestoreIndices(PetscLGMap,const_PetscInt*[])
+    int ISLocalToGlobalMappingGetBlockIndices(PetscLGMap,const_PetscInt*[])
+    int ISLocalToGlobalMappingRestoreBlockIndices(PetscLGMap,const_PetscInt*[])
     int ISLocalToGlobalMappingGetInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
     int ISLocalToGlobalMappingRestoreInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
-    int ISLocalToGlobalMappingBlock(PetscLGMap,PetscInt,PetscLGMap*)
-    int ISLocalToGlobalMappingApply(PetscLGMap mapping,PetscInt,PetscInt[],PetscInt[])
+    int ISLocalToGlobalMappingApply(PetscLGMap,PetscInt,PetscInt[],PetscInt[])
+    int ISLocalToGlobalMappingApplyBlock(PetscLGMap,PetscInt,PetscInt[],PetscInt[])
+    int ISLocalToGlobalMappingApplyIS(PetscLGMap,PetscIS,PetscIS*)
     int ISGlobalToLocalMappingApply(PetscLGMap,PetscGLMapType,PetscInt,PetscInt[],PetscInt*,PetscInt[])
 
 

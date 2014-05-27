@@ -73,8 +73,6 @@ cdef extern from * nogil:
     int VecSetValuesBlocked(PetscVec,PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
 
     int VecSetLocalToGlobalMapping(PetscVec,PetscLGMap)
-    int VecSetLocalToGlobalMappingBlock(PetscVec,PetscLGMap)
-
     int VecSetValueLocal(PetscVec,PetscInt,PetscScalar,PetscInsertMode)
     int VecSetValuesLocal(PetscVec,PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
     int VecSetValuesBlockedLocal(PetscVec,PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)

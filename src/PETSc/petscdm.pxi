@@ -62,7 +62,6 @@ cdef extern from * nogil:
     int DMLocalToLocalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
 
     int DMGetLocalToGlobalMapping(PetscDM,PetscLGMap*)
-    int DMGetLocalToGlobalMappingBlock(PetscDM,PetscLGMap*)
 
     int DMSetDefaultSection(PetscDM,PetscSection)
     int DMGetDefaultSection(PetscDM,PetscSection*)

@@ -339,53 +339,65 @@ cdef class LGMap(Object):
         CHKERR( ISLocalToGlobalMappingDestroy(&self.lgm) )
         return self
 
-    def create(self, indices, comm=None):
-        cdef IS iset
-        cdef MPI_Comm ccomm = MPI_COMM_NULL
-        cdef PetscInt nidx = 0, *idx = NULL
+    def create(self, indices, bsize=None, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt bs = 1, nidx = 0, *idx = NULL
         cdef PetscCopyMode cm = PETSC_COPY_VALUES
         cdef PetscLGMap newlgm = NULL
-        if isinstance(indices, IS):
-            iset = indices
-            CHKERR( ISLocalToGlobalMappingCreateIS(
-                    iset.iset, &newlgm) )
-        else:
-            ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-            indices = iarray_i(indices, &nidx, &idx)
-            CHKERR( ISLocalToGlobalMappingCreate(
-                    ccomm, nidx, idx, cm, &newlgm) )
+        if bsize is not None: bs = asInt(bsize)
+        if bs == PETSC_DECIDE: bs = 1
+        indices = iarray_i(indices, &nidx, &idx)
+        CHKERR( ISLocalToGlobalMappingCreate(
+                ccomm, bs, nidx, idx, cm, &newlgm) )
         PetscCLEAR(self.obj); self.lgm = newlgm
         return self
 
-    def block(self, bsize):
-        cdef PetscInt bs = toInt(bsize)
-        cdef LGMap lgmap = LGMap()
-        CHKERR( ISLocalToGlobalMappingBlock(self.lgm,bs,&lgmap.lgm) )
-        return lgmap
-
-    def unblock(self, bsize):
-        cdef PetscInt bs = toInt(bsize)
-        cdef LGMap lgmap = LGMap()
-        CHKERR( ISLocalToGlobalMappingUnBlock(self.lgm,bs,&lgmap.lgm) )
-        return lgmap
+    def createIS(self, IS iset not None):
+        cdef PetscLGMap newlgm = NULL
+        CHKERR( ISLocalToGlobalMappingCreateIS(
+            iset.iset, &newlgm) )
+        PetscCLEAR(self.obj); self.lgm = newlgm
+        return self
 
     def getSize(self):
         cdef PetscInt n = 0
         CHKERR( ISLocalToGlobalMappingGetSize(self.lgm, &n) )
         return toInt(n)
 
+    def getBlockSize(self):
+        cdef PetscInt bs = 1
+        CHKERR( ISLocalToGlobalMappingGetBlockSize(self.lgm, &bs) )
+        return toInt(bs)
+
     def getIndices(self):
+        cdef PetscInt size = 0, bs = 0
+        cdef const_PetscInt *indices = NULL
+        CHKERR( ISLocalToGlobalMappingGetSize(
+                self.lgm, &size) )
+        CHKERR( ISLocalToGlobalMappingGetBlockSize(
+                self.lgm, &bs) )
+        CHKERR( ISLocalToGlobalMappingGetIndices(
+                self.lgm, &indices) )
+        cdef object oindices = None
+        try:
+            oindices = array_i(size*bs, indices)
+        finally:
+            CHKERR( ISLocalToGlobalMappingRestoreIndices(
+                    self.lgm, &indices) )
+        return oindices
+
+    def getBlockIndices(self):
         cdef PetscInt size = 0
         cdef const_PetscInt *indices = NULL
         CHKERR( ISLocalToGlobalMappingGetSize(
                 self.lgm, &size) )
-        CHKERR( ISLocalToGlobalMappingGetIndices(
+        CHKERR( ISLocalToGlobalMappingGetBlockIndices(
                 self.lgm, &indices) )
         cdef object oindices = None
         try:
             oindices = array_i(size, indices)
         finally:
-            CHKERR( ISLocalToGlobalMappingRestoreIndices(
+            CHKERR( ISLocalToGlobalMappingRestoreBlockIndices(
                     self.lgm, &indices) )
         return oindices
 
@@ -406,20 +418,31 @@ cdef class LGMap(Object):
     #
 
     def apply(self, indices, result=None):
-        cdef IS isetin, iset
         cdef PetscInt niidx = 0, *iidx = NULL
         cdef PetscInt noidx = 0, *oidx = NULL
-        if isinstance(indices, IS):
-            isetin = indices; iset = IS()
-            CHKERR( ISLocalToGlobalMappingApplyIS(
-                    self.lgm, isetin.iset, &iset.iset) )
-            return iset
-        else:
-            indices = iarray_i(indices, &niidx, &iidx)
-            if result is None: result = empty_i(niidx)
-            result  = oarray_i(result,  &noidx, &oidx)
-            assert niidx == noidx, "incompatible array sizes"
-            CHKERR( ISLocalToGlobalMappingApply(self.lgm, niidx, iidx, oidx) )
+        indices = iarray_i(indices, &niidx, &iidx)
+        if result is None: result = empty_i(niidx)
+        result  = oarray_i(result,  &noidx, &oidx)
+        assert niidx == noidx, "incompatible array sizes"
+        CHKERR( ISLocalToGlobalMappingApply(
+            self.lgm, niidx, iidx, oidx) )
+        return result
+
+    def applyBlock(self, indices, result=None):
+        cdef PetscInt niidx = 0, *iidx = NULL
+        cdef PetscInt noidx = 0, *oidx = NULL
+        indices = iarray_i(indices, &niidx, &iidx)
+        if result is None: result = empty_i(niidx)
+        result  = oarray_i(result,  &noidx, &oidx)
+        assert niidx == noidx, "incompatible array sizes"
+        CHKERR( ISLocalToGlobalMappingApplyBlock(
+            self.lgm, niidx, iidx, oidx) )
+        return result
+
+    def applyIS(self, IS iset not None):
+        cdef IS result = IS()
+        CHKERR( ISLocalToGlobalMappingApplyIS(
+            self.lgm, iset.iset, &result.iset) )
         return result
 
     def applyInverse(self, indices, map_type=None):
@@ -442,9 +465,17 @@ cdef class LGMap(Object):
         def __get__(self):
             return self.getSize()
 
+    property block_size:
+        def __get__(self):
+            return self.getBlockSize()
+
     property indices:
         def __get__(self):
             return self.getIndices()
+
+    property block_indices:
+        def __get__(self):
+            return self.getBlockIndices()
 
     property info:
         def __get__(self):
