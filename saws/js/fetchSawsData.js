@@ -28,31 +28,32 @@ SAWsDisplayDirectory = function(sub,divEntry)
         if (SAWs_prefix == "(null)")//null on first pc
             SAWs_prefix = ""; //"(null)" fails populatePcList()
 
-        if (typeof $("#pcList-1"+SAWs_prefix+"text").attr("title") == "undefined" && SAWs_prefix.indexOf("est")==-1) {//it doesn't exist already and doesn't contain 'est'
+        if (typeof $("#pcList-1"+SAWs_prefix+"text").attr("title") == "undefined" && SAWs_prefix.indexOf("est") == -1) {//it doesn't exist already and doesn't contain 'est'
             $("#o-1").append("<br><b style='margin-left:20px;' title=\"Preconditioner\" id=\"pcList-1"+SAWs_prefix+"text\">-"+SAWs_prefix+"pc_type &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList-1"+SAWs_prefix+"\"></select>");
             populatePcList("pcList-1"+SAWs_prefix,SAWs_alternatives,SAWs_pcVal);
 
             //parse through prefix
             var fieldsplit = parsePrefixForFieldsplit(SAWs_prefix);
-            var index = getSawsIndex(fieldsplit);
-            var endtag = parsePrefixForEndtag(SAWs_prefix, index);
+            var index      = getSawsIndex(fieldsplit);
+            var endtag     = parsePrefixForEndtag(SAWs_prefix, index);
 
-            if(sawsInfo.length == 0) //special case. manually start off first one
+            if (sawsInfo.length == 0) {//special case. manually start off first one
                 index = 0;
+            }
 
             allocateMemory(fieldsplit, endtag, index);
 
-            var index2=getSawsDataIndex(index,endtag);
-            sawsInfo[index].data[index2].pc=SAWs_pcVal;
+            var index2 = getSawsDataIndex(index,endtag);
+            sawsInfo[index].data[index2].pc              = SAWs_pcVal;
             sawsInfo[index].data[index2].pc_alternatives = SAWs_alternatives.slice();//deep copy of alternatives
 
             if (SAWs_pcVal == 'bjacobi') {//some extra data for bjacobi
                 //saws does bjacobi_blocks differently than we do. we put bjacoi_blocks as a different endtag than bjacobi dropdown (lower level) but saws puts them on the same level so we need to add a "0" to the endtag
-                endtag=endtag+"0";
-                if(getSawsDataIndex(index,endtag)==-1) {//need to allocate new memory
-                    var writeLoc=sawsInfo[index].data.length;
-                    sawsInfo[index].data[writeLoc]=new Object();
-                    sawsInfo[index].data[writeLoc].endtag=endtag;
+                endtag = endtag + "0";
+                if (getSawsDataIndex(index,endtag) == -1) {//need to allocate new memory
+                    var writeLoc = sawsInfo[index].data.length;
+                    sawsInfo[index].data[writeLoc]        = new Object();
+                    sawsInfo[index].data[writeLoc].endtag = endtag;
                 }
                 sawsInfo[index].data[getSawsDataIndex(index,endtag)].bjacobi_blocks = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_bjacobi_blocks"].data[0];
             }
@@ -77,16 +78,16 @@ SAWsDisplayDirectory = function(sub,divEntry)
 
             //parse through prefix...
             var fieldsplit = parsePrefixForFieldsplit(SAWs_prefix);
-            var index = getSawsIndex(fieldsplit);
-            var endtag = parsePrefixForEndtag(SAWs_prefix, index);
+            var index      = getSawsIndex(fieldsplit);
+            var endtag     = parsePrefixForEndtag(SAWs_prefix, index);
 
-            if(index == -1)
+            if (index == -1)
                 index = 0;
 
             allocateMemory(fieldsplit, endtag, index);
 
-            var index2=getSawsDataIndex(index,endtag);
-            sawsInfo[index].data[index2].ksp=SAWs_kspVal;
+            var index2 = getSawsDataIndex(index,endtag);
+            sawsInfo[index].data[index2].ksp = SAWs_kspVal;
             sawsInfo[index].data[index2].ksp_alternatives = SAWs_alternatives.slice();//deep copy
         }
     }
@@ -98,16 +99,18 @@ SAWsDisplayDirectory = function(sub,divEntry)
 //this function allocates memory in sawsInfo if needed to fit the new data from SAWs
 function allocateMemory(fieldsplit, endtag, index) {
 
-    if(sawsInfo[index] == undefined) {
-        sawsInfo[index]=new Object();
+    if (sawsInfo[index] == undefined) {
+        sawsInfo[index]    = new Object();
         sawsInfo[index].id = fieldsplit;
     }
-    if(sawsInfo[index].data == undefined)//allocate new mem if needed
-        sawsInfo[index].data=new Array();
+    if (sawsInfo[index].data == undefined) {//allocate new mem if needed
+        sawsInfo[index].data = new Array();
+    }
+
     //search if it has already been created
-    if(getSawsDataIndex(index,endtag) == -1) {//doesn't already exist so allocate new memory
-        var writeLoc=sawsInfo[index].data.length;
-        sawsInfo[index].data[writeLoc]=new Object();
-        sawsInfo[index].data[writeLoc].endtag=endtag;
+    if (getSawsDataIndex(index,endtag) == -1) {//doesn't already exist so allocate new memory
+        var writeLoc = sawsInfo[index].data.length;
+        sawsInfo[index].data[writeLoc]        = new Object();
+        sawsInfo[index].data[writeLoc].endtag = endtag;
     }
 }
