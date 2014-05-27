@@ -335,11 +335,11 @@ cdef class PC(Object):
         cdef PetscPCFieldSplitSchurFactType cval = ctype
         CHKERR( PCFieldSplitSetSchurFactType(self.pc, cval) )
 
-    def setFieldSplitSchurPrecondition(self, ptype, Mat pre=None):
+    def setFieldSplitSchurPreType(self, ptype, Mat pre=None):
         cdef PetscPCFieldSplitSchurPreType pval = ptype
-        cdef PetscMat pmat=NULL
+        cdef PetscMat pmat = NULL
         if pre is not None: pmat = pre.mat
-        CHKERR( PCFieldSplitSchurPrecondition(self.pc, pval, pmat) )
+        CHKERR( PCFieldSplitSetSchurPre(self.pc, pval, pmat) )
 
     # --- KSP ---
 
