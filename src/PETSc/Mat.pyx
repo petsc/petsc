@@ -573,6 +573,12 @@ cdef class Mat(Object):
         CHKERR( MPI_Comm_size(comm, &size) )
         return array_i(size+1, colrng)
 
+    def getOwnershipIS(self):
+        cdef IS rows = IS()
+        cdef IS cols = IS()
+        CHKERR( MatGetOwnershipIS(self.mat, &rows.iset, &cols.iset) )
+        return (rows, cols)
+
     def duplicate(self, copy=False):
         cdef PetscMatDuplicateOption flag = MAT_DO_NOT_COPY_VALUES
         if copy: flag = MAT_COPY_VALUES
