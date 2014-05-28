@@ -10,6 +10,7 @@ var fieldsplitKeywords = [];//temperature, omega, etc (the index is the number t
 //Use for pcmg
 var mgLevelLocation = ""; //where to put the mg level data once the highest level is determined. put in same level as coarse. this location keeps on getting overwritten every time mg_levels_n is encountered
 
+var treeDetailed;//global variable. tree.js uses this variable to determine how the tree should be displayed
 
 //  This function is run when the page is first visited
 //-----------------------------------------------------

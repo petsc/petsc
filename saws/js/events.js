@@ -102,12 +102,13 @@ function addEventHandlers() {
     $(document).on("keyup", '.fieldsplitBlocksInput', function() {//alerts user with a tooltip when an invalid input is provided
         //alert('when this is called?'); ???
         if ($(this).val().match(/[^0-9]/) || $(this).val()==0 || $(this).val()==1) {//problem is that integer only bubble still displays when nothing is entered
-	    $(this).attr("title","hello");//set a random title (this will be overwritten)
+	    $(this).attr("title","");//set a random title (this will be overwritten)
 	    $(this).tooltip();//create a tooltip from jquery UI
 	    $(this).tooltip({content: "At least 2 blocks!"});//edit displayed text
 	    $(this).tooltip("open");//manually open once
         } else {
 	    $(this).removeAttr("title");//remove title attribute
+            $(this).tooltip();//create so that we dont call destroy on nothing
 	    $(this).tooltip("destroy");
         }
     });
@@ -125,7 +126,6 @@ function addEventHandlers() {
 
     //When "Cmd Options" button is clicked ...
     //----------------------------------------
-    var treeDetailed;
     $("#cmdOptionsButton").click(function(){
 	$("#treeContainer").html("<div id='tree'> </div>");
 
@@ -141,32 +141,6 @@ function addEventHandlers() {
 
 	//build the tree
         treeDetailed = false;//tree.js uses this variable to know what information to display
-	buildTree(matInfo,matLevelForTree,treeDetailed);
-
-        //show cmdOptions to the screen
-        for (var i=0; i<matInfo.length; i++) {
-	    if (matInfo[i].id=="-1")//possible junk value created by deletion of adiv
-		continue;
-	    $("#oCmdOptions" + matInfo[i].id).empty();
-            $("#oCmdOptions" + matInfo[i].id).append("<br><br>" + matInfo[i].string);
-        }
-    });
-
-    $("#solverTreeButtonDetailed").click(function(){
-	$("#treeContainer").html("<div id='tree'> </div>");
-
-	//get the options from the drop-down lists
-        solverGetOptions(matInfo);
-
-	//get the number of levels for the tree for scaling purposes
-        var matLevelForTree=0;
-        for(var i=0; i<matInfo.length; i++)
-            if(matInfo[i].id!="-1" && matInfo[i].level>matLevelForTree)
-                matLevelForTree=matInfo[i];
-        matLevelForTree++;//appears to be 1 greater than the max
-
-	//build the tree
-        treeDetailed = true;//tree.js uses this variable
 	buildTree(matInfo,matLevelForTree,treeDetailed);
 
         //show cmdOptions to the screen

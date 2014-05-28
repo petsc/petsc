@@ -90,7 +90,7 @@ function getSpecificMatrixTex(matrix, endtag) {
 
     //case 1: non-recursive base case
     if(pc != "ksp" && pc != "bjacobi") {
-        return ksp+"/"+pc+"\\begin{cases} \\end{cases}";
+        return ksp+"/"+pc;//don't put braces at the very end
     }
 
     //case 2: pc=ksp recursive case

@@ -196,12 +196,6 @@ $(document).on('change', '.pcLists', function(){
 	        $("#pcList"+parent+myendtag).find("option[value='ilu']").attr("selected","selected");
             }
         }
-
-        // if parentDiv = bjacobi, it is a Hierarchical Krylov method, display an image for illustration
-        var parentDiv_str = parentDiv.substring(0,7);
-        if (parentDiv_str == pcValue) {
-            alert("parentDiv_str "+ parentDiv_str +" = pcValue, Hierarchical Krylov Method - display an image of the sovler!");
-        }
     }
 
     else if (pcValue == "asm") {
@@ -259,12 +253,6 @@ $(document).on('change', '.pcLists', function(){
 	    $("#pcList"+parent+myendtag).find("option[value='bjacobi']").attr("selected","selected");
 	    //bjacobi has extra dropdown menus so manually trigger once
 	    $("#pcList"+parent+myendtag).trigger("change");
-        }
-
-        // if parentDiv = ksp, it is a Nested Krylov method, display an image for illustration
-        var parentDiv_str = parentDiv.substring(0,3);
-        if (parentDiv_str == pcValue) {
-            alert('parentDiv_str '+ parentDiv_str +' = pcValue, Neste Krylov Method - display an image of the sovler!');
         }
     }
 

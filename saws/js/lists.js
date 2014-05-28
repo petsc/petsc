@@ -165,7 +165,10 @@ function populatePcList(listId,listVals,defaultVal)
     if (matInfo[matIndex].logstruc == undefined) {
         alert("Warning: matInfo["+matIndex+"].logstruc is undefined!");
         if (defaultVal == "null") {
-	    $(list).find("option[value='bjacobi']").attr("selected","selected");
+            if(matInfo[matIndex].symm)//use icc if symm
+                $(list).find("option[value='icc']").attr("selected","selected");
+            else
+	        $(list).find("option[value='bjacobi']").attr("selected","selected");
         } else {
             $(list).find("option[value=" + defaultVal +"]").attr("selected","selected");
         }
@@ -173,7 +176,10 @@ function populatePcList(listId,listVals,defaultVal)
 	$(list).find("option[value='fieldsplit']").attr("selected","selected");
     } else { //!matInfo[recursionCounter].logstruc
         if (defaultVal == "null") {
-	    $(list).find("option[value='bjacobi']").attr("selected","selected");
+            if(matInfo[matIndex].symm)//use icc if symm
+                $(list).find("option[value='icc']").attr("selected","selected");
+            else
+	        $(list).find("option[value='bjacobi']").attr("selected","selected");
         } else {
             $(list).find("option[value=" + defaultVal +"]").attr("selected","selected");
         }
