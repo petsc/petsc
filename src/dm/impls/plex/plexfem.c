@@ -1139,17 +1139,10 @@ PetscErrorCode DMPlexComputeResidualFEM_Internal(DM dm, Vec X, Vec X_t, Vec F, v
   Input Parameters:
 + dm - The mesh
 . X  - Local solution
-. X_t - Local solution time derivative, or NULL
 - user - The user context
 
   Output Parameter:
 . F  - Local output vector
-
-  Note:
-  The first member of the user context must be an FEMContext.
-
-  We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
-  like a GPU, or vectorize on a multicore machine.
 
   Level: developer
 
@@ -1161,6 +1154,34 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 
   PetscFunctionBegin;
   ierr = DMPlexComputeResidualFEM_Internal(dm, X, NULL, F, user);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexTSComputeIFunctionFEM"
+/*@
+  DMPlexTSComputeIFunctionFEM - Form the local residual F from the local input X using pointwise functions specified by the user
+
+  Input Parameters:
++ dm - The mesh
+. t - The time
+. X  - Local solution
+. X_t - Local solution time derivative, or NULL
+- user - The user context
+
+  Output Parameter:
+. F  - Local output vector
+
+  Level: developer
+
+.seealso: DMPlexComputeJacobianActionFEM()
+@*/
+PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec X, Vec X_t, Vec F, void *user)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexComputeResidualFEM_Internal(dm, X, X_t, F, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
