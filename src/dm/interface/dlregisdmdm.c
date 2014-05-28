@@ -252,6 +252,75 @@ PetscErrorCode PetscFVInitializePackage(void)
   ierr = PetscRegisterFinalize(PetscFVFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#include <petscproblem.h>
+
+static PetscBool PetscProblemPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__
+#define __FUNCT__ "PetscProblemFinalizePackage"
+/*@C
+  PetscProblemFinalizePackage - This function finalizes everything in the PetscProblem package. It is called
+  from PetscFinalize().
+
+  Level: developer
+
+.keywords: PetscProblem, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PetscProblemFinalizePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PetscProblemList);CHKERRQ(ierr);
+  PetscProblemPackageInitialized = PETSC_FALSE;
+  PetscProblemRegisterAllCalled  = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscProblemInitializePackage"
+/*@C
+  PetscProblemInitializePackage - This function initializes everything in the Problem package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscProblemCreate()
+  when using static libraries.
+
+  Level: developer
+
+.keywords: PetscProblem, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PetscProblemInitializePackage(void)
+{
+  char           logList[256];
+  char          *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (PetscProblemPackageInitialized) PetscFunctionReturn(0);
+  PetscProblemPackageInitialized = PETSC_TRUE;
+
+  /* Register Classes */
+  ierr = PetscClassIdRegister("Problem", &PETSCPROBLEM_CLASSID);CHKERRQ(ierr);
+
+  /* Register Constructors */
+  ierr = PetscProblemRegisterAll();CHKERRQ(ierr);
+  /* Register Events */
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "problem", &className);CHKERRQ(ierr);
+    if (className) {ierr = PetscInfoDeactivateClass(PETSCPROBLEM_CLASSID);CHKERRQ(ierr);}
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "problem", &className);CHKERRQ(ierr);
+    if (className) {ierr = PetscLogEventDeactivateClass(PETSCPROBLEM_CLASSID);CHKERRQ(ierr);}
+  }
+  ierr = PetscRegisterFinalize(PetscProblemFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 #undef __FUNCT__
