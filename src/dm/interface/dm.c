@@ -3062,6 +3062,7 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
 
     ierr     = PetscSectionGetDof(globalSection, p, &gdof);CHKERRQ(ierr);
     ierr     = PetscSectionGetConstraintDof(globalSection, p, &gcdof);CHKERRQ(ierr);
+    if (gcdof > gdof) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d has %d constraints > %d dof", p, gcdof, gdof);
     nleaves += gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
   }
   ierr = PetscMalloc1(nleaves, &local);CHKERRQ(ierr);

@@ -65,6 +65,7 @@ PETSC_EXTERN PetscFunctionList PetscDualSpaceList;
 PETSC_EXTERN PetscBool         PetscDualSpaceRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate(MPI_Comm, PetscDualSpace *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace, PetscDualSpace *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceSetType(PetscDualSpace, PetscDualSpaceType);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetType(PetscDualSpace, PetscDualSpaceType *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace);

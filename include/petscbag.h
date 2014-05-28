@@ -44,6 +44,7 @@ PETSC_EXTERN PetscErrorCode PetscBagRegisterIntArray(PetscBag,void*,PetscInt,con
 PETSC_EXTERN PetscErrorCode PetscBagRegisterEnum(PetscBag,void*,const char*const*,PetscEnum,const char*,const  char*);
 PETSC_EXTERN PetscErrorCode PetscBagRegisterBool(PetscBag,void*,PetscBool ,const  char*,const  char*);
 PETSC_EXTERN PetscErrorCode PetscBagRegisterBoolArray(PetscBag,void*,PetscInt,const  char*,const  char*);
+PETSC_EXTERN PetscErrorCode PetscBagGetNames(PetscBag, const char *[]);
 
 PETSC_EXTERN PetscErrorCode PetscBagSetFromOptions(PetscBag);
 PETSC_EXTERN PetscErrorCode PetscBagGetName(PetscBag, char **);
