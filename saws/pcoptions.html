@@ -39,7 +39,7 @@ nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;}
 
 <div id="outside" style="width:1290px;background-color:#90C7E3;padding:5px;" >
 
-  <div id="divPc"><h3>&nbsp;&nbsp; Server Solver Options:</h3></div>
+  <div id="divPc"><h3>&nbsp;&nbsp; Server Solver Options:<span style="float: right;"><input type=button value="Hide Server Options" id="toggleServerOptions"></span></h3></div>
 
 <br>
 <div id="matrixPic" style="width:540px;height:220px; float:left;background-color:#90C7E3;padding:5px;"></div>
@@ -47,7 +47,7 @@ nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;}
 
 <div id="parameters" style="width:940px;height:220px;background-color:#90C7E3;padding:5px;">
 <FORM NAME="parameters" id="questions" >
-<b id="currentAskText">Currently Asking for Matrix A0</b>
+<b id="currentAskText">Currently Asking for Matrix A<sub>0</sub></b>
   <TABLE cellspacing="5" >
     <colgroup>
       <col span="1" style="background-color:#90C7E3">
@@ -88,7 +88,10 @@ nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;}
     <input type=button value="Cmd Options" id="cmdOptionsButton">
     <input type=button value="Clear Tree" id="clearTree">
     <input type=button value="Clear Options" id="clearOutput">
-    View Diagram of Solver for Matrix A<input type="text" id="selectedMatrix" value="">
+    <span style="padding-left:5em">
+      View Diagram of Solver for Matrix A<input type="text" id="selectedMatrix" value="">
+      <input type=button value="Refresh" id="refresh">
+    </span>
 
     <div id="treeContainer"><h3>Your Solver Options: </h3></div>
 

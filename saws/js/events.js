@@ -33,10 +33,10 @@ function addEventHandlers() {
         if(currentAsk.length == 2 && fieldsplitKeywords.length > parseInt(currentAsk.substring(1,2))) {//fieldsplit level 1 so we specify the name of the fieldsplit for user's convenience
             var index = parseInt(currentAsk.substring(1,2));//get the second (aka last) character
             var fsText = fieldsplitKeywords[index];
-            $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + currentAsk + " Fieldsplit: "+fsText+" (Symm:"+matInfo[writeLoc].symm+" Posdef:"+matInfo[writeLoc].posdef+" Logstruc:"+matInfo[writeLoc].logstruc +")</b>");
+            $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + "<sub>" + currentAsk + "</sub>" + " Fieldsplit: "+fsText+" (Symm:"+matInfo[writeLoc].symm+" Posdef:"+matInfo[writeLoc].posdef+" Logstruc:"+matInfo[writeLoc].logstruc +")</b>");
         }
         else
-            $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + currentAsk + " (Symm:"+matInfo[writeLoc].symm+" Posdef:"+matInfo[writeLoc].posdef+" Logstruc:"+matInfo[writeLoc].logstruc +")</b>");
+            $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + "<sub>" + currentAsk + "</sub>" + " (Symm:"+matInfo[writeLoc].symm+" Posdef:"+matInfo[writeLoc].posdef+" Logstruc:"+matInfo[writeLoc].logstruc +")</b>");
 
 	$("#A" + currentAsk).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + currentAsk +"\"></select>");
 	$("#A" + currentAsk).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + currentAsk +"\"></select>");
@@ -210,6 +210,21 @@ function addEventHandlers() {
 	    $(this).removeAttr("title");//remove title attribute
             $(this).tooltip();//create so that we dont call destroy on nothing
 	    $(this).tooltip("destroy");
+        }
+    });
+
+    $("#refresh").click(function(){
+        $("#selectedMatrix").trigger("keyup");
+    });
+
+    $("#toggleServerOptions").click(function(){
+        if($("#toggleServerOptions").val() == "Hide Server Options") {
+            $("#o-1").hide();
+            $("#toggleServerOptions").val("Show Server Options");
+        }
+        else {
+            $("#o-1").show();
+            $("#toggleServerOptions").val("Hide Server Options");
         }
     });
 

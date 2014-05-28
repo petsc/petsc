@@ -294,10 +294,10 @@ $(document).on('change', '.pcLists', function(){
             if(newChild.length == 2 && fieldsplitKeywords.length > parseInt(newChild.substring(1,2))) {
                 var idx = parseInt(newChild.substring(1,2));//get the second (aka last) character
                 var fsText = fieldsplitKeywords[idx];
-                $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + newChild + " Fieldsplit: " + fsText + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
+                $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + "<sub>" + newChild + "</sub>" + " Fieldsplit: " + fsText + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
             }
             else
-                $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + newChild + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
+                $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + "<sub>" + newChild + "</sub>" + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
             $("#A" + newChild).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + newChild +"\"></select>");
 	    $("#A" + newChild).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + newChild +"\"></select>");
 
@@ -405,10 +405,10 @@ $(document).on('change', '.fieldsplitBlocks', function() {
             if(newChild.length == 2 && fieldsplitKeywords.length > parseInt(newChild.substring(1,2))) {
                 var idx = parseInt(newChild.substring(1,2));//get the second (aka last) character
                 var fsText = fieldsplitKeywords[idx];
-                $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + newChild + " Fieldsplit: " + fsText + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
+                $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + "<sub>" + newChild + "</sub>" + " Fieldsplit: " + fsText + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
             }
             else
-                $("#A" + parent+i).append("<br><b id='matrixText"+parent+i+"'>A" + parent+i + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
+                $("#A" + parent+i).append("<br><b id='matrixText"+parent+i+"'>A" + "<sub>" + parent+i + "</sub>" + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
 	    $("#A" + parent+i).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+i +"\"></select>");
 	    $("#A" + parent+i).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+i +"\"></select>");
 

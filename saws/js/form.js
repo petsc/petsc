@@ -12,7 +12,7 @@ function formSet(current)//-1 input for current means that program has finished
         return;
     }
 
-    $("#currentAskText").html("<b id='currentAskText'>Currently Asking for Matrix A"+current+"</b>");
+    $("#currentAskText").html("<b id='currentAskText'>Currently Asking for Matrix A<sub>"+current+"</sub></b>");
     $("#posdefRow").hide();
     $("#fieldsplitBlocks").hide();
     $("#fieldsplitBlocks_text").hide();
