@@ -6,6 +6,7 @@
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfetypes.h>
+#include <petscproblemtypes.h>
 
 PETSC_EXTERN PetscErrorCode PetscFEInitializePackage(void);
 
@@ -139,77 +140,13 @@ PETSC_EXTERN PetscErrorCode PetscFEGetTabulation(PetscFE, PetscInt, const PetscR
 PETSC_EXTERN PetscErrorCode PetscFERestoreTabulation(PetscFE, PetscInt, const PetscReal[], PetscReal **, PetscReal **, PetscReal **);
 PETSC_EXTERN PetscErrorCode PetscFERefine(PetscFE, PetscFE *);
 
-PETSC_EXTERN PetscErrorCode PetscFEIntegrate(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
-                                             PetscInt, PetscFE[], const PetscScalar[],
-                                             void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                             PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
-                                                     PetscInt, PetscFE[], const PetscScalar[],
-                                                     void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                     void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                     PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdResidual(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
-                                                       PetscInt, PetscFE[], const PetscScalar[],
-                                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                       PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateJacobianAction(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[],
-                                                           void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                           void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                           void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                           void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                           PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateJacobian(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[],
-                                                     PetscInt, PetscFE[], const PetscScalar[],
-                                                     void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                     void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                     void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                     void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                     PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[],
-                                                       PetscInt, PetscFE[], const PetscScalar[],
-                                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                       PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateIFunction(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[],
-                                                      PetscInt, PetscFE[], const PetscScalar[],
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                      PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdIFunction(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[],
-                                                        PetscInt, PetscFE[], const PetscScalar[],
-                                                        void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                        void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                        PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrate(PetscFE, PetscProblem, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], PetscProblem, const PetscScalar[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual(PetscFE, PetscProblem, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscProblem, const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdResidual(PetscFE, PetscProblem, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscProblem, const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateJacobian(PetscFE, PetscProblem, PetscInt, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscProblem, const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE, PetscProblem, PetscInt, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscProblem, const PetscScalar[], PetscScalar[]);
 
 PETSC_EXTERN PetscErrorCode PetscFEOpenCLSetRealType(PetscFE, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscFEOpenCLGetRealType(PetscFE, PetscDataType *);
-
-/* TODO: Should be moved inside DM */
-typedef struct {
-  PetscFE         *fe;
-  PetscFE         *feAux;
-  void (**f0Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
-  void (**f1Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */
-  void (**f0IFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
-  void (**f1IFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */
-  void (**g0Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_0 functions for each field pair */
-  void (**g1Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_1 functions for each field pair */
-  void (**g2Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_2 functions for each field pair */
-  void (**g3Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_3 functions for each field pair */
-  void (**bcFuncs)(const PetscReal[], PetscScalar *, void *); /* The boundary condition function for each field component */
-  void **bcCtxs; /* Contexts for each boundary condition function, or null if all contexts are null */
-  PetscFE         *feBd;
-  void (**f0BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
-  void (**f1BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */
-  void (**f0BdIFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
-  void (**f1BdIFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */
-  void (**g0BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The g_0 functions for each field pair */
-  void (**g1BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The g_1 functions for each field pair */
-  void (**g2BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The g_2 functions for each field pair */
-  void (**g3BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The g_3 functions for each field pair */
-} PetscFEM;
 
 #endif
