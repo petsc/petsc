@@ -69,15 +69,15 @@
       PetscEnum MAT_HYB
       PetscEnum MAT_OPTION_MAX
 
-      parameter (MAT_OPTION_MIN=-7)
-      parameter (MAT_ROW_ORIENTED=-2)
-      parameter (MAT_NEW_NONZERO_LOCATIONS=-1)
+      parameter (MAT_OPTION_MIN=-5)
+      parameter (MAT_NEW_NONZERO_LOCATION_ERR=-4)
+      parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=-3)
+      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=-2)
+      parameter (MAT_ROW_ORIENTED=-1)
       parameter (MAT_SYMMETRIC=1)
       parameter (MAT_STRUCTURALLY_SYMMETRIC=2)
       parameter (MAT_NEW_DIAGONALS=3)
       parameter (MAT_IGNORE_OFF_PROC_ENTRIES=4)
-      parameter (MAT_NEW_NONZERO_LOCATION_ERR=-7)
-      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=-3)
       parameter (MAT_USE_HASH_TABLE=5)
       parameter (MAT_KEEP_NONZERO_PATTERN=6)
       parameter (MAT_IGNORE_ZERO_ENTRIES=7)
@@ -88,11 +88,11 @@
       parameter (MAT_IGNORE_LOWER_TRIANGULAR=12)
       parameter (MAT_ERROR_LOWER_TRIANGULAR=13)
       parameter (MAT_GETROW_UPPERTRIANGULAR=14)
-      parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=-4)
       parameter (MAT_SPD=15)
-      parameter (MAT_NO_OFF_PROC_ENTRIES=-5)
-      parameter (MAT_NO_OFF_PROC_ZERO_ROWS=-6)
-      parameter (MAT_OPTION_MAX=16)
+      parameter (MAT_NO_OFF_PROC_ZERO_ROWS=16)
+      parameter (MAT_NO_OFF_PROC_ENTRIES=17)
+      parameter (MAT_NEW_NONZERO_LOCATIONS=18)
+      parameter (MAT_OPTION_MAX=19)
 !
 !  MatFactorShiftType
 !
@@ -114,15 +114,15 @@
       parameter (MAT_DO_NOT_COPY_VALUES=0,MAT_COPY_VALUES=1)
       parameter (MAT_SHARE_NONZERO_PATTERN=2)
 !
-!  Flags for PCSetOperators()
+!  Flags for MatCopy, MatAXPY
 !
       PetscEnum DIFFERENT_NONZERO_PATTERN
       PetscEnum SUBSET_NONZERO_PATTERN
       PetscEnum SAME_NONZERO_PATTERN
-      PetscEnum SAME_PRECONDITIONER
 
       parameter (DIFFERENT_NONZERO_PATTERN = 0,SUBSET_NONZERO_PATTERN=1)
-      parameter (SAME_NONZERO_PATTERN = 2,SAME_PRECONDITIONER = 3)
+      parameter (SAME_NONZERO_PATTERN = 2)
+
 #if !(PETSC_USE_FORTRAN_DATATYPES_)
 #include "finclude/petscmatinfosize.h"
 #endif

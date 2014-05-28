@@ -403,31 +403,37 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
   n = mlmat->invec_leng;
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
 
-  nz_max = PetscMax(1,mlmat->max_nz_per_row);
+  /* create global row numbering for a ML_Operator */
+  PetscStackCall("ML_build_global_numbering",ML_build_global_numbering(mlmat,&gordering,"rows"));
+
+  nz_max = PetscMax(1,mlmat->max_nz_per_row) + 1;
   ierr = PetscMalloc2(nz_max,&aa,nz_max,&aj);CHKERRQ(ierr);
-  if (reuse) A = *newmat;
-  else {
+  if (reuse) {
+    A = *newmat;
+  } else {
     PetscInt *nnzA,*nnzB,*nnz;
+    PetscInt rstart;
     ierr = MatCreate(mlmat->comm->USR_comm,&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
     /* keep track of block size for A matrices */
     ierr = MatSetBlockSize (A,mlmat->num_PDEs);CHKERRQ(ierr);
     ierr = PetscMalloc3(m,&nnzA,m,&nnzB,m,&nnz);CHKERRQ(ierr);
+    ierr = MPI_Scan(&m,&rstart,1,MPIU_INT,MPIU_SUM,mlmat->comm->USR_comm);CHKERRQ(ierr);
+    rstart -= m;
 
     for (i=0; i<m; i++) {
+      row = gordering[i] - rstart;
       PetscStackCall("ML_Operator_Getrow",ML_Operator_Getrow(mlmat,1,&i,nz_max,aj,aa,&nnz[i]));
-      nnzA[i] = 0;
+      nnzA[row] = 0;
       for (j=0; j<nnz[i]; j++) {
-        if (aj[j] < m) nnzA[i]++;
+        if (aj[j] < m) nnzA[row]++;
       }
-      nnzB[i] = nnz[i] - nnzA[i];
+      nnzB[row] = nnz[i] - nnzA[row];
     }
     ierr = MatMPIAIJSetPreallocation(A,0,nnzA,0,nnzB);CHKERRQ(ierr);
     ierr = PetscFree3(nnzA,nnzB,nnz);
   }
-  /* create global row numbering for a ML_Operator */
-  PetscStackCall("ML_build_global_numbering",ML_build_global_numbering(mlmat,&gordering,"rows"));
   for (i=0; i<m; i++) {
     PetscInt ncols;
     row = gordering[i];
@@ -436,7 +442,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
     for (j = 0; j < ncols; j++) aj[j] = gordering[aj[j]];
     ierr = MatSetValues(A,1,&row,ncols,aj,aa,INSERT_VALUES);CHKERRQ(ierr);
   }
-  PetscStackCall("ML_Operator_Getrow",ML_free(gordering));
+  PetscStackCall("ML_free",ML_free(gordering));
   ierr    = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr    = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *newmat = A;
@@ -649,10 +655,10 @@ PetscErrorCode PCSetUp_ML(PC pc)
         if (level > 0) {
           ierr = PCMGSetResidual(pc,level,PCMGResidualDefault,gridctx[level].A);CHKERRQ(ierr);
         }
-        ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A);CHKERRQ(ierr);
       }
       ierr = PCMGSetResidual(pc,fine_level,PCMGResidualDefault,gridctx[fine_level].A);CHKERRQ(ierr);
-      ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A);CHKERRQ(ierr);
 
       ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
       PetscFunctionReturn(0);
@@ -950,10 +956,10 @@ PetscErrorCode PCSetUp_ML(PC pc)
     if (level > 0) {
       ierr = PCMGSetResidual(pc,level,PCMGResidualDefault,gridctx[level].A);CHKERRQ(ierr);
     }
-    ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A);CHKERRQ(ierr);
   }
   ierr = PCMGSetResidual(pc,fine_level,PCMGResidualDefault,gridctx[fine_level].A);CHKERRQ(ierr);
-  ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A);CHKERRQ(ierr);
 
   /* put coordinate info in levels */
   if (pc_ml->dim) {
@@ -1147,13 +1153,13 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
        and the restriction/interpolation operators wrapped as PETSc shell matrices.
 
    Options Database Key:
-   Multigrid options(inherited)
+   Multigrid options(inherited):
 +  -pc_mg_cycles <1>: 1 for V cycle, 2 for W-cycle (MGSetCycles)
 .  -pc_mg_smoothup <1>: Number of post-smoothing steps (MGSetNumberSmoothUp)
 .  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (MGSetNumberSmoothDown)
-   -pc_mg_type <multiplicative>: (one of) additive multiplicative full kascade
+-  -pc_mg_type <multiplicative>: (one of) additive multiplicative full kascade
    ML options:
-.  -pc_ml_PrintLevel <0>: Print level (ML_Set_PrintLevel)
++  -pc_ml_PrintLevel <0>: Print level (ML_Set_PrintLevel)
 .  -pc_ml_maxNlevels <10>: Maximum number of levels (None)
 .  -pc_ml_maxCoarseSize <1>: Maximum coarsest mesh size (ML_Aggregate_Set_MaxCoarseSize)
 .  -pc_ml_CoarsenScheme <Uncoupled>: (one of) Uncoupled Coupled MIS METIS

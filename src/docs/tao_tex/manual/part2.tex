@@ -283,8 +283,7 @@ is undefined at that point or an error occurred.
 Some optimization routines also require a Hessian matrix from the user.
 The routine that evaluates the Hessian should have the form 
 \begin{verbatim}
-   PetscErrorCode EvaluateHessian(Tao,Vec,Mat*,Mat*,MatStructure*,
-                     void*);
+   PetscErrorCode EvaluateHessian(Tao,Vec,Mat,Mat,void*);
 \end{verbatim}
 where the first argument of this routine is a TAO solver object.  The
 second
@@ -303,8 +302,8 @@ One can set the Hessian evaluation routine by calling the \sindex{Hessian}
 \findex{TaoSetHessianRoutine()}
 \begin{verbatim}
    TaoSetHessianRoutine(Tao,Mat H, Mat Hpre,
-                     PetscErrorCode (*)(Tao,Vec,Mat*,Mat*,
-                     MatStructure*,void*), void *);
+                     PetscErrorCode (*)(Tao,Vec,Mat,Mat,
+                     void*), void *);
 \end{verbatim}
 routine. 
 The first argument is the TAO Solver object. The second and third arguments
@@ -329,8 +328,7 @@ These routines are
 and 
 \findex{TaoDefaultComputeHessian()}
 \begin{verbatim}
-   TaoDefaultComputeHessian(Tao, Vec, Mat*, Mat*, 
-                     MatStructure*, void*);
+   TaoDefaultComputeHessian(Tao, Vec, Mat*, Mat*,void*);
 \end{verbatim}
 respectively. They can be set by using {\tt
 TaoSetGradientRoutine()} and 
@@ -342,8 +340,7 @@ coloring of the matrix is known.  If the application programmer creates
 a PETSc {\tt MatFDColoring} object, it can be applied to the finite-difference
 approximation by setting the Hessian evaluation routine to
 \begin{verbatim}
-   TaoDefaultComputeHessianColor(Tao, Vec, Mat*, Mat*, 
-                     MatStructure*, void* );
+   TaoDefaultComputeHessianColor(Tao, Vec, Mat*, Mat*,void* );
 \end{verbatim}
 and using the {\tt MatFDColoring} object as
 the last ({\tt void *}) argument to {\tt TaoSetHessianRoutine()}.
@@ -600,8 +597,7 @@ column contains the partial derivatives of $c(x)$ with respect to one
 variable.  The evaluation of the Jacobian of $c$ should be performed 
 by calling the 
 \begin{verbatim}
-   PetscErrorCode JacobianState(Tao,Vec,Mat*,Mat*,Mat*,
-                     MatStructure*, void*);
+   PetscErrorCode JacobianState(Tao,Vec,Mat,Mat,Mat,void*);
    PetscErrorCode JacobianDesign(Tao,Vec,Mat*,void*);
 \end{verbatim}
 routines. 
@@ -621,8 +617,8 @@ registered
 with TAO by using the 
 \begin{verbatim}
    TaoSetJacobianStateRoutine(Tao,Mat,Mat,Mat,
-                     PetscErrorCode (*)(Tao,Vec,Mat*,Mat*,
-                     MatStructure*,void*), void*);
+                     PetscErrorCode (*)(Tao,Vec,Mat,Mat,
+                     void*), void*);
    TaoSetJacobianDesignRoutine(Tao,Mat,
                      PetscErrorCode (*)(Tao,Vec,Mat*,void*), 
                      void*);
@@ -671,14 +667,13 @@ routine.
 The computation of the Jacobian of the separable objective routine 
 should be in a routine that looks like
 \begin{verbatim}
-   PetscErrorCode EvaluateJacobian(Tao,Vec,Mat*,Mat*,MatStructure*,
-                     void*);
+   PetscErrorCode EvaluateJacobian(Tao,Vec,Mat,Mat,void*);
 \end{verbatim}
 This function can be registered with TAO by using the function
 \begin{verbatim}
    TaoSetJacobianRoutine(Tao,Mat J, Mat Jpre,
-                     PetscErrorCode (*)(Tao,Vec,Mat*,Mat*,
-                     MatStructure*,void*), void *);
+                     PetscErrorCode (*)(Tao,Vec,Mat,Mat,
+                     void*), void *);
 \end{verbatim}
 The first argument is the TAO solver object, the second and third arguments
 are the Mat object where the Jacobian will be stored and the Mat object
@@ -730,8 +725,7 @@ to one variable.
 The evaluation of the Jacobian of $C$ should be performed in a routine
 of the form
 \begin{verbatim}
-   PetscErrorCode EvaluateJacobian(Tao,Vec,Mat*,Mat*,MatStructure*,
-                     void*);
+   PetscErrorCode EvaluateJacobian(Tao,Vec,Mat,Mat,void*);
 \end{verbatim}
 \noindent
 In this function, the first argument is the TAO Solver object and the 
@@ -749,8 +743,8 @@ This routine should be specified to TAO by using the
 \findex{TaoAppSetJacobianRoutine()}
 \begin{verbatim}
    TaoSetJacobianRoutine(Tao,Mat J, Mat Jpre,
-                     PetscErrorCode (*)(Tao,Vec,Mat*,Mat*, 
-                     MatStructure*,void*), void*);
+                     PetscErrorCode (*)(Tao,Vec,Mat,Mat, 
+                     void*), void*);
 \end{verbatim}
 \noindent
 command.

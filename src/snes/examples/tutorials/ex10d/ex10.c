@@ -75,7 +75,7 @@ typedef struct {
 /*
   User-defined routines
 */
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 
@@ -393,7 +393,7 @@ int main(int argc,char **argv)
   /*
     The following routine allows us to set the matrix values in local ordering
   */
-  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,vertices,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs,nvertices,vertices,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(Jac,isl2g,isl2g);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -414,9 +414,9 @@ int main(int argc,char **argv)
   } else {  /* Use matfdcoloring */
     ISColoring   iscoloring;
     MatColoring  mc;
-    MatStructure flag;
+
     /* Get the data structure of Jac */
-    ierr = FormJacobian(snes,x,&Jac,&Jac,&flag,&user);CHKERRQ(ierr);
+    ierr = FormJacobian(snes,x,Jac,Jac,&user);CHKERRQ(ierr);
     /* Create coloring context */
     ierr = MatColoringCreate(Jac,&mc);CHKERRQ(ierr);
     ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
@@ -655,10 +655,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 .  flag - flag indicating matrix structure
 
 */
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
 {
   AppCtx      *user = (AppCtx*)ptr;
-  Mat         jac   = *B;
   PetscInt    i,j,Nvlocal,col[50],ierr;
   PetscScalar alpha,lambda,value[50];
   Vec         localX = user->localX;
@@ -722,25 +721,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all nonlinear iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
-  */
-  *flag = SAME_NONZERO_PATTERN;
 
   /*
      Tell the matrix we will never add a new nonzero location to the

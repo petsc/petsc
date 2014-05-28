@@ -31,7 +31,7 @@
 4 56 28.000000
 4 57 28.100000
 *** Matrix A and vector x:
-Mat Object: 1 MPI processes
+Mat Object: 7 MPI processes
   type: mpibaij
 row 0: (0, 4)  (2, -1)  (28, -1) 
 row 1: (1, 4)  (3, -1)  (29, -1) 

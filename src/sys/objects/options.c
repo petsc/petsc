@@ -329,10 +329,10 @@ PetscErrorCode  PetscOptionsValidKey(const char in_str[],PetscBool  *key)
   if (!in_str) PetscFunctionReturn(0);
   if (in_str[0] != '-') PetscFunctionReturn(0);
   if (in_str[1] == '-') in_str++;
-  if (!isalpha(in_str[1])) PetscFunctionReturn(0);
+  if (!isalpha((int)(in_str[1]))) PetscFunctionReturn(0);
   ierr = PetscStrncmp(in_str+1,"inf",3,&inf);CHKERRQ(ierr);
   ierr = PetscStrncmp(in_str+1,"INF",3,&INF);CHKERRQ(ierr);
-  if ((inf || INF) && !(in_str[4] == '_' || isalnum(in_str[4]))) PetscFunctionReturn(0);
+  if ((inf || INF) && !(in_str[4] == '_' || isalnum((int)(in_str[4])))) PetscFunctionReturn(0);
   *key = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -2347,8 +2347,7 @@ PetscErrorCode  PetscOptionsCreate(void)
 .  -options_monitor_cancel - cancel all options database monitors
 
    Notes:
-   To see all options, run your program with the -help option or consult
-   the <A href="../../docs/manual.pdf">users manual</A>..
+   To see all options, run your program with the -help option or consult Users-Manual: sec_gettingstarted
 
    Level: intermediate
 
@@ -2496,7 +2495,7 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectViewFromOptions"
-/*
+/*@C
   PetscObjectViewFromOptions - Processes command line options to determine if/how a PetscObject is to be viewed. 
 
   Collective on PetscObject
@@ -2508,7 +2507,7 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
 
   Level: intermediate
 
-*/
+@*/
 PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,const char prefix[],const char optionname[])
 {
   PetscErrorCode    ierr;

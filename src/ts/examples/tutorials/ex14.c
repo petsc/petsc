@@ -1343,7 +1343,7 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
 
 #undef __FUNCT__
 #define __FUNCT__ "THIJacobian"
-static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   THI            thi = (THI)ctx;
@@ -1365,13 +1365,13 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = THIFixGhosts(thi,da3,da2,X3,X2);CHKERRQ(ierr);
   ierr = DMCompositeScatter(pack,Xdot,NULL,Xdot2);CHKERRQ(ierr);
 
-  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+  ierr = MatZeroEntries(B);CHKERRQ(ierr);
 
   ierr = DMCompositeGetLocalISs(pack,&isloc);CHKERRQ(ierr);
-  ierr = MatGetLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
-  ierr = MatGetLocalSubMatrix(*B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
-  ierr = MatGetLocalSubMatrix(*B,isloc[1],isloc[0],&B21);CHKERRQ(ierr);
-  ierr = MatGetLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(B,isloc[1],isloc[0],&B21);CHKERRQ(ierr);
+  ierr = MatGetLocalSubMatrix(B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
 
   ierr = DMDAVecGetArray(da3,X3,&x3);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
@@ -1389,10 +1389,10 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = DMDAVecRestoreArray(da2,X2,&x2);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da2,Xdot2,&xdot2);CHKERRQ(ierr);
 
-  ierr = MatRestoreLocalSubMatrix(*B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
-  ierr = MatRestoreLocalSubMatrix(*B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
-  ierr = MatRestoreLocalSubMatrix(*B,isloc[1],isloc[0],&B21);CHKERRQ(ierr);
-  ierr = MatRestoreLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(B,isloc[0],isloc[0],&B11);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(B,isloc[1],isloc[0],&B21);CHKERRQ(ierr);
+  ierr = MatRestoreLocalSubMatrix(B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
   ierr = ISDestroy(&isloc[0]);CHKERRQ(ierr);
   ierr = ISDestroy(&isloc[1]);CHKERRQ(ierr);
   ierr = PetscFree(isloc);CHKERRQ(ierr);
@@ -1400,13 +1400,12 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = DMCompositeRestoreLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(pack,0,&Xdot2);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *mstr = SAME_NONZERO_PATTERN;
   if (thi->verbose) {ierr = THIMatrixStatistics(thi,*B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

@@ -85,8 +85,15 @@ int main(int argc,char **args)
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
       /* test mumps options */
-      PetscInt icntl_7 = 5;
-      ierr = MatMumpsSetIcntl(F,7,icntl_7);CHKERRQ(ierr);
+      PetscInt    icntl;   
+      PetscReal   cntl; 
+     
+      icntl = 2;        /* sequential matrix ordering */
+      ierr = MatMumpsSetIcntl(F,7,icntl);CHKERRQ(ierr);
+
+      cntl = 1.e-6; /* threshhold for row pivot detection */
+      ierr = MatMumpsSetIcntl(F,24,1);CHKERRQ(ierr);
+      ierr = MatMumpsSetCntl(F,3,cntl);CHKERRQ(ierr);
     }
     break;
 #endif
@@ -95,9 +102,10 @@ int main(int argc,char **args)
     ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   }
 
-  info.fill = 5.0;
+  ierr           = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+  info.fill      = 5.0;
   info.shifttype = (PetscReal) MAT_SHIFT_NONE;
-  ierr      = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
+  ierr           = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 2; nfact++) {
     if (!rank) printf(" %d-the LU numfactorization \n",nfact);

@@ -8,6 +8,7 @@ is the system of interest).  See the 'Performance Hints' chapter of the\n\
 users manual for a discussion of preloading.  Input parameters include\n\
   -f0 <input_file> : first file to load (small system)\n\
   -f1 <input_file> : second file to load (larger system)\n\n\
+  -nearnulldim <0> : number of vectors in the near-null space immediately following matrix\n\n\
   -trans  : solve transpose system instead\n\n";
 /*
   This code can be used to test PETSc interface to other packages.\n\
@@ -47,7 +48,7 @@ int main(int argc,char **args)
   PetscBool      table     =PETSC_FALSE,flg,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
   PetscBool      outputSoln=PETSC_FALSE;
   PetscErrorCode ierr;
-  PetscInt       its,num_numfac,m,n,M;
+  PetscInt       its,num_numfac,m,n,M,nearnulldim = 0;
   PetscReal      norm;
   PetscBool      preload=PETSC_TRUE,isSymmetric,cknorm=PETSC_FALSE,initialguessfile = PETSC_FALSE;
   PetscMPIInt    rank;
@@ -60,6 +61,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,"-initialguess",&initialguess,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-output_solution",&outputSoln,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,"-initialguessfilename",initialguessfilename,PETSC_MAX_PATH_LEN,&initialguessfile);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-nearnulldim",&nearnulldim,NULL);CHKERRQ(ierr);
 
   /*
      Determine files from which we read the two linear systems
@@ -106,6 +108,21 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  if (nearnulldim) {
+    MatNullSpace nullsp;
+    Vec *nullvecs;
+    PetscInt i;
+    ierr = PetscMalloc(nearnulldim*sizeof(nullvecs[0]),&nullvecs);CHKERRQ(ierr);
+    for (i=0; i<nearnulldim; i++) {
+      ierr = VecCreate(PETSC_COMM_WORLD,&nullvecs[i]);CHKERRQ(ierr);
+      ierr = VecLoad(nullvecs[i],fd);CHKERRQ(ierr);
+    }
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_FALSE,nearnulldim,nullvecs,&nullsp);CHKERRQ(ierr);
+    ierr = MatSetNearNullSpace(A,nullsp);CHKERRQ(ierr);
+    for (i=0; i<nearnulldim; i++) {ierr = VecDestroy(&nullvecs[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(nullvecs);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+  }
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetString(NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -280,10 +297,10 @@ int main(int argc,char **args)
     if (lsqr) {
       Mat BtB;
       ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,4,&BtB);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,BtB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,BtB);CHKERRQ(ierr);
       ierr = MatDestroy(&BtB);CHKERRQ(ierr);
     } else {
-      ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     }
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 

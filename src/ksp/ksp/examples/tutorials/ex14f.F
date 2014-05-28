@@ -229,7 +229,7 @@
 !      matrix.
 !    - Then solve the Newton system.
 
-         call KSPSetOperators(ksp,J,B,SAME_NONZERO_PATTERN,ierr)
+         call KSPSetOperators(ksp,J,B,ierr)
          call KSPSolve(ksp,F,Y,ierr)
 
 !  Compute updated iterate

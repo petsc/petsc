@@ -1,8 +1,8 @@
 #ifndef __TAODM_IMPL_H
 #define __TAODM_IMPL_H
-#include <petscdm.h>
+
 #include <petscdmda.h>
-#include <petsctaodm.h>
+#include <petsctao.h>
 
 struct _TaoDMOps {
   PetscErrorCode (*computeobjectiveandgradientlocal)(DMDALocalInfo*,PetscReal **, PetscReal *, PetscReal **, void*);
@@ -12,7 +12,7 @@ struct _TaoDMOps {
   PetscErrorCode (*computeobjectiveandgradient)(Tao,Vec,PetscReal*,Vec,void*);
   PetscErrorCode (*computeobjective)(Tao,Vec,PetscReal*,void*);
   PetscErrorCode (*computegradient)(Tao,Vec,Vec,void*);
-  PetscErrorCode (*computehessian)(Tao,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computehessian)(Tao,Vec,Mat,Mat,MatStructure*,void*);
   PetscErrorCode (*computebounds)(TaoDM, Vec, Vec);
   PetscErrorCode (*computeinitialguess)(TaoDM, Vec);
 };

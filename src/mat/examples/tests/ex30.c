@@ -106,15 +106,6 @@ int main(int argc,char **args)
   }
   ierr = MatLUFactorNumeric(A,C,&info);CHKERRQ(ierr);
 
-  if (MATDSPL) {
-    printf("factored matrix:\n");
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = MatView(A,viewer2);CHKERRQ(ierr);
-  }
-
   /* Solve A*y = b, then check the error */
   ierr = MatSolve(A,b,y);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);

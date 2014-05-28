@@ -1335,7 +1335,7 @@ can also install additional packages that are used by the FASTMath packages."""
 
         reply = indexbox('Which version of BLAS and LAPACK do you wish to use?',title,['Have installer locate it', 'Install it',"I'll indicate its location"])
         if reply == 1:
-             if not '--with-fc=0' in args: args.append('--download-f-blas-lapack')
+             if not '--with-fc=0' in args: args.append('--download-fblaslapack')
              else: args.append('--download-f2cblaslapack')
         elif reply == 2:
            reply = diropenbox("Directory of BLAS and LAPACK libraries","Directory of BLAS and LAPACK libraries")

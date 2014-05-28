@@ -720,6 +720,7 @@ PetscErrorCode  DMShellCreate(MPI_Comm comm,DM *dm)
   PetscValidPointer(dm,2);
   ierr = DMCreate(comm,dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm,DMSHELL);CHKERRQ(ierr);
+  ierr = DMSetUp(*dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -183,7 +183,7 @@ PetscErrorCode DMCreateMatrix_Composite(DM dm,Mat *J)
 {
   PetscErrorCode         ierr;
   PetscBool              usenest;
-  ISLocalToGlobalMapping ltogmap,ltogmapb;
+  ISLocalToGlobalMapping ltogmap;
 
   PetscFunctionBegin;
   ierr = DMSetUp(dm);CHKERRQ(ierr);
@@ -195,8 +195,6 @@ PetscErrorCode DMCreateMatrix_Composite(DM dm,Mat *J)
   }
 
   ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMappingBlock(dm,&ltogmapb);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*J,ltogmap,ltogmap);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMappingBlock(*J,ltogmapb,ltogmapb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

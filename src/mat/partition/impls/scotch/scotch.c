@@ -282,7 +282,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
     else vwgttab[j] = 1.0;
   }
   for (i=0; i<nparts; i++) {
-    deltval = PetscAbsReal(vwgttab[i]-floor(vwgttab[i]+0.5));
+    deltval = PetscAbsReal(vwgttab[i]-PetscFloorReal(vwgttab[i]+0.5));
     if (deltval>0.01) {
       for (j=0; j<nparts; j++) vwgttab[j] /= deltval;
     }

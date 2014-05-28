@@ -7,9 +7,54 @@
 #endif
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateExodusFromFile"
+/*@C
+  DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file.
+
+  Collective on comm
+
+  Input Parameters:
++ comm  - The MPI communicator
+. filename - The name of the ExodusII file
+- interpolate - Create faces and edges in the mesh
+
+  Output Parameter:
+. dm  - The DM object representing the mesh
+
+  Level: beginner
+
+.keywords: mesh,ExodusII
+.seealso: DMPLEX, DMCreate(), DMPlexCreateExodus()
+@*/
+PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+{
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+#if defined(PETSC_HAVE_EXODUSII)
+  int   CPU_word_size = 0, IO_word_size = 0, exoid = -1;
+  float version;
+#endif
+
+  PetscFunctionBegin;
+  PetscValidCharPointer(filename, 2);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_EXODUSII)
+  if (!rank) {
+    exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
+    if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ex_open(\"%s\",...) did not return a valid file ID", filename);
+  }
+  ierr = DMPlexCreateExodus(comm, exoid, interpolate, dm);CHKERRQ(ierr);
+  if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
+#else
+  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateExodus"
 /*@
-  DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file.
+  DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file ID.
 
   Collective on comm
 
@@ -118,7 +163,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   if (interpolate) {
-    DM idm;
+    DM idm = NULL;
 
     ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     /* Maintain Cell Sets label */

@@ -115,6 +115,7 @@ J*/
 #define MATSOLVERSBSTRM       "sbstrm"
 #define MATSOLVERELEMENTAL    "elemental"
 #define MATSOLVERCLIQUE       "clique"
+#define MATSOLVERKLU          "klu"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
@@ -188,15 +189,15 @@ PETSC_EXTERN PetscFunctionList MatPartitioningList;
 PETSC_EXTERN PetscFunctionList MatCoarsenList;
 
 /*E
-    MatStructure - Indicates if the matrix has the same nonzero structure
+    MatStructure - Indicates if two matrices have the same nonzero structure
 
     Level: beginner
 
    Any additions/changes here MUST also be made in include/finclude/petscmat.h
 
-.seealso: MatCopy(), KSPSetOperators(), PCSetOperators()
+.seealso: MatCopy(), MatAXPY()
 E*/
-typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATTERN,SAME_PRECONDITIONER} MatStructure;
+typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATTERN} MatStructure;
 
 PETSC_EXTERN PetscErrorCode MatCreateSeqDense(MPI_Comm,PetscInt,PetscInt,PetscScalar[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateDense(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar[],Mat*);
@@ -252,6 +253,7 @@ PETSC_EXTERN PetscErrorCode MatPythonSetType(Mat,const char[]);
 
 PETSC_EXTERN PetscErrorCode MatSetUp(Mat);
 PETSC_EXTERN PetscErrorCode MatDestroy(Mat*);
+PETSC_EXTERN PetscErrorCode MatGetNonzeroState(Mat,PetscObjectState*);
 
 PETSC_EXTERN PetscErrorCode MatConjugate(Mat);
 PETSC_EXTERN PetscErrorCode MatRealPart(Mat);
@@ -317,14 +319,11 @@ PETSC_EXTERN PetscErrorCode MatAssembled(Mat,PetscBool *);
 
 .seealso: MatSetOption()
 E*/
-typedef enum {MAT_OPTION_MIN = -8,
-              MAT_NEW_NONZERO_LOCATION_ERR = -7,
-              MAT_NO_OFF_PROC_ZERO_ROWS = -6,
-              MAT_NO_OFF_PROC_ENTRIES = -5,
-              MAT_UNUSED_NONZERO_LOCATION_ERR = -4,
-              MAT_NEW_NONZERO_ALLOCATION_ERR = -3,
-              MAT_ROW_ORIENTED = -2,
-              MAT_NEW_NONZERO_LOCATIONS = -1,
+typedef enum {MAT_OPTION_MIN = -5,
+              MAT_NEW_NONZERO_LOCATION_ERR = -4,
+              MAT_UNUSED_NONZERO_LOCATION_ERR = -3,
+              MAT_NEW_NONZERO_ALLOCATION_ERR = -2,
+              MAT_ROW_ORIENTED = -1,
               MAT_SYMMETRIC = 1,
               MAT_STRUCTURALLY_SYMMETRIC = 2,
               MAT_NEW_DIAGONALS = 3,
@@ -340,7 +339,10 @@ typedef enum {MAT_OPTION_MIN = -8,
               MAT_ERROR_LOWER_TRIANGULAR = 13,
               MAT_GETROW_UPPERTRIANGULAR = 14,
               MAT_SPD = 15,
-              MAT_OPTION_MAX = 16} MatOption;
+              MAT_NO_OFF_PROC_ZERO_ROWS = 16,
+              MAT_NO_OFF_PROC_ENTRIES = 17,
+              MAT_NEW_NONZERO_LOCATIONS = 18,
+              MAT_OPTION_MAX = 19} MatOption;
 
 PETSC_EXTERN const char *MatOptions[];
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool );
@@ -363,6 +365,7 @@ PETSC_EXTERN PetscErrorCode MatGetBlockSize(Mat,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetBlockSizes(Mat,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSizes(Mat,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode MatSetBlockSizesFromMats(Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatSetNThreads(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetNThreads(Mat,PetscInt*);
 
@@ -534,9 +537,8 @@ PETSC_EXTERN PetscErrorCode MatScale(Mat,PetscScalar);
 PETSC_EXTERN PetscErrorCode MatShift(Mat,PetscScalar);
 
 PETSC_EXTERN PetscErrorCode MatSetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
-PETSC_EXTERN PetscErrorCode MatSetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode MatGetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*);
-PETSC_EXTERN PetscErrorCode MatGetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*);
+PETSC_EXTERN PetscErrorCode MatGetLayouts(Mat,PetscLayout*,PetscLayout*);
 PETSC_EXTERN PetscErrorCode MatZeroRowsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsLocalIS(Mat,IS,PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsColumnsLocal(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
@@ -604,7 +606,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
@@ -614,8 +616,8 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
 
   Concepts: preallocation^Matrix
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateSetLocal(),
-          MatPreallocateInitializeSymmetric(), MatPreallocateSymmetricSetLocal()
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
+          MatPreallocateInitializeSymmetric(), MatPreallocateSymmetricSetLocalBlock()
 M*/
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
@@ -648,14 +650,14 @@ M*/
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
   Concepts: preallocation^Matrix
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateInitialize(),
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocal()
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateInitialize(),
+          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock()
 M*/
 #define MatPreallocateSetLocal(rmap,nrows,rows,cmap,ncols,cols,dnz,onz) 0; \
 {\
@@ -668,12 +670,54 @@ M*/
 }
 
 /*MC
-   MatPreallocateSymmetricSetLocal - Indicates the locations (rows and columns) in the matrix where nonzeros will be
+   MatPreallocateSetLocalBlock - Indicates the locations (rows and columns) in the matrix where nonzeros will be
        inserted using a local number of the rows and columns
 
    Synopsis:
    #include <petscmat.h>
-   PetscErrorCode MatPreallocateSymmetricSetLocal(ISLocalToGlobalMappping map,PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
+   PetscErrorCode MatPreallocateSetLocalBlock(ISLocalToGlobalMappping map,PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
+
+   Not Collective
+
+   Input Parameters:
++  map - the row mapping from local numbering to global numbering
+.  nrows - the number of rows indicated
+.  rows - the indices of the rows
+.  cmap - the column mapping from local to global numbering
+.  ncols - the number of columns in the matrix
+.  cols - the columns indicated
+.  dnz - the array that will be passed to the matrix preallocation routines
+-  ozn - the other array passed to the matrix preallocation routines
+
+   Level: intermediate
+
+   Notes:
+    See Users-Manual: ch_performance for more details.
+
+   Do not malloc or free dnz and onz, that is handled internally by these routines
+
+  Concepts: preallocation^Matrix
+
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateInitialize(),
+          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock()
+M*/
+#define MatPreallocateSetLocalBlock(rmap,nrows,rows,cmap,ncols,cols,dnz,onz) 0; \
+{\
+  PetscInt __l;\
+  _4_ierr = ISLocalToGlobalMappingApplyBlock(rmap,nrows,rows,rows);CHKERRQ(_4_ierr);\
+  _4_ierr = ISLocalToGlobalMappingApplyBlock(cmap,ncols,cols,cols);CHKERRQ(_4_ierr);\
+  for (__l=0;__l<nrows;__l++) {\
+    _4_ierr = MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(_4_ierr);\
+  }\
+}
+
+/*MC
+   MatPreallocateSymmetricSetLocalBlock - Indicates the locations (rows and columns) in the matrix where nonzeros will be
+       inserted using a local number of the rows and columns
+
+   Synopsis:
+   #include <petscmat.h>
+   PetscErrorCode MatPreallocateSymmetricSetLocalBlock(ISLocalToGlobalMappping map,PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
 
@@ -689,25 +733,24 @@ M*/
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
   Concepts: preallocation^Matrix
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateInitialize(),
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocal(), MatPreallocateSetLocal()
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateInitialize(),
+          MatPreallocateInitialize(),  MatPreallocateSetLocal()
 M*/
-#define MatPreallocateSymmetricSetLocal(map,nrows,rows,ncols,cols,dnz,onz) 0;\
+#define MatPreallocateSymmetricSetLocalBlock(map,nrows,rows,ncols,cols,dnz,onz) 0;\
 {\
   PetscInt __l;\
-  _4_ierr = ISLocalToGlobalMappingApply(map,nrows,rows,rows);CHKERRQ(_4_ierr);\
-  _4_ierr = ISLocalToGlobalMappingApply(map,ncols,cols,cols);CHKERRQ(_4_ierr);\
+  _4_ierr = ISLocalToGlobalMappingApplyBlock(map,nrows,rows,rows);CHKERRQ(_4_ierr);\
+  _4_ierr = ISLocalToGlobalMappingApplyBlock(map,ncols,cols,cols);CHKERRQ(_4_ierr);\
   for (__l=0;__l<nrows;__l++) {\
-    _4_ierr = MatPreallocateSymmetricSet((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(_4_ierr);\
+    _4_ierr = MatPreallocateSymmetricSetBlock((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(_4_ierr);\
   }\
 }
-
 /*MC
    MatPreallocateSet - Indicates the locations (rows and columns) in the matrix where nonzeros will be
        inserted using a local number of the rows and columns
@@ -730,7 +773,7 @@ M*/
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
@@ -738,8 +781,8 @@ M*/
 
   Concepts: preallocation^Matrix
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateInitialize(),
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocal(), MatPreallocateSetLocal()
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateInitialize(),
+          MatPreallocateInitialize(), MatPreallocateSetLocal()
 M*/
 #define MatPreallocateSet(row,nc,cols,dnz,onz) 0;\
 { PetscInt __i; \
@@ -752,12 +795,12 @@ M*/
 }
 
 /*MC
-   MatPreallocateSymmetricSet - Indicates the locations (rows and columns) in the matrix where nonzeros will be
+   MatPreallocateSymmetricSetBlock - Indicates the locations (rows and columns) in the matrix where nonzeros will be
        inserted using a local number of the rows and columns
 
    Synopsis:
    #include <petscmat.h>
-   PetscErrorCode MatPreallocateSymmetricSet(PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
+   PetscErrorCode MatPreallocateSymmetricSetBlock(PetscInt nrows, PetscInt *rows,PetscInt ncols, PetscInt *cols,PetscInt *dnz, PetscInt *onz)
 
    Not Collective
 
@@ -772,7 +815,7 @@ M*/
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
@@ -780,10 +823,10 @@ M*/
 
   Concepts: preallocation^Matrix
 
-.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateInitialize(),
-          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocal(), MatPreallocateSetLocal()
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(),  MatPreallocateInitialize(),
+          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocalBlock(), MatPreallocateSetLocal()
 M*/
-#define MatPreallocateSymmetricSet(row,nc,cols,dnz,onz) 0;\
+#define MatPreallocateSymmetricSetBlock(row,nc,cols,dnz,onz) 0;\
 { PetscInt __i; \
   for (__i=0; __i<nc; __i++) {\
     if (cols[__i] >= __end) onz[row - __rstart]++; \
@@ -811,7 +854,7 @@ M*/
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
@@ -819,8 +862,8 @@ M*/
 
   Concepts: preallocation^Matrix
 
-.seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateSetLocal(),
-          MatPreallocateSymmetricSetLocal()
+.seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
+          MatPreallocateSymmetricSetLocalBlock()
 M*/
 #define MatPreallocateLocation(A,row,ncols,cols,dnz,onz) 0;if (A) {ierr = MatSetValues(A,1,&row,ncols,cols,NULL,INSERT_VALUES);CHKERRQ(ierr);} else {ierr =  MatPreallocateSet(row,ncols,cols,dnz,onz);CHKERRQ(ierr);}
 
@@ -842,7 +885,7 @@ M*/
    Level: intermediate
 
    Notes:
-    See the <A href="../../docs/manual.pdf#nameddest=ch_performance">Hints for Performance Improvment</A> chapter in the users manual for more details.
+    See Users-Manual: ch_performance for more details.
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
@@ -850,8 +893,8 @@ M*/
 
   Concepts: preallocation^Matrix
 
-.seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateSetLocal(),
-          MatPreallocateSymmetricSetLocal()
+.seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSetBlock(), MatPreallocateSetLocal(),
+          MatPreallocateSymmetricSetLocalBlock()
 M*/
 #define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree2(dnz,onz);CHKERRQ(_4_ierr);}
 
@@ -1036,13 +1079,31 @@ J*/
 
 typedef const  char*           MatColoringType;
 #define MATCOLORINGJP      "jp"
-#define MATCOLORINGMIS     "mis"
 #define MATCOLORINGNATURAL "natural"
 #define MATCOLORINGSL      "sl"
 #define MATCOLORINGLF      "lf"
 #define MATCOLORINGID      "id"
+#define MATCOLORINGGREEDY  "greedy"
+
+/*E
+   MatColoringWeightType - Type of weight scheme
+
+    Not Collective
+
++   MAT_COLORING_RANDOM  - Random weights
+.   MAT_COLORING_LEXICAL - Lexical weighting based upon global numbering.
+-   MAT_COLORING_LF      - Last-first weighting.
+
+    Level: intermediate
+
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+.seealso: MatCUSPSetFormat(), MatCUSPFormatOperation
+E*/
+typedef enum {MAT_COLORING_WEIGHT_RANDOM,MAT_COLORING_WEIGHT_LEXICAL,MAT_COLORING_WEIGHT_LF,MAT_COLORING_WEIGHT_SL} MatColoringWeightType;
 
 PETSC_EXTERN PetscErrorCode MatColoringCreate(Mat,MatColoring*);
+PETSC_EXTERN PetscErrorCode MatColoringGetDegrees(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatColoringDestroy(MatColoring*);
 PETSC_EXTERN PetscErrorCode MatColoringView(MatColoring,PetscViewer);
 PETSC_EXTERN PetscErrorCode MatColoringSetType(MatColoring,MatColoringType);
@@ -1056,6 +1117,9 @@ PETSC_EXTERN PetscErrorCode MatColoringRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],PetscErrorCode(*)(MatColoring));
 PETSC_EXTERN PetscBool MatColoringRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*);
+PETSC_EXTERN PetscErrorCode MatColoringSetWeightType(MatColoring,MatColoringWeightType);
+PETSC_EXTERN PetscErrorCode MatColoringSetWeights(MatColoring,PetscReal*,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatColoringCreateWeights(MatColoring,PetscReal **,PetscInt **lperm);
 
 /*S
      MatFDColoring - Object for computing a sparse Jacobian via finite differences
@@ -1076,7 +1140,7 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetFunction(MatFDColoring,PetscErrorCod
 PETSC_EXTERN PetscErrorCode MatFDColoringGetFunction(MatFDColoring,PetscErrorCode (**)(void),void**);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetParameters(MatFDColoring,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring);
-PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
+PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat,MatFDColoring,Vec,void *);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetF(MatFDColoring,Vec);
 PETSC_EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,PetscInt*[]);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetUp(Mat,ISColoring,MatFDColoring);
@@ -1532,7 +1596,14 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutCSRMatrix(PetscViewer, Pets
 */
 #ifdef PETSC_HAVE_MUMPS
 PETSC_EXTERN PetscErrorCode MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode MatMumpsGetIcntl(Mat,PetscInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatMumpsSetCntl(Mat,PetscInt,PetscReal);
+PETSC_EXTERN PetscErrorCode MatMumpsGetCntl(Mat,PetscInt,PetscReal*);
+
+PETSC_EXTERN PetscErrorCode MatMumpsGetInfo(Mat,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetInfog(Mat,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetRinfo(Mat,PetscInt,PetscReal*);
+PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat,PetscInt,PetscReal*);
 #endif
 
 /*

@@ -1,4 +1,3 @@
-#requirespackage   'PETSC_HAVE_NOTWORKING'
 
 ALL: lib
 

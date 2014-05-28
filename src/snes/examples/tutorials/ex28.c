@@ -230,7 +230,7 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian_All"
-static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *mstr,void *ctx)
+static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   User           user = (User)ctx;
   DM             dau,dak;
@@ -250,7 +250,7 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
     ierr = DMGlobalToLocalEnd  (dau,X,INSERT_VALUES,Uloc);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dau,Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dak,user->Kloc,&k);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_U(user,&infou,u,k,*B);CHKERRQ(ierr);
+    ierr = FormJacobianLocal_U(user,&infou,u,k,B);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dau,Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dak,user->Kloc,&k);CHKERRQ(ierr);
     break;
@@ -259,7 +259,7 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
     ierr = DMGlobalToLocalEnd  (dak,X,INSERT_VALUES,Kloc);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dau,user->Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dak,Kloc,&k);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_K(user,&infok,u,k,*B);CHKERRQ(ierr);
+    ierr = FormJacobianLocal_K(user,&infok,u,k,B);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dau,user->Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dak,Kloc,&k);CHKERRQ(ierr);
     break;
@@ -270,18 +270,18 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
     ierr = DMDAVecGetArray(dau,Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dak,Kloc,&k);CHKERRQ(ierr);
     ierr = DMCompositeGetLocalISs(user->pack,&is);CHKERRQ(ierr);
-    ierr = MatGetLocalSubMatrix(*B,is[0],is[0],&Buu);CHKERRQ(ierr);
-    ierr = MatGetLocalSubMatrix(*B,is[0],is[1],&Buk);CHKERRQ(ierr);
-    ierr = MatGetLocalSubMatrix(*B,is[1],is[0],&Bku);CHKERRQ(ierr);
-    ierr = MatGetLocalSubMatrix(*B,is[1],is[1],&Bkk);CHKERRQ(ierr);
+    ierr = MatGetLocalSubMatrix(B,is[0],is[0],&Buu);CHKERRQ(ierr);
+    ierr = MatGetLocalSubMatrix(B,is[0],is[1],&Buk);CHKERRQ(ierr);
+    ierr = MatGetLocalSubMatrix(B,is[1],is[0],&Bku);CHKERRQ(ierr);
+    ierr = MatGetLocalSubMatrix(B,is[1],is[1],&Bkk);CHKERRQ(ierr);
     ierr = FormJacobianLocal_U(user,&infou,u,k,Buu);CHKERRQ(ierr);
     ierr = FormJacobianLocal_UK(user,&infou,&infok,u,k,Buk);CHKERRQ(ierr);
     ierr = FormJacobianLocal_KU(user,&infou,&infok,u,k,Bku);CHKERRQ(ierr);
     ierr = FormJacobianLocal_K(user,&infok,u,k,Bkk);CHKERRQ(ierr);
-    ierr = MatRestoreLocalSubMatrix(*B,is[0],is[0],&Buu);CHKERRQ(ierr);
-    ierr = MatRestoreLocalSubMatrix(*B,is[0],is[1],&Buk);CHKERRQ(ierr);
-    ierr = MatRestoreLocalSubMatrix(*B,is[1],is[0],&Bku);CHKERRQ(ierr);
-    ierr = MatRestoreLocalSubMatrix(*B,is[1],is[1],&Bkk);CHKERRQ(ierr);
+    ierr = MatRestoreLocalSubMatrix(B,is[0],is[0],&Buu);CHKERRQ(ierr);
+    ierr = MatRestoreLocalSubMatrix(B,is[0],is[1],&Buk);CHKERRQ(ierr);
+    ierr = MatRestoreLocalSubMatrix(B,is[1],is[0],&Bku);CHKERRQ(ierr);
+    ierr = MatRestoreLocalSubMatrix(B,is[1],is[1],&Bkk);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dau,Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dak,Kloc,&k);CHKERRQ(ierr);
 
@@ -291,13 +291,12 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
   } break;
   }
   ierr = DMCompositeRestoreLocalVectors(user->pack,&Uloc,&Kloc);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *B) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd  (*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (J != B) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd  (J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *mstr = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 

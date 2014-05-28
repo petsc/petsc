@@ -69,14 +69,13 @@ typedef struct {
   PetscInt  mx,my;             /* discretization in x,y directions */
   Vec       localX,localF;    /* ghosted local vector */
   DM        da;                /* distributed array data structure */
-  PetscInt  rank;              /* processor rank */
 } AppCtx;
 
 /*
    User-defined routines
 */
 extern PetscErrorCode ComputeFunction(AppCtx*,Vec,Vec),FormInitialGuess(AppCtx*,Vec);
-extern PetscErrorCode ComputeJacobian(AppCtx*,Vec,Mat,MatStructure*);
+extern PetscErrorCode ComputeJacobian(AppCtx*,Vec,Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -103,12 +102,10 @@ int main(int argc,char **argv)
   PetscInt     max_functions  = 50;   /* maximum number of function evaluations */
   PetscInt     lin_its;               /* number of linear solver iterations for each step */
   PetscInt     i;                     /* nonlinear solve iteration number */
-  MatStructure mat_flag;              /* flag indicating structure of preconditioner matrix */
   PetscBool    no_output = PETSC_FALSE;             /* flag indicating whether to surpress output */
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm,&user.rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-no_output",&no_output,NULL);CHKERRQ(ierr);
 
   /*
@@ -213,10 +210,9 @@ int main(int argc,char **argv)
   for (i=0; i<max_nonlin_its; i++) {
 
     /*
-        Compute the Jacobian matrix.  See the comments in this routine for
-        important information about setting the flag mat_flag.
+        Compute the Jacobian matrix.  
      */
-    ierr = ComputeJacobian(&user,X,J,&mat_flag);CHKERRQ(ierr);
+    ierr = ComputeJacobian(&user,X,J);CHKERRQ(ierr);
 
     /*
         Solve J Y = F, where J is the Jacobian matrix.
@@ -225,7 +221,7 @@ int main(int argc,char **argv)
             matrix.
           - Then solve the Newton system.
      */
-    ierr = KSPSetOperators(ksp,J,J,mat_flag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,J,J);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,F,Y);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lin_its);CHKERRQ(ierr);
 
@@ -340,7 +336,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
         x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*PetscSqrtScalar(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
+      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
 
@@ -455,7 +451,7 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */
-PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
+PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac)
 {
   PetscErrorCode ierr;
   Vec            localX = user->localX;   /* local vector */
@@ -536,23 +532,5 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all nonlinear iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
-  */
-  *flag = SAME_NONZERO_PATTERN;
   return 0;
 }

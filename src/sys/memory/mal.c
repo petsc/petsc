@@ -150,3 +150,21 @@ PetscErrorCode  PetscMallocClear(void)
   petscsetmallocvisited = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscMemoryTrace"
+PetscErrorCode PetscMemoryTrace(const char label[])
+{
+  PetscErrorCode        ierr;
+  PetscLogDouble        mem,mal;
+  static PetscLogDouble oldmem = 0,oldmal = 0;
+
+  PetscFunctionBegin;
+  ierr = PetscMemoryGetCurrentUsage(&mem);CHKERRQ(ierr);
+  ierr = PetscMallocGetCurrentUsage(&mal);CHKERRQ(ierr);
+
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s High water  %8.3f MB increase %8.3f MB Current %8.3f MB increase %8.3f MB\n",label,mem*1e-6,(mem - oldmem)*1e-6,mal*1e-6,(mal - oldmal)*1e-6);CHKERRQ(ierr);
+  oldmem = mem;
+  oldmal = mal;
+  PetscFunctionReturn(0);
+}

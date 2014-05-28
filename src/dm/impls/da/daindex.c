@@ -45,7 +45,7 @@
         value = da_array(i_da + 1)
 .ve
 
-   See the <A href="../../docs/manual.pdf#nameddest=ch_fortran">Fortran chapter</A> of the users manual for details.
+   See Users-Manual: ch_fortran for details.
 
 .keywords: distributed array, get, global, indices, local-to-global
 
@@ -60,7 +60,10 @@ PetscErrorCode  DMDAGetGlobalIndices(DM da,PetscInt *n,const PetscInt *idx[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (n) {
+    PetscInt bs;
     ierr = ISLocalToGlobalMappingGetSize(da->ltogmap,n);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockSize(da->ltogmap,&bs);CHKERRQ(ierr);
+    *n = (*n)*bs;
   }
   if (idx) {
     ierr = ISLocalToGlobalMappingGetIndices(da->ltogmap,idx);CHKERRQ(ierr);
@@ -151,7 +154,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
         value = da_array(i_da + 1)
 .ve
 
-   See the <A href="../../docs/manual.pdf#nameddest=ch_fortran">Fortran chapter</A> of the users manual for details.
+   See Users-Manual: ch_fortran for details.
 
 .keywords: distributed array, get, global, indices, local-to-global
 

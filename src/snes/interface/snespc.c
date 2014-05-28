@@ -4,9 +4,9 @@
 
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESApplyPC"
+#define __FUNCT__ "SNESApplyNPC"
 /*@
-   SNESApplyPC - Calls SNESSolve() on preconditioner for the SNES
+   SNESApplyNPC - Calls SNESSolve() on preconditioner for the SNES
 
    Collective on SNES
 
@@ -19,16 +19,16 @@
 .  y - function vector, as set by SNESSetFunction()
 
    Notes:
-   SNESComputeFunction() should be called on x before SNESApplyPC() is called, as it is
+   SNESComputeFunction() should be called on x before SNESApplyNPC() is called, as it is
    with SNESComuteJacobian().
 
    Level: developer
 
 .keywords: SNES, nonlinear, compute, function
 
-.seealso: SNESGetPC(),SNESSetPC(),SNESComputeFunction()
+.seealso: SNESGetNPC(),SNESSetNPC(),SNESComputeFunction()
 @*/
-PetscErrorCode  SNESApplyPC(SNES snes,Vec x,Vec f,Vec y)
+PetscErrorCode  SNESApplyNPC(SNES snes,Vec x,Vec f,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -54,15 +54,16 @@ PetscErrorCode  SNESApplyPC(SNES snes,Vec x,Vec f,Vec y)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESComputeFunctionDefaultPC"
-PetscErrorCode SNESComputeFunctionDefaultPC(SNES snes,Vec X,Vec F) {
+#define __FUNCT__ "SNESComputeFunctionDefaultNPC"
+PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes,Vec X,Vec F)
+{
 /* This is to be used as an argument to SNESMF -- NOT as a "function" */
   SNESConvergedReason reason;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   if (snes->pc) {
-    ierr = SNESApplyPC(snes,X,NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
@@ -70,13 +71,13 @@ PetscErrorCode SNESComputeFunctionDefaultPC(SNES snes,Vec X,Vec F) {
   } else {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
   }
-PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESGetPCFunction"
+#define __FUNCT__ "SNESGetNPCFunction"
 /*@
-   SNESGetPCFunction - Gets the function from a preconditioner after SNESSolve() has been called.
+   SNESGetNPCFunction - Gets the function from a preconditioner after SNESSolve() has been called.
 
    Collective on SNES
 
@@ -91,9 +92,9 @@ PetscFunctionReturn(0);
 
 .keywords: SNES, nonlinear, function
 
-.seealso: SNESGetPC(),SNESSetPC(),SNESComputeFunction(),SNESApplyPC(),SNESSolve()
+.seealso: SNESGetNPC(),SNESSetNPC(),SNESComputeFunction(),SNESApplyNPC(),SNESSolve()
 @*/
-PetscErrorCode SNESGetPCFunction(SNES snes,Vec F,PetscReal *fnorm)
+PetscErrorCode SNESGetNPCFunction(SNES snes,Vec F,PetscReal *fnorm)
 {
   PetscErrorCode   ierr;
   PCSide           npcside;
@@ -103,7 +104,7 @@ PetscErrorCode SNESGetPCFunction(SNES snes,Vec F,PetscReal *fnorm)
 
   PetscFunctionBegin;
   if (snes->pc) {
-    ierr = SNESGetPCSide(snes->pc,&npcside);CHKERRQ(ierr);
+    ierr = SNESGetNPCSide(snes->pc,&npcside);CHKERRQ(ierr);
     ierr = SNESGetFunctionType(snes->pc,&functype);CHKERRQ(ierr);
     ierr = SNESGetNormSchedule(snes->pc,&normschedule);CHKERRQ(ierr);
 
@@ -111,7 +112,7 @@ PetscErrorCode SNESGetPCFunction(SNES snes,Vec F,PetscReal *fnorm)
     if (normschedule != SNES_NORM_NONE && normschedule != SNES_NORM_INITIAL_ONLY && (npcside == PC_RIGHT || functype == SNES_FUNCTION_UNPRECONDITIONED)) {
       ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
       if (FPC) {
-        if (fnorm) {ierr = SNESGetFunctionNorm(snes->pc,fnorm);CHKERRQ(ierr);}
+        if (fnorm) {ierr = VecNorm(FPC,NORM_2,fnorm);CHKERRQ(ierr);}
         ierr = VecCopy(FPC,F);CHKERRQ(ierr);
       } else {
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Preconditioner has no function");

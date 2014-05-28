@@ -1,6 +1,6 @@
 
 /*
-   Provides an interface to the CHOLMOD 1.7.1 sparse solver
+   Provides an interface to the CHOLMOD sparse solver available through SuiteSparse version 4.2.1
 
    When build with PETSC_USE_64BIT_INDICES this will use UF_Long as the
    integer type in UMFPACK, otherwise it will use int. This means
@@ -363,7 +363,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqsbaij_cholmod(Mat A,const MatSolverP
   MATSOLVERCHOLMOD = "cholmod" - A matrix type providing direct solvers (Cholesky) for sequential matrices
   via the external package CHOLMOD.
 
-  ./configure --download-cholmod to install PETSc to use CHOLMOD
+  ./configure --download-suitesparse to install PETSc to use CHOLMOD
 
   Consult CHOLMOD documentation for more information about the Common parameters
   which correspond to the options database keys below.

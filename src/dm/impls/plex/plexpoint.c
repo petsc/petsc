@@ -14,7 +14,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm,PetscInt p
 #else
   {
     PetscSection s = dm->defaultSection;
-    *offset = s->atlasOff[point - s->atlasLayout.pStart];
+    *offset = s->atlasOff[point - s->pStart];
   }
 #endif
   PetscFunctionReturn(0);
@@ -38,9 +38,9 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm,PetscInt 
   {
     PetscSection s = dm->defaultGlobalSection;
     PetscInt     dof,cdof;
-    *offset = s->atlasOff[point - s->atlasLayout.pStart];
-    dof     = s->atlasDof[point - s->atlasLayout.pStart];
-    cdof    = s->bc ? s->bc->atlasDof[point - s->bc->atlasLayout.pStart] : 0;
+    *offset = s->atlasOff[point - s->pStart];
+    dof     = s->atlasDof[point - s->pStart];
+    cdof    = s->bc ? s->bc->atlasDof[point - s->bc->pStart] : 0;
     if (dof-cdof <= 0) *offset = -1;
   }
 #endif

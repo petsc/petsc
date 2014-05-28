@@ -95,8 +95,8 @@ static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscRe
   ierr = VecNorm(asls->ff,NORM_2,&asls->merit);CHKERRQ(ierr);
   *fcn = 0.5*asls->merit*asls->merit;
 
-  ierr = TaoComputeJacobian(tao, tao->solution, &tao->jacobian, &tao->jacobian_pre, &asls->matflag);CHKERRQ(ierr);
-  ierr = D_Fischer(tao->jacobian, tao->solution, tao->constraints,tao->XL, tao->XU, asls->t1, asls->t2,asls->da, asls->db);CHKERRQ(ierr);
+  ierr = TaoComputeJacobian(tao,tao->solution,tao->jacobian,tao->jacobian_pre);CHKERRQ(ierr);
+  ierr = MatDFischer(tao->jacobian, tao->solution, tao->constraints,tao->XL, tao->XU, asls->t1, asls->t2,asls->da, asls->db);CHKERRQ(ierr);
   ierr = VecPointwiseMult(asls->t1, asls->ff, asls->db);CHKERRQ(ierr);
   ierr = MatMultTranspose(tao->jacobian,asls->t1,G);CHKERRQ(ierr);
   ierr = VecPointwiseMult(asls->t1, asls->ff, asls->da);CHKERRQ(ierr);
@@ -247,7 +247,7 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     /* Calculate the reduced direction.  (Really negative of Newton
        direction.  Therefore, rest of the code uses -d.) */
     ierr = KSPReset(tao->ksp);
-    ierr = KSPSetOperators(tao->ksp, asls->J_sub, asls->Jpre_sub,  asls->matflag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(tao->ksp, asls->J_sub, asls->Jpre_sub);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, asls->r2, asls->dxfree);CHKERRQ(ierr);
 
     /* Add the direction in the free variables back into the real direction. */

@@ -26,7 +26,7 @@ PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse reuse,Mat *new
 
   ierr = MatCreate(PetscObjectComm((PetscObject)mat),&M);CHKERRQ(ierr);
   ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(M,mat->rmap->bs,mat->cmap->bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSizesFromMats(M,mat,mat);CHKERRQ(ierr);
   ierr = MatSetType(M,newtype);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
 
@@ -44,8 +44,8 @@ PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse reuse,Mat *new
     ierr = MatMPIDenseSetPreallocation(M,NULL);CHKERRQ(ierr);
   } else {
     /* Preallocation block sizes.  (S)BAIJ matrices will have one index per block. */
-    prbs = (isseqbaij || ismpibaij || isseqsbaij || ismpisbaij) ? M->rmap->bs : 1;
-    pcbs = (isseqbaij || ismpibaij || isseqsbaij || ismpisbaij) ? M->cmap->bs : 1;
+    prbs = (isseqbaij || ismpibaij || isseqsbaij || ismpisbaij) ? PetscAbs(M->rmap->bs) : 1;
+    pcbs = (isseqbaij || ismpibaij || isseqsbaij || ismpisbaij) ? PetscAbs(M->cmap->bs) : 1;
 
     ierr = PetscMalloc2(lm/prbs,&dnz,lm/prbs,&onz);CHKERRQ(ierr);
     ierr = MatGetOwnershipRangeColumn(mat,&cstart,&cend);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse reuse,Mat *new
       }
       ierr = MatRestoreRow(mat,rstart+i,&nz,&cwork,NULL);CHKERRQ(ierr);
     }
-    ierr = MatXAIJSetPreallocation(M,M->rmap->bs,dnz,onz,dnz,onz);CHKERRQ(ierr);
+    ierr = MatXAIJSetPreallocation(M,PETSC_DECIDE,dnz,onz,dnz,onz);CHKERRQ(ierr);
     ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
   }
 

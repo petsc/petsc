@@ -34,7 +34,7 @@ PetscErrorCode  KSPSTCGSetRadius(KSP ksp, PetscReal radius)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (radius < 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
   PetscValidLogicalCollectiveReal(ksp,radius,2);
-  ierr = PetscUseMethod(ksp,"KSPSTCGSetRadius_C",(KSP,PetscReal),(ksp,radius));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ksp,"KSPSTCGSetRadius_C",(KSP,PetscReal),(ksp,radius));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -97,7 +97,6 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 #else
   KSP_STCG       *cg = (KSP_STCG*)ksp->data;
   PetscErrorCode ierr;
-  MatStructure   pflag;
   Mat            Qmat, Mmat;
   Vec            r, z, p, d;
   PC             pc;
@@ -127,7 +126,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   d  = ksp->vec_sol;
   pc = ksp->pc;
 
-  ierr = PCGetOperators(pc, &Qmat, &Mmat, &pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc, &Qmat, &Mmat);CHKERRQ(ierr);
 
   ierr       = VecGetSize(d, &max_cg_its);CHKERRQ(ierr);
   max_cg_its = PetscMin(max_cg_its, ksp->max_it);
@@ -526,7 +525,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /*************************************************************************/
 
     beta = rz / rzm1;
-    if (PetscAbs(beta) <= 0.0) {
+    if (PetscAbsScalar(beta) <= 0.0) {
       /***********************************************************************/
       /* Conjugate gradients has broken down.                                */
       /***********************************************************************/

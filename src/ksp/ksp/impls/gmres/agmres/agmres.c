@@ -129,7 +129,7 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   PC             pc;
   PetscInt       m;
   PetscScalar    *Rshift, *Ishift;
-  PetscBool      flg;
+
 
   PetscFunctionBegin;
   /* Perform one cycle of classical GMRES (with the Arnoldi process) to get the Hessenberg matrix
@@ -137,8 +137,8 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
    linear system have been set in this ksp */
   ierr = KSPCreate(PetscObjectComm((PetscObject)ksp), &kspgmres);CHKERRQ(ierr);
   if (!ksp->pc) { ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr); }
-  ierr = PCGetOperators(ksp->pc, &Amat, &Pmat, &flag);CHKERRQ(ierr);
-  ierr = KSPSetOperators(kspgmres, Amat, Pmat, flag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc, &Amat, &Pmat);CHKERRQ(ierr);
+  ierr = KSPSetOperators(kspgmres, Amat, Pmat);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(kspgmres);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL, "-ksp_view", &flg);CHKERRQ(ierr);
   if (flag) { ierr = PetscOptionsClearValue("-ksp_view");CHKERRQ(ierr); }
@@ -606,7 +606,7 @@ PetscErrorCode KSPSolve_AGMRES(KSP ksp)
     /* compute the eigenvectors to augment the subspace : use an adaptive strategy */
     res = ksp->rnorm;
     if (!ksp->reason && agmres->neig > 0) {
-      test = agmres->max_k * log(ksp->rtol/res) / log(res/res_old); /* estimate the remaining number of steps */
+      test = agmres->max_k * PetscLogReal(ksp->rtol/res) / PetscLogReal(res/res_old); /* estimate the remaining number of steps */
       if ((test > agmres->smv*(ksp->max_it-ksp->its)) || agmres->force) {
         if (!agmres->force && ((test > agmres->bgv*(ksp->max_it-ksp->its)) && ((agmres->r + 1) < agmres->max_neig))) {
           agmres->neig += 1; /* Augment the number of eigenvalues to deflate if the convergence is too slow */

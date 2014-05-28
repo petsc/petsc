@@ -151,7 +151,6 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   PetscBLASInt *e_iblk, *e_splt, *e_iwrk;
 
   PetscErrorCode ierr;
-  MatStructure   pflag;
   Mat            Qmat, Mmat;
   Vec            r, z, p, d;
   PC             pc;
@@ -192,7 +191,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   d  = ksp->vec_sol;
   pc = ksp->pc;
 
-  ierr = PCGetOperators(pc, &Qmat, &Mmat, &pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc, &Qmat, &Mmat);CHKERRQ(ierr);
 
   ierr            = VecGetSize(d, &max_cg_its);CHKERRQ(ierr);
   max_cg_its      = PetscMin(max_cg_its, ksp->max_it);
@@ -419,7 +418,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   /* kappa is zero.                                                          */
   /***************************************************************************/
 
-  if (fabs(kappa) <= 0.0) {
+  if (PetscAbsReal(kappa) <= 0.0) {
     /*************************************************************************/
     /* The curvature is zero.  In this case, we must stop and use follow     */
     /* the direction of negative curvature since the Lanczos matrix is zero. */
@@ -652,7 +651,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     beta = rz / rzm1;
-    if (fabs(beta) <= 0.0) {
+    if (PetscAbsReal(beta) <= 0.0) {
       /***********************************************************************/
       /* Conjugate gradients has broken down.                                */
       /***********************************************************************/
@@ -704,7 +703,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ++l_size;
-    cg->offd[t_size] = PetscSqrtReal(beta) / fabs(alpha);
+    cg->offd[t_size] = PetscSqrtReal(beta) / PetscAbsReal(alpha);
     cg->diag[t_size] = kappa / rz + beta / alpha;
     ++t_size;
 
@@ -713,7 +712,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /* when kappa is zero.                                                   */
     /*************************************************************************/
 
-    if (fabs(kappa) <= 0.0) {
+    if (PetscAbsReal(kappa) <= 0.0) {
       /***********************************************************************/
       /* The method breaks down; move along the direction as if the matrix   */
       /* were indefinite.                                                    */
@@ -777,7 +776,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /* when kappa is zero.                                                   */
     /*************************************************************************/
 
-    if (fabs(kappa) <= 0.0) {
+    if (PetscAbsReal(kappa) <= 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: lanczos breakdown: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
       break;
@@ -843,7 +842,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     beta = rz / rzm1;
-    if (fabs(beta) <= 0.0) {
+    if (PetscAbsReal(beta) <= 0.0) {
       /***********************************************************************/
       /* Conjugate gradients has broken down.                                */
       /***********************************************************************/
@@ -873,7 +872,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ++l_size;
-    cg->offd[t_size] = PetscSqrtReal(beta) / fabs(alpha);
+    cg->offd[t_size] = PetscSqrtReal(beta) / PetscAbsReal(alpha);
     cg->diag[t_size] = kappa / rz + beta / alpha;
     ++t_size;
   }
@@ -1120,7 +1119,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /* Check for convergence.                                              */
       /***********************************************************************/
 
-      if (fabs(norm_t - cg->radius) <= cg->newton_tol * cg->radius) break;
+      if (PetscAbsReal(norm_t - cg->radius) <= cg->newton_tol * cg->radius) break;
 
       /***********************************************************************/
       /* Compute the update.                                                 */
@@ -1213,7 +1212,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /* Check for convergence.                                                */
     /*************************************************************************/
 
-    if (fabs(norm_t - cg->radius) > cg->newton_tol * cg->radius) {
+    if (PetscAbsReal(norm_t - cg->radius) > cg->newton_tol * cg->radius) {
       /***********************************************************************/
       /* Newton method failed to converge in iteration limit.                */
       /***********************************************************************/

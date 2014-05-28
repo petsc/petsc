@@ -1088,7 +1088,7 @@ PetscErrorCode  VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const Pe
    Concepts: vector^setting values blocked with local numbering
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesBlocked(),
-           VecSetLocalToGlobalMappingBlock()
+           VecSetLocalToGlobalMapping()
 @*/
 PetscErrorCode  VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora)
 {
@@ -1100,13 +1100,12 @@ PetscErrorCode  VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],c
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
-  if (!x->map->bmapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with VecSetLocalToGlobalMappingBlock()");
   if (ni > 128) {
     ierr = PetscMalloc1(ni,&lix);CHKERRQ(ierr);
   }
 
   ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(x->map->bmapping,ni,(PetscInt*)ix,lix);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyBlock(x->map->mapping,ni,(PetscInt*)ix,lix);CHKERRQ(ierr);
   ierr = (*x->ops->setvaluesblocked)(x,ni,lix,y,iora);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   if (ni > 128) {
@@ -1310,17 +1309,19 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
     ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
     if (gcontiguous) {          /* We can do a no-copy implementation */
-      PetscInt    n,N;
+      PetscInt    n,N,bs;
       PetscScalar *x;
       PetscMPIInt size;
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
       ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
+      if (n%bs) bs = 1;
       ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
       if (size == 1) {
-        ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),1,n,x+start,&Z);CHKERRQ(ierr);
+        ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),bs,n,x+start,&Z);CHKERRQ(ierr);
       } else {
         ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-        ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),1,n,N,x+start,&Z);CHKERRQ(ierr);
+        ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,x+start,&Z);CHKERRQ(ierr);
       }
       ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
     } else {                    /* Have to create a scatter and do a copy */

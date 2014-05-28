@@ -23,6 +23,7 @@
 #define dmplexrestoremeet_              DMPLEXRESTOREMEET
 #define dmplexcreatesection_            DMPLEXCREATESECTION
 #define dmplexcomputecellgeometry_      DMPLEXCOMPUTECELLGEOMETRY
+#define dmplexcomputecellgeometryfvm_   DMPLEXCOMPUTECELLGEOMETRYFVM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dmplexgetcone_                  dmplexgetcone
 #define dmplexrestorecone_              dmplexrestorecone
@@ -44,6 +45,7 @@
 #define dmplexrestoremeet_              dmplexrestoremeet
 #define dmplexcreatesection_            dmplexcreatesection
 #define dmplexcomputecellgeometry_      dmplexcomputecellgeometry
+#define dmplexcomputecellgeometryfvm_   dmplexcomputecellgeometryfvm
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -117,7 +119,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexvecgetclosure_(DM *dm, PetscSection *secti
   PetscInt     n;
 
   CHKFORTRANNULLOBJECT(section);
-  *ierr = DMPlexVecGetClosure(*dm, *section, *x, *point, &n, &v);if (*ierr) return;
+  *ierr = DMPlexVecGetClosure(*dm, section ? *section : NULL, *x, *point, &n, &v);if (*ierr) return;
   *ierr = F90Array1dCreate((void*) v, PETSC_SCALAR, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
@@ -127,7 +129,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexvecrestoreclosure_(DM *dm, PetscSection *s
 
   CHKFORTRANNULLOBJECT(section);
   *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void **) &array PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = DMPlexVecRestoreClosure(*dm, *section, *v, *point, NULL, &array);if (*ierr) return;
+  *ierr = DMPlexVecRestoreClosure(*dm, section ? *section : NULL, *v, *point, NULL, &array);if (*ierr) return;
   *ierr = F90Array1dDestroy(ptr, PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 
@@ -137,7 +139,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexvecsetclosure_(DM *dm, PetscSection *secti
 
   CHKFORTRANNULLOBJECT(section);
   *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &array PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = DMPlexVecSetClosure(*dm, *section, *v, *point, array, *mode);
+  *ierr = DMPlexVecSetClosure(*dm, section ? *section : NULL, *v, *point, array, *mode);
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmplexmatsetclosure_(DM *dm, PetscSection *section, PetscSection *globalSection, Mat *A, PetscInt *point, F90Array1d *ptr, InsertMode *mode, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -147,7 +149,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexmatsetclosure_(DM *dm, PetscSection *secti
   CHKFORTRANNULLOBJECT(section);
   CHKFORTRANNULLOBJECT(globalSection);
   *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &array PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = DMPlexMatSetClosure(*dm, *section, *globalSection, *A, *point, array, *mode);
+  *ierr = DMPlexMatSetClosure(*dm, section ? *section : NULL, globalSection ? *globalSection : NULL, *A, *point, array, *mode);
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmplexgetjoin_(DM *dm, PetscInt *numPoints, F90Array1d *pptr, F90Array1d *cptr, int *ierr PETSC_F90_2PTR_PROTO(pptrd) PETSC_F90_2PTR_PROTO(cptrd))
@@ -212,18 +214,19 @@ PETSC_EXTERN void PETSC_STDCALL dmplexrestoremeet_(DM *dm, PetscInt *numPoints, 
   *ierr = F90Array1dDestroy(cptr, PETSC_INT PETSC_F90_2PTR_PARAM(cptrd));if (*ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmplexcreatesection_(DM *dm, PetscInt *dim, PetscInt *numFields, F90Array1d *ptrC, F90Array1d *ptrD, PetscInt *numBC, F90Array1d *ptrF, F90Array1d *ptrP, PetscSection *section, int *ierr PETSC_F90_2PTR_PROTO(ptrCd) PETSC_F90_2PTR_PROTO(ptrDd) PETSC_F90_2PTR_PROTO(ptrFd) PETSC_F90_2PTR_PROTO(ptrPd))
+PETSC_EXTERN void PETSC_STDCALL dmplexcreatesection_(DM *dm, PetscInt *dim, PetscInt *numFields, F90Array1d *ptrC, F90Array1d *ptrD, PetscInt *numBC, F90Array1d *ptrF, F90Array1d *ptrP, IS *perm, PetscSection *section, int *ierr PETSC_F90_2PTR_PROTO(ptrCd) PETSC_F90_2PTR_PROTO(ptrDd) PETSC_F90_2PTR_PROTO(ptrFd) PETSC_F90_2PTR_PROTO(ptrPd))
 {
   PetscInt *numComp;
   PetscInt *numDof;
   PetscInt *bcField;
   IS       *bcPoints;
 
+  CHKFORTRANNULLOBJECT(perm);
   *ierr = F90Array1dAccess(ptrC, PETSC_INT, (void**) &numComp PETSC_F90_2PTR_PARAM(ptrCd));if (*ierr) return;
   *ierr = F90Array1dAccess(ptrD, PETSC_INT, (void**) &numDof PETSC_F90_2PTR_PARAM(ptrDd));if (*ierr) return;
   *ierr = F90Array1dAccess(ptrF, PETSC_INT, (void**) &bcField PETSC_F90_2PTR_PARAM(ptrFd));if (*ierr) return;
   *ierr = F90Array1dAccess(ptrP, PETSC_FORTRANADDR, (void**) &bcPoints PETSC_F90_2PTR_PARAM(ptrPd));if (*ierr) return;
-  *ierr = DMPlexCreateSection(*dm, *dim, *numFields, numComp, numDof, *numBC, bcField, bcPoints, section);
+  *ierr = DMPlexCreateSection(*dm, *dim, *numFields, numComp, numDof, *numBC, bcField, bcPoints, perm ? *perm : NULL, section);
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometry_(DM *dm, PetscInt *cell, F90Array1d *ptrV, F90Array1d *ptrJ, F90Array1d *ptrIJ, PetscReal *detJ, int *ierr PETSC_F90_2PTR_PROTO(ptrVd) PETSC_F90_2PTR_PROTO(ptrJd) PETSC_F90_2PTR_PROTO(ptrIJd))
@@ -236,5 +239,15 @@ PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometry_(DM *dm, PetscInt *cel
   *ierr = F90Array1dAccess(ptrJ,  PETSC_REAL, (void**) &J PETSC_F90_2PTR_PARAM(ptrJd));if (*ierr) return;
   *ierr = F90Array1dAccess(ptrIJ, PETSC_REAL, (void**) &invJ PETSC_F90_2PTR_PARAM(ptrIJd));if (*ierr) return;
   *ierr = DMPlexComputeCellGeometry(*dm, *cell, v0, J, invJ, detJ);
+}
+
+PETSC_EXTERN void PETSC_STDCALL dmplexcomputecellgeometryfvm_(DM *dm, PetscInt *cell, PetscReal *vol, F90Array1d *ptrCentroid, F90Array1d *ptrNormal, int *ierr PETSC_F90_2PTR_PROTO(ptrCentroidd) PETSC_F90_2PTR_PROTO(ptrNormald))
+{
+  PetscReal *centroid;
+  PetscReal *normal;
+
+  *ierr = F90Array1dAccess(ptrCentroid, PETSC_REAL, (void**) &centroid PETSC_F90_2PTR_PARAM(ptrCentroidd));if (*ierr) return;
+  *ierr = F90Array1dAccess(ptrNormal,   PETSC_REAL, (void**) &normal   PETSC_F90_2PTR_PARAM(ptrNormald));if (*ierr) return;
+  *ierr = DMPlexComputeCellGeometryFVM(*dm, *cell, vol, centroid, normal);
 }
 

@@ -511,7 +511,7 @@ PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscRe
   }
   ierr = SNESGetFunction(smoothd, &FPC, NULL, NULL);CHKERRQ(ierr);
   ierr = VecCopy(FPC, F);CHKERRQ(ierr);
-  ierr = SNESGetFunctionNorm(smoothd, fnorm);CHKERRQ(ierr);
+  if (fnorm) {ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -542,7 +542,7 @@ PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscReal
   }
   ierr = SNESGetFunction(smoothu, &FPC, NULL, NULL);CHKERRQ(ierr);
   ierr = VecCopy(FPC, F);CHKERRQ(ierr);
-  ierr = SNESGetFunctionNorm(smoothu, fnorm);CHKERRQ(ierr);
+  if (fnorm) {ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -619,10 +619,10 @@ PetscErrorCode SNESFASRestrict(SNES fine,Vec Xfine,Vec Xcoarse)
 
 Performs the FAS coarse correction as:
 
-fine problem: F(x) = 0
-coarse problem: F^c(x) = b^c
+fine problem:   F(x) = b
+coarse problem: F^c(x^c) = b^c
 
-b^c = F^c(I^c_fx^f - I^c_fF(x))
+b^c = F^c(Rx) - R(F(x) - b)
 
  */
 PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
@@ -782,10 +782,10 @@ PetscErrorCode SNESFASCycle_Additive(SNES snes, Vec X)
 
 Defines the FAS cycle as:
 
-fine problem: F(x) = 0
+fine problem: F(x) = b
 coarse problem: F^c(x) = b^c
 
-b^c = F^c(I^c_fx^f - I^c_fF(x))
+b^c = F^c(Rx) - R(F(x) - b)
 
 correction:
 

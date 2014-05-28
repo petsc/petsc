@@ -89,15 +89,15 @@ int main(int argc,char **argv)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr); /* calls PCSetFromOptions_MG/ML */
 
   for (i=0; i<3; i++) {
-    if (i<2) { /* test DIFFERENT_NONZERO_PATTERN */
+    if (i<2) { 
       /* set values for rhs vector */
       ierr = VecSet(fine_ctx.b,i+1.0);CHKERRQ(ierr);
       /* modify A */
       ierr = MatShift(A,1.0);CHKERRQ(ierr);
       ierr = MatScale(A,2.0);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     } else {  /* test SAME_NONZERO_PATTERN */
-      ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     }
     ierr = KSPSolve(ksp,fine_ctx.b,fine_ctx.x);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);

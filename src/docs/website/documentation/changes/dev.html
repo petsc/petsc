@@ -96,6 +96,7 @@
 
       <h4>General:</h4>
       <ul>
+        <li>--download-f-blas-lapack is now --download-fblaslapack.</li>
         <li>PETSc built with --with-precision=__float128 will now by default read in binary files that have all 128 bits stored in the file, to read in files with 64 bit double 
             use the option -binary_read_double</li>
         <li>PETSc options of complex numbers must be passed as [+/-][realnumber][+/-]realnumberi with no spaces, you can no longer pass the real and complex part with a comma between them</li>
@@ -127,6 +128,10 @@
         </li>
       </ul>
       <h4>IS:</h4>
+      <ul>
+        <li>ISLocalToGlobalMappingCreate() now takes a blocksize. Added ISLocalToGlobalMappingApplyBlock() removed ISLocalToGlobalMappingBlock() and ISLocalToGlobalMappingUnblock()</li>
+      </ul>
+
       <h4>PF:</h4>
       <h4>Vec:</h4>
       <h4>VecScatter:</h4>
@@ -145,23 +150,36 @@
       </ul>
       <h4>PC:</h4>
       <ul>
+        <li>PCASA has been removed, it never worked properly</li>
         <li>The documented, but semi-private function <tt>PCMGResidual_Default()</tt> is now public and named <tt>PCMGResidualDefault()</tt>.</li>
         <li>PCGAMG default smoother changed from PCJACOBI to PCSOR.</li>
+        <li><tt>PCFieldSplitSchurPrecondition()</tt> deprecated (replaced in Fortran) in favor of <tt>PCFieldSplitSetSchurPre()</tt>.</li>
       </ul>
       <h4>KSP:</h4>
       <ul>
         <li><tt>KSPSkipConverged()</tt> renamed to <tt>KSPConvergedSkip()</tt>.</li>
+        <li><tt>KSPSetOperators()</tt> no longer has the <tt>MatStructure</tt> argument. The Mat objects now track that information themselves. Use <tt>KPS/PCSetReusePreconditioner()</tt> to prevent the recomputation of the preconditioner if the operator changed in the way that <tt>SAME_PRECONDITIONER</tt> did with <tt>KSPSetOperators()</tt></li>
         <li><tt>KSPDefaultConverged()</tt>, <tt>KSPDefaultConvergedDestroy()</tt>, <tt>KSPDefaultConvergedCreate()</tt>, <tt>KSPDefaultConvergedSetUIRNorm()</tt>, and <tt>KSPDefaultConvergedSetUMIRNorm()</tt> are now <tt>KSPConvergedDefault()</tt>, <tt>KSPConvergedDefaultDestroy()</tt>, <tt>KSPConvergedDefaultCreate()</tt>, <tt>KSPConvergedDefaultSetUIRNorm()</tt>, and <tt>KSPConvergedDefaultSetUMIRNorm()</tt>. for consistency.</li>
       </ul>
       <h4>SNES:</h4>
       <ul>
+        <li>The matrix arguments to the user functions provided with <tt>SNESSetJacobian()</tt> and  <tt>SNESSetPicard()</tt> are now Mat not Mat*.</li>
+        <li>The <tt>MatStructure</tt> argument to the user functions provided with <tt>SNESSetJacobian()</tt> and  <tt>SNESSetPicard()</tt> are gone.</li>
         <li><tt>SNESSetInitialFunctionNorm()</tt> is removed as it's not necessary given that the norm is cached on the Vec.  Use only <tt>SNESSetInitialFunction()</tt>.</li>
+        <li><tt>SNESSetFunctionNorm()</tt> and <tt>SNESGetFunctionNorm()</tt> removed.  <tt>Use SNESGetFunction()</tt> and <tt>VecNorm()</tt> instead.
         <li><tt>SNESSkipConverged()</tt> renamed to <tt>SNESConvergedSkip()</tt>.</li>
+        <li><tt>SNESGetPC()</tt>/<tt>SNESSetPC()</tt> renamed to <tt>SNESGetNPC()</tt>/<tt>SNESSetNPC()</tt>.</li>
+        <li><tt>GS</tt> and _gs used for nonlinear Gauss-Sidel changed to <tt>NGS</tt> and _ngs to match all the other nonlinear solver names.</li>
       </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
+      <ul>
+        <li>The matrix arguments to the user functions provided with <tt>TSSetRHSJacobian()</tt> and  <tt>TSSetIJacobian()</tt> are now Mat not Mat*.</li>
+        <li>The <tt>MatStructure</tt> argument to the user functions provided with <tt>TSSetRHSJacobian()</tt> and  <tt>TSSetIJacobian()</tt> are gone.</li>
+      </ul>
       <h4>DM/DA:</h4>
       <ul>
+        <li>DMADDA has been removed, it never worked correctly</li>
         <li>The MatType argument is removed from DMCreateMatrix(), you can use DMSetMatType() to indicate the type you want used with a DM, defaults to MATAIJ</li>
         <li><tt>DMDABoundaryType</tt> has become <tt>DMBoundaryType</tt>, and all the enumeration values have also been renamed.</li>
       </ul>

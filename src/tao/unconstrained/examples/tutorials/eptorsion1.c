@@ -69,10 +69,10 @@ typedef struct {
 PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 PetscErrorCode FormFunction(Tao,Vec,PetscReal*,void*);
 PetscErrorCode FormGradient(Tao,Vec,Vec,void*);
-PetscErrorCode FormHessian(Tao,Vec,Mat*,Mat*, MatStructure *,void*);
+PetscErrorCode FormHessian(Tao,Vec,Mat,Mat, void*);
 PetscErrorCode HessianProductMat(Mat,Vec,Vec);
 PetscErrorCode HessianProduct(void*,Vec,Vec);
-PetscErrorCode MatrixFreeHessian(Tao,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode MatrixFreeHessian(Tao,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal *,Vec,void *);
 
 #undef __FUNCT__
@@ -424,16 +424,14 @@ PetscErrorCode FormGradient(Tao tao,Vec X,Vec G,void *ptr)
    Hessian a column at a time, it is not particularly efficient and
    is not recommended.
 */
-PetscErrorCode FormHessian(Tao tao,Vec X,Mat *HH,Mat *Hpre, MatStructure *flg, void *ptr)
+PetscErrorCode FormHessian(Tao tao,Vec X,Mat H,Mat Hpre, void *ptr)
 {
   AppCtx         *user = (AppCtx *) ptr;
   PetscErrorCode ierr;
   PetscInt       i,j, ndim = user->ndim;
   PetscReal      *y, zero = 0.0, one = 1.0;
-  Mat            H=*HH;
   PetscBool      assembled;
 
-  *Hpre = H;
   user->xvec = X;
 
   /* Initialize Hessian entries and work vector to zero */
@@ -462,8 +460,6 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat *HH,Mat *Hpre, MatStructure *flg, v
     }
     ierr = VecRestoreArray(user->y,&y);CHKERRQ(ierr);
   }
-
-  *flg=SAME_NONZERO_PATTERN;
   ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   return 0;
@@ -486,7 +482,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat *HH,Mat *Hpre, MatStructure *flg, v
 .  PrecH - optionally different preconditioning Hessian
 .  flag  - flag indicating matrix structure
 */
-PetscErrorCode MatrixFreeHessian(Tao tao,Vec X,Mat *H,Mat *PrecH, MatStructure *flag,void *ptr)
+PetscErrorCode MatrixFreeHessian(Tao tao,Vec X,Mat H,Mat PrecH, void *ptr)
 {
   AppCtx     *user = (AppCtx *) ptr;
 

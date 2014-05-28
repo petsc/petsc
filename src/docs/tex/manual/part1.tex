@@ -419,7 +419,7 @@ After creating the matrix and vectors that define a linear system,
 with the following sequence of commands:
 \begin{tabbing}
   KSPCreate(MPI\_Comm comm,KSP *ksp); \\
-  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag);\\
+  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat);\\
   KSPSetFromOptions(KSP ksp);\\
   KSPSolve(KSP ksp,Vec b,Vec x);\\
   KSPDestroy(KSP ksp);
@@ -687,17 +687,19 @@ When citing PETSc in a publication please cite the following:
 \begin{tabbing}
 
 @Mi\=sc\{petsc-web-page,\\
-   \>Author = \= "Satish Balay and Jed Brown and Kris Buschelman and Victor Eijkhout \\
-\> \> and William~D. Gropp and Dinesh Kaushik and Matthew~G. Knepley and \\
-\> \> Lois Curfman McInnes and Barry~F. Smith and Hong Zhang",\\
+   \>Author = \= "Satish Balay and Mark~F. Adams and Jed Brown and Peter Brune \\
+\> \> and Kris Buschelman and Victor Eijkhout and William~D. Gropp \\
+\> \> and Dinesh Kaushik and Matthew~G. Knepley and Lois Curfman McInnes \\
+\> \> and Karl Rupp and Barry~F. Smith and Hong Zhang",\\
    \>Title  = "{PETS}c {W}eb page",\\
    \>Note   = "http://www.mcs.anl.gov/petsc",\\
    \>Year   = "2013"\}\\
 
 @TechReport\{petsc-user-ref,\\
-   \>Author      = "Satish Balay and Jed Brown and Kris Buschelman and Victor Eijkhout \\
-\> \> and William~D. Gropp and Dinesh Kaushik and Matthew~G. Knepley and \\
-\> \> Lois Curfman McInnes and Barry~F. Smith and Hong Zhang",\\
+   \>Author = \= "Satish Balay and Mark~F. Adams and Jed Brown and Peter Brune \\
+\> \> and Kris Buschelman and Victor Eijkhout and William~D. Gropp \\
+\> \> and Dinesh Kaushik and Matthew~G. Knepley and Lois Curfman McInnes \\
+\> \> and Karl Rupp and Barry~F. Smith and Hong Zhang",\\
    \>Title       = "PETSc Users Manual",\\
    \>Number      = "ANL-95/11 - Revision 3.4",\\
    \>Institution = "Argonne National Laboratory",\\

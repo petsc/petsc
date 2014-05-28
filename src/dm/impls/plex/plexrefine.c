@@ -26,6 +26,63 @@ PETSC_STATIC_INLINE PetscErrorCode GetDepthEnd_Private(PetscInt depth, PetscInt 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CellRefinerGetAffineTransforms_Internal"
+/* Gets the affine map from the original cell to each subcell */
+PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, PetscInt *numSubcells, PetscReal *v0[], PetscReal *jac[], PetscReal *invjac[])
+{
+  PetscReal     *v = NULL, *j = NULL, *invj = NULL, detJ;
+  PetscInt       dim, s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  switch (refiner) {
+  case 0: break;
+  case 1:
+    dim  = 2;
+    if (numSubcells) *numSubcells = 4;
+    if (v0) {
+      ierr = PetscMalloc3(4*dim,&v,4*dim*dim,&j,4*dim*dim,&invj);CHKERRQ(ierr);
+      /* A */
+      v[0+0] = -1.0; v[0+1] = -1.0;
+      j[0+0] =  0.5; j[0+1] =  0.0;
+      j[0+2] =  0.0; j[0+3] =  0.5;
+      /* B */
+      v[2+0] =  0.0; v[2+1] = -1.0;
+      j[4+0] =  0.5; j[4+1] =  0.0;
+      j[4+2] =  0.0; j[4+3] =  0.5;
+      /* C */
+      v[4+0] = -1.0; v[4+1] =  0.0;
+      j[8+0] =  0.5; j[8+1] =  0.0;
+      j[8+2] =  0.0; j[8+3] =  0.5;
+      /* D */
+      v[6+0]  =  0.0; v[6+1]  = -1.0;
+      j[12+0] =  0.0; j[12+1] = -0.5;
+      j[12+2] =  0.5; j[12+3] =  0.5;
+      for (s = 0; s < 4; ++s) {
+        DMPlex_Det2D_Internal(&detJ, &j[s*dim*dim]);
+        DMPlex_Invert2D_Internal(&invj[s*dim*dim], &j[s*dim*dim], detJ);
+      }
+    }
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
+  }
+  if (v0) {*v0 = v; *jac = j; *invjac = invj;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CellRefinerRestoreAffineTransforms_Internal"
+PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefiner refiner, PetscInt *numSubcells, PetscReal *v0[], PetscReal *jac[], PetscReal *invjac[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree3(*v0,*jac,*invjac);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CellRefinerGetSizes"
 static PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSize[])
 {
@@ -175,15 +232,15 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!refiner) PetscFunctionReturn(0);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
-  if (refiner) {ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);}
+  ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
   switch (refiner) {
-  case 0: break;
   case 1:
     /* Simplicial 2D */
     /* All cells have 3 faces */
@@ -984,18 +1041,16 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  if (!refiner) PetscFunctionReturn(0);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
-  if (refiner) {
-    ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
-    ierr = GetDepthEnd_Private(depth, depthSize, &cEndNew, &fEndNew, &eEndNew, &vEndNew);CHKERRQ(ierr);
-  }
+  ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
+  ierr = GetDepthEnd_Private(depth, depthSize, &cEndNew, &fEndNew, &eEndNew, &vEndNew);CHKERRQ(ierr);
   switch (refiner) {
-  case 0: break;
   case 1:
     /* Simplicial 2D */
     /*
@@ -4520,28 +4575,35 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     for (c = cMax; c < cEnd; ++c) {
       const PetscInt  newp = (cMax - cStart)*8 + (c - cMax)*4;
       const PetscInt *cone, *ornt, *fornt;
-      PetscInt        coneNew[6], orntNew[6];
+      PetscInt        coneNew[6], orntNew[6], o, of, i;
 
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, cone[0], &fornt);CHKERRQ(ierr);
+      o = ornt[0] < 0 ? -1 : 1;
       for (r = 0; r < 4; ++r) {
         PetscInt subfA = GetQuadSubface_Static(ornt[0], r);
         PetscInt edgeA = GetQuadEdge_Static(ornt[0], r);
-        PetscInt edgeB = (edgeA+3)%4;
+        PetscInt edgeB = GetQuadEdge_Static(ornt[0], (r+3)%4);
         if (ornt[0] != ornt[1]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent ordering for matching ends of hybrid cell %d: %d != %d", c, ornt[0], ornt[1]);
         coneNew[0]         = fStartNew + (cone[0] - fStart)*4 + subfA;
         orntNew[0]         = ornt[0];
         coneNew[1]         = fStartNew + (cone[1] - fStart)*4 + subfA;
         orntNew[1]         = ornt[0];
-        coneNew[(r+0)%4+2] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (cone[edgeA+2] - fMax)*2 + (fornt[edgeA] < 0 ? 1 : 0);
-        orntNew[(r+0)%4+2] = ornt[edgeA];
-        coneNew[(r+1)%4+2] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd          - fMax)*2 + (c - cMax)*4 + edgeA;
-        orntNew[(r+1)%4+2] = 0;
-        coneNew[(r+2)%4+2] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd          - fMax)*2 + (c - cMax)*4 + edgeB;
-        orntNew[(r+2)%4+2] = -2;
-        coneNew[(r+3)%4+2] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (cone[edgeB+2] - fMax)*2 + (fornt[edgeB] < 0 ? 0 : 1);
-        orntNew[(r+3)%4+2] = ornt[edgeB];
+        of = fornt[edgeA] < 0 ? -1 : 1;
+        i  = GetQuadEdgeInverse_Static(ornt[0], r) + 2;
+        coneNew[i] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (cone[2+edgeA] - fMax)*2 + (o*of < 0 ? 1 : 0);
+        orntNew[i] = ornt[edgeA];
+        i  = GetQuadEdgeInverse_Static(ornt[0], (r+1)%4) + 2;
+        coneNew[i] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd          - fMax)*2 + (c - cMax)*4 + edgeA;
+        orntNew[i] = 0;
+        i  = GetQuadEdgeInverse_Static(ornt[0], (r+2)%4) + 2;
+        coneNew[i] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd          - fMax)*2 + (c - cMax)*4 + edgeB;
+        orntNew[i] = -2;
+        of = fornt[edgeB] < 0 ? -1 : 1;
+        i  = GetQuadEdgeInverse_Static(ornt[0], (r+3)%4) + 2;
+        coneNew[i] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (cone[2+edgeB] - fMax)*2 + (o*of < 0 ? 0 : 1);
+        orntNew[i] = ornt[edgeB];
         ierr       = DMPlexSetCone(rdm, newp+r, coneNew);CHKERRQ(ierr);
         ierr       = DMPlexSetConeOrientation(rdm, newp+r, orntNew);CHKERRQ(ierr);
 #if 1
@@ -4610,7 +4672,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
       }
     }
-    /* Interior faces have 4 edges and 2 cells */
+    /* Interior cell faces have 4 edges and 2 cells */
     for (c = cStart; c < cMax; ++c) {
       const PetscInt  newCells[24] = {0, 3,  2, 3,  1, 2,  0, 1,  4, 5,  5, 6,  6, 7,  4, 7,  0, 4,  3, 5,  2, 6,  1, 7};
       const PetscInt *cone, *ornt;
@@ -4881,13 +4943,16 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #endif
         for (s = 0; s < size; ++s) {
           const PetscInt *coneCell, *orntCell, *fornt;
+          PetscInt        o, of;
 
           ierr = DMPlexGetCone(dm, support[s], &coneCell);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, support[s], &orntCell);CHKERRQ(ierr);
+          o = orntCell[0] < 0 ? -1 : 1;
           for (c = 2; c < 6; ++c) if (coneCell[c] == f) break;
           if (c >= 6) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %d in cone of cell %d", f, support[s]);
           ierr = DMPlexGetConeOrientation(dm, coneCell[0], &fornt);CHKERRQ(ierr);
-          supportNew[s] = cStartNew + (cMax - cStart)*8 + (support[s] - cMax)*4 + (GetQuadEdgeInverse_Static(orntCell[0], c-2) + (fornt[c-2] < 0 ? 1-r : r))%4;
+          of = fornt[c-2] < 0 ? -1 : 1;
+          supportNew[s] = cStartNew + (cMax - cStart)*8 + (support[s] - cMax)*4 + (GetQuadEdgeInverse_Static(orntCell[0], c-2) + (o*of < 0 ? 1-r : r))%4;
         }
         ierr = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
 #if 1
@@ -4908,6 +4973,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
       for (r = 0; r < 4; ++r) {
+#if 0
         coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*4 + GetQuadSubface_Static(ornt[0], r);
         orntNew[0] = 0;
         coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*4 + GetQuadSubface_Static(ornt[1], r);
@@ -4916,6 +4982,16 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
         orntNew[2] = 0;
         coneNew[3] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*4 + (cMax - cStart)*6 + (eEnd - eMax) + (fEnd                                   - fMax) + (c - cMax);
         orntNew[3] = 0;
+#else
+        coneNew[0] = eStartNew + (eMax - eStart)*2 + (cone[0] - fStart)*4 + r;
+        orntNew[0] = 0;
+        coneNew[1] = eStartNew + (eMax - eStart)*2 + (cone[1] - fStart)*4 + r;
+        orntNew[1] = 0;
+        coneNew[2] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*4 + (cMax - cStart)*6 + (eEnd - eMax) + (cone[2+r] - fMax);
+        orntNew[2] = 0;
+        coneNew[3] = eStartNew + (eMax - eStart)*2 + (fMax - fStart)*4 + (cMax - cStart)*6 + (eEnd - eMax) + (fEnd      - fMax) + (c - cMax);
+        orntNew[3] = 0;
+#endif
         ierr = DMPlexSetCone(rdm, newp+r, coneNew);CHKERRQ(ierr);
         ierr = DMPlexSetConeOrientation(rdm, newp+r, orntNew);CHKERRQ(ierr);
 #if 1
@@ -5015,7 +5091,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
           if (support[s] < cMax) {
             supportRef[2+s] = fStartNew + (fMax - fStart)*4 + (support[s] - cStart)*12 + newFaces[c*4 + GetQuadEdgeInverse_Static(orntCell[c], r)];
           } else {
-            supportRef[2+s] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd - fMax)*2 + (support[s] - cMax)*4 + GetQuadEdgeInverse_Static(orntCell[c], r);
+            supportRef[2+s] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd - fMax)*2 + (support[s] - cMax)*4 + r;
           }
         }
         ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
@@ -5116,7 +5192,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
         ierr = DMPlexGetConeOrientation(dm, support[s], &cornt);CHKERRQ(ierr);
         for (c = 0; c < csize; ++c) if (ccone[c] == f) break;
         if ((c < 2) || (c >= csize)) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Hybrid face %d is not in cone of hybrid cell %d", f, support[s]);
-        supportRef[2+s] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd - fMax)*2 + (support[s] - cMax)*4 + GetQuadSubfaceInverse_Static(cornt[0], c-2);
+        supportRef[2+s] = fStartNew + (fMax - fStart)*4 + (cMax - cStart)*12 + (fEnd - fMax)*2 + (support[s] - cMax)*4 + c-2;
       }
       ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
 #if 1
@@ -5263,11 +5339,10 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   Vec            coordinates, coordinatesNew;
   PetscScalar   *coords, *coordsNew;
   const PetscInt numVertices = depthSize ? depthSize[0] : 0;
-  PetscInt       dim, depth, coordSizeNew, cStart, cEnd, cMax, c, vStart, vStartNew, vEnd, v, eStart, eEnd, eMax, e, fStart, fEnd, fMax, f;
+  PetscInt       spaceDim, depth, bs, coordSizeNew, cStart, cEnd, cMax, c, vStart, vStartNew, vEnd, v, eStart, eEnd, eMax, e, fStart, fEnd, fMax, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
@@ -5277,17 +5352,18 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   if (refiner) {ierr = GetDepthStart_Private(depth, depthSize, NULL, NULL, NULL, &vStartNew);CHKERRQ(ierr);}
   ierr = GetDepthStart_Private(depth, depthSize, NULL, NULL, NULL, &vStartNew);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldComponents(coordSection, 0, &spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &coordSectionNew);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSectionNew, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(coordSectionNew, 0, dim);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSectionNew, 0, spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSectionNew, vStartNew, vStartNew+numVertices);CHKERRQ(ierr);
   if (cMax < 0) cMax = cEnd;
   if (fMax < 0) fMax = fEnd;
   if (eMax < 0) eMax = eEnd;
-  /* All vertices have the dim coordinates */
+  /* All vertices have the spaceDim coordinates */
   for (v = vStartNew; v < vStartNew+numVertices; ++v) {
-    ierr = PetscSectionSetDof(coordSectionNew, v, dim);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldDof(coordSectionNew, v, 0, dim);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(coordSectionNew, v, spaceDim);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSectionNew, v, 0, spaceDim);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(coordSectionNew);CHKERRQ(ierr);
   ierr = DMSetCoordinateSection(rdm, coordSectionNew);CHKERRQ(ierr);
@@ -5296,6 +5372,8 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinatesNew);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinatesNew, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinatesNew, coordSizeNew, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinatesNew, bs);CHKERRQ(ierr);
   ierr = VecSetFromOptions(coordinatesNew);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
@@ -5318,18 +5396,16 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = PetscSectionGetOffset(coordSection, cone[v], &off[v]);CHKERRQ(ierr);
       }
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        coordsNew[offnew+d] = 0.0;
-        for (v = 0; v < coneSize; ++v) coordsNew[offnew+d] += coords[off[v]+d];
-        coordsNew[offnew+d] /= coneSize;
-      }
+      for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = 0.0;
+      for (v = 0; v < coneSize; ++v) {ierr = DMPlexLocalizeAddCoordinate_Internal(dm, spaceDim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
+      for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
   case 2: /* Hex 2D */
   case 4: /* Hybrid Hex 2D */
     /* Cell vertices have the average of corner coordinates */
     for (c = cStart; c < cMax; ++c) {
-      const PetscInt newv = vStartNew + (vEnd - vStart) + (eMax - eStart) + (c - cStart) + (dim > 2 ? (fMax - fStart) : 0);
+      const PetscInt newv = vStartNew + (vEnd - vStart) + (eMax - eStart) + (c - cStart) + (spaceDim > 2 ? (fMax - fStart) : 0);
       PetscInt      *cone = NULL;
       PetscInt       closureSize, coneSize = 0, off[8], offnew, p, d;
 
@@ -5342,11 +5418,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
         ierr = PetscSectionGetOffset(coordSection, cone[v], &off[v]);CHKERRQ(ierr);
       }
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        coordsNew[offnew+d] = 0.0;
-        for (v = 0; v < coneSize; ++v) coordsNew[offnew+d] += coords[off[v]+d];
-        coordsNew[offnew+d] /= coneSize;
-      }
+      for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] = 0.0;
+      for (v = 0; v < coneSize; ++v) {ierr = DMPlexLocalizeAddCoordinate_Internal(dm, spaceDim, &coords[off[0]], &coords[off[v]], &coordsNew[offnew]);CHKERRQ(ierr);}
+      for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
   case 1: /* Simplicial 2D */
@@ -5365,8 +5439,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       ierr = PetscSectionGetOffset(coordSection, cone[0], &offA);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSection, cone[1], &offB);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        coordsNew[offnew+d] = 0.5*(coords[offA+d] + coords[offB+d]);
+      ierr = DMPlexLocalizeCoordinate_Internal(dm, spaceDim, &coords[offA], &coords[offB], &coordsNew[offnew]);CHKERRQ(ierr);
+      for (d = 0; d < spaceDim; ++d) {
+        coordsNew[offnew+d] = 0.5*(coords[offA+d] + coordsNew[offnew+d]);
       }
     }
     /* Old vertices have the same coordinates */
@@ -5376,7 +5451,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
+      for (d = 0; d < spaceDim; ++d) {
         coordsNew[offnew+d] = coords[off+d];
       }
     }
@@ -5389,6 +5464,11 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   ierr = DMSetCoordinatesLocal(rdm, coordinatesNew);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinatesNew);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&coordSectionNew);CHKERRQ(ierr);
+  if (dm->maxCell) {
+    const PetscReal *maxCell, *L;
+    ierr = DMGetPeriodicity(dm,  &maxCell, &L);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(rdm,  maxCell,  L);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -5453,10 +5533,13 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
+  cMax = cMax < 0 ? cEnd : cMax;
+  fMax = fMax < 0 ? fEnd : fMax;
+  eMax = eMax < 0 ? eEnd : eMax;
   if (refiner) {ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);}
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = DMGetPointSF(rdm, &sfNew);CHKERRQ(ierr);
-  /* Caculate size of new SF */
+  /* Calculate size of new SF */
   ierr = PetscSFGetGraph(sf, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
   if (numRoots < 0) PetscFunctionReturn(0);
   for (l = 0; l < numLeaves; ++l) {
@@ -5464,18 +5547,6 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
 
     switch (refiner) {
     case 1:
-      /* Simplicial 2D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        ++numLeavesNew;
-      } else if ((p >= fStart) && (p < fEnd)) {
-        /* Old faces add new faces and vertex */
-        numLeavesNew += 2 + 1;
-      } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells and interior faces */
-        numLeavesNew += 4 + 3;
-      }
-      break;
     case 3:
       /* Hybrid Simplicial 2D */
       if ((p >= vStart) && (p < vEnd)) {
@@ -5496,18 +5567,6 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
       }
       break;
     case 2:
-      /* Hex 2D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        ++numLeavesNew;
-      } else if ((p >= fStart) && (p < fEnd)) {
-        /* Old faces add new faces and vertex */
-        numLeavesNew += 2 + 1;
-      } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells, interior faces, and vertex */
-        numLeavesNew += 4 + 4 + 1;
-      }
-      break;
     case 4:
       /* Hybrid Hex 2D */
       if ((p >= vStart) && (p < vEnd)) {
@@ -5528,21 +5587,6 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
       }
       break;
     case 5:
-      /* Simplicial 3D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        ++numLeavesNew;
-      } else if ((p >= eStart) && (p < eEnd)) {
-        /* Old edges add new edges and vertex */
-        numLeavesNew += 2 + 1;
-      } else if ((p >= fStart) && (p < fEnd)) {
-        /* Old faces add new faces and face edges */
-        numLeavesNew += 4 + 3;
-      } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells and interior faces and edges */
-        numLeavesNew += 8 + 8 + 1;
-      }
-      break;
     case 7:
       /* Hybrid Simplicial 3D */
       if ((p >= vStart) && (p < vEnd)) {
@@ -5569,21 +5613,6 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
       }
       break;
     case 6:
-      /* Hex 3D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        ++numLeavesNew;
-      } else if ((p >= eStart) && (p < eEnd)) {
-        /* Old edges add new edges, and vertex */
-        numLeavesNew += 2 + 1;
-      } else if ((p >= fStart) && (p < fEnd)) {
-        /* Old faces add new faces, edges, and vertex */
-        numLeavesNew += 4 + 4 + 1;
-      } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells, faces, edges, and vertex */
-        numLeavesNew += 8 + 12 + 6 + 1;
-      }
-      break;
     case 8:
       /* Hybrid Hex 3D */
       if ((p >= vStart) && (p < vEnd)) {
@@ -5642,6 +5671,9 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
   ierr = PetscSFBcastEnd(sfProcess, depthType, depthSizeOld, rdepthSizeOld);CHKERRQ(ierr);
   for (n = 0; n < numNeighbors; ++n) {
     ierr = GetDepthStart_Private(depth, &rdepthSizeOld[n*(depth+1)], &rcStart[n], &rfStart[n], &reStart[n], &rvStart[n]);CHKERRQ(ierr);
+    rdepthMaxOld[n*(depth+1)+depth]   = rdepthMaxOld[n*(depth+1)+depth]   < 0 ? rdepthSizeOld[n*(depth+1)+depth]  +rcStart[n]: rdepthMaxOld[n*(depth+1)+depth];
+    rdepthMaxOld[n*(depth+1)+depth-1] = rdepthMaxOld[n*(depth+1)+depth-1] < 0 ? rdepthSizeOld[n*(depth+1)+depth-1]+rfStart[n]: rdepthMaxOld[n*(depth+1)+depth-1];
+    rdepthMaxOld[n*(depth+1)+1]       = rdepthMaxOld[n*(depth+1)+1]       < 0 ? rdepthSizeOld[n*(depth+1)+1]      +reStart[n]: rdepthMaxOld[n*(depth+1)+1];
   }
   ierr = MPI_Type_free(&depthType);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfProcess);CHKERRQ(ierr);
@@ -5658,76 +5690,6 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
     if (n < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not locate remote rank %d", rrank);
     switch (refiner) {
     case 1:
-      /* Simplicial 2D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        localPointsNew[m]        = vStartNew     + (p  - vStart);
-        remotePointsNew[m].index = rvStartNew[n] + (rp - rvStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-      } else if ((p >= fStart) && (p < fEnd)) {
-        /* Old faces add new faces and vertex */
-        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - fStart);
-        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - rfStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-        for (r = 0; r < 2; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (p  - fStart)*2     + r;
-          remotePointsNew[m].index = rfStartNew[n] + (rp - rfStart[n])*2 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells and interior faces */
-        for (r = 0; r < 4; ++r, ++m) {
-          localPointsNew[m]        = cStartNew     + (p  - cStart)*4     + r;
-          remotePointsNew[m].index = rcStartNew[n] + (rp - rcStart[n])*4 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 3; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (fEnd - fStart)*2                    + (p  - cStart)*3     + r;
-          remotePointsNew[m].index = rfStartNew[n] + rdepthSizeOld[n*(depth+1)+depth-1]*2 + (rp - rcStart[n])*3 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      }
-      break;
-    case 2:
-      /* Hex 2D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        localPointsNew[m]        = vStartNew     + (p  - vStart);
-        remotePointsNew[m].index = rvStartNew[n] + (rp - rvStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-      } else if ((p >= fStart) && (p < fEnd)) {
-        /* Old faces add new faces and vertex */
-        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - fStart);
-        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - rfStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-        for (r = 0; r < 2; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (p  - fStart)*2     + r;
-          remotePointsNew[m].index = rfStartNew[n] + (rp - rfStart[n])*2 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells, interior faces, and vertex */
-        for (r = 0; r < 4; ++r, ++m) {
-          localPointsNew[m]        = cStartNew     + (p  - cStart)*4     + r;
-          remotePointsNew[m].index = rcStartNew[n] + (rp - rcStart[n])*4 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 4; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (fEnd - fStart)*2                    + (p  - cStart)*4     + r;
-          remotePointsNew[m].index = rfStartNew[n] + rdepthSizeOld[n*(depth+1)+depth-1]*2 + (rp - rcStart[n])*4 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 1; ++r, ++m) {
-          localPointsNew[m]        = vStartNew     + (vEnd - vStart)               + (fEnd - fStart)                    + (p  - cStart)     + r;
-          remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0]  + rdepthSizeOld[n*(depth+1)+depth-1] + (rp - rcStart[n]) + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      }
-      break;
     case 3:
       /* Hybrid simplicial 2D */
       if ((p >= vStart) && (p < vEnd)) {
@@ -5738,15 +5700,15 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
         ++m;
       } else if ((p >= fStart) && (p < fMax)) {
         /* Old interior faces add new faces and vertex */
-        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - fStart);
-        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - rfStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
         for (r = 0; r < 2; ++r, ++m) {
           localPointsNew[m]        = fStartNew     + (p  - fStart)*2     + r;
           remotePointsNew[m].index = rfStartNew[n] + (rp - rfStart[n])*2 + r;
           remotePointsNew[m].rank  = rrank;
         }
+        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - fStart);
+        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - rfStart[n]);
+        remotePointsNew[m].rank  = rrank;
+        ++m;
       } else if ((p >= fMax) && (p < fEnd)) {
         /* Old hybrid faces stay the same */
         localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*2     + (p  - fMax);
@@ -5765,7 +5727,7 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
           remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*2 + (rp - rcStart[n])*3 + r;
           remotePointsNew[m].rank  = rrank;
         }
-      } else if ((p >= cStart) && (p < cMax)) {
+      } else if ((p >= cMax) && (p < cEnd)) {
         /* Old hybrid cells add new cells and hybrid face */
         for (r = 0; r < 2; ++r, ++m) {
           localPointsNew[m]        = cStartNew     + (p  - cStart)*4     + r;
@@ -5778,6 +5740,7 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
         ++m;
       }
       break;
+    case 2:
     case 4:
       /* Hybrid Hex 2D */
       if ((p >= vStart) && (p < vEnd)) {
@@ -5788,15 +5751,15 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
         ++m;
       } else if ((p >= fStart) && (p < fMax)) {
         /* Old interior faces add new faces and vertex */
-        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - fStart);
-        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - rfStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
         for (r = 0; r < 2; ++r, ++m) {
           localPointsNew[m]        = fStartNew     + (p  - fStart)*2     + r;
           remotePointsNew[m].index = rfStartNew[n] + (rp - rfStart[n])*2 + r;
           remotePointsNew[m].rank  = rrank;
         }
+        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - fStart);
+        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - rfStart[n]);
+        remotePointsNew[m].rank  = rrank;
+        ++m;
       } else if ((p >= fMax) && (p < fEnd)) {
         /* Old hybrid faces stay the same */
         localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*2     + (p  - fMax);
@@ -5805,10 +5768,6 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
         ++m;
       } else if ((p >= cStart) && (p < cMax)) {
         /* Old interior cells add new cells, interior faces, and vertex */
-        localPointsNew[m]        = vStartNew     + (vEnd - vStart)               + (fEnd - fStart)                    + (p  - cStart);
-        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0]  + rdepthSizeOld[n*(depth+1)+depth-1] + (rp - rcStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
         for (r = 0; r < 4; ++r, ++m) {
           localPointsNew[m]        = cStartNew     + (p  - cStart)*4     + r;
           remotePointsNew[m].index = rcStartNew[n] + (rp - rcStart[n])*4 + r;
@@ -5819,6 +5778,10 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
           remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*2 + (rp - rcStart[n])*4 + r;
           remotePointsNew[m].rank  = rrank;
         }
+        localPointsNew[m]        = vStartNew     + (vEnd - vStart)               + (fMax                              - fStart)     + (p  - cStart);
+        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0]  + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n]) + (rp - rcStart[n]);
+        remotePointsNew[m].rank  = rrank;
+        ++m;
       } else if ((p >= cStart) && (p < cMax)) {
         /* Old hybrid cells add new cells and hybrid face */
         for (r = 0; r < 2; ++r, ++m) {
@@ -5833,55 +5796,6 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
       }
       break;
     case 5:
-      /* Simplicial 3D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        localPointsNew[m]        = vStartNew     + (p  - vStart);
-        remotePointsNew[m].index = rvStartNew[n] + (rp - rvStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-      } else if ((p >= eStart) && (p < eEnd)) {
-        /* Old edges add new edges and vertex */
-        for (r = 0; r < 2; ++r, ++m) {
-          localPointsNew[m]        = eStartNew     + (p  - eStart)*2     + r;
-          remotePointsNew[m].index = reStartNew[n] + (rp - reStart[n])*2 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - eStart);
-        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - reStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-      } else if ((p >= fStart) && (p < fEnd)) {
-        /* Old faces add new faces and face edges */
-        for (r = 0; r < 4; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (p  - fStart)*4     + r;
-          remotePointsNew[m].index = rfStartNew[n] + (rp - rfStart[n])*4 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 3; ++r, ++m) {
-          localPointsNew[m]        = eStartNew     + (eEnd - eStart)*2              + (p  - fStart)*3     + r;
-          remotePointsNew[m].index = reStartNew[n] + rdepthSizeOld[n*(depth+1)+1]*2 + (rp - rfStart[n])*3 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells and interior faces and edges */
-        for (r = 0; r < 8; ++r, ++m) {
-          localPointsNew[m]        = cStartNew     + (p  - cStart)*8     + r;
-          remotePointsNew[m].index = rcStartNew[n] + (rp - rcStart[n])*8 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 8; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (fEnd - fStart)*4                    + (p  - cStart)*8     + r;
-          remotePointsNew[m].index = rfStartNew[n] + rdepthSizeOld[n*(depth+1)+depth-1]*4 + (rp - rcStart[n])*8 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 1; ++r, ++m) {
-          localPointsNew[m]        = eStartNew     + (eEnd - eStart)*2              + (fEnd - fStart)*3                    + (p  - cStart)*1     + r;
-          remotePointsNew[m].index = reStartNew[n] + rdepthSizeOld[n*(depth+1)+1]*2 + rdepthSizeOld[n*(depth+1)+depth-1]*3 + (rp - rcStart[n])*1 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      }
-      break;
     case 7:
       /* Hybrid Simplicial 3D */
       if ((p >= vStart) && (p < vEnd)) {
@@ -5961,64 +5875,6 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
       }
       break;
     case 6:
-      /* Hex 3D */
-      if ((p >= vStart) && (p < vEnd)) {
-        /* Old vertices stay the same */
-        localPointsNew[m]        = vStartNew     + (p  - vStart);
-        remotePointsNew[m].index = rvStartNew[n] + (rp - rvStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-      } else if ((p >= eStart) && (p < eEnd)) {
-        /* Old edges add new edges and vertex */
-        for (r = 0; r < 2; ++r, ++m) {
-          localPointsNew[m]        = eStartNew     + (p  - eStart)*2     + r;
-          remotePointsNew[m].index = reStartNew[n] + (rp - reStart[n])*2 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - eStart);
-        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - reStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-      } else if ((p >= fStart) && (p < fEnd)) {
-        /* Old faces add new faces, edges, and vertex */
-        for (r = 0; r < 4; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (p  - fStart)*4     + r;
-          remotePointsNew[m].index = rfStartNew[n] + (rp - rfStart[n])*4 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 4; ++r, ++m) {
-          localPointsNew[m]        = eStartNew     + (eEnd - eStart)*2              + (p  - fStart)*4     + r;
-          remotePointsNew[m].index = reStartNew[n] + rdepthSizeOld[n*(depth+1)+1]*2 + (rp - rfStart[n])*4 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (eEnd - eStart)              + (p  - fStart);
-        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + rdepthSizeOld[n*(depth+1)+1] + (rp - rfStart[n]);
-        remotePointsNew[m].rank  = rrank;
-        ++m;
-      } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells, faces, edges, and vertex */
-        for (r = 0; r < 8; ++r, ++m) {
-          localPointsNew[m]        = cStartNew     + (p  - cStart)*8     + r;
-          remotePointsNew[m].index = rcStartNew[n] + (rp - rcStart[n])*8 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 12; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (fEnd - fStart)*4                    + (p  - cStart)*12     + r;
-          remotePointsNew[m].index = rfStartNew[n] + rdepthSizeOld[n*(depth+1)+depth-1]*4 + (rp - rcStart[n])*12 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 6; ++r, ++m) {
-          localPointsNew[m]        = eStartNew     + (eEnd - eStart)*2              + (fEnd - fStart)*4                    + (p  - cStart)*6     + r;
-          remotePointsNew[m].index = reStartNew[n] + rdepthSizeOld[n*(depth+1)+1]*2 + rdepthSizeOld[n*(depth+1)+depth-1]*4 + (rp - rcStart[n])*6 + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-        for (r = 0; r < 1; ++r, ++m) {
-          localPointsNew[m]        = vStartNew     + (eEnd - eStart)              + (fEnd - fStart)                    + (p  - cStart)     + r;
-          remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+1] + rdepthSizeOld[n*(depth+1)+depth-1] + (rp - rcStart[n]) + r;
-          remotePointsNew[m].rank  = rrank;
-        }
-      }
-      break;
     case 8:
       /* Hybrid Hex 3D */
       if ((p >= vStart) && (p < vEnd)) {
@@ -6041,7 +5897,7 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
       } else if ((p >= eMax) && (p < eEnd)) {
         /* Hybrid edges stay the same */
         localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)*4     + (cMax                            - cStart)*6     + (p  - eMax);
-        remotePointsNew[m].index = rvStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*6 + (rp - rdepthMaxOld[n*(depth+1)+1]);
+        remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*6 + (rp - rdepthMaxOld[n*(depth+1)+1]);
         remotePointsNew[m].rank  = rrank;
         ++m;
       } else if ((p >= fStart) && (p < fMax)) {
@@ -6063,12 +5919,12 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
       } else if ((p >= fMax) && (p < fEnd)) {
         /* Hybrid faces add new faces and edges */
         for (r = 0; r < 2; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*4     + (cMax                            - cStart)*8     + (p  - fMax)*2                              + r;
-          remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*8 + (rp - rdepthMaxOld[n*(depth+1)+depth-1])*2 + r;
+          localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*4     + (cMax                            - cStart)*12     + (p  - fMax)*2                              + r;
+          remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*12 + (rp - rdepthMaxOld[n*(depth+1)+depth-1])*2 + r;
           remotePointsNew[m].rank  = rrank;
         }
-        localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)*4     + (cMax                            - cStart)*6     + (fEnd                                          - fMax);
-        remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*6 + (rdepthSizeOld[n*(depth+1)+depth-1]+rfStart[n] - rdepthMaxOld[n*(depth+1)+depth-1]);
+        localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)*4     + (cMax                            - cStart)*6     + (eEnd                                    - eMax)                        + (p  - fMax);
+        remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*6 + (rdepthSizeOld[n*(depth+1)+1]+reStart[n] - rdepthMaxOld[n*(depth+1)+1]) + (rp - rdepthMaxOld[n*(depth+1)+depth-1]);
         remotePointsNew[m].rank  = rrank;
         ++m;
       } else if ((p >= cStart) && (p < cMax)) {
@@ -6101,12 +5957,12 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
           remotePointsNew[m].rank  = rrank;
         }
         for (r = 0; r < 4; ++r, ++m) {
-          localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*4     + (cMax                            - cStart)*8     + (fEnd                                          - fMax)*2                              + (p  - cMax)*4                            + r;
-          remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*8 + (rdepthSizeOld[n*(depth+1)+depth-1]+rfStart[n] - rdepthMaxOld[n*(depth+1)+depth-1])*2 + (rp - rdepthMaxOld[n*(depth+1)+depth])*4 + r;
+          localPointsNew[m]        = fStartNew     + (fMax                              - fStart)*4     + (cMax                            - cStart)*12     + (fEnd                                          - fMax)*2                              + (p  - cMax)*4                            + r;
+          remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*12 + (rdepthSizeOld[n*(depth+1)+depth-1]+rfStart[n] - rdepthMaxOld[n*(depth+1)+depth-1])*2 + (rp - rdepthMaxOld[n*(depth+1)+depth])*4 + r;
           remotePointsNew[m].rank  = rrank;
         }
-        localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)*4     + (cMax                            - cStart)*6     + (fEnd                                          - fMax)                              + (p  - cMax);
-        remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*6 + (rdepthSizeOld[n*(depth+1)+depth-1]+rfStart[n] - rdepthMaxOld[n*(depth+1)+depth-1]) + (rp - rdepthMaxOld[n*(depth+1)+depth]);
+        localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)*4     + (cMax                            - cStart)*6     + (eEnd                                    - eMax)                        + (fEnd                                          - fMax)                              + (p  - cMax);
+        remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rdepthMaxOld[n*(depth+1)+depth] - rcStart[n])*6 + (rdepthSizeOld[n*(depth+1)+1]+reStart[n] - rdepthMaxOld[n*(depth+1)+1]) + (rdepthSizeOld[n*(depth+1)+depth-1]+rfStart[n] - rdepthMaxOld[n*(depth+1)+depth-1]) + (rp - rdepthMaxOld[n*(depth+1)+depth]);
         remotePointsNew[m].rank  = rrank;
         ++m;
       }
@@ -6118,6 +5974,28 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
   if (m != numLeavesNew) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of leaf point %d should be %d", m, numLeavesNew);
   ierr = ISRestoreIndices(processRanks, &neighbors);CHKERRQ(ierr);
   ierr = ISDestroy(&processRanks);CHKERRQ(ierr);
+  {
+    PetscSFNode *rp, *rtmp;
+    PetscInt    *lp, *idx, *ltmp, i;
+
+    /* SF needs sorted leaves to correct calculate Gather */
+    ierr = PetscMalloc1(numLeavesNew,&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeavesNew, &lp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numLeavesNew, &rp);CHKERRQ(ierr);
+    for (i = 0; i < numLeavesNew; ++i) idx[i] = i;
+    ierr = PetscSortIntWithPermutation(numLeavesNew, localPointsNew, idx);CHKERRQ(ierr);
+    for (i = 0; i < numLeavesNew; ++i) {
+      lp[i] = localPointsNew[idx[i]];
+      rp[i] = remotePointsNew[idx[i]];
+    }
+    ltmp            = localPointsNew;
+    localPointsNew  = lp;
+    rtmp            = remotePointsNew;
+    remotePointsNew = rp;
+    ierr = PetscFree(idx);CHKERRQ(ierr);
+    ierr = PetscFree(ltmp);CHKERRQ(ierr);
+    ierr = PetscFree(rtmp);CHKERRQ(ierr);
+  }
   ierr = PetscSFSetGraph(sfNew, pEndNew-pStartNew, numLeavesNew, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscFree5(rdepthSize,rvStartNew,reStartNew,rfStartNew,rcStartNew);CHKERRQ(ierr);
   ierr = PetscFree7(depthSizeOld,rdepthSizeOld,rdepthMaxOld,rvStart,reStart,rfStart,rcStart);CHKERRQ(ierr);
@@ -6586,7 +6464,70 @@ PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateCoarsePointIS"
+/*@
+  DMPlexCreateCoarsePointIS - Creates an IS covering the coarse DM chart with the fine points as data
+
+  Input Parameter:
+. dm - The coarse DM
+
+  Output Parameter:
+. fpointIS - The IS of all the fine points which exist in the original coarse mesh
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexCreateSubpointIS()
+@*/
+PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
+{
+  CellRefiner    cellRefiner;
+  PetscInt      *depthSize, *fpoints;
+  PetscInt       cStartNew = 0, vStartNew = 0, fStartNew = 0, eStartNew = 0;
+  PetscInt       depth, pStart, pEnd, p, vStart, vEnd, v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
+  ierr = PetscMalloc1((depth+1), &depthSize);CHKERRQ(ierr);
+  ierr = CellRefinerGetSizes(cellRefiner, dm, depthSize);CHKERRQ(ierr);
+  if (cellRefiner) {ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);}
+  ierr = PetscMalloc1(pEnd-pStart,&fpoints);CHKERRQ(ierr);
+  for (p = 0; p < pEnd-pStart; ++p) fpoints[p] = -1;
+  switch (cellRefiner) {
+  case 1: /* Simplicial 2D */
+  case 3: /* Hybrid simplicial 2D */
+  case 2: /* Hex 2D */
+  case 4: /* Hybrid Hex 2D */
+  case 5: /* Simplicial 3D */
+  case 7: /* Hybrid Simplicial 3D */
+  case 6: /* Hex 3D */
+  case 8: /* Hybrid Hex 3D */
+    for (v = vStart; v < vEnd; ++v) fpoints[v-pStart] = vStartNew + (v - vStart);
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", cellRefiner);
+  }
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, fpoints, PETSC_OWN_POINTER, fpointIS);CHKERRQ(ierr);
+  ierr = PetscFree(depthSize);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexSetRefinementUniform"
+/*@
+  DMPlexSetRefinementUniform - Set the flag for uniform refinement
+
+  Input Parameters:
++ dm - The DM
+- refinementUniform - The flag for uniform refinement
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexGetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+@*/
 PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -6599,6 +6540,19 @@ PetscErrorCode DMPlexSetRefinementUniform(DM dm, PetscBool refinementUniform)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetRefinementUniform"
+/*@
+  DMPlexGetRefinementUniform - Retrieve the flag for uniform refinement
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. refinementUniform - The flag for uniform refinement
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementUniform(), DMPlexGetRefinementLimit(), DMPlexSetRefinementLimit()
+@*/
 PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -6612,6 +6566,17 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetRefinementLimit"
+/*@
+  DMPlexSetRefinementLimit - Set the maximum cell volume for refinement
+
+  Input Parameters:
++ dm - The DM
+- refinementLimit - The maximum cell volume in the refined mesh
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexGetRefinementLimit(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform()
+@*/
 PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -6624,6 +6589,19 @@ PetscErrorCode DMPlexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetRefinementLimit"
+/*@
+  DMPlexGetRefinementLimit - Retrieve the maximum cell volume for refinement
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. refinementLimit - The maximum cell volume in the refined mesh
+
+  Level: developer
+
+.seealso: DMRefine(), DMPlexSetRefinementLimit(), DMPlexGetRefinementUniform(), DMPlexSetRefinementUniform()
+@*/
 PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;

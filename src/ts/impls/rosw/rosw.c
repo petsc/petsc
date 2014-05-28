@@ -968,6 +968,25 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec U,PetscBool *
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSRollBack_RosW"
+PetscErrorCode TSRollBack_RosW(TS ts)
+{
+  TS_RosW        *ros = (TS_RosW*)ts->data;
+  RosWTableau    tab = ros->tableau;
+  const PetscInt s    = tab->s;
+  PetscScalar    *w = ros->work;
+  PetscInt       i;
+  Vec            *Y = ros->Y;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<s; i++) w[i] = -tab->bt[i];
+  ierr = VecMAXPY(ts->vec_sol,s,w,Y);CHKERRQ(ierr);
+  ros->status   = TS_STEP_INCOMPLETE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSStep_RosW"
 static PetscErrorCode TSStep_RosW(TS ts)
 {
@@ -982,15 +1001,14 @@ static PetscErrorCode TSStep_RosW(TS ts)
   SNES            snes;
   TSAdapt         adapt;
   PetscInt        i,j,its,lits,reject,next_scheme;
-  PetscReal       next_time_step;
   PetscBool       accept;
+  PetscReal       next_time_step;
   PetscErrorCode  ierr;
-  MatStructure    str;
 
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  next_time_step = ts->time_step;
   accept         = PETSC_TRUE;
+  next_time_step = ts->time_step;
   ros->status    = TS_STEP_INCOMPLETE;
 
   for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
@@ -1041,9 +1059,8 @@ static PetscErrorCode TSStep_RosW(TS ts)
         for (j=0; j<i; j++) w[j] = GammaExplicitCorr[i*s+j];
         ierr = VecMAXPY(Zstage,i,w,Y);CHKERRQ(ierr);
         /*Y[i] += Y[i] + Jac*Zstage[=Jac*GammaExplicitCorr[i,j] * Y[j]] */
-        str  = SAME_NONZERO_PATTERN;
         ierr = TSGetIJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
-        ierr = TSComputeIJacobian(ts,ros->stage_time,ts->vec_sol,Ydot,0,&J,&Jp,&str,PETSC_FALSE);CHKERRQ(ierr);
+        ierr = TSComputeIJacobian(ts,ros->stage_time,ts->vec_sol,Ydot,0,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatMult(J,Zstage,Zdot);CHKERRQ(ierr);
 
         ierr = VecAXPY(Y[i],-1.0,Zdot);CHKERRQ(ierr);
@@ -1068,10 +1085,9 @@ static PetscErrorCode TSStep_RosW(TS ts)
       ros->status = TS_STEP_COMPLETE;
       break;
     } else {                    /* Roll back the current step */
-      for (i=0; i<s; i++) w[i] = -tab->bt[i];
-      ierr = VecMAXPY(ts->vec_sol,s,w,Y);CHKERRQ(ierr);
-      ts->time_step = next_time_step;
-      ros->status   = TS_STEP_INCOMPLETE;
+      ts->ptime += next_time_step; /* This will be undone in rollback */
+      ros->status = TS_STEP_INCOMPLETE;
+      ierr = TSRollBack(ts);CHKERRQ(ierr);
     }
 reject_step: continue;
   }
@@ -1338,7 +1354,7 @@ static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec U,Vec F,TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_RosW"
-static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec U,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec U,Mat A,Mat B,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   Vec            Ydot,Zdot,Ystage,Zstage;
@@ -1352,7 +1368,7 @@ static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec U,Mat *A,Mat *B,MatS
   ierr   = TSRosWGetVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr   = TSComputeIJacobian(ts,ros->stage_time,Ystage,Ydot,shift,A,B,str,PETSC_TRUE);CHKERRQ(ierr);
+  ierr   = TSComputeIJacobian(ts,ros->stage_time,Ystage,Ydot,shift,A,B,PETSC_TRUE);CHKERRQ(ierr);
   ts->dm = dmsave;
   ierr   = TSRosWRestoreVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1703,6 +1719,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
   ts->ops->step           = TSStep_RosW;
   ts->ops->interpolate    = TSInterpolate_RosW;
   ts->ops->evaluatestep   = TSEvaluateStep_RosW;
+  ts->ops->rollback       = TSRollBack_RosW;
   ts->ops->setfromoptions = TSSetFromOptions_RosW;
   ts->ops->snesfunction   = SNESTSFormFunction_RosW;
   ts->ops->snesjacobian   = SNESTSFormJacobian_RosW;

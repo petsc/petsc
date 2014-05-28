@@ -1,3 +1,5 @@
+IS Object: 3 MPI processes
+  type: stride
 [0] Index set is permutation
 [0] Number of indices in (stride) set 3
 [0] 0 0
@@ -14,6 +16,8 @@
 [2] 3 23
 [2] 4 24
 [2] 5 25
+IS Object: 3 MPI processes
+  type: general
 [0] Number of indices in set 7
 [0] 0 3
 [0] 1 4

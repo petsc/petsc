@@ -74,7 +74,6 @@ typedef struct {
   PetscReal aug,aug0,lgn,lgn0;
   PetscInt    subset_type;
   PetscInt    solve_type;
-  MatStructure statematflag,designmatflag;
   PetscBool recompute_jacobian_flag;
   PetscInt phase2_niter;
   PetscBool verbose;

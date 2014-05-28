@@ -138,7 +138,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     ierr = TronGradientProjections(tao,tron);CHKERRQ(ierr);
     f=tron->f; delta=tao->trust;
     tron->n_free_last = tron->n_free;
-    ierr = TaoComputeHessian(tao,tao->solution,&tao->hessian, &tao->hessian_pre, &tron->matflag);CHKERRQ(ierr);
+    ierr = TaoComputeHessian(tao,tao->solution,tao->hessian,tao->hessian_pre);CHKERRQ(ierr);
 
     ierr = ISGetSize(tron->Free_Local, &tron->n_free);CHKERRQ(ierr);
 
@@ -163,11 +163,12 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
       ierr = TaoMatGetSubMat(tao->hessian_pre, tron->Free_Local, tron->diag, tao->subset_type,&tron->Hpre_sub);CHKERRQ(ierr);
     }
     ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(tao->ksp, tron->H_sub, tron->Hpre_sub, tron->matflag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(tao->ksp, tron->H_sub, tron->Hpre_sub);CHKERRQ(ierr);
     while (1) {
 
       /* Approximately solve the reduced linear system */
       ierr = KSPSTCGSetRadius(tao->ksp,delta);CHKERRQ(ierr);
+
       ierr = KSPSolve(tao->ksp, tron->R, tron->DXFree);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;

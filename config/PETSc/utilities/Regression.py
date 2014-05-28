@@ -40,6 +40,8 @@ class Configure(config.base.Configure):
         jobs.append('Fortran_MPIUni')
     else:
       jobs.append('C')
+      if hasattr(self.compilers, 'CXX'):
+        rjobs.append('Cxx')
       if self.x.found:
         jobs.append('C_X')
       if hasattr(self.compilers, 'FC') and self.fortrancpp.fortranDatatypes:
@@ -64,6 +66,8 @@ class Configure(config.base.Configure):
         rjobs.append('C_NoComplex')
         if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.libraryOptions.integerSize == 32:
           rjobs.append('DATAFILESPATH')
+          if hasattr(self.compilers, 'CXX'):
+            rjobs.append('Cxx_DATAFILESPATH')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       # Note: do these tests only for non-complex builds
       if self.scalartypes.scalartype.lower() != 'complex':

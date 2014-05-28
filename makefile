@@ -135,6 +135,11 @@ build: chk_makej
 check: test
 test:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/conf/test.log
+	-@if [ "${PETSC_WITH_BATCH}" = "" ]; then \
+          printf "=========================================\n"; \
+          printf "Now to evaluate the computer systems you plan use - do:\n"; \
+          printf "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} streams NPMAX=<number of MPI processes you intend to use>\n"; \
+        fi
 testx:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/conf/testx.log
 test_build:
@@ -244,7 +249,10 @@ newall:
 	-@cd src/ts;   @${PYTHON} ${PETSC_DIR}/config/builder.py
 
 streams:
-	cd src/benchmarks/streams; ${OMAKE} test
+	cd src/benchmarks/streams; ${OMAKE} streams
+
+stream:
+	cd src/benchmarks/streams; ${OMAKE} stream
 # ------------------------------------------------------------------
 #
 # All remaining actions are intended for PETSc developers only.
@@ -417,9 +425,14 @@ gcov:
 mergegcov:
 	-@${PETSC_DIR}/bin/maint/gcov.py -merge_gcov ${LOC} *.tar.gz
 
-# usage make allrcslabel NEW_RCS_LABEL=v_2_0_28
-allrcslabel:
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} NEW_RCS_LABEL=${NEW_RCS_LABEL} ACTION=rcslabel  alltree
+########################
+#
+# Create the include dependency graph (requires graphviz to be available)
+#
+includegraph:
+	-@${PETSC_DIR}/src/contrib/style/include-graph.sh includegraph.pdf
+	-@echo Include dependency graph written to includegraph.pdf
+
 #
 # -------------------------------------------------------------------------------
 #
@@ -431,9 +444,9 @@ countfortranfunctions:
 	sed "s/_$$//" | sort > /tmp/countfortranfunctions
 
 countcfunctions:
-	-@grep extern ${PETSC_DIR}/include/*.h  | grep "(" | tr -s ' ' | \
+	-@grep PETSC_EXTERN ${PETSC_DIR}/include/*.h  | grep "(" | tr -s ' ' | \
 	cut -d'(' -f1 | cut -d' ' -f3 | grep -v "\*" | tr -s '\012' |  \
-	tr 'A-Z' 'a-z' |  sort > /tmp/countcfunctions
+	tr 'A-Z' 'a-z' |  sort | uniq > /tmp/countcfunctions
 
 difffortranfunctions: countfortranfunctions countcfunctions
 	-@echo -------------- Functions missing in the fortran interface ---------------------

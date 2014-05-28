@@ -1,6 +1,6 @@
 
 /*
-   Provides an interface to the UMFPACKv5.1 sparse solver
+   Provides an interface to the UMFPACK sparse solver available through SuiteSparse version 4.2.1
 
    When build with PETSC_USE_64BIT_INDICES this will use UF_Long as the
    integer type in UMFPACK, otherwise it will use int. This means
@@ -348,7 +348,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
   MATSOLVERUMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices
   via the external package UMFPACK.
 
-  ./configure --download-umfpack to install PETSc to use UMFPACK
+  ./configure --download-suitesparse to install PETSc to use UMFPACK
 
   Consult UMFPACK documentation for more information about the Control parameters
   which correspond to the options database keys below.

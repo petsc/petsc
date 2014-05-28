@@ -21,8 +21,8 @@ classdef PetscPC < PetscObject
     function err = SetUp(obj)
       err = calllib('libpetsc', 'PCSetUp', obj.pobj);PetscCHKERRQ(err);
     end
-    function err = SetOperators(obj,A,B,pattern)
-      err = calllib('libpetsc', 'PCSetOperators', obj.pobj,A.pobj,B.pobj,pattern);PetscCHKERRQ(err);
+    function err = SetOperators(obj,A,B)
+      err = calllib('libpetsc', 'PCSetOperators', obj.pobj,A.pobj,B.pobj);PetscCHKERRQ(err);
     end
     function err = FieldSplitSetIS(obj,name,is)
       err = calllib('libpetsc','PCFieldSplitSetIS',obj.pobj,name,is.pobj)

@@ -259,6 +259,7 @@ class Configure(config.base.Configure):
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
           lib = argIter.next()
+          if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
           if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue
@@ -508,6 +509,7 @@ class Configure(config.base.Configure):
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
           lib = argIter.next()
+          if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
           if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue
@@ -699,6 +701,7 @@ class Configure(config.base.Configure):
     for flag in ['-D', '-WF,-D']:
       if self.setCompilers.checkCompilerFlag(flag+'Testing', body = '#define dummy \n           dummy\n#ifndef Testing\n       fooey\n#endif'):
         self.FortranDefineCompilerOption = flag
+        self.framework.addMakeMacro('FC_DEFINE_FLAG',self.FortranDefineCompilerOption)
         self.setCompilers.popLanguage()
         self.logPrint('Fortran uses '+flag+' for defining macro', 3, 'compilers')
         return
@@ -907,6 +910,7 @@ class Configure(config.base.Configure):
         if arg == '-rpath' or arg == '-R':
           lib = argIter.next()
           if lib == '\\': lib = argIter.next()
+          if lib.startswith('-'): continue # perhaps the path was striped due to quotes?
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
           if lib in ['/usr/lib','/lib','/usr/lib64','/lib64']: continue

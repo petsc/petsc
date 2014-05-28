@@ -22,6 +22,7 @@ class Configure(PETSc.package.NewPackage):
   def configureLibrary(self):
     ''' Checks for -fopenmp compiler flag'''
     ''' Needs to check if OpenMP actually exists and works '''
+    self.checkDependencies()
     self.setCompilers.pushLanguage('C')
     #
     for flag in ["-fopenmp", # Gnu
@@ -37,6 +38,7 @@ class Configure(PETSc.package.NewPackage):
                  ]:
       if self.setCompilers.checkCompilerFlag(flag):
         ompflag = flag
+        self.found = 1
         break
     self.setCompilers.addCompilerFlag(ompflag)
     self.setCompilers.popLanguage()

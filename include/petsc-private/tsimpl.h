@@ -22,7 +22,7 @@ typedef struct _TSOps *TSOps;
 
 struct _TSOps {
   PetscErrorCode (*snesfunction)(SNES,Vec,Vec,TS);
-  PetscErrorCode (*snesjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,TS);
+  PetscErrorCode (*snesjacobian)(SNES,Vec,Mat,Mat,TS);
   PetscErrorCode (*setup)(TS);
   PetscErrorCode (*step)(TS);
   PetscErrorCode (*solve)(TS);
@@ -34,7 +34,13 @@ struct _TSOps {
   PetscErrorCode (*reset)(TS);
   PetscErrorCode (*linearstability)(TS,PetscReal,PetscReal,PetscReal*,PetscReal*);
   PetscErrorCode (*load)(TS,PetscViewer);
+  PetscErrorCode (*rollback)(TS);
 };
+
+/* 
+   TSEvent - Abstract object to handle event monitoring
+*/
+typedef struct _p_TSEvent *TSEvent;
 
 struct _p_TS {
   PETSCHEADER(struct _TSOps);
@@ -42,6 +48,7 @@ struct _p_TS {
   TSProblemType problem_type;
   Vec           vec_sol;
   TSAdapt       adapt;
+  TSEvent       event;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*); /* returns control to user after */
@@ -102,6 +109,7 @@ struct _p_TS {
 
   PetscInt  steps;                  /* steps taken so far */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
+  PetscReal ptime_prev;             /* time at the start of the previous step */
   PetscReal solvetime;              /* time at the conclusion of TSSolve() */
   PetscInt  ksp_its;                /* total number of linear solver iterations */
   PetscInt  snes_its;               /* total number of nonlinear solver iterations */
@@ -200,6 +208,29 @@ PETSC_EXTERN PetscErrorCode DMCopyDMTS(DM,DM);
 PETSC_EXTERN PetscErrorCode DMTSView(DMTS,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMTSLoad(DMTS,PetscViewer);
 
+typedef enum {TSEVENT_NONE,TSEVENT_LOCATED_INTERVAL,TSEVENT_PROCESSING,TSEVENT_ZERO,TSEVENT_RESET_NEXTSTEP} TSEventStatus;
+
+struct _p_TSEvent {
+  PetscScalar    *fvalue;          /* value of event function at the end of the step*/
+  PetscScalar    *fvalue_prev;     /* value of event function at start of the step */
+  PetscReal       ptime;           /* time at step end */
+  PetscReal       ptime_prev;      /* time at step start */
+  PetscErrorCode  (*monitor)(TS,PetscReal,Vec,PetscScalar*,void*); /* User event monitor function */
+  PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*); /* User post event function */
+  PetscBool      *terminate;        /* 1 -> Terminate time stepping, 0 -> continue */
+  PetscInt       *direction;        /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */ 
+  PetscInt        nevents;          /* Number of events to handle */
+  PetscInt        nevents_zero;     /* Number of event zero detected */
+  PetscInt        *events_zero;      /* List of events that have reached zero */
+  void           *monitorcontext;
+  PetscReal       tol;              /* Tolerance for event zero check */
+  TSEventStatus   status;           /* Event status */
+  PetscReal       tstepend;         /* End time of step */
+  PetscReal       initial_timestep; /* Initial time step */
+};
+
+PETSC_EXTERN PetscErrorCode TSEventMonitor(TS);
+PETSC_EXTERN PetscErrorCode TSEventMonitorDestroy(TSEvent*);
 
 PETSC_EXTERN PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 

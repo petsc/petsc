@@ -35,7 +35,7 @@ typedef struct {                               /*============================*/
   PetscBool PreLoading;
 } AppCtx;                                      /*============================*/
 
-extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
+extern int  FormJacobian(SNES,Vec,Mat,Mat,void*),
             FormFunction(SNES,Vec,Vec,void*),
             FormInitialGuess(SNES,GRID*),
             Update(SNES,void*),
@@ -445,13 +445,12 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
+int FormJacobian(SNES snes,Vec x,Mat Jac,Mat pc_mat,void *dummy)
 /*---------------------------------------------------------------------*/
 {
   AppCtx      *user  = (AppCtx*) dummy;
   GRID        *grid  = user->grid;
   TstepCtx    *tsCtx = user->tsCtx;
-  Mat         pc_mat = *B;
   Vec         localX = grid->qnodeLoc;
   PetscScalar *qnode;
   int         ierr;
@@ -472,9 +471,8 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
             grid->area,grid->xyzn,&tsCtx->cfl,
            &rank,&grid->nvertices);
   ierr  = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
-  ierr  = MatAssemblyBegin(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *flag = SAME_NONZERO_PATTERN;
+  ierr  = MatAssemblyBegin(Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 #if defined(MATRIX_VIEW)
   if ((tsCtx->itstep != 0) &&(tsCtx->itstep % tsCtx->print_freq) == 0) {
     PetscViewer viewer;
@@ -2381,7 +2379,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
 int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 /*---------------------------------------------------------------------*/
 {
-  int                    ierr,i,j,k,bs;
+  int                    ierr,i,j,bs;
   int                    nnodes,jstart,jend,nbrs_diag,nbrs_offd;
   int                    nnodesLoc,nvertices;
   int                    *val_diag,*val_offd,*svertices,*loc2pet;
@@ -2551,25 +2549,9 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 /* Set local to global mapping for setting the matrix elements in
 * local ordering : first set row by row mapping
 */
-#if defined(INTERLACING)
-  ICALLOC(bs*nvertices,&svertices);
-  k = 0;
-  for (i=0; i < nvertices; i++)
-    for (j=0; j < bs; j++)
-      svertices[k++] = (bs*loc2pet[i] + j);
-  /*ierr = MatSetLocalToGlobalMapping(grid->A,bs*nvertices,svertices);CHKERRQ(ierr);*/
-  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isl2g);
+  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);
   ierr = MatSetLocalToGlobalMapping(grid->A,isl2g,isl2g);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
-
-/* Now set the blockwise local to global mapping */
-#if defined(BLOCKING)
-  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);
-  ierr = MatSetLocalToGlobalMappingBlock(grid->A,isl2g,isl2g);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
-#endif
-  ierr = PetscFree(svertices);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 

@@ -77,14 +77,14 @@ class Configure(config.base.Configure):
         packageObj                    = framework.require('config.packages.'+package, self)
         packageObj.archProvider       = self.arch
         packageObj.languageProvider   = self.languages
+        packageObj.precisionProvider  = self.scalartypes
         packageObj.installDirProvider = self.installdir
         packageObj.externalPackagesDirProvider = self.externalpackagesdir
         setattr(self, package.lower(), packageObj)
     # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.utilities.scalarTypes', self.f2cblaslapack)
-    self.f2cblaslapack.precisionProvider = self.scalartypes
+    framework.require('PETSc.utilities.scalarTypes', self.fblaslapack)
     framework.require('PETSc.utilities.scalarTypes', self.blaslapack)
-    self.blaslapack.precisionProvider = self.scalartypes
 
     self.compilers.headerPrefix  = self.headerPrefix
     self.types.headerPrefix      = self.headerPrefix
@@ -195,6 +195,11 @@ prepend-path PATH %s
   def Dump(self):
     ''' Actually put the values into the configuration files '''
     # eventually everything between -- should be gone
+    if self.mpi.usingMPIUni:
+      #
+      # Remove any MPI/MPICH include files that may have been put here by previous runs of ./configure
+      self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'))
+
 #-----------------------------------------------------------------------------------------------------
 
     # Sometimes we need C compiler, even if built with C++
@@ -334,8 +339,13 @@ prepend-path PATH %s
       self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
     else:
       self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
-    self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS)
     self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
+    if self.framework.argDB['prefix']:
+      installdir = self.framework.argDB['prefix']
+      lib_basic = self.PETSC_EXTERNAL_LIB_BASIC.replace(self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(installdir,'lib'))
+    else:
+      lib_basic = self.PETSC_EXTERNAL_LIB_BASIC
+    self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',lib_basic)
     self.allincludes = self.headers.toStringNoDupes(includes)
     self.addMakeMacro('PETSC_CC_INCLUDES',self.allincludes)
     self.PETSC_CC_INCLUDES = self.allincludes
@@ -392,7 +402,6 @@ prepend-path PATH %s
   def dumpConfigInfo(self):
     import time
     fd = file(os.path.join(self.arch.arch,'include','petscconfiginfo.h'),'w')
-    fd.write('static const char *petscconfigureruntime = "'+time.ctime(time.time())+'";\n')
     fd.write('static const char *petscconfigureoptions = "'+self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"')+'";\n')
     fd.close()
     return
@@ -664,6 +673,12 @@ prepend-path PATH %s
     else:
       self.addDefine('UNUSED', ' ')
     self.popLanguage()
+
+  def configureIsatty(self):
+    '''Check if the Unix C function isatty() works correctly
+       Actually just assumes it does not work correctly on batch systems'''
+    if not self.framework.argDB['with-batch']:
+      self.addDefine('USE_ISATTY',1)
 
   def configureDeprecated(self):
     '''Check if __attribute((deprecated)) is supported'''
@@ -955,6 +970,7 @@ prepend-path PATH %s
     self.executeTest(self.configurePrefetch)
     self.executeTest(self.configureUnused)
     self.executeTest(self.configureDeprecated)
+    self.executeTest(self.configureIsatty)
     self.executeTest(self.configureExpect);
     self.executeTest(self.configureFunctionName);
     self.executeTest(self.configureIntptrt);

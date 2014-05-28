@@ -191,6 +191,7 @@ extern MPI_Datatype MPIU___FLOAT128;
 #endif
 extern int MPIUNI_Memcpy(void*,const void*,int);
 
+#define MPI_MAX_PROCESSOR_NAME 1024
 
 #define MPI_REQUEST_NULL     ((MPI_Request)0)
 #define MPI_GROUP_NULL       ((MPI_Group)0)
@@ -252,6 +253,7 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 #define MPI_Finalized     Petsc_MPI_Finalized
 #define MPI_Comm_size     Petsc_MPI_Comm_size
 #define MPI_Comm_rank     Petsc_MPI_Comm_rank
+#define MPI_Wtime         Petsc_MPI_Wtime
 
 /* identical C bindings */
 #define MPI_Comm_create_keyval Petsc_MPI_Keyval_create
@@ -274,6 +276,7 @@ extern int    MPI_Initialized(int*);
 extern int    MPI_Finalized(int*);
 extern int    MPI_Comm_size(MPI_Comm,int*);
 extern int    MPI_Comm_rank(MPI_Comm,int*);
+extern double MPI_Wtime(void);
 
 #define MPI_Aint MPIUNI_INTPTR
 /*
@@ -720,7 +723,6 @@ extern int    MPI_Comm_rank(MPI_Comm,int*);
 #define MPI_Error_string(errorcode,string,result_len) MPI_SUCCESS
 #define MPI_Error_class(errorcode,errorclass) MPI_SUCCESS
 #define MPI_Wtick() 1.0
-#define MPI_Wtime() 0.0
 #define MPI_Pcontrol(level) MPI_SUCCESS
 
 #define MPI_NULL_COPY_FN   0

@@ -236,7 +236,6 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
   Mat            *ap,*aa = a->a;
 
   PetscFunctionBegin;
-  if (v) PetscValidScalarPointer(v,6);
   for (k=0; k<m; k++) { /* loop over added rows */
     row  = im[k];
     brow = row/bs;
@@ -285,6 +284,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
       if (N>=i) ap[i] = 0;
       rp[i] = bcol;
       a->nz++;
+      A->nonzerostate++;
 noinsert1:;
       if (!*(ap+i)) {
         ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,0,ap+i);CHKERRQ(ierr);
@@ -294,7 +294,6 @@ noinsert1:;
     }
     ailen[brow] = nrow;
   }
-  A->same_nonzero = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -730,9 +729,7 @@ PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
   a->reallocs         = 0;
   A->info.nz_unneeded = (double)fshift;
   a->rmax             = rmax;
-
-  A->same_nonzero = PETSC_TRUE;
-  ierr            = MatMarkDiagonal_BlockMat(A);CHKERRQ(ierr);
+  ierr                = MatMarkDiagonal_BlockMat(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

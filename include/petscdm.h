@@ -5,6 +5,7 @@
 #define __PETSCDM_H
 #include <petscmat.h>
 #include <petscdmtypes.h>
+#include <petscfetypes.h>
 
 PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 
@@ -19,7 +20,6 @@ PETSC_EXTERN PetscClassId DM_CLASSID;
 J*/
 typedef const char* DMType;
 #define DMDA        "da"
-#define DMADDA      "adda"
 #define DMCOMPOSITE "composite"
 #define DMSLICED    "sliced"
 #define DMSHELL     "shell"
@@ -28,6 +28,7 @@ typedef const char* DMType;
 #define DMREDUNDANT "redundant"
 #define DMPATCH     "patch"
 #define DMMOAB      "moab"
+#define DMCIRCUIT   "circuit"
 
 PETSC_EXTERN const char *const DMBoundaryTypes[];
 PETSC_EXTERN PetscFunctionList DMList;
@@ -55,7 +56,6 @@ PETSC_EXTERN PetscErrorCode DMRestoreNamedGlobalVector(DM,const char*,Vec*);
 PETSC_EXTERN PetscErrorCode DMGetNamedLocalVector(DM,const char*,Vec*);
 PETSC_EXTERN PetscErrorCode DMRestoreNamedLocalVector(DM,const char*,Vec*);
 PETSC_EXTERN PetscErrorCode DMGetLocalToGlobalMapping(DM,ISLocalToGlobalMapping*);
-PETSC_EXTERN PetscErrorCode DMGetLocalToGlobalMappingBlock(DM,ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode DMCreateFieldIS(DM,PetscInt*,char***,IS**);
 PETSC_EXTERN PetscErrorCode DMGetBlockSize(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMCreateColoring(DM,ISColoringType,ISColoring*);
@@ -97,6 +97,8 @@ PETSC_EXTERN PetscErrorCode DMSetCoordinates(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocal(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinatesLocal(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMLocatePoints(DM,Vec,IS*);
+PETSC_EXTERN PetscErrorCode DMGetPeriodicity(DM,const PetscReal**,const PetscReal**);
+PETSC_EXTERN PetscErrorCode DMSetPeriodicity(DM,const PetscReal[],const PetscReal[]);
 
 /* block hook interface */
 PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),PetscErrorCode (*)(DM,VecScatter,VecScatter,DM,void*),void*);
@@ -148,9 +150,14 @@ PETSC_EXTERN PetscErrorCode DMCreateDefaultSF(DM, PetscSection, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetPointSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
 
+PETSC_EXTERN PetscErrorCode DMGetOutputDM(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMGetOutputSequenceNumber(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMSetOutputSequenceNumber(DM, PetscInt);
+
 PETSC_EXTERN PetscErrorCode DMGetNumFields(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetField(DM, PetscInt, PetscObject *);
+PETSC_EXTERN PetscErrorCode DMSetField(DM, PetscInt, PetscObject);
 
 typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;
 

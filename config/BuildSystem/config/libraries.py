@@ -123,7 +123,8 @@ class Configure(config.base.Configure):
     libs = newlibs
     newlibs = []
     for j in libs:
-      # do not remove duplicate -l, because there is a tiny chance that order may matter
+      # do not remove duplicate non-consecutive -l, because there is a tiny chance that order may matter
+      if newlibs and j == newlibs[-1]: continue
       if j in newlibs and not ( j.startswith('-l') or j == '-framework') : continue
       newlibs.append(j)
     return ' '.join(newlibs)

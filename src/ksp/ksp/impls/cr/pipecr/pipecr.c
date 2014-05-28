@@ -35,7 +35,6 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
   PetscReal      dp   = 0.0;
   Vec            X,B,Z,P,W,Q,U,M,N;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
@@ -52,7 +51,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
   Q = ksp->work[5];
   U = ksp->work[6];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
   /* we don't have an R vector, so put the (unpreconditioned) residual in w for now */

@@ -95,10 +95,10 @@ typedef struct {
 PetscErrorCode FormFunction(Tao, Vec, PetscReal*, void*);
 PetscErrorCode FormGradient(Tao, Vec, Vec, void*);
 PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal*, Vec, void*);
-PetscErrorCode FormJacobianState(Tao, Vec, Mat*, Mat*, Mat*, MatStructure*,void*);
-PetscErrorCode FormJacobianDesign(Tao, Vec, Mat*,void*);
+PetscErrorCode FormJacobianState(Tao, Vec, Mat, Mat, Mat, void*);
+PetscErrorCode FormJacobianDesign(Tao, Vec, Mat,void*);
 PetscErrorCode FormConstraints(Tao, Vec, Vec, void*);
-PetscErrorCode FormHessian(Tao, Vec, Mat*, Mat*, MatStructure*, void*);
+PetscErrorCode FormHessian(Tao, Vec, Mat, Mat, void*);
 PetscErrorCode Gather(Vec, Vec, VecScatter, Vec, VecScatter);
 PetscErrorCode Scatter(Vec, Vec, VecScatter, Vec, VecScatter);
 PetscErrorCode EllipticInitialize(AppCtx*);
@@ -285,7 +285,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
 /* A
 MatShell object
 */
-PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat *J, Mat* JPre, Mat* JInv, MatStructure* flag, void *ptr)
+PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)ptr;
@@ -307,21 +307,19 @@ PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat *J, Mat* JPre, Mat* JInv, M
     ierr = MatDiagonalScale(user->Divwork,NULL,user->Swork);CHKERRQ(ierr);
     ierr = MatMatMultNumeric(user->Divwork,user->Grad,user->DSG);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianDesign"
 /* B */
-PetscErrorCode FormJacobianDesign(Tao tao, Vec X, Mat *J, void *ptr)
+PetscErrorCode FormJacobianDesign(Tao tao, Vec X, Mat J, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)ptr;
 
   PetscFunctionBegin;
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter);CHKERRQ(ierr);
-  *J = user->Jd;
   PetscFunctionReturn(0);
 }
 
@@ -377,7 +375,7 @@ PetscErrorCode StateInvMatMult(Mat J_shell, Vec X, Vec Y)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
-  ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG);CHKERRQ(ierr);
   if (Y == user->ytrue) {
     ierr = KSPSetTolerances(user->solver,1e-8,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   } else if (user->lcl) {
@@ -1134,7 +1132,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = KSPCreate(PETSC_COMM_WORLD,&user->solver);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user->solver);CHKERRQ(ierr);
 
-  ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG);CHKERRQ(ierr);
   user->lcl->solve_type = LCL_FORWARD1;
   ierr = MatMult(user->JsInv,user->q,user->ytrue);CHKERRQ(ierr);
   /* First compute Av_u = Av*exp(-u) */

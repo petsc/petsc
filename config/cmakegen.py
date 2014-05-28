@@ -170,9 +170,10 @@ def pkgsources(pkg, mistakes):
       return os.path.join(root,filename)
     sourcecu = makevars.get('SOURCECU','').split()
     sourcec = makevars.get('SOURCEC','').split()
+    sourcecxx = makevars.get('SOURCECXX','').split()
     sourcef = makevars.get('SOURCEF','').split()
-    mistakes.compareSourceLists(root,sourcec+sourcef+sourcecu, files) # Diagnostic output about unused source files
-    sources[repr(sorted(conditions))].extend(relpath(f) for f in sourcec + sourcef + sourcecu)
+    mistakes.compareSourceLists(root,sourcec+sourcecxx+sourcef+sourcecu, files) # Diagnostic output about unused source files
+    sources[repr(sorted(conditions))].extend(relpath(f) for f in sourcec + sourcecxx + sourcef + sourcecu)
     allconditions[root] = conditions
   return sources
 
