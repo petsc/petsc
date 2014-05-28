@@ -899,14 +899,15 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
       PetscInt     Nf;
 
       ierr = PetscProblemGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
-      if (cnt >= Nf) continue;
-      ierr = PetscProblemGetDiscretization(dm->prob, cnt, &disc);CHKERRQ(ierr);
-      ierr = PetscObjectQuery(disc, "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
-      if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nullspace", (PetscObject) space);CHKERRQ(ierr);}
-      ierr = PetscObjectQuery(disc, "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
-      if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nearnullspace", (PetscObject) space);CHKERRQ(ierr);}
-      ierr = PetscObjectQuery(disc, "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
-      if (pmat) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "pmat", (PetscObject) pmat);CHKERRQ(ierr);}
+      if (cnt < Nf) {
+        ierr = PetscProblemGetDiscretization(dm->prob, cnt, &disc);CHKERRQ(ierr);
+        ierr = PetscObjectQuery(disc, "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
+        if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nullspace", (PetscObject) space);CHKERRQ(ierr);}
+        ierr = PetscObjectQuery(disc, "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
+        if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nearnullspace", (PetscObject) space);CHKERRQ(ierr);}
+        ierr = PetscObjectQuery(disc, "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
+        if (pmat) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "pmat", (PetscObject) pmat);CHKERRQ(ierr);}
+      }
     }
     cnt++;
     next = next->next;
