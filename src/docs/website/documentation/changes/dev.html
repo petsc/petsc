@@ -180,6 +180,7 @@
       <h4>DM/DA:</h4>
       <ul>
         <li>DMDAGetLocalToGlobalMappingBlock() has been removed, the DMDAGetLocalToGlobalMapping() now handles both block and non-block cases</li>
+        <li>DMDAGetGlobalIndices(DM,PetscInt*,const PetscInt*[]) and DMDARestoreGlobalIndices(DM,PetscInt*,const PetscInt*[]) are removed, use DMGetLocalToGlobalMapping() to get this information</li>
         <li>DMADDA has been removed, it never worked correctly</li>
         <li>The MatType argument is removed from DMCreateMatrix(), you can use DMSetMatType() to indicate the type you want used with a DM, defaults to MATAIJ</li>
         <li><tt>DMDABoundaryType</tt> has become <tt>DMBoundaryType</tt>, and all the enumeration values have also been renamed.</li>

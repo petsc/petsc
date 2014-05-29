@@ -772,22 +772,9 @@ To assemble global stiffness matrices, one needs either
 \begin{itemize}
 \item
 the global node number of each local node
-including the ghost nodes. This number may be determined by using the
-command
+including the ghost nodes cqn be obtained by first calling
 \begin{tabbing}
-  DMDAGetGlobalIndices(DM da,int *n,const int *idx[]);
-  DMDARestoreGlobalIndices(DM da,int *n,const int *idx[]);
-\end{tabbing}
-The output argument \trl{n} contains the number of
-local nodes, including ghost nodes, while \trl{idx} contains a list of length
-\trl{n} containing the global indices that correspond to the local nodes. Either
-parameter may be omitted by passing PETSC\_NULL. Note that the Fortran
-interface differs slightly; see Section~\ref{sec_fortranarrays} for details.
-\item
-or to set up the vectors and matrices so that their entries may be
-added using the local numbering. This is done by first calling
-\begin{tabbing}
-  DMDAGetISLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map);
+  DMGetLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map);
 \end{tabbing}
 followed by
 \begin{tabbing}
@@ -5213,7 +5200,7 @@ final \trl{ierr} argument.
 Since Fortran 77 does not allow arrays to be returned in routine
 arguments, all PETSc routines that return arrays, such as
 VecGetArray(), MatDenseGetArray(),
-ISGetIndices(), and DMDAGetGlobalIndices()
+and ISGetIndices(), 
 are defined slightly differently in Fortran than in C.
 Instead of returning the array itself, these routines
 accept as input a user-specified array of dimension one and return an
@@ -5232,7 +5219,6 @@ The Fortran interface for several routines is as follows:
    call VecGetArray(x,xx\_v,xx\_i,ierr)\\
    call MatDenseGetArray(A,aa\_v,aa\_i,ierr)\\
    call ISGetIndices(s,ss\_v,ss\_i,ierr)\\
-   call DMDAGetGlobalIndices(d,nloc,dd\_v,dd\_i,ierr)
 \end{tabbing}
 
 To access array elements directly, both the user-specified array and
@@ -5264,8 +5250,7 @@ indexing begins with 1, not 0 (unless the array is declared as \trl{xx_v(0:1)}).
 This is different from the use of VecSetValues()
 where, indexing always starts with 0.
 
-{\em Note}: If using VecGetArray(), MatDenseGetArray(), ISGetIndices(),
-or DMDAGetGlobalIndices()
+{\em Note}: If using VecGetArray(), MatDenseGetArray(), or ISGetIndices(),
 from Fortran, the user {\em must not} compile the Fortran code with options
 to check for ``array entries out of bounds'' (e.g., on the IBM RS/6000 this
 is done with the \trl{-C} compiler option, so never use the \trl{-C} option with this).
@@ -5385,7 +5370,7 @@ manual pages and previous discussion in this chapter for details:
  PetscInitialize(char *filename,int \trl{ierr)}\\
  PetscError(MPI\_COMM,int err,char *message,int \trl{ierr)}\\
  VecGetArray(), MatDenseGetArray()\\
- ISGetIndices(), DMDAGetGlobalIndices()\\
+ ISGetIndices(), \\
  VecDuplicateVecs(), VecDestroyVecs()\\
  PetscOptionsGetString()
 \end{tabbing}
@@ -5408,7 +5393,7 @@ Current routines include:
 \begin{tabbing}
  VecGetArrayF90(), VecRestoreArrayF90()\\
  VecDuplicateVecsF90(), VecDestroyVecsF90()\\
- DMDAVecGetArrayF90(), DMDAGetGlobalIndicesF90()\\
+ DMDAVecGetArrayF90(), ISLocalToGlobalMappingGetIndicesF90()\\
  MatDenseGetArrayF90(), MatDenseRestoreArrayF90()\\
  ISGetIndicesF90(), ISRestoreIndicesF90()
 \end{tabbing}

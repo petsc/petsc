@@ -96,11 +96,29 @@ static PetscErrorCode ISL2GCompose(IS is,ISLocalToGlobalMapping ltog,ISLocalToGl
   PetscErrorCode ierr;
   const PetscInt *idx;
   PetscInt       m,*idxm;
+  PetscBool      isblock;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,2);
   PetscValidPointer(cltog,3);
+  ierr = PetscObjectTypeCompare((PetscObject)is,ISBLOCK,&isblock);CHKERRQ(ierr);
+  if (isblock) {
+    PetscInt bs,lbs;
+
+    ierr = ISGetBlockSize(is,&bs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockSize(ltog,&lbs);CHKERRQ(ierr);
+    if (bs == lbs) {
+      ierr = ISGetLocalSize(is,&m);CHKERRQ(ierr);
+      m    = m/bs;
+      ierr = ISBlockGetIndices(is,&idx);CHKERRQ(ierr);
+      ierr = PetscMalloc1(m,&idxm);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingApplyBlock(ltog,m,idx,idxm);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is),bs,m,idxm,PETSC_OWN_POINTER,cltog);CHKERRQ(ierr);
+      ierr = ISBlockRestoreIndices(is,&idx);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
   ierr = ISGetLocalSize(is,&m);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&idx);CHKERRQ(ierr);
   ierr = PetscMalloc1(m,&idxm);CHKERRQ(ierr);

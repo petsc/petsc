@@ -397,7 +397,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
    Notes:
    Due to grid point reordering with DMDAs, we must always work
    with the local grid points, and then transform them to the new
-   global numbering with the "ltog" mapping (via DMDAGetGlobalIndices()).
+   global numbering with the "ltog" mapping
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */
@@ -406,9 +406,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   AppCtx         *user  = (AppCtx*)ptr;   /* user-defined application context */
   Vec            localX = user->localX;   /* local vector */
   PetscErrorCode ierr;
-  const PetscInt *ltog;                   /* local-to-global mapping */
   PetscInt       i,j,row,mx,my,col[5];
-  PetscInt       nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
+  PetscInt       xs,ys,xm,ym,gxs,gys,gxm,gym;
   PetscScalar    two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -436,11 +435,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /*
-     Get the global node numbers for all local nodes, including ghost points
-  */
-  ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
-
-  /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
         contiguous chunks of rows across the processors. The "grow"
@@ -456,22 +450,20 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
     row = (j - gys)*gxm + xs - gxs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
-      grow = ltog[row];
       /* boundary points */
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        ierr = MatSetValues(jac,1,&grow,1,&grow,&one,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(jac,1,&row,1,&row,&one,INSERT_VALUES);CHKERRQ(ierr);
         continue;
       }
       /* interior grid points */
-      v[0] = -hxdhy; col[0] = ltog[row - gxm];
-      v[1] = -hydhx; col[1] = ltog[row - 1];
-      v[2] = two*(hydhx + hxdhy) - sc*lambda*PetscExpScalar(x[row]); col[2] = grow;
-      v[3] = -hydhx; col[3] = ltog[row + 1];
-      v[4] = -hxdhy; col[4] = ltog[row + gxm];
-      ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      v[0] = -hxdhy; col[0] = row - gxm;
+      v[1] = -hydhx; col[1] = row - 1;
+      v[2] = two*(hydhx + hxdhy) - sc*lambda*PetscExpScalar(x[row]); col[2] = row;
+      v[3] = -hydhx; col[3] = row + 1;
+      v[4] = -hxdhy; col[4] = row + gxm;
+      ierr = MatSetValuesLocal(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = DMDARestoreGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
 
   /*
      Assemble matrix, using the 2-step process:

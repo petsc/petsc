@@ -1317,25 +1317,26 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,VecScatter *inject)
 #define __FUNCT__ "DMCreateAggregates_DA"
 PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
 {
-  PetscErrorCode   ierr;
-  PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;
-  PetscInt         dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
-  DMBoundaryType   bxc,byc,bzc,bxf,byf,bzf;
-  DMDAStencilType  stc,stf;
-  PetscInt         i,j,l;
-  PetscInt         i_start,j_start,l_start, m_f,n_f,p_f;
-  PetscInt         i_start_ghost,j_start_ghost,l_start_ghost,m_ghost,n_ghost,p_ghost;
-  const PetscInt   *idx_f;
-  PetscInt         i_c,j_c,l_c;
-  PetscInt         i_start_c,j_start_c,l_start_c, m_c,n_c,p_c;
-  PetscInt         i_start_ghost_c,j_start_ghost_c,l_start_ghost_c,m_ghost_c,n_ghost_c,p_ghost_c;
-  const PetscInt   *idx_c;
-  PetscInt         d;
-  PetscInt         a;
-  PetscInt         max_agg_size;
-  PetscInt         *fine_nodes;
-  PetscScalar      *one_vec;
-  PetscInt         fn_idx;
+  PetscErrorCode         ierr;
+  PetscInt               dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;
+  PetscInt               dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
+  DMBoundaryType         bxc,byc,bzc,bxf,byf,bzf;
+  DMDAStencilType        stc,stf;
+  PetscInt               i,j,l;
+  PetscInt               i_start,j_start,l_start, m_f,n_f,p_f;
+  PetscInt               i_start_ghost,j_start_ghost,l_start_ghost,m_ghost,n_ghost,p_ghost;
+  const PetscInt         *idx_f;
+  PetscInt               i_c,j_c,l_c;
+  PetscInt               i_start_c,j_start_c,l_start_c, m_c,n_c,p_c;
+  PetscInt               i_start_ghost_c,j_start_ghost_c,l_start_ghost_c,m_ghost_c,n_ghost_c,p_ghost_c;
+  const PetscInt         *idx_c;
+  PetscInt               d;
+  PetscInt               a;
+  PetscInt               max_agg_size;
+  PetscInt               *fine_nodes;
+  PetscScalar            *one_vec;
+  PetscInt               fn_idx;
+  ISLocalToGlobalMapping ltogmf,ltogmc;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dac,DM_CLASSID,1);
@@ -1361,11 +1362,15 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
 
   ierr = DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
+
+  ierr = DMGetLocalToGlobalMapping(daf,&ltogmf);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltogmf,&idx_f);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
+
+  ierr = DMGetLocalToGlobalMapping(dac,&ltogmc);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltogmc,&idx_c);CHKERRQ(ierr);
 
   /*
      Basic idea is as follows. Here's a 2D example, suppose r_x, r_y are the ratios
@@ -1412,8 +1417,8 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
       }
     }
   }
-  ierr = DMDARestoreGlobalIndices(daf,NULL,&idx_f);CHKERRQ(ierr);
-  ierr = DMDARestoreGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltogmf,&idx_f);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltogmc,&idx_c);CHKERRQ(ierr);
   ierr = PetscFree2(one_vec,fine_nodes);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*rest, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*rest, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

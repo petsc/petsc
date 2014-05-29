@@ -387,7 +387,7 @@
 !  Notes:
 !  Due to grid point reordering with DMDAs, we must always work
 !  with the local grid points, and then transform them to the new
-!  global numbering with the "ltog" mapping (via DMDAGetGlobalIndices()).
+!  global numbering with the "ltog" mapping
 !  We cannot work directly with the global numbers for the original
 !  uniprocessor grid!
 !
@@ -395,10 +395,6 @@
 !  when setting matrix entries:
 !    (A) MatSetValuesLocal(), using the local ordering (including
 !        ghost points!)
-!        - Use DMDAGetGlobalIndices() to extract the local-to-global map
-!        - Associate this map with the matrix by calling
-!          MatSetLocalToGlobalMapping() once
-!        - Set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
 !    (B) MatSetValues(), using the global ordering
 !        - Use DMDAGetGlobalIndices() to extract the local-to-global map

@@ -31,7 +31,7 @@ PetscErrorCode ISG2LMapApply(ISLocalToGlobalMapping mapping,PetscInt n,const Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingGetSize"
-/*@C
+/*@
     ISLocalToGlobalMappingGetSize - Gets the local size of a local to global mapping.
 
     Not Collective
@@ -40,7 +40,7 @@ PetscErrorCode ISG2LMapApply(ISLocalToGlobalMapping mapping,PetscInt n,const Pet
 .   ltog - local to global mapping
 
     Output Parameter:
-.   n - the number of entries in the local mapping
+.   n - the number of BLOCK entries in the local mapping, the actual number of indices that may be mapped is n*bs where bs is obtained with ISLocalToGlobalMappingGetBlockSize()
 
     Level: advanced
 
@@ -1060,7 +1060,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
 #undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingGetIndices"
 /*@C
-   ISLocalToGlobalMappingGetIndices - Get global indices for every local point
+   ISLocalToGlobalMappingGetIndices - Get global indices for every local block that is mapped
 
    Not Collective
 
@@ -1068,7 +1068,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
 . ltog - local to global mapping
 
    Output Arguments:
-. array - array of indices
+. array - array of indices, the length of this array may be obtained with ISLocalToGlobalMappingGetSize()
 
    Level: advanced
 

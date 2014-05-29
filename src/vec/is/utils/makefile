@@ -7,7 +7,7 @@ SOURCEC	 = isio.c isltog.c pmap.c vsectionis.c
 SOURCEF	 =
 SOURCEH	 =
 LIBBASE	 = libpetscvec
-DIRS	 =
+DIRS	 = 
 MANSEC	 = IS
 LOCDIR	 = src/vec/is/utils/
 

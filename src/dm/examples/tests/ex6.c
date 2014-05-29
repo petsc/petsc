@@ -137,8 +137,16 @@ int main(int argc,char **argv)
 
   /* Tests mappings betweeen application/PETSc orderings */
   if (test_order) {
+    ISLocalToGlobalMapping ltogm;
+    PetscInt               lbs;
+
+    ierr = DMGetLocalToGlobalMapping(da,&ltogm);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltogm,&nloc);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockSize(ltogm,&lbs);CHKERRQ(ierr);
+    nloc = lbs*nloc;
+    ierr = ISLocalToGlobalMappingGetIndices(ltogm,&ltog);CHKERRQ(ierr);
+
     ierr = DMDAGetGhostCorners(da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm);CHKERRQ(ierr);
-    ierr = DMDAGetGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
     ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
     /* ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     ierr = PetscMalloc1(nloc,&iglobal);CHKERRQ(ierr);
@@ -181,7 +189,7 @@ int main(int argc,char **argv)
       }
     }
     ierr = PetscFree(iglobal);CHKERRQ(ierr);
-    ierr = DMDARestoreGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog);CHKERRQ(ierr);
   }
 
   /* Free memory */
