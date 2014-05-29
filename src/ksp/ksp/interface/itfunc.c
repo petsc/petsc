@@ -933,13 +933,9 @@ PetscErrorCode  KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,Petsc
 
    Input Parameters:
 +  ksp - the Krylov subspace context
-.  rtol - the relative convergence tolerance
-   (relative decrease in the residual norm)
-.  abstol - the absolute convergence tolerance
-   (absolute size of the residual norm)
-.  dtol - the divergence tolerance
-   (amount residual can increase before KSPConvergedDefault()
-   concludes that the method is diverging)
+.  rtol - the relative convergence tolerance, relative decrease in the (possibly preconditioned) residual norm
+.  abstol - the absolute convergence tolerance   absolute size of the (possibly preconditioned) residual norm
+.  dtol - the divergence tolerance,   amount (possibly preconditioned) residual norm can increase before KSPConvergedDefault() concludes that the method is diverging
 -  maxits - maximum number of iterations to use
 
    Options Database Keys:
@@ -951,8 +947,7 @@ PetscErrorCode  KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,Petsc
    Notes:
    Use PETSC_DEFAULT to retain the default value of any of the tolerances.
 
-   See KSPConvergedDefault() for details on the use of these parameters
-   in the default convergence test.  See also KSPSetConvergenceTest()
+   See KSPConvergedDefault() for details how these parameters are used in the default convergence test.  See also KSPSetConvergenceTest()
    for setting user-defined stopping criteria.
 
    Level: intermediate

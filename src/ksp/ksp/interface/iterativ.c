@@ -651,40 +651,42 @@ PetscErrorCode  KSPConvergedDefaultSetUMIRNorm(KSP ksp)
 #undef __FUNCT__
 #define __FUNCT__ "KSPConvergedDefault"
 /*@C
-   KSPConvergedDefault - Determines convergence of
-   the iterative solvers (default code).
+   KSPConvergedDefault - Determines convergence of the linear iterative solvers by default
 
    Collective on KSP
 
    Input Parameters:
 +  ksp   - iterative context
 .  n     - iteration number
-.  rnorm - 2-norm residual value (may be estimated)
+.  rnorm - residual norm (may be estimated, depending on the method may be the preconditioned residual norm)
 -  ctx - convergence context which must be created by KSPConvergedDefaultCreate()
 
-   reason is set to:
+   Output Parameter:
 +   positive - if the iteration has converged;
 .   negative - if residual norm exceeds divergence threshold;
 -   0 - otherwise.
 
    Notes:
-   KSPConvergedDefault() reaches convergence when
-$      rnorm < MAX (rtol * rnorm_0, abstol);
-   Divergence is detected if
-$      rnorm > dtol * rnorm_0,
+   KSPConvergedDefault() reaches convergence when   rnorm < MAX (rtol * rnorm_0, abstol);
+   Divergence is detected if  rnorm > dtol * rnorm_0,
 
-   where
+   where:
 +     rtol = relative tolerance,
 .     abstol = absolute tolerance.
 .     dtol = divergence tolerance,
 -     rnorm_0 is the two norm of the right hand side. When initial guess is non-zero you
           can call KSPConvergedDefaultSetUIRNorm() to use the norm of (b - A*(initial guess))
-          as the starting point for relative norm convergence testing.
+          as the starting point for relative norm convergence testing, that is as rnorm_0
 
    Use KSPSetTolerances() to alter the defaults for rtol, abstol, dtol.
 
-   The precise values of reason are macros such as KSP_CONVERGED_RTOL, which
-   are defined in petscksp.h.
+   Use KSPSetNormType() (or -ksp_norm_type <none,preconditioned,unpreconditioned,natural>) to change the norm used for computing rnorm
+
+   The precise values of reason are macros such as KSP_CONVERGED_RTOL, which are defined in petscksp.h.
+
+   This routine is used by KSP by default so the user generally never needs call it directly.
+
+   Use KSPSetConvergenceTest() to provide your own test instead of using this one.
 
    Level: intermediate
 
