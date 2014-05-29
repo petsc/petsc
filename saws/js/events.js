@@ -76,6 +76,8 @@ function addEventHandlers() {
         formSet(currentAsk); //reset the form
 
         $("#matrixPic").html("<center>" + "\\(" + getMatrixTex("0") + "\\)" + "</center>");
+        if(currentAsk == "-1" && matInfo.length == 1) //no fieldsplits at all, manually add braces
+            $("#matrixPic").html("<center>" + "\\(\\left[" + getMatrixTex("0") + "\\right]\\)" + "</center>");
         MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
     });
 
@@ -183,7 +185,8 @@ function addEventHandlers() {
         if(getMatIndex(val) == -1) //invalid matrix
             return;
 
-        $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex(val,"") + getSpecificMatrixTex2(0) + "\\)" + "</center>");
+        $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex(val,"") + "\\)" + "</center>");
+        $("#matrixPic1").html("<center>" + "\\(" + getSpecificMatrixTex2(0) + "\\)" + "</center>");
         MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
     });
 
@@ -225,6 +228,30 @@ function addEventHandlers() {
         else {
             $("#o-1").show();
             $("#toggleServerOptions").val("Hide Server Options");
+        }
+    });
+
+    $("#toggleMatrix").click(function(){
+        if($("#toggleMatrix").val() == "Hide Matrix") {
+            $("#matrixPic").hide();
+            $("#toggleMatrix").val("Show Matrix");
+        }
+        else {
+            $("#matrixPic").show();
+            $("#toggleMatrix").val("Hide Matrix");
+        }
+    });
+
+    $("#toggleDiagram").click(function(){
+        if($("#toggleDiagram").val() == "Hide Diagram") {
+            $("#matrixPic1").hide();
+            $("#matrixPic2").hide();
+            $("#toggleDiagram").val("Show Diagram");
+        }
+        else {
+            $("#matrixPic1").show();
+            $("#matrixPic2").show();
+            $("#toggleDiagram").val("Hide Diagram");
         }
     });
 

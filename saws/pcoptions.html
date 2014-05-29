@@ -37,7 +37,7 @@
     </header>
 
     <!-- overflow:hidden makes sure div expands with floated items as well -->
-    <div id="outside" style="overflow: hidden;min-width:1290px;min-height:300px;background-color:#90C7E3;padding:5px;" >
+    <div id="outside" style="overflow: hidden;min-width:1290px;background-color:#90C7E3;padding:5px;" >
 
       <div id="divPc" style="float:left;">
         <h3>&nbsp;&nbsp; Server Solver Options:</h3>
@@ -86,7 +86,8 @@ to set defaults for input form" style="margin-left:20px;float:left;" id="doneLoa
         <div id="matrixPic" style="background-color:#90C7E3;padding:5px;"></div>
         <!--<div id="matrixPic2" style="width:540px;height:220px; background-color:#90C7E3;padding:5px;"></div>-->
         <br> <br> <br>
-        <div id="matrixPic2" style="background-color:#90C7E3;padding:5px;"></div>
+        <div id="matrixPic1" style="background-color:#90C7E3;padding:5px;float:left;"></div>
+        <div id="matrixPic2" style="background-color:#90C7E3;padding:5px;float:right;"></div>
       </div>
     </div> <!-- end div outside -->
 
@@ -101,7 +102,13 @@ to set defaults for input form" style="margin-left:20px;float:left;" id="doneLoa
         <input type=button value="Refresh" id="refresh">
       </span>
 
-      <div id="treeContainer"><h3>Your Solver Options: </h3></div>
+      <span style="padding-left:5em">
+        <input type=button value="Hide Matrix" id="toggleMatrix">
+        <input type=button value="Hide Diagram" id="toggleDiagram">
+      </span>
+
+      <h3>Your Solver Options: </h3>
+      <div id="treeContainer"></div>
 
       <!-- put table here for A-divs and oCmdOptions -->
       <table cellspacing="5" id="oContainer"></table> <!-- using jquery, find the #oContainer table element and add <TR> div etc </TR> -->
