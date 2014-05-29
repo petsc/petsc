@@ -32,7 +32,7 @@ PetscErrorCode ISG2LMapApply(ISLocalToGlobalMapping mapping,PetscInt n,const Pet
 #undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingGetSize"
 /*@
-    ISLocalToGlobalMappingGetSize - Gets the local size of a local to global mapping.
+    ISLocalToGlobalMappingGetSize - Gets the local size of a local to global mapping
 
     Not Collective
 
@@ -40,7 +40,7 @@ PetscErrorCode ISG2LMapApply(ISLocalToGlobalMapping mapping,PetscInt n,const Pet
 .   ltog - local to global mapping
 
     Output Parameter:
-.   n - the number of BLOCK entries in the local mapping, the actual number of indices that may be mapped is n*bs where bs is obtained with ISLocalToGlobalMappingGetBlockSize()
+.   n - the number of entries in the local mapping, ISLocalToGlobalMappingGetIndices() returns an array of this length
 
     Level: advanced
 
@@ -53,7 +53,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
   PetscValidIntPointer(n,2);
-  *n = mapping->n;
+  *n = mapping->bs*mapping->n;
   PetscFunctionReturn(0);
 }
 
@@ -1060,7 +1060,7 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
 #undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingGetIndices"
 /*@C
-   ISLocalToGlobalMappingGetIndices - Get global indices for every local block that is mapped
+   ISLocalToGlobalMappingGetIndices - Get global indices for every local point that is mapped
 
    Not Collective
 
@@ -1072,7 +1072,9 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping
 
    Level: advanced
 
-.seealso: ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingRestoreIndices()
+   Notes: ISLocalToGlobalMappingGetSize() returns the length the this array
+
+.seealso: ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingRestoreIndices(), ISLocalToGlobalMappingGetBlockIndices(), ISLocalToGlobalMappingRestoreBlockIndices()
 @*/
 PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog,const PetscInt **array)
 {

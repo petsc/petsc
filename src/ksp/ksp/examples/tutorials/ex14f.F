@@ -515,7 +515,7 @@
       PetscInt     ltog(1)
       PetscOffset idltog,idx
       PetscErrorCode ierr
-      PetscInt nloc,xs,ys,xm,ym
+      PetscInt xs,ys,xm,ym
       PetscInt gxs,gys,gxm,gym
       PetscInt grow(1),i,j
       PetscInt row,mx,my,ione
@@ -561,7 +561,6 @@
 
       call DMGetLocalToGlobalMapping(da,ltogm,ierr)
       call ISLocalToGlobalMappingGetIndices(ltogm,ltog,idltog,ierr)
-      call ISLocalToGlobalMappingGetSize(ltogm,nloc,ierr)
 
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by

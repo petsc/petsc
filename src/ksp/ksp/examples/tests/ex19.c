@@ -183,7 +183,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
   Mat                    jac = *J;
   PetscErrorCode         ierr;
   PetscInt               i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
-  PetscInt               nloc,grow;
+  PetscInt               grow;
   const PetscInt         *ltog;
   PetscScalar            two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
   ISLocalToGlobalMapping ltogm;
@@ -196,7 +196,6 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
   ierr = DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMapping(grid->da,&ltogm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetSize(ltogm,&nloc);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetIndices(ltogm,&ltog);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */

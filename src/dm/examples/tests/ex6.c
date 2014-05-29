@@ -138,12 +138,9 @@ int main(int argc,char **argv)
   /* Tests mappings betweeen application/PETSc orderings */
   if (test_order) {
     ISLocalToGlobalMapping ltogm;
-    PetscInt               lbs;
 
     ierr = DMGetLocalToGlobalMapping(da,&ltogm);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetSize(ltogm,&nloc);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetBlockSize(ltogm,&lbs);CHKERRQ(ierr);
-    nloc = lbs*nloc;
     ierr = ISLocalToGlobalMappingGetIndices(ltogm,&ltog);CHKERRQ(ierr);
 
     ierr = DMDAGetGhostCorners(da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm);CHKERRQ(ierr);

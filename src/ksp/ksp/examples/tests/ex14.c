@@ -457,7 +457,7 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac)
   Vec                    localX = user->localX;   /* local vector */
   const PetscInt         *ltog;                   /* local-to-global mapping */
   PetscInt               i,j,row,mx,my,col[5];
-  PetscInt               nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
+  PetscInt               xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
   PetscScalar            two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
   ISLocalToGlobalMapping ltogm;
 
@@ -489,7 +489,6 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac)
      Get the global node numbers for all local nodes, including ghost points
   */
   ierr = DMGetLocalToGlobalMapping(user->da,&ltogm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetSize(ltogm,&nloc);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetIndices(ltogm,&ltog);CHKERRQ(ierr);
 
   /*
