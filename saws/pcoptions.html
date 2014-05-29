@@ -1,106 +1,114 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>PETSc Solver Selection</title>
-<script src="http://www.mcs.anl.gov/research/projects/saws/js/jquery-1.9.1.js"></script>
-<link href="http://www.mcs.anl.gov/research/projects/saws/js/jquery-ui-1.10.3.custom/css/ui-lightness/jquery-ui-1.10.3.custom.css" rel="stylesheet">
-<script src="http://www.mcs.anl.gov/research/projects/saws/js/jquery-ui-1.10.3.custom/js/jquery-1.9.1.js"></script>
-<script src="http://www.mcs.anl.gov/research/projects/saws/js/jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js"></script>
-<script src="js/matrixTex.js"></script>
-<script src="js/main.js"></script>
-<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<script src="js/tree.js"></script>
-<script src="js/lists.js"></script>
-<script src="js/listLogic.js"></script>
-<script src="js/fetchSawsData.js"></script>
-<script src="js/parsePrefix.js"></script>
-<script src="js/getCmdOptions.js"></script>
-<script src="js/form.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/events.js"></script>
-<script src="http://www.mcs.anl.gov/research/projects/saws/js/SAWs.js"></script>
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
-<style type="text/css">
+  <head>
+    <title>PETSc Solver Selection</title>
+    <script src="http://www.mcs.anl.gov/research/projects/saws/js/jquery-1.9.1.js"></script>
+    <link href="http://www.mcs.anl.gov/research/projects/saws/js/jquery-ui-1.10.3.custom/css/ui-lightness/jquery-ui-1.10.3.custom.css" rel="stylesheet">
+    <script src="http://www.mcs.anl.gov/research/projects/saws/js/jquery-ui-1.10.3.custom/js/jquery-1.9.1.js"></script>
+    <script src="http://www.mcs.anl.gov/research/projects/saws/js/jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js"></script>
+    <script src="js/matrixTex.js"></script>
+    <script src="js/main.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="js/tree.js"></script>
+    <script src="js/lists.js"></script>
+    <script src="js/listLogic.js"></script>
+    <script src="js/fetchSawsData.js"></script>
+    <script src="js/parsePrefix.js"></script>
+    <script src="js/getCmdOptions.js"></script>
+    <script src="js/form.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/events.js"></script>
+    <script src="http://www.mcs.anl.gov/research/projects/saws/js/SAWs.js"></script>
+    <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <style type="text/css">
 
-body
-{
-background-color: #E8E8E8;
-}
+      body
+      {
+      background-color: #E8E8E8;
+      }
 
-nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;}
-</style>
-</head>
+      nav a {text-decoration:none;color:#344873;font-family: Georgia, serif;}
+    </style>
+  </head>
 
-<body>
-<header style="width:1290px;background-color:#000033;color:#FFFFFF; padding:5px;text-align:left;">
-<h1> PETSc Linear Solver Selection </h1>
-</header>
+  <body>
+    <header style="width:1290px;background-color:#000033;color:#FFFFFF; padding:5px;text-align:left;">
+      <h1> PETSc Linear Solver Selection </h1>
+    </header>
 
-<div id="outside" style="width:1290px;background-color:#90C7E3;padding:5px;" >
+    <!-- overflow:hidden makes sure div expands with floated items as well -->
+    <div id="outside" style="overflow: hidden;min-width:1290px;min-height:300px;background-color:#90C7E3;padding:5px;" >
 
-  <div id="divPc"><h3>&nbsp;&nbsp; Server Solver Options:<span style="float: right;"><input type=button value="Hide Server Options" id="toggleServerOptions"></span></h3></div>
+      <div id="divPc" style="float:left;">
+        <h3>&nbsp;&nbsp; Server Solver Options:</h3>
+        <span style="float: left;margin-left:20px;"><input type=button value="Hide Server Options" id="toggleServerOptions"></span>
+        <br>
+        <div id="o-1"> </div>
+        <input type=button value="Click when options are done loading
+to set defaults for input form" style="margin-left:20px;float:left;" id="doneLoading">
+      </div> <!-- end of divPC -->
 
-<br>
-<div id="matrixPic" style="width:540px;height:220px; float:left;background-color:#90C7E3;padding:5px;"></div>
-<div id="matrixPic2" style="width:540px;height:220px; float:left;background-color:#90C7E3;padding:5px;"></div>
+      <!-- <div id="parameters" style="width:500px;height:220px;background-color:#90C7E3;padding:5px;float:right;"> -->
+      <div id="parameters" style="background-color:#90C7E3;padding:5px;float:left;">
+        <FORM NAME="parameters" id="questions" >
+          <b id="currentAskText">Currently Asking for Matrix A<sub>0</sub></b>
+          <TABLE cellspacing="5" >
+            <colgroup>
+              <col span="1" style="background-color:#90C7E3;">
+            </colgroup>
+            <!-- <TR> <!-- 1st row -->
+	      <!-- <TH id="isYourMatrix"><span>Is your matrix A &nbsp </span></TH> -->
+              <!-- <TH></TH> -->
+              <!-- </TR> -->
+            <TR> <!-- 2nd row -->
+              <TD><span>Symmetric?</span></TD>
+              <TD><INPUT TYPE="checkbox" id="symm" name="symmOpt"></TD>
+            </TR>
+            <TR id="posdefRow"> <!-- 3rd row -->
+	      <TD><span>Positive Definite?</span></TD>
+	      <TD><INPUT TYPE="checkbox" id="posdef" name="posdefOpt"></TD>
+            </TR>
+            <TR> <!-- 4th row -->
+              <TD>Logically Block Structured?</TD>
+              <TD><INPUT TYPE="checkbox" id="logstruc" name="logstrucOpt"></TD>
+            </TR>
+            <TR><TD COLSPAN=2>
+            </TD></TR>
+          </TABLE>
+          <b id="fieldsplitBlocks_text">Fieldsplit Blocks </b><input type="text" id="fieldsplitBlocks" value="2" maxlength="2" class="fieldsplitBlocksInput">
+          <br>
+          <input type="button" value="Continue" id="continueButton">
+        </FORM>
+        <br><br>
+      </div> <!-- endof div id="parameters" -->
 
-<div id="parameters" style="width:940px;height:220px;background-color:#90C7E3;padding:5px;">
-<FORM NAME="parameters" id="questions" >
-<b id="currentAskText">Currently Asking for Matrix A<sub>0</sub></b>
-  <TABLE cellspacing="5" >
-    <colgroup>
-      <col span="1" style="background-color:#90C7E3">
-    </colgroup>
-    <!-- <TR> <!-- 1st row -->
-	<!-- <TH id="isYourMatrix"><span>Is your matrix A &nbsp </span></TH> -->
-        <!-- <TH></TH> -->
-    <!-- </TR> -->
-    <TR> <!-- 2nd row -->
-      <TD><span>Symmetric?</span></TD>
-      <TD><INPUT TYPE="checkbox" id="symm" name="symmOpt"></TD>
-    </TR>
-    <TR id="posdefRow"> <!-- 3rd row -->
-	<TD><span>Positive Definite?</span></TD>
-	<TD><INPUT TYPE="checkbox" id="posdef" name="posdefOpt"></TD>
-    </TR>
-    <TR> <!-- 4th row -->
-      <TD>Logically Block Structured?</TD>
-      <TD><INPUT TYPE="checkbox" id="logstruc" name="logstrucOpt"></TD>
-    </TR>
-    <TR><TD COLSPAN=2>
-    </TD></TR>
-  </TABLE>
-  <b id="fieldsplitBlocks_text">Fieldsplit Blocks </b><input type="text" id="fieldsplitBlocks" value="2" maxlength="2" class="fieldsplitBlocksInput">
-  <br>
-  <input type="button" value="Continue" id="continueButton">
-</FORM>
-<br><br>
-</div> <!-- endof div id="parameters" -->
+      <div id="texOutput" style="background-color:#90C7E3;padding:5px;float:left;">
+        <div id="matrixPic" style="background-color:#90C7E3;padding:5px;"></div>
+        <!--<div id="matrixPic2" style="width:540px;height:220px; background-color:#90C7E3;padding:5px;"></div>-->
+        <br> <br> <br>
+        <div id="matrixPic2" style="background-color:#90C7E3;padding:5px;"></div>
+      </div>
+    </div> <!-- end div outside -->
 
-<br><br><br><br><br><br>
+    <!--min-width allows for expandable div but with a minimum width -->
 
+    <div id="results" style="min-width:1000px;float:left;margin:10px;font-size:14px;">
+      <input type=button value="Cmd Options" id="cmdOptionsButton">
+      <input type=button value="Clear Tree" id="clearTree">
+      <input type=button value="Clear Options" id="clearOutput">
+      <span style="padding-left:5em">
+        View Diagram of Solver for Matrix A<input type="text" id="selectedMatrix" value="">
+        <input type=button value="Refresh" id="refresh">
+      </span>
 
-<br>
-<!--min-width allows for expandable div but with a minimum width -->
+      <div id="treeContainer"><h3>Your Solver Options: </h3></div>
 
-  <div id="results" style="min-width:1000px;float:left;margin:10px;font-size:14px ">
-    <input type=button value="Cmd Options" id="cmdOptionsButton">
-    <input type=button value="Clear Tree" id="clearTree">
-    <input type=button value="Clear Options" id="clearOutput">
-    <span style="padding-left:5em">
-      View Diagram of Solver for Matrix A<input type="text" id="selectedMatrix" value="">
-      <input type=button value="Refresh" id="refresh">
-    </span>
+      <!-- put table here for A-divs and oCmdOptions -->
+      <table cellspacing="5" id="oContainer"></table> <!-- using jquery, find the #oContainer table element and add <TR> div etc </TR> -->
+      <!-- th=header (center+bold by default) td=standard cell (left+normal by default) -->
 
-    <div id="treeContainer"><h3>Your Solver Options: </h3></div>
+    </div> <!-- endof div id="results" -->
 
-    <!-- put table here for A-divs and oCmdOptions -->
-    <table cellspacing="5" id="oContainer"></table> <!-- using jquery, find the #oContainer table element and add <TR> div etc </TR> -->
-    <!-- th=header (center+bold by default) td=standard cell (left+normal by default) -->
-
-  </div> <!-- endof div id="results" -->
-
-</div> <!-- endof div id="outside" -->
-</body>
+    <!-- </div> endof div id="outside" -->
+  </body>
 </html>
