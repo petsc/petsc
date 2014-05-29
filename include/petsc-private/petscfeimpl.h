@@ -154,6 +154,7 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscProblem prob, PetscBoo
 
   if (!prob) return 0;
   ierr = PetscProblemGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
+  if (bd) dim -= 1;
   ierr = PetscProblemGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscProblemGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
   ierr = PetscProblemGetRefCoordArrays(prob, NULL, &refSpaceDer);CHKERRQ(ierr);

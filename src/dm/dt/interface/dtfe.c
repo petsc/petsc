@@ -3006,7 +3006,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscProblem prob, 
       f1_func(u, u_t, u_x, a, NULL, a_x, x, n, refSpaceDer);
       TransformF(dim, Nc, q, invJ, detJ, quadWeights, refSpaceDer, f0, f1);
     }
-    UpdateElementVec(dim, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
+    UpdateElementVec(dim-1, Nq, Nb, Nc, basisField[field], basisFieldDer[field], f0, f1, &elemVec[cOffset+fOffset]);
     cOffset    += totDim;
     cOffsetAux += totDimAux;
   }
@@ -3206,13 +3206,14 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscProblem prob, 
   PetscReal      *x;
   PetscReal     **basisField, **basisFieldDer, *basisI, *basisDerI, *basisJ, *basisDerJ;
   PetscInt        NbI = 0, NcI = 0, NbJ = 0, NcJ = 0;
-  PetscInt        dim, totDim, totDimAux, e;
+  PetscInt        dim, bdim, totDim, totDimAux, e;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscFEGetQuadrature(fem, &quad);CHKERRQ(ierr);
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
   dim += 1; /* Spatial dimension is one higher than topological dimension */
+  bdim = dim-1;
   ierr = PetscProblemGetTotalBdDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscProblemGetBdJacobian(prob, fieldI, fieldJ, &g0_func, &g1_func, &g2_func, &g3_func);CHKERRQ(ierr);
   ierr = PetscProblemGetEvaluationArrays(prob, &u, coefficients_t ? &u_t : NULL, &u_x);CHKERRQ(ierr);
@@ -3254,9 +3255,10 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscProblem prob, 
       PetscInt f, g, fc, gc, c;
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      CoordinatesRefToReal(dim, dim-1, v0, J, &quadPoints[q*(dim-1)], x);
+      CoordinatesRefToReal(dim, bdim, v0, J, &quadPoints[q*bdim], x);
       ierr = EvaluateFieldJets(prob,    PETSC_TRUE, q, invJ, &coefficients[cOffset],       &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);
       ierr = EvaluateFieldJets(probAux, PETSC_TRUE, q, invJ, &coefficientsAux[cOffsetAux], NULL,                     a, a_x, NULL);CHKERRQ(ierr);
+      /* TODO: I think I have a mistake in the dim loops here */
       if (g0_func) {
         ierr = PetscMemzero(g0, NcI*NcJ * sizeof(PetscScalar));CHKERRQ(ierr);
         g0_func(u, u_t, u_x, a, NULL, a_x, x, n, g0);
@@ -3323,11 +3325,11 @@ PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscFE fem, PetscProblem prob, 
               PetscInt       d, d2;
 
               elemMat[fOff] += basisI[q*NbI*NcI+fidx]*g0[fc*NcJ+gc]*basisJ[q*NbJ*NcJ+gidx];
-              for (d = 0; d < dim; ++d) {
-                elemMat[fOff] += basisI[q*NbI*NcI+fidx]*g1[(fc*NcJ+gc)*dim+d]*basisDerJ[(q*NbJ*NcJ+gidx)*dim+d];
-                elemMat[fOff] += basisDerI[(q*NbI*NcI+fidx)*dim+d]*g2[(fc*NcJ+gc)*dim+d]*basisJ[q*NbJ*NcJ+gidx];
-                for (d2 = 0; d2 < dim; ++d2) {
-                  elemMat[fOff] += basisDerI[(q*NbI*NcI+fidx)*dim+d]*g3[((fc*NcJ+gc)*dim+d)*dim+d2]*basisDerJ[(q*NbJ*NcJ+gidx)*dim+d2];
+              for (d = 0; d < bdim; ++d) {
+                elemMat[fOff] += basisI[q*NbI*NcI+fidx]*g1[(fc*NcJ+gc)*bdim+d]*basisDerJ[(q*NbJ*NcJ+gidx)*bdim+d];
+                elemMat[fOff] += basisDerI[(q*NbI*NcI+fidx)*bdim+d]*g2[(fc*NcJ+gc)*bdim+d]*basisJ[q*NbJ*NcJ+gidx];
+                for (d2 = 0; d2 < bdim; ++d2) {
+                  elemMat[fOff] += basisDerI[(q*NbI*NcI+fidx)*bdim+d]*g3[((fc*NcJ+gc)*bdim+d)*bdim+d2]*basisDerJ[(q*NbJ*NcJ+gidx)*bdim+d2];
                 }
               }
             }
