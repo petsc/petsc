@@ -163,7 +163,7 @@ function solverGetOptions(matInfo)
     var prefix,kspSelectedValue,pcSelectedValue,level;
 
     for (var i = 0; i<matInfo.length; i++) {
-	if (typeof matInfo[i] != 'undefined' && matInfo[i].id!="-1") {
+	if (typeof matInfo[i] != 'undefined' && matInfo[i].id != "-1") {
 	    //get the ksp and pc options at the topest solver-level
 	    kspSelectedValue = $("#kspList" + matInfo[i].id).val();
 	    pcSelectedValue  = $("#pcList" + matInfo[i].id).val();
@@ -173,7 +173,10 @@ function solverGetOptions(matInfo)
             // for pc=fieldsplit
             for (level=1; level<=matInfo[i].matLevel; level++) {
                 if (level == matInfo[i].matLevel) {
-                    prefix += "fieldsplit_A"+matInfo[i].id+"_"; // matInfo[i].id
+                    if(matInfo[i].name == undefined)
+                        prefix += "fieldsplit_A"+matInfo[i].id+"_"; // matInfo[i].id
+                    else
+                        prefix += "fieldsplit_"+matInfo[i].name+"_"; // use fsName if possible!!
                 } else {
                     var parent = matInfo[i].id.substring(0,matInfo[i].id.length-1);//take everything except last char
                     var parentLevel = parent.length-1;//by definition. because A0 is length 1 but level 0
@@ -181,7 +184,10 @@ function solverGetOptions(matInfo)
                         parent = parent.substring(0,parent.length-1);//take everything except last char
                         parentLevel = parent.length-1;
                     }
-                    prefix += "fieldsplit_A"+parent+"_";
+                    if(matInfo[getMatIndex(parent)].name == undefined)
+                        prefix += "fieldsplit_A"+parent+"_";
+                    else
+                        prefix += "fieldsplit_"+matInfo[getMatIndex(parent)].name+"_";
                 }
             }
 
