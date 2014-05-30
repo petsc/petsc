@@ -183,6 +183,14 @@ function addEventHandlers() {
             $("#fieldsplitBlocks").hide();
             $("#fieldsplitBlocks").val(2);
         }
+        //flip the order of all the options
+        for(var i=1; i<serverOptionsCounter; i+=2) {
+            var data = $("#saws"+i).html();
+            var next = i+1;
+
+            $("#saws"+i).remove();
+            $("#saws"+next).after(data);
+        }
     });
 
     $("#selectedMatrix").on("keyup", function() {

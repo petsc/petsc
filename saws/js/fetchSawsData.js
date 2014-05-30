@@ -29,7 +29,8 @@ SAWsDisplayDirectory = function(sub,divEntry)
             SAWs_prefix = ""; //"(null)" fails populatePcList()
 
         if (typeof $("#pcList-1"+SAWs_prefix+"text").attr("title") == "undefined" && SAWs_prefix.indexOf("est") == -1) {//it doesn't exist already and doesn't contain 'est'
-            $("#o-1").append("<br><b style='margin-left:20px;' title=\"Preconditioner\" id=\"pcList-1"+SAWs_prefix+"text\">-"+SAWs_prefix+"pc_type &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList-1"+SAWs_prefix+"\"></select>");
+            $("#o-1").append("<div id='saws"+serverOptionsCounter+"'><b style='margin-left:20px;' title=\"Preconditioner\" id=\"pcList-1"+SAWs_prefix+"text\">-"+SAWs_prefix+"pc_type &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList-1"+SAWs_prefix+"\"></select></div>");
+            serverOptionsCounter++;
             populatePcList("pcList-1"+SAWs_prefix,SAWs_alternatives,SAWs_pcVal);
 
             //parse through prefix
@@ -73,7 +74,8 @@ SAWsDisplayDirectory = function(sub,divEntry)
             SAWs_prefix = "";
 
         if (typeof $("#kspList-1"+SAWs_prefix+"text").attr("title") == "undefined" && SAWs_prefix.indexOf("est")==-1) {//it doesn't exist already and doesn't contain 'est'
-            $("#o-1").append("<br><b style='margin-left:20px;' title=\"Krylov method\" id=\"kspList-1"+SAWs_prefix+"text\">-"+SAWs_prefix+"ksp_type &nbsp;</b><select class=\"kspLists\" id=\"kspList-1"+SAWs_prefix+"\"></select>");//giving an html element a title creates a tooltip
+            $("#o-1").append("<div id='saws"+serverOptionsCounter+"'><b style='margin-left:20px;' title=\"Krylov method\" id=\"kspList-1"+SAWs_prefix+"text\">-"+SAWs_prefix+"ksp_type &nbsp;</b><select class=\"kspLists\" id=\"kspList-1"+SAWs_prefix+"\"></select></div>");//giving an html element a title creates a tooltip
+            serverOptionsCounter++;
             populateKspList("kspList-1"+SAWs_prefix,SAWs_alternatives,SAWs_kspVal);
 
             //parse through prefix...
