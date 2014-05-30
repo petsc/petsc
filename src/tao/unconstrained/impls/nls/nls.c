@@ -1045,6 +1045,60 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
 }
 
 /* ---------------------------------------------------------- */
+/*MC
+  TAONLS - Newton's method with linesearch for unconstrained minimization.
+  At each iteration, the Newton line search method solves the symmetric
+  system of equations to obtain the step diretion dk:
+              Hk dk = -gk
+  a More-Thuente line search is applied on the direction dk to approximately
+  solve
+              min_t f(xk + t d_k)
+
+    Options Database Keys:
++ -tao_nls_ksp_type - "cg","nash","stcg","gltr","petsc"
+. -tao_nls_pc_type - "none","ahess","bfgs","petsc"
+. -tao_nls_bfgs_scale_type - "ahess","phess","bfgs"
+. -tao_nls_init_type - "constant","direction","interpolation"
+. -tao_nls_update_type - "step","direction","interpolation"
+. -tao_nls_sval - perturbation starting value
+. -tao_nls_imin - minimum initial perturbation
+. -tao_nls_imax - maximum initial perturbation
+. -tao_nls_pmin - minimum perturbation
+. -tao_nls_pmax - maximum perturbation
+. -tao_nls_pgfac - growth factor
+. -tao_nls_psfac - shrink factor
+. -tao_nls_imfac - initial merit factor
+. -tao_nls_pmgfac - merit growth factor
+. -tao_nls_pmsfac - merit shrink factor
+. -tao_nls_eta1 - poor steplength; reduce radius
+. -tao_nls_eta2 - reasonable steplength; leave radius
+. -tao_nls_eta3 - good steplength; increase readius
+. -tao_nls_eta4 - excellent steplength; greatly increase radius
+. -tao_nls_alpha1 - alpha1 reduction
+. -tao_nls_alpha2 - alpha2 reduction
+. -tao_nls_alpha3 - alpha3 reduction
+. -tao_nls_alpha4 - alpha4 reduction
+. -tao_nls_alpha - alpha5 reduction
+. -tao_nls_mu1 - mu1 interpolation update
+. -tao_nls_mu2 - mu2 interpolation update
+. -tao_nls_gamma1 - gamma1 interpolation update
+. -tao_nls_gamma2 - gamma2 interpolation update
+. -tao_nls_gamma3 - gamma3 interpolation update
+. -tao_nls_gamma4 - gamma4 interpolation update
+. -tao_nls_theta - theta interpolation update
+. -tao_nls_omega1 - omega1 step update
+. -tao_nls_omega2 - omega2 step update
+. -tao_nls_omega3 - omega3 step update
+. -tao_nls_omega4 - omega4 step update
+. -tao_nls_omega5 - omega5 step update
+. -tao_nls_mu1_i - initial mu1 interpolation factor
+. -tao_nls_mu2_i - initial mu2 interpolation factor
+. -tao_nls_gamma1_i - initial gamma1 interpolation factor
+. -tao_nls_gamma2_i - initial gamma2 interpolation factor
+. -tao_nls_gamma3_i - initial gamma3 interpolation factor
+. -tao_nls_gamma4_i - initial gamma4 interpolation factor
+- -tao_nls_theta_i - initial theta interpolation factor
+ 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NLS"
