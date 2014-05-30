@@ -2898,7 +2898,8 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscProblem prob, Pe
   void          (*f0_func)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[]);
   void          (*f1_func)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f1[]);
   PetscQuadrature quad;
-  PetscScalar   **basisField, **basisFieldDer, *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer;
+  PetscReal     **basisField, **basisFieldDer;
+  PetscScalar    *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer;
   PetscReal      *x;
   PetscInt        dim, Nb, Nc, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e;
   PetscErrorCode  ierr;
@@ -2959,7 +2960,8 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscProblem prob, 
   void          (*f0_func)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], const PetscReal n[], PetscScalar f0[]);
   void          (*f1_func)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], const PetscReal n[], PetscScalar f1[]);
   PetscQuadrature quad;
-  PetscScalar   **basisField, **basisFieldDer, *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer;
+  PetscReal     **basisField, **basisFieldDer;
+  PetscScalar    *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *refSpaceDer;
   PetscReal      *x;
   PetscInt        dim, Nb, Nc, totDim, totDimAux, cOffset = 0, cOffsetAux = 0, fOffset, e;
   PetscErrorCode  ierr;
@@ -3426,7 +3428,8 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscProblem prob
   void          (*f0_func)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[]);
   void          (*f1_func)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f1[]);
   PetscQuadrature quad;
-  PetscScalar   **basisField, **basisFieldDer, *f0, *f1, *u, *u_t, *u_x, *a, *a_x, *refSpaceDer;
+  PetscReal     **basisField, **basisFieldDer;
+  PetscScalar    *f0, *f1, *u, *u_t, *u_x, *a, *a_x, *refSpaceDer;
   PetscReal      *x;
   PetscInt        dim, Nb, Nc, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e;
   PetscErrorCode  ierr;
@@ -3482,7 +3485,8 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscProblem pr
   void          (*f0_func)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], const PetscReal n[], PetscScalar f0[]);
   void          (*f1_func)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], const PetscReal n[], PetscScalar f1[]);
   PetscQuadrature quad;
-  PetscScalar   **basisField, **basisFieldDer, *f0, *f1, *u, *u_t, *u_x, *a, *a_x, *refSpaceDer;
+  PetscReal    **basisField, **basisFieldDer;
+  PetscScalar    *f0, *f1, *u, *u_t, *u_x, *a, *a_x, *refSpaceDer;
   PetscReal      *x;
   PetscInt        dim, Nb, Nc, totDim, totDimAux, cOffset = 0, cOffsetAux = 0, fOffset, e;
   PetscErrorCode  ierr;
@@ -4261,14 +4265,13 @@ PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscL
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEIntegrateResidual_OpenCL"
-PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscInt Nf, PetscFE fe[], PetscInt field, PetscCellGeometry geom, const PetscScalar coefficients[],
-                                               PetscInt NfAux, PetscFE feAux[], const PetscScalar coefficientsAux[],
-                                               void (*f0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[]),
-                                               void (*f1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f1[]),
-                                               PetscScalar elemVec[])
+PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscProblem prob, PetscInt field, PetscInt Ne, PetscCellGeometry geom,
+                                               const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscProblem probAux, const PetscScalar coefficientsAux[], PetscScalar elemVec[])
 {
   /* Nbc = batchSize */
   PetscFE_OpenCL   *ocl = (PetscFE_OpenCL *) fem->data;
+  void            (*f0_func)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[]);
+  void            (*f1_func)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f1[]);
   PetscQuadrature   q;
   PetscInt          dim;
   PetscInt          N_b;    /* The number of basis functions */
@@ -4304,9 +4307,10 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
   PetscFunctionBegin;
   if (!Ne) {ierr = PetscFEOpenCLLogResidual(fem, 0.0, 0.0);CHKERRQ(ierr); PetscFunctionReturn(0);}
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fem, &N_b);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &N_comp);CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
+  ierr = PetscProblemGetResidual(prob, field, &f0_func, &f1_func);CHKERRQ(ierr);
   ierr = PetscFEGetTileSizes(fem, NULL, &N_bl, &N_bc, &N_cb);CHKERRQ(ierr);
   N_bt  = N_b*N_comp;
   N_q   = q->numPoints;

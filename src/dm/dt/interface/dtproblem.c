@@ -600,8 +600,8 @@ PetscErrorCode PetscProblemSetResidual(PetscProblem prob, PetscInt f,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCPROBLEM_CLASSID, 1);
-  PetscValidPointer(f0, 3);
-  PetscValidPointer(f1, 4);
+  PetscValidPointer((const void *) f0, 3);
+  PetscValidPointer((const void *) f1, 4);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   ierr = PetscProblemEnlarge_Static(prob, &prob->Nf, &prob->disc, &prob->f, &prob->g, &prob->discBd, &prob->fBd, &prob->gBd, f+1);CHKERRQ(ierr);
   prob->f[f*2+0] = f0;
@@ -640,10 +640,10 @@ PetscErrorCode PetscProblemSetJacobian(PetscProblem prob, PetscInt f, PetscInt g
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCPROBLEM_CLASSID, 1);
-  if (g0) PetscValidPointer(g0, 4);
-  if (g1) PetscValidPointer(g1, 5);
-  if (g2) PetscValidPointer(g2, 6);
-  if (g3) PetscValidPointer(g3, 7);
+  if (g0) PetscValidPointer((const void *) g0, 4);
+  if (g1) PetscValidPointer((const void *) g1, 5);
+  if (g2) PetscValidPointer((const void *) g2, 6);
+  if (g3) PetscValidPointer((const void *) g3, 7);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   if (g < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", g);
   ierr = PetscProblemEnlarge_Static(prob, &prob->Nf, &prob->disc, &prob->f, &prob->g, &prob->discBd, &prob->fBd, &prob->gBd, PetscMax(f, g)+1);CHKERRQ(ierr);
@@ -680,8 +680,8 @@ PetscErrorCode PetscProblemSetBdResidual(PetscProblem prob, PetscInt f,
   PetscValidHeaderSpecific(prob, PETSCPROBLEM_CLASSID, 1);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   ierr = PetscProblemEnlarge_Static(prob, &prob->Nf, &prob->disc, &prob->f, &prob->g, &prob->discBd, &prob->fBd, &prob->gBd, f+1);CHKERRQ(ierr);
-  if (f0) {PetscValidPointer(f0, 3); prob->fBd[f*2+0] = f0;}
-  if (f1) {PetscValidPointer(f1, 4); prob->fBd[f*2+1] = f1;}
+  if (f0) {PetscValidPointer((const void *) f0, 3); prob->fBd[f*2+0] = f0;}
+  if (f1) {PetscValidPointer((const void *) f1, 4); prob->fBd[f*2+1] = f1;}
   PetscFunctionReturn(0);
 }
 
@@ -716,10 +716,10 @@ PetscErrorCode PetscProblemSetBdJacobian(PetscProblem prob, PetscInt f, PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCPROBLEM_CLASSID, 1);
-  if (g0) PetscValidPointer(g0, 4);
-  if (g1) PetscValidPointer(g1, 5);
-  if (g2) PetscValidPointer(g2, 6);
-  if (g3) PetscValidPointer(g3, 7);
+  if (g0) PetscValidPointer((const void *) g0, 4);
+  if (g1) PetscValidPointer((const void *) g1, 5);
+  if (g2) PetscValidPointer((const void *) g2, 6);
+  if (g3) PetscValidPointer((const void *) g3, 7);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   if (g < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", g);
   ierr = PetscProblemEnlarge_Static(prob, &prob->Nf, &prob->disc, &prob->f, &prob->g, &prob->discBd, &prob->fBd, &prob->gBd, PetscMax(f, g)+1);CHKERRQ(ierr);
