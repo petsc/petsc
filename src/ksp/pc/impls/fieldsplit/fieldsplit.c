@@ -174,7 +174,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     case PC_FIELDSPLIT_SCHUR_PRE_SELF:
       ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from S itself\n");CHKERRQ(ierr);break;
     case PC_FIELDSPLIT_SCHUR_PRE_SELFP:
-      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from Sp, an assembled approximation to S, which uses A00's diagonal's inverse\n");CHKERRQ(ierr);break;
+      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from Sp, an assembled approximation to S, which uses (the lumped) A00's diagonal's inverse\n");CHKERRQ(ierr);break;
     case PC_FIELDSPLIT_SCHUR_PRE_A11:
       ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from A11\n");CHKERRQ(ierr);break;
     case PC_FIELDSPLIT_SCHUR_PRE_USER:
@@ -1335,6 +1335,8 @@ PetscErrorCode  PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,co
 +   pc  - the preconditioner object
 -   flg - boolean flag indicating whether or not to use Amat to extract the diagonal blocks from
 
+    Options Database:
+.     -pc_fieldsplit_diag_use_amat
 
     Level: intermediate
 
@@ -1400,6 +1402,8 @@ PetscErrorCode  PCFieldSplitGetDiagUseAmat(PC pc,PetscBool *flg)
 +   pc  - the preconditioner object
 -   flg - boolean flag indicating whether or not to use Amat to extract the off-diagonal blocks from
 
+    Options Database:
+.     -pc_fieldsplit_off_diag_use_amat
 
     Level: intermediate
 
