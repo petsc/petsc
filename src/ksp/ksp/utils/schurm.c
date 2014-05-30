@@ -768,13 +768,16 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
 {
 
   PetscErrorCode ierr;
+  PetscInt       N00;
 
   PetscFunctionBegin;
   /* Use an appropriate approximate inverse of A00 to form A11 - A10 inv(diag(A00)) A01; a NULL A01, A10 or A11 indicates a zero matrix. */
   /* TODO: Perhaps should create an appropriately-sized zero matrix of the same type as A00? */
   if ((!A01 || !A10) & !A11) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot assemble Spmat: A01, A10 and A11 are all NULL.");
 
-  if (!A01 || !A10) {
+  /* A zero size A00 or empty A01 or A10 imply S = A11. */
+  ierr = MatGetSize(A00,&N00,NULL);CHKERRQ(ierr);
+  if (!A01 || !A10 || !N00) {
     if (!preuse) {
       ierr = MatDuplicate(A11,MAT_COPY_VALUES,Spmat);CHKERRQ(ierr);
     } else {
