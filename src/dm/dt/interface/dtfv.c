@@ -1274,7 +1274,7 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVSetUp"
-/*@C
+/*@
   PetscFVSetUp - Construct data structures for the PetscFV
 
   Collective on PetscFV
