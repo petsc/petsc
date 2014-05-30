@@ -565,7 +565,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink = ilink->next;
     }
   }
-  if (pc->useAmat || jac->diag_use_amat) {
+  if (jac->diag_use_amat) {
     ilink = jac->head;
     if (!jac->mat) {
       ierr = PetscMalloc1(nsplit,&jac->mat);CHKERRQ(ierr);
@@ -585,7 +585,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
   if (jac->type != PC_COMPOSITE_ADDITIVE  && jac->type != PC_COMPOSITE_SCHUR) {
     /* extract the rows of the matrix associated with each field: used for efficient computation of residual inside algorithm */
-    /* FIXME: Can/should we reuse jac->mat whenever (pc->useAmat || jac->diag_use_amat) is true? */
+    /* FIXME: Can/should we reuse jac->mat whenever (jac->diag_use_amat) is true? */
     ilink = jac->head;
     if (!jac->Afield) {
       ierr = PetscMalloc1(nsplit,&jac->Afield);CHKERRQ(ierr);
@@ -619,7 +619,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = MatSchurComplementGetKSP(jac->schur, &kspInner);CHKERRQ(ierr);
       ilink = jac->head;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      if (pc->useAmat || jac->offdiag_use_amat) {
+      if (jac->offdiag_use_amat) {
 	ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
       } else {
 	ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
@@ -627,7 +627,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      if (pc->useAmat || jac->offdiag_use_amat) {
+      if (jac->offdiag_use_amat) {
 	ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       } else {
 	ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
@@ -655,7 +655,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* extract the A01 and A10 matrices */
       ilink = jac->head;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      if (pc->useAmat || jac->offdiag_use_amat) {
+      if (jac->offdiag_use_amat) {
 	ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
       } else {
 	ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
@@ -663,7 +663,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      if (pc->useAmat || jac->offdiag_use_amat) {
+      if (jac->offdiag_use_amat) {
 	ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       } else {
 	ierr  = MatGetSubMatrix(pc->pmat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
@@ -1107,9 +1107,9 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
     ierr = PCFieldSplitSetBlockSize(pc,bs);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_diag_use_amat",&jac->diag_use_amat,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_off_diag_use_amat",&jac->diag_use_amat,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_fieldsplit_diag_use_amat","Use Amat (not Pmat) to extract diagonal fieldsplit blocks", "PCFieldSplitSetDiagUseAmat",pc->useAmat,&jac->diag_use_amat,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_fieldsplit_off_diag_use_amat","Use Amat (not Pmat) to extract off-diagonal fieldsplit blocks", "PCFieldSplitSetOffDiagUseAmat",pc->useAmat,&jac->offdiag_use_amat,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool("-pc_fieldsplit_detect_saddle_point","Define splits based on detected saddle-point structure", &stokes,NULL);CHKERRQ(ierr);
   if (stokes) {
     ierr          = PCFieldSplitSetType(pc,PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
     jac->schurpre = PC_FIELDSPLIT_SCHUR_PRE_SELF;
