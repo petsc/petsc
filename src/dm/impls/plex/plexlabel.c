@@ -742,7 +742,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
   ierr = PetscFree3(sendcnts,offsets,displs);CHKERRQ(ierr);
   ierr = PetscFree(stratumSizes);CHKERRQ(ierr);
   /* Renumber points */
-  ierr = ISGlobalToLocalMappingApply(renumbering, IS_GTOLM_MASK, (*labelNew)->stratumOffsets[(*labelNew)->numStrata], (*labelNew)->points, NULL, (*labelNew)->points);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApplyBlock(renumbering, IS_GTOLM_MASK, (*labelNew)->stratumOffsets[(*labelNew)->numStrata], (*labelNew)->points, NULL, (*labelNew)->points);CHKERRQ(ierr);
   /* Sort points */
   for (s = 0; s < (*labelNew)->numStrata; ++s) {ierr = PetscSortInt((*labelNew)->stratumSizes[s], &(*labelNew)->points[(*labelNew)->stratumOffsets[s]]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

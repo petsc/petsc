@@ -4,7 +4,7 @@ FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/vec/is/is/examples/tutorials/
-EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c
+EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c
 EXAMPLESF        = ex1f.F ex1f90.F ex2f.F ex3f90.F
 
 include ${PETSC_DIR}/conf/variables
@@ -41,6 +41,10 @@ ex3f90: ex3f90.o chkopts
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_VEC_LIB}
 	${RM} -f ex4.o
+
+ex5: ex5.o  chkopts
+	-${CLINKER} -o ex5 ex5.o  ${PETSC_VEC_LIB}
+	${RM} -f ex5.o
 #------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1  > ex1.tmp 2>&1;\
@@ -84,7 +88,19 @@ runex3f90:
 	   else printf "${PWD}\nPossible problem with with ex3f90, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3f90.tmp
 
-TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm
+runex4:
+	-@${MPIEXEC} -n 1 ./ex4  > ex4.tmp 2>&1;\
+	   if (${DIFF} output/ex4_1.out ex4.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex4, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex4.tmp
+
+runex5:
+	-@${MPIEXEC} -n 1 ./ex5  > ex5.tmp 2>&1;\
+	   if (${DIFF} output/ex5_1.out ex5.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex5, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex5.tmp
+
+TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm  ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_C_X	    =
 TESTEXAMPLES_FORTRAN	    = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI =

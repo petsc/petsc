@@ -463,9 +463,9 @@ with a local numbering scheme that includes ghost points.  The mapping from this
 numbering scheme back to the global PETSc numbering can be handled with the
 ISLocalToGlobalMapping routines.
 
-If one is given a list of indices in a global numbering, the routine
+If one is given a list of block indices in a global numbering, the routine
 \begin{tabbing}
-  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping ctx,\\
+  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,\\
                               ISGlobalToLocalMappingType type,int nin,int idxin[],int *nout,int idxout[]);
 \end{tabbing}
 \sindex{global to local mapping} will provide
@@ -480,10 +480,10 @@ are replaced by -1. When \trl{type} is set to \trl{IS_GTOLM_DROP},
 represented locally in the mapping are not included in \trl{idxout}, so that
 potentially \trl{nout} is smaller than \trl{nin}.  One must
 pass in an array long enough to hold all the indices. One can call
-ISGlobalToLocalMappingApply() with \trl{idxout} equal to
+ISGlobalToLocalMappingApplyBlock() with \trl{idxout} equal to
 PETSC\_NULL to determine the required length (returned in
 \trl{nout}) and then allocate the required space and call
-ISGlobalToLocalMappingApply() a second time to set the values.
+ISGlobalToLocalMappingApplyBlock() a second time to set the values.
 
 Often it is convenient to set elements into a vector using the local node
 numbering rather than the global node numbering (e.g.,  each process may

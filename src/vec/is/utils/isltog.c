@@ -530,10 +530,100 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
 
     Concepts: mapping^global to local
 
-.seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
+.seealso: ISLocalToGlobalMappingApply(), ISGlobalToLocalMappingApplyBlock(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy()
 @*/
 PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
+                                            PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
+{
+  PetscInt       i,*globals,nf = 0,tmp,start,end,bs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
+  if (!mapping->globals) {
+    ierr = ISGlobalToLocalMappingSetUp_Private(mapping);CHKERRQ(ierr);
+  }
+  globals = mapping->globals;
+  start   = mapping->globalstart;
+  end     = mapping->globalend;
+  bs      = mapping->bs;
+
+  if (type == IS_GTOLM_MASK) {
+    if (idxout) {
+      for (i=0; i<n; i++) {
+        if (idx[i] < 0) idxout[i] = idx[i];
+        else if (idx[i] < bs*start) idxout[i] = -1;
+        else if (idx[i] > bs*end)   idxout[i] = -1;
+        else                        idxout[i] = bs*globals[idx[i]/bs - start] + (idx[i] % bs);
+      }
+    }
+    if (nout) *nout = n;
+  } else {
+    if (idxout) {
+      for (i=0; i<n; i++) {
+        if (idx[i] < 0) continue;
+        if (idx[i] < bs*start) continue;
+        if (idx[i] > bs*end) continue;
+        tmp = bs*globals[idx[i]/bs - start] + (idx[i] % bs);
+        if (tmp < 0) continue;
+        idxout[nf++] = tmp;
+      }
+    } else {
+      for (i=0; i<n; i++) {
+        if (idx[i] < 0) continue;
+        if (idx[i] < bs*start) continue;
+        if (idx[i] > bs*end) continue;
+        tmp = bs*globals[idx[i]/bs - start] + (idx[i] % bs);
+        if (tmp < 0) continue;
+        nf++;
+      }
+    }
+    if (nout) *nout = nf;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISGlobalToLocalMappingApplyBlock"
+/*@
+    ISGlobalToLocalMappingApplyBlock - Provides the local block numbering for a list of integers
+    specified with a block global numbering.
+
+    Not collective
+
+    Input Parameters:
++   mapping - mapping between local and global numbering
+.   type - IS_GTOLM_MASK - replaces global indices with no local value with -1
+           IS_GTOLM_DROP - drops the indices with no local value from the output list
+.   n - number of global indices to map
+-   idx - global indices to map
+
+    Output Parameters:
++   nout - number of indices in output array (if type == IS_GTOLM_MASK then nout = n)
+-   idxout - local index of each global index, one must pass in an array long enough
+             to hold all the indices. You can call ISGlobalToLocalMappingApplyBlock() with
+             idxout == NULL to determine the required length (returned in nout)
+             and then allocate the required space and call ISGlobalToLocalMappingApplyBlock()
+             a second time to set the values.
+
+    Notes:
+    Either nout or idxout may be NULL. idx and idxout may be identical.
+
+    This is not scalable in memory usage. Each processor requires O(Nglobal) size
+    array to compute these.
+
+    Level: advanced
+
+    Developer Note: The manual page states that idx and idxout may be identical but the calling
+       sequence declares idx as const so it cannot be the same as idxout.
+
+    Concepts: mapping^global to local
+
+.seealso: ISLocalToGlobalMappingApply(), ISGlobalToLocalMappingApply(), ISLocalToGlobalMappingCreate(),
+          ISLocalToGlobalMappingDestroy()
+@*/
+PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
                                   PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
 {
   PetscInt       i,*globals,nf = 0,tmp,start,end;
@@ -1188,6 +1278,10 @@ PetscErrorCode  ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping
 
    Output Arguments:
 . ltogcat - new mapping
+
+   Note: this currently always returns a mapping with block size of 1
+
+   Developer Note: If all the input mapping have the same block size we could easily handle that as a special case
 
    Level: advanced
 
