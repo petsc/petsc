@@ -30,10 +30,10 @@ function addEventHandlers() {
         $("#oContainer").append("<tr id='row"+currentAsk+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
 
         //Create drop-down lists. '&nbsp;' indicates a space
-        if(currentAsk.length == 2 && fieldsplitKeywords.length > parseInt(currentAsk.substring(1,2))) {//fieldsplit level 1 so we specify the name of the fieldsplit for user's convenience
-            var index = parseInt(currentAsk.substring(1,2));//get the second (aka last) character
-            var fsText = fieldsplitKeywords[index];
+        if(getSawsFieldsplitWord(currentAsk) != "-1") {//saws has this information so we specify the name of the fieldsplit for user's convenience
+            var fsText = getSawsFieldsplitWord(currentAsk);
             $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + "<sub>" + currentAsk + "</sub>" + " Fieldsplit: "+fsText+" (Symm:"+matInfo[writeLoc].symm+" Posdef:"+matInfo[writeLoc].posdef+" Logstruc:"+matInfo[writeLoc].logstruc +")</b>");
+            matInfo[writeLoc].name = fsText;//write data to matInfo as well for generating cmd options
         }
         else
             $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + "<sub>" + currentAsk + "</sub>" + " (Symm:"+matInfo[writeLoc].symm+" Posdef:"+matInfo[writeLoc].posdef+" Logstruc:"+matInfo[writeLoc].logstruc +")</b>");
@@ -176,6 +176,12 @@ function addEventHandlers() {
             $("#fieldsplitBlocks_text").show();
             $("#fieldsplitBlocks").show();
             $("#fieldsplitBlocks").val(counter);
+        }
+        else {
+            $("#logstruc").removeAttr("checked");
+            $("#fieldsplitBlocks_text").hide();
+            $("#fieldsplitBlocks").hide();
+            $("#fieldsplitBlocks").val(2);
         }
     });
 

@@ -5,7 +5,6 @@ var askedA0 = false;//a one-way flag to record if A0 was asked
 
 //variables used to collect saws information
 var sawsInfo = [];
-var fieldsplitKeywords = [];//temperature, omega, etc (the index is the number to put after the a-div)
 
 //Use for pcmg
 var mgLevelLocation = ""; //where to put the mg level data once the highest level is determined. put in same level as coarse. this location keeps on getting overwritten every time mg_levels_n is encountered

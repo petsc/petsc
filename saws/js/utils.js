@@ -42,12 +42,48 @@ function getSawsDataIndex(id, endtag)//id is the adiv we are working with. endta
     return -1;//invalid id;
 }
 
-
+//returns the index of that fieldsplit word in sawsInfo
 function getFieldsplitWordIndex(word) {
 
-    for(var i=0; i<fieldsplitKeywords.length; i++) {
-        if(fieldsplitKeywords[i] == word)
+    for(var i=0; i<sawsInfo.length; i++) {
+        if(sawsInfo[i].name == word)
             return i;//return index where word was found
     }
-    return -1;//word does not exist in array yet
+    return -1;//word does not exist in sawsInfo yet
+}
+
+//this function iterates thru sawsInfo and returns the fieldsplit word at the given matrix id. if the id is invalid or the name does not exist, the function returns "-1". the function always returns a string.
+function getSawsFieldsplitWord(id) {
+
+    var index = getSawsIndex(id);
+    if(index == -1)
+        return "-1";//invalid index
+    if(sawsInfo[index].name == undefined)
+        return "-1";//given matrix does not have a name
+    return sawsInfo[index].name;
+
+}
+
+//returns the ID of that fieldsplit word in sawsInfo
+//this function always returns a string
+function getFieldsplitWordID(word) {
+
+    var index = getFieldsplitWordIndex(word);
+    if(index == -1)
+        return "-1";//word does not exist in sawsInfo yet
+    return sawsInfo[index].id;
+}
+
+//count the number of children that current exist for the given parent
+function getSawsNumChildren(parent) {
+
+    var length = parent.length + 1;
+    var count = 0;
+
+    for(var i=0; i<sawsInfo.length; i++) {
+        if(sawsInfo[i].id.length == length)
+            count++;
+    }
+
+    return count;
 }

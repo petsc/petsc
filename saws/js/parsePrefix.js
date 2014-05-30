@@ -16,16 +16,24 @@ function parsePrefixForFieldsplit(SAWs_prefix) {
 
         var theword = SAWs_prefix.substring(11,closest-1);//omit the first and last underscore
 
-        var fieldsplitNumber = getFieldsplitWordIndex(theword);
+        var fieldsplitID = getFieldsplitWordID(theword);
 
-        if(fieldsplitNumber == -1) {// new fieldsplit
-            fieldsplitKeywords[fieldsplitKeywords.length] = theword;//record new keyword
-            fieldsplitNumber = fieldsplitKeywords.length - 1;
+        var fieldsplitNumber = getSawsNumChildren(fieldsplit)-1;//first assume that fieldsplit is not a new fieldsplit
+
+        if(fieldsplitID == "-1") {// new fieldsplit. this word has not been encountered yet.
+            //fieldsplitKeywords[fieldsplitKeywords.length] = theword;//record new keyword
+            //fieldsplitNumber = fieldsplitKeywords.length - 1;
+
+            //get the fieldsplit number (the last digit) by counting how many children its parent already has
+            var fieldsplitNumber = getSawsNumChildren(fieldsplit);//fieldsplit = the existing fieldsplit
+
             var writeLoc = sawsInfo.length;
             sawsInfo[writeLoc]      = new Object();
             sawsInfo[writeLoc].data = new Array();
             sawsInfo[writeLoc].id   = fieldsplit + fieldsplitNumber.toString();
+            sawsInfo[writeLoc].name = theword;//record fieldsplit name in sawsInfo[]
         }
+
         fieldsplit = fieldsplit + fieldsplitNumber.toString();
     }
 

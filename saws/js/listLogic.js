@@ -291,10 +291,10 @@ $(document).on('change', '.pcLists', function(){
                 id:       newChild
 	    }
 
-            if(newChild.length == 2 && fieldsplitKeywords.length > parseInt(newChild.substring(1,2))) {
-                var idx = parseInt(newChild.substring(1,2));//get the second (aka last) character
-                var fsText = fieldsplitKeywords[idx];
+            if(getSawsFieldsplitWord(newChild) != "-1") {//fieldsplit word data exists in saws!!
+                var fsText = getSawsFieldsplitWord(newChild);
                 $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + "<sub>" + newChild + "</sub>" + " Fieldsplit: " + fsText + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
+                matInfo[writeLoc].name = fsText;//write to matInfo as well
             }
             else
                 $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + "<sub>" + newChild + "</sub>" + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
@@ -402,9 +402,8 @@ $(document).on('change', '.fieldsplitBlocks', function() {
 
             //Create drop-down lists. '&nbsp;' indicates a space
             var newChild = parent + i;
-            if(newChild.length == 2 && fieldsplitKeywords.length > parseInt(newChild.substring(1,2))) {
-                var idx = parseInt(newChild.substring(1,2));//get the second (aka last) character
-                var fsText = fieldsplitKeywords[idx];
+            if(getSawsFieldsplitWord(newChild) != "-1") {//fieldsplit word data exists in saws!!
+                var fsText = getSawsFieldsplitWord(newChild);
                 $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + "<sub>" + newChild + "</sub>" + " Fieldsplit: " + fsText + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
             }
             else
@@ -439,6 +438,10 @@ $(document).on('change', '.fieldsplitBlocks', function() {
                 blocks: 0,//children do not have further children
                 matLevel:   parent.length-1+1,
                 id:       parent+i
+            }
+
+            if(getSawsFieldsplitWord(newChild) != "-1") {//fieldsplit word data exists in saws!!
+                matInfo[writeLoc].name = getSawsFieldsplitWord(newChild);
             }
 
         }
