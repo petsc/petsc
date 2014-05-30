@@ -3393,9 +3393,13 @@ There are several variants of the Schur complement preconditioner obtained by dr
 \left( \begin{array}{cc}
 ksp(A_{00},Ap_{00})   & 0 \\
 0 & -ksp(\hat{S},\hat{S}p) \\
-\end{array} \right)
+\end{array} \right).
 \]
-since the Schur complement for saddle point problems is negative definite. IS THIS ALWAYS TRUE, SHOULD THERE BE A FLAG TO SET THE SIGN?
+This is done to ensure the preconditioner is positive definite for a common class of problems, saddle points with a positive definite $A_{00}$:
+for these the Schur complement is negative definite. SHOULD THERE BE A FLAG TO SET THE SIGN?
+
+The effectiveness of the Schur complement preconditioner depends on the availability of a good preconditioner $S_p$ for the Schur complement matrix.
+In general, the user is responsible for suppling $S_p$
 
 You can use the PCLSC preconditioner for the Schur complement with \trl{-pc_fieldsplit_type schur -fieldsplit_1_pc_type lsc}. This uses for the preconditioner to $\hat{S}$ the operator
 \[
@@ -4507,13 +4511,13 @@ the Jacobians need not be provided.\footnote{PETSc will automatically translate 
 
 The Explicit Runge-Kutta timestepper with variable timesteps is an \sindex{Runge-Kutta}
 implementation of the standard Runge-Kutta with an embedded method. The error in each
-timestep is calculated using the solutions from the Runge-Kutta method and its embedded 
+timestep is calculated using the solutions from the Runge-Kutta method and its embedded
 method (the 2-norm of the difference is used). The default method is the \sindex{Bogacki-Shampine}
-$3$rd-order Bogacki-Shampine method with a $2$nd-order embedded method (TSRK3BS). 
-Other available methods are the \sindex{Fehlberg} $5$th-order Fehlberg RK scheme with a $4$th-order embedded 
-method (TSRK5F), and the \sindex{Dormand-Prince} $5$th-order Dormand-Prince RK scheme with a $4$th-order embedded method 
-(TSRK5DP). Variable timesteps cannot be used with RK schemes that do not have an embedded 
-method (TSRK1 - $1$st-order, $1$-stage forward Euler, TSRK2A - $2$nd-order, $2$-stage RK scheme, 
+$3$rd-order Bogacki-Shampine method with a $2$nd-order embedded method (TSRK3BS).
+Other available methods are the \sindex{Fehlberg} $5$th-order Fehlberg RK scheme with a $4$th-order embedded
+method (TSRK5F), and the \sindex{Dormand-Prince} $5$th-order Dormand-Prince RK scheme with a $4$th-order embedded method
+(TSRK5DP). Variable timesteps cannot be used with RK schemes that do not have an embedded
+method (TSRK1 - $1$st-order, $1$-stage forward Euler, TSRK2A - $2$nd-order, $2$-stage RK scheme,
 TSRK3 - $3$rd-order, $3$-stage RK scheme, TSRK4 - $4$-th order, $4$-stage RK scheme).
 
 \subsection{Special Cases}
@@ -6812,11 +6816,11 @@ SOURCES += \
 	$$APP_DIR/src/main.cpp
 HEADERS += \
 	$$APP_DIR/src/source1.h \
-	$$APP_DIR/src/source2.h 	
+	$$APP_DIR/src/source2.h
 OTHER_FILES += \
 	$$APP_DIR/src/some_file.cpp \
 	$$APP_DIR/dir/another_file.xyz
-	
+
 \end{lstlisting}
 
 In this example, there are different keywords used. These include:
