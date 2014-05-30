@@ -4319,7 +4319,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscProblem prob, P
   if (N_bc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, N_bc, N_comp);
   /* Calculate layout */
   if (Ne % (N_cb*N_bc)) { /* Remainder cells */
-    ierr = PetscFEIntegrateResidual_Basic(fem, Ne, Nf, fe, field, geom, coefficients, NfAux, feAux, coefficientsAux, f0_func, f1_func, elemVec);CHKERRQ(ierr);
+    ierr = PetscFEIntegrateResidual_Basic(fem, prob, field, Ne, geom, coefficients, coefficients_t, probAux, coefficientsAux, elemVec);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscFEOpenCLCalculateGrid(fem, Ne, N_cb*N_bc, &x, &y, &z);CHKERRQ(ierr);
@@ -4332,12 +4332,16 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscProblem prob, P
   ierr = PetscInfo7(fem, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n", x, y, z, local_work_size[0], local_work_size[1], local_work_size[2], N_cb);CHKERRQ(ierr);
   ierr = PetscInfo2(fem, " N_t: %d, N_cb: %d\n", N_t, N_cb);
   /* Generate code */
-  if (NfAux) {
+  if (probAux) {
     PetscSpace P;
-    PetscInt   order, f;
+    PetscInt   NfAux, order, f;
 
+    ierr = PetscProblemGetNumFields(probAux, &NfAux);CHKERRQ(ierr);
     for (f = 0; f < NfAux; ++f) {
-      ierr = PetscFEGetBasisSpace(feAux[f], &P);CHKERRQ(ierr);
+      PetscFE feAux;
+
+      ierr = PetscProblemGetDiscretization(probAux, f, (PetscObject *) &feAux);CHKERRQ(ierr);
+      ierr = PetscFEGetBasisSpace(feAux, &P);CHKERRQ(ierr);
       ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
       if (order > 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Can only handle P0 coefficient fields");
     }
