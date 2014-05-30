@@ -11,7 +11,6 @@ class Configure(PETSc.package.NewPackage):
     self.double           = 0   # 1 means requires double precision
     self.cxx              = 0
     self.requires32bitint = 0
-    self.worksonWindows   = 1
     self.complex          = 1
     self.cudaArch      = ''
     self.CUDAVersion   = '4000' # Version 4.0

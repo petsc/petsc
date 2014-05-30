@@ -10,7 +10,6 @@ class Configure(PETSc.package.NewPackage):
     self.double           = 0
     self.complex          = 1
     self.lookforbydefault = 1
-    self.worksonWindows   = 1 # no X on windows - but this flag is set for auto-disable to work
     self.pkgname          = 'x11'
     self.requires32bitint = 0;  # 1 means that the package will not work with 64 bit integers
     return

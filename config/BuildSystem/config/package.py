@@ -53,7 +53,6 @@ class Package(config.base.Configure):
     self.license          = None # optional license text
     self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
     self.downloadonWindows   = 0  # 1 means the --download-package works on Microsoft Windows
-    self.worksonWindows      = 0  # 1 means that package can be used on Microsof Windows
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
     return
@@ -582,8 +581,6 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if not self.worksonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
-        raise RuntimeError('External package '+self.name+' does not work with Microsoft compilers')
       if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
     if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
@@ -764,8 +761,6 @@ Brief overview of how BuildSystem\'s configuration of packages works.
           self.cxx            == 1 implies C++ compiler must be present
           self.fc             == 1 implies Fortran compiler must be present
           self.noMPIUni       == 1 implies real MPI must be present
-          self.worksonWindows == 0 implies we cannot use Cygwin compilers
-          check that download of this package works on Windows (if Windows is being used)
       ...
       generateGuesses:
         ...

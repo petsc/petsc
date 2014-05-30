@@ -10,7 +10,6 @@ class Configure(PETSc.package.NewPackage):
     self.cxx              = 1
     self.requires32bitint = 0
     self.complex          = 1
-    self.worksonWindows   = 0
     self.downloadonWindows= 0
     return
 

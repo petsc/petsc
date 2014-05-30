@@ -11,7 +11,6 @@ class Configure(PETSc.package.NewPackage):
     self.liblist   = [['libml.a']]
     self.license   = 'http://trilinos.sandia.gov/'
     self.fc        = 1
-    self.worksonWindows    = 1
     self.downloadonWindows = 1
     return
 

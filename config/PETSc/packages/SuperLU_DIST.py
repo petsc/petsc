@@ -13,7 +13,6 @@ class Configure(PETSc.package.NewPackage):
     self.complex          = 1
     # SuperLU_Dist does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.
-    self.worksonWindows   = 1
     self.downloadonWindows= 1
     return
 

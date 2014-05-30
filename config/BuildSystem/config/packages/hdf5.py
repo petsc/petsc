@@ -12,7 +12,6 @@ class Configure(config.package.Package):
     self.needsMath = 1
     self.needsCompression = 0
     self.complex   = 1
-    self.worksonWindows = 1
     return
 
   def setupDependencies(self, framework):

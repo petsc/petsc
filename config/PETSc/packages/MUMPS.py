@@ -15,7 +15,6 @@ class Configure(PETSc.package.NewPackage):
     # Mumps does NOT work with 64 bit integers without a huge number of hacks we ain't making
     self.double    = 0
     self.complex   = 1
-    self.worksonWindows   = 1
     self.downloadonWindows= 1
     return
 
