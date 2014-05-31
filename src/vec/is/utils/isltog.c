@@ -1182,7 +1182,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
   ierr = ISLocalToGlobalMappingGetBlockInfo(mapping,nproc,procs,numprocs,&bindices);CHKERRQ(ierr);
-  ierr = PetscCalloc1(1+*nproc,&*indices);CHKERRQ(ierr);
+  ierr = PetscCalloc1(*nproc,&*indices);CHKERRQ(ierr);
   for (i=0; i<*nproc; i++) {
     ierr = PetscMalloc1(bs*(*numprocs)[i],&(*indices)[i]);CHKERRQ(ierr);
     for (j=0; j<(*numprocs)[i]; j++) {
