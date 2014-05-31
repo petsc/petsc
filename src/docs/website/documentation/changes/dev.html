@@ -150,6 +150,7 @@
         <li>The documented, but semi-private function <tt>PCMGResidual_Default()</tt> is now public and named <tt>PCMGResidualDefault()</tt>.</li>
         <li>PCGAMG default smoother changed from PCJACOBI to PCSOR.</li>
         <li>Different logic for PCBDDC APIs: added PCBDDCSet/GetDirichlet/NeumannBoundariesLocal, PCBDDCSetDofsSplittingLocal. Previous call to PCBDDCXXXBoundaries should be replaced by PCBDDCXXXBoundariesLocal. The same holds for setting the fields split. In all cases, the index sets should have the same communicator as the PC.</li>
+        <li>Added PCBDDCSetChangeOfBasisLocalMat for user defined change of basis</li>
         <li><tt>PCFieldSplitSchurPrecondition()</tt> deprecated (replaced in Fortran) in favor of <tt>PCFieldSplitSetSchurPre()</tt>.</li>
       </ul>
       <h4>KSP:</h4>

@@ -2,7 +2,7 @@
 
    ConstraintsSetup
    - tolerances for constraints as an option (take care of single precision!)
-   - Can MAT_IGNORE_ZERO_ENTRIES be used for Constraints Matrix?
+   - * add support for a user which specifies a change of basis
 
    Solvers
    - Add support for reuse fill and cholecky factor for coarse solver (similar to local solvers)
@@ -10,17 +10,18 @@
    - Propagate nearnullspace info among levels
 
    User interface
-   - Negative indices in dirichlet and Neumann is should be skipped (now they cause out-of-bounds access)
-   - DofSplitting and DM attached to pc?
+   - * Negative indices in dirichlet and Neumann is should be skipped (now they cause out-of-bounds access)
+   - ** DofSplitting and DM attached to pc?
 
    Debugging output
-   - Better management of verbosity levels of debugging output
+   - * Better management of verbosity levels of debugging output
 
    Build
    - make runexe59
 
    Extra
-   - Is it possible to work with PCBDDCGraph on boundary indices only (less memory consumed)?
+   - ** GetRid of PCBDDCApplySchur, use MatSchur instead
+   - *** Is it possible to work with PCBDDCGraph on boundary indices only (less memory consumed)?
    - add support for computing h,H and related using coordinates?
    - Change of basis approach does not work with my nonlinear mechanics example. why? (seems not an issue with l2gmap)
    - Better management in PCIS code
@@ -31,7 +32,7 @@
 
    MATIS related operations contained in BDDC code
    - Provide general case for subassembling
-   - Preallocation routines in MatISGetMPIAXAIJ
+   - *** Preallocation routines in MatISGetMPIAXAIJ
 
 */
 
@@ -62,8 +63,8 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   ierr = PetscOptionsBool("-pc_bddc_use_edges","Use or not edge constraints in coarse space","none",pcbddc->use_edges,&pcbddc->use_edges,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_faces","Use or not face constraints in coarse space","none",pcbddc->use_faces,&pcbddc->use_faces,NULL);CHKERRQ(ierr);
   /* Change of basis */
-  ierr = PetscOptionsBool("-pc_bddc_use_change_of_basis","Use or not change of basis on local edge nodes","none",pcbddc->use_change_of_basis,&pcbddc->use_change_of_basis,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_bddc_use_change_on_faces","Use or not change of basis on local face nodes","none",pcbddc->use_change_on_faces,&pcbddc->use_change_on_faces,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_use_change_of_basis","Use or not internal change of basis on local edge nodes","none",pcbddc->use_change_of_basis,&pcbddc->use_change_of_basis,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_use_change_on_faces","Use or not internal change of basis on local face nodes","none",pcbddc->use_change_on_faces,&pcbddc->use_change_on_faces,NULL);CHKERRQ(ierr);
   if (!pcbddc->use_change_of_basis) {
     pcbddc->use_change_on_faces = PETSC_FALSE;
   }
@@ -74,6 +75,48 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   ierr = PetscOptionsBool("-pc_bddc_use_coarse_estimates","Use estimated eigenvalues for coarse problem","none",pcbddc->use_coarse_estimates,&pcbddc->use_coarse_estimates,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_deluxe_scaling","Use deluxe scaling for BDDC","none",pcbddc->use_deluxe_scaling,&pcbddc->use_deluxe_scaling,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/* -------------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetChangeOfBasisLocalMat_BDDC"
+static PetscErrorCode PCBDDCSetChangeOfBasisLocalMat_BDDC(PC pc, Mat change)
+{
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDestroy(&pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)change);CHKERRQ(ierr);
+  pcbddc->user_ChangeOfBasisMatrix = change;
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetChangeOfBasisLocalMat"
+/*@
+ PCBDDCSetChangeOfBasisLocalMat - Set user defined change of basis for local boundary dofs
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioning context
+-  change - the local change of basis matrix, either in local (internal + boundary) or in local boundary numbering
+
+   Level: intermediate
+
+   Notes:
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCBDDCSetChangeOfBasisLocalMat(PC pc, Mat change)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidHeaderSpecific(change,MAT_CLASSID,2);
+  PetscValidLogicalCollectiveBool(pc,change,2);
+  ierr = PetscTryMethod(pc,"PCBDDCSetChangeOfBasisLocalMat_C",(PC,Mat),(pc,change));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -957,7 +1000,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   }
 
   /* prepare MatMult and rhs for solver */
-  if (pcbddc->use_change_of_basis) {
+  if (pcbddc->ChangeOfBasisMatrix) {
     /* swap pointers for local matrices */
     temp_mat = matis->A;
     matis->A = pcbddc->local_mat;
@@ -1008,13 +1051,13 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   Mat            temp_mat;
 
   PetscFunctionBegin;
-  if (pcbddc->use_change_of_basis) {
+  if (pcbddc->ChangeOfBasisMatrix) {
     /* swap pointers for local matrices */
     temp_mat = matis->A;
     matis->A = pcbddc->local_mat;
     pcbddc->local_mat = temp_mat;
   }
-  if (pcbddc->use_change_of_basis && x) {
+  if (pcbddc->ChangeOfBasisMatrix && x) {
     /* Get Local boundary and apply transformation of basis to solution vector */
     ierr = VecScatterBegin(pcis->global_to_B,x,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd  (pcis->global_to_B,x,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1063,7 +1106,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
      Also, BDDC directly build the Dirichlet problem */
-
   /* split work */
   if (pc->setupcalled) {
     computeis = PETSC_FALSE;
@@ -1101,6 +1143,19 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = ISLocalToGlobalMappingCreateIS(pcis->is_B_local,&pcbddc->BtoNmap);CHKERRQ(ierr);
   }
 
+  /* check user defined change of basis (if any) */
+  if (pcbddc->user_ChangeOfBasisMatrix) {
+    PC_IS* pcis= (PC_IS*)pc->data;
+    PetscInt n,m;
+    ierr = MatGetSize(pcbddc->user_ChangeOfBasisMatrix,&n,&m);CHKERRQ(ierr);
+    if (n != m) {
+      SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Change of basis matrix should be square %d != %d\n",n,m);
+    } else if (n != pcis->n_B && n != pcis->n) {
+      SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Size of change of basis matrix %d differs from boundary size %d and local size %d\n",n,pcis->n_B,pcis->n);
+    }
+    /* use_change_of_basis flag is used to automatically compute a change of basis from constraints */
+    pcbddc->use_change_of_basis = PETSC_FALSE;
+  }
   /* Analyze interface */
   if (computetopography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
@@ -1334,6 +1389,7 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = VecDestroy(&pcbddc->original_rhs);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&pcbddc->BtoNmap);CHKERRQ(ierr);
   /* remove functions */
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisLocalMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",NULL);CHKERRQ(ierr);
@@ -1718,6 +1774,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->original_rhs               = 0;
   pcbddc->local_mat                  = 0;
   pcbddc->ChangeOfBasisMatrix        = 0;
+  pcbddc->user_ChangeOfBasisMatrix   = 0;
   pcbddc->coarse_vec                 = 0;
   pcbddc->coarse_rhs                 = 0;
   pcbddc->coarse_ksp                 = 0;
@@ -1775,6 +1832,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pc->ops->postsolve           = PCPostSolve_BDDC;
 
   /* composing function */
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisLocalMat_C",PCBDDCSetChangeOfBasisLocalMat_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",PCBDDCSetPrimalVerticesLocalIS_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",PCBDDCSetCoarseningRatio_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",PCBDDCSetLevel_BDDC);CHKERRQ(ierr);

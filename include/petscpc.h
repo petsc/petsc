@@ -464,6 +464,7 @@ typedef const char *PCGAMGClassicalType;
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC,PCGAMGClassicalType);
 
 #if defined(PETSC_HAVE_PCBDDC)
+PETSC_EXTERN PetscErrorCode PCBDDCSetChangeOfBasisLocalMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetLevels(PC,PetscInt);
