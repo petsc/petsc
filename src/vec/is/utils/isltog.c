@@ -674,9 +674,9 @@ PetscErrorCode  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ISLocalToGlobalMappingGetInfo"
+#define __FUNCT__ "ISLocalToGlobalMappingGetBlockInfo"
 /*@C
-    ISLocalToGlobalMappingGetInfo - Gets the neighbor information for each processor and
+    ISLocalToGlobalMappingGetBlockInfo - Gets the neighbor information for each processor and
      each index shared by more than one processor
 
     Collective on ISLocalToGlobalMapping
@@ -705,7 +705,7 @@ $        ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, Pe
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingRestoreInfo()
 @*/
-PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
+PetscErrorCode  ISLocalToGlobalMappingGetBlockInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag1,tag2,tag3,*len,*source,imdex;
@@ -737,7 +737,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
   ierr = PetscOptionsGetBool(NULL,"-islocaltoglobalmappinggetinfo_debug",&debug,NULL);CHKERRQ(ierr);
 
   /*
-    Notes on ISLocalToGlobalMappingGetInfo
+    Notes on ISLocalToGlobalMappingGetBlockInfo
 
     globally owned node - the nodes that have been assigned to this processor in global
            numbering, just for this routine.
@@ -1104,6 +1104,105 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingRestoreBlockInfo"
+/*@C
+    ISLocalToGlobalMappingRestoreBlockInfo - Frees the memory allocated by ISLocalToGlobalMappingGetBlockInfo()
+
+    Collective on ISLocalToGlobalMapping
+
+    Input Parameters:
+.   mapping - the mapping from local to global indexing
+
+    Output Parameter:
++   nproc - number of processors that are connected to this one
+.   proc - neighboring processors
+.   numproc - number of indices for each processor
+-   indices - indices of local nodes shared with neighbor (sorted by global numbering)
+
+    Level: advanced
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
+          ISLocalToGlobalMappingGetInfo()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(*procs);CHKERRQ(ierr);
+  ierr = PetscFree(*numprocs);CHKERRQ(ierr);
+  if (*indices) {
+    ierr = PetscFree((*indices)[0]);CHKERRQ(ierr);
+    for (i=1; i<*nproc; i++) {
+      ierr = PetscFree((*indices)[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(*indices);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingGetInfo"
+/*@C
+    ISLocalToGlobalMappingGetInfo - Gets the neighbor information for each processor and
+     each index shared by more than one processor
+
+    Collective on ISLocalToGlobalMapping
+
+    Input Parameters:
+.   mapping - the mapping from local to global indexing
+
+    Output Parameter:
++   nproc - number of processors that are connected to this one
+.   proc - neighboring processors
+.   numproc - number of indices for each subdomain (processor)
+-   indices - indices of nodes (in local numbering) shared with neighbors (sorted by global numbering)
+
+    Level: advanced
+
+    Concepts: mapping^local to global
+
+    Fortran Usage:
+$        ISLocalToGlobalMpngGetInfoSize(ISLocalToGlobalMapping,PetscInt nproc,PetscInt numprocmax,ierr) followed by
+$        ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, PetscInt procs[nproc],PetscInt numprocs[nproc],
+          PetscInt indices[nproc][numprocmax],ierr)
+        There is no ISLocalToGlobalMappingRestoreInfo() in Fortran. You must make sure that procs[], numprocs[] and
+        indices[][] are large enough arrays, either by allocating them dynamically or defining static ones large enough.
+
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
+          ISLocalToGlobalMappingRestoreInfo()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
+{
+  PetscErrorCode ierr;
+  PetscInt       **bindices = NULL,bs = mapping->bs,i,j,k;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
+  ierr = ISLocalToGlobalMappingGetBlockInfo(mapping,nproc,procs,numprocs,&bindices);CHKERRQ(ierr);
+  ierr = PetscCalloc1(1+*nproc,&*indices);CHKERRQ(ierr);
+  for (i=0; i<*nproc; i++) {
+    ierr = PetscMalloc1(bs*(*numprocs)[i],&(*indices)[i]);CHKERRQ(ierr);
+    for (j=0; j<(*numprocs)[i]; j++) {
+      for (k=0; k<bs; k++) {
+        (*indices)[i][j*bs+k] = bs*bindices[i][j] + k;
+      }
+    }
+    (*numprocs)[i] *= bs;
+  }
+  if (bindices) {
+    ierr = PetscFree(bindices[0]);CHKERRQ(ierr);
+    for (i=1; i<*nproc; i++) {
+      ierr = PetscFree(bindices[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(bindices);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingRestoreInfo"
 /*@C
     ISLocalToGlobalMappingRestoreInfo - Frees the memory allocated by ISLocalToGlobalMappingGetInfo()
@@ -1127,18 +1226,9 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
 PetscErrorCode  ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = PetscFree(*procs);CHKERRQ(ierr);
-  ierr = PetscFree(*numprocs);CHKERRQ(ierr);
-  if (*indices) {
-    ierr = PetscFree((*indices)[0]);CHKERRQ(ierr);
-    for (i=1; i<*nproc; i++) {
-      ierr = PetscFree((*indices)[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(*indices);CHKERRQ(ierr);
-  }
+  ierr = ISLocalToGlobalMappingRestoreBlockInfo(mapping,nproc,procs,numprocs,indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
