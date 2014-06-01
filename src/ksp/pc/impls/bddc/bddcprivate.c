@@ -3683,6 +3683,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = KSPSetNormType(pcbddc->coarse_ksp,KSP_NORM_NONE);CHKERRQ(ierr);
       ierr = KSPGetPC(pcbddc->coarse_ksp,&pc_temp);CHKERRQ(ierr);
       ierr = PCSetType(pc_temp,coarse_pc_type);CHKERRQ(ierr);
+      ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
       /* prefix */
       ierr = PetscStrcpy(prefix,"");CHKERRQ(ierr);
       ierr = PetscStrcpy(str_level,"");CHKERRQ(ierr);

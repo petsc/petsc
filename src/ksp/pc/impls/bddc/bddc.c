@@ -4,7 +4,7 @@
    - tolerances for constraints as an option (take care of single precision!)
 
    Solvers
-   - Add support for reuse fill and cholecky factor for coarse solver (similar to local solvers)
+   - Add support for cholesky for coarse solver (similar to local solvers)
    - Propagate ksp prefixes for solvers to mat objects?
    - Propagate nearnullspace info among levels
 
