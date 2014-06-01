@@ -774,7 +774,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = ISGetLocalSize(ISForDofs[i],&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (j=0;j<is_size;j++) {
-      if (is_indices[j] > 0 && is_indices[j] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
+      if (is_indices[j] > -1 && is_indices[j] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
         graph->which_dof[is_indices[j]] = i;
       }
     }
@@ -788,7 +788,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = ISGetLocalSize(neumann_is,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(neumann_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++) {
-      if (is_indices[i] > 0 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
+      if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
         array[is_indices[i]] = 1.0;
       }
     }
@@ -816,7 +816,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = ISGetLocalSize(dirichlet_is,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(dirichlet_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++){
-      if (is_indices[i] > 0 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
+      if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
         k = is_indices[i];
         if (graph->count[k] && !PetscBTLookup(graph->touched,k)) {
           if (PetscRealPart(array[k]) > 0.1) {
