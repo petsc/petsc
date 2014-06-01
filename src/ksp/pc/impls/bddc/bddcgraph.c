@@ -763,12 +763,20 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   for (i=0;i<graph->nvtxs;i++) {
     ierr = PetscSortRemoveDupsInt(&graph->count[i],graph->neighbours_set[i]);CHKERRQ(ierr);
   }
-  /* Get info for dofs splitting */
+  /*
+     Get info for dofs splitting
+     User can specify only a subset; an additional field is considered as a complementary set
+  */
+  for (i=0;i<graph->nvtxs;i++) {
+    graph->which_dof[i] = n_ISForDofs; /* by default a dof belongs to the complement set */
+  }
   for (i=0;i<n_ISForDofs;i++) {
     ierr = ISGetLocalSize(ISForDofs[i],&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (j=0;j<is_size;j++) {
-      graph->which_dof[is_indices[j]]=i;
+      if (is_indices[j] > 0 && is_indices[j] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
+        graph->which_dof[is_indices[j]] = i;
+      }
     }
     ierr = ISRestoreIndices(ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
   }
