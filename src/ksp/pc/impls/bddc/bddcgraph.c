@@ -788,7 +788,9 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = ISGetLocalSize(neumann_is,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(neumann_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++) {
-      array[is_indices[i]] = 1.0;
+      if (is_indices[i] > 0 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
+        array[is_indices[i]] = 1.0;
+      }
     }
     ierr = ISRestoreIndices(neumann_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
@@ -801,7 +803,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
   for (i=0;i<graph->nvtxs;i++) {
-    if (PetscRealPart(array[i]) > 0.0) {
+    if (PetscRealPart(array[i]) > 0.1) {
       graph->special_dof[i] = PCBDDCGRAPH_NEUMANN_MARK;
     }
   }
@@ -814,12 +816,14 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = ISGetLocalSize(dirichlet_is,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(dirichlet_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++){
-      k = is_indices[i];
-      if (graph->count[k] && !PetscBTLookup(graph->touched,k)) {
-        if (PetscRealPart(array[k]) > 0.0) {
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"BDDC cannot have boundary nodes which are marked Neumann and Dirichlet at the same time! Local node %d is wrong!\n",k);
+      if (is_indices[i] > 0 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
+        k = is_indices[i];
+        if (graph->count[k] && !PetscBTLookup(graph->touched,k)) {
+          if (PetscRealPart(array[k]) > 0.1) {
+            SETERRQ1(comm,PETSC_ERR_USER,"BDDC cannot have boundary nodes which are marked Neumann and Dirichlet at the same time! Local node %d is wrong!\n",k);
+          }
+          array2[k] = 1.0;
         }
-        array2[k] = 1.0;
       }
     }
     ierr = ISRestoreIndices(dirichlet_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
@@ -834,7 +838,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
   for (i=0;i<graph->nvtxs;i++) {
-    if (PetscRealPart(array[i]) > 0.0) {
+    if (PetscRealPart(array[i]) > 0.1) {
       ierr = PetscBTSet(graph->touched,i);CHKERRQ(ierr);
       graph->subset[i] = 0; /* dirichlet nodes treated as internal -> is it ok? */
       graph->special_dof[i] = PCBDDCGRAPH_DIRICHLET_MARK;

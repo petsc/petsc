@@ -2,7 +2,6 @@
 
    ConstraintsSetup
    - tolerances for constraints as an option (take care of single precision!)
-   - * add support for a user which specifies a change of basis
 
    Solvers
    - Add support for reuse fill and cholecky factor for coarse solver (similar to local solvers)
@@ -10,7 +9,6 @@
    - Propagate nearnullspace info among levels
 
    User interface
-   - * Negative indices in dirichlet and Neumann is should be skipped (now they cause out-of-bounds access)
    - ** DofSplitting and DM attached to pc?
 
    Debugging output
