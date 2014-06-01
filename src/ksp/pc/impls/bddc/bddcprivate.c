@@ -1061,9 +1061,9 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     } else {
       ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
     }
-    ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
     /* Allow user's customization */
     ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
+    ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
   /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
@@ -1130,9 +1130,9 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     } else {
       ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
     }
-    ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
     /* Allow user's customization */
     ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
+    ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR);CHKERRQ(ierr);
   /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
@@ -3697,6 +3697,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = KSPSetOptionsPrefix(pcbddc->coarse_ksp,prefix);CHKERRQ(ierr);
       /* allow user customization */
       ierr = KSPSetFromOptions(pcbddc->coarse_ksp);CHKERRQ(ierr);
+      ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
     }
 
     /* get some info after set from options */
