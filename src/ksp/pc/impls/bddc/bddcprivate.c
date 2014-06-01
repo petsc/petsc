@@ -192,7 +192,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   PetscInt               *idx_V_B,*auxindices;
   PetscInt               n_vertices,n_constraints,size_of_constraint;
   PetscInt               i,j,n_R,n_D,n_B;
-  PetscBool              setsym=PETSC_FALSE,issym=PETSC_FALSE,unsymmetric_check;
+  PetscBool              unsymmetric_check;
   /* matrix type (vector type propagated downstream from vec1_C and local matrix type) */
   MatType                impMatType;
   /* some shortcuts to scalars */
@@ -532,8 +532,8 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   }
 
   /* compute other basis functions for non-symmetric problems */
-  ierr = MatIsSymmetricKnown(pc->pmat,&setsym,&issym);CHKERRQ(ierr);
-  if (!setsym || (setsym && !issym)) {
+  ierr = MatIsSymmetric(pc->pmat,1.e-4,&pcbddc->issym);CHKERRQ(ierr);
+  if (!pcbddc->issym) {
     if (!pcbddc->coarse_psi_B) {
       ierr = MatCreate(PETSC_COMM_SELF,&pcbddc->coarse_psi_B);CHKERRQ(ierr);
       ierr = MatSetSizes(pcbddc->coarse_psi_B,n_B,pcbddc->local_primal_size,n_B,pcbddc->local_primal_size);CHKERRQ(ierr);
@@ -3391,7 +3391,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   PCType                 coarse_pc_type;
   KSPType                coarse_ksp_type;
   PetscBool              multilevel_requested,multilevel_allowed;
-  PetscBool              setsym,issym,isherm,isbddc,isnn,coarse_reuse;
+  PetscBool              isbddc,isnn,coarse_reuse;
   Mat                    t_coarse_mat_is;
   PetscInt               void_procs,ncoarse_ml,ncoarse_ds,ncoarse;
   PetscMPIInt            all_procs;
@@ -3661,10 +3661,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
 
   /* create the coarse KSP object only once with defaults */
-  issym = PETSC_FALSE;
-  isherm = PETSC_FALSE;
-  ierr = MatIsSymmetricKnown(pc->pmat,&setsym,&issym);CHKERRQ(ierr);
-  ierr = MatIsHermitianKnown(pc->pmat,&setsym,&isherm);CHKERRQ(ierr);
   if (coarse_mat_is) {
     MatReuse coarse_mat_reuse;
     PetscViewer dbg_viewer;
@@ -3753,7 +3749,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = MatDestroy(&coarse_mat_is);CHKERRQ(ierr);
 
     /* propagate symmetry info to coarse matrix */
-    ierr = MatSetOption(coarse_mat,MAT_SYMMETRIC,issym);CHKERRQ(ierr);
+    ierr = MatSetOption(coarse_mat,MAT_SYMMETRIC,pcbddc->issym);CHKERRQ(ierr);
     ierr = MatSetOption(coarse_mat,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
     /* set operators */

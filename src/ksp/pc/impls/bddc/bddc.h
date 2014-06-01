@@ -34,6 +34,7 @@ typedef struct {
   VecScatter    R_to_D;
   KSP           ksp_R;
   KSP           ksp_D;
+  PetscBool     issym;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
   ISLocalToGlobalMapping BtoNmap;

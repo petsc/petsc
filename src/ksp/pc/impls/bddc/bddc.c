@@ -1752,7 +1752,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->switch_static       = PETSC_FALSE;
   pcbddc->use_nnsp_true       = PETSC_FALSE; /* not yet exposed */
   pcbddc->dbg_flag            = 0;
-
+  /* private */
+  pcbddc->issym                      = PETSC_FALSE;
   pcbddc->BtoNmap                    = 0;
   pcbddc->local_primal_size          = 0;
   pcbddc->n_vertices                 = 0;
