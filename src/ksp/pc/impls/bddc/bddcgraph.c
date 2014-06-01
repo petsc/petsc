@@ -116,7 +116,9 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
       nvc += graph->cptr[i+1]-graph->cptr[i];
     }
   }
-  if (!nec) { /* we are in a 2d case -> no faces, only edges */
+  j=0;
+  ierr = MPI_Allreduce(&nec,&j,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
+  if (!j) { /* we are in a 2D case -> no faces, only edges */
     nec = nfc;
     nfc = 0;
     twodim_flag = PETSC_TRUE;
