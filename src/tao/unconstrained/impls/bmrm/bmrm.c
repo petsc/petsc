@@ -260,6 +260,14 @@ static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
 }
 
 /*------------------------------------------------------------*/
+/*MC
+  TAOBMRM - bundle method for regularized risk minimization
+
+  Options Database Keys:
+. - tao_bmrm_lambda - regulariser weight
+
+ M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BMRM"

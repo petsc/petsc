@@ -515,7 +515,7 @@ static PetscErrorCode TaoSetFromOptions_BQPIP(Tao tao)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Interior point method for bound constrained quadratic optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-predcorr","Use a predictor-corrector method","",qp->predcorr,&qp->predcorr,0);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_bqpip_predcorr","Use a predictor-corrector method","",qp->predcorr,&qp->predcorr,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -530,6 +530,18 @@ static PetscErrorCode TaoView_BQPIP(Tao tao, PetscViewer viewer)
 }
 
 /* --------------------------------------------------------- */
+/*MC
+ TAOBQPIP - bounded quadratic interior point algorithm for quadratic 
+    optimization with box constraints.
+
+ Notes: This algorithms solves quadratic problems only, the linear Hessian will
+        only be computed once.
+
+ Options Database Keys:
+. -tao_bqpip_predcorr - use a predictor/corrector method
+
+ M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BQPIP"

@@ -41,7 +41,7 @@ static PetscErrorCode TaoSetFromOptions_GPCG(Tao tao)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Gradient Projection, Conjugate Gradient method for bound constrained optimization");CHKERRQ(ierr);
-  ierr=PetscOptionsInt("-gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",0,gpcg->maxgpits,&gpcg->maxgpits,&flg);CHKERRQ(ierr);
+  ierr=PetscOptionsInt("-tao_gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",0,gpcg->maxgpits,&gpcg->maxgpits,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -320,6 +320,15 @@ static PetscErrorCode TaoComputeDual_GPCG(Tao tao, Vec DXL, Vec DXU)
 }
 
 /*------------------------------------------------------------*/
+/*MC
+  TAOGPCG - gradient projected conjugate gradient algorithm is an active-set
+        conjugate-gradient based method for bound-constrained minimization
+
+  Options Database Keys:
++ -tao_gpcg_maxpgits - maximum number of gradient projections for GPCG iterate
+- -tao_subset_type - "subvec","mask","matrix-free", strategies for handling active-sets
+
+ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_GPCG"

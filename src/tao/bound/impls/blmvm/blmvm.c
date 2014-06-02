@@ -235,6 +235,29 @@ static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
 }
 
 /* ---------------------------------------------------------- */
+/*MC
+  TAOBLMVM - Bounded limited memory variable metric is a quasi-Newton method
+         for nonlinear minimization with bound constraints. It is an extension
+         of TAOLMVM
+
+  Options Database Keys:
++     -tao_lmm_vectors - number of vectors to use for approximation
+.     -tao_lmm_scale_type - "none","scalar","broyden"
+.     -tao_lmm_limit_type - "none","average","relative","absolute"
+.     -tao_lmm_rescale_type - "none","scalar","gl"
+.     -tao_lmm_limit_mu - mu limiting factor
+.     -tao_lmm_limit_nu - nu limiting factor
+.     -tao_lmm_delta_min - minimum delta value
+.     -tao_lmm_delta_max - maximum delta value
+.     -tao_lmm_broyden_phi - phi factor for Broyden scaling
+.     -tao_lmm_scalar_alpha - alpha factor for scalar scaling
+.     -tao_lmm_rescale_alpha - alpha factor for rescaling diagonal
+.     -tao_lmm_rescale_beta - beta factor for rescaling diagonal
+.     -tao_lmm_scalar_history - amount of history for scalar scaling
+.     -tao_lmm_rescale_history - amount of history for rescaling diagonal
+-     -tao_lmm_eps - rejection tolerance
+
+ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BLMVM"

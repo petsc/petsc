@@ -40,7 +40,7 @@ static PetscErrorCode TaoSetFromOptions_TRON(Tao tao)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Newton Trust Region Method for bound constrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tron_maxgpits","maximum number of gradient projections per TRON iterate","TaoSetMaxGPIts",tron->maxgpits,&tron->maxgpits,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_tron_maxgpits","maximum number of gradient projections per TRON iterate","TaoSetMaxGPIts",tron->maxgpits,&tron->maxgpits,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
@@ -328,6 +328,15 @@ static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU) {
 }
 
 /*------------------------------------------------------------*/
+/*MC
+  TAOTRON - The TRON algorithm is an active-set Newton trust region method
+  for bound-constrained minimization.
+
+  Options Database Keys:
++ -tao_tron_maxgpits - maximum number of gradient projections per TRON iterate
+- -tao_subset_type - "subvec","mask","matrix-free", strategies for handling active-sets
+
+ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_TRON"

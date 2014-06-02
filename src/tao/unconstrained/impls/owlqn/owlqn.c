@@ -328,6 +328,13 @@ static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
 }
 
 /* ---------------------------------------------------------- */
+/*MC
+  TAOOWLQN - orthant-wise limited memory quasi-newton algorithm
+
+. - tao_owlqn_lambda - regulariser weight
+
+ M*/
+
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

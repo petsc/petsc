@@ -1091,14 +1091,15 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
 . -tao_nls_omega3 - omega3 step update
 . -tao_nls_omega4 - omega4 step update
 . -tao_nls_omega5 - omega5 step update
-. -tao_nls_mu1_i - initial mu1 interpolation factor
-. -tao_nls_mu2_i - initial mu2 interpolation factor
-. -tao_nls_gamma1_i - initial gamma1 interpolation factor
-. -tao_nls_gamma2_i - initial gamma2 interpolation factor
-. -tao_nls_gamma3_i - initial gamma3 interpolation factor
-. -tao_nls_gamma4_i - initial gamma4 interpolation factor
-- -tao_nls_theta_i - initial theta interpolation factor
- 
+. -tao_nls_mu1_i -  mu1 interpolation init factor
+. -tao_nls_mu2_i -  mu2 interpolation init factor
+. -tao_nls_gamma1_i -  gamma1 interpolation init factor
+. -tao_nls_gamma2_i -  gamma2 interpolation init factor
+. -tao_nls_gamma3_i -  gamma3 interpolation init factor
+. -tao_nls_gamma4_i -  gamma4 interpolation init factor
+- -tao_nls_theta_i -  theta interpolation init factor
+ M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NLS"
