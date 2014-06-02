@@ -3795,6 +3795,8 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   char            float_str[]   = "float", double_str[]  = "double";
   char           *numeric_str   = &(float_str[0]);
   PetscInt        op            = ocl->op;
+  PetscReal       lambda        = 1.0;
+  PetscReal       mu            = 0.25;
   PetscBool       useField      = PETSC_FALSE;
   PetscBool       useFieldDer   = PETSC_TRUE;
   PetscBool       useFieldAux   = useAux;
@@ -4100,31 +4102,31 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
       ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      switch (cidx) {\n"
 "      case 0:\n"
-"        f_1[fidx].x = 0.5*(gradU[0].x + gradU[0].x);\n"
-"        f_1[fidx].y = 0.5*(gradU[0].y + gradU[1].x);\n"
+"        f_1[fidx].x = lambda*(gradU[0].x + gradU[1].y) + mu*(gradU[0].x + gradU[0].x);\n"
+"        f_1[fidx].y = lambda*(gradU[0].x + gradU[1].y) + mu*(gradU[0].y + gradU[1].x);\n"
 "        break;\n"
 "      case 1:\n"
-"        f_1[fidx].x = 0.5*(gradU[1].x + gradU[0].y);\n"
-"        f_1[fidx].y = 0.5*(gradU[1].y + gradU[1].y);\n"
+"        f_1[fidx].x = lambda*(gradU[0].x + gradU[1].y) + mu*(gradU[1].x + gradU[0].y);\n"
+"        f_1[fidx].y = lambda*(gradU[0].x + gradU[1].y) + mu*(gradU[1].y + gradU[1].y);\n"
 "      }\n",
                            &count);STRING_ERROR_CHECK("Message to short");break;
     case 3:
       ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      switch (cidx) {\n"
 "      case 0:\n"
-"        f_1[fidx].x = 0.5*(gradU[0].x + gradU[0].x);\n"
-"        f_1[fidx].y = 0.5*(gradU[0].y + gradU[1].x);\n"
-"        f_1[fidx].z = 0.5*(gradU[0].z + gradU[2].x);\n"
+"        f_1[fidx].x = lambda*(gradU[0].x + gradU[1].y + gradU[2].z) + mu*(gradU[0].x + gradU[0].x);\n"
+"        f_1[fidx].y = lambda*(gradU[0].x + gradU[1].y + gradU[2].z) + mu*(gradU[0].y + gradU[1].x);\n"
+"        f_1[fidx].z = lambda*(gradU[0].x + gradU[1].y + gradU[2].z) + mu*(gradU[0].z + gradU[2].x);\n"
 "        break;\n"
 "      case 1:\n"
-"        f_1[fidx].x = 0.5*(gradU[1].x + gradU[0].y);\n"
-"        f_1[fidx].y = 0.5*(gradU[1].y + gradU[1].y);\n"
-"        f_1[fidx].z = 0.5*(gradU[1].y + gradU[2].y);\n"
+"        f_1[fidx].x = lambda*(gradU[0].x + gradU[1].y + gradU[2].z) + mu*(gradU[1].x + gradU[0].y);\n"
+"        f_1[fidx].y = lambda*(gradU[0].x + gradU[1].y + gradU[2].z) + mu*(gradU[1].y + gradU[1].y);\n"
+"        f_1[fidx].z = lambda*(gradU[0].x + gradU[1].y + gradU[2].z) + mu*(gradU[1].y + gradU[2].y);\n"
 "        break;\n"
 "      case 2:\n"
-"        f_1[fidx].x = 0.5*(gradU[2].x + gradU[0].z);\n"
-"        f_1[fidx].y = 0.5*(gradU[2].y + gradU[1].z);\n"
-"        f_1[fidx].z = 0.5*(gradU[2].y + gradU[2].z);\n"
+"        f_1[fidx].x = lambda*(gradU[0].x + gradU[1].y + gradU[2].z) + mu*(gradU[2].x + gradU[0].z);\n"
+"        f_1[fidx].y = lambda*(gradU[0].x + gradU[1].y + gradU[2].z) + mu*(gradU[2].y + gradU[1].z);\n"
+"        f_1[fidx].z = lambda*(gradU[0].x + gradU[1].y + gradU[2].z) + mu*(gradU[2].y + gradU[2].z);\n"
 "      }\n",
                            &count);STRING_ERROR_CHECK("Message to short");break;
     }}
