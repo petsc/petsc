@@ -95,20 +95,20 @@ function getSpecificMatrixTex(matrix, endtag) {
 
     //case 2: pc=ksp recursive case
     if(pc == "ksp") {
-        ret += ksp+"/"+pc+"\\begin{cases}";
+        ret += "\\left.\\begin{aligned}";
 
         endtag += "0";
 
         //ksp is a composite pc so there will be more options
 
         ret += getSpecificMatrixTex(matrix, endtag);
-        ret += "\\end{cases}";
+        ret += "\\end{aligned}\\right\\}"+ksp+"/"+pc;
         return ret;
     }
 
     //case 3: pc=bjacobi recursive case
     else if(pc == "bjacobi") {
-        ret += ksp+"/"+pc+"\\begin{cases}";
+        ret += "\\left.\\begin{aligned}";
 
         endtag += "0";
 
@@ -128,7 +128,7 @@ function getSpecificMatrixTex(matrix, endtag) {
         var childTex = getSpecificMatrixTex(matrix, endtag);
         for(var i=0; i<blocks; i++)
             ret += childTex + "\\\\";
-        ret += "\\end{cases}";
+        ret += "\\end{aligned}\\right\\}" + ksp+"/"+pc;
         return ret;
     }
 

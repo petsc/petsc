@@ -28,7 +28,7 @@ $(document).ready(function(){
         matLevel:0,
         id:      "0"
     }
-
+    //$("#matrixPic2").append("<div id=\"variablesInfo\"> </div>");//test to see what is in variablesInfo. interesting results. this contains what would usually show up on the white webpage
     // get and display SAWs options
     SAWsGetAndDisplayDirectory("","#variablesInfo");//this #variablesInfo variable only appears here
 

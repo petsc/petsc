@@ -201,6 +201,7 @@ function addEventHandlers() {
 
         $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex(val,"") + "\\)" + "</center>");
         $("#matrixPic1").html("<center>" + "\\(" + getSpecificMatrixTex2(0) + "\\)" + "</center>");
+        MathJax.Hub.Config({ TeX: { extensions: ["AMSMath.js"] }});
         MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
     });
 
