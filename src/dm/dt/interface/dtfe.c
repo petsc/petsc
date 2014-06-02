@@ -4202,6 +4202,7 @@ PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool useAux, 
 {
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
   PetscInt        dim, N_bl;
+  PetscBool       flg;
   char           *buffer;
   size_t          len;
   char            errMsg[8192];
@@ -4213,6 +4214,8 @@ PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool useAux, 
   ierr = PetscMalloc1(8192, &buffer);CHKERRQ(ierr);
   ierr = PetscFEGetTileSizes(fem, NULL, &N_bl, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscFEOpenCLGenerateIntegrationCode(fem, &buffer, 8192, useAux, N_bl);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(fem->hdr.prefix, "-petscfe_opencl_kernel_print", &flg);CHKERRQ(ierr);
+  if (flg) {ierr = PetscPrintf(PetscObjectComm((PetscObject) fem), "OpenCL FE Integration Kernel:\n%s\n", buffer);CHKERRQ(ierr);}
   len  = strlen(buffer);
   *ocl_prog = clCreateProgramWithSource(ocl->ctx_id, 1, (const char **) &buffer, &len, &ierr2);CHKERRQ(ierr2);
   ierr = clBuildProgram(*ocl_prog, 0, NULL, NULL, NULL, NULL);
