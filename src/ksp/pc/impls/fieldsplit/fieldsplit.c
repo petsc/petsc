@@ -1109,7 +1109,8 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 
   ierr = PetscOptionsBool("-pc_fieldsplit_diag_use_amat","Use Amat (not Pmat) to extract diagonal fieldsplit blocks", "PCFieldSplitSetDiagUseAmat",pc->useAmat,&jac->diag_use_amat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_fieldsplit_off_diag_use_amat","Use Amat (not Pmat) to extract off-diagonal fieldsplit blocks", "PCFieldSplitSetOffDiagUseAmat",pc->useAmat,&jac->offdiag_use_amat,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool("-pc_fieldsplit_detect_saddle_point","Define splits based on detected saddle-point structure", &stokes,NULL);CHKERRQ(ierr);
+  /* FIXME: No programmatic equivalent to the following. */
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,NULL);CHKERRQ(ierr);
   if (stokes) {
     ierr          = PCFieldSplitSetType(pc,PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
     jac->schurpre = PC_FIELDSPLIT_SCHUR_PRE_SELF;
