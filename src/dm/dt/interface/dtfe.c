@@ -3443,7 +3443,7 @@ PetscErrorCode PetscFEIntegrateResidual_Nonaffine(PetscFE fem, PetscProblem prob
   ierr = PetscProblemGetFieldOffset(prob, field, &fOffset);CHKERRQ(ierr);
   ierr = PetscProblemGetResidual(prob, field, &f0_func, &f1_func);CHKERRQ(ierr);
   ierr = PetscProblemGetEvaluationArrays(prob, &u, &u_t, &u_x);CHKERRQ(ierr);
-  ierr = PetscProblemGetRefCoordArrays(prob, &x, NULL);CHKERRQ(ierr);
+  ierr = PetscProblemGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
   ierr = PetscProblemGetWeakFormArrays(prob, &f0, &f1, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscProblemGetTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);
   if (probAux) {
@@ -3501,7 +3501,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Nonaffine(PetscFE fem, PetscProblem pr
   ierr = PetscProblemGetBdFieldOffset(prob, field, &fOffset);CHKERRQ(ierr);
   ierr = PetscProblemGetBdResidual(prob, field, &f0_func, &f1_func);CHKERRQ(ierr);
   ierr = PetscProblemGetEvaluationArrays(prob, &u, &u_t, &u_x);CHKERRQ(ierr);
-  ierr = PetscProblemGetRefCoordArrays(prob, &x, NULL);CHKERRQ(ierr);
+  ierr = PetscProblemGetRefCoordArrays(prob, &x, &refSpaceDer);CHKERRQ(ierr);
   ierr = PetscProblemGetWeakFormArrays(prob, &f0, &f1, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscProblemGetBdTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);
   if (probAux) {
