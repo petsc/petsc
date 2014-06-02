@@ -347,16 +347,15 @@ PetscErrorCode DMPlexProjectFunction(DM dm, void (**funcs)(const PetscReal [], P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexProjectFieldLocal"
-PetscErrorCode DMPlexProjectFieldLocal(DM dm, PetscFE fe[], PetscFE feAux[], Vec localU, void (**funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal [], PetscScalar []), InsertMode mode, Vec localX)
+PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal [], PetscScalar []), InsertMode mode, Vec localX)
 {
   DM                dmAux;
   PetscProblem      prob, probAux;
   Vec               A;
-  PetscDualSpace   *sp;
   PetscSection      section, sectionAux;
   PetscScalar      *values, *u, *gradU, *a, *gradA, *coefficients, *coefficientsAux;
   PetscReal        *x, *v0, *J, *invJ, detJ, **basisField, **basisFieldDer, **basisFieldAux, **basisFieldDerAux;
-  PetscInt          Nf, NfAux, Nc = 0, NcAux = 0, numCells, cOffset, cOffsetAux, dim, spDim, totDim = 0, numValues, cStart, cEnd, c, f, d, v, comp;
+  PetscInt          Nf, NfAux, cOffset, cOffsetAux, dim, spDim, totDim, numValues, cStart, cEnd, c, f, d, v, comp;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -365,31 +364,15 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, PetscFE fe[], PetscFE feAux[], Vec
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  numCells = cEnd - cStart;
-  ierr = PetscMalloc5(Nf,&sp,Nf,&basisField,Nf,&basisFieldDer,Nf,&basisFieldAux,Nf,&basisFieldDerAux);CHKERRQ(ierr);
-  for (f = 0; f < Nf; ++f) {
-    PetscInt Nb, Ncf;
-
-    ierr = PetscFEGetDualSpace(fe[f], &sp[f]);CHKERRQ(ierr);
-    ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe[f], &Ncf);CHKERRQ(ierr);
-    ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
-    totDim += spDim*Ncf;
-    Nc     += Ncf;
-  }
+  ierr = PetscProblemGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscProblemGetTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
   if (dmAux) {
     ierr = DMGetProblem(dmAux, &probAux);CHKERRQ(ierr);
     ierr = DMGetDefaultSection(dmAux, &sectionAux);CHKERRQ(ierr);
+    ierr = PetscProblemGetTabulation(prob, &basisFieldAux, &basisFieldDerAux);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(sectionAux, &NfAux);CHKERRQ(ierr);
-    for (f = 0; f < NfAux; ++f) {
-      PetscInt Nb, Ncf;
-
-      ierr = PetscFEGetDimension(feAux[f], &Nb);CHKERRQ(ierr);
-      ierr = PetscFEGetNumComponents(feAux[f], &Ncf);CHKERRQ(ierr);
-      NcAux += Ncf;
-    }
   }
   ierr = DMPlexInsertBoundaryValuesFEM(dm, localU);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
@@ -397,28 +380,32 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, PetscFE fe[], PetscFE feAux[], Vec
   ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscInt Ncf;
-
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     for (f = 0, v = 0; f < Nf; ++f) {
-      ierr = PetscFEGetNumComponents(fe[f], &Ncf);CHKERRQ(ierr);
-      ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
+      PetscFE        fe;
+      PetscDualSpace sp;
+      PetscInt       Ncf;
+
+      ierr = PetscProblemGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Ncf);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetDimension(sp, &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
         PetscQuadrature  quad;
         const PetscReal *points, *weights;
         PetscInt         numPoints, q;
 
         if (funcs[f]) {
-          ierr = PetscDualSpaceGetFunctional(sp[f], d, &quad);CHKERRQ(ierr);
+          ierr = PetscDualSpaceGetFunctional(sp, d, &quad);CHKERRQ(ierr);
           ierr = PetscQuadratureGetData(quad, NULL, &numPoints, &points, &weights);CHKERRQ(ierr);
-          ierr = PetscFEGetTabulation(fe[f], numPoints, points, &basisField[f], &basisFieldDer[f], NULL);CHKERRQ(ierr);
+          ierr = PetscFEGetTabulation(fe, numPoints, points, &basisField[f], &basisFieldDer[f], NULL);CHKERRQ(ierr);
           for (q = 0; q < numPoints; ++q) {
             CoordinatesRefToReal(dim, dim, v0, J, &points[q*dim], x);
             ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, &coefficients[cOffset],       NULL, u, gradU, NULL);CHKERRQ(ierr);
             ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL, a, gradA, NULL);CHKERRQ(ierr);
             (*funcs[f])(u, gradU, a, gradA, x, &values[v]);
           }
-          ierr = PetscFERestoreTabulation(fe[f], numPoints, points, &basisField[f], &basisFieldDer[f], NULL);CHKERRQ(ierr);
+          ierr = PetscFERestoreTabulation(fe, numPoints, points, &basisField[f], &basisFieldDer[f], NULL);CHKERRQ(ierr);
         } else {
           for (comp = 0; comp < Ncf; ++comp) values[v+comp] = 0.0;
         }
@@ -429,7 +416,6 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, PetscFE fe[], PetscFE feAux[], Vec
   }
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
-  ierr = PetscFree5(sp,basisField,basisFieldDer,basisFieldAux,basisFieldDerAux);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -463,7 +449,7 @@ PetscErrorCode DMPlexProjectField(DM dm, PetscFE fe[], PetscFE feAux[], Vec U, v
   ierr = DMGetLocalVector(dm, &localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, U, INSERT_VALUES, localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, U, INSERT_VALUES, localU);CHKERRQ(ierr);
-  ierr = DMPlexProjectFieldLocal(dm, fe, feAux, localU, funcs, mode, localX);CHKERRQ(ierr);
+  ierr = DMPlexProjectFieldLocal(dm, localU, funcs, mode, localX);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
