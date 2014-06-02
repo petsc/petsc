@@ -1,5 +1,5 @@
 
-static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
+static char help[] = "Demonstrates using ISLocalToGlobalMappings with block size.\n\n";
 
 /*T
     Concepts: local to global mappings
@@ -27,11 +27,13 @@ int main(int argc,char **argv)
       Create a local to global mapping. Each processor independently
      creates a mapping
   */
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,n,indices,PETSC_COPY_VALUES,&mapping);CHKERRQ(ierr);
+  ierr = PetscIntView(n,indices,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,2,n,indices,PETSC_COPY_VALUES,&mapping);CHKERRQ(ierr);
 
   /*
      Map a set of local indices to their global values
   */
+  ierr = PetscIntView(m,input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(mapping,m,input,output);CHKERRQ(ierr);
   ierr = PetscIntView(m,output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -39,13 +41,15 @@ int main(int argc,char **argv)
      Map some global indices to local, retaining the ones without a local index by -1
   */
   for (i=0; i<13; i++) inglobals[i] = i;
+  ierr = PetscIntView(13,inglobals,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,13,inglobals,NULL,outlocals);CHKERRQ(ierr);
   ierr = PetscIntView(13,outlocals,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
-     Map some global indices to local, dropping the ones without a local index.
+     Map some block global indices to local, dropping the ones without a local index.
   */
-  ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_DROP,13,inglobals,&m,outlocals);CHKERRQ(ierr);
+  ierr = PetscIntView(13,inglobals,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApplyBlock(mapping,IS_GTOLM_DROP,13,inglobals,&m,outlocals);CHKERRQ(ierr);
   ierr = PetscIntView(m,outlocals,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*

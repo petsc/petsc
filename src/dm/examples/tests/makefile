@@ -200,6 +200,8 @@ runex4:
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex4_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex4_1.tmp
+runex4_2:
+	-@${MPIEXEC} -n 1 ./ex4 -testorder -nox
 runex5:
 	-@${MPIEXEC} -n 3 ./ex5 -time 50 -nox
 runex6:
@@ -366,7 +368,7 @@ runex42:
 	  ${RM} -f 2d_nocoord.vtr 2d.vtr 3d_nocoord.vtr 3d.vtr
 
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex15.PETSc ex15.rm ex16.PETSc ex16.rm \
+TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 runex4_2 ex4.rm ex15.PETSc ex15.rm ex16.PETSc ex16.rm \
                             ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
                             runex25 ex25.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm \
                             ex34.PETSc runex34 ex34.rm ex36.PETSc runex36_1d runex36_2d runex36_2dp1 runex36_2dp2 runex36_3d runex36_3dp1 ex36.rm

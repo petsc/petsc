@@ -1293,9 +1293,9 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
 
    Approximate local solvers are automatically adapted for singular linear problems (see [1]) if the user has provided the nullspace using PCBDDCSetNullSpace
 
-   Boundary nodes are split in vertices, edges and faces using information from the local to global mapping of dofs and the local connectivity graph of nodes. The latter can be customized by using PCBDDCSetLocalAdjacencyGraph
+   Boundary nodes are split in vertices, edges and faces using information from the local to global mapping of dofs and the local connectivity graph of nodes. The latter can be customized by using PCBDDCSetLocalAdjacencyGraph()
 
-   Constraints can be customized by attaching a MatNullSpace object to the MATIS matrix via MatSetNearNullSpace.
+   Constraints can be customized by attaching a MatNullSpace object to the MATIS matrix via MatSetNearNullSpace().
 
    Change of basis is performed similarly to [2] when requested. When more the one constraint is present on a single connected component (i.e. an edge or a face), a robust method based on local QR factorizations is used.
 

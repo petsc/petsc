@@ -126,10 +126,10 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
       if ((k >= dd->Zs) && (k < dd->Ze)) {
 
         /* overlay ghost numbers, useful for error checking */
-        base = (dd->Xe-dd->Xs)*(dd->Ye-dd->Ys)*(k-dd->Zs);
+        base = (dd->Xe-dd->Xs)*(dd->Ye-dd->Ys)*(k-dd->Zs)/dd->w;
         ierr = ISLocalToGlobalMappingGetBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
         plane=k;
-        /* Keep z wrap around points on the dradrawg */
+        /* Keep z wrap around points on the drawing */
         if (k<0) plane=dd->P+k;
         if (k>=dd->P) plane=k-dd->P;
         ymin = dd->Ys; ymax = dd->Ye;
@@ -148,7 +148,7 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
             if (x<xmin) xcoord = xmax - (xmin-x);
             if (x>=xmax) xcoord = xmin + (x-xmax);
             ierr = PetscDrawString(draw,xcoord/dd->w,ycoord,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
-            base+=dd->w;
+            base++;
           }
         }
         ierr = ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
