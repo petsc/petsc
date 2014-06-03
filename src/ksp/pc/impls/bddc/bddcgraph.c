@@ -74,15 +74,23 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   ierr = PetscMalloc1(graph->cptr[graph->ncc],&queue_in_global_numbering);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(graph->l2gmap,graph->cptr[graph->ncc],graph->queue,queue_in_global_numbering);CHKERRQ(ierr);
   for (i=0;i<graph->ncc;i++) {
+    PetscInt node_num=graph->queue[graph->cptr[i]];
+    PetscBool printcc = PETSC_FALSE;
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  %d (neighs:",i);CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-    PetscInt node_num=graph->queue[graph->cptr[i]];
     for (j=0;j<graph->count[node_num];j++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d",graph->neighbours_set[node_num][j]);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"):");CHKERRQ(ierr);
-    for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d (%d)",graph->queue[j],queue_in_global_numbering[j]);CHKERRQ(ierr);
+    if (verbosity_level > 1) {
+      printcc = PETSC_TRUE;
+    } else if (graph->count[node_num] > 1 || (graph->count[node_num] == 1 && graph->special_dof[node_num] == NEUMANN_MARK)) {
+      printcc = PETSC_TRUE;
+    }
+    if (printcc) {
+      for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d (%d)",graph->queue[j],queue_in_global_numbering[j]);CHKERRQ(ierr);
+      }
     }
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISetTab(viewer,tabs);CHKERRQ(ierr);
