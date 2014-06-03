@@ -352,10 +352,10 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
   DM                dmAux;
   PetscProblem      prob, probAux;
   Vec               A;
-  PetscSection      section;
-  PetscScalar      *values, *u, *u_x, *a, *a_x, *coefficients, *coefficientsAux;
+  PetscSection      section, sectionAux;
+  PetscScalar      *values, *u, *u_x, *a, *a_x;
   PetscReal        *x, *v0, *J, *invJ, detJ, **basisField, **basisFieldDer, **basisFieldAux, **basisFieldDerAux;
-  PetscInt          Nf, cOffset = 0, cOffsetAux = 0, dim, spDim, totDim, totDimAux, numValues, cStart, cEnd, c, f, d, v, comp;
+  PetscInt          Nf, dim, spDim, totDim, numValues, cStart, cEnd, c, f, d, v, comp;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -372,7 +372,7 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
   if (dmAux) {
     ierr = DMGetProblem(dmAux, &probAux);CHKERRQ(ierr);
-    ierr = PetscProblemGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+    ierr = DMGetDefaultSection(dmAux, &sectionAux);CHKERRQ(ierr);
     ierr = PetscProblemGetTabulation(prob, &basisFieldAux, &basisFieldDerAux);CHKERRQ(ierr);
     ierr = PetscProblemGetEvaluationArrays(probAux, &a, NULL, &a_x);CHKERRQ(ierr);
   }
@@ -382,7 +382,11 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
   ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *coefficients = NULL, *coefficientsAux = NULL;
+
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, section, localU, c, NULL, &coefficients);CHKERRQ(ierr);
+    if (dmAux) {ierr = DMPlexVecGetClosure(dmAux, sectionAux, A, c, NULL, &coefficientsAux);CHKERRQ(ierr);}
     for (f = 0, v = 0; f < Nf; ++f) {
       PetscFE        fe;
       PetscDualSpace sp;
@@ -403,8 +407,8 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
           ierr = PetscFEGetTabulation(fe, numPoints, points, &basisField[f], &basisFieldDer[f], NULL);CHKERRQ(ierr);
           for (q = 0; q < numPoints; ++q) {
             CoordinatesRefToReal(dim, dim, v0, J, &points[q*dim], x);
-            ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, &coefficients[cOffset],       NULL, u, u_x, NULL);CHKERRQ(ierr);
-            ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);CHKERRQ(ierr);
+            ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, coefficients,    NULL, u, u_x, NULL);CHKERRQ(ierr);
+            ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, coefficientsAux, NULL, a, a_x, NULL);CHKERRQ(ierr);
             (*funcs[f])(u, NULL, u_x, a, NULL, a_x, x, &values[v]);
           }
           ierr = PetscFERestoreTabulation(fe, numPoints, points, &basisField[f], &basisFieldDer[f], NULL);CHKERRQ(ierr);
@@ -414,9 +418,9 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
         v += Ncf;
       }
     }
+    ierr = DMPlexVecRestoreClosure(dm, section, localU, c, NULL, &coefficients);CHKERRQ(ierr);
+    if (dmAux) {ierr = DMPlexVecRestoreClosure(dmAux, sectionAux, A, c, NULL, &coefficientsAux);CHKERRQ(ierr);}
     ierr = DMPlexVecSetClosure(dm, section, localX, c, values, mode);CHKERRQ(ierr);
-    cOffset    += totDim;
-    cOffsetAux += totDimAux;
   }
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
