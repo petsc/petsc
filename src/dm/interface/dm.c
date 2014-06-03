@@ -3228,6 +3228,22 @@ PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGetField"
+/*@
+  DMGetField - Return the discretization object for a given DM field
+
+  Not collective
+
+  Input Parameters:
++ dm - The DM
+- f  - The field number
+
+  Output Parameter:
+. field - The discretization object
+
+  Level: developer
+
+.seealso: DMSetField()
+@*/
 PetscErrorCode DMGetField(DM dm, PetscInt f, PetscObject *field)
 {
   PetscErrorCode ierr;
@@ -3240,6 +3256,20 @@ PetscErrorCode DMGetField(DM dm, PetscInt f, PetscObject *field)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetField"
+/*@
+  DMSetField - Set the discretization object for a given DM field
+
+  Logically collective on DM
+
+  Input Parameters:
++ dm - The DM
+. f  - The field number
+- field - The discretization object
+
+  Level: developer
+
+.seealso: DMGetField()
+@*/
 PetscErrorCode DMSetField(DM dm, PetscInt f, PetscObject field)
 {
   PetscErrorCode ierr;

@@ -144,7 +144,7 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
 
   Level: developer
 
-.seealso PetscLimiterDestroy()
+.seealso: PetscLimiterDestroy()
 @*/
 PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
 {
@@ -205,7 +205,7 @@ PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter lim, const char prefix[]
 
   Level: developer
 
-.seealso PetscLimiterView()
+.seealso: PetscLimiterView()
 @*/
 PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
 {
@@ -247,7 +247,7 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
 
   Level: developer
 
-.seealso PetscLimiterView(), PetscLimiterDestroy()
+.seealso: PetscLimiterView(), PetscLimiterDestroy()
 @*/
 PetscErrorCode PetscLimiterSetUp(PetscLimiter lim)
 {
@@ -271,7 +271,7 @@ PetscErrorCode PetscLimiterSetUp(PetscLimiter lim)
 
   Level: developer
 
-.seealso PetscLimiterView()
+.seealso: PetscLimiterView()
 @*/
 PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim)
 {
@@ -1180,7 +1180,7 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
 
   Level: developer
 
-.seealso PetscFVDestroy()
+.seealso: PetscFVDestroy()
 @*/
 PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v)
 {
@@ -1241,7 +1241,7 @@ PetscErrorCode PetscFVViewFromOptions(PetscFV fvm, const char prefix[], const ch
 
   Level: developer
 
-.seealso PetscFVView()
+.seealso: PetscFVView()
 @*/
 PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
 {
@@ -1284,7 +1284,7 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
 
   Level: developer
 
-.seealso PetscFVView(), PetscFVDestroy()
+.seealso: PetscFVView(), PetscFVDestroy()
 @*/
 PetscErrorCode PetscFVSetUp(PetscFV fvm)
 {
@@ -1309,7 +1309,7 @@ PetscErrorCode PetscFVSetUp(PetscFV fvm)
 
   Level: developer
 
-.seealso PetscFVView()
+.seealso: PetscFVView()
 @*/
 PetscErrorCode PetscFVDestroy(PetscFV *fvm)
 {
@@ -1372,6 +1372,19 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVSetLimiter"
+/*@
+  PetscFVSetLimiter - Set the limiter object
+
+  Logically collective on PetscFV
+
+  Input Parameters:
++ fvm - the PetscFV object to destroy
+- lim - The PetscLimiter
+
+  Level: developer
+
+.seealso: PetscFVGetLimiter()
+@*/
 PetscErrorCode PetscFVSetLimiter(PetscFV fvm, PetscLimiter lim)
 {
   PetscErrorCode ierr;
@@ -1387,6 +1400,21 @@ PetscErrorCode PetscFVSetLimiter(PetscFV fvm, PetscLimiter lim)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVGetLimiter"
+/*@
+  PetscFVGetLimiter - Get the limiter object
+
+  Not collective
+
+  Input Parameter:
+. fvm - the PetscFV object to destroy
+
+  Output Parameter:
+. lim - The PetscLimiter
+
+  Level: developer
+
+.seealso: PetscFVSetLimiter()
+@*/
 PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim)
 {
   PetscFunctionBegin;
@@ -1398,6 +1426,19 @@ PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVSetNumComponents"
+/*@
+  PetscFVSetNumComponents - Set the number of field components
+
+  Logically collective on PetscFV
+
+  Input Parameters:
++ fvm - the PetscFV object to destroy
+- comp - The number of components
+
+  Level: developer
+
+.seealso: PetscFVGetNumComponents()
+@*/
 PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp)
 {
   PetscErrorCode ierr;
@@ -1412,6 +1453,21 @@ PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVGetNumComponents"
+/*@
+  PetscFVGetNumComponents - Get the number of field components
+
+  Not collective
+
+  Input Parameter:
+. fvm - the PetscFV object to destroy
+
+  Output Parameter:
+, comp - The number of components
+
+  Level: developer
+
+.seealso: PetscFVSetNumComponents()
+@*/
 PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
 {
   PetscFunctionBegin;
@@ -1423,6 +1479,19 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVSetSpatialDimension"
+/*@
+  PetscFVSetSpatialDimension - Set the spatial dimension
+
+  Logically collective on PetscFV
+
+  Input Parameters:
++ fvm - the PetscFV object to destroy
+- dim - The spatial dimension
+
+  Level: developer
+
+.seealso: PetscFVGetSpatialDimension()
+@*/
 PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim)
 {
   PetscFunctionBegin;
@@ -1433,6 +1502,21 @@ PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVGetSpatialDimension"
+/*@
+  PetscFVGetSpatialDimension - Get the spatial dimension
+
+  Logically collective on PetscFV
+
+  Input Parameter:
+. fvm - the PetscFV object to destroy
+
+  Output Parameter:
+. dim - The spatial dimension
+
+  Level: developer
+
+.seealso: PetscFVSetSpatialDimension()
+@*/
 PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim)
 {
   PetscFunctionBegin;
@@ -1444,6 +1528,19 @@ PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVSetComputeGradients"
+/*@
+  PetscFVSetComputeGradients - Toggle computation of cell gradients
+
+  Logically collective on PetscFV
+
+  Input Parameters:
++ fvm - the PetscFV object to destroy
+- computeGradients - Flag to compute cell gradients
+
+  Level: developer
+
+.seealso: PetscFVGetComputeGradients()
+@*/
 PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradients)
 {
   PetscFunctionBegin;
@@ -1454,6 +1551,21 @@ PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradient
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVGetComputeGradients"
+/*@
+  PetscFVGetComputeGradients - Return flag for computation of cell gradients
+
+  Not collective
+
+  Input Parameter:
+. fvm - the PetscFV object to destroy
+
+  Output Parameter:
+. computeGradients - Flag to compute cell gradients
+
+  Level: developer
+
+.seealso: PetscFVSetComputeGradients()
+@*/
 PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradients)
 {
   PetscFunctionBegin;
