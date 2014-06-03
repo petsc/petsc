@@ -305,51 +305,48 @@ static PetscErrorCode PetscProblemDestroyStructs_Static(PetscProblem prob)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscProblemEnlarge_Static"
-static PetscErrorCode PetscProblemEnlarge_Static(PetscProblem prob, PetscInt *pNf, PetscObject **pdisc, PointFunc **pf, PointFunc **pg, PetscObject **pdiscBd, BdPointFunc **pfBd, BdPointFunc **pgBd, PetscInt NfNew)
+static PetscErrorCode PetscProblemEnlarge_Static(PetscProblem prob, PetscInt NfNew)
 {
   PetscObject   *tmpd, *tmpdbd;
-  PointFunc     *tmpf, *tmpg;
+  PointFunc     *tmpobj, *tmpf, *tmpg;
   BdPointFunc   *tmpfbd, *tmpgbd;
-  PetscInt       Nf = *pNf, f;
+  PetscInt       Nf = prob->Nf, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (Nf >= NfNew) PetscFunctionReturn(0);
   prob->setup = PETSC_FALSE;
   ierr = PetscProblemDestroyStructs_Static(prob);CHKERRQ(ierr);
-  if (Nf >= NfNew) PetscFunctionReturn(0);
   ierr = PetscMalloc1(NfNew, &tmpd);CHKERRQ(ierr);
-  for (f = 0; f < Nf; ++f) tmpd[f] = (*pdisc)[f];
+  for (f = 0; f < Nf; ++f) tmpd[f] = prob->disc[f];
   for (f = Nf; f < NfNew; ++f) {ierr = PetscContainerCreate(PetscObjectComm((PetscObject) prob), (PetscContainer *) &tmpd[f]);CHKERRQ(ierr);}
-  ierr = PetscFree(*pdisc);CHKERRQ(ierr);
-  *pNf   = NfNew;
-  *pdisc = tmpd;
-  if (pf) {
-    ierr = PetscCalloc2(NfNew*2, &tmpf, NfNew*NfNew*4, &tmpg);CHKERRQ(ierr);
-    for (f = 0; f < Nf*2; ++f) tmpf[f] = (*pf)[f];
-    for (f = 0; f < Nf*Nf*4; ++f) tmpg[f] = (*pg)[f];
-    for (f = Nf*2; f < NfNew*2; ++f) tmpf[f] = NULL;
-    for (f = Nf*Nf*4; f < NfNew*NfNew*4; ++f) tmpg[f] = NULL;
-    ierr = PetscFree2(*pf, *pg);CHKERRQ(ierr);
-    *pf = tmpf;
-    *pg = tmpg;
-  }
-  if (pdiscBd) {
-    ierr = PetscMalloc1(NfNew, &tmpdbd);CHKERRQ(ierr);
-    for (f = 0; f < Nf; ++f) tmpdbd[f] = (*pdiscBd)[f];
-    for (f = Nf; f < NfNew; ++f) tmpdbd[f] = NULL;
-    ierr = PetscFree(*pdiscBd);CHKERRQ(ierr);
-    *pdiscBd = tmpdbd;
-  }
-  if (pfBd) {
-    ierr = PetscCalloc2(NfNew*2, &tmpfbd, NfNew*NfNew*4, &tmpgbd);CHKERRQ(ierr);
-    for (f = 0; f < Nf*2; ++f) tmpfbd[f] = (*pfBd)[f];
-    for (f = 0; f < Nf*Nf*4; ++f) tmpgbd[f] = (*pgBd)[f];
-    for (f = Nf*2; f < NfNew*2; ++f) tmpfbd[f] = NULL;
-    for (f = Nf*Nf*4; f < NfNew*NfNew*4; ++f) tmpgbd[f] = NULL;
-    ierr = PetscFree2(*pfBd, *pgBd);CHKERRQ(ierr);
-    *pfBd = tmpfbd;
-    *pgBd = tmpgbd;
-  }
+  ierr = PetscFree(prob->disc);CHKERRQ(ierr);
+  prob->Nf   = NfNew;
+  prob->disc = tmpd;
+  ierr = PetscCalloc3(NfNew, &tmpobj, NfNew*2, &tmpf, NfNew*NfNew*4, &tmpg);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) tmpobj[f] = prob->obj[f];
+  for (f = 0; f < Nf*2; ++f) tmpf[f] = prob->f[f];
+  for (f = 0; f < Nf*Nf*4; ++f) tmpg[f] = prob->g[f];
+  for (f = Nf; f < NfNew; ++f) tmpobj[f] = NULL;
+  for (f = Nf*2; f < NfNew*2; ++f) tmpf[f] = NULL;
+  for (f = Nf*Nf*4; f < NfNew*NfNew*4; ++f) tmpg[f] = NULL;
+  ierr = PetscFree3(prob->obj, prob->f, prob->g);CHKERRQ(ierr);
+  prob->obj = tmpobj;
+  prob->f   = tmpf;
+  prob->g   = tmpg;
+  ierr = PetscMalloc1(NfNew, &tmpdbd);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) tmpdbd[f] = prob->discBd[f];
+  for (f = Nf; f < NfNew; ++f) tmpdbd[f] = NULL;
+  ierr = PetscFree(prob->discBd);CHKERRQ(ierr);
+  prob->discBd = tmpdbd;
+  ierr = PetscCalloc2(NfNew*2, &tmpfbd, NfNew*NfNew*4, &tmpgbd);CHKERRQ(ierr);
+  for (f = 0; f < Nf*2; ++f) tmpfbd[f] = prob->fBd[f];
+  for (f = 0; f < Nf*Nf*4; ++f) tmpgbd[f] = prob->gBd[f];
+  for (f = Nf*2; f < NfNew*2; ++f) tmpfbd[f] = NULL;
+  for (f = Nf*Nf*4; f < NfNew*NfNew*4; ++f) tmpgbd[f] = NULL;
+  ierr = PetscFree2(prob->fBd, prob->gBd);CHKERRQ(ierr);
+  prob->fBd = tmpfbd;
+  prob->gBd = tmpgbd;
   PetscFunctionReturn(0);
 }
 
@@ -385,7 +382,7 @@ PetscErrorCode PetscProblemDestroy(PetscProblem *prob)
   }
   ierr = PetscFree((*prob)->disc);CHKERRQ(ierr);
   ierr = PetscFree((*prob)->discBd);CHKERRQ(ierr);
-  ierr = PetscFree2((*prob)->f,(*prob)->g);CHKERRQ(ierr);
+  ierr = PetscFree3((*prob)->obj,(*prob)->f,(*prob)->g);CHKERRQ(ierr);
   ierr = PetscFree2((*prob)->fBd,(*prob)->gBd);CHKERRQ(ierr);
   if ((*prob)->ops->destroy) {ierr = (*(*prob)->ops->destroy)(*prob);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(prob);CHKERRQ(ierr);
@@ -530,7 +527,7 @@ PetscErrorCode PetscProblemSetDiscretization(PetscProblem prob, PetscInt f, Pets
   PetscValidHeaderSpecific(prob, PETSCPROBLEM_CLASSID, 1);
   PetscValidPointer(disc, 3);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
-  ierr = PetscProblemEnlarge_Static(prob, &prob->Nf, &prob->disc, &prob->f, &prob->g, &prob->discBd, &prob->fBd, &prob->gBd, f+1);CHKERRQ(ierr);
+  ierr = PetscProblemEnlarge_Static(prob, f+1);CHKERRQ(ierr);
   if (prob->disc[f]) {ierr = PetscObjectDereference(prob->disc[f]);CHKERRQ(ierr);}
   prob->disc[f] = disc;
   ierr = PetscObjectReference(disc);CHKERRQ(ierr);
@@ -547,7 +544,7 @@ PetscErrorCode PetscProblemSetBdDiscretization(PetscProblem prob, PetscInt f, Pe
   PetscValidHeaderSpecific(prob, PETSCPROBLEM_CLASSID, 1);
   if (disc) PetscValidPointer(disc, 3);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
-  ierr = PetscProblemEnlarge_Static(prob, &prob->Nf, &prob->disc, &prob->f, &prob->g, &prob->discBd, &prob->fBd, &prob->gBd, f+1);CHKERRQ(ierr);
+  ierr = PetscProblemEnlarge_Static(prob, f+1);CHKERRQ(ierr);
   if (prob->discBd[f]) {ierr = PetscObjectDereference(prob->discBd[f]);CHKERRQ(ierr);}
   prob->discBd[f] = disc;
   ierr = PetscObjectReference(disc);CHKERRQ(ierr);
@@ -573,6 +570,35 @@ PetscErrorCode PetscProblemAddBdDiscretization(PetscProblem prob, PetscObject di
 
   PetscFunctionBegin;
   ierr = PetscProblemSetBdDiscretization(prob, prob->Nf, disc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscProblemGetObjective"
+PetscErrorCode PetscProblemGetObjective(PetscProblem prob, PetscInt f,
+                                        void (**obj)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar obj[]))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCPROBLEM_CLASSID, 1);
+  PetscValidPointer(obj, 2);
+  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  *obj = prob->obj[f];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscProblemSetObjective"
+PetscErrorCode PetscProblemSetObjective(PetscProblem prob, PetscInt f,
+                                        void (*obj)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar obj[]))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCPROBLEM_CLASSID, 1);
+  PetscValidPointer((const void *) obj, 2);
+  if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  ierr = PetscProblemEnlarge_Static(prob, f+1);CHKERRQ(ierr);
+  prob->obj[f] = obj;
   PetscFunctionReturn(0);
 }
 
@@ -603,7 +629,7 @@ PetscErrorCode PetscProblemSetResidual(PetscProblem prob, PetscInt f,
   PetscValidPointer((const void *) f0, 3);
   PetscValidPointer((const void *) f1, 4);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
-  ierr = PetscProblemEnlarge_Static(prob, &prob->Nf, &prob->disc, &prob->f, &prob->g, &prob->discBd, &prob->fBd, &prob->gBd, f+1);CHKERRQ(ierr);
+  ierr = PetscProblemEnlarge_Static(prob, f+1);CHKERRQ(ierr);
   prob->f[f*2+0] = f0;
   prob->f[f*2+1] = f1;
   PetscFunctionReturn(0);
@@ -646,7 +672,7 @@ PetscErrorCode PetscProblemSetJacobian(PetscProblem prob, PetscInt f, PetscInt g
   if (g3) PetscValidPointer((const void *) g3, 7);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   if (g < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", g);
-  ierr = PetscProblemEnlarge_Static(prob, &prob->Nf, &prob->disc, &prob->f, &prob->g, &prob->discBd, &prob->fBd, &prob->gBd, PetscMax(f, g)+1);CHKERRQ(ierr);
+  ierr = PetscProblemEnlarge_Static(prob, PetscMax(f, g)+1);CHKERRQ(ierr);
   prob->g[(f*prob->Nf + g)*4+0] = g0;
   prob->g[(f*prob->Nf + g)*4+1] = g1;
   prob->g[(f*prob->Nf + g)*4+2] = g2;
@@ -679,7 +705,7 @@ PetscErrorCode PetscProblemSetBdResidual(PetscProblem prob, PetscInt f,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCPROBLEM_CLASSID, 1);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
-  ierr = PetscProblemEnlarge_Static(prob, &prob->Nf, &prob->disc, &prob->f, &prob->g, &prob->discBd, &prob->fBd, &prob->gBd, f+1);CHKERRQ(ierr);
+  ierr = PetscProblemEnlarge_Static(prob, f+1);CHKERRQ(ierr);
   if (f0) {PetscValidPointer((const void *) f0, 3); prob->fBd[f*2+0] = f0;}
   if (f1) {PetscValidPointer((const void *) f1, 4); prob->fBd[f*2+1] = f1;}
   PetscFunctionReturn(0);
@@ -722,7 +748,7 @@ PetscErrorCode PetscProblemSetBdJacobian(PetscProblem prob, PetscInt f, PetscInt
   if (g3) PetscValidPointer((const void *) g3, 7);
   if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
   if (g < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", g);
-  ierr = PetscProblemEnlarge_Static(prob, &prob->Nf, &prob->disc, &prob->f, &prob->g, &prob->discBd, &prob->fBd, &prob->gBd, PetscMax(f, g)+1);CHKERRQ(ierr);
+  ierr = PetscProblemEnlarge_Static(prob, PetscMax(f, g)+1);CHKERRQ(ierr);
   prob->gBd[(f*prob->Nf + g)*4+0] = g0;
   prob->gBd[(f*prob->Nf + g)*4+1] = g1;
   prob->gBd[(f*prob->Nf + g)*4+2] = g2;

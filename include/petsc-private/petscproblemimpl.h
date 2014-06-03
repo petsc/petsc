@@ -22,6 +22,7 @@ struct _p_PetscProblem {
   PetscInt     Nf;        /* The number of solution fields */
   PetscObject *disc;      /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
   PetscObject *discBd;    /* The boundary discretization for each solution field (PetscFE, PetscFV, etc.) */
+  PointFunc   *obj;       /* Scalar integral (like an objective function) */
   PointFunc   *f,   *g;   /* Weak form integrands f_0, f_1, g_0, g_1, g_2, g_3 */
   BdPointFunc *fBd, *gBd; /* Weak form boundary integrands f_0, f_1, g_0, g_1, g_2, g_3 */
   PetscInt     dim;       /* The spatial dimension */

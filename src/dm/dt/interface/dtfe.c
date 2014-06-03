@@ -2841,7 +2841,7 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscProblem prob, PetscInt f
                                       const PetscScalar coefficients[], PetscProblem probAux, const PetscScalar coefficientsAux[], PetscReal integral[])
 {
   const PetscInt  debug = 0;
-  void          (*obj_func)(const PetscScalar u[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_x[], const PetscReal x[], PetscScalar obj[]);
+  void          (*obj_func)(const PetscScalar u[], const PetscScalar u_x[], const PetscScalar u_t[], const PetscScalar a[], const PetscScalar a_x[], const PetscScalar a_t[], const PetscReal x[], PetscScalar obj[]);
   PetscQuadrature quad;
   PetscScalar    *u, *u_x, *a, *a_x;
   PetscReal      *x;
@@ -2849,6 +2849,8 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscProblem prob, PetscInt f
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscProblemGetObjective(prob, field, &obj_func);CHKERRQ(ierr);
+  if (!obj_func) PetscFunctionReturn(0);
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &quad);CHKERRQ(ierr);
   ierr = PetscProblemGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
@@ -2878,7 +2880,7 @@ PetscErrorCode PetscFEIntegrate_Basic(PetscFE fem, PetscProblem prob, PetscInt f
       CoordinatesRefToReal(dim, dim, v0, J, &quadPoints[q*dim], x);
       ierr = EvaluateFieldJets(prob,    PETSC_FALSE, q, invJ, &coefficients[cOffset],       NULL, u, u_x, NULL);CHKERRQ(ierr);
       ierr = EvaluateFieldJets(probAux, PETSC_FALSE, q, invJ, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);CHKERRQ(ierr);
-      obj_func(u, u_x, a, a_x, x, &integrand);
+      obj_func(u, NULL, u_x, a, NULL, a_x, x, &integrand);
       integrand *= detJ*quadWeights[q];
       integral[field] += PetscRealPart(integrand);
       if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "    int: %g %g\n", PetscRealPart(integrand), integral[field]);CHKERRQ(ierr);}
