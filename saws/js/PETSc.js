@@ -2,7 +2,7 @@
 PETSc = {}
 
 PETSc.getAndDisplayDirectory = function(names,divEntry){
-    window.location = 'pcoptions.html'
+//    window.location = 'pcoptions.html'
 
     //below are skipped now ...
     jQuery(divEntry).html("")
@@ -28,9 +28,9 @@ PETSc.displayDirectory = function(sub,divEntry)
 
     //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables))
 
-    if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
-        window.location = 'pcoptions.html'
-    } else {
+//    if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
+  //      window.location = 'pcoptions.html'
+//    } else {
         SAWs.displayDirectoryRecursive(sub.directories,divEntry,0,"")
-    }
+  //  }
 }
