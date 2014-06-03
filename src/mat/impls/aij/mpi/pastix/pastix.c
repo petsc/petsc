@@ -181,7 +181,7 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
 
   icntl =-1;
   check = 0;
-  ierr  = PetscOptionsInt("-mat_pastix_check","Check the matrix 0 : no, 1 : yes)","None",check,&icntl,&flg);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(((PetscObject) A)->prefix, "-mat_pastix_check", &icntl, &flg);CHKERRQ(ierr);
   if ((flg && icntl >= 0) || PetscLogPrintInfo) check =  icntl;
 
   if (check == 1) {
@@ -199,10 +199,9 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
 
     icntl=-1;
     verb = API_VERBOSE_NOT;
-    ierr = PetscOptionsInt("-mat_pastix_verbose","iparm[IPARM_VERBOSE] : level of printing (0 to 2)","None",verb,&icntl,&flg);CHKERRQ(ierr);
-    if ((flg && icntl >= 0) || PetscLogPrintInfo) {
-      verb =  icntl;
-    }
+    /* "iparm[IPARM_VERBOSE] : level of printing (0 to 2)" */
+    ierr = PetscOptionsGetInt(((PetscObject) A)->prefix, "-mat_pastix_verbose", &icntl, &flg);CHKERRQ(ierr);
+    if ((flg && icntl >= 0) || PetscLogPrintInfo) verb =  icntl;
     PASTIX_CHECKMATRIX(MPI_COMM_WORLD,verb,((isSym != 0) ? API_SYM_YES : API_SYM_NO),API_YES,*n,&tmpcolptr,&tmprows,(PastixScalar**)&tmpvalues,NULL,1);
 
     ierr = PetscMemcpy(*colptr,tmpcolptr,(*n+1)*sizeof(PetscInt));CHKERRQ(ierr);

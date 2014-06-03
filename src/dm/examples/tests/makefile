@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
-                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c \
+                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex19.c ex20.c \
 	          ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex30.c \
 	          ex31.c ex32.c ex34.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c \
 	          ex42.c
@@ -200,10 +200,31 @@ runex4:
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex4_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex4_1.tmp
+runex4_2:
+	-@${MPIEXEC} -n 1 ./ex4 -testorder -nox
 runex5:
 	-@${MPIEXEC} -n 3 ./ex5 -time 50 -nox
 runex6:
 	-@${MPIEXEC} -n 6 ./ex6 -testorder -nox
+
+runex11:
+	-@${MPIEXEC} -n 1 ./ex11 -dof 2  | grep -v -i Object > ex11_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex11_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex11_1.tmp
+
+runex11_2:
+	-@${MPIEXEC} -n 2 ./ex11 -dof 2  | grep -v -i Object > ex11_2.tmp 2>&1;	  \
+	   if (${DIFF} output/ex11_2.out ex11_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex11_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex11_2.tmp
+
+runex11_3:
+	-@${MPIEXEC} -n 3 ./ex11 -dof 2  | grep -v -i Object > ex11_3.tmp 2>&1;	  \
+	   if (${DIFF} output/ex11_3.out ex11_3.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex11_3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex11_3.tmp
+
 runex12:
 	-@echo "path([getenv('PETSC_DIR') '/bin/matlab'],path); ex12(2) ; exit" | ${MATLAB_COMMAND} -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (${DIFF} output/ex12_1.out ex12_1.tmp2) then true; \
 	   else printf "${PWD}\nPossible problem with with PETSC SOCKET MATLAB INTERFACE ex12_1, diffs above\n=========================================\n"; fi; \
@@ -347,12 +368,12 @@ runex42:
 	  ${RM} -f 2d_nocoord.vtr 2d.vtr 3d_nocoord.vtr 3d.vtr
 
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex15.PETSc ex15.rm ex16.PETSc ex16.rm \
+TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 runex4_2 ex4.rm ex15.PETSc ex15.rm ex16.PETSc ex16.rm \
                             ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
                             runex25 ex25.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm \
                             ex34.PETSc runex34 ex34.rm ex36.PETSc runex36_1d runex36_2d runex36_2dp1 runex36_2dp2 runex36_3d runex36_3dp1 ex36.rm
 TESTEXAMPLES_C_X	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 \
-                            ex6.rm ex7.PETSc ex7.rm  ex11.PETSc ex11.rm ex14.PETSc runex14 ex14.rm \
+                            ex6.rm ex7.PETSc ex7.rm  ex11.PETSc runex11 runex11_2 runex11_3 ex11.rm ex14.PETSc runex14 ex14.rm \
                             ex13.PETSc runex13 ex13.rm ex23.PETSc runex23 ex23.rm ex37.PETSc runex37 ex37.rm
 TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\

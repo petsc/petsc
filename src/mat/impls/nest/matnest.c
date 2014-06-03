@@ -656,6 +656,26 @@ static PetscErrorCode MatZeroEntries_Nest(Mat A)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatCopy_Nest"
+static PetscErrorCode MatCopy_Nest(Mat A,Mat B,MatStructure str)
+{
+  Mat_Nest       *bA = (Mat_Nest*)A->data,*bB = (Mat_Nest*)B->data;
+  PetscInt       i,j,nr = bA->nr,nc = bA->nc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (nr != bB->nr || nc != bB->nc) SETERRQ4(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Cannot copy a Mat_Nest of block size (%D,%D) to a Mat_Nest of block size (%D,%D)",bB->nr,bB->nc,nr,nc);
+  for (i=0; i<nr; i++) {
+    for (j=0; j<nc; j++) {
+      if (bA->m[i][j] && bB->m[i][j]) {
+        ierr = MatCopy(bA->m[i][j],bB->m[i][j],str);CHKERRQ(ierr);
+      } else if (bA->m[i][j] || bB->m[i][j]) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Matrix block does not exist at %D,%D",i,j);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_Nest"
 static PetscErrorCode MatDuplicate_Nest(Mat A,MatDuplicateOption op,Mat *B)
 {
@@ -1091,7 +1111,7 @@ PetscErrorCode MatNestSetSubMats(Mat A,PetscInt nr,const IS is_row[],PetscInt nc
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestCreateAggregateL2G_Private"
-static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const IS islocal[],const IS isglobal[],PetscBool colflg,ISLocalToGlobalMapping *ltog,ISLocalToGlobalMapping *ltogb)
+static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const IS islocal[],const IS isglobal[],PetscBool colflg,ISLocalToGlobalMapping *ltog)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -1154,11 +1174,9 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
       ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
       m   += mi;
     }
-    ierr   = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),m,ix,PETSC_OWN_POINTER,ltog);CHKERRQ(ierr);
-    *ltogb = NULL;
+    ierr   = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,m,ix,PETSC_OWN_POINTER,ltog);CHKERRQ(ierr);
   } else {
     *ltog  = NULL;
-    *ltogb = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -1295,15 +1313,12 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
 
   /* Set up the aggregate ISLocalToGlobalMapping */
   {
-    ISLocalToGlobalMapping rmap,rmapb,cmap,cmapb;
-    ierr = MatNestCreateAggregateL2G_Private(A,vs->nr,vs->islocal.row,vs->isglobal.row,PETSC_FALSE,&rmap,&rmapb);CHKERRQ(ierr);
-    ierr = MatNestCreateAggregateL2G_Private(A,vs->nc,vs->islocal.col,vs->isglobal.col,PETSC_TRUE,&cmap,&cmapb);CHKERRQ(ierr);
+    ISLocalToGlobalMapping rmap,cmap;
+    ierr = MatNestCreateAggregateL2G_Private(A,vs->nr,vs->islocal.row,vs->isglobal.row,PETSC_FALSE,&rmap);CHKERRQ(ierr);
+    ierr = MatNestCreateAggregateL2G_Private(A,vs->nc,vs->islocal.col,vs->isglobal.col,PETSC_TRUE,&cmap);CHKERRQ(ierr);
     if (rmap && cmap) {ierr = MatSetLocalToGlobalMapping(A,rmap,cmap);CHKERRQ(ierr);}
-    if (rmapb && cmapb) {ierr = MatSetLocalToGlobalMappingBlock(A,rmapb,cmapb);CHKERRQ(ierr);}
     ierr = ISLocalToGlobalMappingDestroy(&rmap);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&rmapb);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&cmap);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&cmapb);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_USE_DEBUG)
@@ -1546,6 +1561,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->assemblybegin         = MatAssemblyBegin_Nest;
   A->ops->assemblyend           = MatAssemblyEnd_Nest;
   A->ops->zeroentries           = MatZeroEntries_Nest;
+  A->ops->copy                  = MatCopy_Nest;
   A->ops->duplicate             = MatDuplicate_Nest;
   A->ops->getsubmatrix          = MatGetSubMatrix_Nest;
   A->ops->destroy               = MatDestroy_Nest;

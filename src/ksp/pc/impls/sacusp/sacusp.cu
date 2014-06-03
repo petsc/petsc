@@ -9,11 +9,16 @@
 #include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <cusp/monitor.h>
+#include <cusp/version.h>
+#if CUSP_VERSION >= 400
+#include <cusp/precond/aggregation/smoothed_aggregation.h>
+#define cuspsaprecond cusp::precond::aggregation::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
+#else
 #include <cusp/precond/smoothed_aggregation.h>
+#define cuspsaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
+#endif
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
-
-#define cuspsaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
 
 /*
    Private context (data structure) for the SACUSP preconditioner.

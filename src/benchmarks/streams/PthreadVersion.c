@@ -154,7 +154,7 @@ double *a, *b, *c;
 
 int main(int argc,char *argv[])
 {
-  int    quantum, checktick();
+  int    quantum, checktick(void);
   int    BytesPerWord;
   int    j, k;
   double scalar=3.0, t, times[4][NTIMES];
@@ -282,7 +282,7 @@ int main(int argc,char *argv[])
 
 # define        M        20
 
-int checktick()
+int checktick(void)
 {
   int    i, minDelta, Delta;
   double t1, t2, timesfound[M];

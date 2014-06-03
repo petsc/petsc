@@ -482,24 +482,10 @@
 !   global numbering with the local-to-global mapping.  We cannot work
 !   directly with the global numbers for the original uniprocessor mesh!
 !
-!   Two methods are available for imposing this transformation
-!   when setting matrix entries:
-!     (A) MatSetValuesLocal(), using the local ordering (including
+!      MatSetValuesLocal(), using the local ordering (including
 !         ghost points!)
-!         - Do the following two steps once, before calling TaoSolve()
-!           - Use DMDAGetISLocalToGlobalMapping() to extract the
-!             local-to-global map from the DM
-!           - Associate this map with the matrix by calling
-!             MatSetLocalToGlobalMapping()
 !         - Then set matrix entries using the local ordering
 !           by calling MatSetValuesLocal()
-!     (B) MatSetValues(), using the global ordering
-!         - Use DMDAGetGlobalIndices() to extract the local-to-global map
-!         - Then apply this map explicitly yourself
-!         - Set matrix entries using the global ordering by calling
-!           MatSetValues()
-!   Option (A) seems cleaner/easier in many cases, and is the procedure
-!   used in this example.
 
       subroutine FormHessian(tao, X, Hessian, Hpc, dummy, ierr)
       implicit none

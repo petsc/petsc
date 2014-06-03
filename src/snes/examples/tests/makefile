@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/snes/examples/tests/
-EXAMPLESC       = ex1.c ex5.c ex7.c ex8.c ex11.c ex15.c ex16.c ex17.c ex68.c
+EXAMPLESC       = ex1.c ex5.c ex7.c ex8.c ex15.c ex16.c ex17.c ex68.c
 EXAMPLESF       = ex1f.F ex12f.F ex14f.F
 DIRS	        =
 MANSEC          = SNES
@@ -223,7 +223,7 @@ runex17:
 
 #
 
-TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex11.PETSc ex11.rm ex17.PETSc runex17 ex17.rm ex68.PETSc ex68.rm
+TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex17.PETSc runex17 ex17.rm ex68.PETSc ex68.rm
 TESTEXAMPLES_C_X	       = ex7.PETSc runex7 runex7_2 ex7.rm
 TESTEXAMPLES_FORTRAN	       = ex12f.PETSc runex12f ex12f.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
 TESTEXAMPLES_C_X_MPIUNI        = ex7.PETSc ex7.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm

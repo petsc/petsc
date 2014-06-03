@@ -126,10 +126,10 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
       if ((k >= dd->Zs) && (k < dd->Ze)) {
 
         /* overlay ghost numbers, useful for error checking */
-        base = (dd->Xe-dd->Xs)*(dd->Ye-dd->Ys)*(k-dd->Zs);
-        ierr = ISLocalToGlobalMappingGetIndices(da->ltogmapb,&idx);CHKERRQ(ierr);
+        base = (dd->Xe-dd->Xs)*(dd->Ye-dd->Ys)*(k-dd->Zs)/dd->w;
+        ierr = ISLocalToGlobalMappingGetBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
         plane=k;
-        /* Keep z wrap around points on the dradrawg */
+        /* Keep z wrap around points on the drawing */
         if (k<0) plane=dd->P+k;
         if (k>=dd->P) plane=k-dd->P;
         ymin = dd->Ys; ymax = dd->Ye;
@@ -148,10 +148,10 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
             if (x<xmin) xcoord = xmax - (xmin-x);
             if (x>=xmax) xcoord = xmin + (x-xmax);
             ierr = PetscDrawString(draw,xcoord/dd->w,ycoord,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
-            base+=dd->w;
+            base++;
           }
         }
-        ierr = ISLocalToGlobalMappingRestoreIndices(da->ltogmapb,&idx);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
       }
     }
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
@@ -189,7 +189,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   MPI_Comm         comm;
   PetscMPIInt      rank,size;
   PetscInt         xs = 0,xe,ys = 0,ye,zs = 0,ze,x = 0,y = 0,z = 0;
-  PetscInt         Xs,Xe,Ys,Ye,Zs,Ze,IXs,IXe,IYs,IYe,IZs,IZe,start,end,pm;
+  PetscInt         Xs,Xe,Ys,Ye,Zs,Ze,IXs,IXe,IYs,IYe,IZs,IZe,pm;
   PetscInt         left,right,up,down,bottom,top,i,j,k,*idx,nn;
   PetscInt         n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
   PetscInt         n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
@@ -198,8 +198,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscInt         sn8  = 0,sn9 = 0,sn11 = 0,sn15 = 0,sn24 = 0,sn25 = 0,sn26 = 0;
   PetscInt         sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0;
   Vec              local,global;
-  VecScatter       ltog,gtol;
-  IS               to,from,ltogis;
+  VecScatter       gtol;
+  IS               to,from;
   PetscBool        twod;
   PetscErrorCode   ierr;
 
@@ -422,16 +422,13 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   /* allocate the base parallel and sequential vectors */
   dd->Nlocal = x*y*z*dof;
-  ierr       = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
+  ierr       = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,NULL,&global);CHKERRQ(ierr);
   dd->nlocal = (Xe-Xs)*(Ye-Ys)*(Ze-Zs)*dof;
-  ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,0,&local);CHKERRQ(ierr);
+  ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,NULL,&local);CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
-  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
-  ierr = ISCreateStride(comm,x*y*z*dof,start,1,&to);CHKERRQ(ierr);
-
-  ierr   = PetscMalloc1(x*y*z,&idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc1((IXe-IXs)*(IYe-IYs)*(IZe-IZs),&idx);CHKERRQ(ierr);
   left   = xs - Xs; right = left + x;
   bottom = ys - Ys; top = bottom + y;
   down   = zs - Zs; up  = down + z;
@@ -444,18 +441,9 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     }
   }
 
-  ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)ltog);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
-
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
   if (stencil_type == DMDA_STENCIL_BOX) {
-    count = (IXe-IXs)*(IYe-IYs)*(IZe-IZs);
-    ierr  = PetscMalloc1(count,&idx);CHKERRQ(ierr);
-
     left   = IXs - Xs; right = left + (IXe-IXs);
     bottom = IYs - Ys; top = bottom + (IYe-IYs);
     down   = IZs - Zs; up  = down + (IZe-IZs);
@@ -468,12 +456,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
       }
     }
     ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&to);CHKERRQ(ierr);
-
   } else {
     /* This is way ugly! We need to list the funny cross type region */
-    count = ((ys-IYs) + (IYe-ye))*x*z + ((xs-IXs) + (IXe-xe))*y*z + ((zs-IZs) + (IZe-ze))*x*y + x*y*z;
-    ierr  = PetscMalloc1(count,&idx);CHKERRQ(ierr);
-
     left   = xs - Xs; right = left + x;
     bottom = ys - Ys; top = bottom + y;
     down   = zs - Zs;   up  = down + z;
@@ -769,7 +753,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   }
 
   ierr = PetscMalloc1((Xe-Xs)*(Ye-Ys)*(Ze-Zs),&idx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt));CHKERRQ(ierr);
 
   nn = 0;
   /* Bottom Level */
@@ -1029,7 +1012,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     }
   }
 
-  ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
+  ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)gtol);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
@@ -1358,11 +1341,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
-  ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,dof,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
 
   ierr  = PetscFree2(bases,ldims);CHKERRQ(ierr);
@@ -1375,7 +1354,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   ierr = VecDestroy(&global);CHKERRQ(ierr);
 
   dd->gtol      = gtol;
-  dd->ltog      = ltog;
   dd->base      = base;
   da->ops->view = DMView_DA_3d;
   dd->ltol      = NULL;

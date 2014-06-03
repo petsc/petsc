@@ -36,7 +36,6 @@ PetscErrorCode DMInitialize_Patch(DM dm)
   dm->ops->createglobalvector              = DMCreateGlobalVector_Patch;
   dm->ops->createlocalvector               = DMCreateLocalVector_Patch;
   dm->ops->getlocaltoglobalmapping         = NULL;
-  dm->ops->getlocaltoglobalmappingblock    = NULL;
   dm->ops->createfieldis                   = NULL;
   dm->ops->getcoloring                     = 0;
   dm->ops->creatematrix                    = 0;

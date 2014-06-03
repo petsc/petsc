@@ -92,18 +92,18 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     /* put in numbers */
 
     base = 0;
-    ierr = ISLocalToGlobalMappingGetIndices(da->ltogmapb,&idx);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
     ymin = dd->Ys; ymax = dd->Ye; xmin = dd->Xs; xmax = dd->Xe;
     for (y=ymin; y<ymax; y++) {
       for (x=xmin; x<xmax; x++) {
         if ((base % dd->w) == 0) {
-          sprintf(node,"%d",(int)(idx[base]));
+          sprintf(node,"%d",(int)(idx[base/dd->w]));
           ierr = PetscDrawString(draw,x/dd->w,y,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
         }
         base++;
       }
     }
-    ierr = ISLocalToGlobalMappingRestoreIndices(da->ltogmapb,&idx);
+    ierr = ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx);
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else if (isbinary) {
@@ -236,14 +236,14 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   PetscInt         *ly          = dd->ly;
   MPI_Comm         comm;
   PetscMPIInt      rank,size;
-  PetscInt         xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end,IXs,IXe,IYs,IYe;
+  PetscInt         xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,IXs,IXe,IYs,IYe;
   PetscInt         up,down,left,right,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
   PetscInt         xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
   PetscInt         s_x,s_y; /* s proportionalized to w */
   PetscInt         sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
   Vec              local,global;
-  VecScatter       ltog,gtol;
-  IS               to,from,ltogis;
+  VecScatter       gtol;
+  IS               to,from;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -423,16 +423,13 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   /* allocate the base parallel and sequential vectors */
   dd->Nlocal = x*y*dof;
-  ierr       = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
+  ierr       = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,NULL,&global);CHKERRQ(ierr);
   dd->nlocal = (Xe-Xs)*(Ye-Ys)*dof;
-  ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,0,&local);CHKERRQ(ierr);
+  ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,NULL,&local);CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
-  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
-  ierr = ISCreateStride(comm,x*y*dof,start,1,&to);CHKERRQ(ierr);
-
-  ierr  = PetscMalloc1(x*y,&idx);CHKERRQ(ierr);
+  ierr  = PetscMalloc1((IXe-IXs)*(IYe-IYs),&idx);CHKERRQ(ierr);
   left  = xs - Xs; right = left + x;
   down  = ys - Ys; up = down + y;
   count = 0;
@@ -442,18 +439,9 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     }
   }
 
-  ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)ltog);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
-
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
   if (stencil_type == DMDA_STENCIL_BOX) {
-    count = (IXe-IXs)*(IYe-IYs);
-    ierr  = PetscMalloc1(count,&idx);CHKERRQ(ierr);
-
     left  = IXs - Xs; right = left + (IXe-IXs);
     down  = IYs - Ys; up = down + (IYe-IYs);
     count = 0;
@@ -475,9 +463,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
             | bottom  |
             -----------
          Xs xs        xe Xe */
-    count = (ys-IYs)*x + y*(IXe-IXs) + (IYe-ye)*x;
-    ierr  = PetscMalloc1(count,&idx);CHKERRQ(ierr);
-
     left  = xs - Xs; right = left + x;
     down  = ys - Ys; up = down + y;
     count = 0;
@@ -588,7 +573,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   }
 
   ierr = PetscMalloc1((Xe-Xs)*(Ye-Ys),&idx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)da,(Xe-Xs)*(Ye-Ys)*sizeof(PetscInt));CHKERRQ(ierr);
 
   nn = 0;
   xbase = bases[rank];
@@ -664,7 +648,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     }
   }
 
-  ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
+  ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)gtol);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
@@ -780,11 +764,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
-  ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,dof,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
 
   ierr  = PetscFree2(bases,ldims);CHKERRQ(ierr);
@@ -797,7 +777,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = VecDestroy(&global);CHKERRQ(ierr);
 
   dd->gtol      = gtol;
-  dd->ltog      = ltog;
   dd->base      = base;
   da->ops->view = DMView_DA_2d;
   dd->ltol      = NULL;

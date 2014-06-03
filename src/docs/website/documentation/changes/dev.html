@@ -128,6 +128,10 @@
         </li>
       </ul>
       <h4>IS:</h4>
+      <ul>
+        <li>ISLocalToGlobalMappingCreate() now takes a blocksize. Added ISLocalToGlobalMappingApplyBlock() removed ISLocalToGlobalMappingBlock() and ISLocalToGlobalMappingUnblock()</li>
+      </ul>
+
       <h4>PF:</h4>
       <h4>Vec:</h4>
       <h4>VecScatter:</h4>
@@ -162,6 +166,7 @@
         <li>The matrix arguments to the user functions provided with <tt>SNESSetJacobian()</tt> and  <tt>SNESSetPicard()</tt> are now Mat not Mat*.</li>
         <li>The <tt>MatStructure</tt> argument to the user functions provided with <tt>SNESSetJacobian()</tt> and  <tt>SNESSetPicard()</tt> are gone.</li>
         <li><tt>SNESSetInitialFunctionNorm()</tt> is removed as it's not necessary given that the norm is cached on the Vec.  Use only <tt>SNESSetInitialFunction()</tt>.</li>
+        <li><tt>SNESSetFunctionNorm()</tt> and <tt>SNESGetFunctionNorm()</tt> removed.  <tt>Use SNESGetFunction()</tt> and <tt>VecNorm()</tt> instead.
         <li><tt>SNESSkipConverged()</tt> renamed to <tt>SNESConvergedSkip()</tt>.</li>
         <li><tt>SNESGetPC()</tt>/<tt>SNESSetPC()</tt> renamed to <tt>SNESGetNPC()</tt>/<tt>SNESSetNPC()</tt>.</li>
         <li><tt>GS</tt> and _gs used for nonlinear Gauss-Sidel changed to <tt>NGS</tt> and _ngs to match all the other nonlinear solver names.</li>
@@ -174,6 +179,8 @@
       </ul>
       <h4>DM/DA:</h4>
       <ul>
+        <li>DMDAGetLocalToGlobalMappingBlock() has been removed, the DMDAGetLocalToGlobalMapping() now handles both block and non-block cases</li>
+        <li>DMDAGetGlobalIndices(DM,PetscInt*,const PetscInt*[]) and DMDARestoreGlobalIndices(DM,PetscInt*,const PetscInt*[]) are removed, use DMGetLocalToGlobalMapping() to get this information</li>
         <li>DMADDA has been removed, it never worked correctly</li>
         <li>The MatType argument is removed from DMCreateMatrix(), you can use DMSetMatType() to indicate the type you want used with a DM, defaults to MATAIJ</li>
         <li><tt>DMDABoundaryType</tt> has become <tt>DMBoundaryType</tt>, and all the enumeration values have also been renamed.</li>

@@ -647,7 +647,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
 
    Notes:
    To see all options, run your program with the -help option or consult
-   the <A href="../../docs/manual.pdf#nameddest=ch_snes">SNES chapter of the users manual</A>.
+   Users-Manual: ch_snes
 
    Level: beginner
 
@@ -804,6 +804,13 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-snes_monitor_jacupdate_spectrum","Print the change in the spectrum of the Jacobian","SNESMonitorJacUpdateSpectrum",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorJacUpdateSpectrum,0,0);CHKERRQ(ierr);}
+
+
+  ierr = PetscOptionsString("-snes_monitor_fields","Monitor norm of function per field","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)snes),monfilename,&monviewer);CHKERRQ(ierr);
+    ierr = SNESMonitorSet(snes,SNESMonitorFields,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  }
 
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-snes_fd","Use finite differences (slow) to compute Jacobian","SNESComputeJacobianDefault",flg,&flg,NULL);CHKERRQ(ierr);
@@ -1023,7 +1030,7 @@ PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
 
 .keywords: SNES, nonlinear, get, iteration, number,
 
-.seealso:   SNESGetFunctionNorm(), SNESGetLinearSolveIterations()
+.seealso:   SNESGetLinearSolveIterations()
 @*/
 PetscErrorCode  SNESGetIterationNumber(SNES snes,PetscInt *iter)
 {
@@ -1049,7 +1056,7 @@ PetscErrorCode  SNESGetIterationNumber(SNES snes,PetscInt *iter)
 
 .keywords: SNES, nonlinear, set, iteration, number,
 
-.seealso:   SNESGetFunctionNorm(), SNESGetLinearSolveIterations()
+.seealso:   SNESGetLinearSolveIterations()
 @*/
 PetscErrorCode  SNESSetIterationNumber(SNES snes,PetscInt iter)
 {
@@ -1059,66 +1066,6 @@ PetscErrorCode  SNESSetIterationNumber(SNES snes,PetscInt iter)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = iter;
-  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetFunctionNorm"
-/*@
-   SNESGetFunctionNorm - Gets the norm of the current function that was set
-   with SNESSSetFunction().
-
-   Collective on SNES
-
-   Input Parameter:
-.  snes - SNES context
-
-   Output Parameter:
-.  fnorm - 2-norm of function
-
-   Level: intermediate
-
-.keywords: SNES, nonlinear, get, function, norm
-
-.seealso: SNESGetFunction(), SNESGetIterationNumber(), SNESGetLinearSolveIterations()
-@*/
-PetscErrorCode  SNESGetFunctionNorm(SNES snes,PetscReal *fnorm)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidScalarPointer(fnorm,2);
-  *fnorm = snes->norm;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetFunctionNorm"
-/*@
-   SNESSetFunctionNorm - Sets the 2-norm of the current function computed using VecNorm().
-
-   Collective on SNES
-
-   Input Parameter:
-.  snes - SNES context
-.  fnorm - 2-norm of function
-
-   Level: developer
-
-.keywords: SNES, nonlinear, set, function, norm
-
-.seealso: SNESSetFunction(), SNESSetIterationNumber(), VecNorm().
-@*/
-PetscErrorCode  SNESSetFunctionNorm(SNES snes,PetscReal fnorm)
-{
-
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
-  snes->norm = fnorm;
   ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1358,7 +1305,7 @@ PetscErrorCode  SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
 
 .keywords: SNES, nonlinear, get, number, linear, iterations
 
-.seealso:  SNESGetIterationNumber(), SNESGetFunctionNorm(), SNESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures(), SNESSetCountersReset()
+.seealso:  SNESGetIterationNumber(), SNESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures(), SNESSetCountersReset()
 @*/
 PetscErrorCode  SNESGetLinearSolveIterations(SNES snes,PetscInt *lits)
 {
@@ -2581,6 +2528,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
   void           *funcctx;
   PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*);
   void           *jacctx,*appctx;
+  Mat            j,jpre;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -2616,14 +2564,6 @@ PetscErrorCode  SNESSetUp(SNES snes)
     snes->mf_operator = PETSC_FALSE;
   }
 
-  if (snes->mf) {
-    ierr = SNESSetUpMatrixFree_Private(snes, snes->mf_operator, snes->mf_version);CHKERRQ(ierr);
-  }
-
-  if (snes->ops->usercompute && !snes->user) {
-    ierr = (*snes->ops->usercompute)(snes,(void**)&snes->user);CHKERRQ(ierr);
-  }
-
   if (snes->pc) {
     /* copy the DM over */
     ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
@@ -2632,8 +2572,8 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESGetFunction(snes,&f,&func,&funcctx);CHKERRQ(ierr);
     ierr = VecDuplicate(f,&fpc);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes->pc,fpc,func,funcctx);CHKERRQ(ierr);
-    ierr = SNESGetJacobian(snes,NULL,NULL,&jac,&jacctx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes->pc,snes->jacobian,snes->jacobian_pre,jac,jacctx);CHKERRQ(ierr);
+    ierr = SNESGetJacobian(snes,&j,&jpre,&jac,&jacctx);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes->pc,j,jpre,jac,jacctx);CHKERRQ(ierr);
     ierr = SNESGetApplicationContext(snes,&appctx);CHKERRQ(ierr);
     ierr = SNESSetApplicationContext(snes->pc,appctx);CHKERRQ(ierr);
     ierr = VecDestroy(&fpc);CHKERRQ(ierr);
@@ -2658,6 +2598,12 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESLineSearchSetPreCheck(pclinesearch,precheck,lsprectx);CHKERRQ(ierr);
     ierr = SNESLineSearchSetPostCheck(pclinesearch,postcheck,lspostctx);CHKERRQ(ierr);
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)pclinesearch);CHKERRQ(ierr);
+  }
+  if (snes->mf) {
+    ierr = SNESSetUpMatrixFree_Private(snes, snes->mf_operator, snes->mf_version);CHKERRQ(ierr);
+  }
+  if (snes->ops->usercompute && !snes->user) {
+    ierr = (*snes->ops->usercompute)(snes,(void**)&snes->user);CHKERRQ(ierr);
   }
 
   snes->jac_iter = 0;
@@ -4530,7 +4476,7 @@ PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
   PetscFunctionBegin;
   if (!snes->ksp_ewconv) PetscFunctionReturn(0);
   ierr = KSPGetTolerances(ksp,&kctx->rtol_last,0,0,0);CHKERRQ(ierr);
-  ierr = SNESGetFunctionNorm(snes,&kctx->norm_last);CHKERRQ(ierr);
+  kctx->norm_last = snes->norm;
   if (kctx->version == 1) {
     ierr = KSPGetPCSide(ksp,&pcside);CHKERRQ(ierr);
     if (pcside == PC_RIGHT) { /* XXX Should we also test KSP_UNPRECONDITIONED_NORM ? */

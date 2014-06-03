@@ -165,19 +165,91 @@ PetscErrorCode PetscFEInitializePackage(void)
   ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "fe", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(PETSCFE_CLASSID);CHKERRQ(ierr);
-    }
+    if (className) {ierr = PetscInfoDeactivateClass(PETSCFE_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
-    }
+    ierr = PetscStrstr(logList, "fe", &className);CHKERRQ(ierr);
+    if (className) {ierr = PetscLogEventDeactivateClass(PETSCFE_CLASSID);CHKERRQ(ierr);}
   }
   ierr = PetscRegisterFinalize(PetscFEFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#include <petscfv.h>
+
+static PetscBool PetscFVPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVFinalizePackage"
+/*@C
+  PetscFVFinalizePackage - This function finalizes everything in the PetscFV package. It is called
+  from PetscFinalize().
+
+  Level: developer
+
+.keywords: PetscFV, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PetscFVFinalizePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PetscLimiterList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PetscFVList);CHKERRQ(ierr);
+  PetscFVPackageInitialized     = PETSC_FALSE;
+  PetscFVRegisterAllCalled      = PETSC_FALSE;
+  PetscLimiterRegisterAllCalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVInitializePackage"
+/*@C
+  PetscFVInitializePackage - This function initializes everything in the FV package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscFVCreate()
+  when using static libraries.
+
+  Level: developer
+
+.keywords: PetscFV, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PetscFVInitializePackage(void)
+{
+  char           logList[256];
+  char          *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (PetscFVPackageInitialized) PetscFunctionReturn(0);
+  PetscFVPackageInitialized = PETSC_TRUE;
+
+  /* Register Classes */
+  ierr = PetscClassIdRegister("FV Space", &PETSCFV_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Limiter",  &PETSCLIMITER_CLASSID);CHKERRQ(ierr);
+
+  /* Register Constructors */
+  ierr = PetscFVRegisterAll();CHKERRQ(ierr);
+  /* Register Events */
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "fv", &className);CHKERRQ(ierr);
+    if (className) {ierr = PetscInfoDeactivateClass(PETSCFV_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrstr(logList, "limiter", &className);CHKERRQ(ierr);
+    if (className) {ierr = PetscInfoDeactivateClass(PETSCLIMITER_CLASSID);CHKERRQ(ierr);}
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "fv", &className);CHKERRQ(ierr);
+    if (className) {ierr = PetscLogEventDeactivateClass(PETSCFV_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrstr(logList, "limiter", &className);CHKERRQ(ierr);
+    if (className) {ierr = PetscLogEventDeactivateClass(PETSCLIMITER_CLASSID);CHKERRQ(ierr);}
+  }
+  ierr = PetscRegisterFinalize(PetscFVFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -199,6 +271,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void)
   ierr = AOInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscFEInitializePackage();CHKERRQ(ierr);
+  ierr = PetscFVInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

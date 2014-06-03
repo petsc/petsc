@@ -594,9 +594,12 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     ierr = DMPlexStratify(dm);CHKERRQ(ierr);
     /* Build coordinates */
     ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(coordSection, 0, 2);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
     for (v = firstVertex; v < firstVertex+numVertices; ++v) {
       ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(coordSection, v, 0, 2);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
@@ -756,14 +759,18 @@ extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS);
 /* Replace dm with the contents of dmNew
    - Share the DM_Plex structure
    - Share the coordinates
+   - Share the SF
 */
 static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
 {
+  PetscSF        sf;
   PetscSection   coordSection;
   Vec            coords;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetPointSF(dmNew, &sf);CHKERRQ(ierr);
+  ierr = DMSetPointSF(dm, sf);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dmNew, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dmNew, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinateSection(dm, coordSection);CHKERRQ(ierr);
@@ -829,7 +836,7 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(DM dm)
     if (flg) {
       DMLabel label;
 
-      ierr = DMPlexGetLabel(dm, b->name, &label);CHKERRQ(ierr);
+      ierr = DMPlexGetLabel(dm, b->labelname, &label);CHKERRQ(ierr);
       for (i = 0; i < len; ++i) {
         PetscBool has;
 
@@ -864,7 +871,7 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
   /* Handle DMPlex refinement */
   ierr = PetscOptionsInt("-dm_refine", "The number of uniform refinements", "DMCreate", refine, &refine, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_refine_hierarchy", "The number of uniform refinements", "DMCreate", refine, &refine, &isHierarchy);CHKERRQ(ierr);
-  ierr = DMPlexSetRefinementUniform(dm, refine ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+  if (refine) {ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);}
   if (refine && isHierarchy) {
     DM *dms;
 
@@ -941,7 +948,6 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->createglobalvector              = DMCreateGlobalVector_Plex;
   dm->ops->createlocalvector               = DMCreateLocalVector_Plex;
   dm->ops->getlocaltoglobalmapping         = NULL;
-  dm->ops->getlocaltoglobalmappingblock    = NULL;
   dm->ops->createfieldis                   = NULL;
   dm->ops->createcoordinatedm              = DMCreateCoordinateDM_Plex;
   dm->ops->getcoloring                     = NULL;

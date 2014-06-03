@@ -1228,7 +1228,9 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
                                0,
                                0,
                                0,
-                               0
+                               0,
+                               VecStrideSubSetGather_Default,
+                               VecStrideSubSetScatter_Default
 };
 
 

@@ -447,18 +447,19 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
    Notes:
    Due to grid point reordering with DMDAs, we must always work
    with the local grid points, and then transform them to the new
-   global numbering with the "ltog" mapping (via DMDAGetGlobalIndices()).
+   global numbering with the "ltog" mapping 
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */
 PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac)
 {
-  PetscErrorCode ierr;
-  Vec            localX = user->localX;   /* local vector */
-  const PetscInt *ltog;                   /* local-to-global mapping */
-  PetscInt       i,j,row,mx,my,col[5];
-  PetscInt       nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
-  PetscScalar    two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
+  PetscErrorCode         ierr;
+  Vec                    localX = user->localX;   /* local vector */
+  const PetscInt         *ltog;                   /* local-to-global mapping */
+  PetscInt               i,j,row,mx,my,col[5];
+  PetscInt               xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
+  PetscScalar            two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
+  ISLocalToGlobalMapping ltogm;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -487,7 +488,8 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac)
   /*
      Get the global node numbers for all local nodes, including ghost points
   */
-  ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(user->da,&ltogm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltogm,&ltog);CHKERRQ(ierr);
 
   /*
      Compute entries for the locally owned part of the Jacobian.
@@ -520,7 +522,7 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac)
       ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = DMDARestoreGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog);CHKERRQ(ierr);
 
   /*
      Assemble matrix, using the 2-step process:

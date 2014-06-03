@@ -894,7 +894,7 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
    Concepts: scatter^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideGather(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
-          VecStrideScatterAll()
+          VecStrideScatterAll(), VecStrideSubSetScatter(), VecStrideSubSetGather()
 @*/
 PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 {
@@ -911,17 +911,110 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "VecStrideSubSetGather"
+/*@
+   VecStrideSubSetGather - Gathers a subset of components from a multi-component vector into
+   another vector.
+
+   Collective on Vec
+
+   Input Parameter:
++  v - the vector
+.  nidx - the number of indices
+.  idxv - the indices of the components 0 <= idxv[0] ...idxv[nidx-1] < bs(v), they need not be sorted
+.  idxs - the indices of the components 0 <= idxs[0] ...idxs[nidx-1] < bs(s), they need not be sorted, may be null if nidx == bs(s) or is PETSC_DETERMINE
+-  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
+
+   Output Parameter:
+.  s - the location where the subvector is stored
+
+   Notes:
+   One must call VecSetBlockSize() on both vectors before this routine to set the stride
+   information, or use a vector created from a multicomponent DMDA.
+
+
+   The parallel layout of the vector and the subvector must be the same;
+
+   Not optimized; could be easily
+
+   Level: advanced
+
+   Concepts: gather^into strided vector
+
+.seealso: VecStrideNorm(), VecStrideScatter(), VecStrideGather(), VecStrideSubSetScatter(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
+          VecStrideScatterAll()
+@*/
+PetscErrorCode  VecStrideSubSetGather(Vec v,PetscInt nidx,const PetscInt idxv[],const PetscInt idxs[],Vec s,InsertMode addv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(s,VEC_CLASSID,5);
+  if (nidx == PETSC_DETERMINE) nidx = s->map->bs;
+  if (!v->ops->stridesubsetgather) SETERRQ(PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
+  ierr = (*v->ops->stridesubsetgather)(v,nidx,idxv,idxs,s,addv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecStrideSubSetScatter"
+/*@
+   VecStrideSubSetScatter - Scatters components from a vector into a subset of components of a multi-component vector.
+
+   Collective on Vec
+
+   Input Parameter:
++  s - the smaller-component vector
+.  nidx - the number of indices in idx
+.  idxs - the indices of the components in the smaller-component vector, 0 <= idxs[0] ...idxs[nidx-1] < bs(s) they need not be sorted, may be null if nidx == bs(s) or is PETSC_DETERMINE
+.  idxv - the indices of the components in the larger-component vector, 0 <= idx[0] ...idx[nidx-1] < bs(v) they need not be sorted
+-  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
+
+   Output Parameter:
+.  v - the location where the subvector is into scattered (the multi-component vector)
+
+   Notes:
+   One must call VecSetBlockSize() on the vectors before this
+   routine to set the stride  information, or use a vector created from a multicomponent DMDA.
+
+   The parallel layout of the vector and the subvector must be the same;
+
+   Not optimized; could be easily
+
+   Level: advanced
+
+   Concepts: scatter^into strided vector
+
+.seealso: VecStrideNorm(), VecStrideGather(), VecStrideGather(), VecStrideSubSetGather(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
+          VecStrideScatterAll()
+@*/
+PetscErrorCode  VecStrideSubSetScatter(Vec s,PetscInt nidx,const PetscInt idxs[],const PetscInt idxv[],Vec v,InsertMode addv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,5);
+  if (nidx == PETSC_DETERMINE) nidx = s->map->bs;
+  if (!v->ops->stridesubsetscatter) SETERRQ(PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
+  ierr = (*v->ops->stridesubsetscatter)(s,nidx,idxs,idxv,v,addv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideGather_Default"
 PetscErrorCode  VecStrideGather_Default(Vec v,PetscInt start,Vec s,InsertMode addv)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,bs,ns;
-  PetscScalar    *x,*y;
+  const PetscScalar *x;
+  PetscScalar       *y;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   ierr = VecGetArray(s,&y);CHKERRQ(ierr);
 
   bs = v->map->bs;
@@ -939,7 +1032,7 @@ PetscErrorCode  VecStrideGather_Default(Vec v,PetscInt start,Vec s,InsertMode ad
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
 
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(s,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -948,15 +1041,16 @@ PetscErrorCode  VecStrideGather_Default(Vec v,PetscInt start,Vec s,InsertMode ad
 #define __FUNCT__ "VecStrideScatter_Default"
 PetscErrorCode  VecStrideScatter_Default(Vec s,PetscInt start,Vec v,InsertMode addv)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,n,bs,ns;
-  PetscScalar    *x,*y;
+  PetscErrorCode    ierr;
+  PetscInt          i,n,bs,ns;
+  PetscScalar       *x;
+  const PetscScalar *y;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(s,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(s,&y);CHKERRQ(ierr);
 
   bs = v->map->bs;
   if (n != ns*bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for scatter to multicomponent vector %D",ns*bs,n);
@@ -974,7 +1068,141 @@ PetscErrorCode  VecStrideScatter_Default(Vec s,PetscInt start,Vec v,InsertMode a
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(s,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecStrideSubSetGather_Default"
+PetscErrorCode  VecStrideSubSetGather_Default(Vec v,PetscInt nidx,const PetscInt idxv[],const PetscInt idxs[],Vec s,InsertMode addv)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,j,n,bs,bss,ns;
+  const PetscScalar *x;
+  PetscScalar       *y;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(s,&y);CHKERRQ(ierr);
+
+  bs  = v->map->bs;
+  bss = s->map->bs;
+  n  =  n/bs;
+
+#if defined(PETSC_DEBUG)
+  if (n != ns/bss) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible layout of vectors");
+  for (j=0; j<nidx; j++) {
+    if (idxv[j] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is negative",j,idxv[j]);
+    if (idxv[j] >= bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is greater than or equal to vector blocksize %D",j,idxv[j],bs);
+  }
+  if (!idxs && bss != nidx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not gathering into all locations");
+#endif
+
+  if (addv == INSERT_VALUES) {
+    if (!idxs) {
+      for (i=0; i<n; i++) {
+        for (j=0; j<bss; j++) y[bss*i+j] = x[bs*i+idxv[j]];
+      }
+    } else {
+      for (i=0; i<n; i++) {
+        for (j=0; j<bss; j++) y[bss*i+idxs[j]] = x[bs*i+idxv[j]];
+      }
+    }
+  } else if (addv == ADD_VALUES) {
+    if (!idxs) {
+      for (i=0; i<n; i++) {
+        for (j=0; j<bss; j++) y[bss*i+j] += x[bs*i+idxv[j]];
+      }
+    } else {
+      for (i=0; i<n; i++) {
+        for (j=0; j<bss; j++) y[bss*i+idxs[j]] += x[bs*i+idxv[j]];
+      }
+    }
+#if !defined(PETSC_USE_COMPLEX)
+  } else if (addv == MAX_VALUES) {
+    if (!idxs) {
+      for (i=0; i<n; i++) {
+        for (j=0; j<bss; j++) y[bss*i+j] = PetscMax(y[bss*i+j],x[bs*i+idxv[j]]);
+      }
+    } else {
+      for (i=0; i<n; i++) {
+        for (j=0; j<bss; j++) y[bss*i+idxs[j]] = PetscMax(y[bss*i+idxs[j]],x[bs*i+idxv[j]]);
+      }
+    }
+#endif
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
+
+  ierr = VecRestoreArrayRead(v,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(s,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecStrideSubSetScatter_Default"
+PetscErrorCode  VecStrideSubSetScatter_Default(Vec s,PetscInt nidx,const PetscInt idxs[],const PetscInt idxv[],Vec v,InsertMode addv)
+{
+  PetscErrorCode    ierr;
+  PetscInt          j,i,n,bs,ns,bss;
+  PetscScalar       *x;
+  const PetscScalar *y;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(s,&y);CHKERRQ(ierr);
+
+  bs  = v->map->bs;
+  bss = s->map->bs;
+  n  =  n/bs;
+
+#if defined(PETSC_DEBUG)
+  if (n != ns/bss) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible layout of vectors");
+  for (j=0; j<bss; j++) {
+    if (idx[j] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is negative",j,idx[j]);
+    if (idx[j] >= bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"idx[%D] %D is greater than or equal to vector blocksize %D",j,idx[j],bs);
+  }
+  if (!idxs && bss != nidx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must provide idxs when not scattering from all locations");
+#endif
+
+  if (addv == INSERT_VALUES) {
+    if (!idxs) {
+      for (i=0; i<n; i++) {
+        for (j=0; j<bss; j++) x[bs*i + idxv[j]] = y[bss*i+j];
+      }
+    } else {
+      for (i=0; i<n; i++) {
+        for (j=0; j<bss; j++) x[bs*i + idxv[j]] = y[bss*i+idxs[j]];
+      }
+    }
+  } else if (addv == ADD_VALUES) {
+    if (!idxs) {
+      for (i=0; i<n; i++) {
+        for (j=0; j<bss; j++) x[bs*i + idxv[j]] += y[bss*i+j];
+      }
+    } else {
+      for (i=0; i<n; i++) {
+        for (j=0; j<bss; j++) x[bs*i + idxv[j]] += y[bss*i+idxs[j]];
+      }
+    }
+#if !defined(PETSC_USE_COMPLEX)
+  } else if (addv == MAX_VALUES) {
+    if (!idxs) {
+      for (i=0; i<n; i++) {
+        for (j=0; j<bss; j++) x[bs*i + idxv[j]] = PetscMax(y[bss*i+j],x[bs*i + idxv[j]]);
+      }
+    } else {
+      for (i=0; i<n; i++) {
+        for (j=0; j<bss; j++) x[bs*i + idxv[j]] = PetscMax(y[bss*i+idxs[j]],x[bs*i + idxv[j]]);
+      }
+    }
+#endif
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
+
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(s,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

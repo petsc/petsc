@@ -447,7 +447,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       if (iter > 0) {
         ierr = MatLMVMSolve(lclP->R,lclP->g1,lclP->s);CHKERRQ(ierr);
         ierr = VecDot(lclP->s,lclP->g1,&descent);CHKERRQ(ierr);
-        if (descent < 0e-8) {
+        if (descent <= 0) {
           if (lclP->verbose) {
             ierr = PetscPrintf(PETSC_COMM_WORLD,"Reduced-space direction not descent: %g\n",(double)descent);CHKERRQ(ierr);
           }

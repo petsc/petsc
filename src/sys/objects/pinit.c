@@ -438,7 +438,7 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPI
 
 int  PetscGlobalArgc   = 0;
 char **PetscGlobalArgs = 0;
-PetscSegBuffer PetscCitationsList; 
+PetscSegBuffer PetscCitationsList;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscCitationsInitialize"
@@ -692,7 +692,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 -  -memory_info - Print memory usage at end of run
 
    Options Database Keys for Profiling:
-   See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.
+   See Users-Manual: ch_profiling for details.
 +  -info <optional filename> - Prints verbose information to the screen
 .  -info_exclude <null,vec,mat,pc,ksp,snes,ts> - Excludes some of the verbose messages
 .  -log_sync - Log the synchronization in scatters, inner products and norms
@@ -731,7 +731,7 @@ $       call PetscInitialize(file,ierr)
    Important Fortran Note:
    In Fortran, you MUST use NULL_CHARACTER to indicate a
    null character string; you CANNOT just use NULL as
-   in the C version. See the <a href="../../docs/manual.pdf">users manual</a> for details.
+   in the C version. See Users-Manual: ch_fortran for details.
 
    If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after
    calling PetscInitialize().
@@ -897,6 +897,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Running on machine: %s\n",hostname);CHKERRQ(ierr);
 
+  /* Ensure that threadcomm-related keyval exists, so that PetscOptionsSetFromOptions can use PetscCommDuplicate. */
+  ierr = PetscThreadCommInitializePackage();CHKERRQ(ierr);
+
   ierr = PetscOptionsCheckInitial_Components();CHKERRQ(ierr);
   /* Check the options database for options related to the options database itself */
   ierr = PetscOptionsSetFromOptions();CHKERRQ(ierr);
@@ -929,8 +932,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     PetscInitializeCalled = PETSC_TRUE;
     ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
   }
-
-  ierr = PetscThreadCommInitializePackage();CHKERRQ(ierr);
 
   /*
       Setup building of stack frames for all function calls
@@ -1044,6 +1045,12 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscFree(buffs);CHKERRQ(ierr);
   }
 #endif
+  /*
+    It should be safe to cancel the options monitors, since we don't expect to be setting options
+    here (at least that are worth monitoring).  Monitors ought to be released so that they release
+    whatever memory was allocated there before -malloc_dump reports unfreed memory.
+  */
+  ierr = PetscOptionsMonitorCancel();CHKERRQ(ierr);
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   ierr = PetscFPTDestroy();CHKERRQ(ierr);
@@ -1099,7 +1106,7 @@ PetscErrorCode  PetscFinalize(void)
 #endif
   mname[0] = 0;
 
-  ierr = PetscLogViewFromOptions();CHKERRQ(ierr);  
+  ierr = PetscLogViewFromOptions();CHKERRQ(ierr);
   ierr = PetscOptionsGetString(NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
     PetscViewer viewer;

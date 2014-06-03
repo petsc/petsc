@@ -71,7 +71,6 @@ static struct {
 static PetscErrorCode oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.function,(SNES*,Vec*,Vec*,void*,PetscErrorCode*),(&snes,&x,&f,_ctx,&ierr));
-  return 0;
 }
 
 #undef __FUNCT__
@@ -79,7 +78,6 @@ static PetscErrorCode oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
 static PetscErrorCode oursnestest(SNES snes,PetscInt it,PetscReal a,PetscReal d,PetscReal c,SNESConvergedReason *reason,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.test,(SNES*,PetscInt*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*),(&snes,&it,&a,&d,&c,reason,_ctx,&ierr));
-  return 0;
 }
 
 #undef __FUNCT__
@@ -87,7 +85,6 @@ static PetscErrorCode oursnestest(SNES snes,PetscInt it,PetscReal a,PetscReal d,
 static PetscErrorCode ourdestroy(void *ctx)
 {
   PetscObjectUseFortranCallback(ctx,_cb.destroy,(void*,PetscErrorCode*),(_ctx,&ierr));
-  return 0;
 }
 
 #undef __FUNCT__
@@ -95,7 +92,6 @@ static PetscErrorCode ourdestroy(void *ctx)
 static PetscErrorCode oursnesjacobian(SNES snes,Vec x,Mat m,Mat p,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.jacobian,(SNES*,Vec*,Mat*,Mat*,void*,PetscErrorCode*),(&snes,&x,&m,&p,_ctx,&ierr));
-  return 0;
 }
 
 #undef __FUNCT__
@@ -103,14 +99,12 @@ static PetscErrorCode oursnesjacobian(SNES snes,Vec x,Mat m,Mat p,void *ctx)
 static PetscErrorCode oursnesngs(SNES snes,Vec x,Vec b,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.ngs,(SNES*,Vec*,Vec*,void*,PetscErrorCode*),(&snes,&x,&b,_ctx,&ierr));
-  return 0;
 }
 #undef __FUNCT__
 #define __FUNCT__ "oursnesmonitor"
 static PetscErrorCode oursnesmonitor(SNES snes,PetscInt i,PetscReal d,void *ctx)
 {
   PetscObjectUseFortranCallback(snes,_cb.monitor,(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*),(&snes,&i,&d,_ctx,&ierr));
-  return 0;
 }
 #undef __FUNCT__
 #define __FUNCT__ "ourmondestroy"
@@ -118,7 +112,6 @@ static PetscErrorCode ourmondestroy(void **ctx)
 {
   SNES snes = (SNES)*ctx;
   PetscObjectUseFortranCallback(snes,_cb.mondestroy,(void*,PetscErrorCode*),(_ctx,&ierr));
-  return 0;
 }
 
 /* ---------------------------------------------------------*/

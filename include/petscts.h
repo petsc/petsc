@@ -337,6 +337,10 @@ PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM,PetscErrorCode (*)(DMDA
 PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*),void *);
 PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,void*),void *);
 
+PETSC_EXTERN PetscErrorCode DMPlexTSGetGeometry(DM, Vec *, Vec *, PetscReal *);
+PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionLocalDMPlex(DM, PetscReal, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexTSSetRHSFunctionLocal(DM, void (*)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *), void *);
+
 typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 typedef struct {
   Vec            ray;
