@@ -1,16 +1,6 @@
 !
 !   Modified from ex15f.F for testing MUMPS
-!   Solves a linear system in parallel with KSP.  Also indicates
-!   use of a user-provided preconditioner.  Input parameters include:
-!      -user_defined_pc : Activate a user-defined preconditioner
-!
-!
-!/*T
-!   Concepts: KSP^basic parallel example
-!   Concepts: PC^setting a user-defined shell preconditioner
-!   Processors: n
-!T*/
-!
+!   Solves a linear system in parallel with KSP.  
 !  -------------------------------------------------------------------------
 
       program main
@@ -19,11 +9,6 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                    Include files
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!     petscsys.h  - base PETSc routines      petscvec.h - vectors
-!     petscmat.h - matrices
-!     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
-
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
 #include <finclude/petscmat.h>
@@ -33,16 +18,6 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  Variables:
-!     ksp     - linear solver context
-!     ksp      - Krylov subspace method context
-!     pc       - preconditioner context
-!     x, b, u  - approx solution, right-hand-side, exact solution vectors
-!     A        - matrix that defines linear system
-!     its      - iterations for convergence
-!     norm     - norm of solution error
-
       Vec              x,b,u
       Mat              A
       PC               pc
@@ -63,7 +38,6 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one     = 1.0
       neg_one = -1.0
@@ -79,12 +53,6 @@
 !      Compute the matrix and right-hand-side vector that define
 !      the linear system, Ax = b.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-!  Create parallel matrix, specifying only its global dimensions.
-!  When using MatCreate(), the matrix format can be specified at
-!  runtime. Also, the parallel partitioning of the matrix is
-!  determined by PETSc at runtime.
-
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
       call MatSetType(A, MATAIJ,ierr)
@@ -92,10 +60,6 @@
       call MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,            &
      &                     PETSC_NULL_INTEGER,ierr)
       call MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr)
-
-!  Currently, all PETSc parallel matrix formats are partitioned by
-!  contiguous chunks of rows across the processors.  Determine which
-!  rows of the matrix are locally owned.
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
@@ -106,7 +70,6 @@
 !   - Always specify global row and columns of matrix entries.
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
-
       do 10, II=Istart,Iend-1
         v = -1.0
         i = II/n
@@ -132,56 +95,27 @@
  10   continue
 
 !  Assemble matrix, using the 2-step process:
-!       MatAssemblyBegin(), MatAssemblyEnd()
-!  Computations can be done while messages are in transition,
-!  by placing code between these two statements.
-
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
 !  Create parallel vectors.
-!   - Here, the parallel partitioning of the vector is determined by
-!     PETSc at runtime.  We could also specify the local dimensions
-!     if desired -- or use the more general routine VecCreate().
-!   - When solving a linear system, the vectors and matrices MUST
-!     be partitioned accordingly.  PETSc automatically generates
-!     appropriately partitioned matrices and vectors when MatCreate()
-!     and VecCreate() are used with the same communicator.
-!   - Note: We form 1 vector from scratch and then duplicate as needed.
-
       call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 
 !  Set exact solution; then compute right-hand-side vector.
-
       call VecSet(u,one,ierr)
       call MatMult(A,u,b,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-!  Create linear solver context
-
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
-
-!  Set operators. Here the matrix that defines the linear system
-!  also serves as the preconditioning matrix.
-
       call KSPSetOperators(ksp,A,A,ierr)
-
-!  Set linear solver defaults for this problem (optional).
-!   - By extracting the KSP and PC contexts from the KSP context,
-!     we can then directly directly call any KSP and PC routines
-!     to set various options.
-
-!      call KSPGetPC(ksp,pc,ierr)
       tol = 1.e-7
       call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                       &
      &     PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
 
-!
 !  Test MUMPS
 #if defined(PETSC_HAVE_MUMPS)
       call KSPSetType(ksp,KSPPREONLY,ierr)
@@ -228,9 +162,6 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                     Check solution and clean up
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-!  Check the error
-
       call VecAXPY(x,neg_one,u,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
@@ -255,6 +186,5 @@
       call MatDestroy(A,ierr)
 
 !  Always call PetscFinalize() before exiting a program.
-
       call PetscFinalize(ierr)
       end
