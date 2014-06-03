@@ -4,24 +4,6 @@
 #include "finclude/ftn-custom/petscvechide.h90"
 #include "finclude/ftn-custom/petscdmhide.h90"
 
-      Interface
-        Subroutine DMDAGetGlobalIndicesF90(v,n,array,ierr)
-          USE_DM_HIDE
-          PetscInt, pointer :: array(:)
-          PetscInt  n
-          PetscErrorCode ierr
-          DM_HIDE   v
-        End Subroutine
-        Subroutine DMDARestoreGlobalIndicesF90(v,n,array,ierr)
-          USE_DM_HIDE
-          PetscInt, pointer :: array(:)
-          PetscInt  n
-          PetscErrorCode ierr
-          DM_HIDE   v
-        End Subroutine
-      End Interface
-
-
       type DMDALocalInfof90
         PetscInt ::       dim,dof,sw
         PetscInt ::       mx,my,mz

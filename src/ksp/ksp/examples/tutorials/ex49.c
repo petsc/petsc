@@ -1113,21 +1113,23 @@ int main(int argc,char **args)
 #define __FUNCT__ "BCApply_EAST"
 static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A,Vec b)
 {
-  DM             cda;
-  Vec            coords;
-  PetscInt       si,sj,nx,ny,i,j;
-  PetscInt       M,N;
-  DMDACoor2d     **_coords;
-  const PetscInt *g_idx;
-  PetscInt       *bc_global_ids;
-  PetscScalar    *bc_vals;
-  PetscInt       nbcs;
-  PetscInt       n_dofs;
-  PetscErrorCode ierr;
+  DM                     cda;
+  Vec                    coords;
+  PetscInt               si,sj,nx,ny,i,j;
+  PetscInt               M,N;
+  DMDACoor2d             **_coords;
+  const PetscInt         *g_idx;
+  PetscInt               *bc_global_ids;
+  PetscScalar            *bc_vals;
+  PetscInt               nbcs;
+  PetscInt               n_dofs;
+  PetscErrorCode         ierr;
+  ISLocalToGlobalMapping ltogm;
 
   PetscFunctionBeginUser;
   /* enforce bc's */
-  ierr = DMDAGetGlobalIndices(da,NULL,&g_idx);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltogm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltogm,&g_idx);CHKERRQ(ierr);
 
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da,&coords);CHKERRQ(ierr);
@@ -1157,7 +1159,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
 
     bc_vals[j] =  bc_val;
   }
-  ierr = DMDARestoreGlobalIndices(da,NULL,&g_idx);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx);CHKERRQ(ierr);
   nbcs = 0;
   if ((si+nx) == (M)) nbcs = ny;
 
@@ -1181,21 +1183,23 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
 #define __FUNCT__ "BCApply_WEST"
 static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A,Vec b)
 {
-  DM             cda;
-  Vec            coords;
-  PetscInt       si,sj,nx,ny,i,j;
-  PetscInt       M,N;
-  DMDACoor2d     **_coords;
-  const PetscInt *g_idx;
-  PetscInt       *bc_global_ids;
-  PetscScalar    *bc_vals;
-  PetscInt       nbcs;
-  PetscInt       n_dofs;
-  PetscErrorCode ierr;
+  DM                     cda;
+  Vec                    coords;
+  PetscInt               si,sj,nx,ny,i,j;
+  PetscInt               M,N;
+  DMDACoor2d             **_coords;
+  const PetscInt         *g_idx;
+  PetscInt               *bc_global_ids;
+  PetscScalar            *bc_vals;
+  PetscInt               nbcs;
+  PetscInt               n_dofs;
+  PetscErrorCode         ierr;
+  ISLocalToGlobalMapping ltogm;
 
   PetscFunctionBeginUser;
   /* enforce bc's */
-  ierr = DMDAGetGlobalIndices(da,NULL,&g_idx);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da,&ltogm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltogm,&g_idx);CHKERRQ(ierr);
 
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da,&coords);CHKERRQ(ierr);
@@ -1225,7 +1229,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
 
     bc_vals[j] =  bc_val;
   }
-  ierr = DMDARestoreGlobalIndices(da,NULL,&g_idx);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltogm,&g_idx);CHKERRQ(ierr);
   nbcs = 0;
   if (si == 0) nbcs = ny;
 

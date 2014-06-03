@@ -487,7 +487,7 @@
 !   Notes:
 !   Due to grid point reordering with DMDAs, we must always work
 !   with the local grid points, and then transform them to the new
-!   global numbering with the 'ltog' mapping (via DMDAGetGlobalIndices()).
+!   global numbering with the 'ltog' mapping 
 !   We cannot work directly with the global numbers for the original
 !   uniprocessor grid!
 !
@@ -515,7 +515,7 @@
       PetscInt     ltog(1)
       PetscOffset idltog,idx
       PetscErrorCode ierr
-      PetscInt nloc,xs,ys,xm,ym
+      PetscInt xs,ys,xm,ym
       PetscInt gxs,gys,gxm,gym
       PetscInt grow(1),i,j
       PetscInt row,mx,my,ione
@@ -524,6 +524,7 @@
       PetscScalar v(5),hx,hy,hxdhy
       PetscScalar hydhx,sc,xx(1)
       Mat         B
+      ISLocalToGlobalMapping ltogm
       common   /mycommon/ mx,my,B,localX,localF,da
 
       ione   = 1
@@ -558,7 +559,8 @@
 
 !  Get the global node numbers for all local nodes, including ghost points
 
-      call DMDAGetGlobalIndices(da,nloc,ltog,idltog,ierr)
+      call DMGetLocalToGlobalMapping(da,ltogm,ierr)
+      call ISLocalToGlobalMappingGetIndices(ltogm,ltog,idltog,ierr)
 
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
@@ -597,7 +599,7 @@
  20     continue
  10   continue
 
-      call DMDARestoreGlobalIndices(da,nloc,ltog,idltog,ierr)
+      call ISLocalToGlobalMappingRestoreIndices(ltogm,ltog,idltog,ierr)
 
 !  Assemble matrix, using the 2-step process:
 !    MatAssemblyBegin(), MatAssemblyEnd().

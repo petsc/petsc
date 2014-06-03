@@ -986,11 +986,15 @@ runex50_2:
         ${RM} -f ex50_2.tmp
 
 runex52_mumps:
-	-@${MPIEXEC} -n 1 ./ex52 -use_mumps_lu > ex52.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex52 -use_mumps_lu > ex52.tmp 2>&1;	  \
 	   ${DIFF} output/ex52_1.out ex52.tmp || printf "${PWD}\nPossible problem with with ex52_mumps, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 runex52_mumps_2:
-	-@${MPIEXEC} -n 1 ./ex52 -use_mumps_ch > ex52.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex52 -use_mumps_ch > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_1.out ex52.tmp || printf "${PWD}\nPossible problem with with ex52_mumps_2, diffs above\n=========================================\n"; \
+	   ${RM} -f ex52.tmp
+runex52_mumps_3:
+	-@${MPIEXEC} -n 3 ./ex52 -use_mumps_ch -mat_type sbaij > ex52.tmp 2>&1;	  \
 	   ${DIFF} output/ex52_1.out ex52.tmp || printf "${PWD}\nPossible problem with with ex52_mumps_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 

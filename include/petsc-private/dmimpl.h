@@ -19,7 +19,6 @@ struct _DMOps {
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   PetscErrorCode (*createlocalvector)(DM,Vec*);
   PetscErrorCode (*getlocaltoglobalmapping)(DM);
-  PetscErrorCode (*getlocaltoglobalmappingblock)(DM);
   PetscErrorCode (*createfieldis)(DM,PetscInt*,char***,IS**);
   PetscErrorCode (*createcoordinatedm)(DM,DM*);
 
@@ -118,7 +117,7 @@ struct _p_DM {
   VecType                 vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
   MatType                 mattype;  /* type of matrix created with DMCreateMatrix() */
   PetscInt                bs;
-  ISLocalToGlobalMapping  ltogmap,ltogmapb;
+  ISLocalToGlobalMapping  ltogmap;
   PetscBool               prealloc_only; /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
   PetscInt                levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
   PetscBool               setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */

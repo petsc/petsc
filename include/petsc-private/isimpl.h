@@ -48,6 +48,7 @@ extern PetscErrorCode ISLoad_Default(IS, PetscViewer);
 struct _p_ISLocalToGlobalMapping{
   PETSCHEADER(int);
   PetscInt n;                  /* number of local indices */
+  PetscInt bs;                 /* blocksize; there is one index per block */
   PetscInt *indices;           /* global index of each local index */
   PetscInt globalstart;        /* first global referenced in indices */
   PetscInt globalend;          /* last + 1 global referenced in indices */

@@ -129,11 +129,12 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     MPI_Comm    comm;
-    PetscMPIInt rank;
+    PetscMPIInt size,rank;
 
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)iscoloring,viewer);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"ISColoring Object: %d MPI processes\n",size);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of colors %d\n",rank,iscoloring->n);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

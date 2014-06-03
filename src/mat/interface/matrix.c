@@ -787,7 +787,7 @@ PetscErrorCode  MatSetUp(Mat A)
 .  -mat_view draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
-.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (see the <a href="../../docs/manual.pdf">users manual</a> for details).
+.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (see Users-Manual: ch_matlab for details)
 .  -viewer_socket_machine <machine>
 .  -viewer_socket_port <port>
 .  -mat_view binary - save matrix to file in binary format
@@ -1813,8 +1813,7 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
 
    Input Parameters:
 +  x - the matrix
-.  rmapping - row mapping created with ISLocalToGlobalMappingCreate()
-             or ISLocalToGlobalMappingCreateIS()
+.  rmapping - row mapping created with ISLocalToGlobalMappingCreate()   or ISLocalToGlobalMappingCreateIS()
 - cmapping - column mapping
 
    Level: intermediate
@@ -1843,43 +1842,6 @@ PetscErrorCode  MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatSetLocalToGlobalMappingBlock"
-/*@
-   MatSetLocalToGlobalMappingBlock - Sets a local-to-global numbering for use
-   by the routine MatSetValuesBlockedLocal() to allow users to insert matrix
-   entries using a local (per-processor) numbering.
-
-   Not Collective
-
-   Input Parameters:
-+  x - the matrix
-. rmapping - row mapping created with ISLocalToGlobalMappingCreate() or
-             ISLocalToGlobalMappingCreateIS()
-- cmapping - column mapping
-
-   Level: intermediate
-
-   Concepts: matrices^local to global mapping blocked
-   Concepts: local to global mapping^for matrices, blocked
-
-.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal(),
-           MatSetValuesBlocked(), MatSetValuesLocal()
-@*/
-PetscErrorCode  MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,MAT_CLASSID,1);
-  PetscValidType(x,1);
-  PetscValidHeaderSpecific(rmapping,IS_LTOGM_CLASSID,2);
-  PetscValidHeaderSpecific(cmapping,IS_LTOGM_CLASSID,3);
-
-  ierr = PetscLayoutSetISLocalToGlobalMappingBlock(x->rmap,rmapping);CHKERRQ(ierr);
-  ierr = PetscLayoutSetISLocalToGlobalMappingBlock(x->cmap,cmapping);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetLocalToGlobalMapping"
@@ -1900,7 +1862,7 @@ PetscErrorCode  MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping rma
    Concepts: matrices^local to global mapping
    Concepts: local to global mapping^for matrices
 
-.seealso:  MatSetValuesLocal(), MatGetLocalToGlobalMappingBlock()
+.seealso:  MatSetValuesLocal()
 @*/
 PetscErrorCode  MatGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmapping,ISLocalToGlobalMapping *cmapping)
 {
@@ -1911,39 +1873,6 @@ PetscErrorCode  MatGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmappin
   if (cmapping) PetscValidPointer(cmapping,3);
   if (rmapping) *rmapping = A->rmap->mapping;
   if (cmapping) *cmapping = A->cmap->mapping;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatGetLocalToGlobalMappingBlock"
-/*@
-   MatGetLocalToGlobalMappingBlock - Gets the local-to-global numbering set by MatSetLocalToGlobalMappingBlock()
-
-   Not Collective
-
-   Input Parameters:
-.  A - the matrix
-
-   Output Parameters:
-+ rmapping - row mapping
-- cmapping - column mapping
-
-   Level: advanced
-
-   Concepts: matrices^local to global mapping blocked
-   Concepts: local to global mapping^for matrices, blocked
-
-.seealso:  MatSetValuesBlockedLocal(), MatGetLocalToGlobalMapping()
-@*/
-PetscErrorCode  MatGetLocalToGlobalMappingBlock(Mat A,ISLocalToGlobalMapping *rmapping,ISLocalToGlobalMapping *cmapping)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidType(A,1);
-  if (rmapping) PetscValidPointer(rmapping,2);
-  if (cmapping) PetscValidPointer(cmapping,3);
-  if (rmapping) *rmapping = A->rmap->bmapping;
-  if (cmapping) *cmapping = A->cmap->bmapping;
   PetscFunctionReturn(0);
 }
 
@@ -2090,7 +2019,7 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
    If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatXXXXSetPreallocation() or
       MatSetUp() before using this routine
 
-   If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatSetBlockSize() and MatSetLocalToGlobalMappingBlock()
+   If you create the matrix yourself (that is not with a call to DMCreateMatrix()) then you MUST call MatSetBlockSize() and MatSetLocalToGlobalMapping()
       before using this routineBefore calling MatSetValuesLocal(), the user must first set the
 
    Calls to MatSetValuesBlockedLocal() with the INSERT_VALUES and ADD_VALUES
@@ -2104,8 +2033,8 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
 
    Concepts: matrices^putting blocked values in with local numbering
 
-.seealso:  MatSetBlockSize(), MatSetLocalToGlobalMappingBlock(), MatAssemblyBegin(), MatAssemblyEnd(),
-           MatSetValuesLocal(), MatSetLocalToGlobalMappingBlock(), MatSetValuesBlocked()
+.seealso:  MatSetBlockSize(), MatSetLocalToGlobalMapping(), MatAssemblyBegin(), MatAssemblyEnd(),
+           MatSetValuesLocal(),  MatSetValuesBlocked()
 @*/
 PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
@@ -2137,35 +2066,16 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
     ierr = (*mat->ops->setvaluesblockedlocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
   } else {
     PetscInt buf[8192],*bufr=0,*bufc=0,*irowm,*icolm;
-    if (mat->rmap->bmapping && mat->cmap->bmapping) {
-      if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
-        irowm = buf; icolm = buf + nrow;
-      } else {
-        ierr  = PetscMalloc2(nrow,&bufr,ncol,&bufc);CHKERRQ(ierr);
-        irowm = bufr; icolm = bufc;
-      }
-      ierr = ISLocalToGlobalMappingApply(mat->rmap->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingApply(mat->cmap->bmapping,ncol,icol,icolm);CHKERRQ(ierr);
-      ierr = MatSetValuesBlocked(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
-      ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
+    if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
+      irowm = buf; icolm = buf + nrow;
     } else {
-      PetscInt i,j,bs,cbs;
-      ierr = MatGetBlockSizes(mat,&bs,&cbs);CHKERRQ(ierr);
-      if (nrow*bs+ncol*cbs <=(PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
-        irowm = buf; icolm = buf + nrow;
-      } else {
-        ierr  = PetscMalloc2(nrow*bs,&bufr,ncol*cbs,&bufc);CHKERRQ(ierr);
-        irowm = bufr; icolm = bufc;
-      }
-      for (i=0; i<nrow; i++) {
-        for (j=0; j<bs; j++) irowm[i*bs+j] = irow[i]*bs+j;
-      }
-      for (i=0; i<ncol; i++) {
-        for (j=0; j<cbs; j++) icolm[i*cbs+j] = icol[i]*cbs+j;
-      }
-      ierr = MatSetValuesLocal(mat,nrow*bs,irowm,ncol*cbs,icolm,y,addv);CHKERRQ(ierr);
-      ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
+      ierr  = PetscMalloc2(nrow,&bufr,ncol,&bufc);CHKERRQ(ierr);
+      irowm = bufr; icolm = bufc;
     }
+    ierr = ISLocalToGlobalMappingApplyBlock(mat->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApplyBlock(mat->cmap->mapping,ncol,icol,icolm);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+    ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
@@ -2892,9 +2802,7 @@ $          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
 $                   Run with the option -info to determine an optimal value to use
 
 
-   Notes:
-   See the <a href="../../docs/manual.pdf">users manual</a> for additional information about
-   choosing the fill factor for better efficiency.
+   Notes: See Users-Manual: ch_mat for additional information about choosing the fill factor for better efficiency.
 
    Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
@@ -4954,7 +4862,7 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 .  -mat_view draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
-.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (See the <a href="../../docs/manual.pdf">users manual</a>)
+.  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (See Users-Manual: ch_matlab )
 .  -viewer_socket_machine <machine>
 .  -viewer_socket_port <port>
 .  -mat_view binary - save matrix to file in binary format
@@ -5104,9 +5012,6 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
    MAT_NEW_NONZERO_LOCATION_ERR set to PETSC_TRUE indicates that any add or insertion
    that would generate a new entry in the nonzero structure instead produces
    an error. (Currently supported for AIJ and BAIJ formats only.)
-   This is a useful flag when using SAME_NONZERO_PATTERN in calling
-   KSPSetOperators() to ensure that the nonzero pattern truely does
-   remain unchanged. Set after the first MatAssemblyEnd()
 
    MAT_NEW_NONZERO_ALLOCATION_ERR set to PETSC_TRUE indicates that any add or insertion
    that would generate a new entry that has not been preallocated will
@@ -5771,7 +5676,6 @@ PetscErrorCode  MatZeroRowsColumnsStencil(Mat mat,PetscInt numRows,const MatSten
 PetscErrorCode  MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -5781,11 +5685,8 @@ PetscErrorCode  MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
   if (mat->ops->zerorowslocal) {
     ierr = (*mat->ops->zerorowslocal)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
-  } else if (size == 1) {
-    ierr = (*mat->ops->zerorows)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
   } else {
     IS             is, newis;
     const PetscInt *newRows;
@@ -5907,7 +5808,8 @@ PetscErrorCode  MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar diag,Vec x,Vec b)
 PetscErrorCode  MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
+  IS             is, newis;
+  const PetscInt *newRows;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -5917,22 +5819,14 @@ PetscErrorCode  MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt 
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = (*mat->ops->zerorowscolumns)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
-  } else {
-    IS             is, newis;
-    const PetscInt *newRows;
-
-    if (!mat->cmap->mapping) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Need to provide local to global mapping to matrix first");
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,numRows,rows,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApplyIS(mat->cmap->mapping,is,&newis);CHKERRQ(ierr);
-    ierr = ISGetIndices(newis,&newRows);CHKERRQ(ierr);
-    ierr = (*mat->ops->zerorowscolumns)(mat,numRows,newRows,diag,x,b);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(newis,&newRows);CHKERRQ(ierr);
-    ierr = ISDestroy(&newis);CHKERRQ(ierr);
-    ierr = ISDestroy(&is);CHKERRQ(ierr);
-  }
+  if (!mat->cmap->mapping) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Need to provide local to global mapping to matrix first");
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,numRows,rows,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyIS(mat->cmap->mapping,is,&newis);CHKERRQ(ierr);
+  ierr = ISGetIndices(newis,&newRows);CHKERRQ(ierr);
+  ierr = (*mat->ops->zerorowscolumns)(mat,numRows,newRows,diag,x,b);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(newis,&newRows);CHKERRQ(ierr);
+  ierr = ISDestroy(&newis);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
@@ -6264,9 +6158,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
    Output Parameters:
 .  fact - new matrix that has been symbolically factored
 
-   Notes:
-   See the <a href="../../docs/manual.pdf">users manual</a>  for additional information about
-   choosing the fill factor for better efficiency.
+   Notes: See Users-Manual: ch_mat for additional information about choosing the fill factor for better efficiency.
 
    Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
@@ -7172,9 +7064,8 @@ PetscErrorCode  MatColoringPatch(Mat mat,PetscInt ncolors,PetscInt n,ISColoringV
 
    In-place factorization ILU(0) can also be used as a local
    solver for the blocks within the block Jacobi or additive Schwarz
-   methods (runtime option: -sub_pc_factor_in_place).  See the discussion
-   of these preconditioners in the <a href="../../docs/manual.pdf#ch_pc">PC chapter of the users manual</a> for details on setting
-   local solver options.
+   methods (runtime option: -sub_pc_factor_in_place).  See Users-Manual: ch_pc
+   for details on setting local solver options.
 
    Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.

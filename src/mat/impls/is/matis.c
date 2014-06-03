@@ -532,7 +532,7 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 }
 
 /*MC
-   MATIS - MATIS = "is" - A matrix type to be used for using the Neumann-Neumann type preconditioners.
+   MATIS - MATIS = "is" - A matrix type to be used for using the Neumann-Neumann type preconditioners, see PCBDDC.
    This stores the matrices in globally unassembled form. Each processor
    assembles only its local Neumann problem and the parallel matrix vector
    product is handled "implicitly".
@@ -564,7 +564,7 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 
   Level: advanced
 
-.seealso: PC, MatISGetLocalMat(), MatSetLocalToGlobalMapping()
+.seealso: PC, MatISGetLocalMat(), MatSetLocalToGlobalMapping(), PCBDDC
 
 M*/
 

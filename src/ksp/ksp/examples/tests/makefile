@@ -346,6 +346,11 @@ runex13:
 	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex13_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex13_1.tmp
+runex14:
+	-@${MPIEXEC} -n 1  ./ex14  > ex14_1.tmp 2>&1; \
+	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex14_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex14_1.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex16f:
 	-@${MPIEXEC} -n 1 ./ex16f   -f ${DATAFILESPATH}/matrices/arco1 -options_left no> ex16f_1.tmp 2>&1; \
@@ -933,7 +938,7 @@ runex44:
 	done
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
-                                 runex4_5 ex4.rm ex7.PETSc ex7.rm ex14.PETSc ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm \
+                                 runex4_5 ex4.rm ex7.PETSc ex7.rm ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex22.PETSc runex22 runex22_2 ex22.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \

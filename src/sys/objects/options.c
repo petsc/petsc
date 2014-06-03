@@ -2347,8 +2347,7 @@ PetscErrorCode  PetscOptionsCreate(void)
 .  -options_monitor_cancel - cancel all options database monitors
 
    Notes:
-   To see all options, run your program with the -help option or consult
-   the <A href="../../docs/manual.pdf">users manual</A>..
+   To see all options, run your program with the -help option or consult Users-Manual: sec_gettingstarted
 
    Level: intermediate
 

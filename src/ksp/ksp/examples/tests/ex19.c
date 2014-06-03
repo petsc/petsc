@@ -180,12 +180,13 @@ int main(int argc,char **argv)
 #define __FUNCT__ "FormJacobian_Grid"
 int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
 {
-  Mat            jac = *J;
-  PetscErrorCode ierr;
-  PetscInt       i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
-  PetscInt       nloc,grow;
-  const PetscInt *ltog;
-  PetscScalar    two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
+  Mat                    jac = *J;
+  PetscErrorCode         ierr;
+  PetscInt               i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
+  PetscInt               grow;
+  const PetscInt         *ltog;
+  PetscScalar            two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
+  ISLocalToGlobalMapping ltogm;
 
   mx    = grid->mx;               my = grid->my;
   hx    = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -194,7 +195,8 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
   /* Get ghost points */
   ierr = DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(grid->da,&ltogm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltogm,&ltog);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
@@ -218,7 +220,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
       }
     }
   }
-  ierr = DMDARestoreGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

@@ -163,7 +163,9 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 0,
                                 0,
                                 0,
-                                0
+                                0,
+                                VecStrideSubSetGather_Default,
+                                VecStrideSubSetScatter_Default
 };
 
 #undef __FUNCT__
@@ -400,7 +402,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
   for (i=0; i<nghost; i++) {
     indices[n+i] = ghosts[i];
   }
-  ierr = ISLocalToGlobalMappingCreate(comm,n+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,1,n+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(*vv,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -526,7 +528,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     for (i=0; i<n; i++)      indices[i]   = rstart + i;
     for (i=0; i<nghost; i++) indices[n+i] = ghosts[i];
 
-    ierr = ISLocalToGlobalMappingCreate(comm,n+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(comm,1,n+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
     ierr = VecSetLocalToGlobalMapping(vv,ltog);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
   } else if (vv->ops->create == VecCreate_MPI) SETERRQ(PetscObjectComm((PetscObject)vv),PETSC_ERR_ARG_WRONGSTATE,"Must set local or global size before setting ghosting");
@@ -618,11 +620,11 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   ierr = PetscMalloc1((nb+nghost),&indices);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(*vv,&rstart,NULL);CHKERRQ(ierr);
 
-  for (i=0; i<nb; i++)      indices[i]    = rstart + i*bs;
+  for (i=0; i<nb; i++)      indices[i]    = rstart + i;
   for (i=0; i<nghost; i++)  indices[nb+i] = ghosts[i];
 
-  ierr = ISLocalToGlobalMappingCreate(comm,nb+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
-  ierr = VecSetLocalToGlobalMappingBlock(*vv,ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,bs,nb+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
+  ierr = VecSetLocalToGlobalMapping(*vv,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

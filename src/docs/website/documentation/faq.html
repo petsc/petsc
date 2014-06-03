@@ -751,10 +751,9 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       </p>
 
       <p>
-        PETSc also contains a balancing Neumann-Neumann preconditioner, see the
-        manual page for PCNN. This requires matrices be constructed with
-        <code>MatCreateIS()</code> via the finite element method. There are currently
-        no examples that demonstrate its use.
+        PETSc also contains a balancing Neumann-Neumann type preconditioner, see the
+        manual page for PCBDDC. This requires matrices be constructed with
+        <code>MatCreateIS()</code> via the finite element method. See src/ksp/ksp/examples/tests/ex59.c
       </p>
 
       <h3><a name="blocks">Can I create BAIJ matrices with different size blocks for different block rows?</a></h3>

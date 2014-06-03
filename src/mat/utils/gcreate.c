@@ -336,8 +336,9 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 #define __FUNCT__ "MatHeaderReplace"
 PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat C)
 {
-  PetscErrorCode ierr;
-  PetscInt       refct;
+  PetscErrorCode   ierr;
+  PetscInt         refct;
+  PetscObjectState state;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -356,9 +357,11 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat C)
 
   /* copy C over to A */
   refct = ((PetscObject)A)->refct;
+  state = ((PetscObject)A)->state;
   ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
 
   ((PetscObject)A)->refct = refct;
+  ((PetscObject)A)->state = state + 1;
 
   ierr = PetscFree(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);

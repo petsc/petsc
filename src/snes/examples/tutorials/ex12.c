@@ -404,6 +404,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  if (user->bcType == NEUMANN) {
+    DMLabel label;
+
+    ierr = DMPlexCreateLabel(*dm, "boundary");CHKERRQ(ierr);
+    ierr = DMPlexGetLabel(*dm, "boundary", &label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(*dm, label);CHKERRQ(ierr);
+  }
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -487,7 +494,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   while (cdm) {
     ierr = DMSetNumFields(cdm, 1);CHKERRQ(ierr);
     ierr = DMSetField(cdm, 0, (PetscObject) user->fe[0]);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
     ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -144,3 +144,62 @@ PetscErrorCode PetscFERegisterAll()
 #endif
   PetscFunctionReturn(0);
 }
+#include <petscfv.h>     /*I  "petscfv.h"  I*/
+
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Sin(PetscLimiter);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLimiterRegisterAll"
+/*@C
+  PetscLimiterRegisterAll - Registers all of the PetscLimiter components in the PetscFV package.
+
+  Not Collective
+
+  Input parameter:
+. path - The dynamic library path
+
+  Level: advanced
+
+.keywords: PetscLimiter, register, all
+.seealso:  PetscLimiterRegister(), PetscLimiterRegisterDestroy()
+@*/
+PetscErrorCode PetscLimiterRegisterAll()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscLimiterRegisterAllCalled = PETSC_TRUE;
+
+  ierr = PetscLimiterRegister(PETSCLIMITERSIN,       PetscLimiterCreate_Sin);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV);
+PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVRegisterAll"
+/*@C
+  PetscFVRegisterAll - Registers all of the PetscFV components in the PetscFV package.
+
+  Not Collective
+
+  Input parameter:
+. path - The dynamic library path
+
+  Level: advanced
+
+.keywords: PetscFV, register, all
+.seealso:  PetscFVRegister(), PetscFVRegisterDestroy()
+@*/
+PetscErrorCode PetscFVRegisterAll()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscFVRegisterAllCalled = PETSC_TRUE;
+
+  ierr = PetscFVRegister(PETSCFVUPWIND,       PetscFVCreate_Upwind);CHKERRQ(ierr);
+  ierr = PetscFVRegister(PETSCFVLEASTSQUARES, PetscFVCreate_LeastSquares);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

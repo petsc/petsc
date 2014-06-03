@@ -94,7 +94,6 @@ PetscErrorCode  PetscLayoutDestroy(PetscLayout *map)
   if (!(*map)->refcnt--) {
     ierr = PetscFree((*map)->range);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&(*map)->mapping);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&(*map)->bmapping);CHKERRQ(ierr);
 #if defined(PETSC_THREADCOMM_ACTIVE)
     ierr = PetscFree((*map)->trstarts);CHKERRQ(ierr);
 #endif
@@ -260,52 +259,20 @@ PetscErrorCode  PetscLayoutReference(PetscLayout in,PetscLayout *out)
 
     If the ltog location already contains a PetscLayout it is destroyed
 
-.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutDuplicate(), PetscLayoutSetLocalToGlobalMappingBlock()
+.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutDuplicate()
 
 @*/
 PetscErrorCode  PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlobalMapping ltog)
 {
   PetscErrorCode ierr;
+  PetscInt       bs;
 
   PetscFunctionBegin;
+  ierr = ISLocalToGlobalMappingGetBlockSize(ltog,&bs);CHKERRQ(ierr);
+  if (in->bs > 0 && in->bs != bs) SETERRQ2(in->comm,PETSC_ERR_PLIB,"Blocksize of layout %D must match that of mapping %D",in->bs,bs);
   ierr = PetscObjectReference((PetscObject)ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&in->mapping);CHKERRQ(ierr);
-
   in->mapping = ltog;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutSetISLocalToGlobalMappingBlock"
-/*@C
-
-    PetscLayoutSetISLocalToGlobalMappingBlock - sets a ISLocalGlobalMapping into a PetscLayout
-
-     Collective on PetscLayout
-
-    Input Parameter:
-+     in - input PetscLayout
--     ltog - the local to global block mapping
-
-
-   Level: developer
-
-    Notes: PetscLayoutSetUp() does not need to be called on the resulting PetscLayout
-
-    If the ltog location already contains a PetscLayout it is destroyed
-
-.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutDuplicate(), PetscLayoutSetLocalToGlobalMappingBlock()
-
-@*/
-PetscErrorCode  PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout in,ISLocalToGlobalMapping ltog)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)ltog);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&in->bmapping);CHKERRQ(ierr);
-
-  in->bmapping = ltog;
   PetscFunctionReturn(0);
 }
 
@@ -463,6 +430,13 @@ PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
   if (bs < 0) PetscFunctionReturn(0);
   if (map->n > 0 && map->n % bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",map->n,bs);
   if (map->bs > 0 && map->bs != bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Cannot change block size %D to %D",map->bs,bs);
+  if (map->mapping) {
+    PetscInt       lbs;
+    PetscErrorCode ierr;
+
+    ierr = ISLocalToGlobalMappingGetBlockSize(map->mapping,&lbs);CHKERRQ(ierr);
+    if (lbs != bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Blocksize of localtoglobalmapping %D must match that of layout %D",lbs,bs);
+  }
   map->bs = bs;
   PetscFunctionReturn(0);
 }

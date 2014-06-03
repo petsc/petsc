@@ -1669,18 +1669,18 @@ PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A)
 PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat A,PetscBool  *missing,PetscInt *d)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  PetscInt   *diag,*jj = a->j,i;
+  PetscInt   *diag,*ii = a->i,i;
 
   PetscFunctionBegin;
   *missing = PETSC_FALSE;
-  if (A->rmap->n > 0 && !jj) {
+  if (A->rmap->n > 0 && !ii) {
     *missing = PETSC_TRUE;
     if (d) *d = 0;
     PetscInfo(A,"Matrix has no entries therefore is missing diagonal");
   } else {
     diag = a->diag;
     for (i=0; i<A->rmap->n; i++) {
-      if (jj[diag[i]] != i) {
+      if (diag[i] >= ii[i+1]) {
         *missing = PETSC_TRUE;
         if (d) *d = i;
         PetscInfo1(A,"Matrix is missing diagonal number %D",i);
@@ -2826,6 +2826,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscScalar alpha = a;
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
     ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
+    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
@@ -2837,6 +2838,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
       ierr    = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
     }
     for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += a*(x->a[i]);
+    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
     ierr = PetscInfo3(Y,"ratio of nnz(X)/nnz(Y): %D/%D = %g\n",x->nz,y->nz,(double)((PetscReal)(x->nz)/(y->nz+1)));CHKERRQ(ierr);
   } else {
     Mat      B;

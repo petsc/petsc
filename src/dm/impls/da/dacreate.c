@@ -368,7 +368,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   dd->Po              = -1;
 
   dd->gtol         = NULL;
-  dd->ltog         = NULL;
   dd->ltol         = NULL;
   dd->ao           = NULL;
   dd->base         = -1;

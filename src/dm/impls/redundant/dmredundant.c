@@ -13,7 +13,7 @@ static PetscErrorCode DMCreateMatrix_Redundant(DM dm,Mat *J)
 {
   DM_Redundant           *red = (DM_Redundant*)dm->data;
   PetscErrorCode         ierr;
-  ISLocalToGlobalMapping ltog,ltogb;
+  ISLocalToGlobalMapping ltog;
   PetscInt               i,rstart,rend,*cols;
   PetscScalar            *vals;
 
@@ -27,9 +27,7 @@ static PetscErrorCode DMCreateMatrix_Redundant(DM dm,Mat *J)
   ierr = MatMPIBAIJSetPreallocation(*J,1,red->n,NULL,red->N-red->n,NULL);CHKERRQ(ierr);
 
   ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMappingBlock(dm,&ltogb);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*J,ltog,ltog);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMappingBlock(*J,ltogb,ltogb);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(red->N,&cols,red->N,&vals);CHKERRQ(ierr);
   for (i=0; i<red->N; i++) {
@@ -66,7 +64,7 @@ static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm,Vec *gvec)
 {
   PetscErrorCode         ierr;
   DM_Redundant           *red = (DM_Redundant*)dm->data;
-  ISLocalToGlobalMapping ltog,ltogb;
+  ISLocalToGlobalMapping ltog;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -76,9 +74,7 @@ static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm,Vec *gvec)
   ierr  = VecSetSizes(*gvec,red->n,red->N);CHKERRQ(ierr);
   ierr  = VecSetType(*gvec,dm->vectype);CHKERRQ(ierr);
   ierr  = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
-  ierr  = DMGetLocalToGlobalMappingBlock(dm,&ltogb);CHKERRQ(ierr);
   ierr  = VecSetLocalToGlobalMapping(*gvec,ltog);CHKERRQ(ierr);
-  ierr  = VecSetLocalToGlobalMappingBlock(*gvec,ltog);CHKERRQ(ierr);
   ierr  = VecSetDM(*gvec,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -201,9 +197,7 @@ static PetscErrorCode DMSetUp_Redundant(DM dm)
   PetscFunctionBegin;
   ierr = PetscMalloc1(red->N,&globals);CHKERRQ(ierr);
   for (i=0; i<red->N; i++) globals[i] = i;
-  ierr         = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,red->N,globals,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
-  ierr         = PetscObjectReference((PetscObject)dm->ltogmap);CHKERRQ(ierr);
-  dm->ltogmapb = dm->ltogmap;
+  ierr         = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,1,red->N,globals,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

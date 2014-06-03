@@ -317,11 +317,7 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
 
    Input Parameters:
 +  sp - the null space context
-.  vec - the vector from which the null space is to be removed
--  out - if this is requested (not NULL) then this is a vector with the null space removed otherwise
-         the removal is done in-place (in vec)
-
-   Note: The user is not responsible for the vector returned and should not destroy it.
+-  vec - the vector from which the null space is to be removed
 
    Level: advanced
 

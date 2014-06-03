@@ -70,6 +70,7 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
   } else {
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&N,&oalpha,x->v,&one,y->v,&one));
   }
+  ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   ierr = PetscLogFlops(PetscMax(2*N-1,0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

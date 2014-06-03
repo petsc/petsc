@@ -77,7 +77,7 @@ static double bytes[4] = {
 
 int main(int argc,char **args)
 {
-  int          quantum, checktick();
+  int          quantum, checktick(void);
   register int j, k;
   double       scalar, t, times[4][NTIMES],irate[4],rate[4];
   int          rank,size,resultlen;
@@ -194,7 +194,7 @@ int main(int argc,char **args)
 
 # define        M        20
 
-int checktick()
+int checktick(void)
 {
   int    i, minDelta, Delta;
   double t1, t2, timesfound[M];

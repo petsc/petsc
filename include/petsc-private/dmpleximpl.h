@@ -36,6 +36,8 @@ struct _n_DMLabel {
 
 struct _n_Boundary {
   const char *name;
+  const char *labelname;
+  DMLabel     label;
   PetscBool   essential;
   PetscInt    field;
   void      (*func)();
@@ -119,6 +121,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateGmsh_ReadElement(FILE *, PetscInt *, int
 PETSC_EXTERN PetscErrorCode DMPlexInvertCell_Internal(PetscInt, PetscInt, PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, const PetscScalar[], InsertMode);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlex_Invert2D_Internal"

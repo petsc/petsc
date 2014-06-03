@@ -64,7 +64,7 @@ typedef struct {
   RunType       runType;           /* Whether to run tests, or solve the full problem */
   PetscBool     jacobianMF;        /* Whether to calculate the Jacobian action on the fly */
   PetscLogEvent createMeshEvent;
-  PetscBool     showInitial, showSolution;
+  PetscBool     showInitial, showSolution, showError;
   /* Domain and mesh definition */
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
@@ -101,6 +101,11 @@ void zero_3d(const PetscReal coords[], PetscScalar *u, void *ctx)
 {
   u[0] = 0.0; u[1] = 0.0; u[2] = 0.0;
 }
+void zero_vector(const PetscReal coords[], PetscScalar *u, void *ctx)
+{
+  PetscInt comp;
+  for (comp = 0; comp < spatialDim; ++comp) u[comp] = 0.0;
+}
 
 /*
   In 2D we use exact solution:
@@ -124,6 +129,10 @@ void quadratic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 void linear_p_2d(const PetscReal x[], PetscScalar *p, void *ctx)
 {
   *p = x[0] + x[1] - 1.0;
+}
+void constant_p(const PetscReal x[], PetscScalar *p, void *ctx)
+{
+  *p = 1.0;
 }
 
 void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[])
@@ -252,6 +261,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->jacobianMF      = PETSC_FALSE;
   options->showInitial     = PETSC_FALSE;
   options->showSolution    = PETSC_TRUE;
+  options->showError       = PETSC_FALSE;
 
   options->fem.f0Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f0Funcs;
   options->fem.f1Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f1Funcs;
@@ -286,6 +296,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex62.c", options->jacobianMF, &options->jacobianMF, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex62.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex62.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_error", "Output the error for verification", "ex62.c", options->showError, &options->showError, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
@@ -340,7 +351,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     /* Refine mesh using a volume constraint */
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
-    ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
+    if (user->simplex) {ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);}
     if (refinedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = refinedMesh;
@@ -359,67 +370,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SetupElement"
-PetscErrorCode SetupElement(DM dm, AppCtx *user)
-{
-  const PetscInt  dim = user->dim, numFields = 2;
-  const char     *prefix[2] = {"vel_", "pres_"};
-  PetscInt        qorder    = 0, f;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  for (f = 0; f < numFields; ++f) {
-    PetscFE         fem;
-    DM              K;
-    PetscSpace      P;
-    PetscDualSpace  Q;
-    PetscInt        order;
-
-    /* Create space */
-    ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix[f]);CHKERRQ(ierr);
-    ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
-    ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
-    ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
-    ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
-    qorder = PetscMax(qorder, order);
-    /* Create dual space */
-    ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix[f]);CHKERRQ(ierr);
-    ierr = PetscDualSpaceCreateReferenceCell(Q, dim, PETSC_TRUE, &K);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
-    ierr = DMDestroy(&K);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
-    /* Create element */
-    ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), &fem);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) fem, prefix[f]);CHKERRQ(ierr);
-    ierr = PetscFESetFromOptions(fem);CHKERRQ(ierr);
-    ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
-    ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
-    ierr = PetscFESetNumComponents(fem, f ? 1 : dim);CHKERRQ(ierr);
-    ierr = PetscFESetUp(fem);CHKERRQ(ierr);
-
-    ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
-    ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
-    user->fe[f] = fem;
-  }
-  for (f = 0; f < numFields; ++f) {
-    PetscQuadrature q;
-
-    /* Create quadrature */
-    ierr = PetscDTGaussJacobiQuadrature(dim, qorder, -1.0, 1.0, &q);CHKERRQ(ierr);
-    ierr = PetscFESetQuadrature(user->fe[f], q);CHKERRQ(ierr);
-    ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
-  }
-  user->fem.fe    = user->fe;
-  user->fem.feBd  = NULL;
-  user->fem.feAux = NULL;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DestroyElement"
 PetscErrorCode DestroyElement(AppCtx *user)
 {
@@ -427,9 +377,7 @@ PetscErrorCode DestroyElement(AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  for (f = 0; f < numFields; ++f) {
-    ierr = PetscFEDestroy(&user->fe[f]);CHKERRQ(ierr);
-  }
+  for (f = 0; f < numFields; ++f) {ierr = PetscFEDestroy(&user->fe[f]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -444,9 +392,9 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = PetscObjectSetName((PetscObject) user->fe[0], "velocity");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) user->fe[1], "pressure");CHKERRQ(ierr);
   ierr = DMSetNumFields(dm, 2);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 0, user->fe[0]);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 1, user->fe[1]);CHKERRQ(ierr);
-  ierr = DMPlexAddBoundary(dm, user->bcType == DIRICHLET, user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, (PetscObject) user->fe[0]);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 1, (PetscObject) user->fe[1]);CHKERRQ(ierr);
+  ierr = DMPlexAddBoundary(dm, user->bcType == DIRICHLET, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -498,43 +446,25 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreatePressureNullSpace"
-PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSpace)
+PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, Vec *v, MatNullSpace *nullSpace)
 {
   Vec            vec, localVec;
+  void         (*funcs[2])(const PetscReal x[], PetscScalar *u, void* ctx) = {zero_vector, constant_p};
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetGlobalVector(dm, &vec);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &localVec);CHKERRQ(ierr);
-  ierr = VecSet(vec,  0.0);CHKERRQ(ierr);
-  /* Put a constant in for all pressures
-     Could change this to project the constant function onto the pressure space (when that is finished) */
-  {
-    PetscSection section;
-    PetscInt     pStart, pEnd, p;
-    PetscScalar  *a;
-
-    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = VecGetArray(localVec, &a);CHKERRQ(ierr);
-    for (p = pStart; p < pEnd; ++p) {
-      PetscInt fDim, off, d;
-
-      ierr = PetscSectionGetFieldDof(section, p, 1, &fDim);CHKERRQ(ierr);
-      ierr = PetscSectionGetFieldOffset(section, p, 1, &off);CHKERRQ(ierr);
-      for (d = 0; d < fDim; ++d) a[off+d] = 1.0;
-    }
-    ierr = VecRestoreArray(localVec, &a);CHKERRQ(ierr);
-  }
-  ierr = DMLocalToGlobalBegin(dm, localVec, INSERT_VALUES, vec);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm, localVec, INSERT_VALUES, vec);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localVec);CHKERRQ(ierr);
+  ierr = DMPlexProjectFunction(dm, user->fe, funcs, NULL, INSERT_ALL_VALUES, vec);CHKERRQ(ierr);
   ierr = VecNormalize(vec, NULL);CHKERRQ(ierr);
   if (user->debug) {
     ierr = PetscPrintf(PetscObjectComm((PetscObject)dm), "Pressure Null Space\n");CHKERRQ(ierr);
     ierr = VecView(vec, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)dm), PETSC_FALSE, 1, &vec, nullSpace);CHKERRQ(ierr);
+  if (v) {
+    ierr = DMCreateGlobalVector(dm, v);CHKERRQ(ierr);
+    ierr = VecCopy(vec, *v);CHKERRQ(ierr);
+  }
   ierr = DMRestoreGlobalVector(dm, &vec);CHKERRQ(ierr);
   /* New style for field null spaces */
   {
@@ -642,6 +572,7 @@ int main(int argc, char **argv)
   JacActionCtx   userJ;                /* context for Jacobian MF action */
   PetscInt       its;                  /* iterations for convergence */
   PetscReal      error         = 0.0;  /* L_2 error in the solution */
+  PetscReal      ferrors[2];
   PetscInt       numComponents = 0, order, f;
   PetscSpace     P;
   PetscErrorCode ierr;
@@ -659,7 +590,6 @@ int main(int argc, char **argv)
   ierr = PetscFEGetBasisSpace(user.fe[0], &P);CHKERRQ(ierr);
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(dm, user.dim, 1, user.simplex, "pres_", order, &user.fe[1]);CHKERRQ(ierr);
-  //ierr = SetupElement(dm, &user);CHKERRQ(ierr);
   for (f = 0; f < NUM_FIELDS; ++f) {
     PetscInt numComp;
     ierr = PetscFEGetNumComponents(user.fe[f], &numComp);CHKERRQ(ierr);
@@ -696,7 +626,7 @@ int main(int argc, char **argv)
   } else {
     A = J;
   }
-  ierr = CreatePressureNullSpace(dm, &user, &nullSpace);CHKERRQ(ierr);
+  ierr = CreatePressureNullSpace(dm, &user, NULL, &nullSpace);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
   if (A != J) {
     ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
@@ -721,7 +651,17 @@ int main(int argc, char **argv)
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
     ierr = DMPlexComputeL2Diff(dm, user.fe, user.exactFuncs, NULL, u, &error);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g\n", error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2FieldDiff(dm, user.fe, user.exactFuncs, NULL, u, &ferrors);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g [%.3g, %.3g]\n", error, ferrors[0], ferrors[1]);CHKERRQ(ierr);
+    if (user.showError) {
+      Vec r;
+      ierr = DMGetGlobalVector(dm, &r);CHKERRQ(ierr);
+      ierr = DMPlexProjectFunction(dm, user.fe, user.exactFuncs, NULL, INSERT_ALL_VALUES, r);CHKERRQ(ierr);
+      ierr = VecAXPY(r, -1.0, u);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution Error\n");CHKERRQ(ierr);
+      ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(dm, &r);CHKERRQ(ierr);
+    }
     if (user.showSolution) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);
       ierr = VecChop(u, 3.0e-9);CHKERRQ(ierr);

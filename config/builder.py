@@ -39,19 +39,19 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  # Gmsh tests 12-
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/doublet-tet.msh -interpolate 1 -dm_view'}],
                         'src/dm/impls/plex/examples/tests/ex3': [# 0-2 2D P_1 on a triangle
-                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -convergence'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -porder 2'},
                                                                  # 3-5 3D P_1 on a tetrahedron
-                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -convergence'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 2'},
                                                                  # 6-8 2D P_2 on a triangle
-                                                                 {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2 -convergence'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2 -porder 2'},
                                                                  # 9-11 3D P_2 on a tetrahedron
-                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -convergence'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 2'},
                                                                  # 12-14 2D P_1 on a quadrilaterial
@@ -59,13 +59,27 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 0 -num_comp 2 -qorder 1 -porder 1', 'requires': 'Broken'},
                                                                  {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 0 -num_comp 2 -qorder 1 -porder 2', 'requires': 'Broken'},
                                                                  # 15-17 2D Q_1 on a quadrilaterial
-                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -num_comp 2 -qorder 1'},
-                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -num_comp 2 -qorder 1 -porder 1'},
-                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -num_comp 2 -qorder 1 -porder 2'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 2'},
                                                                  # 18-20 2D Q_2 on a quadrilaterial
-                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 1'},
-                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 1 -porder 1'},
-                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -num_comp 2 -qorder 1 -porder 2'}],
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 2'},
+                                                                 # 21-24 2D P_3 on a triangle
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 3 -num_comp 2 -qorder 3 -convergence', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 3 -num_comp 2 -qorder 3 -porder 1', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 3 -num_comp 2 -qorder 3 -porder 2', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 3 -num_comp 2 -qorder 3 -porder 3', 'requires': 'Broken'},
+                                                                 # 25-27 2D P_1disc on a triangle
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 2'},
+                                                                 # 28-30 2D P_1disc on a quadrilateral
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 2'},
+                                                                 ],
                         'src/dm/impls/plex/examples/tests/ex4': [# 2D Simplex 0-3
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_hybrid 0 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
@@ -407,8 +421,12 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               # Full runs with quads
+                                                               #   FULL Schur with LU/Jacobi
+                                                               {'num': 'quad_q2q1_full', 'numProcs': 1, 'args': '-run_type full -simplex 0 -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
+                                                               {'num': 'quad_q2p1_full', 'numProcs': 1, 'args': '-run_type full -simplex 0 -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscdualspace_lagrange_continuity 0 -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
                                                                ],
-                        'src/ts/examples/tutorials/ex11':      [# 2D 0-6
+                        'src/ts/examples/tutorials/ex11':      [# 2D Advection 0-8
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo'},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo'},
                                                                 {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo'},
@@ -416,8 +434,17 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                 {'numProcs': 8, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad.exo'},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo -ts_type rosw'},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/squaremotor-30.exo -ufv_split_faces'},
-                                                                # 3D 7
-                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201'}],
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo -dm_refine 1'},
+                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo -dm_refine 1'},
+                                                                # 2D Shallow water 9
+                                                                {'numProcs': 1, 'args': ' -ufv_vtk_interval 0 -f %(meshes)s/annulus-20.exo -bc_wall 100,101 -physics sw -ufv_cfl 5 -petscfv_type leastsquares -petsclimiter_type sin -ts_final_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy'},
+                                                                # 3D Advection 10
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201', 'requires': 'Broken'},
+                                                                ],
+                        'src/tao/examples/tutorials/ex1':      [# 2D 0-
+                                                                {'numProcs': 1, 'args': '-run_type test -potential_petscspace_order 2 -conductivity_petscspace_order 1 -multiplier_petscspace_order 2'},
+                                                                {'numProcs': 1, 'args': '-run_type full -potential_petscspace_order 2 -conductivity_petscspace_order 1 -multiplier_petscspace_order 2 -snes_monitor -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_0_pc_type lu -fieldsplit_1_ksp_rtol 1.0e-10 -fieldsplit_1_pc_type lu -sol_vec_view'}
+                                                                ],
                         }
 
 def noCheckCommand(command, status, output, error):

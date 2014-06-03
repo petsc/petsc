@@ -788,7 +788,7 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
       idx[i] = subi - suboff[lo] + next->grstarts[lo];
     }
     ierr = ISLocalToGlobalMappingRestoreIndices(ltog,&indices);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm),n,idx,PETSC_OWN_POINTER,&(*ltogs)[cnt]);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm),1,n,idx,PETSC_OWN_POINTER,&(*ltogs)[cnt]);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr);
     next = next->next;
     cnt++;
@@ -1404,7 +1404,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
   p->ops->createglobalvector              = DMCreateGlobalVector_Composite;
   p->ops->createlocalvector               = DMCreateLocalVector_Composite;
   p->ops->getlocaltoglobalmapping         = DMGetLocalToGlobalMapping_Composite;
-  p->ops->getlocaltoglobalmappingblock    = 0;
   p->ops->createfieldis                   = DMCreateFieldIS_Composite;
   p->ops->createfielddecomposition        = DMCreateFieldDecomposition_Composite;
   p->ops->refine                          = DMRefine_Composite;

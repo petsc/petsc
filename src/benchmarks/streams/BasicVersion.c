@@ -97,7 +97,7 @@ extern double second();
 
 int main(int argc,char **args)
 {
-  int           checktick();
+  int           checktick(void);
   register int j, k;
   double       scalar, t, times[4][NTIMES],irate[4];
 
@@ -153,7 +153,7 @@ int main(int argc,char **args)
 
 # define        M        20
 
-int checktick()
+int checktick(void)
 {
   int    i, minDelta, Delta;
   double t1, t2, timesfound[M];

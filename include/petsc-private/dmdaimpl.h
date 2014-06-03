@@ -18,7 +18,7 @@ typedef struct {
                                                    values above already scaled by w */
   PetscInt              base;                  /* global number of 1st local node, includes the * w term */
   DMBoundaryType        bx,by,bz;              /* indicates type of ghost nodes at boundary */
-  VecScatter            gtol,ltog,ltol;        /* scatters, see below for details */
+  VecScatter            gtol,ltol;        /* scatters, see below for details */
   DMDAStencilType       stencil_type;          /* stencil, either box or star */
   PetscInt              dim;                   /* DMDA dimension (1,2, or 3) */
   DMDAInterpolationType interptype;

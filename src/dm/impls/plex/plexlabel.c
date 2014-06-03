@@ -307,6 +307,55 @@ PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contain
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLabelStratumHasPoint"
+/*@
+  DMLabelStratumHasPoint - Return true if the stratum contains a point
+
+  Input Parameters:
++ label - the DMLabel
+. value - the stratum value
+- point - the point
+
+  Output Parameter:
+. contains - true if the stratum contains the point
+
+  Level: intermediate
+
+.seealso: DMLabelCreate(), DMLabelSetValue(), DMLabelClearValue()
+@*/
+PetscErrorCode DMLabelStratumHasPoint(DMLabel label, PetscInt value, PetscInt point, PetscBool *contains)
+{
+  PetscInt       v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(contains, 4);
+  *contains = PETSC_FALSE;
+  for (v = 0; v < label->numStrata; ++v) {
+    if (label->stratumValues[v] == value) {
+      if (label->arrayValid) {
+        PetscInt i;
+
+        ierr = PetscFindInt(point, label->stratumSizes[v], &label->points[label->stratumOffsets[v]], &i);CHKERRQ(ierr);
+        if (i >= 0) {
+          *contains = PETSC_TRUE;
+          break;
+        }
+      } else {
+        PetscBool has;
+
+        PetscHashIHasKey(label->ht[v], point, has);
+        if (has) {
+          *contains = PETSC_TRUE;
+          break;
+        }
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLabelGetValue"
 /*@
   DMLabelGetValue - Return the value a label assigns to a point, or -1
@@ -742,7 +791,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
   ierr = PetscFree3(sendcnts,offsets,displs);CHKERRQ(ierr);
   ierr = PetscFree(stratumSizes);CHKERRQ(ierr);
   /* Renumber points */
-  ierr = ISGlobalToLocalMappingApply(renumbering, IS_GTOLM_MASK, (*labelNew)->stratumOffsets[(*labelNew)->numStrata], (*labelNew)->points, NULL, (*labelNew)->points);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApplyBlock(renumbering, IS_GTOLM_MASK, (*labelNew)->stratumOffsets[(*labelNew)->numStrata], (*labelNew)->points, NULL, (*labelNew)->points);CHKERRQ(ierr);
   /* Sort points */
   for (s = 0; s < (*labelNew)->numStrata; ++s) {ierr = PetscSortInt((*labelNew)->stratumSizes[s], &(*labelNew)->points[(*labelNew)->stratumOffsets[s]]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

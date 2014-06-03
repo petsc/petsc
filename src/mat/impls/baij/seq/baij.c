@@ -1035,19 +1035,19 @@ PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat A,PetscBool  *missing,PetscInt *d)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       *diag,*jj = a->j,i;
+  PetscInt       *diag,*ii = a->i,i;
 
   PetscFunctionBegin;
   ierr     = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
   *missing = PETSC_FALSE;
-  if (A->rmap->n > 0 && !jj) {
+  if (A->rmap->n > 0 && !ii) {
     *missing = PETSC_TRUE;
     if (d) *d = 0;
     PetscInfo(A,"Matrix has no entries therefore is missing diagonal");
   } else {
     diag = a->diag;
     for (i=0; i<a->mbs; i++) {
-      if (jj[diag[i]] != i) {
+      if (diag[i] >= ii[i+1]) {
         *missing = PETSC_TRUE;
         if (d) *d = i;
         PetscInfo1(A,"Matrix is missing block diagonal number %D",i);
@@ -2399,6 +2399,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscBLASInt bnz;
     ierr = PetscBLASIntCast(x->nz*bs2,&bnz);CHKERRQ(ierr);
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
+    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
@@ -2416,6 +2417,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
         j++;
       }
     }
+    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
     ierr = PetscInfo3(Y,"ratio of nnz(X)/nnz(Y): %D/%D = %g\n",bs2*x->nz,bs2*y->nz,(double)((PetscReal)(bs2*x->nz)/(bs2*y->nz)));CHKERRQ(ierr);
   } else {
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
@@ -3343,7 +3345,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
-   allocation.  See the <A href="../../docs/manual.pdf#nameddest=ch_mat">Mat chapter of the users manual</A> for details.
+   allocation.  See Users-Manual: ch_mat for details.
    matrices.
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateBAIJ()
@@ -3399,7 +3401,7 @@ PetscErrorCode  MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=NULL for PETSc to control dynamic memory
-   allocation.  See the <A href="../../docs/manual.pdf#nameddest=ch_mat">Mat chapter of the users manual</A> for details.
+   allocation.  See Users-Manual: ch_mat for details.
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateBAIJ(), MatGetInfo()
 @*/
