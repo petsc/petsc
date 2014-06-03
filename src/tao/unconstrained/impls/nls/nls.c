@@ -1098,7 +1098,9 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
 . -tao_nls_gamma3_i -  gamma3 interpolation init factor
 . -tao_nls_gamma4_i -  gamma4 interpolation init factor
 - -tao_nls_theta_i -  theta interpolation init factor
- M*/
+
+  Level: beginner
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

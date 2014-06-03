@@ -283,6 +283,7 @@ nonlinear conjugate gradient solver for nonlinear optimization.
          "prp" - Polak-Ribiere-Plus
          "hs" - Hestenes-Steifel
          "dy" - Dai-Yuan
+  Level: beginner
 M*/
 
 

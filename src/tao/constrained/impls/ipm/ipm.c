@@ -1092,7 +1092,9 @@ PetscErrorCode IPMScatterStep(Tao tao, Vec STEP, Vec X1, Vec X2, Vec X3, Vec X4)
 .   -tao_ipm_pushs - parameter to push initial slack variables away from bounds
 
   Notes: This algorithm is more of a place-holder for future constrained optimization algorithms and should not yet be used for large problems or production code.
- M*/
+  Level: beginner
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

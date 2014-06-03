@@ -3,10 +3,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = lmvm.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = lmvm.h
 LIBBASE  = libpetsctao
-MANSEC   = 
+MANSEC   = Tao
 LOCDIR   = src/tao/unconstrained/impls/lmvm/
 
 include ${PETSC_DIR}/conf/variables

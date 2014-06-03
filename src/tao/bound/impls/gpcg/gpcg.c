@@ -328,7 +328,8 @@ static PetscErrorCode TaoComputeDual_GPCG(Tao tao, Vec DXL, Vec DXU)
 + -tao_gpcg_maxpgits - maximum number of gradient projections for GPCG iterate
 - -tao_subset_type - "subvec","mask","matrix-free", strategies for handling active-sets
 
- M*/
+  Level: beginner
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_GPCG"

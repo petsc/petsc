@@ -19,12 +19,28 @@ PetscErrorCode MatDSFischer(Mat, Vec, Vec, Vec, Vec, PetscReal, Vec, Vec, Vec, V
   Options database keys:
 . -different_hessian - TAO will use a copy of the hessian operator for masking.  By default
                        TAO will directly alter the hessian operator.
+  Level: intermediate
 
 E*/
+
 typedef enum {TAO_SUBSET_SUBVEC,TAO_SUBSET_MASK,TAO_SUBSET_MATRIXFREE} TaoSubsetType;
 PETSC_EXTERN const char *const TaoSubsetTypes[];
+/*S
+     Tao - Abstract PETSc object that manages nonlinear optimization solves
+
+   Level: advanced
+
+.seealso TaoCreate(), TaoDestroy(), TaoSetType(), TaoType
+S*/
 
 typedef struct _p_Tao*   Tao;
+
+/*J
+        TaoType - String with the name of a TAO method
+
+       Level: beginner
+
+J*/
 #define TaoType char*
 #define TAOLMVM     "lmvm"
 #define TAONLS      "nls"

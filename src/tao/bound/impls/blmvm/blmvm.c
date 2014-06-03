@@ -257,7 +257,8 @@ static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
 .     -tao_lmm_rescale_history - amount of history for rescaling diagonal
 -     -tao_lmm_eps - rejection tolerance
 
- M*/
+  Level: beginner
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BLMVM"

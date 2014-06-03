@@ -266,7 +266,8 @@ static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
   Options Database Keys:
 . - tao_bmrm_lambda - regulariser weight
 
- M*/
+  Level: beginner
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

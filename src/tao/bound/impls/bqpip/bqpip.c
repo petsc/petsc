@@ -540,7 +540,8 @@ static PetscErrorCode TaoView_BQPIP(Tao tao, PetscViewer viewer)
  Options Database Keys:
 . -tao_bqpip_predcorr - use a predictor/corrector method
 
- M*/
+  Level: beginner
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

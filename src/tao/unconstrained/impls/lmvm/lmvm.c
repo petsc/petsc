@@ -278,6 +278,7 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
 .     -tao_lmm_rescale_history - amount of history for rescaling diagonal
 -     -tao_lmm_eps - rejection tolerance
 
+  Level: beginner
 M*/
 
 EXTERN_C_BEGIN

@@ -333,7 +333,8 @@ static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
 
 . - tao_owlqn_lambda - regulariser weight
 
- M*/
+  Level: beginner
+M*/
 
 
 EXTERN_C_BEGIN

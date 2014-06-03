@@ -2001,11 +2001,11 @@ PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
 .    tron - Newton Trust Region method for bound constrained minimization
 .    gpcg - Newton Trust Region method for quadratic bound constrained minimization
 .    blmvm - Limited memory variable metric method for bound constrained minimization
-+    pounders - Model-based algorithm pounder extended for nonlinear least squares
+-    pounders - Model-based algorithm pounder extended for nonlinear least squares
 
   Level: intermediate
 
-.seealso: TaoCreate(), TaoGetType()
+.seealso: TaoCreate(), TaoGetType(), TaoType
 
 @*/
 PetscErrorCode TaoSetType(Tao tao, const TaoType type)

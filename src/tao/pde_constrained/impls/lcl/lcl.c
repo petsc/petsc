@@ -583,7 +583,8 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 . -tao_lcl_tolc - Tolerance for second forward solve
 - -tao_lcl_told - Tolerance for second adjoint solve
 
- M*/
+  Level: beginner
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_LCL"

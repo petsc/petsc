@@ -121,7 +121,9 @@ PetscErrorCode TaoDestroy_SSFLS(Tao tao)
 + -tao_ssls_delta - descent test fraction
 - -tao_ssls_rho - descent test power
 
- M*/
+   Level: beginner
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_SSFLS"

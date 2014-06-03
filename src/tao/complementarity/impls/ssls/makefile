@@ -4,10 +4,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = ssls.c ssils.c ssfls.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = ssls.h
 LIBBASE  = libpetsctao
-MANSEC   = 
+MANSEC   = Tao 
 LOCDIR   = src/tao/complementarity/impls/ssls/
 
 include ${PETSC_DIR}/conf/variables

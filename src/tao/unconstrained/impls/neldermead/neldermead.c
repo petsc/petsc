@@ -213,6 +213,16 @@ PetscErrorCode TaoSolve_NM(Tao tao)
 }
 
 /* ---------------------------------------------------------- */
+/*MC
+ TAONM - Nelder-Mead solver for derivative free, unconstrained minimization
+
+ Options Database Keys:
++ -tao_nm_lamda - initial step length
+. -tao_nm_mu - expansion/contraction factor
+
+ Level: beginner
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NM"

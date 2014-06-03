@@ -770,7 +770,8 @@ static PetscErrorCode TaoView_NTR(Tao tao, PetscViewer viewer)
 . -tao_ntr_gamma4 - gamma4 interpolation update
 - -tao_ntr_theta - theta interpolation update
 
- M*/
+  Level: beginner
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
