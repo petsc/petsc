@@ -717,7 +717,7 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
       if (!iis) {
         ierr = PetscMalloc1(n,&osm->iis);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
-          for (i=0; i<n; i++) {ierr = PetscObjectReference((PetscObject)ois[i]);CHKERRQ(ierr);}
+          ierr = PetscObjectReference((PetscObject)ois[i]);CHKERRQ(ierr);
           osm->iis[i] = ois[i];
         }
       }
@@ -728,10 +728,8 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
       if (!ois) {
         ierr = PetscMalloc1(n,&osm->ois);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
-          for (i=0; i<n; i++) {
-            ierr = PetscObjectReference((PetscObject)iis[i]);CHKERRQ(ierr);
-            osm->ois[i] = iis[i];
-          }
+	  ierr = PetscObjectReference((PetscObject)iis[i]);CHKERRQ(ierr);
+	  osm->ois[i] = iis[i];
         }
         if (osm->overlap > 0) {
           /* Extend the "overlapping" regions by a number of steps */
