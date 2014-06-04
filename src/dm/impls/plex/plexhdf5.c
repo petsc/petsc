@@ -442,9 +442,9 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
     ierr = PetscSectionGetDof(cSection, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(cSection, v, &off);CHKERRQ(ierr);
     if (L && dof == 2) {
-      ncoords[coordSize++] = cos(2.0*PETSC_PI*coords[off+0]/L[0]);
+      ncoords[coordSize++] = cos(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
       ncoords[coordSize++] = coords[off+1];
-      ncoords[coordSize++] = sin(2.0*PETSC_PI*coords[off+0]/L[0]);
+      ncoords[coordSize++] = sin(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
     } else {
       for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d];
     }
