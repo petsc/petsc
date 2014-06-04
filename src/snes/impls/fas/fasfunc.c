@@ -1058,7 +1058,7 @@ PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
   ierr = SNESFASGetCycleSNES(snes, level, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   if (!fas->smoothd) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
+    ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothd);CHKERRQ(ierr);
   }
   *smooth = fas->smoothd;
   PetscFunctionReturn(0);
@@ -1093,10 +1093,10 @@ PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
   fas  = (SNES_FAS*)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */
   if (!fas->smoothd) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
+    ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothd);CHKERRQ(ierr);
   }
   if (!fas->smoothu) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu);CHKERRQ(ierr);
+    ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothu);CHKERRQ(ierr);
   }
   *smooth = fas->smoothd;
   PetscFunctionReturn(0);
@@ -1131,10 +1131,10 @@ PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
   fas  = (SNES_FAS*)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */
   if (!fas->smoothd) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
+    ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothd);CHKERRQ(ierr);
   }
   if (!fas->smoothu) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu);CHKERRQ(ierr);
+    ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothu);CHKERRQ(ierr);
   }
   *smooth = fas->smoothu;
   PetscFunctionReturn(0);
@@ -1168,7 +1168,7 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *smooth)
   fas  = (SNES_FAS*)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */
   if (!fas->smoothd) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
+    ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothd);CHKERRQ(ierr);
   }
   *smooth = fas->smoothd;
   PetscFunctionReturn(0);
