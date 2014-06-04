@@ -2868,7 +2868,7 @@ can be used to obtain the operators with PCGetOperators() and the
 application-provided data structure that was set with PCShellSetContext().
 
 %----------------------------------------------------------------------
-\subsection{Combining Preconditioners} \sindex{combining preconditioners}
+\subsection{Combining Preconditioners\label{sec:combining-pcs}} \sindex{combining preconditioners}
 
 The PC type PCCOMPOSITE  allows one to form
 new preconditioners by combining already defined preconditioners and
@@ -3266,7 +3266,14 @@ A_{00}^{-1}   & 0 \\
 0 & I \\
 \end{array} \right).
 \]
-These can be access with \trl{-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative>} \findex{-pc_fieldsplit_type} or the function PCFieldSplitSetType(). The option prefixes for the internal KSPs are given by \trl{-fieldsplit_name_}.
+These can be accessed with \trl{-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative>} \findex{-pc_fieldsplit_type} or the function PCFieldSplitSetType(). The option prefixes for the internal KSPs are given by \trl{-fieldsplit_name_}.
+
+By default blocks $A_{00}, A_{01}$ and so on are extracted out of \trl{Pmat}, the matrix that the KSP uses to build the preconditioner,
+and not out of \trl{Amat} (i.e., $A$ itself). As discussed above in Sec.~\ref{sec:combining-pcs}, however, it is possible to use \trl{Amat}
+instead of \trl{Pmat} by calling PCSetUseAmat(pc) or using \trl{-pc_use_amat} on the command line.  Alternatively, you can have PCFieldSplit
+extract the diagonal blocks $A_{00}, A_{11}$ etc. out of \trl{Amat} by calling PCFieldSplitSetDiagUseAmat(pc,\trl{PETSC_TRUE}) or supplying
+command-line argument \trl{-pc_fieldsplit_diag_use_amat}.  Similarly, PCFieldSplitSetOffDiagUseAmat(pc,\trl{PETSC_TRUE}) or \trl{-pc_fieldsplit_off_diag_use_amat}
+will cause the off-diagonal blocks $A_{01},A_{10}$ etc. to be extracted out of \trl{Amat}.
 
 For two by two blocks only there are another family of solvers, based on Schur complements. The inverse of the Schur complement factorization is
 \[
@@ -3358,18 +3365,40 @@ I   & 0 \\
 -A_{10} ksp(A_{00},Ap_{00}) & I \\
 \end{array} \right).
 \]
-Where $\hat{S} = A_{11} - A_{10} ksp(A_{00},Ap_{00}) A_{01}$ is the approximate Schur complement. By default $\hat{S}p$ is $Ap_{11}.$
+Where $\hat{S} = A_{11} - A_{10} ksp(A_{00},Ap_{00}) A_{01}$ is the approximate Schur complement.
 
 There are several variants of the Schur complement preconditioner obtained by dropping some of the terms, these can be obtained with \trl{-pc_fieldsplit_schur_fact_type <diag,lower,upper,full>} or the function PCFieldSplitSetSchurFactType(). Note that the \trl{diag} form uses the preconditioner
 \[
 \left( \begin{array}{cc}
 ksp(A_{00},Ap_{00})   & 0 \\
 0 & -ksp(\hat{S},\hat{S}p) \\
-\end{array} \right)
+\end{array} \right).
 \]
-since the Schur complement for saddle point problems is negative definite. IS THIS ALWAYS TRUE, SHOULD THERE BE A FLAG TO SET THE SIGN?
+This is done to ensure the preconditioner is positive definite for a common class of problems, saddle points with a positive definite $A_{00}$:
+for these the Schur complement is negative definite. SHOULD THERE BE A FLAG TO SET THE SIGN?
 
-You can use the PCLSC preconditioner for the Schur complement with \trl{-pc_fieldsplit_type schur -fieldsplit_1_pc_type lsc}. This uses for the preconditioner to $\hat{S}$ the operator
+The effectiveness of the Schur complement preconditioner depends on the availability of a good preconditioner $\hat Sp$ for the Schur complement matrix.
+In general, you are responsible for supplying $\hat Sp$ via
+PCFieldSplitSchurPrecondition(pc,\trl{PC_FIELDSPLIT_SCHUR_PRE_USER},Sp).
+In the absence of a good
+problem-specific $\hat Sp$, you can use some of the built-in options.
+
+Using \trl{-pc_fieldsplit_schur_precondition user} on the command line activates
+the matrix supplied programmatically as explained above.
+
+With \trl{-pc_fieldsplit_schur_precondition a11} (default) $\hat Sp = A_{11}$ is used to build a
+preconditioner for $\hat S$.
+
+Otherwise, \trl{-pc_fieldsplit_schur_precondition self} will set $\hat Sp = \hat S$ and use the Schur complement matrix itself to build the preconditioner.
+
+The problem with the last approach is that $\hat S$ is used in unassembled, matrix-free form, and many preconditioners (e.g., ILU) cannot be built out of
+such matrices. Instead, you can \emph{assemble}  an approximation to $\hat S$ by inverting $A_{00}$, but only approximately, so as to ensure the sparsity of $\hat Sp$ as much as possible.
+Specifically, using \trl{-pc_fieldsplit_schur_precondition selfp} will assemble $\hat Sp = A_{11} - A_{10} inv(A_{00}) A_{01}$.
+
+By default $inv(A_{00})$ is the inverse of the diagonal of $A_{00}$, but using \trl{-fieldsplit_1_mat_schur_complement_ainv_type lump} will lump $A_{00}$ first.  Option \trl{-mat_schur_complement_ainv_type}
+applies to any matrix of MatSchurComplement type and here it is used with the prefix \trl{-fieldsplit_1} of the linear system in the second split.
+
+Finally, you can use the PCLSC preconditioner for the Schur complement with \trl{-pc_fieldsplit_type schur -fieldsplit_1_pc_type lsc}. This uses for the preconditioner to $\hat{S}$ the operator
 \[
  ksp(A_{10} A_{01},A_{10} A_{01}) A_{10} A_{00} A_{01} ksp(A_{10} A_{01},A_{10} A_{01})
 \]
@@ -4679,13 +4708,13 @@ the Jacobians need not be provided.\footnote{PETSc will automatically translate 
 
 The Explicit Runge-Kutta timestepper with variable timesteps is an \sindex{Runge-Kutta}
 implementation of the standard Runge-Kutta with an embedded method. The error in each
-timestep is calculated using the solutions from the Runge-Kutta method and its embedded 
+timestep is calculated using the solutions from the Runge-Kutta method and its embedded
 method (the 2-norm of the difference is used). The default method is the \sindex{Bogacki-Shampine}
-$3$rd-order Bogacki-Shampine method with a $2$nd-order embedded method (TSRK3BS). 
-Other available methods are the \sindex{Fehlberg} $5$th-order Fehlberg RK scheme with a $4$th-order embedded 
-method (TSRK5F), and the \sindex{Dormand-Prince} $5$th-order Dormand-Prince RK scheme with a $4$th-order embedded method 
-(TSRK5DP). Variable timesteps cannot be used with RK schemes that do not have an embedded 
-method (TSRK1 - $1$st-order, $1$-stage forward Euler, TSRK2A - $2$nd-order, $2$-stage RK scheme, 
+$3$rd-order Bogacki-Shampine method with a $2$nd-order embedded method (TSRK3BS).
+Other available methods are the \sindex{Fehlberg} $5$th-order Fehlberg RK scheme with a $4$th-order embedded
+method (TSRK5F), and the \sindex{Dormand-Prince} $5$th-order Dormand-Prince RK scheme with a $4$th-order embedded method
+(TSRK5DP). Variable timesteps cannot be used with RK schemes that do not have an embedded
+method (TSRK1 - $1$st-order, $1$-stage forward Euler, TSRK2A - $2$nd-order, $2$-stage RK scheme,
 TSRK3 - $3$rd-order, $3$-stage RK scheme, TSRK4 - $4$-th order, $4$-stage RK scheme).
 
 \subsection{Special Cases}
@@ -6982,11 +7011,11 @@ SOURCES += \
 	$$APP_DIR/src/main.cpp
 HEADERS += \
 	$$APP_DIR/src/source1.h \
-	$$APP_DIR/src/source2.h 	
+	$$APP_DIR/src/source2.h
 OTHER_FILES += \
 	$$APP_DIR/src/some_file.cpp \
 	$$APP_DIR/dir/another_file.xyz
-	
+
 \end{lstlisting}
 
 In this example, there are different keywords used. These include:
