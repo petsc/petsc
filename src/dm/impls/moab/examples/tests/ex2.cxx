@@ -76,8 +76,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   else {
     if (user->debug) {
-      PetscPrintf(comm, "Creating a %D-dimensional structured mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,user->nele,user->nele,user->nele);
-      PetscPrintf(comm, "Using simplex ? %D\n", user->simplex);
+      PetscPrintf(comm, "Creating a %D-dimensional structured %s mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,(user->simplex?"simplex":"regular"),user->nele,user->nele,user->nele);
     }
     ierr = DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, 1, dm);CHKERRQ(ierr);
   }
@@ -112,7 +111,7 @@ int main(int argc, char **argv)
 
   /* set block size */
   ierr = DMMoabSetBlockSize(user.dm, (user.interlace?user.nfields:1));CHKERRQ(ierr);
-  ierr = DMSetMatType(user.dm,MATAIJ/*MATBAIJ*/);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.dm,MATAIJ);CHKERRQ(ierr);
 
   ierr = DMSetFromOptions(user.dm);CHKERRQ(ierr);
 
@@ -126,6 +125,7 @@ int main(int argc, char **argv)
   ierr = VecSetRandom(solution,rctx);CHKERRQ(ierr);
 
   /* test if matrix allocation for the prescribed matrix type is done correctly */
+  if (user.debug) PetscPrintf(comm, "Creating a global matrix defined on DM with the right block structure.\n");
   ierr = DMCreateMatrix(user.dm,&system);CHKERRQ(ierr);
 
   if (user.write_output) {
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
     if (user.debug) PetscPrintf(comm, "Output mesh and associated field data to file: %s.\n",user.output_file);
     ierr = DMMoabOutput(user.dm,(const char*)user.output_file,"");CHKERRQ(ierr);
   }
-  ierr = DMView(user.dm,0);CHKERRQ(ierr);
+
   ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   ierr = VecDestroy(&solution);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
