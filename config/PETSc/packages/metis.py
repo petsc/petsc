@@ -9,8 +9,6 @@ class Configure(PETSc.package.NewPackage):
     self.liblist           = [['libmetis.a']]
     self.needsMath         = 1
     self.complex           = 1
-    self.worksonWindows    = 1
-    self.downloadonWindows = 1
     self.double            = 0
     self.requires32bitint  = 0
     return

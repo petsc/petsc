@@ -15,7 +15,6 @@ class Configure(config.package.Package):
     self.missingRoutines   = []
     self.separateBlas      = 1
     self.defaultPrecision  = 'double'
-    self.worksonWindows    = 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)

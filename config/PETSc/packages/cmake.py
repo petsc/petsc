@@ -8,7 +8,6 @@ class Configure(PETSc.package.NewPackage):
     self.complex           = 1
     self.double            = 0
     self.requires32bitint  = 0
-    self.worksonWindows    = 1
     self.downloadonWindows = 1
 
   def setupHelp(self, help):

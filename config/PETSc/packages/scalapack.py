@@ -13,7 +13,6 @@ class Configure(PETSc.package.NewPackage):
     self.double           = 0
     self.complex          = 1
     self.useddirectly     = 0 # PETSc does not use ScaLAPACK, it is only used by MUMPS
-    self.worksonWindows   = 1
     self.downloadonWindows= 1
     return
 

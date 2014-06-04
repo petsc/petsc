@@ -7,7 +7,6 @@ class Configure(PETSc.package.NewPackage):
     self.functions =         ['hwloc_topology_init']
     self.includes  =         ['hwloc.h']
     self.liblist   =         [['libhwloc.a']]
-    self.worksonWindows =    1
     self.downloadonWindows = 1
     return
 

@@ -8,7 +8,6 @@ class Configure(config.package.Package):
     self.complex           = 1
     self.double            = 0
     self.requires32bitint  = 0
-    self.worksonWindows    = 1
     self.downloadonWindows = 1
     self.useddirectly      = 0
 
