@@ -984,6 +984,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
     PetscInfo3(NULL, "GLOBAL_ID: Local minima - %D, Local maxima - %D, Global minima - %D.\n", lmin, lmax, gmin);
   }
+  if(!(dmmoab->bs==dmmoab->numFields || dmmoab->bs == 1)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between block size and number of component fields. %D != 1 OR %D != %D.",dmmoab->bs,dmmoab->bs,dmmoab->numFields);
 
   {
     ierr = PetscMalloc(((PetscInt)(dmmoab->vlocal->back())+1)*sizeof(PetscInt), &dmmoab->gidmap);CHKERRQ(ierr);
@@ -1050,7 +1051,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
     if (!dmmoab->ltog_map) {
       /* create to the local to global mapping for vectors in order to use VecSetValuesLocal */
-      ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,totsize*dmmoab->numFields,dmmoab->lgmap,
+      ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,dmmoab->bs,totsize*dmmoab->numFields,dmmoab->lgmap,
                                           PETSC_COPY_VALUES,&dmmoab->ltog_map);CHKERRQ(ierr);
     }
 

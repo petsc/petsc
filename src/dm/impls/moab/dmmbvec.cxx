@@ -439,7 +439,6 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
   PetscInt               count,lnative_vec,gnative_vec;
   std::string ttname;
   PetscScalar *data_ptr;
-  ISLocalToGlobalMapping ltogb;
 
   Vec_MOAB *vmoab;
   DM_Moab *dmmoab = (DM_Moab*)dm->data;
@@ -550,9 +549,6 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
   /* Vector created, manually set local to global mapping */
   if (dmmoab->ltog_map) {
     ierr = VecSetLocalToGlobalMapping(*vec,dmmoab->ltog_map);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingBlock(dmmoab->ltog_map,dmmoab->bs,&ltogb);
-    ierr = VecSetLocalToGlobalMappingBlock(*vec,ltogb);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&ltogb);CHKERRQ(ierr);
   }
 
   /* set the DM reference to the vector */

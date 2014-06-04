@@ -12,7 +12,6 @@ static PetscErrorCode DMMoab_MatFillMatrixEntries_Private(DM,Mat);
 PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
 {
   PetscErrorCode  ierr;
-  ISLocalToGlobalMapping ltogb;
   PetscInt        innz,ionz,nlsiz;
   DM_Moab         *dmmoab=(DM_Moab*)dm->data;
   PetscInt        *nnz=0,*onz=0;
@@ -26,7 +25,7 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
   /* next, need to allocate the non-zero arrays to enable pre-allocation */
   mtype = dm->mattype;
   ierr = PetscStrstr(mtype, "baij", &tmp);CHKERRQ(ierr);
-  nlsiz = (tmp ? dmmoab->nloc:dmmoab->nloc*dmmoab->bs);
+  nlsiz = (tmp ? dmmoab->nloc:dmmoab->nloc*dmmoab->numFields);
 
   /* allocate the nnz, onz arrays based on block size and local nodes */
   ierr = PetscMalloc((nlsiz)*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
@@ -46,9 +45,6 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
 
   if (!dmmoab->ltog_map) SETERRQ(dmmoab->pcomm->comm(), PETSC_ERR_ORDER, "Cannot create a DMMoab Mat without calling DMSetUp first.");
   ierr = MatSetLocalToGlobalMapping(*J,dmmoab->ltog_map,dmmoab->ltog_map);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingBlock(dmmoab->ltog_map,dmmoab->bs,&ltogb);
-  ierr = MatSetLocalToGlobalMappingBlock(*J,ltogb,ltogb);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&ltogb);CHKERRQ(ierr);
 
   /* set preallocation based on different supported Mat types */
   ierr = MatSeqAIJSetPreallocation(*J, innz, nnz);CHKERRQ(ierr);
@@ -91,7 +87,7 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
   bs = dmmoab->bs;
   nloc = dmmoab->nloc;
   nfields = dmmoab->numFields;
-  isinterlaced=(isbaij || bs==nfields ? PETSC_FALSE : PETSC_TRUE);
+  isinterlaced=(isbaij || bs==nfields ? PETSC_TRUE : PETSC_FALSE);
 
   /* find the truly user-expected layer of ghosted entities to decipher NNZ pattern */
   merr = dmmoab->mbiface->get_entities_by_type(dmmoab->fileset,moab::MBVERTEX,allvlocal,true);MBERRNM(merr);
@@ -151,38 +147,37 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
     }
   }
 
-  for (i=0;i<nloc*nfields;i++)
+  for (i=0;i<nloc*(isbaij?1:nfields);i++)
     nnz[i]+=1;  /* self count the node */
 
-  for (i=0;i<nloc;i++) {
+  for (ivtx=0;ivtx<nloc;ivtx++) {
     if (!isbaij) {
       for (ibs=0; ibs<nfields; ibs++) {
-        /* first address the diagonal block */
-        if (dmmoab->dfill) {
+        if (dmmoab->dfill) {  /* first address the diagonal block */
           /* just add up the ints -- easier/faster rather than branching based on "1" */
           for (jbs=0,inbsize=0; jbs<nfields; jbs++)
             inbsize += dmmoab->dfill[ibs*nfields+jbs];
         }
-        else inbsize=bs; /* dense coupling since user didn't specify the component fill explicitly */
-        if (isinterlaced) nnz[i*nfields+ibs]*=inbsize;
-        else nnz[ibs*nloc+i]*=inbsize;
+        else inbsize=nfields; /* dense coupling since user didn't specify the component fill explicitly */
+        if (isinterlaced) nnz[ivtx*nfields+ibs]*=inbsize;
+        else nnz[ibs*nloc+ivtx]*=inbsize;
 
         if (onz) {
-          /* next address the off-diagonal block */
-          if (dmmoab->ofill) {
+          if (dmmoab->ofill) {  /* next address the off-diagonal block */
             /* just add up the ints -- easier/faster rather than branching based on "1" */
             for (jbs=0,iobsize=0; jbs<nfields; jbs++)
               iobsize += dmmoab->dfill[ibs*nfields+jbs];
           }
-          else iobsize=bs; /* dense coupling since user didn't specify the component fill explicitly */
-          if (isinterlaced) onz[i*nfields+ibs]*=iobsize;
-          else onz[ibs*nloc+i]*=iobsize;
+          else iobsize=nfields; /* dense coupling since user didn't specify the component fill explicitly */
+          if (isinterlaced) onz[ivtx*nfields+ibs]*=iobsize;
+          else onz[ibs*nloc+ivtx]*=iobsize;
         }
       }
     }
     else {
-      /* check if we got overzealous in our nnz computations */
-      nnz[i]=(nnz[i]>dmmoab->nloc ? dmmoab->nloc:nnz[i]);
+      /* check if we got overzealous in our nnz and onz computations */
+      nnz[ivtx]=(nnz[ivtx]>dmmoab->nloc?dmmoab->nloc:nnz[ivtx]);
+      if (onz) onz[ivtx]=(onz[ivtx]>dmmoab->nloc?dmmoab->nloc:onz[ivtx]);
     }
   }
   /* update innz and ionz based on local maxima */
@@ -203,13 +198,25 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
 PetscErrorCode DMMoab_MatFillMatrixEntries_Private(DM dm, Mat A)
 {
   DM_Moab                   *dmmoab = (DM_Moab*)dm->data;
-  PetscInt                  nconn = 0,prev_nconn = 0;
+  PetscInt                  nconn = 0,prev_nconn = 0,bs,nloc,nfields;
   const moab::EntityHandle  *connect;
   PetscScalar               *locala=NULL;
   PetscInt                  *dof_indices=NULL;
+  PetscBool                 isinterlaced;
+  char*                     tmp=0;
+  MatType                   mtype;
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
+  bs = dmmoab->bs;
+  nloc = dmmoab->nloc;
+  nfields = dmmoab->numFields;
+
+  /* check whether we are updating BAIJ or AIJ matrix */
+  ierr = MatGetType(A, &mtype);CHKERRQ(ierr);
+  ierr = PetscStrstr(mtype, "baij", &tmp);CHKERRQ(ierr);
+  isinterlaced=(tmp || bs==nfields ? PETSC_TRUE : PETSC_FALSE);
+
   /* loop over local elements */
   for(moab::Range::iterator iter = dmmoab->elocal->begin(); iter != dmmoab->elocal->end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
@@ -223,17 +230,26 @@ PetscErrorCode DMMoab_MatFillMatrixEntries_Private(DM dm, Mat A)
         ierr = PetscFree(locala);CHKERRQ(ierr);
         ierr = PetscFree(dof_indices);CHKERRQ(ierr);
       }
-      ierr = PetscMalloc(sizeof(PetscScalar)*nconn*nconn*dmmoab->numFields*dmmoab->numFields,&locala);CHKERRQ(ierr);
-      ierr = PetscMemzero(locala,sizeof(PetscScalar)*nconn*nconn*dmmoab->numFields*dmmoab->numFields);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*nconn,&dof_indices);CHKERRQ(ierr);
+      ierr = PetscMalloc(sizeof(PetscScalar)*nconn*nconn*nfields*nfields,&locala);CHKERRQ(ierr);
+      ierr = PetscMemzero(locala,sizeof(PetscScalar)*nconn*nconn*nfields*nfields);CHKERRQ(ierr);
+      ierr = PetscMalloc(sizeof(PetscInt)*nconn*(isinterlaced?1:nfields),&dof_indices);CHKERRQ(ierr);
       prev_nconn=nconn;
     }
 
-    /* get the global DOF number to appropriately set the element contribution in the RHS vector */
-    ierr = DMMoabGetDofsBlockedLocal(dm, nconn, connect, dof_indices);CHKERRQ(ierr);
+    if (isinterlaced) {
+      /* get the global DOF number to appropriately set the element contribution in the RHS vector */
+      ierr = DMMoabGetDofsBlockedLocal(dm, nconn, connect, dof_indices);CHKERRQ(ierr);
 
-    /* set the values directly into appropriate locations. Can alternately use VecSetValues */
-    ierr = MatSetValuesBlockedLocal(A, nconn, dof_indices, nconn, dof_indices, locala, INSERT_VALUES);CHKERRQ(ierr);
+      /* set the values directly into appropriate locations. Can alternately use VecSetValues */
+      ierr = MatSetValuesBlockedLocal(A, nconn, dof_indices, nconn, dof_indices, locala, INSERT_VALUES);CHKERRQ(ierr);
+    }
+    else {
+      /* get the global DOF number to appropriately set the element contribution in the RHS vector */
+      ierr = DMMoabGetDofsLocal(dm, nconn, connect, dof_indices);CHKERRQ(ierr);
+
+      /* set the values directly into appropriate locations. Can alternately use VecSetValues */
+      ierr = MatSetValuesLocal(A, nconn, dof_indices, nconn, dof_indices, locala, INSERT_VALUES);CHKERRQ(ierr);
+    }
   }
 
   /* clean up memory */
