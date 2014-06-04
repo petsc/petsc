@@ -113,7 +113,6 @@ PetscErrorCode PCBDDCSetChangeOfBasisLocalMat(PC pc, Mat change)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(change,MAT_CLASSID,2);
-  PetscValidLogicalCollectiveBool(pc,change,2);
   ierr = PetscTryMethod(pc,"PCBDDCSetChangeOfBasisLocalMat_C",(PC,Mat),(pc,change));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
