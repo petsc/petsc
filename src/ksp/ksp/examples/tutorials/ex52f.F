@@ -149,9 +149,11 @@
       call MatMumpsGetRinfog(F,12,rinfo12,ierr)
       call MatMumpsGetRinfog(F,13,rinfo13,ierr)
       if (rank .eq. 0) then
-         write(6,*) "Mumps row pivot threshhold = ", cntl
-         write(6,*) "Mumps determinant=(",rinfo12,rinfo13,")*2^",infog34
+         write(6,98) cntl
+         write(6,99) rinfo12,rinfo13,infog34
       endif
+ 98   format('Mumps row pivot threshhold = ',1pe11.2)
+ 99   format('Mumps determinant=(',1pe11.2,1pe11.2,')*2^',i3)
 #endif
       
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -172,7 +174,7 @@
         else
            write(6,110) its
         endif
-      endif
+      endif     
   100 format('Norm of error ',1pe11.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12,iterations ',i5)
 
