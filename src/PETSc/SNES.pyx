@@ -656,12 +656,6 @@ cdef class SNES(Object):
         def __set__(self, value):
             self.setIterationNumber(value)
 
-    property norm:
-        def __get__(self):
-            return self.getFunctionNorm()
-        def __set__(self, value):
-            self.setFunctionNorm(value)
-
     property history:
         def __get__(self):
             return self.getConvergenceHistory()
