@@ -655,7 +655,7 @@ PetscErrorCode DMMoabGetMaterialBlock(DM dm,const moab::EntityHandle ehandle, Pe
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (*mat) {
     dmmoab = (DM_Moab*)(dm)->data;
-    dmmoab->mbiface->tag_get_data(dmmoab->material_tag, &ehandle, 1, mat);MBERRNM(merr);
+    merr=dmmoab->mbiface->tag_get_data(dmmoab->material_tag, &ehandle, 1, mat);MBERRNM(merr);
   }
   PetscFunctionReturn(0);
 }
