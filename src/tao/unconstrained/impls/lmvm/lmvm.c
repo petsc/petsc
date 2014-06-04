@@ -252,6 +252,35 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
 
 /* ---------------------------------------------------------- */
 
+/*MC
+     TAOLMVM - Limited Memory Variable Metric method is a quasi-Newton
+     optimization solver for unconstrained minimization. It solves
+     the Newton step
+              Hkdk = - gk
+
+     using an approximation Bk in place of Hk, where Bk is composed using
+     the BFGS update formula. A More-Thuente line search is then used
+     to computed the steplength in the dk direction
+  Options Database Keys:
++     -tao_lmm_vectors - number of vectors to use for approximation
+.     -tao_lmm_scale_type - "none","scalar","broyden"
+.     -tao_lmm_limit_type - "none","average","relative","absolute"
+.     -tao_lmm_rescale_type - "none","scalar","gl"
+.     -tao_lmm_limit_mu - mu limiting factor
+.     -tao_lmm_limit_nu - nu limiting factor
+.     -tao_lmm_delta_min - minimum delta value
+.     -tao_lmm_delta_max - maximum delta value
+.     -tao_lmm_broyden_phi - phi factor for Broyden scaling
+.     -tao_lmm_scalar_alpha - alpha factor for scalar scaling
+.     -tao_lmm_rescale_alpha - alpha factor for rescaling diagonal
+.     -tao_lmm_rescale_beta - beta factor for rescaling diagonal
+.     -tao_lmm_scalar_history - amount of history for scalar scaling
+.     -tao_lmm_rescale_history - amount of history for rescaling diagonal
+-     -tao_lmm_eps - rejection tolerance
+
+  Level: beginner
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_LMVM"

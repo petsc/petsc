@@ -6,7 +6,7 @@ SOURCEC  = blmvm.c
 SOURCEF  = 
 SOURCEH  = blmvm.h
 LIBBASE  = libpetsctao
-MANSEC   = 
+MANSEC   = Tao
 LOCDIR   = src/tao/bound/impls/blmvm/
 
 include ${PETSC_DIR}/conf/variables

@@ -3,10 +3,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = neldermead.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = neldermead.h
 LIBBASE  = libpetsctao
-MANSEC   = 
+MANSEC   = Tao 
 LOCDIR   = src/tao/unconstrained/impls/neldermead/
 
 include ${PETSC_DIR}/conf/variables

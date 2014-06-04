@@ -17,8 +17,9 @@
   Output Parameters:
 . vreduced - the subvector
 
-  Note:
+  Notes:
   maskvalue should usually be 0.0, unless a pointwise divide will be used.
+
 @*/
 PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, PetscReal maskvalue, Vec *vreduced)
 {

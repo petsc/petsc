@@ -3,10 +3,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = gpcg.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = gpcg.h
 LIBBASE  = libpetsctao
-MANSEC   = 
+MANSEC   = Tao 
 LOCDIR   = src/tao/bound/impls/gpcg/
 
 include ${PETSC_DIR}/conf/variables

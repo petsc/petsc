@@ -3,10 +3,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = bqpip.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = bqpip.h
 LIBBASE  = libpetsctao
-MANSEC   = 
+MANSEC   = Tao 
 LOCDIR   = src/tao/bound/impls/bqpip/
 
 include ${PETSC_DIR}/conf/variables

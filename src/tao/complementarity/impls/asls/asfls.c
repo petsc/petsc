@@ -284,6 +284,16 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
 }
 
 /* ---------------------------------------------------------- */
+/*MC
+   TAOASFLS - Active-set feasible linesearch algorithm for solving
+       complementarity constraints
+
+   Options Database Keys:
++ -tao_ssls_delta - descent test fraction
+- -tao_ssls_rho - descent test power
+
+   Level: beginner
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_ASFLS"

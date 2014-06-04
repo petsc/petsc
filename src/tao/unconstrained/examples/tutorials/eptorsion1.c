@@ -143,7 +143,6 @@ PetscErrorCode main(int argc,char **argv)
     ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,(void *)&user);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsSetValue("-ksp_type","cg");CHKERRQ(ierr);
 
   /* Check for any TAO command line options */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);

@@ -278,6 +278,16 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 }
 
 /* ---------------------------------------------------------- */
+/*MC
+   TAOASILS - Active-set infeasible linesearch algorithm for solving
+       complementarity constraints
+
+   Options Database Keys:
++ -tao_ssls_delta - descent test fraction
+- -tao_ssls_rho - descent test power
+
+  Level: beginner 
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_ASILS"

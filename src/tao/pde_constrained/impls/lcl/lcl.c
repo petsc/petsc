@@ -569,6 +569,22 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   PetscFunctionReturn(0);
 }
 
+/*MC
+ TAOLCL - linearly constrained lagrangian method for pde-constrained optimization
+
++ -tao_lcl_eps1 - epsilon 1 tolerance
+. -tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,&flg);CHKERRQ(ierr);
+. -tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,&flg);CHKERRQ(ierr);
+. -tao_lcl_rhomax","max value for rho","",lclP->rhomax,&lclP->rhomax,&flg);CHKERRQ(ierr);
+. -tao_lcl_phase2_niter - Number of phase 2 iterations in LCL algorithm
+. -tao_lcl_verbose - Print verbose output if True
+. -tao_lcl_tola - Tolerance for first forward solve
+. -tao_lcl_tolb - Tolerance for first adjoint solve
+. -tao_lcl_tolc - Tolerance for second forward solve
+- -tao_lcl_told - Tolerance for second adjoint solve
+
+  Level: beginner
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_LCL"

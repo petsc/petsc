@@ -3,10 +3,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = ntl.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = ntl.h
 LIBBASE  = libpetsctao
-MANSEC   = 
+MANSEC   = Tao 
 LOCDIR   = src/tao/unconstrained/impls/ntl/
 
 include ${PETSC_DIR}/conf/variables
