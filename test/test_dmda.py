@@ -109,8 +109,7 @@ class BaseTestDA(object):
     def testGetOther(self):
         ao = self.da.getAO()
         lgmap = self.da.getLGMap()
-        lgmap = self.da.getLGMapBlock()
-        l2g, g2l, l2l = self.da.getScatter()
+        l2g, g2l = self.da.getScatter()
 
     def testRefineCoarsen(self):
         da = self.da

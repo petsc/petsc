@@ -73,10 +73,13 @@ cdef extern from * nogil:
     int ISLocalToGlobalMappingRestoreBlockIndices(PetscLGMap,const_PetscInt*[])
     int ISLocalToGlobalMappingGetInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
     int ISLocalToGlobalMappingRestoreInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
+    int ISLocalToGlobalMappingGetBlockInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
+    int ISLocalToGlobalMappingRestoreBlockInfo(PetscLGMap,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[])
     int ISLocalToGlobalMappingApply(PetscLGMap,PetscInt,PetscInt[],PetscInt[])
     int ISLocalToGlobalMappingApplyBlock(PetscLGMap,PetscInt,PetscInt[],PetscInt[])
     int ISLocalToGlobalMappingApplyIS(PetscLGMap,PetscIS,PetscIS*)
     int ISGlobalToLocalMappingApply(PetscLGMap,PetscGLMapType,PetscInt,PetscInt[],PetscInt*,PetscInt[])
+    int ISGlobalToLocalMappingApplyBlock(PetscLGMap,PetscGLMapType,PetscInt,PetscInt[],PetscInt*,PetscInt[])
 
 
 # --------------------------------------------------------------------

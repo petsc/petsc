@@ -370,32 +370,32 @@ cdef class LGMap(Object):
         return toInt(bs)
 
     def getIndices(self):
-        cdef PetscInt size = 0, bs = 0
+        cdef PetscInt size = 0
         cdef const_PetscInt *indices = NULL
         CHKERR( ISLocalToGlobalMappingGetSize(
                 self.lgm, &size) )
-        CHKERR( ISLocalToGlobalMappingGetBlockSize(
-                self.lgm, &bs) )
         CHKERR( ISLocalToGlobalMappingGetIndices(
                 self.lgm, &indices) )
         cdef object oindices = None
         try:
-            oindices = array_i(size*bs, indices)
+            oindices = array_i(size, indices)
         finally:
             CHKERR( ISLocalToGlobalMappingRestoreIndices(
                     self.lgm, &indices) )
         return oindices
 
     def getBlockIndices(self):
-        cdef PetscInt size = 0
+        cdef PetscInt size = 0, bs = 1
         cdef const_PetscInt *indices = NULL
         CHKERR( ISLocalToGlobalMappingGetSize(
                 self.lgm, &size) )
+        CHKERR( ISLocalToGlobalMappingGetBlockSize(
+                self.lgm, &bs) )
         CHKERR( ISLocalToGlobalMappingGetBlockIndices(
                 self.lgm, &indices) )
         cdef object oindices = None
         try:
-            oindices = array_i(size, indices)
+            oindices = array_i(size//bs, indices)
         finally:
             CHKERR( ISLocalToGlobalMappingRestoreBlockIndices(
                     self.lgm, &indices) )
@@ -412,6 +412,20 @@ cdef class LGMap(Object):
                 neighs[toInt(procs[i])] = array_i(numprocs[i], indices[i])
         finally:
             ISLocalToGlobalMappingRestoreInfo(
+                self.lgm, &nproc, &procs, &numprocs, &indices)
+        return neighs
+
+    def getBlockInfo(self):
+        cdef PetscInt i, nproc = 0, *procs = NULL,
+        cdef PetscInt *numprocs = NULL, **indices = NULL
+        cdef object neighs = { }
+        CHKERR( ISLocalToGlobalMappingGetBlockInfo(
+                self.lgm, &nproc, &procs, &numprocs, &indices) )
+        try:
+            for i from 0 <= i < nproc:
+                neighs[toInt(procs[i])] = array_i(numprocs[i], indices[i])
+        finally:
+            ISLocalToGlobalMappingRestoreBlockInfo(
                 self.lgm, &nproc, &procs, &numprocs, &indices)
         return neighs
 
@@ -459,6 +473,19 @@ cdef class LGMap(Object):
                 self.lgm, cmtype, n, idx, &nout, idxout) )
         return result
 
+    def applyBlockInverse(self, indices, map_type=None):
+        cdef PetscGLMapType cmtype = IS_GTOLM_MASK
+        if map_type is not None: cmtype = map_type
+        cdef PetscInt n = 0, *idx = NULL
+        indices = iarray_i(indices, &n, &idx)
+        cdef PetscInt nout = n, *idxout = NULL
+        if cmtype != IS_GTOLM_MASK:
+            CHKERR( ISGlobalToLocalMappingApply(
+                    self.lgm, cmtype, n, idx, &nout, NULL) )
+        result = oarray_i(empty_i(nout), &nout, &idxout)
+        CHKERR( ISGlobalToLocalMappingApplyBlock(
+                self.lgm, cmtype, n, idx, &nout, idxout) )
+        return result
     #
 
     property size:
@@ -480,6 +507,10 @@ cdef class LGMap(Object):
     property info:
         def __get__(self):
             return self.getInfo()
+
+    property block_info:
+        def __get__(self):
+            return self.getBlockInfo()
 
 # --------------------------------------------------------------------
 
