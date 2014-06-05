@@ -4157,7 +4157,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "    /* Map values at quadrature points to coefficients */\n"
 "    for (int c = 0; c < N_sbc; ++c) {\n"
-"      const int cell = c*N_bl*N_q + blbidx;\n"
+"      const int cell = c*N_bl*N_q + blbidx; /* Cell number in batch */\n"
 "\n"
 "      e_i = 0.0;\n"
 "      for (int q = 0; q < N_q; ++q) {\n"
@@ -4190,7 +4190,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      }\n"
 "      /* Write element vector for N_{cbc} cells at a time */\n"
-"      elemVec[(gidx*N_cb*N_bc*N_bt)+(batch*N_sbc+c)*N_t+tidx] = e_i;\n"
+"      elemVec[(Goffset + batch*N_bc + c*N_bl*N_q)*N_bt + tidx] = e_i;\n"
 "    }\n"
 "    /* ==== Could do one write per batch ==== */\n"
 "  }\n"
