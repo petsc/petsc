@@ -3916,7 +3916,8 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "  const int qidx    = tidx %% N_q;                    // Quadrature point mapped to this thread\n"
 "  const int blbidx  = tidx %% N_q + blidx*N_q;        // Cell mapped to this thread in the basis phase\n"
 "  const int blqidx  = tidx %% N_b + blidx*N_b;        // Cell mapped to this thread in the quadrature phase\n"
-"  const int gidx    = get_group_id(1)*get_num_groups(0) + get_group_id(0);\n",
+"  const int gidx    = get_group_id(1)*get_num_groups(0) + get_group_id(0);\n"
+"  const int Goffset = gidx*N_cb*N_bc;\n",
                             &count, dim, N_bl, N_b, N_c, N_q);STRING_ERROR_CHECK("Message to short");
   /* Local memory */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
@@ -3968,7 +3969,6 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   /* Batch loads */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  for (int batch = 0; batch < N_cb; ++batch) {\n"
-"    const int Goffset = gidx*N_cb*N_bc;\n"
 "    /* Load geometry */\n"
 "    detJ[tidx] = jacobianDeterminants[Goffset+batch*N_bc+tidx];\n"
 "    for (int n = 0; n < dim*dim; ++n) {\n"
@@ -4304,8 +4304,8 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscProblem prob, P
   cl_ulong          ns_end;         /* Nanoseconds counter on GPU at kernel stop */
   cl_mem            o_jacobianInverses, o_jacobianDeterminants;
   cl_mem            o_coefficients, o_coefficientsAux, o_elemVec;
-  float            *f_coeff, *f_coeffAux, *f_invJ, *f_detJ;
-  double           *d_coeff, *d_coeffAux, *d_invJ, *d_detJ;
+  float            *f_coeff = NULL, *f_coeffAux = NULL, *f_invJ = NULL, *f_detJ = NULL;
+  double           *d_coeff = NULL, *d_coeffAux = NULL, *d_invJ = NULL, *d_detJ = NULL;
   void             *oclCoeff, *oclCoeffAux, *oclInvJ, *oclDetJ;
   size_t            local_work_size[3], global_work_size[3];
   size_t            realSize, x, y, z;
