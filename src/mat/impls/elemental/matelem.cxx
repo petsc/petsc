@@ -503,7 +503,7 @@ static PetscErrorCode MatDuplicate_Elemental(Mat A,MatDuplicateOption op,Mat *B)
 #define __FUNCT__ "MatTranspose_Elemental"
 static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
 {
-  Mat            Be;
+  Mat            Be = *B;
   PetscErrorCode ierr;
   MPI_Comm       comm;
   Mat_Elemental  *a = (Mat_Elemental*)A->data, *b;
@@ -539,7 +539,7 @@ static PetscErrorCode MatConjugate_Elemental(Mat A)
 #define __FUNCT__ "MatHermitianTranspose_Elemental"
 static PetscErrorCode MatHermitianTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
 {
-  Mat            Be;
+  Mat            Be = *B;
   PetscErrorCode ierr;
   MPI_Comm       comm;
   Mat_Elemental  *a = (Mat_Elemental*)A->data, *b;

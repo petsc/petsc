@@ -2035,7 +2035,7 @@ TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_3 runex112_4 ex1
 TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm
 TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm \
                                  ex39.PETSc runex39 runex39_2 ex39.rm \
-                                 ex104_elemental.PETSc runex104_elemental runex104_elemental_2 ex104_elemental.rm \
+                                 ex104.PETSc runex104_elemental runex104_elemental_2 ex104.rm \
                                  ex145.PETSc runex145 runex145_2 ex145.rm
 
 include ${PETSC_DIR}/conf/test
