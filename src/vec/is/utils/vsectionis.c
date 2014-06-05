@@ -256,7 +256,7 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(fieldName,3);
+  if (fieldName) PetscValidCharPointer(fieldName,3);
   if ((field < 0) || (field >= s->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
   ierr = PetscFree(s->fieldNames[field]);CHKERRQ(ierr);
   ierr = PetscStrallocpy(fieldName, (char**) &s->fieldNames[field]);CHKERRQ(ierr);
@@ -1719,6 +1719,22 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetConstraintIndices"
+/*@C
+  PetscSectionGetConstraintIndices - Get the point dof numbers, in [0, dof), which are constrained
+
+  Input Parameters:
++ s     - The PetscSection
+- point - The point
+
+  Output Parameter:
+. indices - The constrained dofs
+
+  Note: In Fortran, you call PetscSectionGetConstraintIndicesF90() and PetscSectionRestoreConstraintIndicesF90()
+
+  Level: advanced
+
+.seealso: PetscSectionSetConstraintIndices(), PetscSectionGetConstraintDof(), PetscSection
+@*/
 PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, const PetscInt **indices)
 {
   PetscErrorCode ierr;
@@ -1732,6 +1748,20 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetConstraintIndices"
+/*@C
+  PetscSectionSetConstraintIndices - Set the point dof numbers, in [0, dof), which are constrained
+
+  Input Parameters:
++ s     - The PetscSection
+. point - The point
+- indices - The constrained dofs
+
+  Note: The Fortran is PetscSectionSetConstraintIndicesF90()
+
+  Level: advanced
+
+.seealso: PetscSectionGetConstraintIndices(), PetscSectionGetConstraintDof(), PetscSection
+@*/
 PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, const PetscInt indices[])
 {
   PetscErrorCode ierr;
