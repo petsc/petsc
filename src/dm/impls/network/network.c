@@ -111,7 +111,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
 
   PetscFunctionBegin;
   if (network->nNodes) {
-    ierr = PetscMalloc(numCorners*network->nNodes*sizeof(PetscInt),&vertexcoords);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numCorners*network->nNodes,&vertexcoords);CHKERRQ(ierr);
   }
   ierr = DMPlexCreateFromCellList(PetscObjectComm((PetscObject)dm),dim,network->nEdges,network->nNodes,numCorners,PETSC_FALSE,network->edges,spacedim,vertexcoords,&network->plex);CHKERRQ(ierr);
   if (network->nNodes) {
@@ -127,14 +127,14 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   ierr = PetscSectionSetChart(network->DofSection,network->pStart,network->pEnd);CHKERRQ(ierr);
 
   network->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
-  ierr = PetscMalloc((network->pEnd-network->pStart)*sizeof(struct _p_DMNetworkComponentHeader),&network->header);CHKERRQ(ierr);
+  ierr = PetscMalloc1((network->pEnd-network->pStart),&network->header);CHKERRQ(ierr);
   for (i = network->pStart; i < network->pEnd; i++) {
     network->header[i].ndata = 0;
     ndata = network->header[i].ndata;
     ierr = PetscSectionAddDof(network->DataSection,i,network->dataheadersize);CHKERRQ(ierr);
     network->header[i].offset[ndata] = 0;
   }
-  ierr = PetscMalloc((network->pEnd-network->pStart)*sizeof(struct _p_DMNetworkComponentValue),&network->cvalue);CHKERRQ(ierr);
+  ierr = PetscMalloc1((network->pEnd-network->pStart),&network->cvalue);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -480,7 +480,7 @@ PetscErrorCode DMNetworkComponentSetUp(DM dm)
   PetscFunctionBegin;
   ierr = PetscSectionSetUp(network->DataSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(network->DataSection,&arr_size);CHKERRQ(ierr);
-  ierr = PetscMalloc(arr_size*sizeof(DMNetworkComponentGenericDataType),&network->componentdataarray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(arr_size,&network->componentdataarray);CHKERRQ(ierr);
   componentdataarray = network->componentdataarray;
   for (p = network->pStart; p < network->pEnd; p++) {
     ierr = PetscSectionGetOffset(network->DataSection,p,&offsetp);CHKERRQ(ierr);
