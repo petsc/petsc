@@ -2597,7 +2597,7 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
  * possible. */
 PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void**)slot);}
 
-extern PetscSegBuffer PetscCitationsList;
+PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 #undef __FUNCT__
 #define __FUNCT__ "PetscCitationsRegister"
 /*@C
