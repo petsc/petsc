@@ -1,29 +1,29 @@
-#if !defined(_CIRCUITIMPL_H)
-#define _CIRCUITIMPL_H
+#if !defined(_NETWORKIMPL_H)
+#define _NETWORKIMPL_H
 
 #include <petscmat.h>       /*I      "petscmat.h"          I*/
-#include <petscdmcircuit.h> /*I      "petscdmcircuit.h"    I*/
+#include <petscdmnetwork.h> /*I      "petscdmnetwork.h"    I*/
 #include "petsc-private/dmimpl.h"
 
 #define MAX_DATA_AT_POINT 14
 
-typedef struct _p_DMCircuitComponentHeader *DMCircuitComponentHeader;
-struct _p_DMCircuitComponentHeader {
+typedef struct _p_DMNetworkComponentHeader *DMNetworkComponentHeader;
+struct _p_DMNetworkComponentHeader {
   PetscInt ndata; 
   PetscInt size[MAX_DATA_AT_POINT];
   PetscInt key[MAX_DATA_AT_POINT];
   PetscInt offset[MAX_DATA_AT_POINT];
 };
 
-typedef struct _p_DMCircuitComponentValue *DMCircuitComponentValue;
-struct _p_DMCircuitComponentValue {
+typedef struct _p_DMNetworkComponentValue *DMNetworkComponentValue;
+struct _p_DMNetworkComponentValue {
   void* data[MAX_DATA_AT_POINT];
 };
 
 typedef struct {
   char name[20];
   PetscInt size;
-}DMCircuitComponent;
+}DMNetworkComponent;
 
 typedef struct {
   PetscInt                          refct;  /* reference count */
@@ -40,11 +40,11 @@ typedef struct {
   PetscSection                      DofSection;  /* Section for managing data distribution */
   PetscSection                      GlobalDofSection; /* Global Dof section */
   PetscInt                          ncomponent; /* Number of components */
-  DMCircuitComponent                component[10]; /* List of components */
-  DMCircuitComponentHeader          header;  
-  DMCircuitComponentValue           cvalue;
+  DMNetworkComponent                component[10]; /* List of components */
+  DMNetworkComponentHeader          header;  
+  DMNetworkComponentValue           cvalue;
   PetscInt                          dataheadersize;
-  DMCircuitComponentGenericDataType *componentdataarray; /* Array to hold the data */
-} DM_Circuit;
+  DMNetworkComponentGenericDataType *componentdataarray; /* Array to hold the data */
+} DM_Network;
 
-#endif /* _CIRCUITIMPL_H */
+#endif /* _NETWORKIMPL_H */
