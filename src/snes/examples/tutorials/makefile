@@ -20,7 +20,7 @@ EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5f90t.F ex5fs.F ex40f90.F90
 EXAMPLESCH	 = 
 EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m  ex61genm.m ex61m.m
-DIRS		 = ex10d circuit
+DIRS		 = ex10d network
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

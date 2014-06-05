@@ -3,14 +3,14 @@ ALL: lib
 CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = circuitcreate.c circuit.c
+SOURCEC  = networkcreate.c network.c
 SOURCEF  =
 SOURCEH  =
 DIRS     = 
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= 
-LOCDIR   = src/dm/impls/circuit/
+LOCDIR   = src/dm/impls/network/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

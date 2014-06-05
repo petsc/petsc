@@ -1,5 +1,5 @@
 
-LOCDIR		 = src/snes/examples/tutorials/circuit/
+LOCDIR		 = src/snes/examples/tutorials/network/
 DIRS		 = pflow
 MANSEC           = SNES
 
