@@ -73,7 +73,7 @@ static double bytes[4] = {
   3 * sizeof(double) * N
 };
 
-#include <mpi.h>
+#include <petscsys.h>
 
 int main(int argc,char **args)
 {
