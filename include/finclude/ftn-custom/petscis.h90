@@ -68,7 +68,8 @@
       End Interface
 
       Interface
-        Subroutine PetscSectionGetConstraintIndicesF90(s,point,array,ierr)
+        Subroutine PetscSectionGetConstraintIndicesF90(s,point,array,   &
+     & ierr)
           USE_PETSCSECTION_HIDE
           PetscInt point
           PetscInt, pointer :: array(:)
@@ -78,7 +79,8 @@
       End Interface
 
       Interface
-        Subroutine PetscSectionRestoreConstraintIndicesF90(s,point,array,ierr)
+        Subroutine PetscSectionRestoreConstraintIndicesF90(s,point,     &
+     & array,ierr)
           USE_PETSCSECTION_HIDE
           PetscInt point
           PetscInt, pointer :: array(:)
@@ -88,7 +90,8 @@
       End Interface
 
       Interface
-        Subroutine PetscSectionSetConstraintIndicesF90(s,point,array,ierr)
+        Subroutine PetscSectionSetConstraintIndicesF90(s,point,array,   &
+     & ierr)
           USE_PETSCSECTION_HIDE
           PetscInt point
           PetscInt, pointer :: array(:)
