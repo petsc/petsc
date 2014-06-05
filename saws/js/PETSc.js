@@ -55,32 +55,37 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                       jQuery("#"+fullkey).append(vKey+":&nbsp;");
                   }
                   for(j=0;j<sub[key].variables[vKey].data.length;j++){//vKey tells us a lot of information on what the data is
-                      if(sub[key].variables[vKey].alternatives.length == 0){
+                      if(sub[key].variables[vKey].alternatives.length == 0) {//case where there are no alternatives
                           if(sub[key].variables[vKey].dtype == "SAWs_BOOLEAN") {
-                              jQuery("#"+fullkey).append("<select id=\"data"+fullkey+vKey+j+"\">");
+                              jQuery("#"+fullkey).append("<select id=\"data"+fullkey+vKey+j+"\">");//make the boolean dropdown list
                               jQuery("#data"+fullkey+vKey+j).append("<option value=\"true\">True</option> <option value=\"false\">False</option>");
                           } else {
-                              jQuery("#"+fullkey).append("<input type=\"text\" style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\" name=\"data\" \\>");
+                              jQuery("#"+fullkey).append("<input type=\"text\" style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\" name=\"data\" \\>");//make a text input box
                               jQuery("#data"+fullkey+vKey+j).keyup(function(obj) {
                                   console.log( "Key up called "+key+vKey );
                                   sub[key].variables[vKey].selected = 1;
+                                  $("#data"+fullkey+"ChangedMethod0").find("option[value='true']").attr("selected","selected");//set changed to true automatically
                               });
                           }
                           jQuery("#data"+fullkey+vKey+j).val(sub[key].variables[vKey].data[j]);
-                          jQuery("#data"+fullkey+vKey+j).change(function(obj) {
-                              console.log( "Change called"+key+vKey );
-                              sub[key].variables[vKey].selected = 1;
-                          });
-                      } else {
+                          if(vKey != "ChangedMethod") {
+                              jQuery("#data"+fullkey+vKey+j).change(function(obj) {
+                                  console.log( "Change called"+key+vKey );
+                                  sub[key].variables[vKey].selected = 1;
+                                  $("#data"+fullkey+"ChangedMethod0").find("option[value='true']").attr("selected","selected");//set changed to true automatically
+                              });
+                          }
+                      } else {//case where there are alternatives
                           jQuery("#"+fullkey).append("<select id=\"data"+fullkey+vKey+j+"\">");
                           jQuery("#data"+fullkey+vKey+j).append("<option value=\""+sub[key].variables[vKey].data[j]+"\">"+sub[key].variables[vKey].data[j]+"</option>");
-                          for(var l=0;l<sub[key].variables[vKey].alternatives.length;l++){
+                          for(var l=0;l<sub[key].variables[vKey].alternatives.length;l++) {
                               jQuery("#data"+fullkey+vKey+j).append("<option value=\""+sub[key].variables[vKey].alternatives[l]+"\">"+sub[key].variables[vKey].alternatives[l]+"</option>");
                           }
                           jQuery("#"+fullkey).append("</select>");
                           jQuery("#data"+fullkey+vKey+j).change(function(obj) {
                               console.log( "Change called"+key+vKey );
                               sub[key].variables[vKey].selected = 1;
+                              $("#data"+fullkey+"ChangedMethod0").find("option[value='true']").attr("selected","selected");//set changed to true automatically
                           });
                       }
                       if(sub[key].variables[vKey].mtype != "SAWs_WRITE") {
