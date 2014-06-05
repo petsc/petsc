@@ -172,7 +172,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPU(Vec v);
 PETSC_INTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
 PETSC_INTERN PetscErrorCode VecDestroyVecs_Default(PetscInt,Vec []);
 PETSC_INTERN PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 
 PETSC_EXTERN PetscInt  NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */
 
