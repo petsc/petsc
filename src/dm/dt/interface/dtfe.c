@@ -3797,8 +3797,6 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   char            float_str[]   = "float", double_str[]  = "double";
   char           *numeric_str   = &(float_str[0]);
   PetscInt        op            = ocl->op;
-  PetscReal       lambda        = 1.0;
-  PetscReal       mu            = 0.25;
   PetscBool       useField      = PETSC_FALSE;
   PetscBool       useFieldDer   = PETSC_TRUE;
   PetscBool       useFieldAux   = useAux;
@@ -3951,6 +3949,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "  __local %s%d       f_1[%d]; //[N_t*N_sqc];      // $f_1(u(x_q), \\nabla u(x_q)) |J(x_q)| w_q$\n",
                               &count, numeric_str, dim, N_t*N_q);STRING_ERROR_CHECK("Message to short");
   }
+  /* TODO: If using elasticity, put in mu/lambda coefficients */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  /* Output data */\n"
 "  %s                e_i;                 // Coefficient $e_i$ of the residual\n\n",
@@ -3990,6 +3989,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   }
   /* Quadrature phase */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
+"    barrier(CLK_LOCAL_MEM_FENCE);\n"
 "\n"
 "    /* Map coefficients to values at quadrature points */\n"
 "    for (int c = 0; c < N_sqc; ++c) {\n"
@@ -4290,7 +4290,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscProblem prob, P
   PetscInt          N_bl;   /* The number of blocks */
   PetscInt          N_bc;   /* The batch size, N_bl*N_q*N_b */
   PetscInt          N_cb;   /* The number of batches */
-  PetscInt          numFlops, f0Flops, f1Flops;
+  PetscInt          numFlops, f0Flops = 0, f1Flops = 0;
   PetscBool         useAux      = coefficientsAux ? PETSC_TRUE : PETSC_FALSE;
   PetscBool         useField    = PETSC_FALSE;
   PetscBool         useFieldDer = PETSC_TRUE;
