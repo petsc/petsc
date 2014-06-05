@@ -4151,7 +4151,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "    }\n\n"
 "    /* ==== TRANSPOSE THREADS ==== */\n"
-"    barrier(CLK_GLOBAL_MEM_FENCE);\n\n",
+"    barrier(CLK_LOCAL_MEM_FENCE);\n\n",
                        &count);STRING_ERROR_CHECK("Message to short");
   /* Basis phase */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
