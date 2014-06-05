@@ -1719,6 +1719,22 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetConstraintIndices"
+/*@C
+  PetscSectionGetConstraintIndices - Get the point dof numbers, in [0, dof), which are constrained
+
+  Input Parameters:
++ s     - The PetscSection
+- point - The point
+
+  Output Parameter:
+. indices - The constrained dofs
+
+  Note: In Fortran, you call PetscSectionGetConstraintIndicesF90() and PetscSectionRestoreConstraintIndicesF90()
+
+  Level: advanced
+
+.seealso: PetscSectionSetConstraintIndices(), PetscSectionGetConstraintDof(), PetscSection
+@*/
 PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, const PetscInt **indices)
 {
   PetscErrorCode ierr;
@@ -1732,6 +1748,20 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetConstraintIndices"
+/*@C
+  PetscSectionSetConstraintIndices - Set the point dof numbers, in [0, dof), which are constrained
+
+  Input Parameters:
++ s     - The PetscSection
+. point - The point
+- indices - The constrained dofs
+
+  Note: The Fortran is PetscSectionSetConstraintIndicesF90()
+
+  Level: advanced
+
+.seealso: PetscSectionGetConstraintIndices(), PetscSectionGetConstraintDof(), PetscSection
+@*/
 PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, const PetscInt indices[])
 {
   PetscErrorCode ierr;

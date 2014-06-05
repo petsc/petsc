@@ -67,3 +67,32 @@
         End Subroutine
       End Interface
 
+      Interface
+        Subroutine PetscSectionGetConstraintIndicesF90(s,point,array,ierr)
+          USE_PETSCSECTION_HIDE
+          PetscInt point
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+          PETSCSECTION_HIDE       s
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionRestoreConstraintIndicesF90(s,point,array,ierr)
+          USE_PETSCSECTION_HIDE
+          PetscInt point
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+          PETSCSECTION_HIDE       s
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine PetscSectionSetConstraintIndicesF90(s,point,array,ierr)
+          USE_PETSCSECTION_HIDE
+          PetscInt point
+          PetscInt, pointer :: array(:)
+          PetscErrorCode  ierr
+          PETSCSECTION_HIDE       s
+        End Subroutine
+      End Interface
