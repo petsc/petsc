@@ -18,18 +18,6 @@ static const char help[] = "Time-dependent Brusselator reaction-diffusion PDE in
 #include <petscts.h>
 #include <petscdmmoab.h>
 
-// MOAB includes:
-#if defined (PETSC_HAVE_MOAB)
-#  include <moab/Core.hpp>
-#  include <moab/ReadUtilIface.hpp>
-#  include <MBTagConventions.hpp>
-
-typedef moab::Range* MBRange;
-#else
-#error You must have MOAB for this example. Reconfigure using --download-moab
-#endif
-
-
 typedef struct {
   PetscScalar u,v;
 } Field;
@@ -108,7 +96,6 @@ static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode FormIFunctionGhosted(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode FormIFunctionGlobalBlocked(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode FormIFunctionMOAB(TS,PetscReal,Vec,Vec,Vec,void*);
-//static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 static PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
 /****************

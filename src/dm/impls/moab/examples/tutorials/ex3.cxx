@@ -29,18 +29,9 @@ static char help[] = "\
                       Usage: ./ex3 -bc_type dirichlet -nu .01 -n 10\n";
 
 
-// PETSc includes:
+/* PETSc includes */
 #include <petscksp.h>
 #include <petscdmmoab.h>
-
-// MOAB includes:
-#if defined (PETSC_HAVE_MOAB)
-#  include <moab/Core.hpp>
-#  include <moab/ReadUtilIface.hpp>
-#  include <MBTagConventions.hpp>
-#else
-#error You must have MOAB for this example. Reconfigure using --download-moab
-#endif
 
 #define LOCAL_ASSEMBLY
 
@@ -338,14 +329,8 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
         if (dbdry[i]) {  /* dirichlet node */
           /* think about strongly imposing dirichlet */
           for (j=0; j < VPERE; ++j) {
-            array[i*VPERE+j] = 0.0;
             /* TODO: symmetrize the system - need the RHS */
-            /*
-            const PetscScalar xx=(vpos[3*q]-user->xref)*(vpos[3*q]-user->xref);
-            const PetscScalar yy=(vpos[3*q+1]-user->yref)*(vpos[3*q+1]-user->yref);
-            barray[j*VPERE] -= array[j*VPERE+i]*barray[i*VPERE];
-            array[j*VPERE+i] = 0.0;
-            */
+            array[i*VPERE+j] = 0.0;
           }
           array[i*VPERE+i] = 1.0;
         }
@@ -485,7 +470,8 @@ PetscErrorCode Compute_Quad4_Basis ( PetscScalar coords[VPERE*3], PetscInt n, Pe
 *
 *    Output, PetscScalar jxw[NQPTS], the product of Jacobian of the physical element times the weights at the quadrature points.
 */
-
+#undef __FUNCT__
+#define __FUNCT__ "ComputeQuadraturePointsPhysical"
 PetscErrorCode ComputeQuadraturePointsPhysical(const PetscScalar verts[VPERE*3], PetscScalar quad[NQPTS*3], PetscScalar jxw[NQPTS])
 {
   int i,j;
