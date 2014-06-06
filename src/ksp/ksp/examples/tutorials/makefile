@@ -10,7 +10,7 @@ EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex8g.c ex9.c \
                 ex41.c ex42.c ex43.c \
                 ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
                 ex54.c ex55.c ex56.c ex58.c
-EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F ex54f.F
+EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F ex52f.F ex54f.F
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
 NP               = 1
@@ -258,6 +258,10 @@ ex51: ex51.o chkopts
 ex52: ex52.o chkopts
 	-${CLINKER} -o ex52 ex52.o ${PETSC_KSP_LIB}
 	${RM} ex52.o
+
+ex52f: ex52f.o  chkopts
+	-${FLINKER} -o ex52f ex52f.o  ${PETSC_KSP_LIB}
+	${RM} ex52f.o
 
 ex53: ex53.o chkopts
 	-${CLINKER} -o ex53 ex53.o ${PETSC_KSP_LIB}
@@ -997,6 +1001,10 @@ runex52_mumps_3:
 	-@${MPIEXEC} -n 3 ./ex52 -use_mumps_ch -mat_type sbaij > ex52.tmp 2>&1;	  \
 	   ${DIFF} output/ex52_1.out ex52.tmp || printf "${PWD}\nPossible problem with with ex52_mumps_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
+runex52f_mumps:
+	-@${MPIEXEC} -n 3 ./ex52f > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52f_1.out ex52.tmp || printf "${PWD}\nPossible problem with with ex52f_mumps, diffs above\n=========================================\n"; \
+	   ${RM} -f ex52.tmp
 
 runex52_superlu:
 	-@${MPIEXEC} -n 1 ./ex52 -use_superlu_ilu > ex52.tmp 2>&1;	  \
@@ -1143,7 +1151,7 @@ TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
 				 runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
                                  runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm ex53.PETSc runex53 runex53_2 ex53.rm \
-                                 ex52.PETSc runex52_mumps runex52_mumps_2 ex52.rm
+                                 ex52.PETSc runex52_mumps runex52_mumps_2 runex52f_mumps ex52.rm
 TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu ex52.rm
 TESTEXAMPLES_FFTW              =
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm

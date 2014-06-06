@@ -1355,6 +1355,24 @@ PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMumpsGetIcntl"
+/*@
+  MatMumpsGetIcntl - Get MUMPS parameter ICNTL()
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+-  icntl - index of MUMPS parameter array ICNTL()
+
+  Output Parameter:
+.  ival - value of MUMPS ICNTL(icntl)
+
+   Level: beginner
+
+   References: MUMPS Users' Guide
+
+.seealso: MatGetFactor()
+@*/
 PetscErrorCode MatMumpsGetIcntl(Mat F,PetscInt icntl,PetscInt *ival)
 {
   PetscErrorCode ierr;
@@ -1423,6 +1441,24 @@ PetscErrorCode MatMumpsSetCntl(Mat F,PetscInt icntl,PetscReal val)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMumpsGetCntl"
+/*@
+  MatMumpsGetCntl - Get MUMPS parameter CNTL()
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+-  icntl - index of MUMPS parameter array CNTL()
+
+  Output Parameter:
+.  val - value of MUMPS CNTL(icntl)
+
+   Level: beginner
+
+   References: MUMPS Users' Guide
+
+.seealso: MatGetFactor()
+@*/
 PetscErrorCode MatMumpsGetCntl(Mat F,PetscInt icntl,PetscReal *val)
 {
   PetscErrorCode ierr;
@@ -1480,6 +1516,24 @@ PetscErrorCode MatMumpsGetRinfog_MUMPS(Mat F,PetscInt icntl,PetscReal *rinfog)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMumpsGetInfo"
+/*@
+  MatMumpsGetInfo - Get MUMPS parameter INFO()
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+-  icntl - index of MUMPS parameter array INFO()
+
+  Output Parameter:
+.  ival - value of MUMPS INFO(icntl)
+
+   Level: beginner
+
+   References: MUMPS Users' Guide
+
+.seealso: MatGetFactor()
+@*/
 PetscErrorCode MatMumpsGetInfo(Mat F,PetscInt icntl,PetscInt *ival)
 {
   PetscErrorCode ierr;
@@ -1492,6 +1546,24 @@ PetscErrorCode MatMumpsGetInfo(Mat F,PetscInt icntl,PetscInt *ival)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMumpsGetInfog"
+/*@
+  MatMumpsGetInfog - Get MUMPS parameter INFOG()
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+-  icntl - index of MUMPS parameter array INFOG()
+
+  Output Parameter:
+.  ival - value of MUMPS INFOG(icntl)
+
+   Level: beginner
+
+   References: MUMPS Users' Guide
+
+.seealso: MatGetFactor()
+@*/
 PetscErrorCode MatMumpsGetInfog(Mat F,PetscInt icntl,PetscInt *ival)
 {
   PetscErrorCode ierr;
@@ -1504,6 +1576,24 @@ PetscErrorCode MatMumpsGetInfog(Mat F,PetscInt icntl,PetscInt *ival)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMumpsGetRinfo"
+/*@
+  MatMumpsGetRinfo - Get MUMPS parameter RINFO()
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+-  icntl - index of MUMPS parameter array RINFO()
+
+  Output Parameter:
+.  val - value of MUMPS RINFO(icntl)
+
+   Level: beginner
+
+   References: MUMPS Users' Guide
+
+.seealso: MatGetFactor()
+@*/
 PetscErrorCode MatMumpsGetRinfo(Mat F,PetscInt icntl,PetscReal *val)
 {
   PetscErrorCode ierr;
@@ -1516,6 +1606,24 @@ PetscErrorCode MatMumpsGetRinfo(Mat F,PetscInt icntl,PetscReal *val)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMumpsGetRinfog"
+/*@
+  MatMumpsGetRinfog - Get MUMPS parameter RINFOG()
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+-  icntl - index of MUMPS parameter array RINFOG()
+
+  Output Parameter:
+.  val - value of MUMPS RINFOG(icntl)
+
+   Level: beginner
+
+   References: MUMPS Users' Guide
+
+.seealso: MatGetFactor()
+@*/
 PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 {
   PetscErrorCode ierr;
