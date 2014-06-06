@@ -28,7 +28,7 @@ typedef const char* DMType;
 #define DMREDUNDANT "redundant"
 #define DMPATCH     "patch"
 #define DMMOAB      "moab"
-#define DMCIRCUIT   "circuit"
+#define DMNETWORK   "network"
 
 PETSC_EXTERN const char *const DMBoundaryTypes[];
 PETSC_EXTERN PetscFunctionList DMList;
