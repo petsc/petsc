@@ -15,7 +15,7 @@ typedef struct {
   char          output_file[PETSC_MAX_PATH_LEN];   /* Output mesh file name */
   PetscBool     write_output;                        /* Write output mesh and data to file */
   PetscInt      nfields;         /* Number of fields */
-  char          *fieldnames[128]; /* Name of a defined field on the mesh */
+  char          *fieldnames[PETSC_MAX_PATH_LEN]; /* Name of a defined field on the mesh */
 } AppCtx;
 
 #undef __FUNCT__
@@ -23,7 +23,7 @@ typedef struct {
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
-  PetscBool      flg;
+  PetscBool      flg,is_user_fields;
 
   PetscFunctionBegin;
   options->debug             = PETSC_FALSE;
@@ -35,6 +35,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interlace         = PETSC_FALSE;
   options->input_file[0]     = '\0';
   ierr = PetscStrcpy(options->output_file,"ex2.h5m");CHKERRQ(ierr);
+
+  //ierr = PetscOptionsHasName("", "-fields", is_user_fields);
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMMOAB");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-debug", "Enable debug messages", "ex2.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -59,7 +61,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
 {
   PetscInt       i;
   size_t         len;
@@ -72,24 +74,23 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscStrlen(user->input_file, &len);CHKERRQ(ierr);
   if (len) {
     if (user->debug) PetscPrintf(comm, "Loading mesh from file: %s and creating a DM object.\n",user->input_file);
-    ierr = DMMoabLoadFromFile(comm, user->dim, user->input_file, "", dm);CHKERRQ(ierr);
+    ierr = DMMoabLoadFromFile(comm, user->dim, user->input_file, "", &user->dm);CHKERRQ(ierr);
   }
   else {
     if (user->debug) {
       PetscPrintf(comm, "Creating a %D-dimensional structured %s mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,(user->simplex?"simplex":"regular"),user->nele,user->nele,user->nele);
     }
-    ierr = DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, 1, dm);CHKERRQ(ierr);
+    ierr = DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, 1, &user->dm);CHKERRQ(ierr);
   }
 
   if (user->debug) {
     PetscPrintf(comm, "Setting field names to DM: \n");
     for (i=0; i<user->nfields; i++)
-      PetscPrintf(comm, "\t Field{0} = %s.\n",user->fieldnames[i]);
+      PetscPrintf(comm, "\t Field{%D} = %s.\n",i,user->fieldnames[i]);
   }
-  ierr     = DMMoabSetFieldNames(*dm, user->nfields, (const char**)user->fieldnames);CHKERRQ(ierr);
-  ierr     = PetscObjectSetName((PetscObject) *dm, "Structured Mesh");CHKERRQ(ierr);
+  ierr     = DMMoabSetFieldNames(user->dm, user->nfields, (const char**)user->fieldnames);CHKERRQ(ierr);
+  ierr     = PetscObjectSetName((PetscObject)user->dm, "Structured Mesh");CHKERRQ(ierr);
   ierr     = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  user->dm = *dm;
   PetscFunctionReturn(0);
 }
 
@@ -102,12 +103,13 @@ int main(int argc, char **argv)
   Vec            solution;
   Mat            system;
   MPI_Comm       comm;
+  PetscInt       i;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(comm, &user, &user.dm);CHKERRQ(ierr);
+  ierr = CreateMesh(comm, &user);CHKERRQ(ierr);
 
   /* set block size */
   ierr = DMMoabSetBlockSize(user.dm, (user.interlace?user.nfields:1));CHKERRQ(ierr);
@@ -119,7 +121,7 @@ int main(int argc, char **argv)
   ierr = DMSetUp(user.dm);CHKERRQ(ierr);
 
   if (user.debug) PetscPrintf(comm, "Creating a global vector defined on DM and setting random data.\n");
-  ierr = DMCreateGlobalVector(user.dm, &solution);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(user.dm,&solution);CHKERRQ(ierr);
   ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetType(rctx,PETSCRAND48);CHKERRQ(ierr);
   ierr = VecSetRandom(solution,rctx);CHKERRQ(ierr);
@@ -134,9 +136,17 @@ int main(int argc, char **argv)
     ierr = DMMoabOutput(user.dm,(const char*)user.output_file,"");CHKERRQ(ierr);
   }
 
+  if (user.fieldnames) {
+    for(i=0; i<user.nfields; i++) {
+      ierr = PetscFree(user.fieldnames[i]);CHKERRQ(ierr);
+    }
+    //ierr = PetscFree(user.fieldnames);CHKERRQ(ierr);
+  }
   ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   ierr = VecDestroy(&solution);CHKERRQ(ierr);
+  ierr = MatDestroy(&system);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
+

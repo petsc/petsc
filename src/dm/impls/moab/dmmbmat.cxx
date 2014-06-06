@@ -16,6 +16,7 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
   DM_Moab         *dmmoab=(DM_Moab*)dm->data;
   PetscInt        *nnz=0,*onz=0;
   char            *tmp=0;
+  Mat             A;
   MatType         mtype;
 
   PetscFunctionBegin;
@@ -37,33 +38,33 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
   ierr = DMMoab_Compute_NNZ_From_Connectivity(dm,&innz,nnz,&ionz,onz,(tmp?PETSC_TRUE:PETSC_FALSE));CHKERRQ(ierr);
 
   /* create the Matrix and set its type as specified by user */
-  ierr = MatCreate(dmmoab->pcomm->comm(), J);CHKERRQ(ierr);
-  ierr = MatSetSizes(*J, dmmoab->nloc*dmmoab->numFields, dmmoab->nloc*dmmoab->numFields, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(*J, dmmoab->bs);CHKERRQ(ierr);
-  ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
+  ierr = MatCreate(dmmoab->pcomm->comm(), &A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A, dmmoab->nloc*dmmoab->numFields, dmmoab->nloc*dmmoab->numFields, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(A, mtype);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(A, dmmoab->bs);CHKERRQ(ierr);
+  ierr = MatSetDM(A, dm);CHKERRQ(ierr);  /* set DM reference */
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   if (!dmmoab->ltog_map) SETERRQ(dmmoab->pcomm->comm(), PETSC_ERR_ORDER, "Cannot create a DMMoab Mat without calling DMSetUp first.");
-  ierr = MatSetLocalToGlobalMapping(*J,dmmoab->ltog_map,dmmoab->ltog_map);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(A,dmmoab->ltog_map,dmmoab->ltog_map);CHKERRQ(ierr);
 
   /* set preallocation based on different supported Mat types */
-  ierr = MatSeqAIJSetPreallocation(*J, innz, nnz);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(*J, innz, nnz, ionz, onz);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(*J, dmmoab->bs, innz, nnz);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(*J, dmmoab->bs, innz, nnz, ionz, onz);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A, innz, nnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A, innz, nnz, ionz, onz);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(A, dmmoab->bs, innz, nnz);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(A, dmmoab->bs, innz, nnz, ionz, onz);CHKERRQ(ierr);
 
   /* clean up temporary memory */
   ierr = PetscFree(nnz);CHKERRQ(ierr);
   ierr = PetscFree(onz);CHKERRQ(ierr);
 
   /* set up internal matrix data-structures */
-  ierr = MatSetUp(*J);CHKERRQ(ierr);
-
-  /* set DM reference */
-  ierr = MatSetDM(*J, dm);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
 
   /* set the correct NNZ pattern by setting matrix entries - make the matrix ready to use */
-  ierr = DMMoab_MatFillMatrixEntries_Private(dm,*J);CHKERRQ(ierr);
+  ierr = DMMoab_MatFillMatrixEntries_Private(dm,A);CHKERRQ(ierr);
+
+  *J = A;
   PetscFunctionReturn(0);
 }
 
