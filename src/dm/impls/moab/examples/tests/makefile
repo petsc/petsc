@@ -1,7 +1,4 @@
 #requirespackage  'PETSC_HAVE_MOAB'
-#requireslanguage 'CXXONLY'
-#requiresprecision double
-#requiresscalar    real
 
 CFLAGS	        =
 FFLAGS	        =
