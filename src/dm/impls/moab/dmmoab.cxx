@@ -78,12 +78,14 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
   moab::ErrorCode merr;
   moab::EntityHandle partnset;
   PetscInt rank, nprocs;
+  DM             dmmb;
   DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
   PetscValidPointer(dmb,6);
-  ierr = DMMoabCreate(comm, dmb);CHKERRQ(ierr);
-  dmmoab = (DM_Moab*)(*dmb)->data;
+
+  ierr = DMMoabCreate(comm, &dmmb);CHKERRQ(ierr);
+  dmmoab = (DM_Moab*)(dmmb)->data;
 
   if (!mbiface) {
     dmmoab->mbiface = new moab::Core();
@@ -109,7 +111,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
     dmmoab->pcomm = moab::ParallelComm::get_pcomm(dmmoab->mbiface, partnset, &comm);
   }
   else {
-    ierr = DMMoabSetParallelComm(*dmb, pcomm);CHKERRQ(ierr);
+    ierr = DMMoabSetParallelComm(dmmb, pcomm);CHKERRQ(ierr);
   }
 
   /* do the remaining initializations for DMMoab */
@@ -124,7 +126,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
 
   /* set global ID tag handle */
   if (ltog_tag && *ltog_tag) {
-    ierr = DMMoabSetLocalToGlobalTag(*dmb, *ltog_tag);CHKERRQ(ierr);
+    ierr = DMMoabSetLocalToGlobalTag(dmmb, *ltog_tag);CHKERRQ(ierr);
   }
   else {
     merr = dmmoab->mbiface->tag_get_handle(GLOBAL_ID_TAG_NAME, dmmoab->ltog_tag);MBERRNM(merr);
@@ -135,8 +137,9 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
 
   /* set the local range of entities (vertices) of interest */
   if (range) {
-    ierr = DMMoabSetLocalVertices(*dmb, range);CHKERRQ(ierr);
+    ierr = DMMoabSetLocalVertices(dmmb, range);CHKERRQ(ierr);
   }
+  *dmb=dmmb;
   PetscFunctionReturn(0);
 }
 
@@ -663,6 +666,23 @@ PetscErrorCode DMMoabGetMaterialBlock(DM dm,const moab::EntityHandle ehandle, Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetVertexCoordinates"
+/*@
+  DMMoabGetVertexCoordinates - Get the coordinates corresponding to the requested vertex entities
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The DMMoab object
+. nconn - Number of entities whose coordinates are needed
+. conn - The vertex entity handles
+
+  Output Parameter:
+. vpos - The coordinates of the requested vertex entities
+
+  Level: beginner
+
+.seealso: DMMoabGetVertexConnectivity()
+@*/
 PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::EntityHandle *conn,PetscScalar *vpos)
 {
   DM_Moab         *dmmoab;
@@ -686,7 +706,24 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::Entit
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetVertexConnectivity"
-PetscErrorCode DMMoabGetVertexConnectivity(DM dm,moab::EntityHandle ehandle,PetscInt* nconn, moab::EntityHandle **conn)
+/*@
+  DMMoabGetVertexConnectivity - Get the vertex adjacency for the given entity
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The DMMoab object
+. vhandle - Vertex entity handle
+
+  Output Parameter:
+. nconn - Number of entities whose coordinates are needed
+. conn - The vertex entity handles
+
+  Level: beginner
+
+.seealso: DMMoabGetVertexCoordinates(), DMMoabRestoreVertexConnectivity()
+@*/
+PetscErrorCode DMMoabGetVertexConnectivity(DM dm,moab::EntityHandle vhandle,PetscInt* nconn, moab::EntityHandle **conn)
 {
   DM_Moab        *dmmoab;
   std::vector<moab::EntityHandle> adj_entities,connect;
@@ -699,7 +736,7 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm,moab::EntityHandle ehandle,Pets
   dmmoab = (DM_Moab*)(dm)->data;
 
   /* Get connectivity information in MOAB canonical ordering */
-  merr = dmmoab->mbiface->get_adjacencies(&ehandle, 1, 1, true, adj_entities, moab::Interface::UNION);MBERRNM(merr);
+  merr = dmmoab->mbiface->get_adjacencies(&vhandle, 1, 1, true, adj_entities, moab::Interface::UNION);MBERRNM(merr);
   merr = dmmoab->mbiface->get_connectivity(&adj_entities[0],adj_entities.size(),connect);MBERRNM(merr);
 
   if (conn) {
@@ -713,6 +750,21 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm,moab::EntityHandle ehandle,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabRestoreVertexConnectivity"
+/*@
+  DMMoabRestoreVertexConnectivity - Restore the vertex connectivity for the given entity
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The DMMoab object
+. vhandle - Vertex entity handle
+. nconn - Number of entities whose coordinates are needed
+. conn - The vertex entity handles
+
+  Level: beginner
+
+.seealso: DMMoabGetVertexCoordinates(), DMMoabGetVertexConnectivity()
+@*/
 PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm,moab::EntityHandle ehandle,PetscInt* nconn, moab::EntityHandle **conn)
 {
   PetscErrorCode  ierr;
@@ -729,9 +781,25 @@ PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm,moab::EntityHandle ehandle,
 }
 
 
-
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetElementConnectivity"
+/*@
+  DMMoabGetElementConnectivity - Get the vertex adjacency for the given entity
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The DMMoab object
+. ehandle - Vertex entity handle
+
+  Output Parameter:
+. nconn - Number of entities whose coordinates are needed
+. conn - The vertex entity handles
+
+  Level: beginner
+
+.seealso: DMMoabGetVertexCoordinates(), DMMoabGetVertexConnectivity(), DMMoabRestoreVertexConnectivity()
+@*/
 PetscErrorCode DMMoabGetElementConnectivity(DM dm,moab::EntityHandle ehandle,PetscInt* nconn,const moab::EntityHandle **conn)
 {
   DM_Moab        *dmmoab;
@@ -754,6 +822,22 @@ PetscErrorCode DMMoabGetElementConnectivity(DM dm,moab::EntityHandle ehandle,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabIsEntityOnBoundary"
+/*@
+  DMMoabIsEntityOnBoundary - Check whether a given entity is on the boundary (vertex, edge, face, element)
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The DMMoab object
+. ent - Entity handle
+
+  Output Parameter:
+. ent_on_boundary - PETSC_TRUE if entity on boundary; PETSC_FALSE otherwise
+
+  Level: beginner
+
+.seealso: DMMoabCheckBoundaryVertices()
+@*/
 PetscErrorCode DMMoabIsEntityOnBoundary(DM dm,const moab::EntityHandle ent,PetscBool* ent_on_boundary)
 {
   moab::EntityType etype;
@@ -790,6 +874,21 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm,const moab::EntityHandle ent,Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabCheckBoundaryVertices"
+/*@
+  DMMoabIsEntityOnBoundary - Check whether a given entity is on the boundary (vertex, edge, face, element)
+
+  Input Parameter:
+. dm - The DMMoab object
+. nconn - Number of handles
+. cnt - Array of entity handles
+
+  Output Parameter:
+. isbdvtx - Array of boundary markers - PETSC_TRUE if entity on boundary; PETSC_FALSE otherwise
+
+  Level: beginner
+
+.seealso: DMMoabIsEntityOnBoundary()
+@*/
 PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::EntityHandle *cnt,PetscBool* isbdvtx)
 {
   DM_Moab        *dmmoab;
@@ -810,6 +909,21 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::Enti
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetBoundaryMarkers"
+/*@
+  DMMoabGetBoundaryMarkers - Return references to the vertices, faces, elements on the boundary
+
+  Input Parameter:
+. dm - The DMMoab object
+
+  Output Parameter:
+. bdvtx - Boundary vertices
+. bdelems - Boundary elements
+. bdfaces - Boundary faces
+
+  Level: beginner
+
+.seealso: DMMoabCheckBoundaryVertices(), DMMoabIsEntityOnBoundary()
+@*/
 PetscErrorCode DMMoabGetBoundaryMarkers(DM dm,const moab::Range **bdvtx,const moab::Range** bdelems,const moab::Range** bdfaces)
 {
   DM_Moab        *dmmoab;
@@ -830,6 +944,7 @@ PetscErrorCode DMMoabGetBoundaryMarkers(DM dm,const moab::Range **bdvtx,const mo
 PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
 {
   PetscErrorCode ierr;
+  PetscInt       i;
   DM_Moab        *dmmoab = (DM_Moab*)dm->data;
 
   PetscFunctionBegin;
@@ -855,6 +970,12 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
   ierr = PetscFree(dmmoab->lgmap);CHKERRQ(ierr);
   ierr = PetscFree(dmmoab->dfill);CHKERRQ(ierr);
   ierr = PetscFree(dmmoab->ofill);CHKERRQ(ierr);
+  if (dmmoab->fieldNames) {
+    for(i=0; i<dmmoab->numFields; i++) {
+      ierr = PetscFree(dmmoab->fieldNames[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(dmmoab->fieldNames);CHKERRQ(ierr);
+  }
   ierr = VecScatterDestroy(&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&dmmoab->ltog_map);CHKERRQ(ierr);
   ierr = PetscFree(dm->data);CHKERRQ(ierr);
