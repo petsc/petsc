@@ -136,6 +136,34 @@ PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefiner refiner, 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CellRefinerInCellTest_Internal"
+/* Should this be here or in the DualSpace somehow? */
+PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner refiner, const PetscReal point[], PetscBool *inside)
+{
+  PetscReal sum = 0.0;
+  PetscInt  d;
+
+  PetscFunctionBegin;
+  *inside = PETSC_TRUE;
+  switch (refiner) {
+  case 0: break;
+  case 1:
+    for (d = 0; d < 2; ++d) {
+      if (point[d] < -1.0) {*inside = PETSC_FALSE; break;}
+      sum += point[d];
+    }
+    if (sum > 0.0) {*inside = PETSC_FALSE; break;}
+    break;
+  case 2:
+    for (d = 0; d < 2; ++d) if ((point[d] < -1.0) || (point[d] > 1.0)) {*inside = PETSC_FALSE; break;}
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CellRefinerGetSizes"
 static PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSize[])
 {
