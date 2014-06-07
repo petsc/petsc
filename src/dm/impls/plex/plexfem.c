@@ -1521,10 +1521,10 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat In, void *user)
       /* Evaluate basis at points */
       ierr = PetscProblemGetDiscretization(prob, fieldJ, (PetscObject *) &fe);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &NcJ);CHKERRQ(ierr);
-      if (Nc != NcJ) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %d does not match coarse field %d", Nc, NcJ);
       ierr = PetscFEGetDimension(fe, &cpdim);CHKERRQ(ierr);
       /* For now, fields only interpolate themselves */
       if (fieldI == fieldJ) {
+        if (Nc != NcJ) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %d does not match coarse field %d", Nc, NcJ);
         ierr = PetscFEGetTabulation(fe, npoints, points, &B, NULL, NULL);CHKERRQ(ierr);
         for (i = 0, k = 0; i < fpdim; ++i) {
           ierr = PetscDualSpaceGetFunctional(Qref, i, &f);CHKERRQ(ierr);
@@ -1559,6 +1559,114 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat In, void *user)
 #if 0
   ierr = PetscLogEventEnd(DMPLEX_InterpolatorFEM,dmc,dmf,0,0);CHKERRQ(ierr);
 #endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeInjectorFEM"
+PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *user)
+{
+  PetscProblem   prob;
+  PetscFE       *feRef;
+  Vec            fv, cv;
+  IS             fis, cis;
+  PetscSection   fsection, fglobalSection, csection, cglobalSection;
+  PetscInt      *cmap, *cellCIndices, *cellFIndices, *cindices, *findices;
+  PetscInt       cTotDim, fTotDim = 0, Nf, f, field, cStart, cEnd, c, dim, d, startC, offsetC, offsetF, m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDimension(dmf, &dim);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dmf, &fsection);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dmf, &fglobalSection);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dmc, &csection);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dmc, &cglobalSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(fsection, &Nf);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dmc, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMGetProblem(dmc, &prob);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nf,&feRef);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) {
+    PetscFE  fe;
+    PetscInt fNb, Nc;
+
+    ierr = PetscProblemGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
+    ierr = PetscFERefine(fe, &feRef[f]);CHKERRQ(ierr);
+    ierr = PetscFEGetDimension(feRef[f], &fNb);CHKERRQ(ierr);
+    ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+    fTotDim += fNb*Nc;
+  }
+  ierr = PetscProblemGetTotalDimension(prob, &cTotDim);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cTotDim,&cmap);CHKERRQ(ierr);
+  for (field = 0, offsetC = 0, offsetF = 0; field < Nf; ++field) {
+    PetscFE        feC;
+    PetscDualSpace QF, QC;
+    PetscInt       NcF, NcC, fpdim, cpdim;
+
+    ierr = PetscProblemGetDiscretization(prob, field, (PetscObject *) &feC);CHKERRQ(ierr);
+    ierr = PetscFEGetNumComponents(feC, &NcC);CHKERRQ(ierr);
+    ierr = PetscFEGetNumComponents(feRef[field], &NcF);CHKERRQ(ierr);
+    if (NcF != NcC) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %d does not match coarse field %d", NcF, NcC);
+    ierr = PetscFEGetDualSpace(feRef[field], &QF);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetDimension(QF, &fpdim);CHKERRQ(ierr);
+    ierr = PetscFEGetDualSpace(feC, &QC);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetDimension(QC, &cpdim);CHKERRQ(ierr);
+    for (c = 0; c < cpdim; ++c) {
+      PetscQuadrature  cfunc;
+      const PetscReal *cqpoints;
+      PetscInt         NpC;
+
+      ierr = PetscDualSpaceGetFunctional(QC, c, &cfunc);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(cfunc, NULL, &NpC, &cqpoints, NULL);CHKERRQ(ierr);
+      if (NpC != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Do not know how to do injection for moments");
+      for (f = 0; f < fpdim; ++f) {
+        PetscQuadrature  ffunc;
+        const PetscReal *fqpoints;
+        PetscReal        sum = 0.0;
+        PetscInt         NpF, comp;
+
+        ierr = PetscDualSpaceGetFunctional(QF, f, &ffunc);CHKERRQ(ierr);
+        ierr = PetscQuadratureGetData(ffunc, NULL, &NpF, &fqpoints, NULL);CHKERRQ(ierr);
+        if (NpC != NpF) continue;
+        for (d = 0; d < dim; ++d) sum += PetscAbsReal(cqpoints[d] - fqpoints[d]);
+        if (sum > 1.0e-9) continue;
+        for (comp = 0; comp < NcC; ++comp) {
+          cmap[(offsetC+c)*NcC+comp] = (offsetF+f)*NcF+comp;
+        }
+        break;
+      }
+    }
+    offsetC += cpdim*NcC;
+    offsetF += fpdim*NcF;
+  }
+  for (f = 0; f < Nf; ++f) {ierr = PetscFEDestroy(&feRef[f]);CHKERRQ(ierr);}
+  ierr = PetscFree(feRef);CHKERRQ(ierr);
+
+  ierr = DMGetGlobalVector(dmf, &fv);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dmc, &cv);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(cv, &startC, NULL);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(cglobalSection, &m);CHKERRQ(ierr);
+  ierr = PetscMalloc2(cTotDim,&cellCIndices,fTotDim,&cellFIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,&cindices,m,&findices);CHKERRQ(ierr);
+  for (d = 0; d < m; ++d) cindices[d] = findices[d] = -1;
+  for (c = cStart; c < cEnd; ++c) {
+    ierr = DMPlexMatGetClosureIndicesRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, c, cellCIndices, cellFIndices);CHKERRQ(ierr);
+    for (d = 0; d < cTotDim; ++d) {
+      if (cellCIndices[d] < 0) continue;
+      if ((findices[cellCIndices[d]-startC] >= 0) && (findices[cellCIndices[d]-startC] != cellFIndices[cmap[d]])) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Coarse dof %d maps to both %d and %d", cindices[cellCIndices[d]-startC], findices[cellCIndices[d]-startC], cellFIndices[cmap[d]]);
+      cindices[cellCIndices[d]-startC] = cellCIndices[d];
+      findices[cellCIndices[d]-startC] = cellFIndices[cmap[d]];
+    }
+  }
+  ierr = PetscFree(cmap);CHKERRQ(ierr);
+  ierr = PetscFree2(cellCIndices,cellFIndices);CHKERRQ(ierr);
+
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, m, cindices, PETSC_OWN_POINTER, &cis);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, m, findices, PETSC_OWN_POINTER, &fis);CHKERRQ(ierr);
+  ierr = VecScatterCreate(cv, cis, fv, fis, sc);CHKERRQ(ierr);
+  ierr = ISDestroy(&cis);CHKERRQ(ierr);
+  ierr = ISDestroy(&fis);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dmf, &fv);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dmc, &cv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
