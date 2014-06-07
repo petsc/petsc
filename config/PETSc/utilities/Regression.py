@@ -24,6 +24,7 @@ class Configure(config.base.Configure):
     self.datafilespath  = framework.require('PETSc.utilities.dataFilesPath', self)
     self.compilers      = framework.require('config.compilers', self)
     self.mpi            = framework.require('config.packages.MPI', self)
+    self.elemental      = framework.require('PETSc.packages.elemental', self)
     self.x              = framework.require('PETSc.packages.X', self)
     self.fortrancpp     = framework.require('PETSc.utilities.fortranCPP', self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)

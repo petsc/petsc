@@ -378,7 +378,10 @@ class Configure(config.base.Configure):
     support it.
     """
     # Test borrowed from Jack Poulson (Elemental)
-    includes = '#include <random>'
+    includes = """
+          #include <random>
+          template<typename T> constexpr T Cubed( T x ) { return x*x*x; }
+          """
     body = """
           std::random_device rd;
           std::mt19937 mt(rd());
