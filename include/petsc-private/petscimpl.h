@@ -193,6 +193,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #define PetscValidIntPointer(h,arg) do {} while (0)
 #define PetscValidScalarPointer(h,arg) do {} while (0)
 #define PetscValidRealPointer(h,arg) do {} while (0)
+#define PetscValidFunction(h,arg) do {} while (0)
 
 #else
 
@@ -242,6 +243,11 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
   do {                                                                  \
     if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg); \
     if (!PetscCheckPointer(h,PETSC_REAL)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscReal: Parameter # %d",arg); \
+  } while (0)
+
+#define PetscValidFunction(f,arg)                                       \
+  do {                                                                  \
+    if (!f) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Function Pointer: Parameter # %d",arg); \
   } while (0)
 
 #endif

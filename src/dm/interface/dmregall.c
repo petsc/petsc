@@ -201,3 +201,32 @@ PetscErrorCode PetscFVRegisterAll()
   ierr = PetscFVRegister(PETSCFVLEASTSQUARES, PetscFVCreate_LeastSquares);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#include <petscproblem.h>     /*I  "petscproblem.h"  I*/
+
+PETSC_EXTERN PetscErrorCode PetscProblemCreate_Basic(PetscProblem);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscProblemRegisterAll"
+/*@C
+  PetscProblemRegisterAll - Registers all of the PetscProblem components in the PetscProblem package.
+
+  Not Collective
+
+  Input parameter:
+. path - The dynamic library path
+
+  Level: advanced
+
+.keywords: PetscProblem, register, all
+.seealso:  PetscProblemRegister(), PetscProblemRegisterDestroy()
+@*/
+PetscErrorCode PetscProblemRegisterAll()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscProblemRegisterAllCalled = PETSC_TRUE;
+
+  ierr = PetscProblemRegister(PETSCPROBLEMBASIC, PetscProblemCreate_Basic);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

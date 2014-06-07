@@ -142,8 +142,7 @@ struct _p_DM {
   /*   I now believe this might not be the right way: see below */
   NullSpaceFunc           nullspaceConstructors[10];
   /* Fields are represented by objects */
-  PetscInt                numFields;
-  PetscFE                *fields;
+  PetscProblem            prob;
   /* Output structures */
   DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
   PetscInt                outputSequenceNum;    /* The current sequence number for output */
