@@ -195,7 +195,7 @@ PetscErrorCode  MatDestroy_CHOLMOD(Mat F)
 
 static PetscErrorCode MatSolve_CHOLMOD(Mat,Vec,Vec);
 
-static const char *const CholmodOrderingMethods[] = {"User","AMD","METIS","NESDIS(default)","Natural","NESDIS(small=20000)","NESDIS(small=4,no constrained)","NESDIS()"};
+/*static const char *const CholmodOrderingMethods[] = {"User","AMD","METIS","NESDIS(default)","Natural","NESDIS(small=20000)","NESDIS(small=4,no constrained)","NESDIS()"};*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorInfo_CHOLMOD"
