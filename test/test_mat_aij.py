@@ -156,31 +156,22 @@ class BaseTestMatAnyAIJ(object):
         if 'sbaij' in A.getType():
             opt = PETSc.Mat.Option.GETROW_UPPERTRIANGULAR
             self.A.setOption(opt, True)
-            ai, aj, av = self.A.getValuesCSR()
-            A = PETSc.Mat()
-            self.A.convert('aij', A)
-            self.A.setOption(opt, False)
         ai, aj, av = A.getValuesCSR()
-        if not ('mpibaij' == self.A.type and
-                self.A.comm.size == 1):
-            B = PETSc.Mat()
-            A.convert('aij', B)
-            bi, bj, bv = B.getValuesCSR()
-            self.assertTrue(N.allclose(ai, bi))
-            self.assertTrue(N.allclose(aj, bj))
-            self.assertTrue(N.allclose(av, bv))
-            B.destroy()
-        if 'crl' not in self.A.getType():
-            C = A.duplicate()
-            C.setValuesCSR(ai, aj, av)
-            C.assemble()
-            ci, cj, cv = C.getValuesCSR()
-            self.assertTrue(N.allclose(ai, ci))
-            self.assertTrue(N.allclose(aj, cj))
-            self.assertTrue(N.allclose(av, cv))
-            eq = A.equal(C)
-            self.assertTrue(eq)
-            C.destroy()
+        rstart, rend = A.getOwnershipRange()
+        try: range = xrange
+        except NameError: pass
+        for row in range(rstart, rend):
+            cols, vals = A.getRow(row)
+            i = row - rstart
+            self.assertTrue(N.allclose(aj[ai[i]:ai[i+1]], cols))
+            self.assertTrue(N.allclose(av[ai[i]:ai[i+1]], vals))
+
+    #def testConvertToAIJ(self):
+    #    self._preallocate()
+    #    self._set_values_ijv()
+    #    A = self.A
+    #    A.assemble()
+    #    A.convert('aij')
 
     def testGetDiagonalBlock(self):
         self._preallocate()
@@ -677,186 +668,179 @@ class TestMatMPIAIJ_B_G45_B5(TestMatMPIAIJ_B_G45):
 class TestMatMPIAIJ_B_G89_B5(TestMatMPIAIJ_B_G89):
     BSIZE = 5
 
+# -- Non-square blocks --
+class BaseTestMatAIJ_B(BaseTestMatAnyAIJ, unittest.TestCase):
+    COMM  = PETSc.COMM_WORLD
+    TYPE  = PETSc.Mat.Type.AIJ
+    GRID  = 0, 0
+    BSIZE = 4, 2
+
+    def _preallocate(self):
+        try:
+            rbs, cbs = self.BSIZE
+        except (TypeError, ValueError):
+            rbs = cbs = self.BSIZE
+        self.A.setPreallocationNNZ([5*rbs, 3*cbs])
+        self._chk_bsizes(self.A, self.BSIZE)
+    def testSetPreallocNNZ(self):pass
+    def testSetPreallocNNZ_2(self):pass
+    def testSetPreallocCSR(self):pass
+    def testSetPreallocCSR_2(self):pass
+    def testSetValues(self):
+        self._preallocate()
+        opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
+        self.A.setOption(opt, True)
+        ai, aj, av = self._set_values()
+        self.A.assemble()
+        self._chk_aij(self.A, ai, aj)
+        opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
+        self.A.setOption(opt, True)
+        ai, aj, av = self._set_values()
+        self.A.assemble()
+        self._chk_aij(self.A, ai, aj)
+    def testSetValuesIJV(self):
+        self._preallocate()
+        opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
+        self.A.setOption(opt, True)
+        ai, aj, av = self._set_values_ijv()
+        self.A.assemble()
+        self._chk_aij(self.A, ai, aj)
+        opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
+        self.A.setOption(opt, True)
+        ai, aj, av = self._set_values_ijv()
+        self.A.assemble()
+        self._chk_aij(self.A, ai, aj)
+    def _chk_aij(self, A, i, j):
+        bs = self.BSIZE or 1
+        ai, aj = A.getRowIJ()
+        if None not in (ai, aj):  ## XXX map and check !!
+            #self.assertTrue(N.all(i==ai))
+            #self.assertTrue(N.all(j==aj))
+            pass
+        ai, aj = A.getColumnIJ()
+        if None not in (ai, aj): ## XXX map and check !!
+            #self.assertTrue(N.all(i==ai))
+            #self.assertTrue(N.all(j==aj))
+            pass
+
+# -- AIJCRL ---------------------
+
+class BaseTestMatAIJCRL(BaseTestMatAIJ, unittest.TestCase):
+    TYPE  = PETSc.Mat.Type.AIJCRL
+
+# -- Seq AIJCRL --
+
+class TestMatSeqAIJCRL(BaseTestMatAIJCRL):
+    COMM = PETSc.COMM_SELF
+    TYPE = PETSc.Mat.Type.SEQAIJCRL
+class TestMatSeqAIJCRL_G23(TestMatSeqAIJCRL):
+    GRID  = 2, 3
+class TestMatSeqAIJCRL_G45(TestMatSeqAIJCRL):
+    GRID  = 4, 5
+class TestMatSeqAIJCRL_G89(TestMatSeqAIJCRL):
+    GRID  = 8, 9
+
+# -- MPI AIJCRL --
+
+class TestMatMPIAIJCRL(BaseTestMatAIJCRL):
+    COMM = PETSc.COMM_WORLD
+    TYPE = PETSc.Mat.Type.MPIAIJCRL
+class TestMatMPIAIJCRL_G23(TestMatMPIAIJCRL):
+    GRID  = 2, 3
+class TestMatMPIAIJCRL_G45(TestMatMPIAIJCRL):
+    GRID  = 4, 5
+class TestMatMPIAIJCRL_G89(TestMatMPIAIJCRL):
+    GRID  = 8, 9
+
+# -- AIJCRL + Block -------------
+
+class BaseTestMatAIJCRL_B(BaseTestMatAIJ_B, unittest.TestCase):
+    TYPE  = PETSc.Mat.Type.AIJCRL
+
+# -- Seq AIJCRL + Block --
+
+class TestMatSeqAIJCRL_B(BaseTestMatAIJCRL_B):
+    COMM = PETSc.COMM_SELF
+    TYPE = PETSc.Mat.Type.SEQAIJCRL
+# bs = 1
+class TestMatSeqAIJCRL_B_G23(TestMatSeqAIJCRL_B):
+    GRID  = 2, 3
+class TestMatSeqAIJCRL_B_G45(TestMatSeqAIJCRL_B):
+    GRID  = 4, 5
+class TestMatSeqAIJCRL_B_G89(TestMatSeqAIJCRL_B):
+    GRID  = 8, 9
+# bs = 2
+class TestMatSeqAIJCRL_B_G23_B2(TestMatSeqAIJCRL_B_G23):
+    BSIZE = 2
+class TestMatSeqAIJCRL_B_G45_B2(TestMatSeqAIJCRL_B_G45):
+    BSIZE = 2
+class TestMatSeqAIJCRL_B_G89_B2(TestMatSeqAIJCRL_B_G89):
+    BSIZE = 2
+# bs = 3
+class TestMatSeqAIJCRL_B_G23_B3(TestMatSeqAIJCRL_B_G23):
+    BSIZE = 3
+class TestMatSeqAIJCRL_B_G45_B3(TestMatSeqAIJCRL_B_G45):
+    BSIZE = 3
+class TestMatSeqAIJCRL_B_G89_B3(TestMatSeqAIJCRL_B_G89):
+    BSIZE = 3
+# bs = 4
+class TestMatSeqAIJCRL_B_G23_B4(TestMatSeqAIJCRL_B_G23):
+    BSIZE = 4
+class TestMatSeqAIJCRL_B_G45_B4(TestMatSeqAIJCRL_B_G45):
+    BSIZE = 4
+class TestMatSeqAIJCRL_B_G89_B4(TestMatSeqAIJCRL_B_G89):
+    BSIZE = 4
+# bs = 5
+class TestMatSeqAIJCRL_B_G23_B5(TestMatSeqAIJCRL_B_G23):
+    BSIZE = 5
+class TestMatSeqAIJCRL_B_G45_B5(TestMatSeqAIJCRL_B_G45):
+    BSIZE = 5
+class TestMatSeqAIJCRL_B_G89_B5(TestMatSeqAIJCRL_B_G89):
+    BSIZE = 5
+
+
+# -- MPI AIJCRL + Block --
+
+class TestMatMPIAIJCRL_B(BaseTestMatAIJCRL_B):
+    COMM = PETSc.COMM_WORLD
+    TYPE = PETSc.Mat.Type.MPIAIJCRL
+# bs = 1
+class TestMatMPIAIJCRL_B_G23(TestMatMPIAIJCRL_B):
+    GRID  = 2, 3
+class TestMatMPIAIJCRL_B_G45(TestMatMPIAIJCRL_B):
+    GRID  = 4, 5
+class TestMatMPIAIJCRL_B_G89(TestMatMPIAIJCRL_B):
+    GRID  = 8, 9
+# bs = 2
+class TestMatMPIAIJCRL_B_G23_B2(TestMatMPIAIJCRL_B_G23):
+    BSIZE = 2
+class TestMatMPIAIJCRL_B_G45_B2(TestMatMPIAIJCRL_B_G45):
+    BSIZE = 2
+class TestMatMPIAIJCRL_B_G89_B2(TestMatMPIAIJCRL_B_G89):
+    BSIZE = 2
+# bs = 3
+class TestMatMPIAIJCRL_B_G23_B3(TestMatMPIAIJCRL_B_G23):
+    BSIZE = 3
+class TestMatMPIAIJCRL_B_G45_B3(TestMatMPIAIJCRL_B_G45):
+    BSIZE = 3
+class TestMatMPIAIJCRL_B_G89_B3(TestMatMPIAIJCRL_B_G89):
+    BSIZE = 3
+# bs = 4
+class TestMatMPIAIJCRL_B_G23_B4(TestMatMPIAIJCRL_B_G23):
+    BSIZE = 4
+class TestMatMPIAIJCRL_B_G45_B4(TestMatMPIAIJCRL_B_G45):
+    BSIZE = 4
+class TestMatMPIAIJCRL_B_G89_B4(TestMatMPIAIJCRL_B_G89):
+    BSIZE = 4
+# bs = 5
+class TestMatMPIAIJCRL_B_G23_B5(TestMatMPIAIJCRL_B_G23):
+    BSIZE = 5
+class TestMatMPIAIJCRL_B_G45_B5(TestMatMPIAIJCRL_B_G45):
+    BSIZE = 5
+class TestMatMPIAIJCRL_B_G89_B5(TestMatMPIAIJCRL_B_G89):
+    BSIZE = 5
+
 # -----
-
-if PETSc.Sys.getVersion() >= (3,2,0):
-    # -- Non-square blocks --
-    class BaseTestMatAIJ_B(BaseTestMatAnyAIJ, unittest.TestCase):
-        COMM  = PETSc.COMM_WORLD
-        TYPE  = PETSc.Mat.Type.AIJ
-        GRID  = 0, 0
-        BSIZE = 4, 2
-
-        def _preallocate(self):
-            try:
-                rbs, cbs = self.BSIZE
-            except (TypeError, ValueError):
-                rbs = cbs = self.BSIZE
-            self.A.setPreallocationNNZ([5*rbs, 3*cbs])
-            self._chk_bsizes(self.A, self.BSIZE)
-        def testSetPreallocNNZ(self):pass
-        def testSetPreallocNNZ_2(self):pass
-        def testSetPreallocCSR(self):pass
-        def testSetPreallocCSR_2(self):pass
-        def testSetValues(self):
-            self._preallocate()
-            opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
-            self.A.setOption(opt, True)
-            ai, aj, av = self._set_values()
-            self.A.assemble()
-            self._chk_aij(self.A, ai, aj)
-            opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
-            self.A.setOption(opt, True)
-            ai, aj, av = self._set_values()
-            self.A.assemble()
-            self._chk_aij(self.A, ai, aj)
-        def testSetValuesIJV(self):
-            self._preallocate()
-            opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
-            self.A.setOption(opt, True)
-            ai, aj, av = self._set_values_ijv()
-            self.A.assemble()
-            self._chk_aij(self.A, ai, aj)
-            opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
-            self.A.setOption(opt, True)
-            ai, aj, av = self._set_values_ijv()
-            self.A.assemble()
-            self._chk_aij(self.A, ai, aj)
-        def _chk_aij(self, A, i, j):
-            bs = self.BSIZE or 1
-            ai, aj = A.getRowIJ()
-            if None not in (ai, aj):  ## XXX map and check !!
-                #self.assertTrue(N.all(i==ai))
-                #self.assertTrue(N.all(j==aj))
-                pass
-            ai, aj = A.getColumnIJ()
-            if None not in (ai, aj): ## XXX map and check !!
-                #self.assertTrue(N.all(i==ai))
-                #self.assertTrue(N.all(j==aj))
-                pass
-
-# -----
-
-
-if PETSc.Sys.getVersion() >= (3,1,0):
-    # -- AIJCRL ---------------------
-
-    class BaseTestMatAIJCRL(BaseTestMatAIJ, unittest.TestCase):
-        TYPE  = PETSc.Mat.Type.AIJCRL
-
-    # -- Seq AIJCRL --
-
-    class TestMatSeqAIJCRL(BaseTestMatAIJCRL):
-        COMM = PETSc.COMM_SELF
-        TYPE = PETSc.Mat.Type.SEQAIJCRL
-    class TestMatSeqAIJCRL_G23(TestMatSeqAIJCRL):
-        GRID  = 2, 3
-    class TestMatSeqAIJCRL_G45(TestMatSeqAIJCRL):
-        GRID  = 4, 5
-    class TestMatSeqAIJCRL_G89(TestMatSeqAIJCRL):
-        GRID  = 8, 9
-
-    # -- MPI AIJCRL --
-
-    class TestMatMPIAIJCRL(BaseTestMatAIJCRL):
-        COMM = PETSc.COMM_WORLD
-        TYPE = PETSc.Mat.Type.MPIAIJCRL
-    class TestMatMPIAIJCRL_G23(TestMatMPIAIJCRL):
-        GRID  = 2, 3
-    class TestMatMPIAIJCRL_G45(TestMatMPIAIJCRL):
-        GRID  = 4, 5
-    class TestMatMPIAIJCRL_G89(TestMatMPIAIJCRL):
-        GRID  = 8, 9
-
-    # -- AIJCRL + Block -------------
-
-    class BaseTestMatAIJCRL_B(BaseTestMatAIJ_B, unittest.TestCase):
-        TYPE  = PETSc.Mat.Type.AIJ
-
-    # -- Seq AIJCRL + Block --
-
-    class TestMatSeqAIJCRL_B(BaseTestMatAIJCRL_B):
-        COMM = PETSc.COMM_SELF
-        TYPE = PETSc.Mat.Type.SEQAIJCRL
-    # bs = 1
-    class TestMatSeqAIJCRL_B_G23(TestMatSeqAIJCRL_B):
-        GRID  = 2, 3
-    class TestMatSeqAIJCRL_B_G45(TestMatSeqAIJCRL_B):
-        GRID  = 4, 5
-    class TestMatSeqAIJCRL_B_G89(TestMatSeqAIJCRL_B):
-        GRID  = 8, 9
-    # bs = 2
-    class TestMatSeqAIJCRL_B_G23_B2(TestMatSeqAIJCRL_B_G23):
-        BSIZE = 2
-    class TestMatSeqAIJCRL_B_G45_B2(TestMatSeqAIJCRL_B_G45):
-        BSIZE = 2
-    class TestMatSeqAIJCRL_B_G89_B2(TestMatSeqAIJCRL_B_G89):
-        BSIZE = 2
-    # bs = 3
-    class TestMatSeqAIJCRL_B_G23_B3(TestMatSeqAIJCRL_B_G23):
-        BSIZE = 3
-    class TestMatSeqAIJCRL_B_G45_B3(TestMatSeqAIJCRL_B_G45):
-        BSIZE = 3
-    class TestMatSeqAIJCRL_B_G89_B3(TestMatSeqAIJCRL_B_G89):
-        BSIZE = 3
-    # bs = 4
-    class TestMatSeqAIJCRL_B_G23_B4(TestMatSeqAIJCRL_B_G23):
-        BSIZE = 4
-    class TestMatSeqAIJCRL_B_G45_B4(TestMatSeqAIJCRL_B_G45):
-        BSIZE = 4
-    class TestMatSeqAIJCRL_B_G89_B4(TestMatSeqAIJCRL_B_G89):
-        BSIZE = 4
-    # bs = 5
-    class TestMatSeqAIJCRL_B_G23_B5(TestMatSeqAIJCRL_B_G23):
-        BSIZE = 5
-    class TestMatSeqAIJCRL_B_G45_B5(TestMatSeqAIJCRL_B_G45):
-        BSIZE = 5
-    class TestMatSeqAIJCRL_B_G89_B5(TestMatSeqAIJCRL_B_G89):
-        BSIZE = 5
-
-
-    # -- MPI AIJCRL + Block --
-
-    class TestMatMPIAIJCRL_B(BaseTestMatAIJCRL_B):
-        COMM = PETSc.COMM_WORLD
-        TYPE = PETSc.Mat.Type.MPIAIJCRL
-    # bs = 1
-    class TestMatMPIAIJCRL_B_G23(TestMatMPIAIJCRL_B):
-        GRID  = 2, 3
-    class TestMatMPIAIJCRL_B_G45(TestMatMPIAIJCRL_B):
-        GRID  = 4, 5
-    class TestMatMPIAIJCRL_B_G89(TestMatMPIAIJCRL_B):
-        GRID  = 8, 9
-    # bs = 2
-    class TestMatMPIAIJCRL_B_G23_B2(TestMatMPIAIJCRL_B_G23):
-        BSIZE = 2
-    class TestMatMPIAIJCRL_B_G45_B2(TestMatMPIAIJCRL_B_G45):
-        BSIZE = 2
-    class TestMatMPIAIJCRL_B_G89_B2(TestMatMPIAIJCRL_B_G89):
-        BSIZE = 2
-    # bs = 3
-    class TestMatMPIAIJCRL_B_G23_B3(TestMatMPIAIJCRL_B_G23):
-        BSIZE = 3
-    class TestMatMPIAIJCRL_B_G45_B3(TestMatMPIAIJCRL_B_G45):
-        BSIZE = 3
-    class TestMatMPIAIJCRL_B_G89_B3(TestMatMPIAIJCRL_B_G89):
-        BSIZE = 3
-    # bs = 4
-    class TestMatMPIAIJCRL_B_G23_B4(TestMatMPIAIJCRL_B_G23):
-        BSIZE = 4
-    class TestMatMPIAIJCRL_B_G45_B4(TestMatMPIAIJCRL_B_G45):
-        BSIZE = 4
-    class TestMatMPIAIJCRL_B_G89_B4(TestMatMPIAIJCRL_B_G89):
-        BSIZE = 4
-    # bs = 5
-    class TestMatMPIAIJCRL_B_G23_B5(TestMatMPIAIJCRL_B_G23):
-        BSIZE = 5
-    class TestMatMPIAIJCRL_B_G45_B5(TestMatMPIAIJCRL_B_G45):
-        BSIZE = 5
-    class TestMatMPIAIJCRL_B_G89_B5(TestMatMPIAIJCRL_B_G89):
-        BSIZE = 5
-
-    # -----
 
 
 
