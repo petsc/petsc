@@ -4,6 +4,8 @@ class KSPType(object):
     RICHARDSON = S_(KSPRICHARDSON)
     CHEBYSHEV  = S_(KSPCHEBYSHEV)
     CG         = S_(KSPCG)
+    GROPPCG    = S_(KSPGROPPCG)
+    PIPECG     = S_(KSPPIPECG)
     CGNE       = S_(KSPCGNE)
     NASH       = S_(KSPNASH)
     STCG       = S_(KSPSTCG)
@@ -17,10 +19,12 @@ class KSPType(object):
     BCGS       = S_(KSPBCGS)
     IBCGS      = S_(KSPIBCGS)
     FBCGS      = S_(KSPFBCGS)
+    FBCGSR     = S_(KSPFBCGSR)
     BCGSL      = S_(KSPBCGSL)
     CGS        = S_(KSPCGS)
     TFQMR      = S_(KSPTFQMR)
     CR         = S_(KSPCR)
+    PIPECR     = S_(KSPPIPECR)
     LSQR       = S_(KSPLSQR)
     PREONLY    = S_(KSPPREONLY)
     QCG        = S_(KSPQCG)
@@ -34,11 +38,13 @@ class KSPType(object):
 
 class KSPNormType(object):
     # native
+    NORM_DEFAULT          = KSP_NORM_DEFAULT
     NORM_NONE             = KSP_NORM_NONE
     NORM_PRECONDITIONED   = KSP_NORM_PRECONDITIONED
     NORM_UNPRECONDITIONED = KSP_NORM_UNPRECONDITIONED
     NORM_NATURAL          = KSP_NORM_NATURAL
     # aliases
+    DEFAULT          = NORM_DEFAULT
     NONE = NO        = NORM_NONE
     PRECONDITIONED   = NORM_PRECONDITIONED
     UNPRECONDITIONED = NORM_UNPRECONDITIONED
@@ -49,6 +55,8 @@ class KSPConvergedReason(object):
     CONVERGED_ITERATING       = KSP_CONVERGED_ITERATING
     ITERATING                 = KSP_CONVERGED_ITERATING
     # converged
+    CONVERGED_RTOL_NORMAL     = KSP_CONVERGED_RTOL_NORMAL
+    CONVERGED_ATOL_NORMAL     = KSP_CONVERGED_ATOL_NORMAL
     CONVERGED_RTOL            = KSP_CONVERGED_RTOL
     CONVERGED_ATOL            = KSP_CONVERGED_ATOL
     CONVERGED_ITS             = KSP_CONVERGED_ITS

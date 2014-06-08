@@ -43,7 +43,7 @@ class PCType(object):
     BICGSTABCUSP = S_(PCBICGSTABCUSP)
     AINVCUSP     = S_(PCAINVCUSP)
     BDDC         = S_(PCBDDC)
-
+    KACZMARZ     = S_(PCKACZMARZ)
 
 class PCSide(object):
     # native
@@ -61,6 +61,17 @@ class PCASMType(object):
     RESTRICT    = PC_ASM_RESTRICT
     INTERPOLATE = PC_ASM_INTERPOLATE
 
+class PCGASMType(object):
+    NONE        = PC_GASM_NONE
+    BASIC       = PC_GASM_BASIC
+    RESTRICT    = PC_GASM_RESTRICT
+    INTERPOLATE = PC_GASM_INTERPOLATE
+
+class PCGAMGType(object):
+    AGG       = S_(PCGAMGAGG)
+    GEO       = S_(PCGAMGGEO)
+    CLASSICAL = S_(PCGAMGCLASSICAL)
+
 class PCCompositeType(object):
     ADDITIVE                 = PC_COMPOSITE_ADDITIVE
     MULTIPLICATIVE           = PC_COMPOSITE_MULTIPLICATIVE
@@ -70,8 +81,10 @@ class PCCompositeType(object):
 
 class PCFieldSplitSchurPreType(object):
     SELF                     = PC_FIELDSPLIT_SCHUR_PRE_SELF
+    SELFP                    = PC_FIELDSPLIT_SCHUR_PRE_SELFP
     A11                      = PC_FIELDSPLIT_SCHUR_PRE_A11
     USER                     = PC_FIELDSPLIT_SCHUR_PRE_USER
+    FULL                     = PC_FIELDSPLIT_SCHUR_PRE_FULL
 
 class PCFieldSplitSchurFactType(object):
     DIAG                     = PC_FIELDSPLIT_SCHUR_FACT_DIAG
@@ -87,6 +100,8 @@ cdef class PC(Object):
     Side = PCSide
 
     ASMType       = PCASMType
+    GASMType      = PCGASMType
+    GAMGType      = PCGAMGType
     CompositeType = PCCompositeType
     SchurFactType = PCFieldSplitSchurFactType
     SchurPreType  = PCFieldSplitSchurPreType
@@ -242,6 +257,31 @@ cdef class PC(Object):
         CHKERR( PCASMGetSubKSP(self.pc, &n, NULL, &p) )
         return [ref_KSP(p[i]) for i from 0 <= i <n]
 
+    # --- GASM ---
+
+    def setGASMType(self, gasmtype):
+        cdef PetscPCGASMType cval = gasmtype
+        CHKERR( PCGASMSetType(self.pc, cval) )
+
+    def setGASMOverlap(self, overlap):
+        cdef PetscInt ival = asInt(overlap)
+        CHKERR( PCGASMSetOverlap(self.pc, ival) )
+
+    # --- GAMG ---
+
+    def setGAMGType(self, gamgtype):
+        cdef PetscPCGAMGType cval = NULL
+        gamgtype = str2bytes(gamgtype, &cval)
+        CHKERR( PCGAMGSetType(self.pc, cval) )
+
+    def setGAMGLevels(self, levels):
+        cdef PetscInt ival = asInt(levels)
+        CHKERR( PCGAMGSetNlevels(self.pc, ival) )
+
+    def setGAMGSmooths(self, smooths):
+        cdef PetscInt ival = asInt(smooths)
+        CHKERR( PCGAMGSetNSmooths(self.pc, ival) )
+
     # --- Factor ---
 
     def setFactorSolverPackage(self, solver):
@@ -354,6 +394,8 @@ cdef class PC(Object):
 del PCType
 del PCSide
 del PCASMType
+del PCGASMType
+del PCGAMGType
 del PCCompositeType
 del PCFieldSplitSchurPreType
 del PCFieldSplitSchurFactType

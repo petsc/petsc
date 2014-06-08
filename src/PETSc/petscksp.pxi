@@ -4,6 +4,8 @@ cdef extern from * nogil:
     PetscKSPType KSPRICHARDSON
     PetscKSPType KSPCHEBYSHEV
     PetscKSPType KSPCG
+    PetscKSPType   KSPGROPPCG
+    PetscKSPType   KSPPIPECG
     PetscKSPType   KSPCGNE
     PetscKSPType   KSPNASH
     PetscKSPType   KSPSTCG
@@ -17,10 +19,12 @@ cdef extern from * nogil:
     PetscKSPType KSPBCGS
     PetscKSPType   KSPIBCGS
     PetscKSPType   KSPFBCGS
+    PetscKSPType   KSPFBCGSR
     PetscKSPType   KSPBCGSL
     PetscKSPType KSPCGS
     PetscKSPType KSPTFQMR
     PetscKSPType KSPCR
+    PetscKSPType KSPPIPECR
     PetscKSPType KSPLSQR
     PetscKSPType KSPPREONLY
     PetscKSPType KSPQCG
@@ -33,6 +37,7 @@ cdef extern from * nogil:
     PetscKSPType KSPSPECEST
 
     ctypedef enum PetscKSPNormType "KSPNormType":
+        KSP_NORM_DEFAULT
         KSP_NORM_NONE
         KSP_NORM_PRECONDITIONED
         KSP_NORM_UNPRECONDITIONED
@@ -42,6 +47,8 @@ cdef extern from * nogil:
         # iterating
         KSP_CONVERGED_ITERATING
         # converged
+        KSP_CONVERGED_RTOL_NORMAL
+        KSP_CONVERGED_ATOL_NORMAL
         KSP_CONVERGED_RTOL
         KSP_CONVERGED_ATOL
         KSP_CONVERGED_ITS

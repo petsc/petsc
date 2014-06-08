@@ -4,6 +4,7 @@ class SNESType(object):
     NEWTONLS     = S_(SNESNEWTONLS)
     NEWTONTR     = S_(SNESNEWTONTR)
     PYTHON       = S_(SNESPYTHON)
+    TEST         = S_(SNESTEST)
     NRICHARDSON  = S_(SNESNRICHARDSON)
     KSPONLY      = S_(SNESKSPONLY)
     VINEWTONRSLS = S_(SNESVINEWTONRSLS)
@@ -18,6 +19,7 @@ class SNESType(object):
     NASM         = S_(SNESNASM)
     ANDERSON     = S_(SNESANDERSON)
     ASPIN        = S_(SNESASPIN)
+    COMPOSITE    = S_(SNESCOMPOSITE)
 
 class SNESNormSchedule(object):
     # native

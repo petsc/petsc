@@ -17,6 +17,12 @@ cdef extern from * nogil:
     PetscMatType     MATAIJCUSP
     PetscMatType       MATSEQAIJCUSP
     PetscMatType       MATMPIAIJCUSP
+    PetscMatType     MATAIJCUSPARSE
+    PetscMatType       MATSEQAIJCUSPARSE
+    PetscMatType       MATMPIAIJCUSPARSE
+    PetscMatType     MATAIJVIENNACL
+    PetscMatType       MATSEQAIJVIENNACL
+    PetscMatType       MATMPIAIJVIENNACL
     PetscMatType     MATAIJPERM
     PetscMatType       MATSEQAIJPERM
     PetscMatType       MATMPIAIJPERM
@@ -24,6 +30,7 @@ cdef extern from * nogil:
     PetscMatType MATDENSE
     PetscMatType   MATSEQDENSE
     PetscMatType   MATMPIDENSE
+    PetscMatType MATELEMENTAL
     PetscMatType MATBAIJ
     PetscMatType   MATSEQBAIJ
     PetscMatType   MATMPIBAIJ

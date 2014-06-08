@@ -58,8 +58,8 @@ cdef extern from * nogil:
 cdef extern from * nogil:
 
     ctypedef enum PetscGLMapType "ISGlobalToLocalMappingType":
-        IS_GTOLM_MASK
-        IS_GTOLM_DROP
+        PETSC_IS_GTOLM_MASK "IS_GTOLM_MASK"
+        PETSC_IS_GTOLM_DROP "IS_GTOLM_DROP"
 
     int ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscCopyMode,PetscLGMap*)
     int ISLocalToGlobalMappingCreateIS(PetscIS,PetscLGMap*)

@@ -42,8 +42,10 @@ cdef extern from * nogil:
     PetscPCType PCBICGSTABCUSP
     PetscPCType PCAINVCUSP
     PetscPCType PCBDDC
+    PetscPCType PCKACZMARZ
 
     ctypedef enum PetscPCSide "PCSide":
+        PC_SIDE_DEFAULT
         PC_LEFT
         PC_RIGHT
         PC_SYMMETRIC
@@ -54,6 +56,17 @@ cdef extern from * nogil:
         PC_ASM_INTERPOLATE
         PC_ASM_NONE
 
+    ctypedef enum PetscPCGASMType "PCGASMType":
+        PC_GASM_BASIC
+        PC_GASM_RESTRICT
+        PC_GASM_INTERPOLATE
+        PC_GASM_NONE
+
+    ctypedef char* PetscPCGAMGType "const char*"
+    PetscPCGAMGType PCGAMGAGG
+    PetscPCGAMGType PCGAMGGEO
+    PetscPCGAMGType PCGAMGCLASSICAL
+
     ctypedef enum PetscPCCompositeType "PCCompositeType":
         PC_COMPOSITE_ADDITIVE
         PC_COMPOSITE_MULTIPLICATIVE
@@ -63,8 +76,10 @@ cdef extern from * nogil:
 
     ctypedef enum PetscPCFieldSplitSchurPreType "PCFieldSplitSchurPreType":
         PC_FIELDSPLIT_SCHUR_PRE_SELF
+        PC_FIELDSPLIT_SCHUR_PRE_SELFP
         PC_FIELDSPLIT_SCHUR_PRE_A11
         PC_FIELDSPLIT_SCHUR_PRE_USER
+        PC_FIELDSPLIT_SCHUR_PRE_FULL
 
     ctypedef enum PetscPCFieldSplitSchurFactType "PCFieldSplitSchurFactType":
         PC_FIELDSPLIT_SCHUR_FACT_DIAG
@@ -118,6 +133,13 @@ cdef extern from * nogil:
     int PCASMSetLocalSubdomains(PetscPC,PetscInt,PetscIS[],PetscIS[])
     int PCASMSetTotalSubdomains(PetscPC,PetscInt,PetscIS[],PetscIS[])
     int PCASMGetSubKSP(PetscPC,PetscInt*,PetscInt*,PetscKSP*[])
+
+    int PCGASMSetType(PetscPC,PetscPCGASMType)
+    int PCGASMSetOverlap(PetscPC,PetscInt)
+
+    int PCGAMGSetType(PetscPC,PetscPCGAMGType)
+    int PCGAMGSetNlevels(PetscPC,PetscInt)
+    int PCGAMGSetNSmooths(PetscPC,PetscInt)
 
     int PCFactorGetMatrix(PetscPC,PetscMat*)
     int PCFactorSetZeroPivot(PetscPC,PetscReal)

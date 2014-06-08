@@ -19,6 +19,7 @@ cdef extern from * nogil:
     PetscSNESType SNESNASM
     PetscSNESType SNESANDERSON
     PetscSNESType SNESASPIN
+    PetscSNESType SNESCOMPOSITE
 
     ctypedef enum PetscSNESNormSchedule "SNESNormSchedule":
       SNES_NORM_DEFAULT
