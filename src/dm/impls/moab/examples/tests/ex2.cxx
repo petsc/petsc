@@ -23,7 +23,7 @@ typedef struct {
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscErrorCode ierr;
-  PetscBool      flg,is_user_fields;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   options->debug             = PETSC_FALSE;
@@ -35,8 +35,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interlace         = PETSC_FALSE;
   options->input_file[0]     = '\0';
   ierr = PetscStrcpy(options->output_file,"ex2.h5m");CHKERRQ(ierr);
-
-  //ierr = PetscOptionsHasName("", "-fields", is_user_fields);
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMMOAB");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-debug", "Enable debug messages", "ex2.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
