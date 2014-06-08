@@ -1646,7 +1646,8 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   ierr = VecGetOwnershipRange(cv, &startC, NULL);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(cglobalSection, &m);CHKERRQ(ierr);
   ierr = PetscMalloc2(cTotDim,&cellCIndices,fTotDim,&cellFIndices);CHKERRQ(ierr);
-  ierr = PetscMalloc2(m,&cindices,m,&findices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&cindices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&findices);CHKERRQ(ierr);
   for (d = 0; d < m; ++d) cindices[d] = findices[d] = -1;
   for (c = cStart; c < cEnd; ++c) {
     ierr = DMPlexMatGetClosureIndicesRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, c, cellCIndices, cellFIndices);CHKERRQ(ierr);
