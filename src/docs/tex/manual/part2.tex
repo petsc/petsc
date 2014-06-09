@@ -4366,7 +4366,7 @@ To solve an ODE or DAE one uses:
     \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat,Mat,MatStructure*,void*),void *jacP);
   \end{tabbing}
   The arguments for the function \trl{fjac()}
-  are the timestep contex, current time, input state $u$, matrix $A$, preconditioning matrix
+  are the timestep context, current time, input state $u$, matrix $A$, preconditioning matrix
   $B$, flag describing structure of preconditioning matrix (see the
   discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
   details), and the (optional) user-provided context \trl{jacP}.
@@ -4534,6 +4534,31 @@ where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$
 
 \subsection{Error control via variable time-stepping}
 
+\subsection{Handling of discontinuities}
+
+For problems that involve discontinuous right hand sides, one can set an ``event'' function 
+$ g(t,u) $ for PETSc to detect and locate the times of discontinuities (zeros of $g(t,u)$). Events can be defined through the
+event monitoring routine
+\begin{tabbing}
+     TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate, \\
+     ~~PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void* eventP), \\
+     ~~PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void* eventP),void *eventP);
+\end{tabbing}
+Here, \trl{nevents} denotes the number of events, \trl{direction} sets the type of zero crossing to be detected for 
+an event (+1 for positive zero-crossing, -1 for negative zero-crossing, and 0 for both), \trl{terminate} conveys whether 
+the time-stepping should continue or halt when an event is located, \trl{eventmonitor} is a user-
+defined routine that specifies the event description, \trl{postevent} is an optional user-defined routine to take
+specific actions following an event.
+
+The arguments to \trl{eventmonitor()} are the timestep context, current time, input state $u$, array of event function
+value, and the (optional) user-provided context \trl{eventP}. 
+
+The arguments to \trl{posteventmonitor()} routine are
+the timestep context, number of events occured, indices of events occured, current time, input state $u$, and the (optional)
+user-provided context \trl{eventP}. 
+
+The event monitoring functionality is only available with PETSc's implicit time-stepping solvers TSTHETA, TSARKIMEX, and TSROSW.
+
 \subsection{Debugging ODE solvers}
 
 \subsection{Using Sundials from PETSc}
@@ -4597,8 +4622,7 @@ sets the number of vectors in the Krylov subpspace used by GMRES.
 This may be set in the options
 database with \trl{-ts_sundials_gmres_restart} \trl{restart}. \findex{-ts_sundials_gmres_restart}
 
-
-\chapter{Solving Steady-State Problems with Pseudo-Timestepping}
+ \chapter{Solving Steady-State Problems with Pseudo-Timestepping}
 
 \vspace{.2cm}
 
