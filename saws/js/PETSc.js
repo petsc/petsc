@@ -49,11 +49,10 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
 	        //jQuery("#"+fullkey).append("<b>"+ key +"<b><br>");//do not display "PETSc" nor "Options"
             }
 
-            var save = "";//saved span containing the description because although the data is fetched: "description, -option, value" we wish to display it: "-option, value, description"
+            var save = "";//saved html element containing the description because although the data is fetched: "description, -option, value" we wish to display it: "-option, value, description"
+            var manualSave = ""; //saved manual text
 
             jQuery.each(sub[key].variables, function(vKey, vValue) {//for each variable...
-                if(vKey.indexOf("man") != -1)//do not display manual
-                    return;
 
                 if (vKey[0] != '_' || vKey[1] != '_' ) {//neither the first nor second character are underscores
                     SAWs.tab(fullkey,tab+1);
@@ -61,6 +60,11 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                         $("#"+fullkey).append(vKey + ":&nbsp;");
                     }
                     for(j=0;j<sub[key].variables[vKey].data.length;j++){//vKey tells us a lot of information on what the data is
+
+                        if(vKey.indexOf("man") != -1) {//do not display manual, but record the text
+                            manualSave = sub[key].variables[vKey].data[j];
+                            continue;
+                        }
 
                         if(vKey.indexOf("title") != -1) {//display title in center
                             $("#"+fullkey).append("<center>"+"<span style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</span>"+"</center>");
@@ -77,7 +81,7 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                                 if(sub[key].variables[vKey].mtype != "SAWs_WRITE") {
                                     if(save != "")
                                         $("#"+fullkey).append(save+"<br>");
-                                    save = "<span style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</span>";//can't be changed
+                                    save = "<a style=\"font-family: Courier\" href=\"http://www.google.com\" title=\"" + manualSave + "\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</a>";//can't be changed
 //                                    alert(save);
                                     if(vKey.indexOf("prefix") != -1) {//data of prefix so use immediately
                                         $("#"+fullkey).append(save+"<br>");
@@ -127,6 +131,12 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                     }
                 }
             });
+
+            if(save != "") {//to avoid losing a description at the end of the page
+                $("#"+fullkey).append(save+"<br>");
+                save = "";
+            }
+
             if(typeof sub[key].directories != 'undefined'){
                 PETSc.displayDirectoryRecursive(sub[key].directories,divEntry,tab+1,fullkey);
              }
