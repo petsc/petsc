@@ -1566,7 +1566,7 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat In, void *user)
 #define __FUNCT__ "DMPlexComputeInjectorFEM"
 PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *user)
 {
-  PetscProblem   prob;
+  PetscDS        prob;
   PetscFE       *feRef;
   Vec            fv, cv;
   IS             fis, cis;
@@ -1583,26 +1583,26 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   ierr = DMGetDefaultGlobalSection(dmc, &cglobalSection);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(fsection, &Nf);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dmc, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMGetProblem(dmc, &prob);CHKERRQ(ierr);
+  ierr = DMGetDS(dmc, &prob);CHKERRQ(ierr);
   ierr = PetscMalloc1(Nf,&feRef);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
     PetscFE  fe;
     PetscInt fNb, Nc;
 
-    ierr = PetscProblemGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
     ierr = PetscFERefine(fe, &feRef[f]);CHKERRQ(ierr);
     ierr = PetscFEGetDimension(feRef[f], &fNb);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
     fTotDim += fNb*Nc;
   }
-  ierr = PetscProblemGetTotalDimension(prob, &cTotDim);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &cTotDim);CHKERRQ(ierr);
   ierr = PetscMalloc1(cTotDim,&cmap);CHKERRQ(ierr);
   for (field = 0, offsetC = 0, offsetF = 0; field < Nf; ++field) {
     PetscFE        feC;
     PetscDualSpace QF, QC;
     PetscInt       NcF, NcC, fpdim, cpdim;
 
-    ierr = PetscProblemGetDiscretization(prob, field, (PetscObject *) &feC);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &feC);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents(feC, &NcC);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents(feRef[field], &NcF);CHKERRQ(ierr);
     if (NcF != NcC) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components in fine space field %d does not match coarse field %d", NcF, NcC);
