@@ -201,14 +201,14 @@ PetscErrorCode PetscFVRegisterAll()
   ierr = PetscFVRegister(PETSCFVLEASTSQUARES, PetscFVCreate_LeastSquares);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#include <petscproblem.h>     /*I  "petscproblem.h"  I*/
+#include <petscds.h>     /*I  "petscds.h"  I*/
 
-PETSC_EXTERN PetscErrorCode PetscProblemCreate_Basic(PetscProblem);
+PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS);
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscProblemRegisterAll"
+#define __FUNCT__ "PetscDSRegisterAll"
 /*@C
-  PetscProblemRegisterAll - Registers all of the PetscProblem components in the PetscProblem package.
+  PetscDSRegisterAll - Registers all of the PetscDS components in the PetscDS package.
 
   Not Collective
 
@@ -217,16 +217,16 @@ PETSC_EXTERN PetscErrorCode PetscProblemCreate_Basic(PetscProblem);
 
   Level: advanced
 
-.keywords: PetscProblem, register, all
-.seealso:  PetscProblemRegister(), PetscProblemRegisterDestroy()
+.keywords: PetscDS, register, all
+.seealso:  PetscDSRegister(), PetscDSRegisterDestroy()
 @*/
-PetscErrorCode PetscProblemRegisterAll()
+PetscErrorCode PetscDSRegisterAll()
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscProblemRegisterAllCalled = PETSC_TRUE;
+  PetscDSRegisterAllCalled = PETSC_TRUE;
 
-  ierr = PetscProblemRegister(PETSCPROBLEMBASIC, PetscProblemCreate_Basic);CHKERRQ(ierr);
+  ierr = PetscDSRegister(PETSCDSBASIC, PetscDSCreate_Basic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

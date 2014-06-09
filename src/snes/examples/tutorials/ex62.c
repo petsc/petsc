@@ -47,7 +47,7 @@ For tensor product meshes, see SNES ex67, ex72
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
-#include <petscproblem.h>
+#include <petscds.h>
 
 PetscInt spatialDim = 0;
 
@@ -327,16 +327,16 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #define __FUNCT__ "SetupProblem"
 PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
-  PetscProblem   prob;
+  PetscDS        prob;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetProblem(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscProblemSetResidual(prob, 0, f0_u, f1_u);CHKERRQ(ierr);
-  ierr = PetscProblemSetResidual(prob, 1, f0_p, f1_p);CHKERRQ(ierr);
-  ierr = PetscProblemSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  g3_uu);CHKERRQ(ierr);
-  ierr = PetscProblemSetJacobian(prob, 0, 1, NULL, NULL,  g2_up, NULL);CHKERRQ(ierr);
-  ierr = PetscProblemSetJacobian(prob, 1, 0, NULL, g1_pu, NULL,  NULL);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u);CHKERRQ(ierr);
+  ierr = PetscDSSetResidual(prob, 1, f0_p, f1_p);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL,  NULL,  g3_uu);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(prob, 0, 1, NULL, NULL,  g2_up, NULL);CHKERRQ(ierr);
+  ierr = PetscDSSetJacobian(prob, 1, 0, NULL, g1_pu, NULL,  NULL);CHKERRQ(ierr);
   switch (user->dim) {
   case 2:
     user->exactFuncs[0] = quadratic_u_2d;
@@ -361,7 +361,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   const PetscInt id    = 1;
   PetscFE        fe[2];
   PetscSpace     P;
-  PetscProblem   prob;
+  PetscDS        prob;
   PetscInt       order;
   PetscErrorCode ierr;
 
@@ -375,9 +375,9 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */
   while (cdm) {
-    ierr = DMGetProblem(cdm, &prob);CHKERRQ(ierr);
-    ierr = PetscProblemSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
-    ierr = PetscProblemSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
+    ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
     ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
     ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);

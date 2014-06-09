@@ -6,7 +6,7 @@
 #include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 #include <petscbt.h>
 #include <petscsf.h>
-#include <petscproblem.h>
+#include <petscds.h>
 #include <petscfe.h>
 
 /*
@@ -1220,7 +1220,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 #define __FUNCT__ "DMDAProjectFunctionLocal"
 PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
-  PetscProblem    prob;
+  PetscDS    prob;
   PetscFE         fe;
   PetscDualSpace  sp;
   PetscQuadrature q;
@@ -1231,9 +1231,9 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal []
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetProblem(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscProblemGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = PetscProblemGetDiscretization(prob, 0, (PetscObject *) &fe);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(prob, 0, (PetscObject *) &fe);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
@@ -1254,7 +1254,7 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal []
     for (f = 0, v = 0; f < numFields; ++f) {
       void * const ctx = ctxs ? ctxs[f] : NULL;
 
-      ierr = PetscProblemGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &numComp);CHKERRQ(ierr);
       ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(sp, &spDim);CHKERRQ(ierr);
@@ -1324,7 +1324,7 @@ PetscErrorCode DMDAProjectFunction(DM dm, void (**funcs)(const PetscReal [], Pet
 PetscErrorCode DMDAComputeL2Diff(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   const PetscInt  debug = 0;
-  PetscProblem    prob;
+  PetscDS    prob;
   PetscFE         fe;
   PetscQuadrature quad;
   PetscSection    section;
@@ -1337,9 +1337,9 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, void (**funcs)(const PetscReal [], Petsc
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dm, &dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMGetProblem(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscProblemGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
-  ierr = PetscProblemGetDiscretization(prob, 0, (PetscObject *) &fe);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(prob, 0, (PetscObject *) &fe);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
@@ -1363,7 +1363,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, void (**funcs)(const PetscReal [], Petsc
       PetscReal       *basis;
       PetscInt         numQuadPoints, numBasisFuncs, numBasisComps, q, d, e, fc, f;
 
-      ierr = PetscProblemGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, &quadWeights);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(fe, &numBasisFuncs);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &numBasisComps);CHKERRQ(ierr);
@@ -1428,7 +1428,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, void (**funcs)(const PetscReal [], Petsc
 PetscErrorCode DMDAComputeL2GradientDiff(DM dm, void (**funcs)(const PetscReal [], const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
   const PetscInt  debug = 0;
-  PetscProblem    prob;
+  PetscDS    prob;
   PetscFE         fe;
   PetscQuadrature quad;
   PetscSection    section;
@@ -1441,9 +1441,9 @@ PetscErrorCode DMDAComputeL2GradientDiff(DM dm, void (**funcs)(const PetscReal [
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dm, &dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMGetProblem(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscProblemGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
-  ierr = PetscProblemGetDiscretization(prob, 0, (PetscObject *) &fe);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(prob, 0, (PetscObject *) &fe);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
@@ -1467,7 +1467,7 @@ PetscErrorCode DMDAComputeL2GradientDiff(DM dm, void (**funcs)(const PetscReal [
       PetscReal       *basisDer;
       PetscInt         Nq, Nb, Nc, q, d, e, fc, f, g;
 
-      ierr = PetscProblemGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);

@@ -252,44 +252,44 @@ PetscErrorCode PetscFVInitializePackage(void)
   ierr = PetscRegisterFinalize(PetscFVFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#include <petscproblem.h>
+#include <petscds.h>
 
-static PetscBool PetscProblemPackageInitialized = PETSC_FALSE;
+static PetscBool PetscDSPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
-#define __FUNCT__ "PetscProblemFinalizePackage"
+#define __FUNCT__ "PetscDSFinalizePackage"
 /*@C
-  PetscProblemFinalizePackage - This function finalizes everything in the PetscProblem package. It is called
+  PetscDSFinalizePackage - This function finalizes everything in the PetscDS package. It is called
   from PetscFinalize().
 
   Level: developer
 
-.keywords: PetscProblem, initialize, package
+.keywords: PetscDS, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PetscProblemFinalizePackage(void)
+PetscErrorCode PetscDSFinalizePackage(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscProblemList);CHKERRQ(ierr);
-  PetscProblemPackageInitialized = PETSC_FALSE;
-  PetscProblemRegisterAllCalled  = PETSC_FALSE;
+  ierr = PetscFunctionListDestroy(&PetscDSList);CHKERRQ(ierr);
+  PetscDSPackageInitialized = PETSC_FALSE;
+  PetscDSRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscProblemInitializePackage"
+#define __FUNCT__ "PetscDSInitializePackage"
 /*@C
-  PetscProblemInitializePackage - This function initializes everything in the Problem package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscProblemCreate()
+  PetscDSInitializePackage - This function initializes everything in the DS package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscDSCreate()
   when using static libraries.
 
   Level: developer
 
-.keywords: PetscProblem, initialize, package
+.keywords: PetscDS, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PetscProblemInitializePackage(void)
+PetscErrorCode PetscDSInitializePackage(void)
 {
   char           logList[256];
   char          *className;
@@ -297,28 +297,28 @@ PetscErrorCode PetscProblemInitializePackage(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PetscProblemPackageInitialized) PetscFunctionReturn(0);
-  PetscProblemPackageInitialized = PETSC_TRUE;
+  if (PetscDSPackageInitialized) PetscFunctionReturn(0);
+  PetscDSPackageInitialized = PETSC_TRUE;
 
   /* Register Classes */
-  ierr = PetscClassIdRegister("Problem", &PETSCPROBLEM_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Discrete System", &PETSCDS_CLASSID);CHKERRQ(ierr);
 
   /* Register Constructors */
-  ierr = PetscProblemRegisterAll();CHKERRQ(ierr);
+  ierr = PetscDSRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "problem", &className);CHKERRQ(ierr);
-    if (className) {ierr = PetscInfoDeactivateClass(PETSCPROBLEM_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrstr(logList, "ds", &className);CHKERRQ(ierr);
+    if (className) {ierr = PetscInfoDeactivateClass(PETSCDS_CLASSID);CHKERRQ(ierr);}
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "problem", &className);CHKERRQ(ierr);
-    if (className) {ierr = PetscLogEventDeactivateClass(PETSCPROBLEM_CLASSID);CHKERRQ(ierr);}
+    ierr = PetscStrstr(logList, "ds", &className);CHKERRQ(ierr);
+    if (className) {ierr = PetscLogEventDeactivateClass(PETSCDS_CLASSID);CHKERRQ(ierr);}
   }
-  ierr = PetscRegisterFinalize(PetscProblemFinalizePackage);CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(PetscDSFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

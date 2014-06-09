@@ -6,7 +6,7 @@ multilevel nonlienar solvers.\n\n\n";
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
-#include <petscproblem.h>
+#include <petscds.h>
 #include <petscviewerhdf5.h>
 
 PetscInt spatialDim = 0;
@@ -386,38 +386,38 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #define __FUNCT__ "SetupProblem"
 PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
-  PetscProblem   prob;
+  PetscDS        prob;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetProblem(dm, &prob);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   switch (user->variableCoefficient) {
   case COEFF_NONE:
-    ierr = PetscProblemSetResidual(prob, 0, f0_u, f1_u);CHKERRQ(ierr);
-    ierr = PetscProblemSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(prob, 0, f0_u, f1_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_uu);CHKERRQ(ierr);
     break;
   case COEFF_ANALYTIC:
-    ierr = PetscProblemSetResidual(prob, 0, f0_analytic_u, f1_analytic_u);CHKERRQ(ierr);
-    ierr = PetscProblemSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_analytic_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(prob, 0, f0_analytic_u, f1_analytic_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_analytic_uu);CHKERRQ(ierr);
     break;
   case COEFF_FIELD:
-    ierr = PetscProblemSetResidual(prob, 0, f0_analytic_u, f1_field_u);CHKERRQ(ierr);
-    ierr = PetscProblemSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_field_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(prob, 0, f0_analytic_u, f1_field_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_field_uu);CHKERRQ(ierr);
     break;
   case COEFF_NONLINEAR:
-    ierr = PetscProblemSetResidual(prob, 0, f0_analytic_nonlinear_u, f1_analytic_nonlinear_u);CHKERRQ(ierr);
-    ierr = PetscProblemSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_analytic_nonlinear_uu);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(prob, 0, f0_analytic_nonlinear_u, f1_analytic_nonlinear_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, g3_analytic_nonlinear_uu);CHKERRQ(ierr);
     break;
   default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid variable coefficient type %d", user->variableCoefficient);
   }
   switch (user->dim) {
   case 2:
     user->exactFuncs[0] = quadratic_u_2d;
-    if (user->bcType == NEUMANN) {ierr = PetscProblemSetBdResidual(prob, 0, f0_bd_u, f1_bd_zero);CHKERRQ(ierr);}
+    if (user->bcType == NEUMANN) {ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u, f1_bd_zero);CHKERRQ(ierr);}
     break;
   case 3:
     user->exactFuncs[0] = quadratic_u_3d;
-    if (user->bcType == NEUMANN) {ierr = PetscProblemSetBdResidual(prob, 0, f0_bd_u, f1_bd_zero);CHKERRQ(ierr);}
+    if (user->bcType == NEUMANN) {ierr = PetscDSSetBdResidual(prob, 0, f0_bd_u, f1_bd_zero);CHKERRQ(ierr);}
     break;
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
@@ -451,7 +451,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE        feAux = NULL;
   PetscFE        feBd  = NULL;
   PetscFE        fe;
-  PetscProblem   prob;
+  PetscDS        prob;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -471,17 +471,17 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   }
   /* Set discretization and boundary conditions for each mesh */
   while (cdm) {
-    ierr = DMGetProblem(cdm, &prob);CHKERRQ(ierr);
-    ierr = PetscProblemSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
-    ierr = PetscProblemSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
+    ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe);CHKERRQ(ierr);
+    ierr = PetscDSSetBdDiscretization(prob, 0, (PetscObject) feBd);CHKERRQ(ierr);
     if (feAux) {
-      DM           dmAux;
-      PetscProblem probAux;
+      DM      dmAux;
+      PetscDS probAux;
 
       ierr = DMClone(cdm, &dmAux);CHKERRQ(ierr);
       ierr = DMPlexCopyCoordinates(cdm, dmAux);CHKERRQ(ierr);
-      ierr = DMGetProblem(dmAux, &probAux);CHKERRQ(ierr);
-      ierr = PetscProblemSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
+      ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
+      ierr = PetscDSSetDiscretization(probAux, 0, (PetscObject) feAux);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
       ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);
       ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
