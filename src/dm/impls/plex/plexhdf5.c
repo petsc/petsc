@@ -140,6 +140,7 @@ PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
       ierr = DMPlexGetFieldType_Internal(dm, section, f, &pStart, &pEnd, &ft);CHKERRQ(ierr);
       fgroup = (ft == PETSC_VTK_POINT_VECTOR_FIELD) || (ft == PETSC_VTK_POINT_FIELD) ? "/vertex_fields" : "/cell_fields";
       ierr = PetscSectionGetFieldName(section, f, &fname);CHKERRQ(ierr);
+      if (!fname) continue;
       ierr = PetscViewerHDF5PushGroup(viewer, fgroup);CHKERRQ(ierr);
       ierr = GetField_Static(dmBC, section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) subv, fname);CHKERRQ(ierr);
@@ -441,9 +442,9 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
     ierr = PetscSectionGetDof(cSection, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(cSection, v, &off);CHKERRQ(ierr);
     if (L && dof == 2) {
-      ncoords[coordSize++] = cos(2.0*PETSC_PI*coords[off+0]/L[0]);
+      ncoords[coordSize++] = -cos(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
       ncoords[coordSize++] = coords[off+1];
-      ncoords[coordSize++] = sin(2.0*PETSC_PI*coords[off+0]/L[0]);
+      ncoords[coordSize++] = sin(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
     } else {
       for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d];
     }

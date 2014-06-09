@@ -7,5 +7,8 @@
       type ISColoring
         PetscFortranAddr:: v
       end type ISColoring
+      type PetscSection
+        PetscFortranAddr:: v
+      end type PetscSection
 #endif
 #endif

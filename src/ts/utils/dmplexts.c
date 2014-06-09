@@ -64,6 +64,21 @@ static PetscErrorCode DMPlexTSGetContext(DM dm, DMTS dmts, DMTS_Plex **dmplexts)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexTSGetGeometry"
+/*@
+  DMPlexTSGetGeometry - Return precomputed geometric data
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameters:
++ facegeom - The values precomputed from face geometry
+. cellgeom - The values precomputed from cell geometry
+- minRadius - The minimum radius over the mesh of an inscribed sphere in a cell
+
+  Level: developer
+
+.seealso: DMPlexTSSetRHSFunctionLocal()
+@*/
 PetscErrorCode DMPlexTSGetGeometry(DM dm, Vec *facegeom, Vec *cellgeom, PetscReal *minRadius)
 {
   DMTS           dmts;

@@ -1,5 +1,6 @@
 
 #include <../src/dm/impls/composite/packimpl.h>       /*I  "petscdmcomposite.h"  I*/
+#include <petscds.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCompositeSetCoupling"
@@ -891,17 +892,22 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
   /* loop over packed objects, handling one at at time */
   while (next) {
     ierr = ISCreateStride(PetscObjectComm((PetscObject)dm),next->n,next->grstart,1,&(*is)[cnt]);CHKERRQ(ierr);
-    if (dm->fields) {
+    if (dm->prob) {
       MatNullSpace space;
       Mat          pmat;
+      PetscObject  disc;
+      PetscInt     Nf;
 
-      if (cnt >= dm->numFields) continue;
-      ierr = PetscObjectQuery((PetscObject) dm->fields[cnt], "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
-      if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nullspace", (PetscObject) space);CHKERRQ(ierr);}
-      ierr = PetscObjectQuery((PetscObject) dm->fields[cnt], "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
-      if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nearnullspace", (PetscObject) space);CHKERRQ(ierr);}
-      ierr = PetscObjectQuery((PetscObject) dm->fields[cnt], "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
-      if (pmat) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "pmat", (PetscObject) pmat);CHKERRQ(ierr);}
+      ierr = PetscDSGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
+      if (cnt < Nf) {
+        ierr = PetscDSGetDiscretization(dm->prob, cnt, &disc);CHKERRQ(ierr);
+        ierr = PetscObjectQuery(disc, "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
+        if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nullspace", (PetscObject) space);CHKERRQ(ierr);}
+        ierr = PetscObjectQuery(disc, "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
+        if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nearnullspace", (PetscObject) space);CHKERRQ(ierr);}
+        ierr = PetscObjectQuery(disc, "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
+        if (pmat) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "pmat", (PetscObject) pmat);CHKERRQ(ierr);}
+      }
     }
     cnt++;
     next = next->next;

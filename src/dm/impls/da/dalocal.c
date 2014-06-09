@@ -6,6 +6,7 @@
 #include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 #include <petscbt.h>
 #include <petscsf.h>
+#include <petscds.h>
 #include <petscfe.h>
 
 /*
@@ -1217,27 +1218,25 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAProjectFunctionLocal"
-PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
-  PetscDualSpace *sp;
+  PetscDS    prob;
+  PetscFE         fe;
+  PetscDualSpace  sp;
   PetscQuadrature q;
   PetscSection    section;
   PetscScalar    *values;
   PetscReal      *v0, *J, *detJ;
-  PetscInt        numFields, numComp, numPoints, dim, spDim, totDim = 0, numValues, cStart, cEnd, f, c, v, d;
+  PetscInt        numFields, numComp, numPoints, dim, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(prob, 0, (PetscObject *) &fe);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr = PetscMalloc(numFields * sizeof(PetscDualSpace), &sp);CHKERRQ(ierr);
-  for (f = 0; f < numFields; ++f) {
-    ierr = PetscFEGetDualSpace(fe[f], &sp[f]);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe[f], &numComp);CHKERRQ(ierr);
-    ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
-    totDim += spDim*numComp;
-  }
   ierr = DMDAGetInfo(dm, &dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMDAVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
@@ -1254,10 +1253,13 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(cons
     geom.detJ = detJ;
     for (f = 0, v = 0; f < numFields; ++f) {
       void * const ctx = ctxs ? ctxs[f] : NULL;
-      ierr = PetscFEGetNumComponents(fe[f], &numComp);CHKERRQ(ierr);
-      ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
+
+      ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &numComp);CHKERRQ(ierr);
+      ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetDimension(sp, &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
-        ierr = PetscDualSpaceApply(sp[f], d, geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+        ierr = PetscDualSpaceApply(sp, d, geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
         v += numComp;
       }
     }
@@ -1265,7 +1267,6 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(cons
   }
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = PetscFree3(v0,J,detJ);CHKERRQ(ierr);
-  ierr = PetscFree(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1276,7 +1277,6 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(cons
 
   Input Parameters:
 + dm      - The DM
-. fe      - The PetscFE associated with the field
 . funcs   - The coordinate functions to evaluate
 . ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
 - mode    - The insertion mode for values
@@ -1288,7 +1288,7 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(cons
 
 .seealso: DMDAComputeL2Diff()
 @*/
-PetscErrorCode DMDAProjectFunction(DM dm, PetscFE fe[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
+PetscErrorCode DMDAProjectFunction(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
 {
   Vec            localX;
   PetscErrorCode ierr;
@@ -1296,7 +1296,7 @@ PetscErrorCode DMDAProjectFunction(DM dm, PetscFE fe[], void (**funcs)(const Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMDAProjectFunctionLocal(dm, fe, funcs, ctxs, mode, localX);CHKERRQ(ierr);
+  ierr = DMDAProjectFunctionLocal(dm, funcs, ctxs, mode, localX);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
@@ -1310,7 +1310,6 @@ PetscErrorCode DMDAProjectFunction(DM dm, PetscFE fe[], void (**funcs)(const Pet
 
   Input Parameters:
 + dm    - The DM
-. fe    - The PetscFE object for each field
 . funcs - The functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
 - X     - The coefficient vector u_h
@@ -1322,35 +1321,34 @@ PetscErrorCode DMDAProjectFunction(DM dm, PetscFE fe[], void (**funcs)(const Pet
 
 .seealso: DMDAProjectFunction(), DMDAComputeL2GradientDiff()
 @*/
-PetscErrorCode DMDAComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
+PetscErrorCode DMDAComputeL2Diff(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
 {
   const PetscInt  debug = 0;
-  PetscSection    section;
+  PetscDS    prob;
+  PetscFE         fe;
   PetscQuadrature quad;
+  PetscSection    section;
   Vec             localX;
   PetscScalar    *funcVal;
   PetscReal      *coords, *v0, *J, *invJ, detJ;
   PetscReal       localDiff = 0.0;
-  PetscInt        dim, numFields, numComponents = 0, cStart, cEnd, c, field, fieldOffset, comp;
+  PetscInt        dim, numFields, Nc, cStart, cEnd, c, field, fieldOffset, comp;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dm, &dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(prob, 0, (PetscObject *) &fe);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  for (field = 0; field < numFields; ++field) {
-    PetscInt Nc;
-
-    ierr = PetscFEGetNumComponents(fe[field], &Nc);CHKERRQ(ierr);
-    numComponents += Nc;
-  }
   /* There are no BC values in DAs right now: ierr = DMDAProjectFunctionLocal(dm, fe, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr); */
-  ierr = PetscMalloc5(numComponents,&funcVal,dim,&coords,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
+  ierr = PetscMalloc5(Nc,&funcVal,dim,&coords,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
   ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[0], &quad);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscReal    elemDiff = 0.0;
@@ -1365,10 +1363,11 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const Petsc
       PetscReal       *basis;
       PetscInt         numQuadPoints, numBasisFuncs, numBasisComps, q, d, e, fc, f;
 
+      ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, &quadWeights);CHKERRQ(ierr);
-      ierr = PetscFEGetDimension(fe[field], &numBasisFuncs);CHKERRQ(ierr);
-      ierr = PetscFEGetNumComponents(fe[field], &numBasisComps);CHKERRQ(ierr);
-      ierr = PetscFEGetDefaultTabulation(fe[field], &basis, NULL, NULL);CHKERRQ(ierr);
+      ierr = PetscFEGetDimension(fe, &numBasisFuncs);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &numBasisComps);CHKERRQ(ierr);
+      ierr = PetscFEGetDefaultTabulation(fe, &basis, NULL, NULL);CHKERRQ(ierr);
       if (debug) {
         char title[1024];
         ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
@@ -1414,7 +1413,6 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const Petsc
 
   Input Parameters:
 + dm    - The DM
-. fe    - The PetscFE object for each field
 . funcs - The gradient functions to evaluate for each field component
 . ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
 . X     - The coefficient vector u_h
@@ -1427,35 +1425,34 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const Petsc
 
 .seealso: DMDAProjectFunction(), DMPlexComputeL2Diff()
 @*/
-PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscFE fe[], void (**funcs)(const PetscReal [], const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
+PetscErrorCode DMDAComputeL2GradientDiff(DM dm, void (**funcs)(const PetscReal [], const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
 {
   const PetscInt  debug = 0;
-  PetscSection    section;
+  PetscDS    prob;
+  PetscFE         fe;
   PetscQuadrature quad;
+  PetscSection    section;
   Vec             localX;
   PetscScalar    *funcVal, *interpolantVec;
   PetscReal      *coords, *realSpaceDer, *v0, *J, *invJ, detJ;
   PetscReal       localDiff = 0.0;
-  PetscInt        dim, numFields, numComponents = 0, cStart, cEnd, c, field, fieldOffset, comp;
+  PetscInt        dim, numFields, Nc, cStart, cEnd, c, field, fieldOffset, comp;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dm, &dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(prob, 0, (PetscObject *) &fe);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  for (field = 0; field < numFields; ++field) {
-    PetscInt Nc;
-
-    ierr = PetscFEGetNumComponents(fe[field], &Nc);CHKERRQ(ierr);
-    numComponents += Nc;
-  }
   /* There are no BC values in DAs right now: ierr = DMDAProjectFunctionLocal(dm, fe, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr); */
-  ierr = PetscMalloc7(numComponents,&funcVal,dim,&coords,dim,&realSpaceDer,dim,&v0,dim*dim,&J,dim*dim,&invJ,dim,&interpolantVec);CHKERRQ(ierr);
+  ierr = PetscMalloc7(Nc,&funcVal,dim,&coords,dim,&realSpaceDer,dim,&v0,dim*dim,&J,dim*dim,&invJ,dim,&interpolantVec);CHKERRQ(ierr);
   ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe[0], &quad);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscReal    elemDiff = 0.0;
@@ -1470,10 +1467,11 @@ PetscErrorCode DMDAComputeL2GradientDiff(DM dm, PetscFE fe[], void (**funcs)(con
       PetscReal       *basisDer;
       PetscInt         Nq, Nb, Nc, q, d, e, fc, f, g;
 
+      ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
       ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
-      ierr = PetscFEGetDimension(fe[field], &Nb);CHKERRQ(ierr);
-      ierr = PetscFEGetNumComponents(fe[field], &Nc);CHKERRQ(ierr);
-      ierr = PetscFEGetDefaultTabulation(fe[field], NULL, &basisDer, NULL);CHKERRQ(ierr);
+      ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+      ierr = PetscFEGetDefaultTabulation(fe, NULL, &basisDer, NULL);CHKERRQ(ierr);
       if (debug) {
         char title[1024];
         ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);

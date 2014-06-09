@@ -5,6 +5,7 @@
       implicit none
 #include <finclude/petsc.h90>
       DM :: dm, dmi
+      PetscFV :: fvm
       PetscInt, parameter :: dim = 3
 
       PetscInt :: depth = 1
@@ -70,6 +71,13 @@
      &           'cell: ', i, ' volume: ', vol, ' centroid: ',          &
      &           pcentroid(1), pcentroid(2), pcentroid(3)
       end do
+
+      call PetscFVCreate(PETSC_COMM_WORLD, fvm, ierr)
+      CHKERRQ(ierr)
+      call PetscFVSetUp(fvm, ierr)
+      CHKERRQ(ierr)
+      call PetscFVDestroy(fvm, ierr)
+      CHKERRQ(ierr)
 
       call DMDestroy(dm, ierr)
       CHKERRQ(ierr)
