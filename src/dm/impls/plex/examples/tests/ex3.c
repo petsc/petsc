@@ -6,7 +6,6 @@ static char help[] = "Check that a DM can accurately represent and interpolate f
 #include <petscfe.h>
 
 typedef struct {
-  PetscFEM  fem;               /* REQUIRED to use DMPlexComputeResidualFEM() */
   PetscInt  debug;             /* The debugging level */
   /* Domain and mesh definition */
   PetscInt  dim;               /* The topological mesh dimension */
@@ -177,10 +176,9 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (user->simplex) {
-    ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
-    ierr = DMSetField(dm, 0, (PetscObject) user->fe);CHKERRQ(ierr);
-  } else {
+  ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
+  ierr = DMSetField(dm, 0, (PetscObject) user->fe);CHKERRQ(ierr);
+  if (!user->simplex) {
     PetscSection    section;
     const PetscInt *numDof;
     PetscInt        numComp;
@@ -206,10 +204,10 @@ static PetscErrorCode ComputeError_Plex(DM dm, void (**exactFuncs)(const PetscRe
   PetscFunctionBegin;
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
   /* Project function into FE function space */
-  ierr = DMPlexProjectFunction(dm, &user->fe, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMPlexProjectFunction(dm, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   /* Compare approximation to exact in L_2 */
-  ierr = DMPlexComputeL2Diff(dm, &user->fe, exactFuncs, exactCtxs, u, error);CHKERRQ(ierr);
-  ierr = DMPlexComputeL2GradientDiff(dm, &user->fe, exactFuncDers, exactCtxs, u, n, errorDer);CHKERRQ(ierr);
+  ierr = DMPlexComputeL2Diff(dm, exactFuncs, exactCtxs, u, error);CHKERRQ(ierr);
+  ierr = DMPlexComputeL2GradientDiff(dm, exactFuncDers, exactCtxs, u, n, errorDer);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -226,10 +224,10 @@ static PetscErrorCode ComputeError_DA(DM dm, void (**exactFuncs)(const PetscReal
   PetscFunctionBegin;
   ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
   /* Project function into FE function space */
-  ierr = DMDAProjectFunction(dm, &user->fe, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMDAProjectFunction(dm, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   /* Compare approximation to exact in L_2 */
-  ierr = DMDAComputeL2Diff(dm, &user->fe, exactFuncs, exactCtxs, u, error);CHKERRQ(ierr);
-  ierr = DMDAComputeL2GradientDiff(dm, &user->fe, exactFuncDers, exactCtxs, u, n, errorDer);CHKERRQ(ierr);
+  ierr = DMDAComputeL2Diff(dm, exactFuncs, exactCtxs, u, error);CHKERRQ(ierr);
+  ierr = DMDAComputeL2GradientDiff(dm, exactFuncDers, exactCtxs, u, n, errorDer);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -354,20 +352,20 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   ierr = DMCreateInterpolation(dm, rdm, &I, &scaling);CHKERRQ(ierr);
   /* Project function into initial FE function space */
   if (isPlex) {
-    ierr = DMPlexProjectFunction(idm, &user->fe, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(idm, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu);CHKERRQ(ierr);
   } else if (isDA) {
-    ierr = DMDAProjectFunction(idm, &user->fe, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu);CHKERRQ(ierr);
+    ierr = DMDAProjectFunction(idm, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM projection routine for this type of DM");
   /* Interpolate function into final FE function space */
   if (checkRestrict) {ierr = MatRestrict(I, iu, fu);CHKERRQ(ierr);ierr = VecPointwiseMult(fu, scaling, fu);CHKERRQ(ierr);}
   else               {ierr = MatInterpolate(I, iu, fu);CHKERRQ(ierr);}
   /* Compare approximation to exact in L_2 */
   if (isPlex) {
-    ierr = DMPlexComputeL2Diff(fdm, &user->fe, exactFuncs, exactCtxs, fu, &error);CHKERRQ(ierr);
-    ierr = DMPlexComputeL2GradientDiff(fdm, &user->fe, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(fdm, exactFuncs, exactCtxs, fu, &error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2GradientDiff(fdm, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
   } else if (isDA) {
-    ierr = DMDAComputeL2Diff(fdm, &user->fe, exactFuncs, exactCtxs, fu, &error);CHKERRQ(ierr);
-    ierr = DMDAComputeL2GradientDiff(dm, &user->fe, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
+    ierr = DMDAComputeL2Diff(fdm, exactFuncs, exactCtxs, fu, &error);CHKERRQ(ierr);
+    ierr = DMDAComputeL2GradientDiff(dm, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM L_2 difference routine for this type of DM");
   /* Report result */
   if (error > tol)    {ierr = PetscPrintf(comm, "Interpolation tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);}
@@ -429,7 +427,6 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
-  user.fem.fe = &user.fe;
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
   if (user.dim == 2 && user.simplex == PETSC_TRUE) {

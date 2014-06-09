@@ -1,22 +1,22 @@
-#if !defined(_PETSCPROBLEMIMPL_H)
-#define _PETSCPROBLEMIMPL_H
+#if !defined(_PETSCDSIMPL_H)
+#define _PETSCDSIMPL_H
 
-#include <petscproblem.h>
+#include <petscds.h>
 #include <petsc-private/petscimpl.h>
 
-typedef struct _PetscProblemOps *PetscProblemOps;
-struct _PetscProblemOps {
-  PetscErrorCode (*setfromoptions)(PetscProblem);
-  PetscErrorCode (*setup)(PetscProblem);
-  PetscErrorCode (*view)(PetscProblem,PetscViewer);
-  PetscErrorCode (*destroy)(PetscProblem);
+typedef struct _PetscDSOps *PetscDSOps;
+struct _PetscDSOps {
+  PetscErrorCode (*setfromoptions)(PetscDS);
+  PetscErrorCode (*setup)(PetscDS);
+  PetscErrorCode (*view)(PetscDS,PetscViewer);
+  PetscErrorCode (*destroy)(PetscDS);
 };
 
 typedef void (*PointFunc)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]);
 typedef void (*BdPointFunc)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]);
 
-struct _p_PetscProblem {
-  PETSCHEADER(struct _PetscProblemOps);
+struct _p_PetscDS {
+  PETSCHEADER(struct _PetscDSOps);
   void        *data;      /* Implementation object */
   PetscBool    setup;     /* Flag for setup */
   PetscInt     Nf;        /* The number of solution fields */
@@ -27,7 +27,7 @@ struct _p_PetscProblem {
   BdPointFunc *fBd, *gBd; /* Weak form boundary integrands f_0, f_1, g_0, g_1, g_2, g_3 */
   PetscInt     dim;       /* The spatial dimension */
   /* Computed sizes */
-  PetscInt     totDim, totDimBd;       /* Total problem dimension */
+  PetscInt     totDim, totDimBd;       /* Total system dimension */
   PetscInt     totComp;                /* Total field components */
   /* Work space */
   PetscReal  **basis,    **basisBd;    /* Default basis tabulation for each field */
@@ -43,6 +43,6 @@ struct _p_PetscProblem {
 
 typedef struct {
   PetscInt dummy; /* */
-} PetscProblem_Basic;
+} PetscDS_Basic;
 
 #endif
