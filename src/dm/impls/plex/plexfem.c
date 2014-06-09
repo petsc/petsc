@@ -1128,7 +1128,6 @@ PetscErrorCode DMPlexComputeResidualFEM_Internal(DM dm, Vec X, Vec X_t, Vec F, v
 #define __FUNCT__ "DMPlexComputeResidualFEM_Check"
 static PetscErrorCode DMPlexComputeResidualFEM_Check(DM dm, Vec X, Vec X_t, Vec F, void *user)
 {
-  DM_Plex          *mesh = (DM_Plex *) dm->data;
   DM                dmCh, dmAux;
   Vec               A;
   PetscDS           prob, probCh, probAux = NULL;
