@@ -1131,7 +1131,7 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check(DM dm, Vec X, Vec X_t, Vec 
   DM_Plex          *mesh = (DM_Plex *) dm->data;
   DM                dmCh, dmAux;
   Vec               A;
-  PetscProblem      prob, probCh, probAux = NULL;
+  PetscDS           prob, probCh, probAux = NULL;
   PetscQuadrature   q;
   PetscCellGeometry geom;
   PetscSection      section, sectionAux;
@@ -1144,19 +1144,19 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check(DM dm, Vec X, Vec X_t, Vec 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMGetProblem(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscProblemGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
   ierr = PetscObjectQuery((PetscObject) dm, "dmCh", (PetscObject *) &dmCh);CHKERRQ(ierr);
-  ierr = DMGetProblem(dmCh, &probCh);CHKERRQ(ierr);
+  ierr = DMGetDS(dmCh, &probCh);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
   if (dmAux) {
     ierr = DMGetDefaultSection(dmAux, &sectionAux);CHKERRQ(ierr);
-    ierr = DMGetProblem(dmAux, &probAux);CHKERRQ(ierr);
-    ierr = PetscProblemGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+    ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
+    ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
   }
   ierr = DMPlexInsertBoundaryValuesFEM(dm, X);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
@@ -1191,8 +1191,8 @@ static PetscErrorCode DMPlexComputeResidualFEM_Check(DM dm, Vec X, Vec X_t, Vec 
     /* Remainder */
     PetscInt Nr, offset;
 
-    ierr = PetscProblemGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
-    ierr = PetscProblemGetDiscretization(probCh, f, (PetscObject *) &feCh);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(probCh, f, (PetscObject *) &feCh);CHKERRQ(ierr);
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
     ierr = PetscFEGetTileSizes(fe, NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);

@@ -491,13 +491,13 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
       ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
     }
     if (feCh) {
-      DM           dmCh;
-      PetscProblem probCh;
+      DM      dmCh;
+      PetscDS probCh;
 
       ierr = DMClone(cdm, &dmCh);CHKERRQ(ierr);
       ierr = DMPlexCopyCoordinates(cdm, dmCh);CHKERRQ(ierr);
-      ierr = DMGetProblem(dmCh, &probCh);CHKERRQ(ierr);
-      ierr = PetscProblemSetDiscretization(probCh, 0, (PetscObject) feCh);CHKERRQ(ierr);
+      ierr = DMGetDS(dmCh, &probCh);CHKERRQ(ierr);
+      ierr = PetscDSSetDiscretization(probCh, 0, (PetscObject) feCh);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) dm, "dmCh", (PetscObject) dmCh);CHKERRQ(ierr);
       ierr = DMDestroy(&dmCh);CHKERRQ(ierr);
     }
