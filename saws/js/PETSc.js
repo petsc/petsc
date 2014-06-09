@@ -81,9 +81,22 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                                 if(sub[key].variables[vKey].mtype != "SAWs_WRITE") {
                                     if(save != "")
                                         $("#"+fullkey).append(save+"<br>");
-                                    save = "<a style=\"font-family: Courier\" href=\"http://www.google.com\" title=\"" + manualSave + "\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</a>";//can't be changed
-//                                    alert(save);
-                                    if(vKey.indexOf("prefix") != -1) {//data of prefix so use immediately
+
+                                    var manualDirectory = "unknown%20directory";//this should be overwritten
+                                    if(manualSave.indexOf("KSP") == 0) {
+                                        manualDirectory = "KSP";
+                                    }
+                                    else if(manualSave.indexOf("PC") == 0) {
+                                        manualDirectory = "PC";
+                                    }
+                                    else if(manualSave.indexOf("Petsc") == 0) {
+                                        manualDirectory = "Sys";
+                                    }
+
+                                    save = "<a style=\"font-family: Courier\" href=\"http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/" +  manualDirectory + "/" + manualSave + ".html\" title=\"" + manualSave + "\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</a>";//can't be changed
+
+                                    if(vKey.indexOf("prefix") != -1) {//data of prefix so dont do manual and use immediately
+                                        save = "<a style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</a>";//can't be changed
                                         $("#"+fullkey).append(save+"<br>");
                                         save = "";
                                     }
