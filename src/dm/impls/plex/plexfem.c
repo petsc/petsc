@@ -1125,6 +1125,118 @@ PetscErrorCode DMPlexComputeResidualFEM_Internal(DM dm, Vec X, Vec X_t, Vec F, v
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeResidualFEM_Check"
+static PetscErrorCode DMPlexComputeResidualFEM_Check(DM dm, Vec X, Vec X_t, Vec F, void *user)
+{
+  DM                dmCh, dmAux;
+  Vec               A;
+  PetscDS           prob, probCh, probAux = NULL;
+  PetscQuadrature   q;
+  PetscCellGeometry geom;
+  PetscSection      section, sectionAux;
+  PetscReal        *v0, *J, *invJ, *detJ;
+  PetscScalar      *elemVec, *elemVecCh, *u, *u_t, *a = NULL;
+  PetscInt          dim, Nf, f, numCells, cStart, cEnd, c;
+  PetscInt          totDim, totDimAux, diffCell = 0;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  numCells = cEnd - cStart;
+  ierr = PetscObjectQuery((PetscObject) dm, "dmCh", (PetscObject *) &dmCh);CHKERRQ(ierr);
+  ierr = DMGetDS(dmCh, &probCh);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
+  if (dmAux) {
+    ierr = DMGetDefaultSection(dmAux, &sectionAux);CHKERRQ(ierr);
+    ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
+    ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
+  }
+  ierr = DMPlexInsertBoundaryValuesFEM(dm, X);CHKERRQ(ierr);
+  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
+  ierr = PetscMalloc7(numCells*totDim,&u,X_t ? numCells*totDim : 0,&u_t,numCells*dim,&v0,numCells*dim*dim,&J,numCells*dim*dim,&invJ,numCells,&detJ,numCells*totDim,&elemVec);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numCells*totDim,&elemVecCh);CHKERRQ(ierr);
+  if (dmAux) {ierr = PetscMalloc1(numCells*totDimAux, &a);CHKERRQ(ierr);}
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *x = NULL, *x_t = NULL;
+    PetscInt     i;
+
+    ierr = DMPlexComputeCellGeometry(dm, c, &v0[c*dim], &J[c*dim*dim], &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
+    if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
+    ierr = DMPlexVecGetClosure(dm, section, X, c, NULL, &x);CHKERRQ(ierr);
+    for (i = 0; i < totDim; ++i) u[c*totDim+i] = x[i];
+    ierr = DMPlexVecRestoreClosure(dm, section, X, c, NULL, &x);CHKERRQ(ierr);
+    if (X_t) {
+      ierr = DMPlexVecGetClosure(dm, section, X_t, c, NULL, &x_t);CHKERRQ(ierr);
+      for (i = 0; i < totDim; ++i) u_t[c*totDim+i] = x_t[i];
+      ierr = DMPlexVecRestoreClosure(dm, section, X_t, c, NULL, &x_t);CHKERRQ(ierr);
+    }
+    if (dmAux) {
+      ierr = DMPlexVecGetClosure(dmAux, sectionAux, A, c, NULL, &x);CHKERRQ(ierr);
+      for (i = 0; i < totDimAux; ++i) a[c*totDimAux+i] = x[i];
+      ierr = DMPlexVecRestoreClosure(dmAux, sectionAux, A, c, NULL, &x);CHKERRQ(ierr);
+    }
+  }
+  for (f = 0; f < Nf; ++f) {
+    PetscFE  fe, feCh;
+    PetscInt numQuadPoints, Nb;
+    /* Conforming batches */
+    PetscInt numChunks, numBatches, numBlocks, Ne, blockSize, batchSize;
+    /* Remainder */
+    PetscInt Nr, offset;
+
+    ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(probCh, f, (PetscObject *) &feCh);CHKERRQ(ierr);
+    ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
+    ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+    ierr = PetscFEGetTileSizes(fe, NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(q, NULL, &numQuadPoints, NULL, NULL);CHKERRQ(ierr);
+    blockSize = Nb*numQuadPoints;
+    batchSize = numBlocks * blockSize;
+    ierr =  PetscFESetTileSizes(fe, blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
+    numChunks = numCells / (numBatches*batchSize);
+    Ne        = numChunks*numBatches*batchSize;
+    Nr        = numCells % (numBatches*batchSize);
+    offset    = numCells - Nr;
+    geom.v0   = v0;
+    geom.J    = J;
+    geom.invJ = invJ;
+    geom.detJ = detJ;
+    ierr = PetscFEIntegrateResidual(fe, prob, f, Ne, geom, u, u_t, probAux, a, elemVec);CHKERRQ(ierr);
+    ierr = PetscFEIntegrateResidual(feCh, prob, f, Ne, geom, u, u_t, probAux, a, elemVecCh);CHKERRQ(ierr);
+    geom.v0   = &v0[offset*dim];
+    geom.J    = &J[offset*dim*dim];
+    geom.invJ = &invJ[offset*dim*dim];
+    geom.detJ = &detJ[offset];
+    ierr = PetscFEIntegrateResidual(fe, prob, f, Nr, geom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], &elemVec[offset*totDim]);CHKERRQ(ierr);
+    ierr = PetscFEIntegrateResidual(feCh, prob, f, Nr, geom, &u[offset*totDim], u_t ? &u_t[offset*totDim] : NULL, probAux, &a[offset*totDimAux], &elemVecCh[offset*totDim]);CHKERRQ(ierr);
+  }
+  for (c = cStart; c < cEnd; ++c) {
+    PetscBool diff = PETSC_FALSE;
+    PetscInt  d;
+
+    for (d = 0; d < totDim; ++d) if (PetscAbsScalar(elemVec[c*totDim+d] - elemVecCh[c*totDim+d]) > 1.0e-7) {diff = PETSC_TRUE;break;}
+    if (diff) {
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Different cell %d\n", c);CHKERRQ(ierr);
+      ierr = DMPrintCellVector(c, "Residual", totDim, &elemVec[c*totDim]);CHKERRQ(ierr);
+      ierr = DMPrintCellVector(c, "Check Residual", totDim, &elemVecCh[c*totDim]);CHKERRQ(ierr);
+      ++diffCell;
+    }
+    if (diffCell > 9) break;
+    ierr = DMPlexVecSetClosure(dm, section, F, c, &elemVec[c*totDim], ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree7(u,u_t,v0,J,invJ,detJ,elemVec);CHKERRQ(ierr);
+  ierr = PetscFree(elemVecCh);CHKERRQ(ierr);
+  if (dmAux) {ierr = PetscFree(a);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexSNESComputeResidualFEM"
 /*@
   DMPlexSNESComputeResidualFEM - Form the local residual F from the local input X using pointwise functions specified by the user
@@ -1143,10 +1255,13 @@ PetscErrorCode DMPlexComputeResidualFEM_Internal(DM dm, Vec X, Vec X_t, Vec F, v
 @*/
 PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 {
+  PetscObject    check;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeResidualFEM_Internal(dm, X, NULL, F, user);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) dm, "dmCh", &check);CHKERRQ(ierr);
+  if (check) {ierr = DMPlexComputeResidualFEM_Check(dm, X, NULL, F, user);CHKERRQ(ierr);}
+  else       {ierr = DMPlexComputeResidualFEM_Internal(dm, X, NULL, F, user);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

@@ -20,7 +20,7 @@ typedef struct {
   RunType       runType;           /* Whether to run tests, or solve the full problem */
   PetscBool     jacobianMF;        /* Whether to calculate the Jacobian action on the fly */
   PetscLogEvent createMeshEvent;
-  PetscBool     showInitial, showSolution, restart;
+  PetscBool     showInitial, showSolution, restart, check;
   PetscViewer   checkpoint;
   /* Domain and mesh definition */
   PetscInt      dim;               /* The topological mesh dimension */
@@ -256,6 +256,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->showInitial         = PETSC_FALSE;
   options->showSolution        = PETSC_FALSE;
   options->restart             = PETSC_FALSE;
+  options->check               = PETSC_FALSE;
   options->checkpoint          = NULL;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
@@ -288,6 +289,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex12.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex12.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-restart", "Read in the mesh and solution from a file", "ex12.c", options->restart, &options->restart, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-check", "Compare with default integration routines", "ex12.c", options->check, &options->check, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
@@ -450,6 +452,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   const PetscInt id    = 1;
   PetscFE        feAux = NULL;
   PetscFE        feBd  = NULL;
+  PetscFE        feCh  = NULL;
   PetscFE        fe;
   PetscDS        prob;
   PetscErrorCode ierr;
@@ -469,6 +472,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(feAux, q);CHKERRQ(ierr);
   }
+  if (user->check) {ierr = PetscFECreateDefault(dm, dim, 1, PETSC_TRUE, "ch_", -1, &feCh);CHKERRQ(ierr);}
   /* Set discretization and boundary conditions for each mesh */
   while (cdm) {
     ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
@@ -486,6 +490,17 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
       ierr = SetupMaterial(cdm, dmAux, user);CHKERRQ(ierr);
       ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
     }
+    if (feCh) {
+      DM      dmCh;
+      PetscDS probCh;
+
+      ierr = DMClone(cdm, &dmCh);CHKERRQ(ierr);
+      ierr = DMPlexCopyCoordinates(cdm, dmCh);CHKERRQ(ierr);
+      ierr = DMGetDS(dmCh, &probCh);CHKERRQ(ierr);
+      ierr = PetscDSSetDiscretization(probCh, 0, (PetscObject) feCh);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject) dm, "dmCh", (PetscObject) dmCh);CHKERRQ(ierr);
+      ierr = DMDestroy(&dmCh);CHKERRQ(ierr);
+    }
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
     ierr = DMPlexAddBoundary(cdm, user->bcType == DIRICHLET, "wall", user->bcType == NEUMANN ? "boundary" : "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
     ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
@@ -493,6 +508,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feBd);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&feAux);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&feCh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
