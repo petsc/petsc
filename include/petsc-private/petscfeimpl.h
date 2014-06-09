@@ -2,7 +2,7 @@
 #define _PETSCFEIMPL_H
 
 #include <petscfe.h>
-#include <petscproblem.h>
+#include <petscds.h>
 #include <petsc-private/petscimpl.h>
 
 typedef struct _PetscSpaceOps *PetscSpaceOps;
@@ -70,12 +70,12 @@ struct _PetscFEOps {
   PetscErrorCode (*getdimension)(PetscFE,PetscInt*);
   PetscErrorCode (*gettabulation)(PetscFE,PetscInt,const PetscReal*,PetscReal*,PetscReal*,PetscReal*);
   /* Element integration */
-  PetscErrorCode (*integrate)(PetscFE, PetscProblem, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], PetscProblem, const PetscScalar[], PetscReal[]);
-  PetscErrorCode (*integrateresidual)(PetscFE, PetscProblem, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscProblem, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratebdresidual)(PetscFE, PetscProblem, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscProblem, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratejacobianaction)(PetscFE, PetscProblem, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscProblem, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratejacobian)(PetscFE, PetscProblem, PetscInt, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscProblem, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratebdjacobian)(PetscFE, PetscProblem, PetscInt, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscProblem, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integrate)(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], PetscDS, const PetscScalar[], PetscReal[]);
+  PetscErrorCode (*integrateresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratebdresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratejacobianaction)(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratejacobian)(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratebdjacobian)(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
 };
 
 struct _p_PetscFE {
@@ -144,7 +144,7 @@ PETSC_STATIC_INLINE void CoordinatesRefToReal(PetscInt dimReal, PetscInt dimRef,
 
 #undef __FUNCT__
 #define __FUNCT__ "EvaluateFieldJets"
-PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscProblem prob, PetscBool bd, PetscInt q, const PetscReal invJ[], const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscScalar u[], PetscScalar u_x[], PetscScalar u_t[])
+PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscDS prob, PetscBool bd, PetscInt q, const PetscReal invJ[], const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscScalar u[], PetscScalar u_x[], PetscScalar u_t[])
 {
   PetscScalar   *refSpaceDer;
   PetscReal    **basisField, **basisFieldDer;
@@ -153,13 +153,13 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscProblem prob, PetscBoo
   PetscErrorCode ierr;
 
   if (!prob) return 0;
-  ierr = PetscProblemGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
+  ierr = PetscDSGetSpatialDimension(prob, &dim);CHKERRQ(ierr);
   if (bd) dim -= 1;
-  ierr = PetscProblemGetNumFields(prob, &Nf);CHKERRQ(ierr);
-  ierr = PetscProblemGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
-  ierr = PetscProblemGetRefCoordArrays(prob, NULL, &refSpaceDer);CHKERRQ(ierr);
-  if (bd) {ierr = PetscProblemGetBdTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);}
-  else    {ierr = PetscProblemGetTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);}
+  ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetRefCoordArrays(prob, NULL, &refSpaceDer);CHKERRQ(ierr);
+  if (bd) {ierr = PetscDSGetBdTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);}
+  else    {ierr = PetscDSGetTabulation(prob, &basisField, &basisFieldDer);CHKERRQ(ierr);}
   for (d = 0; d < Nc; ++d)          {u[d]   = 0.0;}
   for (d = 0; d < dim*Nc; ++d)      {u_x[d] = 0.0;}
   if (u_t) for (d = 0; d < Nc; ++d) {u_t[d] = 0.0;}
@@ -169,8 +169,8 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscProblem prob, PetscBoo
     const PetscReal *basisDer = basisFieldDer[f];
     PetscInt         Nb, Ncf, b, c, e;
 
-    if (bd) {ierr = PetscProblemGetBdDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);}
-    else    {ierr = PetscProblemGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);}
+    if (bd) {ierr = PetscDSGetBdDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);}
+    else    {ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);}
     ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents(fe, &Ncf);CHKERRQ(ierr);
     for (d = 0; d < dim*Ncf; ++d) refSpaceDer[d] = 0.0;

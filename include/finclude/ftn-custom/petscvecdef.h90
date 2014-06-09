@@ -7,8 +7,5 @@
       type VecScatter
         PetscFortranAddr:: v
       end type VecScatter
-      type PetscSection
-        PetscFortranAddr:: v
-      end type PetscSection
 #endif
 #endif

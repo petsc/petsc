@@ -1,5 +1,5 @@
 #include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
-#include <petscproblem.h>
+#include <petscds.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector_Section_Private"
@@ -152,7 +152,7 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
     if (dm->prob) {
       PetscInt Nf;
 
-      ierr = PetscProblemGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
+      ierr = PetscDSGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
       if (nF != Nf) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "The number of DM fields %d does not match the number of Section fields %d", Nf, nF);
       ierr = DMSetNumFields(*subdm, numFields);CHKERRQ(ierr);
       for (f = 0; f < numFields; ++f) {

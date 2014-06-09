@@ -1,6 +1,6 @@
 
 #include <../src/dm/impls/composite/packimpl.h>       /*I  "petscdmcomposite.h"  I*/
-#include <petscproblem.h>
+#include <petscds.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCompositeSetCoupling"
@@ -898,9 +898,9 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
       PetscObject  disc;
       PetscInt     Nf;
 
-      ierr = PetscProblemGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
+      ierr = PetscDSGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
       if (cnt < Nf) {
-        ierr = PetscProblemGetDiscretization(dm->prob, cnt, &disc);CHKERRQ(ierr);
+        ierr = PetscDSGetDiscretization(dm->prob, cnt, &disc);CHKERRQ(ierr);
         ierr = PetscObjectQuery(disc, "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
         if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nullspace", (PetscObject) space);CHKERRQ(ierr);}
         ierr = PetscObjectQuery(disc, "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 #include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
 #include <petscsf.h>
-#include <petscproblem.h>
+#include <petscds.h>
 
 PetscClassId  DM_CLASSID;
 PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal;
@@ -59,7 +59,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
       v->nullspaceConstructors[i] = NULL;
     }
   }
-  ierr = PetscProblemCreate(comm, &v->prob);CHKERRQ(ierr);
+  ierr = PetscDSCreate(comm, &v->prob);CHKERRQ(ierr);
   v->dmBC = NULL;
   v->outputSequenceNum = -1;
   ierr = DMSetVecType(v,VECSTANDARD);CHKERRQ(ierr);
@@ -399,9 +399,9 @@ PetscErrorCode  DMDestroy(DM *dm)
     PetscObject disc;
 
     /* I think it makes sense to dump all attached things when you are destroyed, which also eliminates circular references */
-    ierr = PetscProblemGetNumFields((*dm)->prob, &Nf);CHKERRQ(ierr);
+    ierr = PetscDSGetNumFields((*dm)->prob, &Nf);CHKERRQ(ierr);
     for (f = 0; f < Nf; ++f) {
-      ierr = PetscProblemGetDiscretization((*dm)->prob, f, &disc);CHKERRQ(ierr);
+      ierr = PetscDSGetDiscretization((*dm)->prob, f, &disc);CHKERRQ(ierr);
       ierr = PetscObjectCompose(disc, "pmat", NULL);CHKERRQ(ierr);
       ierr = PetscObjectCompose(disc, "nullspace", NULL);CHKERRQ(ierr);
       ierr = PetscObjectCompose(disc, "nearnullspace", NULL);CHKERRQ(ierr);
@@ -522,7 +522,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = PetscFree((*dm)->maxCell);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->L);CHKERRQ(ierr);
 
-  ierr = PetscProblemDestroy(&(*dm)->prob);CHKERRQ(ierr);
+  ierr = PetscDSDestroy(&(*dm)->prob);CHKERRQ(ierr);
   ierr = DMDestroy(&(*dm)->dmBC);CHKERRQ(ierr);
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)*dm);CHKERRQ(ierr);
@@ -3169,8 +3169,21 @@ PetscErrorCode DMSetPointSF(DM dm, PetscSF sf)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMGetProblem"
-PetscErrorCode DMGetProblem(DM dm, PetscProblem *prob)
+#define __FUNCT__ "DMGetDS"
+/*@
+  DMGetDS - Get the PetscDS
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. prob - The PetscDS
+
+  Level: developer
+
+.seealso: DMSetDS()
+@*/
+PetscErrorCode DMGetDS(DM dm, PetscDS *prob)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -3180,15 +3193,26 @@ PetscErrorCode DMGetProblem(DM dm, PetscProblem *prob)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSetProblem"
-PetscErrorCode DMSetProblem(DM dm, PetscProblem prob)
+#define __FUNCT__ "DMSetDS"
+/*@
+  DMSetDS - Set the PetscDS
+
+  Input Parameters:
++ dm - The DM
+- prob - The PetscDS
+
+  Level: developer
+
+.seealso: DMGetDS()
+@*/
+PetscErrorCode DMSetDS(DM dm, PetscDS prob)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(prob, PETSCPROBLEM_CLASSID, 2);
-  ierr = PetscProblemDestroy(&dm->prob);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 2);
+  ierr = PetscDSDestroy(&dm->prob);CHKERRQ(ierr);
   dm->prob = prob;
   ierr = PetscObjectReference((PetscObject) dm->prob);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3202,7 +3226,7 @@ PetscErrorCode DMGetNumFields(DM dm, PetscInt *numFields)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscProblemGetNumFields(dm->prob, numFields);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(dm->prob, numFields);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3215,12 +3239,12 @@ PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscProblemGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
   for (f = Nf; f < numFields; ++f) {
     PetscContainer obj;
 
     ierr = PetscContainerCreate(PetscObjectComm((PetscObject) dm), &obj);CHKERRQ(ierr);
-    ierr = PetscProblemSetDiscretization(dm->prob, f, (PetscObject) obj);CHKERRQ(ierr);
+    ierr = PetscDSSetDiscretization(dm->prob, f, (PetscObject) obj);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&obj);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -3250,7 +3274,7 @@ PetscErrorCode DMGetField(DM dm, PetscInt f, PetscObject *field)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscProblemGetDiscretization(dm->prob, f, field);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(dm->prob, f, field);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3276,7 +3300,7 @@ PetscErrorCode DMSetField(DM dm, PetscInt f, PetscObject field)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscProblemSetDiscretization(dm->prob, f, field);CHKERRQ(ierr);
+  ierr = PetscDSSetDiscretization(dm->prob, f, field);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
