@@ -2146,6 +2146,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
   PetscBool      flag;
   DM             dm;
   DMSNES         sdm;
+  KSP            ksp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -2194,6 +2195,8 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat A,Mat B)
 
   ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,A,B);CHKERRQ(ierr);
 
+  /* the next line ensures that snes->ksp exists */
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   if (snes->lagpreconditioner == -2) {
     ierr = PetscInfo(snes,"Rebuilding preconditioner exactly once since lag is -2\n");CHKERRQ(ierr);
     ierr = KSPSetReusePreconditioner(snes->ksp,PETSC_FALSE);CHKERRQ(ierr);
