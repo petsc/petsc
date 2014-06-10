@@ -8152,6 +8152,100 @@ methods where we want the data from neighboring cells for each face
 \end{tabbing}
 This kind of calculation is used in TS ex11.
 
+\section{Networks}
+Built on top of \trl{DMPlex}, the \trl{DMNetwork} subclass provides abstractions for representing general unstructured 
+networks such as communication networks, power grid, computer networks, transportation networks, electrical circuits, graphs, and others. 
+
+\subsection{Application flow}
+The general flow of an application code using \trl{DMNetwork} is as follows:
+
+\begin{enumerate}
+  \item Create a network object and a ``component'' library:
+  \begin{tabbing}
+  DMNetworkCreate(MPI\_Comm, DM*);
+  \end{tabbing}
+  creates an empty network object. A ``component'' is specific application data at a node/edge of the network required for its residual evaluation. For example, components could be resistor, inductor data for circuit applications, edge weights for graph problems, generator/transmission line data for power grids. Components are registered by calling
+  \begin{tabbing}
+    DMNetworkRegisterComponent(DM,const char* name, PetscInt size, PetscInt* compkey);
+  \end{tabbing}
+  Here, \trl{name} is the component name,\trl{size} is the size of component data type, and \trl{compkey} is an integer key that can be used for
+  setting/getting the component at a node or an edge.
+  \item Set network size (number of nodes, edges), edge connectivity.
+  \item Set the bare layout (graph) of the network
+  \begin{tabbing}
+    DMNetworkLayoutSetUp(DM dm);
+  \end{tabbing}   
+  \begin{tabbing}
+    DMNetworkSetSizes(DM dm, PetscInt nnodes, PetscInt nedges, PetscInt Nnodes, PetscInt Nedges);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkSetEdgeList(DM dm, int edgeconns[]);
+  \end{tabbing}  
+  \item Set components and number of variables for nodes/edges.
+  \begin{tabbing}
+    DMNetworkAddComponent(DM dm, PetscInt p,PetscInt component,void* component);
+  \end{tabbing}
+  Multiple components can be added at a node/edge.
+  \begin{tabbing}
+    DMNetworkSetNumVariables(DM dm,PetscInt p,PetscInt nvar);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar);
+   \end{tabbing}
+  \item Signal network ready to be distributed.
+  \begin{tabbing}
+    DMSetUp(DM dm);
+  \end{tabbing}
+  \item Distribute the network (also moves components attached with nodes/edges)
+  \begin{tabbing}
+    DMNetworkDistribute(DM oldDM, const char partitioner[], PetscInt overlap,DM *distDM);
+  \end{tabbing}  
+  \item Hook up the DM with the solver: KSPSetDM, SNESSetDM, TSSetDM
+\end{enumerate}
+
+\subsection{Utility functions}
+  \trl{DMNetwork} provides functions for obtaining iterators for nodes/edges, checking the ``ghost'' status of a node (vertex), and retrieving local/global indices of node/edge variables for inserting elements in vectors/matrices.
+  \begin{tabbing}
+    DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkGetVertexRange(DM dm,PetscInt *vStart, PetscInt *vEnd);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkIsGhostVertex(DM dm,PetscInt p,PetscBool *isghost);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkGetVariableOffset(DM dm,PetscInt p,PetscInt *offset);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offsetg);
+  \end{tabbing}
+
+\subsection{Retrieving components}
+The components set at nodes/edges are stored in a container that can be accessed by
+\begin{tabbing}
+   DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDataType **componentdataarray);
+\end{tabbing}
+  Using \trl{componentdataarray}, individual components set at a node/edge can be retrieved by
+\begin{tabbing}
+ DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset);
+\end{tabbing}
+\trl{compkey} is the key set by DMNetworkRegisterComponent. An example of accessing and retrieving the components at nodes is:
+
+\begin{tabbing}
+DMNetworkComponentGenericDataType *arr; \\
+PetscInt Start, End, numcomps,offset,key,v,compnum; \\
+\\
+DMNetworkGetComponentDataArray(dm, \&arr); \\
+DMNetworkGetVertexRange(dm,\&Start,\&End); \\
+for(v=Start; v \trl{<} End; v++) \{ \\
+~~DMNetworkGetNumComponents(dm,v,\&numcomps); \\
+~~for(compnum=0; compnum \trl{<} numcomps;compnum++) \{ \\
+~~~~DMNetworkGetComponentTypeOffset(dm,v,compnum,\&key,\&offset); \\
+~~~~compdata = (UserCompDataType)(arr+offset); \\
+~~\} \\
+\}
+\end{tabbing}
 %------------------------------------------------------------------
 
 \cleardoublepage
