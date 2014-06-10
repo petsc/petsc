@@ -201,3 +201,32 @@ PetscErrorCode PetscFVRegisterAll()
   ierr = PetscFVRegister(PETSCFVLEASTSQUARES, PetscFVCreate_LeastSquares);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#include <petscds.h>     /*I  "petscds.h"  I*/
+
+PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSRegisterAll"
+/*@C
+  PetscDSRegisterAll - Registers all of the PetscDS components in the PetscDS package.
+
+  Not Collective
+
+  Input parameter:
+. path - The dynamic library path
+
+  Level: advanced
+
+.keywords: PetscDS, register, all
+.seealso:  PetscDSRegister(), PetscDSRegisterDestroy()
+@*/
+PetscErrorCode PetscDSRegisterAll()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscDSRegisterAllCalled = PETSC_TRUE;
+
+  ierr = PetscDSRegister(PETSCDSBASIC, PetscDSCreate_Basic);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -3830,7 +3830,7 @@ PetscErrorCode DMPlexLocalizeCoordinates(DM dm)
   PetscSection   coordSection, cSection;
   Vec            coordinates,  cVec;
   PetscScalar   *coords, *coords2, *anchor;
-  PetscInt       cStart, cEnd, c, vStart, vEnd, v, dof, d, off, off2, bs, coordSize;
+  PetscInt       Nc, cStart, cEnd, c, vStart, vEnd, v, dof, d, off, off2, bs, coordSize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3841,14 +3841,19 @@ PetscErrorCode DMPlexLocalizeCoordinates(DM dm)
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &cSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(cSection, 1);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldComponents(coordSection, 0, &Nc);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(cSection, 0, Nc);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(cSection, cStart, vEnd);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
     ierr = PetscSectionGetDof(coordSection, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(cSection,     v,  dof);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(cSection, v, 0, dof);CHKERRQ(ierr);
   }
   for (c = cStart; c < cEnd; ++c) {
     ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, c, &dof, NULL);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(cSection, c, dof);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(cSection, c, 0, dof);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(cSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(cSection, &coordSize);CHKERRQ(ierr);

@@ -38,7 +38,22 @@ PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, Pets
   switch (refiner) {
   case 0: break;
   case 1:
-    dim  = 2;
+    /*
+     2
+     |\
+     | \
+     |  \
+     |   \
+     | C  \
+     |     \
+     |      \
+     2---1---1
+     |\  D  / \
+     | 2   0   \
+     |A \ /  B  \
+     0---0-------1
+     */
+    dim = 2;
     if (numSubcells) *numSubcells = 4;
     if (v0) {
       ierr = PetscMalloc3(4*dim,&v,4*dim*dim,&j,4*dim*dim,&invj);CHKERRQ(ierr);
@@ -58,6 +73,44 @@ PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner refiner, Pets
       v[6+0]  =  0.0; v[6+1]  = -1.0;
       j[12+0] =  0.0; j[12+1] = -0.5;
       j[12+2] =  0.5; j[12+3] =  0.5;
+      for (s = 0; s < 4; ++s) {
+        DMPlex_Det2D_Internal(&detJ, &j[s*dim*dim]);
+        DMPlex_Invert2D_Internal(&invj[s*dim*dim], &j[s*dim*dim], detJ);
+      }
+    }
+    break;
+  case 2:
+    /*
+     3---------2---------2
+     |         |         |
+     |    D    2    C    |
+     |         |         |
+     3----3----0----1----1
+     |         |         |
+     |    A    0    B    |
+     |         |         |
+     0---------0---------1
+     */
+    dim = 2;
+    if (numSubcells) *numSubcells = 4;
+    if (v0) {
+      ierr = PetscMalloc3(4*dim,&v,4*dim*dim,&j,4*dim*dim,&invj);CHKERRQ(ierr);
+      /* A */
+      v[0+0] = -1.0; v[0+1] = -1.0;
+      j[0+0] =  0.5; j[0+1] =  0.0;
+      j[0+2] =  0.0; j[0+3] =  0.5;
+      /* B */
+      v[2+0] =  0.0; v[2+1] = -1.0;
+      j[4+0] =  0.5; j[4+1] =  0.0;
+      j[4+2] =  0.0; j[4+3] =  0.5;
+      /* C */
+      v[4+0] =  0.0; v[4+1] =  0.0;
+      j[8+0] =  0.5; j[8+1] =  0.0;
+      j[8+2] =  0.0; j[8+3] =  0.5;
+      /* D */
+      v[6+0]  = -1.0; v[6+1]  =  0.0;
+      j[12+0] =  0.5; j[12+1] =  0.0;
+      j[12+2] =  0.0; j[12+3] =  0.5;
       for (s = 0; s < 4; ++s) {
         DMPlex_Det2D_Internal(&detJ, &j[s*dim*dim]);
         DMPlex_Invert2D_Internal(&invj[s*dim*dim], &j[s*dim*dim], detJ);

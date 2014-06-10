@@ -576,13 +576,17 @@ PetscErrorCode  VecSet(Vec x,PetscScalar alpha)
   ierr = PetscLogEventEnd(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
 
-  /*  norms can be simply set */
+  /*  norms can be simply set (if |alpha|*N not too large) */
   val  = PetscAbsScalar(alpha);
-  ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],x->map->N * val);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val);CHKERRQ(ierr);
-  val  = PetscSqrtReal((PetscReal)x->map->N) * val;
-  ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_2],val);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_FROBENIUS],val);CHKERRQ(ierr);
+  if (val > PETSC_MAX_REAL/x->map->N) {
+    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],x->map->N * val);CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val);CHKERRQ(ierr);
+    val  = PetscSqrtReal((PetscReal)x->map->N) * val;
+    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_2],val);CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_FROBENIUS],val);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

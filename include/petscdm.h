@@ -6,6 +6,7 @@
 #include <petscmat.h>
 #include <petscdmtypes.h>
 #include <petscfetypes.h>
+#include <petscdstypes.h>
 
 PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 
@@ -154,6 +155,8 @@ PETSC_EXTERN PetscErrorCode DMGetOutputDM(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMGetOutputSequenceNumber(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetOutputSequenceNumber(DM, PetscInt);
 
+PETSC_EXTERN PetscErrorCode DMGetDS(DM, PetscDS *);
+PETSC_EXTERN PetscErrorCode DMSetDS(DM, PetscDS);
 PETSC_EXTERN PetscErrorCode DMGetNumFields(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetField(DM, PetscInt, PetscObject *);
