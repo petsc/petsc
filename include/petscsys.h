@@ -2642,6 +2642,30 @@ PETSC_EXTERN PetscErrorCode PetscTextBelt(MPI_Comm,const char[],const char[],Pet
 PETSC_EXTERN PetscErrorCode PetscPullJSONValue(const char[],const char[],char[],size_t,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[],const char[],const char[],size_t);
 
+#define REDUCE_SUM  0
+#define REDUCE_MAX  1
+#define REDUCE_MIN  2
+
+typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
+
+typedef struct {
+  MPI_Comm    comm;
+  MPI_Request request;
+  PetscBool   async;
+  PetscScalar *lvalues;     /* this are the reduced values before call to MPI_Allreduce() */
+  PetscScalar *gvalues;     /* values after call to MPI_Allreduce() */
+  void        **invecs;     /* for debugging only, vector/memory used with each op */
+  PetscInt    *reducetype;  /* is particular value to be summed or maxed? */
+  SRState     state;        /* are we calling xxxBegin() or xxxEnd()? */
+  PetscInt    maxops;       /* total amount of space we have for requests */
+  PetscInt    numopsbegin;  /* number of requests that have been queued in */
+  PetscInt    numopsend;    /* number of requests that have been gotten by user */
+} PetscSplitReduction;
+
+PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm,PetscSplitReduction**);
+PETSC_EXTERN PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction*);
+PETSC_EXTERN PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction*);
+
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__
 #define __FUNCT__ "User provided function"
