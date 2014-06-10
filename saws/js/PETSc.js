@@ -1,17 +1,49 @@
 //this js file contains methods copied from matt's original SAWs.js but modified to fit our needs
 
+var divSave;
+
+var successFunc = function(data, textStatus, jqXHR)//ignore this for now. I'm trying to get rid of the 1000ms delay
+{
+    console.log(data);
+    jQuery(divSave).html("");
+    window.setTimeout(PETSc.getAndDisplayDirectory,1000,null,divSave);
+}
+
+
 PETSc = {};
 
 PETSc.getAndDisplayDirectory = function(names,divEntry){
 //    window.location = 'pcoptions.html'
 
-    //below are skipped now ...
     jQuery(divEntry).html("");
-    SAWs.getDirectory(names,PETSc.displayDirectory,divEntry);
+    PETSc.getDirectory(names,PETSc.displayDirectory,divEntry);
 }
 
+PETSc.getDirectory = function(names,callback,callbackdata) {
+
+  /*If names is null, get all*/
+  if(names == null){
+    /*jQuery.getJSON('/SAWs/*',function(data){
+                               if(typeof(callback) == typeof(Function)) callback(data,callbackdata)
+                             })*/
+      jQuery.ajax({type: 'GET',async:"false",dataType: 'json',url: '/SAWs/*', success:
+                   function(data){
+                       console.log("data fetched from server");
+                       console.log(data);
+                       callback(data,callbackdata);
+                   }
+                  }
+                 );console.log('here1');
+  } else {alert("should not be here");
+    jQuery.getJSON('/SAWs/' + names,function(data){
+        if(typeof(callback) == typeof(Function))
+            callback(data,callbackdata);
+    });
+  }
+};
+
 PETSc.displayDirectory = function(sub,divEntry)
-{
+{console.log('here2');
     globaldirectory[divEntry] = sub;
     //var SAWs_pcVal = JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0]);
     //alert("SAWs_pcVal="+SAWs_pcVal);
@@ -30,12 +62,22 @@ PETSc.displayDirectory = function(sub,divEntry)
         jQuery('#continue').on('click', function(){
             SAWs.updateDirectoryFromDisplay(divEntry);
             sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data = ["false"];
-            SAWs.postDirectory(sub);
-            jQuery(divEntry).html("");
-            window.setTimeout(PETSc.getAndDisplayDirectory,1000,null,divEntry);
-        })
-    }
 
+            divSave = divEntry;
+            //PETSc.postDirectory(sub, successFunc);//ignore this for now. I'm trying to get rid of 1000ms delay
+            SAWs.postDirectory(sub);
+
+            PETSc.getAndDisplayDirectory(null, divEntry);
+            window.setTimeout(PETSc.getAndDisplayDirectory,1000,null,divEntry);
+        });
+    } //else alert("no block property or block property is false");
+
+}
+
+PETSc.postDirectory = function(directory, callback)
+{
+    var stringJSON = JSON.stringify(directory);
+    jQuery.ajax({type: 'POST',async:"false",dataType: 'json',url: '/SAWs/*',data: {input: stringJSON}, success: callback});
 }
 
 PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
@@ -45,7 +87,7 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
         if(jQuery("#"+fullkey).length == 0){
             jQuery(divEntry).append("<div id =\""+fullkey+"\"></div>")
             if (key != "SAWs_ROOT_DIRECTORY") {
-	        SAWs.tab(fullkey,tab);
+                //SAWs.tab(fullkey,tab);
 	        //jQuery("#"+fullkey).append("<b>"+ key +"<b><br>");//do not display "PETSc" nor "Options"
             }
 
@@ -55,11 +97,11 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
             jQuery.each(sub[key].variables, function(vKey, vValue) {//for each variable...
 
                 if (vKey[0] != '_' || vKey[1] != '_' ) {//neither the first nor second character are underscores
-                    SAWs.tab(fullkey,tab+1);
+                    //SAWs.tab(fullkey,tab+1);
                     if (vKey[0] != '_') {
                         $("#"+fullkey).append(vKey + ":&nbsp;");
                     }
-                    for(j=0;j<sub[key].variables[vKey].data.length;j++){//vKey tells us a lot of information on what the data is
+                    for(j=0;j<sub[key].variables[vKey].data.length;j++){//vKey tells us a lot of information on what the data is. data.length is 1 most of the time. when it is more than 1, that results in 2 input boxes right next to each other
 
                         if(vKey.indexOf("man") != -1) {//do not display manual, but record the text
                             manualSave = sub[key].variables[vKey].data[j];
@@ -103,8 +145,6 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                                 }
                                 else {//can be changed
                                     $("#"+fullkey).append("<input type=\"text\" style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\" name=\"data\" \\>");
-//                                    $("#"+fullkey).append(save+"<br>");
-//                                    save = "";
                                 }
                                 jQuery("#data"+fullkey+vKey+j).keyup(function(obj) {
                                     console.log( "Key up called "+key+vKey );
