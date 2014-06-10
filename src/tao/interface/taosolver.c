@@ -138,7 +138,6 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->viewgradient=PETSC_FALSE;
   tao->viewjacobian=PETSC_FALSE;
   tao->viewconstraints = PETSC_FALSE;
-  tao->viewtao = PETSC_FALSE;
 
   ierr = TaoResetStatistics(tao);CHKERRQ(ierr);
   *newtao = tao;
@@ -167,9 +166,6 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 PetscErrorCode TaoSolve(Tao tao)
 {
   PetscErrorCode   ierr;
-  char             filename[PETSC_MAX_PATH_LEN];
-  PetscBool        flg;
-  PetscViewer      viewer;
   static PetscBool set = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -192,12 +188,7 @@ PetscErrorCode TaoSolve(Tao tao)
   if (tao->ops->solve){ ierr = (*tao->ops->solve)(tao);CHKERRQ(ierr); }
   ierr = PetscLogEventEnd(Tao_Solve,tao,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(((PetscObject)tao)->prefix,"-tao_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerASCIIOpen(((PetscObject)tao)->comm,filename,&viewer);CHKERRQ(ierr);
-    ierr = TaoView(tao,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = TaoViewFromOptions(tao,NULL,"-tao_view");CHKERRQ(ierr);
 
   if (tao->printreason) {
     if (tao->reason > 0) {
@@ -390,7 +381,6 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       ierr = TaoSetType(tao,default_type);
     }
 
-    ierr = PetscOptionsBool("-tao_view","view Tao info after each minimization has completed","TaoView",PETSC_FALSE,&tao->viewtao,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_fatol","Stop if solution within","TaoSetTolerances",tao->fatol,&tao->fatol,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_frtol","Stop if relative solution within","TaoSetTolerances",tao->frtol,&tao->frtol,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSetConstraintTolerances",tao->catol,&tao->catol,&flg);CHKERRQ(ierr);

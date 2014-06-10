@@ -140,13 +140,11 @@ struct _p_Tao {
     PetscReal fmin;
 
     PetscBool printreason;
-    PetscBool viewtao;
     PetscBool viewsolution;
     PetscBool viewgradient;
     PetscBool viewconstraints;
     PetscBool viewhessian;
     PetscBool viewjacobian;
-    PetscViewer viewer;
 
     TaoSubsetType subset_type;
     PetscInt      hist_max;/* Number of iteration histories to keep */

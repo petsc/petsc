@@ -342,10 +342,7 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s, PetscReal *steplength, TaoLineSearchConvergedReason *reason)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer;
   PetscInt       low1,low2,low3,high1,high2,high3;
-  PetscBool      flg;
-  char           filename[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   *reason = TAOLINESEARCH_CONTINUE_ITERATING;
@@ -416,12 +413,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
     *steplength=ls->step;
   }
 
-  ierr = PetscOptionsGetString(((PetscObject)ls)->prefix,"-tao_ls_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (ls->viewls && !PetscPreLoadingOn) {
-    ierr = PetscViewerASCIIOpen(((PetscObject)ls)->comm,filename,&viewer);CHKERRQ(ierr);
-    ierr = TaoLineSearchView(ls,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = TaoLineSearchViewFromOptions(ls,NULL,"-tao_ls_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -547,7 +539,6 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   ierr = PetscOptionsReal("-tao_ls_rtol","relative tol for acceptable step","",ls->rtol,&ls->rtol,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ls_stepmin","lower bound for step","",ls->stepmin,&ls->stepmin,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ls_stepmax","upper bound for step","",ls->stepmax,&ls->stepmax,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_ls_view","view TaoLineSearch info after each line search has completed","TaoLineSearchView",PETSC_FALSE,&ls->viewls,NULL);CHKERRQ(ierr);
   if (ls->ops->setfromoptions) {
     ierr = (*ls->ops->setfromoptions)(ls);CHKERRQ(ierr);
   }
@@ -955,8 +946,8 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x,
     PetscStackPop;
     ierr = PetscLogEventEnd(TaoLineSearch_EvalEvent,ls,0,0,0);CHKERRQ(ierr);
     ierr = PetscInfo1(ls,"TaoLineSearch Function evaluation: %14.12e\n",(double)(*f));CHKERRQ(ierr);
-    ls->nfgeval++;
   }
+  ls->nfgeval++;
   PetscFunctionReturn(0);
 }
 
