@@ -59,7 +59,6 @@ struct _p_TaoLineSearch {
     PetscReal gtol;      /* tol for curvature condition (gtol>0)*/
     PetscReal stepmin;   /* lower bound for step */
     PetscReal stepmax;   /* upper bound for step */
-    PetscBool viewls;    /* print out information if true */
 
     Tao tao;
 };
