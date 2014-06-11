@@ -1159,7 +1159,7 @@ PetscErrorCode PetscDualSpaceGetType(PetscDualSpace sp, PetscDualSpaceType *name
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceView"
-/*@C
+/*@
   PetscDualSpaceView - Views a PetscDualSpace
 
   Collective on PetscDualSpace
@@ -1189,7 +1189,7 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceViewFromOptions"
-/*
+/*@C
   PetscDualSpaceViewFromOptions - Processes command line options to determine if/how a PetscDualSpace is to be viewed.
 
   Collective on PetscDualSpace
@@ -1203,7 +1203,7 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
 
 .keywords: PetscDualSpace, view, options, database
 .seealso: VecViewFromOptions(), MatViewFromOptions()
-*/
+@*/
 PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace sp, const char prefix[], const char optionname[])
 {
   PetscViewer       viewer;
@@ -1279,7 +1279,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceSetUp"
-/*@C
+/*@
   PetscDualSpaceSetUp - Construct a basis for the PetscDualSpace
 
   Collective on PetscDualSpace
@@ -1406,6 +1406,21 @@ PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetDM"
+/*@
+  PetscDualSpaceGetDM - Get the DM representing the reference cell
+
+  Not collective
+
+  Input Parameter:
+. sp - The PetscDualSpace
+
+  Output Parameter:
+. dm - The reference cell
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceSetDM(), PetscDualSpaceCreate()
+@*/
 PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace sp, DM *dm)
 {
   PetscFunctionBegin;
@@ -1417,6 +1432,19 @@ PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace sp, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceSetDM"
+/*@
+  PetscDualSpaceSetDM - Get the DM representing the reference cell
+
+  Not collective
+
+  Input Parameters:
++ sp - The PetscDualSpace
+- dm - The reference cell
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceGetDM(), PetscDualSpaceCreate()
+@*/
 PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace sp, DM dm)
 {
   PetscErrorCode ierr;
@@ -1432,6 +1460,21 @@ PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace sp, DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetOrder"
+/*@
+  PetscDualSpaceGetOrder - Get the order of the dual space
+
+  Not collective
+
+  Input Parameter:
+. sp - The PetscDualSpace
+
+  Output Parameter:
+. order - The order
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceSetOrder(), PetscDualSpaceCreate()
+@*/
 PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace sp, PetscInt *order)
 {
   PetscFunctionBegin;
@@ -1443,6 +1486,19 @@ PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace sp, PetscInt *order)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceSetOrder"
+/*@
+  PetscDualSpaceSetOrder - Set the order of the dual space
+
+  Not collective
+
+  Input Parameters:
++ sp - The PetscDualSpace
+- order - The order
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceGetOrder(), PetscDualSpaceCreate()
+@*/
 PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace sp, PetscInt order)
 {
   PetscFunctionBegin;
@@ -1453,6 +1509,22 @@ PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace sp, PetscInt order)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetFunctional"
+/*@
+  PetscDualSpaceGetFunctional - Get the i-th basis functional in the dual space
+
+  Not collective
+
+  Input Parameters:
++ sp - The PetscDualSpace
+- i  - The basis number
+
+  Output Parameter:
+. functional - The basis functional
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceGetDimension(), PetscDualSpaceCreate()
+@*/
 PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace sp, PetscInt i, PetscQuadrature *functional)
 {
   PetscInt       dim;
@@ -1469,7 +1541,21 @@ PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace sp, PetscInt i, PetscQ
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetDimension"
-/* Dimension of the space, i.e. number of basis vectors */
+/*@
+  PetscDualSpaceGetDimension - Get the dimension of the dual space, i.e. the number of basis functionals
+
+  Not collective
+
+  Input Parameter:
+. sp - The PetscDualSpace
+
+  Output Parameter:
+. dim - The dimension
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceGetFunctional(), PetscDualSpaceCreate()
+@*/
 PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
 {
   PetscErrorCode ierr;
@@ -1484,6 +1570,21 @@ PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetNumDof"
+/*@C
+  PetscDualSpaceGetNumDof - Get the number of degrees of freedom for each spatial (topological) dimension
+
+  Not collective
+
+  Input Parameter:
+. sp - The PetscDualSpace
+
+  Output Parameter:
+. numDof - An array of length dim+1 which holds the number of dofs for each dimension
+
+  Level: intermediate
+
+.seealso: PetscDualSpaceGetFunctional(), PetscDualSpaceCreate()
+@*/
 PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDof)
 {
   PetscErrorCode ierr;
@@ -1498,7 +1599,7 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceCreateReferenceCell"
-/*@C
+/*@
   PetscDualSpaceCreateReferenceCell - Create a DMPLEX with the appropriate FEM reference cell
 
   Collective on PetscDualSpace
