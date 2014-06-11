@@ -6202,9 +6202,6 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
   ierr = MatCreate(PetscObjectComm((PetscObject) dmCoarse), interpolation);CHKERRQ(ierr);
   ierr = MatSetSizes(*interpolation, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*interpolation, dmCoarse->mattype);CHKERRQ(ierr);
-  ierr = MatSetUp(*interpolation);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(*interpolation);CHKERRQ(ierr);
-  ierr = MatSetOption(*interpolation, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dmFine, &ctx);CHKERRQ(ierr);
   ierr = DMPlexComputeInterpolatorFEM(dmCoarse, dmFine, *interpolation, ctx);CHKERRQ(ierr);
   /* Use naive scaling */
