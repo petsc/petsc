@@ -208,6 +208,17 @@ cdef class PC(Object):
     def setDM(self, DM dm not None):
         CHKERR( PCSetDM(self.pc, dm.dm) )
 
+    def setCoordinates(self, coordinates):
+        cdef ndarray xyz = iarray(coordinates, NPY_PETSC_REAL)
+        if PyArray_ISFORTRAN(xyz): xyz = PyArray_Copy(xyz)
+        if PyArray_NDIM(xyz) != 2: raise ValueError(
+            ("coordinates must have two dimensions: "
+             "coordinates.ndim=%d") % (PyArray_NDIM(xyz)) )
+        cdef PetscInt nvtx = <PetscInt> PyArray_DIM(xyz, 0)
+        cdef PetscInt ndim = <PetscInt> PyArray_DIM(xyz, 1)
+        cdef PetscReal *coords = <PetscReal*> PyArray_DATA(xyz)
+        CHKERR( PCSetCoordinates(self.pc, ndim, nvtx, coords) )
+
     # --- Python ---
 
     def createPython(self, context=None, comm=None):

@@ -120,6 +120,7 @@ cdef extern from * nogil:
     int PCSetOperators(PetscPC,PetscMat,PetscMat)
     int PCGetOperators(PetscPC,PetscMat*,PetscMat*)
     int PCGetOperatorsSet(PetscPC,PetscBool*,PetscBool*)
+    int PCSetCoordinates(PetscPC,PetscInt,PetscInt,PetscReal[])
 
     int PCComputeExplicitOperator(PetscPC,PetscMat*)
 
