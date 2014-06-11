@@ -1464,9 +1464,7 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat In, void *user)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-#if 0
   ierr = PetscLogEventBegin(DMPLEX_InterpolatorFEM,dmc,dmf,0,0);CHKERRQ(ierr);
-#endif
   ierr = DMPlexGetDimension(dmf, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dmf, &fsection);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(dmf, &fglobalSection);CHKERRQ(ierr);
@@ -1556,9 +1554,7 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat In, void *user)
     ierr = MatChop(In, 1.0e-10);CHKERRQ(ierr);
     ierr = MatView(In, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-#if 0
   ierr = PetscLogEventEnd(DMPLEX_InterpolatorFEM,dmc,dmf,0,0);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -1576,6 +1572,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMPLEX_InjectorFEM,dmc,dmf,0,0);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dmf, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dmf, &fsection);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(dmf, &fglobalSection);CHKERRQ(ierr);
@@ -1668,6 +1665,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   ierr = ISDestroy(&fis);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmf, &fv);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmc, &cv);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMPLEX_InjectorFEM,dmc,dmf,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
