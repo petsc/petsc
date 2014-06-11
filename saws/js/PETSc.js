@@ -33,7 +33,7 @@ PETSc.getDirectory = function(names,callback,callbackdata) {
                        callback(data,callbackdata);
                    }
                   }
-                 );console.log('here1');
+                 );
   } else {alert("should not be here");
     jQuery.getJSON('/SAWs/' + names,function(data){
         if(typeof(callback) == typeof(Function))
@@ -43,7 +43,7 @@ PETSc.getDirectory = function(names,callback,callbackdata) {
 };
 
 PETSc.displayDirectory = function(sub,divEntry)
-{console.log('here2');
+{
     globaldirectory[divEntry] = sub;
     //var SAWs_pcVal = JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0]);
     //alert("SAWs_pcVal="+SAWs_pcVal);
@@ -66,11 +66,9 @@ PETSc.displayDirectory = function(sub,divEntry)
             divSave = divEntry;
             //PETSc.postDirectory(sub, successFunc);//ignore this for now. I'm trying to get rid of 1000ms delay
             SAWs.postDirectory(sub);
-
-            PETSc.getAndDisplayDirectory(null, divEntry);
             window.setTimeout(PETSc.getAndDisplayDirectory,1000,null,divEntry);
         });
-    } //else alert("no block property or block property is false");
+    } else console.log("no block property or block property is false"); // alert("no block property or block property is false");
 
 }
 
@@ -93,13 +91,17 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
 
             var save = "";//saved html element containing the description because although the data is fetched: "description, -option, value" we wish to display it: "-option, value, description"
             var manualSave = ""; //saved manual text
+            var prefix = "";//save what the prefix is so that we can prepend it to all the options
 
             jQuery.each(sub[key].variables, function(vKey, vValue) {//for each variable...
 
                 if (vKey[0] != '_' || vKey[1] != '_' ) {//neither the first nor second character are underscores
                     //SAWs.tab(fullkey,tab+1);
                     if (vKey[0] != '_') {
-                        $("#"+fullkey).append(vKey + ":&nbsp;");
+                        if(vKey.indexOf("prefix") == -1 && vKey.indexOf("ChangedMethod") == -1)//not the prefix text so edit to have the prefix prepended to the option text
+                            $("#"+fullkey).append("-" + prefix + vKey.substring(1,vKey.length) + ":&nbsp;");
+                        else
+                            $("#"+fullkey).append(vKey + ":&nbsp;");
                     }
                     for(j=0;j<sub[key].variables[vKey].data.length;j++){//vKey tells us a lot of information on what the data is. data.length is 1 most of the time. when it is more than 1, that results in 2 input boxes right next to each other
 
@@ -111,6 +113,14 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                         if(vKey.indexOf("title") != -1) {//display title in center
                             $("#"+fullkey).append("<center>"+"<span style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</span>"+"</center>");
                             continue;
+                        }
+
+                        if(vKey.indexOf("prefix") != -1) {//record prefix
+                            var saws_prefix = sub[key].variables[vKey].data[j];
+                            if(saws_prefix == "(null)")
+                                prefix = "";
+                            else
+                                prefix = saws_prefix;
                         }
 
                         if(sub[key].variables[vKey].alternatives.length == 0) {//case where there are no alternatives
