@@ -1111,6 +1111,49 @@ PetscErrorCode MatScale_MPIAIJ(Mat A,PetscScalar aa)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDestroy_MatRedundant"
+PetscErrorCode MatDestroy_MatRedundant(Mat A)
+{
+  PetscErrorCode ierr;
+  Mat_Redundant  *redund; 
+  PetscInt       i;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
+    redund = a->redundant;
+  } else {
+    Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
+    redund = a->redundant;
+  }
+  if (redund){
+    if (redund->matseq) { /* via MatGetSubMatrices()  */
+      ierr = ISDestroy(&redund->isrow);CHKERRQ(ierr);
+      ierr = ISDestroy(&redund->iscol);CHKERRQ(ierr);
+      ierr = MatDestroy(&redund->matseq[0]);CHKERRQ(ierr);
+      ierr = PetscFree(redund->matseq);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFree2(redund->send_rank,redund->recv_rank);CHKERRQ(ierr);
+      ierr = PetscFree(redund->sbuf_j);CHKERRQ(ierr);
+      ierr = PetscFree(redund->sbuf_a);CHKERRQ(ierr);
+      for (i=0; i<redund->nrecvs; i++) {
+        ierr = PetscFree(redund->rbuf_j[i]);CHKERRQ(ierr);
+        ierr = PetscFree(redund->rbuf_a[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree4(redund->sbuf_nz,redund->rbuf_nz,redund->rbuf_j,redund->rbuf_a);CHKERRQ(ierr);
+    }
+
+    if (redund->psubcomm) {
+      ierr = PetscSubcommDestroy(&redund->psubcomm);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(redund);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPIAIJ"
 PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
 {
@@ -1121,6 +1164,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D",mat->rmap->N,mat->cmap->N);
 #endif
+  ierr = MatDestroy_MatRedundant(mat);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   ierr = VecDestroy(&aij->diag);CHKERRQ(ierr);
   ierr = MatDestroy(&aij->A);CHKERRQ(ierr);
@@ -2339,49 +2383,6 @@ PetscErrorCode MatSolve_MPIAIJ(Mat A, Vec b, Vec x)
 }
 #endif
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MatRedundant"
-PetscErrorCode MatDestroy_MatRedundant(Mat A)
-{
-  PetscErrorCode ierr;
-  Mat_Redundant  *redund; 
-  PetscInt       i;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-    redund = a->redundant;
-  } else {
-    Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
-    redund = a->redundant;
-  }
-  if (redund){
-    if (redund->matseq) { /* via MatGetSubMatrices()  */
-      ierr = ISDestroy(&redund->isrow);CHKERRQ(ierr);
-      ierr = ISDestroy(&redund->iscol);CHKERRQ(ierr);
-      ierr = MatDestroy(&redund->matseq[0]);CHKERRQ(ierr);
-      ierr = PetscFree(redund->matseq);CHKERRQ(ierr);
-    } else {
-      ierr = PetscFree2(redund->send_rank,redund->recv_rank);CHKERRQ(ierr);
-      ierr = PetscFree(redund->sbuf_j);CHKERRQ(ierr);
-      ierr = PetscFree(redund->sbuf_a);CHKERRQ(ierr);
-      for (i=0; i<redund->nrecvs; i++) {
-        ierr = PetscFree(redund->rbuf_j[i]);CHKERRQ(ierr);
-        ierr = PetscFree(redund->rbuf_a[i]);CHKERRQ(ierr);
-      }
-      ierr = PetscFree4(redund->sbuf_nz,redund->rbuf_nz,redund->rbuf_j,redund->rbuf_a);CHKERRQ(ierr);
-    }
-
-    if (redund->psubcomm) {
-      ierr = PetscSubcommDestroy(&redund->psubcomm);CHKERRQ(ierr);
-    }
-    ierr = redund->Destroy(A);CHKERRQ(ierr);
-    ierr = PetscFree(redund);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetRedundantMatrix_MPIAIJ_interlaced"
@@ -2736,9 +2737,6 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm
     redund->rbuf_j    = rbuf_j;
     redund->rbuf_a    = rbuf_a;
     redund->psubcomm  = NULL;
-
-    redund->Destroy = C->ops->destroy;
-    C->ops->destroy = MatDestroy_MatRedundant;
   }
   PetscFunctionReturn(0);
 }
@@ -2838,8 +2836,6 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     redund->iscol    = iscol;
     redund->matseq   = matseq;
     redund->psubcomm = psubcomm;
-    redund->Destroy               = (*matredundant)->ops->destroy;
-    (*matredundant)->ops->destroy = MatDestroy_MatRedundant;
   }
   PetscFunctionReturn(0);
 }

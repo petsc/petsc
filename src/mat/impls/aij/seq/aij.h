@@ -81,7 +81,6 @@ typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
   PetscSubcomm psubcomm;
   IS           isrow,iscol;
   Mat          *matseq;
-  PetscErrorCode (*Destroy)(Mat);
 } Mat_Redundant;
 
 /*

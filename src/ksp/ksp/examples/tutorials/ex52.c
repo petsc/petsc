@@ -254,18 +254,20 @@ int main(int argc,char **args)
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_MUMPS)
-  PetscInt  icntl,infog34;
-  PetscReal cntl,rinfo12,rinfo13;
-  icntl = 3;
-  ierr = MatMumpsGetCntl(F,icntl,&cntl);CHKERRQ(ierr);
+  if (flg || flg_ch) {
+    PetscInt  icntl,infog34;
+    PetscReal cntl,rinfo12,rinfo13;
+    icntl = 3;
+    ierr = MatMumpsGetCntl(F,icntl,&cntl);CHKERRQ(ierr);
   
-  /* compute determinant */
-  if (!rank) {
-    ierr = MatMumpsGetInfog(F,34,&infog34);CHKERRQ(ierr);
-    ierr = MatMumpsGetRinfog(F,12,&rinfo12);CHKERRQ(ierr);
-    ierr = MatMumpsGetRinfog(F,13,&rinfo13);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  Mumps row pivot threshhold = %g\n",cntl);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  Mumps determinant = (%g, %g) * 2^%D \n",rinfo12,rinfo13,infog34);
+    /* compute determinant */
+    if (!rank) {
+      ierr = MatMumpsGetInfog(F,34,&infog34);CHKERRQ(ierr);
+      ierr = MatMumpsGetRinfog(F,12,&rinfo12);CHKERRQ(ierr);
+      ierr = MatMumpsGetRinfog(F,13,&rinfo13);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Mumps row pivot threshhold = %g\n",cntl);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Mumps determinant = (%g, %g) * 2^%D \n",rinfo12,rinfo13,infog34);
+    }
   }
 #endif
 
