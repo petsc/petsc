@@ -98,9 +98,12 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                 if (vKey[0] != '_' || vKey[1] != '_' ) {//neither the first nor second character are underscores
                     //SAWs.tab(fullkey,tab+1);
                     if (vKey[0] != '_') {
+                        if(vKey.indexOf("prefix") != -1 && sub[key].variables[vKey].data[0] == "(null)")
+                            return;//do not display (null) prefix
+
                         if(vKey.indexOf("prefix") == -1 && vKey.indexOf("ChangedMethod") == -1)//not the prefix text so edit to have the prefix prepended to the option text
                             $("#"+fullkey).append("-" + prefix + vKey.substring(1,vKey.length) + ":&nbsp;");
-                        else
+                        else if(vKey.indexOf("ChangedMethod") == -1) //if reaches here, it is the prefix text
                             $("#"+fullkey).append(vKey + ":&nbsp;");
                     }
                     for(j=0;j<sub[key].variables[vKey].data.length;j++){//vKey tells us a lot of information on what the data is. data.length is 1 most of the time. when it is more than 1, that results in 2 input boxes right next to each other
@@ -127,8 +130,14 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                             if(sub[key].variables[vKey].dtype == "SAWs_BOOLEAN") {
                                 $("#"+fullkey).append("<select id=\"data"+fullkey+vKey+j+"\">");//make the boolean dropdown list.
                                 $("#data"+fullkey+vKey+j).append("<option value=\"true\">True</option> <option value=\"false\">False</option>");
-                                $("#"+fullkey).append(save+"<br>");
-                                save = "";
+                                if(vKey == "ChangedMethod") {//do not show changedmethod to user
+                                    $("#data"+fullkey+vKey+j).attr("hidden",true);
+                                }
+                                else {//do not add the extra line if it was ChangedMethod
+                                    $("#"+fullkey).append(save+"<br>");
+                                    save = "";
+                                }
+
                             } else {
                                 if(sub[key].variables[vKey].mtype != "SAWs_WRITE") {
                                     if(save != "")
