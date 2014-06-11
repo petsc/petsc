@@ -62,6 +62,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr = PetscDSCreate(comm, &v->prob);CHKERRQ(ierr);
   v->dmBC = NULL;
   v->outputSequenceNum = -1;
+  v->outputSequenceVal = 0.0;
   ierr = DMSetVecType(v,VECSTANDARD);CHKERRQ(ierr);
   ierr = DMSetMatType(v,MATAIJ);CHKERRQ(ierr);
   *dm = v;
@@ -3760,13 +3761,14 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
 #undef __FUNCT__
 #define __FUNCT__ "DMGetOutputSequenceNumber"
 /*@
-  DMGetOutputSequenceNumber - Retrieve the sequence number for output
+  DMGetOutputSequenceNumber - Retrieve the sequence number/value for output
 
   Input Parameter:
 . dm - The original DM
 
-  Output Parameter:
-. num - The output sequence number
+  Output Parameters:
++ num - The output sequence number
+- val - The output sequence value
 
   Level: intermediate
 
@@ -3775,23 +3777,24 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
 
 .seealso: VecView()
 @*/
-PetscErrorCode DMGetOutputSequenceNumber(DM dm, PetscInt *num)
+PetscErrorCode DMGetOutputSequenceNumber(DM dm, PetscInt *num, PetscReal *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(num,2);
-  *num = dm->outputSequenceNum;
+  if (num) {PetscValidPointer(num,2); *num = dm->outputSequenceNum;}
+  if (val) {PetscValidPointer(val,3);*val = dm->outputSequenceVal;}
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetOutputSequenceNumber"
 /*@
-  DMSetOutputSequenceNumber - Set the sequence number for output
+  DMSetOutputSequenceNumber - Set the sequence number/value for output
 
   Input Parameters:
 + dm - The original DM
-- num - The output sequence number
+. num - The output sequence number
+- val - The output sequence value
 
   Level: intermediate
 
@@ -3800,10 +3803,52 @@ PetscErrorCode DMGetOutputSequenceNumber(DM dm, PetscInt *num)
 
 .seealso: VecView()
 @*/
-PetscErrorCode DMSetOutputSequenceNumber(DM dm, PetscInt num)
+PetscErrorCode DMSetOutputSequenceNumber(DM dm, PetscInt num, PetscReal val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dm->outputSequenceNum = num;
+  dm->outputSequenceVal = val;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMOutputSequenceLoad"
+/*@C
+  DMOutputSequenceLoad - Retrieve the sequence value from a Viewer
+
+  Input Parameters:
++ dm   - The original DM
+. name - The sequence name
+- num  - The output sequence number
+
+  Output Parameter:
+. val  - The output sequence value
+
+  Level: intermediate
+
+  Note: This is intended for output that should appear in sequence, for instance
+  a set of timesteps in an HDF5 file, or a set of realizations of a stochastic system.
+
+.seealso: DMGetOutputSequenceNumber(), DMSetOutputSequenceNumber(), VecView()
+@*/
+PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char *name, PetscInt num, PetscReal *val)
+{
+  PetscBool      ishdf5;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  PetscValidPointer(val,4);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+#if defined(PETSC_HAVE_HDF5)
+    PetscScalar value;
+
+    ierr = DMSequenceLoad_HDF5(dm, name, num, &value, viewer);CHKERRQ(ierr);
+    *val = (PetscReal) value;
+#endif
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerHDF5Open()");
   PetscFunctionReturn(0);
 }

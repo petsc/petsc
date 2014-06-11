@@ -152,8 +152,9 @@ PETSC_EXTERN PetscErrorCode DMGetPointSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
 
 PETSC_EXTERN PetscErrorCode DMGetOutputDM(DM, DM *);
-PETSC_EXTERN PetscErrorCode DMGetOutputSequenceNumber(DM, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMSetOutputSequenceNumber(DM, PetscInt);
+PETSC_EXTERN PetscErrorCode DMGetOutputSequenceNumber(DM, PetscInt *, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMSetOutputSequenceNumber(DM, PetscInt, PetscReal);
+PETSC_EXTERN PetscErrorCode DMOutputSequenceLoad(DM, PetscViewer, const char *, PetscInt, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode DMGetDS(DM, PetscDS *);
 PETSC_EXTERN PetscErrorCode DMSetDS(DM, PetscDS);

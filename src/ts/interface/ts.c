@@ -2628,7 +2628,7 @@ PetscErrorCode  TSStep(TS ts)
 
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
-  ierr = DMSetOutputSequenceNumber(dm, ts->steps);CHKERRQ(ierr);
+  ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
   ierr = VecViewFromOptions(ts->vec_sol, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
@@ -2636,7 +2636,7 @@ PetscErrorCode  TSStep(TS ts)
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
 
   ts->time_step_prev = ts->ptime - ts->ptime_prev;
-  ierr = DMSetOutputSequenceNumber(dm, ts->steps);CHKERRQ(ierr);
+  ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {
