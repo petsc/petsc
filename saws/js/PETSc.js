@@ -95,111 +95,98 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
 
             jQuery.each(sub[key].variables, function(vKey, vValue) {//for each variable...
 
-                if (vKey[0] != '_' || vKey[1] != '_' ) {//neither the first nor second character are underscores
-                    //SAWs.tab(fullkey,tab+1);
-                    if (vKey[0] != '_') {
-                        if(vKey.indexOf("prefix") != -1 && sub[key].variables[vKey].data[0] == "(null)")
-                            return;//do not display (null) prefix
+                if (vKey[0] == '_' && vKey[1] == '_' )
+                    return;
+                //SAWs.tab(fullkey,tab+1);
+                if (vKey[0] != '_') {//this chunk of code adds the option name
+                    if(vKey.indexOf("prefix") != -1 && sub[key].variables[vKey].data[0] == "(null)")
+                        return;//do not display (null) prefix
 
-                        if(vKey.indexOf("prefix") == -1 && vKey.indexOf("ChangedMethod") == -1)//not the prefix text so edit to have the prefix prepended to the option text
-                            $("#"+fullkey).append("-" + prefix + vKey.substring(1,vKey.length) + ":&nbsp;");
-                        else if(vKey.indexOf("ChangedMethod") == -1) //if reaches here, it is the prefix text
-                            $("#"+fullkey).append(vKey + ":&nbsp;");
+                    if(vKey.indexOf("prefix") == -1 && vKey.indexOf("ChangedMethod") == -1)//not the prefix text so edit to have the prefix prepended to the option text
+                        $("#"+fullkey).append("-" + prefix + vKey.substring(1,vKey.length) + ":&nbsp;");
+                    else if(vKey.indexOf("ChangedMethod") == -1) //if reaches here, it is the prefix text
+                        $("#"+fullkey).append(vKey + ":&nbsp;");
+                }
+
+                for(j=0;j<sub[key].variables[vKey].data.length;j++){//vKey tells us a lot of information on what the data is. data.length is 1 most of the time. when it is more than 1, that results in 2 input boxes right next to each other
+
+                    if(vKey.indexOf("man") != -1) {//do not display manual, but record the text
+                        manualSave = sub[key].variables[vKey].data[j];
+                        continue;
                     }
-                    for(j=0;j<sub[key].variables[vKey].data.length;j++){//vKey tells us a lot of information on what the data is. data.length is 1 most of the time. when it is more than 1, that results in 2 input boxes right next to each other
 
-                        if(vKey.indexOf("man") != -1) {//do not display manual, but record the text
-                            manualSave = sub[key].variables[vKey].data[j];
-                            continue;
-                        }
+                    if(vKey.indexOf("title") != -1) {//display title in center
+                        $("#"+fullkey).append("<center>"+"<span style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</span>"+"</center>");
+                        continue;
+                    }
 
-                        if(vKey.indexOf("title") != -1) {//display title in center
-                            $("#"+fullkey).append("<center>"+"<span style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</span>"+"</center>");
-                            continue;
-                        }
+                    if(vKey.indexOf("prefix") != -1) {//record prefix
+                        var saws_prefix = sub[key].variables[vKey].data[j];
+                        if(saws_prefix == "(null)")
+                            prefix = "";
+                        else
+                            prefix = saws_prefix;
+                    }
 
-                        if(vKey.indexOf("prefix") != -1) {//record prefix
-                            var saws_prefix = sub[key].variables[vKey].data[j];
-                            if(saws_prefix == "(null)")
-                                prefix = "";
-                            else
-                                prefix = saws_prefix;
-                        }
+                    if(sub[key].variables[vKey].alternatives.length == 0) {//case where there are no alternatives
+                        if(sub[key].variables[vKey].dtype == "SAWs_BOOLEAN") {
+                            $("#"+fullkey).append("<select id=\"data"+fullkey+vKey+j+"\">");//make the boolean dropdown list.
+                            $("#data"+fullkey+vKey+j).append("<option value=\"true\">True</option> <option value=\"false\">False</option>");
+                            if(vKey == "ChangedMethod") {//do not show changedmethod to user
+                                $("#data"+fullkey+vKey+j).attr("hidden",true);
+                            }
+                            else {//do not add the extra line if it was ChangedMethod
+                                $("#"+fullkey).append(save+"<br>");
+                                save = "";
+                            }
 
-                        if(sub[key].variables[vKey].alternatives.length == 0) {//case where there are no alternatives
-                            if(sub[key].variables[vKey].dtype == "SAWs_BOOLEAN") {
-                                $("#"+fullkey).append("<select id=\"data"+fullkey+vKey+j+"\">");//make the boolean dropdown list.
-                                $("#data"+fullkey+vKey+j).append("<option value=\"true\">True</option> <option value=\"false\">False</option>");
-                                if(vKey == "ChangedMethod") {//do not show changedmethod to user
-                                    $("#data"+fullkey+vKey+j).attr("hidden",true);
-                                }
-                                else {//do not add the extra line if it was ChangedMethod
+                        } else {
+                            if(sub[key].variables[vKey].mtype != "SAWs_WRITE") {
+                                if(save != "")
+                                    $("#"+fullkey).append(save+"<br>");
+
+                                var manualDirectory = "all"; //this directory does not exist yet so links will not work for now
+
+                                save = "<a style=\"font-family: Courier\" href=\"http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/" +  manualDirectory + "/" + manualSave + ".html\" title=\"" + manualSave + "\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</a>";//can't be changed
+
+                                if(vKey.indexOf("prefix") != -1) {//data of prefix so dont do manual and use immediately
+                                    save = "<a style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</a>";//can't be changed
                                     $("#"+fullkey).append(save+"<br>");
                                     save = "";
                                 }
-
-                            } else {
-                                if(sub[key].variables[vKey].mtype != "SAWs_WRITE") {
-                                    if(save != "")
-                                        $("#"+fullkey).append(save+"<br>");
-
-                                    var manualDirectory = "unknown%20directory";//this should be overwritten
-                                    if(manualSave.indexOf("KSP") == 0) {
-                                        manualDirectory = "KSP";
-                                    }
-                                    else if(manualSave.indexOf("PC") == 0) {
-                                        manualDirectory = "PC";
-                                    }
-                                    else if(manualSave.indexOf("Petsc") == 0) {
-                                        manualDirectory = "Sys";
-                                    }
-
-                                    save = "<a style=\"font-family: Courier\" href=\"http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/" +  manualDirectory + "/" + manualSave + ".html\" title=\"" + manualSave + "\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</a>";//can't be changed
-
-                                    if(vKey.indexOf("prefix") != -1) {//data of prefix so dont do manual and use immediately
-                                        save = "<a style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</a>";//can't be changed
-                                        $("#"+fullkey).append(save+"<br>");
-                                        save = "";
-                                    }
-                                }
-                                else {//can be changed
-                                    $("#"+fullkey).append("<input type=\"text\" style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\" name=\"data\" \\>");
-                                }
-                                jQuery("#data"+fullkey+vKey+j).keyup(function(obj) {
-                                    console.log( "Key up called "+key+vKey );
-                                    sub[key].variables[vKey].selected = 1;
-                                    $("#data"+fullkey+"ChangedMethod0").find("option[value='true']").attr("selected","selected");//set changed to true automatically
-                                });
                             }
-                            jQuery("#data"+fullkey+vKey+j).val(sub[key].variables[vKey].data[j]);//set val from server
-                            if(vKey != "ChangedMethod") {
-                                jQuery("#data"+fullkey+vKey+j).change(function(obj) {
-                                    console.log( "Change called"+key+vKey );
-                                    sub[key].variables[vKey].selected = 1;
-                                    $("#data"+fullkey+"ChangedMethod0").find("option[value='true']").attr("selected","selected");//set changed to true automatically
-                                });
+                            else {//can be changed (append dropdown list)
+                                $("#"+fullkey).append("<input type=\"text\" style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\" name=\"data\" \\>");
                             }
-                        } else {//case where there are alternatives
-                            jQuery("#"+fullkey).append("<select id=\"data"+fullkey+vKey+j+"\">");
-                            jQuery("#data"+fullkey+vKey+j).append("<option value=\""+sub[key].variables[vKey].data[j]+"\">"+sub[key].variables[vKey].data[j]+"</option>");
-                            for(var l=0;l<sub[key].variables[vKey].alternatives.length;l++) {
-                                jQuery("#data"+fullkey+vKey+j).append("<option value=\""+sub[key].variables[vKey].alternatives[l]+"\">"+sub[key].variables[vKey].alternatives[l]+"</option>");
-                            }
-                            jQuery("#"+fullkey).append("</select>");
-                            $("#"+fullkey).append(save+"<br>");
-                            save = "";
-
+                            jQuery("#data"+fullkey+vKey+j).keyup(function(obj) {
+                                console.log( "Key up called "+key+vKey );
+                                sub[key].variables[vKey].selected = 1;
+                                $("#data"+fullkey+"ChangedMethod0").find("option[value='true']").attr("selected","selected");//set changed to true automatically
+                            });
+                        }
+                        jQuery("#data"+fullkey+vKey+j).val(sub[key].variables[vKey].data[j]);//set val from server
+                        if(vKey != "ChangedMethod") {
                             jQuery("#data"+fullkey+vKey+j).change(function(obj) {
                                 console.log( "Change called"+key+vKey );
                                 sub[key].variables[vKey].selected = 1;
                                 $("#data"+fullkey+"ChangedMethod0").find("option[value='true']").attr("selected","selected");//set changed to true automatically
                             });
                         }
-                        if(sub[key].variables[vKey].mtype != "SAWs_WRITE") {
-                            jQuery("#data"+ fullkey+vKey+j).attr('readonly',true);
-                        } else {
-                            jQuery("#data"+ fullkey+vKey+j).attr('style',"color: #FF0000");
+                    } else {//case where there are alternatives
+                        jQuery("#"+fullkey).append("<select id=\"data"+fullkey+vKey+j+"\">");
+                        jQuery("#data"+fullkey+vKey+j).append("<option value=\""+sub[key].variables[vKey].data[j]+"\">"+sub[key].variables[vKey].data[j]+"</option>");
+                        for(var l=0;l<sub[key].variables[vKey].alternatives.length;l++) {
+                            jQuery("#data"+fullkey+vKey+j).append("<option value=\""+sub[key].variables[vKey].alternatives[l]+"\">"+sub[key].variables[vKey].alternatives[l]+"</option>");
                         }
+                        jQuery("#"+fullkey).append("</select>");
+                        $("#"+fullkey).append(save+"<br>");
+                        save = "";
+
+                        jQuery("#data"+fullkey+vKey+j).change(function(obj) {
+                            console.log( "Change called"+key+vKey );
+                            sub[key].variables[vKey].selected = 1;
+                            $("#data"+fullkey+"ChangedMethod0").find("option[value='true']").attr("selected","selected");//set changed to true automatically
+                        });
                     }
                 }
             });
