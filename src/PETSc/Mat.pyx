@@ -1015,10 +1015,27 @@ cdef class Mat(Object):
         ibdiag.shape = (toInt(m//bs), toInt(bs), toInt(bs))
         return ibdiag.transpose(0, 2, 1)
 
-    # matrix-vector product
+    # null space
 
     def setNullSpace(self, NullSpace nsp not None):
         CHKERR( MatSetNullSpace(self.mat, nsp.nsp) )
+
+    def getNullSpace(self):
+        cdef NullSpace nsp = NullSpace()
+        CHKERR( MatGetNullSpace(self.mat, &nsp.nsp) )
+        PetscINCREF(nsp.obj)
+        return nsp
+
+    def setNearNullSpace(self, NullSpace nsp not None):
+        CHKERR( MatSetNearNullSpace(self.mat, nsp.nsp) )
+
+    def getNearNullSpace(self):
+        cdef NullSpace nsp = NullSpace()
+        CHKERR( MatGetNearNullSpace(self.mat, &nsp.nsp) )
+        PetscINCREF(nsp.obj)
+        return nsp
+
+    # matrix-vector product
 
     def mult(self, Vec x not None, Vec y not None):
         CHKERR( MatMult(self.mat, x.vec, y.vec) )

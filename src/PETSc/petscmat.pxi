@@ -349,13 +349,17 @@ cdef extern from * nogil:
     int MatNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,PetscVec[],
                            PetscNullSpace*)
     int MatNullSpaceRemove(PetscNullSpace,PetscVec)
-    int MatSetNullSpace(PetscMat,PetscNullSpace)
     int MatNullSpaceTest(PetscNullSpace,PetscMat)
 
     ctypedef int MatNullSpaceFunction(PetscNullSpace,
                                       PetscVec,
                                       void*) except PETSC_ERR_PYTHON
     int MatNullSpaceSetFunction(PetscNullSpace,MatNullSpaceFunction*,void*)
+
+    int MatSetNullSpace(PetscMat,PetscNullSpace)
+    int MatGetNullSpace(PetscMat,PetscNullSpace*)
+    int MatSetNearNullSpace(PetscMat,PetscNullSpace)
+    int MatGetNearNullSpace(PetscMat,PetscNullSpace*)
 
 cdef inline NullSpace ref_NullSpace(PetscNullSpace nsp):
     cdef NullSpace ob = <NullSpace> NullSpace()
