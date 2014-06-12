@@ -12,8 +12,8 @@ var successFunc = function(data, textStatus, jqXHR)//ignore this for now. I'm tr
 
 PETSc = {};
 
-var encounteredMg = false; // record whether we encountered pc=mg
-var mgLevel = -1;//record the current mg level: 0=coarse, >0 = smoothing
+var mgLevelLocation = "";//record where we encountered the mg (using the endtag numbering system)
+var sawsInfo = [];//ignore this. the parseprefix method depends on the existence of this variable. I will restructure the parseprefix system soon. the method shouldn't write to this variable.
 
 var init = false;//record if initialized the page (added appropriate divs for the diagrams and such)
 
@@ -21,6 +21,9 @@ var init = false;//record if initialized the page (added appropriate divs for th
 PETSc.getAndDisplayDirectory = function(names,divEntry){
 
     if(!init) {
+        $("head").append('<script src="js/parsePrefix.js"></script>');//reuse the code for parsing thru the prefix
+        $("head").append('<script src="js/fetchSawsData.js"></script>');//reuse the code for alloc mem
+        $("head").append('<script src="js/utils.js"></script>');//reuse the code for alloc mem
         $("body").append("<div id=\"multigridDiagram\"></div>");
         $("body").append("<div id=\"fieldsplitDiagram\"></div>");
         init = true;
@@ -39,8 +42,8 @@ PETSc.getDirectory = function(names,callback,callbackdata) {
                              })*/
       jQuery.ajax({type: 'GET',dataType: 'json',url: '/SAWs/*', success:
                    function(data){
-                       console.log("data fetched from server");
-                       console.log(data);
+                       //console.log("data fetched from server");
+                       //console.log(data);
                        callback(data,callbackdata);
                    }
                   }
@@ -56,8 +59,31 @@ PETSc.getDirectory = function(names,callback,callbackdata) {
 PETSc.displayDirectory = function(sub,divEntry)
 {
     globaldirectory[divEntry] = sub;
-    //var SAWs_pcVal = JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0]);
-    //alert("SAWs_pcVal="+SAWs_pcVal);
+
+    if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
+        var SAWs_pcVal = JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0]);
+
+        var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];
+        if(SAWs_prefix == "(null)")
+            SAWs_prefix = "";
+
+        var generatedEndtag = parsePrefixForEndtag(SAWs_prefix,0);
+
+        if(SAWs_pcVal == "mg" && mgLevelLocation != "")
+            alert("Nested Multigrid Not Yet Supported!");
+        else if(mgLevelLocation != "") {
+            var _index = generatedEndtag.length;
+            var _level = generatedEndtag[_index-1];//get the last character
+
+            $("#multigridDiagram").html("");//clear the diagram
+            $("#multigridDiagram").append("<img src='images/multigrid1.bmp' alt='Error Loading Multigrid Diagram'><br>");
+            if(_level > 0)
+                $("#multigridDiagram").append("<img src='images/multigrid2.bmp' alt='Error Loading Multigrid Diagram'><br>");
+            if(_level > 1)
+                $("#multigridDiagram").append("<img src='images/multigrid3.bmp' alt='Error Loading Multigrid Diagram'><br>");
+        }
+    }
+
     //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].alternatives)) //pcList
 
     //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables))
