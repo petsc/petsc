@@ -1,6 +1,6 @@
 //this js file contains methods copied from matt's original SAWs.js but modified to fit our needs
 
-var divSave;
+var divSave;//ignore this for now. I'm trying to get rid of the 1000ms delay
 
 var successFunc = function(data, textStatus, jqXHR)//ignore this for now. I'm trying to get rid of the 1000ms delay
 {
@@ -12,8 +12,19 @@ var successFunc = function(data, textStatus, jqXHR)//ignore this for now. I'm tr
 
 PETSc = {};
 
+var encounteredMg = false; // record whether we encountered pc=mg
+var mgLevel = -1;//record the current mg level: 0=coarse, >0 = smoothing
+
+var init = false;//record if initialized the page (added appropriate divs for the diagrams and such)
+
+//This Function is called once (document).ready. The javascript for this was written by the PETSc code into index.html
 PETSc.getAndDisplayDirectory = function(names,divEntry){
-//    window.location = 'pcoptions.html'
+
+    if(!init) {
+        $("body").append("<div id=\"multigridDiagram\"></div>");
+        $("body").append("<div id=\"fieldsplitDiagram\"></div>");
+        init = true;
+    }
 
     jQuery(divEntry).html("");
     PETSc.getDirectory(names,PETSc.displayDirectory,divEntry);
@@ -26,7 +37,7 @@ PETSc.getDirectory = function(names,callback,callbackdata) {
     /*jQuery.getJSON('/SAWs/*',function(data){
                                if(typeof(callback) == typeof(Function)) callback(data,callbackdata)
                              })*/
-      jQuery.ajax({type: 'GET',async:"false",dataType: 'json',url: '/SAWs/*', success:
+      jQuery.ajax({type: 'GET',dataType: 'json',url: '/SAWs/*', success:
                    function(data){
                        console.log("data fetched from server");
                        console.log(data);
@@ -68,14 +79,14 @@ PETSc.displayDirectory = function(sub,divEntry)
             SAWs.postDirectory(sub);
             window.setTimeout(PETSc.getAndDisplayDirectory,1000,null,divEntry);
         });
-    } else console.log("no block property or block property is false"); // alert("no block property or block property is false");
+    } else console.log("no block property or block property is false");
 
 }
 
-PETSc.postDirectory = function(directory, callback)
+PETSc.postDirectory = function(directory, callback)//ignore this for now. I'm trying to get rid of the 1000ms delay
 {
     var stringJSON = JSON.stringify(directory);
-    jQuery.ajax({type: 'POST',async:"false",dataType: 'json',url: '/SAWs/*',data: {input: stringJSON}, success: callback});
+    jQuery.ajax({type: 'POST',dataType: 'json',url: '/SAWs/*',data: {input: stringJSON}, success: callback});
 }
 
 PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
@@ -92,6 +103,7 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
             var save = "";//saved html element containing the description because although the data is fetched: "description, -option, value" we wish to display it: "-option, value, description"
             var manualSave = ""; //saved manual text
             var prefix = "";//save what the prefix is so that we can prepend it to all the options
+            var mg_encountered = false;//record whether or not we have encountered pc=multigrid
 
             jQuery.each(sub[key].variables, function(vKey, vValue) {//for each variable...
 
