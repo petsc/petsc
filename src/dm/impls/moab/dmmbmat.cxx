@@ -5,7 +5,6 @@
 #include <MBTagConventions.hpp>
 
 static PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscBool);
-static PetscErrorCode DMMoab_MatFillMatrixEntries_Private(DM,Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Moab"
@@ -60,9 +59,6 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
 
   /* set up internal matrix data-structures */
   ierr = MatSetUp(A);CHKERRQ(ierr);
-
-  /* set the correct NNZ pattern by setting matrix entries - make the matrix ready to use */
-  ierr = DMMoab_MatFillMatrixEntries_Private(dm,A);CHKERRQ(ierr);
 
   *J = A;
   PetscFunctionReturn(0);
@@ -190,76 +186,6 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
       if ((ionz && onz) && (onz[i]>*ionz)) *ionz=onz[i];
     }
   }
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMMoab_MatFillMatrixEntries_Private"
-PetscErrorCode DMMoab_MatFillMatrixEntries_Private(DM dm, Mat A)
-{
-  DM_Moab                   *dmmoab = (DM_Moab*)dm->data;
-  PetscInt                  nconn = 0,prev_nconn = 0,bs,nloc,nfields;
-  const moab::EntityHandle  *connect;
-  PetscScalar               *locala=NULL;
-  PetscInt                  *dof_indices=NULL;
-  PetscBool                 isinterlaced;
-  char*                     tmp=0;
-  MatType                   mtype;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  bs = dmmoab->bs;
-  nloc = dmmoab->nloc;
-  nfields = dmmoab->numFields;
-
-  /* check whether we are updating BAIJ or AIJ matrix */
-  ierr = MatGetType(A, &mtype);CHKERRQ(ierr);
-  ierr = PetscStrstr(mtype, "baij", &tmp);CHKERRQ(ierr);
-  isinterlaced=(tmp || bs==nfields ? PETSC_TRUE : PETSC_FALSE);
-
-  /* loop over local elements */
-  for(moab::Range::iterator iter = dmmoab->elocal->begin(); iter != dmmoab->elocal->end(); iter++) {
-    const moab::EntityHandle ehandle = *iter;
-
-    /* Get connectivity information: */
-    ierr = DMMoabGetElementConnectivity(dm, ehandle, &nconn, &connect);CHKERRQ(ierr);
-
-    /* if we have mixed elements or arrays have not been initialized - Allocate now */
-    if (prev_nconn != nconn) {
-      if (locala) {
-        ierr = PetscFree(locala);CHKERRQ(ierr);
-        ierr = PetscFree(dof_indices);CHKERRQ(ierr);
-      }
-      ierr = PetscMalloc(sizeof(PetscScalar)*nconn*nconn*nfields*nfields,&locala);CHKERRQ(ierr);
-      ierr = PetscMemzero(locala,sizeof(PetscScalar)*nconn*nconn*nfields*nfields);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*nconn*(isinterlaced?1:nfields),&dof_indices);CHKERRQ(ierr);
-      prev_nconn=nconn;
-    }
-
-    if (isinterlaced) {
-      /* get the global DOF number to appropriately set the element contribution in the RHS vector */
-      ierr = DMMoabGetDofsBlockedLocal(dm, nconn, connect, dof_indices);CHKERRQ(ierr);
-
-      /* set the values directly into appropriate locations. Can alternately use VecSetValues */
-      ierr = MatSetValuesBlockedLocal(A, nconn, dof_indices, nconn, dof_indices, locala, INSERT_VALUES);CHKERRQ(ierr);
-    }
-    else {
-      /* get the global DOF number to appropriately set the element contribution in the RHS vector */
-      ierr = DMMoabGetDofsLocal(dm, nconn, connect, dof_indices);CHKERRQ(ierr);
-
-      /* set the values directly into appropriate locations. Can alternately use VecSetValues */
-      ierr = MatSetValuesLocal(A, nconn, dof_indices, nconn, dof_indices, locala, INSERT_VALUES);CHKERRQ(ierr);
-    }
-  }
-
-  /* clean up memory */
-  ierr = PetscFree(locala);CHKERRQ(ierr);
-  ierr = PetscFree(dof_indices);CHKERRQ(ierr);
-
-  /* finish assembly */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
