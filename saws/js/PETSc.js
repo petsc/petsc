@@ -76,11 +76,18 @@ PETSc.displayDirectory = function(sub,divEntry)
             var _level = generatedEndtag[_index-1];//get the last character
 
             $("#multigridDiagram").html("");//clear the diagram
-            $("#multigridDiagram").append("<img src='images/multigrid1.bmp' alt='Error Loading Multigrid Diagram'><br>");
-            if(_level > 0)
-                $("#multigridDiagram").append("<img src='images/multigrid2.bmp' alt='Error Loading Multigrid Diagram'><br>");
-            if(_level > 1)
-                $("#multigridDiagram").append("<img src='images/multigrid3.bmp' alt='Error Loading Multigrid Diagram'><br>");
+            $("#multigridDiagram").append("<img src='images/multigrid0.bmp' alt='Error Loading Multigrid Diagram'>");
+            $("#multigridDiagram").append("<span>Coarse Grid (Level 0)</span><br>");
+            if(_level > 0) {
+                $("#multigridDiagram").append("<img src='images/transition.bmp' alt='Error Loading Multigrid Diagram'><br>");
+                $("#multigridDiagram").append("<img src='images/multigrid1.bmp' alt='Error Loading Multigrid Diagram'>");
+                $("#multigridDiagram").append("<span>Level 1</span><br>");
+            }
+            if(_level > 1) {
+                $("#multigridDiagram").append("<img src='images/transition.bmp' alt='Error Loading Multigrid Diagram'><br>");
+                $("#multigridDiagram").append("<img src='images/multigrid2.bmp' alt='Error Loading Multigrid Diagram'>");
+                $("#multigridDiagram").append("<span>Level 2</span><br>");
+            }
         }
     }
 
