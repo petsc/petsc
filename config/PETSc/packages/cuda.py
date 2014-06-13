@@ -107,7 +107,7 @@ class Configure(PETSc.package.NewPackage):
       self.setCompilers.pushLanguage('CUDA')
 #Not setting -arch if with-cuda-arch is not specified uses nvcc default architecture
       if 'with-cuda-arch' in self.framework.argDB:
-        if not self.framework.argDB['with-cuda-arch'] in ['compute_10', 'compute_11', 'compute_12', 'compute_13', 'compute_20', 'compute_21', 'compute_30', 'compute_35', 'sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21', 'sm_30', 'sm_35']:
+        if not self.framework.argDB['with-cuda-arch'] in ['compute_10', 'compute_11', 'compute_12', 'compute_13', 'compute_20', 'compute_21', 'compute_30', 'compute_35', 'compute_50', 'sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21', 'sm_30', 'sm_35', 'sm_50']:
           raise RuntimeError('CUDA Error: specified CUDA architecture invalid.  Example of valid architecture: \'-with-cuda-arch=sm_13\'')
         else:
           self.cudaArch = '-arch='+ self.framework.argDB['with-cuda-arch']
