@@ -146,6 +146,7 @@ struct _p_DM {
   /* Output structures */
   DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
   PetscInt                outputSequenceNum;    /* The current sequence number for output */
+  PetscReal               outputSequenceVal;    /* The current sequence value for output */
 
   PetscObject             dmksp,dmsnes,dmts;
 };
@@ -221,5 +222,9 @@ PETSC_EXTERN PetscErrorCode DMCreateSubDM_Section_Private(DM,PetscInt,PetscInt[]
 ?????   individual global vectors   ????
 
 */
+
+#if defined(PETSC_HAVE_HDF5)
+PETSC_EXTERN PetscErrorCode DMSequenceLoad_HDF5(DM, const char *, PetscInt, PetscScalar *, PetscViewer);
+#endif
 
 #endif

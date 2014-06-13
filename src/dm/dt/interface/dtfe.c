@@ -4750,8 +4750,7 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
     PetscInt sd = 0;
 
     for (j = 0; j < pdim; ++j) {
-      PetscBool       inside = PETSC_TRUE;
-      PetscReal       sum    = 0.0;
+      PetscBool       inside;
       PetscQuadrature f;
       PetscInt        d, e;
 
@@ -4759,13 +4758,10 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
       /* Apply transform to first point, and check that point is inside subcell */
       for (d = 0; d < dim; ++d) {
         subpoint[d] = -1.0;
-        for (e = 0; e < dim; ++e) {
-          subpoint[d] += cmp->invjac[(s*dim + d)*dim+e]*(f->points[e] - cmp->v0[s*dim+e]);
-        }
-        if (subpoint[d] < -1.0) {inside = PETSC_FALSE; break;}
-        sum += subpoint[d];
+        for (e = 0; e < dim; ++e) subpoint[d] += cmp->invjac[(s*dim + d)*dim+e]*(f->points[e] - cmp->v0[s*dim+e]);
       }
-      if (inside && (sum <= 0.0)) {cmp->embedding[s*spdim+sd++] = j;}
+      ierr = CellRefinerInCellTest_Internal(cmp->cellRefiner, subpoint, &inside);CHKERRQ(ierr);
+      if (inside) {cmp->embedding[s*spdim+sd++] = j;}
     }
     if (sd != spdim) SETERRQ3(PetscObjectComm((PetscObject) fem), PETSC_ERR_PLIB, "Subelement %d has %d dual basis vectors != %d", s, sd, spdim);
   }
@@ -4827,19 +4823,15 @@ PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, con
   ierr = DMGetWorkArray(dm, dim, PETSC_REAL, &subpoint);CHKERRQ(ierr);
   for (p = 0; p < npoints; ++p) {
     for (s = 0; s < cmp->numSubelements; ++s) {
-      PetscBool inside = PETSC_TRUE;
-      PetscReal sum    = 0.0;
+      PetscBool inside;
 
       /* Apply transform, and check that point is inside cell */
       for (d = 0; d < dim; ++d) {
         subpoint[d] = -1.0;
-        for (e = 0; e < dim; ++e) {
-          subpoint[d] += cmp->invjac[(s*dim + d)*dim+e]*(points[p*dim+e] - cmp->v0[s*dim+e]);
-        }
-        if (subpoint[d] < -1.0) {inside = PETSC_FALSE; break;}
-        sum += subpoint[d];
+        for (e = 0; e < dim; ++e) subpoint[d] += cmp->invjac[(s*dim + d)*dim+e]*(points[p*dim+e] - cmp->v0[s*dim+e]);
       }
-      if (inside && (sum <= 0.0)) {subpoints[p] = s; break;}
+      ierr = CellRefinerInCellTest_Internal(cmp->cellRefiner, subpoint, &inside);CHKERRQ(ierr);
+      if (inside) {subpoints[p] = s; break;}
     }
     if (s >= cmp->numSubelements) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d was not found in any subelement", p);
   }
