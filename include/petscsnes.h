@@ -784,6 +784,7 @@ PETSC_EXTERN PetscErrorCode SNESFASSetInjection(SNES, PetscInt, Mat);
 PETSC_EXTERN PetscErrorCode SNESFASGetInjection(SNES, PetscInt, Mat*);
 PETSC_EXTERN PetscErrorCode SNESFASSetRScale(SNES, PetscInt, Vec);
 PETSC_EXTERN PetscErrorCode SNESFASGetRScale(SNES, PetscInt, Vec*);
+PETSC_EXTERN PetscErrorCode SNESFASSetContinuation(SNES,PetscBool);
 
 PETSC_EXTERN PetscErrorCode SNESFASGetSmoother(SNES,     PetscInt, SNES*);
 PETSC_EXTERN PetscErrorCode SNESFASGetSmootherUp(SNES,   PetscInt, SNES*);

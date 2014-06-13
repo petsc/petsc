@@ -315,7 +315,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
 {
   SNES_FAS       *fas   = (SNES_FAS*) snes->data;
   PetscInt       levels = 1;
-  PetscBool      flg    = PETSC_FALSE, upflg = PETSC_FALSE, downflg = PETSC_FALSE, monflg = PETSC_FALSE, galerkinflg = PETSC_FALSE;
+  PetscBool      flg    = PETSC_FALSE, upflg = PETSC_FALSE, downflg = PETSC_FALSE, monflg = PETSC_FALSE, galerkinflg = PETSC_FALSE,continuationflg = PETSC_FALSE;
   PetscErrorCode ierr;
   char           monfilename[PETSC_MAX_PATH_LEN];
   SNESFASType    fastype;
@@ -348,6 +348,10 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = PetscOptionsInt("-snes_fas_cycles","Number of cycles","SNESFASSetCycles",fas->n_cycles,&m,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = SNESFASSetCycles(snes, m);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsBool("-snes_fas_continuation","Corrected grid-sequence continuation","SNESFASSetContinuation",fas->continuation,&continuationflg,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SNESFASSetContinuation(snes,continuationflg);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsBool("-snes_fas_galerkin", "Form coarse problems with Galerkin","SNESFASSetGalerkin",fas->galerkin,&galerkinflg,&flg);CHKERRQ(ierr);
