@@ -1151,7 +1151,7 @@ TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
 				 runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
                                  runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm ex53.PETSc runex53 runex53_2 ex53.rm \
-                                 ex52.PETSc runex52_mumps runex52_mumps_2 runex52f_mumps ex52.rm
+                                 ex52.PETSc runex52_mumps runex52_mumps_2 ex52.rm ex52f runex52f_mumps ex52f.rm
 TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu ex52.rm
 TESTEXAMPLES_FFTW              =
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
