@@ -955,8 +955,8 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x,
     PetscStackPop;
     ierr = PetscLogEventEnd(TaoLineSearch_EvalEvent,ls,0,0,0);CHKERRQ(ierr);
     ierr = PetscInfo1(ls,"TaoLineSearch Function evaluation: %14.12e\n",(double)(*f));CHKERRQ(ierr);
-    ls->nfgeval++;
   }
+  ls->nfgeval++;
   PetscFunctionReturn(0);
 }
 
