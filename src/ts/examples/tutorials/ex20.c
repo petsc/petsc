@@ -74,8 +74,6 @@ Input parameters include:\n";
 
 #include <petscts.h>
 
-const PetscReal mu = 1.0e6;
-
 typedef struct _n_User *User;
 struct _n_User {
   PetscReal mu;
