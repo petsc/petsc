@@ -1102,6 +1102,8 @@ PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
 }
 #endif
 
+extern PetscErrorCode MatDestroy_MatRedundant(Mat);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqAIJ"
 PetscErrorCode MatDestroy_SeqAIJ(Mat A)
@@ -1113,6 +1115,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D",A->rmap->n,A->cmap->n,a->nz);
 #endif
+  ierr = MatDestroy_MatRedundant(A);CHKERRQ(ierr);
   ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
   ierr = ISDestroy(&a->row);CHKERRQ(ierr);
   ierr = ISDestroy(&a->col);CHKERRQ(ierr);
