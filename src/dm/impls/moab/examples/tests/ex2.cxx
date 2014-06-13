@@ -138,7 +138,6 @@ int main(int argc, char **argv)
     for(i=0; i<user.nfields; i++) {
       ierr = PetscFree(user.fieldnames[i]);CHKERRQ(ierr);
     }
-    //ierr = PetscFree(user.fieldnames);CHKERRQ(ierr);
   }
   ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   ierr = VecDestroy(&solution);CHKERRQ(ierr);

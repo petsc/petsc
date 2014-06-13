@@ -156,6 +156,10 @@ ex31: ex31.o chkopts
 	-${CLINKER} -o ex31 ex31.o ${PETSC_TS_LIB}
 	${RM} ex31.o
 
+ex35: ex35.o chkopts
+	-${CLINKER} -o ex35 ex35.o ${PETSC_TS_LIB}
+	${RM} ex35.o
+
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
@@ -449,6 +453,16 @@ runex31:
 	   ${DIFF} output/ex31_1.out ex31_1.tmp || printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n";  \
 	   ${RM} -f ex31_1.tmp
 
+runex35:
+	-@${MPIEXEC} -n 1 ./ex35 -ts_monitor > ex35_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex35_1.out ex35_1.tmp || printf "${PWD}\nPossible problem with ex35_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex35_1.tmp
+
+runex35_2:
+	-@${MPIEXEC} -n 2 ./ex35 -ts_monitor -n 100 > ex35_2.tmp 2>&1;	  \
+	   ${DIFF} output/ex35_2.out ex35_2.tmp || printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; \
+	   ${RM} -f ex35_2.tmp
+
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
@@ -468,6 +482,6 @@ TESTEXAMPLES_C_X_MPIUNI =
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
 TESTEXAMPLES_EXODUSII     = ex11.PETSc runex11 ex11.rm
-TESTEXAMPLES_MOAB         = ex30.PETSc runex30 ex30.rm
+TESTEXAMPLES_MOAB         = ex30.PETSc runex30 ex30.rm ex35.PETSc runex35 runex35_2 ex35.rm
 
 include ${PETSC_DIR}/conf/test
