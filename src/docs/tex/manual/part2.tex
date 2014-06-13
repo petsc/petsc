@@ -8204,7 +8204,9 @@ The general flow of an application code using \trl{DMNetwork} is as follows:
 \end{enumerate}
 
 \subsection{Utility functions}
-  \trl{DMNetwork} provides functions for obtaining iterators for nodes/edges, checking the ``ghost'' status of a node (vertex), and retrieving local/global indices of node/edge variables for inserting elements in vectors/matrices.
+  \trl{DMNetwork} provides functions for obtaining iterators for nodes/edges, checking the ``ghost'' 
+  status of a node (vertex), and retrieving local/global indices of node/edge variables for inserting 
+  elements in vectors/matrices.
   \begin{tabbing}
     DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd);
   \end{tabbing}
@@ -8220,6 +8222,14 @@ The general flow of an application code using \trl{DMNetwork} is as follows:
   \begin{tabbing}
     DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offsetg);
   \end{tabbing}
+  In network applications, one frequently needs to find the supporting edges for a node or
+  the connecting nodes covering an edge. These can be obtained by the following two routines.
+  \begin{tabbing}
+    DMNetworkGetConnectedNodes(DM dm,PetscInt edge,const PetscInt *vertices[]);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt *edges[]) ;
+  \end{tabbing}  
 
 \subsection{Retrieving components}
 The components set at nodes/edges are stored in a container that can be accessed by

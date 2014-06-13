@@ -1,14 +1,12 @@
 function mpc = case9
-%CASE9    Power flow data for 9 bus, 3 generator case.
-%   Please see CASEFORMAT for details on the case file format.
-%
-%   Based on data from Joe H. Chow's book, p. 70.
+% CASE9    Power flow data for 9 bus, 3 generator case.
+% MATPOWER case9 data
+% http://www.pserc.cornell.edu//matpower/
 
-%   MATPOWER
-%   $Id: case9.m,v 1.11 2010/03/10 18:08:14 ray Exp $
-
-%% MATPOWER Case Format : Version 2
-mpc.version = '2';
+% R. D. Zimmerman, C. E. Murillo-Sánchez, and R. J. Thomas, 
+% "MATPOWER: Steady-State Operations, Planning and Analysis Tools 
+% for Power Systems Research and Education," Power Systems, IEEE 
+% Transactions on, vol. 26, no. 1, pp. 12-19, Feb. 2011
 
 %%-----  Power Flow Data  -----%%
 %% system MVA base

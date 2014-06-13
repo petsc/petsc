@@ -1,7 +1,7 @@
-static char help[] = "This example demonstrates the DMNetwork interface for a per phase steady state power flow problem.\n\
+static char help[] = "This example demonstrates the use of DMNetwork interface for solving a nonlinear electric power grid problem.\n\
                       The available solver options are in the pfoptions file and the data files are in the datafiles directory.\n\
-                      The data file format for the reader is the MatPower data format.\n\
-                      Run this program: mpiexec -n <n> ./PF\n					\
+                      The data file format used is from the MatPower package (http://www.pserc.cornell.edu//matpower/).\n\
+                      Run this program: mpiexec -n <n> ./PF\n\
                       mpiexec -n <n> ./PF -pfdata <filename>\n";
 
 /* T
