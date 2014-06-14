@@ -495,31 +495,32 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 #define __FUNCT__ "DMMoab_GetReadOptions_Private"
 PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt numproc, PetscInt dim, MoabReadMode mode, PetscInt dbglevel, const char* dm_opts, const char* extra_opts, const char** read_opts)
 {
-  char           ropts[PETSC_MAX_PATH_LEN];
+  char           *ropts;
   char           ropts_par[PETSC_MAX_PATH_LEN];
   char           ropts_dbg[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscMalloc(PETSC_MAX_PATH_LEN,&ropts);CHKERRQ(ierr);
   ierr = PetscMemzero(&ropts,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscMemzero(&ropts_par,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscMemzero(&ropts_dbg,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
 
   /* do parallel read unless using only one processor */
   if (numproc > 1) {
-    ierr = PetscSNPrintf(ropts_par, sizeof(ropts_par), "PARALLEL=%s;PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=%d.0.1%s;",MoabReadModes[mode],dim,(by_rank ? ";PARTITION_BY_RANK":""));CHKERRQ(ierr);
+    ierr = PetscSNPrintf(ropts_par, PETSC_MAX_PATH_LEN, "PARALLEL=%s;PARTITION=PARALLEL_PARTITION;PARTITION_DISTRIBUTE;PARALLEL_RESOLVE_SHARED_ENTS;PARALLEL_GHOSTS=%d.0.1%s;",MoabReadModes[mode],dim,(by_rank ? ";PARTITION_BY_RANK":""));CHKERRQ(ierr);
   }
 
   if (dbglevel) {
     if (numproc>1) {
-      ierr = PetscSNPrintf(ropts_dbg, sizeof(ropts_dbg), "%sCPUTIME;DEBUG_IO=%d;DEBUG_PIO=%d;",dbglevel,dbglevel);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(ropts_dbg, PETSC_MAX_PATH_LEN, "%sCPUTIME;DEBUG_IO=%d;DEBUG_PIO=%d;",dbglevel,dbglevel);CHKERRQ(ierr);
     }
     else {
-      ierr = PetscSNPrintf(ropts_dbg, sizeof(ropts_dbg), "%sCPUTIME;DEBUG_IO=%d;",dbglevel);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(ropts_dbg, PETSC_MAX_PATH_LEN, "%sCPUTIME;DEBUG_IO=%d;",dbglevel);CHKERRQ(ierr);
     }
   }
 
-  ierr = PetscSNPrintf(ropts, sizeof(ropts), "%s%s%s%s",ropts_par,ropts_dbg,(extra_opts?extra_opts:""),(dm_opts?dm_opts:""));CHKERRQ(ierr);
+  ierr = PetscSNPrintf(ropts, PETSC_MAX_PATH_LEN, "%s%s%s%s",ropts_par,ropts_dbg,(extra_opts?extra_opts:""),(dm_opts?dm_opts:""));CHKERRQ(ierr);
   *read_opts = ropts;
   PetscFunctionReturn(0);
 }
@@ -603,6 +604,7 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filenam
   merr = pcomm->collective_sync_partition();MBERR("Collective sync failed", merr);
 
   PetscInfo3(*dm, "MOAB file '%s' was successfully loaded. Found %D vertices and %D elements.\n", filename, verts.size(), elems.size());
+  ierr = PetscFree(readopts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
