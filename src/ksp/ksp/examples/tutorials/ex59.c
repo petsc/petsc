@@ -194,9 +194,9 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,
   ierr = PetscMalloc1(localsize,&indices);CHKERRQ(ierr);
   ierr = PetscMalloc1(localsize,&touched);CHKERRQ(ierr);
   for (i=0; i<localsize; i++) touched[i] = PETSC_FALSE;
-  i=0;
 
   if (dirichlet) {
+    i = 0;
     /* west boundary */
     if (dd.ipx == 0) {
       for (k=0;k<dd.zm_l;k++) {
@@ -207,10 +207,10 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,
         }
       }
     }
+    ierr = ISCreateGeneral(dd.gcomm,i,indices,PETSC_COPY_VALUES,&temp_dirichlet);CHKERRQ(ierr);
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,i,indices,PETSC_COPY_VALUES,&temp_dirichlet);CHKERRQ(ierr);
-  i    = 0;
   if (neumann) {
+    i = 0;
     /* west boundary */
     if (dd.ipx == 0) {
       for (k=0;k<dd.zm_l;k++) {
@@ -283,17 +283,10 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,
         }
       }
     }
+    ierr = ISCreateGeneral(dd.gcomm,i,indices,PETSC_COPY_VALUES,&temp_neumann);
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,i,indices,PETSC_COPY_VALUES,&temp_neumann);
   if (dirichlet) *dirichlet = temp_dirichlet;
-  else {
-    ierr = ISDestroy(&temp_dirichlet);CHKERRQ(ierr);
-  }
   if (neumann) *neumann = temp_neumann;
-  else {
-    ierr = ISDestroy(&temp_neumann);CHKERRQ(ierr);
-  }
-
   ierr = PetscFree(indices);CHKERRQ(ierr);
   ierr = PetscFree(touched);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -330,11 +323,11 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2l
     }
   }
   if (dd.dim==3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stype,dd.xm,dd.ym,dd.zm,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate3d(dd.gcomm,bx,by,bz,stype,dd.xm,dd.ym,dd.zm,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   } else if (dd.dim==2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,dd.xm,dd.ym,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(dd.gcomm,bx,by,stype,dd.xm,dd.ym,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,dd.xm,1,1,NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate1d(dd.gcomm,bx,dd.xm,1,1,NULL,&da);CHKERRQ(ierr);
   }
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,dd.xm_l*dd.ym_l*dd.zm_l,global_indices);CHKERRQ(ierr);
@@ -747,7 +740,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   ierr = MatISSetLocalMat(temp_A,local_mat);CHKERRQ(ierr);
   /* Call assembly functions */
   ierr = MatAssemblyBegin(temp_A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (temp_A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(temp_A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (dd.DBC_zerorows) {
     ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,NULL);CHKERRQ(ierr);
@@ -840,8 +833,19 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
      Simple stride-1 IS
      It is not needed since, by default, PCBDDC assumes a stride-1 split */
   ierr = PetscMalloc1(1,&bddc_dofs_splitting);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,localsize,0,1,&bddc_dofs_splitting[0]);CHKERRQ(ierr);
+#if 1
+  ierr = ISCreateStride(PETSC_COMM_WORLD,localsize,0,1,&bddc_dofs_splitting[0]);CHKERRQ(ierr);
+  ierr = PCBDDCSetDofsSplittingLocal(pc,1,bddc_dofs_splitting);CHKERRQ(ierr);
+#else
+  /* examples for global ordering */
+
+  /* each process lists the nodes it owns */
+  PetscInt sr,er;
+  ierr = MatGetOwnershipRange(A,&sr,&er);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,er-sr,sr,1,&bddc_dofs_splitting[0]);CHKERRQ(ierr);
   ierr = PCBDDCSetDofsSplitting(pc,1,bddc_dofs_splitting);CHKERRQ(ierr);
+  /* Split can be passed in a more general way since any process can list any node */
+#endif
   ierr = ISDestroy(&bddc_dofs_splitting[0]);CHKERRQ(ierr);
   ierr = PetscFree(bddc_dofs_splitting);CHKERRQ(ierr);
 
@@ -851,7 +855,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   Vec vecs[2];
   PetscRandom rctx;
   ierr = MatGetVecs(A,&vecs[0],&vecs[1]);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(dd.gcomm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetType(rctx,PETSCRAND);CHKERRQ(ierr);
   ierr = VecSetRandom(vecs[0],rctx);CHKERRQ(ierr);
   ierr = VecSetRandom(vecs[1],rctx);CHKERRQ(ierr);
@@ -873,18 +877,18 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   if (dd.DBC_zerorows) {
     /* Only in case you eliminate some rows matrix with zerorows function, you need to set dirichlet indices into PCBDDC data */
     ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,&neumannIS);CHKERRQ(ierr);
-    ierr = PCBDDCSetNeumannBoundaries(pc,neumannIS);CHKERRQ(ierr);
-    ierr = PCBDDCSetDirichletBoundaries(pc,dirichletIS);CHKERRQ(ierr);
+    ierr = PCBDDCSetNeumannBoundariesLocal(pc,neumannIS);CHKERRQ(ierr);
+    ierr = PCBDDCSetDirichletBoundariesLocal(pc,dirichletIS);CHKERRQ(ierr);
   } else {
     if (dd.pure_neumann) {
       /* In such a case, all interface nodes lying on the global boundary are neumann nodes */
       ierr = ComputeSpecialBoundaryIndices(dd,NULL,&neumannIS);CHKERRQ(ierr);
-      ierr = PCBDDCSetNeumannBoundaries(pc,neumannIS);CHKERRQ(ierr);
+      ierr = PCBDDCSetNeumannBoundariesLocal(pc,neumannIS);CHKERRQ(ierr);
     } else {
       /* It is wrong setting dirichlet indices without having zeroed the corresponding rows in the global matrix */
       /* But we can still compute them since nodes near the dirichlet boundaries does not need to be defined as neumann nodes */
       ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,&neumannIS);CHKERRQ(ierr);
-      ierr = PCBDDCSetNeumannBoundaries(pc,neumannIS);CHKERRQ(ierr);
+      ierr = PCBDDCSetNeumannBoundariesLocal(pc,neumannIS);CHKERRQ(ierr);
     }
   }
 

@@ -34,6 +34,7 @@ typedef struct {
   VecScatter    R_to_D;
   KSP           ksp_R;
   KSP           ksp_D;
+  PetscBool     issym;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
   ISLocalToGlobalMapping BtoNmap;
@@ -47,11 +48,13 @@ typedef struct {
   PetscBool     use_change_of_basis;
   PetscBool     use_change_on_faces;
   Mat           ChangeOfBasisMatrix;
+  Mat           user_ChangeOfBasisMatrix;
   Vec           original_rhs;
   Vec           temp_solution;
   Mat           local_mat;
   PetscBool     use_exact_dirichlet_trick;
   /* Some defaults on selecting vertices and constraints*/
+  PetscBool     use_local_adj;
   PetscBool     use_vertices;
   PetscBool     use_faces;
   PetscBool     use_edges;
@@ -65,13 +68,20 @@ typedef struct {
   PetscBool                  use_nnsp_true;
   PetscBool                  user_provided_isfordofs;
   PetscInt                   n_ISForDofs;
+  PetscInt                   n_ISForDofsLocal;
   IS                         *ISForDofs;
+  IS                         *ISForDofsLocal;
   IS                         NeumannBoundaries;
+  IS                         NeumannBoundariesLocal;
   IS                         DirichletBoundaries;
+  IS                         DirichletBoundariesLocal;
   PetscBool                  switch_static;
   PetscInt                   coarsening_ratio;
   PetscInt                   current_level;
   PetscInt                   max_levels;
+  IS                         coarse_subassembling;
+  IS                         coarse_subassembling_init;
+  PetscBool                  use_coarse_estimates;
   /* scaling */
   Vec                        work_scaling;
   PetscBool                  use_deluxe_scaling;

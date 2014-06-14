@@ -469,15 +469,21 @@ typedef const char *PCGAMGClassicalType;
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC,PCGAMGClassicalType);
 
 #if defined(PETSC_HAVE_PCBDDC)
+PETSC_EXTERN PetscErrorCode PCBDDCSetChangeOfBasisLocalMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNullSpace(PC,MatNullSpace);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundaries(PC,IS);
+PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundaries(PC,IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundariesLocal(PC,IS*);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNeumannBoundaries(PC,IS);
+PETSC_EXTERN PetscErrorCode PCBDDCSetNeumannBoundariesLocal(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetNeumannBoundaries(PC,IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCGetNeumannBoundariesLocal(PC,IS*);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDofsSplitting(PC,PetscInt,IS[]);
+PETSC_EXTERN PetscErrorCode PCBDDCSetDofsSplittingLocal(PC,PetscInt,IS[]);
 PETSC_EXTERN PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC,PetscInt,const PetscInt[],const PetscInt[],PetscCopyMode);
 PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPOperators(PC,Mat*,PC*);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat,Vec,Vec);

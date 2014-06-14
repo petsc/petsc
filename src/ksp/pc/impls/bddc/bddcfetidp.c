@@ -570,7 +570,33 @@ PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
   ierr = MatMultTranspose(mat_ctx->B_delta,mat_ctx->lambda_local,pcis->vec1_B);CHKERRQ(ierr);
   /* Application of \widetilde{S}^-1 */
   ierr = VecSet(pcis->vec1_D,0.0);CHKERRQ(ierr);
-  ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc);CHKERRQ(ierr);
+  ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_FALSE);CHKERRQ(ierr);
+  /* Application of B_delta */
+  ierr = MatMult(mat_ctx->B_delta,pcis->vec1_B,mat_ctx->lambda_local);CHKERRQ(ierr);
+  ierr = VecSet(y,0.0);CHKERRQ(ierr);
+  ierr = VecScatterBegin(mat_ctx->l2g_lambda,mat_ctx->lambda_local,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(mat_ctx->l2g_lambda,mat_ctx->lambda_local,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FETIDPMatMultTranspose"
+PetscErrorCode FETIDPMatMultTranspose(Mat fetimat, Vec x, Vec y)
+{
+  FETIDPMat_ctx  mat_ctx;
+  PC_IS          *pcis;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(fetimat,(void**)&mat_ctx);CHKERRQ(ierr);
+  pcis = (PC_IS*)mat_ctx->pc->data;
+  /* Application of B_delta^T */
+  ierr = VecScatterBegin(mat_ctx->l2g_lambda,x,mat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(mat_ctx->l2g_lambda,x,mat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = MatMultTranspose(mat_ctx->B_delta,mat_ctx->lambda_local,pcis->vec1_B);CHKERRQ(ierr);
+  /* Application of \widetilde{S}^-1 */
+  ierr = VecSet(pcis->vec1_D,0.0);CHKERRQ(ierr);
+  ierr = PCBDDCApplyInterfacePreconditioner(mat_ctx->pc,PETSC_TRUE);CHKERRQ(ierr);
   /* Application of B_delta */
   ierr = MatMult(mat_ctx->B_delta,pcis->vec1_B,mat_ctx->lambda_local);CHKERRQ(ierr);
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
@@ -596,7 +622,33 @@ PetscErrorCode FETIDPPCApply(PC fetipc, Vec x, Vec y)
   ierr = VecSet(pcis->vec2_B,0.0);CHKERRQ(ierr);
   ierr = MatMultTranspose(pc_ctx->B_Ddelta,pc_ctx->lambda_local,pcis->vec2_B);CHKERRQ(ierr);
   /* Application of S */
-  ierr = PCISApplySchur(pc_ctx->pc,pcis->vec2_B,pcis->vec1_B,(Vec)0,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+  ierr = PCBDDCApplySchur(pc_ctx->pc,pcis->vec2_B,pcis->vec1_B,(Vec)0,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+  /* Application of B_Ddelta */
+  ierr = MatMult(pc_ctx->B_Ddelta,pcis->vec1_B,pc_ctx->lambda_local);CHKERRQ(ierr);
+  ierr = VecSet(y,0.0);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pc_ctx->l2g_lambda,pc_ctx->lambda_local,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pc_ctx->l2g_lambda,pc_ctx->lambda_local,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FETIDPPCApplyTranspose"
+PetscErrorCode FETIDPPCApplyTranspose(PC fetipc, Vec x, Vec y)
+{
+  FETIDPPC_ctx   pc_ctx;
+  PC_IS          *pcis;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCShellGetContext(fetipc,(void**)&pc_ctx);
+  pcis = (PC_IS*)pc_ctx->pc->data;
+  /* Application of B_Ddelta^T */
+  ierr = VecScatterBegin(pc_ctx->l2g_lambda,x,pc_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pc_ctx->l2g_lambda,x,pc_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecSet(pcis->vec2_B,0.0);CHKERRQ(ierr);
+  ierr = MatMultTranspose(pc_ctx->B_Ddelta,pc_ctx->lambda_local,pcis->vec2_B);CHKERRQ(ierr);
+  /* Application of S */
+  ierr = PCBDDCApplySchurTranspose(pc_ctx->pc,pcis->vec2_B,pcis->vec1_B,(Vec)0,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
   /* Application of B_Ddelta */
   ierr = MatMult(pc_ctx->B_Ddelta,pcis->vec1_B,pc_ctx->lambda_local);CHKERRQ(ierr);
   ierr = VecSet(y,0.0);CHKERRQ(ierr);

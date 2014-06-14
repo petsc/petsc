@@ -15,6 +15,28 @@
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDuplicate_IS"
+PetscErrorCode MatDuplicate_IS(Mat mat,MatDuplicateOption op,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  Mat_IS         *matis = (Mat_IS*)(mat->data);
+  PetscInt       bs,m,n,M,N;
+  Mat            B,localmat;
+
+  PetscFunctionBegin;
+  ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
+  ierr = MatCreateIS(PetscObjectComm((PetscObject)mat),bs,m,n,M,N,matis->mapping,&B);CHKERRQ(ierr);
+  ierr = MatDuplicate(matis->A,op,&localmat);CHKERRQ(ierr);
+  ierr = MatISSetLocalMat(B,localmat);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatIsHermitian_IS"
 PetscErrorCode MatIsHermitian_IS(Mat A,PetscReal tol,PetscBool  *flg)
 {
@@ -175,11 +197,17 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   Vec            global;
 
   PetscFunctionBegin;
-  if (is->mapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
   PetscCheckSameComm(A,1,rmapping,2);
   if (rmapping != cmapping) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MATIS requires the row and column mappings to be identical");
-  ierr        = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
-  ierr        = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr);
+  if (is->mapping) { /* Currenly destroys the objects that will be created by this routine. Is there anything else that should be checked? */
+    ierr = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr);
+    ierr = VecDestroy(&is->x);CHKERRQ(ierr);
+    ierr = VecDestroy(&is->y);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&is->ctx);CHKERRQ(ierr);
+    ierr = MatDestroy(&is->A);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr);
   is->mapping = rmapping;
 /*
   ierr = PetscLayoutSetISLocalToGlobalMapping(A->rmap,rmapping);CHKERRQ(ierr);
@@ -600,14 +628,16 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->setoption               = MatSetOption_IS;
   A->ops->ishermitian             = MatIsHermitian_IS;
   A->ops->issymmetric             = MatIsSymmetric_IS;
+  A->ops->duplicate               = MatDuplicate_IS;
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  b->A   = 0;
-  b->ctx = 0;
-  b->x   = 0;
-  b->y   = 0;
+  b->A       = 0;
+  b->ctx     = 0;
+  b->x       = 0;
+  b->y       = 0;
+  b->mapping = 0;
   ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
   ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",MatISSetLocalMat_IS);CHKERRQ(ierr);
   ierr   = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
