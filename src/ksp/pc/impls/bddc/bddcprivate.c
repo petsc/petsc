@@ -4024,13 +4024,13 @@ PetscErrorCode PCBDDCGlobalToLocal(VecScatter g2l_ctx,Vec gwork, Vec lwork, IS g
   ierr = VecGetArrayRead(lwork,(const PetscScalar**)&vals);CHKERRQ(ierr);
   ierr = VecGetSize(lwork,&n);CHKERRQ(ierr);
   for (i=0,lsize=0;i<n;i++) {
-    if (vals[i] > 0.5) {
+    if (PetscRealPart(vals[i]) > 0.5) {
       lsize++;
     }
   }
   ierr = PetscMalloc(lsize*sizeof(PetscInt),&idxs);CHKERRQ(ierr);
   for (i=0,lsize=0;i<n;i++) {
-    if (vals[i] > 0.5) {
+    if (PetscRealPart(vals[i]) > 0.5) {
       idxs[lsize++] = i;
     }
   }
