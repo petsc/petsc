@@ -197,7 +197,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
   /* for active set method the matrix does not get changed, so do not need to copy each time,
      if the active set remains the same for several solves the preconditioner does not need to be rebuilt*/
   if (!copied) {
-    ierr   = MatCopy(user->M,J,*flg);CHKERRQ(ierr);
+    ierr   = MatCopy(user->M,J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     copied = PETSC_TRUE;
   }
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

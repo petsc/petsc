@@ -357,7 +357,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
   AppCtx         *user=(AppCtx*)ctx;
 
   PetscFunctionBeginUser;
-  ierr = MatCopy(user->M,J,*flg);CHKERRQ(ierr);
+  ierr = MatCopy(user->M,J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

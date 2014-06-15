@@ -1117,7 +1117,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  ex35.PETSc runex35 runex35_2 runex35_3 runex35_4 runex35_5 runex35_6 runex35_7 runex35_8 ex35.rm \
                                  ex42.PETSc runex42 ex42.rm \
                                  ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 ex46.rm \
-                                 ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
+                                 ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm ex54.PETSc ex54.rm ex55.PETSc ex55.rm\
                                  ex58.PETSc runex58 runex58_2 ex58.rm ex70.PETSc ex70.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
