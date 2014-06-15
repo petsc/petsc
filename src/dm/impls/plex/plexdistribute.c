@@ -509,85 +509,6 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   }
   ierr = DMPlexSymmetrize(*dmParallel);CHKERRQ(ierr);
   ierr = DMPlexStratify(*dmParallel);CHKERRQ(ierr);
-  /* Distribute Coordinates */
-  {
-    PetscSection originalCoordSection, newCoordSection;
-    Vec          originalCoordinates, newCoordinates;
-    PetscInt     bs;
-    const char  *name;
-
-    ierr = DMGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
-    ierr = DMGetCoordinateSection(*dmParallel, &newCoordSection);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm, &originalCoordinates);CHKERRQ(ierr);
-    ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) newCoordinates, name);CHKERRQ(ierr);
-
-    ierr = DMPlexDistributeField(dm, pointSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates);CHKERRQ(ierr);
-    ierr = DMSetCoordinatesLocal(*dmParallel, newCoordinates);CHKERRQ(ierr);
-    ierr = VecGetBlockSize(originalCoordinates, &bs);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(newCoordinates, bs);CHKERRQ(ierr);
-    ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
-  }
-  /* Distribute labels */
-  ierr = PetscLogEventBegin(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
-  {
-    DMLabel  next      = mesh->labels, newNext = pmesh->labels;
-    PetscInt numLabels = 0, l;
-
-    /* Bcast number of labels */
-    while (next) {++numLabels; next = next->next;}
-    ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-    next = mesh->labels;
-    for (l = 0; l < numLabels; ++l) {
-      DMLabel   labelNew;
-      PetscBool isdepth;
-
-      /* Skip "depth" because it is recreated */
-      if (!rank) {ierr = PetscStrcmp(next->name, "depth", &isdepth);CHKERRQ(ierr);}
-      ierr = MPI_Bcast(&isdepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
-      if (isdepth) {if (!rank) next = next->next; continue;}
-      ierr = DMLabelDistribute(next, partSection, part, renumbering, &labelNew);CHKERRQ(ierr);
-      /* Insert into list */
-      if (newNext) newNext->next = labelNew;
-      else         pmesh->labels = labelNew;
-      newNext = labelNew;
-      if (!rank) next = next->next;
-    }
-  }
-  ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
-  /* Setup hybrid structure */
-  {
-    const PetscInt *gpoints;
-    PetscInt        depth, n, d;
-
-    for (d = 0; d <= dim; ++d) {pmesh->hybridPointMax[d] = mesh->hybridPointMax[d];}
-    ierr = MPI_Bcast(pmesh->hybridPointMax, dim+1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetSize(renumbering, &n);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetIndices(renumbering, &gpoints);CHKERRQ(ierr);
-    ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-    for (d = 0; d <= dim; ++d) {
-      PetscInt pmax = pmesh->hybridPointMax[d], newmax = 0, pEnd, stratum[2], p;
-
-      if (pmax < 0) continue;
-      ierr = DMPlexGetDepthStratum(dm, d > depth ? depth : d, &stratum[0], &stratum[1]);CHKERRQ(ierr);
-      ierr = DMPlexGetDepthStratum(*dmParallel, d, NULL, &pEnd);CHKERRQ(ierr);
-      ierr = MPI_Bcast(stratum, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      for (p = 0; p < n; ++p) {
-        const PetscInt point = gpoints[p];
-
-        if ((point >= stratum[0]) && (point < stratum[1]) && (point >= pmax)) ++newmax;
-      }
-      if (newmax > 0) pmesh->hybridPointMax[d] = pEnd - newmax;
-      else            pmesh->hybridPointMax[d] = -1;
-    }
-    ierr = ISLocalToGlobalMappingRestoreIndices(renumbering, &gpoints);CHKERRQ(ierr);
-  }
-  /* Cleanup Partition */
-  ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&partSection);CHKERRQ(ierr);
-  ierr = ISDestroy(&part);CHKERRQ(ierr);
   /* Create point SF for parallel mesh */
   ierr = PetscLogEventBegin(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
   {
@@ -665,6 +586,88 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   pmesh->useCone    = mesh->useCone;
   pmesh->useClosure = mesh->useClosure;
   ierr = PetscLogEventEnd(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
+  /* Distribute Coordinates */
+  {
+    PetscSection     originalCoordSection, newCoordSection;
+    Vec              originalCoordinates, newCoordinates;
+    PetscInt         bs;
+    const char      *name;
+    const PetscReal *maxCell, *L;
+
+    ierr = DMGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(*dmParallel, &newCoordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm, &originalCoordinates);CHKERRQ(ierr);
+    ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) newCoordinates, name);CHKERRQ(ierr);
+
+    ierr = DMPlexDistributeField(dm, pointSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates);CHKERRQ(ierr);
+    ierr = DMSetCoordinatesLocal(*dmParallel, newCoordinates);CHKERRQ(ierr);
+    ierr = VecGetBlockSize(originalCoordinates, &bs);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(newCoordinates, bs);CHKERRQ(ierr);
+    ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
+    ierr = DMGetPeriodicity(dm, &maxCell, &L);CHKERRQ(ierr);
+    if (L) {ierr = DMSetPeriodicity(*dmParallel, maxCell, L);CHKERRQ(ierr);}
+  }
+  /* Distribute labels */
+  ierr = PetscLogEventBegin(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
+  {
+    DMLabel  next      = mesh->labels, newNext = pmesh->labels;
+    PetscInt numLabels = 0, l;
+
+    /* Bcast number of labels */
+    while (next) {++numLabels; next = next->next;}
+    ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+    next = mesh->labels;
+    for (l = 0; l < numLabels; ++l) {
+      DMLabel   labelNew;
+      PetscBool isdepth;
+
+      /* Skip "depth" because it is recreated */
+      if (!rank) {ierr = PetscStrcmp(next->name, "depth", &isdepth);CHKERRQ(ierr);}
+      ierr = MPI_Bcast(&isdepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
+      if (isdepth) {if (!rank) next = next->next; continue;}
+      ierr = DMLabelDistribute(next, partSection, part, renumbering, &labelNew);CHKERRQ(ierr);
+      /* Insert into list */
+      if (newNext) newNext->next = labelNew;
+      else         pmesh->labels = labelNew;
+      newNext = labelNew;
+      if (!rank) next = next->next;
+    }
+  }
+  ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
+  /* Setup hybrid structure */
+  {
+    const PetscInt *gpoints;
+    PetscInt        depth, n, d;
+
+    for (d = 0; d <= dim; ++d) {pmesh->hybridPointMax[d] = mesh->hybridPointMax[d];}
+    ierr = MPI_Bcast(pmesh->hybridPointMax, dim+1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(renumbering, &n);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(renumbering, &gpoints);CHKERRQ(ierr);
+    ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+    for (d = 0; d <= dim; ++d) {
+      PetscInt pmax = pmesh->hybridPointMax[d], newmax = 0, pEnd, stratum[2], p;
+
+      if (pmax < 0) continue;
+      ierr = DMPlexGetDepthStratum(dm, d > depth ? depth : d, &stratum[0], &stratum[1]);CHKERRQ(ierr);
+      ierr = DMPlexGetDepthStratum(*dmParallel, d, NULL, &pEnd);CHKERRQ(ierr);
+      ierr = MPI_Bcast(stratum, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
+      for (p = 0; p < n; ++p) {
+        const PetscInt point = gpoints[p];
+
+        if ((point >= stratum[0]) && (point < stratum[1]) && (point >= pmax)) ++newmax;
+      }
+      if (newmax > 0) pmesh->hybridPointMax[d] = pEnd - newmax;
+      else            pmesh->hybridPointMax[d] = -1;
+    }
+    ierr = ISLocalToGlobalMappingRestoreIndices(renumbering, &gpoints);CHKERRQ(ierr);
+  }
+  /* Cleanup Partition */
+  ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&partSection);CHKERRQ(ierr);
+  ierr = ISDestroy(&part);CHKERRQ(ierr);
   /* Copy BC */
   ierr = DMPlexCopyBoundary(dm, *dmParallel);CHKERRQ(ierr);
   /* Cleanup */
