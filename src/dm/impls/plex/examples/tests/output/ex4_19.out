@@ -2252,9 +2252,9 @@ PetscSF Object: 2 MPI processes
   [0] 127 <- (1,156)
   [0] 128 <- (1,157)
   [0] 129 <- (1,158)
-  [0] 157 <- (1,195)
-  [0] 158 <- (1,196)
-  [0] 159 <- (1,197)
+  [0] 157 <- (1,189)
+  [0] 158 <- (1,190)
+  [0] 159 <- (1,191)
   [1] Number of roots=201, leaves=0, remote ranks=0
   [0] Roots referenced by my leaves, by rank
   [0] 1: 19 edges
@@ -2274,7 +2274,7 @@ PetscSF Object: 2 MPI processes
   [0]    127 <- 156
   [0]    128 <- 157
   [0]    129 <- 158
-  [0]    157 <- 195
-  [0]    158 <- 196
-  [0]    159 <- 197
+  [0]    157 <- 189
+  [0]    158 <- 190
+  [0]    159 <- 191
   [1] Roots referenced by my leaves, by rank
