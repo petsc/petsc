@@ -763,18 +763,21 @@ extern PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS);
 */
 static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
 {
-  PetscSF        sf;
-  PetscSection   coordSection;
-  Vec            coords;
-  PetscErrorCode ierr;
+  PetscSF          sf;
+  DM               coordDM;
+  Vec              coords;
+  const PetscReal *maxCell, *L;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = DMGetPointSF(dmNew, &sf);CHKERRQ(ierr);
   ierr = DMSetPointSF(dm, sf);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dmNew, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dmNew, &coordDM);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dmNew, &coords);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(dm, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateDM(dm, coordDM);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coords);CHKERRQ(ierr);
+  ierr = DMGetPeriodicity(dm, &maxCell, &L);CHKERRQ(ierr);
+  if (L) {ierr = DMSetPeriodicity(dmNew, maxCell, L);CHKERRQ(ierr);}
   ierr = DMDestroy_Plex(dm);CHKERRQ(ierr);
   dm->data = dmNew->data;
   ((DM_Plex *) dmNew->data)->refct++;
