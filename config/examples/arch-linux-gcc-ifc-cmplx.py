@@ -12,6 +12,7 @@ configure_options = [
   '--with-scalar-type=complex',
   '--download-mpich=1',
   '--download-mpich-pm=gforker',
+  '--download-hdf5',
   '--download-fblaslapack=1'
   ]
 
