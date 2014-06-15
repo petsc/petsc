@@ -1359,6 +1359,12 @@ cdef class NullSpace(Object):
         PetscCLEAR(self.obj); self.nsp = newnsp
         return self
 
+    def createRigidBody(self, Vec coords not None):
+        cdef PetscNullSpace newnsp = NULL
+        CHKERR( MatNullSpaceCreateRigidBody(coords.vec, &newnsp) )
+        PetscCLEAR(self.obj); self.nsp = newnsp
+        return self
+
     def setFunction(self, function, args=None, kargs=None):
         if function is not None:
             CHKERR( MatNullSpaceSetFunction(

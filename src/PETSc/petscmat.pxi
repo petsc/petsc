@@ -348,6 +348,7 @@ cdef extern from * nogil:
     int MatNullSpaceView(PetscNullSpace,PetscViewer)
     int MatNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,PetscVec[],
                            PetscNullSpace*)
+    int MatNullSpaceCreateRigidBody(PetscVec,PetscNullSpace*)
     int MatNullSpaceRemove(PetscNullSpace,PetscVec)
     int MatNullSpaceTest(PetscNullSpace,PetscMat)
 
