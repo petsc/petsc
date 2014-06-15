@@ -3099,7 +3099,7 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
       PetscInt       off, d;
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = array[off+d];
+      for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       ierr = DMPlexGetLabelValue(boundary, "marker", v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(coordinates, &array);CHKERRQ(ierr);
@@ -3227,7 +3227,7 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
       PetscInt       off, d;
 
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = array[off+d];
+      for (d = 0; d < dim; ++d) in.pointlist[idx*dim + d] = PetscRealPart(array[off+d]);
       ierr = DMPlexGetLabelValue(dm, "marker", v, &in.pointmarkerlist[idx]);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(coordinates, &array);CHKERRQ(ierr);
