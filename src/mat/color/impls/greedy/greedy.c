@@ -340,7 +340,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           ncols = mo_i[idx+1]-mo_i[idx];
           cidx = &(mo_j[mo_i[idx]]);
           for (j=0;j<ncols;j++) {
-            ccol=dcolors[cidx[j]];
+            ccol=ocolors[cidx[j]];
             if (ccol != maxcolors) {
               if (ccol>=masksize) {
                 PetscInt *newmask;
