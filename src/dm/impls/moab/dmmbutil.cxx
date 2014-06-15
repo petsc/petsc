@@ -204,7 +204,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   moab::EntityHandle  vfirst,efirst,regionset,faceset,edgeset,vtxset;
   std::vector<double*> vcoords;
   moab::EntityHandle  *connectivity = 0;
-  moab::EntityType etype;
+  moab::EntityType etype=moab::MBHEX;
   PetscInt    ise[6];
   PetscReal   xse[6],defbounds[6];
   /* TODO: Fix nghost > 0 - now relying on exchange_ghost_cells */
@@ -216,7 +216,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   bool build_adjacencies=false;
 
   const PetscInt npts=nele+1;        /* Number of points in every dimension */
-  PetscInt vpere,locnele,locnpts,ghnele,ghnpts;    /* Number of verts/element, vertices, elements owned by this process */
+  PetscInt vpere=0,locnele=0,locnpts=0,ghnele,ghnpts;    /* Number of verts/element, vertices, elements owned by this process */
 
   PetscFunctionBegin;
   if(dim < 1 || dim > 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid dimension argument for mesh: dim=[1,3].\n");
@@ -279,6 +279,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
     }
     break;
    case 3:
+   default:
     locnpts = (ise[1]-ise[0]+1)*(ise[3]-ise[2]+1)*(ise[5]-ise[4]+1);
     ghnpts = (nghost > 0 ? (ise[4] > 0 ? npts*npts : 0) + (ise[5] < nele ? npts*npts : 0) : 0);
     if (useSimplex) {
