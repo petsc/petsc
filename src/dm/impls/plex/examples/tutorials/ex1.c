@@ -6,7 +6,7 @@ static char help[] = "Define a simple field over the mesh\n\n";
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  DM             dm;
+  DM             dm, dmDist = NULL;
   Vec            u;
   PetscSection   section;
   PetscViewer    viewer;
@@ -22,6 +22,9 @@ int main(int argc, char **argv)
   ierr = PetscOptionsGetInt(NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
   /* Create a mesh */
   ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, interpolate, &dm);CHKERRQ(ierr);
+  /* Distribute mesh over processes */
+  ierr = DMPlexDistribute(dm, NULL, 0, NULL, &dmDist);CHKERRQ(ierr);
+  if (dmDist) {ierr = DMDestroy(&dm);CHKERRQ(ierr); dm = dmDist;}
   /* Create a scalar field u, a vector field v, and a surface vector field w */
   numFields  = 3;
   numComp[0] = 1;
