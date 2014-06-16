@@ -97,6 +97,7 @@ def main():
         'copyright.html',
         'faq.html',
         'index.html',
+        'license.html',
         'linearsolvertable.html',
         'nonlinearsolvertable.html',
         'changes/2015.html',
