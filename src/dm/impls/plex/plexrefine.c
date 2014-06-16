@@ -5416,13 +5416,12 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
 #define __FUNCT__ "CellRefinerSetCoordinates"
 static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
-  PetscSection     coordSection, coordSectionNew;
-  Vec              coordinates, coordinatesNew;
-  PetscScalar     *coords, *coordsNew;
-  const PetscReal *maxCell, *L;
-  const PetscInt   numVertices = depthSize ? depthSize[0] : 0;
-  PetscInt         spaceDim, depth, bs, coordSizeNew, cStart, cEnd, cMax, c, vStart, vStartNew, vEnd, v, eStart, eEnd, eMax, e, fStart, fEnd, fMax, f;
-  PetscErrorCode   ierr;
+  PetscSection   coordSection, coordSectionNew;
+  Vec            coordinates, coordinatesNew;
+  PetscScalar   *coords, *coordsNew;
+  const PetscInt numVertices = depthSize ? depthSize[0] : 0;
+  PetscInt       spaceDim, depth, bs, coordSizeNew, cStart, cEnd, cMax, c, vStart, vStartNew, vEnd, v, eStart, eEnd, eMax, e, fStart, fEnd, fMax, f;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
@@ -5449,8 +5448,6 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   }
   ierr = PetscSectionSetUp(coordSectionNew);CHKERRQ(ierr);
   ierr = DMSetCoordinateSection(rdm, coordSectionNew);CHKERRQ(ierr);
-  ierr = DMGetPeriodicity(dm, &maxCell, &L);CHKERRQ(ierr);
-  if (L) {ierr = DMSetPeriodicity(rdm, maxCell, L);CHKERRQ(ierr);}
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSectionNew, &coordSizeNew);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinatesNew);CHKERRQ(ierr);
