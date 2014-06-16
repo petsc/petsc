@@ -85,18 +85,39 @@ PETSc.displayDirectory = function(sub,divEntry)
             var _level = generatedEndtag[_index-1];//get the last character
 
             $("#multigridDiagram").html("");//clear the diagram
-            $("#multigridDiagram").append("<img src='images/multigrid0.bmp' alt='Error Loading Multigrid Diagram'>");
-            $("#multigridDiagram").append("<span>Coarse Grid (Level 0)</span><br>");
-            if(_level > 0) {
-                $("#multigridDiagram").append("<img src='images/transition.bmp' alt='Error Loading Multigrid Diagram'><br>");
-                $("#multigridDiagram").append("<img src='images/multigrid1.bmp' alt='Error Loading Multigrid Diagram'>");
-                $("#multigridDiagram").append("<span>Level 1</span><br>");
+
+            //using svg to generate the diagram
+
+            //generate a parallelogram for each layer
+            for(var i=0; i<=_level; i++) { //i represents the multigrid level (i=0 would be coarse)
+                var dim = 3+2*i;//dimxdim grid
+                $("#multigridDiagram").append("<svg id=\"svg"+i+"\" width='465' height='142'> <polygon points=\"0,141 141,0 465,0 324,141\" style=\"fill:khaki;stroke:black;stroke-width:1\"> </svg>");//the sides of the parallogram follow the golden ratio so that the original figure was a golden rectangle. the diagram is slanted at a 45 degree angle.
+
+                for(var j=1; j<dim; j++) {//draw 'vertical' lines
+                    var inc = 324/dim;//parallogram is 324 wide and 200 on the slant side (1.6x)
+                    var shift = j*inc;
+                    var top_shift = shift + 141;
+                    $("#svg"+i).append("<line x1=\""+shift+"\" y1='141' x2=\""+top_shift+"\" y2='0' style='stroke:black;stroke-width:1'></line>");
+                }
+                for(var j=1; j<dim; j++) {//draw horizonal lines
+                    var inc = 141/dim;//parallelogram is 141 tall
+                    var horiz_shift = (141/dim) * j;
+                    var horiz_shift_end = horiz_shift + 324;
+
+                    var shift = 141 - inc * j;
+                    $("#svg"+i).append("<line x1=\""+horiz_shift+"\" y1=\""+shift +"\" x2=\""+horiz_shift_end+"\" y2=\""+shift+"\" style='stroke:black;stroke-width:1'></line>");
+                }
+                //put text here
+                if(i!=0)
+                    $("#multigridDiagram").append("<span>Level "+i+"</span><br>");
+                else
+                    $("#multigridDiagram").append("<span>Coarse Grid (Level 0)</span><br>");
+
+                if(i != _level)//add transition arrows image if there are more grids left
+                    $("#multigridDiagram").append("<img src='images/transition.bmp' alt='Error Loading Multigrid Transition Arrows'><br>");
             }
-            if(_level > 1) {
-                $("#multigridDiagram").append("<img src='images/transition.bmp' alt='Error Loading Multigrid Diagram'><br>");
-                $("#multigridDiagram").append("<img src='images/multigrid2.bmp' alt='Error Loading Multigrid Diagram'>");
-                $("#multigridDiagram").append("<span>Level 2</span><br>");
-            }
+
+            $("body").html($("body").html());//refresh (hacky) after appending to svg
         }
     }
 
