@@ -254,6 +254,11 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   PETSC_STDOUT = stdout;
   PETSC_STDERR = stderr;
 
+  /* on Windows - set printf to default to printing 2 digit exponents */
+#if defined(PETSC_HAVE__SET_OUTPUT_FORMAT)
+  _set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
+
   *ierr = PetscOptionsCreate();
   if (*ierr) return;
   i = 0;
