@@ -24,10 +24,14 @@
 #if defined(PETSC_USE_FORTRANKIND)
 #define integer8 integer(kind=selected_int_kind(10))
 #define integer4 integer(kind=selected_int_kind(5))
+#define integer2 integer(kind=selected_int_kind(3))
+#define integer1 integer(kind=selected_int_kind(1))
 #define PetscBool  logical(kind=4)
 #else
 #define integer8 integer*8
 #define integer4 integer*4
+#define integer2 integer*2
+#define integer1 integer*1
 #define PetscBool  logical*4
 #endif
 
