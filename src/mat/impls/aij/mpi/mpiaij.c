@@ -1111,23 +1111,15 @@ PetscErrorCode MatScale_MPIAIJ(Mat A,PetscScalar aa)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatDestroy_MatRedundant"
-PetscErrorCode MatDestroy_MatRedundant(Mat A)
+#define __FUNCT__ "MatDestroy_Redundant"
+PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
 {
   PetscErrorCode ierr;
-  Mat_Redundant  *redund; 
+  Mat_Redundant  *redund = *redundant;
   PetscInt       i;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-    redund = a->redundant;
-  } else {
-    Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
-    redund = a->redundant;
-  }
+  *redundant = NULL;
   if (redund){
     if (redund->matseq) { /* via MatGetSubMatrices()  */
       ierr = ISDestroy(&redund->isrow);CHKERRQ(ierr);
@@ -1164,7 +1156,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D",mat->rmap->N,mat->cmap->N);
 #endif
-  ierr = MatDestroy_MatRedundant(mat);CHKERRQ(ierr);
+  ierr = MatDestroy_Redundant(&aij->redundant);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   ierr = VecDestroy(&aij->diag);CHKERRQ(ierr);
   ierr = MatDestroy(&aij->A);CHKERRQ(ierr);
@@ -2782,7 +2774,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     }
     if (psubcomm->type == PETSC_SUBCOMM_INTERLACED) {
       ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(mat,nsubcomm,subcomm,reuse,matredundant);CHKERRQ(ierr);
-      if (reuse ==  MAT_INITIAL_MATRIX) { /* psubcomm is created in this routine, free it in MatDestroy_MatRedundant() */
+      if (reuse ==  MAT_INITIAL_MATRIX) { /* psubcomm is created in this routine, free it in MatDestroy_Redundant() */
         ierr = MPI_Comm_size(psubcomm->comm,&subsize);CHKERRQ(ierr);
         if (subsize == 1) {
           Mat_SeqAIJ *c = (Mat_SeqAIJ*)(*matredundant)->data;
