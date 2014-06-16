@@ -979,6 +979,35 @@ PetscErrorCode  VecReciprocal(Vec vec)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetOperation"
+/*@C
+    VecSetOperation - Allows user to set a vector operation.
+
+   Logically Collective on Vec
+
+    Input Parameters:
++   vec - the vector
+.   op - the name of the operation
+-   f - the function that provides the operation.
+
+   Level: advanced
+
+    Usage:
+$      PetscErrorCode userview(Vec,PetscViewer);
+$      ierr = VecCreateMPI(comm,m,M,&x);
+$      ierr = VecSetOperation(x,VECOP_VIEW,(void(*)(void))userview);
+
+    Notes:
+    See the file include/petscvec.h for a complete list of matrix
+    operations, which all have the form VECOP_<OPERATION>, where
+    <OPERATION> is the name (in all capital letters) of the
+    user interface routine (e.g., VecView() -> VECOP_VIEW).
+
+    This function is not currently available from Fortran.
+
+.keywords: vector, set, operation
+
+.seealso: VecCreate(), MatShellSetOperation()
+@*/
 PetscErrorCode  VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
 {
   PetscFunctionBegin;
