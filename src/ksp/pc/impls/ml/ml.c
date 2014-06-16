@@ -500,6 +500,7 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
 }
 
 /* -----------------------------------------------------------------------------*/
+extern PetscErrorCode PCReset_MG(PC);
 #undef __FUNCT__
 #define __FUNCT__ "PCReset_ML"
 PetscErrorCode PCReset_ML(PC pc)
@@ -549,6 +550,7 @@ PetscErrorCode PCReset_ML(PC pc)
 
   pc_ml->dim  = 0;
   pc_ml->nloc = 0;
+  ierr = PCReset_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -665,7 +667,6 @@ PetscErrorCode PCSetUp_ML(PC pc)
     } else {
       /* since ML can change the size of vectors/matrices at any level we must destroy everything */
       ierr = PCReset_ML(pc);CHKERRQ(ierr);
-      ierr = PCReset_MG(pc);CHKERRQ(ierr);
     }
   }
 
