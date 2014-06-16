@@ -3100,6 +3100,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
 
   /* put together the new matrix */
   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),cn,cn,ci,cj,ca,C);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(*C,pp->dof);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* Since these are PETSc arrays, change flags to free them as necessary. */
@@ -3334,6 +3335,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,Mat
     }
   }
   ierr = MatCreateAIJ(PetscObjectComm((PetscObject)A),A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N,0,dnz,0,onz,&B);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(B,dof);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
 
   ierr   = PetscMalloc2(nmax,&icols,onmax,&oicols);CHKERRQ(ierr);
