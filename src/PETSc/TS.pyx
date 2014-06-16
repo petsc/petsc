@@ -138,11 +138,11 @@ cdef class TS(Object):
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
         if function is not None:
-            if args is None: args = ()
+            if args  is None: args  = ()
             if kargs is None: kargs = {}
-            self.set_attr('__rhsfunction__', (function, args, kargs))
-            CHKERR( TSSetRHSFunction(self.ts, fvec,
-                                     TS_RHSFunction, NULL) )
+            context = (function, args, kargs)
+            self.set_attr('__rhsfunction__', context)
+            CHKERR( TSSetRHSFunction(self.ts, fvec, TS_RHSFunction, <void*>context) )
         else:
             CHKERR( TSSetRHSFunction(self.ts, fvec, NULL, NULL) )
 
@@ -152,11 +152,11 @@ cdef class TS(Object):
         cdef PetscMat Pmat=Jmat
         if P is not None: Pmat = P.mat
         if jacobian is not None:
-            if args is None: args = ()
+            if args  is None: args  = ()
             if kargs is None: kargs = {}
-            self.set_attr('__rhsjacobian__', (jacobian, args, kargs))
-            CHKERR( TSSetRHSJacobian(self.ts, Jmat, Pmat,
-                                     TS_RHSJacobian, NULL) )
+            context = (jacobian, args, kargs)
+            self.set_attr('__rhsjacobian__', context)
+            CHKERR( TSSetRHSJacobian(self.ts, Jmat, Pmat, TS_RHSJacobian, <void*>context) )
         else:
             CHKERR( TSSetRHSJacobian(self.ts, Jmat, Pmat, NULL, NULL) )
 
@@ -190,8 +190,7 @@ cdef class TS(Object):
     def getRHSJacobian(self):
         cdef Mat J = Mat(), P = Mat()
         CHKERR( TSGetRHSJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
-        PetscINCREF(J.obj)
-        PetscINCREF(P.obj)
+        PetscINCREF(J.obj); PetscINCREF(P.obj)
         cdef object jacobian = self.get_attr('__rhsjacobian__')
         return (J, P, jacobian)
 
@@ -201,11 +200,11 @@ cdef class TS(Object):
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
         if function is not None:
-            if args is None: args = ()
+            if args  is None: args  = ()
             if kargs is None: kargs = {}
-            self.set_attr('__ifunction__', (function, args, kargs))
-            CHKERR( TSSetIFunction(self.ts, fvec,
-                                   TS_IFunction, NULL) )
+            context = (function, args, kargs)
+            self.set_attr('__ifunction__', context)
+            CHKERR( TSSetIFunction(self.ts, fvec, TS_IFunction, <void*>context) )
         else:
             CHKERR( TSSetIFunction(self.ts, fvec, NULL, NULL) )
 
@@ -215,11 +214,11 @@ cdef class TS(Object):
         cdef PetscMat Pmat=Jmat
         if P is not None: Pmat = P.mat
         if jacobian is not None:
-            if args is None: args = ()
+            if args  is None: args  = ()
             if kargs is None: kargs = {}
-            self.set_attr('__ijacobian__', (jacobian, args, kargs))
-            CHKERR( TSSetIJacobian(self.ts, Jmat, Pmat,
-                                   TS_IJacobian, NULL) )
+            context = (jacobian, args, kargs)
+            self.set_attr('__ijacobian__', context)
+            CHKERR( TSSetIJacobian(self.ts, Jmat, Pmat, TS_IJacobian, <void*>context) )
         else:
             CHKERR( TSSetIJacobian(self.ts, Jmat, Pmat, NULL, NULL) )
 
@@ -252,8 +251,7 @@ cdef class TS(Object):
     def getIJacobian(self):
         cdef Mat J = Mat(), P = Mat()
         CHKERR( TSGetIJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
-        PetscINCREF(J.obj)
-        PetscINCREF(P.obj)
+        PetscINCREF(J.obj); PetscINCREF(P.obj)
         cdef object jacobian = self.get_attr('__ijacobian__')
         return (J, P, jacobian)
 
@@ -471,16 +469,17 @@ cdef class TS(Object):
             monitorlist = []
             self.set_attr('__monitor__', monitorlist)
             CHKERR( TSMonitorSet(self.ts, TS_Monitor, NULL, NULL) )
-        if args is None: args = ()
+        if args  is None: args  = ()
         if kargs is None: kargs = {}
-        monitorlist.append((monitor, args, kargs))
+        context = (monitor, args, kargs)
+        monitorlist.append(context)
 
     def getMonitor(self):
         return self.get_attr('__monitor__')
 
     def cancelMonitor(self):
-        CHKERR( TSMonitorCancel(self.ts) )
         self.set_attr('__monitor__', None)
+        CHKERR( TSMonitorCancel(self.ts) )
 
     def monitor(self, step, time, Vec u=None):
         cdef PetscInt  ival = asInt(step)
@@ -495,26 +494,28 @@ cdef class TS(Object):
 
     def setPreStep(self, prestep, args=None, kargs=None):
         if prestep is not None:
-            CHKERR( TSSetPreStep(self.ts, TS_PreStep) )
-            if args is None: args = ()
+            if args  is None: args  = ()
             if kargs is None: kargs = {}
-            self.set_attr('__prestep__', (prestep, args, kargs))
+            context = (prestep, args, kargs)
+            self.set_attr('__prestep__', context)
+            CHKERR( TSSetPreStep(self.ts, TS_PreStep) )
         else:
-            CHKERR( TSSetPreStep(self.ts, NULL) )
             self.set_attr('__prestep__', None)
+            CHKERR( TSSetPreStep(self.ts, NULL) )
 
     def getPreStep(self):
         return self.get_attr('__prestep__')
 
     def setPostStep(self, poststep, args=None, kargs=None):
         if poststep is not None:
-            CHKERR( TSSetPostStep(self.ts, TS_PostStep) )
-            if args is None: args = ()
+            if args  is None: args  = ()
             if kargs is None: kargs = {}
-            self.set_attr('__poststep__', (poststep, args, kargs))
+            context = (poststep, args, kargs)
+            self.set_attr('__poststep__', context)
+            CHKERR( TSSetPostStep(self.ts, TS_PostStep) )
         else:
-            CHKERR( TSSetPostStep(self.ts, NULL) )
             self.set_attr('__poststep__', None)
+            CHKERR( TSSetPostStep(self.ts, NULL) )
 
     def getPostStep(self):
         return self.get_attr('__poststep__')

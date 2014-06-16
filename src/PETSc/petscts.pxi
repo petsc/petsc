@@ -197,7 +197,10 @@ cdef int TS_RHSFunction(
     cdef TS  Ts   = ref_TS(ts)
     cdef Vec Xvec = ref_Vec(x)
     cdef Vec Fvec = ref_Vec(f)
-    (function, args, kargs) = Ts.get_attr('__rhsfunction__')
+    cdef object context = Ts.get_attr('__rhsfunction__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (function, args, kargs) = context
     function(Ts, toReal(t), Xvec, Fvec, *args, **kargs)
     return 0
 
@@ -213,7 +216,10 @@ cdef int TS_RHSJacobian(
     cdef Vec Xvec = ref_Vec(x)
     cdef Mat Jmat = ref_Mat(J)
     cdef Mat Pmat = ref_Mat(P)
-    (jacobian, args, kargs) = Ts.get_attr('__rhsjacobian__')
+    cdef object context = Ts.get_attr('__rhsjacobian__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (jacobian, args, kargs) = context
     jacobian(Ts, toReal(t), Xvec, Jmat, Pmat, *args, **kargs)
     return 0
 
@@ -231,7 +237,10 @@ cdef int TS_IFunction(
     cdef Vec Xvec  = ref_Vec(x)
     cdef Vec XDvec = ref_Vec(xdot)
     cdef Vec Fvec  = ref_Vec(f)
-    (function, args, kargs) = Ts.get_attr('__ifunction__')
+    cdef object context = Ts.get_attr('__ifunction__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (function, args, kargs) = context
     function(Ts, toReal(t), Xvec, XDvec, Fvec, *args, **kargs)
     return 0
 
@@ -250,7 +259,10 @@ cdef int TS_IJacobian(
     cdef Vec  XDvec = ref_Vec(xdot)
     cdef Mat  Jmat  = ref_Mat(J)
     cdef Mat  Pmat  = ref_Mat(P)
-    (jacobian, args, kargs) = Ts.get_attr('__ijacobian__')
+    cdef object context = Ts.get_attr('__ijacobian__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (jacobian, args, kargs) = context
     jacobian(Ts, toReal(t), Xvec, XDvec, toReal(a), Jmat, Pmat, *args, **kargs)
     return 0
 
