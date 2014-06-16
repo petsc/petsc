@@ -59,6 +59,16 @@ SAWsDisplayDirectory = function(sub,divEntry)
                 sawsInfo[index].data[getSawsDataIndex(index,endtag)].bjacobi_blocks = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_bjacobi_blocks"].data[0];
             }
 
+            /*if(SAWs_pcVal == 'mg') {//some extra data for pc=multigrid
+                //petsc does mg_levels differently as well. so we need to allocate memory for it.
+                endtag = endtag + "0";
+                
+            } ignore this code for now. I'm working on it.
+
+            //lastly, check if parent was mg because then this child is a mg_level and we might need to record a new record for mg_level
+            var parentEndtag = endtag.substring
+            if(sawsInfo[index].data[getSawsDataIndex(index, endtag.substring*/
+
         }
 
     }

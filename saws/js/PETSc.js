@@ -17,6 +17,8 @@ var sawsInfo = [];//ignore this. the parseprefix method depends on the existence
 
 var init = false;//record if initialized the page (added appropriate divs for the diagrams and such)
 
+var removedText = false;//record if the text at the top was removed
+
 //This Function is called once (document).ready. The javascript for this was written by the PETSc code into index.html
 PETSc.getAndDisplayDirectory = function(names,divEntry){
 
@@ -24,7 +26,7 @@ PETSc.getAndDisplayDirectory = function(names,divEntry){
         $("head").append('<script src="js/parsePrefix.js"></script>');//reuse the code for parsing thru the prefix
         $("head").append('<script src="js/fetchSawsData.js"></script>');//reuse the code for alloc mem
         $("head").append('<script src="js/utils.js"></script>');//reuse the code for alloc mem
-        $("body").append("<div id=\"multigridDiagram\"></div>");
+        $("body").append("<div id=\"multigridDiagram\" style=\"float:right;\"></div>");
         $("body").append("<div id=\"fieldsplitDiagram\"></div>");
         init = true;
     }
@@ -66,6 +68,13 @@ PETSc.displayDirectory = function(sub,divEntry)
         var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];
         if(SAWs_prefix == "(null)")
             SAWs_prefix = "";
+
+        if(SAWs_prefix != "" && !removedText) {//remove the text at the top (the first 9 elements)
+            for(var i=0; i<9; i++) {
+                $("body").children().first().remove();
+            }
+            removedText=true;
+        }
 
         var generatedEndtag = parsePrefixForEndtag(SAWs_prefix,0);
 
@@ -133,9 +142,8 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
 	        //jQuery("#"+fullkey).append("<b>"+ key +"<b><br>");//do not display "PETSc" nor "Options"
             }
 
-            var save = "";//saved html element containing the description because although the data is fetched: "description, -option, value" we wish to display it: "-option, value, description"
+            var descriptionSave = "";//saved description string because although the data is fetched: "description, -option, value" we wish to display it: "-option, value, description"
             var manualSave = ""; //saved manual text
-            var prefix = "";//save what the prefix is so that we can prepend it to all the options
             var mg_encountered = false;//record whether or not we have encountered pc=multigrid
 
             jQuery.each(sub[key].variables, function(vKey, vValue) {//for each variable...
@@ -147,10 +155,14 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                     if(vKey.indexOf("prefix") != -1 && sub[key].variables[vKey].data[0] == "(null)")
                         return;//do not display (null) prefix
 
-                    if(vKey.indexOf("prefix") == -1 && vKey.indexOf("ChangedMethod") == -1)//not the prefix text so edit to have the prefix prepended to the option text
-                        $("#"+fullkey).append("-" + prefix + vKey.substring(1,vKey.length) + ":&nbsp;");
-                    else if(vKey.indexOf("ChangedMethod") == -1) //if reaches here, it is the prefix text
+                    if(vKey.indexOf("prefix") != -1) //prefix text
                         $("#"+fullkey).append(vKey + ":&nbsp;");
+                    else if(vKey.indexOf("ChangedMethod") == -1) { //options text
+                        //options text is a link to the appropriate manual page
+
+                        var manualDirectory = "all"; //this directory does not exist yet so links will not work for now
+                        $("#"+fullkey).append("<br><a href=\"http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/" +  manualDirectory + "/" + manualSave + ".html\" title=\"" + descriptionSave + "\" id=\"data"+fullkey+vKey+j+"\">"+vKey+"&nbsp</a>");
+                    }
                 }
 
                 for(j=0;j<sub[key].variables[vKey].data.length;j++){//vKey tells us a lot of information on what the data is. data.length is 1 most of the time. when it is more than 1, that results in 2 input boxes right next to each other
@@ -165,14 +177,6 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                         continue;
                     }
 
-                    if(vKey.indexOf("prefix") != -1) {//record prefix
-                        var saws_prefix = sub[key].variables[vKey].data[j];
-                        if(saws_prefix == "(null)")
-                            prefix = "";
-                        else
-                            prefix = saws_prefix;
-                    }
-
                     if(sub[key].variables[vKey].alternatives.length == 0) {//case where there are no alternatives
                         if(sub[key].variables[vKey].dtype == "SAWs_BOOLEAN") {
                             $("#"+fullkey).append("<select id=\"data"+fullkey+vKey+j+"\">");//make the boolean dropdown list.
@@ -180,25 +184,15 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                             if(vKey == "ChangedMethod") {//do not show changedmethod to user
                                 $("#data"+fullkey+vKey+j).attr("hidden",true);
                             }
-                            else {//do not add the extra line if it was ChangedMethod
-                                $("#"+fullkey).append(save+"<br>");
-                                save = "";
-                            }
 
                         } else {
                             if(sub[key].variables[vKey].mtype != "SAWs_WRITE") {
-                                if(save != "")
-                                    $("#"+fullkey).append(save+"<br>");
 
-                                var manualDirectory = "all"; //this directory does not exist yet so links will not work for now
+                                descriptionSave = sub[key].variables[vKey].data[j];
 
-                                save = "<a style=\"font-family: Courier\" href=\"http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/" +  manualDirectory + "/" + manualSave + ".html\" title=\"" + manualSave + "\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</a>";//can't be changed
+                                if(vKey.indexOf("prefix") != -1) //data of prefix so dont do manual and use immediately
+                                    $("#"+fullkey).append("<a style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</a><br>");
 
-                                if(vKey.indexOf("prefix") != -1) {//data of prefix so dont do manual and use immediately
-                                    save = "<a style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</a>";//can't be changed
-                                    $("#"+fullkey).append(save+"<br>");
-                                    save = "";
-                                }
                             }
                             else {//can be changed (append dropdown list)
                                 $("#"+fullkey).append("<input type=\"text\" style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\" name=\"data\" \\>");
@@ -224,8 +218,6 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                             jQuery("#data"+fullkey+vKey+j).append("<option value=\""+sub[key].variables[vKey].alternatives[l]+"\">"+sub[key].variables[vKey].alternatives[l]+"</option>");
                         }
                         jQuery("#"+fullkey).append("</select>");
-                        $("#"+fullkey).append(save+"<br>");
-                        save = "";
 
                         jQuery("#data"+fullkey+vKey+j).change(function(obj) {
                             console.log( "Change called"+key+vKey );
@@ -235,11 +227,6 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                     }
                 }
             });
-
-            if(save != "") {//to avoid losing a description at the end of the page
-                $("#"+fullkey).append(save+"<br>");
-                save = "";
-            }
 
             if(typeof sub[key].directories != 'undefined'){
                 PETSc.displayDirectoryRecursive(sub[key].directories,divEntry,tab+1,fullkey);
