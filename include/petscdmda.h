@@ -115,11 +115,10 @@ PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*);
 
     Level: intermediate
 
-    Sample Usage:
+    Synopsis:
       DMDACoor2d **coors;
       Vec      vcoors;
       DM       cda;
-
       DMGetCoordinates(da,&vcoors);
       DMGetCoordinateDM(da,&cda);
       DMDAVecGetArray(cda,vcoors,&coors);
@@ -133,7 +132,7 @@ PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*);
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
 
-.seealso: DMDACoor3d, DMGetCoordinateDM(), DMGetCoordinates(), DMDAGetGhostCoordinates()
+.seealso: DMDACoor3d, DMGetCoordinateDM(), DMGetCoordinates()
 M*/
 typedef struct {PetscScalar x,y;} DMDACoor2d;
 
@@ -142,11 +141,10 @@ typedef struct {PetscScalar x,y;} DMDACoor2d;
 
     Level: intermediate
 
-    Sample Usage:
+    Synopsis:
       DMDACoor3d ***coors;
       Vec      vcoors;
       DM       cda;
-
       DMGetCoordinates(da,&vcoors);
       DMGetCoordinateDM(da,&cda);
       DMDAVecGetArray(cda,vcoors,&coors);
@@ -162,7 +160,7 @@ typedef struct {PetscScalar x,y;} DMDACoor2d;
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
 
-.seealso: DMDACoor2d, DMGetCoordinateDM(), DMGetCoordinates(), DMDAGetGhostCoordinates()
+.seealso: DMDACoor2d, DMGetCoordinateDM(), DMGetCoordinates()
 M*/
 typedef struct {PetscScalar x,y,z;} DMDACoor3d;
 
