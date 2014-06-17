@@ -1620,82 +1620,10 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
 @*/
 PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim, PetscBool simplex, DM *refdm)
 {
-  DM             rdm;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMCreate(PetscObjectComm((PetscObject) sp), &rdm);CHKERRQ(ierr);
-  ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetDimension(rdm, dim);CHKERRQ(ierr);
-  switch (dim) {
-  case 0:
-  {
-    PetscInt    numPoints[1]        = {1};
-    PetscInt    coneSize[1]         = {0};
-    PetscInt    cones[1]            = {0};
-    PetscInt    coneOrientations[1] = {0};
-    PetscScalar vertexCoords[1]     = {0.0};
-
-    ierr = DMPlexCreateFromDAG(rdm, 0, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-  }
-  break;
-  case 1:
-  {
-    PetscInt    numPoints[2]        = {2, 1};
-    PetscInt    coneSize[3]         = {2, 0, 0};
-    PetscInt    cones[2]            = {1, 2};
-    PetscInt    coneOrientations[2] = {0, 0};
-    PetscScalar vertexCoords[2]     = {-1.0,  1.0};
-
-    ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-  }
-  break;
-  case 2:
-    if (simplex) {
-      PetscInt    numPoints[2]        = {3, 1};
-      PetscInt    coneSize[4]         = {3, 0, 0, 0};
-      PetscInt    cones[3]            = {1, 2, 3};
-      PetscInt    coneOrientations[3] = {0, 0, 0};
-      PetscScalar vertexCoords[6]     = {-1.0, -1.0,  1.0, -1.0,  -1.0, 1.0};
-
-      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    } else {
-      PetscInt    numPoints[2]        = {4, 1};
-      PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
-      PetscInt    cones[4]            = {1, 2, 3, 4};
-      PetscInt    coneOrientations[4] = {0, 0, 0, 0};
-      PetscScalar vertexCoords[8]     = {-1.0, -1.0,  1.0, -1.0,  1.0, 1.0,  -1.0, 1.0};
-
-      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    }
-  break;
-  case 3:
-    if (simplex) {
-      PetscInt    numPoints[2]        = {4, 1};
-      PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
-      PetscInt    cones[4]            = {1, 3, 2, 4};
-      PetscInt    coneOrientations[4] = {0, 0, 0, 0};
-      PetscScalar vertexCoords[12]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  -1.0, -1.0, 1.0};
-
-      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    } else {
-      PetscInt    numPoints[2]        = {8, 1};
-      PetscInt    coneSize[9]         = {8, 0, 0, 0, 0, 0, 0, 0, 0};
-      PetscInt    cones[8]            = {1, 4, 3, 2, 5, 6, 7, 8};
-      PetscInt    coneOrientations[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-      PetscScalar vertexCoords[24]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  1.0, 1.0, -1.0,  -1.0, 1.0, -1.0,
-                                         -1.0, -1.0,  1.0,  1.0, -1.0,  1.0,  1.0, 1.0,  1.0,  -1.0, 1.0,  1.0};
-
-      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    }
-  break;
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_WRONG, "Cannot create reference cell for dimension %d", dim);
-  }
-  *refdm = NULL;
-  ierr = DMPlexInterpolate(rdm, refdm);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(rdm, *refdm);CHKERRQ(ierr);
-  ierr = DMDestroy(&rdm);CHKERRQ(ierr);
+  ierr = DMPlexCreateReferenceCell(PetscObjectComm((PetscObject) sp), dim, simplex, refdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
