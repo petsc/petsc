@@ -81,7 +81,7 @@ function getSawsNumChildren(parent) {
     var count = 0;
 
     for(var i=0; i<sawsInfo.length; i++) {
-        if(sawsInfo[i].id.length == length)
+        if(sawsInfo[i].id.length == length && sawsInfo[i].id.substring(0,sawsInfo[i].id.length-1) == parent)
             count++;
     }
 

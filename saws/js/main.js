@@ -7,9 +7,6 @@ var askedA0 = false;//a one-way flag to record if A0 was asked
 var sawsInfo = [];
 var serverOptionsCounter = 1;//this counter is used to flip the order of pc/ksp->ksp/pc in the server solver options. the flip is performed at the end when the user clicks the button.
 
-//Use for pcmg
-var mgLevelLocation = ""; //where to put the mg level data once the highest level is determined. put in same level as coarse. the data in this location keeps on getting overwritten every time mg_levels_n is encountered
-
 var treeDetailed;//global variable. tree.js uses this variable to determine how the tree should be displayed
 
 //  This function is run when the page is first visited

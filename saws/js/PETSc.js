@@ -12,8 +12,7 @@ var successFunc = function(data, textStatus, jqXHR)//ignore this for now. I'm tr
 
 PETSc = {};
 
-var mgLevelLocation = "";//record where we encountered the mg (using the endtag numbering system)
-var sawsInfo = [];//ignore this. the parseprefix method depends on the existence of this variable. I will restructure the parseprefix system soon. the method shouldn't write to this variable.
+var sawsInfo = [];//this variable is used to organize all the data from SAWs
 
 var init = false;//record if initialized the page (added appropriate divs for the diagrams and such)
 
@@ -24,8 +23,8 @@ PETSc.getAndDisplayDirectory = function(names,divEntry){
 
     if(!init) {
         $("head").append('<script src="js/parsePrefix.js"></script>');//reuse the code for parsing thru the prefix
-        $("head").append('<script src="js/fetchSawsData.js"></script>');//reuse the code for alloc mem
-        $("head").append('<script src="js/utils.js"></script>');//reuse the code for alloc mem
+        $("head").append('<script src="js/fetchSawsData.js"></script>');//reuse the code for organizing data into sawsInfo
+        $("head").append('<script src="js/utils.js"></script>');//necessary for the two js files above
         $("body").append("<div id=\"multigridDiagram\" style=\"float:right;\"></div>");
         $("body").append("<div id=\"fieldsplitDiagram\"></div>");
         init = true;
@@ -61,11 +60,12 @@ PETSc.getDirectory = function(names,callback,callbackdata) {
 PETSc.displayDirectory = function(sub,divEntry)
 {
     globaldirectory[divEntry] = sub;
+    recordSawsData(sub);//records data into sawsInfo[]
 
     if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
-        var SAWs_pcVal = JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0]);
-
+        var SAWs_pcVal  = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0];
         var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];
+
         if(SAWs_prefix == "(null)")
             SAWs_prefix = "";
 
@@ -76,11 +76,48 @@ PETSc.displayDirectory = function(sub,divEntry)
             removedText=true;
         }
 
-        var generatedEndtag = parsePrefixForEndtag(SAWs_prefix,0);
 
-        if(SAWs_pcVal == "mg" && mgLevelLocation != "")
-            alert("Nested Multigrid Not Yet Supported!");
-        else if(mgLevelLocation != "") {
+        var generatedFieldsplit = parsePrefixForFieldsplit(SAWs_prefix).fieldsplit;
+
+        if(generatedFieldsplit != "0") {
+            $("fieldsplitDiagram").html("");
+
+            var colors = ["green","blue"];
+            var layer = 0;
+            $("#fieldsplitDiagram").html("<svg id=\"svgFieldsplit\" width='400' height='400'> <polygon points=\"0,0 0,400 400,400 400,0\" style=\"fill:khaki;stroke:black;stroke-width:1\"> </svg>");
+            layer = 1;
+
+            drawFieldsplit("0",0,0,400);
+
+            function drawFieldsplit(fieldsplit,x,y,size) {//input is the id of the fieldsplit. for example "0". (x,y) is the upper lefthand corner. size is the size of one side of the parent square (in pixels)
+                //work = draw the children of the fieldsplit then call draw on each child
+                var numChildren = getSawsNumChildren(fieldsplit);
+                if(numChildren == 0)
+                    return;
+                var colorNum = fieldsplit.length - 1;
+
+                for(var i=0; i<numChildren; i++) {
+                    var side   = size/numChildren;
+                    var curr_x = x + i*side;
+                    var curr_y = y + i*side;
+
+                    var string = "<polygon points=\""+curr_x+","+curr_y+" "+(curr_x+side)+","+curr_y+" "+(curr_x+side)+","+(curr_y+side)+" "+curr_x+","+(curr_y+side)+"\" style=\"fill:"+colors[colorNum]+";stroke:black;stroke-width:1\"> </svg>";
+
+                    $("#svgFieldsplit").append(string);
+                    var childID = fieldsplit + i;
+                    drawFieldsplit(childID, curr_x, curr_y, size/numChildren);
+                }
+            }
+
+            $("body").html($("body").html());//hacky refresh svg
+        }
+
+
+        var generatedEndtag = parsePrefixForEndtag(SAWs_prefix,0);
+        var index = getSawsIndex(generatedFieldsplit);
+
+        if(sawsInfo[index].data[getSawsDataIndex(index,generatedEndtag.substring(0,generatedEndtag.length-1))].pc == "mg") { //if parent is mg
+
             var _index = generatedEndtag.length;
             var _level = generatedEndtag[_index-1];//get the last character
 
@@ -121,14 +158,6 @@ PETSc.displayDirectory = function(sub,divEntry)
         }
     }
 
-    //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].alternatives)) //pcList
-
-    //alert(JSON.stringify(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables))
-
-//    if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
-  //      window.location = 'pcoptions.html'
-//    } else {
-      //  }
     PETSc.displayDirectoryRecursive(sub.directories,divEntry,0,"");//this method is recursive on itself and actually fills the div with text and dropdown lists
 
     if (sub.directories.SAWs_ROOT_DIRECTORY.variables.hasOwnProperty("__Block") && (sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data[0] == "true")) {

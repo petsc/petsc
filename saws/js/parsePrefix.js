@@ -1,8 +1,9 @@
 function parsePrefixForFieldsplit(SAWs_prefix) {
 
-    var fieldsplit="0";
+    var fieldsplit = "0";
+    var newWord    = "";
 
-    if(SAWs_prefix.indexOf("fieldsplit_")!=-1) {//still contains at least 1 fieldsplit (assume max of 1 fieldsplit for now)
+    if(SAWs_prefix.indexOf("fieldsplit_") != -1) {//still contains at least 1 fieldsplit (assume max of 1 fieldsplit for now)
 
         var closest=SAWs_prefix.length;//the furthest a keyword could possibly be
         //find index of next keyword (pc, ksp, sub, smoothing, coarse)
@@ -14,29 +15,25 @@ function parsePrefixForFieldsplit(SAWs_prefix) {
                 closest=loc;
         }
 
-        var theword = SAWs_prefix.substring(11,closest-1);//omit the first and last underscore
+        var theword      = SAWs_prefix.substring(11,closest-1);//omit the first and last underscore
+        var fieldsplitID = getFieldsplitWordID(theword);//get the id (for example "001") associated with this fieldsplit word
 
-        var fieldsplitID = getFieldsplitWordID(theword);
-
-        if(fieldsplitID == "-1") {// new fieldsplit. this word has not been encountered yet.
-            //get the fieldsplit number (the last digit) by counting how many children its parent already has
+        if(fieldsplitID == "-1") { //new fieldsplit. this word has not been encountered yet.
             var fieldsplitNumber = getSawsNumChildren(fieldsplit);//fieldsplit = the existing fieldsplit
-
-            var writeLoc = sawsInfo.length;
-            sawsInfo[writeLoc]      = new Object();
-            sawsInfo[writeLoc].data = new Array();
-            sawsInfo[writeLoc].id   = fieldsplit + fieldsplitNumber.toString();
-            sawsInfo[writeLoc].name = theword;//record fieldsplit name in sawsInfo[]
-            fieldsplit = fieldsplit + fieldsplitNumber.toString();
+            fieldsplit           = fieldsplit + fieldsplitNumber.toString();
+            newWord              = theword;
         }
 
         else {//old fieldsplit
             fieldsplit = fieldsplitID;
-
         }
     }
 
-    return fieldsplit;
+    var ret        = new Object();
+    ret.fieldsplit = fieldsplit;
+    ret.newWord    = newWord;
+
+    return ret;//we have to return both the fieldsplit id and the new word encountered (if any)
 
 }
 
@@ -59,18 +56,10 @@ function parsePrefixForEndtag(SAWs_prefix, index) {
 
         SAWs_prefix=SAWs_prefix.substring(indexFirstUnderscore+1, SAWs_prefix.length);//dont include the underscore
 
-        if((chunk=="mg_coarse" || chunk=="mg_levels_0") && SAWs_prefix=="")//new mg coarse
-            mgLevelLocation=endtag+"0";/* THIS SHOULD NOT BE IN THIS METHOD */
-
         if(chunk=="ksp" || chunk=="sub" || chunk=="mg_coarse" || chunk=="redundant")
             endtag+="0";
         else if(chunk.substring(0,10)=="mg_levels_")
             endtag+=chunk.substring(10,11);//can only be 1 character long for now
-
-        if(chunk.substring(0,10)=="mg_levels_" && SAWs_prefix=="") {//new mg levels. it's not okay to assume memory was already allocated b/c mg_coarse is sometimes written as mg_levels_0
-            allocateMemory(parsePrefixForFieldsplit(SAWs_prefix), mgLevelLocation, index);
-            sawsInfo[index].data[getSawsDataIndex(index, mgLevelLocation)].mg_levels=parseInt(chunk.substring(10,11))+1;
-        }/* THIS SHOULD NOT BE IN THIS METHOD */
     }
 
     return endtag;
