@@ -353,8 +353,10 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCSetFromOptions(ksp->pc);CHKERRQ(ierr);
+  if (!ksp->skippcsetfromoptions) {
+    if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
+    ierr = PCSetFromOptions(ksp->pc);CHKERRQ(ierr);
+  }
 
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll();CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)ksp);CHKERRQ(ierr);
@@ -368,6 +370,9 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (!((PetscObject)ksp)->type_name) {
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
+
+  ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
+  if (flg) goto skipoptions;
 
   ierr = PetscOptionsInt("-ksp_max_it","Maximum number of iterations","KSPSetTolerances",ksp->max_it,&ksp->max_it,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_rtol","Relative decrease in residual norm","KSPSetTolerances",ksp->rtol,&ksp->rtol,NULL);CHKERRQ(ierr);
@@ -614,6 +619,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (ksp->ops->setfromoptions) {
     ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
   }
+  skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

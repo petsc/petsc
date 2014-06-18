@@ -27,8 +27,9 @@ PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
     ierr = KSPChebyshevSetEstimateEigenvalues(ksp,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     /* Enable runtime options for cheb->kspest: 
        KSPChebyshevSetEstimateEigenvalues() creates cheb->kspest, but does not call KSPSetFromOptions(cheb->kspest)! */
+    ierr = KSPSetSkipPCSetFromOptions(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(cheb->kspest);CHKERRQ(ierr);
-  } 
+  }
   PetscFunctionReturn(0);
 }
 
@@ -66,9 +67,6 @@ static PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP ksp,Petsc
       ierr = KSPSetOptionsPrefix(cheb->kspest,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(cheb->kspest,"est_");CHKERRQ(ierr);
 
-      ierr = KSPGetPC(cheb->kspest,&cheb->pcnone);CHKERRQ(ierr);
-      ierr = PetscObjectReference((PetscObject)cheb->pcnone);CHKERRQ(ierr);
-      ierr = PCSetType(cheb->pcnone,PCNONE);CHKERRQ(ierr);
       ierr = KSPSetPC(cheb->kspest,ksp->pc);CHKERRQ(ierr);
       
       ierr = KSPGetInitialGuessNonzero(ksp,&nonzero);CHKERRQ(ierr);
@@ -87,7 +85,6 @@ static PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP ksp,Petsc
     cheb->estimate_current = PETSC_FALSE;
   } else {
     ierr = KSPDestroy(&cheb->kspest);CHKERRQ(ierr);
-    ierr = PCDestroy(&cheb->pcnone);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -297,15 +294,13 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
   }
 
   if (cheb->kspest) {
-    /* Mask the PC so that PCSetFromOptions does not do anything */
-    ierr = KSPSetPC(cheb->kspest,cheb->pcnone);CHKERRQ(ierr);
+    ierr = KSPSetSkipPCSetFromOptions(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(cheb->kspest,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
     ierr = KSPAppendOptionsPrefix(cheb->kspest,"est_");CHKERRQ(ierr);
     if (!((PetscObject)cheb->kspest)->type_name) {
       ierr = KSPSetType(cheb->kspest,KSPGMRES);CHKERRQ(ierr);
     }
     ierr = KSPSetFromOptions(cheb->kspest);CHKERRQ(ierr);
-    ierr = KSPSetPC(cheb->kspest,ksp->pc);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -522,7 +517,6 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPDestroy(&cheb->kspest);CHKERRQ(ierr);
-  ierr = PCDestroy(&cheb->pcnone);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&cheb->random);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C",NULL);CHKERRQ(ierr);

@@ -113,6 +113,8 @@ struct _p_KSP {
 
   MatNullSpace nullsp;      /* Null space of the operator, removed from Krylov space */
 
+  PetscBool    skippcsetfromoptions; /* if set then KSPSetFromOptions() does not call PCSetFromOptions() */
+
   PetscViewer  eigviewer;   /* Viewer where computed eigenvalues are displayed */
 
   PetscErrorCode (*presolve)(KSP,Vec,Vec,void*);

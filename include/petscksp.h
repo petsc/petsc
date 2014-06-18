@@ -78,6 +78,7 @@ PETSC_EXTERN PetscErrorCode KSPSolveTranspose(KSP,Vec,Vec);
 PETSC_EXTERN PetscErrorCode KSPReset(KSP);
 PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
 PETSC_EXTERN PetscErrorCode KSPSetReusePreconditioner(KSP,PetscBool);
+PETSC_EXTERN PetscErrorCode KSPSetSkipPCSetFromOptions(KSP,PetscBool);
 
 PETSC_EXTERN PetscFunctionList KSPList;
 PETSC_EXTERN PetscBool         KSPRegisterAllCalled;
