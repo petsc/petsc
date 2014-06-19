@@ -37,6 +37,7 @@ testexamples_FFTW: ${TESTEXAMPLES_FFTW}
 testexamples_SAWS: ${TESTEXAMPLES_SAWS}
 testexamples_VALGRIND: ${TESTEXAMPLES_VALGRIND}
 testexamples_MATLAB: ${TESTEXAMPLES_MATLAB}
+testexamples_MATLAB_ENGINE: ${TESTEXAMPLES_MATLAB_ENGINE}
 testexamples_MUMPS: ${TESTEXAMPLES_MUMPS}
 testexamples_SUPERLU: ${TESTEXAMPLES_SUPERLU}
 testexamples_ELEMENTAL: ${TESTEXAMPLES_ELEMENTAL}
@@ -137,6 +138,8 @@ buildexamples_VALGRIND:
 	-@${OMAKE} testexamples_VALGRIND TESTEXAMPLES_VALGRIND=`echo ${TESTEXAMPLES_VALGRIND} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_MATLAB:
 	-@${OMAKE} testexamples_MATLAB TESTEXAMPLES_MATLAB=`echo ${TESTEXAMPLES_MATLAB} | sed s/runex[0-9]*[a-z0-9_]*//g`
+buildexamples_MATLAB_ENGINE:
+	-@${OMAKE} testexamples_MATLAB_ENGINE TESTEXAMPLES_MATLAB_ENGINE=`echo ${TESTEXAMPLES_MATLAB_ENGINE} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_MUMPS:
 	-@${OMAKE} testexamples_MUMPS TESTEXAMPLES_MUMPS=`echo ${TESTEXAMPLES_MUMPS} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_SUPERLU:

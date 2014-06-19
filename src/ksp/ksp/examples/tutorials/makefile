@@ -609,7 +609,7 @@ runex10_11:
 	   else printf "${PWD}\nPossible problem with with ex10_11, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_11.tmp
 runex10_12:
-	-@${MPIEXEC} -n 1 ./ex10 -mat_aij_matlab -pc_type lu -f0 ${DATAFILESPATH}/matrices/arco1 > ex10_12.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex10 -pc_type lu -pc_factor_mat_solver_package matlab -f0 ${DATAFILESPATH}/matrices/arco1 > ex10_12.tmp 2>&1;\
 	   if (${DIFF} output/ex10_12.out ex10_12.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex10_12, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_12.tmp

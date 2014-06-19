@@ -267,7 +267,7 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
   Works with MATSEQAIJ matrices.
 
   Options Database Keys:
-. -pc_factor_mat_solver_type matlab - selects MATLAB to do the sparse factorization
+. -pc_factor_mat_solver_package matlab - selects MATLAB to do the sparse factorization
 
 
   Level: beginner
