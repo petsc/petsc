@@ -135,8 +135,7 @@ extern PetscClassId KSP_CLASSID,PC_CLASSID;
 
 M*/
 #define PetscObjectOptionsBegin(obj) 0; do {                            \
-  PetscBool publishedclass = PETSC_FALSE;\
-  if ((((PetscObject)obj)->classid == KSP_CLASSID) || (((PetscObject)obj)->classid == PC_CLASSID)) publishedclass = PETSC_TRUE; \
+  PetscBool publishedclass = PETSC_TRUE;\
   for (PetscOptionsPublishCount=((PetscOptionsPublish && publishedclass)?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) { \
   PetscErrorCode _5_ierr = PetscObjectOptionsBegin_Private(obj);CHKERRQ(_5_ierr);
 
