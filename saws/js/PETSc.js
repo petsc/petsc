@@ -174,6 +174,7 @@ PETSc.displayDirectory = function(sub,divEntry)
     if (sub.directories.SAWs_ROOT_DIRECTORY.variables.hasOwnProperty("__Block") && (sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data[0] == "true")) {
         jQuery(divEntry).append("<input type=\"button\" value=\"Continue\" id=\"continue\">");
         jQuery('#continue').on('click', function(){
+            console.log("continue button clicked");
             SAWs.updateDirectoryFromDisplay(divEntry);
             sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data = ["false"];
 
@@ -209,7 +210,7 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
 
             jQuery.each(sub[key].variables, function(vKey, vValue) {//for each variable...
 
-                if (vKey[0] == '_' && vKey[1] == '_' )
+                if (vKey.substring(0,2) == "__") // __Block variable
                     return;
                 //SAWs.tab(fullkey,tab+1);
                 if (vKey[0] != '_') {//this chunk of code adds the option name
@@ -267,7 +268,6 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                         jQuery("#data"+fullkey+vKey+j).val(sub[key].variables[vKey].data[j]);//set val from server
                         if(vKey != "ChangedMethod") {
                             jQuery("#data"+fullkey+vKey+j).change(function(obj) {
-                                console.log( "Change called"+key+vKey );
                                 sub[key].variables[vKey].selected = 1;
                                 $("#data"+fullkey+"ChangedMethod0").find("option[value='true']").attr("selected","selected");//set changed to true automatically
                             });
@@ -281,9 +281,12 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                         jQuery("#"+fullkey).append("</select>");
 
                         jQuery("#data"+fullkey+vKey+j).change(function(obj) {
-                            console.log( "Change called"+key+vKey );
                             sub[key].variables[vKey].selected = 1;
                             $("#data"+fullkey+"ChangedMethod0").find("option[value='true']").attr("selected","selected");//set changed to true automatically
+                            var id = "data"+fullkey+vKey+j;
+                            if(id.indexOf("type") != -1) {//if some type variable changed, then act as if continue button was clicked
+                                $("#continue").trigger("click");
+                            }
                         });
                     }
                 }
