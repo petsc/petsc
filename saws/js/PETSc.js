@@ -97,7 +97,7 @@ PETSc.displayDirectory = function(sub,divEntry)
                 var colorNum = fieldsplit.length - 1;
 
                 for(var i=0; i<numChildren; i++) {
-                    var side   = size/numChildren;
+                    var side   = size/(numChildren+1);//leave one extra block of space
                     var curr_x = x + i*side;
                     var curr_y = y + i*side;
 
@@ -107,6 +107,17 @@ PETSc.displayDirectory = function(sub,divEntry)
                     var childID = fieldsplit + i;
                     drawFieldsplit(childID, curr_x, curr_y, size/numChildren);
                 }
+                var side = size/(numChildren+1);//side of the blank square
+                var blank_x = x + numChildren*side;
+                var blank_y = y + numChildren*side;
+
+                var inc = side/4;//the increment
+                for(var i=1; i<4; i++) {
+                    var x_coord = blank_x + i*inc;
+                    var y_coord = blank_y + i*inc;
+                    $("#svgFieldsplit").append("<circle cx=\""+x_coord+"\" cy=\"" + y_coord + "\" r=\"1\" stroke=\"black\" stroke-width=\"2\" fill=\"black\">");
+                }
+
             }
 
             $("body").html($("body").html());//hacky refresh svg
