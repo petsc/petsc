@@ -391,9 +391,6 @@ static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes)
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNESNEWTONLS options");CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
-  /* set the default line search type */
   if (!snes->linesearch) {
     ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
