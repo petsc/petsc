@@ -1508,7 +1508,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   Vec            coordinates;
   PetscSection   coordSection;
   PetscScalar    *coords;
-  PetscInt       coordSize, firstVertex = numPoints[depth], pStart = 0, pEnd = 0, p, v, dim, d, off;
+  PetscInt       coordSize, firstVertex = -1, pStart = 0, pEnd = 0, p, v, dim, d, off;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1517,7 +1517,11 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   ierr = DMPlexSetChart(dm, pStart, pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     ierr = DMPlexSetConeSize(dm, p, coneSize[p-pStart]);CHKERRQ(ierr);
+    if (firstVertex < 0 && !coneSize[p - pStart]) {
+      firstVertex = p - pStart;
+    }
   }
+  if (firstVertex < 0 && numPoints[0]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected %d vertices but could not find any", numPoints[0]);
   ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
   for (p = pStart, off = 0; p < pEnd; off += coneSize[p-pStart], ++p) {
     ierr = DMPlexSetCone(dm, p, &cones[off]);CHKERRQ(ierr);
