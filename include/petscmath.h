@@ -91,6 +91,7 @@ typedef complexlib::complex<float> PetscComplex;
 typedef complexlib::complex<double> PetscComplex;
 #elif defined(PETSC_USE_REAL___FLOAT128)
 typedef complexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
+PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 #endif  /* PETSC_USE_REAL_ */
 #endif  /* PETSC_USE_COMPLEX && PETSC_DESIRE_COMPLEX */
 
