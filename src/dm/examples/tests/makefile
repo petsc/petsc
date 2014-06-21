@@ -226,7 +226,7 @@ runex11_3:
 	   ${RM} -f ex11_3.tmp
 
 runex12:
-	-@echo "path([getenv('PETSC_DIR') '/bin/matlab'],path); ex12(2) ; exit" | ${MATLAB_COMMAND} -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (${DIFF} output/ex12_1.out ex12_1.tmp2) then true; \
+	-@echo "path([getenv('PETSC_DIR') '/' getenv('PETSC_ARCH') '/lib/petsc/matlab'],path); ex12(2) ; exit" | ${MATLAB_COMMAND} -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (${DIFF} output/ex12_1.out ex12_1.tmp2) then true; \
 	   else printf "${PWD}\nPossible problem with with PETSC SOCKET MATLAB INTERFACE ex12_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex12_1.tmp ex12_1.tmp2
 

@@ -5,8 +5,8 @@ function ex12(np,opt)
 %
 % Run with option -on_error_attach_debugger to debug
 %
-%  Requires the Matlab mex routines in ${PETSC_DIR}/bin/matlab.
-%  Make sure that ${PETSC_DIR}/bin/matlab is in your Matlab PATH.
+  %  Requires the Matlab mex routines in ${PETSC_DIR}/${PETSC_ARCH}/lib/matlab.
+%  Make sure that ${PETSC_DIR}/bin/matlab and ${PETSC_DIR}/${PETSC_ARCH}/lib/matlab is in your Matlab PATH.
 %
 if (nargin < 1)
   np = 1;
