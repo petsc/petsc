@@ -65,6 +65,28 @@ PetscErrorCode MatView_SchurComplement(Mat N,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*
+           A11^T - A01^T ksptrans(A00,Ap00) A10^T
+*/
+#undef __FUNCT__
+#define __FUNCT__ "MatMultTranspose_SchurComplement"
+PetscErrorCode MatMultTranspose_SchurComplement(Mat N,Vec x,Vec y)
+{
+  Mat_SchurComplement *Na = (Mat_SchurComplement*)N->data;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
+  if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
+  ierr = MatMultTranspose(Na->C,x,Na->work1);CHKERRQ(ierr);
+  ierr = KSPSolveTranspose(Na->ksp,Na->work1,Na->work2);CHKERRQ(ierr);
+  ierr = MatMultTranspose(Na->B,Na->work2,y);CHKERRQ(ierr);
+  ierr = VecScale(y,-1.0);CHKERRQ(ierr);
+  if (Na->D) {
+    ierr = MatMultTransposeAdd(Na->D,x,y,y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 /*
            A11 - A10 ksp(A00,Ap00) A01
@@ -893,6 +915,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)
   N->ops->getvecs        = MatGetVecs_SchurComplement;
   N->ops->view           = MatView_SchurComplement;
   N->ops->mult           = MatMult_SchurComplement;
+  N->ops->multtranspose  = MatMultTranspose_SchurComplement;
   N->ops->multadd        = MatMultAdd_SchurComplement;
   N->ops->setfromoptions = MatSetFromOptions_SchurComplement;
   N->assembled           = PETSC_FALSE;
