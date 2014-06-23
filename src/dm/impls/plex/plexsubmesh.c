@@ -1458,6 +1458,19 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
 
       ierr = DMLabelGetValue(blabel, point, &bval);CHKERRQ(ierr);
       if (bval >= 0) {
+        ierr = DMLabelGetValue(label, point, &val);CHKERRQ(ierr);
+        if ((val < 0) || (val > dim)) {
+          /* This could be a point added from splitting a vertex on an adjacent fault, otherwise its just wrong */
+          ierr = DMLabelClearValue(blabel, point, bval);CHKERRQ(ierr);
+        }
+      }
+    }
+    for (p = 0; p < numPoints; ++p) {
+      const PetscInt point = points[p];
+      PetscInt       val, bval;
+
+      ierr = DMLabelGetValue(blabel, point, &bval);CHKERRQ(ierr);
+      if (bval >= 0) {
         const PetscInt *cone,    *support;
         PetscInt        coneSize, supportSize, s, valA, valB, valE;
 
