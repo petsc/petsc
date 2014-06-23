@@ -49,7 +49,7 @@ all-cmake:
 all-legacy:
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" all
 
-all-cmake-local: chk_makej info cmakegen cmake
+all-cmake-local: chk_makej info cmakegen cmake mpi4py petsc4py
 
 all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
 #
