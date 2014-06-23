@@ -59,7 +59,7 @@ all-legacy:
 
 all-gnumake-local: chk_makej info gnumake
 
-all-cmake-local: chk_makej info cmakegen cmake
+all-cmake-local: chk_makej info cmakegen cmake mpi4py petsc4py
 
 all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
 #
