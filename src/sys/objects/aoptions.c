@@ -716,10 +716,16 @@ PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char ma
 
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
+    PetscBool wasset;
+
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_INT,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
-
     *(PetscInt*)amsopt->data = defaultv;
+
+    ierr = PetscOptionsGetInt(PetscOptionsObject.prefix,opt,&defaultv,&wasset);CHKERRQ(ierr);
+    if (wasset) {
+      *(PetscInt*)amsopt->data = defaultv;
+    }
   }
   ierr = PetscOptionsGetInt(PetscOptionsObject.prefix,opt,value,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
