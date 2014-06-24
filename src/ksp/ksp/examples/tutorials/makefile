@@ -1161,6 +1161,7 @@ TESTEXAMPLES_FFTW              =
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
 TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm
 TESTEXAMPLES_PCBDDC            = ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm
-TESTEXAMPLES_MOAB              = ex35.PETSc runex35 runex35_2 ex35.rm
+TESTEXAMPLES_MOAB              = ex35.PETSc runex35 ex35.rm
+TESTEXAMPLES_MOAB_HDF5         = ex35.PETSc runex35_2 ex35.rm
 
 include ${PETSC_DIR}/conf/test
