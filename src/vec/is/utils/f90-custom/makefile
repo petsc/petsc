@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zisltogf.c
+SOURCEC  = zisltogf90.c zvsectionisf90.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscvec
