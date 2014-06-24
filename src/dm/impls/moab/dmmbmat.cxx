@@ -11,7 +11,7 @@ static PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM,PetscInt*,PetscInt
 PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
 {
   PetscErrorCode  ierr;
-  PetscInt        innz,ionz,nlsiz;
+  PetscInt        innz=0,ionz=0,nlsiz;
   DM_Moab         *dmmoab=(DM_Moab*)dm->data;
   PetscInt        *nnz=0,*onz=0;
   char            *tmp=0;
@@ -70,7 +70,7 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
 PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscInt* nnz,PetscInt* ionz,PetscInt* onz,PetscBool isbaij)
 {
   PetscInt        i,f,nloc,vpere,bs,ivtx,n_nnz,n_onz;
-  PetscInt        ibs,jbs,inbsize,iobsize,nfields;
+  PetscInt        ibs,jbs,inbsize,iobsize,nfields,nlsiz;
   DM_Moab         *dmmoab = (DM_Moab*)dm->data;
   const moab::EntityHandle *connect;
   moab::Range     adjs,found,allvlocal,allvghost;
@@ -85,6 +85,7 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
   nloc = dmmoab->nloc;
   nfields = dmmoab->numFields;
   isinterlaced=(isbaij || bs==nfields ? PETSC_TRUE : PETSC_FALSE);
+  nlsiz = (isinterlaced ? nloc:nloc*nfields);
 
   /* find the truly user-expected layer of ghosted entities to decipher NNZ pattern */
   merr = dmmoab->mbiface->get_entities_by_type(dmmoab->fileset,moab::MBVERTEX,allvlocal,true);MBERRNM(merr);
@@ -144,7 +145,7 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
     }
   }
 
-  for (i=0;i<nloc*(isbaij?1:nfields);i++)
+  for (i=0;i<nlsiz;i++)
     nnz[i]+=1;  /* self count the node */
 
   for (ivtx=0;ivtx<nloc;ivtx++) {
@@ -181,7 +182,7 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
   if (innz || ionz) {
     if (innz) *innz=0;
     if (ionz) *ionz=0;
-    for (i=0;i<nloc*nfields;i++) {
+    for (i=0;i<nlsiz;i++) {
       if (innz && (nnz[i]>*innz)) *innz=nnz[i];
       if ((ionz && onz) && (onz[i]>*ionz)) *ionz=onz[i];
     }
