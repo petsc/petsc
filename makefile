@@ -57,7 +57,7 @@ all-cmake:
 all-legacy:
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" MAKE_IS_GNUMAKE="" all
 
-all-gnumake-local: chk_makej info gnumake
+all-gnumake-local: chk_makej info gnumake mpi4py petsc4py
 
 all-cmake-local: chk_makej info cmakegen cmake mpi4py petsc4py
 
