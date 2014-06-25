@@ -1,12 +1,12 @@
 
 /* Routines to be used by MatIncreaseOverlap() for BAIJ and SBAIJ matrices */
-#include <petscis.h>
+#include <petscis.h>                       /*I "petscis.h"  I*/
 #include <petscbt.h>
 #include <petscctable.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "ISCompressIndicesGeneral"
-/*@C
+/*@
    ISCompressIndicesGeneral - convert the indices into block indices
    Input Parameters:
 +  n - maximum possible length of the index set
