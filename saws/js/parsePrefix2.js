@@ -64,19 +64,3 @@ function parsePrefix(SAWs_prefix) {
 
     return ret;
 }
-
-//this recursive function should always be called on the root solver (endtag = "0")
-function drawDiagrams(endtag) {
-
-    var numChildren = getSawsNumChildren(endtag);
-
-    if(numChildren == 0) //base case
-        return;
-
-    
-
-    //this code is severely misplaced. I'm writing it here and then moving it back because PETSc.js is currently much too cumbersome to work with
-
-
-
-}
