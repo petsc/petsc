@@ -4,7 +4,7 @@ import os
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.includes     = ['mkl_pardiso.h']
+    self.includes     = ['mkl.h']
     self.functions    = ['pardisoinit']
     self.liblist      = [[]] # use MKL detected by BlasLapack.py
     self.double       = 0
