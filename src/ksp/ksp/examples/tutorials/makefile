@@ -386,6 +386,11 @@ runex2_umfpack:
            if (${DIFF} output/ex2_umfpack.out ex2_umfpack.tmp) then true; \
            else printf "${PWD}\nPossible problem with with ex2_umfpack, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2_umfpack.tmp
+runex2_mkl_pardiso:
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mkl_pardiso > ex2_mkl_pardiso.tmp 2>&1; \
+           if (${DIFF} output/ex2_mkl_pardiso.out ex2_mkl_pardiso.tmp) then true; \
+           else printf "${PWD}\nPossible problem with with ex2_mkl_pardiso, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex2_mkl_pardiso.tmp
 runex2_fbcgs:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type fbcgs -pc_type ilu  > ex2.tmp 2>&1; \
            if (${DIFF} output/ex2_fbcgs.out ex2.tmp) then true; \
@@ -1155,6 +1160,7 @@ TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_
 TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu ex52.rm
 TESTEXAMPLES_FFTW              =
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
+TESTEXAMPLES_MKL_PARDISO       = ex2.PETSc runex2_mkl_pardiso ex2.rm
 TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm
 TESTEXAMPLES_PCBDDC            = ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm
 
