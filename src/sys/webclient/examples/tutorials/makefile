@@ -4,7 +4,7 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
-EXAMPLESC = googledriveupload.c urlshorten.c googleobtainrefreshtoken.c boxobtainrefreshtoken.c boxupload.c globusotainaccesstoken.c
+EXAMPLESC = googledriveupload.c urlshorten.c googleobtainrefreshtoken.c boxobtainrefreshtoken.c boxupload.c
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  =
