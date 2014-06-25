@@ -12,6 +12,7 @@ class Configure(config.package.Package):
     self.argDB             = framework.argDB
     self.found             = 0
     self.f2c               = 0  # indicates either the f2c BLAS/LAPACK are used (with or without Fortran compiler) or there is no Fortran compiler (and system BLAS/LAPACK is used)
+    self.mkl               = 0  # indicates BLAS/LAPACK library used is Intel MKL
     self.missingRoutines   = []
     self.separateBlas      = 1
     self.defaultPrecision  = 'double'
@@ -364,6 +365,12 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_ESSL',1)
     return
 
+  def checkMKL(self):
+    '''Check for Intel MKL library'''
+    if self.libraries.check(self.lapackLibrary, 'mkl_set_num_threads'):
+      self.mkl = 1
+    return
+
   def checkPESSL(self):
     '''Check for the IBM PESSL library - and error out - if used instead of ESSL'''
     if self.libraries.check(self.lapackLibrary, 'ipessl'):
@@ -424,6 +431,7 @@ class Configure(config.package.Package):
     self.executeTest(self.check64BitBLASIndices)
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkPESSL)
+    self.executeTest(self.checkMKL)
     self.executeTest(self.checkMissing)
     self.executeTest(self.checklsame)
     if self.framework.argDB['with-shared-libraries']:

@@ -17,3 +17,10 @@ class Configure(PETSc.package.NewPackage):
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.blasLapack]
     return
+
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      if not self.blasLapack.mkl:
+        raise RuntimeError('MKL_Paradiso requires Intel MKL. Please rerun configure using --with-blas-lapack-dir=LOCATION_OF_INTEL_MKL')
+    return
