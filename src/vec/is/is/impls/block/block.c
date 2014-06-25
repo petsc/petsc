@@ -287,6 +287,31 @@ static PetscErrorCode ISSetBlockSize_Block(IS is,PetscInt bs)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "ISToGeneral_Block"
+static PetscErrorCode ISToGeneral_Block(IS inis)
+{
+  IS_Block       *sub   = (IS_Block*)inis->data;
+  PetscInt       bs,n;
+  const PetscInt *idx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = ISGetBlockSize(inis,&bs);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(inis,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(inis,&idx);CHKERRQ(ierr);
+  if (bs == 1) {
+    PetscCopyMode mode = sub->borrowed_indices ? PETSC_USE_POINTER : PETSC_OWN_POINTER;
+    sub->borrowed_indices = PETSC_TRUE; /* prevent deallocation when changing the subtype*/
+    ierr = ISSetType(inis,ISGENERAL);CHKERRQ(ierr);
+    ierr = ISGeneralSetIndices(inis,n,idx,mode);CHKERRQ(ierr);
+  } else {
+    ierr = ISSetType(inis,ISGENERAL);CHKERRQ(ierr);
+    ierr = ISGeneralSetIndices(inis,n,idx,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 
 static struct _ISOps myops = { ISGetSize_Block,
                                ISGetLocalSize_Block,
@@ -302,7 +327,7 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISLoad_Default,
                                ISIdentity_Block,
                                ISCopy_Block,
-                               0,
+                               ISToGeneral_Block,
                                ISOnComm_Block,
                                ISSetBlockSize_Block,
                                0};
@@ -610,22 +635,6 @@ PetscErrorCode  ISBlockGetSize_Block(IS is,PetscInt *size)
   ierr = PetscLayoutGetBlockSize(is->map, &bs);CHKERRQ(ierr);
   ierr = PetscLayoutGetSize(is->map, &N);CHKERRQ(ierr);
   *size = N/bs;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ISToGeneral_Block"
-PetscErrorCode  ISToGeneral_Block(IS inis)
-{
-  PetscErrorCode ierr;
-  const PetscInt *idx;
-  PetscInt       n;
-
-  PetscFunctionBegin;
-  ierr = ISGetLocalSize(inis,&n);CHKERRQ(ierr);
-  ierr = ISGetIndices(inis,&idx);CHKERRQ(ierr);
-  ierr = ISSetType(inis,ISGENERAL);CHKERRQ(ierr);
-  ierr = ISGeneralSetIndices(inis,n,idx,PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
