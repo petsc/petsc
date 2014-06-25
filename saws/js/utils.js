@@ -21,6 +21,8 @@ function getMatIndex(id)
   output:
     index in sawsInfo where information on that id is located
 */
+
+/*
 function getSawsIndex(id)
 {
     for(var i=0; i<sawsInfo.length; i++) {
@@ -82,6 +84,38 @@ function getSawsNumChildren(parent) {
 
     for(var i=0; i<sawsInfo.length; i++) {
         if(sawsInfo[i].id.length == length && sawsInfo[i].id.substring(0,sawsInfo[i].id.length-1) == parent)
+            count++;
+    }
+
+    return count;
+}*/
+
+function getSawsIndex(endtag) {
+
+    for(var i=0; i<sawsInfo.length; i++) {
+        if(sawsInfo[i].endtag == endtag)
+            return i;//return index where information is located
+    }
+    return -1;//invalid endtag;
+}
+
+function getFieldsplitWordIndex(word) {
+
+    for(var i=0; i<sawsInfo.length; i++) {
+        if(sawsInfo[i].name == word)
+            return i;//return index where word was found
+    }
+    return -1;//word does not exist in sawsInfo yet
+}
+
+//count the number of children that current exist for the given parent
+function getSawsNumChildren(parent) {
+
+    var length = parent.length + 1;
+    var count = 0;
+
+    for(var i=0; i<sawsInfo.length; i++) {
+        if(sawsInfo[i].endtag.length == length && sawsInfo[i].endtag.substring(0,sawsInfo[i].endtag.length-1) == parent)
             count++;
     }
 

@@ -22,7 +22,7 @@ var removedText = false;//record if the text at the top was removed
 PETSc.getAndDisplayDirectory = function(names,divEntry){
 
     if(!init) {
-        $("head").append('<script src="js/parsePrefix.js"></script>');//reuse the code for parsing thru the prefix
+        $("head").append('<script src="js/parsePrefix2.js"></script>');//reuse the code for parsing thru the prefix
         $("head").append('<script src="js/fetchSawsData.js"></script>');//reuse the code for organizing data into sawsInfo
         $("head").append('<script src="js/utils.js"></script>');//necessary for the two js files above
         $("body").append("<div id=\"multigridDiagram\" style=\"float:right;\"></div>");
@@ -31,31 +31,8 @@ PETSc.getAndDisplayDirectory = function(names,divEntry){
     }
 
     jQuery(divEntry).html("");
-    PETSc.getDirectory(names,PETSc.displayDirectory,divEntry);
+    SAWs.getDirectory(names,PETSc.displayDirectory,divEntry);
 }
-
-PETSc.getDirectory = function(names,callback,callbackdata) {
-
-  /*If names is null, get all*/
-  if(names == null){
-    /*jQuery.getJSON('/SAWs/*',function(data){
-                               if(typeof(callback) == typeof(Function)) callback(data,callbackdata)
-                             })*/
-      jQuery.ajax({type: 'GET',dataType: 'json',url: '/SAWs/*', success:
-                   function(data){
-                       //console.log("data fetched from server");
-                       //console.log(data);
-                       callback(data,callbackdata);
-                   }
-                  }
-                 );
-  } else {alert("should not be here");
-    jQuery.getJSON('/SAWs/' + names,function(data){
-        if(typeof(callback) == typeof(Function))
-            callback(data,callbackdata);
-    });
-  }
-};
 
 PETSc.displayDirectory = function(sub,divEntry)
 {
@@ -75,8 +52,7 @@ PETSc.displayDirectory = function(sub,divEntry)
             }
             removedText=true;
         }
-
-
+/*
         var generatedFieldsplit = parsePrefixForFieldsplit(SAWs_prefix).fieldsplit;
 
         if(generatedFieldsplit != "0") {
@@ -117,9 +93,7 @@ PETSc.displayDirectory = function(sub,divEntry)
                     var y_coord = blank_y + i*inc;
                     $("#svgFieldsplit").append("<circle cx=\""+x_coord+"\" cy=\"" + y_coord + "\" r=\"1\" stroke=\"black\" stroke-width=\"2\" fill=\"black\">");
                 }
-
             }
-
             $("body").html($("body").html());//hacky refresh svg
         }
 
@@ -133,8 +107,6 @@ PETSc.displayDirectory = function(sub,divEntry)
             var _level = generatedEndtag[_index-1];//get the last character
 
             $("#multigridDiagram").html("");//clear the diagram
-
-            //using svg to generate the diagram
 
             //generate a parallelogram for each layer
             for(var i=0; i<=_level; i++) { //i represents the multigrid level (i=0 would be coarse)
@@ -166,15 +138,16 @@ PETSc.displayDirectory = function(sub,divEntry)
             }
 
             $("body").html($("body").html());//refresh (hacky) after appending to svg
-        }
+        }*/
     }
 
     PETSc.displayDirectoryRecursive(sub.directories,divEntry,0,"");//this method is recursive on itself and actually fills the div with text and dropdown lists
 
     if (sub.directories.SAWs_ROOT_DIRECTORY.variables.hasOwnProperty("__Block") && (sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data[0] == "true")) {
+        console.log("data fetched:");
+        console.log(sub);
         jQuery(divEntry).append("<input type=\"button\" value=\"Continue\" id=\"continue\">");
         jQuery('#continue').on('click', function(){
-            console.log("continue button clicked");
             SAWs.updateDirectoryFromDisplay(divEntry);
             sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data = ["false"];
 
@@ -184,7 +157,6 @@ PETSc.displayDirectory = function(sub,divEntry)
             window.setTimeout(PETSc.getAndDisplayDirectory,1000,null,divEntry);
         });
     } else console.log("no block property or block property is false");
-
 }
 
 PETSc.postDirectory = function(directory, callback)//ignore this for now. I'm trying to get rid of the 1000ms delay
