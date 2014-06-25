@@ -4,13 +4,13 @@ ALL: lib
 
 CFLAGS   = ${MKL_PARDISO_INCLUDE}
 FFLAGS   =
-SOURCEC	 = pardiso.c
+SOURCEC	 = mkl_pardiso.c
 SOURCEF	 =
 SOURCEH	 =
 LIBBASE	 = libpetscmat
 DIRS	 =
 MANSEC	 = Mat
-LOCDIR	 = src/mat/impls/aij/seq/pardiso/
+LOCDIR	 = src/mat/impls/aij/seq/mkl_pardiso/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
