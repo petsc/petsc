@@ -73,17 +73,17 @@ function recordSawsData(sub) {
             }
 
             //check if parent was mg because then this child is a mg_level and we might need to record a new record for mg_level. we need to do this because the variable mg_levels is still not available in saws yet.
-            var parentEndtag = endtag.substring(0,endtag.length-1);//knock off the last character
+            var parentEndtag = getParent(endtag);
             var parentIndex  = getSawsIndex(parentEndtag);
 
             if(parentIndex != -1 && sawsInfo[parentIndex].pc == "mg") { //check to see if parent was mg
-                var currentLevel                = endtag.charAt(endtag.length-1); //the last character
+                var currentLevel                = endtag.substring(endtag.lastIndexOf('_')+1, endtag.length);//everything after the last underscore
                 currentLevel                    = parseInt(currentLevel);
                 sawsInfo[parentIndex].mg_levels = currentLevel+1;//if we are on level 0 then that means there was 1 level so far
             }
 
             if(parentIndex != -1 && sawsInfo[parentIndex].pc == "fieldsplit"){ //cheeck to see if parent was fieldsplit
-                var currentLevel                        = endtag.charAt(endtag.length-1); //the last character
+                var currentLevel                        = endtag.substring(endtag.lastIndexOf('_')+1, endtag.length);//everything after the last underscore
                 currentLevel                            = parseInt(currentLevel);
                 sawsInfo[parentIndex].fieldsplit_blocks = currentLevel + 1;
                 sawsInfo[writeLoc].name                 = newWord;//important! record name of the fieldsplit

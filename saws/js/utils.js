@@ -111,13 +111,33 @@ function getFieldsplitWordIndex(word) {
 //count the number of children that current exist for the given parent
 function getSawsNumChildren(parent) {
 
-    var length = parent.length + 1;
-    var count = 0;
+    var childNumUnderscores = getNumUnderscores(parent) + 1;
+    var count               = 0;
 
     for(var i=0; i<sawsInfo.length; i++) {
-        if(sawsInfo[i].endtag.length == length && sawsInfo[i].endtag.substring(0,sawsInfo[i].endtag.length-1) == parent)
+        if(getNumUnderscores(sawsInfo[i].endtag) == childNumUnderscores && sawsInfo[i].endtag.substring(0,sawsInfo[i].endtag.lastIndexOf('_')) == parent) //if child level is the same, and parent matches...
             count++;
     }
 
     return count;
+}
+
+//returns the number of underscores in the endtag
+function getNumUnderscores(endtag) {
+
+    var count = 0;
+    for(var i=0; i<endtag.length; i++) {
+        if(endtag.charAt(i) == "_")
+            count ++;
+    }
+    return count;
+}
+
+//returns the endtag of the parent (if any)
+function getParent(endtag) {
+
+    if(endtag.indexOf('_') == -1)
+        return "-1"; //has no parent or invalid endtag
+
+    return endtag.substring(0,endtag.lastIndexOf('_'));
 }
