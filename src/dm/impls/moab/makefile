@@ -1,12 +1,10 @@
 #requirespackage  'PETSC_HAVE_MOAB'
-#requiresprecision double
-#requiresscalar    real
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCECXX= dmmoab.cxx
+SOURCECXX= dmmoab.cxx dmmbvec.cxx dmmbmat.cxx dmmbfield.cxx dmmbio.cxx dmmbutil.cxx
 SOURCEF  =
 SOURCEH  =
 DIRS     = examples
