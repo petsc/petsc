@@ -4,8 +4,6 @@
 //this function returns a string that needs to be put into an svg in the html page
 function drawDiagrams(endtag,target_endtag,x,y) {
 
-    alert("called on:"+endtag+"     and:"+target_endtag);
-
     var numChildren = getSawsNumChildren(endtag);
 
     if(numChildren == 0) //base case. no children.
@@ -63,7 +61,7 @@ function drawDiagrams(endtag,target_endtag,x,y) {
             var blank_y = y + numChildren*side;
 
             var inc = side/4;//the increment
-            for(var i=1; i<4; i++) {
+            for(var i=1; i<4; i++) { //add diagonal ellipsis
                 var x_coord = blank_x + i*inc;
                 var y_coord = blank_y + i*inc;
                 ret += "<circle cx=\""+x_coord+"\" cy=\"" + y_coord + "\" r=\"2\" stroke=\"black\" stroke-width=\"2\" fill=\"black\"></circle>";
