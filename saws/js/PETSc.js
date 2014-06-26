@@ -54,9 +54,11 @@ PETSc.displayDirectory = function(sub,divEntry)
         }
 
         var data = drawDiagrams("0",parsePrefix(SAWs_prefix).endtag,5,5);
-        $("#diagram").html("<svg id=\"svgCanvas\" width='500' height='500' viewBox='0 0 1000 1000'></svg>");
+        $("#diagram").html("<svg id=\"svgCanvas\" width='700' height='700' viewBox='0 0 2000 2000'></svg>");
         //IMPORTANT: Viewbox determines the coordinate system for drawing. width and height will rescale the SVG to the given width and height.
         $("#svgCanvas").html(data);
+        if(data == "")
+            $("#diagram").html(""); //avoid having lots of white space
         $("body").html($("body").html()); //hacky refresh after appending to svg
 
     }

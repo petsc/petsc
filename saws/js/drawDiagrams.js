@@ -50,8 +50,13 @@ function drawDiagrams(endtag,target_endtag,x,y) {
                     ret += drawFieldsplit(childID, level+1, target_endtag, curr_x, curr_y, size/numChildren);
 
                 //if child is mg, then it is time to switch drawing methods
-                else if(child_index != -1 && sawsInfo[child_index].pc == "mg")
-                    ret += drawDiagrams(childID,target_endtag,x+size,y);
+                else if(child_index != -1 && sawsInfo[child_index].pc == "mg") {
+                    var possible = drawDiagrams(childID,target_endtag,x+size+20+146,y+i*side+side/2);
+                    if(possible != "") {//don't draw the arrow if there is no diagram following
+                        ret += "<image x=\""+(x+size+20)+"\" y=\""+(y+i*side+side/2)+"\" width=\"146\" height=\"26\" xlink:href=\"images/arrow.png\"></image>";
+                        ret += possible;
+                    }
+                }
             }
             var side = size/(numChildren+1);//side of the blank square
             var blank_x = x + numChildren*side;
@@ -61,7 +66,7 @@ function drawDiagrams(endtag,target_endtag,x,y) {
             for(var i=1; i<4; i++) {
                 var x_coord = blank_x + i*inc;
                 var y_coord = blank_y + i*inc;
-                ret += "<circle cx=\""+x_coord+"\" cy=\"" + y_coord + "\" r=\"1\" stroke=\"black\" stroke-width=\"2\" fill=\"black\"></circle>";
+                ret += "<circle cx=\""+x_coord+"\" cy=\"" + y_coord + "\" r=\"2\" stroke=\"black\" stroke-width=\"2\" fill=\"black\"></circle>";
             }
 
             return ret;
@@ -110,7 +115,12 @@ function drawDiagrams(endtag,target_endtag,x,y) {
         var new_y = y + (selectedChild) * (141+68);//manipulate based on selectedChild
 
         //recursively draw the rest of the path to target_endtag
-        ret += drawDiagrams(endtag+"_"+selectedChild,target_endtag,new_x,new_y);
+
+        var possible  = drawDiagrams(endtag+"_"+selectedChild,target_endtag,new_x+146,new_y);
+        if(possible != "") {//only add the arrow if something was actually drawn
+            ret += "<image x=\""+(new_x-45)+"\" y=\""+(new_y+70)+"\" width=\"146\" height=\"26\" xlink:href=\"images/arrow.png\"></image>";
+            ret += possible
+        }
 
     }
 
