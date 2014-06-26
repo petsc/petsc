@@ -43,6 +43,7 @@ testexamples_SUPERLU: ${TESTEXAMPLES_SUPERLU}
 testexamples_ELEMENTAL: ${TESTEXAMPLES_ELEMENTAL}
 testexamples_SUNDIALS: ${TESTEXAMPLES_SUNDIALS}
 testexamples_SUITESPARSE: ${TESTEXAMPLES_SUITESPARSE}
+testexamples_MKL_PARDISO: ${TESTEXAMPLES_MKL_PARDISO}
 testexamples_SUPERLU_DIST: ${TESTEXAMPLES_SUPERLU_DIST}
 testexamples_HYPRE: ${TESTEXAMPLES_HYPRE}
 testexamples_HDF5: ${TESTEXAMPLES_HDF5}
@@ -149,6 +150,8 @@ buildexamples_SUNDIALS:
 	-@${OMAKE} testexamples_SUNDIALS TESTEXAMPLES_SUNDIALS=`echo ${TESTEXAMPLES_SUNDIALS} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_SUITESPARSE:
 	-@${OMAKE} testexamples_SUITESPARSE TESTEXAMPLES_SUITESPARSE=`echo ${TESTEXAMPLES_SUITESPARSE} | sed s/runex[0-9]*[a-z0-9_]*//g`
+buildexamples_MKL_PARDISO:
+	-@${OMAKE} testexamples_MKL_PARDISO TESTEXAMPLES_MKL_PARDISO=`echo ${TESTEXAMPLES_MKL_PARDISO} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_SUPERLU_DIST:
 	-@${OMAKE} testexamples_SUPERLU_DIST TESTEXAMPLES_SUPERLU_DIST=`echo ${TESTEXAMPLES_SUPERLU_DIST} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_HYPRE:
