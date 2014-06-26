@@ -25,8 +25,8 @@ PETSc.getAndDisplayDirectory = function(names,divEntry){
         $("head").append('<script src="js/parsePrefix2.js"></script>');//reuse the code for parsing thru the prefix
         $("head").append('<script src="js/fetchSawsData.js"></script>');//reuse the code for organizing data into sawsInfo
         $("head").append('<script src="js/utils.js"></script>');//necessary for the two js files above
-        $("body").append("<div id=\"multigridDiagram\" style=\"float:right;\"></div>");
-        $("body").append("<div id=\"fieldsplitDiagram\"></div>");
+        $("head").append('<script src="js/drawDiagrams.js"></script>');//contains the code to draw diagrams of the solver structure. in particular, fieldsplit and multigrid
+        $("body").append("<div id=\"diagram\"></div>");
         init = true;
     }
 
@@ -52,17 +52,13 @@ PETSc.displayDirectory = function(sub,divEntry)
             }
             removedText=true;
         }
-/*
 
-  Diagrams are disabled for now.
+        var data = drawDiagrams("0",parsePrefix(SAWs_prefix).endtag,0,0);
+        $("#diagram").html("<svg id=\"svgCanvas\" width='1000' height='1000'></svg>");
+        $("#svgCanvas").html(data);
+        $("body").html($("body").html()); //hacky refresh after appending to svg
 
-  $("fieldsplitDiagram").html("");
-
-  $("body").html($("body").html());//hacky refresh svg
-
-  $("#multigridDiagram").html("");//clear the diagram
-
-  $("body").html($("body").html());//refresh (hacky) after appending to svg */
+        //Diagrams are disabled for now
     }
 
     PETSc.displayDirectoryRecursive(sub.directories,divEntry,0,"");//this method is recursive on itself and actually fills the div with text and dropdown lists

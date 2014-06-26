@@ -1,39 +1,54 @@
-//this recursive function should always be called on the root solver (endtag = "0")
-function drawDiagrams(endtag) {
+//this recursive function should always be called on the root solver (endtag = "0").
+//target_endtag is the endtag of the solver option that is currently being asked. the reason we have this as a parameter is because there is simply not enough space to display a diagram of the ENTIRE solver. so, we only display a path to the current solver option
+//x,y are the x and y coordinates of the upper lefthand corner of the svg (should initially be called with 0,0)
+//this function returns a string that needs to be put into an svg in the html page
+function drawDiagrams(endtag,target_endtag,x,y) {
+
+    alert("called on:"+endtag+"     and:"+target_endtag);
 
     var numChildren = getSawsNumChildren(endtag);
 
-    if(numChildren == 0) //base case
-        return;
+    if(numChildren == 0) //base case. no children.
+        return "";
+    if(target_endtag.indexOf(endtag) != 0) //base case. endtag is not on the path to target_endtag.
+        return "";
 
     var index = getSawsIndex(endtag);
     var ret   = "";
 
+
+
     if(sawsInfo[index].pc == "fieldsplit") { //draw fieldsplit diagram
-        var colors = ["green","blue"];
+        var colors = ["green","blue","red"];
         var layer = 0;
-        $("#fieldsplitDiagram").html("<svg id=\"svgFieldsplit\" width='400' height='400'> <polygon points=\"0,0 0,400 400,400 400,0\" style=\"fill:khaki;stroke:black;stroke-width:1\"> </svg>");
+        ret += "<polygon points=\""+x+","+y+" "+(x+400)+","+y+" "+(x+400)+","+(y+400)+" "+x+","+(y+400)+"\" style=\"fill:khaki;stroke:black;stroke-width:1\"></polygon>";
         layer = 1;
 
-        drawFieldsplit("0",0,0,400);
+        ret += drawFieldsplit(endtag,0,target_endtag,x,y,400);
 
-        function drawFieldsplit(fieldsplit,x,y,size) {//input is the id of the fieldsplit. for example "0". (x,y) is the upper lefthand corner. size is the size of one side of the parent square (in pixels)
+        function drawFieldsplit(endtag,level,target_endtag,x,y,size) {//input is the id of the fieldsplit. for example "0". (x,y) is the upper lefthand corner. size is the size of one side of the parent square (in pixels)
             //work = draw the children of the fieldsplit then call draw on each child
-            var numChildren = getSawsNumChildren(fieldsplit);
+            alert(target_endtag);
+            alert(endtag);
+            if(target_endtag.indexOf(endtag) != 0)
+                return ""; //endtag is not on the path to the target_endtag
+
+            var ret = "";
+
+            var numChildren = getSawsNumChildren(endtag);
             if(numChildren == 0)
                 return;
-            var colorNum = fieldsplit.length - 1;
+            var colorNum = level;//the depth of the fieldsplit within other fieldsplits
 
             for(var i=0; i<numChildren; i++) {
                 var side   = size/(numChildren+1);//leave one extra block of space
                 var curr_x = x + i*side;
                 var curr_y = y + i*side;
 
-                var string = "<polygon points=\""+curr_x+","+curr_y+" "+(curr_x+side)+","+curr_y+" "+(curr_x+side)+","+(curr_y+side)+" "+curr_x+","+(curr_y+side)+"\" style=\"fill:"+colors[colorNum]+";stroke:black;stroke-width:1\"> </svg>";
+                ret += "<polygon points=\""+curr_x+","+curr_y+" "+(curr_x+side)+","+curr_y+" "+(curr_x+side)+","+(curr_y+side)+" "+curr_x+","+(curr_y+side)+"\" style=\"fill:"+colors[colorNum]+";stroke:black;stroke-width:1\"></polygon>";
 
-                $("#svgFieldsplit").append(string);
-                var childID = fieldsplit + i;
-                drawFieldsplit(childID, curr_x, curr_y, size/numChildren);
+                var childID = endtag + "_" + i;
+                ret += drawFieldsplit(childID, level+1, target_endtag, curr_x, curr_y, size/numChildren);
             }
             var side = size/(numChildren+1);//side of the blank square
             var blank_x = x + numChildren*side;
@@ -43,42 +58,60 @@ function drawDiagrams(endtag) {
             for(var i=1; i<4; i++) {
                 var x_coord = blank_x + i*inc;
                 var y_coord = blank_y + i*inc;
-                $("#svgFieldsplit").append("<circle cx=\""+x_coord+"\" cy=\"" + y_coord + "\" r=\"1\" stroke=\"black\" stroke-width=\"2\" fill=\"black\">");
+                ret += "<circle cx=\""+x_coord+"\" cy=\"" + y_coord + "\" r=\"1\" stroke=\"black\" stroke-width=\"2\" fill=\"black\"></circle>";
             }
+
+            alert("returning: "+ret);
+            return ret;
         }
     }
 
-    else if(sawsInfo[index].pc == "mg") { //draw multigrid diagram
+    else if(sawsInfo[index].pc == "mg") { //draw multigrid diagram. multigrid diagram doesn't use an inner recursive function because it's not that complex to draw.
+
+        var selectedChild = "";
 
         //generate a parallelogram for each layer
-            for(var i=0; i<=_level; i++) { //i represents the multigrid level (i=0 would be coarse)
-                var dim = 3+2*i;//dimxdim grid
-                $("#multigridDiagram").append("<svg id=\"svg"+i+"\" width='465' height='142'> <polygon points=\"0,141 141,0 465,0 324,141\" style=\"fill:khaki;stroke:black;stroke-width:1\"> </svg>");//the sides of the parallogram follow the golden ratio so that the original figure was a golden rectangle. the diagram is slanted at a 45 degree angle.
+        for(var i=0; i<=numChildren; i++) { //i represents the multigrid level (i=0 would be coarse)
+            var dim = 3+2*i;//dimxdim grid
+            //ret += "<polygon points=\"0,141 141,0 465,0 324,141\" style=\"fill:khaki;stroke:black;stroke-width:1\"> </polygon>";
+            var global_downshift = 141*i + 68*i;
 
-                for(var j=1; j<dim; j++) {//draw 'vertical' lines
-                    var inc = 324/dim;//parallogram is 324 wide and 200 on the slant side (1.6x)
-                    var shift = j*inc;
-                    var top_shift = shift + 141;
-                    $("#svg"+i).append("<line x1=\""+shift+"\" y1='141' x2=\""+top_shift+"\" y2='0' style='stroke:black;stroke-width:1'></line>");
-                }
-                for(var j=1; j<dim; j++) {//draw horizonal lines
-                    var inc = 141/dim;//parallelogram is 141 tall
-                    var horiz_shift = (141/dim) * j;
-                    var horiz_shift_end = horiz_shift + 324;
+            ret += "<polygon points=\""+x+","+(y+141+global_downshift)+" "+ (x+141)+","+(y+global_downshift)+" "+(x+465)+","+(y+global_downshift)+" "+(x+324)+","+(y+141+global_downshift)+"\" style=\"fill:khaki;stroke:black;stroke-width:1\"> </polygon>";
 
-                    var shift = 141 - inc * j;
-                    $("#svg"+i).append("<line x1=\""+horiz_shift+"\" y1=\""+shift +"\" x2=\""+horiz_shift_end+"\" y2=\""+shift+"\" style='stroke:black;stroke-width:1'></line>");
-                }
-                //put text here
-                if(i!=0)
-                    $("#multigridDiagram").append("<span>Level "+i+"</span><br>");
-                else
-                    $("#multigridDiagram").append("<span>Coarse Grid (Level 0)</span><br>");
+            for(var j=1; j<dim; j++) {//draw 'vertical' lines
+                var inc = 324/dim;//parallogram is 324 wide and 200 on the slant side (1.6x)
+                var shift = j*inc;
+                var top_shift = shift + 141;
+                ret += "<line x1=\""+(x+shift)+"\" y1=\""+(y+141+global_downshift)+"\" x2=\""+(x+top_shift)+"\" y2=\""+(y+global_downshift)+"\" style='stroke:black;stroke-width:1'></line>";
+            }
+            for(var j=1; j<dim; j++) {//draw horizonal lines
+                var inc = 141/dim;//parallelogram is 141 tall
+                var horiz_shift = (141/dim) * j;
+                var horiz_shift_end = horiz_shift + 324;
 
-                if(i != _level)//add transition arrows image if there are more grids left
-                    $("#multigridDiagram").append("<img src='images/transition.bmp' alt='Error Loading Multigrid Transition Arrows'><br>");
+                var shift = 141 - inc * j;
+                ret += "<line x1=\""+(x+horiz_shift)+"\" y1=\""+(y+shift+global_downshift) +"\" x2=\""+(x+horiz_shift_end)+"\" y2=\""+(y+shift+global_downshift)+"\" style='stroke:black;stroke-width:1'></line>";
             }
 
+            if(i != numChildren)//add transition arrows image if there are more grids left
+                ret += "<image x=\""+x+"\" y=\""+(y+141+global_downshift)+"\" width=\"349\" height=\"68\" xlink:href=\"images/transition.bmp\"></image>"; //images in svg are handled differently. can't simply use <img>
+
+            //if the current child is the one that is on the path to the target, then record it
+            var child_endtag = endtag + "_" + i;
+
+            if(target_endtag.indexOf(child_endtag) == 0) { //this can only happen with 1 child (the one that is on the path to the target)
+                selectedChild = i;
+            }
+        }
+
+        var new_x = x + 465;//manipulate based on selectedChild
+        var new_y = y + (selectedChild+1) * 141;
+
+        //recursively draw the rest of the path to target_endtag
+        drawDiagrams(endtag+"_"+selectedChild,target_endtag,new_x,new_y);
+
     }
+
+    return ret;
 
 }
