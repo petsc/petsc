@@ -1360,6 +1360,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   if (usecprow) { /* use compressed row format */
     ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
     ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+    ierr = PetscMemzero(y,m*sizeof(PetscScalar));CHKERRQ(ierr);
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -1411,6 +1412,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   aa   = a->a;
   ii   = a->i;
   if (usecprow) { /* use compressed row format */
+    ierr = PetscMemzero(y,m*sizeof(PetscScalar));CHKERRQ(ierr);
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
