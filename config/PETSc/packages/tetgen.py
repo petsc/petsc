@@ -194,3 +194,10 @@ class Configure(PETSc.package.NewPackage):
       self.postInstall(output1+err1+output2+err2,'make.inc')
 
     return self.installDir
+
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      if self.languages.clanguage == 'C':
+        raise RuntimeError('TetGen: requires --with-clanguage=cxx. Or use ctetgen instead.')
+    return
