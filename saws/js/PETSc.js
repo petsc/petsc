@@ -53,12 +53,12 @@ PETSc.displayDirectory = function(sub,divEntry)
             removedText=true;
         }
 
-        var data = drawDiagrams("0",parsePrefix(SAWs_prefix).endtag,0,0);
-        $("#diagram").html("<svg id=\"svgCanvas\" width='1000' height='1000'></svg>");
+        var data = drawDiagrams("0",parsePrefix(SAWs_prefix).endtag,5,5);
+        $("#diagram").html("<svg id=\"svgCanvas\" width='500' height='500' viewBox='0 0 1000 1000'></svg>");
+        //IMPORTANT: Viewbox determines the coordinate system for drawing. width and height will rescale the SVG to the given width and height.
         $("#svgCanvas").html(data);
         $("body").html($("body").html()); //hacky refresh after appending to svg
 
-        //Diagrams are disabled for now
     }
 
     PETSc.displayDirectoryRecursive(sub.directories,divEntry,0,"");//this method is recursive on itself and actually fills the div with text and dropdown lists

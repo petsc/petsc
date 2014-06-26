@@ -16,8 +16,6 @@ function drawDiagrams(endtag,target_endtag,x,y) {
     var index = getSawsIndex(endtag);
     var ret   = "";
 
-
-
     if(sawsInfo[index].pc == "fieldsplit") { //draw fieldsplit diagram
         var colors = ["green","blue","red"];
         var layer = 0;
@@ -28,8 +26,6 @@ function drawDiagrams(endtag,target_endtag,x,y) {
 
         function drawFieldsplit(endtag,level,target_endtag,x,y,size) {//input is the id of the fieldsplit. for example "0". (x,y) is the upper lefthand corner. size is the size of one side of the parent square (in pixels)
             //work = draw the children of the fieldsplit then call draw on each child
-            alert(target_endtag);
-            alert(endtag);
             if(target_endtag.indexOf(endtag) != 0)
                 return ""; //endtag is not on the path to the target_endtag
 
@@ -48,7 +44,14 @@ function drawDiagrams(endtag,target_endtag,x,y) {
                 ret += "<polygon points=\""+curr_x+","+curr_y+" "+(curr_x+side)+","+curr_y+" "+(curr_x+side)+","+(curr_y+side)+" "+curr_x+","+(curr_y+side)+"\" style=\"fill:"+colors[colorNum]+";stroke:black;stroke-width:1\"></polygon>";
 
                 var childID = endtag + "_" + i;
-                ret += drawFieldsplit(childID, level+1, target_endtag, curr_x, curr_y, size/numChildren);
+                //only draw if child is indeed a fieldsplit
+                var child_index = getSawsIndex(childID);
+                if(child_index != -1 && sawsInfo[child_index].pc == "fieldsplit")
+                    ret += drawFieldsplit(childID, level+1, target_endtag, curr_x, curr_y, size/numChildren);
+
+                //if child is mg, then it is time to switch drawing methods
+                else if(child_index != -1 && sawsInfo[child_index].pc == "mg")
+                    ret += drawDiagrams(childID,target_endtag,x+size,y);
             }
             var side = size/(numChildren+1);//side of the blank square
             var blank_x = x + numChildren*side;
@@ -61,7 +64,6 @@ function drawDiagrams(endtag,target_endtag,x,y) {
                 ret += "<circle cx=\""+x_coord+"\" cy=\"" + y_coord + "\" r=\"1\" stroke=\"black\" stroke-width=\"2\" fill=\"black\"></circle>";
             }
 
-            alert("returning: "+ret);
             return ret;
         }
     }
@@ -71,7 +73,7 @@ function drawDiagrams(endtag,target_endtag,x,y) {
         var selectedChild = "";
 
         //generate a parallelogram for each layer
-        for(var i=0; i<=numChildren; i++) { //i represents the multigrid level (i=0 would be coarse)
+        for(var i=0; i<numChildren; i++) { //i represents the multigrid level (i=0 would be coarse)
             var dim = 3+2*i;//dimxdim grid
             //ret += "<polygon points=\"0,141 141,0 465,0 324,141\" style=\"fill:khaki;stroke:black;stroke-width:1\"> </polygon>";
             var global_downshift = 141*i + 68*i;
@@ -93,7 +95,7 @@ function drawDiagrams(endtag,target_endtag,x,y) {
                 ret += "<line x1=\""+(x+horiz_shift)+"\" y1=\""+(y+shift+global_downshift) +"\" x2=\""+(x+horiz_shift_end)+"\" y2=\""+(y+shift+global_downshift)+"\" style='stroke:black;stroke-width:1'></line>";
             }
 
-            if(i != numChildren)//add transition arrows image if there are more grids left
+            if(i != numChildren-1)//add transition arrows image if there are more grids left
                 ret += "<image x=\""+x+"\" y=\""+(y+141+global_downshift)+"\" width=\"349\" height=\"68\" xlink:href=\"images/transition.bmp\"></image>"; //images in svg are handled differently. can't simply use <img>
 
             //if the current child is the one that is on the path to the target, then record it
@@ -104,11 +106,11 @@ function drawDiagrams(endtag,target_endtag,x,y) {
             }
         }
 
-        var new_x = x + 465;//manipulate based on selectedChild
-        var new_y = y + (selectedChild+1) * 141;
+        var new_x = x + 465;
+        var new_y = y + (selectedChild) * (141+68);//manipulate based on selectedChild
 
         //recursively draw the rest of the path to target_endtag
-        drawDiagrams(endtag+"_"+selectedChild,target_endtag,new_x,new_y);
+        ret += drawDiagrams(endtag+"_"+selectedChild,target_endtag,new_x,new_y);
 
     }
 
