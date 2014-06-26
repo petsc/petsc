@@ -10,7 +10,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
 #if defined(PETSC_HAVE_MOAB)
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM);
 #endif
-PETSC_EXTERN PetscErrorCode DMCreate_Circuit(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Network(DM);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterAll"
