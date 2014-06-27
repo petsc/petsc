@@ -57,11 +57,11 @@ all-cmake:
 all-legacy:
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" MAKE_IS_GNUMAKE="" all
 
-all-gnumake-local: chk_makej info gnumake
+all-gnumake-local: chk_makej info gnumake matlabbin
 
-all-cmake-local: chk_makej info cmakegen cmake
+all-cmake-local: chk_makej info cmakegen cmake matlabbin
 
-all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
+all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build matlabbin shared_nomesg mpi4py petsc4py
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -129,6 +129,16 @@ build: chk_makej
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 #
+# Build MatLab binaries
+#
+matlabbin:
+	-@if [ "${MATLAB_MEX}" != "" -a "${PETSC_SCALAR}" == "real" -a "${PETSC_PRECISION}" == "double" ]; then \
+          echo "BEGINNING TO COMPILE MATLAB INTERFACE"; \
+            if [ ! -d "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc" ] ; then ${MKDIR}  ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc; fi; \
+            if [ ! -d "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab" ] ; then ${MKDIR}  ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab; fi; \
+            cd src/sys/classes/viewer/impls/socket/matlab && ${OMAKE} matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}; \
+            echo "========================================="; \
+        fi
 #
 # Builds PETSc test examples for a given architecture
 #
@@ -512,7 +522,7 @@ exercises:
 .PHONY: info info_h all build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
         allhtml allcleanhtml  allci allco allrcslabel countfortranfunctions \
-        start_configure configure_petsc configure_clean
+        start_configure configure_petsc configure_clean matlabbin
 
 petscao : petscmat petscao.f90.h
 petscdm : petscksp petscdm.f90.h
