@@ -736,17 +736,13 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
       ierr = KSPGetPC(deluxe_ctx->par_ksp[i],&pc);CHKERRQ(ierr);
       ierr = PCSetType(pc,PCREDUNDANT);CHKERRQ(ierr);
       ierr = PetscStrlen(((PetscObject)(pcbddc->ksp_D))->prefix,&len);CHKERRQ(ierr);
-      //ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] PREFIX DIR %d is \"%s\"\n",PetscGlobalRank,len,((PetscObject)(pcbddc->ksp_D))->prefix);CHKERRQ(ierr);
-      len -= 10; /* remove "dirichlet_" TODO CHECK WITH VALGRIND*/
-      ierr = PetscStrncpy(ksp_prefix,((PetscObject)(pcbddc->ksp_D))->prefix,len+1);CHKERRQ(ierr);
-      //ierr = PetscStrncpy(ksp_prefix,((PetscObject)(pcbddc->ksp_D))->prefix,len);CHKERRQ(ierr);
-      //ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] PREFIX TMP %d is \"%s\"\n",PetscGlobalRank,len,ksp_prefix);CHKERRQ(ierr);
+      len -= 10; /* remove "dirichlet_" */
+      ierr = PetscStrncpy(ksp_prefix,((PetscObject)(pcbddc->ksp_D))->prefix,len+1);CHKERRQ(ierr); /* PetscStrncpy puts a terminating char at the end */
       ierr = PetscStrcat(ksp_prefix,"deluxe_par_");CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(deluxe_ctx->par_ksp[i],ksp_prefix);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(deluxe_ctx->par_ksp[i]);CHKERRQ(ierr);
       ierr = KSPSetUp(deluxe_ctx->par_ksp[i]);CHKERRQ(ierr);
       ierr = MatDestroy(&color_mat);CHKERRQ(ierr);
-      //ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] PREFIX PAR %d is \"%s\"\n",PetscGlobalRank,len,((PetscObject)deluxe_ctx->par_ksp[i])->prefix);CHKERRQ(ierr);
     } else { /* not partecipating in color */
       deluxe_ctx->par_ksp[i] = 0;
       deluxe_ctx->par_vec[i] = 0;
@@ -954,13 +950,11 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ierr = KSPSetType(deluxe_ctx->seq_ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = PetscStrlen(((PetscObject)(pcbddc->ksp_D))->prefix,&len);CHKERRQ(ierr);
   len -= 10; /* remove "dirichlet_" */
-  ierr = PetscStrncpy(ksp_prefix,((PetscObject)(pcbddc->ksp_D))->prefix,len);CHKERRQ(ierr);
-  *(ksp_prefix+len)='\0';
+  ierr = PetscStrncpy(ksp_prefix,((PetscObject)(pcbddc->ksp_D))->prefix,len+1);CHKERRQ(ierr);
   ierr = PetscStrcat(ksp_prefix,"deluxe_seq_");CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(deluxe_ctx->seq_ksp,ksp_prefix);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(deluxe_ctx->seq_ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(deluxe_ctx->seq_ksp);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] PREFIX SEQ is %s\n",PetscGlobalRank,((PetscObject)deluxe_ctx->seq_ksp)->prefix);CHKERRQ(ierr);
   ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
