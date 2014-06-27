@@ -822,6 +822,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   PetscInt            i,j,k,local_problem_index;
   PetscInt            subset_size,max_subset_size,max_subset_size_red;
   PetscInt            local_size,global_size;
+  PC                  pc_temp;
+  MatSolverPackage    solver=NULL;
   char                ksp_prefix[256];
   size_t              len;
   PetscErrorCode      ierr;
@@ -948,6 +950,13 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ierr = KSPCreate(PETSC_COMM_SELF,&deluxe_ctx->seq_ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(deluxe_ctx->seq_ksp,work_mat,work_mat);CHKERRQ(ierr);
   ierr = KSPSetType(deluxe_ctx->seq_ksp,KSPPREONLY);CHKERRQ(ierr);
+  ierr = KSPGetPC(deluxe_ctx->seq_ksp,&pc_temp);CHKERRQ(ierr);
+  ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
+  ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
+  ierr = PCFactorGetMatSolverPackage(pc_temp,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
+  if (solver) {
+    ierr = PCFactorSetMatSolverPackage(pc_temp,solver);CHKERRQ(ierr);
+  }
   ierr = PetscStrlen(((PetscObject)(pcbddc->ksp_D))->prefix,&len);CHKERRQ(ierr);
   len -= 10; /* remove "dirichlet_" */
   ierr = PetscStrncpy(ksp_prefix,((PetscObject)(pcbddc->ksp_D))->prefix,len+1);CHKERRQ(ierr);
