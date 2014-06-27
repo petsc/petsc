@@ -4570,16 +4570,13 @@ PetscErrorCode  TSSetFunctionMatlab(TS ts,const char *func,mxArray *ctx)
 .  A, B - the matrices
 -  ctx - user context
 
-   Output Parameter:
-.  flag - structure of the matrix
-
    Level: developer
 
 .keywords: TS, nonlinear, compute, function
 
 .seealso: TSSetFunction(), TSGetFunction()
 @*/
-PetscErrorCode  TSComputeJacobian_Matlab(TS ts,PetscReal time,Vec u,Vec udot,PetscReal shift,Mat *A,Mat *B,MatStructure *flag, void *ctx)
+PetscErrorCode  TSComputeJacobian_Matlab(TS ts,PetscReal time,Vec u,Vec udot,PetscReal shift,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode  ierr;
   TSMatlabContext *sctx = (TSMatlabContext*)ctx;
@@ -4610,7 +4607,6 @@ PetscErrorCode  TSComputeJacobian_Matlab(TS ts,PetscReal time,Vec u,Vec udot,Pet
   prhs[8] =  sctx->ctx;
   ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscTSComputeJacobianInternal");CHKERRQ(ierr);
   ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
-  *flag   =  (MatStructure) mxGetScalar(plhs[1]);CHKERRQ(ierr);
   mxDestroyArray(prhs[0]);
   mxDestroyArray(prhs[1]);
   mxDestroyArray(prhs[2]);
