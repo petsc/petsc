@@ -53,14 +53,13 @@ PETSc.displayDirectory = function(sub,divEntry)
             removedText=true;
         }
 
+        $("#diagram").html("");
         var data = drawDiagrams("0",parsePrefix(SAWs_prefix).endtag,5,5);
-        $("#diagram").html("<svg id=\"svgCanvas\" width='700' height='700' viewBox='0 0 2000 2000'></svg>");
-        //IMPORTANT: Viewbox determines the coordinate system for drawing. width and height will rescale the SVG to the given width and height.
-        $("#svgCanvas").html(data);
-        if(data == "")
-            $("#diagram").html(""); //avoid having lots of white space
-        $("body").html($("body").html()); //hacky refresh after appending to svg
 
+        if(data != "") {
+            $("#diagram").html("<svg id=\"svgCanvas\" width='700' height='700' viewBox='0 0 2000 2000'>"+data+"</svg>");
+        //IMPORTANT: Viewbox determines the coordinate system for drawing. width and height will rescale the SVG to the given width and height.
+        }
     }
 
     PETSc.displayDirectoryRecursive(sub.directories,divEntry,0,"");//this method is recursive on itself and actually fills the div with text and dropdown lists
@@ -75,6 +74,8 @@ PETSc.displayDirectory = function(sub,divEntry)
 
             divSave = divEntry;
             //PETSc.postDirectory(sub, successFunc);//ignore this for now. I'm trying to get rid of 1000ms delay
+            console.log("posting:");
+            console.log(sub);
             SAWs.postDirectory(sub);
             window.setTimeout(PETSc.getAndDisplayDirectory,1000,null,divEntry);
         });

@@ -20,7 +20,7 @@ function drawDiagrams(endtag,target_endtag,x,y) {
         ret += "<polygon points=\""+x+","+y+" "+(x+400)+","+y+" "+(x+400)+","+(y+400)+" "+x+","+(y+400)+"\" style=\"fill:khaki;stroke:black;stroke-width:1\"></polygon>";
         layer = 1;
 
-        ret += drawFieldsplit(endtag,0,target_endtag,x,y,400);
+        //used to be here
 
         function drawFieldsplit(endtag,level,target_endtag,x,y,size) {//input is the id of the fieldsplit. for example "0". (x,y) is the upper lefthand corner. size is the size of one side of the parent square (in pixels)
             //work = draw the children of the fieldsplit then call draw on each child
@@ -69,6 +69,8 @@ function drawDiagrams(endtag,target_endtag,x,y) {
 
             return ret;
         }
+
+        ret += drawFieldsplit(endtag,0,target_endtag,x,y,400);
     }
 
     else if(sawsInfo[index].pc == "mg") { //draw multigrid diagram. multigrid diagram doesn't use an inner recursive function because it's not that complex to draw.
@@ -99,7 +101,7 @@ function drawDiagrams(endtag,target_endtag,x,y) {
             }
 
             if(i != numChildren-1)//add transition arrows image if there are more grids left
-                ret += "<image x=\""+x+"\" y=\""+(y+141+global_downshift)+"\" width=\"349\" height=\"68\" xlink:href=\"images/transition.bmp\"></image>"; //images in svg are handled differently. can't simply use <img>
+                ret += "<image x=\""+x+"\" y=\""+(y+141+global_downshift)+"\" width=\"349\" height=\"68\" xlink:href=\"/images/transition.bmp\"/>"; //images in svg are handled differently. can't simply use <img>
 
             //if the current child is the one that is on the path to the target, then record it
             var child_endtag = endtag + "_" + i;
