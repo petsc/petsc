@@ -20,8 +20,6 @@ function drawDiagrams(endtag,target_endtag,x,y) {
         ret += "<polygon points=\""+x+","+y+" "+(x+400)+","+y+" "+(x+400)+","+(y+400)+" "+x+","+(y+400)+"\" style=\"fill:khaki;stroke:black;stroke-width:1\"></polygon>";
         layer = 1;
 
-        //used to be here
-
         function drawFieldsplit(endtag,level,target_endtag,x,y,size) {//input is the id of the fieldsplit. for example "0". (x,y) is the upper lefthand corner. size is the size of one side of the parent square (in pixels)
             //work = draw the children of the fieldsplit then call draw on each child
             if(target_endtag.indexOf(endtag) != 0)
@@ -49,9 +47,9 @@ function drawDiagrams(endtag,target_endtag,x,y) {
 
                 //if child is mg, then it is time to switch drawing methods
                 else if(child_index != -1 && sawsInfo[child_index].pc == "mg") {
-                    var possible = drawDiagrams(childID,target_endtag,x+size+20+146,y+i*side+side/2);
+                    var possible = drawDiagrams(childID,target_endtag,x+size+20+146,y+i*side);
                     if(possible != "") {//don't draw the arrow if there is no diagram following
-                        ret += "<image x=\""+(x+size+20)+"\" y=\""+(y+i*side+side/2)+"\" width=\"146\" height=\"26\" xlink:href=\"images/arrow.png\"></image>";
+                        ret += "<image x=\""+(x+size+20)+"\" y=\""+(y+i*side+side/2-13)+"\" width=\"146\" height=\"26\" xlink:href=\"images/arrow.png\"></image>";
                         ret += possible;
                     }
                 }

@@ -58,7 +58,7 @@ PETSc.displayDirectory = function(sub,divEntry)
 
         if(data != "") {
             $("#diagram").html("<svg id=\"svgCanvas\" width='700' height='700' viewBox='0 0 2000 2000'>"+data+"</svg>");
-        //IMPORTANT: Viewbox determines the coordinate system for drawing. width and height will rescale the SVG to the given width and height.
+            //IMPORTANT: Viewbox determines the coordinate system for drawing. width and height will rescale the SVG to the given width and height. Things should NEVER be appended to an svg element because then we would need to use a hacky refresh which works in Chrome, but no other browsers that I know of.
         }
     }
 
