@@ -5136,7 +5136,7 @@ This code is not currently supported due to lack of interest and usage. If you r
 PETSc must be configured with \trl{--with-shared-libraries} \trl{--with-matlab-engine} \trl{--with-matlab} \trl{[--download-f2cblaslapack]}. The option \trl{--download-f2cblaslapack} must be used if using 64bit MATLAB on LINUX or 64bit MATLAB and the \trl{--download-ml} external package on Apple Mac OS X.
 You can build with or without MPI, but cannot run on more than one process
 There is currently no MPI in the API, the MPI_Comm is not in any of the argument lists but otherwise the argument lists try to mimic the C binding.
-Add \trl{${PETSC_DIR}/bin/matlab/classes} to your MATLAB path.
+Add \trl{${PETSC_DIR}/share/petsc/matlab/classes} to your MATLAB path.
 
 In MATLAB use help PETSc to get started using PETSc from MATLAB once you have setup PETSc to support MATLAB.
 
