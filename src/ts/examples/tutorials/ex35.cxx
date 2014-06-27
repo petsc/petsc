@@ -46,7 +46,7 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
   PetscFunctionBegin;
   ierr = PetscNew(&user);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","ex35.cxx");
   {
     user->nvars  = 2;
     user->A      = 1;
@@ -60,17 +60,17 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser)
     user->ntsteps = 10000;
     user->ftype = 0;
     user->io = PETSC_FALSE;
-    ierr = PetscOptionsReal("-A","Reaction rate","",user->A,&user->A,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-B","Reaction rate","",user->B,&user->B,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-alpha","Diffusion coefficient","",user->alpha,&user->alpha,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-uleft","Dirichlet boundary condition","",user->leftbc.u,&user->leftbc.u,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-uright","Dirichlet boundary condition","",user->rightbc.u,&user->rightbc.u,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-vleft","Dirichlet boundary condition","",user->leftbc.v,&user->leftbc.v,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-vright","Dirichlet boundary condition","",user->rightbc.v,&user->rightbc.v,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-n","Number of 1-D elements","",user->n,&user->n,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ndt","Number of time steps","",user->ntsteps,&user->ntsteps,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ftype","Type of function evaluation model for FEM assembly","",user->ftype,&user->ftype,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-io","Write the mesh and solution output to a file.","",user->io,&user->io,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-A","Reaction rate","ex35.cxx",user->A,&user->A,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-B","Reaction rate","ex35.cxx",user->B,&user->B,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-alpha","Diffusion coefficient","ex35.cxx",user->alpha,&user->alpha,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-uleft","Dirichlet boundary condition","ex35.cxx",user->leftbc.u,&user->leftbc.u,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-uright","Dirichlet boundary condition","ex35.cxx",user->rightbc.u,&user->rightbc.u,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-vleft","Dirichlet boundary condition","ex35.cxx",user->leftbc.v,&user->leftbc.v,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-vright","Dirichlet boundary condition","ex35.cxx",user->rightbc.v,&user->rightbc.v,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-n","Number of 1-D elements","ex35.cxx",user->n,&user->n,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ndt","Number of time steps","ex35.cxx",user->ntsteps,&user->ntsteps,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ftype","Type of function evaluation model for FEM assembly","ex35.cxx",user->ftype,&user->ftype,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-io","Write the mesh and solution output to a file.","ex35.cxx",user->io,&user->io,NULL);CHKERRQ(ierr);
     user->npts   = user->n+1;
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -203,7 +203,16 @@ int main(int argc,char **argv)
 
     /* Write out the solution along with the mesh */
     ierr = DMMoabSetGlobalFieldVector(dm, X);CHKERRQ(ierr);
-    ierr = DMMoabOutput(dm, "ex1.h5m", "");CHKERRQ(ierr);
+#ifdef MOAB_HDF5_H
+    ierr = DMMoabOutput(dm, "ex35.h5m", "");CHKERRQ(ierr);
+#else
+    /* MOAB does not support true parallel writers that aren't HDF5 based
+       And so if you are using VTK as the output format in parallel,
+       the data could be jumbled due to the order in which the processors
+       write out their parts of the mesh and solution tags
+    */
+    ierr = DMMoabOutput(dm, "ex35.vtk", "");CHKERRQ(ierr);
+#endif
   }
 
   /* Free work space.

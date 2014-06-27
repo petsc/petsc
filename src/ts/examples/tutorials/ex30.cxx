@@ -38,6 +38,7 @@ struct _User {
   PetscReal uleft,uright;       /* Dirichlet boundary conditions */
   PetscReal vleft,vright;       /* Dirichlet boundary conditions */
   PetscInt  npts;               /* Number of mesh points */
+  PetscBool io;
 
   moab::ParallelComm *pcomm;
   moab::Interface *mbint;
@@ -123,7 +124,13 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps);CHKERRQ(ierr);
 
   /* Write out the final mesh */
-  merr = user.mbint->write_file("ex30.h5m");MBERRNM(merr);
+  if (user.io) {
+#ifdef MOAB_HDF5_H
+    merr = user.mbint->write_file("ex30.h5m");MBERRNM(merr);
+#else
+    merr = user.mbint->write_file("ex30.vtk");MBERRNM(merr);
+#endif
+  }
 
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -436,7 +443,7 @@ PetscErrorCode create_app_data(_User& user)
 
   PetscFunctionBegin;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options",""); {
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Advection-reaction options","ex30.cxx"); {
     user.A      = 1;
     user.B      = 3;
     user.alpha  = 0.02;
@@ -445,14 +452,16 @@ PetscErrorCode create_app_data(_User& user)
     user.vleft  = 3;
     user.vright = 3;
     user.npts   = 11;
-    ierr = PetscOptionsReal("-A","Reaction rate","",user.A,&user.A,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-B","Reaction rate","",user.B,&user.B,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-alpha","Diffusion coefficient","",user.alpha,&user.alpha,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-uleft","Dirichlet boundary condition","",user.uleft,&user.uleft,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-uright","Dirichlet boundary condition","",user.uright,&user.uright,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-vleft","Dirichlet boundary condition","",user.vleft,&user.vleft,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-vright","Dirichlet boundary condition","",user.vright,&user.vright,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-npts","Number of mesh points","",user.npts,&user.npts,NULL);CHKERRQ(ierr);
+    user.io     = PETSC_FALSE;
+    ierr = PetscOptionsReal("-A","Reaction rate","ex30.cxx",user.A,&user.A,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-B","Reaction rate","ex30.cxx",user.B,&user.B,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-alpha","Diffusion coefficient","ex30.cxx",user.alpha,&user.alpha,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-uleft","Dirichlet boundary condition","ex30.cxx",user.uleft,&user.uleft,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-uright","Dirichlet boundary condition","ex30.cxx",user.uright,&user.uright,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-vleft","Dirichlet boundary condition","ex30.cxx",user.vleft,&user.vleft,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-vright","Dirichlet boundary condition","ex30.cxx",user.vright,&user.vright,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-npts","Number of mesh points","ex30.cxx",user.npts,&user.npts,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-io", "Write out the solution and mesh data", "ex30.cxx", user.io, &user.io, NULL);CHKERRQ(ierr);
   } ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   user.mbint = new moab::Core;

@@ -491,6 +491,6 @@ TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
 TESTEXAMPLES_EXODUSII     = ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_MOAB         = ex30.PETSc runex30 ex30.rm ex35.PETSc runex35 ex35.rm
-TESTEXAMPLES_MOAB_HDF5    = ex35.PETSc runex35_2 ex35.rm
+TESTEXAMPLES_MOAB_HDF5    = ex30.PETSc runex30_2 ex30.rm ex35.PETSc runex35_2 ex35.rm
 
 include ${PETSC_DIR}/conf/test
