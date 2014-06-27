@@ -75,6 +75,11 @@ class Configure(config.base.Configure):
         for i in self.framework.packages:
           if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI','SCALAPACK','PTHREAD','CUDA','THRUST','VALGRIND','NUMDIFF','FBLASLAPACK','MAKE']:
             ejobs.append(i.name.upper())
+          # horrible python here
+          if i.name.upper() == 'MOAB':
+            for j in self.framework.packages:
+              if j.name.upper() == 'HDF5':
+                ejobs.append('MOAB_HDF5')
 
     self.addMakeMacro('TEST_RUNS',' '.join(jobs)+' '+' '.join(ejobs)+' '+' '.join(rjobs))
     return

@@ -112,7 +112,8 @@ class tetgenio {
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://tetgen.berlios.de/files/tetgen1.4.3.tar.gz']
+    self.download = ['http://tetgen.org/files/tetgen1.4.3.tar.gz',
+                     'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/tetgen1.4.3.tar.gz']
     self.functions = ['tetrahedralize']
     self.functionsCxx = [1, structDecl+'void tetrahedralize(char *switches, tetgenio *in, tetgenio *out, tetgenio *addin = NULL, tetgenio *bgmin = NULL);', 'tetrahedralize((char *) "", NULL, NULL)']
     self.includes  = ['tetgen.h']
@@ -193,3 +194,10 @@ class Configure(PETSc.package.NewPackage):
       self.postInstall(output1+err1+output2+err2,'make.inc')
 
     return self.installDir
+
+  def consistencyChecks(self):
+    PETSc.package.NewPackage.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      if self.languages.clanguage == 'C':
+        raise RuntimeError('TetGen: requires --with-clanguage=cxx. Or use ctetgen instead.')
+    return

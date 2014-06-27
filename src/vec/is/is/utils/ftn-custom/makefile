@@ -3,7 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ziscoloringf.c zisltogf.c
+SOURCEC  = ziscoloringf.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

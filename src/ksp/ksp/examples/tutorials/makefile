@@ -386,6 +386,11 @@ runex2_umfpack:
            if (${DIFF} output/ex2_umfpack.out ex2_umfpack.tmp) then true; \
            else printf "${PWD}\nPossible problem with with ex2_umfpack, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex2_umfpack.tmp
+runex2_mkl_pardiso:
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mkl_pardiso > ex2_mkl_pardiso.tmp 2>&1; \
+           if (${DIFF} output/ex2_mkl_pardiso.out ex2_mkl_pardiso.tmp) then true; \
+           else printf "${PWD}\nPossible problem with with ex2_mkl_pardiso, diffs above\n=========================================\n"; fi; \
+           ${RM} -f ex2_mkl_pardiso.tmp
 runex2_fbcgs:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type fbcgs -pc_type ilu  > ex2.tmp 2>&1; \
            if (${DIFF} output/ex2_fbcgs.out ex2.tmp) then true; \
@@ -917,6 +922,18 @@ runex34:
 	   else printf "${PWD}\nPossible problem with with ex34_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex34_1.tmp
 
+runex35:
+	-@${MPIEXEC} -n 1 ./ex35 -bc_type dirichlet -nu .01 -n 10 -ksp_type cg -pc_type sor -ksp_converged_reason > ex35_1.tmp 2>&1;\
+	   if (${DIFF} output/ex35_1.out ex35_1.tmp) then true ;  \
+	   else echo ${PWD} ; echo "Possible problem with with runex35, diffs above \n========================================="; fi ;\
+	   ${RM} -f ex35_1.tmp
+
+runex35_2:
+	-@${MPIEXEC} -n 2 ./ex35 -bc_type dirichlet -nu .01 -n 20 -ksp_type cg -pc_type sor -ksp_converged_reason > ex35_2.tmp 2>&1;\
+	   if (${DIFF} output/ex35_2.out ex35_2.tmp) then true ;  \
+	   else echo ${PWD} ; echo "Possible problem with with runex35_2, diffs above \n========================================="; fi ;\
+	   ${RM} -f ex35_2.tmp
+
 runex43:
 	-@${MPIEXEC} -n 1 ./ex43 -stokes_ksp_type fgmres -stokes_ksp_rtol 1e-8 -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_pc_fieldsplit_0_fields 0,1 -stokes_pc_fieldsplit_1_fields 2 -stokes_fieldsplit_0_ksp_type preonly -stokes_fieldsplit_0_pc_type lu -stokes_fieldsplit_1_ksp_type preonly -stokes_fieldsplit_1_pc_type jacobi -c_str 0 -solcx_eta0 1.0 -solcx_eta1 1.0e6 -solcx_xc 0.5 -solcx_nz 2 -mx 20 -my 20 -stokes_ksp_monitor_short > ex43_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_1.out ex43_1.tmp || printf "${PWD}\nPossible problem with with ex43_1, diffs above\n=========================================\n"; \
@@ -1155,7 +1172,9 @@ TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_
 TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu ex52.rm
 TESTEXAMPLES_FFTW              =
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
+TESTEXAMPLES_MKL_PARDISO       = ex2.PETSc runex2_mkl_pardiso ex2.rm
 TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm
 TESTEXAMPLES_PCBDDC            = ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm
+TESTEXAMPLES_MOAB              = ex35.PETSc runex35 runex35_2 ex35.rm
 
 include ${PETSC_DIR}/conf/test

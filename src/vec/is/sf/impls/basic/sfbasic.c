@@ -579,10 +579,11 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
 {
   PetscErrorCode ierr;
   PetscBool      isInt,isPetscInt,isPetscReal,is2Int,is2PetscInt;
+  PetscInt       nPetscIntContig,nPetscRealContig;
 #if defined(PETSC_HAVE_COMPLEX)
   PetscBool isPetscComplex;
+  PetscInt nPetscComplexContig;
 #endif
-  PetscInt       nPetscIntContig,nPetscRealContig,nPetscComplexContig;
 
   PetscFunctionBegin;
   ierr = MPIPetsc_Type_compare(unit,MPI_INT,&isInt);CHKERRQ(ierr);

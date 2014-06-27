@@ -1360,6 +1360,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   if (usecprow) { /* use compressed row format */
     ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
     ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+    ierr = PetscMemzero(y,m*sizeof(PetscScalar));CHKERRQ(ierr);
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -1411,6 +1412,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   aa   = a->a;
   ii   = a->i;
   if (usecprow) { /* use compressed row format */
+    ierr = PetscMemzero(y,m*sizeof(PetscScalar));CHKERRQ(ierr);
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
     ridx = a->compressedrow.rindex;
@@ -3957,6 +3959,9 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mumps(Mat,MatFactorType,Mat*);
 #if defined(PETSC_HAVE_SUPERLU)
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat,MatFactorType,Mat*);
 #endif
+#if defined(PETSC_HAVE_MKL_PARDISO)
+PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat,MatFactorType,Mat*);
+#endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu_dist(Mat,MatFactorType,Mat*);
 #endif
@@ -4089,6 +4094,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_superlu_C",MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MKL_PARDISO)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mkl_pardiso_C",MatGetFactor_aij_mkl_pardiso);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_superlu_dist_C",MatGetFactor_seqaij_superlu_dist);CHKERRQ(ierr);

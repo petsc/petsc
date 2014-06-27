@@ -4918,7 +4918,7 @@ PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
   fem->ops->gettabulation           = PetscFEGetTabulation_Composite;
   fem->ops->integrateresidual       = PetscFEIntegrateResidual_Basic;
   fem->ops->integratebdresidual     = PetscFEIntegrateBdResidual_Basic;
-  fem->ops->integratejacobianaction = NULL/*PetscFEIntegrateJacobianAction_Basic*/;
+  fem->ops->integratejacobianaction = NULL/* PetscFEIntegrateJacobianAction_Basic */;
   fem->ops->integratejacobian       = PetscFEIntegrateJacobian_Basic;
   PetscFunctionReturn(0);
 }

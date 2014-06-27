@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tests/
-EXAMPLESC       = ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex21.c ex25.c
+EXAMPLESC       = ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex25.c
 EXAMPLESF       =
 EXAMPLESFH      =
 MANSEC          = TS
@@ -55,10 +55,6 @@ ex9: ex9.o  chkopts
 ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o ${PETSC_TS_LIB}
 	${RM} ex10.o
-
-ex21: ex21.o  chkopts
-	-${CLINKER} -o ex21 ex21.o  ${PETSC_TS_LIB}
-	${RM} ex21.o
 
 ex22: ex22.o  chkopts
 	-${CLINKER} -o ex22 ex22.o  ${PETSC_TS_LIB}

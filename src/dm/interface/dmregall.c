@@ -7,7 +7,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
+#if defined(PETSC_HAVE_MOAB)
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM);
+#endif
 PETSC_EXTERN PetscErrorCode DMCreate_Network(DM);
 
 #undef __FUNCT__

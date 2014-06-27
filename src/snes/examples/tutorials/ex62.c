@@ -7,7 +7,7 @@ The isoviscous Stokes problem, which we discretize using the finite
 element method on an unstructured mesh. The weak form equations are
 
   < \nabla v, \nabla u + {\nabla u}^T > - < \nabla\cdot v, p > + < v, f > = 0
-  < q, \nabla\cdot v >                                                    = 0
+  < q, \nabla\cdot u >                                                    = 0
 
 We start with homogeneous Dirichlet conditions. We will expand this as the set
 of test problems is developed.
@@ -147,7 +147,7 @@ void f1_p(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[
   for (d = 0; d < spatialDim; ++d) f1[d] = 0.0;
 }
 
-/* < q, \nabla\cdot v >
+/* < q, \nabla\cdot u >
    NcompI = 1, NcompJ = dim */
 void g1_pu(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar g1[])
 {

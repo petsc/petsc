@@ -203,6 +203,12 @@
       <ul>
 	<li> Configure options <tt>--download-umfpack</tt> and <tt>--download-cholmod</tt> to download UMFPACK and CHOLMOD have been removed. Use <tt>--download-suitesparse</tt> to download these packages.
 	</li>
+        <li>
+          Added interface to Pardiso solver in Intel MKL. To use MKL_Pardiso,
+          PETSc should be configured with <tt>--blas-lapack-dir=LOCATION_OF_INTEL_MKL
+          --with-mkl_pardiso-dir=LOCATION_OF_INTEL_MKL</tt> and then run the code with
+          <tt>-pc_type lu -pc_factor_mat_solver_package mkl_pardiso</tt>
+        </li>
       </ul>
     </div>
 

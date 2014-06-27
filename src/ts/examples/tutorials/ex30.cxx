@@ -80,74 +80,60 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  // Fill in the user defined work context (creates mesh, solution field on mesh)
+  /* Fill in the user defined work context (creates mesh, solution field on mesh) */
   ierr = create_app_data(user);CHKERRQ(ierr);
 
-    // Create the DM to manage the mesh
-  ierr = DMMoabCreateMoab(user.pcomm->comm(),user.mbint,user.pcomm,user.id_tag,user.owned_vertexes,&dm);CHKERRQ(ierr);
+  /* Create the DM to manage the mesh */
+  ierr = DMMoabCreateMoab(user.pcomm->comm(),user.mbint,user.pcomm,&user.id_tag,user.owned_vertexes,&dm);CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
 
-  // Create the solution vector:
-  ierr = DMMoabCreateVector(dm,user.unknowns_tag,user.unknowns_tag_size,*user.owned_vertexes,PETSC_FALSE,PETSC_FALSE,&X);CHKERRQ(ierr);
-    // Create the matrix
+  /* Create the solution vector: */
+  ierr = DMMoabCreateVector(dm,user.unknowns_tag,user.owned_vertexes,PETSC_TRUE,PETSC_FALSE,&X);CHKERRQ(ierr);
+  /* Create the matrix */
   ierr = create_matrix(user, dm, &J);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create timestepping solver context
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /* Create timestepping solver context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
 
   ierr = TSSetRHSFunction(ts,NULL,FormRHSFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,FormIFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
+  ierr = TSSetDM(ts,dm);CHKERRQ(ierr);
 
   ftime = 10.0;
   maxsteps = 10000;
   ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set initial conditions
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /* Set initial conditions */
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   ierr = VecGetSize(X,&mx);CHKERRQ(ierr);
   hx = 1.0/(PetscReal)(mx/2-1);
   dt = 0.4 * PetscSqr(hx) / user.alpha; /* Diffusive stability limit */
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
 
-  // /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  //    Set runtime options
-  //  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /* Set runtime options */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Solve nonlinear system
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /* Solve nonlinear system */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps);CHKERRQ(ierr);
 
+  /* Write out the final mesh */
+  merr = user.mbint->write_file("ex30.h5m");MBERRNM(merr);
 
-  // Print the solution:
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Write out the final mesh
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  merr = user.mbint->write_file("ex30-final.h5m");MBERRNM(merr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Free work space.
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  // Free all PETSc related resources:
+  /* Free work space. */
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
 
-  // Free all MOAB related resources:
+  /* Free all MOAB related resources */
   ierr = destroy_app_data(user);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
@@ -236,17 +222,6 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 
   // Add tags on shared vertexes:
   merr = user->pcomm->reduce_tags(f_tag,MPI_SUM,*user->shared_vertexes);MBERRNM(merr);
-
-  // Print vectors for debugging:
-  // ierr = PetscPrintf(PETSC_COMM_WORLD, "X\n");CHKERRQ(ierr);
-  // ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
-  // ierr = PetscPrintf(PETSC_COMM_WORLD, "Xdot\n");CHKERRQ(ierr);
-  // ierr = VecView(Xdot,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
-  // ierr = PetscPrintf(PETSC_COMM_WORLD, "F\n");CHKERRQ(ierr);
-  // ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -283,11 +258,6 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   /* Restore vectors */
   ierr = VecRestoreArray(X,reinterpret_cast<PetscScalar**>(&x));CHKERRQ(ierr);
   ierr = VecRestoreArray(F,reinterpret_cast<PetscScalar**>(&f));CHKERRQ(ierr);
-
-  // Print vectors for debugging:
-  /* ierr = PetscPrintf(PETSC_COMM_WORLD,"RHS");CHKERRQ(ierr); */
-  /* ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-
   PetscFunctionReturn(0);
 }
 
@@ -337,9 +307,6 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-
-  /* ierr = MatView(*J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-
   PetscFunctionReturn(0);
 }
 
@@ -386,7 +353,6 @@ PetscErrorCode initialize_moab_mesh(moab::ParallelComm* pcomm,int npts,int nghos
   const PetscInt my_npts = my_nele + 1;
 
   // Create the local portion of the mesh:
-
   // Create vertexes and set the coodinate of each vertex:
   moab::EntityHandle vertex_first;
   std::vector<double*> vertex_coords;
@@ -417,7 +383,6 @@ PetscErrorCode initialize_moab_mesh(moab::ParallelComm* pcomm,int npts,int nghos
   merr = readMeshIface->update_adjacencies(edge_first,my_nele,2,connectivity);MBERRNM(merr);
 
   // Set tags on all of the vertexes...
-
   // Create tag handle to represent the unknowns, u and v and
   // initialize them. We will create a single tag whose type is an
   // array of two doubles and whose name is "unknowns"
@@ -458,7 +423,6 @@ PetscErrorCode initialize_moab_mesh(moab::ParallelComm* pcomm,int npts,int nghos
   // Everything is set up, now just do a tag exchange to update tags
   // on all of the shared vertexes:
   merr = pcomm->exchange_tags(id_tag,owned_vertexes);MBERRNM(merr);
-
   PetscFunctionReturn(0);
 }
 
@@ -527,7 +491,6 @@ PetscErrorCode create_app_data(_User& user)
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Tag data not laid out contiguously %i %i",
 	     count,user.all_vertexes->size());
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -539,28 +502,27 @@ PetscErrorCode create_matrix(_User &user, DM &dm, Mat *J)
   PetscErrorCode ierr;
   moab::ErrorCode merr;
   moab::Tag ltog_tag;
-  moab::Range range;
+  const moab::Range *range;
 
   PetscFunctionBegin;
   ierr = DMMoabGetLocalToGlobalTag(dm,&ltog_tag);CHKERRQ(ierr);
-  ierr = DMMoabGetRange(dm,&range);CHKERRQ(ierr);
+  ierr = DMMoabGetLocalVertices(dm,&range,NULL);CHKERRQ(ierr);
 
   // Create the matrix:
-  ierr = MatCreateBAIJ(user.pcomm->comm(),2,2*range.size(),2*range.size(),
+  ierr = MatCreateBAIJ(user.pcomm->comm(),2,2*range->size(),2*range->size(),
   		       PETSC_DECIDE,PETSC_DECIDE,3, NULL, 3, NULL, J);CHKERRQ(ierr);
 
   // Set local to global numbering using the ltog_tag:
   ISLocalToGlobalMapping ltog;
-  PetscInt               *gindices = new PetscInt[range.size()];
-  merr = user.pcomm->get_moab()->tag_get_data(ltog_tag, range, gindices);MBERRNM(merr);
+  PetscInt               *gindices = new PetscInt[range->size()];
+  merr = user.pcomm->get_moab()->tag_get_data(ltog_tag, *range, gindices);MBERRNM(merr);
 
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, 2,range.size(), gindices,PETSC_COPY_VALUES, &ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, 2, range->size(), gindices,PETSC_COPY_VALUES, &ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*J,ltog,ltog);CHKERRQ(ierr);
 
   // Clean up:
   ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
   delete [] gindices;
-
   PetscFunctionReturn(0);
 }
 

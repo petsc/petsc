@@ -1035,10 +1035,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     len -= 15; /* remove "pc_bddc_coarse_" */
     if (pcbddc->current_level>1) len -= 3; /* remove "lX_" with X level number */
     if (pcbddc->current_level>10) len -= 1; /* remove another char from level number */
-    ierr = PetscStrncpy(dir_prefix,((PetscObject)pc)->prefix,len);CHKERRQ(ierr);
-    ierr = PetscStrncpy(neu_prefix,((PetscObject)pc)->prefix,len);CHKERRQ(ierr);
-    *(dir_prefix+len)='\0';
-    *(neu_prefix+len)='\0';
+    ierr = PetscStrncpy(dir_prefix,((PetscObject)pc)->prefix,len+1);CHKERRQ(ierr);
+    ierr = PetscStrncpy(neu_prefix,((PetscObject)pc)->prefix,len+1);CHKERRQ(ierr);
     ierr = PetscStrcat(dir_prefix,"pc_bddc_dirichlet_");CHKERRQ(ierr);
     ierr = PetscStrcat(neu_prefix,"pc_bddc_neumann_");CHKERRQ(ierr);
     ierr = PetscStrcat(dir_prefix,str_level);CHKERRQ(ierr);
@@ -2817,7 +2815,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   matis = (Mat_IS*)mat->data;
 
   /* get comm */
-  comm = PetscObjectComm((PetscObject)mat);
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
 
   /* compute number of sends */
   ierr = ISGetLocalSize(is_sends_internal,&i);CHKERRQ(ierr);
@@ -2996,7 +2994,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
     ptr_idxs += olengths_idxs[i];
   }
   ierr = PetscSortRemoveDupsInt(&buf_size_idxs,l2gmap_indices);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreate(comm,1,buf_size_idxs,l2gmap_indices,PETSC_COPY_VALUES,&l2gmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm_n,1,buf_size_idxs,l2gmap_indices,PETSC_COPY_VALUES,&l2gmap);CHKERRQ(ierr);
   ierr = PetscFree(l2gmap_indices);CHKERRQ(ierr);
 
   /* infer new local matrix type from received local matrices type */
@@ -3494,8 +3492,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = PetscStrlen(((PetscObject)pc)->prefix,&len);CHKERRQ(ierr);
         if (pcbddc->current_level>1) len -= 3; /* remove "lX_" with X level number */
         if (pcbddc->current_level>10) len -= 1; /* remove another char from level number */
-        ierr = PetscStrncpy(prefix,((PetscObject)pc)->prefix,len);CHKERRQ(ierr);
-        *(prefix+len)='\0';
+        ierr = PetscStrncpy(prefix,((PetscObject)pc)->prefix,len+1);CHKERRQ(ierr);
         sprintf(str_level,"l%d_",(int)(pcbddc->current_level));
         ierr = PetscStrcat(prefix,str_level);CHKERRQ(ierr);
       }

@@ -425,9 +425,7 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   PetscInt          nele,nen,i,j;
   const PetscInt    *ele;
   PetscScalar       dt=user->dt;
-  Vec               coords;
-  const PetscScalar *_coords;
-  PetscScalar       x[3],y[3];
+  PetscScalar       y[3];
   PetscInt          idx[3];
   PetscScalar       eM_0[3][3],eM_2_odd[3][3],eM_2_even[3][3];
   Mat               M      =user->M;
@@ -437,10 +435,6 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   DM                da;
 
   PetscFunctionBeginUser;
-  /* Get ghosted coordinates */
-  ierr = DMGetCoordinatesLocal(user->da,&coords);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
-
   /* Create the mass matrix M_0 */
   ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
 
@@ -476,9 +470,6 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   ierr = DMDAGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
   for (i=0; i < nele; i++) {
     idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
-    x[0]   = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
-    x[1]   = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
-    x[2]   = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
 
     PetscInt    row,cols[3],r,row_M_0;
     PetscScalar vals[3],vals_M_0[3];
@@ -569,7 +560,6 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   }
 
   ierr = DMDARestoreElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
