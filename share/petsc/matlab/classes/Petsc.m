@@ -29,7 +29,7 @@ classdef Petsc < handle
 %      PetscTS     - ODE integrator class
 %      PetscDM     - Manages interface between mesh data and the solvers
 %
-%  The script demo.m in bin/matlab/classes/examples/tutorials demonstrates several example 
+%  The script demo.m in share/petsc/matlab/classes/examples/tutorials demonstrates several example
 %     usages of PETSc from MATLAB
 
 %  Notes: You can call PetscInitialize() multiple times so long as you call PetscFinalize() between each call

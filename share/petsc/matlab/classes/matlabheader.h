@@ -1,6 +1,6 @@
 
 /*
-    This is used by bin/matlab/classes/PetscInitialize() to define to Matlab all the functions available in the
+    This is used by share/petsc/matlab/classes/PetscInitialize() to define to Matlab all the functions available in the
    PETSc shared library. We cannot simply use the regular PETSc include files because they are too complicated for
    Matlab to parse.
 

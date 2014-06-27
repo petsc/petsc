@@ -1,4 +1,3 @@
-
 #
 #requirespackage  'PETSC_HAVE_MATLAB'
 #requiresscalar real
@@ -7,15 +6,6 @@
 #   matlabcodes makes the MATLAB mex files for receiving PETSc objects
 # in MATLAB. You cannot use a complex numbers.
 #
-SPECIALLIB     = yes
-SPECIALFASTLIB = yes
-speciallib:
-	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
-	-@if [ ! -d "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc" ] ; then ${MKDIR}  ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc; fi
-	-@if [ ! -d "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab" ] ; then ${MKDIR}  ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab; fi
-	-@${OMAKE}  matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
-specialfastlib: speciallib
-
 matlabcodes: sread sopen sclose swrite
 
 CFLAGS    =
