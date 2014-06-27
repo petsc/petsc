@@ -3012,7 +3012,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   matis = (Mat_IS*)mat->data;
 
   /* get comm */
-  comm = PetscObjectComm((PetscObject)mat);
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
 
   /* compute number of sends */
   ierr = ISGetLocalSize(is_sends_internal,&i);CHKERRQ(ierr);
