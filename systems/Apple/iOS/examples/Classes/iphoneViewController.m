@@ -111,7 +111,7 @@ PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
   int argc;
   PetscBool flg1,flg2;
   
-  PetscErrorCode ierr = PetscStrToArray(str,&argc,&args);
+  PetscErrorCode ierr = PetscStrToArray(str,' ',&argc,&args);
   ierr = PetscStrncmp(str, "./ex19", 6, &flg1);
   ierr = PetscStrncmp(str, "./ex48", 6, &flg2);
   if (flg1) {
