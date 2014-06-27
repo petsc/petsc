@@ -585,6 +585,54 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ISGlobalToLocalMappingApplyIS"
+/*@
+    ISGlobalToLocalMappingApplyIS - Creates from an IS in the global numbering
+    a new index set using the local numbering defined in an ISLocalToGlobalMapping
+    context.
+
+    Not collective
+
+    Input Parameters:
++   mapping - mapping between local and global numbering
+-   is - index set in global numbering
+
+    Output Parameters:
+.   newis - index set in local numbering
+
+    Level: advanced
+
+    Concepts: mapping^local to global
+
+.seealso: ISGlobalToLocalMappingApply(), ISLocalToGlobalMappingCreate(),
+          ISLocalToGlobalMappingDestroy()
+@*/
+PetscErrorCode  ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type, IS is,IS *newis)
+{
+  PetscErrorCode ierr;
+  PetscInt       n,nout,*idxout;
+  const PetscInt *idxin;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
+  PetscValidHeaderSpecific(is,IS_CLASSID,3);
+  PetscValidPointer(newis,4);
+
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&idxin);CHKERRQ(ierr);
+  if (type == IS_GTOLM_MASK) {
+    ierr = PetscMalloc1(n,&idxout);CHKERRQ(ierr);
+  } else {
+    ierr = ISGlobalToLocalMappingApply(mapping,type,n,idxin,&nout,NULL);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nout,&idxout);CHKERRQ(ierr);
+  }
+  ierr = ISGlobalToLocalMappingApply(mapping,type,n,idxin,&nout,idxout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&idxin);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is),nout,idxout,PETSC_OWN_POINTER,newis);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISGlobalToLocalMappingApplyBlock"
 /*@
     ISGlobalToLocalMappingApplyBlock - Provides the local block numbering for a list of integers
