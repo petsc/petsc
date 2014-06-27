@@ -72,6 +72,10 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   ierr = PetscOptionsInt("-pc_bddc_levels","Set maximum number of levels for multilevel","none",pcbddc->max_levels,&pcbddc->max_levels,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_coarse_estimates","Use estimated eigenvalues for coarse problem","none",pcbddc->use_coarse_estimates,&pcbddc->use_coarse_estimates,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_deluxe_scaling","Use deluxe scaling for BDDC","none",pcbddc->use_deluxe_scaling,&pcbddc->use_deluxe_scaling,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_bddc_deluxe_threshold","Deluxe subproblems (Schur principal minors) smaller than this value are explicilty computed","none",pcbddc->deluxe_threshold,&pcbddc->deluxe_threshold,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_deluxe_rebuild","Whether or not the interface graph for deluxe has to be rebuilt (i.e. use a standard definition of the interface)","none",pcbddc->deluxe_rebuild,&pcbddc->deluxe_rebuild,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_bddc_deluxe_layers","Number of dofs' layers for the application of deluxe cheap version (i.e. -1 uses all dofs)","none",pcbddc->deluxe_layers,&pcbddc->deluxe_layers,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_deluxe_use_useradj","Whether or not the CSR graph specified by the user should be used for computing layers (default is to use adj of local mat)","none",pcbddc->deluxe_use_useradj,&pcbddc->deluxe_use_useradj,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -986,10 +990,10 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
     if (pcbddc->use_exact_dirichlet_trick) {
       ierr = VecScatterBegin(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
       ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (pcis->global_to_D,pcis->vec2_D,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       if (ksp) {
         ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
@@ -1002,15 +1006,16 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     temp_mat = matis->A;
     matis->A = pcbddc->local_mat;
     pcbddc->local_mat = temp_mat;
-    if (rhs) {
+    if (rhs) { /* TODO the change of basis is fragile when the change involves dofs which are not on the same subset of the interface (i.e. Toselli's for curl-curl) */
       /* Get local rhs and apply transformation of basis */
       ierr = VecScatterBegin(pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(pcis->vec2_B,pcis->vec2_B,pcis->D);CHKERRQ(ierr);
       /* from original basis to modified basis */
       ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,pcis->vec1_B,pcis->vec2_B);CHKERRQ(ierr);
-      /* put back modified values into the global vec using INSERT_VALUES copy mode */
-      ierr = VecScatterBegin(pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      /* put back modified values into the global vec using ADD_VALUES copy mode */
+      ierr = VecScatterBegin(pcis->global_to_B,pcis->vec2_B,rhs,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcis->global_to_B,pcis->vec2_B,rhs,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     }
   }
 
@@ -1044,7 +1049,7 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscErrorCode ierr;
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PC_IS          *pcis   = (PC_IS*)(pc->data);
-  Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
+  Mat_IS         *matis  = (Mat_IS*)pc->pmat->data;
   Mat            temp_mat;
 
   PetscFunctionBegin;
@@ -1057,12 +1062,12 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   if (pcbddc->ChangeOfBasisMatrix && x) {
     /* Get Local boundary and apply transformation of basis to solution vector */
     ierr = VecScatterBegin(pcis->global_to_B,x,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_B,x,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->global_to_B,x,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     /* from modified basis to original basis */
     ierr = MatMult(pcbddc->ChangeOfBasisMatrix,pcis->vec1_B,pcis->vec2_B);CHKERRQ(ierr);
     /* put back modified values into the global vec using INSERT_VALUES copy mode */
     ierr = VecScatterBegin(pcis->global_to_B,pcis->vec2_B,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec2_B,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcis->global_to_B,pcis->vec2_B,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
   /* add solution removed in presolve */
   if (x) {
@@ -1156,6 +1161,10 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* Analyze interface */
   if (computetopography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
+    /* Schurs on subsets should be reset */
+    if (pcbddc->deluxe_ctx) {
+      ierr = PCBDDCSubSchursReset(pcbddc->deluxe_ctx->sub_schurs);CHKERRQ(ierr);
+    }
   }
 
   /* infer if NullSpace object attached to Mat via MatSetNearNullSpace has changed */
@@ -1200,13 +1209,16 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCConstraintsSetUp(pc);CHKERRQ(ierr);
     /* Allocate needed local vectors (which depends on quantities defined during ConstraintsSetUp) */
     ierr = PCBDDCSetUpLocalWorkVectors(pc);CHKERRQ(ierr);
+    /* Schurs on subsets should be reset */
+    if (pcbddc->deluxe_ctx) {
+      ierr = PCBDDCSubSchursReset(pcbddc->deluxe_ctx->sub_schurs);CHKERRQ(ierr);
+    }
   }
 
   if (computesolvers || pcbddc->new_primal_space) {
-    /* reset data */
-    ierr = PCBDDCScalingDestroy(pc);CHKERRQ(ierr);
     /* Create coarse and local stuffs */
     ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
+    /* Create scaling operators */
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
   }
 
@@ -1377,8 +1389,9 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PCBDDCResetTopography(pc);CHKERRQ(ierr);
   /* free allocated graph structure */
   ierr = PetscFree(pcbddc->mat_graph);CHKERRQ(ierr);
-  /* free data for scaling operator */
+  /* destroy objects for scaling operator */
   ierr = PCBDDCScalingDestroy(pc);CHKERRQ(ierr);
+  ierr = PetscFree(pcbddc->deluxe_ctx);CHKERRQ(ierr);
   /* free solvers stuff */
   ierr = PCBDDCResetSolvers(pc);CHKERRQ(ierr);
   /* free global vectors needed in presolve */
@@ -1812,9 +1825,13 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
 
   /* scaling */
-  pcbddc->use_deluxe_scaling         = PETSC_FALSE;
-  pcbddc->deluxe_ctx                 = 0;
-  pcbddc->work_scaling               = 0;
+  pcbddc->work_scaling          = 0;
+  pcbddc->use_deluxe_scaling    = PETSC_FALSE;
+  pcbddc->deluxe_threshold      = 1;
+  pcbddc->deluxe_rebuild        = PETSC_FALSE;
+  pcbddc->deluxe_layers         = -1;
+  pcbddc->deluxe_use_useradj    = PETSC_FALSE;
+  pcbddc->deluxe_compute_rowadj = PETSC_TRUE;
 
   /* function pointers */
   pc->ops->apply               = PCApply_BDDC;
