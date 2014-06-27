@@ -17,6 +17,7 @@ cdef extern from * nogil:
     int ISCreateBlock(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscCopyMode,PetscIS*)
     int ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscIS*)
 
+    int ISLoad(PetscIS,PetscViewer)
     int ISDuplicate(PetscIS,PetscIS*)
     int ISCopy(PetscIS,PetscIS)
     int ISAllGather(PetscIS,PetscIS*)
@@ -42,6 +43,7 @@ cdef extern from * nogil:
     int ISExpand(PetscIS,PetscIS,PetscIS*)
     int ISDifference(PetscIS,PetscIS,PetscIS*)
     int ISComplement(PetscIS,PetscInt,PetscInt,PetscIS*)
+    int ISEmbed(PetscIS,PetscIS,PetscBool,PetscIS*)
 
     int ISGeneralSetIndices(PetscIS,PetscInt,PetscInt[],PetscCopyMode)
 

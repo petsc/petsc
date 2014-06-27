@@ -99,6 +99,15 @@ cdef class IS(Object):
         CHKERR( ISCopy(self.iset, result.iset) )
         return result
 
+    def load(self, Viewer viewer not None):
+        cdef MPI_Comm comm = MPI_COMM_NULL
+        cdef PetscObject obj = <PetscObject>(viewer.vwr)
+        if self.iset == NULL:
+            CHKERR( PetscObjectGetComm(obj, &comm) )
+            CHKERR( ISCreate(comm, &self.iset) )
+        CHKERR( ISLoad(self.iset, viewer.vwr) )
+        return self
+
     def allGather(self):
         cdef IS iset = IS()
         CHKERR( ISAllGather(self.iset, &iset.iset) )
@@ -199,6 +208,12 @@ cdef class IS(Object):
         cdef PetscInt cnmax = asInt(nmax)
         cdef IS out = IS()
         CHKERR( ISComplement(self.iset, cnmin, cnmax, &out.iset) )
+        return out
+
+    def embed(self, IS iset not None, drop):
+        cdef PetscBool bval = drop
+        cdef IS out = IS()
+        CHKERR( ISEmbed(self.iset, iset.iset, bval, &out.iset) )
         return out
 
     #
