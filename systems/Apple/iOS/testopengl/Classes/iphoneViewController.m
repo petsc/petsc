@@ -127,13 +127,13 @@ PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
 #undef Field
 #define main ex4
 #define help help4
-#include <../src/sys/draw/examples/tests/ex4.c>
+#include <../src/sys/classes/draw/examples/tests/ex4.c>
 #undef main
 #undef help
 #undef Field
 #define main ex3
 #define help help3
-#include <../src/sys/draw/examples/tests/ex3.c>
+#include <../src/sys/classes/draw/examples/tests/ex3.c>
 
 extern PetscErrorCode  PetscDrawOpenGLESRegisterGLKView(GLKView *);
 
@@ -159,7 +159,7 @@ extern PetscErrorCode  PetscDrawOpenGLESRegisterGLKView(GLKView *);
   int argc;
   PetscBool flg1,flg2,flg3,flg4;
   
-  PetscErrorCode ierr = PetscStrToArray(str,&argc,&args);
+  PetscErrorCode ierr = PetscStrToArray(str,' ',&argc,&args);
   ierr = PetscStrncmp(str, "./ex19", 6, &flg1);
   ierr = PetscStrncmp(str, "./ex48", 6, &flg2);
   ierr = PetscStrncmp(str, "./ex4", 5, &flg3);

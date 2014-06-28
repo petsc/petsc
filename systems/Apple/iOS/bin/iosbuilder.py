@@ -45,6 +45,7 @@ class PETScMaker(script.Script):
    self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
    self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
+   self.opengles      = self.framework.require('PETSc.packages.opengles',     None)
    self.make          = self.framework.require('config.programs',             None)
    self.compilers     = self.framework.require('config.compilers',            None)
    self.types         = self.framework.require('config.types',                None)
@@ -219,6 +220,10 @@ class PETScMaker(script.Script):
            if pname == rvalue: found = 1
          if not found:
            for i in self.base.defines:
+             pname = 'PETSC_'+i.upper()
+             pname = "'"+pname+"'"
+             if pname == rvalue: found = 1
+           for i in self.opengles.defines:
              pname = 'PETSC_'+i.upper()
              pname = "'"+pname+"'"
              if pname == rvalue: found = 1
