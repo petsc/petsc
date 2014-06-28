@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #
-#   Builds a iPhone/iPad static library of PETSc
+#   Builds a iOS static library of PETSc
 #
-#   Before using removed /usr/include/mpi.h and /Developer/SDKs/MacOSX10.5.sdk/usr/include/mpi.h or
+#   Before using remove /usr/include/mpi.h and /Developer/SDKs/MacOSX10.5.sdk/usr/include/mpi.h or
 #      Xcode will use those instead of the MPIuni one we point to
 #
 #   export PETSC_ARCH=arch-ios
-
+#
 #   ./systems/Apple/iOS/bin/arch-ios.py [use --with-debugging=0 to get iPhone/iPad version, otherwise creates simulator version]
 #      this sets up the appropriate configuration file
 #
@@ -14,7 +14,7 @@
 #      this creates the PETSc iPhone/iPad library
 #      this will open Xcode and give you directions to follow
 #
-#   open xcode/examples/examples.xcodeproj
+#   open systems/Apple/iOS/examples/examples.xcodeproj
 #       Project -> Edit Project Setting  -> Configuration (make sure it is Release or Debug depending on if you used --with-debugging=0)
 #       Build -> Build and Debug
 #
@@ -45,6 +45,7 @@ class PETScMaker(script.Script):
    self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
    self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
+   self.opengles      = self.framework.require('PETSc.packages.opengles',     None)
    self.make          = self.framework.require('config.programs',             None)
    self.compilers     = self.framework.require('config.compilers',            None)
    self.types         = self.framework.require('config.types',                None)
@@ -133,7 +134,7 @@ class PETScMaker(script.Script):
      if self.verbose: print 'Linking C files',cnames
      for i in cnames:
        j = i[l+1:]
-       if not os.path.islink(os.path.join(basedir,i)) and not i.startswith('.'):
+       if not os.path.islink(os.path.join(basedir,i)) and not i.startswith('.') and i.find(".BACKUP") == -1 and i.find(".LOCAL") == -1 and i.find(".BASE") == -1:
          if i.endswith('openglops.c') and not os.path.islink(os.path.join(basedir,'openglops.m')):
            os.symlink(os.path.join(dirname,i),os.path.join(basedir,'openglops.m'))
          else:
@@ -165,6 +166,9 @@ class PETScMaker(script.Script):
    if base == 'tutorials':  return False
    if base == 'benchmarks':  return False
    if base == 'systems':  return False
+# for some reason agrmes is in the repository but not used!
+   if base == 'agmres':  return False
+   if base == 'test-dir':  return False
    if base.startswith('arch-'):  return False     
 
    import re
@@ -215,8 +219,17 @@ class PETScMaker(script.Script):
            pname = "'"+pname+"'"
            if pname == rvalue: found = 1
          if not found:
-           if self.verbose: print 'Rejecting',dirname,'because package '+rvalue+' does not exist'
-           return 0
+           for i in self.base.defines:
+             pname = 'PETSC_'+i.upper()
+             pname = "'"+pname+"'"
+             if pname == rvalue: found = 1
+           for i in self.opengles.defines:
+             pname = 'PETSC_'+i.upper()
+             pname = "'"+pname+"'"
+             if pname == rvalue: found = 1
+           if not found:
+             if self.verbose: print 'Rejecting',dirname,'because package '+rvalue+' does not exist'
+             return 0
        elif rtype == 'define':
          found = 0
          for i in self.base.defines:
@@ -262,7 +275,7 @@ class PETScMaker(script.Script):
 
    if not self.skipXCode:
 
-     print 'In Xcode mouse click on xcode-links and the delete key, then'
+     print 'In Xcode mouse click on Other Sources then xcode-links and the delete key, then'
      print 'control mouse click on "Other Sources" and select "Add files to PETSc ...", then'
      print 'in the finder window locate ${PETSC_DIR}/arch-ios/xcode-links and select it. Now'
      print 'exit Xcode'
@@ -274,7 +287,7 @@ class PETScMaker(script.Script):
        raise RuntimeError('Error opening xcode project '+str(e))
 
 
-   sdk         = ' -sdk iphonesimulator5.1 '
+   sdk         = ' -sdk iphonesimulator7.1 '
    destination = 'iphonesimulator'
    debug       = 'Debug'
    debugdir    = 'Debug-'+destination

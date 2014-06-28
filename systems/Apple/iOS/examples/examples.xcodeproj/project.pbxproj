@@ -17,6 +17,8 @@
 		D83A8DD0119DD88A009DD17A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D83A8DCF119DD88A009DD17A /* Foundation.framework */; };
 		D83A8DF3119DD897009DD17A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D83A8DF2119DD897009DD17A /* CoreGraphics.framework */; };
 		D89698F415C85DE600C720F1 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D89698F315C85DE600C720F1 /* Accelerate.framework */; };
+		D8B4FA0E195E5D1900608859 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8B4FA0D195E5D1900608859 /* GLKit.framework */; };
+		D8B4FA10195E5D4800608859 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8B4FA0F195E5D4800608859 /* OpenGLES.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +38,8 @@
 		D83A8DF2119DD897009DD17A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		D89698F115C85D3100C720F1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		D89698F315C85DE600C720F1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		D8B4FA0D195E5D1900608859 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
+		D8B4FA0F195E5D4800608859 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,6 +49,8 @@
 			files = (
 				D80A07DC15E87BBE00E85750 /* libPETSc.a in Frameworks */,
 				D83A8D7E119DD87B009DD17A /* UIKit.framework in Frameworks */,
+				D8B4FA0E195E5D1900608859 /* GLKit.framework in Frameworks */,
+				D8B4FA10195E5D4800608859 /* OpenGLES.framework in Frameworks */,
 				D83A8DD0119DD88A009DD17A /* Foundation.framework in Frameworks */,
 				D83A8DF3119DD897009DD17A /* CoreGraphics.framework in Frameworks */,
 				D89698F415C85DE600C720F1 /* Accelerate.framework in Frameworks */,
@@ -110,6 +116,8 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D8B4FA0F195E5D4800608859 /* OpenGLES.framework */,
+				D8B4FA0D195E5D1900608859 /* GLKit.framework */,
 				D83A8D7D119DD87B009DD17A /* UIKit.framework */,
 				D83A8DCF119DD88A009DD17A /* Foundation.framework */,
 				D83A8DF2119DD897009DD17A /* CoreGraphics.framework */,

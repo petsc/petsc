@@ -15,6 +15,7 @@ if __name__ == '__main__':
     '--with-mpi=0',
     '--with-ios=1',
     '--with-valgrind=0',
+    '--with-opengles=1',
     '--with-x=0',
     '--with-fc=0',
     '--known-blaslapack-mangling=underscore',   # ios only supports this mangling

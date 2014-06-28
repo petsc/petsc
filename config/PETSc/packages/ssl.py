@@ -27,6 +27,12 @@ class Configure(PETSc.package.NewPackage):
     yield ''
     return
 
+  def configureLibrary(self):
+    if self.framework.argDB['with-ios']: 
+      self.found = 0
+      return
+    PETSc.package.NewPackage.configureLibrary(self)
+
   def consistencyChecks(self):
    PETSc.package.NewPackage.consistencyChecks(self)
    if self.framework.argDB['with-'+self.package]:
