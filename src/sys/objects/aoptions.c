@@ -383,7 +383,7 @@ static const char *OptionsHeader = "<head>\n"
                                       "})\n"
                                   "</script>\n"
                                   "</head>\n";
-static const char *OptionsBodyBottom = "<div id=\"variablesInfo\" style=\"float:left\"></div>\n<br>\n</body>";
+static const char *OptionsBodyBottom = "<div id=\"variablesInfo\" style=\"height:550px;overflow:scroll;\"></div>\n<br>\n</body>";
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsSAWsInput"

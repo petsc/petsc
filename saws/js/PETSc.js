@@ -16,7 +16,7 @@ var sawsInfo = [];//this variable is used to organize all the data from SAWs
 
 var init = false;//record if initialized the page (added appropriate divs for the diagrams and such)
 
-var removedText = false;//record if the text at the top was removed
+var iteration = 0;//record what iteration we are on (remove text on second iteration)
 
 //This Function is called once (document).ready. The javascript for this was written by the PETSc code into index.html
 PETSc.getAndDisplayDirectory = function(names,divEntry){
@@ -26,6 +26,8 @@ PETSc.getAndDisplayDirectory = function(names,divEntry){
         $("head").append('<script src="js/fetchSawsData.js"></script>');//reuse the code for organizing data into sawsInfo
         $("head").append('<script src="js/utils.js"></script>');//necessary for the two js files above
         $("head").append('<script src="js/drawDiagrams.js"></script>');//contains the code to draw diagrams of the solver structure. in particular, fieldsplit and multigrid
+        $("body").append("<div id=\"leftDiv\" style=\"float:left;\"></div>");
+        $(divEntry).appendTo("#leftDiv");
         $("body").append("<div id=\"diagram\"></div>");
         init = true;
     }
@@ -39,19 +41,22 @@ PETSc.displayDirectory = function(sub,divEntry)
     globaldirectory[divEntry] = sub;
     recordSawsData(sub);//records data into sawsInfo[]
 
+    iteration ++;
+    if(iteration == 2) { //remove text
+        for(var i=0; i<9; i++) {
+            $("body").children().first().remove();
+        }
+    }
+
+    if($("#leftDiv").children(0).is("center")) //remove the title of the options if needed
+        $("#leftDiv").children().get(0).remove();
+
     if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
         var SAWs_pcVal  = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0];
         var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];
 
         if(SAWs_prefix == "(null)")
             SAWs_prefix = "";
-
-        if(SAWs_prefix != "" && !removedText) {//remove the text at the top (the first 9 elements)
-            for(var i=0; i<9; i++) {
-                $("body").children().first().remove();
-            }
-            removedText=true;
-        }
 
         $("#diagram").html("");
         var data = drawDiagrams("0",parsePrefix(SAWs_prefix).endtag,5,5);
@@ -67,8 +72,9 @@ PETSc.displayDirectory = function(sub,divEntry)
     if (sub.directories.SAWs_ROOT_DIRECTORY.variables.hasOwnProperty("__Block") && (sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data[0] == "true")) {
         console.log("data fetched:");
         console.log(sub);
-        jQuery(divEntry).append("<input type=\"button\" value=\"Continue\" id=\"continue\">");
+        jQuery(divEntry).after("<input type=\"button\" value=\"Continue\" id=\"continue\">");
         jQuery('#continue').on('click', function(){
+            $("#continue").remove();//remove self immediately
             SAWs.updateDirectoryFromDisplay(divEntry);
             sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data = ["false"];
 
@@ -130,7 +136,7 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                     }
 
                     if(vKey.indexOf("title") != -1) {//display title in center
-                        $("#"+fullkey).append("<center>"+"<span style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</span>"+"</center>");
+                        $("#"+"leftDiv").prepend("<center>"+"<span style=\"font-family: Courier\" size=\""+(sub[key].variables[vKey].data[j].toString().length+1)+"\" id=\"data"+fullkey+vKey+j+"\">"+sub[key].variables[vKey].data[j]+"</span>"+"</center>");//used to be ("#"+fullkey).append
                         continue;
                     }
 
