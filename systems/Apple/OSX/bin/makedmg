@@ -8,6 +8,9 @@ echo "Creating ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg from ${PETSC_DIR}/${PETSC_AR
 rm -rf pack.temp.dmg tempsource ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
 mkdir tempsource
 cp -r ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework ${PETSC_DIR}/${PETSC_ARCH}/PETSc.docset ${PETSC_DIR}/systems/Apple/OSX/examples tempsource
+cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc\ command\ line\ example/examples/PETSc\ command\ line\ example
+cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc\ cocoa\ example/examples/PETSc\ cocoa\ example
+
 let size=`du  -c tempsource | tail -1 | cut -f1`
 let size=2*$size
 
@@ -37,6 +40,8 @@ echo 'Completed osascript'
 #hdiutil detach ${device}
 hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
 rm -rf pack.temp.dmg tempsource
+sync
+sleep 2
 hdiutil detach /Volumes/PETSc
 
 #           set the bounds of container window to {400, 100, 885, 630}
