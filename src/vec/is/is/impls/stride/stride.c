@@ -102,12 +102,16 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
 @*/
 PetscErrorCode  ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
 {
-  IS_Stride *sub;
+  IS_Stride      *sub;
+  PetscBool      flg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (first) PetscValidIntPointer(first,2);
   if (step) PetscValidIntPointer(step,3);
+  ierr = PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"IS must be of type ISSTRIDE");
 
   sub = (IS_Stride*)is->data;
   if (first) *first = sub->first;
