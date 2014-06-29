@@ -24,6 +24,8 @@ make alldoc
 
 ./systems/Apple/osx/bin/makedmg
 
+echo "To use the PETSc.framework in examples either run the installer ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg"
+echo "  or cp ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg /Library/Frameworks"
 
 
 
