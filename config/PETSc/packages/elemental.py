@@ -3,9 +3,9 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.gitcommit  = '0508d9946de76e32d4a801ea3999ca78ecef4e00'
+    self.gitcommit  = '60be4cf1536c2a97bbf8f32903c5dae0d47a2b04'
     self.giturls    = ['https://github.com/elemental/Elemental']
-    self.download   = ['http://libelemental.org/pub/releases/Elemental-0.84-p3.tgz']
+    self.download   = ['http://libelemental.org/pub/releases/Elemental-0.84-p5.tgz']
     self.liblist    = [['libelemental.a','libpmrrr.a']]
     self.includes   = ['elemental.hpp']
     self.cxx              = 1
