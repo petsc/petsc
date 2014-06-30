@@ -251,11 +251,7 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/../../../../include",
-					"$(SRCROOT)/../../../../include/mpiuni",
-					"$(SRCROOT)/../../../../arch-ios/include",
-				);
+				HEADER_SEARCH_PATHS = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				"PROVISIONING_PROFILE[sdk=iphonesimulator5.1]" = "AFDA94A8-BF9D-4B65-999C-118FE0474B66";
 				SDKROOT = iphoneos;
@@ -271,11 +267,7 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/../../../../include",
-					"$(SRCROOT)/../../../../include/mpiuni",
-					"$(SRCROOT)/../../../../arch-ios/include",
-				);
+				HEADER_SEARCH_PATHS = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				"PROVISIONING_PROFILE[sdk=iphonesimulator5.1]" = "AFDA94A8-BF9D-4B65-999C-118FE0474B66";
