@@ -8,7 +8,7 @@
 
 #import "iphoneAppDelegate.h"
 #import "iphoneViewController.h"
-#include "petscsys.h"
+#include "PETSc/petscsys.h"
 
 extern PetscErrorCode PetscVFPrintfiPhone(FILE *,const char *,va_list);
 

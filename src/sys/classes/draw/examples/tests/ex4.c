@@ -1,8 +1,13 @@
 
 static char help[] = "Demonstrates use of PetscDrawZoom()\n";
 
+#if defined(PETSC_APPLE_FRAMEWORK)
+#include <PETSc/petscsys.h>
+#include <PETSc/petscdraw.h>
+#else
 #include <petscsys.h>
 #include <petscdraw.h>
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "zoomfunction"
