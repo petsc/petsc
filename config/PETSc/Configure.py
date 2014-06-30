@@ -42,6 +42,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
+    self.programs      = framework.require('config.programs',           self)
     self.setCompilers  = framework.require('config.setCompilers',       self)
     self.arch          = framework.require('PETSc.utilities.arch',      self.setCompilers)
     self.petscdir      = framework.require('PETSc.utilities.petscdir',  self.arch)
@@ -86,6 +87,7 @@ class Configure(config.base.Configure):
     framework.require('PETSc.utilities.scalarTypes', self.fblaslapack)
     framework.require('PETSc.utilities.scalarTypes', self.blaslapack)
 
+    self.programs.headerPrefix   = self.headerPrefix
     self.compilers.headerPrefix  = self.headerPrefix
     self.types.headerPrefix      = self.headerPrefix
     self.headers.headerPrefix    = self.headerPrefix
