@@ -74,6 +74,14 @@ struct _NullSpaceCorrection_ctx {
 };
 typedef struct _NullSpaceCorrection_ctx *NullSpaceCorrection_ctx;
 
+/* change of basis */
+struct _PCBDDCChange_ctx {
+  Mat original_mat;
+  Mat global_change;
+  Vec *work;
+};
+typedef struct _PCBDDCChange_ctx *PCBDDCChange_ctx;
+
 /* feti-dp mat */
 struct _FETIDPMat_ctx {
   PetscInt   n_lambda;

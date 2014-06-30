@@ -77,8 +77,8 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
 }
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetChangeOfBasisLocalMat_BDDC"
-static PetscErrorCode PCBDDCSetChangeOfBasisLocalMat_BDDC(PC pc, Mat change)
+#define __FUNCT__ "PCBDDCSetChangeOfBasisMat_BDDC"
+static PetscErrorCode PCBDDCSetChangeOfBasisMat_BDDC(PC pc, Mat change)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PetscErrorCode ierr;
@@ -90,15 +90,15 @@ static PetscErrorCode PCBDDCSetChangeOfBasisLocalMat_BDDC(PC pc, Mat change)
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetChangeOfBasisLocalMat"
+#define __FUNCT__ "PCBDDCSetChangeOfBasisMat"
 /*@
- PCBDDCSetChangeOfBasisLocalMat - Set user defined change of basis for local boundary dofs
+ PCBDDCSetChangeOfBasisMat - Set user defined change of basis for dofs
 
    Collective on PC
 
    Input Parameters:
 +  pc - the preconditioning context
--  change - the local change of basis matrix, either in local (internal + boundary) or in local boundary numbering
+-  change - the change of basis matrix
 
    Level: intermediate
 
@@ -106,14 +106,34 @@ static PetscErrorCode PCBDDCSetChangeOfBasisLocalMat_BDDC(PC pc, Mat change)
 
 .seealso: PCBDDC
 @*/
-PetscErrorCode PCBDDCSetChangeOfBasisLocalMat(PC pc, Mat change)
+PetscErrorCode PCBDDCSetChangeOfBasisMat(PC pc, Mat change)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(change,MAT_CLASSID,2);
-  ierr = PetscTryMethod(pc,"PCBDDCSetChangeOfBasisLocalMat_C",(PC,Mat),(pc,change));CHKERRQ(ierr);
+  PetscCheckSameComm(pc,1,change,2);
+  if (pc->mat) {
+    PetscInt rows_c,cols_c,rows,cols;
+    ierr = MatGetSize(pc->mat,&rows,&cols);CHKERRQ(ierr);
+    ierr = MatGetSize(change,&rows_c,&cols_c);CHKERRQ(ierr);
+    if (rows_c != rows) {
+      SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of rows for change of basis matrix! %d != %d",rows_c,rows);
+    }
+    if (cols_c != cols) {
+      SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of columns for change of basis matrix! %d != %d",cols_c,cols);
+    }
+    ierr = MatGetLocalSize(pc->mat,&rows,&cols);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(change,&rows_c,&cols_c);CHKERRQ(ierr);
+    if (rows_c != rows) {
+      SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local rows for change of basis matrix! %d != %d",rows_c,rows);
+    }
+    if (cols_c != cols) {
+      SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local columns for change of basis matrix! %d != %d",cols_c,cols);
+    }
+  }
+  ierr = PetscTryMethod(pc,"PCBDDCSetChangeOfBasisMat_C",(PC,Mat),(pc,change));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -887,6 +907,7 @@ PetscErrorCode PCBDDCSetDofsSplitting(PC pc,PetscInt n_is, IS ISForDofs[])
   ierr = PetscTryMethod(pc,"PCBDDCSetDofsSplitting_C",(PC,PetscInt,IS[]),(pc,n_is,ISForDofs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCPreSolve_BDDC"
@@ -909,11 +930,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscErrorCode ierr;
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PC_IS          *pcis = (PC_IS*)(pc->data);
-  Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
-  Mat            temp_mat;
   IS             dirIS;
   Vec            used_vec;
-  PetscBool      guess_nonzero;
 
   PetscFunctionBegin;
   /* if we are working with cg, one dirichlet solve can be avoided during Krylov iterations */
@@ -941,6 +959,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   }
   /* hack into ksp data structure PCPreSolve comes earlier in src/ksp/ksp/interface/itfunc.c */
   if (ksp) {
+    PetscBool guess_nonzero;
     ierr = KSPGetInitialGuessNonzero(ksp,&guess_nonzero);CHKERRQ(ierr);
     if (!guess_nonzero) {
       ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
@@ -954,6 +973,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   /* note that Dirichlet boundaries in global ordering (if any) has already been translated into local ordering in PCBDDCAnalyzeInterface */
   ierr = PCBDDCGetDirichletBoundariesLocal(pc,&dirIS);CHKERRQ(ierr);
   if (rhs && dirIS) {
+    Mat_IS      *matis = (Mat_IS*)pc->pmat->data;
     PetscInt    dirsize,i,*is_indices;
     PetscScalar *array_x,*array_diagonal;
 
@@ -986,32 +1006,35 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
     if (pcbddc->use_exact_dirichlet_trick) {
       ierr = VecScatterBegin(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
       ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (pcis->global_to_D,pcis->vec2_D,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       if (ksp) {
         ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
   }
 
-  /* prepare MatMult and rhs for solver */
   if (pcbddc->ChangeOfBasisMatrix) {
-    /* swap pointers for local matrices */
-    temp_mat = matis->A;
-    matis->A = pcbddc->local_mat;
-    pcbddc->local_mat = temp_mat;
-    if (rhs) {
-      /* Get local rhs and apply transformation of basis */
-      ierr = VecScatterBegin(pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      /* from original basis to modified basis */
-      ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,pcis->vec1_B,pcis->vec2_B);CHKERRQ(ierr);
-      /* put back modified values into the global vec using INSERT_VALUES copy mode */
-      ierr = VecScatterBegin(pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    }
+    PCBDDCChange_ctx change_ctx;
+
+    /* get change ctx */
+    ierr = MatShellGetContext(pcbddc->new_global_mat,&change_ctx);CHKERRQ(ierr);
+
+    /* set current iteration matrix inside change context (change of basis has been already set into the ctx during PCSetUp) */
+    ierr = MatDestroy(&change_ctx->original_mat);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr);
+    change_ctx->original_mat = pc->mat;
+
+    /* change iteration matrix */
+    ierr = MatDestroy(&pc->mat);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)pcbddc->new_global_mat);CHKERRQ(ierr);
+    pc->mat = pcbddc->new_global_mat;
+
+    /* change rhs */
+    ierr = MatMultTranspose(change_ctx->global_change,rhs,pcis->vec1_global);CHKERRQ(ierr);
+    ierr = VecCopy(pcis->vec1_global,rhs);CHKERRQ(ierr);
   }
 
   /* remove nullspace if present */
@@ -1022,6 +1045,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   ierr = VecDestroy(&used_vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCPostSolve_BDDC"
@@ -1043,31 +1067,32 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 {
   PetscErrorCode ierr;
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
-  PC_IS          *pcis   = (PC_IS*)(pc->data);
-  Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
-  Mat            temp_mat;
 
   PetscFunctionBegin;
   if (pcbddc->ChangeOfBasisMatrix) {
-    /* swap pointers for local matrices */
-    temp_mat = matis->A;
-    matis->A = pcbddc->local_mat;
-    pcbddc->local_mat = temp_mat;
+    PCBDDCChange_ctx change_ctx;
+
+    /* get change ctx */
+    ierr = MatShellGetContext(pcbddc->new_global_mat,&change_ctx);CHKERRQ(ierr);
+
+    /* restore iteration matrix */
+    ierr = MatDestroy(&pc->mat);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)change_ctx->original_mat);CHKERRQ(ierr);
+    pc->mat = change_ctx->original_mat;
+
+    /* get solution in original basis */
+    if (x) {
+      PC_IS *pcis = (PC_IS*)(pc->data);
+      ierr = MatMult(change_ctx->global_change,x,pcis->vec1_global);CHKERRQ(ierr);
+      ierr = VecCopy(pcis->vec1_global,x);CHKERRQ(ierr);
+    }
   }
-  if (pcbddc->ChangeOfBasisMatrix && x) {
-    /* Get Local boundary and apply transformation of basis to solution vector */
-    ierr = VecScatterBegin(pcis->global_to_B,x,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_B,x,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    /* from modified basis to original basis */
-    ierr = MatMult(pcbddc->ChangeOfBasisMatrix,pcis->vec1_B,pcis->vec2_B);CHKERRQ(ierr);
-    /* put back modified values into the global vec using INSERT_VALUES copy mode */
-    ierr = VecScatterBegin(pcis->global_to_B,pcis->vec2_B,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec2_B,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
+
   /* add solution removed in presolve */
   if (x) {
     ierr = VecAXPY(x,1.0,pcbddc->temp_solution);CHKERRQ(ierr);
   }
+
   /* restore rhs to its original state */
   if (rhs) {
     ierr = VecCopy(pcbddc->original_rhs,rhs);CHKERRQ(ierr);
@@ -1140,19 +1165,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = ISLocalToGlobalMappingCreateIS(pcis->is_B_local,&pcbddc->BtoNmap);CHKERRQ(ierr);
   }
 
-  /* check user defined change of basis (if any) */
+  /* use_change_of_basis flag is used to automatically compute a change of basis from constraints */
   if (pcbddc->user_ChangeOfBasisMatrix) {
-    PC_IS* pcis= (PC_IS*)pc->data;
-    PetscInt n,m;
-    ierr = MatGetSize(pcbddc->user_ChangeOfBasisMatrix,&n,&m);CHKERRQ(ierr);
-    if (n != m) {
-      SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Change of basis matrix should be square %d != %d\n",n,m);
-    } else if (n != pcis->n_B && n != pcis->n) {
-      SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Size of change of basis matrix %d differs from boundary size %d and local size %d\n",n,pcis->n_B,pcis->n);
-    }
-    /* use_change_of_basis flag is used to automatically compute a change of basis from constraints */
     pcbddc->use_change_of_basis = PETSC_FALSE;
   }
+
   /* Analyze interface */
   if (computetopography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
@@ -1384,9 +1401,20 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   /* free global vectors needed in presolve */
   ierr = VecDestroy(&pcbddc->temp_solution);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->original_rhs);CHKERRQ(ierr);
+  /* free stuff for change of basis hooks */
+  if (pcbddc->new_global_mat) {
+    PCBDDCChange_ctx change_ctx;
+    ierr = MatShellGetContext(pcbddc->new_global_mat,&change_ctx);CHKERRQ(ierr);
+    ierr = MatDestroy(&change_ctx->original_mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&change_ctx->global_change);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(2,&change_ctx->work);CHKERRQ(ierr);
+    ierr = PetscFree(change_ctx);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy(&pcbddc->new_global_mat);CHKERRQ(ierr);
+  /* remove map from local boundary to local numbering */
   ierr = ISLocalToGlobalMappingDestroy(&pcbddc->BtoNmap);CHKERRQ(ierr);
   /* remove functions */
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisLocalMat_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",NULL);CHKERRQ(ierr);
@@ -1773,6 +1801,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->local_mat                  = 0;
   pcbddc->ChangeOfBasisMatrix        = 0;
   pcbddc->user_ChangeOfBasisMatrix   = 0;
+  pcbddc->new_global_mat             = 0;
   pcbddc->coarse_vec                 = 0;
   pcbddc->coarse_rhs                 = 0;
   pcbddc->coarse_ksp                 = 0;
@@ -1830,7 +1859,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pc->ops->postsolve           = PCPostSolve_BDDC;
 
   /* composing function */
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisLocalMat_C",PCBDDCSetChangeOfBasisLocalMat_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetChangeOfBasisMat_C",PCBDDCSetChangeOfBasisMat_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",PCBDDCSetPrimalVerticesLocalIS_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",PCBDDCSetCoarseningRatio_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",PCBDDCSetLevel_BDDC);CHKERRQ(ierr);
