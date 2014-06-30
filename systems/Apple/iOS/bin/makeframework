@@ -1,14 +1,12 @@
 #!/bin/sh
 #
-# This script makes a Apple Mac OS X framework for PETSc see ./makeall
+# This script makes a Apple Mac iOS framework for PETSc  see ./makeall
 #
 # To use the framework:
 #
 #    1) replace all #include <petscXXX.h> in application with #import <PETSc/petscXXX.h>
-#    2a) compile, for example, in src/snes/examples/tutorials, with cc -v ex19.c -o ex19 -DPETSC_APPLE_FRAMEWORK=1 -F ${PETSC_DIR}/${PETSC_ARCH} -framework PETSc  or
-#    2b) Run the installer or sudo mv -r ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework to /Library/Frameworks/ then use
-#        cc -v ex19.c -o ex19 -DPETSC_APPLE_FRAMEWORK=1 -F /Library/Frameworks -framework PETSc
-#    2c) you can also use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework located in /Library/Frameworks/
+#    2a) either run the installer or sudo -r mv ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework /Library/Framework
+#    2) use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework located at /Library/Framework
 #
 #
 rm -rf ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
@@ -24,13 +22,16 @@ mkdir Headers
 cp  ${PETSC_DIR}/include/*.h Headers
 cp  ${PETSC_DIR}/${PETSC_ARCH}/include/*.h Headers
 cp -r  ${PETSC_DIR}/include/petsc-private Headers
+cp -r  ${PETSC_DIR}/include/mpiuni Headers
+
 cd Headers
 sed -i "" "s?#include [ ]*<petsc-private?#import <PETSc/petsc-private?g" *.h petsc-private/*.h
 sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h petsc-private/*.h
-sed -i "" "s?#include [ ]*<mpi?#import <PETSc/mpi?g" *.h petsc-private/*.h
+sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h mpiuni/*.h
+sed -i "" "s?#include [ ]*<mpi?#import <PETSc/mpiuni/mpi?g" *.h petsc-private/*.h
 cd ..
 
-cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc.dylib PETSc
+cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc.a PETSc
 mkdir Resources
 cd Resources
 cat <<EOF > Info.plist

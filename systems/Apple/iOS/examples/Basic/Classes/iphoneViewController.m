@@ -7,7 +7,7 @@
 //
 
 #import "iphoneViewController.h"
-#include "petsc.h"
+#include "PETSc/petsc.h"
 
 @implementation iphoneViewController
 @synthesize textField;
@@ -86,14 +86,15 @@ PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
 #define main ex19
 #define help help19
 #define Field Field19
-#include <../src/snes/examples/tutorials/ex19.c>
+#define PETSC_APPLE_FRAMEWORK
+#include "../../../../../../src/snes/examples/tutorials/ex19.c"
 #undef main 
 #undef help
 #undef Field
 #define main ex48
 #define help help48
 #define Field Field48
-#include <../src/snes/examples/tutorials/ex48.c>
+#include "../../../../../../src/snes/examples/tutorials/ex48.c"
 
 /*
     This is called each time one hits return in the TextField.
