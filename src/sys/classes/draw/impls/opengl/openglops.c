@@ -455,8 +455,8 @@ static PetscErrorCode PetscDrawStringGetSize_OpenGL(PetscDraw draw,PetscReal *x,
   PetscFunctionBegin;
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
   w    = glutBitmapWidth(GLUT_BITMAP_8_BY_13,'W');
-  *x   = w*(draw->coor_xr - draw->coor_xl)/((win->w)*(draw->port_xr - draw->port_xl));
-  *y   = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/((win->h)*(draw->port_yr - draw->port_yl));
+  if (x) *x   = w*(draw->coor_xr - draw->coor_xl)/((win->w)*(draw->port_xr - draw->port_xl));
+  if (y) *y   = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/((win->h)*(draw->port_yr - draw->port_yl));
   PetscFunctionReturn(0);
 }
 
@@ -661,8 +661,8 @@ static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
 static PetscErrorCode PetscDrawStringGetSize_OpenGL(PetscDraw draw,PetscReal *x,PetscReal  *y)
 {
   float w = .02;
-  *x = w*(draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
-  *y = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
+  if (x) *x = w*(draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
+  if (y) *y = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
   return 0;
 }
 #undef __FUNCT__

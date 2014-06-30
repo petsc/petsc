@@ -316,8 +316,8 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
     ierr = (*draw->ops->getpopup)(draw,popup);CHKERRQ(ierr);
     if (*popup) {
       ierr = PetscObjectSetOptionsPrefix((PetscObject)*popup,"popup_");CHKERRQ(ierr);
+      ierr = PetscDrawSetFromOptions(*popup);CHKERRQ(ierr);
     }
-    ierr = PetscDrawSetFromOptions(*popup);CHKERRQ(ierr);
   } else *popup = NULL;
   PetscFunctionReturn(0);
 }
