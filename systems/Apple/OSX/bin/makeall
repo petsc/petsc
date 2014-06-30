@@ -16,8 +16,6 @@ export PETSC_ARCH=arch-osx
 make all test
 ./systems/Apple/osx/bin/makeframework
 
-cp arch-osx-debug/lib/libpetsc.dylib arch-osx/PETSc.framework/PETSc_debug
-
 export LOC=$PETSC_DIR
 make alldoc
 ./systems/Apple/osx/bin/makedocs
@@ -25,7 +23,7 @@ make alldoc
 ./systems/Apple/osx/bin/makedmg
 
 echo "To use the PETSc.framework in examples either run the installer ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg"
-echo "  or cp ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg /Library/Frameworks"
+echo "  or sudo cp -r ${PETSC_DIR}/${PETSC_ARCH}/PETSc /Library/Frameworks"
 
 
 

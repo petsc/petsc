@@ -11,12 +11,14 @@
 #    2c) you can also use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework located in /Library/Frameworks/
 #
 #
-rm -rf ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
+rm -rf ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX
 
-mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
-mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/Versions
-mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/Versions/A
-cd ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/Versions/
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/release
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/release/PETSc.framework
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/release/PETSc.framework/Versions
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/release/PETSc.framework/Versions/A
+cd ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/release/PETSc.framework/Versions/
 ln -s A Current
 
 cd A 
@@ -78,7 +80,7 @@ cat <<EOF > Info.plist
 </plist>
 EOF
 
-cd  ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
+cd  ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/release/PETSc.framework
 ln -s Versions/Current/Headers Headers
 ln -s Versions/Current/PETSc PETSc
 ln -s Versions/Current/Resources Resources
