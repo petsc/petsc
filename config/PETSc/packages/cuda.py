@@ -204,7 +204,6 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def configureLibrary(self):
-    raise RuntimeError('Please use petsc-dev for CUDA functionality')
     PETSc.package.NewPackage.configureLibrary(self)
     self.checkCUDAVersion()
     self.checkNVCCDoubleAlign()
