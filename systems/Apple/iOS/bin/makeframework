@@ -1,11 +1,12 @@
 #!/bin/sh
 #
-# This script makes a Apple Mac iOS framework for PETSc
+# This script makes a Apple Mac iOS framework for PETSc  see ./makeall
 #
 # To use the framework:
 #
 #    1) replace all #include <petscXXX.h> in application with #import <PETSc/petscXXX.h>
-#    2) use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework
+#    2a) either run the installer or sudo -r mv ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework /Library/Framework
+#    2) use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework located at /Library/Framework
 #
 #
 rm -rf ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
