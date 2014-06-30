@@ -9,7 +9,7 @@ hdiutil detach /Volumes/PETSc
 echo "Creating ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg from ${PETSC_DIR}/${PETSC_ARCH}/PETSc and ${PETSC_DIR}/${PETSC_ARCH}/PETSc.docset"
 rm -rf pack.temp.dmg tempsource ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
 mkdir tempsource
-cp -r ${PETSC_DIR}/${PETSC_ARCH}/PETSc ${PETSC_DIR}/${PETSC_ARCH}/PETSc.docset tempsource
+cp -r ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS ${PETSC_DIR}/${PETSC_ARCH}/PETSc.docset tempsource
 cp -r  ${PETSC_DIR}/systems/Apple/iOS/examples tempsource/PETSc-iOS.examples
 
 # copy the PETSc source for the examples into the example directories and modify the include to point to them 
@@ -40,7 +40,7 @@ echo '
            set current view of container window to icon view
            set toolbar visible of container window to false
            set statusbar visible of container window to false
-           make new alias file at container window to POSIX file "/Library/Frameworks" with properties {name:"Copy in PETSc"}
+           make new alias file at container window to POSIX file "/Library/Frameworks" with properties {name:"Copy in PETSc-iOS"}
            make new alias file at container window to POSIX file "/Applications/Xcode.app/Contents/Developer/Documentation/DocSets" with properties {name:"Copy in PETSc.docset"}
            make new alias file at container window to (path to home folder) with properties {name:"Copy in PETSc-iOS.examples"}
            eject
@@ -52,7 +52,7 @@ sync
 sync
 echo 'Completed osascript'
 #hdiutil detach ${device}
-hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
+hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS.dmg
 rm -rf pack.temp.dmg tempsource
 sync
 sleep 2

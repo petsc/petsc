@@ -46,7 +46,7 @@ sync
 sync
 echo 'Completed osascript'
 #hdiutil detach ${device}
-hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
+hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX.dmg
 rm -rf pack.temp.dmg tempsource
 sync
 sleep 2
