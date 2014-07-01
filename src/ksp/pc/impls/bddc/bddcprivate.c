@@ -3661,7 +3661,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   /* create the coarse KSP object only once with defaults */
   if (coarse_mat_is) {
     MatReuse coarse_mat_reuse;
-    PetscViewer dbg_viewer;
+    PetscViewer dbg_viewer = NULL;
     if (pcbddc->dbg_flag) {
       dbg_viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)coarse_mat_is));
       ierr = PetscViewerASCIIAddTab(dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
@@ -3811,7 +3811,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       KSPType   check_ksp_type;
       PC        check_pc;
       Vec       check_vec,coarse_vec;
-      PetscReal abs_infty_error,infty_error,lambda_min,lambda_max;
+      PetscReal abs_infty_error,infty_error,lambda_min=1.0,lambda_max=1.0;
       PetscInt  its;
       PetscBool compute_eigs;
       PetscReal *eigs_r,*eigs_c;
