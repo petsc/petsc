@@ -6,7 +6,7 @@ SOURCEC  = ipm.c
 SOURCEF  =
 SOURCEH  = ipm.h
 LIBBASE  = libpetsctao
-MANSEC   = Tao 
+MANSEC   = Tao
 LOCDIR   = src/tao/constrained/impls/ipm/
 
 include ${PETSC_DIR}/conf/variables

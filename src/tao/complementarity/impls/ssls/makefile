@@ -7,7 +7,7 @@ SOURCEC  = ssls.c ssils.c ssfls.c
 SOURCEF  =
 SOURCEH  = ssls.h
 LIBBASE  = libpetsctao
-MANSEC   = Tao 
+MANSEC   = Tao
 LOCDIR   = src/tao/complementarity/impls/ssls/
 
 include ${PETSC_DIR}/conf/variables
