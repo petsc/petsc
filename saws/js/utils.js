@@ -32,10 +32,11 @@ function getSawsIndex(endtag) {
 }
 
 //return the index for the given fieldsplit name (if any)
-function getFieldsplitWordIndex(word) {
+//we need to specify the parent as well because we allow fieldsplits with the same name as long as they are under different parents. this actually happens quite often with unnamed fieldsplits that are given a numerical name by default.
+function getFieldsplitWordIndex(word,parent) {
 
     for(var i=0; i<sawsInfo.length; i++) {
-        if(sawsInfo[i].name == word)
+        if(sawsInfo[i].name == word && sawsInfo[i].endtag.indexOf(parent) == 0)
             return i;//return index where word was found
     }
     return -1;//word does not exist in sawsInfo yet

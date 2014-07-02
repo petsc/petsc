@@ -29,7 +29,7 @@ function parsePrefix(SAWs_prefix) {
             //find index of next keyword (pc, ksp, sub, smoothing, coarse). we have to do it this way because the name of the fieldsplit may include an underscore. for example, x_velocity_
 
             var keywords = ["pc","ksp","sub","redundant","mg","asm"];
-            var loc      = "";
+            var loc      = SAWs_prefix.length;
             for(var i=0; i<keywords.length; i++) {
                 loc = SAWs_prefix.indexOf(keywords[i]);
                 if(loc < closest && loc != -1)
@@ -37,7 +37,7 @@ function parsePrefix(SAWs_prefix) {
             }
 
             var theword          = SAWs_prefix.substring(11,closest-1);//omit the first and last underscore
-            var index            = getFieldsplitWordIndex(theword);//get the id (for example "001") associated with this fieldsplit word.
+            var index            = getFieldsplitWordIndex(theword, endtag);//get the id (for example "001") associated with this fieldsplit word. need to pass in the existing endtag because we need to specify the parent of this fieldsplit
 
             if(index == -1) { //new fieldsplit. this word has not been encountered yet.
                 var fieldsplitNumber = getSawsNumChildren(endtag);//endtag = parent of this fieldsplit @TODO

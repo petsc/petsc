@@ -86,7 +86,8 @@ function recordSawsData(sub) {
                 var currentLevel                        = endtag.substring(endtag.lastIndexOf('_')+1, endtag.length);//everything after the last underscore
                 currentLevel                            = parseInt(currentLevel);
                 sawsInfo[parentIndex].fieldsplit_blocks = currentLevel + 1;
-                sawsInfo[writeLoc].name                 = newWord;//important! record name of the fieldsplit
+                if(newWord != "")
+                    sawsInfo[writeLoc].name             = newWord;//important! record name of the fieldsplit
             }
         //}
 
