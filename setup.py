@@ -1,30 +1,24 @@
 #!/usr/bin/env python
+# Author:  Lisandro Dalcin
+# Contact: dalcinl@gmail.com
 
 """
-PETSc for Python
-================
-
 Python bindings for PETSc.
-
-.. tip::
-
-  You can also install `petsc4py-dev`_ with::
-
-    $ pip install petsc==dev petsc4py==dev 
-
-  .. _petsc4py-dev: https://bitbucket.org/petsc/petsc4py/get/master.tar.gz#egg=petsc4py-dev
 """
 
-## try:
-##     import setuptools
-## except ImportError:
-##     pass
+import sys
+import os
+try:
+    import setuptools
+except ImportError:
+    pass
 
-import sys, os
 
 # --------------------------------------------------------------------
 # Metadata
 # --------------------------------------------------------------------
+
+topdir = os.path.abspath(os.path.dirname(__file__))
 
 from conf.metadata import metadata
 
@@ -39,6 +33,12 @@ def version():
     m = re.search(r"__version__\s*=\s*'(.*)'", data)
     return m.groups()[0]
 
+def description():
+    f = open(os.path.join(topdir, 'DESCRIPTION.rst'))
+    try: data = f.read()
+    finally: f.close()
+    return data
+
 name     = name()
 version  = version()
 
@@ -51,8 +51,8 @@ keywords = ['PETSc', 'MPI']
 
 metadata['name'] = name
 metadata['version'] = version
-metadata['description'] = descr.pop(0)
-metadata['long_description'] = '\n'.join(descr)
+metadata['description'] = __doc__.strip()
+metadata['long_description'] = description()
 metadata['keywords'] += keywords
 metadata['classifiers'] += devstat
 metadata['url'] = url
