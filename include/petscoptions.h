@@ -103,7 +103,7 @@ $           currently set.
 
 M*/
 #define    PetscOptionsBegin(comm,prefix,mess,sec) 0; do {\
-             for (PetscOptionsPublishCount=(!PetscOptionsPublish?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) {\
+             for (PetscOptionsPublishCount=(PetscOptionsPublish?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) {\
              PetscErrorCode _5_ierr = PetscOptionsBegin_Private(comm,prefix,mess,sec);CHKERRQ(_5_ierr);
 
 extern PetscClassId KSP_CLASSID,PC_CLASSID;
