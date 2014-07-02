@@ -529,9 +529,6 @@ PetscErrorCode PetscOptionsEnd_Private(void)
     }
   }
 
-  ierr = PetscFree(PetscOptionsObject.title);CHKERRQ(ierr);
-  ierr = PetscFree(PetscOptionsObject.prefix);CHKERRQ(ierr);
-
   /* reset counter to -2; this updates the screen with the new options for the selected method */
   if (PetscOptionsObject.changedmethod) PetscOptionsPublishCount = -2;
   /* reset alreadyprinted flag */
@@ -620,6 +617,9 @@ PetscErrorCode PetscOptionsEnd_Private(void)
     ierr                    = PetscFree(last);CHKERRQ(ierr);
   }
   PetscOptionsObject.next = 0;
+
+  ierr = PetscFree(PetscOptionsObject.title);CHKERRQ(ierr);
+  ierr = PetscFree(PetscOptionsObject.prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
