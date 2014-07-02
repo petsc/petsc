@@ -59,12 +59,14 @@ docsclean:
 	-${RM} docs/*.html docs/*.pdf
 	-${RM} -r docs/usrman docs/apiref
 
-RST2HTML = rst2html
-RST2HTMLOPTS = --no-compact-lists --cloak-email-addresses
+RST2HTML = $(shell command -v rst2html || command -v rst2html.py || false)
+RST2HTMLOPTS  = --input-encoding=utf-8
+RST2HTMLOPTS += --no-compact-lists
+RST2HTMLOPTS += --cloak-email-addresses
 rst2html:
+	${RST2HTML} ${RST2HTMLOPTS} ./LICENSE.rst  > docs/LICENSE.html
+	${RST2HTML} ${RST2HTMLOPTS} ./CHANGES.rst  > docs/CHANGES.html
 	${RST2HTML} ${RST2HTMLOPTS} docs/index.rst > docs/index.html
-	${RST2HTML} ${RST2HTMLOPTS} LICENSE.txt    > docs/LICENSE.html
-	${RST2HTML} ${RST2HTMLOPTS} HISTORY.txt    > docs/HISTORY.html
 
 SPHINXBUILD = sphinx-build
 SPHINXOPTS  =

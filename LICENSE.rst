@@ -2,13 +2,11 @@
 LICENSE: PETSc for Python
 =========================
 
-:Author:       Lisandro Dalcin
-:Contact:      dalcinl@gmail.com
-:Organization: CIMEC <http://www.cimec.org.ar>
-:Address:      CCT CONICET, 3000 Santa Fe, Argentina
+:Author:  Lisandro Dalcin
+:Contact: dalcinl@gmail.com
 
 
-Copyright (c) 2013, Lisandro Dalcin.
+Copyright (c) 2014, Lisandro Dalcin.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

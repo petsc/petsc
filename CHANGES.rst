@@ -1,11 +1,15 @@
 =========================
-HISTORY: PETSc for Python
+CHANGES: PETSc for Python
 =========================
 
-:Author:       Lisandro Dalcin
-:Contact:      dalcinl@gmail.com
-:Organization: CIMEC <http://www.cimec.org.ar>
-:Address:      CCT CONICET, 3000 Santa Fe, Argentina
+:Author:  Lisandro Dalcin
+:Contact: dalcinl@gmail.com
+
+
+Release 3.5
+===========
+
+- Update to PETSc 3.5 release.
 
 
 Release 3.4
