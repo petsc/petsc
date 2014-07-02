@@ -484,37 +484,36 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = pardm
         return pointsf
 
-    def createSection(self, numFields, numComp, numDof, numBC=0, bcField=None, bcPoints=None, IS perm=None):
+    def createSection(self, numComp, numDof, bcField=None, bcPoints=None, IS perm=None):
+        # topological dimension
         cdef PetscInt dim = 0
         CHKERR( DMPlexGetDimension(self.dm, &dim) )
-        cdef PetscInt nfield = asInt(numFields)
+        # components and DOFs
         cdef PetscInt ncomp = 0, ndof = 0
         cdef PetscInt *icomp = NULL, *idof = NULL
         numComp = iarray_i(numComp, &ncomp, &icomp)
-        numDof = iarray_i(numDof, &ndof, &idof)
-
-        cdef PetscInt nbcfield = 0
-        cdef PetscInt *ibcfield = NULL
-        cdef PetscInt nbc = asInt(numBC)
-        cdef PetscIS* cbcpoints = NULL
-
-        if numBC != 0:
-          assert numBC > 0
-          assert numBC == len(bcField)
-          assert numBC == len(bcPoints)
-          bcField = iarray_i(bcField, &nbcfield, &ibcfield)
-          tmp = oarray_p(empty_p(nbc), NULL, <void**>&cbcpoints)
-          for i from 0 <= i < nbc: cbcpoints[i] = (<IS?>bcPoints[i]).iset
+        numDof  = iarray_i(numDof, &ndof, &idof)
+        assert ndof == ncomp*(dim+1)
+        # boundary conditions
+        cdef PetscInt nbc = 0, i = 0
+        cdef PetscInt *bcfield = NULL
+        cdef PetscIS *bcpoints = NULL
+        if bcField is not None:
+            assert bcPoints is not None
+            bcField = iarray_i(bcField, &nbc, &bcfield)
+            assert nbc == len(bcPoints)
+            tmp = oarray_p(empty_p(nbc), NULL, <void**>&bcpoints)
+            for i from 0 <= i < nbc: bcpoints[i] = (<IS?>bcPoints[i]).iset
         else:
-          assert bcField is None
-          assert bcPoints is None
-
+            assert bcPoints is None
+        # optional chart permutations
         cdef PetscIS cperm = NULL
         if perm is not None:
             cperm = perm.iset
-        cdef Section sec = Section()
-        CHKERR( DMPlexCreateSection(self.dm, dim, nfield, icomp, idof, nbc, ibcfield, cbcpoints, cperm, &sec.sec) )
-        return sec
+        # create section
+        cdef Section section = Section()
+        CHKERR( DMPlexCreateSection(self.dm, dim, ncomp, icomp, idof, nbc, bcfield, bcpoints, cperm, &section.sec) )
+        return section
 
     def setRefinementUniform(self, refinementUniform=True):
         cdef PetscBool uniform = refinementUniform

@@ -152,6 +152,7 @@ class BaseTestSNES(object):
         self.snes.setJacobian(jac, J)
         x = PETSc.Vec().createSeq(2)
         x[0], x[1] = [1, 2]
+        self.snes.getKSP().getPC()
         self.snes.computeJacobian(x, J)
 
     def testGetSetUpd(self):

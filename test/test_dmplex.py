@@ -54,14 +54,14 @@ class BaseTestPlex(object):
                     self.assertIn(i, star)
 
     def testSectionDofs(self):
-        section = self.plex.createSection(1, [self.COMP], [self.DOFS])
+        section = self.plex.createSection([self.COMP], [self.DOFS])
         size = section.getStorageSize()
         entity_dofs = [self.plex.getStratumSize("depth", d) *
                        self.DOFS[d] for d in range(self.DIM+1)]
         self.assertEqual(sum(entity_dofs), size)
 
     def testSectionClosure(self):
-        section = self.plex.createSection(1, [self.COMP], [self.DOFS])
+        section = self.plex.createSection([self.COMP], [self.DOFS])
         self.plex.setDefaultSection(section)
         vec = self.plex.createLocalVec()
         pStart, pEnd = self.plex.getChart()
