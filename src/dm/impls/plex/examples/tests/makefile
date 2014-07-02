@@ -96,6 +96,12 @@ runex3_9:
 	   if (${DIFF} output/ex3_8.out ex3_8.tmp) then true ;  \
 	   else printf "${PWD}\nPossible problem with runex3_9, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3_8.tmp
+runex3_constraints:
+	-@${MPIEXEC} -n 1 ./ex3 -simplex 0 -petscspace_order 1 -constraints > ex3_constraints.tmp 2>&1;\
+	   if (${DIFF} output/ex3_constraints.out ex3_constraints.tmp) then true ;  \
+	   else printf "${PWD}\nPossible problem with with runex3_constraints, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex3_constraints.tmp
+
 
 TESTEXAMPLES_CTETGEN = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 runex3_5 runex3_6 runex3_7 runex3_8 runex3_9 ex3.rm
 TESTEXAMPLES_FORTRAN = ex1f90.PETSc runex1f90 ex1f90.rm ex2f90.PETSc runex2f90 ex2f90.rm
