@@ -10,6 +10,8 @@ class DMType(object):
     REDUNDANT = S_(DMREDUNDANT)
     PATCH     = S_(DMPATCH)
     MOAB      = S_(DMMOAB)
+    NETWORK   = S_(DMNETWORK)
+
 
 class DMBoundaryType(object):
     NONE     = DM_BOUNDARY_NONE

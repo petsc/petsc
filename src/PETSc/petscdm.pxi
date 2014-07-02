@@ -13,6 +13,7 @@ cdef extern from * nogil:
     PetscDMType DMREDUNDANT
     PetscDMType DMPATCH
     PetscDMType DMMOAB
+    PetscDMType DMNETWORK
 
     ctypedef enum PetscDMBoundaryType"DMBoundaryType":
         DM_BOUNDARY_NONE
