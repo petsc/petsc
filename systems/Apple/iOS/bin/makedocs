@@ -3,7 +3,7 @@
 # This script makes a Apple Mac OS X docset for PETSc see ./makeall
 #
 #
-cd ${PETSC_DIR}/${PETSC_ARCH}
+cd ${PETSC_DIR}
 rm -rf PETSc.docset
 mkdir PETSc.docset
 mkdir PETSc.docset/Contents
@@ -145,11 +145,11 @@ cd ${LOC}/docs
 for i in manualpages/*/*.html; do 
   symbol=`echo $i | sed s?manualpages/[A-Za-z]*/??g | sed s?.html??g`
   if [ ${symbol} != "index" ]; then
-    echo \<Token\> \<TokenIdentifier\>//apple_ref/c/func/${symbol}\</TokenIdentifier\>\<Path\>${i}\</Path\>\</Token\> >> ${PETSC_DIR}/${PETSC_ARCH}/PETSc.docset/Contents/Resources/Tokens.xml
+    echo \<Token\> \<TokenIdentifier\>//apple_ref/c/func/${symbol}\</TokenIdentifier\>\<Path\>${i}\</Path\>\</Token\> >> ${PETSC_DIR}/PETSc.docset/Contents/Resources/Tokens.xml
   fi;
 done
 
-cd ${PETSC_DIR}/${PETSC_ARCH}
+cd ${PETSC_DIR}
 
 cat <<EOF >> PETSc.docset/Contents/Resources/Tokens.xml
 </Tokens>

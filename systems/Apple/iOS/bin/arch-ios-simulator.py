@@ -19,6 +19,6 @@ if __name__ == '__main__':
     '--with-x=0',
     '--with-fc=0',
     '--known-blaslapack-mangling=underscore',   # ios only supports this mangling
-    'PETSC_ARCH=arch-ios',
+    'PETSC_ARCH=arch-ios-simulator',
   ]
   configure.petsc_configure(configure_options)

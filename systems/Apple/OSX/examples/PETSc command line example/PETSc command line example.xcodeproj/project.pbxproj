@@ -176,7 +176,7 @@
 		D8027CA215CB04C300F715AC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = "$(LOCAL_LIBRARY_DIR)/Frameworks/PETSc-OSX/release";
+				FRAMEWORK_SEARCH_PATHS = "$(LOCAL_LIBRARY_DIR)/Frameworks/PETSc-OSX/debug";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;

@@ -6,10 +6,13 @@
 #
 hdiutil detach /Volumes/PETSc
 #
-echo "Creating ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg from ${PETSC_DIR}/${PETSC_ARCH}/PETSc and ${PETSC_DIR}/${PETSC_ARCH}/PETSc.docset"
-rm -rf pack.temp.dmg tempsource ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
+echo "Creating ${PETSC_DIR}/PETSc-iOS.dmg from frameworks in ${PETSC_DIR}/arch-ios-simulator/PETSc-iOS and ${PETSC_DIR}/PETSc.docset"
+echo "  and examples in ${PETSC_DIR}/systems/Apple/iOS/examples"
+
+rm -rf pack.temp.dmg tempsource ${PETSC_DIR}/PETSc-iOS.dmg
 mkdir tempsource
-cp -r ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS ${PETSC_DIR}/${PETSC_ARCH}/PETSc.docset tempsource
+cp -r ${PETSC_DIR}/arch-ios-simulator/PETSc-iOS tempsource
+cp -r ${PETSC_DIR}/PETSc.docset tempsource
 cp -r  ${PETSC_DIR}/systems/Apple/iOS/examples tempsource/PETSc-iOS.examples
 
 # copy the PETSc source for the examples into the example directories and modify the include to point to them 
@@ -52,7 +55,7 @@ sync
 sync
 echo 'Completed osascript'
 #hdiutil detach ${device}
-hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS.dmg
+hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/PETSc-iOS.dmg
 rm -rf pack.temp.dmg tempsource
 sync
 sleep 2
