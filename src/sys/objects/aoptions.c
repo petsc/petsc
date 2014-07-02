@@ -404,6 +404,7 @@ PetscErrorCode PetscOptionsSAWsInput()
   static int     mancount = 0;
   char           options[16];
   PetscBool      changedmethod = PETSC_FALSE;
+  PetscBool      stopasking    = PETSC_FALSE;
   char           manname[16],textname[16];
   char           dir[1024];
 
@@ -417,6 +418,7 @@ PetscErrorCode PetscOptionsSAWsInput()
   ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s","prefix");CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&PetscOptionsObject.pprefix,1,SAWs_READ,SAWs_STRING));
   PetscStackCallSAWs(SAWs_Register,("/PETSc/Options/ChangedMethod",&changedmethod,1,SAWs_WRITE,SAWs_BOOLEAN));
+  PetscStackCallSAWs(SAWs_Register,("/PETSc/Options/StopAsking",&stopasking,1,SAWs_WRITE,SAWs_BOOLEAN));
 
   while (next) {
     sprintf(manname,"_man_%d",mancount);
@@ -503,6 +505,11 @@ PetscErrorCode PetscOptionsSAWsInput()
 
   /* reset counter to -2; this updates the screen with the new options for the selected method */
   if (changedmethod) PetscOptionsPublishCount = -2;
+
+  if (stopasking) {
+    PetscOptionsPublish      = PETSC_FALSE;
+    PetscOptionsPublishCount = 0;//do not ask for same thing again
+  }
 
   PetscStackCallSAWs(SAWs_Delete,("/PETSc/Options"));
   PetscFunctionReturn(0);
