@@ -6,7 +6,7 @@ SOURCEC  = neldermead.c
 SOURCEF  =
 SOURCEH  = neldermead.h
 LIBBASE  = libpetsctao
-MANSEC   = Tao 
+MANSEC   = Tao
 LOCDIR   = src/tao/unconstrained/impls/neldermead/
 
 include ${PETSC_DIR}/conf/variables

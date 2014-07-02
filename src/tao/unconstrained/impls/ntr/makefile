@@ -6,7 +6,7 @@ SOURCEC  = ntr.c
 SOURCEF  =
 SOURCEH  = ntr.h
 LIBBASE  = libpetsctao
-MANSEC   = Tao 
+MANSEC   = Tao
 LOCDIR   = src/tao/unconstrained/impls/ntr/
 
 include ${PETSC_DIR}/conf/variables

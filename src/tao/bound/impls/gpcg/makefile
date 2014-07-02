@@ -6,7 +6,7 @@ SOURCEC  = gpcg.c
 SOURCEF  =
 SOURCEH  = gpcg.h
 LIBBASE  = libpetsctao
-MANSEC   = Tao 
+MANSEC   = Tao
 LOCDIR   = src/tao/bound/impls/gpcg/
 
 include ${PETSC_DIR}/conf/variables

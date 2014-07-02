@@ -12,6 +12,6 @@ if __name__ == '__main__':
     '--download-mpich-shared=0',
     '--with-valgrind=0',
     '--with-debugging=0',
-    'PETSC_ARCH=arch-osx',
+    'PETSC_ARCH=arch-osx-release',
   ]
   configure.petsc_configure(configure_options)

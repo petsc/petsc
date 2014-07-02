@@ -336,6 +336,11 @@ alldoc3: chk_loc
           cd examples/tutorials; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
         fi
 
+#
+# Makes links for all manual pages in $LOC/docs/manualpages/all
+allman:
+	@cd ${LOC}/docs/manualpages; rm -rf all ; mkdir all ; find *  -type d -wholename all -prune -o -name index.html -prune  -o -type f -name \*.html -exec ln -s  -f ../{} all \;
+
 # modify all generated html files and add in version number, date, canonical URL info.
 docsetdate: chk_petscdir
 	@echo "Updating generated html files with petsc version, date, canonical URL info";\

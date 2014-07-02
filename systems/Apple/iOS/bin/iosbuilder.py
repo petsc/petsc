@@ -5,7 +5,7 @@
 #   Before using remove /usr/include/mpi.h and /Developer/SDKs/MacOSX10.5.sdk/usr/include/mpi.h or
 #      Xcode will use those instead of the MPIuni one we point to
 #
-#   export PETSC_ARCH=arch-ios
+#   export PETSC_ARCH=arch-ios-simular
 #
 #   ./systems/Apple/iOS/bin/arch-ios.py [use --with-debugging=0 to get iPhone/iPad version, otherwise creates simulator version]
 #      this sets up the appropriate configuration file

@@ -606,7 +606,7 @@ manexamples:
               a=`cat $$i | ${MAPNAMES} -map ${LOC}/docs/manualpages/manualpages.cit \
                    -printmatch -o /dev/null | sort | uniq` ;  \
               for j in $$a ; do \
-                b=`ls ${LOC}/docs/manualpages/*/$${j}.html | cut -f9` ; \
+                b=`ls ${LOC}/docs/manualpages/*/$${j}.html | grep -v /all/ | cut -f9` ; \
                 l=`grep tutorials $${b} | wc -l`; \
                 if [ $$l -le 10 ] ; then \
                   if [ $$l -eq 0 ] ; then \
