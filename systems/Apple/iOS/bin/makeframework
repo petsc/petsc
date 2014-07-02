@@ -5,16 +5,18 @@
 # To use the framework:
 #
 #    1) replace all #include <petscXXX.h> in application with #import <PETSc/petscXXX.h>
-#    2a) either run the installer or sudo -r mv ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework /Library/Framework
-#    2) use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework located at /Library/Framework
+#    2a) either run the installer or sudo -r mv ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS /Library/Framework
+#    2) use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework located at /Library/Framework/PETSc-iOS/simulator
 #
 #
-rm -rf ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
+rm -rf ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS
 
-mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
-mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/Versions
-mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/Versions/A
-cd ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/Versions/
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1/PETSc.framework
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1/PETSc.framework/Versions
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1/PETSc.framework/Versions/A
+cd ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1/PETSc.framework/Versions/
 ln -s A Current
 
 cd A 
@@ -79,7 +81,7 @@ cat <<EOF > Info.plist
 </plist>
 EOF
 
-cd  ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
+cd  ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1/PETSc.framework
 ln -s Versions/Current/Headers Headers
 ln -s Versions/Current/PETSc PETSc
 ln -s Versions/Current/Resources Resources

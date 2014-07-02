@@ -6,18 +6,22 @@
 #
 hdiutil detach /Volumes/PETSc
 #
-echo "Creating ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg from ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework and ${PETSC_DIR}/${PETSC_ARCH}/PETSc.docset"
-rm -rf pack.temp.dmg tempsource ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
+echo "Creating ${PETSC_DIR}/PETSc-OSX.dmg from frameworks in ${PETSC_DIR}/arch-osx-release and debug/PETSc-OSX and ${PETSC_DIR}/PETSc.docset"
+echo "  and examples in ${PETSC_DIR}/systems/Apple/OSX/examples"
+
+rm -rf pack.temp.dmg tempsource ${PETSC_DIR}/PETSc-OSX.dmg
 mkdir tempsource
-cp -r ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework ${PETSC_DIR}/${PETSC_ARCH}/PETSc.docset tempsource
-cp -r  ${PETSC_DIR}/systems/Apple/OSX/examples tempsource/PETSc.examples
+cp -r ${PETSC_DIR}/arch-osx-release/PETSc-OSX tempsource
+cp -r ${PETSC_DIR}/arch-osx-debug/PETSc-OSX tempsource
+cp -r ${PETSC_DIR}/PETSc.docset tempsource
+cp -r  ${PETSC_DIR}/systems/Apple/OSX/examples tempsource/PETSc-OSX.examples
 
 # copy the PETSc source for the examples into the example directories and modify the include to point to them 
 # in the PETSc tree the examples point to the original source elsewhere in the PETSc tree
-cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc.examples/PETSc\ command\ line\ example/PETSc\ command\ line\ example
-sed -i "" s?../../../../../../src/snes/examples/tutorials/??g tempsource/PETSc.examples/PETSc\ command\ line\ example/PETSc\ command\ line\ example/main.c
-cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc.examples/PETSc\ cocoa\ example/PETSc\ cocoa\ example
-sed -i "" s?../../../../../../src/snes/examples/tutorials/??g tempsource/PETSc.examples/PETSc\ cocoa\ example/PETSc\ cocoa\ example/AppDelegate.m
+cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc-OSX.examples/PETSc\ command\ line\ example/PETSc\ command\ line\ example
+sed -i "" s?../../../../../../src/snes/examples/tutorials/??g tempsource/PETSc-OSX.examples/PETSc\ command\ line\ example/PETSc\ command\ line\ example/main.c
+cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc-OSX.examples/PETSc\ cocoa\ example/PETSc\ cocoa\ example
+sed -i "" s?../../../../../../src/snes/examples/tutorials/??g tempsource/PETSc-OSX.examples/PETSc\ cocoa\ example/PETSc\ cocoa\ example/AppDelegate.m
 
 let size=`du  -c tempsource | tail -1 | cut -f1`
 let size=2*$size
@@ -34,9 +38,9 @@ echo '
            set current view of container window to icon view
            set toolbar visible of container window to false
            set statusbar visible of container window to false
-           make new alias file at container window to POSIX file "/Library/Frameworks" with properties {name:"Copy in PETSc.frameworks"}
+           make new alias file at container window to POSIX file "/Library/Frameworks" with properties {name:"Copy in PETSc-OSX"}
            make new alias file at container window to POSIX file "/Applications/Xcode.app/Contents/Developer/Documentation/DocSets" with properties {name:"Copy in PETSc.docset"}
-           make new alias file at container window to (path to home folder) with properties {name:"Copy in PETSc.examples"}
+           make new alias file at container window to (path to home folder) with properties {name:"Copy in PETSc-OSX.examples"}
            eject
      end tell
    end tell
@@ -46,7 +50,7 @@ sync
 sync
 echo 'Completed osascript'
 #hdiutil detach ${device}
-hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
+hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/PETSc-OSX.dmg
 rm -rf pack.temp.dmg tempsource
 sync
 sleep 2

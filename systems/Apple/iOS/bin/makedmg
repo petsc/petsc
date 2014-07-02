@@ -1,0 +1,67 @@
+#!/bin/sh
+#
+# This script makes a Apple Mac OSX dmg from the PETSc iOS framework and docset, see ./makeall
+#
+# Make sure that "Enable access for assistive devices" is checked in System Preferences>>Universal Access. It is required for the AppleScript to work.
+#
+hdiutil detach /Volumes/PETSc
+#
+echo "Creating ${PETSC_DIR}/PETSc-iOS.dmg from frameworks in ${PETSC_DIR}/arch-ios-simulator/PETSc-iOS and ${PETSC_DIR}/PETSc.docset"
+echo "  and examples in ${PETSC_DIR}/systems/Apple/iOS/examples"
+
+rm -rf pack.temp.dmg tempsource ${PETSC_DIR}/PETSc-iOS.dmg
+mkdir tempsource
+cp -r ${PETSC_DIR}/arch-ios-simulator/PETSc-iOS tempsource
+cp -r ${PETSC_DIR}/PETSc.docset tempsource
+cp -r  ${PETSC_DIR}/systems/Apple/iOS/examples tempsource/PETSc-iOS.examples
+
+# copy the PETSc source for the examples into the example directories and modify the include to point to them 
+# in the PETSc tree the examples point to the original source elsewhere in the PETSc tree
+cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc-iOS.examples/Basic/Classes
+cp ${PETSC_DIR}/src/snes/examples/tutorials/ex48.c tempsource/PETSc-iOS.examples/Basic/Classes
+sed -i "" s?../../../../../../src/snes/examples/tutorials/??g tempsource/PETSc-iOS.examples/Basic/Classes/iphoneViewController.m
+cp ${PETSC_DIR}/src/snes/examples/tutorials/ex19.c tempsource/PETSc-iOS.examples/testopengl/Classes
+cp ${PETSC_DIR}/src/snes/examples/tutorials/ex48.c tempsource/PETSc-iOS.examples/testopengl/Classes
+cp ${PETSC_DIR}/src/sys/classes/draw/examples/tests/ex3.c tempsource/PETSc-iOS.examples/testopengl/Classes
+cp ${PETSC_DIR}/src/sys/classes/draw/examples/tests/ex4.c tempsource/PETSc-iOS.examples/testopengl/Classes
+sed -i "" s?../../../../../../src/snes/examples/tutorials/??g tempsource/PETSc-iOS.examples/testopengl/Classes/iphoneViewController.m
+sed -i "" s?../../../../../../src/sys/classes/draw/examples/tests/??g tempsource/PETSc-iOS.examples/testopengl/Classes/iphoneViewController.m
+
+
+let size=`du  -c tempsource | tail -1 | cut -f1`
+let size=2*$size
+
+hdiutil create -srcfolder tempsource -volname PETSc -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size ${size}k pack.temp.dmg
+sleep 5
+device=`hdiutil attach -readwrite -noverify -noautoopen "pack.temp.dmg" | head -1 | cut -f1`
+echo Created device $device
+sleep 5
+echo '
+   tell application "Finder"
+     tell disk "PETSc"
+           open
+           set current view of container window to icon view
+           set toolbar visible of container window to false
+           set statusbar visible of container window to false
+           make new alias file at container window to POSIX file "/Library/Frameworks" with properties {name:"Copy in PETSc-iOS"}
+           make new alias file at container window to POSIX file "/Applications/Xcode.app/Contents/Developer/Documentation/DocSets" with properties {name:"Copy in PETSc.docset"}
+           make new alias file at container window to (path to home folder) with properties {name:"Copy in PETSc-iOS.examples"}
+           eject
+     end tell
+   end tell
+' | osascript
+sleep 8
+sync
+sync
+echo 'Completed osascript'
+#hdiutil detach ${device}
+hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/PETSc-iOS.dmg
+rm -rf pack.temp.dmg tempsource
+sync
+sleep 2
+hdiutil detach /Volumes/PETSc
+
+#           set the bounds of container window to {400, 100, 885, 630}
+#           set theViewOptions to the icon view options of container window
+#           set icon size of theViewOptions to 72
+#           set arrangement of theViewOptions to not arranged
