@@ -1,15 +1,5 @@
 //this js file contains methods copied from matt's original SAWs.js but modified to fit our needs
 
-var divSave;//ignore this for now. I'm trying to get rid of the 1000ms delay
-
-var successFunc = function(data, textStatus, jqXHR)//ignore this for now. I'm trying to get rid of the 1000ms delay
-{
-    console.log(data);
-    jQuery(divSave).html("");
-    window.setTimeout(PETSc.getAndDisplayDirectory,1000,null,divSave);
-}
-
-
 PETSc = {};
 
 var sawsInfo = [];//this variable is used to organize all the data from SAWs
@@ -70,29 +60,33 @@ PETSc.displayDirectory = function(sub,divEntry)
     PETSc.displayDirectoryRecursive(sub.directories,divEntry,0,"");//this method is recursive on itself and actually fills the div with text and dropdown lists
 
     if (sub.directories.SAWs_ROOT_DIRECTORY.variables.hasOwnProperty("__Block") && (sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data[0] == "true")) {
-        console.log("data fetched:");
-        console.log(sub);
         jQuery(divEntry).after("<input type=\"button\" value=\"Continue\" id=\"continue\">");
+        $("#continue").after("<input type=\"button\" value=\"Finish\" id=\"finish\">");
         jQuery('#continue').on('click', function(){
             $("#continue").remove();//remove self immediately
+            $("#finish").remove();
             SAWs.updateDirectoryFromDisplay(divEntry);
             sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data = ["false"];
-
-            divSave = divEntry;
-            //PETSc.postDirectory(sub, successFunc);//ignore this for now. I'm trying to get rid of 1000ms delay
-            console.log("posting:");
-            console.log(sub);
+            SAWs.postDirectory(sub);
+            window.setTimeout(PETSc.getAndDisplayDirectory,1000,null,divEntry);
+        });
+        jQuery('#finish').on('click', function(){
+            $("#finish").remove();//remove self immediately
+            $("#continue").remove();
+            SAWs.updateDirectoryFromDisplay(divEntry);
+            sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data = ["false"];
+            sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables.StopAsking.data = ["true"];//this is hardcoded (bad)
             SAWs.postDirectory(sub);
             window.setTimeout(PETSc.getAndDisplayDirectory,1000,null,divEntry);
         });
     } else console.log("no block property or block property is false");
 }
 
-PETSc.postDirectory = function(directory, callback)//ignore this for now. I'm trying to get rid of the 1000ms delay
-{
-    var stringJSON = JSON.stringify(directory);
-    jQuery.ajax({type: 'POST',dataType: 'json',url: '/SAWs/*',data: {input: stringJSON}, success: callback});
-}
+
+/*
+ * This function appends DOM elements to divEntry based on the JSON data in sub
+ *
+ */
 
 PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
 {
@@ -120,7 +114,7 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
 
                     if(vKey.indexOf("prefix") != -1) //prefix text
                         $("#"+fullkey).append(vKey + ":&nbsp;");
-                    else if(vKey.indexOf("ChangedMethod") == -1) { //options text
+                    else if(vKey.indexOf("ChangedMethod") == -1 && vKey.indexOf("StopAsking") == -1) { //options text
                         //options text is a link to the appropriate manual page
 
                         var manualDirectory = "all"; //this directory does not exist yet so links will not work for now
@@ -144,7 +138,7 @@ PETSc.displayDirectoryRecursive = function(sub,divEntry,tab,fullkey)
                         if(sub[key].variables[vKey].dtype == "SAWs_BOOLEAN") {
                             $("#"+fullkey).append("<select id=\"data"+fullkey+vKey+j+"\">");//make the boolean dropdown list.
                             $("#data"+fullkey+vKey+j).append("<option value=\"true\">True</option> <option value=\"false\">False</option>");
-                            if(vKey == "ChangedMethod") {//do not show changedmethod to user
+                            if(vKey == "ChangedMethod" || vKey == "StopAsking") {//do not show changedmethod nor stopasking to user
                                 $("#data"+fullkey+vKey+j).attr("hidden",true);
                             }
 
