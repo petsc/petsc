@@ -133,10 +133,10 @@ cdef class DM(Object):
         return cdm
 
     def getCoordinateSection(self):
-        cdef Section csec = Section()
-        CHKERR( DMGetCoordinateSection(self.dm, &csec.sec) )
-        PetscINCREF(csec.obj)
-        return csec
+        cdef Section sec = Section()
+        CHKERR( DMGetCoordinateSection(self.dm, &sec.sec) )
+        PetscINCREF(sec.obj)
+        return sec
 
     def setCoordinates(self, Vec c not None):
         CHKERR( DMSetCoordinates(self.dm, c.vec) )
@@ -246,38 +246,42 @@ cdef class DM(Object):
     createLocalVector = createLocalVec
     getMatrix = createMatrix = createMat
 
-    def setDefaultSection(self, Section dsec not None):
-        CHKERR( DMSetDefaultSection(self.dm, dsec.sec) )
+    #
+
+    def setDefaultSection(self, Section sec not None):
+        CHKERR( DMSetDefaultSection(self.dm, sec.sec) )
 
     def getDefaultSection(self):
-        cdef Section dsec = Section()
-        CHKERR( DMGetDefaultSection(self.dm, &dsec.sec) )
-        PetscINCREF(dsec.obj)
-        return dsec
+        cdef Section sec = Section()
+        CHKERR( DMGetDefaultSection(self.dm, &sec.sec) )
+        PetscINCREF(sec.obj)
+        return sec
 
-    def setDefaultGlobalSection(self, Section dgsec not None):
-        CHKERR( DMSetDefaultGlobalSection(self.dm, dgsec.sec) )
+    def setDefaultGlobalSection(self, Section sec not None):
+        CHKERR( DMSetDefaultGlobalSection(self.dm, sec.sec) )
 
     def getDefaultGlobalSection(self):
-        cdef Section dgsec = Section()
-        CHKERR( DMGetDefaultGlobalSection(self.dm, &dgsec.sec) )
-        PetscINCREF(dgsec.obj)
-        return dgsec
+        cdef Section sec = Section()
+        CHKERR( DMGetDefaultGlobalSection(self.dm, &sec.sec) )
+        PetscINCREF(sec.obj)
+        return sec
 
-    def createDefaultSF(self, Section localsec, Section globalsec):
+    def createDefaultSF(self, Section localsec not None, Section globalsec not None):
         CHKERR( DMCreateDefaultSF(self.dm, localsec.sec, globalsec.sec) )
 
     def getDefaultSF(self):
-        cdef SF dsf = SF()
-        CHKERR( DMGetDefaultSF(self.dm, &dsf.sf) )
-        PetscINCREF(dsf.obj)
-        return dsf
+        cdef SF sf = SF()
+        CHKERR( DMGetDefaultSF(self.dm, &sf.sf) )
+        PetscINCREF(sf.obj)
+        return sf
 
     def getPointSF(self):
-        cdef SF psf = SF()
-        CHKERR( DMGetPointSF(self.dm, &psf.sf) )
-        PetscINCREF(psf.obj)
-        return psf
+        cdef SF sf = SF()
+        CHKERR( DMGetPointSF(self.dm, &sf.sf) )
+        PetscINCREF(sf.obj)
+        return sf
+
+    #
 
     def setShellGlobalVector(self, Vec gv not None):
         CHKERR( DMShellSetGlobalVector(self.dm, gv.vec) )

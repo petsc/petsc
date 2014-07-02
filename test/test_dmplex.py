@@ -136,6 +136,7 @@ class TestPlex_3D_P4(BaseTestPlex_3D, unittest.TestCase):
 
 import sys
 try:
+    raise PETSc.Error
     PETSc.DMPlex().createBoxMesh(1, comm=PETSc.COMM_SELF).destroy()
 except PETSc.Error:
     pass

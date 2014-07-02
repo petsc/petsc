@@ -36,7 +36,9 @@ cdef class DMPlex(DM):
         spaceDim     = <PetscInt> PyArray_DIM(coords, 1)
         cellVertices = <int*>     PyArray_DATA(cells)
         vertexCoords = <double*>  PyArray_DATA(coords)
-        CHKERR( DMPlexCreateFromCellList(ccomm,cdim,numCells,numVertices,numCorners,interp,cellVertices,spaceDim,vertexCoords,&newdm) )
+        CHKERR( DMPlexCreateFromCellList(ccomm, cdim, numCells, numVertices,
+                                         numCorners, interp, cellVertices,
+                                         spaceDim, vertexCoords, &newdm) )
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
@@ -45,7 +47,21 @@ cdef class DMPlex(DM):
         cdef PetscBool interp = interpolate
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM   newdm = NULL
-        CHKERR( DMPlexCreateBoxMesh(ccomm,cdim,interp,&newdm) )
+        CHKERR( DMPlexCreateBoxMesh(ccomm,cdim, interp, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+        return self
+
+    def createHexBoxMesh(self, numcells, boundary_type=None, comm=None):
+        cdef PetscInt dim = 0, *icells = NULL
+        cells = iarray_i(numcells, &dim, &icells)
+        cdef PetscDMBoundaryType btx = DM_BOUNDARY_NONE
+        cdef PetscDMBoundaryType bty = DM_BOUNDARY_NONE
+        cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
+        if boundary_type is not None:
+            asBoundary(boundary_type, &btx, &bty, &btz)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscDM  newdm = NULL
+        CHKERR( DMPlexCreateHexBoxMesh(ccomm, dim, icells, btx, bty, btz, &newdm) )
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
@@ -101,10 +117,10 @@ cdef class DMPlex(DM):
         return self
 
     def createCohesiveSubmesh(self, hasLagrange, value):
-        cdef PetscBool hasL = hasLagrange
+        cdef PetscBool flag = hasLagrange
         cdef PetscInt cvalue = asInt(value)
         cdef DM subdm = DMPlex()
-        CHKERR( DMPlexCreateCohesiveSubmesh(self.dm,hasL,NULL,cvalue,&subdm.dm) )
+        CHKERR( DMPlexCreateCohesiveSubmesh(self.dm, flag, NULL, cvalue, &subdm.dm) )
         return subdm
 
     def getDimension(self):
@@ -183,7 +199,7 @@ cdef class DMPlex(DM):
         cdef PetscInt cp = asInt(p)
         cdef PetscInt cconePos = asInt(conePos)
         cdef PetscInt cconeOrientation = asInt(coneOrientation)
-        CHKERR( DMPlexInsertConeOrientation(self.dm,cp,cconePos,cconeOrientation) )
+        CHKERR( DMPlexInsertConeOrientation(self.dm, cp, cconePos, cconeOrientation) )
 
     def getConeOrientation(self, p):
         cdef PetscInt cp = asInt(p)
@@ -262,38 +278,40 @@ cdef class DMPlex(DM):
     def orient(self):
         CHKERR( DMPlexOrient(self.dm) )
 
-    def getNumLabels(self):
-        cdef PetscInt nLabels = 0
-        CHKERR( DMPlexGetNumLabels(self.dm,&nLabels) )
-        return toInt(nLabels)
-
-    def getLabelName(self, n):
-        cdef PetscInt cn = asInt(n)
-        cdef const_char *cname = NULL
-        CHKERR( DMPlexGetLabelName(self.dm,cn,&cname) )
-        return bytes2str(cname)
-
-    def hasLabel(self, label):
-        cdef PetscBool flag = PETSC_FALSE
-        cdef const_char *cval = NULL
-        label = str2bytes(label, &cval)
-        CHKERR( DMPlexHasLabel(self.dm, cval, &flag) )
-        return <bint> flag
-
     def getCellNumbering(self):
-        cdef IS globalCellNumbers = IS()
-        CHKERR( DMPlexGetCellNumbering(self.dm,&globalCellNumbers.iset) )
-        return globalCellNumbers
+        cdef IS iset = IS()
+        CHKERR( DMPlexGetCellNumbering(self.dm, &iset.iset) )
+        PetscINCREF(iset.obj)
+        return iset
 
     def getVertexNumbering(self):
-        cdef IS globalVertexNumbers = IS()
-        CHKERR( DMPlexGetVertexNumbering(self.dm,&globalVertexNumbers.iset) )
-        return globalVertexNumbers
+        cdef IS iset = IS()
+        CHKERR( DMPlexGetVertexNumbering(self.dm, &iset.iset) )
+        PetscINCREF(iset.obj)
+        return iset
+
+    def getNumLabels(self):
+        cdef PetscInt nLabels = 0
+        CHKERR( DMPlexGetNumLabels(self.dm, &nLabels) )
+        return toInt(nLabels)
+
+    def getLabelName(self, index):
+        cdef PetscInt cindex = asInt(index)
+        cdef const_char *cname = NULL
+        CHKERR( DMPlexGetLabelName(self.dm, cindex, &cname) )
+        return bytes2str(cname)
+
+    def hasLabel(self, name):
+        cdef PetscBool flag = PETSC_FALSE
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
+        CHKERR( DMPlexHasLabel(self.dm, cname, &flag) )
+        return <bint> flag
 
     def createLabel(self, name):
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        CHKERR( DMPlexCreateLabel(self.dm,cname) )
+        CHKERR( DMPlexCreateLabel(self.dm, cname) )
 
     def removeLabel(self, name):
         cdef const_char *cname = NULL
@@ -301,114 +319,113 @@ cdef class DMPlex(DM):
         name = str2bytes(name, &cname)
         CHKERR( DMPlexRemoveLabel(self.dm, cname, &clbl) )
 
-    def getLabelValue(self, name, n):
-        cdef PetscInt cn = asInt(n), value
+    def getLabelValue(self, name, point):
+        cdef PetscInt cpoint = asInt(point), value = 0
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        CHKERR( DMPlexGetLabelValue(self.dm,cname,cn,&value) )
+        CHKERR( DMPlexGetLabelValue(self.dm, cname, cpoint, &value) )
         return toInt(value)
 
-    def setLabelValue(self, name, n, value):
-        cdef PetscInt cn = asInt(n), cvalue = asInt(value)
+    def setLabelValue(self, name, point, value):
+        cdef PetscInt cpoint = asInt(point), cvalue = asInt(value)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        CHKERR( DMPlexSetLabelValue(self.dm,cname,cn,cvalue) )
+        CHKERR( DMPlexSetLabelValue(self.dm, cname, cpoint, cvalue) )
 
-    def clearLabelValue(self, name, n, value):
-        cdef PetscInt cn = asInt(n), cvalue = asInt(value)
+    def clearLabelValue(self, name, point, value):
+        cdef PetscInt cpoint = asInt(point), cvalue = asInt(value)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        CHKERR( DMPlexClearLabelValue(self.dm,cname,cn,cvalue) )
+        CHKERR( DMPlexClearLabelValue(self.dm, cname, cpoint, cvalue) )
 
     def getLabelSize(self, name):
         cdef PetscInt size = 0
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        CHKERR( DMPlexGetLabelSize(self.dm,cname,&size) )
+        CHKERR( DMPlexGetLabelSize(self.dm, cname, &size) )
         return toInt(size)
 
     def getLabelIdIS(self, name):
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
         cdef IS lis = IS()
-        CHKERR( DMPlexGetLabelIdIS(self.dm,cname,&lis.iset) )
+        CHKERR( DMPlexGetLabelIdIS(self.dm, cname, &lis.iset) )
         return lis
 
-    def getStratumSize(self, name, n):
+    def getStratumSize(self, name, value):
         cdef PetscInt size = 0
-        cdef PetscInt cn = asInt(n)
+        cdef PetscInt cvalue = asInt(value)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        CHKERR( DMPlexGetStratumSize(self.dm,cname,n,&size) )
+        CHKERR( DMPlexGetStratumSize(self.dm, cname, cvalue, &size) )
         return toInt(size)
 
-    def getStratumIS(self, name, n):
-        cdef PetscInt cn = asInt(n)
+    def getStratumIS(self, name, value):
+        cdef PetscInt cvalue = asInt(value)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
         cdef IS sis = IS()
-        CHKERR( DMPlexGetStratumIS(self.dm,cname,n,&sis.iset) )
+        CHKERR( DMPlexGetStratumIS(self.dm, cname, cvalue, &sis.iset) )
         return sis
 
-    def clearLabelStratum(self, name, n):
-        cdef PetscInt cn = asInt(n)
+    def clearLabelStratum(self, name, value):
+        cdef PetscInt cvalue = asInt(value)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        CHKERR( DMPlexClearLabelStratum(self.dm,cname,n) )
+        CHKERR( DMPlexClearLabelStratum(self.dm, cname, value) )
 
     def getDepth(self):
         cdef PetscInt depth = 0
         CHKERR( DMPlexGetDepth(self.dm,&depth) )
         return toInt(depth)
 
-    def getDepthStratum(self,svalue):
-        cdef PetscInt csvalue = asInt(svalue),sStart,sEnd
-        CHKERR( DMPlexGetDepthStratum(self.dm,csvalue,&sStart,&sEnd) )
-        return (toInt(sStart),toInt(sEnd))
+    def getDepthStratum(self, svalue):
+        cdef PetscInt csvalue = asInt(svalue), sStart = 0, sEnd = 0
+        CHKERR( DMPlexGetDepthStratum(self.dm, csvalue, &sStart, &sEnd) )
+        return (toInt(sStart), toInt(sEnd))
 
-    def getHeightStratum(self,svalue):
-        cdef PetscInt csvalue = asInt(svalue),sStart,sEnd
-        CHKERR( DMPlexGetHeightStratum(self.dm,csvalue,&sStart,&sEnd) )
-        return (toInt(sStart),toInt(sEnd))
+    def getHeightStratum(self, svalue):
+        cdef PetscInt csvalue = asInt(svalue), sStart = 0, sEnd = 0
+        CHKERR( DMPlexGetHeightStratum(self.dm, csvalue, &sStart, &sEnd) )
+        return (toInt(sStart), toInt(sEnd))
 
-    def getMeet(self,points):
+    def getMeet(self, points):
         cdef PetscInt  numPoints = 0
         cdef PetscInt *ipoints = NULL
         cdef PetscInt  numCoveringPoints = 0
         cdef const_PetscInt *coveringPoints = NULL
         points = iarray_i(points, &numPoints, &ipoints)
-        CHKERR( DMPlexGetMeet(self.dm,numPoints,ipoints,&numCoveringPoints,&coveringPoints) )
+        CHKERR( DMPlexGetMeet(self.dm, numPoints, ipoints, &numCoveringPoints, &coveringPoints) )
         try:
-            return array_i(numCoveringPoints,coveringPoints)
+            return array_i(numCoveringPoints, coveringPoints)
         finally:
-            CHKERR( DMPlexRestoreMeet(self.dm,numPoints,ipoints,&numCoveringPoints,&coveringPoints) )
+            CHKERR( DMPlexRestoreMeet(self.dm, numPoints, ipoints, &numCoveringPoints, &coveringPoints) )
 
-    def getJoin(self,points):
+    def getJoin(self, points):
         cdef PetscInt  numPoints = 0
         cdef PetscInt *ipoints = NULL
         cdef PetscInt  numCoveringPoints = 0
         cdef const_PetscInt *coveringPoints = NULL
         points = iarray_i(points, &numPoints, &ipoints)
-        CHKERR( DMPlexGetJoin(self.dm,numPoints,ipoints,&numCoveringPoints,&coveringPoints) )
+        CHKERR( DMPlexGetJoin(self.dm, numPoints, ipoints, &numCoveringPoints, &coveringPoints) )
         try:
-            return array_i(numCoveringPoints,coveringPoints)
+            return array_i(numCoveringPoints, coveringPoints)
         finally:
-            CHKERR( DMPlexRestoreJoin(self.dm,numPoints,ipoints,&numCoveringPoints,&coveringPoints) )
+            CHKERR( DMPlexRestoreJoin(self.dm, numPoints, ipoints, &numCoveringPoints, &coveringPoints) )
 
-    def getTransitiveClosure(self,p,useCone=True):
+    def getTransitiveClosure(self, p, useCone=True):
         cdef PetscInt cp = asInt(p)
         cdef PetscInt pStart = 0, pEnd = 0
         CHKERR( DMPlexGetChart(self.dm, &pStart, &pEnd) )
         assert cp>=pStart and cp<pEnd
-        cdef PetscBool cuseCone = PETSC_FALSE
-        if useCone: cuseCone = PETSC_TRUE
+        cdef PetscBool cuseCone = useCone
         cdef PetscInt  numPoints = 0
         cdef PetscInt *points = NULL
-        CHKERR( DMPlexGetTransitiveClosure(self.dm,cp,cuseCone,&numPoints,&points) )
+        CHKERR( DMPlexGetTransitiveClosure(self.dm, cp, cuseCone, &numPoints, &points) )
         try:
             out = array_i(2*numPoints,points)
         finally:
-            CHKERR( DMPlexRestoreTransitiveClosure(self.dm,cp,cuseCone,&numPoints,&points) )
+            CHKERR( DMPlexRestoreTransitiveClosure(self.dm, cp, cuseCone, &numPoints, &points) )
         return out[::2],out[1::2]
 
     def vecGetClosure(self, Section sec, Vec vec, p):
@@ -422,9 +439,8 @@ cdef class DMPlex(DM):
         return closure
 
     def generate(self, DMPlex boundary, name=None, interpolate=True):
-        cdef DMPlex    dm = <DMPlex>type(self)()
-        cdef PetscBool interp = PETSC_FALSE
-        if interpolate: interp = PETSC_TRUE
+        cdef DMPlex dm = <DMPlex>type(self)()
+        cdef PetscBool interp = interpolate
         cdef const_char *cname = NULL
         if name: name = str2bytes(name, &cname)
         cdef PetscDM   newdm = NULL
@@ -464,13 +480,11 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexMarkBoundaryFaces(self.dm, clbl) )
 
     def setAdjacencyUseCone(self, useCone=True):
-        cdef PetscBool flag = PETSC_FALSE
-        if useCone: flag = PETSC_TRUE
+        cdef PetscBool flag = useCone
         CHKERR( DMPlexSetAdjacencyUseCone(self.dm, flag) )
 
     def setAdjacencyUseClosure(self, useClosure=True):
-        cdef PetscBool flag = PETSC_FALSE
-        if useClosure: flag = PETSC_TRUE
+        cdef PetscBool flag = useClosure
         CHKERR( DMPlexSetAdjacencyUseClosure(self.dm, flag) )
 
     def distribute(self, partitioner=None, overlap=0):
@@ -511,27 +525,28 @@ cdef class DMPlex(DM):
         if perm is not None:
             cperm = perm.iset
         # create section
-        cdef Section section = Section()
-        CHKERR( DMPlexCreateSection(self.dm, dim, ncomp, icomp, idof, nbc, bcfield, bcpoints, cperm, &section.sec) )
-        return section
+        cdef Section sec = Section()
+        CHKERR( DMPlexCreateSection(self.dm, dim, ncomp, icomp, idof,
+                                    nbc, bcfield, bcpoints, cperm, &sec.sec) )
+        return sec
 
     def setRefinementUniform(self, refinementUniform=True):
-        cdef PetscBool uniform = refinementUniform
-        CHKERR( DMPlexSetRefinementUniform(self.dm, uniform) )
+        cdef PetscBool flag = refinementUniform
+        CHKERR( DMPlexSetRefinementUniform(self.dm, flag) )
 
     def getRefinementUniform(self):
-        cdef PetscBool uniform
-        CHKERR( DMPlexGetRefinementUniform(self.dm, &uniform) )
-        return <bint>uniform
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( DMPlexGetRefinementUniform(self.dm, &flag) )
+        return <bint> flag
 
     def setRefinementLimit(self, refinementLimit):
-        cdef PetscReal limit = asReal(refinementLimit)
-        CHKERR( DMPlexSetRefinementLimit(self.dm, limit) )
+        cdef PetscReal rval = asReal(refinementLimit)
+        CHKERR( DMPlexSetRefinementLimit(self.dm, rval) )
 
     def getRefinementLimit(self):
-        cdef PetscReal limit
-        CHKERR( DMPlexGetRefinementLimit(self.dm, &limit) )
-        return toReal(limit)
+        cdef PetscReal rval = 0.0
+        CHKERR( DMPlexGetRefinementLimit(self.dm, &rval) )
+        return toReal(rval)
 
     def getOrdering(self, otype):
         cdef PetscMatOrderingType cval = NULL
@@ -542,8 +557,5 @@ cdef class DMPlex(DM):
 
     def permute(self, IS perm not None):
         cdef DMPlex dm = <DMPlex>type(self)()
-        cdef PetscDM newdm = NULL
-
-        CHKERR( DMPlexPermute(self.dm, perm.iset, &newdm) )
-        dm.dm = newdm
+        CHKERR( DMPlexPermute(self.dm, perm.iset, &dm.dm) )
         return dm
