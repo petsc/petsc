@@ -29,14 +29,6 @@ function populateKspList(listId,listVals,defaultVal)
     var matrix = getMatrix(listId);
     var endtag = getEndtag(listId);
 
-    var index1 = getSawsIndex(matrix);
-    var index2 = getSawsDataIndex(index1,endtag);
-
-    if(listVals == null && index2 != -1) {//use ksp_alternatives from saws !!!
-        populateKspList(listId,sawsInfo[index1].data[index2].ksp_alternatives,sawsInfo[index1].data[index2].ksp);
-        return;
-    }
-
     var list = "#" + listId;
     $(list).empty(); //empty existing list
     //alert("enter  populateKspList...");
@@ -108,14 +100,6 @@ function populatePcList(listId,listVals,defaultVal)
 {
     var matrix = getMatrix(listId);
     var endtag = getEndtag(listId);
-
-    var index1 = getSawsIndex(matrix);
-    var index2 = getSawsDataIndex(index1,endtag);
-
-    if(listVals == null && index2 != -1) {//use ksp_alternatives from saws !!!
-        populatePcList(listId,sawsInfo[index1].data[index2].pc_alternatives,sawsInfo[index1].data[index2].pc);
-        return;
-    }
 
     var list="#"+listId;
     $(list).empty(); //empty existing list

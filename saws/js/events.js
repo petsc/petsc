@@ -30,13 +30,8 @@ function addEventHandlers() {
         $("#oContainer").append("<tr id='row"+currentAsk+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
 
         //Create drop-down lists. '&nbsp;' indicates a space
-        if(getSawsFieldsplitWord(currentAsk) != "-1") {//saws has this information so we specify the name of the fieldsplit for user's convenience
-            var fsText = getSawsFieldsplitWord(currentAsk);
-            $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + "<sub>" + currentAsk + "</sub>" + " Fieldsplit: "+fsText+" (Symm:"+matInfo[writeLoc].symm+" Posdef:"+matInfo[writeLoc].posdef+" Logstruc:"+matInfo[writeLoc].logstruc +")</b>");
-            matInfo[writeLoc].name = fsText;//write data to matInfo as well for generating cmd options
-        }
-        else
-            $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + "<sub>" + currentAsk + "</sub>" + " (Symm:"+matInfo[writeLoc].symm+" Posdef:"+matInfo[writeLoc].posdef+" Logstruc:"+matInfo[writeLoc].logstruc +")</b>");
+
+        $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + "<sub>" + currentAsk + "</sub>" + " (Symm:"+matInfo[writeLoc].symm+" Posdef:"+matInfo[writeLoc].posdef+" Logstruc:"+matInfo[writeLoc].logstruc +")</b>");
 
 	$("#A" + currentAsk).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + currentAsk +"\"></select>");
 	$("#A" + currentAsk).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + currentAsk +"\"></select>");
@@ -52,20 +47,8 @@ function addEventHandlers() {
         }
 
 	//populate the kspList and pclist with default options
-        if (getSawsIndex(currentAsk) != -1) { //use SAWs options if they exist for this matrix
-            var sawsIndex=getSawsIndex(currentAsk);
-
-            var SAWs_kspVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,"")].ksp;//want the ksp where endtag=""
-            //SAWs_alternatives ???
-            populateKspList("kspList"+currentAsk,null,SAWs_kspVal);
-
-            var SAWs_pcVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,"")].pc;//want the pc where endtag=""
-            //SAWs_alternatives ???
-	    populatePcList("pcList"+currentAsk,null,SAWs_pcVal);
-        } else {//else, use default values
-            populateKspList("kspList"+currentAsk,null,"null");
-            populatePcList("pcList"+currentAsk,null,"null");
-        }
+        populateKspList("kspList"+currentAsk,null,"null");
+        populatePcList("pcList"+currentAsk,null,"null");
 
         //manually trigger pclist once because additional options, e.g., detailed info may need to be added
         if($("#pcList"+currentAsk).val()!="fieldsplit")//but DON'T trigger change on fieldsplit because that would append the required A divs twice
@@ -161,36 +144,6 @@ function addEventHandlers() {
 
     $("#clearTree").click(function(){
         $("#tree").remove();
-    });
-
-    $("#doneLoading").click(function() {
-        $("#doneLoading").remove();
-        //count how many level 1 fieldsplits there are in sawsInfo
-        var counter = 0;
-        for(var i=0; i<sawsInfo.length; i++) {
-            if(sawsInfo[i].id.length == 2)
-                counter++;
-        }
-        if(counter > 0) {
-            $("#logstruc").prop("checked", "true");
-            $("#fieldsplitBlocks_text").show();
-            $("#fieldsplitBlocks").show();
-            $("#fieldsplitBlocks").val(counter);
-        }
-        else {
-            $("#logstruc").removeAttr("checked");
-            $("#fieldsplitBlocks_text").hide();
-            $("#fieldsplitBlocks").hide();
-            $("#fieldsplitBlocks").val(2);
-        }
-        //flip the order of all the options
-        for(var i=1; i<serverOptionsCounter; i+=2) {
-            var data = $("#saws"+i).html();
-            var next = i+1;
-
-            $("#saws"+i).remove();
-            $("#saws"+next).after(data);
-        }
     });
 
     $("#selectedMatrix").on("keyup", function() {

@@ -29,7 +29,7 @@ PETSc.getAndDisplayDirectory = function(names,divEntry){
 PETSc.displayDirectory = function(sub,divEntry)
 {
     globaldirectory[divEntry] = sub;
-    recordSawsData(sub);//records data into sawsInfo[]
+    recordSawsData(sawsInfo,sub);//records data into sawsInfo[]
 
     iteration ++;
     if(iteration == 2) { //remove text
@@ -48,8 +48,9 @@ PETSc.displayDirectory = function(sub,divEntry)
         if(SAWs_prefix == "(null)")
             SAWs_prefix = "";
 
+        //DIAGRAMS DISABLED FOR NOW. WILL BE RESTORED SOON.
         $("#diagram").html("");
-        var data = drawDiagrams("0",parsePrefix(SAWs_prefix).endtag,5,5);
+        var data = drawDiagrams(sawsInfo,"0",parsePrefix(sawsInfo,SAWs_prefix).endtag,5,5);
 
         if(data != "") {
             $("#diagram").html("<svg id=\"svgCanvas\" width='700' height='700' viewBox='0 0 2000 2000'>"+data+"</svg>");

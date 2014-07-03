@@ -1,7 +1,8 @@
-//this js file parses the prefix according to the new system of storing information in sawsInfo[] (allows for indefinite mg/fieldsplit nesting)
+//this js file parses the prefix into the endtag format to store information in an array (allows for indefinite mg/fieldsplit nesting)
+//requires the SAWs_prefix and the array of data that was already parsed
 
 //parses the prefix and returns an object containing the proper endtag and the newly encountered fieldsplit word (if any)
-function parsePrefix(SAWs_prefix) {
+function parsePrefix(data,SAWs_prefix) {
 
     var endtag  = "0";
     var newWord = "";
@@ -37,16 +38,16 @@ function parsePrefix(SAWs_prefix) {
             }
 
             var theword          = SAWs_prefix.substring(11,closest-1);//omit the first and last underscore
-            var index            = getFieldsplitWordIndex(theword, endtag);//get the id (for example "001") associated with this fieldsplit word. need to pass in the existing endtag because we need to specify the parent of this fieldsplit
+            var index            = getIndexByName(data, theword, endtag);//get the id (for example "001") associated with this fieldsplit word. need to pass in the existing endtag because we need to specify the parent of this fieldsplit
 
             if(index == -1) { //new fieldsplit. this word has not been encountered yet.
-                var fieldsplitNumber = getSawsNumChildren(endtag);//endtag = parent of this fieldsplit @TODO
+                var fieldsplitNumber = getNumChildren(data, endtag);//endtag = parent of this fieldsplit @TODO
                 endtag               = endtag + "_" + fieldsplitNumber.toString();
                 newWord              = theword;
             }
 
             else { //we have encountered this word before
-                endtag = sawsInfo[index].endtag;
+                endtag = data[index].endtag;
             }
         }
 

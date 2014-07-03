@@ -61,28 +61,17 @@ $(document).on('change', '.pcLists', function(){
         $("#"+newDiv).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+myendtag +"\"></select>");
 	$("#"+newDiv).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+myendtag +"\"></select>");
 
-        var sawsIndex=getSawsIndex(parent);
         var endtagEdit=myendtag.substring(1,myendtag.length);//take off the first character (the underscore)
-        if (sawsIndex!=-1 && getSawsDataIndex(sawsIndex,endtagEdit)!=-1) { //use SAWs options if they exist
-            var SAWs_kspVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].ksp;
-            var SAWs_pcVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].pc;
-            mgLevels=sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].mg_levels;//pull mg_levels from saws when dealing with coarse
-            //alternative???
-            populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
-            populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
 
-            //manually trigger pclist once
-	    $("#pcList"+parent+myendtag).trigger("change");
-        } else {
-	    populateKspList("kspList"+parent+myendtag,null,"null");
-            populatePcList("pcList"+parent+myendtag,null,"null");
+	populateKspList("kspList"+parent+myendtag,null,"null");
+        populatePcList("pcList"+parent+myendtag,null,"null");
 
-	    //set defaults
-	    $("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
-	    $("#pcList"+parent+myendtag).find("option[value='redundant']").attr("selected","selected");
-	    //redundant has to have extra dropdown menus so manually trigger
-	    $("#pcList"+parent+myendtag).trigger("change");
-        }
+	//set defaults
+	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
+	$("#pcList"+parent+myendtag).find("option[value='redundant']").attr("selected","selected");
+	//redundant has to have extra dropdown menus so manually trigger
+	$("#pcList"+parent+myendtag).trigger("change");
+
 
         $("#mglevels"+parent+myendtag).val(mgLevels); // set default mgLevels -- when reset mglevels to 4, gives order 3, 2, 1 below???
 
@@ -96,24 +85,14 @@ $(document).on('change', '.pcLists', function(){
                 $("#"+newDiv).append("<br><b id=\"text_kspList"+parent+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ parent+myendtag +"\"></select>");
 	        $("#"+newDiv).append("<br><b id=\"text_pcList"+parent+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ parent+myendtag+"\"></select>");
 
-                var sawsIndex=getSawsIndex(parent);
                 var endtagEdit=myendtag.substring(1,myendtag.length);//take off the first character (the underscore)
-                if (sawsIndex!=-1 && getSawsDataIndex(sawsIndex,endtagEdit)!=-1) { //use SAWs options if they exist
-                    var SAWs_kspVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].ksp;
-                    var SAWs_pcVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].pc;
-                    //alternative???
-                    populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
-                    populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
 
-                    //manually trigger pclist once
-	            $("#pcList"+parent+myendtag).trigger("change");
-                } else {
-                    populateKspList("kspList"+parent+myendtag,null,"null");
-	            populatePcList("pcList"+parent+myendtag,null,"null");
-                    // set defaults
-                    $("#kspList"+parent+myendtag).find("option[value='chebyshev']").attr("selected","selected");
-	            $("#pcList"+parent+myendtag).find("option[value='sor']").attr("selected","selected");
-                }
+                populateKspList("kspList"+parent+myendtag,null,"null");
+	        populatePcList("pcList"+parent+myendtag,null,"null");
+                // set defaults
+                $("#kspList"+parent+myendtag).find("option[value='chebyshev']").attr("selected","selected");
+	        $("#pcList"+parent+myendtag).find("option[value='sor']").attr("selected","selected");
+
             }
         }
 
@@ -131,29 +110,18 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<br><b>Redundant KSP    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"redundant\" id=\"kspList" + parent +myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>Redundant PC     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent +myendtag+"\"></select>");
 
-        var sawsIndex=getSawsIndex(parent);
         var endtagEdit=myendtag.substring(1,myendtag.length);//take off the first character (the underscore)
-        if (sawsIndex!=-1 && getSawsDataIndex(sawsIndex,endtagEdit)!=-1) { //use SAWs options if they exist
-            var SAWs_kspVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].ksp;
-            var SAWs_pcVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].pc;
-            //alternative???
-            populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
-            populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
 
-            //manually trigger pclist once
-	    $("#pcList"+parent+myendtag).trigger("change");
+	populateKspList("kspList"+parent+myendtag,null,"null");
+        populatePcList("pcList"+parent+myendtag,null,"null");
+
+	//set defaults for redundant
+	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
+        var index=getMatIndex(parent);
+        if (matInfo[index].symm) {
+            $("#pcList"+parent+myendtag).find("option[value='cholesky']").attr("selected","selected");
         } else {
-	    populateKspList("kspList"+parent+myendtag,null,"null");
-            populatePcList("pcList"+parent+myendtag,null,"null");
-
-	    //set defaults for redundant
-	    $("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
-            var index=getMatIndex(parent);
-            if (matInfo[index].symm) {
-                $("#pcList"+parent+myendtag).find("option[value='cholesky']").attr("selected","selected");
-            } else {
-	        $("#pcList"+parent+myendtag).find("option[value='lu']").attr("selected","selected");
-            }
+	    $("#pcList"+parent+myendtag).find("option[value='lu']").attr("selected","selected");
         }
     }
 
@@ -170,31 +138,18 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<br><b>Bjacobi KSP   &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+parent+myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>Bjacobi PC   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+parent+myendtag+"\"></select>");
 
-        var sawsIndex=getSawsIndex(parent);
         var endtagEdit=myendtag.substring(1,myendtag.length);//take off the first character (the underscore)
-        if (sawsIndex!=-1 && getSawsDataIndex(sawsIndex,endtagEdit)!=-1) { //use SAWs options if they exist
-            var SAWs_kspVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].ksp;
-            var SAWs_pcVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].pc;
-            //alternative???
-            populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
-            populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
 
-            var bjacobi_blocks = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].bjacobi_blocks;
-            $("#bjacobiBlocks"+parent+myendtag).attr("value",bjacobi_blocks);
-            //manually trigger pclist once
-	    $("#pcList"+parent+myendtag).trigger("change");
+	populateKspList("kspList"+parent+myendtag,null,"null");
+        populatePcList("pcList"+parent+myendtag,null,"null");
+
+	//set defaults for bjacobi
+	$("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
+        var index=getMatIndex(parent);
+        if (matInfo[index].symm) {
+            $("#pcList"+parent+myendtag).find("option[value='icc']").attr("selected","selected");
         } else {
-	    populateKspList("kspList"+parent+myendtag,null,"null");
-            populatePcList("pcList"+parent+myendtag,null,"null");
-
-	    //set defaults for bjacobi
-	    $("#kspList"+parent+myendtag).find("option[value='preonly']").attr("selected","selected");
-            var index=getMatIndex(parent);
-            if (matInfo[index].symm) {
-                $("#pcList"+parent+myendtag).find("option[value='icc']").attr("selected","selected");
-            } else {
-	        $("#pcList"+parent+myendtag).find("option[value='ilu']").attr("selected","selected");
-            }
+	    $("#pcList"+parent+myendtag).find("option[value='ilu']").attr("selected","selected");
         }
     }
 
@@ -234,26 +189,16 @@ $(document).on('change', '.pcLists', function(){
 	$("#"+newDiv).append("<b>KSP KSP   </b><select class=\"kspLists\" id=\"kspList" + parent +myendtag+"\"></select>");
 	$("#"+newDiv).append("<br><b>KSP PC &nbsp;&nbsp; </b><select class=\"pcLists\" id=\"pcList" + parent +myendtag+"\"></select>");
 
-        var sawsIndex=getSawsIndex(parent);
         var endtagEdit=myendtag.substring(1,myendtag.length);//take off the first character (the underscore)
-        if (sawsIndex!=-1 && getSawsDataIndex(sawsIndex,endtagEdit)!=-1) { //use SAWs options if they exist
 
-            var SAWs_kspVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].ksp;
-            var SAWs_pcVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].pc;
-            //alternative???
-            populateKspList("kspList"+parent+myendtag,null,SAWs_kspVal);
-            populatePcList("pcList"+parent+myendtag,null,SAWs_pcVal);
-            $("#pcList"+parent+myendtag).trigger("change");
-        } else {
-	    populateKspList("kspList"+parent+myendtag,null,"null");
-	    populatePcList("pcList"+parent+myendtag,null,"null");
+	populateKspList("kspList"+parent+myendtag,null,"null");
+	populatePcList("pcList"+parent+myendtag,null,"null");
 
-	    //set defaults for ksp
-	    $("#kspList"+parent+myendtag).find("option[value='gmres']").attr("selected","selected");
-	    $("#pcList"+parent+myendtag).find("option[value='bjacobi']").attr("selected","selected");
-	    //bjacobi has extra dropdown menus so manually trigger once
-	    $("#pcList"+parent+myendtag).trigger("change");
-        }
+	//set defaults for ksp
+	$("#kspList"+parent+myendtag).find("option[value='gmres']").attr("selected","selected");
+	$("#pcList"+parent+myendtag).find("option[value='bjacobi']").attr("selected","selected");
+	//bjacobi has extra dropdown menus so manually trigger once
+	$("#pcList"+parent+myendtag).trigger("change");
     }
 
     else if (pcValue == "fieldsplit") {//just changed to fieldsplit so set up defaults (2 children)
@@ -291,31 +236,13 @@ $(document).on('change', '.pcLists', function(){
                 id:       newChild
 	    }
 
-            if(getSawsFieldsplitWord(newChild) != "-1") {//fieldsplit word data exists in saws!!
-                var fsText = getSawsFieldsplitWord(newChild);
-                $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + "<sub>" + newChild + "</sub>" + " Fieldsplit: " + fsText + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
-                matInfo[writeLoc].name = fsText;//write to matInfo as well
-            }
-            else
-                $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + "<sub>" + newChild + "</sub>" + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
+            $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + "<sub>" + newChild + "</sub>" + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
             $("#A" + newChild).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + newChild +"\"></select>");
 	    $("#A" + newChild).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + newChild +"\"></select>");
 
 	    //populate the kspList and pclist with default options
-            if (getSawsIndex(newChild) != -1) { //use SAWs options if they exist for this matrix
-                var sawsIndex=getSawsIndex(newChild);
-
-                var SAWs_kspVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,"")].ksp;//want the ksp where endtag=""
-                //SAWs_alternatives ???
-                populateKspList("kspList"+newChild,null,SAWs_kspVal);
-
-                var SAWs_pcVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,"")].pc;//want the pc where endtag=""
-                //SAWs_alternatives ???
-	        populatePcList("pcList"+newChild,null,SAWs_pcVal);
-            } else {//else, use default values
-                populateKspList("kspList"+newChild,null,"null");
-                populatePcList("pcList"+newChild,null,"null");
-            }
+            populateKspList("kspList"+newChild,null,"null");
+            populatePcList("pcList"+newChild,null,"null");
 
             $("#pcList"+newChild).trigger("change");//make sure necessary options are added on
         }
@@ -402,31 +329,15 @@ $(document).on('change', '.fieldsplitBlocks', function() {
 
             //Create drop-down lists. '&nbsp;' indicates a space
             var newChild = parent + i;
-            if(getSawsFieldsplitWord(newChild) != "-1") {//fieldsplit word data exists in saws!!
-                var fsText = getSawsFieldsplitWord(newChild);
-                $("#A" + newChild).append("<br><b id='matrixText"+newChild+"'>A" + "<sub>" + newChild + "</sub>" + " Fieldsplit: " + fsText + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
-            }
-            else
-                $("#A" + parent+i).append("<br><b id='matrixText"+parent+i+"'>A" + "<sub>" + parent+i + "</sub>" + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
+
+            $("#A" + parent+i).append("<br><b id='matrixText"+parent+i+"'>A" + "<sub>" + parent+i + "</sub>" + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
 	    $("#A" + parent+i).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+i +"\"></select>");
 	    $("#A" + parent+i).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+i +"\"></select>");
 
 
             //populate the kspList and pclist with default options
-            if (getSawsIndex(parent+i) != -1) { //use SAWs options if they exist for this matrix
-                var sawsIndex=getSawsIndex(parent+i);
-
-                var SAWs_kspVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,"")].ksp;//want the ksp where endtag=""
-                //SAWs_alternatives ???
-                populateKspList("kspList"+parent+i,null,SAWs_kspVal);
-
-                var SAWs_pcVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,"")].pc;//want the pc where endtag=""
-                //SAWs_alternatives ???
-	        populatePcList("pcList"+parent+i,null,SAWs_pcVal);
-            } else {//else, use default values
-                populateKspList("kspList"+parent+i,null,"null");
-                populatePcList("pcList"+parent+i,null,"null");
-            }
+            populateKspList("kspList"+parent+i,null,"null");
+            populatePcList("pcList"+parent+i,null,"null");
 
             $("#pcList"+parent+i).trigger("change");
 
@@ -438,10 +349,6 @@ $(document).on('change', '.fieldsplitBlocks', function() {
                 blocks: 0,//children do not have further children
                 matLevel:   parent.length-1+1,
                 id:       parent+i
-            }
-
-            if(getSawsFieldsplitWord(newChild) != "-1") {//fieldsplit word data exists in saws!!
-                matInfo[writeLoc].name = getSawsFieldsplitWord(newChild);
             }
 
         }
@@ -522,24 +429,13 @@ $(document).on('change', '.mgLevels', function()
 	    $("#text_smoothing"+recursionCounter+endtag).after("<br><b id=\"text_pcList"+recursionCounter+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ recursionCounter+myendtag+"\"></select>");
             $("#text_smoothing"+recursionCounter+endtag).after("<br><b id=\"text_kspList"+recursionCounter+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ recursionCounter+myendtag +"\"></select>");
 
-            var sawsIndex=getSawsIndex(recursionCounter);
             var endtagEdit=myendtag.substring(1,myendtag.length);//take off the first character (the underscore)
-            if (sawsIndex!=-1 && getSawsDataIndex(sawsIndex,endtagEdit)!=-1) { //use SAWs options if they exist
-                var SAWs_kspVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].ksp;
-                var SAWs_pcVal = sawsInfo[sawsIndex].data[getSawsDataIndex(sawsIndex,endtagEdit)].pc;
-                //alternative???
-                populateKspList("kspList"+recursionCounter+myendtag,null,SAWs_kspVal);
-                populatePcList("pcList"+recursionCounter+myendtag,null,SAWs_pcVal);
 
-                //manually trigger pclist once
-	        $("#pcList"+recursionCounter+myendtag).trigger("change");
-            } else {
-                populateKspList("kspList"+recursionCounter+myendtag,null,"null");
-	        populatePcList("pcList"+recursionCounter+myendtag,null,"null");
-                // set defaults
-                $("#kspList"+recursionCounter+myendtag).find("option[value='chebyshev']").attr("selected","selected");
-	        $("#pcList"+recursionCounter+myendtag).find("option[value='sor']").attr("selected","selected");
-            }
+            populateKspList("kspList"+recursionCounter+myendtag,null,"null");
+	    populatePcList("pcList"+recursionCounter+myendtag,null,"null");
+            // set defaults
+            $("#kspList"+recursionCounter+myendtag).find("option[value='chebyshev']").attr("selected","selected");
+	    $("#pcList"+recursionCounter+myendtag).find("option[value='sor']").attr("selected","selected");
         }
     }
 });

@@ -2,32 +2,32 @@
 //target_endtag is the endtag of the solver option that is currently being asked. the reason we have this as a parameter is because there is simply not enough space to display a diagram of the ENTIRE solver. so, we only display a path to the current solver option
 //x,y are the x and y coordinates of the upper lefthand corner of the svg (should initially be called with 0,0)
 //this function returns a string that needs to be put into an svg in the html page
-function drawDiagrams(endtag,target_endtag,x,y) {
+function drawDiagrams(data,endtag,target_endtag,x,y) {
 
-    var numChildren = getSawsNumChildren(endtag);
+    var numChildren = getNumChildren(data,endtag);
 
     if(numChildren == 0) //base case. no children.
         return "";
     if(target_endtag.indexOf(endtag) != 0) //base case. endtag is not on the path to target_endtag.
         return "";
 
-    var index = getSawsIndex(endtag);
+    var index = getIndex(data,endtag);
     var ret   = "";
 
-    if(sawsInfo[index].pc == "fieldsplit") { //draw fieldsplit diagram
+    if(data[index].pc == "fieldsplit") { //draw fieldsplit diagram
         var colors = ["green","blue","red"];
         var layer = 0;
         ret += "<polygon points=\""+x+","+y+" "+(x+400)+","+y+" "+(x+400)+","+(y+400)+" "+x+","+(y+400)+"\" style=\"fill:khaki;stroke:black;stroke-width:1\"></polygon>";
         layer = 1;
 
-        function drawFieldsplit(endtag,level,target_endtag,x,y,size) {//input is the id of the fieldsplit. for example "0". (x,y) is the upper lefthand corner. size is the size of one side of the parent square (in pixels)
+        function drawFieldsplit(data,endtag,level,target_endtag,x,y,size) {//input is the id of the fieldsplit. for example "0". (x,y) is the upper lefthand corner. size is the size of one side of the parent square (in pixels)
             //work = draw the children of the fieldsplit then call draw on each child
             if(target_endtag.indexOf(endtag) != 0)
                 return ""; //endtag is not on the path to the target_endtag
 
             var ret = "";
 
-            var numChildren = getSawsNumChildren(endtag);
+            var numChildren = getNumChildren(data,endtag);
             if(numChildren == 0)
                 return;
             var colorNum = level;//the depth of the fieldsplit within other fieldsplits
@@ -41,13 +41,13 @@ function drawDiagrams(endtag,target_endtag,x,y) {
 
                 var childID = endtag + "_" + i;
                 //only draw if child is indeed a fieldsplit
-                var child_index = getSawsIndex(childID);
-                if(child_index != -1 && sawsInfo[child_index].pc == "fieldsplit")
-                    ret += drawFieldsplit(childID, level+1, target_endtag, curr_x, curr_y, size/numChildren);
+                var child_index = getIndex(data,childID);
+                if(child_index != -1 && data[child_index].pc == "fieldsplit")
+                    ret += drawFieldsplit(data,childID, level+1, target_endtag, curr_x, curr_y, size/numChildren);
 
                 //if child is mg, then it is time to switch drawing methods
-                else if(child_index != -1 && sawsInfo[child_index].pc == "mg") {
-                    var possible = drawDiagrams(childID,target_endtag,x+size+20+146,y+i*side);
+                else if(child_index != -1 && data[child_index].pc == "mg") {
+                    var possible = drawDiagrams(data,childID,target_endtag,x+size+20+146,y+i*side);
                     if(possible != "") {//don't draw the arrow if there is no diagram following
                         ret += "<image x=\""+(x+size+20)+"\" y=\""+(y+i*side+side/2-13)+"\" width=\"146\" height=\"26\" xlink:href=\"images/arrow.png\"></image>";
                         ret += possible;
@@ -67,11 +67,10 @@ function drawDiagrams(endtag,target_endtag,x,y) {
 
             return ret;
         }
-
-        ret += drawFieldsplit(endtag,0,target_endtag,x,y,400);
+        ret += drawFieldsplit(data,endtag,0,target_endtag,x,y,400);
     }
 
-    else if(sawsInfo[index].pc == "mg") { //draw multigrid diagram. multigrid diagram doesn't use an inner recursive function because it's not that complex to draw.
+    else if(data[index].pc == "mg") { //draw multigrid diagram. multigrid diagram doesn't use an inner recursive function because it's not that complex to draw.
 
         var selectedChild = "";
 
@@ -114,14 +113,12 @@ function drawDiagrams(endtag,target_endtag,x,y) {
 
         //recursively draw the rest of the path to target_endtag
 
-        var possible  = drawDiagrams(endtag+"_"+selectedChild,target_endtag,new_x+146,new_y);
+        var possible  = drawDiagrams(data,endtag+"_"+selectedChild,target_endtag,new_x+146,new_y);
         if(possible != "") {//only add the arrow if something was actually drawn
             ret += "<image x=\""+(new_x-45)+"\" y=\""+(new_y+70)+"\" width=\"146\" height=\"26\" xlink:href=\"images/arrow.png\"></image>";
-            ret += possible
+            ret += possible;
         }
-
     }
 
     return ret;
-
 }
