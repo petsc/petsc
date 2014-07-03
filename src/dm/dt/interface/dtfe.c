@@ -1783,7 +1783,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   Vec                 coordinates;
   PetscReal          *qpoints, *qweights;
   PetscInt           *closure = NULL, closureSize, c;
-  PetscInt            depth, dim, pdimMax, *pStart, *pEnd, cell, coneSize, d, n, f = 0;
+  PetscInt            depth, dim, pdimMax, pMax = 0, *pStart, *pEnd, cell, coneSize, d, n, f = 0;
   PetscBool           simplex;
   PetscErrorCode      ierr;
 
@@ -1797,13 +1797,24 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   ierr = DMPlexGetConeSize(dm, pStart[depth], &coneSize);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &csection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  if      (coneSize == dim+1)    simplex = PETSC_TRUE;
-  else if (coneSize == 1 << dim) simplex = PETSC_FALSE;
-  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
+  if (depth == 1) {
+    if      (coneSize == dim+1)    simplex = PETSC_TRUE;
+    else if (coneSize == 1 << dim) simplex = PETSC_FALSE;
+    else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
+  }
+  else if (depth == dim) {
+    if      (coneSize == dim+1)   simplex = PETSC_TRUE;
+    else if (coneSize == 2 * dim) simplex = PETSC_FALSE;
+    else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
+  }
+  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support cell-vertex meshes or interpolated meshes");
   lag->simplex = simplex;
   ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, sp->order, &pdimMax);CHKERRQ(ierr);
   pdimMax *= (pEnd[dim] - pStart[dim]);
   ierr = PetscMalloc1(pdimMax, &sp->functional);CHKERRQ(ierr);
+  for (d = 0; d <= depth; d++) {
+    pMax = PetscMax(pMax,pEnd[d]);
+  }
   if (!dim) {
     ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
     ierr = PetscMalloc1(1, &qpoints);CHKERRQ(ierr);
@@ -1816,8 +1827,8 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   } else {
     PetscBT seen;
 
-    ierr = PetscBTCreate(pEnd[dim-1], &seen);CHKERRQ(ierr);
-    ierr = PetscBTMemzero(pEnd[dim-1], seen);CHKERRQ(ierr);
+    ierr = PetscBTCreate(pMax, &seen);CHKERRQ(ierr);
+    ierr = PetscBTMemzero(pMax, seen);CHKERRQ(ierr);
     for (cell = pStart[depth]; cell < pEnd[depth]; ++cell) {
       ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (c = 0; c < closureSize*2; c += 2) {
@@ -5399,6 +5410,7 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
   ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialSetTensor(P, !isSimplex);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
   ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
