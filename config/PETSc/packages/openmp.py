@@ -21,7 +21,6 @@ class Configure(PETSc.package.NewPackage):
   def configureLibrary(self):
     ''' Checks for -fopenmp compiler flag'''
     ''' Needs to check if OpenMP actually exists and works '''
-    raise RuntimeError('Please use petsc-dev for OpenMP functionality')
     self.checkDependencies()
     self.setCompilers.pushLanguage('C')
     #
