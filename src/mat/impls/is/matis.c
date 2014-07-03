@@ -15,6 +15,283 @@
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "MatISGetMPIXAIJ_IS"
+PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
+{
+  Mat_IS                 *matis = (Mat_IS*)(mat->data);
+  /* info on mat */
+  /* ISLocalToGlobalMapping rmapping,cmapping; */
+  PetscInt               bs,rows,cols;
+  PetscInt               lrows,lcols;
+  PetscInt               local_rows,local_cols;
+  PetscBool              isdense,issbaij,issbaij_red;
+  /* values insertion */
+  PetscScalar            *array;
+  PetscInt               *local_indices,*global_indices;
+  /* work */
+  PetscInt               i,j,index_row;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  /* MISSING CHECKS
+    - rectangular case not covered (it is not allowed by MATIS)
+  */
+  /* get info from mat */
+  /* ierr = MatGetLocalToGlobalMapping(mat,&rmapping,&cmapping);CHKERRQ(ierr); */
+  ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  ierr = MatGetSize(matis->A,&local_rows,&local_cols);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQDENSE,&isdense);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
+
+  /* work */
+  ierr = PetscMalloc1(local_rows,&local_indices);CHKERRQ(ierr);
+  for (i=0;i<local_rows;i++) local_indices[i]=i;
+  /* map indices of local mat to global values */
+  ierr = PetscMalloc(PetscMax(local_cols,local_rows)*sizeof(*global_indices),&global_indices);CHKERRQ(ierr);
+  /* ierr = ISLocalToGlobalMappingApply(rmapping,local_rows,local_indices,global_indices);CHKERRQ(ierr); */
+  ierr = ISLocalToGlobalMappingApply(matis->mapping,local_rows,local_indices,global_indices);CHKERRQ(ierr);
+
+  if (issbaij) {
+    ierr = MatGetRowUpperTriangular(matis->A);CHKERRQ(ierr);
+  }
+
+  if (reuse == MAT_INITIAL_MATRIX) {
+    Mat         new_mat;
+    MatType     new_mat_type;
+    Vec         vec_dnz,vec_onz;
+    PetscScalar *my_dnz,*my_onz;
+    PetscInt    *dnz,*onz,*mat_ranges,*row_ownership;
+    PetscInt    index_col,owner;
+    PetscMPIInt nsubdomains;
+
+    /* determining new matrix type */
+    ierr = MPI_Allreduce(&issbaij,&issbaij_red,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+    if (issbaij_red) {
+      new_mat_type = MATSBAIJ;
+    } else {
+      if (bs>1) {
+        new_mat_type = MATBAIJ;
+      } else {
+        new_mat_type = MATAIJ;
+      }
+    }
+
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&nsubdomains);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)mat),&new_mat);CHKERRQ(ierr);
+    ierr = MatSetSizes(new_mat,PETSC_DECIDE,PETSC_DECIDE,rows,cols);CHKERRQ(ierr);
+    ierr = MatSetBlockSize(new_mat,bs);CHKERRQ(ierr);
+    ierr = MatSetType(new_mat,new_mat_type);CHKERRQ(ierr);
+    ierr = MatSetUp(new_mat);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(new_mat,&lrows,&lcols);CHKERRQ(ierr);
+
+    /*
+      preallocation
+    */
+
+    ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)new_mat),lrows,lcols,dnz,onz);CHKERRQ(ierr);
+    /*
+       Some vectors are needed to sum up properly on shared interface dofs.
+       Preallocation macros cannot do the job.
+       Note that preallocation is not exact, since it overestimates nonzeros
+    */
+    ierr = MatGetVecs(new_mat,NULL,&vec_dnz);CHKERRQ(ierr);
+    /* ierr = VecSetLocalToGlobalMapping(vec_dnz,rmapping);CHKERRQ(ierr); */
+    ierr = VecSetLocalToGlobalMapping(vec_dnz,matis->mapping);CHKERRQ(ierr);
+    ierr = VecDuplicate(vec_dnz,&vec_onz);CHKERRQ(ierr);
+    /* All processes need to compute entire row ownership */
+    ierr = PetscMalloc1(rows,&row_ownership);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRanges(new_mat,(const PetscInt**)&mat_ranges);CHKERRQ(ierr);
+    for (i=0;i<nsubdomains;i++) {
+      for (j=mat_ranges[i];j<mat_ranges[i+1];j++) {
+        row_ownership[j]=i;
+      }
+    }
+
+    /*
+       my_dnz and my_onz contains exact contribution to preallocation from each local mat
+       then, they will be summed up properly. This way, preallocation is always sufficient
+    */
+    ierr = PetscMalloc1(local_rows,&my_dnz);CHKERRQ(ierr);
+    ierr = PetscMalloc1(local_rows,&my_onz);CHKERRQ(ierr);
+    ierr = PetscMemzero(my_dnz,local_rows*sizeof(*my_dnz));CHKERRQ(ierr);
+    ierr = PetscMemzero(my_onz,local_rows*sizeof(*my_onz));CHKERRQ(ierr);
+    /* preallocation as a MATAIJ */
+    if (isdense) { /* special case for dense local matrices */
+      for (i=0;i<local_rows;i++) {
+        index_row = global_indices[i];
+        for (j=i;j<local_rows;j++) {
+          owner = row_ownership[index_row];
+          index_col = global_indices[j];
+          if (index_col > mat_ranges[owner]-1 && index_col < mat_ranges[owner+1] ) { /* diag block */
+            my_dnz[i] += 1.0;
+          } else { /* offdiag block */
+            my_onz[i] += 1.0;
+          }
+          /* same as before, interchanging rows and cols */
+          if (i != j) {
+            owner = row_ownership[index_col];
+            if (index_row > mat_ranges[owner]-1 && index_row < mat_ranges[owner+1] ) {
+              my_dnz[j] += 1.0;
+            } else {
+              my_onz[j] += 1.0;
+            }
+          }
+        }
+      }
+    } else {
+      for (i=0;i<local_rows;i++) {
+        PetscInt ncols;
+        const PetscInt *cols;
+        index_row = global_indices[i];
+        ierr = MatGetRow(matis->A,i,&ncols,&cols,NULL);CHKERRQ(ierr);
+        for (j=0;j<ncols;j++) {
+          owner = row_ownership[index_row];
+          index_col = global_indices[cols[j]];
+          if (index_col > mat_ranges[owner]-1 && index_col < mat_ranges[owner+1] ) { /* diag block */
+            my_dnz[i] += 1.0;
+          } else { /* offdiag block */
+            my_onz[i] += 1.0;
+          }
+          /* same as before, interchanging rows and cols */
+          if (issbaij) {
+            owner = row_ownership[index_col];
+            if (index_row > mat_ranges[owner]-1 && index_row < mat_ranges[owner+1] ) {
+              my_dnz[j] += 1.0;
+            } else {
+              my_onz[j] += 1.0;
+            }
+          }
+        }
+        ierr = MatRestoreRow(matis->A,i,&ncols,&cols,NULL);CHKERRQ(ierr);
+      }
+    }
+    ierr = VecSet(vec_dnz,0.0);CHKERRQ(ierr);
+    ierr = VecSet(vec_onz,0.0);CHKERRQ(ierr);
+    if (local_rows) { /* multilevel guard */
+      ierr = VecSetValuesLocal(vec_dnz,local_rows,local_indices,my_dnz,ADD_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValuesLocal(vec_onz,local_rows,local_indices,my_onz,ADD_VALUES);CHKERRQ(ierr);
+    }
+    ierr = VecAssemblyBegin(vec_dnz);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(vec_onz);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(vec_dnz);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(vec_onz);CHKERRQ(ierr);
+    ierr = PetscFree(my_dnz);CHKERRQ(ierr);
+    ierr = PetscFree(my_onz);CHKERRQ(ierr);
+    ierr = PetscFree(row_ownership);CHKERRQ(ierr);
+
+    /* set computed preallocation in dnz and onz */
+    ierr = VecGetArray(vec_dnz,&array);CHKERRQ(ierr);
+    for (i=0; i<lrows; i++) dnz[i] = (PetscInt)PetscRealPart(array[i]);
+    ierr = VecRestoreArray(vec_dnz,&array);CHKERRQ(ierr);
+    ierr = VecGetArray(vec_onz,&array);CHKERRQ(ierr);
+    for (i=0;i<lrows;i++) onz[i] = (PetscInt)PetscRealPart(array[i]);
+    ierr = VecRestoreArray(vec_onz,&array);CHKERRQ(ierr);
+    ierr = VecDestroy(&vec_dnz);CHKERRQ(ierr);
+    ierr = VecDestroy(&vec_onz);CHKERRQ(ierr);
+
+    /* Resize preallocation if overestimated */
+    for (i=0;i<lrows;i++) {
+      dnz[i] = PetscMin(dnz[i],lcols);
+      onz[i] = PetscMin(onz[i],cols-lcols);
+    }
+    /* set preallocation */
+    ierr = MatMPIAIJSetPreallocation(new_mat,0,dnz,0,onz);CHKERRQ(ierr);
+    for (i=0;i<lrows/bs;i++) {
+      dnz[i] = dnz[i*bs]/bs;
+      onz[i] = onz[i*bs]/bs;
+    }
+    ierr = MatMPIBAIJSetPreallocation(new_mat,bs,0,dnz,0,onz);CHKERRQ(ierr);
+    for (i=0;i<lrows/bs;i++) {
+      dnz[i] = dnz[i]-i;
+    }
+    ierr = MatMPISBAIJSetPreallocation(new_mat,bs,0,dnz,0,onz);CHKERRQ(ierr);
+    ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+    *M = new_mat;
+  } else {
+    PetscInt mbs,mrows,mcols;
+    /* some checks */
+    ierr = MatGetBlockSize(*M,&mbs);CHKERRQ(ierr);
+    ierr = MatGetSize(*M,&mrows,&mcols);CHKERRQ(ierr);
+    if (mrows != rows) {
+      SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse matrix. Wrong number of rows (%d != %d)",rows,mrows);
+    }
+    if (mrows != rows) {
+      SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse matrix. Wrong number of cols (%d != %d)",cols,mcols);
+    }
+    if (mbs != bs) {
+      SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot reuse matrix. Wrong block size (%d != %d)",bs,mbs);
+    }
+    ierr = MatZeroEntries(*M);CHKERRQ(ierr);
+  }
+  /* set local to global mappings */
+  /* ierr = MatSetLocalToGlobalMapping(*M,rmapping,cmapping);CHKERRQ(ierr); */
+  /* Set values */
+  if (isdense) { /* special case for dense local matrices */
+    ierr = MatSetOption(*M,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(matis->A,&array);CHKERRQ(ierr);
+    ierr = MatSetValues(*M,local_rows,global_indices,local_cols,global_indices,array,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(matis->A,&array);CHKERRQ(ierr);
+    ierr = PetscFree(local_indices);CHKERRQ(ierr);
+    ierr = PetscFree(global_indices);CHKERRQ(ierr);
+  } else { /* very basic values insertion for all other matrix types */
+    ierr = PetscFree(local_indices);CHKERRQ(ierr);
+    for (i=0;i<local_rows;i++) {
+      ierr = MatGetRow(matis->A,i,&j,(const PetscInt**)&local_indices,(const PetscScalar**)&array);CHKERRQ(ierr);
+      /* ierr = MatSetValuesLocal(*M,1,&i,j,local_indices,array,ADD_VALUES);CHKERRQ(ierr); */
+      ierr = ISLocalToGlobalMappingApply(matis->mapping,j,local_indices,global_indices);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingApply(matis->mapping,1,&i,&index_row);CHKERRQ(ierr);
+      ierr = MatSetValues(*M,1,&index_row,j,global_indices,array,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(matis->A,i,&j,(const PetscInt**)&local_indices,(const PetscScalar**)&array);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(global_indices);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(*M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (isdense) {
+    ierr = MatSetOption(*M,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  if (issbaij) {
+    ierr = MatRestoreRowUpperTriangular(matis->A);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatISGetMPIXAIJ"
+/*@
+    MatISGetMPIXAIJ - Converts MATIS matrix into a parallel AIJ format
+
+  Input Parameter:
+.  mat - the matrix (should be of type MATIS)
+.  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+  Output Parameter:
+.  newmat - the matrix in AIJ format
+
+  Level: developer
+
+  Notes:
+
+.seealso: MATIS
+@*/
+PetscErrorCode MatISGetMPIXAIJ(Mat mat, MatReuse reuse, Mat *newmat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(mat,reuse,2);
+  PetscValidPointer(newmat,3);
+  if (reuse != MAT_INITIAL_MATRIX) {
+    PetscValidHeaderSpecific(*newmat,MAT_CLASSID,3);
+    PetscCheckSameComm(mat,1,*newmat,3);
+  }
+  ierr = PetscUseMethod(mat,"MatISGetMPIXAIJ_C",(Mat,MatReuse,Mat*),(mat,reuse,newmat));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_IS"
 PetscErrorCode MatDuplicate_IS(Mat mat,MatDuplicateOption op,Mat *newmat)
 {
@@ -80,6 +357,8 @@ PetscErrorCode MatDestroy_IS(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetMPIXAIJ_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -108,7 +387,7 @@ PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_IS"
-static PetscErrorCode MatMultAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
+PetscErrorCode MatMultAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
 {
   Vec            temp_vec;
   PetscErrorCode ierr;
@@ -378,7 +657,7 @@ PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISGetLocalMat_IS"
-PetscErrorCode  MatISGetLocalMat_IS(Mat mat,Mat *local)
+PetscErrorCode MatISGetLocalMat_IS(Mat mat,Mat *local)
 {
   Mat_IS *is = (Mat_IS*)mat->data;
 
@@ -407,7 +686,7 @@ PetscErrorCode  MatISGetLocalMat_IS(Mat mat,Mat *local)
 
 .seealso: MATIS
 @*/
-PetscErrorCode  MatISGetLocalMat(Mat mat,Mat *local)
+PetscErrorCode MatISGetLocalMat(Mat mat,Mat *local)
 {
   PetscErrorCode ierr;
 
@@ -420,7 +699,7 @@ PetscErrorCode  MatISGetLocalMat(Mat mat,Mat *local)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISSetLocalMat_IS"
-PetscErrorCode  MatISSetLocalMat_IS(Mat mat,Mat local)
+PetscErrorCode MatISSetLocalMat_IS(Mat mat,Mat local)
 {
   Mat_IS         *is = (Mat_IS*)mat->data;
   PetscInt       nrows,ncols,orows,ocols;
@@ -457,12 +736,13 @@ PetscErrorCode  MatISSetLocalMat_IS(Mat mat,Mat local)
 
 .seealso: MATIS
 @*/
-PetscErrorCode  MatISSetLocalMat(Mat mat,Mat local)
+PetscErrorCode MatISSetLocalMat(Mat mat,Mat local)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(local,MAT_CLASSID,2);
   ierr = PetscUseMethod(mat,"MatISSetLocalMat_C",(Mat,Mat),(mat,local));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -633,13 +913,17 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
+  /* zeros pointer */
   b->A       = 0;
   b->ctx     = 0;
   b->x       = 0;
   b->y       = 0;
   b->mapping = 0;
-  ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
-  ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",MatISSetLocalMat_IS);CHKERRQ(ierr);
-  ierr   = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
+
+  /* special MATIS functions */
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",MatISSetLocalMat_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetMPIXAIJ_C",MatISGetMPIXAIJ_IS);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
