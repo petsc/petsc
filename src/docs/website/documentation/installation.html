@@ -76,7 +76,7 @@
 
       Invoke the following commands from the top level PETSc directory: <br>
       <ul class="code">
-        <li>./configure --with-cc=gcc --with-fc=gfortran --download-fblaslapack --download-mpich</li>
+        <li>./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-fblaslapack --download-mpich</li>
         <li>make all test</li>
       </ul>
 
@@ -130,14 +130,14 @@
             installed <code>./configure</code> will download &amp; install BLAS,
             LAPACK, MPICH if they are not already installed on the system):
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=gfortran --download-fblaslapack --download-mpich</li>
+              <li>./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-fblaslapack --download-mpich</li>
             </ul>
           </li>
 
           <li>
-            Same as above - but do not have a fortran compiler [and want to use PETSc from C].
+            Same as above - but do not have a fortran compiler [and want to use PETSc from C only].
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=0 --download-f2cblaslapack --download-mpich</li>
+              <li>./configure --with-cc=gcc --with-cxx=0 --with-fc=0 --download-f2cblaslapack --download-mpich</li>
             </ul>
           </li>
 
@@ -167,16 +167,16 @@
             (add the option <code>--with-fortran-kernels=generic</code> to get
             possibly faster complex number performance on some systems):
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --download-fblaslapack --download-mpich --with-scalar-type=complex --with-clanguage=cxx</li>
+              <li>./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --with-clanguage=cxx --download-fblaslapack --download-mpich --with-scalar-type=complex</li>
             </ul>
           </li>
 
           <li>
             Install 2 variants of PETSc, one with gnu, the other with intel compilers. Specify different PETSC_ARCH for each build.
             <ul>
-              <li>./configure PETSC_ARCH=linux-gnu --with-cc=gcc --with-fc=gfortran --download-mpich</li>
+              <li>./configure PETSC_ARCH=linux-gnu --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich</li>
               <li>make PETSC_ARCH=linux-gnu all test</li>
-              <li>./configure PETSC_ARCH=linux-gnu-intel --with-cc=icc --with-fc=ifort --download-mpich --with-blas-lapack-dir=/usr/local/mkl</li>
+              <li>./configure PETSC_ARCH=linux-gnu-intel --with-cc=icc --with-cxx=icpc --with-fc=ifort --download-mpich --with-blas-lapack-dir=/usr/local/mkl</li>
               <li>make PETSC_ARCH=linux-gnu-intel all test</li>
             </ul>
           </li>
@@ -272,19 +272,26 @@
 
         <ul>
           <li>
-            Specify compilers using the options <code>--with-cc --with-fc --with-cxx</code> for c, c++, and fortran compilers
+            Specify compilers using the options <code>--with-cc --with-cxx --with-fc</code> for c, c++, and fortran compilers
             <ul>
-              <li>--with-cc=mpicc --with-fc=mpif90</li>
-              <li>--with-cc=gcc --with-fc=gfortran</li>
+              <li>--with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90</li>
+              <li>--with-cc=gcc --with-cxx=g++ --with-fc=gfortran</li>
               <li>--with-cc=gcc --with-cxx=g++ --with-fc=gfortran --with-clanguage=cxx</li>
             </ul>
-            Note that --with-clanguage=cxx means that the PETSc source code is compiled with the C++ compiler. This is not normally needed and we don't recommend it unless you are using complex numbers (--with-scalar-type=complex) and programming yourself in C++.
+            Note that --with-clanguage=cxx means that the PETSc source code is compiled with the C++ compiler. This is not normally needed and we don't recommend it. One can use 'c' build of PETSc from both C and C++. One can also have a complex build with C99.
           </li>
 
           <li>
             If fortran compiler is not available or not needed - then disabling using fortran
             <ul>
               <li>--with-fc=0</li>
+            </ul>
+          </li>
+
+          <li>
+            If a C++ compiler is not available or not needed - disable configuring with it
+            <ul>
+              <li>--with-cxx=0</li>
             </ul>
           </li>
 
@@ -308,7 +315,7 @@
             --with-cc=mpicc or --with-mpi-dir [and not
             --with-cc=gcc]
             <ul>
-              <li>--with-cc=mpicc --with-fc=mpif90</li>
+              <li>--with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90</li>
               <li>--with-mpi-dir=/opt/mpich2-1.1 [but <b>*no*</b> --with-cc=gcc]</li>
             </ul>
           </li>
@@ -319,9 +326,10 @@
             option --with-debugging [defaults to debug enabled].
             Additionally one can specify more suitable optimization
             flags with the options COPTFLAGS, FOPTFLAGS,
-            CXXOPTFLAGS.
+            CXXOPTFLAGS. For ex: when using gnu compilers with corresponding
+            optimization flags:
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=gfortran --with-debugging=0 COPTFLAGS='-O3 -march=p4 -mtune=p4' FOPTFLAGS='-O3 -qarch=p4 -qtune=p4'</li>
+              <li>./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --with-debugging=0 COPTFLAGS='-O3 -march=native -mtune=native' CXXOPTFLAGS='-O3 -march=native -mtune=native' FOPTFLAGS='-O3 -march=native -mtune=native' --download-mpich</li>
             </ul>
           </li>
 
