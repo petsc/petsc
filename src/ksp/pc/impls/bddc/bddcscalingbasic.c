@@ -382,7 +382,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   PetscInt               *auxlocal_sequential,*auxlocal_parallel;
   PetscInt               *auxglobal_sequential,*auxglobal_parallel;
   PetscInt               *auxmapping;
-  PetscInt               i,j,min_loc;
+  PetscInt               i,max_subset_size;
   PetscInt               n_sequential_problems,n_local_sequential_problems,n_parallel_problems,n_local_parallel_problems;
   PetscErrorCode         ierr;
 
@@ -411,15 +411,18 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   }
 
   /* map interface's subsets */
-  j = 0;
+  max_subset_size = 0;
   for (i=0;i<graph->ncc;i++) {
-    j = PetscMax(j,graph->cptr[i+1]-graph->cptr[i]);
+    max_subset_size = PetscMax(max_subset_size,graph->cptr[i+1]-graph->cptr[i]);
   }
-  ierr = PetscMalloc5(j,&auxmapping,
+  ierr = PetscMalloc5(max_subset_size,&auxmapping,
                       graph->ncc,&auxlocal_sequential,
                       graph->ncc,&auxlocal_parallel,
                       graph->ncc,&index_sequential,
                       graph->ncc,&index_parallel);CHKERRQ(ierr);
+
+  /* if threshold is negative, uses all sequential problems */
+  if (pcbddc->deluxe_threshold < 0) pcbddc->deluxe_threshold = max_subset_size;
 
   n_local_sequential_problems = 0;
   n_local_parallel_problems = 0;
@@ -427,8 +430,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   for (i=0;i<graph->ncc;i++) {
     PetscInt subset_size = graph->cptr[i+1]-graph->cptr[i];
     if (subset_size > 1) {
+      PetscInt j,min_loc = 0;
       ierr = ISLocalToGlobalMappingApply(graph->l2gmap,subset_size,&graph->queue[graph->cptr[i]],auxmapping);CHKERRQ(ierr);
-      min_loc = 0;
       for (j=1;j<subset_size;j++) {
         if (auxmapping[j]<auxmapping[min_loc]) {
           min_loc = j;
