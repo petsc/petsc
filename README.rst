@@ -1,38 +1,25 @@
-========================
-README: PETSc for Python
-========================
+================
+PETSc for Python
+================
 
-:Author:       Lisandro Dalcin
-:Contact:      dalcinl@gmail.com
-:Organization: CIMEC <http://www.cimec.org.ar/>
-:Address:      CCT CONICET, 3000 Santa Fe, Argentina
+Overview
+--------
 
-Thank you for downloading the *PETSc for Python* project archive. As
-this is a work in progress, please check the `project website`_ for
-updates.
+Welcome to PETSc for Python. This package provides Python bindings for
+PETSc_, the *Portable, Extensible Toolkit for Scientific Computation*.
 
-.. _CIMEC:            http://www.cimec.org.ar/
-.. _project website:  https://bitbucket.org/petsc/petsc4py/
+Dependencies
+------------
 
+* A matching version of PETSc_  built with *shared/dynamic libraries*.
 
-- To build and install this package, you must meet the following
-  requirements.
+* Python_ 2.4 to 2.7 or 3.1 to 3.4.
 
-  + PETSc_ 3.4 or 3.3, built with *shared libraries* (i.e., by
-    passing ``--with-shared-libraries`` option to PETSc ``configure``
-    script; this is not strictly required, but **highly** recommended).
+* A recent NumPy_ release.
 
-  + Python_ 2.4 to 2.7 and 3.1 to 3.3.
-
-  + NumPy_ 1.0.1 and above.
+* To work with the in-development version, you need to install Cython_.
 
 .. _PETSc:  http://www.mcs.anl.gov/petsc/
 .. _Python: http://www.python.org
 .. _NumPy:  http://www.numpy.org
-
-
-- This package uses standard distutils_. For detailed instructions
-  about requirements and the building/install process, read the file
-  ``docs/source/install.rst``.
-
-.. _distutils: http://docs.python.org/distutils/
+.. _Cython: http://www.cython.org
