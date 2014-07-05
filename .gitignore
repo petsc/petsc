@@ -1,6 +1,8 @@
 build
 docs/*.html
+docs/*.info
 docs/*.pdf
+docs/*.1
 docs/apiref
 docs/usrman
 dist
