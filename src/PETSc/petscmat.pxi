@@ -344,11 +344,13 @@ cdef extern from "libpetsc4py.h":
 # -----------------------------------------------------------------------------
 
 cdef extern from * nogil:
+    ctypedef PetscVec const_PetscVec "const Vec"
     int MatNullSpaceDestroy(PetscNullSpace*)
     int MatNullSpaceView(PetscNullSpace,PetscViewer)
     int MatNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,PetscVec[],
                            PetscNullSpace*)
     int MatNullSpaceCreateRigidBody(PetscVec,PetscNullSpace*)
+    int MatNullSpaceGetVecs(PetscNullSpace,PetscBool*,PetscInt*,const_PetscVec*[])
     int MatNullSpaceRemove(PetscNullSpace,PetscVec)
     int MatNullSpaceTest(PetscNullSpace,PetscMat)
 

@@ -1375,9 +1375,29 @@ cdef class NullSpace(Object):
         else:
             CHKERR( MatNullSpaceSetFunction(self.nsp, NULL, NULL) )
             self.set_attr('__function__', None)
+    #
+
+    def hasConstant(self):
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR( MatNullSpaceGetVecs(self.nsp, &flag, NULL, NULL) )
+        return <bint> flag
+
+    def getVecs(self):
+        cdef PetscInt i = 0, nv = 0
+        cdef const_PetscVec *v = NULL
+        CHKERR( MatNullSpaceGetVecs(self.nsp, NULL, &nv, &v) )
+        cdef Vec vec = None
+        cdef list vectors = []
+        for i from 0 <= i < nv:
+            vec = Vec()
+            vec.vec = v[i]
+            PetscINCREF(vec.obj)
+            vectors.append(vec)
 
     def getFunction(self):
         return self.get_attr('__function__')
+
+    #
 
     def remove(self, Vec vec not None):
         CHKERR( MatNullSpaceRemove(self.nsp, vec.vec) )
