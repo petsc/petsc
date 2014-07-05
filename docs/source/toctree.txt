@@ -2,8 +2,9 @@
    :maxdepth: 2
 
    overview
-   tutorial
    install
+   tutorial
+   citing
 
 .. Local Variables:
 .. mode: rst
