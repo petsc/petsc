@@ -559,3 +559,13 @@ cdef class DMPlex(DM):
         cdef DMPlex dm = <DMPlex>type(self)()
         CHKERR( DMPlexPermute(self.dm, perm.iset, &dm.dm) )
         return dm
+
+    #
+
+    def computeCellGeometryFVM(self, cell):
+        cdef PetscInt dim = 0
+        cdef PetscInt ccell = asInt(cell)
+        CHKERR( DMPlexGetDimension(self.dm, &dim) )
+        cdef PetscReal vol = 0, centroid[3], normal[3]
+        CHKERR( DMPlexComputeCellGeometryFVM(self.dm, ccell, &vol, centroid, normal) )
+        return (toReal(vol), array_r(dim, centroid), array_r(dim, normal))

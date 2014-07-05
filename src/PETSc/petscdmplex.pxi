@@ -133,3 +133,5 @@ cdef extern from * nogil:
     #int DMPlexGetOrientedFace(PetscDM,PetscInt,PetscInt,const_PetscInt [],PetscInt,PetscInt [],PetscInt [],PetscInt [],PetscBool *)
 
     int DMPlexCreateSection(PetscDM,PetscInt,PetscInt,const_PetscInt[],const_PetscInt[],PetscInt,const_PetscInt[],const_PetscIS[],PetscIS,PetscSection*)
+
+    int DMPlexComputeCellGeometryFVM(PetscDM,PetscInt,PetscReal*,PetscReal[],PetscReal[])
