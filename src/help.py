@@ -9,7 +9,7 @@ Options Database. It outputs a listing of the many PETSc options
 indicating option names, default values and descriptions. If you have
 Python 2.4 and above, then you can issue at the command line::
 
-  $ python -m petsc4py.help [vec|mat|ksp|pc|snes|ts] [<petsc-option-list>]
+  $ python -m petsc4py.help [vec|mat|pc|ksp|snes|ts|tao] [<petsc-option-list>]
 
 """
 
@@ -20,46 +20,61 @@ def help(args=None):
         prog = sys.argv[0]
     except Exception:
         prog = getattr(sys, 'executable', 'python')
+    # arguments
     if args is None:
         args = sys.argv[1:]
     elif isinstance(args, str):
         args = shlex.split(args)
     else:
         args = [str(a) for a in args]
+    # import and initialize
     import petsc4py
     petsc4py.init([prog, '-help'] + args)
     from petsc4py import PETSc
+    # help dispatcher
     COMM = PETSc.COMM_SELF
     if 'vec' in args:
         vec = PETSc.Vec().create(comm=COMM)
         vec.setSizes(0)
         vec.setFromOptions()
-        del vec
+        vec.destroy()
     if 'mat' in args:
         mat = PETSc.Mat().create(comm=COMM)
         mat.setSizes([0, 0])
         mat.setFromOptions()
-        del mat
-    if 'ksp' in args:
-        ksp = PETSc.KSP().create(comm=COMM)
-        ksp.setFromOptions()
-        del ksp
+        mat.destroy()
     if 'pc' in args:
         pc = PETSc.PC().create(comm=COMM)
         pc.setFromOptions()
-        del pc
+        pc.destroy()
+    if 'ksp' in args:
+        ksp = PETSc.KSP().create(comm=COMM)
+        ksp.setFromOptions()
+        ksp.destroy()
     if 'snes' in args:
         snes = PETSc.SNES().create(comm=COMM)
         snes.setFromOptions()
-        del snes
+        snes.destroy()
     if 'ts' in args:
         ts = PETSc.TS().create(comm=COMM)
         ts.setFromOptions()
-        del ts
-    if 'da' in args:
-        da = PETSc.DA().create(comm=COMM)
-        da.setFromOptions()
-        del da
+        ts.destroy()
+    if 'tao' in args:
+        tao = PETSc.TAO().create(comm=COMM)
+        tao.setFromOptions()
+        tao.destroy()
+    #if 'dm' in args:
+    #    dm = PETSc.DM().create(comm=COMM)
+    #    dm.setFromOptions()
+    #    dm.destroy()
+    if 'dmda' in args:
+        dmda = PETSc.DMDA().create(comm=COMM)
+        dmda.setFromOptions()
+        dmda.destroy()
+    if 'dmplex' in args:
+        dmplex = PETSc.DMPlex().create(comm=COMM)
+        dmplex.setFromOptions()
+        dmplex.destroy()
 
 if __name__ == '__main__':
     help()
