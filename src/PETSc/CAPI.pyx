@@ -104,6 +104,19 @@ cdef api PetscLGMap PyPetscLGMap_Get(object arg) except ? NULL:
     retv = ob.lgm
     return retv
 
+# -- SF --
+
+cdef api object PyPetscSF_New(PetscSF arg):
+    cdef SF retv = SF()
+    setref(&retv.sf, arg)
+    return retv
+
+cdef api PetscSF PyPetscSF_Get(object arg) except? NULL:
+    cdef PetscSF retv = NULL
+    cdef SF ob = <SF?> arg
+    retv = ob.sf
+    return retv
+
 # -- Vec --
 
 cdef api object PyPetscVec_New(PetscVec arg):

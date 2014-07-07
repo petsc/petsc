@@ -1,6 +1,14 @@
 # --------------------------------------------------------------------
 
+class SFType(object):
+    BASIC  = S_(PETSCSFBASIC)
+    WINDOW = S_(PETSCSFWINDOW)
+
+# --------------------------------------------------------------------
+
 cdef class SF(Object):
+
+    Type = SFType
 
     def __cinit__(self):
         if PETSC_VERSION_GT(3,3,0):
@@ -27,11 +35,26 @@ cdef class SF(Object):
         PetscCLEAR(self.obj); self.sf = newsf
         return self
 
+    def setType(self, sf_type):
+        cdef PetscSFType cval = NULL
+        sf_type = str2bytes(sf_type, &cval)
+        CHKERR( PetscSFSetType(self.sf, cval) )
+
+    def getType(self):
+        cdef PetscSFType cval = NULL
+        CHKERR( PetscObjectGetType(<PetscObject>self.sf, &cval) )
+        return bytes2str(cval)
+
+    def setFromOptions(self):
+        CHKERR( PetscSFSetFromOptions(self.sf) )
+
     def setUp(self):
         CHKERR( PetscSFSetUp(self.sf) )
 
     def reset(self):
         CHKERR( PetscSFReset(self.sf) )
+
+    #
 
     def getGraph(self):
         cdef PetscInt nroots = 0, nleaves = 0
@@ -59,3 +82,26 @@ cdef class SF(Object):
             iremote[i].index = asInt(index)
             i += 1
         CHKERR( PetscSFSetGraph(self.sf, cnroots, cnleaves, ilocal, PETSC_COPY_VALUES, iremote, PETSC_OWN_POINTER) )
+
+    def setRankOrder(self, flag):
+        cdef PetscBool bval = flag
+        CHKERR( PetscSFSetRankOrder(self.sf, bval) ) 
+
+    #
+
+    def getMulti(self):
+        cdef SF sf = SF()
+        CHKERR( PetscSFGetMultiSF(self.sf, &sf.sf) )
+        PetscINCREF(sf.obj)
+        return sf
+
+    def createInverse(self):
+        cdef SF sf = SF()
+        CHKERR( PetscSFCreateInverseSF(self.sf, &sf.sf) )
+        return sf
+
+# --------------------------------------------------------------------
+
+del SFType
+
+# --------------------------------------------------------------------

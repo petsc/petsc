@@ -412,8 +412,9 @@ SWIG_From_dec(Type)(Type v) {
 
 %define SWIG_TYPECHECK_PETSC_IS            510 %enddef
 %define SWIG_TYPECHECK_PETSC_IS_LTOGM      511 %enddef
-%define SWIG_TYPECHECK_PETSC_VEC           512 %enddef
-%define SWIG_TYPECHECK_PETSC_VEC_SCATTER   513 %enddef
+%define SWIG_TYPECHECK_PETSC_SF            512 %enddef
+%define SWIG_TYPECHECK_PETSC_VEC           513 %enddef
+%define SWIG_TYPECHECK_PETSC_VEC_SCATTER   514 %enddef
 
 %define SWIG_TYPECHECK_PETSC_MAT           520 %enddef
 %define SWIG_TYPECHECK_PETSC_MAT_NULLSPACE 521 %enddef
@@ -528,6 +529,7 @@ SWIG_From_dec(Type)(Type v) {
 %petsc4py_objt( Petsc , Random    , PetscRandom            , PETSC_RANDOM        )
 %petsc4py_objt( Petsc , IS        , IS                     , PETSC_IS            )
 %petsc4py_objt( Petsc , LGMap     , ISLocalToGlobalMapping , PETSC_IS_LTOGM      )
+%petsc4py_objt( Petsc , SF        , SF                     , PETSC_SF            )
 %petsc4py_objt( Petsc , Vec       , Vec                    , PETSC_VEC           )
 %petsc4py_objt( Petsc , Scatter   , VecScatter             , PETSC_VEC_SCATTER   )
 %petsc4py_objt( Petsc , Mat       , Mat                    , PETSC_MAT           )

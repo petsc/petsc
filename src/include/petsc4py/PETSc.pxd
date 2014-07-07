@@ -23,6 +23,9 @@ cdef extern from "petsc.h":
     struct _p_ISLocalToGlobalMapping
     ctypedef _p_ISLocalToGlobalMapping* PetscLGMap "ISLocalToGlobalMapping"
 
+    struct _p_PetscSF
+    ctypedef _p_PetscSF* PetscSF "PetscSF"
+
     struct _p_Vec
     ctypedef _p_Vec* PetscVec "Vec"
 
@@ -61,9 +64,6 @@ cdef extern from "petsc.h":
 
     struct _n_DMLabel
     ctypedef _n_DMLabel* PetscDMLabel "DMLabel"
-
-    struct _p_PetscSF
-    ctypedef _p_PetscSF* PetscSF "PetscSF"
 
 # --------------------------------------------------------------------
 
@@ -110,6 +110,12 @@ ctypedef public api class LGMap(Object) [
     object PyPetscLGMapObject,
     ]:
     cdef PetscLGMap lgm
+
+ctypedef public api class SF(Object) [
+    type   PyPetscSF_Type,
+    object PyPetscSFObject,
+    ]:
+    cdef PetscSF sf
 
 ctypedef public api class Vec(Object) [
     type   PyPetscVec_Type,
@@ -188,12 +194,6 @@ ctypedef public api class DMDA(DM) [
     object PyPetscDMDAObject,
     ]:
     pass
-
-ctypedef public api class SF(Object) [
-    type   PyPetscSF_Type,
-    object PyPetscSFObject,
-    ]:
-    cdef PetscSF sf
 
 # --------------------------------------------------------------------
 

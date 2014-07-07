@@ -351,6 +351,7 @@ cdef extern from *:
     PetscClassId PETSC_RANDOM_CLASSID    "PETSC_RANDOM_CLASSID"
     PetscClassId PETSC_IS_CLASSID        "IS_CLASSID"
     PetscClassId PETSC_LGMAP_CLASSID     "IS_LTOGM_CLASSID"
+    PetscClassId PETSC_SF_CLASSID        "PETSCSF_CLASSID"
     PetscClassId PETSC_VEC_CLASSID       "VEC_CLASSID"
     PetscClassId PETSC_SCATTER_CLASSID   "VEC_SCATTER_CLASSID"
     PetscClassId PETSC_SECTION_CLASSID   "PETSC_SECTION_CLASSID"
@@ -363,7 +364,6 @@ cdef extern from *:
     PetscClassId PETSC_TAO_CLASSID       "TAO_CLASSID"
     PetscClassId PETSC_AO_CLASSID        "AO_CLASSID"
     PetscClassId PETSC_DM_CLASSID        "DM_CLASSID"
-    PetscClassId PETSC_SF_CLASSID        "PETSCSF_CLASSID"
 
 cdef bint registercalled = 0
 
@@ -382,6 +382,7 @@ cdef int register() except -1:
     PyPetscType_Register(PETSC_RANDOM_CLASSID,    Random)
     PyPetscType_Register(PETSC_IS_CLASSID,        IS)
     PyPetscType_Register(PETSC_LGMAP_CLASSID,     LGMap)
+    PyPetscType_Register(PETSC_SF_CLASSID,        SF)
     PyPetscType_Register(PETSC_VEC_CLASSID,       Vec)
     PyPetscType_Register(PETSC_SCATTER_CLASSID,   Scatter)
     PyPetscType_Register(PETSC_SECTION_CLASSID,   Section)
@@ -394,7 +395,6 @@ cdef int register() except -1:
     PyPetscType_Register(PETSC_TAO_CLASSID,       TAO)
     PyPetscType_Register(PETSC_AO_CLASSID,        AO)
     PyPetscType_Register(PETSC_DM_CLASSID,        DM)
-    PyPetscType_Register(PETSC_SF_CLASSID,        SF)
     return 0 # and we are done, enjoy !!
 
 # --------------------------------------------------------------------
