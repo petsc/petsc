@@ -257,4 +257,5 @@ PETSC_EXTERN PetscErrorCode DMPlexSetConstraintMatrix(DM, Mat);
 /* tree */
 PETSC_EXTERN PetscErrorCode DMPlexSetReferenceTree(DM, DM);
 PETSC_EXTERN PetscErrorCode DMPlexGetReferenceTree(DM, DM*);
+PETSC_EXTERN PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm, PetscInt, PetscBool, DM*);
 #endif
