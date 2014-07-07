@@ -48,7 +48,6 @@ PETSc.displayDirectory = function(sub,divEntry)
         if(SAWs_prefix == "(null)")
             SAWs_prefix = "";
 
-        //DIAGRAMS DISABLED FOR NOW. WILL BE RESTORED SOON.
         $("#diagram").html("");
         var data = drawDiagrams(sawsInfo,"0",parsePrefix(sawsInfo,SAWs_prefix).endtag,5,5);
 

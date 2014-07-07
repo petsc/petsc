@@ -39,22 +39,22 @@
     <!-- overflow:hidden makes sure div expands with floated items as well -->
     <div id="outside" style="overflow: hidden;min-width:1290px;background-color:#90C7E3;padding:5px;" >
 
-      <div id="parameters" style="background-color:#90C7E3;padding:5px;float:left;">
+ <!-- <div id="parameters" style="background-color:#90C7E3;padding:5px;float:left;">
         <FORM NAME="parameters" id="questions" >
           <b id="currentAskText">Currently Asking for Matrix A<sub>0</sub></b>
           <TABLE cellspacing="5" >
             <colgroup>
               <col span="1" style="background-color:#90C7E3;">
             </colgroup>
-            <TR> <!-- 2nd row -->
+            <TR>
               <TD><span>Symmetric?</span></TD>
               <TD><INPUT TYPE="checkbox" id="symm" name="symmOpt"></TD>
             </TR>
-            <TR id="posdefRow"> <!-- 3rd row -->
+            <TR id="posdefRow">
 	      <TD><span>Positive Definite?</span></TD>
 	      <TD><INPUT TYPE="checkbox" id="posdef" name="posdefOpt"></TD>
             </TR>
-            <TR> <!-- 4th row -->
+            <TR>
               <TD>Logically Block Structured?</TD>
               <TD><INPUT TYPE="checkbox" id="logstruc" name="logstrucOpt"></TD>
             </TR>
@@ -66,11 +66,10 @@
           <input type="button" value="Continue" id="continueButton">
         </FORM>
         <br><br>
-      </div> <!-- endof div id="parameters" -->
+      </div> --> <!-- endof div id="parameters" -->
 
       <div id="texOutput" style="background-color:#90C7E3;padding:5px;float:left;">
         <div id="matrixPic" style="background-color:#90C7E3;padding:5px;"></div>
-        <!--<div id="matrixPic2" style="width:540px;height:220px; background-color:#90C7E3;padding:5px;"></div>-->
         <br> <br> <br>
         <div id="matrixPic1" style="background-color:#90C7E3;padding:5px;float:left;"></div>
         <div id="matrixPic2" style="background-color:#90C7E3;padding:5px;float:right;"></div>
@@ -97,7 +96,8 @@
       <div id="treeContainer"></div>
 
       <!-- put table here for A-divs and oCmdOptions -->
-      <table cellspacing="5" id="oContainer"></table> <!-- using jquery, find the #oContainer table element and add <TR> div etc </TR> -->
+      <!-- <table cellspacing="5" id="table"></table> -->
+      <!-- using jquery, find this element and add <TR> div etc </TR> -->
       <!-- th=header (center+bold by default) td=standard cell (left+normal by default) -->
 
     </div> <!-- endof div id="results" -->

@@ -2,7 +2,7 @@ function addEventHandlers() {
 
     //When "Continue" button is clicked ...
     //----------------------------------------
-    $("#continueButton").click(function(){
+    /*$("#continueButton").click(function(){
 
 	//matrixLevel is how many matrices deep the data is. 0 is the overall matrix,
         var matrixLevel = currentAsk.length-1;//minus one because A0 is length 1 but level 0
@@ -30,7 +30,6 @@ function addEventHandlers() {
         $("#oContainer").append("<tr id='row"+currentAsk+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ currentAsk + "\"> </div></td> <td> <div id=\"oCmdOptions" + currentAsk + "\"></div> </td> </tr>");
 
         //Create drop-down lists. '&nbsp;' indicates a space
-
         $("#A" + currentAsk).append("<br><b id='matrixText"+currentAsk+"'>A" + "<sub>" + currentAsk + "</sub>" + " (Symm:"+matInfo[writeLoc].symm+" Posdef:"+matInfo[writeLoc].posdef+" Logstruc:"+matInfo[writeLoc].logstruc +")</b>");
 
 	$("#A" + currentAsk).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + currentAsk +"\"></select>");
@@ -62,51 +61,24 @@ function addEventHandlers() {
         if(currentAsk == "-1" && matInfo.length == 1) //no fieldsplits at all, manually add braces
             $("#matrixPic").html("<center>" + "\\(\\left[" + getMatrixTex("0") + "\\right]\\)" + "</center>");
         MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-    });
+    });*/
 
 
     $(function() { //needed for jqueryUI tool tip to override native javascript tooltip
         $(document).tooltip();
     });
 
-    //When the button "Logically Block Structured" is clicked...
-    //----------------------------------------------------------
-    $("#logstruc").change(function(){
-        if (document.getElementById("logstruc").checked) {
-            $("#fieldsplitBlocks_text").show();
-            $("#fieldsplitBlocks").show();
-            //populatePcList("pcList-1",null,"fieldsplit");//HAD THIS ORIGINALLY
-        } else {
-            $("#fieldsplitBlocks_text").hide();
-            $("#fieldsplitBlocks").hide();
-        }
+    //important: always use document.on() because this will also apply to future elements added to document
+    $(document).on("change","input[id^='logstruc']",function(){
+        alert('logstruc changed');
     });
 
-    //this is ONLY for the input box in the beginning form. NOT the inputs in the A divs (those have class='fieldsplitBlocks')
-    //-------------------------------------------------------------------------------------------------------------------------
-    $(document).on("keyup", '.fieldsplitBlocksInput', function() {//alerts user with a tooltip when an invalid input is provided
-        //alert('when this is called?'); ???
-        if ($(this).val().match(/[^0-9]/) || $(this).val()==0 || $(this).val()==1) {//problem is that integer only bubble still displays when nothing is entered
-	    $(this).attr("title","");//set a random title (this will be overwritten)
-	    $(this).tooltip();//create a tooltip from jquery UI
-	    $(this).tooltip({content: "At least 2 blocks!"});//edit displayed text
-	    $(this).tooltip("open");//manually open once
-        } else {
-	    $(this).removeAttr("title");//remove title attribute
-            $(this).tooltip();//create so that we dont call destroy on nothing
-	    $(this).tooltip("destroy");
-        }
+    $(document).on("change","input[id^='symm']",function(){
+        alert('symm changed');
     });
 
-    //Only show positive definite if symmetric
-    //----------------------------------------
-    $("#symm").change(function(){
-        if (document.getElementById("symm").checked) {
-            $("#posdefRow").show();
-        } else {
-            $("#posdefRow").hide();
-            $("#posdef").removeAttr("checked");
-        }
+    $(document).on("change","input[id^='posdef']",function(){
+        alert('posdef changed');
     });
 
     //When "Cmd Options" button is clicked ...
@@ -118,10 +90,10 @@ function addEventHandlers() {
         solverGetOptions(matInfo);
 
 	//get the number of levels for the tree for scaling purposes
-        var matLevelForTree=0;
+        var matLevelForTree = 0;
         for(var i=0; i<matInfo.length; i++)
             if(matInfo[i].id!="-1" && matInfo[i].level>matLevelForTree)
-                matLevelForTree=matInfo[i];
+                matLevelForTree = matInfo[i];
         matLevelForTree++;//appears to be 1 greater than the max
 
 	//build the tree
@@ -132,8 +104,8 @@ function addEventHandlers() {
         for (var i=0; i<matInfo.length; i++) {
 	    if (matInfo[i].id=="-1")//possible junk value created by deletion of adiv
 		continue;
-	    $("#oCmdOptions" + matInfo[i].id).empty();
-            $("#oCmdOptions" + matInfo[i].id).append("<br><br>" + matInfo[i].string);
+	    $("#cmdOptions" + matInfo[i].endtag).empty();
+            $("#cmdOptions" + matInfo[i].endtag).append("<br><br>" + matInfo[i].string);
         }
     });
 
@@ -186,17 +158,6 @@ function addEventHandlers() {
 
     $("#refresh").click(function(){
         $("#selectedMatrix").trigger("keyup");
-    });
-
-    $("#toggleServerOptions").click(function(){
-        if($("#toggleServerOptions").val() == "Hide Server Options") {
-            $("#o-1").hide();
-            $("#toggleServerOptions").val("Show Server Options");
-        }
-        else {
-            $("#o-1").show();
-            $("#toggleServerOptions").val("Hide Server Options");
-        }
     });
 
     $("#toggleMatrix").click(function(){
