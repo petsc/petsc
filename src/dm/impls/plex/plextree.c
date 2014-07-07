@@ -283,3 +283,100 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetTreeParent"
+/*@
+  DMPlexGetTreeParent - get the parent of a point in the tree describing the point hierarchy (not the Sieve DAG)
+
+  Input Parameters:
++ dm - the DMPlex object
+- point - the query point
+
+  Output Parameters:
++ parent - if not NULL, set to the parent of the point, or the point itself if the point does not have a parent
+- childID - if not NULL, set to the child ID of the point with respect to its parent, or 0 if the point
+            does not have a parent
+
+  Level: intermediate
+
+.seealso: DMPlexSetTree(), DMPlexGetTree(), DMPlexGetTreeChildren()
+@*/
+PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, PetscInt *childID)
+{
+  DM_Plex       *mesh = (DM_Plex *)dm->data;
+  PetscSection   pSec;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  pSec = mesh->parentSection;
+  if (pSec && point >= pSec->pStart && point < pSec->pEnd) {
+    PetscInt dof;
+
+    ierr = PetscSectionGetDof (pSec, point, &dof);CHKERRQ(ierr);
+    if (dof) {
+      PetscInt off;
+
+      ierr = PetscSectionGetOffset (pSec, point, &off);CHKERRQ(ierr);
+      if (parent)  *parent = mesh->parents[off];
+      if (childID) *childID = mesh->childIDs[off];
+      PetscFunctionReturn(0);
+    }
+  }
+  if (parent) {
+    *parent = point;
+  }
+  if (childID) {
+    *childID = 0;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetTreeChildren"
+/*@C
+  DMPlexGetTreeChildren - get the children of a point in the tree describing the point hierarchy (not the Sieve DAG)
+
+  Input Parameters:
++ dm - the DMPlex object
+- point - the query point
+
+  Output Parameters:
++ numChildren - if not NULL, set to the number of children
+- children - if not NULL, set to a list children, or set to NULL if the point has no children
+
+  Level: intermediate
+
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+.seealso: DMPlexSetTree(), DMPlexGetTree(), DMPlexGetTreeParent()
+@*/
+PetscErrorCode DMPlexGetTreeChildren(DM dm, PetscInt point, PetscInt *numChildren, const PetscInt *children[])
+{
+  DM_Plex       *mesh = (DM_Plex *)dm->data;
+  PetscSection   childSec;
+  PetscInt       dof = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  childSec = mesh->childSection;
+  if (childSec && point >= childSec->pStart && point < childSec->pEnd) {
+    ierr = PetscSectionGetDof (childSec, point, &dof);CHKERRQ(ierr);
+  }
+  if (numChildren) *numChildren = dof;
+  if (children) {
+    if (dof) {
+      PetscInt off;
+
+      ierr = PetscSectionGetOffset (childSec, point, &off);CHKERRQ(ierr);
+      *children = &mesh->children[off];
+    }
+    else {
+      *children = NULL;
+    }
+  }
+  PetscFunctionReturn(0);
+}

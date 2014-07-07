@@ -83,6 +83,11 @@ typedef struct {
   Mat                  constraintMat;     /* (m x n), m = constrained dofs in the default section, n = dofs in the default section */
 
   /* Tree: automatically construct constraints for hierarchically non-conforming meshes */
+  PetscSection         parentSection;     /* dof == 1 if point has parent */
+  PetscInt            *parents;           /* point to parent */
+  PetscInt            *childIDs;          /* point to child ID */
+  PetscSection         childSection;      /* inverse of parent section */
+  PetscInt            *children;          /* point to children */
   DM                   referenceTree;     /* reference tree to which child ID's refer */
 
   /* Adjacency */
