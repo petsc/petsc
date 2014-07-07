@@ -10,7 +10,7 @@ build *PETSc for Python*:
 * Any MPI_ implementation [#]_ (e.g., MPICH_ or `Open MPI`_),
   built with shared libraries.
 
-* PETSc_ 3.4 or 3.3 built with shared libraries.
+* PETSc_ 3.5 built with shared libraries.
 
 * Python_ 2.4 to 2.7 or 3.1 to 3.3 [#]_.
 
