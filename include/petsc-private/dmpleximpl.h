@@ -82,6 +82,9 @@ typedef struct {
   PetscSection         constraintSection; /* maps points to rows in the constraint matrix below */
   Mat                  constraintMat;     /* (m x n), m = constrained dofs in the default section, n = dofs in the default section */
 
+  /* Tree: automatically construct constraints for hierarchically non-conforming meshes */
+  DM                   referenceTree;     /* reference tree to which child ID's refer */
+
   /* Adjacency */
   PetscBool            useCone;           /* Use cone() first when defining adjacency */
   PetscBool            useClosure;        /* Use the transitive closure when defining adjacency */

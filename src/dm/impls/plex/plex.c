@@ -538,6 +538,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = ISDestroy(&mesh->anchorIS);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->constraintSection);CHKERRQ(ierr);
   ierr = MatDestroy(&mesh->constraintMat);CHKERRQ(ierr);
+  ierr = DMDestroy(&mesh->referenceTree);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
