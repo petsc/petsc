@@ -45,6 +45,11 @@ cdef extern from * nogil:
       TS_DIVERGED_NONLINEAR_SOLVE
       TS_DIVERGED_STEP_REJECTED
 
+    ctypedef enum PetscTSExactFinalTimeOption "TSExactFinalTimeOption":
+      TS_EXACTFINALTIME_STEPOVER
+      TS_EXACTFINALTIME_INTERPOLATE
+      TS_EXACTFINALTIME_MATCHSTEP
+
     ctypedef int PetscTSCtxDel(void*)
 
     ctypedef int (*PetscTSFunctionFunction)(PetscTS,
@@ -134,7 +139,7 @@ cdef extern from * nogil:
     int TSGetTimeStepNumber(PetscTS,PetscInt*)
     int TSSetDuration(PetscTS,PetscInt,PetscReal)
     int TSGetDuration(PetscTS,PetscInt*,PetscReal*)
-    int TSSetExactFinalTime(PetscTS,PetscBool)
+    int TSSetExactFinalTime(PetscTS,PetscTSExactFinalTimeOption)
     int TSSetConvergedReason(PetscTS,PetscTSConvergedReason)
     int TSGetConvergedReason(PetscTS,PetscTSConvergedReason*)
     int TSGetSNESIterations(PetscTS,PetscInt*)
@@ -157,7 +162,9 @@ cdef extern from * nogil:
     int TSSetUp(PetscTS)
     int TSReset(PetscTS)
     int TSStep(PetscTS)
+    int TSRollBack(PetscTS)
     int TSSolve(PetscTS,PetscVec)
+    int TSInterpolate(PetscTS,PetscReal,PetscVec)
 
     int TSThetaSetTheta(PetscTS,PetscReal)
     int TSThetaGetTheta(PetscTS,PetscReal*)

@@ -41,6 +41,11 @@ class TSEquationType(object):
     DAE_IMPLICIT_INDEX3       = TS_EQ_DAE_IMPLICIT_INDEX3
     DAE_IMPLICIT_INDEXHI      = TS_EQ_DAE_IMPLICIT_INDEXHI
 
+class TSExactFinalTimeOption(object):
+    STEPOVER    = TS_EXACTFINALTIME_STEPOVER
+    INTERPOLATE = TS_EXACTFINALTIME_INTERPOLATE
+    MATCHSTEP   = TS_EXACTFINALTIME_MATCHSTEP
+
 class TSConvergedReason(object):
     # iterating
     CONVERGED_ITERATING      = TS_CONVERGED_ITERATING
@@ -59,6 +64,7 @@ cdef class TS(Object):
     Type = TSType
     ProblemType = TSProblemType
     EquationType = TSEquationType
+    ExactFinalTimeOption = TSExactFinalTimeOption
     ConvergedReason = TSConvergedReason
 
     # --- xxx ---
@@ -255,7 +261,7 @@ cdef class TS(Object):
         cdef object jacobian = self.get_attr('__ijacobian__')
         return (J, P, jacobian)
 
-    # --- solution ---
+    # --- solution vector ---
 
     def setSolution(self, Vec u not None):
         CHKERR( TSSetSolution(self.ts, u.vec) )
@@ -265,11 +271,6 @@ cdef class TS(Object):
         CHKERR( TSGetSolution(self.ts, &u.vec) )
         PetscINCREF(u.obj)
         return u
-
-    def getSolveTime(self):
-        cdef PetscReal rval = 0
-        CHKERR( TSGetSolveTime(self.ts, &rval) )
-        return toReal(rval)
 
     # --- inner solver ---
 
@@ -307,6 +308,11 @@ cdef class TS(Object):
     def getTime(self):
         cdef PetscReal rval = 0
         CHKERR( TSGetTime(self.ts, &rval) )
+        return toReal(rval)
+
+    def getSolveTime(self):
+        cdef PetscReal rval = 0
+        CHKERR( TSGetSolveTime(self.ts, &rval) )
         return toReal(rval)
 
     def setInitialTimeStep(self, initial_time, initial_time_step):
@@ -447,9 +453,9 @@ cdef class TS(Object):
             atol = toReal(ratol)
         return (rtol, atol)
 
-    #def setExactFinalTime(self, flag=True):
-    #    cdef PetscBool bval = flag
-    #    CHKERR( TSSetExactFinalTime(self.ts, bval) )
+    def setExactFinalTime(self, option):
+        cdef PetscTSExactFinalTimeOption oval = option
+        CHKERR( TSSetExactFinalTime(self.ts, oval) )
 
     def setConvergedReason(self, reason):
         cdef PetscTSConvergedReason cval = reason
@@ -526,11 +532,19 @@ cdef class TS(Object):
     def reset(self):
         CHKERR( TSReset(self.ts) )
 
+    def step(self):
+        CHKERR( TSStep(self.ts) )
+
+    def rollBack(self):
+        CHKERR( TSRollBack(self.ts) )
+
     def solve(self, Vec u not None):
         CHKERR( TSSolve(self.ts, u.vec) )
 
-    def step(self):
-        CHKERR( TSStep(self.ts) )
+    def interpolate(self, t, Vec u not None):
+        cdef PetscReal rval = asReal(t)
+        CHKERR( TSInterpolate(self.ts, rval, u.vec) )
+
 
     # --- Python ---
 
@@ -708,6 +722,7 @@ cdef class TS(Object):
 del TSType
 del TSProblemType
 del TSEquationType
+del TSExactFinalTimeOption
 del TSConvergedReason
 
 # -----------------------------------------------------------------------------
