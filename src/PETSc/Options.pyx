@@ -32,6 +32,16 @@ cdef class Options:
         CHKERR( PetscOptionsSetFromOptions() )
     #
 
+    def prefixPush(self, prefix):
+        prefix = getprefix(prefix)
+        cdef const_char *cprefix = NULL
+        prefix = str2bytes(prefix, &cprefix)
+        CHKERR( PetscOptionsPrefixPush(cprefix) )
+
+    def prefixPop(self):
+        CHKERR( PetscOptionsPrefixPop() )
+    #
+
     def hasName(self, name):
         cdef const_char *pr = NULL
         cdef const_char *nm = NULL
