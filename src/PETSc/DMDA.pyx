@@ -61,7 +61,7 @@ cdef class DMDA(DM):
         # vertex distribution
         if ownership_ranges is not None:
             oranges = asOwnershipRanges(ownership_ranges,
-                                        dim, &m, &n, &p,
+                                        ndim, &m, &n, &p,
                                         &lx, &ly, &lz)
         # periodicity, stencil type & width
         if boundary_type is not None:

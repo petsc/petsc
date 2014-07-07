@@ -43,7 +43,7 @@ cdef class SF(Object):
         for i in range(toInt(nleaves)):
             sfnode = (toInt(iremote[asInt(i)].rank), toInt(iremote[asInt(i)].index))
             remote.append( sfnode )
-        return asInt(nroots), asInt(nleaves), local, remote
+        return toInt(nroots), toInt(nleaves), local, remote
 
     def setGraph(self, nroots, nleaves, local, remote):
         cdef PetscInt cnroots = asInt(nroots)
@@ -55,7 +55,7 @@ cdef class SF(Object):
         CHKERR( PetscMalloc(nleaves*sizeof(PetscSFNode), &iremote) )
         cdef int i = 0
         for rank, index in remote:
-            iremote[i].rank = rank
-            iremote[i].index = index
+            iremote[i].rank  = asInt(rank)
+            iremote[i].index = asInt(index)
             i += 1
         CHKERR( PetscSFSetGraph(self.sf, cnroots, cnleaves, ilocal, PETSC_COPY_VALUES, iremote, PETSC_OWN_POINTER) )

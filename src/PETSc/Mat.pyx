@@ -1353,7 +1353,7 @@ cdef class NullSpace(Object):
         cdef PetscVec *v = NULL
         cdef object tmp2 = oarray_p(empty_p(nv), NULL, <void**>&v)
         for i from 0 <= i < nv:
-            v[i] = (<Vec?>(vectors[i])).vec
+            v[i] = (<Vec?>(vectors[<Py_ssize_t>i])).vec
         cdef PetscNullSpace newnsp = NULL
         CHKERR( MatNullSpaceCreate(ccomm, has_const, nv, v, &newnsp) )
         PetscCLEAR(self.obj); self.nsp = newnsp

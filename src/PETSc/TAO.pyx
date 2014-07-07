@@ -279,7 +279,7 @@ cdef class TAO(Object):
         """
         cdef PetscReal f = 0
         CHKERR( TaoComputeObjective(self.tao, x.vec, &f) )
-        return f
+        return toReal(f)
 
     def computeSeparableObjective(self, Vec x not None, Vec f not None):
         """
@@ -296,7 +296,7 @@ cdef class TAO(Object):
         """
         cdef PetscReal f = 0
         CHKERR( TaoComputeObjectiveAndGradient(self.tao, x.vec, &f, g.vec) )
-        return f
+        return toReal(f)
 
     def computeDualVariables(self, Vec xl not None, Vec xu not None):
         """
@@ -349,12 +349,12 @@ cdef class TAO(Object):
         """
         """
         cdef PetscReal _fatol=PETSC_DEFAULT, _frtol=PETSC_DEFAULT
-        if fatol is not None: _fatol = fatol
-        if frtol is not None: _frtol = frtol
+        if fatol is not None: _fatol = asReal(fatol)
+        if frtol is not None: _frtol = asReal(frtol)
         cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
-        if gatol is not None: _gatol = gatol
-        if grtol is not None: _grtol = grtol
-        if gttol is not None: _gttol = gttol
+        if gatol is not None: _gatol = asReal(gatol)
+        if grtol is not None: _grtol = asReal(grtol)
+        if gttol is not None: _gttol = asReal(gttol)
         CHKERR( TaoSetTolerances(self.tao, _fatol, _frtol, _gatol, _grtol, _gttol) )
 
     def getTolerances(self):
@@ -363,15 +363,16 @@ cdef class TAO(Object):
         cdef PetscReal _fatol=PETSC_DEFAULT, _frtol=PETSC_DEFAULT
         cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
         CHKERR( TaoGetTolerances(self.tao, &_fatol, &_frtol, &_gatol, &_grtol, &_gttol) )
-        return (_fatol, _frtol, _gatol, _grtol, _gttol)
+        return (toReal(_fatol), toReal(_frtol),
+                toReal(_gatol), toReal(_grtol), toReal(_gttol))
 
     def setObjectiveTolerances(self, fatol=None, frtol=None):
         """
         """
         cdef PetscReal _fatol=PETSC_DEFAULT, _frtol=PETSC_DEFAULT
         cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
-        if fatol is not None: _fatol = fatol
-        if frtol is not None: _frtol = frtol
+        if fatol is not None: _fatol = asReal(fatol)
+        if frtol is not None: _frtol = asReal(frtol)
         CHKERR( TaoSetTolerances(self.tao, _fatol, _frtol, _gatol, _grtol, _gttol) )
 
     def getObjectiveTolerances(self):
@@ -380,7 +381,7 @@ cdef class TAO(Object):
         cdef PetscReal _fatol=PETSC_DEFAULT, _frtol=PETSC_DEFAULT
         cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
         CHKERR( TaoGetTolerances(self.tao, &_fatol, &_frtol, &_gatol, &_grtol, &_gttol) )
-        return (_fatol, _frtol)
+        return (toReal(_fatol), toReal(_frtol))
 
     setFunctionTolerances = setObjectiveTolerances
     getFunctionTolerances = getObjectiveTolerances
@@ -390,9 +391,9 @@ cdef class TAO(Object):
         """
         cdef PetscReal _fatol=PETSC_DEFAULT, _frtol=PETSC_DEFAULT
         cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
-        if gatol is not None: _gatol = gatol
-        if grtol is not None: _grtol = grtol
-        if gttol is not None: _gttol = gttol
+        if gatol is not None: _gatol = asReal(gatol)
+        if grtol is not None: _grtol = asReal(grtol)
+        if gttol is not None: _gttol = asReal(gttol)
         CHKERR( TaoSetTolerances(self.tao, _fatol, _frtol, _gatol, _grtol, _gttol) )
 
     def getGradientTolerances(self):
@@ -401,14 +402,14 @@ cdef class TAO(Object):
         cdef PetscReal _fatol=PETSC_DEFAULT, _frtol=PETSC_DEFAULT
         cdef PetscReal _gatol=PETSC_DEFAULT, _grtol=PETSC_DEFAULT, _gttol=PETSC_DEFAULT
         CHKERR( TaoGetTolerances(self.tao, &_fatol, &_frtol, &_gatol, &_grtol, &_gttol) )
-        return (_gatol, _grtol, _gttol)
+        return (toReal(_gatol), toReal(_grtol), toReal(_gttol))
 
     def setConstraintTolerances(self, catol=None, crtol=None):
         """
         """
         cdef PetscReal _catol=PETSC_DEFAULT, _crtol=PETSC_DEFAULT
-        if catol is not None: _catol = catol
-        if crtol is not None: _crtol = crtol
+        if catol is not None: _catol = asReal(catol)
+        if crtol is not None: _crtol = asReal(crtol)
         CHKERR( TaoSetConstraintTolerances(self.tao, _catol, _crtol) )
 
     def getConstraintTolerances(self):
@@ -416,7 +417,7 @@ cdef class TAO(Object):
         """
         cdef PetscReal _catol=PETSC_DEFAULT, _crtol=PETSC_DEFAULT
         CHKERR( TaoGetConstraintTolerances(self.tao, &_catol, &_crtol) )
-        return (_catol, _crtol)
+        return (toReal(_catol), toReal(_crtol))
 
     def setConvergenceTest(self, converged, args=None, kargs=None):
         """
@@ -510,14 +511,14 @@ cdef class TAO(Object):
         """
         cdef PetscInt its=0
         CHKERR( TaoGetSolutionStatus(self.tao, &its, NULL, NULL, NULL, NULL, NULL) )
-        return its
+        return toInt(its)
 
     def getObjectiveValue(self):
         """
         """
         cdef PetscReal fval=0
         CHKERR( TaoGetSolutionStatus(self.tao, NULL, &fval, NULL, NULL, NULL, NULL) )
-        return fval
+        return toReal(fval)
 
     getFunctionValue = getObjectiveValue
 
@@ -526,14 +527,14 @@ cdef class TAO(Object):
         """
         cdef PetscReal gnorm=0
         CHKERR( TaoGetSolutionStatus(self.tao, NULL, NULL, &gnorm, NULL, NULL, NULL) )
-        return gnorm
+        return toReal(gnorm)
 
     def getConstraintsNorm(self):
         """
         """
         cdef PetscReal cnorm=0
         CHKERR( TaoGetSolutionStatus(self.tao, NULL, NULL, NULL, &cnorm, NULL, NULL) )
-        return cnorm
+        return toReal(cnorm)
 
     def getConvergedReason(self):
         """
@@ -551,7 +552,9 @@ cdef class TAO(Object):
         CHKERR( TaoGetSolutionStatus(self.tao, &its,
                                      &fval, &gnorm, &cnorm, &xdiff,
                                      &reason) )
-        return (its, fval, gnorm, cnorm, xdiff, reason)
+        return (toInt(its), toReal(fval),
+                toReal(gnorm), toReal(cnorm),
+                toReal(xdiff), reason)
 
     def getKSP(self):
         """

@@ -6,9 +6,9 @@ DETERMINE = PETSC_DETERMINE
 
 # --------------------------------------------------------------------
 
-INFINITY  = PETSC_INFINITY
-NINFINITY = PETSC_NINFINITY
-PINFINITY = PETSC_INFINITY
+INFINITY  = toReal(PETSC_INFINITY)
+NINFINITY = toReal(PETSC_NINFINITY)
+PINFINITY = toReal(PETSC_INFINITY)
 
 # --------------------------------------------------------------------
 

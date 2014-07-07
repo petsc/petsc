@@ -372,7 +372,7 @@ cdef class DMPlex(DM):
         cdef PetscInt cvalue = asInt(value)
         cdef const_char *cname = NULL
         name = str2bytes(name, &cname)
-        CHKERR( DMPlexClearLabelStratum(self.dm, cname, value) )
+        CHKERR( DMPlexClearLabelStratum(self.dm, cname, cvalue) )
 
     def getDepth(self):
         cdef PetscInt depth = 0
@@ -517,7 +517,8 @@ cdef class DMPlex(DM):
             bcField = iarray_i(bcField, &nbc, &bcfield)
             assert nbc == len(bcPoints)
             tmp = oarray_p(empty_p(nbc), NULL, <void**>&bcpoints)
-            for i from 0 <= i < nbc: bcpoints[i] = (<IS?>bcPoints[i]).iset
+            for i from 0 <= i < nbc:
+                bcpoints[i] = (<IS?>bcPoints[<Py_ssize_t>i]).iset
         else:
             assert bcPoints is None
         # optional chart permutations

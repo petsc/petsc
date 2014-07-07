@@ -47,7 +47,7 @@ cdef class DMComposite(DM):
         cdef PetscVec *clvecs = NULL
         cdef object clvecs_mem = oarray_p(empty_p(n), NULL, <void**>&clvecs)
         for i from 0 <= i < n:
-            clvecs[i] = (<Vec?>lvecs[i]).vec
+            clvecs[i] = (<Vec?>lvecs[<Py_ssize_t>i]).vec
         CHKERR( DMCompositeScatterArray(self.dm, gvec.vec, clvecs) )
 
     def gather(self, Vec gvec not None, imode, lvecs):
@@ -58,7 +58,7 @@ cdef class DMComposite(DM):
         cdef PetscVec *clvecs = NULL
         cdef object clvecs_mem = oarray_p(empty_p(n), NULL, <void**>&clvecs)
         for i from 0 <= i < n:
-            clvecs[i] = (<Vec?>lvecs[i]).vec
+            clvecs[i] = (<Vec?>lvecs[<Py_ssize_t>i]).vec
         CHKERR( DMCompositeGatherArray(self.dm, gvec.vec, cimode, clvecs) )
 
     def getGlobalISs(self):

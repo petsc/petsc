@@ -162,7 +162,7 @@ cdef int TAO_Objective(PetscTAO _tao,
     cdef Vec x   = ref_Vec(_x)
     (objective, args, kargs) = tao.get_attr("__objective__")
     retv = objective(tao, x, *args, **kargs)
-    _f[0] = retv
+    _f[0] = asReal(retv)
     return 0
 
 cdef int TAO_SeparableObjective(PetscTAO _tao,
@@ -197,7 +197,7 @@ cdef int TAO_ObjGrad(PetscTAO _tao,
     cdef Vec g   = ref_Vec(_g)
     (objgrad, args, kargs) = tao.get_attr("__objgrad__")
     retv = objgrad(tao, x, g, *args, **kargs)
-    _f[0] = retv
+    _f[0] = asReal(retv)
     return 0
 
 cdef int TAO_Constraints(PetscTAO _tao,
