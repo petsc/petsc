@@ -62,9 +62,6 @@ cdef extern from "petsc.h":
     struct _p_DM
     ctypedef _p_DM* PetscDM "DM"
 
-    struct _n_DMLabel
-    ctypedef _n_DMLabel* PetscDMLabel "DMLabel"
-
 # --------------------------------------------------------------------
 
 ctypedef public api class Comm [
@@ -188,12 +185,6 @@ ctypedef public api class DM(Object) [
     object PyPetscDMObject,
     ]:
     cdef PetscDM dm
-
-ctypedef public api class DMDA(DM) [
-    type   PyPetscDMDA_Type,
-    object PyPetscDMDAObject,
-    ]:
-    pass
 
 # --------------------------------------------------------------------
 

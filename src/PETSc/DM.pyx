@@ -12,7 +12,6 @@ class DMType(object):
     MOAB      = S_(DMMOAB)
     NETWORK   = S_(DMNETWORK)
 
-
 class DMBoundaryType(object):
     NONE     = DM_BOUNDARY_NONE
     GHOSTED  = DM_BOUNDARY_GHOSTED
@@ -243,11 +242,6 @@ cdef class DM(Object):
             hierarchy.append(dmc)
         return hierarchy
 
-    # backward compatibility
-    createGlobalVector = createGlobalVec
-    createLocalVector = createLocalVec
-    getMatrix = createMatrix = createMat
-
     #
 
     def setDefaultSection(self, Section sec not None):
@@ -290,6 +284,11 @@ cdef class DM(Object):
 
     def setShellLocalVector(self, Vec lv not None):
         CHKERR( DMShellSetLocalVector(self.dm, lv.vec) )
+
+    # backward compatibility
+    createGlobalVector = createGlobalVec
+    createLocalVector = createLocalVec
+    getMatrix = createMatrix = createMat
 
 # --------------------------------------------------------------------
 

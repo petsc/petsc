@@ -2,6 +2,9 @@
 
 cdef extern from * nogil:
 
+    struct _n_DMLabel
+    ctypedef _n_DMLabel* PetscDMLabel "DMLabel"
+
     int DMPlexCreate(MPI_Comm,PetscDM*)
     int DMPlexCreateCohesiveSubmesh(PetscDM,PetscBool,const_char[],PetscInt,PetscDM*)
     int DMPlexCreateFromCellList(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscBool,int[],PetscInt,double[],PetscDM*)
