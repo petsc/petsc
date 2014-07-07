@@ -8,10 +8,10 @@ Python bindings for PETSc.
 
 import sys
 import os
-try:
-    import setuptools
-except ImportError:
-    pass
+#try:
+#    import setuptools
+#except ImportError:
+#    pass
 
 
 # --------------------------------------------------------------------
