@@ -9,11 +9,15 @@ $(document).on("change","select[id^='pc_type']",function() {
     var id        = $(this).attr("id");//really should not be used in this method. there are better ways of getting information
     var endtag    = id.substring(id.indexOf("0"),id.length);
     var parentDiv = "solver" + endtag;
+    var index     = getIndex(matInfo,endtag);
 
     removeAllChildren(endtag);//this function also changes matInfo as needed
 
     if (pcValue == "mg") {
         var defaultMgLevels = 2;
+
+        matInfo[index].pc_type      = "mg";
+        matInfo[index].pc_mg_levels = defaultMgLevels;
 
         //first add options related to multigrid (pc_mg_type and pc_mg_levels)
         $("#" + parentDiv).append("<br><b>MG Type &nbsp;&nbsp;</b><select id=\"pc_mg_type" + endtag + "\"></select>");
@@ -22,14 +26,14 @@ $(document).on("change","select[id^='pc_type']",function() {
 
         populateMgList(endtag);
 
-        //also record new information in matInfo
+        //display options for each level
         for(var i=defaultMgLevels-1; i>=0; i--) {
             var childEndtag = endtag + "_" + i;
 
             var writeLoc = matInfo.length;
             matInfo[writeLoc] = {
-                pc_type : "",
-                ksp_type: "",
+                pc_type : "redundant",
+                ksp_type: "preonly",
                 endtag : childEndtag
             }
 
@@ -60,6 +64,9 @@ $(document).on("change","select[id^='pc_type']",function() {
         var defaultRedundantNumber = 2;
         var childEndtag = endtag + "_0";
 
+        matInfo[index].pc_type             = "redundant";
+        matInfo[index].pc_redundant_number = defaultRedundantNumber;
+
         //first add options related to redundant (pc_redundant_number)
         $("#" + parentDiv).append("<br><b>Redundant Number </b><input type='text' id=\'pc_redundant_number" + endtag + "\' maxlength='4'>");
         $("#pc_redundant_number" + endtag).val(defaultRedundantNumber);
@@ -67,15 +74,13 @@ $(document).on("change","select[id^='pc_type']",function() {
         var writeLoc = matInfo.length;
         matInfo[writeLoc] = {
             pc_type : "",
-            ksp_type: "",
+            ksp_type: "preonly",
             endtag : childEndtag,
-            symm: false
+            symm: false //perhaps should inherit this val from parent? (ask dr. smith)
         }
 
         var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
-
 	$("#" + parentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-
 	$("#solver" + childEndtag).append("<br><b>Redundant Solver Options </b>");
 	$("#solver" + childEndtag).append("<br><b>KSP    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag + "\"></select>");
 	$("#solver" + childEndtag).append("<br><b>PC     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
@@ -85,11 +90,12 @@ $(document).on("change","select[id^='pc_type']",function() {
 
 	//set defaults for redundant
 	$("#ksp_type" + childEndtag).find("option[value='preonly']").attr("selected","selected");
-        var index = getIndex(matInfo,endtag);
         if (matInfo[index].symm) {
             $("#pc_type" + childEndtag).find("option[value='cholesky']").attr("selected","selected");
+            matInfo[writeLoc].pc_type = "cholesky";
         } else {
 	    $("#pc_type" + childEndtag).find("option[value='lu']").attr("selected","selected");
+            matInfo[writeLoc].pc_type = "lu";
         }
     }
 
@@ -98,14 +104,17 @@ $(document).on("change","select[id^='pc_type']",function() {
         var defaultBjacobiBlocks = 2;
         var childEndtag = endtag + "_0";
 
+        matInfo[index].pc_type             = "bjacobi";
+        matInfo[index].pc_bjacobi_blocks   = defaultBjacobiBlocks;
+
         //first add options related to bjacobi (pc_bjacobi_blocks)
         $("#" + parentDiv).append("<br><b>Bjacobi Blocks </b><input type='text' id=\'pc_bjacobi_blocks" + endtag + "\' maxlength='4'>");
         $("#pc_bjacobi_blocks" + endtag).val(defaultBjacobiBlocks);
 
         var writeLoc = matInfo.length;
-        matInfo[writeLoc] = {
+        matInfo[writeLoc] = { //here, we should set default symm/posdef/logstruc according to parent properties
             pc_type : "",
-            ksp_type: "",
+            ksp_type: "preonly",
             endtag : childEndtag,
             symm: false
         }
@@ -123,11 +132,12 @@ $(document).on("change","select[id^='pc_type']",function() {
 
 	//set defaults for bjacobi
 	$("#ksp_type" + childEndtag).find("option[value='preonly']").attr("selected","selected");
-        var index=getIndex(matInfo, endtag);
         if (matInfo[index].symm) {
             $("#pc_type" + childEndtag).find("option[value='icc']").attr("selected","selected");
+            matInfo[writeLoc].pc_type = "icc";
         } else {
 	    $("#pc_type" + childEndtag).find("option[value='ilu']").attr("selected","selected");
+            matInfo[writeLoc].pc_type = "ilu";
         }
     }
 
@@ -136,6 +146,10 @@ $(document).on("change","select[id^='pc_type']",function() {
         var defaultAsmBlocks  = 2;
         var defaultAsmOverlap = 2;
         var childEndtag = endtag + "_0";
+
+        matInfo[index].pc_type             = "asm";
+        matInfo[index].pc_asm_blocks       = defaultAsmBlocks;
+        matInfo[index].pc_asm_overlap      = defaultAsmOverlap;
 
         //first add options related to ASM
         $("#" + parentDiv).append("<br><b>ASM blocks   &nbsp;&nbsp;</b><input type='text' id=\"pc_asm_blocks" + endtag + "\" maxlength='4'>");
@@ -146,7 +160,7 @@ $(document).on("change","select[id^='pc_type']",function() {
         var writeLoc = matInfo.length;
         matInfo[writeLoc] = {
             pc_type : "",
-            ksp_type: "",
+            ksp_type: "preonly",
             endtag : childEndtag,
             symm: false
         }
@@ -164,21 +178,24 @@ $(document).on("change","select[id^='pc_type']",function() {
 
 	//set defaults for asm
 	$("#ksp_type" + childEndtag).find("option[value='preonly']").attr("selected","selected");
-        var index = getIndex(matInfo, endtag);
         if (matInfo[index].symm) {
             $("#pc_type" + childEndtag).find("option[value='icc']").attr("selected","selected");
+            matInfo[writeLoc].pc_type = "icc";
         } else {
 	    $("#pc_type" + childEndtag).find("option[value='ilu']").attr("selected","selected");
+            matInfo[writeLoc].pc_type = "ilu";
         }
     }
 
     else if (pcValue == "ksp") {
         var childEndtag = endtag + "_0";
 
+        matInfo[index].pc_type             = "ksp";
+
         var writeLoc = matInfo.length;
         matInfo[writeLoc] = {
-            pc_type : "",
-            ksp_type: "",
+            pc_type : "bjacobi",
+            ksp_type: "gmres",
             endtag : childEndtag,
             symm: false
         }
@@ -205,6 +222,10 @@ $(document).on("change","select[id^='pc_type']",function() {
 
         var defaultFieldsplitBlocks = 2;
 
+        matInfo[index].pc_type              = "fieldsplit";
+        matInfo[index].pc_fieldsplit_type   = "multiplicative";//this is hardcoded
+        matInfo[index].pc_fieldsplit_blocks = defaultFieldsplitBlocks;
+
         //first add options related to fieldsplit (pc_fieldsplit_type and pc_fieldsplit_blocks)
         $("#" + parentDiv).append("<br><b>Fieldsplit Type &nbsp;&nbsp;</b><select id=\"pc_fieldsplit_type" + endtag + "\"></select>");
         $("#" + parentDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id=\"pc_fieldsplit_blocks" + endtag + "\" maxlength='4'>");
@@ -212,14 +233,13 @@ $(document).on("change","select[id^='pc_type']",function() {
 
         populateFieldsplitList(endtag);
 
-        //also record new information in matInfo
         for(var i=defaultFieldsplitBlocks-1; i>=0; i--) {
             var childEndtag = endtag + "_" + i;
 
             var writeLoc = matInfo.length;
             matInfo[writeLoc] = {
-                pc_type : "",
-                ksp_type: "",
+                pc_type : "redundant",
+                ksp_type: "preonly",
                 endtag : childEndtag
             }
 
@@ -240,7 +260,27 @@ $(document).on("change","select[id^='pc_type']",function() {
 	    $("#pc_type" + childEndtag).trigger("change");
         }
     }
+
+    else { //for other pcs, simply adjust pc_type in matInfo
+        matInfo[index].pc_type = pcValue;
+    }
 });
+
+//called when a ksp option is changed
+//simply adjust ksp_type in matInfo
+$(document).on("change","select[id^='ksp_type']",function() {
+
+    var kspValue   = $(this).val();
+    var id         = $(this).attr("id");//really should not be used in this method. there are better ways of getting information
+    var endtag     = id.substring(id.indexOf("0"),id.length);
+    var index      = getIndex(matInfo,endtag);
+
+    matInfo[index].ksp_type = kspValue;
+});
+
+//need to add a bunch of methods here for changing each variable: pc_fieldsplit_blocks, pc_asm_blocks, pc_redundant_number, etc
+//$(document).on("change","input
+
 
 //input: endtag of the parent
 function removeAllChildren(endtag) {
@@ -274,7 +314,7 @@ function removeAllChildren(endtag) {
 }
 
 //called when text input for pc_fieldsplit_blocks is changed
-$(document).on('keyup', "select[id^='pc__fieldsplit_blocks']", function() {
+$(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
 
     if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
         return;
@@ -284,73 +324,89 @@ $(document).on('keyup', "select[id^='pc__fieldsplit_blocks']", function() {
     var index  = getIndex(matInfo, endtag);
     var val    = $(this).val();
 
-    // this next part is a bit tricky
+    // this next part is a bit tricky...there are 2 cases
 
-    if( ) //case 1: we need to remove some divs
+    //case 1: we need to remove some divs
+    if(val < matInfo[index].pc_fieldsplit_blocks) {
+        for(var i=val; i<matInfo[index].pc_fieldsplit_blocks; i++) {
+            var childEndtag = endtag + "_" + i;
+            var childIndex  = getIndex(matInfo, childEndtag);
 
+            removeAllChildren(childEndtag); //remove grandchildren (if any)
+            matInfo[childIndex].endtag = "-1"; //set matInfo endtag to "-1"
+            $("#solver" + childEndtag).remove(); //remove the divs
+        }
+        matInfo[index].pc_fieldsplit_blocks = val;
+    }
 
+    //case 2: we need to add some divs
+    else if(val > matInfo[index].pc_fieldsplit_blocks) {
+        for(var i = matInfo[index].pc_fieldsplit_blocks; i < val; i++) {
 
-    //case 1: more A divs need to be added
-    if(val > matInfo[index].blocks) {
-        for(var i=val-1; i>=matInfo[index].blocks; i--) {//insert in backwards order for convenience
             //add divs and write matInfo
+            var childEndtag = endtag + "_" + i;
+            var margin = getNumUnderscores(childEndtag) * 30;
 
-            var indentation=(parent.length-1+1)*30; //according to the length of currentAsk (aka matrix level), add margins of 30 pixels accordingly
-            $("#row"+lastBlock).after("<tr id='row"+parent+i+"'> <td> <div style=\"margin-left:"+indentation+"px;\" id=\"A"+ parent+i + "\"> </div></td> <td> <div id=\"oCmdOptions" + parent+i + "\"></div> </td> </tr>");
+            //this is the trickiest part: need to find exactly where to insert the new divs
+            //find the first div that doesn't begin with endtag
 
-            //Create drop-down lists. '&nbsp;' indicates a space
-            var newChild = parent + i;
+            var currentDiv  = $(this).parent().get(0);
 
-            $("#A" + parent+i).append("<br><b id='matrixText"+parent+i+"'>A" + "<sub>" + parent+i + "</sub>" + " (Symm:"+matInfo[index].symm+" Posdef:"+matInfo[index].posdef+" Logstruc:false)</b>");
-	    $("#A" + parent+i).append("<br><b>KSP &nbsp;</b><select class=\"kspLists\" id=\"kspList" + parent+i +"\"></select>");
-	    $("#A" + parent+i).append("<br><b>PC &nbsp; &nbsp;</b><select class=\"pcLists\" id=\"pcList" + parent+i +"\"></select>");
+            while($(currentDiv).next().length > 0) { //while has next
+                var nextDiv    = $(currentDiv).next().get(0);
+                var nextId     = nextDiv.id;
+                var nextEndtag = nextDiv.id.substring(nextId.indexOf("0"),nextId.length);
 
-
-            //populate the kspList and pclist with default options
-            populateKspList("kspList"+parent+i,null,"null");
-            populatePcList("pcList"+parent+i,null,"null");
-
-            $("#pcList"+parent+i).trigger("change");
-
-            var writeLoc = matInfo.length;
-            matInfo[writeLoc] = {
-                posdef:  matInfo[index].posdef,//inherits attributes of parents
-                symm:    matInfo[index].symm,
-                logstruc:false,//HOW SHOULD THIS BE ADDRESSED ?????????
-                blocks: 0,//children do not have further children
-                matLevel:   parent.length-1+1,
-                id:       parent+i
+                if(nextEndtag.indexOf(endtag) == 0) {
+                    console.log(nextDiv);
+                    currentDiv = nextDiv;
+                }
+                else
+                    break;
             }
 
-        }
-        matInfo[index].blocks=val;
-    }
+            //append new stuff immediately after current div
+            var writeLoc = matInfo.length;
+            matInfo[writeLoc] = {
+                pc_type : "redundant",
+                ksp_type: "preonly",
+                endtag : childEndtag
+            }
 
-    //case 2: some A divs need to be removed
-    else if(val < matInfo[index].blocks) {
-        for(var i=val; i<matInfo[index].blocks; i++) {
-            removeChildren(parent+""+i);//remove grandchildren if any exist
-            matInfo[getMatIndex(parent+""+i)].id="-1";//set matInfo id to -1
-            $("#A"+parent+""+i).remove(); //manually remove the extras themselves
-            $("#row"+parent+""+i).remove();
-        }
-        matInfo[index].blocks=val;
-    }
+            var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
+            $(currentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
+            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + (i+1) + " Options</b>");
+            $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
+	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
+            populateKspList(childEndtag);
+            populatePcList(childEndtag);
+
+	    //set defaults
+	    $("#ksp_type" + childEndtag).find("option[value='preonly']").attr("selected","selected");
+	    $("#pc_type" + childEndtag).find("option[value='redundant']").attr("selected","selected");
+	    //redundant has to have extra dropdown menus so manually trigger
+	    $("#pc_type" + childEndtag).trigger("change");
+        }
+        matInfo[index].pc_fieldsplit_blocks = val;
+
+    }
 });
 
 /*
   This function is called when the text input "MG Levels" is changed
 */
-$(document).on('keyup', '.mgLevels', function()
+$(document).on('keyup', "input[id^='pc_mg_levels']", function()
 {
-    //get mgLevels
     var mgLevels = $(this).val();
-    if (mgLevels < 1) alert("Error: mgLevels must be >= 1!");
 
-    // get parent div's id
-    var newDiv           = $(this).parent().get(0).id; //eg., mg0_
-    var loc              = newDiv.indexOf('_');
+    if (mgLevels.match(/[^0-9]/) || mgLevels < 1)  //return on invalid mg levels
+        return;
+
+    var id     = this.id;
+    var endtag = id.substring(id.indexOf("0"),id.length);
+
+
 
     //new way of finding parent (the id of the A matrix)
     var parentDiv = $(this).parent().get(0).id;

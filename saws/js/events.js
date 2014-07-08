@@ -70,15 +70,27 @@ function addEventHandlers() {
 
     //important: always use document.on() because this will also apply to future elements added to document
     $(document).on("change","input[id^='logstruc']",function(){
-        alert('logstruc changed');
+        var id     = this.id;
+        var endtag = id.substring(id.indexOf("0"),id.length);
+        var index  = getIndex(matInfo,endtag);
+
+        matInfo[endtag].logstruc = $(this).prop("checked");
     });
 
     $(document).on("change","input[id^='symm']",function(){
-        alert('symm changed');
+        var id     = this.id;
+        var endtag = id.substring(id.indexOf("0"),id.length);
+        var index  = getIndex(matInfo,endtag);
+
+        matInfo[endtag].symm = $(this).prop("checked");
     });
 
     $(document).on("change","input[id^='posdef']",function(){
-        alert('posdef changed');
+        var id     = this.id;
+        var endtag = id.substring(id.indexOf("0"),id.length);
+        var index  = getIndex(matInfo,endtag);
+
+        matInfo[endtag].posdef = $(this).prop("checked");
     });
 
     //When "Cmd Options" button is clicked ...
