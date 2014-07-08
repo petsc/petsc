@@ -32,8 +32,8 @@ $(document).on("change","select[id^='pc_type']",function() {
 
             var writeLoc = matInfo.length;
             matInfo[writeLoc] = {
-                pc_type : "redundant",
-                ksp_type: "preonly",
+                pc_type : "sor",
+                ksp_type: "chebyshev",
                 endtag : childEndtag
             }
 
@@ -43,7 +43,7 @@ $(document).on("change","select[id^='pc_type']",function() {
             if(i == 0) //coarse grid solver (level 0)
                 $("#solver" + childEndtag).append("<br><b>Coarse Grid Solver (Level 0)  </b>");
             else
-                $("#solver" + childEndtag).append("<br><b>Smoothing   </b>");
+                $("#solver" + childEndtag).append("<br><b>Smoothing (Level " + i + ")  </b>");
 
             $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
 	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
@@ -52,10 +52,8 @@ $(document).on("change","select[id^='pc_type']",function() {
             populatePcList(childEndtag);
 
 	    //set defaults
-	    $("#ksp_type" + childEndtag).find("option[value='preonly']").attr("selected","selected");
-	    $("#pc_type" + childEndtag).find("option[value='redundant']").attr("selected","selected");
-	    //redundant has to have extra dropdown menus so manually trigger
-	    $("#pc_type" + childEndtag).trigger("change");
+	    $("#ksp_type" + childEndtag).find("option[value='chebyshev']").attr("selected","selected");
+	    $("#pc_type" + childEndtag).find("option[value='sor']").attr("selected","selected");
         }
 
     }
@@ -389,7 +387,6 @@ $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
 	    $("#pc_type" + childEndtag).trigger("change");
         }
         matInfo[index].pc_fieldsplit_blocks = val;
-
     }
 });
 
@@ -398,71 +395,78 @@ $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
 */
 $(document).on('keyup', "input[id^='pc_mg_levels']", function()
 {
-    var mgLevels = $(this).val();
-
-    if (mgLevels.match(/[^0-9]/) || mgLevels < 1)  //return on invalid mg levels
+    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
         return;
 
     var id     = this.id;
-    var endtag = id.substring(id.indexOf("0"),id.length);
+    var endtag = id.substring(id.indexOf(0),id.length);
+    var index  = getIndex(matInfo, endtag);
+    var val    = $(this).val();
 
+    // this next part is a bit tricky...there are 2 cases
 
+    //case 1: we need to remove some divs
+    if(val < matInfo[index].pc_mg_levels) {
+        for(var i=val; i<matInfo[index].pc_mg_levels; i++) {
+            var childEndtag = endtag + "_" + i;
+            var childIndex  = getIndex(matInfo, childEndtag);
 
-    //new way of finding parent (the id of the A matrix)
-    var parentDiv = $(this).parent().get(0).id;
-    while (parentDiv.indexOf('_') != -1)
-	parentDiv=$("#"+parentDiv).parent().get(0).id;
-    var recursionCounter = parentDiv.substring(1, parentDiv.length); //will work when there is more than 1 digit after 'A'
-
-    var endtag = newDiv.substring(loc);
-    //alert("newDiv "+newDiv+"; endtag "+endtag+"; recursionCounter "+recursionCounter);
-
-    //instead of removing entire div, only remove the necessary smoothing options
-    var ksp = $('b[id^="text_kspList'+recursionCounter+endtag+'"]').filter(function() {
-	return this.id.substring(this.id.lastIndexOf('_'),this.id.length).length > endtag.length; //used to prevent removing options from higher levels since the first few characters would indeed match
-    });
-
-    ksp.next().next().remove();//remove br
-    ksp.next().remove();//remove dropdown menus
-    ksp.remove();//remove text itself
-
-    var pc = $('b[id^="text_pcList'+recursionCounter+endtag+'"]').filter(function() {
-	return this.id.substring(this.id.lastIndexOf('_'),this.id.length).length > endtag.length;
-    });
-
-    pc.next().next().remove();//remove br
-    pc.next().remove();//remove dropdown menus
-    pc.remove();//remove text itself
-
-    var myendtag;
-    //alert("mg: #pcList"+recursionCounter+endtag);
-    if (endtag == "_") { // this is ugly! rename solver-level 0 kspList0 and pcList0 as kspList0_ and pcList0_ ???
-        myendtag = "";
-    } else {
-        myendtag= endtag;
-    }
-    myendtag = endtag+"0";
-
-    // Smoothing (Level>0)
-    mgLevels = $("#mglevels" + recursionCounter + myendtag).val();
-    if (mgLevels > 1) {
-        for (var level=mgLevels-1; level>=1; level--) {
-
-	    if (level<10)//still using numbers
-		myendtag = endtag+level;
-	    else
-		myendtag = endtag+'abcdefghijklmnopqrstuvwxyz'.charAt(level-10);//add the correct char
-
-	    $("#text_smoothing"+recursionCounter+endtag).after("<br><b id=\"text_pcList"+recursionCounter+myendtag+"\">PC Level "+level+" &nbsp;&nbsp;&nbsp;&nbsp;</b><select class=\"pcLists\" id=\"pcList"+ recursionCounter+myendtag+"\"></select>");
-            $("#text_smoothing"+recursionCounter+endtag).after("<br><b id=\"text_kspList"+recursionCounter+myendtag+"\">KSP Level "+level+" &nbsp;&nbsp;</b><select class=\"kspLists\" id=\"kspList"+ recursionCounter+myendtag +"\"></select>");
-
-            var endtagEdit=myendtag.substring(1,myendtag.length);//take off the first character (the underscore)
-
-            populateKspList("kspList"+recursionCounter+myendtag,null,"null");
-	    populatePcList("pcList"+recursionCounter+myendtag,null,"null");
-            // set defaults
-            $("#kspList"+recursionCounter+myendtag).find("option[value='chebyshev']").attr("selected","selected");
-	    $("#pcList"+recursionCounter+myendtag).find("option[value='sor']").attr("selected","selected");
+            removeAllChildren(childEndtag); //remove grandchildren (if any)
+            matInfo[childIndex].endtag = "-1"; //set matInfo endtag to "-1"
+            $("#solver" + childEndtag).remove(); //remove the divs
         }
+        matInfo[index].pc_mg_levels = val;
+    }
+
+    //case 2: we need to add some divs
+    else if(val > matInfo[index].pc_mg_levels) {
+        for(var i = matInfo[index].pc_mg_levels; i < val; i++) {
+            var childEndtag = endtag + "_" + i;
+            var margin = getNumUnderscores(childEndtag) * 30;
+
+            //this is the trickiest part: need to find exactly where to insert the new divs
+            //find the first div that doesn't begin with endtag
+
+            var currentDiv  = $(this).parent().get(0);
+
+            while($(currentDiv).next().length > 0) { //while has next
+                var nextDiv    = $(currentDiv).next().get(0);
+                var nextId     = nextDiv.id;
+                var nextEndtag = nextDiv.id.substring(nextId.indexOf("0"),nextId.length);
+
+                if(nextEndtag.indexOf(endtag) == 0) {
+                    console.log(nextDiv);
+                    currentDiv = nextDiv;
+                }
+                else
+                    break;
+            }
+
+            //append new stuff immediately after current div
+            var writeLoc = matInfo.length;
+            matInfo[writeLoc] = {
+                pc_type : "sor",
+                ksp_type: "chebyshev",
+                endtag : childEndtag
+            }
+
+            var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
+            $(currentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
+            if(i == 0) //coarse grid solver (level 0)
+                $("#solver" + childEndtag).append("<br><b>Coarse Grid Solver (Level 0)  </b>");
+            else
+                $("#solver" + childEndtag).append("<br><b>Smoothing (Level " + i + ")  </b>");
+
+            $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
+	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
+
+            populateKspList(childEndtag);
+            populatePcList(childEndtag);
+
+            //set defaults
+            $("#ksp_type" + childEndtag).find("option[value='chebyshev']").attr("selected","selected");
+            $("#pc_type" + childEndtag).find("option[value='sor']").attr("selected","selected");
+        }
+        matInfo[index].pc_mg_levels = val;
     }
 });
