@@ -85,10 +85,10 @@ PetscErrorCode DMPlexGetReferenceTree(DM dm, DM *ref)
 PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *ref)
 {
   DM             K, Kref;
-  PetscInt       p, pStart, pEnd, pRefStart, pRefEnd, d, offset;
+  PetscInt       p, pStart, pEnd, pRefStart, pRefEnd, d, offset, parentSize, *parents, *childIDs;
   PetscInt      *permvals, *unionCones, *coneSizes, *unionOrientations, numUnionPoints, *numDimPoints, numCones, numVerts;
   DMLabel        identity, identityRef;
-  PetscSection   unionSection, unionConeSection;
+  PetscSection   unionSection, unionConeSection, parentSection;
   PetscScalar   *unionCoords;
   IS             perm;
   PetscErrorCode ierr;
@@ -271,6 +271,39 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
   ierr = DMSetType(*ref,DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(*ref,dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(*ref,dim,numDimPoints,coneSizes,unionCones,unionOrientations,unionCoords);CHKERRQ(ierr);
+  /* set the tree */
+  ierr = PetscSectionCreate(comm,&parentSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(parentSection,0,numUnionPoints);CHKERRQ(ierr);
+  for (p = pRefStart; p < pRefEnd; p++) {
+    PetscInt uDof, uOff;
+
+    ierr = PetscSectionGetDof(unionSection, p - pRefStart + (pEnd - pStart),&uDof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(unionSection, p - pRefStart + (pEnd - pStart),&uOff);CHKERRQ(ierr);
+    if (uDof) {
+      PetscSectionSetDof(parentSection,uOff,1);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSectionSetUp(parentSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(parentSection,&parentSize);CHKERRQ(ierr);
+  ierr = PetscMalloc2(parentSize,&parents,parentSize,&childIDs);CHKERRQ(ierr);
+  for (p = pRefStart; p < pRefEnd; p++) {
+    PetscInt uDof, uOff;
+
+    ierr = PetscSectionGetDof(unionSection, p - pRefStart + (pEnd - pStart),&uDof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(unionSection, p - pRefStart + (pEnd - pStart),&uOff);CHKERRQ(ierr);
+    if (uDof) {
+      PetscInt pOff, parent, parentU;
+      PetscSectionGetOffset(parentSection,uOff,&pOff);CHKERRQ(ierr);
+      DMLabelGetValue(identityRef,p,&parent);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(unionSection, parent - pStart,&parentU);CHKERRQ(ierr);
+      parents[pOff] = parentU;
+      childIDs[pOff] = uOff;
+    }
+  }
+  ierr = DMPlexSetTree(*ref,parentSection,parents,childIDs);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&parentSection);CHKERRQ(ierr);
+  ierr = PetscFree2(parents,childIDs);CHKERRQ(ierr);
+
   /* clean up */
   ierr = PetscSectionDestroy(&unionSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&unionConeSection);CHKERRQ(ierr);
