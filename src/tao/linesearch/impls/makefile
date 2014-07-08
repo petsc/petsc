@@ -1,4 +1,4 @@
-
+#requiresscalar    real
 ALL: lib
 
 DIRS     = unit morethuente  gpcglinesearch armijo owarmijo

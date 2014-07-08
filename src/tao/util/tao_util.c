@@ -6,9 +6,9 @@ PETSC_STATIC_INLINE PetscReal Fischer(PetscReal a, PetscReal b)
 {
   /* Method suggested by Bob Vanderbei */
    if (a + b <= 0) {
-     return PetscSqrtScalar(a*a + b*b) - (a + b);
+     return PetscSqrtReal(a*a + b*b) - (a + b);
    }
-   return -2.0*a*b / (PetscSqrtScalar(a*a + b*b) + (a + b));
+   return -2.0*a*b / (PetscSqrtReal(a*a + b*b) + (a + b));
 }
 
 #undef __FUNCT__
@@ -46,11 +46,11 @@ $        phi(a,b) := sqrt(a*a + b*b) - a - b
 @*/
 PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
 {
-  const PetscReal *x, *f, *l, *u;
-  PetscReal       *fb;
-  PetscReal       xval, fval, lval, uval;
-  PetscErrorCode  ierr;
-  PetscInt        low[5], high[5], n, i;
+  const PetscScalar *x, *f, *l, *u;
+  PetscScalar       *fb;
+  PetscReal         xval, fval, lval, uval;
+  PetscErrorCode    ierr;
+  PetscInt          low[5], high[5], n, i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X, VEC_CLASSID,1);
@@ -149,11 +149,11 @@ $        phi(a,b) := sqrt(a*a + b*b + 2*mu*mu) - a - b
 @*/
 PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
 {
-  const PetscReal *x, *f, *l, *u;
-  PetscReal       *fb;
-  PetscReal       xval, fval, lval, uval;
-  PetscErrorCode  ierr;
-  PetscInt        low[5], high[5], n, i;
+  const PetscScalar *x, *f, *l, *u;
+  PetscScalar       *fb;
+  PetscReal         xval, fval, lval, uval;
+  PetscErrorCode    ierr;
+  PetscInt          low[5], high[5], n, i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X, VEC_CLASSID,1);
@@ -244,11 +244,11 @@ PETSC_STATIC_INLINE PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 @*/
 PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec T2, Vec Da, Vec Db)
 {
-  PetscErrorCode  ierr;
-  PetscInt        i,nn;
-  const PetscReal *x,*f,*l,*u,*t2;
-  PetscReal       *da,*db,*t1;
-  PetscReal        ai,bi,ci,di,ei;
+  PetscErrorCode    ierr;
+  PetscInt          i,nn;
+  const PetscScalar *x,*f,*l,*u,*t2;
+  PetscScalar       *da,*db,*t1;
+  PetscReal          ai,bi,ci,di,ei;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(X,&nn);CHKERRQ(ierr);
@@ -262,19 +262,19 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
   ierr = VecGetArrayRead(T2,&t2);CHKERRQ(ierr);
 
   for (i = 0; i < nn; i++) {
-    da[i] = 0;
-    db[i] = 0;
-    t1[i] = 0;
+    da[i] = 0.0;
+    db[i] = 0.0;
+    t1[i] = 0.0;
 
-    if (PetscAbsReal(f[i]) <= PETSC_MACHINE_EPSILON) {
-      if (l[i] > PETSC_NINFINITY && PetscAbsReal(x[i] - l[i]) <= PETSC_MACHINE_EPSILON) {
-        t1[i] = 1;
-        da[i] = 1;
+    if (PetscAbsScalar(f[i]) <= PETSC_MACHINE_EPSILON) {
+      if (PetscRealPart(l[i]) > PETSC_NINFINITY && PetscAbsScalar(x[i] - l[i]) <= PETSC_MACHINE_EPSILON) {
+        t1[i] = 1.0;
+        da[i] = 1.0;
       }
 
-      if (u[i] <  PETSC_INFINITY && PetscAbsReal(u[i] - x[i]) <= PETSC_MACHINE_EPSILON) {
-        t1[i] = 1;
-        db[i] = 1;
+      if (PetscRealPart(u[i]) <  PETSC_INFINITY && PetscAbsScalar(u[i] - x[i]) <= PETSC_MACHINE_EPSILON) {
+        t1[i] = 1.0;
+        db[i] = 1.0;
       }
     }
   }
@@ -285,68 +285,68 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
   ierr = VecGetArrayRead(T2,&t2);CHKERRQ(ierr);
 
   for (i = 0; i < nn; i++) {
-    if ((l[i] <= PETSC_NINFINITY) && (u[i] >= PETSC_INFINITY)) {
-      da[i] = 0;
-      db[i] = -1;
-    } else if (l[i] <= PETSC_NINFINITY) {
-      if (db[i] >= 1) {
+    if ((PetscRealPart(l[i]) <= PETSC_NINFINITY) && (PetscRealPart(u[i]) >= PETSC_INFINITY)) {
+      da[i] = 0.0;
+      db[i] = -1.0;
+    } else if (PetscRealPart(l[i]) <= PETSC_NINFINITY) {
+      if (PetscRealPart(db[i]) >= 1) {
         ai = fischnorm(1, t2[i]);
 
-        da[i] = -1/ai - 1;
-        db[i] = -t2[i]/ai - 1;
+        da[i] = -1.0 / ai - 1.0;
+        db[i] = -t2[i] / ai - 1.0;
       } else {
         bi = u[i] - x[i];
         ai = fischnorm(bi, f[i]);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
-        da[i] = bi / ai - 1;
-        db[i] = -f[i] / ai - 1;
+        da[i] = bi / ai - 1.0;
+        db[i] = -f[i] / ai - 1.0;
       }
-    } else if (u[i] >=  PETSC_INFINITY) {
-      if (da[i] >= 1) {
+    } else if (PetscRealPart(u[i]) >=  PETSC_INFINITY) {
+      if (PetscRealPart(da[i]) >= 1) {
         ai = fischnorm(1, t2[i]);
 
-        da[i] = 1 / ai - 1;
-        db[i] = t2[i] / ai - 1;
+        da[i] = 1.0 / ai - 1.0;
+        db[i] = t2[i] / ai - 1.0;
       } else {
         bi = x[i] - l[i];
         ai = fischnorm(bi, f[i]);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
-        da[i] = bi / ai - 1;
-        db[i] = f[i] / ai - 1;
+        da[i] = bi / ai - 1.0;
+        db[i] = f[i] / ai - 1.0;
       }
     } else if (l[i] == u[i]) {
-      da[i] = -1;
-      db[i] = 0;
+      da[i] = -1.0;
+      db[i] = 0.0;
     } else {
-      if (db[i] >= 1) {
+      if (PetscRealPart(db[i]) >= 1) {
         ai = fischnorm(1, t2[i]);
 
-        ci = 1 / ai + 1;
-        di = t2[i] / ai + 1;
+        ci = 1.0 / ai + 1.0;
+        di = t2[i] / ai + 1.0;
       } else {
         bi = x[i] - u[i];
         ai = fischnorm(bi, f[i]);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
-        ci = bi / ai + 1;
-        di = f[i] / ai + 1;
+        ci = bi / ai + 1.0;
+        di = f[i] / ai + 1.0;
       }
 
-      if (da[i] >= 1) {
+      if (PetscRealPart(da[i]) >= 1) {
         bi = ci + di*t2[i];
         ai = fischnorm(1, bi);
 
-        bi = bi / ai - 1;
-        ai = 1 / ai - 1;
+        bi = bi / ai - 1.0;
+        ai = 1.0 / ai - 1.0;
       } else {
         ei = Fischer(u[i] - x[i], -f[i]);
         ai = fischnorm(x[i] - l[i], ei);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
-        bi = ei / ai - 1;
-        ai = (x[i] - l[i]) / ai - 1;
+        bi = ei / ai - 1.0;
+        ai = (x[i] - l[i]) / ai - 1.0;
       }
 
       da[i] = ai + bi*ci;
@@ -393,11 +393,11 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
 @*/
 PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu,Vec T1, Vec T2,Vec Da, Vec Db, Vec Dm)
 {
-  PetscErrorCode  ierr;
-  PetscInt        i,nn;
-  const PetscReal *x, *f, *l, *u;
-  PetscReal       *da, *db, *dm;
-  PetscReal       ai, bi, ci, di, ei, fi;
+  PetscErrorCode    ierr;
+  PetscInt          i,nn;
+  const PetscScalar *x, *f, *l, *u;
+  PetscScalar       *da, *db, *dm;
+  PetscReal         ai, bi, ci, di, ei, fi;
 
   PetscFunctionBegin;
   if (PetscAbsReal(mu) <= PETSC_MACHINE_EPSILON) {
@@ -414,46 +414,46 @@ PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu
     ierr = VecGetArray(Dm,&dm);CHKERRQ(ierr);
 
     for (i = 0; i < nn; ++i) {
-      if ((l[i] <= PETSC_NINFINITY) && (u[i] >= PETSC_INFINITY)) {
+      if ((PetscRealPart(l[i]) <= PETSC_NINFINITY) && (PetscRealPart(u[i]) >= PETSC_INFINITY)) {
         da[i] = -mu;
-        db[i] = -1;
+        db[i] = -1.0;
         dm[i] = -x[i];
-      } else if (l[i] <= PETSC_NINFINITY) {
+      } else if (PetscRealPart(l[i]) <= PETSC_NINFINITY) {
         bi = u[i] - x[i];
         ai = fischsnorm(bi, f[i], mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
-        da[i] = bi / ai - 1;
-        db[i] = -f[i] / ai - 1;
+        da[i] = bi / ai - 1.0;
+        db[i] = -f[i] / ai - 1.0;
         dm[i] = 2.0 * mu / ai;
-      } else if (u[i] >=  PETSC_INFINITY) {
+      } else if (PetscRealPart(u[i]) >=  PETSC_INFINITY) {
         bi = x[i] - l[i];
         ai = fischsnorm(bi, f[i], mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
-        da[i] = bi / ai - 1;
-        db[i] = f[i] / ai - 1;
+        da[i] = bi / ai - 1.0;
+        db[i] = f[i] / ai - 1.0;
         dm[i] = 2.0 * mu / ai;
       } else if (l[i] == u[i]) {
-        da[i] = -1;
-        db[i] = 0;
-        dm[i] = 0;
+        da[i] = -1.0;
+        db[i] = 0.0;
+        dm[i] = 0.0;
       } else {
         bi = x[i] - u[i];
         ai = fischsnorm(bi, f[i], mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
-        ci = bi / ai + 1;
-        di = f[i] / ai + 1;
+        ci = bi / ai + 1.0;
+        di = f[i] / ai + 1.0;
         fi = 2.0 * mu / ai;
 
         ei = SFischer(u[i] - x[i], -f[i], mu);
         ai = fischsnorm(x[i] - l[i], ei, mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
-        bi = ei / ai - 1;
+        bi = ei / ai - 1.0;
         ei = 2.0 * mu / ei;
-        ai = (x[i] - l[i]) / ai - 1;
+        ai = (x[i] - l[i]) / ai - 1.0;
 
         da[i] = ai + bi*ci;
         db[i] = bi*di;
