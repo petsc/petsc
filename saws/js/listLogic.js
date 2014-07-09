@@ -356,7 +356,6 @@ $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
                 var nextEndtag = nextDiv.id.substring(nextId.indexOf("0"),nextId.length);
 
                 if(nextEndtag.indexOf(endtag) == 0) {
-                    console.log(nextDiv);
                     currentDiv = nextDiv;
                 }
                 else
@@ -435,7 +434,6 @@ $(document).on('keyup', "input[id^='pc_mg_levels']", function()
                 var nextEndtag = nextDiv.id.substring(nextId.indexOf("0"),nextId.length);
 
                 if(nextEndtag.indexOf(endtag) == 0) {
-                    console.log(nextDiv);
                     currentDiv = nextDiv;
                 }
                 else

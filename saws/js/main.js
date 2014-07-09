@@ -3,8 +3,6 @@ var matInfo = [];
 //var currentAsk = "0";//start at endtag=0. then 0_0 0_1, then 0_0_0 0_0_1 0_1_0 0_1_1 etc...
 //var askedA0 = false;//a one-way flag to record if A0 was asked
 
-var treeDetailed;//global variable. tree.js uses this variable to determine how the tree should be displayed
-
 //  This function is run when the page is first visited
 //-----------------------------------------------------
 $(document).ready(function(){

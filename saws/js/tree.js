@@ -2,7 +2,7 @@
 //A good video explaining the tree:
 //http://www.youtube.com/watch?v=x8dwXoWODZ4 (part 1)
 //http://www.youtube.com/watch?v=iZ6MSHA4FMU (part 2)
-function buildTree(matInfo, numberOfLevels, detailed)
+function buildTree()
 {
     //initialize tree
     var treeData = {};
@@ -11,45 +11,72 @@ function buildTree(matInfo, numberOfLevels, detailed)
     cleanMatInfo();
     sortMatInfo();
 
+    //calculate number of levels
+    var numberOfLevels = 1;
+    for(var i=0; i<matInfo.length; i++) {
+        var currentLevel = getNumUnderscores(matInfo[i].endtag);
+        if(currentLevel > numberOfLevels)
+            numberOfLevels = currentLevel;
+    }
+
+    alert(matInfo.length);
     for(var i=0; i<matInfo.length; i++) {//first zero doesn't matter
-        var string=(detailed) ? matInfo[i].string : matInfo[i].stringshort;
-        var obj={name: string};//the new object to be placed
-        var id=matInfo[i].id;
+        var string = getSimpleDescription(matInfo[i].endtag);alert(string);
+        var obj    = {name: string};//the new object to be placed
+        var endtag = matInfo[i].endtag;
         var needsAllocation=false;
 
-        if(matInfo[i].id == "0")
+        if(endtag == "0")
             treeData=obj;
 
-        if(id.charAt(id.length-1)=="0") {//get the last char
+        //get the last number in the endtag
+        if(endtag == "0" || endtag.substring(endtag.lastIndexOf("_")+1,endtag.length) == "0") {
             //need to allocate
             needsAllocation=true;
         }
 
-        if(id.length == 2) {
+        if(getNumUnderscores(endtag) == 1) {
             if(needsAllocation) {
                 treeData.contents=[];
             }
-            treeData.contents[parseInt(id.charAt(1))]=obj;
+            treeData.contents[getNthPos(endtag,1)] = obj;
         }
-        else if(id.length == 3) {
+        else if(getNumUnderscores(endtag) == 2) {
             if(needsAllocation) {
-                treeData.contents[parseInt(id.charAt(1))].contents=[];
+                treeData.contents[getNthPos(endtag,1)].contents=[];
             }
-            treeData.contents[parseInt(id.charAt(1))].contents[parseInt(id.charAt(2))]=obj;
+            treeData.contents[getNthPos(endtag,1)].contents[getNthPos(endtag,2)]=obj;
         }
-        else if(id.length == 4) {
+        else if(getNumUnderscores(endtag) == 3) {
             if(needsAllocation) {
-                treeData.contents[parseInt(id.charAt(1))].contents[parseInt(id.charAt(2))]=[];
+                treeData.contents[getNthPos(endtag,1)].contents[getNthPos(endtag,2)]=[];
             }
-            treeData.contents[parseInt(id.charAt(1))].contents[parseInt(id.charAt(2))].contents[parseInt(id.charAt(3))]=obj;
+            treeData.contents[getNthPos(endtag,1)].contents[getNthPos(endtag,2)].contents[getNthPos(endtag,3)]=obj;
         }
 
+    }
+
+    //pos goes from 0 to numUnderscores. pos 0 is always "0"
+    function getNthPos(endtag,pos) {
+        if(pos == 0)
+            return 0;
+        if(pos > getNumUnderscores(endtag))
+            return -1; //error. this is not possible.
+
+        for(var i=0; i<pos; i++) { //remove 'pos' number of underscores
+            endtag = endtag.substring(endtag.indexOf("_")+1, endtag.length);
+        }
+
+        if(endtag.indexOf("_") == -1) //has no more underscores so just return everything that's left
+            return parseInt(endtag);
+        else //otherwise, return up to the next underscore
+            return parseInt(endtag.substring(0,endtag.indexOf("_")));
     }
 
     function cleanMatInfo() {//remove all the -1 elements (these get generated when something is deleted)
 
         for(var i=0; i<matInfo.length; i++) {
-            if(matInfo[i].id=="-1") {
+            if(matInfo[i].endtag == "-1") {
 
                 //shift everything down
                 for(var j=i; j<matInfo.length-1; j++)
@@ -67,15 +94,15 @@ function buildTree(matInfo, numberOfLevels, detailed)
     //selection sort. NOTE: THIS FUNCTION ASSUMES ALL GARBAGE VALUES (ID="-1") HAVE ALREADY BEEN REMOVED USING cleanMatInfo()
     function sortMatInfo() {
         for(var i=0; i<matInfo.length-1; i++) {//only need to go to second to last element
-            var indexOfCurrentSmallest=i;
+            var indexOfCurrentSmallest = i;
             for(var j=i; j<matInfo.length; j++) {
-                if(matInfo[j].id.localeCompare(matInfo[i].id) == -1)
-                    indexOfCurrentSmallest=j;
+                if(matInfo[j].endtag.localeCompare(matInfo[i].endtag) == -1)
+                    indexOfCurrentSmallest = j;
             }
             //swap i and indexOfCurrentSmallest
-            var temp=matInfo[i];
-            matInfo[i]=matInfo[indexOfCurrentSmallest];
-            matInfo[indexOfCurrentSmallest]=temp;
+            var temp                        = matInfo[i];
+            matInfo[i]                      = matInfo[indexOfCurrentSmallest];
+            matInfo[indexOfCurrentSmallest] = temp;
         }
 
     }

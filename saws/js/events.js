@@ -96,29 +96,20 @@ function addEventHandlers() {
     //When "Cmd Options" button is clicked ...
     //----------------------------------------
     $("#cmdOptionsButton").click(function(){
-	//$("#treeContainer").html("<div id='tree'> </div>");
-
-	//get the number of levels for the tree for scaling purposes
-        /*var matLevelForTree = 0;
-        for(var i=0; i<matInfo.length; i++)
-            if(matInfo[i].id!="-1" && matInfo[i].level>matLevelForTree)
-                matLevelForTree = matInfo[i];
-        matLevelForTree++;//appears to be 1 greater than the max
+	$("#treeContainer").html("<div id='tree'> </div>");
 
 	//build the tree
-        treeDetailed = false;//tree.js uses this variable to know what information to display
-	buildTree(matInfo,matLevelForTree,treeDetailed);*/
+	buildTree();
 
         //show cmdOptions to the screen
         $("#rightPanel").html(""); //clear the rightPanel
         var cmdOptions = getCmdOptions("0","","newline");
-        $("#rightPanel").append("<b>Command Line Options:</b><br>");
+        $("#rightPanel").append("<b>Command Line Options:</b><br><br>");
         $("#rightPanel").append(cmdOptions);
     });
 
     $("#clearOutput").click(function(){
-	for(var i=0; i<matInfo.length; i++)
-	    $("#oCmdOptions"+matInfo[i].id).empty();//if matInfo has deleted A-divs, its still okay because id will be "-1" and nothing will be changed
+        $("#rightPanel").html("");
     });
 
     $("#clearTree").click(function(){
