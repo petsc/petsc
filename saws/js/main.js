@@ -20,7 +20,7 @@ $(document).ready(function(){
     }
 
     //to start, append the first div (div0) in the table and the first pc/ksp options dropdown
-    $("#results").append("<div id=\"leftPanel\"> </div> <div id=\"rightPanel\"></div>");
+    $("#results").append("<div id=\"leftPanel\" style=\"float:left;\"> </div> <div id=\"rightPanel\" style=\"float:left;padding-left:30px;\"></div>");
     $("#leftPanel").append("<div id=\"solver0\"> </div>");
 
     $("#solver0").append("<b>Root Solver Options (Mat Properties: Symm:<input type=\"checkbox\" id=\"symm0\"> Posdef:<input type=\"checkbox\" id=\"posdef0\"> Logstruc:<input type=\"checkbox\" id=\"logstruc0\">)</b><br>");//text: Solver Level: 0
@@ -31,7 +31,7 @@ $(document).ready(function(){
     populateKspList("0");
 
     $("#pc_type0").trigger("change");//display options for sub-solvers (if any)
-
+    $("#ksp_type0").trigger("change");//just to record ksp. (ask Dr. Smith or Dr. Zhang for proper defaults)
 
     //display matrix pic. manually add square braces the first time
     //$("#matrixPic").html("<center>" + "\\(\\left[" + getMatrixTex("0") + "\\right]\\)" + "</center>");

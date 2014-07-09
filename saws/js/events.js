@@ -96,13 +96,10 @@ function addEventHandlers() {
     //When "Cmd Options" button is clicked ...
     //----------------------------------------
     $("#cmdOptionsButton").click(function(){
-	$("#treeContainer").html("<div id='tree'> </div>");
-
-	//get the options from the drop-down lists
-        solverGetOptions(matInfo);
+	//$("#treeContainer").html("<div id='tree'> </div>");
 
 	//get the number of levels for the tree for scaling purposes
-        var matLevelForTree = 0;
+        /*var matLevelForTree = 0;
         for(var i=0; i<matInfo.length; i++)
             if(matInfo[i].id!="-1" && matInfo[i].level>matLevelForTree)
                 matLevelForTree = matInfo[i];
@@ -110,15 +107,13 @@ function addEventHandlers() {
 
 	//build the tree
         treeDetailed = false;//tree.js uses this variable to know what information to display
-	buildTree(matInfo,matLevelForTree,treeDetailed);
+	buildTree(matInfo,matLevelForTree,treeDetailed);*/
 
         //show cmdOptions to the screen
-        for (var i=0; i<matInfo.length; i++) {
-	    if (matInfo[i].id=="-1")//possible junk value created by deletion of adiv
-		continue;
-	    $("#cmdOptions" + matInfo[i].endtag).empty();
-            $("#cmdOptions" + matInfo[i].endtag).append("<br><br>" + matInfo[i].string);
-        }
+        $("#rightPanel").html(""); //clear the rightPanel
+        var cmdOptions = getCmdOptions("0","","newline");
+        $("#rightPanel").append("<b>Command Line Options:</b><br>");
+        $("#rightPanel").append(cmdOptions);
     });
 
     $("#clearOutput").click(function(){

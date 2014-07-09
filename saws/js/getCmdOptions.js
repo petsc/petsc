@@ -8,7 +8,7 @@ function getCmdOptions(endtag,prefix,option)
 
     var endl = "";
     if(option == "newline")
-        endl = "\n";
+        endl = "<br>";
     else if(option == "space")
         endl = " ";
     else
@@ -66,7 +66,7 @@ function getCmdOptions(endtag,prefix,option)
         else if(pc_type == "ksp")
             childPrefix = "sub_";
 
-        ret += getCmdOptions(childEndtag,childPrefix); //recursive call
+        ret += getCmdOptions(childEndtag,prefix+childPrefix,option); //recursive call
     }
 
     return ret;
