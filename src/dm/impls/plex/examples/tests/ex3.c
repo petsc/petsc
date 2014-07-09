@@ -211,6 +211,8 @@ static void simple_mass(const PetscScalar u[], const PetscScalar u_t[], const Pe
 #define __FUNCT__ "SetupSection"
 static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
+  PetscBool      isPlex;
+  DMType         type;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -381,6 +383,17 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 #endif
     }
   }
+  ierr = DMGetType(dm,&type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,DMPLEX,&isPlex);CHKERRQ(ierr);
+  if (user->tree && isPlex) {
+    PetscDS ds;
+    DM refTree;
+
+    ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
+    ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
+    ierr = DMSetDS(refTree,ds);CHKERRQ(ierr);
+    ierr = DMPlexComputeConstraintMatrix_ReferenceTree(refTree);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -513,6 +526,11 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMPLEX, &isPlex);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) dm, DMDA,   &isDA);CHKERRQ(ierr);
   ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
+  if (user->tree && isPlex) {
+    DM refTree;
+    ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
+    ierr = DMPlexSetReferenceTree(rdm,refTree);CHKERRQ(ierr);
+  }
   if (!user->simplex && !user->constraints) {ierr = DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
   ierr = SetupSection(rdm, user);CHKERRQ(ierr);
   /* Setup functions to approximate */
