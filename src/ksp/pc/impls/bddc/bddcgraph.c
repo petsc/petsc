@@ -122,7 +122,9 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
         nec++;
       }
     } else {
-      if (graph->count[repdof] > 1 || (graph->count[repdof] == 1 && graph->special_dof[repdof] == PCBDDCGRAPH_NEUMANN_MARK)) {
+      if (graph->count[repdof] > 1 ||
+          (graph->count[repdof] == 1 && graph->special_dof[repdof] == PCBDDCGRAPH_NEUMANN_MARK) ||
+          (graph->count[repdof] == 1 && graph->special_dof[repdof] <= PCBDDCGRAPH_SPECIAL_MARK) ) {
         nvc += graph->cptr[i+1]-graph->cptr[i];
       }
     }
@@ -179,7 +181,9 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
     for (i=0;i<graph->ncc;i++) {
       if (graph->cptr[i+1]-graph->cptr[i] <= graph->custom_minimal_size) {
         PetscInt repdof = graph->queue[graph->cptr[i]];
-        if (graph->count[repdof] > 1 || (graph->count[repdof] == 1 && graph->special_dof[repdof] == PCBDDCGRAPH_NEUMANN_MARK)) {
+        if (graph->count[repdof] > 1 ||
+            (graph->count[repdof] == 1 && graph->special_dof[repdof] == PCBDDCGRAPH_NEUMANN_MARK) ||
+            (graph->count[repdof] == 1 && graph->special_dof[repdof] <= PCBDDCGRAPH_SPECIAL_MARK)) {
           for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
             idx[nvc]=graph->queue[j];
             nvc++;
@@ -904,14 +908,35 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   }
 
   /* mark special nodes -> each will become a single node equivalence class */
+  ierr = VecSet(local_vec,0.0);CHKERRQ(ierr);
   if (custom_primal_vertices) {
+    ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
     ierr = ISGetLocalSize(custom_primal_vertices,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(custom_primal_vertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    for (i=0;i<is_size;i++) {
-      graph->special_dof[is_indices[i]] = PCBDDCGRAPH_SPECIAL_MARK-i;
+    for (i=0;i<is_size;i++){
+      if (is_indices[i] > -1 && is_indices[i] < graph->nvtxs) { /* out of bounds indices (if any) are skipped */
+        array[is_indices[i]] = 1.0;
+      }
     }
     ierr = ISRestoreIndices(custom_primal_vertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
+    ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
   }
+  /* special nodes: impose consistency among neighbours */
+  ierr = VecSet(global_vec,0.0);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter_ctx,local_vec,global_vec,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
+  j = 0;
+  for (i=0;i<graph->nvtxs;i++) {
+    if (PetscRealPart(array[i]) > 0.1 && graph->special_dof[i] != PCBDDCGRAPH_DIRICHLET_MARK) {
+      graph->special_dof[i] = PCBDDCGRAPH_SPECIAL_MARK-j;
+      j++;
+    }
+  }
+  ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
+
   /* mark interior nodes as touched and belonging to partition number 0 */
   for (i=0;i<graph->nvtxs;i++) {
     if (!graph->count[i]) {
