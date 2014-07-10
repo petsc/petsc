@@ -13,6 +13,7 @@ $(document).on("change","select[id^='pc_type']",function() {
 
     removeAllChildren(endtag);//this function also changes matInfo as needed
 
+    //inherit matrix properties from parent !!
     if (pcValue == "mg") {
         var defaultMgLevels = 2;
 

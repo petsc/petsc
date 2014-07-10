@@ -167,7 +167,6 @@ function sortMatInfo()
     for(var i=0; i<matInfo.length-1; i++) {//only need to go to second to last element
         var indexOfCurrentSmallest = i;
         for(var j=i; j<matInfo.length; j++) {
-            //if(matInfo[j].endtag.localeCompare(matInfo[i].endtag) == -1)
             if(compare(matInfo[j].endtag,matInfo[indexOfCurrentSmallest].endtag) == -1) {
                 indexOfCurrentSmallest = j;
             }
@@ -181,11 +180,6 @@ function sortMatInfo()
 
 function compare(endtag1, endtag2)
 {
-    /*if(getNumUnderscores(endtag1) < getNumUnderscores(endtag2))
-        return -1;
-    if(getNumUnderscores(endtag1) > getNumUnderscores(endtag2))
-        return 1;*/
-
     if(endtag1 == endtag2)
         return 0;
 

@@ -10,7 +10,7 @@ $(document).ready(function(){
     //reset the form
     //formSet(currentAsk);
 
-    matInfo[0] = {
+    matInfo[0] = { //all false by default
         endtag: "0",
         logstruc: false,
         symm: false,
@@ -30,10 +30,14 @@ $(document).ready(function(){
 
     $("#pc_type0").trigger("change");//display options for sub-solvers (if any)
     $("#ksp_type0").trigger("change");//just to record ksp. (ask Dr. Smith or Dr. Zhang for proper defaults)
+    $("#symm0").trigger("change");//blur out posdef (see events.js)
 
     //display matrix pic. manually add square braces the first time
     //$("#matrixPic").html("<center>" + "\\(\\left[" + getMatrixTex("0") + "\\right]\\)" + "</center>");
     //MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 
-    addEventHandlers();
+    $(function() { //needed for jqueryUI tool tip to override native javascript tooltip
+        $(document).tooltip();
+    });
+
 });

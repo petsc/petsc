@@ -58,7 +58,7 @@ function populateKspList(endtag)
 
     //set default ksp_type
 
-    var index = getIndex(matInfo,endtag);
+    /*var index = getIndex(matInfo,endtag);
 
     if(index == -1)
         alert("error: this item does not exist in matInfo");
@@ -72,7 +72,7 @@ function populateKspList(endtag)
 	$(list).find("option[value='cg']").attr("selected","selected");
     } else {
 	$(list).find("option[value='gmres']").attr("selected","selected");
-    }
+    }*/
 }
 
 /*
@@ -115,7 +115,7 @@ function populatePcList(endtag)
     $(list).append("<option value=\"svd\">svd</option>");
 
     //set default pc_type
-    var index = getIndex(matInfo,endtag);
+    /*var index = getIndex(matInfo,endtag);
 
     if(index == -1)
         alert("error: this item does not exist in matInfo");
@@ -133,5 +133,5 @@ function populatePcList(endtag)
             $(list).find("option[value='icc']").attr("selected","selected");
         else
 	    $(list).find("option[value='bjacobi']").attr("selected","selected");
-    }
+    }*/
 }
