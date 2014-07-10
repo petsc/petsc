@@ -64,7 +64,7 @@ function populateKspList(endtag)
         alert("error: this item does not exist in matInfo");
 
     if (typeof matInfo[index].symm == undefined) {
-        alert("Warning: matInfo["+index+"].symm is undefined!");
+        //alert("Warning: matInfo["+index+"].symm is undefined!");
         $(list).find("option[value='gmres']").attr("selected","selected");
     } else if (matInfo[index].symm && !matInfo[index].posdef) {
 	$(list).find("option[value='minres']").attr("selected","selected");
@@ -121,7 +121,7 @@ function populatePcList(endtag)
         alert("error: this item does not exist in matInfo");
 
     if (matInfo[index].logstruc == undefined) {
-        alert("Warning: matInfo["+index+"].logstruc is undefined!");
+        //alert("Warning: matInfo["+index+"].logstruc is undefined!");
         if(matInfo[index].symm)//use icc if symm
             $(list).find("option[value='icc']").attr("selected","selected");
         else
