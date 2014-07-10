@@ -1054,3 +1054,330 @@ PetscErrorCode DMPlexComputeConstraintMatrix_ReferenceTree(DM dm)
 
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeConstraintMatrix_Tree"
+PetscErrorCode DMPlexComputeConstraintMatrix_Tree(DM dm)
+{
+  DM             refTree;
+  PetscDS        ds;
+  Mat            refCmat, cMat;
+  PetscInt       numFields, f, pRefStart, pRefEnd, p, *rows, *cols, maxDof, maxAnDof, *perm, *iperm, pStart, pEnd, conStart, conEnd, **refPointFieldN;
+  PetscScalar ***refPointFieldMats, *pointWork;
+  PetscSection   refConSec, conSec, refAnSec, anSec, section, refSection;
+  IS             refAnIS, anIS;
+  const PetscInt *refAnchors, *anchors;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(ds,&numFields);CHKERRQ(ierr);
+  ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
+  ierr = DMSetDS(refTree,ds);CHKERRQ(ierr);
+  ierr = DMPlexComputeConstraintMatrix_ReferenceTree(refTree);CHKERRQ(ierr);
+  ierr = DMPlexGetConstraintMatrix(refTree,&refCmat);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(refTree,&pRefStart,&pRefEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetConstraints(refTree,&refAnSec,&refAnIS);CHKERRQ(ierr);
+  ierr = DMPlexGetConstraints(dm,&anSec,&anIS);CHKERRQ(ierr);
+  ierr = ISGetIndices(refAnIS,&refAnchors);CHKERRQ(ierr);
+  ierr = ISGetIndices(anIS,&anchors);CHKERRQ(ierr);
+  ierr = DMPlexGetConstraintSection(refTree,&refConSec);CHKERRQ(ierr);
+  ierr = DMPlexGetConstraintSection(dm,&conSec);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(refTree,&refSection);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(refConSec,&pRefStart,&pRefEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(conSec,&conStart,&conEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pRefEnd-pRefStart,&refPointFieldMats);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pRefEnd-pRefStart,&refPointFieldN);CHKERRQ(ierr);
+  ierr = PetscSectionGetMaxDof(refConSec,&maxDof);CHKERRQ(ierr);
+  ierr = PetscSectionGetMaxDof(refAnSec,&maxAnDof);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxDof,&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxDof*maxAnDof,&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxDof*maxDof*maxAnDof,&pointWork);CHKERRQ(ierr);
+
+  /* step 1: get submats for every constrained point in the reference tree */
+  for (p = pRefStart; p < pRefEnd; p++) {
+    PetscInt parent, closureSize, *closure = NULL, pDof;
+
+    ierr = DMPlexGetTreeParent(refTree,p,&parent,NULL);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(refConSec,p,&pDof);CHKERRQ(ierr);
+    if (!pDof || parent == p) continue;
+
+    ierr = PetscMalloc1(numFields,&refPointFieldMats[p-pRefStart]);CHKERRQ(ierr);
+    ierr = PetscCalloc1(numFields,&refPointFieldN[p-pRefStart]);CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(refTree,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+    for (f = 0; f < numFields; f++) {
+      PetscInt cDof, cOff, numCols, r, i, fComp;
+      PetscFE fe;
+
+      ierr = PetscDSGetDiscretization(ds,f,(PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+
+      if (numFields > 1) {
+        ierr = PetscSectionGetFieldDof(refConSec,p,f,&cDof);CHKERRQ(ierr);
+        ierr = PetscSectionGetFieldOffset(refConSec,p,f,&cOff);CHKERRQ(ierr);
+      }
+      else {
+        ierr = PetscSectionGetDof(refConSec,p,&cDof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(refConSec,p,&cOff);CHKERRQ(ierr);
+      }
+
+      if (!cDof) continue;
+      for (r = 0; r < cDof; r++) {
+        rows[r] = cOff + r;
+      }
+      numCols = 0;
+      for (i = 0; i < closureSize; i++) {
+        PetscInt q = closure[2*i];
+        PetscInt o = closure[2*i+1];
+        PetscInt aDof, aOff, j;
+
+        if (numFields > 1) {
+          ierr = PetscSectionGetFieldDof(refSection,q,f,&aDof);CHKERRQ(ierr);
+          ierr = PetscSectionGetFieldOffset(refSection,q,f,&aOff);CHKERRQ(ierr);
+        }
+        else {
+          ierr = PetscSectionGetDof(refSection,q,&aDof);CHKERRQ(ierr);
+          ierr = PetscSectionGetOffset(refSection,q,&aOff);CHKERRQ(ierr);
+        }
+
+        for (j = 0; j < aDof; j++) {
+          PetscInt node = (o >= 0) ? (j / fComp) : ((aDof - 1 - j) / fComp);
+          PetscInt comp = (j % fComp);
+
+          cols[numCols++] = aOff + node * fComp + comp;
+        }
+      }
+      refPointFieldN[p-pRefStart][f] = numCols;
+      ierr = PetscMalloc1(cDof*numCols,&refPointFieldMats[p-pRefStart][f]);CHKERRQ(ierr);
+      ierr = MatGetValues(refCmat,cDof,rows,numCols,cols,refPointFieldMats[p-pRefStart][f]);CHKERRQ(ierr);
+    }
+    ierr = DMPlexRestoreTransitiveClosure(refTree,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+  }
+
+  /* step 2: compute the preorder */
+  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc2(pEnd-pStart,&perm,pEnd-pStart,&iperm);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; p++) {
+    perm[p - pStart] = p;
+    iperm[p - pStart] = p-pStart;
+  }
+  for (p = 0; p < pEnd - pStart;) {
+    PetscInt point = perm[p];
+    PetscInt parent;
+
+    ierr = DMPlexGetTreeParent(dm,point,&parent,NULL);CHKERRQ(ierr);
+    if (parent == point) {
+      p++;
+    }
+    else {
+      PetscInt size, closureSize, *closure = NULL, i;
+
+      ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      for (i = 0; i < closureSize; i++) {
+        PetscInt q = closure[2*i];
+        if (iperm[q-pStart] > iperm[point-pStart]) {
+          /* swap */
+          perm[p]               = q;
+          perm[iperm[q-pStart]] = point;
+          iperm[point-pStart]   = iperm[q-pStart];
+          iperm[q-pStart]       = p;
+          break;
+        }
+      }
+      size = closureSize;
+      ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      if (i == size) {
+        p++;
+      }
+    }
+  }
+
+  /* step 3: fill the constraint matrix */
+  /* we are going to use a preorder progressive fill strategy.  Mat doesn't
+   * allow progressive fill without assembly, so we are going to set up the
+   * values outside of the Mat first.
+   */
+  {
+    PetscInt nRows, row, nnz;
+    PetscBool done;
+    const PetscInt *ia, *ja;
+    PetscScalar *vals;
+
+    ierr = DMPlexGetConstraintMatrix(dm,&cMat);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(cMat,0,PETSC_FALSE,PETSC_FALSE,&nRows,&ia,&ja,&done);CHKERRQ(ierr);
+    if (!done) SETERRQ(PetscObjectComm((PetscObject)cMat),PETSC_ERR_PLIB,"Could not get RowIJ of constraint matrix");
+    nnz  = ia[nRows];
+    /* malloc and then zero rows right before we fill them: this way valgrind
+     * can tell if we are doing progressive fill in the wrong order */
+    ierr = PetscMalloc1(nnz,&vals);CHKERRQ(ierr);
+    for (p = 0; p < pEnd - pStart; p++) {
+      PetscInt parent, childid, closureSize, *closure = NULL;
+      PetscInt point = perm[p], pointDof;
+
+      ierr = DMPlexGetTreeParent(dm,point,&parent,&childid);CHKERRQ(ierr);
+      if ((point < conStart) || (point >= conEnd) || (parent == point)) continue;
+      ierr = PetscSectionGetDof(conSec,point,&pointDof);CHKERRQ(ierr);
+      if (!pointDof) continue;
+      ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      for (f = 0; f < numFields; f++) {
+        PetscInt cDof, cOff, numCols, numFillCols, i, r, fComp, matOffset, offset;
+        PetscScalar *pointMat;
+        PetscFE fe;
+
+        ierr = PetscDSGetDiscretization(ds,f,(PetscObject *) &fe);CHKERRQ(ierr);
+        ierr = PetscFEGetNumComponents(fe,&fComp);CHKERRQ(ierr);
+
+        if (numFields > 1) {
+          ierr = PetscSectionGetFieldDof(conSec,point,f,&cDof);CHKERRQ(ierr);
+          ierr = PetscSectionGetFieldOffset(conSec,point,f,&cOff);CHKERRQ(ierr);
+        }
+        else {
+          ierr = PetscSectionGetDof(conSec,point,&cDof);CHKERRQ(ierr);
+          ierr = PetscSectionGetOffset(conSec,point,&cOff);CHKERRQ(ierr);
+        }
+        if (!cDof) continue;
+
+        /* make sure that every row for this point is the same size */
+#if defined(PETSC_USE_DEBUG)
+        for (r = 0; r < cDof; r++) {
+          if (cDof > 1 && r) {
+            if ((ia[cOff+r+1]-ia[cOff+r]) != (ia[cOff+r]-ia[cOff+r-1])) {
+              SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Two point rows have different nnz: %d vs. %d", (ia[rows[r]+1]-ia[rows[r]]), (ia[rows[r]]-ia[rows[r]-1]));
+            }
+          }
+        }
+#endif
+        /* zero rows */
+        for (i = ia[cOff] ; i< ia[cOff+cDof];i++) {
+          vals[i] = 0.;
+        }
+        matOffset = ia[cOff];
+        numFillCols = ia[cOff+1] - matOffset;
+        pointMat = refPointFieldMats[childid-pRefStart][f];
+        numCols = refPointFieldN[childid-pRefStart][f];
+        offset = 0;
+        for (i = 0; i < closureSize; i++) {
+          PetscInt q = closure[2*i];
+          PetscInt o = closure[2*i+1];
+          PetscInt aDof, aOff, j, k, qConDof, qConOff;
+
+          qConDof = qConOff = 0;
+          if (numFields > 1) {
+            ierr = PetscSectionGetFieldDof(section,q,f,&aDof);CHKERRQ(ierr);
+            ierr = PetscSectionGetFieldOffset(section,q,f,&aOff);CHKERRQ(ierr);
+            if (q >= conStart && q < conEnd) {
+              ierr = PetscSectionGetFieldDof(conSec,q,f,&qConDof);CHKERRQ(ierr);
+              ierr = PetscSectionGetFieldOffset(conSec,q,f,&qConOff);CHKERRQ(ierr);
+            }
+          }
+          else {
+            ierr = PetscSectionGetDof(section,q,&aDof);CHKERRQ(ierr);
+            ierr = PetscSectionGetOffset(section,q,&aOff);CHKERRQ(ierr);
+            if (q >= conStart && q < conEnd) {
+              ierr = PetscSectionGetDof(conSec,q,&qConDof);CHKERRQ(ierr);
+              ierr = PetscSectionGetOffset(conSec,q,&qConOff);CHKERRQ(ierr);
+            }
+          }
+          if (!aDof) continue;
+          if (qConDof) {
+            /* this point has anchors: its rows of the matrix should already
+             * be filled, thanks to preordering */
+            /* first multiply into pointWork, then set in matrix */
+            PetscInt aMatOffset = ia[qConOff];
+            PetscInt aNumFillCols = ia[qConOff + 1] - aMatOffset;
+            for (r = 0; r < cDof; r++) {
+              for (j = 0; j < aNumFillCols; j++) {
+                PetscScalar inVal = 0;
+                for (k = 0; k < aDof; k++) {
+                  PetscInt node = (o >= 0) ? (k / fComp) : ((aDof - 1 - k) / fComp);
+                  PetscInt comp = (k % fComp);
+                  PetscInt col  = node * fComp + comp;
+
+                  inVal += pointMat[r * numCols + offset + col] * vals[aMatOffset + aNumFillCols * k + j];
+                }
+                pointWork[r * aNumFillCols + j] = inVal;
+              }
+            }
+            /* assume that the columns are sorted, spend less time searching */
+            for (j = 0, k = 0; j < aNumFillCols; j++) {
+              PetscInt col = ja[aMatOffset + j];
+              for (;k < numFillCols; k++) {
+                if (ja[matOffset + k] == col) {
+                  break;
+                }
+              }
+              if (k == numFillCols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No nonzero space for (%d, %d)", cOff, col);
+              for (r = 0; r < cDof; r++) {
+                vals[matOffset + numFillCols * r + k] = pointWork[r * aNumFillCols + j];
+              }
+            }
+          }
+          else {
+            /* find where to put this portion of pointMat into the matrix */
+            for (k = 0; k < numFillCols; k++) {
+              if (ja[matOffset + k] == aOff) {
+                break;
+              }
+            }
+            if (k == numFillCols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No nonzero space for (%d, %d)", cOff, aOff);
+            for (j = 0; j < aDof; j++) {
+              PetscInt node = (o >= 0) ? (j / fComp) : ((aDof - 1 - j) / fComp);
+              PetscInt comp = (j % fComp);
+              PetscInt col  = node * fComp + comp;
+              for (r = 0; r < cDof; r++) {
+                vals[matOffset + numFillCols * r + k + col] += pointMat[r * numCols + offset + col];
+              }
+            }
+          }
+          offset += aDof;
+        }
+      }
+      ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+    }
+    for (row = 0; row < nRows; row++) {
+      ierr = MatSetValues(cMat,1,&row,ia[row+1]-ia[row],&ja[ia[row]],&vals[ia[row]],INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRowIJ(cMat,0,PETSC_FALSE,PETSC_FALSE,&nRows,&ia,&ja,&done);CHKERRQ(ierr);
+    if (!done) SETERRQ(PetscObjectComm((PetscObject)cMat),PETSC_ERR_PLIB,"Could not restore RowIJ of constraint matrix");
+    ierr = MatAssemblyBegin(cMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(cMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = PetscFree(vals);CHKERRQ(ierr);
+  }
+
+  /* clean up */
+  ierr = ISRestoreIndices(refAnIS,&refAnchors);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(anIS,&anchors);CHKERRQ(ierr);
+  ierr = PetscFree2(perm,iperm);CHKERRQ(ierr);
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = PetscFree(cols);CHKERRQ(ierr);
+  ierr = PetscFree(pointWork);CHKERRQ(ierr);
+  for (p = pRefStart; p < pRefEnd; p++) {
+    PetscInt parent, pDof;
+
+    ierr = DMPlexGetTreeParent(refTree,p,&parent,NULL);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(refConSec,p,&pDof);CHKERRQ(ierr);
+    if (!pDof || parent == p) continue;
+
+    for (f = 0; f < numFields; f++) {
+      PetscInt cDof;
+
+      if (numFields > 1) {
+        ierr = PetscSectionGetFieldDof(refConSec,p,f,&cDof);CHKERRQ(ierr);
+      }
+      else {
+        ierr = PetscSectionGetDof(refConSec,p,&cDof);CHKERRQ(ierr);
+      }
+
+      if (!cDof) continue;
+      ierr = PetscFree(refPointFieldMats[p - pRefStart][f]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(refPointFieldMats[p - pRefStart]);CHKERRQ(ierr);
+    ierr = PetscFree(refPointFieldN[p - pRefStart]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(refPointFieldMats);CHKERRQ(ierr);
+  ierr = PetscFree(refPointFieldN);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
