@@ -398,7 +398,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
     ierr = ISCreateGeneral(PETSC_COMM_SELF,i,idx_V_N,PETSC_OWN_POINTER,&verticesIS);CHKERRQ(ierr);
     ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
     ierr = PCBDDCGraphInit(graph,pcbddc->mat_graph->l2gmap);CHKERRQ(ierr);
-    ierr = PCBDDCGraphSetUp(graph,0,PETSC_NULL,pcbddc->DirichletBoundaries,0,PETSC_NULL,verticesIS);CHKERRQ(ierr);
+    ierr = PCBDDCGraphSetUp(graph,0,NULL,pcbddc->DirichletBoundariesLocal,0,NULL,verticesIS);CHKERRQ(ierr);
     ierr = PCBDDCGraphComputeConnectedComponents(graph);CHKERRQ(ierr);
     ierr = ISDestroy(&verticesIS);CHKERRQ(ierr);
 /*
