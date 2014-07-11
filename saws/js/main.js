@@ -24,7 +24,7 @@ $(document).ready(function(){
 
     $("#pc_type0").trigger("change");//display options for sub-solvers (if any)
     $("#ksp_type0").trigger("change");//just to record ksp. (ask Dr. Smith or Dr. Zhang for proper defaults)
-    $("#symm0").trigger("change");//blur out posdef (see events.js)
+    $("#symm0").trigger("change");//blur out posdef. will also set the default root pc/ksp for the first time (see events.js)
 
     //display matrix pic. manually add square braces the first time
     //$("#matrixPic").html("<center>" + "\\(\\left[" + getMatrixTex("0") + "\\right]\\)" + "</center>");

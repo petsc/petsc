@@ -7,18 +7,10 @@ $(document).on("change","input[id^='logstruc']",function(){//automatically selec
     var checked = $(this).prop("checked");
 
     matInfo[endtag].logstruc = checked;
-
-    if(checked && $("#pc_type"+endtag).val() != "fieldsplit") { //if logstruc is selected and is not currently fieldsplit, default to fieldsplit
-        $("#pc_type" + endtag).find("option[value='fieldsplit']").attr("selected","selected");
-        $("#pc_type" + endtag).trigger("change");
-    }
-    if(!checked && $("#pc_type"+endtag).val() == "fieldsplit") { //if no longer log struc, then cannot use fieldsplit solver
-        $("#pc_type" + endtag).find("option[value='bjacobi']").attr("selected","selected");
-        $("#pc_type" + endtag).trigger("change");
-    }
+    setDefaults(endtag);
 });
 
-$(document).on("change","input[id^='symm']",function(){//blur posdef to false if symm isn't selected!!
+$(document).on("change","input[id^='symm']",function(){//blur (disable) posdef to false if symm isn't selected!!
     var id     = this.id;
     var endtag = id.substring(id.indexOf("0"),id.length);
     var index  = getIndex(matInfo,endtag);
@@ -29,10 +21,12 @@ $(document).on("change","input[id^='symm']",function(){//blur posdef to false if
     if(!checked) { //if not symm, then cannot be posdef
         $("#posdef" + endtag).attr("checked",false);
         $("#posdef" + endtag).attr("disabled", true);
+        matInfo[endtag].posdef = false;
     }
     if(checked) { //if symm, then allow user to adjust posdef
         $("#posdef" + endtag).attr("disabled", false);
     }
+    setDefaults(endtag);
 });
 
 $(document).on("change","input[id^='posdef']",function(){
@@ -42,7 +36,23 @@ $(document).on("change","input[id^='posdef']",function(){
     var checked = $(this).prop("checked");
 
     matInfo[endtag].posdef = checked;
+    setDefaults(endtag);
 });
+
+//this function is called after a change in symm,posdef,OR logstruc
+function setDefaults(endtag) {
+    var symm     = $("#symm" + endtag).prop("checked");
+    var posdef   = $("#posdef" + endtag).prop("checked");
+    var logstruc = $("#logstruc" + endtag).prop("checked");
+
+    var defaults = getDefaults("",symm,posdef,logstruc);
+
+    $("#pc_type" + endtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+    $("#ksp_type" + endtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
+    //trigger both to add additional options
+    $("#ksp_type" + endtag).trigger("change");
+    $("#pc_type" + endtag).trigger("change");
+}
 
 //When "Cmd Options" button is clicked ...
 $(document).on("click","#cmdOptionsButton", function(){
