@@ -13,19 +13,23 @@ $(document).on("change","select[id^='pc_type']",function() {
 
     removeAllChildren(endtag);//this function also changes matInfo as needed
 
-    //inherit matrix properties from parent !!
-    if (pcValue == "mg") {
-        var defaultMgLevels = 2;
+    //record pc_type in matInfo
+    matInfo[index].pc_type = pcValue;
 
-        matInfo[index].pc_type      = "mg";
+    if (pcValue == "mg") {
+        var defaults = getDefaults("mg",matInfo[index].symm, matInfo[index].posdef, matInfo[index].logstruc);
+        var defaultMgLevels = defaults.pc_mg_levels;
+
         matInfo[index].pc_mg_levels = defaultMgLevels;
 
         //first add options related to multigrid (pc_mg_type and pc_mg_levels)
         $("#" + parentDiv).append("<br><b>MG Type &nbsp;&nbsp;</b><select id=\"pc_mg_type" + endtag + "\"></select>");
         $("#" + parentDiv).append("<br><b>MG Levels </b><input type='text' id=\'pc_mg_levels" + endtag + "\' maxlength='4'>");
-        $("#pc_mg_levels" + endtag).val(defaultMgLevels);
 
         populateMgList(endtag);
+
+        $("#pc_mg_levels" + endtag).val(defaultMgLevels);
+        $("#pc_mg_type" + endtag).find("option[value=\"" + defaults.pc_mg_type + "\"]").attr("selected","selected");
 
         //display options for each level
         for(var i=defaultMgLevels-1; i>=0; i--) {
@@ -33,9 +37,12 @@ $(document).on("change","select[id^='pc_type']",function() {
 
             var writeLoc = matInfo.length;
             matInfo[writeLoc] = {
-                pc_type : "sor",
-                ksp_type: "chebyshev",
-                endtag : childEndtag
+                pc_type : defaults.pc_type,
+                ksp_type: defaults.ksp_type,
+                endtag : childEndtag,
+                symm: matInfo[index].symm, //inherit !!
+                posdef: matInfo[index].posdef,
+                logstruc: false
             }
 
             var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -53,17 +60,20 @@ $(document).on("change","select[id^='pc_type']",function() {
             populatePcList(childEndtag);
 
 	    //set defaults
-	    $("#ksp_type" + childEndtag).find("option[value='chebyshev']").attr("selected","selected");
-	    $("#pc_type" + childEndtag).find("option[value='sor']").attr("selected","selected");
+	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
+	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+            //trigger both to add additional options
+            $("#ksp_type" + childEndtag).trigger("change");
+            $("#pc_type" + childEndtag).trigger("change");
         }
 
     }
 
     else if (pcValue == "redundant") {
-        var defaultRedundantNumber = 2;
+        var defaults = getDefaults("redundant",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        var defaultRedundantNumber = defaults.pc_redundant_number;
         var childEndtag = endtag + "_0";
 
-        matInfo[index].pc_type             = "redundant";
         matInfo[index].pc_redundant_number = defaultRedundantNumber;
 
         //first add options related to redundant (pc_redundant_number)
@@ -72,10 +82,12 @@ $(document).on("change","select[id^='pc_type']",function() {
 
         var writeLoc = matInfo.length;
         matInfo[writeLoc] = {
-            pc_type : "",
-            ksp_type: "preonly",
+            pc_type : defaults.pc_type,
+            ksp_type: defaults.ksp_type,
             endtag : childEndtag,
-            symm: false //perhaps should inherit this val from parent? (ask dr. smith)
+            symm: matInfo[index].symm, //inherit!!
+            posdef: matInfo[index].posdef,
+            logstruc: false
         }
 
         var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -87,23 +99,19 @@ $(document).on("change","select[id^='pc_type']",function() {
 	populateKspList(childEndtag);
         populatePcList(childEndtag);
 
-	//set defaults for redundant
-	$("#ksp_type" + childEndtag).find("option[value='preonly']").attr("selected","selected");
-        if (matInfo[index].symm) {
-            $("#pc_type" + childEndtag).find("option[value='cholesky']").attr("selected","selected");
-            matInfo[writeLoc].pc_type = "cholesky";
-        } else {
-	    $("#pc_type" + childEndtag).find("option[value='lu']").attr("selected","selected");
-            matInfo[writeLoc].pc_type = "lu";
-        }
+        //set defaults
+	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
+	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+        //trigger both to add additional options
+        $("#ksp_type" + childEndtag).trigger("change");
+        $("#pc_type" + childEndtag).trigger("change");
     }
 
     else if (pcValue == "bjacobi") {
-
-        var defaultBjacobiBlocks = 2;
+        var defaults = getDefaults("bjacobi",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        var defaultBjacobiBlocks = defaults.pc_bjacobi_blocks;
         var childEndtag = endtag + "_0";
 
-        matInfo[index].pc_type             = "bjacobi";
         matInfo[index].pc_bjacobi_blocks   = defaultBjacobiBlocks;
 
         //first add options related to bjacobi (pc_bjacobi_blocks)
@@ -111,11 +119,13 @@ $(document).on("change","select[id^='pc_type']",function() {
         $("#pc_bjacobi_blocks" + endtag).val(defaultBjacobiBlocks);
 
         var writeLoc = matInfo.length;
-        matInfo[writeLoc] = { //here, we should set default symm/posdef/logstruc according to parent properties
-            pc_type : "",
-            ksp_type: "preonly",
+        matInfo[writeLoc] = {
+            pc_type : defaults.pc_type,
+            ksp_type: defaults.ksp_type,
             endtag : childEndtag,
-            symm: false
+            symm: matInfo[index].symm, //inherit!!
+            posdef: matInfo[index].posdef,
+            logstruc: false
         }
 
         var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -129,26 +139,23 @@ $(document).on("change","select[id^='pc_type']",function() {
 	populateKspList(childEndtag);
         populatePcList(childEndtag);
 
-	//set defaults for bjacobi
-	$("#ksp_type" + childEndtag).find("option[value='preonly']").attr("selected","selected");
-        if (matInfo[index].symm) {
-            $("#pc_type" + childEndtag).find("option[value='icc']").attr("selected","selected");
-            matInfo[writeLoc].pc_type = "icc";
-        } else {
-	    $("#pc_type" + childEndtag).find("option[value='ilu']").attr("selected","selected");
-            matInfo[writeLoc].pc_type = "ilu";
-        }
+        //set defaults
+	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
+	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+        //trigger both to add additional options
+        $("#ksp_type" + childEndtag).trigger("change");
+        $("#pc_type" + childEndtag).trigger("change");
     }
 
     else if (pcValue == "asm") {
+        var defaults = getDefaults("asm",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
 
-        var defaultAsmBlocks  = 2;
-        var defaultAsmOverlap = 2;
+        var defaultAsmBlocks  = defaults.pc_asm_blocks;
+        var defaultAsmOverlap = defaults.pc_asm_overlap;
         var childEndtag = endtag + "_0";
 
-        matInfo[index].pc_type             = "asm";
-        matInfo[index].pc_asm_blocks       = defaultAsmBlocks;
-        matInfo[index].pc_asm_overlap      = defaultAsmOverlap;
+        matInfo[index].pc_asm_blocks  = defaultAsmBlocks;
+        matInfo[index].pc_asm_overlap = defaultAsmOverlap;
 
         //first add options related to ASM
         $("#" + parentDiv).append("<br><b>ASM blocks   &nbsp;&nbsp;</b><input type='text' id=\"pc_asm_blocks" + endtag + "\" maxlength='4'>");
@@ -158,10 +165,12 @@ $(document).on("change","select[id^='pc_type']",function() {
 
         var writeLoc = matInfo.length;
         matInfo[writeLoc] = {
-            pc_type : "",
-            ksp_type: "preonly",
+            pc_type : defaults.pc_type,
+            ksp_type: defaults.ksp_type,
             endtag : childEndtag,
-            symm: false
+            symm: matInfo[index].symm, //inherit!!
+            posdef: matInfo[index].posdef,
+            logstruc: false
         }
 
         var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -175,28 +184,26 @@ $(document).on("change","select[id^='pc_type']",function() {
 	populateKspList(childEndtag);
         populatePcList(childEndtag);
 
-	//set defaults for asm
-	$("#ksp_type" + childEndtag).find("option[value='preonly']").attr("selected","selected");
-        if (matInfo[index].symm) {
-            $("#pc_type" + childEndtag).find("option[value='icc']").attr("selected","selected");
-            matInfo[writeLoc].pc_type = "icc";
-        } else {
-	    $("#pc_type" + childEndtag).find("option[value='ilu']").attr("selected","selected");
-            matInfo[writeLoc].pc_type = "ilu";
-        }
+        //set defaults
+	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
+	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+        //trigger both to add additional options
+        $("#ksp_type" + childEndtag).trigger("change");
+        $("#pc_type" + childEndtag).trigger("change");
     }
 
     else if (pcValue == "ksp") {
+        var defaults = getDefaults("ksp",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
         var childEndtag = endtag + "_0";
-
-        matInfo[index].pc_type             = "ksp";
 
         var writeLoc = matInfo.length;
         matInfo[writeLoc] = {
-            pc_type : "bjacobi",
-            ksp_type: "gmres",
+            pc_type : defaults.pc_type,
+            ksp_type: defaults.ksp_type,
             endtag : childEndtag,
-            symm: false
+            symm: matInfo[index].symm, //inherit!!
+            posdef: matInfo[index].posdef,
+            logstruc: false
         }
 
         var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -210,36 +217,41 @@ $(document).on("change","select[id^='pc_type']",function() {
 	populateKspList(childEndtag);
         populatePcList(childEndtag);
 
-	//set defaults for ksp
-	$("#ksp_type" + childEndtag).find("option[value='gmres']").attr("selected","selected");
-	$("#pc_type" + childEndtag).find("option[value='bjacobi']").attr("selected","selected");
-	//bjacobi has extra dropdown menus so manually trigger once
-	$("#pc_type" + childEndtag).trigger("change");
+        //set defaults
+	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
+	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+        //trigger both to add additional options
+        $("#ksp_type" + childEndtag).trigger("change");
+        $("#pc_type" + childEndtag).trigger("change");
     }
 
-    else if (pcValue == "fieldsplit") {//just changed to fieldsplit so set up defaults (2 children)
+    else if (pcValue == "fieldsplit") {
+        var defaults = getDefaults("fieldsplit",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        var defaultFieldsplitBlocks = defaults.pc_fieldsplit_blocks;
 
-        var defaultFieldsplitBlocks = 2;
-
-        matInfo[index].pc_type              = "fieldsplit";
-        matInfo[index].pc_fieldsplit_type   = "multiplicative";//this is hardcoded
-        matInfo[index].pc_fieldsplit_blocks = defaultFieldsplitBlocks;
+        matInfo[index].pc_fieldsplit_type   = defaults.pc_fieldsplit_type;
+        matInfo[index].pc_fieldsplit_blocks = defaults.pc_fieldsplit_blocks;
 
         //first add options related to fieldsplit (pc_fieldsplit_type and pc_fieldsplit_blocks)
         $("#" + parentDiv).append("<br><b>Fieldsplit Type &nbsp;&nbsp;</b><select id=\"pc_fieldsplit_type" + endtag + "\"></select>");
         $("#" + parentDiv).append("<br><b>Fieldsplit Blocks </b><input type='text' id=\"pc_fieldsplit_blocks" + endtag + "\" maxlength='4'>");
-        $("#pc_fieldsplit_blocks" + endtag).val(defaultFieldsplitBlocks);
 
         populateFieldsplitList(endtag);
+
+        $("#pc_fieldsplit_blocks" + endtag).val(defaultFieldsplitBlocks);
+        $("#pc_fieldsplit_type" + endtag).find("option[value=\"" + defaults.pc_fieldsplit_type + "\"]").attr("selected","selected");
 
         for(var i=defaultFieldsplitBlocks-1; i>=0; i--) {
             var childEndtag = endtag + "_" + i;
 
             var writeLoc = matInfo.length;
             matInfo[writeLoc] = {
-                pc_type : "redundant",
-                ksp_type: "preonly",
-                endtag : childEndtag
+                pc_type : defaults.pc_type,
+                ksp_type: defaults.ksp_type,
+                endtag : childEndtag,
+                symm: matInfo[index].symm, //inherit!!
+                posdef: matInfo[index].posdef,
+                logstruc: false
             }
 
             var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -253,15 +265,12 @@ $(document).on("change","select[id^='pc_type']",function() {
             populatePcList(childEndtag);
 
 	    //set defaults
-	    $("#ksp_type" + childEndtag).find("option[value='preonly']").attr("selected","selected");
-	    $("#pc_type" + childEndtag).find("option[value='redundant']").attr("selected","selected");
-	    //redundant has to have extra dropdown menus so manually trigger
-	    $("#pc_type" + childEndtag).trigger("change");
+	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
+	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+            //trigger both to add additional options
+            $("#ksp_type" + childEndtag).trigger("change");
+            $("#pc_type" + childEndtag).trigger("change");
         }
-    }
-
-    else { //for other pcs, simply adjust pc_type in matInfo
-        matInfo[index].pc_type = pcValue;
     }
 });
 

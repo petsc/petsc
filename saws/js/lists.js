@@ -55,24 +55,6 @@ function populateKspList(endtag)
     $(list).append("<option value=\"symmlq\">symmlq (symm, non-positive definite)</option>");
     $(list).append("<option value=\"tcqmr\">tcqmr</option>");
     $(list).append("<option value=\"tfqmr\">tfqmr</option>");
-
-    //set default ksp_type
-
-    /*var index = getIndex(matInfo,endtag);
-
-    if(index == -1)
-        alert("error: this item does not exist in matInfo");
-
-    if (typeof matInfo[index].symm == undefined) {
-        //alert("Warning: matInfo["+index+"].symm is undefined!");
-        $(list).find("option[value='gmres']").attr("selected","selected");
-    } else if (matInfo[index].symm && !matInfo[index].posdef) {
-	$(list).find("option[value='minres']").attr("selected","selected");
-    } else if (matInfo[index].symm && matInfo[index].posdef) {
-	$(list).find("option[value='cg']").attr("selected","selected");
-    } else {
-	$(list).find("option[value='gmres']").attr("selected","selected");
-    }*/
 }
 
 /*
@@ -113,25 +95,4 @@ function populatePcList(endtag)
     $(list).append("<option value=\"shell\">shell</option>");
     $(list).append("<option value=\"sor\">sor</option>");
     $(list).append("<option value=\"svd\">svd</option>");
-
-    //set default pc_type
-    /*var index = getIndex(matInfo,endtag);
-
-    if(index == -1)
-        alert("error: this item does not exist in matInfo");
-
-    if (matInfo[index].logstruc == undefined) {
-        //alert("Warning: matInfo["+index+"].logstruc is undefined!");
-        if(matInfo[index].symm)//use icc if symm
-            $(list).find("option[value='icc']").attr("selected","selected");
-        else
-	    $(list).find("option[value='bjacobi']").attr("selected","selected");
-    } else if (matInfo[index].logstruc) {
-	$(list).find("option[value='fieldsplit']").attr("selected","selected");
-    } else { //!matInfo[recursionCounter].logstruc
-        if(matInfo[index].symm)//use icc if symm
-            $(list).find("option[value='icc']").attr("selected","selected");
-        else
-	    $(list).find("option[value='bjacobi']").attr("selected","selected");
-    }*/
 }

@@ -46,19 +46,44 @@ function getDefaults(solver,symm,posdef,logstruc) {
     }
 
     else if(solver == "bjacobi") {
-
+        ret = {
+            pc_bjacobi_blocks: 2,
+            ksp_type: "preonly"
+        };
+        if(symm)
+            ret.pc_type = "icc";
+        else
+            ret.pc_type = "ilu";
     }
 
     else if(solver == "asm") {
-
+        ret = {
+            pc_asm_blocks: 2,
+            pc_asm_overlap: 2,
+            ksp_type: "preonly"
+        };
+        if(symm)
+            ret.pc_type = "icc";
+        else
+            ret.pc_type = "ilu";
     }
 
     else if(solver == "redundant") {
-
+        ret = {
+            pc_redundant_number: 2,
+            ksp_type: "preonly"
+        };
+        if(symm)
+            ret.pc_type = "cholesky";
+        else
+            ret.pc_type = "lu";
     }
 
     else if(solver == "ksp") { //note: this is for pc_type = ksp
-
+        ret = {
+            pc_type: "bjacobi",
+            ksp_type: "gmres"
+        };
     }
 
     return ret;
