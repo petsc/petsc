@@ -43,6 +43,7 @@ static PetscErrorCode TaoSetFromOptions_GPCG(Tao tao)
   ierr = PetscOptionsHead("Gradient Projection, Conjugate Gradient method for bound constrained optimization");CHKERRQ(ierr);
   ierr=PetscOptionsInt("-tao_gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",0,gpcg->maxgpits,&gpcg->maxgpits,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -122,9 +123,6 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao)
   ierr=VecDuplicate(tao->solution,&gpcg->DXFree);CHKERRQ(ierr);
   ierr=VecDuplicate(tao->solution,&gpcg->R);CHKERRQ(ierr);
   ierr=VecDuplicate(tao->solution,&gpcg->PG);CHKERRQ(ierr);
-  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
-  ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   /*
     if (gpcg->ksp_type == GPCG_KSP_NASH) {
         ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
@@ -375,6 +373,9 @@ PetscErrorCode TaoCreate_GPCG(Tao tao)
   gpcg->n_lower=0;
   gpcg->subset_type = TAO_SUBSET_MASK;
   /* gpcg->ksp_type = GPCG_KSP_STCG; */
+
+  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
 
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHGPCG);CHKERRQ(ierr);
