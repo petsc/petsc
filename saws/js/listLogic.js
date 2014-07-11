@@ -257,7 +257,21 @@ $(document).on("change","select[id^='pc_type']",function() {
             var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
 
             $("#" + parentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + (i+1) + " Options</b>");
+            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + i + " Options (Mat Properties: Symm:<input type=\"checkbox\" id=\"symm" + childEndtag + "\"> Posdef:<input type=\"checkbox\" id=\"posdef" + childEndtag + "\"> Logstruc:<input type=\"checkbox\" id=\"logstruc" + childEndtag + "\">)</b>");
+
+            //special for fieldsplit
+            if(matInfo[writeLoc].symm)
+                $("#symm" + childEndtag).attr("checked",true);
+            if(matInfo[writeLoc].posdef)
+                $("#posdef" + childEndtag).attr("checked",true);
+            if(matInfo[writeLoc].logstruc)
+                $("#logstruc" + childEndtag).attr("checked",true);
+
+            if(matInfo[index].symm)
+                $("#symm" + childEndtag).attr("disabled",true);
+            if(matInfo[index].posdef)
+                $("#posdef" + childEndtag).attr("disabled",true);
+
             $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
 	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
@@ -382,7 +396,7 @@ $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
 
             var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
             $(currentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + (i+1) + " Options</b>");
+            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + i + " Options</b>");
             $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
 	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 

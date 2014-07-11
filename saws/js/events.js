@@ -6,7 +6,7 @@ $(document).on("change","input[id^='logstruc']",function(){//automatically selec
     var index  = getIndex(matInfo,endtag);
     var checked = $(this).prop("checked");
 
-    matInfo[endtag].logstruc = checked;
+    matInfo[index].logstruc = checked;
     setDefaults(endtag);
 });
 
@@ -16,7 +16,7 @@ $(document).on("change","input[id^='symm']",function(){//blur (disable) posdef t
     var index  = getIndex(matInfo,endtag);
     var checked = $(this).prop("checked");
 
-    matInfo[endtag].symm = checked;
+    matInfo[index].symm = checked;
 
     if(!checked) { //if not symm, then cannot be posdef
         $("#posdef" + endtag).attr("checked",false);
@@ -27,6 +27,10 @@ $(document).on("change","input[id^='symm']",function(){//blur (disable) posdef t
         $("#posdef" + endtag).attr("disabled", false);
     }
     setDefaults(endtag);
+
+    //if symm is checked, disable all child symms
+
+    //if symm is unchecked, enable all child symms
 });
 
 $(document).on("change","input[id^='posdef']",function(){
@@ -35,8 +39,12 @@ $(document).on("change","input[id^='posdef']",function(){
     var index  = getIndex(matInfo,endtag);
     var checked = $(this).prop("checked");
 
-    matInfo[endtag].posdef = checked;
+    matInfo[index].posdef = checked;
     setDefaults(endtag);
+
+    //if posdef is checked, disable all child posdefs
+
+    //if posdef is unchecked, enable all the posdefs
 });
 
 //this function is called after a change in symm,posdef,OR logstruc
