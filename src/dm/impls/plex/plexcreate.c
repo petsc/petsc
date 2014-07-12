@@ -436,6 +436,374 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateCubeMesh_Internal"
+static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], DMBoundaryType bdX, DMBoundaryType bdY, DMBoundaryType bdZ)
+{
+  PetscInt       markerTop      = 1;
+  PetscInt       markerBottom   = 1;
+  PetscInt       markerFront    = 1;
+  PetscInt       markerBack     = 1;
+  PetscInt       markerRight    = 1;
+  PetscInt       markerLeft     = 1;
+  PetscInt       dim;
+  PetscBool      markerSeparate = PETSC_FALSE;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
+  if (markerSeparate) {
+    switch (dim) {
+    case 2:
+      markerTop    = 3;
+      markerBottom = 1;
+      markerRight  = 2;
+      markerLeft   = 4;
+      break;
+    case 3:
+      markerBottom = 1;
+      markerTop    = 2;
+      markerFront  = 3;
+      markerBack   = 4;
+      markerRight  = 5;
+      markerLeft   = 6;
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %d not supported",dim);
+      break;
+    }
+  }
+  {
+    const PetscInt numXEdges    = !rank ? edges[0]   : 0;
+    const PetscInt numYEdges    = !rank ? edges[1]   : 0;
+    const PetscInt numZEdges    = !rank ? edges[2]   : 0;
+    const PetscInt numXVertices = !rank ? (bdX == DM_BOUNDARY_PERIODIC || bdX == DM_BOUNDARY_TWIST ? edges[0] : edges[0]+1) : 0;
+    const PetscInt numYVertices = !rank ? (bdY == DM_BOUNDARY_PERIODIC || bdY == DM_BOUNDARY_TWIST ? edges[1] : edges[1]+1) : 0;
+    const PetscInt numZVertices = !rank ? (bdZ == DM_BOUNDARY_PERIODIC || bdY == DM_BOUNDARY_TWIST ? edges[2] : edges[2]+1) : 0;
+    const PetscInt numCells     = numXEdges*numYEdges*numZEdges;
+    const PetscInt numXFaces    = numYEdges*numZEdges;
+    const PetscInt numYFaces    = numXEdges*numZEdges;
+    const PetscInt numZFaces    = numXEdges*numYEdges;
+    const PetscInt numTotXFaces = numXVertices*numXFaces;
+    const PetscInt numTotYFaces = numYVertices*numYFaces;
+    const PetscInt numTotZFaces = numZVertices*numZFaces;
+    const PetscInt numFaces     = numTotXFaces + numTotYFaces + numTotZFaces;
+    const PetscInt numTotXEdges = numXEdges*numYVertices*numZVertices;
+    const PetscInt numTotYEdges = numYEdges*numXVertices*numZVertices;
+    const PetscInt numTotZEdges = numZEdges*numXVertices*numYVertices;
+    const PetscInt numVertices  = numXVertices*numYVertices*numZVertices;
+    const PetscInt numEdges     = numTotXEdges + numTotYEdges + numTotZEdges;
+    const PetscInt firstVertex  = (dim == 2) ? numFaces : numCells;
+    const PetscInt firstXFace   = (dim == 2) ? 0 : numCells + numVertices;
+    const PetscInt firstYFace   = firstXFace + numTotXFaces;
+    const PetscInt firstZFace   = firstYFace + numTotYFaces;
+    const PetscInt firstXEdge   = numCells + numFaces + numVertices;
+    const PetscInt firstYEdge   = firstXEdge + numTotXEdges;
+    const PetscInt firstZEdge   = firstYEdge + numTotYEdges;
+    Vec            coordinates;
+    PetscSection   coordSection;
+    PetscScalar   *coords;
+    PetscInt       coordSize;
+    PetscInt       v, vx, vy, vz;
+    PetscInt       c, f, fx, fy, fz, e, ex, ey, ez;
+
+    ierr = DMPlexSetChart(dm, 0, numCells+numFaces+numEdges+numVertices);CHKERRQ(ierr);
+    for (c = 0; c < numCells; c++) {
+      ierr = DMPlexSetConeSize(dm, c, 6);CHKERRQ(ierr);
+    }
+    for (f = firstXFace; f < firstXFace+numFaces; ++f) {
+      ierr = DMPlexSetConeSize(dm, f, 4);CHKERRQ(ierr);
+    }
+    for (e = firstXEdge; e < firstXEdge+numEdges; ++e) {
+      ierr = DMPlexSetConeSize(dm, e, 2);CHKERRQ(ierr);
+    }
+    ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
+    /* Build cells */
+    for (fz = 0; fz < numZEdges; ++fz) {
+      for (fy = 0; fy < numYEdges; ++fy) {
+        for (fx = 0; fx < numXEdges; ++fx) {
+          PetscInt cell    = (fz*numYEdges + fy)*numXEdges + fx;
+          PetscInt faceB   = firstZFace + (fy*numXEdges+fx)*numZVertices +   fz;
+          PetscInt faceT   = firstZFace + (fy*numXEdges+fx)*numZVertices + ((fz+1)%numZVertices);
+          PetscInt faceF   = firstYFace + (fz*numXEdges+fx)*numYVertices +   fy;
+          PetscInt faceK   = firstYFace + (fz*numXEdges+fx)*numYVertices + ((fy+1)%numYVertices);
+          PetscInt faceL   = firstXFace + (fz*numYEdges+fy)*numXVertices +   fx;
+          PetscInt faceR   = firstXFace + (fz*numYEdges+fy)*numXVertices + ((fx+1)%numXVertices);
+                            /* B,  T,  F,  K,  R,  L */
+          PetscInt ornt[8] = {-4,  0,  0, -1,  0, -4}; /* ??? */
+          PetscInt cone[8];
+
+          /* no boundary twisting in 3D */
+          cone[0] = faceB; cone[1] = faceT; cone[2] = faceF; cone[3] = faceK; cone[4] = faceR; cone[5] = faceL;
+          ierr    = DMPlexSetCone(dm, cell, cone);CHKERRQ(ierr);
+          ierr    = DMPlexSetConeOrientation(dm, cell, ornt);CHKERRQ(ierr);
+        }
+      }
+    }
+    /* Build x faces */
+    for (fz = 0; fz < numZEdges; ++fz) {
+      for (fy = 0; fy < numYEdges; ++fy) {
+        for (fx = 0; fx < numXVertices; ++fx) {
+          PetscInt face    = firstXFace + (fz*numYEdges+fy)*numXVertices + fx;
+          PetscInt edgeL   = firstZEdge + (  fy*                 numXVertices+fx)*numZEdges + fz;
+          PetscInt edgeR   = firstZEdge + (((fy+1)%numYVertices)*numXVertices+fx)*numZEdges + fz;
+          PetscInt edgeB   = firstYEdge + (  fz*                 numXVertices+fx)*numYEdges + fy;
+          PetscInt edgeT   = firstYEdge + (((fz+1)%numZVertices)*numXVertices+fx)*numYEdges + fy;
+          PetscInt ornt[4] = {0, 0, -2, -2};
+          PetscInt cone[4];
+
+          if (dim == 3) {
+            /* markers */
+            if (bdX != DM_BOUNDARY_PERIODIC) {
+              if (fx == numXVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "marker", face, markerRight);CHKERRQ(ierr);
+              }
+              else if (fx == 0) {
+                ierr = DMPlexSetLabelValue(dm, "marker", face, markerLeft);CHKERRQ(ierr);
+              }
+            }
+          }
+          cone[0] = edgeB; cone[1] = edgeR; cone[2] = edgeT; cone[3] = edgeL;
+          ierr    = DMPlexSetCone(dm, face, cone);CHKERRQ(ierr);
+          ierr    = DMPlexSetConeOrientation(dm, face, ornt);CHKERRQ(ierr);
+        }
+      }
+    }
+    /* Build y faces */
+    for (fz = 0; fz < numZEdges; ++fz) {
+      for (fx = 0; fx < numYEdges; ++fx) {
+        for (fy = 0; fy < numYVertices; ++fy) {
+          PetscInt face    = firstYFace + (fz*numXEdges+fx)*numYVertices + fy;
+          PetscInt edgeL   = firstZEdge + (fy*numXVertices+  fx                 )*numZEdges + fz;
+          PetscInt edgeR   = firstZEdge + (fy*numXVertices+((fx+1)%numXVertices))*numZEdges + fz;
+          PetscInt edgeB   = firstXEdge + (  fz                 *numYVertices+fy)*numXEdges + fx;
+          PetscInt edgeT   = firstXEdge + (((fz+1)%numZVertices)*numYVertices+fy)*numXEdges + fx;
+          PetscInt ornt[4] = {0, 0, -2, -2};
+          PetscInt cone[4];
+
+          if (dim == 3) {
+            /* markers */
+            if (bdY != DM_BOUNDARY_PERIODIC) {
+              if (fy == numYVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "marker", face, markerBack);CHKERRQ(ierr);
+              }
+              else if (fy == 0) {
+                ierr = DMPlexSetLabelValue(dm, "marker", face, markerFront);CHKERRQ(ierr);
+              }
+            }
+          }
+          cone[0] = edgeB; cone[1] = edgeR; cone[2] = edgeT; cone[3] = edgeL;
+          ierr    = DMPlexSetCone(dm, face, cone);CHKERRQ(ierr);
+          ierr    = DMPlexSetConeOrientation(dm, face, ornt);CHKERRQ(ierr);
+        }
+      }
+    }
+    /* Build z faces */
+    for (fy = 0; fy < numYEdges; ++fy) {
+      for (fx = 0; fx < numXEdges; ++fx) {
+        for (fz = 0; fz < numZVertices; fz++) {
+          PetscInt face    = firstZFace + (fy*numXEdges+fx)*numZVertices + fz;
+          PetscInt edgeL   = firstYEdge + (fz*numXVertices+  fx                 )*numYEdges + fy;
+          PetscInt edgeR   = firstYEdge + (fz*numXVertices+((fx+1)%numXVertices))*numYEdges + fy;
+          PetscInt edgeB   = firstXEdge + (fz*numYVertices+  fy                 )*numXEdges + fx;
+          PetscInt edgeT   = firstXEdge + (fz*numYVertices+((fy+1)%numYVertices))*numXEdges + fx;
+          PetscInt ornt[4] = {0, 0, -2, -2};
+          PetscInt cone[4];
+
+          if (dim == 2) {
+            if (bdX == DM_BOUNDARY_TWIST && fx == numXEdges-1) {edgeR += numYEdges-1-2*fy; ornt[1] = -2;}
+            if (bdY == DM_BOUNDARY_TWIST && fy == numYEdges-1) {edgeT += numXEdges-1-2*fx; ornt[2] =  0;}
+          }
+          else {
+            /* markers */
+            if (bdZ != DM_BOUNDARY_PERIODIC) {
+              if (fz == numZVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "marker", face, markerTop);CHKERRQ(ierr);
+              }
+              else if (fz == 0) {
+                ierr = DMPlexSetLabelValue(dm, "marker", face, markerBottom);CHKERRQ(ierr);
+              }
+            }
+          }
+          cone[0] = edgeB; cone[1] = edgeR; cone[2] = edgeT; cone[3] = edgeL;
+          ierr    = DMPlexSetCone(dm, face, cone);CHKERRQ(ierr);
+          ierr    = DMPlexSetConeOrientation(dm, face, ornt);CHKERRQ(ierr);
+        }
+      }
+    }
+    /* Build Z edges*/
+    for (vy = 0; vy < numYVertices; vy++) {
+      for (vx = 0; vx < numXVertices; vx++) {
+        for (ez = 0; ez < numZEdges; ez++) {
+          const PetscInt edge    = firstZEdge  + (vy*numXVertices+vx)*numZEdges + ez;
+          const PetscInt vertexB = firstVertex + (  ez                 *numYVertices+vy)*numXVertices + vx;
+          const PetscInt vertexT = firstVertex + (((ez+1)%numZVertices)*numYVertices+vy)*numXVertices + vx;
+          PetscInt       cone[2];
+
+          if (dim == 3) {
+            if (bdX != DM_BOUNDARY_PERIODIC) {
+              if (vx == numXVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerRight);CHKERRQ(ierr);
+              }
+              else if (vx == 0) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerLeft);CHKERRQ(ierr);
+              }
+            }
+            if (bdY != DM_BOUNDARY_PERIODIC) {
+              if (vy == numYVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerBack);CHKERRQ(ierr);
+              }
+              else if (vy == 0) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerFront);CHKERRQ(ierr);
+              }
+            }
+          }
+          cone[0] = vertexB; cone[1] = vertexT;
+          ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
+        }
+      }
+    }
+    /* Build Y edges*/
+    for (vz = 0; vz < numZVertices; vz++) {
+      for (vx = 0; vx < numXVertices; vx++) {
+        for (ey = 0; ey < numYEdges; ey++) {
+          const PetscInt nextv   = (dim == 2 && bdY == DM_BOUNDARY_TWIST && ey == numYEdges-1) ? (numXVertices-vx-1) : (vz*numYVertices+((ey+1)%numYVertices))*numXVertices + vx;
+          const PetscInt edge    = firstYEdge  + (vz*numXVertices+vx)*numYEdges + ey;
+          const PetscInt vertexF = firstVertex + (vz*numYVertices+ey)*numXVertices + vx;
+          const PetscInt vertexK = firstVertex + nextv;
+          PetscInt       cone[2];
+
+          cone[0] = vertexF; cone[1] = vertexK;
+          ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
+          if (dim == 2) {
+            if ((bdX != DM_BOUNDARY_PERIODIC) && (bdX != DM_BOUNDARY_TWIST)) {
+              if (vx == numXVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
+                ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
+                if (ey == numYEdges-1) {
+                  ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerRight);CHKERRQ(ierr);
+                }
+              }
+              else if (vx == 0) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
+                ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
+                if (ey == numYEdges-1) {
+                  ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerLeft);CHKERRQ(ierr);
+                }
+              }
+            }
+          }
+          else {
+            if (bdX != DM_BOUNDARY_PERIODIC) {
+              if (vx == numXVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerRight);CHKERRQ(ierr);
+              }
+              else if (vx == 0) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerLeft);CHKERRQ(ierr);
+              }
+            }
+            if (bdZ != DM_BOUNDARY_PERIODIC) {
+              if (vz == numZVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerTop);CHKERRQ(ierr);
+              }
+              else if (vz == 0) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerBottom);CHKERRQ(ierr);
+              }
+            }
+          }
+        }
+      }
+    }
+    /* Build X edges*/
+    for (vz = 0; vz < numZVertices; vz++) {
+      for (vy = 0; vy < numYVertices; vy++) {
+        for (ex = 0; ex < numXEdges; ex++) {
+          const PetscInt nextv   = (dim == 2 && bdX == DM_BOUNDARY_TWIST && ex == numXEdges-1) ? (numYVertices-vy-1)*numXVertices : (vz*numYVertices+vy)*numXVertices + (ex+1)%numXVertices;
+          const PetscInt edge    = firstXEdge  + (vz*numYVertices+vy)*numXEdges + ex;
+          const PetscInt vertexL = firstVertex + (vz*numYVertices+vy)*numXVertices + ex;
+          const PetscInt vertexR = firstVertex + nextv;
+          PetscInt       cone[2];
+
+          cone[0] = vertexL; cone[1] = vertexR;
+          ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
+          if (dim == 2) {
+            if ((bdY != DM_BOUNDARY_PERIODIC) && (bdY != DM_BOUNDARY_TWIST)) {
+              if (vy == numYVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
+                ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
+                if (ex == numXEdges-1) {
+                  ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerTop);CHKERRQ(ierr);
+                }
+              }
+              else if (vy == 0) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
+                ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
+                if (ex == numXEdges-1) {
+                  ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerBottom);CHKERRQ(ierr);
+                }
+              }
+            }
+          }
+          else {
+            if (bdY != DM_BOUNDARY_PERIODIC) {
+              if (vy == numYVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerBack);CHKERRQ(ierr);
+              }
+              else if (vy == 0) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerFront);CHKERRQ(ierr);
+              }
+            }
+            if (bdZ != DM_BOUNDARY_PERIODIC) {
+              if (vz == numZVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerTop);CHKERRQ(ierr);
+              }
+              else if (vz == 0) {
+                ierr = DMPlexSetLabelValue(dm, "marker", edge, markerBottom);CHKERRQ(ierr);
+              }
+            }
+          }
+        }
+      }
+    }
+    ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
+    ierr = DMPlexStratify(dm);CHKERRQ(ierr);
+    /* Build coordinates */
+    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
+    for (v = firstVertex; v < firstVertex+numVertices; ++v) {
+      ierr = PetscSectionSetDof(coordSection, v, dim);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(coordSection, v, 0, dim);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
+    ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
+    ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
+    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+    for (vz = 0; vz < numZVertices; ++vz) {
+      for (vy = 0; vy < numYVertices; ++vy) {
+        for (vx = 0; vx < numXVertices; ++vx) {
+          coords[((vz*numYVertices+vy)*numXVertices+vx)*dim+0] = lower[0] + ((upper[0] - lower[0])/numXEdges)*vx;
+          coords[((vz*numYVertices+vy)*numXVertices+vx)*dim+1] = lower[1] + ((upper[1] - lower[1])/numYEdges)*vy;
+          if (dim == 3) {
+            coords[((vz*numYVertices+vy)*numXVertices+vx)*dim+2] = lower[2] + ((upper[2] - lower[2])/numZEdges)*vz;
+          }
+        }
+      }
+    }
+    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+    ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
+    ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSquareMesh"
 /*@
   DMPlexCreateSquareMesh - Creates a 2D mesh for a square lattice.
@@ -471,153 +839,15 @@ $ 16--4-17--5--18
 @*/
 PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], DMBoundaryType bdX, DMBoundaryType bdY)
 {
-  PetscInt       markerTop      = 1;
-  PetscInt       markerBottom   = 1;
-  PetscInt       markerRight    = 1;
-  PetscInt       markerLeft     = 1;
-  PetscBool      markerSeparate = PETSC_FALSE;
-  PetscMPIInt    rank;
+  PetscReal      lower3[3], upper3[3];
+  PetscInt       edges3[3];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
-  if (markerSeparate) {
-    markerTop    = 3;
-    markerBottom = 1;
-    markerRight  = 2;
-    markerLeft   = 4;
-  }
-  {
-    const PetscInt numXEdges    = !rank ? edges[0]   : 0;
-    const PetscInt numYEdges    = !rank ? edges[1]   : 0;
-    const PetscInt numXVertices = !rank ? (bdX == DM_BOUNDARY_PERIODIC || bdX == DM_BOUNDARY_TWIST ? edges[0] : edges[0]+1) : 0;
-    const PetscInt numYVertices = !rank ? (bdY == DM_BOUNDARY_PERIODIC || bdY == DM_BOUNDARY_TWIST ? edges[1] : edges[1]+1) : 0;
-    const PetscInt numTotXEdges = numXEdges*numYVertices;
-    const PetscInt numTotYEdges = numYEdges*numXVertices;
-    const PetscInt numVertices  = numXVertices*numYVertices;
-    const PetscInt numEdges     = numTotXEdges + numTotYEdges;
-    const PetscInt numFaces     = numXEdges*numYEdges;
-    const PetscInt firstVertex  = numFaces;
-    const PetscInt firstXEdge   = numFaces + numVertices;
-    const PetscInt firstYEdge   = numFaces + numVertices + numTotXEdges;
-    Vec            coordinates;
-    PetscSection   coordSection;
-    PetscScalar   *coords;
-    PetscInt       coordSize;
-    PetscInt       v, vx, vy;
-    PetscInt       f, fx, fy, e, ex, ey;
-
-    ierr = DMPlexSetChart(dm, 0, numFaces+numEdges+numVertices);CHKERRQ(ierr);
-    for (f = 0; f < numFaces; ++f) {
-      ierr = DMPlexSetConeSize(dm, f, 4);CHKERRQ(ierr);
-    }
-    for (e = firstXEdge; e < firstXEdge+numEdges; ++e) {
-      ierr = DMPlexSetConeSize(dm, e, 2);CHKERRQ(ierr);
-    }
-    ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
-    /* Build faces */
-    for (fy = 0; fy < numYEdges; ++fy) {
-      for (fx = 0; fx < numXEdges; ++fx) {
-        PetscInt face    = fy*numXEdges + fx;
-        PetscInt edgeL   = firstYEdge +   fx                 *numYEdges + fy;
-        PetscInt edgeR   = firstYEdge + ((fx+1)%numXVertices)*numYEdges + fy;
-        PetscInt edgeB   = firstXEdge +   fy                 *numXEdges + fx;
-        PetscInt edgeT   = firstXEdge + ((fy+1)%numYVertices)*numXEdges + fx;
-        PetscInt ornt[4] = {0, 0, -2, -2};
-        PetscInt cone[4];
-
-        if (bdX == DM_BOUNDARY_TWIST && fx == numXEdges-1) {edgeR += numYEdges-1-2*fy; ornt[1] = -2;}
-        if (bdY == DM_BOUNDARY_TWIST && fy == numYEdges-1) {edgeT += numXEdges-1-2*fx; ornt[2] =  0;}
-        cone[0] = edgeB; cone[1] = edgeR; cone[2] = edgeT; cone[3] = edgeL;
-        ierr    = DMPlexSetCone(dm, face, cone);CHKERRQ(ierr);
-        ierr    = DMPlexSetConeOrientation(dm, face, ornt);CHKERRQ(ierr);
-      }
-    }
-    /* Build Y edges*/
-    for (vx = 0; vx < numXVertices; vx++) {
-      for (ey = 0; ey < numYEdges; ey++) {
-        const PetscInt nextv   = (bdY == DM_BOUNDARY_TWIST && ey == numYEdges-1) ? (numXVertices-vx-1) : ((ey+1)%numYVertices)*numXVertices + vx;
-        const PetscInt edge    = firstYEdge  + vx*numYEdges + ey;
-        const PetscInt vertexB = firstVertex + ey*numXVertices + vx;
-        const PetscInt vertexT = firstVertex + nextv;
-        PetscInt       cone[2];
-
-        cone[0] = vertexB; cone[1] = vertexT;
-        ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
-        if ((bdX != DM_BOUNDARY_PERIODIC) && (bdX != DM_BOUNDARY_TWIST)) {
-          if (vx == numXVertices-1) {
-            ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
-            ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
-            if (ey == numYEdges-1) {
-              ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerRight);CHKERRQ(ierr);
-            }
-          } else if (vx == 0) {
-            ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
-            ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
-            if (ey == numYEdges-1) {
-              ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerLeft);CHKERRQ(ierr);
-            }
-          }
-        }
-      }
-    }
-    /* Build X edges*/
-    for (vy = 0; vy < numYVertices; vy++) {
-      for (ex = 0; ex < numXEdges; ex++) {
-        const PetscInt nextv   = (bdX == DM_BOUNDARY_TWIST && ex == numXEdges-1) ? (numYVertices-vy-1)*numXVertices : vy*numXVertices + (ex+1)%numXVertices;
-        const PetscInt edge    = firstXEdge  + vy*numXEdges + ex;
-        const PetscInt vertexL = firstVertex + vy*numXVertices + ex;
-        const PetscInt vertexR = firstVertex + nextv;
-        PetscInt       cone[2];
-
-        cone[0] = vertexL; cone[1] = vertexR;
-        ierr = DMPlexSetCone(dm, edge, cone);CHKERRQ(ierr);
-        if ((bdY != DM_BOUNDARY_PERIODIC) && (bdY != DM_BOUNDARY_TWIST)) {
-          if (vy == numYVertices-1) {
-            ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
-            ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
-            if (ex == numXEdges-1) {
-              ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerTop);CHKERRQ(ierr);
-            }
-          } else if (vy == 0) {
-            ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
-            ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
-            if (ex == numXEdges-1) {
-              ierr = DMPlexSetLabelValue(dm, "marker", cone[1], markerBottom);CHKERRQ(ierr);
-            }
-          }
-        }
-      }
-    }
-    ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
-    ierr = DMPlexStratify(dm);CHKERRQ(ierr);
-    /* Build coordinates */
-    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-    ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldComponents(coordSection, 0, 2);CHKERRQ(ierr);
-    ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
-    for (v = firstVertex; v < firstVertex+numVertices; ++v) {
-      ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldDof(coordSection, v, 0, 2);CHKERRQ(ierr);
-    }
-    ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
-    ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
-    ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(coordinates, 2);CHKERRQ(ierr);
-    ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
-    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-    for (vy = 0; vy < numYVertices; ++vy) {
-      for (vx = 0; vx < numXVertices; ++vx) {
-        coords[(vy*numXVertices+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/numXEdges)*vx;
-        coords[(vy*numXVertices+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/numYEdges)*vy;
-      }
-    }
-    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-    ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
-    ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-  }
+  lower3[0] = lower[0]; lower3[1] = lower[1]; lower3[2] = 0.;
+  upper3[0] = upper[0]; upper3[1] = upper[1]; upper3[2] = 0.;
+  edges3[0] = edges[0]; edges3[1] = edges[1]; edges3[2] = 0;
+  ierr = DMPlexCreateCubeMesh_Internal(dm, lower3, upper3, edges3, bdX, bdY, DM_BOUNDARY_NONE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -721,16 +951,14 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
     ierr = DMPlexCreateSquareMesh(*dm, lower, upper, cells, periodicX, periodicY);CHKERRQ(ierr);
     break;
   }
-#if 0
   case 3:
   {
     PetscReal lower[3] = {0.0, 0.0, 0.0};
     PetscReal upper[3] = {1.0, 1.0, 1.0};
 
-    ierr = DMPlexCreateCubeMesh(boundary, lower, upper, cells, periodicX, periodicY, periodicZ);CHKERRQ(ierr);
+    ierr = DMPlexCreateCubeMesh_Internal(*dm, lower, upper, cells, periodicX, periodicY, periodicZ);CHKERRQ(ierr);
     break;
   }
-#endif
   default:
     SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %d", dim);
   }
