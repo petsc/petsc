@@ -59,13 +59,15 @@ class Configure(PETSc.package.NewPackage):
       import os
       prefix = sys.exec_prefix
       if os.path.isfile(os.path.join(prefix,'Python')):
-        for i in ['/usr/lib/libpython.dylib','/opt/local/lib/libpython2.5.dylib','/opt/local/lib/libpython2.6.dylib']:
+        for i in ['/usr/lib/libpython.dylib','/usr/lib/libpython'+sys.version[:3]+'.dylib','/opt/local/lib/libpython.dylib','/opt/local/lib/libpython'+sys.version[:3]+'.dylib']:
           if os.path.realpath(i) == os.path.join(prefix,'Python'):
             self.addDefine('PYTHON_LIB','"'+os.path.join(i)+'"')
             return
         raise RuntimeError('realpath of /usr/lib/libpython.dylib ('+os.path.realpath('/usr/lib/libpython.dylib')+') does not point to the expected Python library path ('+os.path.join(prefix,'Python')+') for current Python;\n')
       elif os.path.isfile(os.path.join(prefix,'lib','libpython.dylib')):
         self.addDefine('PYTHON_LIB','"'+os.path.join(prefix,'lib','libpython.dylib')+'"')
+      elif os.path.isfile(os.path.join(prefix,'lib','libpython'+sys.version[:3]+'.dylib')):
+        self.addDefine('PYTHON_LIB','"'+os.path.join(prefix,'lib','libpython'+sys.version[:3]+'.dylib')+'"')
       else:
         raise RuntimeError('Unable to find Python dynamic library at prefix '+prefix)
 
