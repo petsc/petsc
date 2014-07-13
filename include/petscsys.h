@@ -105,6 +105,32 @@
 #include <mpi.h>
 
 /*
+   Perform various sanity checks that the correct mpi.h is being included at compile time.
+   This usually happens because
+      * either an unexpected mpi.h is in the default compiler path (i.e. in /usr/include) or
+      * an extra include path -I/something (which contains the unexpected mpi.h) is being passed to the compiler
+*/
+#if defined(PETSC_HAVE_MPIUNI)
+#  if !defined(__MPIUNI_H)
+#    error "PETSc was configured with --with-mpi=0 but now appears to be compiling using a different mpi.h"
+#  endif
+#elif defined(PETSC_HAVE_MPICH_NUMVERSION)
+#  if !defined(MPICH_NUMVERSION)
+#    error "PETSc was configured with MPICH but now appears to be compiling using a non-MPICH mpi.h"
+#  elif MPICH_NUMVERSION != PETSC_HAVE_MPICH_NUMVERSION
+#    error "PETSc was configured with one MPICH mpi.h version but now appears to be compiling using a different MPICH mpi.h version"
+#  endif
+#elif defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
+#  if !defined(OMPI_MAJOR_VERSION)
+#    error "PETSc was configured with OpenMPI but now appears to be compiling using a non-OpenMPI mpi.h"
+#  elif OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION
+#    error "PETSc was configured with one OpenMPI mpi.h major version but now appears to be compiling using a different OpenMPI mpi.h major version"
+#  elif OMPI_MINOR_VERSION != PETSC_HAVE_OMPI_MAINOR_VERSION
+#    error "PETSc was configured with one OpenMPI minor mpi.h version but now appears to be compiling using a different OpenMPI mpi.h minor version"
+#  endif
+#endif
+
+/*
     Need to put stdio.h AFTER mpi.h for MPICH2 with C++ compiler
     see the top of mpicxx.h in the MPICH2 distribution.
 */

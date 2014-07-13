@@ -11,8 +11,8 @@ from stat import *
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.5.tar.gz',
-                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-1.6.5.tar.gz']
+    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.1.tar.gz',
+                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-1.8.1.tar.gz']
     self.download_mpich     = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz']
     self.download_mpich_sol = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich-master-v3.0.4-106-g3adb59c.tar.gz']
     self.download           = ['redefine']
@@ -720,6 +720,24 @@ class Configure(config.package.Package):
     self.compilers.LIBS = oldLibs
     return
 
+  def checkMPICHorOpenMPI(self):
+    '''Determine if MPICH_NUMVERSION or OMPI_MAJOR_VERSION exist in mpi.h
+       Used for consistency checking of MPI installation at compile time'''
+    if self.checkCompile('#include <mpi.h>', 'int combiner = MPICH_NUMVERSION;'):
+      mpich_numversion = self.outputPreprocess('#include <mpi.h>\nint combiner = MPICH_NUMVERSION;\n')
+      mpich_numversion = mpich_numversion.split('\n')[-1]
+      mpich_numversion = mpich_numversion[15:-1]
+      self.addDefine('HAVE_MPICH_NUMVERSION',mpich_numversion)
+    elif self.checkCompile('#include <mpi.h>', 'int combiner = OMPI_MAJOR_VERSION;'):
+      ompi_major_version = self.outputPreprocess('#include <mpi.h>\nint combiner = OMPI_MAJOR_VERSION;\n')
+      ompi_major_version = ompi_major_version.split('\n')[-1]
+      ompi_major_version = ompi_major_version[16:-1]
+      self.addDefine('HAVE_OMPI_MAJOR_VERSION',ompi_major_version)
+      ompi_minor_version = self.outputPreprocess('#include <mpi.h>\nint combiner = OMPI_MINOR_VERSION;\n')
+      ompi_minor_version = ompi_minor_version.split('\n')[-1]
+      ompi_minor_version = ompi_minor_version[15:-1]
+      self.addDefine('HAVE_OMPI_MINOR_VERSION',ompi_minor_version)
+
   def findMPIInc(self):
     '''Find MPI include paths from "mpicc -show"'''
     import re
@@ -759,6 +777,7 @@ class Configure(config.package.Package):
     self.executeTest(self.FortranMPICheck)
     self.executeTest(self.configureIO)
     self.executeTest(self.findMPIInc)
+    self.executeTest(self.checkMPICHorOpenMPI)
     if self.libraries.check(self.dlib, "MPI_Alltoallw") and self.libraries.check(self.dlib, "MPI_Type_create_indexed_block"):
       self.addDefine('HAVE_MPI_ALLTOALLW',1)
     if self.libraries.check(self.dlib, "MPI_Win_create"):
