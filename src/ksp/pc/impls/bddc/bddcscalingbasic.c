@@ -373,18 +373,21 @@ static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling delu
 #define __FUNCT__ "PCBDDCScalingSetUp_Deluxe"
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
 {
-  PC_IS                  *pcis=(PC_IS*)pc->data;
-  PC_BDDC                *pcbddc=(PC_BDDC*)pc->data;
-  PCBDDCDeluxeScaling    deluxe_ctx=pcbddc->deluxe_ctx;
-  PCBDDCSubSchurs        sub_schurs=deluxe_ctx->sub_schurs;
-  PCBDDCGraph            graph;
-  PetscInt               *index_sequential,*index_parallel;
-  PetscInt               *auxlocal_sequential,*auxlocal_parallel;
-  PetscInt               *auxglobal_sequential,*auxglobal_parallel;
-  PetscInt               *auxmapping;
-  PetscInt               i,max_subset_size;
-  PetscInt               n_sequential_problems,n_local_sequential_problems,n_parallel_problems,n_local_parallel_problems;
-  PetscErrorCode         ierr;
+  PC_IS               *pcis=(PC_IS*)pc->data;
+  PC_BDDC             *pcbddc=(PC_BDDC*)pc->data;
+  PCBDDCDeluxeScaling deluxe_ctx=pcbddc->deluxe_ctx;
+  PCBDDCSubSchurs     sub_schurs=deluxe_ctx->sub_schurs;
+  PCBDDCGraph         graph;
+  IS                  *faces,*edges,*all_cc;
+  PetscBT             bitmask;
+  PetscInt            *index_sequential,*index_parallel;
+  PetscInt            *auxlocal_sequential,*auxlocal_parallel;
+  PetscInt            *auxglobal_sequential,*auxglobal_parallel;
+  PetscInt            *auxmapping,*idxs;
+  PetscInt            i,max_subset_size;
+  PetscInt            n_sequential_problems,n_local_sequential_problems,n_parallel_problems,n_local_parallel_problems;
+  PetscInt            n_faces,n_edges,n_all_cc;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   /* throw away the solvers */
@@ -410,10 +413,23 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
     graph = pcbddc->mat_graph;
   }
 
+  /* get index sets for faces and edges */
+  ierr = PCBDDCGraphGetCandidatesIS(graph,&n_faces,&faces,&n_edges,&edges,NULL);CHKERRQ(ierr);
+  n_all_cc = n_faces+n_edges;
+  ierr = PetscMalloc1(n_all_cc,&all_cc);CHKERRQ(ierr);
+  for (i=0;i<n_faces;i++) {
+    all_cc[i] = faces[i];
+  }
+  for (i=0;i<n_edges;i++) {
+    all_cc[n_faces+i] = edges[i];
+  }
+
   /* map interface's subsets */
   max_subset_size = 0;
-  for (i=0;i<graph->ncc;i++) {
-    max_subset_size = PetscMax(max_subset_size,graph->cptr[i+1]-graph->cptr[i]);
+  for (i=0;i<n_all_cc;i++) {
+    PetscInt subset_size;
+    ierr = ISGetLocalSize(all_cc[i],&subset_size);CHKERRQ(ierr);
+    max_subset_size = PetscMax(max_subset_size,subset_size);
   }
   ierr = PetscMalloc5(max_subset_size,&auxmapping,
                       graph->ncc,&auxlocal_sequential,
@@ -424,48 +440,54 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   /* if threshold is negative, uses all sequential problems */
   if (pcbddc->deluxe_threshold < 0) pcbddc->deluxe_threshold = max_subset_size;
 
+  /* workspace */
+  ierr = PetscBTCreate(pcis->n,&bitmask);CHKERRQ(ierr);
+  ierr = ISGetIndices(pcis->is_I_local,(const PetscInt**)&idxs);CHKERRQ(ierr);
+  for (i=0;i<pcis->n-pcis->n_B;i++) {
+    ierr = PetscBTSet(bitmask,idxs[i]);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(pcis->is_I_local,(const PetscInt**)&idxs);CHKERRQ(ierr);
+
+  /* determine which problem has to be solved in parallel or sequentially */
   n_local_sequential_problems = 0;
   n_local_parallel_problems = 0;
-  deluxe_ctx->n_simple = 0;
-  for (i=0;i<graph->ncc;i++) {
-    PetscInt subset_size = graph->cptr[i+1]-graph->cptr[i];
-    if (subset_size > 1) {
-      PetscInt j,min_loc = 0;
-      ierr = ISLocalToGlobalMappingApply(graph->l2gmap,subset_size,&graph->queue[graph->cptr[i]],auxmapping);CHKERRQ(ierr);
-      for (j=1;j<subset_size;j++) {
-        if (auxmapping[j]<auxmapping[min_loc]) {
-          min_loc = j;
-        }
-      }
-      if (subset_size > pcbddc->deluxe_threshold) {
-        index_parallel[n_local_parallel_problems] = i;
-        auxlocal_parallel[n_local_parallel_problems] = graph->queue[graph->cptr[i]+min_loc];
-        n_local_parallel_problems++;
-      } else {
-        index_sequential[n_local_sequential_problems] = i;
-        auxlocal_sequential[n_local_sequential_problems] = graph->queue[graph->cptr[i]+min_loc];
-        n_local_sequential_problems++;
-      }
-    } else {
-      deluxe_ctx->n_simple++;
+  for (i=0;i<n_all_cc;i++) {
+    PetscInt subset_size,j,min_loc = 0;
+
+    ierr = ISGetLocalSize(all_cc[i],&subset_size);CHKERRQ(ierr);
+    ierr = ISGetIndices(all_cc[i],(const PetscInt**)&idxs);CHKERRQ(ierr);
+    for (j=0;j<subset_size;j++) {
+      ierr = PetscBTSet(bitmask,idxs[j]);CHKERRQ(ierr);
     }
+    ierr = ISLocalToGlobalMappingApply(graph->l2gmap,subset_size,idxs,auxmapping);CHKERRQ(ierr);
+    for (j=1;j<subset_size;j++) {
+      if (auxmapping[j]<auxmapping[min_loc]) {
+        min_loc = j;
+      }
+    }
+    if (subset_size > pcbddc->deluxe_threshold) {
+      index_parallel[n_local_parallel_problems] = i;
+      auxlocal_parallel[n_local_parallel_problems] = idxs[min_loc];
+      n_local_parallel_problems++;
+    } else {
+      index_sequential[n_local_sequential_problems] = i;
+      auxlocal_sequential[n_local_sequential_problems] = idxs[min_loc];
+      n_local_sequential_problems++;
+    }
+    ierr = ISRestoreIndices(all_cc[i],(const PetscInt**)&idxs);CHKERRQ(ierr);
   }
 
-  /* diagonal scaling on size 1 cc and on dirichlet boundary dofs */
-  for (i=0;i<graph->nvtxs;i++) {
-    if (graph->count[i] && graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK) {
+  /* diagonal scaling on interface dofs not contained in cc */
+  deluxe_ctx->n_simple = 0;
+  for (i=0;i<pcis->n;i++) {
+    if (!PetscBTLookup(bitmask,i)) {
       deluxe_ctx->n_simple++;
     }
   }
   ierr = PetscMalloc1(deluxe_ctx->n_simple,&deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
   deluxe_ctx->n_simple = 0;
-  for (i=0;i<graph->ncc;i++) {
-    if (graph->cptr[i+1]-graph->cptr[i]==1) {
-      deluxe_ctx->idx_simple_B[deluxe_ctx->n_simple++] = graph->queue[graph->cptr[i]];
-    }
-  }
-  for (i=0;i<graph->nvtxs;i++) {
-    if (graph->count[i] && graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK) {
+  for (i=0;i<pcis->n;i++) {
+    if (!PetscBTLookup(bitmask,i)) {
       deluxe_ctx->idx_simple_B[deluxe_ctx->n_simple++] = i;
     }
   }
@@ -473,7 +495,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   if (i != deluxe_ctx->n_simple) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simple scaling dofs! %d != %d",i,deluxe_ctx->n_simple);
   }
-  ierr = PetscSortInt(deluxe_ctx->n_simple,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&bitmask);CHKERRQ(ierr);
 
   /* SetUp local schur complements on subsets TODO better reuse procedure */
   if (!sub_schurs->n_subs) {
@@ -516,14 +538,19 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
     /* Create Schur complement matrix */
     ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&S_j);CHKERRQ(ierr);
     ierr = MatSchurComplementSetKSP(S_j,pcbddc->ksp_D);CHKERRQ(ierr);
+
     /* setup Schur complements on subsets */
-    ierr = PCBDDCSubSchursSetUp(sub_schurs,S_j,pcis->is_I_local,pcis->is_B_local,graph->ncc,graph->cptr,graph->queue,used_xadj,used_adjncy,PETSC_TRUE,pcbddc->deluxe_layers);CHKERRQ(ierr);
+    ierr = PCBDDCSubSchursSetUp(sub_schurs,S_j,pcis->is_I_local,pcis->is_B_local,n_all_cc,all_cc,used_xadj,used_adjncy,pcbddc->deluxe_layers);CHKERRQ(ierr);
     ierr = MatDestroy(&S_j);CHKERRQ(ierr);
     /* free adjacency */
     if (free_used_adj) {
       ierr = PetscFree2(used_xadj,used_adjncy);CHKERRQ(ierr);
     }
   }
+  for (i=0;i<n_all_cc;i++) {
+    ierr = ISDestroy(&all_cc[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(all_cc);CHKERRQ(ierr);
 
   /* Number parallel problems */
   auxglobal_parallel = 0;

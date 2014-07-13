@@ -74,7 +74,7 @@ static PetscErrorCode PCBDDCAdjGetNextLayer_Private(PetscInt* queue_tip,PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursSetUp"
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I, IS is_A_B, PetscInt ncc, PetscInt cptr[], PetscInt queue[], PetscInt xadj[], PetscInt adjncy[], PetscBool skip_corners, PetscInt nlayers)
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I, IS is_A_B, PetscInt ncc, IS is_cc[], PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers)
 {
   Mat                    A_II,A_IB,A_BI,A_BB;
   ISLocalToGlobalMapping BtoNmap,ItoNmap;
@@ -122,21 +122,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I
   for (i=0;i<sub_schurs->n_subs;i++) {
     Mat      AE_II,AE_IE,AE_EI,AE_EE;
     IS       is_I,is_subset_B;
-    PetscInt subset_size;
 
-    /* size of subset */
-    subset_size = cptr[i+1]-cptr[i];
-    if (subset_size == 1 && skip_corners) {
-      sub_schurs->is_AEj_B[i] = 0;
-      sub_schurs->is_AEj_I[i] = 0;
-      sub_schurs->S_Ej[i] = 0;
-      sub_schurs->work1[i] = 0;
-      sub_schurs->work2[i] = 0;
-      continue;
-    }
-
-    /* get IS for subsets in original numbering and in B numbering */
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)BtoNmap),subset_size,queue+cptr[i],PETSC_COPY_VALUES,&sub_schurs->is_AEj_B[i]);CHKERRQ(ierr);
+    /* get IS for subsets in B numbering */
+    ierr = ISDuplicate(is_cc[i],&sub_schurs->is_AEj_B[i]);CHKERRQ(ierr);
     ierr = ISSort(sub_schurs->is_AEj_B[i]);CHKERRQ(ierr);
     ierr = ISGlobalToLocalMappingApplyIS(BtoNmap,IS_GTOLM_DROP,sub_schurs->is_AEj_B[i],&is_subset_B);CHKERRQ(ierr);
 
@@ -145,7 +133,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I
 
     if (ItoNmap) { /* is ItoNmap has been computed, extracts only a part of I dofs */
       const PetscInt* idx_B;
-      PetscInt        n_local_dofs,n_prev_added,j,layer;
+      PetscInt        n_local_dofs,n_prev_added,j,layer,subset_size;
 
       /* all boundary dofs must be skipped when adding layers */
       ierr = PetscBTMemzero(n_local,touched);CHKERRQ(ierr);
@@ -156,7 +144,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I
       ierr = ISRestoreIndices(is_A_B,&idx_B);CHKERRQ(ierr);
 
       /* add next layers of dofs */
-      ierr = PetscMemcpy(local_numbering,queue+cptr[i],subset_size*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = ISGetLocalSize(is_cc[i],&subset_size);CHKERRQ(ierr);
+      ierr = ISGetIndices(is_cc[i],&idx_B);CHKERRQ(ierr);
+      ierr = PetscMemcpy(local_numbering,idx_B,subset_size*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = ISRestoreIndices(is_cc[i],&idx_B);CHKERRQ(ierr);
       n_local_dofs = subset_size;
       n_prev_added = subset_size;
       for (layer=0;layer<nlayers;layer++) {
