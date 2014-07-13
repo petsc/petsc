@@ -122,11 +122,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
         nec++;
       }
     } else {
-      if (graph->count[repdof] > 1 ||
-          (graph->count[repdof] == 1 && graph->special_dof[repdof] == PCBDDCGRAPH_NEUMANN_MARK) ||
-          (graph->count[repdof] == 1 && graph->special_dof[repdof] <= PCBDDCGRAPH_SPECIAL_MARK) ) {
-        nvc += graph->cptr[i+1]-graph->cptr[i];
-      }
+      nvc += graph->cptr[i+1]-graph->cptr[i];
     }
   }
   j=0;
@@ -180,14 +176,9 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
     nvc = 0;
     for (i=0;i<graph->ncc;i++) {
       if (graph->cptr[i+1]-graph->cptr[i] <= graph->custom_minimal_size) {
-        PetscInt repdof = graph->queue[graph->cptr[i]];
-        if (graph->count[repdof] > 1 ||
-            (graph->count[repdof] == 1 && graph->special_dof[repdof] == PCBDDCGRAPH_NEUMANN_MARK) ||
-            (graph->count[repdof] == 1 && graph->special_dof[repdof] <= PCBDDCGRAPH_SPECIAL_MARK)) {
-          for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
-            idx[nvc]=graph->queue[j];
-            nvc++;
-          }
+        for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
+          idx[nvc]=graph->queue[j];
+          nvc++;
         }
       }
     }
@@ -197,10 +188,28 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
   }
   /* get back info */
   *n_faces = nfc;
-  *FacesIS = ISForFaces;
+  if (FacesIS) {
+    *FacesIS = ISForFaces;
+  } else {
+    for (i=0;i<nfc;i++) {
+      ierr = ISDestroy(&ISForFaces[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(ISForFaces);CHKERRQ(ierr);
+  }
   *n_edges = nec;
-  *EdgesIS = ISForEdges;
-  *VerticesIS = ISForVertices;
+  if (EdgesIS) {
+    *EdgesIS = ISForEdges;
+  } else {
+    for (i=0;i<nec;i++) {
+      ierr = ISDestroy(&ISForEdges[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(ISForEdges);CHKERRQ(ierr);
+  }
+  if (VerticesIS) {
+    *VerticesIS = ISForVertices;
+  } else {
+    ierr = ISDestroy(&ISForVertices);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
