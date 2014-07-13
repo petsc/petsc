@@ -731,7 +731,7 @@ class Configure(config.package.Package):
     elif self.checkCompile('#include <mpi.h>', 'int combiner = OMPI_MAJOR_VERSION;'):
       ompi_major_version = self.outputPreprocess('#include <mpi.h>\nint combiner = OMPI_MAJOR_VERSION;\n')
       ompi_major_version = ompi_major_version.split('\n')[-1]
-      ompi_major_version = ompi_major_version[16:-1]
+      ompi_major_version = ompi_major_version[15:-1]
       self.addDefine('HAVE_OMPI_MAJOR_VERSION',ompi_major_version)
       ompi_minor_version = self.outputPreprocess('#include <mpi.h>\nint combiner = OMPI_MINOR_VERSION;\n')
       ompi_minor_version = ompi_minor_version.split('\n')[-1]
