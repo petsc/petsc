@@ -2396,8 +2396,13 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
   ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
-  ierr = ISStrideGetInfo(iscol,&first,&step);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)iscol,ISSTRIDE,&stride);CHKERRQ(ierr);
+  if (stride) {
+    ierr = ISStrideGetInfo(iscol,&first,&step);CHKERRQ(ierr);
+  } else {
+    first = 0;
+    step  = 0;
+  }
   if (stride && step == 1) {
     /* special case of contiguous rows */
     ierr = PetscMalloc2(nrows,&lens,nrows,&starts);CHKERRQ(ierr);

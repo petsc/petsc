@@ -4,7 +4,7 @@ recursive-exclude config/examples *
 recursive-exclude config/BuildSystem/docs *
 
 recursive-include bin *.py *mpiexec* petscrun popup
-recursive-include bin/matlab *
+recursive-include share/petsc/matlab *
 recursive-include share *
 recursive-include conf *
 recursive-include include *
@@ -12,7 +12,7 @@ recursive-include src *
 recursive-exclude src/docs *
 recursive-exclude src/tops *
 
-recursive-exclude bin/matlab/classes/examples *
+recursive-exclude share/petsc/matlab/classes/examples *
 recursive-exclude src/*/examples/* *.*
 recursive-exclude src/*/*/examples/* *.*
 recursive-exclude src/*/*/*/examples/* *.*

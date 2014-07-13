@@ -797,7 +797,7 @@ PetscErrorCode  MatSetUp(Mat A)
    Notes: see the manual page for MatLoad() for the exact format of the binary file when the binary
       viewer is used.
 
-      See bin/matlab/PetscBinaryRead.m for a Matlab code that can read in the binary file when the binary
+      See share/petsc/matlab/PetscBinaryRead.m for a Matlab code that can read in the binary file when the binary
       viewer is used.
 
       One can use '-mat_view draw -draw_pause -1' to pause the graphical display of matrix nonzero structure.

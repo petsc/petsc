@@ -6,7 +6,7 @@ SOURCEC  = nls.c
 SOURCEF  =
 SOURCEH  = nls.h
 LIBBASE  = libpetsctao
-MANSEC   = Tao 
+MANSEC   = Tao
 LOCDIR   = src/tao/unconstrained/impls/nls/
 
 include ${PETSC_DIR}/conf/variables

@@ -4963,16 +4963,13 @@ PetscErrorCode  SNESSetFunctionMatlab(SNES snes,Vec r,const char *f,mxArray *ctx
 .  A, B - the matrices
 -  ctx - user context
 
-   Output Parameter:
-.  flag - structure of the matrix
-
    Level: developer
 
 .keywords: SNES, nonlinear, compute, function
 
 .seealso: SNESSetFunction(), SNESGetFunction()
 @*/
-PetscErrorCode  SNESComputeJacobian_Matlab(SNES snes,Vec x,Mat A,Mat B,MatStructure *flag, void *ctx)
+PetscErrorCode  SNESComputeJacobian_Matlab(SNES snes,Vec x,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode    ierr;
   SNESMatlabContext *sctx = (SNESMatlabContext*)ctx;
@@ -4998,7 +4995,6 @@ PetscErrorCode  SNESComputeJacobian_Matlab(SNES snes,Vec x,Mat A,Mat B,MatStruct
   prhs[5] = sctx->ctx;
   ierr    = mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscSNESComputeJacobianInternal");CHKERRQ(ierr);
   ierr    = mxGetScalar(plhs[0]);CHKERRQ(ierr);
-  *flag   = (MatStructure) mxGetScalar(plhs[1]);CHKERRQ(ierr);
   mxDestroyArray(prhs[0]);
   mxDestroyArray(prhs[1]);
   mxDestroyArray(prhs[2]);

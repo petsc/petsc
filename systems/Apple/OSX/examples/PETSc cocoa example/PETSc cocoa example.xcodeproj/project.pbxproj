@@ -7,17 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D8A06756195FB1AA0052E182 /* PETSc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8A06755195FB1AA0052E182 /* PETSc.framework */; };
 		D8F8285815CB0A080091B85A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8F8285715CB0A080091B85A /* Cocoa.framework */; };
 		D8F8286215CB0A080091B85A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D8F8286015CB0A080091B85A /* InfoPlist.strings */; };
 		D8F8286415CB0A080091B85A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D8F8286315CB0A080091B85A /* main.m */; };
 		D8F8286815CB0A080091B85A /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = D8F8286615CB0A080091B85A /* Credits.rtf */; };
 		D8F8286B15CB0A080091B85A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D8F8286A15CB0A080091B85A /* AppDelegate.m */; };
 		D8F8286E15CB0A080091B85A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = D8F8286C15CB0A080091B85A /* MainMenu.xib */; };
-		D8F8287515CB0A4D0091B85A /* PETSc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8F8287415CB0A4D0091B85A /* PETSc.framework */; };
 		D8F8287A15CB0B5A0091B85A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8F8287915CB0B5A0091B85A /* Accelerate.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D8A06755195FB1AA0052E182 /* PETSc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PETSc.framework; path = ../../../../../../../../../Library/Frameworks/PETSc.framework; sourceTree = "<group>"; };
 		D8F8285315CB0A080091B85A /* PETSc cocoa example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PETSc cocoa example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8F8285715CB0A080091B85A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		D8F8285A15CB0A080091B85A /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -31,7 +32,6 @@
 		D8F8286915CB0A080091B85A /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		D8F8286A15CB0A080091B85A /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		D8F8286D15CB0A080091B85A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
-		D8F8287415CB0A4D0091B85A /* PETSc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PETSc.framework; path = "../../../../../arch-osx/PETSc.framework"; sourceTree = "<group>"; };
 		D8F8287915CB0B5A0091B85A /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -40,7 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D8F8287515CB0A4D0091B85A /* PETSc.framework in Frameworks */,
+				D8A06756195FB1AA0052E182 /* PETSc.framework in Frameworks */,
 				D8F8287A15CB0B5A0091B85A /* Accelerate.framework in Frameworks */,
 				D8F8285815CB0A080091B85A /* Cocoa.framework in Frameworks */,
 			);
@@ -53,7 +53,6 @@
 			isa = PBXGroup;
 			children = (
 				D8F8287915CB0B5A0091B85A /* Accelerate.framework */,
-				D8F8287415CB0A4D0091B85A /* PETSc.framework */,
 				D8F8285D15CB0A080091B85A /* PETSc cocoa example */,
 				D8F8285615CB0A080091B85A /* Frameworks */,
 				D8F8285415CB0A080091B85A /* Products */,
@@ -71,6 +70,7 @@
 		D8F8285615CB0A080091B85A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D8A06755195FB1AA0052E182 /* PETSc.framework */,
 				D8F8285715CB0A080091B85A /* Cocoa.framework */,
 				D8F8285915CB0A080091B85A /* Other Frameworks */,
 			);
@@ -260,10 +260,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../../../../arch-osx\"",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(LOCAL_LIBRARY_DIR)/Frameworks/PETSc-OSX/debug";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "PETSc cocoa example/PETSc cocoa example-Prefix.pch";
 				INFOPLIST_FILE = "PETSc cocoa example/PETSc cocoa example-Info.plist";
@@ -276,10 +273,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../../../../arch-osx\"",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(LOCAL_LIBRARY_DIR)/Frameworks/PETSc-OSX/release";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "PETSc cocoa example/PETSc cocoa example-Prefix.pch";
 				INFOPLIST_FILE = "PETSc cocoa example/PETSc cocoa example-Info.plist";
@@ -307,6 +301,7 @@
 				D8F8287315CB0A080091B85A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

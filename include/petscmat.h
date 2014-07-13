@@ -564,6 +564,10 @@ PETSC_EXTERN PetscErrorCode MatFindOffBlockDiagonalEntries(Mat,IS*);
 
    Not collective
 
+   Synopsis:
+     #include <petscmat.h>
+     PetscErrorCode MatSetValue(Mat m,PetscInt row,PetscInt col,PetscScalar value,InsertMode mode)
+
    Input Parameters:
 +  m - the matrix
 .  row - the row location of the entry

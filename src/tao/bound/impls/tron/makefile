@@ -6,7 +6,7 @@ SOURCEC  = tron.c
 SOURCEF  =
 SOURCEH  = tron.h
 LIBBASE  = libpetsctao
-MANSEC   = Tao 
+MANSEC   = Tao
 LOCDIR   = src/tao/bound/impls/tron/
 
 include ${PETSC_DIR}/conf/variables

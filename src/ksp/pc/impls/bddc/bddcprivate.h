@@ -23,7 +23,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph,PetscInt,IS,IS,PetscInt,IS[],IS);
 PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph);
 PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph);
 PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph,PetscInt,PetscViewer);
-PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph,PetscBool,PetscBool,PetscBool,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
+PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
 
 /* application of local Schur complements */
 PetscErrorCode PCBDDCApplySchur(PC,Vec,Vec,Vec,Vec,Vec);

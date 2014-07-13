@@ -43,8 +43,6 @@ ssh petsc@login.mcs.anl.gov " \
   /bin/ln -s petsc-${VERSION} petsc-${RELEASE}"
 
 #######################################
-# M bin/maint/createpatch
-# M bin/maint/rebuildtar
 # M bin/maint/update-docs.py
 # M include/petscversion.h
 # M src/docs/tex/manual/intro.tex

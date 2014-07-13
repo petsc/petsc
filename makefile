@@ -57,11 +57,11 @@ all-cmake:
 all-legacy:
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" MAKE_IS_GNUMAKE="" all
 
-all-gnumake-local: chk_makej info gnumake mpi4py petsc4py
+all-gnumake-local: chk_makej info gnumake matlabbin mpi4py petsc4py
 
-all-cmake-local: chk_makej info cmakegen cmake mpi4py petsc4py
+all-cmake-local: chk_makej info cmakegen cmake matlabbin mpi4py petsc4py
 
-all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
+all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build matlabbin shared_nomesg mpi4py petsc4py
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -129,6 +129,16 @@ build: chk_makej
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 #
+# Build MatLab binaries
+#
+matlabbin:
+	-@if [ "${MATLAB_MEX}" != "" -a "${PETSC_SCALAR}" == "real" -a "${PETSC_PRECISION}" == "double" ]; then \
+          echo "BEGINNING TO COMPILE MATLAB INTERFACE"; \
+            if [ ! -d "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc" ] ; then ${MKDIR}  ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc; fi; \
+            if [ ! -d "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab" ] ; then ${MKDIR}  ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab; fi; \
+            cd src/sys/classes/viewer/impls/socket/matlab && ${OMAKE} matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}; \
+            echo "========================================="; \
+        fi
 #
 # Builds PETSc test examples for a given architecture
 #
@@ -320,11 +330,16 @@ alldoc2: chk_loc
 # Builds HTML versions of Matlab scripts
 alldoc3: chk_loc
 	if  [ "${MATLAB_COMMAND}" != "" ]; then\
-          export MATLABPATH=${MATLABPATH}:${PETSC_DIR}/bin/matlab; \
-          cd ${PETSC_DIR}/bin/matlab; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
+          export MATLABPATH=${MATLABPATH}:${PETSC_DIR}/share/petsc/matlab; \
+          cd ${PETSC_DIR}/share/petsc/matlab; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
           cd classes; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
           cd examples/tutorials; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
         fi
+
+#
+# Makes links for all manual pages in $LOC/docs/manualpages/all
+allman:
+	@cd ${LOC}/docs/manualpages; rm -rf all ; mkdir all ; find *  -type d -wholename all -prune -o -name index.html -prune  -o -type f -name \*.html -exec ln -s  -f ../{} all \;
 
 # modify all generated html files and add in version number, date, canonical URL info.
 docsetdate: chk_petscdir
@@ -512,7 +527,7 @@ exercises:
 .PHONY: info info_h all build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
         allhtml allcleanhtml  allci allco allrcslabel countfortranfunctions \
-        start_configure configure_petsc configure_clean
+        start_configure configure_petsc configure_clean matlabbin
 
 petscao : petscmat petscao.f90.h
 petscdm : petscksp petscdm.f90.h

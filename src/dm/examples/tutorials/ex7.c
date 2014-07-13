@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   /*
      Write output file with PETSC_VIEWER_BINARY_MATLAB format
      NOTE: the output generated with this viewer can be loaded into
-     MATLAB using $PETSC_DIR/bin/matlab/PetscReadBinaryMatlab.m
+     MATLAB using $PETSC_DIR/share/petsc/matlab/PetscReadBinaryMatlab.m
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,params->filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_BINARY_MATLAB);CHKERRQ(ierr);

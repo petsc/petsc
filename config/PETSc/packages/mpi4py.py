@@ -30,11 +30,18 @@ class Configure(PETSc.package.NewPackage):
     archflags = ""
     if self.setCompilers.isDarwin():
       if self.types.sizes['known-sizeof-void-p'] == 32:
-        archflags = "ARCHFLAGS=\'-arch i386\'"
+        archflags = "ARCHFLAGS=\'-arch i386\' "
       else:
-        archflags = "ARCHFLAGS=\'-arch x86_64\'"
+        archflags = "ARCHFLAGS=\'-arch x86_64\' "
     self.addMakeRule('mpi4py','', \
-                       ['@MPICC=${PCC}; export MPICC; cd '+self.packageDir+';python setup.py clean --all; '+archflags+' python setup.py install --install-lib='+os.path.join(self.installDir,'lib'),\
+                       ['@echo "*** Building mpi4py ***"',\
+                          '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
+           python setup.py clean --all && \\\n\
+           '+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') > ${PETSC_ARCH}/conf/petsc4py.log 2>&1 || \\\n\
+             (echo "**************************ERROR*************************************" && \\\n\
+             echo "Error building mpi4py. Check ${PETSC_ARCH}/conf/petsc4py.log" && \\\n\
+             echo "********************************************************************" && \\\n\
+             exit 1)',\
                           '@echo "====================================="',\
                           '@echo "To use mpi4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
@@ -48,4 +55,3 @@ class Configure(PETSc.package.NewPackage):
 
   def alternateConfigureLibrary(self):
     self.addMakeRule('mpi4py','')
-    self.addMakeRule('mpi4py_noinstall','')

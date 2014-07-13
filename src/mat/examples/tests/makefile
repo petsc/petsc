@@ -1815,27 +1815,35 @@ runex139:
 
 runex140:
 	-@${MPIEXEC} -n 1 ./ex140 -f ${DATAFILESPATH}/matrices/small -aij
-	-@${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_1.tmp 2>&1; \
-	   ${DIFF} output/ex140_1.out ex140_1.tmp || printf "${PWD}\nPossible problem with ex140, diffs above\n=========================================\n"; \
-	   ${RM} -f ex140_1.tmp binaryoutput binaryoutput.info
+	-@if [ "${MATLAB_COMMMAN}" != "" ]; then \
+           ${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_1.tmp 2>&1; \
+	   ${DIFF} output/ex140_1.out ex140_1.tmp || printf "${PWD}\nPossible problem with ex140, diffs above\n=========================================\n";\
+         fi
+	-@${RM} -f ex140_1.tmp binaryoutput binaryoutput.info
 
 runex140_2:
 	-@${MPIEXEC} -n 1 ./ex140  -f ${DATAFILESPATH}/matrices/small -matload_block_size 2
-	-@${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_2.tmp 2>&1; \
+	-@if [ "${MATLAB_COMMMAN}" != "" ]; then \
+           ${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_2.tmp 2>&1; \
 	   ${DIFF} output/ex140_1.out ex140_2.tmp || printf "${PWD}\nPossible problem with ex140_2, diffs above\n=========================================\n"; \
-	   ${RM} -f ex140_2.tmp binaryoutput binaryoutput.info
+         fi
+	-@${RM} -f ex140_2.tmp binaryoutput binaryoutput.info
 
 runex140_3:
 	-@${MPIEXEC} -n 1 ./ex140  -f ${DATAFILESPATH}/matrices/small -matload_block_size 4 -sbaij
-	-@${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_3.tmp 2>&1; \
+	-@if [ "${MATLAB_COMMMAN}" != "" ]; then \
+           ${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_3.tmp 2>&1; \
 	   ${DIFF} output/ex140_1.out ex140_3.tmp || printf "${PWD}\nPossible problem with ex140_3, diffs above\n=========================================\n"; \
-	   ${RM} -f ex140_3.tmp binaryoutput binaryoutput.info
+         fi
+	-@${RM} -f ex140_3.tmp binaryoutput binaryoutput.info
 
 runex140_4:
 	-@${MPIEXEC} -n 3 ./ex140  -f ${DATAFILESPATH}/matrices/small  -aij
-	-@${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_4.tmp 2>&1; \
+	-@if [ "${MATLAB_COMMMAN}" != "" ]; then \
+           ${MATLAB_COMMAND} -nodesktop -nojvm -nodisplay -r "ex140; exit"  > ex140_4.tmp 2>&1; \
 	   ${DIFF} output/ex140_1.out ex140_4.tmp || printf "${PWD}\nPossible problem with ex140_4, diffs above\n=========================================\n"; \
-	   ${RM} -f ex140_4.tmp binaryoutput binaryoutput.info
+         fi
+	-@${RM} -f ex140_4.tmp binaryoutput binaryoutput.info
 
 runex141:
 	-@${MPIEXEC} -n 1 ./ex141  > ex141.tmp 2>&1; \

@@ -69,29 +69,31 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       bc,np;
   Vec            b,x;
-  PetscBool      use_extfile;
+  PetscBool      use_extfile,io;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   MPI_Comm_size(PETSC_COMM_WORLD,&np);
 
-  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "ex2.c");
+  ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "ex35.c");
   user.dim    = 2;
-  ierr        = PetscOptionsInt("-dim", "The dimension of the problem", "ex2.c", user.dim, &user.dim, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsInt("-dim", "The dimension of the problem", "ex35.c", user.dim, &user.dim, NULL);CHKERRQ(ierr);
   user.n      = 2;
-  ierr        = PetscOptionsInt("-n", "The elements in each direction", "ex2.c", user.n, &user.n, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsInt("-n", "The elements in each direction", "ex35.c", user.n, &user.n, NULL);CHKERRQ(ierr);
   user.rho    = 0.5;
-  ierr        = PetscOptionsReal("-rho", "The conductivity", "ex2.c", user.rho, &user.rho, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsReal("-rho", "The conductivity", "ex35.c", user.rho, &user.rho, NULL);CHKERRQ(ierr);
   user.xref   = 0.5;
-  ierr        = PetscOptionsReal("-xref", "The x-coordinate of Gaussian center", "ex2.c", user.xref, &user.xref, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsReal("-xref", "The x-coordinate of Gaussian center", "ex35.c", user.xref, &user.xref, NULL);CHKERRQ(ierr);
   user.yref   = 0.5;
-  ierr        = PetscOptionsReal("-yref", "The y-coordinate of Gaussian center", "ex2.c", user.yref, &user.yref, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsReal("-yref", "The y-coordinate of Gaussian center", "ex35.c", user.yref, &user.yref, NULL);CHKERRQ(ierr);
   user.nu     = 0.05;
-  ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source", "ex2.c", user.nu, &user.nu, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source", "ex35.c", user.nu, &user.nu, NULL);CHKERRQ(ierr);
+  io          = PETSC_FALSE;
+  ierr        = PetscOptionsBool("-io", "Write out the solution and mesh data", "ex35.c", io, &io, NULL);CHKERRQ(ierr);
   bc          = (PetscInt)DIRICHLET;
-  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex2.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex35.c",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
-  ierr        = PetscOptionsString("-file", "The mesh file for the problem", "ex2.c", "",user.filename,PETSC_MAX_PATH_LEN,&use_extfile);CHKERRQ(ierr);
+  ierr        = PetscOptionsString("-file", "The mesh file for the problem", "ex35.c", "",user.filename,PETSC_MAX_PATH_LEN,&use_extfile);CHKERRQ(ierr);
   ierr        = PetscOptionsEnd();
 
   /* Create the DM object from either a mesh file or from in-memory structured grid */
@@ -119,8 +121,20 @@ int main(int argc,char **argv)
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
 
-  ierr = DMMoabSetGlobalFieldVector(dm, x);CHKERRQ(ierr);
-  ierr = DMMoabOutput(dm, "ex2.h5m", "");CHKERRQ(ierr);
+  if (io) {
+    /* Write out the solution along with the mesh */
+    ierr = DMMoabSetGlobalFieldVector(dm, x);CHKERRQ(ierr);
+#ifdef MOAB_HDF5_H
+    ierr = DMMoabOutput(dm, "ex35.h5m", "");CHKERRQ(ierr);
+#else
+    /* MOAB does not support true parallel writers that aren't HDF5 based
+       And so if you are using VTK as the output format in parallel,
+       the data could be jumbled due to the order in which the processors
+       write out their parts of the mesh and solution tags
+    */
+    ierr = DMMoabOutput(dm, "ex35.vtk", "");CHKERRQ(ierr);
+#endif
+  }
 
   /* Cleanup objects */
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
