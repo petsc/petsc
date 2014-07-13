@@ -1413,19 +1413,40 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = MatDestroy(&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
   /* Get index sets for faces, edges and vertices from graph */
-  if (!pcbddc->use_faces && !pcbddc->use_edges && !pcbddc->use_vertices) {
-    pcbddc->use_vertices = PETSC_TRUE;
+  ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices);CHKERRQ(ierr);
+  /* free unneeded index sets */
+  if (!pcbddc->use_vertices) {
+    ierr = ISDestroy(&ISForVertices);CHKERRQ(ierr);
   }
-  ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,pcbddc->use_faces,pcbddc->use_edges,pcbddc->use_vertices,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices);
-  /* HACKS (the two following code branches) */
+  if (!pcbddc->use_edges) {
+    for (i=0;i<n_ISForEdges;i++) {
+      ierr = ISDestroy(&ISForEdges[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(ISForEdges);CHKERRQ(ierr);
+    n_ISForEdges = 0;
+  }
+  if (!pcbddc->use_faces) {
+    for (i=0;i<n_ISForFaces;i++) {
+      ierr = ISDestroy(&ISForFaces[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(ISForFaces);CHKERRQ(ierr);
+    n_ISForFaces = 0;
+  }
+  /* HACKS (the following two blocks of code) */
   if (!ISForVertices && pcbddc->NullSpace && !pcbddc->user_ChangeOfBasisMatrix) {
     pcbddc->use_change_of_basis = PETSC_TRUE;
-    pcbddc->use_change_on_faces = PETSC_FALSE;
+    if (!ISForEdges) {
+      pcbddc->use_change_on_faces = PETSC_TRUE;
+    }
   }
   if (pcbddc->NullSpace) {
     /* use_change_of_basis should be consistent among processors */
-    PetscBool tbool = pcbddc->use_change_of_basis;
-    ierr = MPI_Allreduce(&tbool,&(pcbddc->use_change_of_basis),1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    PetscBool tbool[2],gbool[2];
+    tbool [0] = pcbddc->use_change_of_basis;
+    tbool [1] = pcbddc->use_change_on_faces;
+    ierr = MPI_Allreduce(tbool,gbool,2,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+    pcbddc->use_change_of_basis = gbool[0];
+    pcbddc->use_change_on_faces = gbool[1];
   }
   /* print some info */
   if (pcbddc->dbg_flag) {
@@ -1729,11 +1750,15 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   for (i=0;i<n_ISForFaces;i++) {
     ierr = ISDestroy(&ISForFaces[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(ISForFaces);CHKERRQ(ierr);
+  if (n_ISForFaces) {
+    ierr = PetscFree(ISForFaces);CHKERRQ(ierr);
+  }
   for (i=0;i<n_ISForEdges;i++) {
     ierr = ISDestroy(&ISForEdges[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(ISForEdges);CHKERRQ(ierr);
+  if (n_ISForEdges) {
+    ierr = PetscFree(ISForEdges);CHKERRQ(ierr);
+  }
   ierr = ISDestroy(&ISForVertices);CHKERRQ(ierr);
   /* map temp_indices_to_constraint in boundary numbering */
   ierr = ISGlobalToLocalMappingApply(pcbddc->BtoNmap,IS_GTOLM_DROP,temp_indices[total_counts],temp_indices_to_constraint,&i,temp_indices_to_constraint_B);CHKERRQ(ierr);
