@@ -303,7 +303,79 @@ $(document).on("change","select[id^='ksp_type']",function() {
 });
 
 //need to add a bunch of methods here for changing each variable: pc_fieldsplit_blocks, pc_asm_blocks, pc_redundant_number, etc
-//$(document).on("change","input
+//these methods seem incredibly redundant. perhaps there is a better way to write these.
+$(document).on("change","select[id^='pc_mg_type']",function() {
+
+    var mgType     = $(this).val();
+    var id         = $(this).attr("id");//really should not be used in this method. there are better ways of getting information
+    var endtag     = id.substring(id.indexOf("0"),id.length);
+    var index      = getIndex(matInfo,endtag);
+
+    matInfo[index].pc_mg_type = mgType;
+});
+
+$(document).on("change","select[id^='pc_fieldsplit_type']",function() {
+
+    var fieldsplitType  = $(this).val();
+    var id              = $(this).attr("id");//really should not be used in this method. there are better ways of getting information
+    var endtag          = id.substring(id.indexOf("0"),id.length);
+    var index           = getIndex(matInfo,endtag);
+
+    matInfo[index].pc_fieldsplit_type = fieldsplitType;
+
+});
+
+$(document).on("keyup","input[id^='pc_asm_blocks']",function() {
+
+    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
+        return;
+
+    var id     = this.id;
+    var endtag = id.substring(id.indexOf(0),id.length);
+    var index  = getIndex(matInfo, endtag);
+    var val    = $(this).val();
+
+    matInfo[index].pc_asm_blocks = val;
+});
+
+$(document).on("keyup","input[id^='pc_asm_overlap']",function() {
+
+    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
+        return;
+
+    var id     = this.id;
+    var endtag = id.substring(id.indexOf(0),id.length);
+    var index  = getIndex(matInfo, endtag);
+    var val    = $(this).val();
+
+    matInfo[index].pc_asm_overlap = val;
+});
+
+$(document).on("keyup","input[id^='pc_bjacobi_blocks']",function() {
+
+    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
+        return;
+
+    var id     = this.id;
+    var endtag = id.substring(id.indexOf(0),id.length);
+    var index  = getIndex(matInfo, endtag);
+    var val    = $(this).val();
+
+    matInfo[index].pc_bjacobi_blocks = val;
+});
+
+$(document).on("keyup","input[id^='pc_redundant_number']",function() {
+
+    if($(this).val().match(/[^0-9]/) || $(this).val()<1) //return on invalid input
+        return;
+
+    var id     = this.id;
+    var endtag = id.substring(id.indexOf(0),id.length);
+    var index  = getIndex(matInfo, endtag);
+    var val    = $(this).val();
+
+    matInfo[index].pc_redundant_number = val;
+});
 
 
 //input: endtag of the parent
@@ -365,6 +437,9 @@ $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
 
     //case 2: we need to add some divs
     else if(val > matInfo[index].pc_fieldsplit_blocks) {
+
+        var defaults = getDefaults("fieldsplit",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+
         for(var i = matInfo[index].pc_fieldsplit_blocks; i < val; i++) {
 
             //add divs and write matInfo
@@ -391,25 +466,45 @@ $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
             //append new stuff immediately after current div
             var writeLoc = matInfo.length;
             matInfo[writeLoc] = {
-                pc_type : "redundant",
-                ksp_type: "preonly",
-                endtag : childEndtag
+                pc_type : defaults.sub_pc_type,
+                ksp_type: defaults.sub_ksp_type,
+                endtag : childEndtag,
+                symm: matInfo[index].symm, //inherit!!
+                posdef: matInfo[index].posdef,
+                logstruc: false
             }
 
             var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
             $(currentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + i + " Options</b>");
+            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + i + " Options (Mat Properties: Symm:<input type=\"checkbox\" id=\"symm" + childEndtag + "\"> Posdef:<input type=\"checkbox\" id=\"posdef" + childEndtag + "\"> Logstruc:<input type=\"checkbox\" id=\"logstruc" + childEndtag + "\">)</b>");
+
+            //special for fieldsplit
+            if(matInfo[writeLoc].symm)
+                $("#symm" + childEndtag).attr("checked",true);
+            if(matInfo[writeLoc].posdef)
+                $("#posdef" + childEndtag).attr("checked",true);
+            if(matInfo[writeLoc].logstruc)
+                $("#logstruc" + childEndtag).attr("checked",true);
+
+            if(matInfo[index].symm)
+                $("#symm" + childEndtag).attr("disabled",true);
+            if(matInfo[index].posdef)
+                $("#posdef" + childEndtag).attr("disabled",true);
+            if(!matInfo[index].symm)
+                $("#posdef" + childEndtag).attr("disabled",true);
+
             $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
 	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
 
             populateKspList(childEndtag);
             populatePcList(childEndtag);
 
-	    //set defaults
-	    $("#ksp_type" + childEndtag).find("option[value='preonly']").attr("selected","selected");
-	    $("#pc_type" + childEndtag).find("option[value='redundant']").attr("selected","selected");
-	    //redundant has to have extra dropdown menus so manually trigger
-	    $("#pc_type" + childEndtag).trigger("change");
+            //set defaults
+	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+            //trigger both to add additional options
+            $("#ksp_type" + childEndtag).trigger("change");
+            $("#pc_type" + childEndtag).trigger("change");
         }
         matInfo[index].pc_fieldsplit_blocks = val;
     }
@@ -445,6 +540,9 @@ $(document).on('keyup', "input[id^='pc_mg_levels']", function()
 
     //case 2: we need to add some divs
     else if(val > matInfo[index].pc_mg_levels) {
+
+        var defaults = getDefaults("mg",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+
         for(var i = matInfo[index].pc_mg_levels; i < val; i++) {
             var childEndtag = endtag + "_" + i;
             var margin = getNumUnderscores(childEndtag) * 30;
@@ -469,9 +567,12 @@ $(document).on('keyup', "input[id^='pc_mg_levels']", function()
             //append new stuff immediately after current div
             var writeLoc = matInfo.length;
             matInfo[writeLoc] = {
-                pc_type : "sor",
-                ksp_type: "chebyshev",
-                endtag : childEndtag
+                pc_type : defaults.sub_pc_type,
+                ksp_type: defaults.sub_ksp_type,
+                endtag : childEndtag,
+                symm: matInfo[index].symm, //inherit!!
+                posdef: matInfo[index].posdef,
+                logstruc: false
             }
 
             var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -488,8 +589,11 @@ $(document).on('keyup', "input[id^='pc_mg_levels']", function()
             populatePcList(childEndtag);
 
             //set defaults
-            $("#ksp_type" + childEndtag).find("option[value='chebyshev']").attr("selected","selected");
-            $("#pc_type" + childEndtag).find("option[value='sor']").attr("selected","selected");
+	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+            //trigger both to add additional options
+            $("#ksp_type" + childEndtag).trigger("change");
+            $("#pc_type" + childEndtag).trigger("change");
         }
         matInfo[index].pc_mg_levels = val;
     }
