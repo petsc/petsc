@@ -1,26 +1,26 @@
-//this function replaces Matt's old tex2.js
+//gives users a visual of the nested matricies
 //instead of using subscript of subscript of subscript, etc. simply put the id of the matrix in the first subscript level. for example, A_{010}
-//gives users a visual of the nested arrays
 
 //this function is recursive and should always be called with parameter "0"
 //this function gets the information from matInfo[]
 function getMatrixTex(currentMatrix) {//weird because the longer the string is, the more deep the recursion is. "0" is the top level. digits are only added. never removed
 
     //case 1: not logstruc. base case.
-    if(!matInfo[getMatIndex(currentMatrix)].logstruc) {
+    if(!matInfo[getIndex(matInfo,currentMatrix)].logstruc) {
         //return the appropriate tex
 
-        if(currentMatrix == currentAsk) //make red and bold
+        /*if(currentMatrix == currentAsk) //make red and bold
             return "\\color{red}{\\mathbf{A_{" + currentMatrix +" } }}";
-        else //return black text
-            return "A_{" + currentMatrix + "}";
+        else //return black text*/
+        var subscript = currentMatrix.replace(/_/g, ",");
+        return "A_{" + subscript + "}";
     }
 
     //case 2: has more children. recursive case.
     else {
         var ret = "";
 
-        var blocks = matInfo[getMatIndex(currentMatrix)].blocks;
+        var blocks = matInfo[getIndex(matInfo,currentMatrix)].pc_fieldsplit_blocks;
         var childrenTex = "";
 
         var justify = "";
@@ -36,13 +36,15 @@ function getMatrixTex(currentMatrix) {//weird because the longer the string is, 
                 ret += "* & ";
             }
 
-            var childID = currentMatrix + i;
+            var childID = currentMatrix + "_" + i;
             //lay out chilren
             var childTex = getMatrixTex(childID);
             if(childTex != "")
                 ret += getMatrixTex(childID);
-            else
-                ret += "A_{"+childID+"}";
+            else {
+                var subscript = childID.replace(/_/g, ",");
+                ret += "A_{" + subscript + "}";
+            }
 
             for(var j=i+1; j<blocks; j++) {//add the stars that go AFTER the diagonal element
                 ret += "& *";

@@ -143,11 +143,10 @@ $(document).on("click","#refresh",function(){
 
 $(document).on("click","#toggleMatrix",function(){
 
-    /*    $("#matrixPic").html("<center>" + "\\(" + getMatrixTex("0") + "\\)" + "</center>");
-    if(currentAsk == "-1" && matInfo.length == 1) //no fieldsplits at all, manually add braces
-        $("#matrixPic").html("<center>" + "\\(\\left[" + getMatrixTex("0") + "\\right]\\)" + "</center>");
+    $("#matrixPic").html("<center>" + "\\(" + getMatrixTex("0") + "\\)" + "</center>");
+    //if(currentAsk == "-1" && matInfo.length == 1) //no fieldsplits at all, manually add braces
+        //$("#matrixPic").html("<center>" + "\\(\\left[" + getMatrixTex("0") + "\\right]\\)" + "</center>");
     MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-});*/
 
     if($("#toggleMatrix").val() == "Hide Matrix") {
         $("#matrixPic").hide();
