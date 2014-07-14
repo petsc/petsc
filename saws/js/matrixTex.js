@@ -64,7 +64,7 @@ var bjacobiSplits = [];//global variable that keeps track of how the bjacobi blo
 //this function is recursive and should almost always be called with parameter "0" like so: getSpecificMatrixTex("0")
 function getSpecificMatrixTex(endtag) {
 
-    if(endtag == "") {//reset bjacobi splits data
+    if(endtag == "0") {//reset bjacobi splits data
         delete bjacobiSplits;
         bjacobiSplits.length=0;
     }
