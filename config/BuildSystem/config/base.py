@@ -432,7 +432,7 @@ class Configure(script.Script):
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
-    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.framework.log, lineLimit = 1000)
+    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.framework.log, lineLimit = 100000)
     if self.cleanup:
       for filename in [self.compilerDefines, self.compilerFixes, self.compilerSource]:
         if os.path.isfile(filename): os.remove(filename)
@@ -440,6 +440,7 @@ class Configure(script.Script):
 
   def outputPreprocess(self, codeStr):
     '''Return the contents of stdout when preprocessing "codeStr"'''
+    self.framework.log.write('Source:\n'+self.getCode(codeStr))
     return self.preprocess(codeStr)[0]
 
   def checkPreprocess(self, codeStr, timeout = 600.0):
