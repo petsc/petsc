@@ -200,6 +200,8 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
                           "warning: treating 'c' input as 'c..' when in C.. mode",
                           "warning: statement not reached",
                           "warning: loop not entered at top",
+                          "is deprecated",
+                          "is superseded",
                           "warning: no debug symbols in executable (-arch x86_64)",
                           "cusp/complex.h", "cusp/detail/device/generalized_spmv/coo_flat.h",
                           "thrust/detail/vector_base.inl", "thrust/detail/tuple_transform.h", "detail/tuple.inl", "detail/launch_closure.inl"]
