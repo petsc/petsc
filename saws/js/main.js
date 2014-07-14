@@ -1,6 +1,12 @@
 //this data structure is used to hold all of the solver options and matrix properties
 var matInfo = [];
 
+//some global boolean variables to keep track of what the user wants to display
+var displayingCmdOptions = false;
+var displayingTree       = false;
+var displayingMatrixTex  = false;
+var displayingDiagramTex = false;
+
 //  This function is run when the page is first visited
 $(document).ready(function(){
 
@@ -9,7 +15,7 @@ $(document).ready(function(){
         logstruc: false,
         symm: false,
         posdef: false,
-    }
+    };
 
     //to start, append the first div (div0) in the table and the first pc/ksp options dropdown
     $("#results").append("<div id=\"leftPanel\" style=\"float:left;\"> </div> <div id=\"rightPanel\" style=\"float:left;padding-left:30px;\"></div>");

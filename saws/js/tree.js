@@ -121,7 +121,7 @@ function buildTree()
 	.append("path")
 	.attr("class", "link")
 	.attr("fill", "none")
-	.attr("stroke", "#ADADAD")
+        .attr("stroke", "#404040")
 	.attr("d", diagonal)
 }
 

@@ -60,14 +60,9 @@ function getMatrixTex(currentMatrix) {//weird because the longer the string is, 
 
 var bjacobiSplits = [];//global variable that keeps track of how the bjacobi blocks were split
 
-
-//this function generates the appropriate tex for the given matrix
-//the data for the pc/ksp is taken directly from the dropdown lists
-//displays visual of the nested pc=bjacobi block structure and/or nested pc=ksp block structure
-
-//matrix refers to the id of the matrix. for example, "01"
-//this function is recursive and should always be called with an empty string in the second parameter like so: getSpecificMatrixTex(matrix, "")
-function getSpecificMatrixTex(matrix, endtag) {
+//this function displays a visual of the nested pc=bjacobi block structure and/or nested pc=ksp block structure
+//this function is recursive and should almost always be called with parameter "0" like so: getSpecificMatrixTex("0")
+function getSpecificMatrixTex(endtag) {
 
     if(endtag == "") {//reset bjacobi splits data
         delete bjacobiSplits;
@@ -76,19 +71,12 @@ function getSpecificMatrixTex(matrix, endtag) {
 
     var ret = "";//returned value
 
-    if(getMatIndex(matrix) == -1)//invalid matrix
+    if(getIndex(matInfo,endtag) == -1)//invalid matrix
         return ret;
 
-    var pc;
-    var ksp;
-    if(endtag == "") {
-        pc  = $("#pcList"+matrix).val();
-        ksp = $("#kspList"+matrix).val();
-    }
-    else {
-        pc  = $("#pcList"+matrix+"_"+endtag).val();
-        ksp = $("#kspList"+matrix+"_"+endtag).val();
-    }
+    var index = getIndex(matInfo,endtag);
+    var pc    = matInfo[index].pc_type;
+    var ksp   = matInfo[index].ksp_type;
 
     //case 1: non-recursive base case
     if(pc != "ksp" && pc != "bjacobi") {
@@ -99,11 +87,11 @@ function getSpecificMatrixTex(matrix, endtag) {
     if(pc == "ksp") {
         ret += "\\left.\\begin{aligned}";
 
-        endtag += "0";
+        endtag += "_0";
 
         //ksp is a composite pc so there will be more options
 
-        ret += getSpecificMatrixTex(matrix, endtag);
+        ret += getSpecificMatrixTex(endtag);
         ret += "\\end{aligned}\\right\\}"+ksp+"/"+pc;
         return ret;
     }
@@ -112,22 +100,15 @@ function getSpecificMatrixTex(matrix, endtag) {
     else if(pc == "bjacobi") {
         ret += "\\left.\\begin{aligned}";
 
-        endtag += "0";
+        endtag += "_0";
 
-        //bjacobi is a composite pc so there will be more options
-
-        var blocks = $("#bjacobiBlocks"+matrix+"_"+endtag).val();
-
-        if(blocks == "np")
-            blocks = 2;
-        else
-            blocks = parseInt(blocks);
+        var blocks = matInfo[index].pc_bjacobi_blocks;
 
         //record that we split
         var idx = bjacobiSplits.length;
         bjacobiSplits[idx] = blocks;
 
-        var childTex = getSpecificMatrixTex(matrix, endtag);
+        var childTex = getSpecificMatrixTex(endtag);
         for(var i=0; i<blocks; i++)
             ret += childTex + "\\\\";
         ret += "\\end{aligned}\\right\\}" + ksp+"/"+pc;

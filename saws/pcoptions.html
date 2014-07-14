@@ -38,18 +38,6 @@
 
     <!-- overflow:hidden makes sure div expands with floated items as well -->
     <div id="outside" style="overflow: hidden;min-width:1290px;background-color:#90C7E3;padding:5px;" >
-
-      <div id="texOutput" style="background-color:#90C7E3;padding:5px;float:left;">
-        <div id="matrixPic" style="background-color:#90C7E3;padding:5px;"></div>
-        <br> <br> <br>
-        <div id="matrixPic1" style="background-color:#90C7E3;padding:5px;float:left;"></div>
-        <div id="matrixPic2" style="background-color:#90C7E3;padding:5px;float:right;"></div>
-      </div>
-    </div> <!-- end div outside -->
-
-    <!--min-width allows for expandable div but with a minimum width -->
-
-    <div id="results" style="min-width:1000px;float:left;margin:10px;font-size:14px;">
       <input type=button value="Cmd Options" id="cmdOptionsButton">
       <input type=button value="Clear Tree" id="clearTree">
       <input type=button value="Clear Options" id="clearOutput">
@@ -63,9 +51,24 @@
         <input type=button value="Hide Diagram" id="toggleDiagram">
       </span>
 
-      <h3>Your Solver Options: </h3>
-      <div id="treeContainer"></div>
+      <br> <br>
 
+      <div id="texOutput" style="background-color:#90C7E3;padding:5px;float:left;">
+        <div id="matrixPic" style="background-color:#90C7E3;padding:5px;"></div>
+        <br> <br> <br>
+        <div id="matrixPic1" style="background-color:#90C7E3;padding:5px;float:left;"></div>
+        <div id="matrixPic2" style="background-color:#90C7E3;padding:5px;float:right;"></div>
+        <br> <br> <br>
+
+      </div> <!-- end of div texOutput -->
+      <br> <br> <br>
+      <div id="treeContainer"></div>
+    </div> <!-- end div outside -->
+
+    <!--min-width allows for expandable div but with a minimum width -->
+
+    <div id="results" style="min-width:1000px;float:left;margin:10px;font-size:14px;">
+      <h3>Your Solver Options: </h3>
     </div> <!-- endof div id="results" -->
 
   </body>

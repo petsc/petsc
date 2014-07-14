@@ -102,17 +102,18 @@ $(document).on("click","#clearTree",function(){
 $(document).on("keyup","#selectedMatrix",function(){
 
     var val = $(this).val();
-    if(getMatIndex(val) == -1) //invalid matrix
+    if(getIndex(matInfo,val) == -1) //invalid endtag
         return;
 
-    $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex(val,"") + "\\)" + "</center>");
+    $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex("0") + "\\)" + "</center>");
     $("#matrixPic1").html("<center>" + "\\(" + getSpecificMatrixTex2(0) + "\\)" + "</center>");
     MathJax.Hub.Config({ TeX: { extensions: ["AMSMath.js"] }});
     MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 });
 
+//this piece of code is useless right now, but will be restored
 $(document).on("keyup", '.processorInput', function() {
-    if ($(this).val().match(/[^0-9]/) || $(this).val()==0) {//integer only bubble still displays when nothing is entered
+    if ($(this).val().match(/[^0-9]/) || $(this).val()<1) {//integer only bubble still displays when nothing is entered
 	$(this).attr("title","");//set a random title (this will be overwritten)
 	$(this).tooltip();//create a tooltip from jquery UI
 	$(this).tooltip({ content: "Integer only!" });//edit displayed text
@@ -121,19 +122,6 @@ $(document).on("keyup", '.processorInput', function() {
 	$(this).removeAttr("title");//remove title attribute
 	$(this).tooltip();//create so that we dont call destroy on nothing
         $(this).tooltip("destroy");
-    }
-});
-
-$(document).on("keyup", '.fieldsplitBlocks', function() {//alerts user with a tooltip when an invalid input is provided
-    if ($(this).val().match(/[^0-9]/) || $(this).val()==0 || $(this).val()==1) {
-	$(this).attr("title","");//set a random title (this will be overwritten)
-	$(this).tooltip();//create a tooltip from jquery UI
-	$(this).tooltip({content: "At least 2 blocks!"});//edit displayed text
-	$(this).tooltip("open");//manually open once
-    } else {
-	$(this).removeAttr("title");//remove title attribute
-        $(this).tooltip();//create so that we dont call destroy on nothing
-	$(this).tooltip("destroy");
     }
 });
 
@@ -170,4 +158,3 @@ $(document).on("click","#toggleDiagram",function(){
         $("#toggleDiagram").val("Hide Diagram");
     }
 });
-
