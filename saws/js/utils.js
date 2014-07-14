@@ -51,3 +51,13 @@ function getParent(endtag) {
 
     return endtag.substring(0,endtag.lastIndexOf('_'));
 }
+
+//returns the index of the parent (if any)
+function getParentIndex(data,endtag) {
+
+    var parentEndtag = getParent(endtag);
+    if(parentEndtag == "-1")
+        return -1;
+
+    return getIndex(data,parentEndtag);
+}

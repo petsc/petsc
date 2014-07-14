@@ -1,9 +1,9 @@
 //IMPORTANT: always use document.on() because this will also apply to future elements added to document
 
-$(document).on("change","input[id^='logstruc']",function(){//automatically select fieldsplit when logstruc is selected. automatically revert to something else when logstruc is de-selected!!!!!!
-    var id     = this.id;
-    var endtag = id.substring(id.indexOf("0"),id.length);
-    var index  = getIndex(matInfo,endtag);
+$(document).on("change","input[id^='logstruc']",function(){
+    var id      = this.id;
+    var endtag  = id.substring(id.indexOf("0"),id.length);
+    var index   = getIndex(matInfo,endtag);
     var checked = $(this).prop("checked");
 
     matInfo[index].logstruc = checked;
@@ -11,9 +11,9 @@ $(document).on("change","input[id^='logstruc']",function(){//automatically selec
 });
 
 $(document).on("change","input[id^='symm']",function(){//blur (disable) posdef to false if symm isn't selected!!
-    var id     = this.id;
-    var endtag = id.substring(id.indexOf("0"),id.length);
-    var index  = getIndex(matInfo,endtag);
+    var id      = this.id;
+    var endtag  = id.substring(id.indexOf("0"),id.length);
+    var index   = getIndex(matInfo,endtag);
     var checked = $(this).prop("checked");
 
     matInfo[index].symm = checked;
@@ -21,30 +21,28 @@ $(document).on("change","input[id^='symm']",function(){//blur (disable) posdef t
     if(!checked) { //if not symm, then cannot be posdef
         $("#posdef" + endtag).attr("checked",false);
         $("#posdef" + endtag).attr("disabled", true);
-        matInfo[endtag].posdef = false;
+        matInfo[index].posdef = false;
     }
     if(checked) { //if symm, then allow user to adjust posdef
         $("#posdef" + endtag).attr("disabled", false);
     }
     setDefaults(endtag);
 
-    //if symm is checked, disable all child symms
-
-    //if symm is unchecked, enable all child symms
+    //if symm is checked, disable all child symms ?? (hold off on this)
+    //if symm is unchecked, enable all child symms ??
 });
 
 $(document).on("change","input[id^='posdef']",function(){
-    var id     = this.id;
-    var endtag = id.substring(id.indexOf("0"),id.length);
-    var index  = getIndex(matInfo,endtag);
+    var id      = this.id;
+    var endtag  = id.substring(id.indexOf("0"),id.length);
+    var index   = getIndex(matInfo,endtag);
     var checked = $(this).prop("checked");
 
     matInfo[index].posdef = checked;
     setDefaults(endtag);
 
-    //if posdef is checked, disable all child posdefs
-
-    //if posdef is unchecked, enable all the posdefs
+    //if posdef is checked, disable all child posdefs ?? (hold off on this)
+    //if posdef is unchecked, enable all the posdefs ??
 });
 
 //this function is called after a change in symm,posdef,OR logstruc
@@ -53,7 +51,24 @@ function setDefaults(endtag) {
     var posdef   = $("#posdef" + endtag).prop("checked");
     var logstruc = $("#logstruc" + endtag).prop("checked");
 
-    var defaults = getDefaults("",symm,posdef,logstruc);
+    var defaults;
+    if(endtag == "0") { //has no parent
+        defaults = getDefaults("",symm,posdef,logstruc);
+    }
+    else { //otherwise, we should generate a more appropriate default
+        var parentIndex     = getParentIndex(matInfo,endtag);
+        var parent_pc_type  = matInfo[parentIndex].pc_type;
+        var parent_symm     = matInfo[parentIndex].symm;
+        var parent_posdef   = matInfo[parentIndex].posdef;
+        var parent_logstruc = matInfo[parentIndex].logstruc;
+        defaults            = getDefaults(parent_pc_type,parent_symm,parent_posdef,parent_logstruc,symm,posdef,logstruc); //if this current solver is a sub-solver, then we should set defaults according to its parent. this suggestion will be better.
+        var sub_pc_type   = defaults.sub_pc_type;
+        var sub_ksp_type  = defaults.sub_ksp_type;
+        defaults = {
+            pc_type: sub_pc_type,
+            ksp_type: sub_ksp_type
+        };
+    }
 
     $("#pc_type" + endtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
     $("#ksp_type" + endtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");

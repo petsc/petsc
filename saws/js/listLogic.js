@@ -37,8 +37,8 @@ $(document).on("change","select[id^='pc_type']",function() {
 
             var writeLoc = matInfo.length;
             matInfo[writeLoc] = {
-                pc_type : defaults.pc_type,
-                ksp_type: defaults.ksp_type,
+                pc_type : defaults.sub_pc_type,
+                ksp_type: defaults.sub_ksp_type,
                 endtag : childEndtag,
                 symm: matInfo[index].symm, //inherit !!
                 posdef: matInfo[index].posdef,
@@ -60,8 +60,8 @@ $(document).on("change","select[id^='pc_type']",function() {
             populatePcList(childEndtag);
 
 	    //set defaults
-	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
-	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
             //trigger both to add additional options
             $("#ksp_type" + childEndtag).trigger("change");
             $("#pc_type" + childEndtag).trigger("change");
@@ -82,8 +82,8 @@ $(document).on("change","select[id^='pc_type']",function() {
 
         var writeLoc = matInfo.length;
         matInfo[writeLoc] = {
-            pc_type : defaults.pc_type,
-            ksp_type: defaults.ksp_type,
+            pc_type : defaults.sub_pc_type,
+            ksp_type: defaults.sub_ksp_type,
             endtag : childEndtag,
             symm: matInfo[index].symm, //inherit!!
             posdef: matInfo[index].posdef,
@@ -100,8 +100,8 @@ $(document).on("change","select[id^='pc_type']",function() {
         populatePcList(childEndtag);
 
         //set defaults
-	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
-	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
         //trigger both to add additional options
         $("#ksp_type" + childEndtag).trigger("change");
         $("#pc_type" + childEndtag).trigger("change");
@@ -120,8 +120,8 @@ $(document).on("change","select[id^='pc_type']",function() {
 
         var writeLoc = matInfo.length;
         matInfo[writeLoc] = {
-            pc_type : defaults.pc_type,
-            ksp_type: defaults.ksp_type,
+            pc_type : defaults.sub_pc_type,
+            ksp_type: defaults.sub_ksp_type,
             endtag : childEndtag,
             symm: matInfo[index].symm, //inherit!!
             posdef: matInfo[index].posdef,
@@ -140,8 +140,8 @@ $(document).on("change","select[id^='pc_type']",function() {
         populatePcList(childEndtag);
 
         //set defaults
-	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
-	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
         //trigger both to add additional options
         $("#ksp_type" + childEndtag).trigger("change");
         $("#pc_type" + childEndtag).trigger("change");
@@ -165,8 +165,8 @@ $(document).on("change","select[id^='pc_type']",function() {
 
         var writeLoc = matInfo.length;
         matInfo[writeLoc] = {
-            pc_type : defaults.pc_type,
-            ksp_type: defaults.ksp_type,
+            pc_type : defaults.sub_pc_type,
+            ksp_type: defaults.sub_ksp_type,
             endtag : childEndtag,
             symm: matInfo[index].symm, //inherit!!
             posdef: matInfo[index].posdef,
@@ -185,8 +185,8 @@ $(document).on("change","select[id^='pc_type']",function() {
         populatePcList(childEndtag);
 
         //set defaults
-	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
-	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
         //trigger both to add additional options
         $("#ksp_type" + childEndtag).trigger("change");
         $("#pc_type" + childEndtag).trigger("change");
@@ -198,8 +198,8 @@ $(document).on("change","select[id^='pc_type']",function() {
 
         var writeLoc = matInfo.length;
         matInfo[writeLoc] = {
-            pc_type : defaults.pc_type,
-            ksp_type: defaults.ksp_type,
+            pc_type : defaults.sub_pc_type,
+            ksp_type: defaults.sub_ksp_type,
             endtag : childEndtag,
             symm: matInfo[index].symm, //inherit!!
             posdef: matInfo[index].posdef,
@@ -218,8 +218,8 @@ $(document).on("change","select[id^='pc_type']",function() {
         populatePcList(childEndtag);
 
         //set defaults
-	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
-	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
         //trigger both to add additional options
         $("#ksp_type" + childEndtag).trigger("change");
         $("#pc_type" + childEndtag).trigger("change");
@@ -246,8 +246,8 @@ $(document).on("change","select[id^='pc_type']",function() {
 
             var writeLoc = matInfo.length;
             matInfo[writeLoc] = {
-                pc_type : defaults.pc_type,
-                ksp_type: defaults.ksp_type,
+                pc_type : defaults.sub_pc_type,
+                ksp_type: defaults.sub_ksp_type,
                 endtag : childEndtag,
                 symm: matInfo[index].symm, //inherit!!
                 posdef: matInfo[index].posdef,
@@ -271,6 +271,8 @@ $(document).on("change","select[id^='pc_type']",function() {
                 $("#symm" + childEndtag).attr("disabled",true);
             if(matInfo[index].posdef)
                 $("#posdef" + childEndtag).attr("disabled",true);
+            if(!matInfo[index].symm)
+                $("#posdef" + childEndtag).attr("disabled",true);
 
             $("#solver" + childEndtag).append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"ksp_type" + childEndtag  + "\"></select>");
 	    $("#solver" + childEndtag).append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"pc_type" + childEndtag + "\"></select>");
@@ -279,8 +281,8 @@ $(document).on("change","select[id^='pc_type']",function() {
             populatePcList(childEndtag);
 
 	    //set defaults
-	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
-	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
             //trigger both to add additional options
             $("#ksp_type" + childEndtag).trigger("change");
             $("#pc_type" + childEndtag).trigger("change");
