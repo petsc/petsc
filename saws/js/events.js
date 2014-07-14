@@ -77,41 +77,63 @@ function setDefaults(endtag) {
     $("#pc_type" + endtag).trigger("change");
 }
 
-//When "Cmd Options" button is clicked ...
-$(document).on("click","#cmdOptionsButton", function(){
-    $("#treeContainer").html("<div id='tree'> </div>");
+$(document).on("click","#refresh",function(){
+    if(displayCmdOptions) {
+        $("#rightPanel").html(""); //clear the rightPanel
+        var cmdOptions = getCmdOptions("0","","newline");
+        $("#rightPanel").append("<b>Command Line Options:</b><br><br>");
+        $("#rightPanel").append(cmdOptions);
+    }
+    else
+        $("#rightPanel").html("");
 
-    //build the tree
-    buildTree();
+    if(displayTree) {
+       $("#treeContainer").html("<div id='tree'> </div>");
+        buildTree();
+    }
+    else
+        $("#treeContainer").html("");
 
-    //show cmdOptions to the screen
-    $("#rightPanel").html(""); //clear the rightPanel
-    var cmdOptions = getCmdOptions("0","","newline");
-    $("#rightPanel").append("<b>Command Line Options:</b><br><br>");
-    $("#rightPanel").append(cmdOptions);
+    if(displayMatrix) {
+        /*//display matrix pic. manually add square braces the first time
+    $("#matrixPic").html("<center>" + "\\(\\left[" + getMatrixTex("0") + "\\right]\\)" + "</center>");
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);*/
+         $("#matrixPic").html("<center>" + "\\(" + getMatrixTex("0") + "\\)" + "</center>");
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    }
+    else
+        $("#matrixPic").html("");
+
+    if(displayDiagram) {
+        $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex("0") + "\\)" + "</center>");
+        $("#matrixPic1").html("<center>" + "\\(" + getSpecificMatrixTex2(0) + "\\)" + "</center>");
+        MathJax.Hub.Config({ TeX: { extensions: ["AMSMath.js"] }});
+        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    }
+    else {
+        $("#matrixPic1").html("");
+        $("#matrixPic2").html("");
+    }
 });
 
-$(document).on("click","#clearOutput",function(){
-    $("#rightPanel").html("");
+$(document).on("change","#displayCmdOptions",function(){
+    displayCmdOptions = $(this).prop("checked");
 });
 
-$(document).on("click","#clearTree",function(){
-    $("#tree").remove();
+$(document).on("change","#displayTree",function(){
+    displayTree = $(this).prop("checked");
 });
 
-$(document).on("keyup","#selectedMatrix",function(){
-
-    var val = $(this).val();
-    if(getIndex(matInfo,val) == -1) //invalid endtag
-        return;
-
-    $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex("0") + "\\)" + "</center>");
-    $("#matrixPic1").html("<center>" + "\\(" + getSpecificMatrixTex2(0) + "\\)" + "</center>");
-    MathJax.Hub.Config({ TeX: { extensions: ["AMSMath.js"] }});
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+$(document).on("change","#displayMatrix",function(){
+    displayMatrix = $(this).prop("checked");
 });
 
-//this piece of code is useless right now, but will be restored
+$(document).on("change","#displayDiagram",function(){
+    displayDiagram = $(this).prop("checked");
+});
+
+/*
+//this piece of code is useless right now, but will be restored eventually
 $(document).on("keyup", '.processorInput', function() {
     if ($(this).val().match(/[^0-9]/) || $(this).val()<1) {//integer only bubble still displays when nothing is entered
 	$(this).attr("title","");//set a random title (this will be overwritten)
@@ -123,38 +145,4 @@ $(document).on("keyup", '.processorInput', function() {
 	$(this).tooltip();//create so that we dont call destroy on nothing
         $(this).tooltip("destroy");
     }
-});
-
-$(document).on("click","#refresh",function(){
-    $("#selectedMatrix").trigger("keyup");
-});
-
-$(document).on("click","#toggleMatrix",function(){
-
-    $("#matrixPic").html("<center>" + "\\(" + getMatrixTex("0") + "\\)" + "</center>");
-    //if(currentAsk == "-1" && matInfo.length == 1) //no fieldsplits at all, manually add braces
-        //$("#matrixPic").html("<center>" + "\\(\\left[" + getMatrixTex("0") + "\\right]\\)" + "</center>");
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-
-    if($("#toggleMatrix").val() == "Hide Matrix") {
-        $("#matrixPic").hide();
-        $("#toggleMatrix").val("Show Matrix");
-    }
-    else {
-        $("#matrixPic").show();
-        $("#toggleMatrix").val("Hide Matrix");
-    }
-});
-
-$(document).on("click","#toggleDiagram",function(){
-    if($("#toggleDiagram").val() == "Hide Diagram") {
-        $("#matrixPic1").hide();
-        $("#matrixPic2").hide();
-        $("#toggleDiagram").val("Show Diagram");
-    }
-    else {
-        $("#matrixPic1").show();
-        $("#matrixPic2").show();
-        $("#toggleDiagram").val("Hide Diagram");
-    }
-});
+});*/

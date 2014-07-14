@@ -2,10 +2,10 @@
 var matInfo = [];
 
 //some global boolean variables to keep track of what the user wants to display
-var displayingCmdOptions = false;
-var displayingTree       = false;
-var displayingMatrixTex  = false;
-var displayingDiagramTex = false;
+var displayCmdOptions = false;
+var displayTree       = false;
+var displayMatrix     = false;
+var displayDiagram    = false;
 
 //  This function is run when the page is first visited
 $(document).ready(function(){
@@ -31,10 +31,6 @@ $(document).ready(function(){
     $("#pc_type0").trigger("change");//display options for sub-solvers (if any)
     $("#ksp_type0").trigger("change");//just to record ksp. (ask Dr. Smith or Dr. Zhang for proper defaults)
     $("#symm0").trigger("change");//blur out posdef. will also set the default root pc/ksp for the first time (see events.js)
-
-    //display matrix pic. manually add square braces the first time
-    $("#matrixPic").html("<center>" + "\\(\\left[" + getMatrixTex("0") + "\\right]\\)" + "</center>");
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 
     $(function() { //needed for jqueryUI tool tip to override native javascript tooltip
         $(document).tooltip();

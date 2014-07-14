@@ -38,30 +38,27 @@
 
     <!-- overflow:hidden makes sure div expands with floated items as well -->
     <div id="outside" style="overflow: hidden;min-width:1290px;background-color:#90C7E3;padding:5px;" >
-      <input type=button value="Cmd Options" id="cmdOptionsButton">
-      <input type=button value="Clear Tree" id="clearTree">
-      <input type=button value="Clear Options" id="clearOutput">
-      <span style="padding-left:5em">
-        View Diagram of Solver for Matrix A<input type="text" id="selectedMatrix" value="">
+      <!-- <input type=button value="Show Cmd Options" id="toggleCmdOptions">
+      <input type=button value="Show Tree" id="toggleTree">
+      <input type=button value="Show Matrix" id="toggleMatrix">
+      <input type=button value="Show Diagram" id="toggleDiagram"> -->
+
+      <b> Display: </b> Command Options<input type="checkbox" id="displayCmdOptions">&nbsp;&nbsp;Tree<input type="checkbox" id="displayTree">&nbsp;&nbsp;Matrix<input type="checkbox" id="displayMatrix">&nbsp;&nbsp;Diagram<input type="checkbox" id="displayDiagram">
+
+      <span style="padding-left:100px;">
         <input type=button value="Refresh" id="refresh">
       </span>
 
-      <span style="padding-left:5em">
-        <input type=button value="Hide Matrix" id="toggleMatrix">
-        <input type=button value="Hide Diagram" id="toggleDiagram">
-      </span>
-
-      <br> <br>
+      <br>
 
       <div id="texOutput" style="background-color:#90C7E3;padding:5px;float:left;">
         <div id="matrixPic" style="background-color:#90C7E3;padding:5px;"></div>
-        <br> <br> <br>
+        <br>
         <div id="matrixPic1" style="background-color:#90C7E3;padding:5px;float:left;"></div>
         <div id="matrixPic2" style="background-color:#90C7E3;padding:5px;float:right;"></div>
-        <br> <br> <br>
-
+        <br>
       </div> <!-- end of div texOutput -->
-      <br> <br> <br>
+      <br> <br>
       <div id="treeContainer"></div>
     </div> <!-- end div outside -->
 

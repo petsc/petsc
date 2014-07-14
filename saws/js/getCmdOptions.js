@@ -19,28 +19,28 @@ function getCmdOptions(endtag,prefix,option)
     if(index == -1)
         return "";
 
-    ret += prefix + "pc_type " + matInfo[index].pc_type + endl;
-    ret += prefix + "ksp_type " + matInfo[index].ksp_type + endl;
+    ret += "-" + prefix + "pc_type " + matInfo[index].pc_type + endl;
+    ret += "-" + prefix + "ksp_type " + matInfo[index].ksp_type + endl;
 
     var pc_type = matInfo[index].pc_type;
 
     if(pc_type == "mg") { //add extra info related to mg
-        ret += prefix + "pc_mg_type " + matInfo[index].pc_mg_type + endl;
-        ret += prefix + "pc_mg_levels " + matInfo[index].pc_mg_levels + endl;
+        ret += "-" + prefix + "pc_mg_type " + matInfo[index].pc_mg_type + endl;
+        ret += "-" + prefix + "pc_mg_levels " + matInfo[index].pc_mg_levels + endl;
     }
     else if(pc_type == "fieldsplit") {
-        ret += prefix + "pc_fieldsplit_type " + matInfo[index].pc_fieldsplit_type + endl;
-        ret += prefix + "pc_fieldsplit_blocks " + matInfo[index].pc_fieldsplit_blocks + endl;
+        ret += "-" + prefix + "pc_fieldsplit_type " + matInfo[index].pc_fieldsplit_type + endl;
+        ret += "-" + prefix + "pc_fieldsplit_blocks " + matInfo[index].pc_fieldsplit_blocks + endl;
     }
     else if(pc_type == "bjacobi") {
-        ret += prefix + "pc_bjacobi_blocks " + matInfo[index].pc_bjacobi_blocks + endl;
+        ret += "-" + prefix + "pc_bjacobi_blocks " + matInfo[index].pc_bjacobi_blocks + endl;
     }
     else if(pc_type == "asm") {
-        ret += prefix + "pc_asm_blocks " + matInfo[index].pc_asm_blocks + endl;
-        ret += prefix + "pc_asm_overlap " + matInfo[index].pc_asm_overlap + endl;
+        ret += "-" + prefix + "pc_asm_blocks " + matInfo[index].pc_asm_blocks + endl;
+        ret += "-" + prefix + "pc_asm_overlap " + matInfo[index].pc_asm_overlap + endl;
     }
     else if(pc_type == "redundant") {
-        ret += prefix + "pc_redundant_number " + matInfo[index].pc_redundant_number + endl;
+        ret += "-" + prefix + "pc_redundant_number " + matInfo[index].pc_redundant_number + endl;
     }
 
 
