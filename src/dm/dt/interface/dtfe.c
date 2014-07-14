@@ -632,8 +632,9 @@ static PetscErrorCode TensorPoint_Internal(PetscInt len, PetscInt max, PetscInt 
     tup[0] = ind[0];
     ierr = TensorPoint_Internal(len-1, max, &ind[1], &tup[1]);CHKERRQ(ierr);
     if (ind[1] < 0) {
+      ind[1] = 0;
       if (ind[0] == max-1) {ind[0] = -1;}
-      else                 {ind[1] = 0; ++ind[0];}
+      else                 {++ind[0];}
     }
   }
   PetscFunctionReturn(0);
