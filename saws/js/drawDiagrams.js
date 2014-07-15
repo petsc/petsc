@@ -14,7 +14,7 @@ function drawDiagrams(data,endtag,target_endtag,x,y) {
     var index = getIndex(data,endtag);
     var ret   = "";
 
-    if(data[index].pc == "fieldsplit") { //draw fieldsplit diagram
+    if(data[index].pc_type == "fieldsplit") { //draw fieldsplit diagram
         var colors = ["green","blue","red"];
         var layer = 0;
         ret += "<polygon points=\""+x+","+y+" "+(x+400)+","+y+" "+(x+400)+","+(y+400)+" "+x+","+(y+400)+"\" style=\"fill:khaki;stroke:black;stroke-width:1\"></polygon>";
@@ -42,11 +42,11 @@ function drawDiagrams(data,endtag,target_endtag,x,y) {
                 var childID = endtag + "_" + i;
                 //only draw if child is indeed a fieldsplit
                 var child_index = getIndex(data,childID);
-                if(child_index != -1 && data[child_index].pc == "fieldsplit")
+                if(child_index != -1 && data[child_index].pc_type == "fieldsplit")
                     ret += drawFieldsplit(data,childID, level+1, target_endtag, curr_x, curr_y, size/numChildren);
 
                 //if child is mg, then it is time to switch drawing methods
-                else if(child_index != -1 && data[child_index].pc == "mg") {
+                else if(child_index != -1 && data[child_index].pc_type == "mg") {
                     var possible = drawDiagrams(data,childID,target_endtag,x+size+20+146,y+i*side);
                     if(possible != "") {//don't draw the arrow if there is no diagram following
                         ret += "<image x=\""+(x+size+20)+"\" y=\""+(y+i*side+side/2-13)+"\" width=\"146\" height=\"26\" xlink:href=\"images/arrow.png\"></image>";
@@ -70,7 +70,7 @@ function drawDiagrams(data,endtag,target_endtag,x,y) {
         ret += drawFieldsplit(data,endtag,0,target_endtag,x,y,400);
     }
 
-    else if(data[index].pc == "mg") { //draw multigrid diagram. multigrid diagram doesn't use an inner recursive function because it's not that complex to draw.
+    else if(data[index].pc_type == "mg") { //draw multigrid diagram. multigrid diagram doesn't use an inner recursive function because it's not that complex to draw.
 
         var selectedChild = "";
 

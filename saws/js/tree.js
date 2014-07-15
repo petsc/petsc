@@ -62,16 +62,16 @@ function buildTree()
     //[n*310, n* 310] for horizontal
     //[n*580, n* 310] for vertical
     var canvas = d3.select("#tree").append("svg")
-	.attr("width", numberOfLevels * 400)
-	.attr("height", numberOfLevels * 320)
+	.attr("width", numberOfLevels * 300)
+	.attr("height", numberOfLevels * 200)
 	.append("g")
-	.attr("transform", "translate(50,50)");
+	.attr("transform", "translate(10,0)");
 
     //Call the d3 tree layout
     //[n * 200, n * 200] for horizontal
     //[n* 550, n* 200] for vertical
     var tree = d3.layout.tree()
-	.size([numberOfLevels * 200, numberOfLevels * 200])
+	.size([numberOfLevels * 160, numberOfLevels * 160])
    	.children(function(d) //find who has children from the data structure
     		  {
         	      return (!d.contents || d.contents.length === 0) ? null : d.contents;
