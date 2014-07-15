@@ -78,8 +78,8 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
   ierr = VecGetLocalSize(X, &n);CHKERRQ(ierr);
 
   for (i = 0; i < n; ++i) {
-    xval = x[i]; fval = f[i];
-    lval = l[i]; uval = u[i];
+    xval = PetscRealPart(x[i]); fval = PetscRealPart(f[i]);
+    lval = PetscRealPart(l[i]); uval = PetscRealPart(u[i]);
 
     if ((lval <= -PETSC_INFINITY) && (uval >= PETSC_INFINITY)) {
       fb[i] = -fval;
@@ -181,8 +181,8 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
   ierr = VecGetLocalSize(X, &n);CHKERRQ(ierr);
 
   for (i = 0; i < n; ++i) {
-    xval = (*x++); fval = (*f++);
-    lval = (*l++); uval = (*u++);
+    xval = PetscRealPart(*x++); fval = PetscRealPart(*f++);
+    lval = PetscRealPart(*l++); uval = PetscRealPart(*u++);
 
     if ((lval <= -PETSC_INFINITY) && (uval >= PETSC_INFINITY)) {
       (*fb++) = -fval - mu*xval;
@@ -209,12 +209,12 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
 
 PETSC_STATIC_INLINE PetscReal fischnorm(PetscReal a, PetscReal b)
 {
-  return PetscSqrtScalar(a*a + b*b);
+  return PetscSqrtReal(a*a + b*b);
 }
 
 PETSC_STATIC_INLINE PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 {
-  return PetscSqrtScalar(a*a + b*b + 2.0*c*c);
+  return PetscSqrtReal(a*a + b*b + 2.0*c*c);
 }
 
 #undef __FUNCT__
@@ -290,13 +290,13 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
       db[i] = -1.0;
     } else if (PetscRealPart(l[i]) <= PETSC_NINFINITY) {
       if (PetscRealPart(db[i]) >= 1) {
-        ai = fischnorm(1, t2[i]);
+        ai = fischnorm(1.0, PetscRealPart(t2[i]));
 
         da[i] = -1.0 / ai - 1.0;
         db[i] = -t2[i] / ai - 1.0;
       } else {
-        bi = u[i] - x[i];
-        ai = fischnorm(bi, f[i]);
+        bi = PetscRealPart(u[i]) - PetscRealPart(x[i]);
+        ai = fischnorm(bi, PetscRealPart(f[i]));
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
         da[i] = bi / ai - 1.0;
@@ -304,49 +304,49 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
       }
     } else if (PetscRealPart(u[i]) >=  PETSC_INFINITY) {
       if (PetscRealPart(da[i]) >= 1) {
-        ai = fischnorm(1, t2[i]);
+        ai = fischnorm(1.0, PetscRealPart(t2[i]));
 
         da[i] = 1.0 / ai - 1.0;
         db[i] = t2[i] / ai - 1.0;
       } else {
-        bi = x[i] - l[i];
-        ai = fischnorm(bi, f[i]);
+        bi = PetscRealPart(x[i]) - PetscRealPart(l[i]);
+        ai = fischnorm(bi, PetscRealPart(f[i]));
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
         da[i] = bi / ai - 1.0;
         db[i] = f[i] / ai - 1.0;
       }
-    } else if (l[i] == u[i]) {
+    } else if (PetscRealPart(l[i]) == PetscRealPart(u[i])) {
       da[i] = -1.0;
       db[i] = 0.0;
     } else {
       if (PetscRealPart(db[i]) >= 1) {
-        ai = fischnorm(1, t2[i]);
+        ai = fischnorm(1.0, PetscRealPart(t2[i]));
 
         ci = 1.0 / ai + 1.0;
-        di = t2[i] / ai + 1.0;
+        di = PetscRealPart(t2[i]) / ai + 1.0;
       } else {
-        bi = x[i] - u[i];
-        ai = fischnorm(bi, f[i]);
+        bi = PetscRealPart(x[i]) - PetscRealPart(u[i]);
+        ai = fischnorm(bi, PetscRealPart(f[i]));
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
         ci = bi / ai + 1.0;
-        di = f[i] / ai + 1.0;
+        di = PetscRealPart(f[i]) / ai + 1.0;
       }
 
       if (PetscRealPart(da[i]) >= 1) {
-        bi = ci + di*t2[i];
-        ai = fischnorm(1, bi);
+        bi = ci + di*PetscRealPart(t2[i]);
+        ai = fischnorm(1.0, bi);
 
         bi = bi / ai - 1.0;
         ai = 1.0 / ai - 1.0;
       } else {
-        ei = Fischer(u[i] - x[i], -f[i]);
-        ai = fischnorm(x[i] - l[i], ei);
+        ei = Fischer(PetscRealPart(u[i]) - PetscRealPart(x[i]), -PetscRealPart(f[i]));
+        ai = fischnorm(PetscRealPart(x[i]) - PetscRealPart(l[i]), ei);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
         bi = ei / ai - 1.0;
-        ai = (x[i] - l[i]) / ai - 1.0;
+        ai = (PetscRealPart(x[i]) - PetscRealPart(l[i])) / ai - 1.0;
       }
 
       da[i] = ai + bi*ci;
@@ -419,41 +419,41 @@ PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu
         db[i] = -1.0;
         dm[i] = -x[i];
       } else if (PetscRealPart(l[i]) <= PETSC_NINFINITY) {
-        bi = u[i] - x[i];
-        ai = fischsnorm(bi, f[i], mu);
+        bi = PetscRealPart(u[i]) - PetscRealPart(x[i]);
+        ai = fischsnorm(bi, PetscRealPart(f[i]), mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
         da[i] = bi / ai - 1.0;
-        db[i] = -f[i] / ai - 1.0;
+        db[i] = -PetscRealPart(f[i]) / ai - 1.0;
         dm[i] = 2.0 * mu / ai;
       } else if (PetscRealPart(u[i]) >=  PETSC_INFINITY) {
-        bi = x[i] - l[i];
-        ai = fischsnorm(bi, f[i], mu);
+        bi = PetscRealPart(x[i]) - PetscRealPart(l[i]);
+        ai = fischsnorm(bi, PetscRealPart(f[i]), mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
         da[i] = bi / ai - 1.0;
-        db[i] = f[i] / ai - 1.0;
+        db[i] = PetscRealPart(f[i]) / ai - 1.0;
         dm[i] = 2.0 * mu / ai;
-      } else if (l[i] == u[i]) {
+      } else if (PetscRealPart(l[i]) == PetscRealPart(u[i])) {
         da[i] = -1.0;
         db[i] = 0.0;
         dm[i] = 0.0;
       } else {
-        bi = x[i] - u[i];
-        ai = fischsnorm(bi, f[i], mu);
+        bi = PetscRealPart(x[i]) - PetscRealPart(u[i]);
+        ai = fischsnorm(bi, PetscRealPart(f[i]), mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
         ci = bi / ai + 1.0;
-        di = f[i] / ai + 1.0;
+        di = PetscRealPart(f[i]) / ai + 1.0;
         fi = 2.0 * mu / ai;
 
-        ei = SFischer(u[i] - x[i], -f[i], mu);
-        ai = fischsnorm(x[i] - l[i], ei, mu);
+        ei = SFischer(PetscRealPart(u[i]) - PetscRealPart(x[i]), -PetscRealPart(f[i]), mu);
+        ai = fischsnorm(PetscRealPart(x[i]) - PetscRealPart(l[i]), ei, mu);
         ai = PetscMax(PETSC_MACHINE_EPSILON, ai);
 
         bi = ei / ai - 1.0;
         ei = 2.0 * mu / ei;
-        ai = (x[i] - l[i]) / ai - 1.0;
+        ai = (PetscRealPart(x[i]) - PetscRealPart(l[i])) / ai - 1.0;
 
         da[i] = ai + bi*ci;
         db[i] = bi*di;
