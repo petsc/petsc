@@ -1222,7 +1222,15 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
     if (points)    *points    = closure;
     PetscFunctionReturn(0);
   }
-  maxSize = 2*PetscMax(PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1)),depth+1);
+  {
+    PetscInt c, coneSeries, s,supportSeries;
+
+    c = mesh->maxConeSize;
+    coneSeries = (c > 1) ? ((PetscPowInt(c,depth+1)-1)/(c-1)) : depth+1;
+    s = mesh->maxSupportSize;
+    supportSeries = (s > 1) ? ((PetscPowInt(s,depth+1)-1)/(s-1)) : depth+1;
+    maxSize = 2*PetscMax(coneSeries,supportSeries);
+  }
   ierr    = DMGetWorkArray(dm, maxSize, PETSC_INT, &fifo);CHKERRQ(ierr);
   if (*points) {
     closure = *points;
@@ -1361,7 +1369,15 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
     if (points)    *points    = closure;
     PetscFunctionReturn(0);
   }
-  maxSize = 2*PetscMax(PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1)),depth+1);
+  {
+    PetscInt c, coneSeries, s,supportSeries;
+
+    c = mesh->maxConeSize;
+    coneSeries = (c > 1) ? ((PetscPowInt(c,depth+1)-1)/(c-1)) : depth+1;
+    s = mesh->maxSupportSize;
+    supportSeries = (s > 1) ? ((PetscPowInt(s,depth+1)-1)/(s-1)) : depth+1;
+    maxSize = 2*PetscMax(coneSeries,supportSeries);
+  }
   ierr    = DMGetWorkArray(dm, maxSize, PETSC_INT, &fifo);CHKERRQ(ierr);
   if (*points) {
     closure = *points;
@@ -1863,7 +1879,7 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
   PetscInt      *offsets, **closures;
   PetscInt      *join[2];
   PetscInt       depth = 0, maxSize, joinSize = 0, i = 0;
-  PetscInt       p, d, c, m;
+  PetscInt       p, d, c, m, ms;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1875,7 +1891,8 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
   ierr    = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr    = PetscCalloc1(numPoints, &closures);CHKERRQ(ierr);
   ierr    = DMGetWorkArray(dm, numPoints*(depth+2), PETSC_INT, &offsets);CHKERRQ(ierr);
-  maxSize = PetscPowInt(mesh->maxSupportSize,depth+1);
+  ms      = mesh->maxSupportSize;
+  maxSize = (ms > 1) ? ((PetscPowInt(ms,depth+1)-1)/(ms-1)) : depth + 1;
   ierr    = DMGetWorkArray(dm, maxSize, PETSC_INT, &join[0]);CHKERRQ(ierr);
   ierr    = DMGetWorkArray(dm, maxSize, PETSC_INT, &join[1]);CHKERRQ(ierr);
 
@@ -2087,7 +2104,7 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
   PetscInt      *offsets, **closures;
   PetscInt      *meet[2];
   PetscInt       height = 0, maxSize, meetSize = 0, i = 0;
-  PetscInt       p, h, c, m;
+  PetscInt       p, h, c, m, mc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2099,7 +2116,8 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
   ierr    = DMPlexGetDepth(dm, &height);CHKERRQ(ierr);
   ierr    = PetscMalloc1(numPoints, &closures);CHKERRQ(ierr);
   ierr    = DMGetWorkArray(dm, numPoints*(height+2), PETSC_INT, &offsets);CHKERRQ(ierr);
-  maxSize = PetscPowInt(mesh->maxConeSize,height+1);
+  mc      = mesh->maxConeSize;
+  maxSize = (mc > 1) ? ((PetscPowInt(mc,height+1)-1)/(mc-1)) : height + 1;
   ierr    = DMGetWorkArray(dm, maxSize, PETSC_INT, &meet[0]);CHKERRQ(ierr);
   ierr    = DMGetWorkArray(dm, maxSize, PETSC_INT, &meet[1]);CHKERRQ(ierr);
 

@@ -270,17 +270,22 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
     ierr = DMPlexGetConstraints(dm,&aSec,&aIS);CHKERRQ(ierr);
     if (aSec) {
       ierr = PetscSectionGetMaxDof(aSec,&maxAnchors);CHKERRQ(ierr);
+      maxAnchors = PetscMax(1,maxAnchors);
       ierr = PetscSectionGetChart(aSec,&aStart,&aEnd);CHKERRQ(ierr);
       ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
     }
   }
   if (!*adj) {
-    PetscInt depth, maxConeSize, maxSupportSize;
+    PetscInt depth, coneSeries, supportSeries, maxC, maxS, pStart, pEnd;
 
+    ierr  = DMPlexGetChart(dm, &pStart,&pEnd);CHKERRQ(ierr);
     ierr  = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-    ierr  = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-    asiz  = PetscPowInt(maxConeSize, depth+1) * PetscPowInt(maxSupportSize, depth+1) + 1;
+    ierr  = DMPlexGetMaxSizes(dm, &maxC, &maxS);CHKERRQ(ierr);
+    coneSeries    = (maxC > 1) ? ((PetscPowInt(maxC,depth+1)-1)/(maxC-1)) : depth+1;
+    supportSeries = (maxS > 1) ? ((PetscPowInt(maxS,depth+1)-1)/(maxS-1)) : depth+1;
+    asiz  = PetscMax(PetscPowInt(maxS,depth)*coneSeries,PetscPowInt(maxC,depth)*supportSeries);
     asiz *= maxAnchors;
+    asiz  = PetscMin(asiz,pEnd-pStart);
     ierr  = PetscMalloc1(asiz,adj);CHKERRQ(ierr);
   }
   if (*adjSize < 0) *adjSize = asiz;
