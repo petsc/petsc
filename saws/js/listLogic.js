@@ -42,7 +42,7 @@ $(document).on("change","select[id^='pc_type']",function() {
                 endtag : childEndtag,
                 symm: matInfo[index].symm, //inherit !!
                 posdef: matInfo[index].posdef,
-                logstruc: false
+                logstruc: matInfo[index].logstruc
             }
 
             var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -87,7 +87,7 @@ $(document).on("change","select[id^='pc_type']",function() {
             endtag : childEndtag,
             symm: matInfo[index].symm, //inherit!!
             posdef: matInfo[index].posdef,
-            logstruc: false
+            logstruc: matInfo[index].logstruc
         }
 
         var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -125,7 +125,7 @@ $(document).on("change","select[id^='pc_type']",function() {
             endtag : childEndtag,
             symm: matInfo[index].symm, //inherit!!
             posdef: matInfo[index].posdef,
-            logstruc: false
+            logstruc: matInfo[index].logstruc
         }
 
         var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -170,7 +170,7 @@ $(document).on("change","select[id^='pc_type']",function() {
             endtag : childEndtag,
             symm: matInfo[index].symm, //inherit!!
             posdef: matInfo[index].posdef,
-            logstruc: false
+            logstruc: matInfo[index].logstruc
         }
 
         var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -203,7 +203,7 @@ $(document).on("change","select[id^='pc_type']",function() {
             endtag : childEndtag,
             symm: matInfo[index].symm, //inherit!!
             posdef: matInfo[index].posdef,
-            logstruc: false
+            logstruc: matInfo[index].logstruc
         }
 
         var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -226,6 +226,10 @@ $(document).on("change","select[id^='pc_type']",function() {
     }
 
     else if (pcValue == "fieldsplit") {
+        if(!matInfo[index].logstruc) {//do nothing if not logstruc
+            alert("Error: Fieldsplit can only be used on logically block-structured matrix!");
+            return;
+        }
         var defaults = getDefaults("fieldsplit",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
         var defaultFieldsplitBlocks = defaults.pc_fieldsplit_blocks;
 
@@ -251,7 +255,7 @@ $(document).on("change","select[id^='pc_type']",function() {
                 endtag : childEndtag,
                 symm: matInfo[index].symm, //inherit!!
                 posdef: matInfo[index].posdef,
-                logstruc: false
+                logstruc: false //this one is false to prevent infinite recursion
             }
 
             var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
@@ -572,7 +576,7 @@ $(document).on('keyup', "input[id^='pc_mg_levels']", function()
                 endtag : childEndtag,
                 symm: matInfo[index].symm, //inherit!!
                 posdef: matInfo[index].posdef,
-                logstruc: false
+                logstruc: matInfo[index].logstruc
             }
 
             var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
