@@ -7,6 +7,9 @@ var displayTree       = false;
 var displayMatrix     = false;
 var displayDiagram    = false;
 
+//holds the cmd options to copy to the clipboard
+var clipboardText     = "";
+
 //  This function is run when the page is first visited
 $(document).ready(function(){
 

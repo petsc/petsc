@@ -68,10 +68,8 @@ function buildTree()
 	.attr("transform", "translate(10,0)");
 
     //Call the d3 tree layout
-    //[n * 200, n * 200] for horizontal
-    //[n* 550, n* 200] for vertical
     var tree = d3.layout.tree()
-	.size([numberOfLevels * 160, numberOfLevels * 160])
+	.size([numberOfLevels * 150, numberOfLevels * 250])
    	.children(function(d) //find who has children from the data structure
     		  {
         	      return (!d.contents || d.contents.length === 0) ? null : d.contents;

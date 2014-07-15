@@ -77,15 +77,24 @@ function setDefaults(endtag) {
     $("#pc_type" + endtag).trigger("change");
 }
 
+$(document).on("click","#copyToClipboard",function(){
+    window.prompt("Copy to clipboard: Ctrl+C, Enter", clipboardText);
+    //Note: Because of security reasons, copying to clipboard on click is actually quite complicated. This is a much simpler way to get the job done.
+});
+
 $(document).on("click","#refresh",function(){
     if(displayCmdOptions) {
         $("#rightPanel").html(""); //clear the rightPanel
         var cmdOptions = getCmdOptions("0","","newline");
-        $("#rightPanel").append("<b>Command Line Options:</b><br><br>");
+        clipboardText  = getCmdOptions("0","","space");
+        $("#rightPanel").append("<b>Command Line Options:</b>");
+        $("#rightPanel").append("<input type=button value=\"Copy to Clipboard\" id=\"copyToClipboard\" style=\"float:right;font-size:12px;\"><br><br>");
         $("#rightPanel").append(cmdOptions);
     }
-    else
+    else {
         $("#rightPanel").html("");
+        clipboardText = "";
+    }
 
     if(displayTree) {
        $("#treeContainer").html("<div id='tree'> </div>");
