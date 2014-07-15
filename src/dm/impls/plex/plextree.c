@@ -218,7 +218,7 @@ PetscErrorCode DMPlexReferenceTreeGetChildSymmetry(DM dm, PetscInt parent, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexSetTree_Internal(DM,PetscSection,PetscInt*,PetscInt*,PetscBool);
+static PetscErrorCode DMPlexSetTree_Internal(DM,PetscSection,PetscInt*,PetscInt*,PetscBool,PetscBool);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateDefaultReferenceTree"
@@ -459,7 +459,7 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
       childIDs[pOff] = uOff;
     }
   }
-  ierr = DMPlexSetTree_Internal(*ref,parentSection,parents,childIDs,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexSetTree_Internal(*ref,parentSection,parents,childIDs,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
   mesh = (DM_Plex *) (*ref)->data;
   mesh->getchildsymmetry = DMPlexReferenceTreeGetChildSymmetry_Default;
   ierr = PetscSectionDestroy(&parentSection);CHKERRQ(ierr);
@@ -476,7 +476,6 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
   ierr = DMDestroy(&Kref);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexTreeSymmetrize"
@@ -798,8 +797,90 @@ static PetscErrorCode DMPlexComputeConstraints_Tree(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexTreeExchangeSupports"
+static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+  PetscSection newSupportSection;
+  PetscInt newSize, *newSupports, pStart, pEnd, p, d, depth;
+  PetscInt *offsets;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  /* symmetrize the hierarchy */
+  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&newSupportSection);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(newSupportSection,pStart,pEnd);CHKERRQ(ierr);
+  ierr = PetscCalloc1(pEnd,&offsets);CHKERRQ(ierr);
+  /* if a point is in the support of q, it should be in the support of
+   * parent(q) */
+  for (d = 0; d <= depth; d++) {
+    ierr = DMPlexGetHeightStratum(dm,d,&pStart,&pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt dof, q, qdof, parent;
+
+      ierr = PetscSectionGetDof(mesh->supportSection, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionAddDof(newSupportSection, p, dof);CHKERRQ(ierr);
+      q    = p;
+      ierr = DMPlexGetTreeParent(dm,q,&parent,NULL);CHKERRQ(ierr);
+      while (parent != q && parent >= pStart && parent < pEnd) {
+        q = parent;
+
+        ierr = PetscSectionGetDof(mesh->supportSection, q, &qdof);CHKERRQ(ierr);
+        ierr = PetscSectionAddDof(newSupportSection,p,qdof);CHKERRQ(ierr);
+        ierr = PetscSectionAddDof(newSupportSection,q,dof);CHKERRQ(ierr);
+        ierr = DMPlexGetTreeParent(dm,q,&parent,NULL);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscSectionSetUp(newSupportSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(newSupportSection,&newSize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(newSize,&newSupports);CHKERRQ(ierr);
+  for (d = 0; d <= depth; d++) {
+    ierr = DMPlexGetHeightStratum(dm,d,&pStart,&pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; p++) {
+      PetscInt dof, off, q, qdof, qoff, newDof, newOff, newqOff, i, parent;
+
+      ierr = PetscSectionGetDof(mesh->supportSection, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(mesh->supportSection, p, &off);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(newSupportSection, p, &newDof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(newSupportSection, p, &newOff);CHKERRQ(ierr);
+      for (i = 0; i < dof; i++) {
+        newSupports[newOff+offsets[p]++] = mesh->supports[off + i];
+      }
+      mesh->maxSupportSize = PetscMax(mesh->maxSupportSize,newDof);
+
+      q    = p;
+      ierr = DMPlexGetTreeParent(dm,q,&parent,NULL);CHKERRQ(ierr);
+      while (parent != q && parent >= pStart && parent < pEnd) {
+        q = parent;
+        ierr = PetscSectionGetDof(mesh->supportSection, q, &qdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(mesh->supportSection, q, &qoff);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(newSupportSection, q, &newqOff);CHKERRQ(ierr);
+        for (i = 0; i < qdof; i++) {
+          newSupports[newOff+offsets[p]++] = mesh->supports[qoff + i];
+        }
+        for (i = 0; i < dof; i++) {
+          newSupports[newqOff+offsets[q]++] = mesh->supports[off + i];
+        }
+        ierr = DMPlexGetTreeParent(dm,q,&parent,NULL);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscSectionDestroy(&mesh->supportSection);CHKERRQ(ierr);
+  mesh->supportSection = newSupportSection;
+  ierr = PetscFree(mesh->supports);CHKERRQ(ierr);
+  mesh->supports = newSupports;
+  ierr = PetscFree(offsets);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexSetTree_Internal"
-static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, PetscInt *parents, PetscInt *childIDs, PetscBool computeCanonical)
+static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, PetscInt *parents, PetscInt *childIDs, PetscBool computeCanonical, PetscBool exchangeSupports)
 {
   DM_Plex       *mesh = (DM_Plex *)dm->data;
   DM             refTree;
@@ -875,6 +956,9 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
       }
     }
   }
+  if (exchangeSupports) {
+    ierr = DMPlexTreeExchangeSupports(dm);CHKERRQ(ierr);
+  }
   ierr = DMPlexComputeConstraints_Tree(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -905,7 +989,7 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexSetTree_Internal(dm,parentSection,parents,childIDs,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = DMPlexSetTree_Internal(dm,parentSection,parents,childIDs,PETSC_FALSE,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
