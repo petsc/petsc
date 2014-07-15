@@ -12,8 +12,8 @@ var iteration = 0;//record what iteration we are on (remove text on second itera
 PETSc.getAndDisplayDirectory = function(names,divEntry){
 
     if(!init) {
-        $("head").append('<script src="js/parsePrefix2.js"></script>');//reuse the code for parsing thru the prefix
-        $("head").append('<script src="js/fetchSawsData.js"></script>');//reuse the code for organizing data into sawsInfo
+        $("head").append('<script src="js/parsePrefix.js"></script>');//reuse the code for parsing thru the prefix
+        $("head").append('<script src="js/recordSawsData.js"></script>');//reuse the code for organizing data into sawsInfo
         $("head").append('<script src="js/utils.js"></script>');//necessary for the two js files above
         $("head").append('<script src="js/drawDiagrams.js"></script>');//contains the code to draw diagrams of the solver structure. in particular, fieldsplit and multigrid
         $("body").append("<div id=\"leftDiv\" style=\"float:left;\"></div>");
