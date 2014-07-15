@@ -3598,7 +3598,7 @@ PetscErrorCode  MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,
    Collective on MPI_Comm
 
    Input Parameters:
-+  B - The matrix-free
++  B - The matrix
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows
          (possibly different for each row) or NULL

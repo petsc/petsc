@@ -2015,7 +2015,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
    Collective on Mat
 
    Input Parameters:
-+  A - the symmetric matrix
++  B - the symmetric matrix
 .  bs - size of block
 .  nz - number of block nonzeros per block row (same for all rows)
 -  nnz - array containing the number of block nonzeros in the upper triangular plus
@@ -2061,7 +2061,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
    MatSeqSBAIJSetPreallocationCSR - Allocates memory for a sparse sequential matrix in symmetric block AIJ format.
 
    Input Parameters:
-+  A - the matrix
++  B - the matrix
 .  i - the indices into j for the start of each local row (starts with zero)
 .  j - the column indices for each local row (starts with zero) these must be sorted for each row
 -  v - optional values in the matrix
