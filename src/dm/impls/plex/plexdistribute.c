@@ -690,8 +690,9 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     ierr = PetscSFSetGraph((*dmParallel)->sf, pEnd - pStart, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFSetFromOptions((*dmParallel)->sf);CHKERRQ(ierr);
   }
-  pmesh->useCone    = mesh->useCone;
-  pmesh->useClosure = mesh->useClosure;
+  pmesh->useCone        = mesh->useCone;
+  pmesh->useClosure     = mesh->useClosure;
+  pmesh->useConstraints = mesh->useConstraints;
   ierr = PetscLogEventEnd(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
   /* Distribute Coordinates */
   {
@@ -769,6 +770,47 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
       else            pmesh->hybridPointMax[d] = -1;
     }
     ierr = ISLocalToGlobalMappingRestoreIndices(renumbering, &gpoints);CHKERRQ(ierr);
+  }
+  /* Set up tree */
+  {
+    DM              refTree;
+    PetscSection    origParentSection, newParentSection;
+    PetscInt        *origParents, *origChildIDs;
+
+    ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
+    ierr = DMPlexSetReferenceTree(*dmParallel,refTree);CHKERRQ(ierr);
+    ierr = DMPlexGetTree(dm,&origParentSection,&origParents,&origChildIDs,NULL,NULL);CHKERRQ(ierr);
+    if (origParentSection) {
+      PetscInt        pStart, pEnd;
+      PetscInt        *newParents, *newChildIDs;
+      PetscInt        *remoteOffsetsParents, newParentSize;
+      PetscSF         parentSF;
+
+      ierr = DMPlexGetChart(*dmParallel, &pStart, &pEnd);CHKERRQ(ierr);
+      ierr = PetscSectionCreate(PetscObjectComm((PetscObject)*dmParallel),&newParentSection);CHKERRQ(ierr);
+      ierr = PetscSectionSetChart(newParentSection,pStart,pEnd);CHKERRQ(ierr);
+      ierr = PetscSFDistributeSection(pointSF, origParentSection, &remoteOffsetsParents, newParentSection);CHKERRQ(ierr);
+      ierr = PetscSFCreateSectionSF(pointSF, origParentSection, remoteOffsetsParents, newParentSection, &parentSF);CHKERRQ(ierr);
+      ierr = PetscSectionGetStorageSize(newParentSection,&newParentSize);CHKERRQ(ierr);
+      ierr = PetscMalloc2(newParentSize,&newParents,newParentSize,&newChildIDs);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(parentSF, MPIU_INT, origParents, newParents);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(parentSF, MPIU_INT, origParents, newParents);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(parentSF, MPIU_INT, origChildIDs, newChildIDs);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(parentSF, MPIU_INT, origChildIDs, newChildIDs);CHKERRQ(ierr);
+      ierr = ISGlobalToLocalMappingApplyBlock(renumbering,IS_GTOLM_MASK, newParentSize, newParents, NULL, newParents);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-parents_view", &flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = PetscPrintf(comm, "Serial Parent Section: \n");CHKERRQ(ierr);
+        ierr = PetscSectionView(origParentSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm, "Parallel Parent Section: \n");CHKERRQ(ierr);
+        ierr = PetscSectionView(newParentSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+        ierr = PetscSFView(parentSF, NULL);CHKERRQ(ierr);
+      }
+      ierr = DMPlexSetTree(*dmParallel,newParentSection,newParents,newChildIDs);CHKERRQ(ierr);
+      ierr = PetscSectionDestroy(&newParentSection);CHKERRQ(ierr);
+      ierr = PetscFree2(newParents,newChildIDs);CHKERRQ(ierr);
+      ierr = PetscSFDestroy(&parentSF);CHKERRQ(ierr);
+    }
   }
   /* Cleanup Partition */
   ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
