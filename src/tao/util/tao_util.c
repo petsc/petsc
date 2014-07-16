@@ -107,9 +107,9 @@ PETSC_STATIC_INLINE PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 {
   /* Method suggested by Bob Vanderbei */
    if (a + b <= 0) {
-     return PetscSqrtScalar(a*a + b*b + 2.0*c*c) - (a + b);
+     return PetscSqrtReal(a*a + b*b + 2.0*c*c) - (a + b);
    }
-   return 2.0*(c*c - a*b) / (PetscSqrtScalar(a*a + b*b + 2.0*c*c) + (a + b));
+   return 2.0*(c*c - a*b) / (PetscSqrtReal(a*a + b*b + 2.0*c*c) + (a + b));
 }
 
 #undef __FUNCT__

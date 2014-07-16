@@ -627,7 +627,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
               denom = TAO_ZERO_SAFEGUARD;
             }
 
-            sigmanew = ((2*ctx->r_alpha-1)*ys_sum + PetscSqrtScalar((2*ctx->r_alpha-1)*(2*ctx->r_alpha-1)*ys_sum*ys_sum - 4*ctx->r_alpha*(ctx->r_alpha-1)*yy_sum*ss_sum)) / denom;
+            sigmanew = ((2*ctx->r_alpha-1)*ys_sum + PetscSqrtReal((2*ctx->r_alpha-1)*(2*ctx->r_alpha-1)*ys_sum*ys_sum - 4*ctx->r_alpha*(ctx->r_alpha-1)*yy_sum*ss_sum)) / denom;
           }
 
           /*  If Q has small values, then Q^(r_beta - 1) */
