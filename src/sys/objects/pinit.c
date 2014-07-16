@@ -1155,7 +1155,7 @@ PetscErrorCode  PetscFinalize(void)
   /* preemptive call to avoid listing this option in options table as unused */
   ierr = PetscOptionsHasName(NULL,"-malloc_dump",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-options_table",&flg2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-options_view",&flg2,NULL);CHKERRQ(ierr);
 
   if (flg2) {
     PetscViewer viewer;

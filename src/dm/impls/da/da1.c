@@ -240,8 +240,8 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
     for (i=0; i<x; i++) idx [nn++] = xs + i;  /* Non-ghost points */
 
     for (i=0; i<(sDist); i++) { /* Right ghost points */
-      if ((xe+i)<dof) idx[nn++] =  xe+i;
-      else              idx[nn++] = M - (i + 2);
+      if ((xe+i)<M) idx[nn++] =  xe+i;
+      else          idx[nn++] = M - (i + 1);
     }
   } else {      /* Now do all cases with no periodicity */
     if (0 <= xs-sDist) {
