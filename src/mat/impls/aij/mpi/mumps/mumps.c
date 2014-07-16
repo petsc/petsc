@@ -744,45 +744,39 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",mumps->id.INFO(1),mumps->id.INFO(2));
   }
   if (!mumps->myid && mumps->id.ICNTL(16) > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"  mumps->id.ICNTL(16):=%d\n",mumps->id.INFOG(16));
-
-  if (mumps->size > 1) {
-    ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isMPIAIJ);CHKERRQ(ierr);
-    if (isMPIAIJ) F_diag = ((Mat_MPIAIJ*)(F)->data)->A;
-    else F_diag = ((Mat_MPISBAIJ*)(F)->data)->A;
-    F_diag->assembled = PETSC_TRUE;
-    if (mumps->scat_sol) {
-      ierr = VecScatterDestroy(&mumps->scat_sol);CHKERRQ(ierr);
-      ierr = PetscFree2(mumps->id.sol_loc,mumps->id.isol_loc);CHKERRQ(ierr);
-      ierr = VecDestroy(&mumps->x_seq);CHKERRQ(ierr);
-    }
-  }
+  
   (F)->assembled      = PETSC_TRUE;
   mumps->matstruc     = SAME_NONZERO_PATTERN;
   mumps->CleanUpMUMPS = PETSC_TRUE;
 
   if (mumps->size > 1) {
-    /* distributed solution */
-    if (!mumps->scat_sol) {
-      /* Create x_seq=sol_loc for repeated use */
-      PetscInt    lsol_loc;
-      PetscScalar *sol_loc;
+    PetscInt    lsol_loc;
+    PetscScalar *sol_loc;
 
-      lsol_loc = mumps->id.INFO(23); /* length of sol_loc */
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isMPIAIJ);CHKERRQ(ierr);
+    if (isMPIAIJ) F_diag = ((Mat_MPIAIJ*)(F)->data)->A;
+    else F_diag = ((Mat_MPISBAIJ*)(F)->data)->A;
+    F_diag->assembled = PETSC_TRUE;
 
-      ierr = PetscMalloc2(lsol_loc,&sol_loc,lsol_loc,&mumps->id.isol_loc);CHKERRQ(ierr);
-
-      mumps->id.lsol_loc = lsol_loc;
+    /* distributed solution; Create x_seq=sol_loc for repeated use */
+    if (mumps->x_seq) {
+      ierr = VecScatterDestroy(&mumps->scat_sol);CHKERRQ(ierr);
+      ierr = PetscFree2(mumps->id.sol_loc,mumps->id.isol_loc);CHKERRQ(ierr);
+      ierr = VecDestroy(&mumps->x_seq);CHKERRQ(ierr);
+    }
+    lsol_loc = mumps->id.INFO(23); /* length of sol_loc */
+    ierr = PetscMalloc2(lsol_loc,&sol_loc,lsol_loc,&mumps->id.isol_loc);CHKERRQ(ierr);
+    mumps->id.lsol_loc = lsol_loc;
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-      mumps->id.sol_loc = (mumps_complex*)sol_loc;
+    mumps->id.sol_loc = (mumps_complex*)sol_loc;
 #else
-      mumps->id.sol_loc = (mumps_double_complex*)sol_loc;
+    mumps->id.sol_loc = (mumps_double_complex*)sol_loc;
 #endif
 #else
-      mumps->id.sol_loc = sol_loc;
+    mumps->id.sol_loc = sol_loc;
 #endif
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,lsol_loc,sol_loc,&mumps->x_seq);CHKERRQ(ierr);
-    }
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,lsol_loc,sol_loc,&mumps->x_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
