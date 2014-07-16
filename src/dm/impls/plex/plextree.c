@@ -335,9 +335,9 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
 
   Level: intermediate
 
-.seealso: DMPlexSetReferenceTree(), DMPlexSetConstraints(), DMPlexGetTreeParent()
+.seealso: DMPlexGetTree(), DMPlexSetReferenceTree(), DMPlexSetConstraints(), DMPlexGetTreeParent(), DMPlexGetTreeChildren()
 @*/
-PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt *parents, PetscInt *childIDs)
+PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents[], PetscInt childIDs[])
 {
   DM_Plex       *mesh = (DM_Plex *)dm->data;
   PetscInt       size;
@@ -360,6 +360,42 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt *parent
     ierr = PetscMalloc1(size,&mesh->childIDs);CHKERRQ(ierr);
     ierr = PetscMemcpy(mesh->childIDs, childIDs, size * sizeof(*childIDs));CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetTree"
+/*@
+  DMPlexGetTree - get the tree that describes the hierarchy of non-conforming mesh points.
+  Collective on dm
+
+  Input Parameters:
+. dm - the DMPlex object
+
+  Output Parameters:
++ parentSection - a section describing the tree: a point has a parent if it has 1 dof in the section; the section
+                  offset indexes the parent and childID list
+. parents - a list of the point parents
+. childIDs - identifies the relationship of the child point to the parent point; if there is a reference tree, then
+             the child corresponds to the point in the reference tree with index childID
+. childSection - the inverse of the parent section
+- children - a list of the point children
+
+  Level: intermediate
+
+.seealso: DMPlexSetTree(), DMPlexSetReferenceTree(), DMPlexSetConstraints(), DMPlexGetTreeParent(), DMPlexGetTreeChildren()
+@*/
+PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *parents[], PetscInt *childIDs[], PetscSection *childSection, PetscInt *children[])
+{
+  DM_Plex        *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (parentSection) *parentSection = mesh->parentSection;
+  if (parents)       *parents       = mesh->parents;
+  if (childIDs)      *childIDs      = mesh->childIDs;
+  if (childSection)  *childSection  = mesh->childSection;
+  if (children)      *children      = mesh->children;
   PetscFunctionReturn(0);
 }
 
