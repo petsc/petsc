@@ -1317,7 +1317,7 @@ M*/
    Not collective
 
    Input Parameters:
-.  A - the matrix
+.  B - the matrix
 -  data - optional location of matrix data.  Set data=NULL for PETSc
    to control all matrix memory allocation.
 
@@ -1335,12 +1335,12 @@ M*/
 
 .seealso: MatCreate(), MatCreateSeqDense(), MatSetValues()
 @*/
-PetscErrorCode  MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
+PetscErrorCode  MatMPIDenseSetPreallocation(Mat B,PetscScalar *data)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(mat,"MatMPIDenseSetPreallocation_C",(Mat,PetscScalar*),(mat,data));CHKERRQ(ierr);
+  ierr = PetscTryMethod(B,"MatMPIDenseSetPreallocation_C",(Mat,PetscScalar*),(B,data));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

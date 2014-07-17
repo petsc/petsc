@@ -1843,7 +1843,7 @@ M*/
    Collective on Mat
 
    Input Parameters:
-+  A - the matrix
++  B - the matrix
 .  bs   - size of blockk
 .  d_nz  - number of block nonzeros per block row in diagonal portion of local
            submatrix  (same for all local rows)
@@ -2772,7 +2772,7 @@ PetscErrorCode  MatCreateMPISBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
    Collective on MPI_Comm
 
    Input Parameters:
-+  A - the matrix
++  B - the matrix
 .  bs - the block size
 .  i - the indices into j for the start of each local row (starts with zero)
 .  j - the column indices for each local row (starts with zero) these must be sorted for each row

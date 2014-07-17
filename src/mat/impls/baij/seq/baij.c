@@ -3374,7 +3374,7 @@ PetscErrorCode  MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
    Collective on MPI_Comm
 
    Input Parameters:
-+  A - the matrix
++  B - the matrix
 .  bs - size of block
 .  nz - number of block nonzeros per block row (same for all rows)
 -  nnz - array containing the number of block nonzeros in the various block rows
@@ -3426,7 +3426,7 @@ PetscErrorCode  MatSeqBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const P
    Collective on MPI_Comm
 
    Input Parameters:
-+  A - the matrix
++  B - the matrix
 .  i - the indices into j for the start of each local row (starts with zero)
 .  j - the column indices for each local row (starts with zero) these must be sorted for each row
 -  v - optional values in the matrix
