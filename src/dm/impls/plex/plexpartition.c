@@ -96,7 +96,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
   for (cell = cStart; cell < cEnd; ++cell) {
     PetscInt numNeighbors = PETSC_DETERMINE, n;
 
-    ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, &numNeighbors, &neighborCells);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &numNeighbors, &neighborCells);CHKERRQ(ierr);
     /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
     for (n = 0; n < numNeighbors; ++n) {
       PetscInt        cellPair[2];
@@ -133,7 +133,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
       PetscInt numNeighbors = PETSC_DETERMINE, n;
       PetscInt cellOffset   = 0;
 
-      ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, &numNeighbors, &neighborCells);CHKERRQ(ierr);
+      ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &numNeighbors, &neighborCells);CHKERRQ(ierr);
       /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
       for (n = 0; n < numNeighbors; ++n) {
         PetscInt        cellPair[2];

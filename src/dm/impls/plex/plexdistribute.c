@@ -120,6 +120,55 @@ PetscErrorCode DMPlexGetAdjacencyUseClosure(DM dm, PetscBool *useClosure)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexSetAdjacencyUseConstraints"
+/*@
+  DMPlexSetAdjacencyUseConstraints - Define adjacency in the mesh using the point-to-point constraints.
+
+  Input Parameters:
++ dm      - The DM object
+- useConstraints - Flag to use the constraints.  If PETSC_TRUE, then constrained points are omitted from DMPlexGetAdjacency(), and their anchor points appear in their place.
+
+  Level: intermediate
+
+.seealso: DMPlexGetAdjacencyUseClosure(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetConstraints()
+@*/
+PetscErrorCode DMPlexSetAdjacencyUseConstraints(DM dm, PetscBool useConstraints)
+{
+  DM_Plex *mesh = (DM_Plex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->useConstraints = useConstraints;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetAdjacencyUseConstraints"
+/*@
+  DMPlexGetAdjacencyUseConstraints - Query whether adjacency in the mesh uses the point-to-point constraints.
+
+  Input Parameter:
+. dm      - The DM object
+
+  Output Parameter:
+. useConstraints - Flag to use the closure.  If PETSC_TRUE, then constrained points are omitted from DMPlexGetAdjacency(), and their anchor points appear in their place.
+
+  Level: intermediate
+
+.seealso: DMPlexSetAdjacencyUseConstraints(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetConstraints()
+@*/
+PetscErrorCode DMPlexGetAdjacencyUseConstraints(DM dm, PetscBool *useConstraints)
+{
+  DM_Plex *mesh = (DM_Plex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(useConstraints, 2);
+  *useConstraints = mesh->useConstraints;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexGetAdjacency_Cone_Internal"
 static PetscErrorCode DMPlexGetAdjacency_Cone_Internal(DM dm, PetscInt p, PetscInt *adjSize, PetscInt adj[])
 {
@@ -205,27 +254,80 @@ static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetAdjacency_Internal"
-PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone, PetscBool useTransitiveClosure, PetscInt *adjSize, PetscInt *adj[])
+PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone, PetscBool useTransitiveClosure, PetscBool useConstraints, PetscInt *adjSize, PetscInt *adj[])
 {
   static PetscInt asiz = 0;
+  PetscInt maxAnchors = 1;
+  PetscInt aStart = -1, aEnd = -1;
+  PetscInt maxAdjSize;
+  PetscSection aSec = NULL;
+  IS aIS = NULL;
+  const PetscInt *anchors;
   PetscErrorCode  ierr;
 
   PetscFunctionBeginHot;
+  if (useConstraints) {
+    ierr = DMPlexGetConstraints(dm,&aSec,&aIS);CHKERRQ(ierr);
+    if (aSec) {
+      ierr = PetscSectionGetMaxDof(aSec,&maxAnchors);CHKERRQ(ierr);
+      ierr = PetscSectionGetChart(aSec,&aStart,&aEnd);CHKERRQ(ierr);
+      ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
+    }
+  }
   if (!*adj) {
     PetscInt depth, maxConeSize, maxSupportSize;
 
-    ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-    ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-    asiz = PetscPowInt(maxConeSize, depth+1) * PetscPowInt(maxSupportSize, depth+1) + 1;
-    ierr = PetscMalloc1(asiz,adj);CHKERRQ(ierr);
+    ierr  = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+    ierr  = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
+    asiz  = PetscPowInt(maxConeSize, depth+1) * PetscPowInt(maxSupportSize, depth+1) + 1;
+    asiz *= maxAnchors;
+    ierr  = PetscMalloc1(asiz,adj);CHKERRQ(ierr);
   }
   if (*adjSize < 0) *adjSize = asiz;
+  maxAdjSize = *adjSize;
   if (useTransitiveClosure) {
     ierr = DMPlexGetAdjacency_Transitive_Internal(dm, p, useCone, adjSize, *adj);CHKERRQ(ierr);
   } else if (useCone) {
     ierr = DMPlexGetAdjacency_Cone_Internal(dm, p, adjSize, *adj);CHKERRQ(ierr);
   } else {
     ierr = DMPlexGetAdjacency_Support_Internal(dm, p, adjSize, *adj);CHKERRQ(ierr);
+  }
+  if (useConstraints && aSec) {
+    PetscInt origSize = *adjSize;
+    PetscInt numAdj = origSize;
+    PetscInt i = 0, j;
+    PetscInt *orig = *adj;
+
+    while (i < origSize) {
+      PetscInt p = orig[i];
+      PetscInt aDof = 0;
+
+      if (p >= aStart && p < aEnd) {
+        ierr = PetscSectionGetDof(aSec,p,&aDof);CHKERRQ(ierr);
+      }
+      if (aDof) {
+        PetscInt aOff;
+        PetscInt s, q;
+
+        for (j = i + 1; j < numAdj; j++) {
+          orig[j - 1] = orig[j];
+        }
+        origSize--;
+        numAdj--;
+        ierr = PetscSectionGetOffset(aSec,p,&aOff);CHKERRQ(ierr);
+        for (s = 0; s < aDof; ++s) {
+          for (q = 0; q < numAdj || (orig[numAdj++] = anchors[aOff+s],0); ++q) {
+            if (anchors[aOff+s] == orig[q]) break;
+          }
+          if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
+        }
+      }
+      else {
+        i++;
+      }
+    }
+    *adjSize = numAdj;
+    ierr = ISRestoreIndices(aIS,&anchors);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -260,7 +362,7 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(adjSize,3);
   PetscValidPointer(adj,4);
-  ierr = DMPlexGetAdjacency_Internal(dm, p, mesh->useCone, mesh->useClosure, adjSize, adj);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacency_Internal(dm, p, mesh->useCone, mesh->useClosure, mesh->useConstraints, adjSize, adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

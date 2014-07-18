@@ -1290,6 +1290,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->vtkCellHeight       = 0;
   mesh->useCone             = PETSC_FALSE;
   mesh->useClosure          = PETSC_TRUE;
+  mesh->useConstraints      = PETSC_FALSE;
 
   mesh->printSetValues = PETSC_FALSE;
   mesh->printFEM       = 0;

@@ -147,6 +147,8 @@ PETSC_EXTERN PetscErrorCode DMPlexSetAdjacencyUseCone(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetAdjacencyUseCone(DM,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMPlexSetAdjacencyUseClosure(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetAdjacencyUseClosure(DM,PetscBool*);
+PETSC_EXTERN PetscErrorCode DMPlexSetAdjacencyUseConstraints(DM,PetscBool);
+PETSC_EXTERN PetscErrorCode DMPlexGetAdjacencyUseConstraints(DM,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency(DM, PetscInt, PetscInt *, PetscInt *[]);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetOrdering(DM, MatOrderingType, IS *);

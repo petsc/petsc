@@ -85,6 +85,7 @@ typedef struct {
   /* Adjacency */
   PetscBool            useCone;           /* Use cone() first when defining adjacency */
   PetscBool            useClosure;        /* Use the transitive closure when defining adjacency */
+  PetscBool            useConstraints;    /* Replace constrained points with their anchors in adjacency lists */
 
   /* Output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
@@ -114,7 +115,7 @@ PETSC_EXTERN PetscErrorCode DMPlexView_HDF5(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexLoad_HDF5(DM, PetscViewer);
 #endif
 
-PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,PetscBool,PetscInt*,PetscInt*[]);
+PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,PetscBool,PetscBool,PetscInt*,PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetRawFaces_Internal(DM,PetscInt,PetscInt,const PetscInt[], PetscInt*,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexRestoreFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);
