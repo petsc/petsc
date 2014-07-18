@@ -434,13 +434,14 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 #define __FUNCT__ "DMView_Plex"
 PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 {
-  PetscBool      iascii, ishdf5;
+  PetscBool      iascii, ishdf5, isvtk;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,   &isvtk);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,  &ishdf5);CHKERRQ(ierr);
   if (iascii) {
     ierr = DMPlexView_Ascii(dm, viewer);CHKERRQ(ierr);
@@ -452,6 +453,9 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 #else
     SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
+  }
+  else if (isvtk) {
+    ierr = DMPlexVTKWriteAll((PetscObject) dm,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
