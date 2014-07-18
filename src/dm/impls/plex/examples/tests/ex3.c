@@ -22,6 +22,7 @@ typedef struct {
   PetscBool convergence;       /* Test for order of convergence */
   PetscBool constraints;       /* Test local constraints */
   PetscBool tree;              /* Test tree routines */
+  PetscInt  treeCell;          /* Cell to refine in tree test */
 } AppCtx;
 
 static int spdim = 1;
@@ -110,6 +111,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->porder          = 0;
   options->convergence     = PETSC_FALSE;
   options->constraints     = PETSC_FALSE;
+  options->tree            = PETSC_FALSE;
+  options->treeCell        = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -123,6 +126,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-convergence", "Check the convergence rate", "ex3.c", options->convergence, &options->convergence, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-constraints", "Test local constraints (serial only)", "ex3.c", options->constraints, &options->constraints, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-tree", "Test tree routines", "ex3.c", options->tree, &options->tree, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   spdim = options->numComponents = options->dim;
@@ -137,14 +141,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
   const char    *partitioner     = "chaco";
-  DMType         type;
   PetscBool      isPlex;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (user->simplex) {
     DM refinedMesh     = NULL;
-    DM distributedMesh = NULL;
 
     ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
     /* Refine mesh using a volume constraint */
@@ -154,46 +156,63 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = refinedMesh;
     }
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
+  } else {
+    if (user->constraints || user->tree) {
+      PetscInt cells[3] = {2, 2, 2};
+
+      ierr = PetscOptionsGetInt(NULL,"-da_grid_x",&cells[0],NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetInt(NULL,"-da_grid_y",&cells[1],NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetInt(NULL,"-da_grid_z",&cells[2],NULL);CHKERRQ(ierr);
+      ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,dm);CHKERRQ(ierr);
+    }
+    else {
+      switch (user->dim) {
+      case 2:
+        ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -2, -2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
+        ierr = DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+        break;
+      default:
+        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot create structured mesh of dimension %d", dim);
+      }
+      ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscObjectTypeCompare((PetscObject)*dm,DMPLEX,&isPlex);CHKERRQ(ierr);
+  if (isPlex) {
+    DM distributedMesh = NULL;
+    if (user->tree) {
+      DM refTree;
+      DM ncdm = NULL;
+
+      ierr = DMPlexCreateDefaultReferenceTree(comm,user->dim,user->simplex,&refTree);CHKERRQ(ierr);
+      ierr = DMPlexSetReferenceTree(*dm,refTree);CHKERRQ(ierr);
+      ierr = DMDestroy(&refTree);CHKERRQ(ierr);
+      ierr = DMPlexTreeRefineCell(*dm,user->treeCell,&ncdm);CHKERRQ(ierr);
+      if (ncdm) {
+        ierr = DMDestroy(dm);CHKERRQ(ierr);
+        *dm = ncdm;
+        ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
+      }
+    }
+    else {
+      ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
+    }
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
-    ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) *dm, "Simplical Mesh");CHKERRQ(ierr);
-  } else {
-    switch (user->dim) {
-    case 2:
-      if (!user->constraints) {
-        ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, -2, -2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
-        ierr = DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
-        break;
-      }
-      else {
-        PetscInt cells[2] = {2, 2};
-
-        ierr = PetscOptionsGetInt(NULL,"-da_grid_x",&cells[0],NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsGetInt(NULL,"-da_grid_y",&cells[1],NULL);CHKERRQ(ierr);
-        ierr = DMPlexCreateHexBoxMesh(comm, 2, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,dm);CHKERRQ(ierr);
-        break;
-      }
-    default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot create structured mesh of dimension %d", dim);
+    if (user->simplex) {
+      ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);
     }
-    ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);
+    else {
+      ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);
+    }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm,NULL,"-dm_view");CHKERRQ(ierr);
-  ierr = DMGetType(*dm,&type);CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,DMPLEX,&isPlex);CHKERRQ(ierr);
-  if (user->tree && isPlex) {
-    DM refTree;
-
-    ierr = DMPlexCreateDefaultReferenceTree(comm,user->dim,user->simplex,&refTree);CHKERRQ(ierr);
-    ierr = DMPlexSetReferenceTree(*dm,refTree);CHKERRQ(ierr);
-    ierr = DMDestroy(&refTree);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -207,12 +226,39 @@ static void simple_mass(const PetscScalar u[], const PetscScalar u_t[], const Pe
   }
 }
 
+/* < \nabla v, 1/2(\nabla u + {\nabla u}^T) > */
+#undef __FUNCT__
+#define __FUNCT__ "symmetric_gradient_inner_product"
+void symmetric_gradient_inner_product (const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar C[])
+{
+  const PetscInt dim   = spdim;
+  const PetscInt Ncomp = spdim;
+  PetscInt       compI, compJ, d, e;
+
+  for (compI = 0; compI < Ncomp; ++compI) {
+    for (compJ = 0; compJ < Ncomp; ++compJ) {
+      for (d = 0; d < dim; ++d) {
+        for (e = 0; e < dim; e++) {
+          if (d == e && d == compI && d == compJ) {
+            C[((compI*Ncomp+compJ)*dim+d)*dim+e] = 1.0;
+          }
+          else if ((d == compJ && e == compI) || (d == e && compI == compJ)) {
+            C[((compI*Ncomp+compJ)*dim+d)*dim+e] = 0.5;
+          }
+          else {
+            C[((compI*Ncomp+compJ)*dim+d)*dim+e] = 0.0;
+          }
+        }
+      }
+    }
+  }
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "SetupSection"
 static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
   PetscBool      isPlex;
-  DMType         type;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -272,7 +318,8 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
   }
   ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
   ierr = DMSetField(dm, 0, (PetscObject) user->fe);CHKERRQ(ierr);
-  if (!user->simplex && !user->constraints) {
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
+  if (!isPlex) {
       PetscSection    section;
       const PetscInt *numDof;
       PetscInt        numComp;
@@ -347,7 +394,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
       ierr = DMGetLocalVector(dm,&local);CHKERRQ(ierr);
       ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
       /* set the jacobian to be the mass matrix */
-      ierr = PetscDSSetJacobian(ds,0,0,simple_mass,NULL,NULL,NULL);CHKERRQ(ierr);
+      ierr = PetscDSSetJacobian(ds, 0, 0, simple_mass, NULL,  NULL, NULL);CHKERRQ(ierr);
       /* build the mass matrix */
       ierr = DMPlexSNESComputeJacobianFEM(dm,local,mass,mass,NULL);CHKERRQ(ierr);
       ierr = MatView(mass,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -383,16 +430,25 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 #endif
     }
   }
-  ierr = DMGetType(dm,&type);CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,DMPLEX,&isPlex);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex);CHKERRQ(ierr);
   if (user->tree && isPlex) {
+    Vec          local;
+    Mat          E;
+    MatNullSpace sp;
+    PetscBool    isNullSpace;
     PetscDS ds;
-    DM refTree;
 
     ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
-    ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
-    ierr = DMSetDS(refTree,ds);CHKERRQ(ierr);
-    ierr = DMPlexComputeConstraintMatrix_ReferenceTree(refTree);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds,0,0,NULL,NULL,NULL,symmetric_gradient_inner_product);CHKERRQ(ierr);
+    ierr = DMPlexComputeConstraintMatrix_Tree(dm);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dm,&E);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(dm,&local);CHKERRQ(ierr);
+    ierr = DMPlexSNESComputeJacobianFEM(dm,local,E,E,NULL);CHKERRQ(ierr);
+    ierr = DMPlexCreateRigidBody(dm,NULL,NULL,&sp);CHKERRQ(ierr);
+    ierr = MatNullSpaceTest(sp,E,&isNullSpace);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&sp);CHKERRQ(ierr);
+    ierr = MatDestroy(&E);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dm,&local);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -639,7 +695,7 @@ int main(int argc, char **argv)
   ierr = PetscFECreateDefault(dm, user.dim, user.numComponents, user.simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
   ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
-  if (user.dim == 2 && user.simplex == PETSC_TRUE) {
+  if (user.dim == 2 && user.simplex == PETSC_TRUE && user.tree == PETSC_FALSE) {
     ierr = CheckInterpolation(dm, PETSC_FALSE, user.porder, &user);CHKERRQ(ierr);
     ierr = CheckInterpolation(dm, PETSC_TRUE,  user.porder, &user);CHKERRQ(ierr);
   }

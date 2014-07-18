@@ -1,0 +1,8 @@
+Null vector 0 is likely null vector|| A * v[0] || = 2.1571e-17
+Null vector 1 is likely null vector|| A * v[1] || = 2.91761e-17
+Null vector 2 is likely null vector|| A * v[2] || = 2.86689e-17
+Null vector 3 is likely null vector|| A * v[3] || = 2.15232e-17
+Null vector 4 is likely null vector|| A * v[4] || = 2.12812e-17
+Null vector 5 is likely null vector|| A * v[5] || = 1.96432e-17
+Function tests pass for order 0 at tolerance 1e-10
+Function tests pass for order 0 derivatives at tolerance 1e-10

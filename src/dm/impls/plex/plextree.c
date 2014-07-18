@@ -1045,7 +1045,7 @@ PetscErrorCode DMPlexGetTreeChildren(DM dm, PetscInt point, PetscInt *numChildre
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeConstraintMatrix_ReferenceTree"
-PetscErrorCode DMPlexComputeConstraintMatrix_ReferenceTree(DM dm)
+static PetscErrorCode DMPlexComputeConstraintMatrix_ReferenceTree(DM dm)
 {
   PetscDS        ds;
   PetscInt       spdim;
