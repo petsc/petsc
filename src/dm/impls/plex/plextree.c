@@ -374,6 +374,80 @@ static PetscErrorCode DMPlexTreeSymmetrize(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeConstraints_Tree"
+static PetscErrorCode DMPlexComputeConstraints_Tree(DM dm)
+{
+  PetscInt       p, pStart, pEnd, *anchors, size;
+  PetscInt       aMin = PETSC_MAX_INT, aMax = PETSC_MIN_INT;
+  PetscSection   aSec;
+  IS             aIS;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; p++) {
+    PetscInt parent;
+
+    ierr = DMPlexGetTreeParent(dm,p,&parent,NULL);CHKERRQ(ierr);
+    if (parent != p) {
+      aMin = PetscMin(aMin,p);
+      aMax = PetscMax(aMax,p+1);
+    }
+  }
+  if (aMin > aMax) {
+    aMin = -1;
+    aMax = -1;
+  }
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&aSec);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(aSec,aMin,aMax);CHKERRQ(ierr);
+  for (p = aMin; p < aMax; p++) {
+    PetscInt parent, ancestor = p;
+
+    ierr = DMPlexGetTreeParent(dm,p,&parent,NULL);CHKERRQ(ierr);
+    while (parent != ancestor) {
+      ancestor = parent;
+      ierr     = DMPlexGetTreeParent(dm,ancestor,&parent,NULL);CHKERRQ(ierr);
+    }
+    if (ancestor != p) {
+      PetscInt closureSize, *closure = NULL;
+
+      ierr = DMPlexGetTransitiveClosure(dm,ancestor,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(aSec,p,closureSize);CHKERRQ(ierr);
+      ierr = DMPlexRestoreTransitiveClosure(dm,ancestor,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSectionSetUp(aSec);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(aSec,&size);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size,&anchors);CHKERRQ(ierr);
+  for (p = aMin; p < aMax; p++) {
+    PetscInt parent, ancestor = p;
+
+    ierr = DMPlexGetTreeParent(dm,p,&parent,NULL);CHKERRQ(ierr);
+    while (parent != ancestor) {
+      ancestor = parent;
+      ierr     = DMPlexGetTreeParent(dm,ancestor,&parent,NULL);CHKERRQ(ierr);
+    }
+    if (ancestor != p) {
+      PetscInt j, closureSize, *closure = NULL, aOff;
+
+      ierr = PetscSectionGetOffset(aSec,p,&aOff);CHKERRQ(ierr);
+
+      ierr = DMPlexGetTransitiveClosure(dm,ancestor,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+      for (j = 0; j < closureSize; j++) {
+        anchors[aOff + j] = closure[2*j];
+      }
+      ierr = DMPlexRestoreTransitiveClosure(dm,ancestor,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+    }
+  }
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),size,anchors,PETSC_OWN_POINTER,&aIS);CHKERRQ(ierr);
+  ierr = DMPlexSetConstraints(dm,aSec,aIS);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&aSec);CHKERRQ(ierr);
+  ierr = ISDestroy(&aIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexSetTree"
 /*@
   DMPlexSetTree - set the tree that describes the hierarchy of non-conforming mesh points.  This routine also creates
@@ -418,6 +492,7 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
     ierr = PetscMemcpy(mesh->childIDs, childIDs, size * sizeof(*childIDs));CHKERRQ(ierr);
   }
   ierr = DMPlexTreeSymmetrize(dm);CHKERRQ(ierr);
+  ierr = DMPlexComputeConstraints_Tree(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
