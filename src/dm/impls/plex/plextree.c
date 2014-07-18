@@ -317,6 +317,63 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexTreeSymmetrize"
+static PetscErrorCode DMPlexTreeSymmetrize(DM dm)
+{
+  DM_Plex        *mesh = (DM_Plex *)dm->data;
+  PetscSection   childSec, pSec;
+  PetscInt       p, pSize, cSize, parMax = PETSC_MIN_INT, parMin = PETSC_MAX_INT;
+  PetscInt       *offsets, *children, pStart, pEnd;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscSectionDestroy(&mesh->childSection);CHKERRQ(ierr);
+  ierr = PetscFree(mesh->children);CHKERRQ(ierr);
+  pSec = mesh->parentSection;
+  if (!pSec) PetscFunctionReturn(0);
+  ierr = PetscSectionGetStorageSize(pSec,&pSize);CHKERRQ(ierr);
+  for (p = 0; p < pSize; p++) {
+    PetscInt par = mesh->parents[p];
+
+    parMax = PetscMax(parMax,par+1);
+    parMin = PetscMin(parMin,par);
+  }
+  if (parMin > parMax) {
+    parMin = -1;
+    parMax = -1;
+  }
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)pSec),&childSec);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(childSec,parMin,parMax);CHKERRQ(ierr);
+  for (p = 0; p < pSize; p++) {
+    PetscInt par = mesh->parents[p];
+
+    ierr = PetscSectionAddDof(childSec,par,1);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(childSec);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(childSec,&cSize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cSize,&children);CHKERRQ(ierr);
+  ierr = PetscCalloc1(parMax-parMin,&offsets);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(pSec,&pStart,&pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; p++) {
+    PetscInt dof, off, i;
+
+    ierr = PetscSectionGetDof(pSec,p,&dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(pSec,p,&off);CHKERRQ(ierr);
+    for (i = 0; i < dof; i++) {
+      PetscInt par = mesh->parents[off + i], cOff;
+
+      ierr = PetscSectionGetOffset(childSec,par,&cOff);CHKERRQ(ierr);
+      children[cOff + offsets[par-parMin]++] = p;
+    }
+  }
+  mesh->childSection = childSec;
+  mesh->children = children;
+  ierr = PetscFree(offsets);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexSetTree"
 /*@
   DMPlexSetTree - set the tree that describes the hierarchy of non-conforming mesh points.  This routine also creates
@@ -360,6 +417,7 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
     ierr = PetscMalloc1(size,&mesh->childIDs);CHKERRQ(ierr);
     ierr = PetscMemcpy(mesh->childIDs, childIDs, size * sizeof(*childIDs));CHKERRQ(ierr);
   }
+  ierr = DMPlexTreeSymmetrize(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
