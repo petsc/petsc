@@ -64,6 +64,8 @@ PetscErrorCode DMPlexGetReferenceTree(DM dm, DM *ref)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexSetTree_Internal(DM,PetscSection,PetscInt*,PetscInt*,PetscBool);
+
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateDefaultReferenceTree"
 /*@
@@ -302,7 +304,7 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
       childIDs[pOff] = uOff;
     }
   }
-  ierr = DMPlexSetTree(*ref,parentSection,parents,childIDs);CHKERRQ(ierr);
+  ierr = DMPlexSetTree_Internal(*ref,parentSection,parents,childIDs,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&parentSection);CHKERRQ(ierr);
   ierr = PetscFree2(parents,childIDs);CHKERRQ(ierr);
 
@@ -317,6 +319,7 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
   ierr = DMDestroy(&Kref);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexTreeSymmetrize"
@@ -534,15 +537,23 @@ static PetscErrorCode DMPlexComputeConstraints_Tree(DM dm)
   PetscInt       p, pStart, pEnd, *anchors, size;
   PetscInt       aMin = PETSC_MAX_INT, aMax = PETSC_MIN_INT;
   PetscSection   aSec;
+  DMLabel        canonLabel;
   IS             aIS;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm,"canonical",&canonLabel);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; p++) {
     PetscInt parent;
 
+    if (canonLabel) {
+      PetscInt canon;
+
+      ierr = DMLabelGetValue(canonLabel,p,&canon);CHKERRQ(ierr);
+      if (p != canon) continue;
+    }
     ierr = DMPlexGetTreeParent(dm,p,&parent,NULL);CHKERRQ(ierr);
     if (parent != p) {
       aMin = PetscMin(aMin,p);
@@ -558,6 +569,12 @@ static PetscErrorCode DMPlexComputeConstraints_Tree(DM dm)
   for (p = aMin; p < aMax; p++) {
     PetscInt parent, ancestor = p;
 
+    if (canonLabel) {
+      PetscInt canon;
+
+      ierr = DMLabelGetValue(canonLabel,p,&canon);CHKERRQ(ierr);
+      if (p != canon) continue;
+    }
     ierr = DMPlexGetTreeParent(dm,p,&parent,NULL);CHKERRQ(ierr);
     while (parent != ancestor) {
       ancestor = parent;
@@ -577,6 +594,12 @@ static PetscErrorCode DMPlexComputeConstraints_Tree(DM dm)
   for (p = aMin; p < aMax; p++) {
     PetscInt parent, ancestor = p;
 
+    if (canonLabel) {
+      PetscInt canon;
+
+      ierr = DMLabelGetValue(canonLabel,p,&canon);CHKERRQ(ierr);
+      if (p != canon) continue;
+    }
     ierr = DMPlexGetTreeParent(dm,p,&parent,NULL);CHKERRQ(ierr);
     while (parent != ancestor) {
       ancestor = parent;
@@ -618,6 +641,88 @@ static PetscErrorCode DMPlexComputeConstraints_Tree(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexSetTree_Internal"
+static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, PetscInt *parents, PetscInt *childIDs, PetscBool computeCanonical)
+{
+  DM_Plex       *mesh = (DM_Plex *)dm->data;
+  DM             refTree;
+  PetscInt       size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(parentSection, PETSC_SECTION_CLASSID, 2);
+  ierr = PetscObjectReference((PetscObject)parentSection);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&mesh->parentSection);CHKERRQ(ierr);
+  mesh->parentSection = parentSection;
+  ierr = PetscSectionGetStorageSize(parentSection,&size);CHKERRQ(ierr);
+  if (parents != mesh->parents) {
+    ierr = PetscFree(mesh->parents);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&mesh->parents);CHKERRQ(ierr);
+    ierr = PetscMemcpy(mesh->parents, parents, size * sizeof(*parents));CHKERRQ(ierr);
+  }
+  if (childIDs != mesh->childIDs) {
+    ierr = PetscFree(mesh->childIDs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&mesh->childIDs);CHKERRQ(ierr);
+    ierr = PetscMemcpy(mesh->childIDs, childIDs, size * sizeof(*childIDs));CHKERRQ(ierr);
+  }
+  ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
+  if (refTree) {
+    DMLabel canonLabel;
+
+    ierr = DMPlexGetLabel(refTree,"canonical",&canonLabel);CHKERRQ(ierr);
+    if (canonLabel) {
+      PetscInt i;
+
+      for (i = 0; i < size; i++) {
+        PetscInt canon;
+        ierr = DMLabelGetValue(canonLabel, mesh->childIDs[i], &canon);CHKERRQ(ierr);
+        if (canon >= 0) {
+          mesh->childIDs[i] = canon;
+        }
+      }
+    }
+  }
+  ierr = DMPlexTreeSymmetrize(dm);CHKERRQ(ierr);
+  if (computeCanonical) {
+    PetscInt d, dim;
+
+    /* add the canonical label */
+    ierr = DMPlexGetDimension(dm,&dim);CHKERRQ(ierr);
+    ierr = DMPlexCreateLabel(dm,"canonical");CHKERRQ(ierr);
+    for (d = 0; d <= dim; d++) {
+      PetscInt p, dStart, dEnd, canon = -1, cNumChildren;
+      const PetscInt *cChildren;
+
+      ierr = DMPlexGetDepthStratum(dm,d,&dStart,&dEnd);CHKERRQ(ierr);
+      for (p = dStart; p < dEnd; p++) {
+        ierr = DMPlexGetTreeChildren(dm,p,&cNumChildren,&cChildren);CHKERRQ(ierr);
+        if (cNumChildren) {
+          canon = p;
+          break;
+        }
+      }
+      if (canon == -1) continue;
+      for (p = dStart; p < dEnd; p++) {
+        PetscInt numChildren, i;
+        const PetscInt *children;
+
+        ierr = DMPlexGetTreeChildren(dm,p,&numChildren,&children);CHKERRQ(ierr);
+        if (numChildren) {
+          if (numChildren != cNumChildren) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"All parent points in a stratum should have the same number of children: %d != %d", numChildren, cNumChildren);
+          ierr = DMPlexSetLabelValue(dm,"canonical",p,canon);CHKERRQ(ierr);
+          for (i = 0; i < numChildren; i++) {
+            ierr = DMPlexSetLabelValue(dm,"canonical",children[i],cChildren[i]);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+  }
+  ierr = DMPlexComputeConstraints_Tree(dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexSetTree"
 /*@
   DMPlexSetTree - set the tree that describes the hierarchy of non-conforming mesh points.  This routine also creates
@@ -640,29 +745,10 @@ static PetscErrorCode DMPlexComputeConstraints_Tree(DM dm)
 @*/
 PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents[], PetscInt childIDs[])
 {
-  DM_Plex       *mesh = (DM_Plex *)dm->data;
-  PetscInt       size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(parentSection, PETSC_SECTION_CLASSID, 2);
-  ierr = PetscObjectReference((PetscObject)parentSection);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&mesh->parentSection);CHKERRQ(ierr);
-  mesh->parentSection = parentSection;
-  ierr = PetscSectionGetStorageSize(parentSection,&size);CHKERRQ(ierr);
-  if (parents != mesh->parents) {
-    ierr = PetscFree(mesh->parents);CHKERRQ(ierr);
-    ierr = PetscMalloc1(size,&mesh->parents);CHKERRQ(ierr);
-    ierr = PetscMemcpy(mesh->parents, parents, size * sizeof(*parents));CHKERRQ(ierr);
-  }
-  if (childIDs != mesh->childIDs) {
-    ierr = PetscFree(mesh->childIDs);CHKERRQ(ierr);
-    ierr = PetscMalloc1(size,&mesh->childIDs);CHKERRQ(ierr);
-    ierr = PetscMemcpy(mesh->childIDs, childIDs, size * sizeof(*childIDs));CHKERRQ(ierr);
-  }
-  ierr = DMPlexTreeSymmetrize(dm);CHKERRQ(ierr);
-  ierr = DMPlexComputeConstraints_Tree(dm);CHKERRQ(ierr);
+  ierr = DMPlexSetTree_Internal(dm,parentSection,parents,childIDs,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
