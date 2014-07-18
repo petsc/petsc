@@ -6676,6 +6676,116 @@ PetscErrorCode DMPlexGetConstraintSection(DM dm, PetscSection *cSec)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateConstraintMatrix"
+static PetscErrorCode DMPlexCreateConstraintMatrix(DM dm, Mat *cMat)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+  PetscSection section, aSec, cSec;
+  PetscInt pStart, pEnd, p, dof, aDof, aOff, off, nnz, annz, m, n, q, a, offset, *i, *j;
+  const PetscInt *anchors;
+  PetscInt numFields, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+  ierr = DMPlexGetConstraintSection(dm, &cSec);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(cSec, &m);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(section, &n);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,cMat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*cMat,m,n,m,n);CHKERRQ(ierr);
+  ierr = MatSetType(*cMat,MATSEQAIJ);
+  aSec = plex->anchorSection;
+  ierr = ISGetIndices(plex->anchorIS,&anchors);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(aSec,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1,&i);CHKERRQ(ierr);
+  i[0] = 0;
+  ierr = PetscSectionGetNumFields(section,&numFields);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; p++) {
+    ierr = PetscSectionGetDof(aSec,p,&dof);CHKERRQ(ierr);
+    if (!dof) continue;
+    ierr = PetscSectionGetOffset(aSec,p,&off);CHKERRQ(ierr);
+    if (numFields) {
+      for (f = 0; f < numFields; f++) {
+        annz = 0;
+        for (q = 0; q < dof; q++) {
+          a = anchors[off + q];
+          ierr = PetscSectionGetFieldDof(section,a,f,&aDof);CHKERRQ(ierr);
+          annz += aDof;
+        }
+        ierr = PetscSectionGetFieldDof(cSec,p,f,&dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetFieldOffset(cSec,p,f,&off);CHKERRQ(ierr);
+        for (q = 0; q < dof; q++) {
+          i[off + q + 1] = i[off + q] + annz;
+        }
+      }
+    }
+    else {
+      annz = 0;
+      for (q = 0; q < dof; q++) {
+        a = anchors[off + q];
+        ierr = PetscSectionGetDof(section,a,&aDof);CHKERRQ(ierr);
+        annz += aDof;
+      }
+      ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(cSec,p,&off);CHKERRQ(ierr);
+      for (q = 0; q < dof; q++) {
+        i[off + q + 1] = i[off + q] + annz;
+      }
+    }
+  }
+  nnz = i[m];
+  ierr = PetscMalloc1(nnz,&j);CHKERRQ(ierr);
+  offset = 0;
+  for (p = pStart; p < pEnd; p++) {
+    if (numFields) {
+      for (f = 0; f < numFields; f++) {
+        ierr = PetscSectionGetFieldDof(cSec,p,f,&dof);CHKERRQ(ierr);
+        for (q = 0; q < dof; q++) {
+          PetscInt rDof, rOff, r;
+          ierr = PetscSectionGetDof(aSec,p,&rDof);CHKERRQ(ierr);
+          ierr = PetscSectionGetOffset(aSec,p,&rOff);CHKERRQ(ierr);
+          for (r = 0; r < rDof; r++) {
+            PetscInt s;
+
+            a = anchors[rOff + r];
+
+            ierr = PetscSectionGetFieldDof(section,a,f,&aDof);CHKERRQ(ierr);
+            ierr = PetscSectionGetFieldOffset(section,a,f,&aOff);CHKERRQ(ierr);
+            for (s = 0; s < aDof; s++) {
+              j[offset++] = aOff + s;
+            }
+          }
+        }
+      }
+    }
+    else {
+      ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
+      for (q = 0; q < dof; q++) {
+        PetscInt rDof, rOff, r;
+        ierr = PetscSectionGetDof(aSec,p,&rDof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(aSec,p,&rOff);CHKERRQ(ierr);
+        for (r = 0; r < rDof; r++) {
+          PetscInt s;
+
+          a = anchors[rOff + r];
+
+          ierr = PetscSectionGetDof(section,a,&aDof);CHKERRQ(ierr);
+          ierr = PetscSectionGetOffset(section,a,&aOff);CHKERRQ(ierr);
+          for (s = 0; s < aDof; s++) {
+            j[offset++] = aOff + s;
+          }
+        }
+      }
+    }
+  }
+  ierr = MatSeqAIJSetPreallocationCSR(*cMat,i,j,NULL);CHKERRQ(ierr);
+  ierr = PetscFree2(i,j);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(plex->anchorIS,&anchors);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexGetConstraintMatrix"
 /*@
   DMPlexGetConstraintMatrix - Get the matrix that specifies the point-to-point constraints.
@@ -6701,6 +6811,9 @@ PetscErrorCode DMPlexGetConstraintMatrix(DM dm, Mat *cMat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (plex->anchorSection && !plex->constraintMat) {
+    ierr = DMPlexCreateConstraintMatrix(dm,&plex->constraintMat);CHKERRQ(ierr);
+  }
   if (cMat) *cMat = plex->constraintMat;
   PetscFunctionReturn(0);
 }
