@@ -140,6 +140,39 @@ PETSC_EXTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, 
 PETSC_EXTERN PetscErrorCode DMPlexProjectConstraints_Internal(DM, Vec, Vec);
 
 #undef __FUNCT__
+#define __FUNCT__ "DihedralInvert"
+/* invert dihedral symmetry: return a^-1,
+ * using the representation described in
+ * DMPlexGetConeOrientation() */
+PETSC_STATIC_INLINE PetscInt DihedralInvert(PetscInt N, PetscInt a)
+{
+  return (a <= 0) ? a : (N - a);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DihedralCompose"
+/* invert dihedral symmetry: return b * a,
+ * using the representation described in
+ * DMPlexGetConeOrientation() */
+PETSC_STATIC_INLINE PetscInt DihedralCompose(PetscInt N, PetscInt a, PetscInt b)
+{
+  if (!N) return 0;
+  return  (a >= 0) ?
+         ((b >= 0) ? ((a + b) % N) : -(((a - b - 1) % N) + 1)) :
+         ((b >= 0) ? -(((N - b - a - 1) % N) + 1) : ((N + b - a) % N));
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DihedralSwap"
+/* swap dihedral symmetries: return b * a^-1,
+ * using the representation described in
+ * DMPlexGetConeOrientation() */
+PETSC_STATIC_INLINE PetscInt DihedralSwap(PetscInt N, PetscInt a, PetscInt b)
+{
+  return DihedralCompose(N,DihedralInvert(N,a),b);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlex_Invert2D_Internal"
 PETSC_STATIC_INLINE void DMPlex_Invert2D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)
 {
