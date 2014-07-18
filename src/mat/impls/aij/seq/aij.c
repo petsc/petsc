@@ -4019,6 +4019,32 @@ PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatSeqAIJGetMaxRowNonzeros"
+/*@C
+   MatSeqAIJGetMaxRowNonzeros - returns the maximum number of nonzeros in any row
+
+   Not Collective
+
+   Input Parameter:
+.  mat - a MATSEQDENSE matrix
+
+   Output Parameter:
+.   nz - the maximum number of nonzeros in any row
+
+   Level: intermediate
+
+.seealso: MatSeqAIJRestoreArray(), MatSeqAIJGetArrayF90()
+@*/
+PetscErrorCode  MatSeqAIJGetMaxRowNonzeros(Mat A,PetscInt *nz)
+{
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)A->data;
+
+  PetscFunctionBegin;
+  *nz = aij->rmax;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatSeqAIJRestoreArray"
 /*@C
    MatSeqAIJRestoreArray - returns access to the array where the data for a SeqSeqAIJ matrix is stored obtained by MatSeqAIJGetArray()
