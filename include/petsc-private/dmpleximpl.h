@@ -89,6 +89,7 @@ typedef struct {
   PetscSection         childSection;      /* inverse of parent section */
   PetscInt            *children;          /* point to children */
   DM                   referenceTree;     /* reference tree to which child ID's refer */
+  PetscErrorCode      (*getchildsymmetry)(DM,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*);
 
   /* Adjacency */
   PetscBool            useCone;           /* Use cone() first when defining adjacency */
