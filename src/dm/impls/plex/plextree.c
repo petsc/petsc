@@ -1624,3 +1624,308 @@ PetscErrorCode DMPlexComputeConstraintMatrix_Tree(DM dm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexTreeRefineCell"
+/* refine a single cell on rank 0: this is not intended to provide good local refinement, only to create an example of
+ * a non-conforming mesh.  Local refinement comes later */
+PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
+{
+  DM K;
+  PetscInt rank;
+  PetscInt dim, *pNewStart, *pNewEnd, *pNewCount, *pOldStart, *pOldEnd, offset, d, pStart, pEnd;
+  PetscInt numNewCones, *newConeSizes, *newCones, *newOrientations;
+  PetscInt *Kembedding;
+  PetscInt *cellClosure=NULL, nc;
+  PetscScalar *newVertexCoords;
+  PetscInt numPointsWithParents, *parents, *childIDs, *perm, *iperm, *preOrient, pOffset;
+  PetscSection parentSection;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr = DMPlexGetDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = DMPlexCreate(PetscObjectComm((PetscObject)dm), ncdm);CHKERRQ(ierr);
+  ierr = DMPlexSetDimension(*ncdm,dim);CHKERRQ(ierr);
+
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&parentSection);CHKERRQ(ierr);
+  ierr = DMPlexGetReferenceTree(dm,&K);CHKERRQ(ierr);
+  if (!rank) {
+    /* compute the new charts */
+    ierr = PetscMalloc5(dim+1,&pNewCount,dim+1,&pNewStart,dim+1,&pNewEnd,dim+1,&pOldStart,dim+1,&pOldEnd);CHKERRQ(ierr);
+    offset = 0;
+    for (d = 0; d <= dim; d++) {
+      PetscInt pOldCount, kStart, kEnd, k;
+
+      pNewStart[d] = offset;
+      ierr = DMPlexGetHeightStratum(dm,d,&pOldStart[d],&pOldEnd[d]);CHKERRQ(ierr);
+      ierr = DMPlexGetHeightStratum(K,d,&kStart,&kEnd);CHKERRQ(ierr);
+      pOldCount = pOldEnd[d] - pOldStart[d];
+      /* adding the new points */
+      pNewCount[d] = pOldCount + kEnd - kStart;
+      if (!d) {
+        /* removing the cell */
+        pNewCount[d]--;
+      }
+      for (k = kStart; k < kEnd; k++) {
+        PetscInt parent;
+        ierr = DMPlexGetTreeParent(K,k,&parent,NULL);CHKERRQ(ierr);
+        if (parent == k) {
+          /* avoid double counting points that won't actually be new */
+          pNewCount[d]--;
+        }
+      }
+      pNewEnd[d] = pNewStart[d] + pNewCount[d];
+      offset = pNewEnd[d];
+
+    }
+    if (cell < pOldStart[0] || cell >= pOldEnd[0]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"%d not in cell range [%d, %d)", cell, pOldStart[0], pOldEnd[0]);
+    /* get the current closure of the cell that we are removing */
+    ierr = DMPlexGetTransitiveClosure(dm,cell,PETSC_TRUE,&nc,&cellClosure);CHKERRQ(ierr);
+
+    ierr = PetscMalloc1(pNewEnd[dim],&newConeSizes);CHKERRQ(ierr);
+    {
+      PetscInt kStart, kEnd, k, closureSizeK, *closureK = NULL, j;
+
+      ierr = DMPlexGetChart(K,&kStart,&kEnd);CHKERRQ(ierr);
+      ierr = PetscMalloc4(kEnd-kStart,&Kembedding,kEnd-kStart,&perm,kEnd-kStart,&iperm,kEnd-kStart,&preOrient);CHKERRQ(ierr);
+
+      for (k = kStart; k < kEnd; k++) {
+        perm[k - kStart] = k;
+        iperm [k - kStart] = k - kStart;
+        preOrient[k - kStart] = 0;
+      }
+
+      ierr = DMPlexGetTransitiveClosure(K,0,PETSC_TRUE,&closureSizeK,&closureK);CHKERRQ(ierr);
+      for (j = 1; j < closureSizeK; j++) {
+        PetscInt parentOrientA = closureK[2*j+1];
+        PetscInt parentOrientB = cellClosure[2*j+1];
+        PetscInt p, q;
+
+        p = closureK[2*j];
+        q = cellClosure[2*j];
+        for (d = 0; d <= dim; d++) {
+          if (q >= pOldStart[d] && q < pOldEnd[d]) {
+            Kembedding[p] = (q - pOldStart[d]) + pNewStart[d];
+          }
+        }
+        if (parentOrientA != parentOrientB) {
+          PetscInt numChildren, i;
+          const PetscInt *children;
+
+          ierr = DMPlexGetTreeChildren(K,p,&numChildren,&children);CHKERRQ(ierr);
+          for (i = 0; i < numChildren; i++) {
+            PetscInt kPerm, oPerm;
+
+            k    = children[i];
+            ierr = DMPlexReferenceTreeGetChildSymmetry(K,p,parentOrientA,0,k,parentOrientB,&oPerm,&kPerm);CHKERRQ(ierr);
+            /* perm = what refTree position I'm in */
+            perm[kPerm-kStart]      = k;
+            /* iperm = who is at this position */
+            iperm[k-kStart]         = kPerm-kStart;
+            preOrient[kPerm-kStart] = oPerm;
+          }
+        }
+      }
+      ierr = DMPlexRestoreTransitiveClosure(K,0,PETSC_TRUE,&closureSizeK,&closureK);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetChart(parentSection,0,pNewEnd[dim]);CHKERRQ(ierr);
+    offset = 0;
+    numNewCones = 0;
+    for (d = 0; d <= dim; d++) {
+      PetscInt kStart, kEnd, k;
+      PetscInt p;
+      PetscInt size;
+
+      for (p = pOldStart[d]; p < pOldEnd[d]; p++) {
+        /* skip cell 0 */
+        if (p == cell) continue;
+        /* old cones to new cones */
+        ierr = DMPlexGetConeSize(dm,p,&size);CHKERRQ(ierr);
+        newConeSizes[offset++] = size;
+        numNewCones += size;
+      }
+
+      ierr = DMPlexGetHeightStratum(K,d,&kStart,&kEnd);CHKERRQ(ierr);
+      for (k = kStart; k < kEnd; k++) {
+        PetscInt kParent;
+
+        ierr = DMPlexGetTreeParent(K,k,&kParent,NULL);CHKERRQ(ierr);
+        if (kParent != k) {
+          Kembedding[k] = offset;
+          ierr = DMPlexGetConeSize(K,k,&size);CHKERRQ(ierr);
+          newConeSizes[offset++] = size;
+          numNewCones += size;
+          if (kParent != 0) {
+            ierr = PetscSectionSetDof(parentSection,Kembedding[k],1);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+
+    ierr = PetscSectionSetUp(parentSection);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(parentSection,&numPointsWithParents);CHKERRQ(ierr);
+    ierr = PetscMalloc2(numNewCones,&newCones,numNewCones,&newOrientations);CHKERRQ(ierr);
+    ierr = PetscMalloc2(numPointsWithParents,&parents,numPointsWithParents,&childIDs);CHKERRQ(ierr);
+
+    /* fill new cones */
+    offset = 0;
+    for (d = 0; d <= dim; d++) {
+      PetscInt kStart, kEnd, k, l;
+      PetscInt p;
+      PetscInt size;
+      const PetscInt *cone, *orientation;
+
+      for (p = pOldStart[d]; p < pOldEnd[d]; p++) {
+        /* skip cell 0 */
+        if (p == cell) continue;
+        /* old cones to new cones */
+        ierr = DMPlexGetConeSize(dm,p,&size);CHKERRQ(ierr);
+        ierr = DMPlexGetCone(dm,p,&cone);CHKERRQ(ierr);
+        ierr = DMPlexGetConeOrientation(dm,p,&orientation);CHKERRQ(ierr);
+        for (l = 0; l < size; l++) {
+          newCones[offset]          = (cone[l] - pOldStart[d + 1]) + pNewStart[d + 1];
+          newOrientations[offset++] = orientation[l];
+        }
+      }
+
+      ierr = DMPlexGetHeightStratum(K,d,&kStart,&kEnd);CHKERRQ(ierr);
+      for (k = kStart; k < kEnd; k++) {
+        PetscInt kPerm = perm[k], kParent;
+        PetscInt preO  = preOrient[k];
+
+        ierr = DMPlexGetTreeParent(K,k,&kParent,NULL);CHKERRQ(ierr);
+        if (kParent != k) {
+          /* embed new cones */
+          ierr = DMPlexGetConeSize(K,k,&size);CHKERRQ(ierr);
+          ierr = DMPlexGetCone(K,kPerm,&cone);CHKERRQ(ierr);
+          ierr = DMPlexGetConeOrientation(K,kPerm,&orientation);CHKERRQ(ierr);
+          for (l = 0; l < size; l++) {
+            PetscInt q, m = (preO >= 0) ? ((preO + l) % size) : ((size -(preO + 1) - l) % size);
+            PetscInt newO, lSize, oTrue;
+
+            q                         = iperm[cone[m]];
+            newCones[offset]          = Kembedding[q];
+            ierr                      = DMPlexGetConeSize(K,q,&lSize);CHKERRQ(ierr);
+            oTrue                     = orientation[m];
+            oTrue                     = ((!lSize) || (preOrient[k] >= 0)) ? oTrue : -(oTrue + 2);
+            newO                      = DihedralCompose(lSize,oTrue,preOrient[q]);
+            newOrientations[offset++] = newO;
+          }
+          if (kParent != 0) {
+            PetscInt newPoint = Kembedding[kParent];
+            ierr              = PetscSectionGetOffset(parentSection,Kembedding[k],&pOffset);CHKERRQ(ierr);
+            parents[pOffset]  = newPoint;
+            childIDs[pOffset] = k;
+          }
+        }
+      }
+    }
+
+    ierr = PetscMalloc1(dim*(pNewEnd[dim]-pNewStart[dim]),&newVertexCoords);CHKERRQ(ierr);
+
+    /* fill coordinates */
+    offset = 0;
+    {
+      PetscInt k, kStart, kEnd, l;
+      PetscSection vSection;
+      PetscInt v;
+      Vec coords;
+      PetscScalar *coordvals;
+      PetscInt dof, off;
+      PetscScalar v0[3], J[9], detJ;
+
+#if defined(PETSC_USE_DEBUG)
+      ierr = DMPlexGetHeightStratum(K,0,&kStart,&kEnd);CHKERRQ(ierr);
+      for (k = kStart; k < kEnd; k++) {
+        ierr = DMPlexComputeCellGeometry(K, k, v0, J, NULL, &detJ);CHKERRQ(ierr);
+        if (detJ <= 0.) SETERRQ1 (PETSC_COMM_SELF,PETSC_ERR_PLIB,"reference tree cell %d has bad determinant",k);
+      }
+#endif
+      ierr = DMPlexComputeCellGeometry(dm, cell, v0, J, NULL, &detJ);CHKERRQ(ierr);
+      ierr = DMGetCoordinateSection(dm,&vSection);CHKERRQ(ierr);
+      ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
+      ierr = VecGetArray(coords,&coordvals);CHKERRQ(ierr);
+      for (v = pOldStart[dim]; v < pOldEnd[dim]; v++) {
+
+        ierr = PetscSectionGetDof(vSection,v,&dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(vSection,v,&off);CHKERRQ(ierr);
+        for (l = 0; l < dof; l++) {
+          newVertexCoords[offset++] = coordvals[off + l];
+        }
+      }
+      ierr = VecRestoreArray(coords,&coordvals);CHKERRQ(ierr);
+
+      ierr = DMGetCoordinateSection(K,&vSection);CHKERRQ(ierr);
+      ierr = DMGetCoordinatesLocal(K,&coords);CHKERRQ(ierr);
+      ierr = VecGetArray(coords,&coordvals);CHKERRQ(ierr);
+      ierr = DMPlexGetDepthStratum(K,0,&kStart,&kEnd);CHKERRQ(ierr);
+      for (v = kStart; v < kEnd; v++) {
+        PetscInt vPerm = perm[v];
+        PetscInt kParent;
+
+        ierr = DMPlexGetTreeParent(K,v,&kParent,NULL);CHKERRQ(ierr);
+        if (kParent != v) {
+          /* this is a new vertex */
+          ierr = PetscSectionGetOffset(vSection,vPerm,&off);CHKERRQ(ierr);
+          CoordinatesRefToReal(dim, dim, v0, J, &coordvals[off],&newVertexCoords[offset]);CHKERRQ(ierr);
+          offset += dim;
+        }
+      }
+      ierr = VecRestoreArray(coords,&coordvals);CHKERRQ(ierr);
+    }
+
+    /* need to reverse the order of pNewCount: vertices first, cells last */
+    for (d = 0; d < (dim + 1) / 2; d++) {
+      PetscInt tmp;
+
+      tmp = pNewCount[d];
+      pNewCount[d] = pNewCount[dim - d];
+      pNewCount[dim - d] = tmp;
+    }
+
+    ierr = DMPlexCreateFromDAG(*ncdm,dim,pNewCount,newConeSizes,newCones,newOrientations,newVertexCoords);CHKERRQ(ierr);
+    ierr = DMPlexSetReferenceTree(*ncdm,K);CHKERRQ(ierr);
+    ierr = DMPlexSetTree(*ncdm,parentSection,parents,childIDs);CHKERRQ(ierr);
+
+    /* clean up */
+    ierr = DMPlexRestoreTransitiveClosure(dm,cell,PETSC_TRUE,&nc,&cellClosure);CHKERRQ(ierr);
+    ierr = PetscFree5(pNewCount,pNewStart,pNewEnd,pOldStart,pOldEnd);CHKERRQ(ierr);
+    ierr = PetscFree(newConeSizes);CHKERRQ(ierr);
+    ierr = PetscFree2(newCones,newOrientations);CHKERRQ(ierr);
+    ierr = PetscFree(newVertexCoords);CHKERRQ(ierr);
+    ierr = PetscFree2(parents,childIDs);CHKERRQ(ierr);
+    ierr = PetscFree4(Kembedding,perm,iperm,preOrient);CHKERRQ(ierr);
+  }
+  else {
+    PetscInt    p, counts[4];
+    PetscInt    *coneSizes, *cones, *orientations;
+    Vec         coordVec;
+    PetscScalar *coords;
+
+    for (d = 0; d <= dim; d++) {
+      PetscInt dStart, dEnd;
+
+      ierr = DMPlexGetDepthStratum(dm,d,&dStart,&dEnd);CHKERRQ(ierr);
+      counts[d] = dEnd - dStart;
+    }
+    ierr = PetscMalloc1(pEnd-pStart,&coneSizes);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; p++) {
+      ierr = DMPlexGetConeSize(dm,p,&coneSizes[p-pStart]);CHKERRQ(ierr);
+    }
+    ierr = DMPlexGetCones(dm, &cones);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientations(dm, &orientations);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm,&coordVec);CHKERRQ(ierr);
+    ierr = VecGetArray(coordVec,&coords);CHKERRQ(ierr);
+
+    ierr = PetscSectionSetChart(parentSection,pStart,pEnd);CHKERRQ(ierr);
+    ierr = PetscSectionSetUp(parentSection);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromDAG(*ncdm,dim,counts,coneSizes,cones,orientations,NULL);CHKERRQ(ierr);
+    ierr = DMPlexSetReferenceTree(*ncdm,K);CHKERRQ(ierr);
+    ierr = DMPlexSetTree(*ncdm,parentSection,NULL,NULL);CHKERRQ(ierr);
+    ierr = VecRestoreArray(coordVec,&coords);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionDestroy(&parentSection);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
