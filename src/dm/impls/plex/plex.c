@@ -1,4 +1,5 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc-private/dmimpl.h>
 #include <../src/sys/utils/hash.h>
 #include <petsc-private/isimpl.h>
 #include <petscsf.h>
@@ -531,6 +532,10 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = ISDestroy(&mesh->globalVertexNumbers);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalCellNumbers);CHKERRQ(ierr);
   ierr = BoundaryDestroy(&mesh->boundary);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&mesh->anchorSection);CHKERRQ(ierr);
+  ierr = ISDestroy(&mesh->anchorIS);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&mesh->constraintSection);CHKERRQ(ierr);
+  ierr = MatDestroy(&mesh->constraintMat);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4045,6 +4050,7 @@ PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC,const PetscInt bcF
 {
   PetscInt       numFields;
   PetscInt       bc;
+  PetscSection   aSec;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4075,6 +4081,30 @@ PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC,const PetscInt bcF
       ierr = PetscSectionAddConstraintDof(section, p, numConst);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
+  }
+  ierr = DMPlexGetConstraints(dm, &aSec, NULL);CHKERRQ(ierr);
+  if (aSec) {
+    PetscInt aStart, aEnd, a;
+
+    ierr = PetscSectionGetChart(aSec, &aStart, &aEnd);CHKERRQ(ierr);
+    for (a = aStart; a < aEnd; a++) {
+      PetscInt dof;
+
+      ierr = PetscSectionGetDof(aSec, a, &dof);CHKERRQ(ierr);
+      if (dof) {
+        /* if there are point-to-point constraints, then all dofs are constrained */
+        ierr = PetscSectionGetDof(section, a, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionSetConstraintDof(section, a, dof);CHKERRQ(ierr);
+        if (numFields) {
+          PetscInt f;
+
+          for (f = 0; f < numFields; f++) {
+            ierr = PetscSectionGetFieldDof(section, a, f, &dof);CHKERRQ(ierr);
+            ierr = PetscSectionSetFieldConstraintDof(section, a, f, dof);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -4266,6 +4296,7 @@ PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 @*/
 PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscInt numBC,const PetscInt bcField[],const IS bcPoints[], IS perm, PetscSection *section)
 {
+  PetscSection   aSec;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4273,7 +4304,8 @@ PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const
   ierr = DMPlexCreateSectionBCDof(dm, numBC, bcField, bcPoints, PETSC_DETERMINE, *section);CHKERRQ(ierr);
   if (perm) {ierr = PetscSectionSetPermutation(*section, perm);CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
-  if (numBC) {ierr = DMPlexCreateSectionBCIndicesAll(dm, *section);CHKERRQ(ierr);}
+  ierr = DMPlexGetConstraints(dm,&aSec,NULL);CHKERRQ(ierr);
+  if (numBC || aSec) {ierr = DMPlexCreateSectionBCIndicesAll(dm, *section);CHKERRQ(ierr);}
   ierr = PetscSectionViewFromOptions(*section,NULL,"-section_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -6327,5 +6359,383 @@ PetscErrorCode DMPlexSetCoarseDM(DM dm, DM cdm)
   ierr = DMDestroy(&mesh->coarseMesh);CHKERRQ(ierr);
   mesh->coarseMesh = cdm;
   ierr = PetscObjectReference((PetscObject) mesh->coarseMesh);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* constraints */
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetConstraints"
+/*@
+  DMPlexGetConstraints - Get the layout of the local point-to-point constraints
+
+  not collective
+
+  Input Parameters:
+. dm - The DMPlex object
+
+  Output Parameters:
++ anchorSection - If not NULL, set to the section describing which points anchor the constrained points.
+- anchorIS - If not NULL, set to the list of anchors indexed by anchorSection
+
+
+  Level: intermediate
+
+.seealso: DMPlexSetConstraints(), DMPlexGetConstraintSection(), DMPlexGetConstraintMatrix(), DMPlexSetConstraintMatrix()
+@*/
+PetscErrorCode DMPlexGetConstraints(DM dm, PetscSection *anchorSection, IS *anchorIS)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (anchorSection) *anchorSection = plex->anchorSection;
+  if (anchorIS) *anchorIS = plex->anchorIS;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalHook_Plex_constraints"
+static PetscErrorCode DMGlobalToLocalHook_Plex_constraints(DM dm, Vec g, InsertMode mode, Vec l, void *ctx)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+  Mat cMat;
+  Vec cVec;
+  PetscSection section, cSec;
+  PetscInt pStart, pEnd, p, dof;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  cMat = plex->constraintMat;
+  if (cMat && (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES)) {
+    ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+    cSec = plex->constraintSection;
+    ierr = MatGetVecs(cMat,NULL,&cVec);CHKERRQ(ierr);
+    ierr = MatMult(cMat,l,cVec);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(cSec,&pStart,&pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; p++) {
+      ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
+      if (dof) {
+        PetscScalar *vals;
+        ierr = VecGetValuesSection(cVec,cSec,p,&vals);CHKERRQ(ierr);
+        ierr = VecSetValuesSection(l,section,p,vals,INSERT_ALL_VALUES);CHKERRQ(ierr);
+      }
+    }
+    ierr = VecDestroy(&cVec);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalHook_Plex_constraints"
+static PetscErrorCode DMLocalToGlobalHook_Plex_constraints(DM dm, Vec l, InsertMode mode, Vec g, void *ctx)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+  Mat cMat;
+  Vec cVec;
+  PetscSection section, cSec;
+  PetscInt pStart, pEnd, p, dof;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  cMat = plex->constraintMat;
+  if (cMat && (mode == ADD_VALUES || mode == ADD_ALL_VALUES || mode == ADD_BC_VALUES)) {
+    ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+    cSec = plex->constraintSection;
+    ierr = MatGetVecs(cMat,NULL,&cVec);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(cSec,&pStart,&pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; p++) {
+      ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
+      if (dof) {
+        PetscInt d;
+        PetscScalar *vals;
+        ierr = VecGetValuesSection(l,section,p,&vals);CHKERRQ(ierr);
+        ierr = VecSetValuesSection(cVec,cSec,p,vals,mode);CHKERRQ(ierr);
+        /* for this to be the true transpose, we have to zero the values that
+         * we just extracted */
+        for (d = 0; d < dof; d++) {
+          vals[d] = 0.;
+        }
+      }
+    }
+    ierr = MatMultTransposeAdd(cMat,cVec,l,l);CHKERRQ(ierr);
+    ierr = VecDestroy(&cVec);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexSetConstraints"
+/*@
+  DMPlexSetConstraints - Set the layout of the local point-to-point constraints.  Unlike boundary conditions, when a
+  point's degrees of freedom in a section are constrained to an outside value, the point-to-point constraints set a
+  point's degrees of freedom to be a linear combination of other points' degrees of freedom.
+
+  After specifying the layout of constraints with DMPlexSetConstraints(), one specifies the constraints by calling
+  DMPlexGetConstraintMatrix() and filling in the entries.  This matrix will be used fill in the constrained values
+  from the anchor values in local vectors in DMGlobalToLocalEnd() with mode = INSERT_VALUES, and its transpose is used
+  to sum constrained values back to their anchor values in DMLocalToGlobalBegin() with mode = ADD_VALUES.
+
+  logically collective
+
+  Input Parameters:
++ dm - The DMPlex object
+. anchorSection - The section that describes the mapping from constrained points to the anchor points listed in anchorIS.
+- anchorIS - The list of all anchor points.
+
+  The reference counts of anchorSection and anchorIS are incremented.
+
+
+  Level: intermediate
+
+.seealso: DMPlexGetConstraints(), DMPlexGetConstraintSection(), DMPlexGetConstraintMatrix(), DMPlexSetConstraintMatrix()
+@*/
+PetscErrorCode DMPlexSetConstraints(DM dm, PetscSection anchorSection, IS anchorIS)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+
+  ierr = PetscObjectReference((PetscObject)anchorSection);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&plex->anchorSection);CHKERRQ(ierr);
+  plex->anchorSection = anchorSection;
+
+  ierr = PetscObjectReference((PetscObject)anchorIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&plex->anchorIS);CHKERRQ(ierr);
+  plex->anchorIS = anchorIS;
+
+#if defined(PETSC_USE_DEBUG)
+  if (anchorIS && anchorSection) {
+    PetscInt size, a, pStart, pEnd;
+    const PetscInt *anchors;
+
+    ierr = PetscSectionGetChart(anchorSection,&pStart,&pEnd);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(anchorIS,&size);CHKERRQ(ierr);
+    ierr = ISGetIndices(anchorIS,&anchors);CHKERRQ(ierr);
+    for (a = 0; a < size; a++) {
+      PetscInt p;
+
+      p = anchors[a];
+      if (p >= pStart && p < pEnd) {
+        PetscInt dof;
+
+        ierr = PetscSectionGetDof(anchorSection,p,&dof);CHKERRQ(ierr);
+        if (dof) {
+          PetscErrorCode ierr2;
+
+          ierr2 = ISRestoreIndices(anchorIS,&anchors);CHKERRQ(ierr2);
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Point %d cannot be constrained and an anchor",p);
+        }
+      }
+    }
+    ierr = ISRestoreIndices(anchorIS,&anchors);CHKERRQ(ierr);
+  }
+#endif
+
+  ierr = PetscSectionDestroy(&plex->constraintSection);CHKERRQ(ierr);
+  ierr = MatDestroy(&plex->constraintMat);CHKERRQ(ierr);
+
+  if (anchorSection) {
+    /* add the constraint hooks if they have not already been added */
+    {
+      DMGlobalToLocalHookLink link,next=NULL;
+      for (link=dm->gtolhook; link; link=next) {
+        next = link->next;
+        if (link->endhook == DMGlobalToLocalHook_Plex_constraints) {
+          break;
+        }
+      }
+      if (!link) {
+        ierr = DMGlobalToLocalHookAdd(dm,NULL,DMGlobalToLocalHook_Plex_constraints,NULL);CHKERRQ(ierr);
+      }
+    }
+    {
+      DMLocalToGlobalHookLink link,next=NULL;
+      for (link=dm->ltoghook; link; link=next) {
+        next = link->next;
+        if (link->beginhook == DMLocalToGlobalHook_Plex_constraints) {
+          break;
+        }
+      }
+      if (!link) {
+        ierr = DMLocalToGlobalHookAdd(dm,DMLocalToGlobalHook_Plex_constraints,NULL,NULL);CHKERRQ(ierr);
+      }
+    }
+  }
+  else {
+    /* remove the constraint hooks if they were added before */
+    {
+      DMGlobalToLocalHookLink prev=NULL,link,next=NULL;
+      for (link=dm->gtolhook; link; link=next) {
+        next = link->next;
+        if (link->endhook == DMGlobalToLocalHook_Plex_constraints) {
+          break;
+        }
+      }
+      if (link) {
+        ierr = PetscFree(link);CHKERRQ(ierr);
+        if (prev) {
+          prev->next = next;
+        }
+        else {
+          dm->gtolhook = next;
+        }
+      }
+    }
+    {
+      DMLocalToGlobalHookLink prev=NULL,link,next=NULL;
+      for (link=dm->ltoghook; link; link=next) {
+        next = link->next;
+        if (link->beginhook == DMLocalToGlobalHook_Plex_constraints) {
+          break;
+        }
+      }
+      if (link) {
+        ierr = PetscFree(link);CHKERRQ(ierr);
+        if (prev) {
+          prev->next = next;
+        }
+        else {
+          dm->ltoghook = next;
+        }
+      }
+    }
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateConstraintSection"
+static PetscErrorCode DMPlexCreateConstraintSection(DM dm, PetscSection *cSec)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+  PetscSection section, anchorSection;
+  PetscInt pStart, pEnd, p, dof, numFields, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  anchorSection = plex->anchorSection;
+  ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)section),cSec);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section,&numFields);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(*cSec,numFields);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(anchorSection,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*cSec,pStart,pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; p++) {
+    ierr = PetscSectionGetDof(anchorSection,p,&dof);CHKERRQ(ierr);
+    if (dof) {
+      ierr = PetscSectionGetDof(section,p,&dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(*cSec,p,dof);CHKERRQ(ierr);
+      for (f = 0; f < numFields; f++) {
+        ierr = PetscSectionGetFieldDof(section,p,f,&dof);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(*cSec,p,f,dof);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscSectionSetUp(*cSec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetConstraintSection"
+/*@
+  DMPlexGetConstraintSection - Get the section that maps constrained points to rows of the constraint matrix.
+
+  The default section obtained with DMGetDefaultSection() maps points to columns of the constraint matrix.
+
+  logically collective
+
+  Input Parameters:
+. dm - The DMPlex object
+
+  Output Parameters:
+. cSec - If not NULL, set to the section describing which points anchor the constrained points.
+
+
+  Level: intermediate
+
+.seealso: DMPlexGetConstraints(), DMPlexSetConstraints(), DMPlexGetConstraintMatrix(), DMPlexSetConstraintMatrix()
+@*/
+PetscErrorCode DMPlexGetConstraintSection(DM dm, PetscSection *cSec)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (plex->anchorSection && !plex->constraintSection) {
+    ierr = DMPlexCreateConstraintSection(dm,&plex->constraintSection);CHKERRQ(ierr);
+  }
+  if (cSec) *cSec = plex->constraintSection;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetConstraintMatrix"
+/*@
+  DMPlexGetConstraintMatrix - Get the matrix that specifies the point-to-point constraints.
+
+  logically collective
+
+  Input Parameters:
+. dm - The DMPlex object
+
+  Output Parameters:
+. cMat - If not NULL, returns the constraint matrix.  If the constraint matrix has not been created before, then it is
+         created and its nonzero structure is allocated, so that the user can insert values.
+
+
+  Level: intermediate
+
+.seealso: DMPlexGetConstraints(), DMPlexSetConstraints(), DMPlexGetConstraintSection(), DMPlexSetConstraintMatrix()
+@*/
+PetscErrorCode DMPlexGetConstraintMatrix(DM dm, Mat *cMat)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (cMat) *cMat = plex->constraintMat;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexSetConstraintMatrix"
+/*@
+  DMPlexSetConstraintMatrix - Set the matrix that specifies the point-to-point constraints.  It should have the same
+  number of rows as the layout size of the section returned by DMPlexGetConstraintSection(), and it should have the
+  same number of columns as the layout size of the section returned by DMGetDefaultSection().  For the constraint
+  matrix to be used when constructing a matrix in, e.g., DMPlexSNESComputeJacobianFEM(), then MatGetValues() must be
+  implemented.
+
+  logically collective
+
+  Input Parameters:
++ dm - The DMPlex object
+- cMat - The constraint matrix.
+
+  The reference count of cMat is incremented.
+
+
+  Level: advanced.
+
+.seealso: DMPlexGetConstraints(), DMPlexSetConstraints(), DMPlexGetConstraintSection(), DMPlexGetConstraintMatrix()
+@*/
+PetscErrorCode DMPlexSetConstraintMatrix(DM dm, Mat cMat)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscObjectReference((PetscObject)cMat);CHKERRQ(ierr);
+  ierr = MatDestroy(&plex->constraintMat);CHKERRQ(ierr);
+  plex->constraintMat = cMat;
   PetscFunctionReturn(0);
 }

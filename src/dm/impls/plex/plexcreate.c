@@ -1282,6 +1282,10 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->depthLabel          = NULL;
   mesh->globalVertexNumbers = NULL;
   mesh->globalCellNumbers   = NULL;
+  mesh->anchorSection       = NULL;
+  mesh->anchorIS            = NULL;
+  mesh->constraintSection   = NULL;
+  mesh->constraintMat       = NULL;
   for (d = 0; d < 8; ++d) mesh->hybridPointMax[d] = PETSC_DETERMINE;
   mesh->vtkCellHeight       = 0;
   mesh->useCone             = PETSC_FALSE;

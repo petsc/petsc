@@ -76,6 +76,12 @@ typedef struct {
   IS                   globalVertexNumbers;
   IS                   globalCellNumbers;
 
+  /* Constraints */
+  PetscSection         anchorSection;     /* maps constrained points to anchor points */
+  IS                   anchorIS;          /* anchors indexed by the above section */
+  PetscSection         constraintSection; /* maps points to rows in the constraint matrix below */
+  Mat                  constraintMat;     /* (m x n), m = constrained dofs in the default section, n = dofs in the default section */
+
   /* Adjacency */
   PetscBool            useCone;           /* Use cone() first when defining adjacency */
   PetscBool            useClosure;        /* Use the transitive closure when defining adjacency */

@@ -245,4 +245,11 @@ PETSC_EXTERN PetscErrorCode DMPlexSNESComputeJacobianFEM(DM, Vec, Mat, Mat,void 
 PETSC_EXTERN PetscErrorCode DMPlexTSComputeIFunctionFEM(DM, PetscReal, Vec, Vec, Vec, void *);
 
 PETSC_EXTERN PetscErrorCode DMPlexComputeRHSFunctionFVM(DM, PetscReal, Vec, Vec, void *);
+
+/* constraints */
+PETSC_EXTERN PetscErrorCode DMPlexGetConstraints(DM, PetscSection*, IS*);
+PETSC_EXTERN PetscErrorCode DMPlexSetConstraints(DM, PetscSection, IS);
+PETSC_EXTERN PetscErrorCode DMPlexGetConstraintSection(DM, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMPlexGetConstraintMatrix(DM, Mat*);
+PETSC_EXTERN PetscErrorCode DMPlexSetConstraintMatrix(DM, Mat);
 #endif
