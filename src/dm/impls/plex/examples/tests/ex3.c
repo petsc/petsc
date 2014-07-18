@@ -21,6 +21,7 @@ typedef struct {
   PetscInt  porder;            /* Order of polynomials to test */
   PetscBool convergence;       /* Test for order of convergence */
   PetscBool constraints;       /* Test local constraints */
+  PetscBool tree;              /* Test tree routines */
 } AppCtx;
 
 static int spdim = 1;
@@ -121,6 +122,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-convergence", "Check the convergence rate", "ex3.c", options->convergence, &options->convergence, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-constraints", "Test local constraints (serial only)", "ex3.c", options->constraints, &options->constraints, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tree", "Test tree routines", "ex3.c", options->tree, &options->tree, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   spdim = options->numComponents = options->dim;
@@ -135,6 +137,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
   const char    *partitioner     = "chaco";
+  DMType         type;
+  PetscBool      isPlex;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -181,6 +185,15 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm,NULL,"-dm_view");CHKERRQ(ierr);
+  ierr = DMGetType(*dm,&type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,DMPLEX,&isPlex);CHKERRQ(ierr);
+  if (user->tree && isPlex) {
+    DM refTree;
+
+    ierr = DMPlexCreateDefaultReferenceTree(comm,user->dim,user->simplex,&refTree);CHKERRQ(ierr);
+    ierr = DMPlexSetReferenceTree(*dm,refTree);CHKERRQ(ierr);
+    ierr = DMDestroy(&refTree);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
