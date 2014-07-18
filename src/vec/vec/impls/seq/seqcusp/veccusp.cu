@@ -203,7 +203,6 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
 
     ierr = VecCUSPRestoreArrayRead(v,&varray);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_CUSPCopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
-    v->valid_GPU_array = PETSC_CUSP_BOTH;
   }
   PetscFunctionReturn(0);
 }
