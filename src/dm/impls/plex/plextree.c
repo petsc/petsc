@@ -16,7 +16,7 @@
 + dm - The DMPlex object
 - ref - The reference tree DMPlex object
 
-  Level: beginner
+  Level: intermediate
 
 .seealso: DMPlexGetReferenceTree(), DMPlexCreateDefaultReferenceTree()
 @*/
@@ -47,7 +47,7 @@ PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
   Output Parameters
 . ref - The reference tree DMPlex object
 
-  Level: beginner
+  Level: intermediate
 
 .seealso: DMPlexSetReferenceTree(), DMPlexCreateDefaultReferenceTree()
 @*/
@@ -77,7 +77,7 @@ PetscErrorCode DMPlexGetReferenceTree(DM dm, DM *ref)
   Output Parameters:
 . ref     - the reference tree DMPlex object
 
-  Level: beginner
+  Level: intermediate
 
 .keywords: reference cell
 .seealso: DMPlexSetReferenceTree(), DMPlexGetReferenceTree()
@@ -280,6 +280,53 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
   ierr = PetscFree2(coneSizes,numDimPoints);CHKERRQ(ierr);
   ierr = DMDestroy(&K);CHKERRQ(ierr);
   ierr = DMDestroy(&Kref);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexSetTree"
+/*@
+  DMPlexSetTree - set the tree that describes the hierarchy of non-conforming mesh points.  This routine also creates
+  the point-to-point constraints determined by the tree: a point is constained to the points in the closure of its
+  tree root.
+
+  Collective on dm
+
+  Input Parameters:
++ dm - the DMPlex object
+. parentSection - a section describing the tree: a point has a parent if it has 1 dof in the section; the section
+                  offset indexes the parent and childID list; the reference count of parentSection is incremented
+. parents - a list of the point parents; copied, can be destroyed
+- childIDs - identifies the relationship of the child point to the parent point; if there is a reference tree, then
+             the child corresponds to the point in the reference tree with index childIDs; copied, can be destroyed
+
+  Level: intermediate
+
+.seealso: DMPlexSetReferenceTree(), DMPlexSetConstraints(), DMPlexGetTreeParent()
+@*/
+PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt *parents, PetscInt *childIDs)
+{
+  DM_Plex       *mesh = (DM_Plex *)dm->data;
+  PetscInt       size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(parentSection, PETSC_SECTION_CLASSID, 2);
+  ierr = PetscObjectReference((PetscObject)parentSection);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&mesh->parentSection);CHKERRQ(ierr);
+  mesh->parentSection = parentSection;
+  ierr = PetscSectionGetStorageSize(parentSection,&size);CHKERRQ(ierr);
+  if (parents != mesh->parents) {
+    ierr = PetscFree(mesh->parents);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&mesh->parents);CHKERRQ(ierr);
+    ierr = PetscMemcpy(mesh->parents, parents, size * sizeof(*parents));CHKERRQ(ierr);
+  }
+  if (childIDs != mesh->childIDs) {
+    ierr = PetscFree(mesh->childIDs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&mesh->childIDs);CHKERRQ(ierr);
+    ierr = PetscMemcpy(mesh->childIDs, childIDs, size * sizeof(*childIDs));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
