@@ -374,6 +374,158 @@ static PetscErrorCode DMPlexTreeSymmetrize(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "AnchorsFlatten"
+static PetscErrorCode AnchorsFlatten (PetscSection section, IS is, PetscSection *sectionNew, IS *isNew)
+{
+  PetscInt       pStart, pEnd, size, sizeNew, i, p, *valsNew = NULL;
+  const PetscInt *vals;
+  PetscSection   secNew;
+  PetscBool      anyNew, globalAnyNew;
+  PetscBool      compress;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetChart(section,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&size);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&vals);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)section),&secNew);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(secNew,pStart,pEnd);CHKERRQ(ierr);
+  for (i = 0; i < size; i++) {
+    PetscInt dof;
+
+    p = vals[i];
+    if (p < pStart || p >= pEnd) continue;
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    if (dof) break;
+  }
+  if (i == size) {
+    ierr     = PetscSectionSetUp(secNew);CHKERRQ(ierr);
+    anyNew   = PETSC_FALSE;
+    compress = PETSC_FALSE;
+    sizeNew  = 0;
+  }
+  else {
+    anyNew = PETSC_TRUE;
+    for (p = pStart; p < pEnd; p++) {
+      PetscInt dof, off;
+
+      ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+      for (i = 0; i < dof; i++) {
+        PetscInt q = vals[off + i], qDof = 0;
+
+        if (q >= pStart && q < pEnd) {
+          ierr = PetscSectionGetDof(section, q, &qDof);CHKERRQ(ierr);
+        }
+        if (qDof) {
+          ierr = PetscSectionAddDof(secNew, p, qDof);CHKERRQ(ierr);
+        }
+        else {
+          ierr = PetscSectionAddDof(secNew, p, 1);CHKERRQ(ierr);
+        }
+      }
+    }
+    ierr = PetscSectionSetUp(secNew);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(secNew,&sizeNew);CHKERRQ(ierr);
+    ierr = PetscMalloc1(sizeNew,&valsNew);CHKERRQ(ierr);
+    compress = PETSC_FALSE;
+    for (p = pStart; p < pEnd; p++) {
+      PetscInt dof, off, count, offNew, dofNew;
+
+      ierr  = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+      ierr  = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+      ierr  = PetscSectionGetDof(secNew, p, &dofNew);CHKERRQ(ierr);
+      ierr  = PetscSectionGetOffset(secNew, p, &offNew);CHKERRQ(ierr);
+      count = 0;
+      for (i = 0; i < dof; i++) {
+        PetscInt q = vals[off + i], qDof = 0, qOff = 0, j;
+
+        if (q >= pStart && q < pEnd) {
+          ierr = PetscSectionGetDof(section, q, &qDof);CHKERRQ(ierr);
+          ierr = PetscSectionGetOffset(section, q, &qOff);CHKERRQ(ierr);
+        }
+        if (qDof) {
+          PetscInt oldCount = count;
+
+          for (j = 0; j < qDof; j++) {
+            PetscInt k, r = vals[qOff + j];
+
+            for (k = 0; k < oldCount; k++) {
+              if (valsNew[offNew + k] == r) {
+                break;
+              }
+            }
+            if (k == oldCount) {
+              valsNew[offNew + count++] = r;
+            }
+          }
+        }
+        else {
+          PetscInt k, oldCount = count;
+
+          for (k = 0; k < oldCount; k++) {
+            if (valsNew[offNew + k] == q) {
+              break;
+            }
+          }
+          if (k == oldCount) {
+            valsNew[offNew + count++] = q;
+          }
+        }
+      }
+      if (count < dofNew) {
+        ierr = PetscSectionSetDof(secNew, p, count);CHKERRQ(ierr);
+        compress = PETSC_TRUE;
+      }
+    }
+  }
+  ierr = ISRestoreIndices(is,&vals);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&anyNew,&globalAnyNew,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
+  if (!globalAnyNew) {
+    ierr = PetscSectionDestroy(&secNew);CHKERRQ(ierr);
+    *sectionNew = NULL;
+    *isNew = NULL;
+  }
+  else {
+    PetscBool globalCompress;
+
+    ierr = MPI_Allreduce(&compress,&globalCompress,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)secNew));CHKERRQ(ierr);
+    if (compress) {
+      PetscSection secComp;
+      PetscInt *valsComp = NULL;
+
+      ierr = PetscSectionCreate(PetscObjectComm((PetscObject)section),&secComp);CHKERRQ(ierr);
+      ierr = PetscSectionSetChart(secComp,pStart,pEnd);CHKERRQ(ierr);
+      for (p = pStart; p < pEnd; p++) {
+        PetscInt dof;
+
+        ierr = PetscSectionGetDof(secNew, p, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionSetDof(secComp, p, dof);CHKERRQ(ierr);
+      }
+      ierr = PetscSectionSetUp(secComp);CHKERRQ(ierr);
+      ierr = PetscSectionGetStorageSize(secComp,&sizeNew);CHKERRQ(ierr);
+      ierr = PetscMalloc1(sizeNew,&valsComp);CHKERRQ(ierr);
+      for (p = pStart; p < pEnd; p++) {
+        PetscInt dof, off, offNew, j;
+
+        ierr = PetscSectionGetDof(secNew, p, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(secNew, p, &off);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(secComp, p, &offNew);CHKERRQ(ierr);
+        for (j = 0; j < dof; j++) {
+          valsComp[offNew + j] = valsNew[off + j];
+        }
+      }
+      ierr    = PetscSectionDestroy(&secNew);CHKERRQ(ierr);
+      secNew  = secComp;
+      ierr    = PetscFree(valsNew);CHKERRQ(ierr);
+      valsNew = valsComp;
+    }
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is),sizeNew,valsNew,PETSC_OWN_POINTER,isNew);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeConstraints_Tree"
 static PetscErrorCode DMPlexComputeConstraints_Tree(DM dm)
 {
@@ -441,6 +593,22 @@ static PetscErrorCode DMPlexComputeConstraints_Tree(DM dm)
     }
   }
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),size,anchors,PETSC_OWN_POINTER,&aIS);CHKERRQ(ierr);
+  {
+    PetscSection aSecNew = aSec;
+    IS           aISNew  = aIS;
+
+    ierr = PetscObjectReference((PetscObject)aSec);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)aIS);CHKERRQ(ierr);
+    while (aSecNew) {
+      ierr    = PetscSectionDestroy(&aSec);CHKERRQ(ierr);
+      ierr    = ISDestroy(&aIS);CHKERRQ(ierr);
+      aSec    = aSecNew;
+      aIS     = aISNew;
+      aSecNew = NULL;
+      aISNew  = NULL;
+      ierr    = AnchorsFlatten(aSec,aIS,&aSecNew,&aISNew);CHKERRQ(ierr);
+    }
+  }
   ierr = DMPlexSetConstraints(dm,aSec,aIS);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&aSec);CHKERRQ(ierr);
   ierr = ISDestroy(&aIS);CHKERRQ(ierr);
