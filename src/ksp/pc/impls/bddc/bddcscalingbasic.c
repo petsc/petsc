@@ -985,6 +985,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
   ierr = PCFactorGetMatSolverPackage(pc_temp,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
   if (solver) {
+    ierr = KSPGetPC(deluxe_ctx->seq_ksp,&pc_temp);CHKERRQ(ierr);
     ierr = PCFactorSetMatSolverPackage(pc_temp,solver);CHKERRQ(ierr);
   }
   ierr = PetscStrlen(((PetscObject)(pcbddc->ksp_D))->prefix,&len);CHKERRQ(ierr);
