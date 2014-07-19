@@ -1,4 +1,5 @@
-#requiresscalar    real
+
+ALL: lib
 
 SOURCEH  = ../../include/petsc-private/taoimpl.h ../../include/taolinesearchimpl.h
 DIRS     = interface util unconstrained constrained bound complementarity linesearch matrix leastsquares pde_constrained

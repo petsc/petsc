@@ -259,9 +259,9 @@ PetscErrorCode MatTranspose_ADA(Mat mat,Mat *B)
 PetscErrorCode MatADAComputeDiagonal(Mat mat)
 {
   PetscErrorCode ierr;
-  PetscInt        i,m,n,low,high;
-  PetscReal       *dtemp,*dptr;
-  TaoMatADACtx    ctx;
+  PetscInt       i,m,n,low,high;
+  PetscScalar    *dtemp,*dptr;
+  TaoMatADACtx   ctx;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
@@ -327,17 +327,17 @@ PetscErrorCode MatGetSubMatrices_ADA(Mat A,PetscInt n, IS *irow,IS *icol,MatReus
 #define __FUNCT__ "MatGetSubMatrix_ADA"
 PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll, Mat *newmat)
 {
-  PetscErrorCode  ierr;
-  PetscInt        low,high;
-  PetscInt        n,nlocal,i;
-  const PetscInt  *iptr;
-  const PetscReal *dptr;
-  PetscReal       *ddptr,zero=0.0;
-  VecType         type_name;
-  IS              ISrow;
-  Vec             D1,D2;
-  Mat             Atemp;
-  TaoMatADACtx    ctx;
+  PetscErrorCode    ierr;
+  PetscInt          low,high;
+  PetscInt          n,nlocal,i;
+  const PetscInt    *iptr;
+  const PetscScalar *dptr;
+  PetscScalar       *ddptr,zero=0.0;
+  VecType           type_name;
+  IS                ISrow;
+  Vec               D1,D2;
+  Mat               Atemp;
+  TaoMatADACtx      ctx;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
@@ -429,7 +429,7 @@ PetscErrorCode MatGetColumnVector_ADA(Mat mat,Vec Y, PetscInt col)
 {
   PetscErrorCode ierr;
   PetscInt       low,high;
-  PetscReal      zero=0.0,one=1.0;
+  PetscScalar    zero=0.0,one=1.0;
 
   PetscFunctionBegin;
   ierr=VecSet(Y, zero);CHKERRQ(ierr);
@@ -462,9 +462,9 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
   if (sametype || issame) {
     ierr=MatDuplicate(mat,MAT_COPY_VALUES,NewMat);CHKERRQ(ierr);
   } else if (isdense) {
-    PetscInt        i,j,low,high,m,n,M,N;
-    const PetscReal *dptr;
-    Vec             X;
+    PetscInt          i,j,low,high,m,n,M,N;
+    const PetscScalar *dptr;
+    Vec               X;
 
     ierr = VecDuplicate(ctx->D2,&X);CHKERRQ(ierr);
     ierr=MatGetSize(mat,&M,&N);CHKERRQ(ierr);
@@ -483,9 +483,9 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     ierr = MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecDestroy(&X);CHKERRQ(ierr);
   } else if (isseqdense && size==1){
-    PetscInt        i,j,low,high,m,n,M,N;
-    const PetscReal *dptr;
-    Vec             X;
+    PetscInt          i,j,low,high,m,n,M,N;
+    const PetscScalar *dptr;
+    Vec               X;
 
     ierr = VecDuplicate(ctx->D2,&X);CHKERRQ(ierr);
     ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
