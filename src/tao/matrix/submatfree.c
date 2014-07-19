@@ -301,7 +301,7 @@ PetscErrorCode MatGetSubMatrix_SMF(Mat mat,IS isrow,IS iscol,MatReuse cll,
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetRow_SMF"
-PetscErrorCode MatGetRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt **cols,const PetscReal **vals)
+PetscErrorCode MatGetRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt **cols,const PetscScalar **vals)
 {
   PetscErrorCode   ierr;
   MatSubMatFreeCtx ctx;
@@ -314,7 +314,7 @@ PetscErrorCode MatGetRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "MatRestoreRow_SMF"
-PetscErrorCode MatRestoreRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt **cols,const PetscReal **vals)
+PetscErrorCode MatRestoreRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt **cols,const PetscScalar **vals)
 {
   PetscErrorCode   ierr;
   MatSubMatFreeCtx ctx;

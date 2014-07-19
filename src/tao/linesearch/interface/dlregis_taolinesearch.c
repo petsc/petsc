@@ -47,7 +47,7 @@ PetscErrorCode TaoLineSearchInitializePackage(void)
   PetscFunctionBegin;
   if (TaoLineSearchPackageInitialized) PetscFunctionReturn(0);
   TaoLineSearchPackageInitialized=PETSC_TRUE;
-
+#if !defined(PETSC_USE_COMPLEX)
   ierr = PetscClassIdRegister("TaoLineSearch",&TAOLINESEARCH_CLASSID);CHKERRQ(ierr);
   ierr = TaoLineSearchRegister("unit",TaoLineSearchCreate_Unit);CHKERRQ(ierr);
   ierr = TaoLineSearchRegister("more-thuente",TaoLineSearchCreate_MT);CHKERRQ(ierr);
@@ -56,6 +56,7 @@ PetscErrorCode TaoLineSearchInitializePackage(void)
   ierr = TaoLineSearchRegister("owarmijo",TaoLineSearchCreate_OWArmijo);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TaoLineSearchApply",TAOLINESEARCH_CLASSID,&TaoLineSearch_ApplyEvent);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TaoLineSearchComputeObjective[Gradient]",TAOLINESEARCH_CLASSID,&TaoLineSearch_EvalEvent);CHKERRQ(ierr);
+#endif
   ierr = PetscRegisterFinalize(TaoLineSearchFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

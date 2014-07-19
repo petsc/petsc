@@ -348,7 +348,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
   *reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  PetscValidScalarPointer(f,3);
+  PetscValidRealPointer(f,3);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   PetscValidHeaderSpecific(s,VEC_CLASSID,5);
   PetscValidPointer(reason,7);
