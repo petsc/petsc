@@ -99,7 +99,7 @@ typedef __float128 PetscReal;
 /*
     Complex number definitions
  */
-#if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
+#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
 #if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX)) || defined(PETSC_DESIRE_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 /* C++ support of complex number */
@@ -138,7 +138,7 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 #endif  /* PETSC_USE_REAL_ */
 #endif  /* PETSC_USE_COMPLEX || PETSC_DESIRE_COMPLEX */
 
-#elif defined(PETSC_CLANGUAGE_C) && defined(PETSC_HAVE_C99_COMPLEX)
+#elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX)
 /* Use C99 _Complex for the type. Do not include complex.h by default to define "complex" because of symbol conflicts in Hypre. */
 /* Compilation units that can safely use complex should define PETSC_DESIRE_COMPLEX before including any headers */
 #if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX)) || defined(PETSC_DESIRE_COMPLEX)
@@ -210,17 +210,17 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 #elif (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
 #error "PETSc was configured --with-scalar-type=complex, but a language-appropriate complex library is not available"
 #endif /* PETSC_USE_COMPLEX || PETSC_DESIRE_COMPLEX */
-#endif /* (PETSC_CLANGUAGE_CXX && PETSC_HAVE_CXX_COMPLEX) else-if (PETSC_CLANGUAGE_C && PETSC_HAVE_C99_COMPLEX) */
+#endif /* (__cplusplus && PETSC_HAVE_CXX_COMPLEX) else-if (!__cplusplus && PETSC_HAVE_C99_COMPLEX) */
 
 #if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
 #define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX
 #define MPIU_C_COMPLEX MPI_C_COMPLEX
 #else
-# if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX)
+# if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX)
   typedef complexlib::complex<double> petsc_mpiu_c_double_complex;
   typedef complexlib::complex<float> petsc_mpiu_c_complex;
-# elif defined(PETSC_CLANGUAGE_C) && defined(PETSC_HAVE_C99_COMPLEX)
+# elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX)
   typedef double _Complex petsc_mpiu_c_double_complex;
   typedef float _Complex petsc_mpiu_c_complex;
 # else
