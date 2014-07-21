@@ -3684,9 +3684,9 @@ PetscErrorCode  MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colma
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)A->data;
 
   PetscFunctionBegin;
-  *Ad     = a->A;
-  *Ao     = a->B;
-  *colmap = a->garray;
+  if (Ad)     *Ad     = a->A;
+  if (Ao)     *Ao     = a->B;
+  if (colmap) *colmap = a->garray;
   PetscFunctionReturn(0);
 }
 
