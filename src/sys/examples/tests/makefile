@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
                 ex13.c ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
-                ex22.c ex23.c ex24.c
+                ex22.c ex23.c ex24.c ex27.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex17f.F
 MANSEC          = Sys
 
@@ -101,6 +101,9 @@ ex24: ex24.o chkopts
 ex25: ex25.o chkopts
 	-${CLINKER} -o ex25 ex25.o  ${PETSC_SYS_LIB}
 	${RM} -f ex25.o
+ex27: ex27.o chkopts
+	-${CLINKER} -o ex27 ex27.o  ${PETSC_SYS_LIB}
+	${RM} -f ex27.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 > ex1.tmp1 2>&1; egrep "(main|CreateError|Error Created)" ex1.tmp1 | cut -f1,2,3,4,5 -d" " > ex1.tmp;\

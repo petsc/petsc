@@ -4226,9 +4226,9 @@ PetscErrorCode  MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[
   Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
 
   PetscFunctionBegin;
-  *Ad     = a->A;
-  *Ao     = a->B;
-  *colmap = a->garray;
+  if (Ad)     *Ad     = a->A;
+  if (Ao)     *Ao     = a->B;
+  if (colmap) *colmap = a->garray;
   PetscFunctionReturn(0);
 }
 
