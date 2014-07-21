@@ -43,7 +43,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatCollapseRow(Mat Amat,PetscInt row,PetscInt
 */
 PETSC_STATIC_INLINE PetscErrorCode MatCollapseRows(Mat Amat,PetscInt start,PetscInt bs,PetscInt *w0,PetscInt *w1,PetscInt *w2,PetscInt *ncollapsed,PetscInt **collapsed)
 {
-  PetscInt       i,nprev,*cprev = w0,ncur,*ccur = w1,*merged = w2,*cprevtmp;
+  PetscInt       i,nprev,*cprev = w0,ncur = 0,*ccur = w1,*merged = w2,*cprevtmp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
