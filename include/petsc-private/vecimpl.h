@@ -184,11 +184,18 @@ typedef enum { VEC_SCATTER_SEQ_GENERAL,VEC_SCATTER_SEQ_STRIDE,
                VEC_SCATTER_MPI_GENERAL,VEC_SCATTER_MPI_TOALL,
                VEC_SCATTER_MPI_TOONE} VecScatterType;
 
+#define VECSCATTER_IMPL_HEADER \
+      VecScatterType type;
+
+typedef struct {
+  VECSCATTER_IMPL_HEADER
+} VecScatter_Common;
+
 /*
    These scatters are for the purely local case.
 */
 typedef struct {
-  VecScatterType type;
+  VECSCATTER_IMPL_HEADER
   PetscInt       n;                    /* number of components to scatter */
   PetscInt       *vslots;              /* locations of components */
   /*
@@ -206,7 +213,7 @@ typedef struct {
 } VecScatter_Seq_General;
 
 typedef struct {
-  VecScatterType type;
+  VECSCATTER_IMPL_HEADER
   PetscInt       n;
   PetscInt       first;
   PetscInt       step;
@@ -216,7 +223,7 @@ typedef struct {
    This scatter is for a global vector copied (completely) to each processor (or all to one)
 */
 typedef struct {
-  VecScatterType type;
+  VECSCATTER_IMPL_HEADER
   PetscMPIInt    *count;        /* elements of vector on each processor */
   PetscMPIInt    *displx;
   PetscScalar    *work1;
@@ -227,7 +234,7 @@ typedef struct {
    This is the general parallel scatter
 */
 typedef struct {
-  VecScatterType         type;
+  VECSCATTER_IMPL_HEADER
   PetscInt               n;        /* number of processors to send/receive */
   PetscInt               *starts;  /* starting point in indices and values for each proc*/
   PetscInt               *indices; /* list of all components sent or received */
@@ -256,7 +263,8 @@ typedef struct {
 #endif
 } VecScatter_MPI_General;
 
-PETSC_INTERN PetscErrorCode VecScatterIsSequential_Private(VecScatter_MPI_General*,PetscBool*);
+
+PETSC_INTERN PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common*,PetscBool*);
 
 struct _p_VecScatter {
   PETSCHEADER(int);

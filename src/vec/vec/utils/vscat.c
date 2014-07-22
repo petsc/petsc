@@ -1949,9 +1949,13 @@ PetscErrorCode  VecScatterRemap(VecScatter scat,PetscInt *rto,PetscInt *rfrom)
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterIsSequential_Private"
 /*
-  Returns true if the scatter is sequential.
+  VecScatterIsSequential_Private - Returns true if the scatter is sequential.
+
+  scatter - The scatter.
+  flag    - Upon exit flag is true if the scatter is of type VecScatter_Seq_General 
+            or VecScatter_Seq_Stride; otherwise flag is false.
 */
-PetscErrorCode  VecScatterIsSequential_Private(VecScatter_MPI_General *scatter,PetscBool *flag)
+PetscErrorCode  VecScatterIsSequential_Private(VecScatter_Common *scatter,PetscBool *flag)
 {
   VecScatterType scatterType = scatter->type;
 
