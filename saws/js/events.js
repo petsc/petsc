@@ -97,11 +97,11 @@ $(document).on("click","#refresh",function(){
     }
 
     if(displayTree) {
-       $("#treeContainer").html("<div id='tree'> </div>");
-        buildTree();
+        $("#tree").html("");
+        buildTree();//should instead have this method return a string of the generated svg and then append that svg to #tree
     }
     else
-        $("#treeContainer").html("");
+        $("#tree").html("");
 
     if(displayMatrix) {
         /*//display matrix pic. manually add square braces the first time
