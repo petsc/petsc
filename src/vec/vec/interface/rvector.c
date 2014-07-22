@@ -578,7 +578,12 @@ PetscErrorCode  VecSet(Vec x,PetscScalar alpha)
 
   /*  norms can be simply set (if |alpha|*N not too large) */
   val  = PetscAbsScalar(alpha);
-  if (val > PETSC_MAX_REAL/x->map->N) {
+  if (x->map->N == 0) {
+    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],0.0l);CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],0.0);CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_2],0.0);CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_FROBENIUS],0.0);CHKERRQ(ierr);
+  } else if (val > PETSC_MAX_REAL/x->map->N) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],x->map->N * val);CHKERRQ(ierr);
