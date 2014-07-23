@@ -67,6 +67,13 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
   PetscInt       levels = mglevels[0]->levels,i;
 
   PetscFunctionBegin;
+  /* When the DM is supplying the matrix then it will not exist until here */
+  for (i=0; i<levels; i++) {
+    if (!mglevels[i]->A) {
+      ierr = KSPGetOperators(mglevels[i]->smoothu,&mglevels[i]->A,NULL);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)mglevels[i]->A);CHKERRQ(ierr);
+    }
+  }
   mglevels[levels-1]->b = b;
   mglevels[levels-1]->x = x;
 

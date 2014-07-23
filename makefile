@@ -132,7 +132,7 @@ build: chk_makej
 # Build MatLab binaries
 #
 matlabbin:
-	-@if [ "${MATLAB_MEX}" != "" -a "${PETSC_SCALAR}" == "real" -a "${PETSC_PRECISION}" == "double" ]; then \
+	-@if [ "${MATLAB_MEX}" != "" -a "${PETSC_SCALAR}" = "real" -a "${PETSC_PRECISION}" = "double" ]; then \
           echo "BEGINNING TO COMPILE MATLAB INTERFACE"; \
             if [ ! -d "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc" ] ; then ${MKDIR}  ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc; fi; \
             if [ ! -d "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab" ] ; then ${MKDIR}  ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab; fi; \
