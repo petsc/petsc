@@ -132,6 +132,103 @@ cdef class SNES(Object):
     def setDM(self, DM dm not None):
         CHKERR( SNESSetDM(self.snes, dm.dm) )
 
+    # --- FAS ---
+    def setFASInterpolation(self, level, Mat mat not None):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( SNESFASSetInterpolation(self.snes, clevel, mat.mat) )
+
+    def getFASInterpolation(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef Mat mat = Mat()
+        CHKERR( SNESFASGetInterpolation(self.snes, clevel, &mat.mat) )
+        PetscINCREF(mat.obj)
+        return mat
+
+    def setFASRestriction(self, level, Mat mat not None):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( SNESFASSetRestriction(self.snes, clevel, mat.mat) )
+
+    def getFASRestriction(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef Mat mat = Mat()
+        CHKERR( SNESFASGetRestriction(self.snes, clevel, &mat.mat) )
+        PetscINCREF(mat.obj)
+        return mat
+
+    def setFASInjection(self, level, Mat mat not None):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( SNESFASSetInjection(self.snes, clevel, mat.mat) )
+
+    def getFASInjection(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef Mat mat = Mat()
+        CHKERR( SNESFASGetInjection(self.snes, clevel, &mat.mat) )
+        PetscINCREF(mat.obj)
+        return mat
+
+    def setFASRScale(self, level, Vec vec not None):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( SNESFASSetRScale(self.snes, clevel, vec.vec) )
+
+    def setFASLevels(self, levels, comms=None):
+        cdef PetscInt clevels = asInt(levels)
+        cdef PetscInt ncomm = len(comms)
+        cdef int i
+        cdef Comm comm
+        cdef MPI_Comm *ccomms = NULL
+
+        if ncomm > 0:
+            if ncomm != clevels:
+                raise ValueError("Must provide as many communicators as levels")
+            CHKERR( PetscMalloc(sizeof(MPI_Comm)*ncomm, &ccomms) )
+            try:
+                for i, c in enumerate(comms):
+                    comm = <Comm?>c
+                    ccomms[i] = comm.comm
+                CHKERR( SNESFASSetLevels(self.snes, clevels, ccomms) )
+            finally:
+                CHKERR( PetscFree(ccomms) )
+        else:
+            CHKERR( SNESFASSetLevels(self.snes, clevels, NULL) )
+
+    def getFASLevels(self):
+        cdef PetscInt levels = 0
+        CHKERR( SNESFASGetLevels(self.snes, &levels) )
+        return toInt(levels)
+
+    def getFASCycleSNES(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef SNES lsnes = SNES()
+        CHKERR( SNESFASGetCycleSNES(self.snes, clevel, &lsnes.snes) )
+        PetscINCREF(lsnes.obj)
+        return lsnes
+
+    def getFASCoarseSolve(self):
+        cdef SNES smooth = SNES()
+        CHKERR( SNESFASGetCoarseSolve(self.snes, &smooth.snes) )
+        PetscINCREF(smooth.obj)
+        return smooth
+
+    def getFASSmoother(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef SNES smooth = SNES()
+        CHKERR( SNESFASGetSmoother(self.snes, clevel, &smooth.snes) )
+        PetscINCREF(smooth.obj)
+        return smooth
+
+    def getFASSmootherDown(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef SNES smooth = SNES()
+        CHKERR( SNESFASGetSmootherDown(self.snes, clevel, &smooth.snes) )
+        PetscINCREF(smooth.obj)
+        return smooth
+
+    def getFASSmootherUp(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef SNES smooth = SNES()
+        CHKERR( SNESFASGetSmootherUp(self.snes, clevel, &smooth.snes) )
+        PetscINCREF(smooth.obj)
+        return smooth
     # --- nonlinear preconditioner ---
 
     def getNPC(self):
