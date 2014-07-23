@@ -659,7 +659,6 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscErrorCode         ierr;
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-  PetscScalar            *x_array,*y_array;
 
   PetscFunctionBegin;
   ierr = VecGetLocalVector(x, &bjac->x);CHKERRQ(ierr);
