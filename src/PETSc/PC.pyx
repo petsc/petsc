@@ -400,6 +400,89 @@ cdef class PC(Object):
         PetscINCREF(ksp.obj)
         return ksp
 
+    # --- MG ---
+    def getMGLevels(self):
+        cdef PetscInt levels
+        CHKERR( PCMGGetLevels(self.pc, &levels) )
+        return toInt(levels)
+
+    def getMGCoarseSolve(self):
+        cdef KSP ksp = KSP()
+        CHKERR( PCMGGetCoarseSolve(self.pc, &ksp.ksp) )
+        PetscINCREF(ksp.obj)
+        return ksp
+
+    def setMGInterpolation(self, level, Mat mat not None):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( PCMGSetInterpolation(self.pc, clevel, mat.mat) )
+
+    def getMGInterpolation(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef Mat interpolation = Mat()
+        CHKERR( PCMGGetInterpolation(self.pc, clevel, &interpolation.mat) )
+        PetscINCREF(interpolation.obj)
+        return interpolation
+
+    def setMGRestriction(self, level, Mat mat not None):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( PCMGSetRestriction(self.pc, clevel, mat.mat) )
+
+    def getMGRestriction(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef Mat restriction = Mat()
+        CHKERR( PCMGGetRestriction(self.pc, clevel, &restriction.mat) )
+        PetscINCREF(restriction.obj)
+        return restriction
+
+    def setMGRScale(self, level, Vec rscale not None):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( PCMGSetRScale(self.pc, clevel, rscale.vec) )
+
+    def getMGRScale(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef Vec rscale = Vec()
+        CHKERR( PCMGGetRScale(self.pc, clevel, &rscale.vec) )
+        PetscINCREF(rscale.obj)
+        return rscale
+
+    def getMGSmoother(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef KSP ksp = KSP()
+        CHKERR( PCMGGetSmoother(self.pc, clevel, &ksp.ksp) )
+        PetscINCREF(ksp.obj)
+        return ksp
+
+    def getMGSmootherDown(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef KSP ksp = KSP()
+        CHKERR( PCMGGetSmootherDown(self.pc, clevel, &ksp.ksp) )
+        PetscINCREF(ksp.obj)
+        return ksp
+
+    def getMGSmootherUp(self, level):
+        cdef PetscInt clevel = asInt(level)
+        cdef KSP ksp = KSP()
+        CHKERR( PCMGGetSmootherUp(self.pc, clevel, &ksp.ksp) )
+        PetscINCREF(ksp.obj)
+        return ksp
+
+    def setMGCyclesOnLevel(self, level, ncycle):
+        cdef PetscInt clevel = asInt(level)
+        cdef PetscInt c = asInt(ncycle)
+        CHKERR( PCMGSetCyclesOnLevel(self.pc, clevel, c) )
+
+    def setMGRhs(self, level, Vec rhs not None):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( PCMGSetRhs(self.pc, clevel, rhs.vec) )
+
+    def setMGX(self, level, Vec x not None):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( PCMGSetX(self.pc, clevel, x.vec) )
+
+    def setMGR(self, level, Vec r not None):
+        cdef PetscInt clevel = asInt(level)
+        CHKERR( PCMGSetR(self.pc, clevel, r.vec) )
+
 # --------------------------------------------------------------------
 
 del PCType

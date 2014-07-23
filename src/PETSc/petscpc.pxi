@@ -172,6 +172,23 @@ cdef extern from * nogil:
 
     int PCKSPGetKSP(PetscPC,PetscKSP*)
 
+    # --- MG ---
+    int PCMGSetInterpolation(PetscPC,PetscInt,PetscMat)
+    int PCMGGetInterpolation(PetscPC,PetscInt,PetscMat*)
+    int PCMGSetRestriction(PetscPC,PetscInt,PetscMat)
+    int PCMGGetRestriction(PetscPC,PetscInt,PetscMat*)
+    int PCMGSetRScale(PetscPC,PetscInt,PetscVec)
+    int PCMGGetRScale(PetscPC,PetscInt,PetscVec*)
+    int PCMGGetSmoother(PetscPC,PetscInt,PetscKSP*)
+    int PCMGGetSmootherUp(PetscPC,PetscInt,PetscKSP*)
+    int PCMGGetSmootherDown(PetscPC,PetscInt,PetscKSP*)
+    int PCMGGetCoarseSolve(PetscPC,PetscKSP*)
+    int PCMGSetRhs(PetscPC,PetscInt,PetscVec)
+    int PCMGSetX(PetscPC,PetscInt,PetscVec)
+    int PCMGSetR(PetscPC,PetscInt,PetscVec)
+    int PCMGGetLevels(PetscPC,PetscInt*)
+    int PCMGSetCyclesOnLevel(PetscPC,PetscInt,PetscInt)
+
 # --------------------------------------------------------------------
 
 cdef extern from "libpetsc4py.h":
