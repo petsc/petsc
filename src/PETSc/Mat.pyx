@@ -1107,6 +1107,10 @@ cdef class Mat(Object):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR( MatShift(self.mat, sval) )
 
+    def chop(self, tol):
+        cdef PetscReal rval = asReal(tol)
+        CHKERR( MatChop(self.mat, rval) )
+
     def axpy(self, alpha, Mat X not None, structure=None):
         cdef PetscScalar sval = asScalar(alpha)
         cdef PetscMatStructure flag = matstructure(structure)

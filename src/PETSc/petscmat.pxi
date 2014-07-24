@@ -229,6 +229,7 @@ cdef extern from * nogil:
     int MatDiagonalScale(PetscMat, PetscVec OPTIONAL, PetscVec OPTIONAL)
     int MatScale(PetscMat,PetscScalar)
     int MatShift(PetscMat,PetscScalar)
+    int MatChop(PetscMat,PetscReal)
     int MatAXPY(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
     int MatAYPX(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
     int MatMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
