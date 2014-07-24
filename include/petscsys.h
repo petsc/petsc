@@ -123,10 +123,8 @@
 #elif defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
 #  if !defined(OMPI_MAJOR_VERSION)
 #    error "PETSc was configured with OpenMPI but now appears to be compiling using a non-OpenMPI mpi.h"
-#  elif OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION
-#    error "PETSc was configured with one OpenMPI mpi.h major version but now appears to be compiling using a different OpenMPI mpi.h major version"
-#  elif OMPI_MINOR_VERSION != PETSC_HAVE_OMPI_MINOR_VERSION
-#    error "PETSc was configured with one OpenMPI minor mpi.h version but now appears to be compiling using a different OpenMPI mpi.h minor version"
+#  elif (OMPI_MAJOR_VERSION != PETSC_HAVE_OMPI_MAJOR_VERSION) || (OMPI_MINOR_VERSION != PETSC_HAVE_OMPI_MINOR_VERSION) || (OMPI_RELEASE_VERSION != PETSC_HAVE_OMPI_RELEASE_VERSION)
+#    error "PETSc was configured with one OpenMPI mpi.h version but now appears to be compiling using a different OpenMPI mpi.h version"
 #  endif
 #endif
 
