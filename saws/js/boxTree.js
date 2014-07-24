@@ -60,7 +60,10 @@ function getBoxTree(data, endtag, x, y) {
             var child_centered_x = x+text_size.width;
             var child_centered_y = y+elapsedDist;
 
-            child_centered_y = (y+elapsedDist) + .5*childTotalSize.height - .5*childTextSize.height;
+            if(child_pc_type == "mg")
+                child_centered_y = (y+elapsedDist) + .5*childTotalSize.height - .5*childTextSize.height;
+            else
+                child_centered_x = (x+text_size.width) + .5*childTotalSize.width - .5*childTextSize.width;
 
             ret += getCurve(centered_x + node_radius, centered_y + node_radius, child_centered_x + node_radius, child_centered_y + node_radius,"east");
 
@@ -79,7 +82,10 @@ function getBoxTree(data, endtag, x, y) {
             var child_centered_x = x+elapsedDist;
             var child_centered_y = y+text_size.height;
 
-            child_centered_x = (x+elapsedDist) + .5*childTotalSize.width - .5*childTextSize.width;
+            if(child_pc_type == "mg")
+                child_centered_y = (y+text_size.height) + .5*childTotalSize.height - .5*childTextSize.height;
+            else
+                child_centered_x = (x+elapsedDist) + .5*childTotalSize.width - .5*childTextSize.width;
 
             ret += getCurve(centered_x + node_radius, centered_y + node_radius, child_centered_x + node_radius, child_centered_y + node_radius,"south");
 
