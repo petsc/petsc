@@ -34,8 +34,13 @@ function getBoxTree(data, endtag, x, y) {
     else {
         centered_x = x + .5*total_size.width - .5*text_size.width;
     }
-    ret += "<rect x=\"" + centered_x + "\" y=\"" + centered_y + "\" width=\"" + text_size.width + "\" height=\"" + text_size.height + "\" style=\"fill:rgb(0,0,255);stroke-width:2;stroke:rgb(0,0,0)\" />";
-    ret += "<text x=\"" + (centered_x+2) + "\" y=\"" + (centered_y+14) + "\" fill=\"black\">" + endtag + "</text>"; //for debugging purposes, I'm putting the endtag here. this will eventually be replaced by the proper solver description
+
+    var node_radius = 5;
+
+    //ret += "<rect x=\"" + centered_x + "\" y=\"" + centered_y + "\" width=\"" + text_size.width + "\" height=\"" + text_size.height + "\" style=\"fill:rgb(0,0,255);stroke-width:2;stroke:rgb(0,0,0)\" />"; //don't delete this code. this is very useful for debugging purposes
+    ret += "<circle cx=\"" + (centered_x + node_radius) + "\" cy=\"" + (centered_y + node_radius) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"blue\" />";
+
+    ret += "<text x=\"" + (centered_x+2) + "\" y=\"" + (centered_y+20) + "\" fill=\"black\">" + endtag + "</text>"; //for debugging purposes, I'm putting the endtag here. this will eventually be replaced by the proper solver description
 
     var elapsedDist = 0;
 
@@ -47,10 +52,38 @@ function getBoxTree(data, endtag, x, y) {
 
         if(pc_type == "mg") {
             ret += getBoxTree(data, childEndtag, x+text_size.width, y+elapsedDist);
+            //calculate where child is located and draw the appropriate line
+            var child_pc_type  = data[childIndex].pc_type;
+            var childNodeSize  = data[childIndex].node_size;
+            var childTextSize  = getTextSize(data,childEndtag);
+
+            var child_centered_x = x+text_size.width;
+            var child_centered_y = y+elapsedDist;
+
+            child_centered_y = (y+elapsedDist) + .5*childTotalSize.height - .5*childTextSize.height;
+
+            ret += getCurve(centered_x + node_radius, centered_y + node_radius, child_centered_x + node_radius, child_centered_y + node_radius,"east");
+
+
+
+
             elapsedDist += childTotalSize.height;
         }
         else {
             ret += getBoxTree(data, childEndtag, x+elapsedDist, y+text_size.height);
+            //calculate where child is located and draw the appropriate line
+            var child_pc_type  = data[childIndex].pc_type;
+            var childNodeSize  = data[childIndex].node_size;
+            var childTextSize  = getTextSize(data,childEndtag);
+
+            var child_centered_x = x+elapsedDist;
+            var child_centered_y = y+text_size.height;
+
+            child_centered_x = (x+elapsedDist) + .5*childTotalSize.width - .5*childTextSize.width;
+
+            ret += getCurve(centered_x + node_radius, centered_y + node_radius, child_centered_x + node_radius, child_centered_y + node_radius,"south");
+
+
             elapsedDist += childTotalSize.width;
         }
     }
@@ -285,4 +318,44 @@ function calculateSizes2(data, endtag) {
 
 
 
+}
+
+
+//use svg to generate a smooth Bézier curve from one point to another
+//this simple logistic-looking curve algorithm is taken from d3
+function getCurve(x1,y1,x2,y2,direction) {
+
+    var ret = "";
+
+    if(direction == "east") {
+        var mid_x = (x1+x2)/2.0;
+
+        var control1 = new Object();
+        control1.x = mid_x;
+        control1.y = y1;
+
+        var control2 = new Object();
+        control2.x = mid_x;
+        control2.y = y2;
+
+        ret = "<path d=\"M " + x1 + "," + y1 + " " + "C" + control1.x + "," + control1.y + " " + control2.x + "," + control2.y + " " + x2 + "," + y2 + "\" stroke =\"blue\" stroke-width=\"2\" fill=\"none\" />";
+    }
+
+    else if(direction == "south") {
+        var mid_y = (y1+y2)/2.0;
+
+        var control1 = new Object();
+        control1.x = x1;
+        control1.y = mid_y;
+
+        var control2 = new Object();
+        control2.x = x2;
+        control2.y = mid_y;
+
+        ret = "<path d=\"M " + x1 + "," + y1 + " " + "C" + control1.x + "," + control1.y + " " + control2.x + "," + control2.y + " " + x2 + "," + y2 + "\" stroke =\"blue\" stroke-width=\"2\" fill=\"none\" />";
+    }
+
+    /*$("#tree").html("<svg id=\"demo\" width=\"" + matInfo[0].total_size.width + "\" height=\"" + matInfo[0].total_size.height + "\" viewBox=\"0 0 " + matInfo[0].total_size.width + " " + matInfo[0].total_size.height + "\">" + ret + "</svg>");*/ //this was for debugging purposes
+
+    return ret;
 }
