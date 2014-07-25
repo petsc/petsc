@@ -191,8 +191,8 @@ PETSC_EXTERN PetscErrorCode TaoGetKSP(Tao, KSP*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch, Tao);
 PETSC_EXTERN PetscErrorCode TaoGetLineSearch(Tao, TaoLineSearch*);
 
-PETSC_EXTERN PetscErrorCode TaoSetHistory(Tao,PetscReal*,PetscReal*,PetscReal*,PetscInt,PetscBool);
-PETSC_EXTERN PetscErrorCode TaoGetHistory(Tao,PetscReal**,PetscReal**,PetscReal**,PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoSetConvergenceHistory(Tao,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt,PetscBool);
+PETSC_EXTERN PetscErrorCode TaoGetConvergenceHistory(Tao,PetscReal**,PetscReal**,PetscReal**,PetscInt**,PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoSetMonitor(Tao, PetscErrorCode (*)(Tao,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode TaoCancelMonitors(Tao);
 PETSC_EXTERN PetscErrorCode TaoDefaultMonitor(Tao, void*);

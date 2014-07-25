@@ -357,6 +357,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   /* Have not converged; continue with Newton method */
   while (reason == TAO_CONTINUE_ITERATING) {
     ++iter;
+    tao->ksp_its=0;
 
     /* Compute the Hessian */
     if (needH) {
@@ -408,6 +409,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
       tao->ksp_its+=kspits;
+      tao->ksp_tot_its+=kspits;
 
       if (NLS_KSP_NASH == nlsP->ksp_type) {
         ierr = KSPNASHGetNormD(tao->ksp,&norm_d);CHKERRQ(ierr);
@@ -445,6 +447,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D);CHKERRQ(ierr);
           ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
           tao->ksp_its+=kspits;
+          tao->ksp_tot_its+=kspits;
           if (NLS_KSP_NASH == nlsP->ksp_type) {
             ierr = KSPNASHGetNormD(tao->ksp,&norm_d);CHKERRQ(ierr);
           } else if (NLS_KSP_STCG == nlsP->ksp_type) {
@@ -460,6 +463,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       ierr = KSPSolve(tao->ksp, tao->gradient, nlsP->D);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp, &kspits);CHKERRQ(ierr);
       tao->ksp_its += kspits;
+      tao->ksp_tot_its+=kspits;
     }
     ierr = VecScale(nlsP->D, -1.0);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(tao->ksp, &ksp_reason);CHKERRQ(ierr);
