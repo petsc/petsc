@@ -5,7 +5,7 @@
  *
  * 1) No overlapping between boxes
  * 2) When switching directions, the entire sub-tree in direction 2 should be seen as one of the nodes in direction 1 (the original direction)
- * 3) Children of the same depth are shown on the same line (not implemented yet)
+ * 3) Children of the same depth are shown on the same line. note that this is not just sister nodes, but all nodes of the same depth (not yet implemented). Also, this refers to the spot that the illustration of the node is drawn
  * 4) Child nodes are spaced according to the size of their subtree such that the subtrees never overlap at any point
  * 5) Parent is centered at the middle of all the subtrees of the children. (can be adjusted)
  *
@@ -36,11 +36,20 @@ function getBoxTree(data, endtag, x, y) {
     }
 
     var node_radius = 5;
+    var description = getSimpleDescription(endtag);
+    var numLines    = countNumOccurances("<br>",description);
 
     //ret += "<rect x=\"" + centered_x + "\" y=\"" + centered_y + "\" width=\"" + text_size.width + "\" height=\"" + text_size.height + "\" style=\"fill:rgb(0,0,255);stroke-width:2;stroke:rgb(0,0,0)\" />"; //don't delete this code. this is very useful for debugging purposes
     ret += "<circle cx=\"" + (centered_x + node_radius) + "\" cy=\"" + (centered_y + node_radius) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"blue\" />";
 
-    ret += "<text x=\"" + (centered_x+2) + "\" y=\"" + (centered_y+20) + "\" fill=\"black\">" + endtag + "</text>"; //for debugging purposes, I'm putting the endtag here. this will eventually be replaced by the proper solver description
+    for(var i = 0; i<numLines; i++) {
+        var index = description.indexOf("<br>");
+        var chunk = description.substring(0,index);
+        description = description.substring(index+4,description.length);
+        ret += "<text x=\"" + (centered_x+2) + "\" y=\"" + (centered_y+20+12*i) + "\" fill=\"black\" font-size=\"12px\">" + chunk + "</text>"; //for debugging purposes, I'm putting the endtag here. this will eventually be replaced by the proper solver description
+    }
+
+
 
     var elapsedDist = 0;
 
@@ -66,8 +75,6 @@ function getBoxTree(data, endtag, x, y) {
                 child_centered_x = (x+text_size.width) + .5*childTotalSize.width - .5*childTextSize.width;
 
             ret += getCurve(centered_x + node_radius, centered_y + node_radius, child_centered_x + node_radius, child_centered_y + node_radius,"east");
-
-
 
 
             elapsedDist += childTotalSize.height;
@@ -103,16 +110,11 @@ function getTextSize(data, endtag) {
     var index   = getIndex(data,endtag);
     var pc_type = data[index].pc_type;
     var ret     = new Object();
-    ret.width   = 100;
+    ret.width   = 150;
 
-    if(pc_type == "fieldsplit") {
-        ret.height = 50;
-    }
-    else if(pc_type == "mg") {
-        ret.height = 30;
-    }
-    else
-        ret.height = 30;
+    var description = getSimpleDescription(endtag);
+    var height = 20 + 15 * countNumOccurances("<br>",description); //make each line 15 pixels tall
+    ret.height = height;
 
     return ret;
 }
@@ -317,18 +319,8 @@ function calculateSizes(data, endtag) {
     }
 }
 
-//this function goes through the tree a second time and centers sister nodes and makes sure child nodes of the same level (not necesarily sisters) align on the same line. without this function, everything would be crammed tightly together.
-
-function calculateSizes2(data, endtag) {
-
-
-
-
-}
-
-
 //use svg to generate a smooth Bézier curve from one point to another
-//this simple logistic-looking curve algorithm is taken from d3
+//this simple algorithm to find the 2 control points for the bezier curve to generate a logistic-looking curve is taken from the d3 graphics library
 function getCurve(x1,y1,x2,y2,direction) {
 
     var ret = "";

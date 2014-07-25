@@ -101,7 +101,6 @@ $(document).on("click","#refresh",function(){
         //buildTree();
 
         calculateSizes(matInfo,"0");
-        calculateSizes2(matInfo,"0");
         var svgString = getBoxTree(matInfo,"0",0,0);
         $("#tree").html("<svg id=\"treeCanvas\" width=\"" + matInfo[0].total_size.width + "\" height=\"" + matInfo[0].total_size.height + "\" viewBox=\"0 0 " + matInfo[0].total_size.width + " " + matInfo[0].total_size.height + "\">" + svgString + "</svg>");
     }

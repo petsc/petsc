@@ -61,3 +61,17 @@ function getParentIndex(data,endtag) {
 
     return getIndex(data,parentEndtag);
 }
+
+//returns the number of occurances of a string in another string
+function countNumOccurances(small_string, big_string) {
+
+    var count = 0;
+
+    while(small_string.length <= big_string.length && big_string.indexOf(small_string) != -1) {
+        count ++;
+        var loc = big_string.indexOf(small_string);
+        big_string = big_string.substring(loc + small_string.length, big_string.length);
+    }
+
+    return count;
+}
