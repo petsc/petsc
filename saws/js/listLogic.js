@@ -21,6 +21,7 @@ $(document).on("change","select[id^='pc_type']",function() {
         var defaultMgLevels = defaults.pc_mg_levels;
 
         matInfo[index].pc_mg_levels = defaultMgLevels;
+        matInfo[index].pc_mg_type   = defaults.pc_mg_type;
 
         //first add options related to multigrid (pc_mg_type and pc_mg_levels)
         $("#" + parentDiv).append("<br><b>MG Type &nbsp;&nbsp;</b><select id=\"pc_mg_type" + endtag + "\"></select>");
