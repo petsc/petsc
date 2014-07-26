@@ -3,11 +3,11 @@
  *
  * The following aesthetic criteria are satisfied:
  *
- * 1) No overlapping between boxes
- * 2) When switching directions, the entire sub-tree in direction 2 should be seen as one of the nodes in direction 1 (the original direction)
- * 3) Children of the same depth are shown on the same line. note that this is not just sister nodes, but all nodes of the same depth (not yet implemented). Also, this refers to the spot that the illustration of the node is drawn
- * 4) Child nodes are spaced according to the size of their subtree such that the subtrees never overlap at any point
- * 5) Parent is centered at the middle of all the subtrees of the children. (can be adjusted)
+ * 1) No overlapping text
+ * 2) When switching directions, the entire subtree in the new direction should be seen as one of the nodes in the original direction
+ * 3) Sister nodes are shown on the same line (not yet implemented)
+ * 4) No overlapping subtrees
+ * 5) Parent is centered at the middle of its children (not yet implemented)
  *
  */
 
@@ -21,7 +21,6 @@ function getBoxTree(data, endtag, x, y) {
     var pc_type     = data[index].pc_type;
 
     var total_size = data[index].total_size;
-    var node_size  = data[index].node_size;
     var text_size  = getTextSize(data,endtag);
 
     //draw the node itself (centering it properly)
@@ -46,7 +45,7 @@ function getBoxTree(data, endtag, x, y) {
         var index = description.indexOf("<br>");
         var chunk = description.substring(0,index);
         description = description.substring(index+4,description.length);
-        ret += "<text x=\"" + (centered_x+2) + "\" y=\"" + (centered_y+20+12*i) + "\" fill=\"black\" font-size=\"12px\">" + chunk + "</text>"; //for debugging purposes, I'm putting the endtag here. this will eventually be replaced by the proper solver description
+        ret += "<text x=\"" + (centered_x+6) + "\" y=\"" + (centered_y+19+12*i) + "\" fill=\"black\" font-size=\"12px\">" + chunk + "</text>"; //for debugging purposes, I'm putting the endtag here. this will eventually be replaced by the proper solver description
     }
 
 
@@ -63,7 +62,6 @@ function getBoxTree(data, endtag, x, y) {
             ret += getBoxTree(data, childEndtag, x+text_size.width, y+elapsedDist);
             //calculate where child is located and draw the appropriate line
             var child_pc_type  = data[childIndex].pc_type;
-            var childNodeSize  = data[childIndex].node_size;
             var childTextSize  = getTextSize(data,childEndtag);
 
             var child_centered_x = x+text_size.width;
@@ -83,7 +81,6 @@ function getBoxTree(data, endtag, x, y) {
             ret += getBoxTree(data, childEndtag, x+elapsedDist, y+text_size.height);
             //calculate where child is located and draw the appropriate line
             var child_pc_type  = data[childIndex].pc_type;
-            var childNodeSize  = data[childIndex].node_size;
             var childTextSize  = getTextSize(data,childEndtag);
 
             var child_centered_x = x+elapsedDist;
@@ -120,13 +117,7 @@ function getTextSize(data, endtag) {
 }
 
 /*
- * Each node has 3 sizes:
- * 1) text size (the most 'basic' size. the size of the smallest individual entity)
- * 2) node size (the size of the node on a particular level whether vertical or horizonally laid out)
- *    this one is the hardest to understand. a node's node-size only increases when the desired layout changes
- * 3) total size (the size of the node and all of its children)
- *
- * This method recursively calculates the latter two properties (the first one is trivial)
+ * This method recursively calculates each node's total-size (the total size the its subtree takes up)
  * This method puts children of fieldsplit to the south of the parent node and the children of mg to the east of the parent node
  *
  */
@@ -136,12 +127,10 @@ function calculateSizes(data, endtag) {
     var index       = getIndex(data,endtag);
     var text_size   = getTextSize(data,endtag); //return an object containing 'width' and 'height'
     var numChildren = getNumChildren(data,endtag);
-
     var pc_type     = data[index].pc_type;
 
     if(numChildren == 0) {
-	data[index].total_size = text_size; //set both node_size and total_size to text_size
-	data[index].node_size  = text_size;
+	data[index].total_size = text_size; //simply set total_size to text_size
 	return;
     }
 
@@ -151,121 +140,7 @@ function calculateSizes(data, endtag) {
 	calculateSizes(data,childEndtag); //recursively calculate the sizes of all the children !!
     }
 
-    //used to decide if we need to have a big node_size
-    var parentIndex = getParentIndex(data,endtag);
-
-    if(parentIndex == "-1") { //root
-	if(pc_type == "mg") { //put children to the east. normal node_size (use text_size).
-	    data[index].node_size = text_size;
-
-	    var totalHeight = 0; //get the total heights of all the children. and the most extreme width
-	    var maxWidth    = 0;
-
-	    for(var i=0; i<numChildren; i++) {
-		var childEndtag = endtag + "_" + i;
-		var childIndex  = getIndex(data,childEndtag);
-		var childSize   = data[childIndex].total_size;
-
-		totalHeight += childSize.height;
-		if(childSize.width > maxWidth)
-		    maxWidth = childSize.width;
-	    }
-
-	    var total_size = new Object();
-
-	    if(text_size.height > totalHeight) //should be rare, but certainly possible.
-		total_size.height = text_size.height;
-            else
-                total_size.height = totalHeight;
-	    total_size.width = text_size.width + maxWidth;
-
-	    data[index].total_size = total_size;
-	}
-	else { //put children to the south. normal node_size (use text_size).
-	    data[index].node_size = text_size;
-
-	    var totalWidth = 0; //get the total widths of all the children. and the most extreme height
-	    var maxHeight  = 0;
-
-	    for(var i=0; i<numChildren; i++) {
-		var childEndtag = endtag + "_" + i;
-		var childIndex  = getIndex(data,childEndtag);
-		var childSize   = data[childIndex].total_size;
-
-		totalWidth += childSize.width;
-		if(childSize.height > maxHeight)
-		    maxHeight = childSize.height;
-	    }
-
-	    var total_size = new Object();
-
-	    if(text_size.width > totalWidth) //should be rare, but certainly possible.
-		total_size.width = text_size.width;
-            else
-                total_size.width = totalWidth;
-	    total_size.height = text_size.height + maxHeight;
-
-	    data[index].total_size = total_size;
-	}
-	return;
-    } //end of root case.
-
-    var parent_pc_type = data[parentIndex].pc_type;
-
-    if(parent_pc_type != "mg" && pc_type == "mg") { //put children to the east + big node_size !! (simply node_size = total_size)
-	var totalHeight = 0; //get the total heights of all the children. and the most extreme width
-	var maxWidth    = 0;
-
-	for(var i=0; i<numChildren; i++) {
-	    var childEndtag = endtag + "_" + i;
-	    var childIndex  = getIndex(data,childEndtag);
-	    var childSize   = data[childIndex].total_size;
-
-	    totalHeight += childSize.height;
-	    if(childSize.width > maxWidth)
-		maxWidth = childSize.width;
-	}
-
-	var total_size = new Object();
-
-	if(text_size.height > totalHeight) //should be rare, but certainly possible.
-	    total_size.height = text_size.height;
-        else
-            total_size.height = totalHeight;
-	total_size.width = text_size.width + maxWidth;
-
-	data[index].total_size = total_size;
-	data[index].node_size  = total_size;
-    }
-
-    else if(parent_pc_type == "mg" && pc_type != "mg") { //put children to the south + big node_size !! (simply node_size = total_size)
-	var totalWidth = 0; //get the total widths of all the children. and the most extreme height
-	var maxHeight  = 0;
-
-	for(var i=0; i<numChildren; i++) {
-	    var childEndtag = endtag + "_" + i;
-	    var childIndex  = getIndex(data,childEndtag);
-	    var childSize   = data[childIndex].total_size;
-
-	    totalWidth += childSize.width;
-	    if(childSize.height > maxHeight)
-		maxHeight = childSize.height;
-	}
-
-	var total_size = new Object();
-
-	if(text_size.width > totalWidth) //should be rare, but certainly possible.
-	    total_size.width = text_size.width;
-        else
-            total_size.width = totalWidth;
-	total_size.height = text_size.height + maxHeight;
-
-	data[index].total_size = total_size;
-	data[index].node_size  = total_size;
-    }
-
-    else if(pc_type == "mg") { //put children to the east. normal node_size.
-	data[index].node_size = text_size;
+    if(pc_type == "mg") { //put children to the east
 
 	var totalHeight = 0; //get the total heights of all the children. and the most extreme width
 	var maxWidth    = 0;
@@ -290,9 +165,7 @@ function calculateSizes(data, endtag) {
 
 	data[index].total_size = total_size;
     }
-
-    else { //put children to the south. normal node_size.
-	data[index].node_size = text_size;
+    else { //put children to the south
 
 	var totalWidth = 0; //get the total widths of all the children. and the most extreme height
 	var maxHeight  = 0;
@@ -317,7 +190,9 @@ function calculateSizes(data, endtag) {
 
 	data[index].total_size = total_size;
     }
+    return;
 }
+
 
 //use svg to generate a smooth Bézier curve from one point to another
 //this simple algorithm to find the 2 control points for the bezier curve to generate a logistic-looking curve is taken from the d3 graphics library
