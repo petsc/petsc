@@ -5,11 +5,13 @@
  *
  * 1) No overlapping text
  * 2) When switching directions, the entire subtree in the new direction should be seen as one of the nodes in the original direction
- * 3) Sister nodes are shown on the same line (not yet implemented)
+ * 3) Sister nodes are shown on the same line
  * 4) No overlapping subtrees
- * 5) Parent is centered at the middle of its children (not yet implemented)
+ * 5) Parent is centered at the middle of its children
  *
  */
+
+var node_radius = 5; //adjust this global variable to change the size of the drawn node
 
 //generates svg code for the given input parameters
 //the x, y coordinates are the upper left hand coordinate of the drawing. should start with (0,0)
@@ -24,75 +26,42 @@ function getBoxTree(data, endtag, x, y) {
     var text_size  = getTextSize(data,endtag);
 
     //draw the node itself (centering it properly)
-    //this centering algorithm can be easily changed
-    var centered_x = x;
-    var centered_y = y;
-    if(pc_type == "mg") {
-        centered_y = y + .5*total_size.height - .5*text_size.height;
-    }
-    else {
-        centered_x = x + .5*total_size.width - .5*text_size.width;
-    }
+    var visualLoc  = data[index].visual_loc;
 
-    var node_radius = 5;
     var description = getSimpleDescription(endtag);
     var numLines    = countNumOccurances("<br>",description);
 
     //ret += "<rect x=\"" + centered_x + "\" y=\"" + centered_y + "\" width=\"" + text_size.width + "\" height=\"" + text_size.height + "\" style=\"fill:rgb(0,0,255);stroke-width:2;stroke:rgb(0,0,0)\" />"; //don't delete this code. this is very useful for debugging purposes
-    ret += "<circle cx=\"" + (centered_x + node_radius) + "\" cy=\"" + (centered_y + node_radius) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"blue\" />";
+    ret += "<circle cx=\"" + (x + visualLoc.x) + "\" cy=\"" + (y + visualLoc.y) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"blue\" />";
 
     for(var i = 0; i<numLines; i++) {
-        var index = description.indexOf("<br>");
-        var chunk = description.substring(0,index);
-        description = description.substring(index+4,description.length);
-        ret += "<text x=\"" + (centered_x+6) + "\" y=\"" + (centered_y+19+12*i) + "\" fill=\"black\" font-size=\"12px\">" + chunk + "</text>"; //for debugging purposes, I'm putting the endtag here. this will eventually be replaced by the proper solver description
+        var indx  = description.indexOf("<br>");
+        var chunk = description.substring(0,indx);
+        description = description.substring(indx+4,description.length);
+        ret += "<text x=\"" + (x + visualLoc.x + 6) + "\" y=\"" + (y + visualLoc.y + 19 + 12*i) + "\" fill=\"black\" font-size=\"12px\">" + chunk + "</text>";
     }
 
-
-
+    //recursively draw all the children (if any)
     var elapsedDist = 0;
 
-    //recursively draw all the children (if any)
     for(var i = 0; i<numChildren; i++) {
         var childEndtag    = endtag + "_" + i;
         var childIndex     = getIndex(data,childEndtag);
         var childTotalSize = data[childIndex].total_size;
 
         if(pc_type == "mg") {
-            ret += getBoxTree(data, childEndtag, x+text_size.width, y+elapsedDist);
-            //calculate where child is located and draw the appropriate line
-            var child_pc_type  = data[childIndex].pc_type;
-            var childTextSize  = getTextSize(data,childEndtag);
+            ret += getBoxTree(data, childEndtag, x+text_size.width+data[index].indentations[i], y+elapsedDist); //remember to indent !!
 
-            var child_centered_x = x+text_size.width;
-            var child_centered_y = y+elapsedDist;
-
-            if(child_pc_type == "mg")
-                child_centered_y = (y+elapsedDist) + .5*childTotalSize.height - .5*childTextSize.height;
-            else
-                child_centered_x = (x+text_size.width) + .5*childTotalSize.width - .5*childTextSize.width;
-
-            ret += getCurve(centered_x + node_radius, centered_y + node_radius, child_centered_x + node_radius, child_centered_y + node_radius,"east");
-
+            //draw the appropriate line from the parent to the child
+            ret += getCurve(x + visualLoc.x, y + visualLoc.y, x+text_size.width+data[index].indentations[i]+data[childIndex].visual_loc.x, y+elapsedDist+data[childIndex].visual_loc.y,"east");
 
             elapsedDist += childTotalSize.height;
         }
         else {
-            ret += getBoxTree(data, childEndtag, x+elapsedDist, y+text_size.height);
-            //calculate where child is located and draw the appropriate line
-            var child_pc_type  = data[childIndex].pc_type;
-            var childTextSize  = getTextSize(data,childEndtag);
+            ret += getBoxTree(data, childEndtag, x+elapsedDist, y+text_size.height+data[index].indentations[i]); //remember to indent !!
 
-            var child_centered_x = x+elapsedDist;
-            var child_centered_y = y+text_size.height;
-
-            if(child_pc_type == "mg")
-                child_centered_y = (y+text_size.height) + .5*childTotalSize.height - .5*childTextSize.height;
-            else
-                child_centered_x = (x+elapsedDist) + .5*childTotalSize.width - .5*childTextSize.width;
-
-            ret += getCurve(centered_x + node_radius, centered_y + node_radius, child_centered_x + node_radius, child_centered_y + node_radius,"south");
-
+            //draw the appropriate line from the parent to the child
+            ret += getCurve(x + visualLoc.x, y + visualLoc.y, x+elapsedDist+data[childIndex].visual_loc.x, y+text_size.height+data[index].indentations[i]+data[childIndex].visual_loc.y ,"south");
 
             elapsedDist += childTotalSize.width;
         }
@@ -110,7 +79,7 @@ function getTextSize(data, endtag) {
     ret.width   = 150;
 
     var description = getSimpleDescription(endtag);
-    var height = 20 + 15 * countNumOccurances("<br>",description); //make each line 15 pixels tall
+    var height = 19 + 12 * countNumOccurances("<br>",description); //make each line 15 pixels tall
     ret.height = height;
 
     return ret;
@@ -118,7 +87,9 @@ function getTextSize(data, endtag) {
 
 /*
  * This method recursively calculates each node's total-size (the total size the its subtree takes up)
- * This method puts children of fieldsplit to the south of the parent node and the children of mg to the east of the parent node
+ * Children of mg are put to the east of the parent node and children of anything else are put to the south
+ * If the node has children, this method also calculates the data on how the child nodes should be indented (so that all sister nodes line up)
+ * Also calculates and records the location (the center coordinates) of the visual node
  *
  */
 
@@ -131,64 +102,194 @@ function calculateSizes(data, endtag) {
 
     if(numChildren == 0) {
 	data[index].total_size = text_size; //simply set total_size to text_size
+        data[index].visual_loc = {
+            x: node_radius,
+            y: node_radius
+        }; //the location of the visual node
 	return;
     }
 
     //otherwise, first recursively calculate the properties of the child nodes
     for(var i = 0; i<numChildren; i++) {
 	var childEndtag = endtag + "_" + i;
-	calculateSizes(data,childEndtag); //recursively calculate the sizes of all the children !!
+	calculateSizes(data,childEndtag); //recursively calculate the data of all the children !!
     }
 
     if(pc_type == "mg") { //put children to the east
 
-	var totalHeight = 0; //get the total heights of all the children. and the most extreme width
-	var maxWidth    = 0;
+	var totalHeight = 0; //get the total heights of all the children. and the most extreme visual node location
+        var mostShifted = 0; //of the child nodes, find the most x_shifted visual node
 
-	for(var i=0; i<numChildren; i++) {
-	    var childEndtag = endtag + "_" + i;
-	    var childIndex  = getIndex(data,childEndtag);
-	    var childSize   = data[childIndex].total_size;
+	for(var i=0; i<numChildren; i++) { //iterate thru the children to get the total height and most extreme visual node location
+	    var childEndtag  = endtag + "_" + i;
+	    var childIndex   = getIndex(data,childEndtag);
+
+            var childSize    = data[childIndex].total_size;
+            var visualLoc    = data[childIndex].visual_loc;
 
 	    totalHeight += childSize.height;
-	    if(childSize.width > maxWidth)
-		maxWidth = childSize.width;
+            if(visualLoc.x > mostShifted)
+                mostShifted = visualLoc.x;
 	}
+
+        var indentations  = new Array();
+        var rightFrontier = 0;
+
+        for(var i=0; i<numChildren; i++) { //iterate through the children again and indent each child such that their visual nodes line up
+            var childEndtag  = endtag + "_" + i;
+	    var childIndex   = getIndex(data,childEndtag);
+            var childSize    = data[childIndex].total_size;
+            var visualLoc    = data[childIndex].visual_loc;
+
+            indentations[i] = 0;
+
+            if(visualLoc.x < mostShifted) {
+                indentations[i] = mostShifted - visualLoc.x; //record to let the drawing algorithm know to indent these children
+            }
+            if(indentations[i] + childSize.width > rightFrontier) //at the same time, calculate how wide the total_size must be
+                rightFrontier = indentations[i] + childSize.width;
+        }
+
+        //find where the parent node must be (if there is an odd number of children, simply align it with the center child. for even, take average of the middle 2 children)
+        var visualLoc = new Object();
+        visualLoc.x = node_radius;
+
+        if(numChildren % 2 == 0) { //even number of children (take avg of middle two visual nodes)
+            var elapsedDist = 0;
+            for(var i = 0; i<numChildren/2 - 1; i++) {
+                var childEndtag  = endtag + "_" + i;
+	        var childIndex   = getIndex(data,childEndtag);
+                elapsedDist += data[childIndex].total_size.height;
+            }
+            var child1 = numChildren/2 - 1;
+            var child2 = numChildren/2;
+            var child1_endtag = endtag + "_" + child1;
+            var child2_endtag = endtag + "_" + child2;
+            var child1_index  = getIndex(data,child1_endtag);
+            var child2_index  = getIndex(data,child2_endtag);
+
+            var child1_pos    = elapsedDist + data[child1_index].visual_loc.y;
+            var child2_pos    = elapsedDist + data[child1_index].total_size.height + data[child2_index].visual_loc.y;
+
+            var mid_y = (child1_pos + child2_pos)/2;
+            visualLoc.y = mid_y;
+        }
+        else { //odd number of children (simply take the visual y-coord of the middle child)
+            var elapsedDist = 0;
+            for(var i = 0; i<Math.floor(numChildren/2); i++) {
+                var childEndtag  = endtag + "_" + i;
+	        var childIndex   = getIndex(data,childEndtag);
+                elapsedDist += data[childIndex].total_size.height;
+            }
+            var child = Math.floor(numChildren/2);
+            var child_endtag = endtag + "_" + child;
+            var child_index  = getIndex(data,child_endtag);
+
+            var mid_y = elapsedDist + data[child_index].visual_loc.y;
+            visualLoc.y = mid_y;
+        }
 
 	var total_size = new Object();
 
-	if(text_size.height > totalHeight) //should be rare, but certainly possible.
-	    total_size.height = text_size.height;
+        var southFrontier = visualLoc.y - node_radius + text_size.height;
+	if(southFrontier > totalHeight) //should be rare, but certainly possible. (this is when the parent node is absurdly long)
+	    total_size.height = southFrontier;
         else
             total_size.height = totalHeight;
-	total_size.width = text_size.width + maxWidth;
 
-	data[index].total_size = total_size;
+	total_size.width = text_size.width + rightFrontier; //total width depends on how far the right frontier got pushed
+
+	data[index].total_size   = total_size;
+        data[index].indentations = indentations;
+        data[index].visual_loc   = visualLoc;
     }
     else { //put children to the south
 
-	var totalWidth = 0; //get the total widths of all the children. and the most extreme height
-	var maxHeight  = 0;
+	var totalWidth = 0; //get the total widths of all the children. and the most extreme visual node location
+        var mostShifted = 0; //of the child nodes, find the most y_shifted visual node
 
-	for(var i=0; i<numChildren; i++) {
+	for(var i=0; i<numChildren; i++) { //iterate thru the children to get the total width and most extreme visual node location
 	    var childEndtag = endtag + "_" + i;
 	    var childIndex  = getIndex(data,childEndtag);
+
 	    var childSize   = data[childIndex].total_size;
+            var visualLoc   = data[childIndex].visual_loc;
 
 	    totalWidth += childSize.width;
-	    if(childSize.height > maxHeight)
-		maxHeight = childSize.height;
+	    if(visualLoc.y > mostShifted)
+		mostShifted = visualLoc.y;
 	}
+
+        var indentations  = new Array();
+        var southFrontier = 0;
+
+        for(var i=0; i<numChildren; i++) { //iterate through the children again and indent each child such that their visual nodes line up
+            var childEndtag  = endtag + "_" + i;
+	    var childIndex   = getIndex(data,childEndtag);
+            var childSize    = data[childIndex].total_size;
+            var visualLoc    = data[childIndex].visual_loc;
+
+            indentations[i] = 0;
+
+            if(visualLoc.y < mostShifted) {
+                indentations[i] = mostShifted - visualLoc.y; //record to let the drawing algorithm know to indent these children
+            }
+            if(indentations[i] + childSize.height > southFrontier) //at the same time, calculate how long the total_size must be
+                southFrontier = indentations[i] + childSize.height;
+        }
+
+        //find where the parent node must be (if there is an odd number of children, simply align it with the center child. for even, take average of the middle 2 children)
+        var visualLoc = new Object();
+        visualLoc.y   = node_radius;
+
+        if(numChildren % 2 == 0) { //even number of children (take avg of middle two visual nodes)
+            var elapsedDist = 0;
+            for(var i = 0; i<numChildren/2 - 1; i++) {
+                var childEndtag  = endtag + "_" + i;
+	        var childIndex   = getIndex(data,childEndtag);
+                elapsedDist += data[childIndex].total_size.width;
+            }
+            var child1 = numChildren/2 - 1;
+            var child2 = numChildren/2;
+            var child1_endtag = endtag + "_" + child1;
+            var child2_endtag = endtag + "_" + child2;
+            var child1_index  = getIndex(data,child1_endtag);
+            var child2_index  = getIndex(data,child2_endtag);
+
+            var child1_pos    = elapsedDist + data[child1_index].visual_loc.x;
+            var child2_pos    = elapsedDist + data[child1_index].total_size.width + data[child2_index].visual_loc.x;
+
+            var mid_x = (child1_pos + child2_pos)/2;
+            visualLoc.x = mid_x;
+        }
+        else { //odd number of children (simply take the visual y-coord of the middle child)
+            var elapsedDist = 0;
+            for(var i = 0; i<Math.floor(numChildren/2); i++) {
+                var childEndtag  = endtag + "_" + i;
+	        var childIndex   = getIndex(data,childEndtag);
+                elapsedDist += data[childIndex].total_size.width;
+            }
+            var child = Math.floor(numChildren/2);
+            var child_endtag = endtag + "_" + child;
+            var child_index  = getIndex(data,child_endtag);
+
+            var mid_x = elapsedDist + data[child_index].visual_loc.x;
+            visualLoc.x = mid_x;
+        }
 
 	var total_size = new Object();
 
-	if(text_size.width > totalWidth) //should be rare, but certainly possible.
-	    total_size.width = text_size.width;
+        var rightFrontier = visualLoc.x - node_radius + text_size.width;
+	if(rightFrontier > totalWidth) //should be rare, but certainly possible. (this is when the parent node is absurdly wide)
+	    total_size.width = rightFrontier;
         else
             total_size.width = totalWidth;
-	total_size.height = text_size.height + maxHeight;
 
-	data[index].total_size = total_size;
+	total_size.height = text_size.height + southFrontier; //total height depends on how far the south frontier got pushed
+
+	data[index].total_size   = total_size;
+        data[index].indentations = indentations;
+        data[index].visual_loc   = visualLoc;
     }
     return;
 }
