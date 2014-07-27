@@ -32,11 +32,17 @@ class ViewerFormat(object):
     ASCII_PCICE       = PETSC_VIEWER_ASCII_PCICE
     ASCII_PYTHON      = PETSC_VIEWER_ASCII_PYTHON
     ASCII_FACTOR_INFO = PETSC_VIEWER_ASCII_FACTOR_INFO
+    ASCII_LATEX       = PETSC_VIEWER_ASCII_LATEX
     DRAW_BASIC        = PETSC_VIEWER_DRAW_BASIC
     DRAW_LG           = PETSC_VIEWER_DRAW_LG
     DRAW_CONTOUR      = PETSC_VIEWER_DRAW_CONTOUR
     DRAW_PORTS        = PETSC_VIEWER_DRAW_PORTS
+    VTK_VTS           = PETSC_VIEWER_VTK_VTS
+    VTK_VTR           = PETSC_VIEWER_VTK_VTR
+    VTK_VTU           = PETSC_VIEWER_VTK_VTU
+    BINARY_MATLAB     = PETSC_VIEWER_BINARY_MATLAB
     NATIVE            = PETSC_VIEWER_NATIVE
+    HDF5_VIZ          = PETSC_VIEWER_HDF5_VIZ
     NOFORMAT          = PETSC_VIEWER_NOFORMAT
 
 class FileMode(object):
@@ -148,6 +154,19 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
         CHKERR( PetscViewerFileSetName(self.vwr, cname) )
         CHKERR( PetscViewerSetFormat(self.vwr, cvfmt) )
+        return self
+
+    def createVTK(self, name, mode=None, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
+        cdef PetscFileMode cmode = filemode(mode)
+        cdef PetscViewer newvwr = NULL
+        CHKERR( PetscViewerCreate(ccomm, &newvwr) )
+        PetscCLEAR(self.obj); self.vwr = newvwr
+        CHKERR( PetscViewerSetType(self.vwr, PETSCVIEWERVTK) )
+        CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
+        CHKERR( PetscViewerFileSetName(self.vwr, cname) )
         return self
 
     def createHDF5(self, name, mode=None, comm=None):
