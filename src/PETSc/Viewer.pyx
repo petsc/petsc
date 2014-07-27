@@ -307,7 +307,7 @@ cdef class Viewer(Object):
 
     # --- methods specific to draw viewers ---
 
-    def setInfo(self,  display=None, title=None, position=None, size=None):
+    def setDrawInfo(self,  display=None, title=None, position=None, size=None):
         cdef const_char *cdisplay = NULL
         cdef const_char *ctitle = NULL
         display = str2bytes(display, &cdisplay)
@@ -325,7 +325,7 @@ cdef class Viewer(Object):
                                        cdisplay, ctitle,
                                        x, y, w, h) )
 
-    def clear(self):
+    def clearDraw(self):
         CHKERR( PetscViewerDrawClear(self.vwr) )
 
 # --------------------------------------------------------------------
