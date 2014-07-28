@@ -44,7 +44,7 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
   TAO_SSLS                     *ssls = (TAO_SSLS *)tao->data;
   PetscReal                    psi, ndpsi, normd, innerd, t=0;
   PetscReal                    delta, rho;
-  PetscInt                     iter=0,kspits;
+  PetscInt                     iter=0;
   TaoConvergedReason           reason;
   TaoLineSearchConvergedReason ls_reason;
   PetscErrorCode               ierr;
@@ -75,8 +75,8 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
        rest of the code uses -d.) */
     ierr = KSPSetOperators(tao->ksp,tao->jacobian,tao->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp,ssls->ff,tao->stepdirection);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
-    tao->ksp_its+=kspits;
+    ierr = KSPGetIterationNumber(tao->ksp,&tao->ksp_its);CHKERRQ(ierr);
+    tao->ksp_tot_its+=tao->ksp_its;
     ierr = VecNorm(tao->stepdirection,NORM_2,&normd);CHKERRQ(ierr);
     ierr = VecDot(tao->stepdirection,ssls->dpsi,&innerd);CHKERRQ(ierr);
 

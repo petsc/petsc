@@ -51,6 +51,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
   ierr = TaoMonitor(tao,iter++,ipmP->kkt_f,ipmP->phi,0.0,1.0,&reason);
 
   while (reason == TAO_CONTINUE_ITERATING) {
+    tao->ksp_its=0;
     ierr = IPMUpdateK(tao);CHKERRQ(ierr);
     /*
        rhs.x    = -rd
@@ -77,6 +78,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
     ierr = IPMScatterStep(tao,ipmP->bigstep,tao->stepdirection,ipmP->ds,ipmP->dlamdae,ipmP->dlamdai);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
     tao->ksp_its += its;
+    tao->ksp_tot_its+=its;
      /* Find distance along step direction to closest bound */
     if (ipmP->nb > 0) {
       ierr = VecStepBoundInfo(ipmP->s,ipmP->ds,ipmP->Zero_nb,ipmP->Inf_nb,&step_s,NULL,NULL);CHKERRQ(ierr);
@@ -143,7 +145,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
     ierr = IPMScatterStep(tao,ipmP->bigstep,tao->stepdirection,ipmP->ds,ipmP->dlamdae,ipmP->dlamdai);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
     tao->ksp_its += its;
-
+    tao->ksp_tot_its+=its;
     if (ipmP->nb > 0) {
       /* Get max step size and apply frac-to-boundary */
       tau = PetscMax(ipmP->taumin,1.0-ipmP->mu);
