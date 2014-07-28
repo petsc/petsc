@@ -32,14 +32,14 @@ function getBoxTree(data, endtag, x, y) {
     var numLines    = countNumOccurances("<br>",description);
 
     //ret += "<rect x=\"" + centered_x + "\" y=\"" + centered_y + "\" width=\"" + text_size.width + "\" height=\"" + text_size.height + "\" style=\"fill:rgb(0,0,255);stroke-width:2;stroke:rgb(0,0,0)\" />"; //don't delete this code. this is very useful for debugging purposes
-    ret += "<circle cx=\"" + (x + visualLoc.x) + "\" cy=\"" + (y + visualLoc.y) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"blue\" />";
+    //ret += "<circle cx=\"" + (x + visualLoc.x) + "\" cy=\"" + (y + visualLoc.y) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"blue\" />";
 
-    for(var i = 0; i<numLines; i++) {
+    /*for(var i = 0; i<numLines; i++) {
         var indx  = description.indexOf("<br>");
         var chunk = description.substring(0,indx);
         description = description.substring(indx+4,description.length);
         ret += "<text x=\"" + (x + visualLoc.x + 1.2*node_radius) + "\" y=\"" + (y + visualLoc.y + 2*node_radius + 12*i) + "\" fill=\"black\" font-size=\"12px\">" + chunk + "</text>";
-    }
+    }*/
 
     //recursively draw all the children (if any)
     var elapsedDist = 0;
@@ -50,21 +50,34 @@ function getBoxTree(data, endtag, x, y) {
         var childTotalSize = data[childIndex].total_size;
 
         if(pc_type == "mg") {
-            ret += getBoxTree(data, childEndtag, x+text_size.width+data[index].indentations[i], y+elapsedDist); //remember to indent !!
+            //ret += getBoxTree(data, childEndtag, x+text_size.width+data[index].indentations[i], y+elapsedDist); //remember to indent !!
 
             //draw the appropriate line from the parent to the child
             ret += getCurve(x + visualLoc.x, y + visualLoc.y, x+text_size.width+data[index].indentations[i]+data[childIndex].visual_loc.x, y+elapsedDist+data[childIndex].visual_loc.y,"east");
 
+            ret += getBoxTree(data, childEndtag, x+text_size.width+data[index].indentations[i], y+elapsedDist); //remember to indent !!
+
             elapsedDist += childTotalSize.height;
         }
         else {
-            ret += getBoxTree(data, childEndtag, x+elapsedDist, y+text_size.height+data[index].indentations[i]); //remember to indent !!
+            //ret += getBoxTree(data, childEndtag, x+elapsedDist, y+text_size.height+data[index].indentations[i]); //remember to indent !!
 
             //draw the appropriate line from the parent to the child
             ret += getCurve(x + visualLoc.x, y + visualLoc.y, x+elapsedDist+data[childIndex].visual_loc.x, y+text_size.height+data[index].indentations[i]+data[childIndex].visual_loc.y ,"south");
 
+            ret += getBoxTree(data, childEndtag, x+elapsedDist, y+text_size.height+data[index].indentations[i]); //remember to indent !!
+
             elapsedDist += childTotalSize.width;
         }
+    }
+
+    ret += "<circle cx=\"" + (x + visualLoc.x) + "\" cy=\"" + (y + visualLoc.y) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"blue\" />";
+
+    for(var i = 0; i<numLines; i++) {
+        var indx  = description.indexOf("<br>");
+        var chunk = description.substring(0,indx);
+        description = description.substring(indx+4,description.length);
+        ret += "<text x=\"" + (x + visualLoc.x + 1.2*node_radius) + "\" y=\"" + (y + visualLoc.y + 2*node_radius + 12*i) + "\" fill=\"black\" font-size=\"12px\">" + chunk + "</text>";
     }
 
     return ret;
@@ -312,7 +325,7 @@ function getCurve(x1,y1,x2,y2,direction) {
         control2.x = mid_x;
         control2.y = y2;
 
-        ret = "<path d=\"M " + x1 + "," + y1 + " " + "C" + control1.x + "," + control1.y + " " + control2.x + "," + control2.y + " " + x2 + "," + y2 + "\" stroke =\"blue\" stroke-width=\"2\" fill=\"none\" />";
+        ret = "<path d=\"M " + x1 + "," + y1 + " " + "C" + control1.x + "," + control1.y + " " + control2.x + "," + control2.y + " " + x2 + "," + y2 + "\" stroke =\"blue\" stroke-width=\"2\" stroke-opacity=\".5\" fill=\"none\" />";
     }
 
     else if(direction == "south") {
@@ -326,10 +339,8 @@ function getCurve(x1,y1,x2,y2,direction) {
         control2.x = x2;
         control2.y = mid_y;
 
-        ret = "<path d=\"M " + x1 + "," + y1 + " " + "C" + control1.x + "," + control1.y + " " + control2.x + "," + control2.y + " " + x2 + "," + y2 + "\" stroke =\"blue\" stroke-width=\"2\" fill=\"none\" />";
+        ret = "<path d=\"M " + x1 + "," + y1 + " " + "C" + control1.x + "," + control1.y + " " + control2.x + "," + control2.y + " " + x2 + "," + y2 + "\" stroke =\"blue\" stroke-width=\"2\" stroke-opacity=\".5\" fill=\"none\" />";
     }
-
-    /*$("#tree").html("<svg id=\"demo\" width=\"" + matInfo[0].total_size.width + "\" height=\"" + matInfo[0].total_size.height + "\" viewBox=\"0 0 " + matInfo[0].total_size.width + " " + matInfo[0].total_size.height + "\">" + ret + "</svg>");*/ //this was for debugging purposes
 
     return ret;
 }
