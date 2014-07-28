@@ -42,6 +42,8 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   if (xin->valid_GPU_array == PETSC_CUSP_GPU) {
     if (xin->spptr && ctx->spptr) {
       ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+    } else {
+      ierr = VecCUSPCopyFromGPU(xin);CHKERRQ(ierr);
     }
   }
   xv = *(PetscScalar**)xin->data;
