@@ -38,7 +38,7 @@ function getBoxTree(data, endtag, x, y) {
         var indx  = description.indexOf("<br>");
         var chunk = description.substring(0,indx);
         description = description.substring(indx+4,description.length);
-        ret += "<text x=\"" + (x + visualLoc.x + 6) + "\" y=\"" + (y + visualLoc.y + 19 + 12*i) + "\" fill=\"black\" font-size=\"12px\">" + chunk + "</text>";
+        ret += "<text x=\"" + (x + visualLoc.x + 1.2*node_radius) + "\" y=\"" + (y + visualLoc.y + 2*node_radius + 12*i) + "\" fill=\"black\" font-size=\"12px\">" + chunk + "</text>";
     }
 
     //recursively draw all the children (if any)
@@ -79,7 +79,7 @@ function getTextSize(data, endtag) {
     ret.width   = 150;
 
     var description = getSimpleDescription(endtag);
-    var height = 19 + 12 * countNumOccurances("<br>",description); //make each line 15 pixels tall
+    var height = 2*node_radius + 12 * countNumOccurances("<br>",description); //make each line 15 pixels tall
     ret.height = height;
 
     return ret;
