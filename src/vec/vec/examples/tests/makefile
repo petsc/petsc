@@ -236,6 +236,11 @@ runex4:
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex4_1, diffs above\n=========================================\n"; fi;\
 	   ${RM} -f ex4_1.tmp
+runex4_cusp2:
+	-@${MPIEXEC} -n 2 ./ex4 -vec_type cusp > ex4_cusp_2.tmp 2>&1;\
+	   if (${DIFF} output/ex4_1.out ex4_cusp_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex4_cusp2, diffs above\n=========================================\n"; fi;\
+	   ${RM} -f ex4_cusp_2.tmp
 runex5:
 	-@${MPIEXEC} -n 2 ./ex5 > ex5_1.tmp 2>&1;\
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
@@ -458,6 +463,7 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex32f.PETSc runex32f ex32f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI = ex19f.PETSc runex19f ex19f.rm
 TESTEXAMPLES_C_X_MPIUNI   = ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 \
                               ex7.rm ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm
-TESTEXAMPLES_CUSP           = ex44.PETSc runex44 ex44.rm
+TESTEXAMPLES_CUSP           = ex44.PETSc runex44 ex44.rm \
+                              ex4.PETSc runex4_cusp2 ex4.rm 
 
 include ${PETSC_DIR}/conf/test
