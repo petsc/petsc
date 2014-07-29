@@ -226,6 +226,11 @@ PetscErrorCode DMPlexCreateGmsh_ReadElement(FILE *fd, PetscInt *dim, int *cellNu
     *numCorners = 8;
     snum = fscanf(fd, "%d %d %d %d %d %d %d %d\n", &cone[0], &cone[1], &cone[2], &cone[3], &cone[4], &cone[5], &cone[6], &cone[7]);CHKERRQ(snum != *numCorners);
     break;
+  case 15: /* 1-node vertex */
+    *dim = 0;
+    *numCorners = 1;
+    snum = fscanf(fd, "%d\n", &cone[0]);CHKERRQ(snum != *numCorners);
+    break;
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported Gmsh element type %d", cellType);
   }
