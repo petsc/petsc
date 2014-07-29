@@ -1119,6 +1119,38 @@ PetscErrorCode TaoGetKSP(Tao tao, KSP *ksp)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TaoGetLinearSolveIterations"
+/*@
+   TaoGetLinearSolveIterations - Gets the total number of linear iterations
+   used by the TAO solver
+
+   Not Collective
+
+   Input Parameter:
+.  tao - TAO context
+
+   Output Parameter:
+.  lits - number of linear iterations
+
+   Notes:
+   This counter is reset to zero for each successive call to TaoSolve()
+
+   Level: intermediate
+
+.keywords: TAO
+
+.seealso:  TaoGetKSP()
+@*/
+PetscErrorCode  TaoGetLinearSolveIterations(Tao tao,PetscInt *lits)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  PetscValidIntPointer(lits,2);
+  *lits = tao->ksp_its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TaoGetLineSearch"
 /*@
   TaoGetLineSearch - Gets the line search used by the optimization solver.
