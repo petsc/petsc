@@ -125,12 +125,14 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
   tao->steptol     = 0.0;
   tao->trust0      = PETSC_INFINITY;
   tao->fmin        = PETSC_NINFINITY;
+  tao->hist_malloc = PETSC_FALSE;
   tao->hist_reset = PETSC_TRUE;
   tao->hist_max = 0;
   tao->hist_len = 0;
   tao->hist_obj = NULL;
   tao->hist_resid = NULL;
   tao->hist_cnorm = NULL;
+  tao->hist_lits = NULL;
 
   tao->numbermonitors=0;
   tao->viewsolution=PETSC_FALSE;
@@ -300,6 +302,12 @@ PetscErrorCode TaoDestroy(Tao *tao)
   ierr = ISDestroy(&(*tao)->state_is);CHKERRQ(ierr);
   ierr = ISDestroy(&(*tao)->design_is);CHKERRQ(ierr);
   ierr = TaoCancelMonitors(*tao);CHKERRQ(ierr);
+  if ((*tao)->hist_malloc) {
+    ierr = PetscFree((*tao)->hist_obj);CHKERRQ(ierr);
+    ierr = PetscFree((*tao)->hist_resid);CHKERRQ(ierr);
+    ierr = PetscFree((*tao)->hist_cnorm);CHKERRQ(ierr);
+    ierr = PetscFree((*tao)->hist_lits);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -528,7 +536,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
     }
     if (tao->ksp) {
       ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(tao->ksp),viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"total KSP iterations: %D\n",tao->ksp_its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"total KSP iterations: %D\n",tao->ksp_tot_its);CHKERRQ(ierr);
     }
     if (tao->XL || tao->XU) {
       ierr = PetscViewerASCIIPrintf(viewer,"Active Set subset type: %s\n",TaoSubSetTypes[tao->subset_type]);
@@ -1245,6 +1253,7 @@ PetscErrorCode TaoResetStatistics(Tao tao)
   tao->njac         = 0;
   tao->nconstraints = 0;
   tao->ksp_its      = 0;
+  tao->ksp_tot_its      = 0;
   tao->reason       = TAO_CONTINUE_ITERATING;
   tao->residual     = 0.0;
   tao->cnorm        = 0.0;
@@ -2294,7 +2303,7 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
   if (its == 0) {
     tao->cnorm0 = cnorm; tao->gnorm0 = res;
   }
-  TaoLogHistory(tao,f,res,cnorm);
+  TaoLogConvergenceHistory(tao,f,res,cnorm,tao->ksp_its);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(res)) SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   if (tao->ops->convergencetest) {
     ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
@@ -2307,9 +2316,9 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSetHistory"
+#define __FUNCT__ "TaoSetConvergenceHistory"
 /*@
-   TaoSetHistory - Sets the array used to hold the convergence history.
+   TaoSetConvergenceHistory - Sets the array used to hold the convergence history.
 
    Logically Collective on Tao
 
@@ -2318,14 +2327,20 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
 .  obj   - array to hold objective value history
 .  resid - array to hold residual history
 .  cnorm - array to hold constraint violation history
+.  lits - integer array holds the number of linear iterations for each solve
 .  na  - size of obj, resid, and cnorm
 -  reset - PetscTrue indicates each new minimization resets the history counter to zero,
            else it continues storing new values for new minimizations after the old ones
 
    Notes:
    If set, TAO will fill the given arrays with the indicated
-   information at each iteration.  If no information is desired
-   for a given array, then NULL may be used.
+   information at each iteration.  If 'obj','resid','cnorm','lits' are
+   *all* NULL then space (using size na, or 1000 if na is PETSC_DECIDE or
+   PETSC_DEFAULT) is allocated for the history.
+   If not all are NULL, then only the Non-NULL information categories
+   will be stored, the others will be ignored.
+
+   Any convergence information after iteration number 'na' will not be stored.
 
    This routine is useful, e.g., when running a code for purposes
    of accurate performance monitoring, when no I/O should be done
@@ -2333,25 +2348,43 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
 
    Level: intermediate
 
-.seealso: TaoGetHistory()
+.seealso: TaoGetConvergenceHistory()
 
 @*/
-PetscErrorCode TaoSetHistory(Tao tao, PetscReal *obj, PetscReal *resid, PetscReal *cnorm, PetscInt na,PetscBool reset)
+PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal *obj, PetscReal *resid, PetscReal *cnorm, PetscInt *lits, PetscInt na,PetscBool reset)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  if (obj) PetscValidScalarPointer(obj,2);
+  if (resid) PetscValidScalarPointer(resid,3);
+  if (cnorm) PetscValidScalarPointer(cnorm,4);
+  if (lits) PetscValidIntPointer(lits,5);
+
+  if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;
+  if (!obj && !resid && !cnorm && !lits) {
+    ierr = PetscCalloc1(na,&obj);CHKERRQ(ierr);
+    ierr = PetscCalloc1(na,&resid);CHKERRQ(ierr);
+    ierr = PetscCalloc1(na,&cnorm);CHKERRQ(ierr);
+    ierr = PetscCalloc1(na,&lits);CHKERRQ(ierr);
+    tao->hist_malloc=PETSC_TRUE;
+  }
+
   tao->hist_obj = obj;
   tao->hist_resid = resid;
   tao->hist_cnorm = cnorm;
+  tao->hist_lits = lits;
   tao->hist_max   = na;
   tao->hist_reset = reset;
+  tao->hist_len = 0;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoGetHistory"
+#define __FUNCT__ "TaoGetConvergenceHistory"
 /*@C
-   TaoGetHistory - Gets the array used to hold the convergence history.
+   TaoGetConvergenceHistory - Gets the arrays used to hold the convergence history.
 
    Collective on Tao
 
@@ -2362,11 +2395,15 @@ PetscErrorCode TaoSetHistory(Tao tao, PetscReal *obj, PetscReal *resid, PetscRea
 +  obj   - array used to hold objective value history
 .  resid - array used to hold residual history
 .  cnorm - array used to hold constraint violation history
--  nhist  - size of obj, resid, and cnorm (will be less than or equal to na given in TaoSetHistory)
+.  lits  - integer array used to hold linear solver iteration count
+-  nhist  - size of obj, resid, cnorm, and lits (will be less than or equal to na given in TaoSetHistory)
 
    Notes:
+    This routine must be preceded by calls to TaoSetConvergenceHistory()
+    and TaoSolve(), otherwise it returns useless information.
+
     The calling sequence for this routine in Fortran is
-$   call TaoGetHistory(Tao tao, integer nhist, integer info)
+$   call TaoGetConvergenceHistory(Tao tao, PetscInt nhist, PetscErrorCode ierr)
 
    This routine is useful, e.g., when running a code for purposes
    of accurate performance monitoring, when no I/O should be done
@@ -2374,10 +2411,10 @@ $   call TaoGetHistory(Tao tao, integer nhist, integer info)
 
    Level: advanced
 
-.seealso: TaoSetHistory()
+.seealso: TaoSetConvergenceHistory()
 
 @*/
-PetscErrorCode TaoGetHistory(Tao tao, PetscReal **obj, PetscReal **resid, PetscReal **cnorm, PetscInt *nhist)
+PetscErrorCode TaoGetConvergenceHistory(Tao tao, PetscReal **obj, PetscReal **resid, PetscReal **cnorm, PetscInt **lits, PetscInt *nhist)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);

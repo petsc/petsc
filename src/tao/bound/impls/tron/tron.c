@@ -134,7 +134,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   tron->stepsize=tao->trust;
   ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason);CHKERRQ(ierr);
   while (reason==TAO_CONTINUE_ITERATING){
-
+    tao->ksp_its=0;
     ierr = TronGradientProjections(tao,tron);CHKERRQ(ierr);
     f=tron->f; delta=tao->trust;
     tron->n_free_last = tron->n_free;
@@ -172,6 +172,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
       ierr = KSPSolve(tao->ksp, tron->R, tron->DXFree);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
+      tao->ksp_tot_its+=its;
       ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
 
       /* Add dxfree matrix to compute step direction vector */

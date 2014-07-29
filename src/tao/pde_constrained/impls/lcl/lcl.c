@@ -239,7 +239,8 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       ierr = KSPSolveTranspose(tao->ksp, lclP->GU,  lclP->lamda);CHKERRQ(ierr);
     }
     ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-    tao->ksp_its += its;
+    tao->ksp_its+=its;
+    tao->ksp_tot_its+=its;
   }
   ierr = VecCopy(lclP->lamda,lclP->lamda0);CHKERRQ(ierr);
   ierr = LCLComputeAugmentedLagrangianAndGradient(tao->linesearch,tao->solution,&lclP->aug,lclP->GAugL,tao);CHKERRQ(ierr);
@@ -255,6 +256,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
   ierr = TaoMonitor(tao, iter,f,mnorm,cnorm,step,&reason);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING) {
+    tao->ksp_its=0;
     /* Compute a descent direction for the linearly constrained subproblem
        minimize f(u+du, v+dv)
        s.t. A(u0,v0)du + B(u0,v0)dv = -g(u0,v0) */
@@ -287,7 +289,8 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
       ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre);CHKERRQ(ierr);
       ierr = KSPSolve(tao->ksp, tao->constraints,  lclP->r);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-      tao->ksp_its += its;
+      tao->ksp_its+=its;
+      tao->ksp_tot_its+=tao->ksp_its;
     }
 
     /* Set design step direction dv to zero */
@@ -438,7 +441,8 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
           ierr = KSPSolveTranspose(tao->ksp, lclP->GAugL_U,  lclP->lamda);CHKERRQ(ierr);
         }
         ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
-        tao->ksp_its += its;
+        tao->ksp_its+=its;
+        tao->ksp_tot_its+=its;
       }
       ierr = MatMultTranspose(tao->jacobian_design,lclP->lamda,lclP->g1);CHKERRQ(ierr);
       ierr = VecAXPY(lclP->g1,-1.0,lclP->GAugL_V);CHKERRQ(ierr);
@@ -468,6 +472,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
         ierr = KSPSolve(tao->ksp, lclP->WU, lclP->r);CHKERRQ(ierr);
         ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
         tao->ksp_its += its;
+        tao->ksp_tot_its+=its;
       }
 
       /* We now minimize the augmented Lagrangian along the direction -r,s */
