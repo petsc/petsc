@@ -733,7 +733,7 @@ class Configure(config.package.Package):
     elif self.checkCompile(openmpi_test):
       buf = self.outputPreprocess(openmpi_test)
       ompi_major_version = re.compile('\nint ompi_major = *([0-9]*) *;').search(buf).group(1)
-      ompi_minor_version = re.compile('\nint ompi_minor = *([0-9]*); *').search(buf).group(1)
+      ompi_minor_version = re.compile('\nint ompi_minor = *([0-9]*) *;').search(buf).group(1)
       ompi_release_version = re.compile('\nint ompi_release = *([0-9]*) *;').search(buf).group(1)
       self.addDefine('HAVE_OMPI_MAJOR_VERSION',ompi_major_version)
       self.addDefine('HAVE_OMPI_MINOR_VERSION',ompi_minor_version)
