@@ -141,17 +141,6 @@ static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
                            cudaMemcpyHostToDevice, stream);CHKERRCUSP(err);
     err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
 
-#if 0
-    Vec_Seq *s;
-    s = (Vec_Seq*)v->data;
-
-    CUSPINTARRAYCPU *indicesCPU=&ci->recvIndicesCPU;
-    CUSPINTARRAYGPU *indicesGPU=&ci->recvIndicesGPU;
-
-    thrust::copy(thrust::make_permutation_iterator(s->array,indicesCPU->begin()),
-                 thrust::make_permutation_iterator(s->array,indicesCPU->end()),
-                 thrust::make_permutation_iterator(varray->begin(),indicesGPU->begin()));
-#endif
     // Set the buffer states
     v->valid_GPU_array = PETSC_CUSP_BOTH;
     ierr = PetscLogEventEnd(VEC_CUSPCopyToGPUSome,v,0,0,0);CHKERRQ(ierr);
@@ -228,16 +217,6 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
 			   cudaMemcpyDeviceToHost, stream);CHKERRCUSP(err);
     err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
 
-#if 0
-    Vec_Seq *s;
-    s = (Vec_Seq*)v->data;
-    CUSPINTARRAYCPU *indicesCPU=&ci->sendIndicesCPU;
-    CUSPINTARRAYGPU *indicesGPU=&ci->sendIndicesGPU;
-
-    thrust::copy(thrust::make_permutation_iterator(varray->begin(),indicesGPU->begin()),
-                 thrust::make_permutation_iterator(varray->begin(),indicesGPU->end()),
-                 thrust::make_permutation_iterator(s->array,indicesCPU->begin()));
-#endif
     ierr = VecCUSPRestoreArrayRead(v,&varray);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_CUSPCopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
     v->valid_GPU_array = PETSC_CUSP_BOTH;
