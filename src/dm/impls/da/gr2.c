@@ -62,22 +62,30 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 
       id   = i+j*m+1;
       x2   = PetscRealPart(xy[2*id]);
-      y2   = y_1;
+      y2   = PetscRealPart(xy[2*id+1]);
       c2   = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
       xmin = PetscMin(xmin,x2);
+      ymin = PetscMin(ymin,y2);
       xmax = PetscMax(xmax,x2);
+      ymax = PetscMax(ymax,y2);
 
       id   = i+j*m+1+m;
-      x3   = x2;
+      x3   = PetscRealPart(xy[2*id]);
       y3   = PetscRealPart(xy[2*id+1]);
       c3   = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      xmin = PetscMin(xmin,x3);
       ymin = PetscMin(ymin,y3);
+      xmax = PetscMax(xmax,x3);
       ymax = PetscMax(ymax,y3);
 
       id = i+j*m+m;
-      x4 = x1;
-      y4 = y3;
+      x4 = PetscRealPart(xy[2*id]);
+      y4 = PetscRealPart(xy[2*id+1]);
       c4 = (int)(PETSC_DRAW_BASIC_COLORS+s*(PetscClipInterval(PetscRealPart(v[k+step*id]),min,max)-min));
+      xmin = PetscMin(xmin,x4);
+      ymin = PetscMin(ymin,y4);
+      xmax = PetscMax(xmax,x4);
+      ymax = PetscMax(ymax,y4);
 
       ierr = PetscDrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
       ierr = PetscDrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
