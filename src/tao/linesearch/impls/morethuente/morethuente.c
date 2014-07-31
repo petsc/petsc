@@ -468,7 +468,7 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,PetscReal *stx,PetscReal *fx,P
      in the direction of the step or if the minimum of the cubic
      is beyond stp. Otherwise the cubic step is defined to be
      either stepmin or stepmax. The quadratic (secant) step is also
-     computed and if the minimum is bracketed then the the step
+     computed and if the minimum is bracketed then the step
      closest to stx is taken, else the step farthest away is taken. */
 
     mtP->infoc = 3;

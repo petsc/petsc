@@ -772,7 +772,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 
 /*
    Converts from an SPAI matrix B  to a PETSc matrix PB.
-   This assumes that the the SPAI matrix B is stored in
+   This assumes that the SPAI matrix B is stored in
    COMPRESSED-ROW format.
 */
 #undef __FUNCT__

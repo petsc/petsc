@@ -298,7 +298,7 @@ def multenterbox(message="Fill in values for the fields."
 	):
 	"""Show screen with multiple data entry fields.
 	The third argument is a list of fieldnames.
-	The the forth argument is a list of field values.
+	the forth argument is a list of field values.
 
 	If there are fewer values than names, the list of values is padded with
 	empty strings until the number of values is the same as the number of names.

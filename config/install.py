@@ -264,11 +264,11 @@ for src, dst in copies:
   def outputInstallDone(self):
     print '''\
 ====================================
-Install complete. It is useable with PETSC_DIR=%s [and no more PETSC_ARCH].
+Install complete.
 Now to check if the libraries are working do (in current directory):
-make PETSC_DIR=%s test
+make PETSC_DIR=%s PETSC_ARCH="" test
 ====================================\
-''' % (self.installDir,self.installDir)
+''' % (self.installDir)
     return
 
   def outputDestDirDone(self):

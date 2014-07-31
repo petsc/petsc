@@ -209,7 +209,7 @@ M*/
 #define __FUNCT__ "SNESLineSearchSetPreCheck"
 /*@C
    SNESLineSearchSetPreCheck - Sets a user function that is called after the initial search direction has been computed but 
-         before the the line search routine has been applied. Allows the user to adjust the result of (usually a linear solve) that
+         before the line search routine has been applied. Allows the user to adjust the result of (usually a linear solve) that
          determined the search direction.
 
    Logically Collective on SNESLineSearch

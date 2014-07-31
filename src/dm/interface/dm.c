@@ -2336,7 +2336,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 #undef __FUNCT__
 #define __FUNCT__ "DMSetVariableBounds"
 /*@C
-    DMSetVariableBounds - sets a function to compute the the lower and upper bound vectors for SNESVI.
+    DMSetVariableBounds - sets a function to compute the lower and upper bound vectors for SNESVI.
 
     Logically Collective on DM
 

@@ -810,7 +810,7 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool flg)
    Input Parameters:
 +     comm - MPI communicator that will share the matrix
 .     bs - local and global block size of the matrix
-.     m,n,M,N - local and/or global sizes of the the left and right vector used in matrix vector products
+.     m,n,M,N - local and/or global sizes of the left and right vector used in matrix vector products
 -     map - mapping that defines the global number for each local number
 
    Output Parameter:
