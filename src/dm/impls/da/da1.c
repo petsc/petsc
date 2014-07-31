@@ -336,7 +336,7 @@ PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMBoundaryType bx, PetscInt M, Petsc
 
   PetscFunctionBegin;
   ierr = DMDACreate(comm, da);CHKERRQ(ierr);
-  ierr = DMDASetDim(*da, 1);CHKERRQ(ierr);
+  ierr = DMSetDimension(*da, 1);CHKERRQ(ierr);
   ierr = DMDASetSizes(*da, M, 1, 1);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, size, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);

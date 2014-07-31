@@ -211,7 +211,7 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, PetscInt *nlocal, DM **sdm)
 
         ierr = DMDACreate(PETSC_COMM_SELF,&(da[idx]));CHKERRQ(ierr);
         ierr = DMSetOptionsPrefix(da[idx],"sub_");CHKERRQ(ierr);
-        ierr = DMDASetDim(da[idx], info.dim);CHKERRQ(ierr);
+        ierr = DMSetDimension(da[idx], info.dim);CHKERRQ(ierr);
         ierr = DMDASetDof(da[idx], info.dof);CHKERRQ(ierr);
 
         ierr = DMDASetStencilType(da[idx],info.st);CHKERRQ(ierr);

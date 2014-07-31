@@ -211,19 +211,20 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
 #define __FUNCT__ "DMDAGetElements"
 PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
-  DM_DA          *da = (DM_DA*)dm->data;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (da->dim==-1) {
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim==-1) {
     *nel = 0; *nen = 0; *e = NULL;
-  } else if (da->dim==1) {
+  } else if (dim==1) {
     ierr = DMDAGetElements_1D(dm,nel,nen,e);CHKERRQ(ierr);
-  } else if (da->dim==2) {
+  } else if (dim==2) {
     ierr = DMDAGetElements_2D(dm,nel,nen,e);CHKERRQ(ierr);
-  } else if (da->dim==3) {
+  } else if (dim==3) {
     ierr = DMDAGetElements_3D(dm,nel,nen,e);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",da->dim);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",dim);
   PetscFunctionReturn(0);
 }
 

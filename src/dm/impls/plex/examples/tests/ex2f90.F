@@ -33,7 +33,7 @@
       call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr)
       CHKERRQ(ierr)
       dim = 2
-      call DMPlexSetDimension(dm, dim, ierr)
+      call DMSetDimension(dm, dim, ierr)
       CHKERRQ(ierr)
 
 ! Make Doublet Mesh from Fig 2 of Flexible Representation of Computational Meshes,

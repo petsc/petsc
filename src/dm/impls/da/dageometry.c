@@ -95,8 +95,7 @@ PETSC_STATIC_INLINE PetscErrorCode RestorePointArray_Private(DM dm,PetscInt *rn,
 #define __FUNCT__ "DMDAGetTransitiveClosure"
 PetscErrorCode DMDAGetTransitiveClosure(DM dm, PetscInt p, PetscBool useClosure, PetscInt *closureSize, PetscInt **closure)
 {
-  DM_DA         *da = (DM_DA *) dm->data;
-  PetscInt       dim = da->dim;
+  PetscInt       dim = dm->dim;
   PetscInt       nVx, nVy, nVz, nxF, nXF, nyF, nYF, nzF, nZF;
   PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart;
   PetscErrorCode ierr;
@@ -221,8 +220,7 @@ PetscErrorCode DMDARestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useClos
 #define __FUNCT__ "DMDAGetClosure"
 PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *n,const PetscInt **closure)
 {
-  DM_DA          *da = (DM_DA*) dm->data;
-  PetscInt       dim = da->dim;
+  PetscInt       dim = dm->dim;
   PetscInt       nVx, nVy, nxF, nXF, nyF, nYF, nzF, nZF;
   PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart;
   PetscErrorCode ierr;
@@ -333,8 +331,7 @@ PetscErrorCode DMDARestoreClosure(DM dm, PetscSection section, PetscInt p,PetscI
 #define __FUNCT__ "DMDAGetClosureScalar"
 PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section, PetscInt p, PetscScalar *vArray, PetscInt *csize, PetscScalar **values)
 {
-  DM_DA          *da = (DM_DA*) dm->data;
-  PetscInt       dim = da->dim;
+  PetscInt       dim = dm->dim;
   PetscInt       nVx, nVy, nxF, nXF, nyF, nYF, nzF, nZF;
   PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart, yfEnd, zfStart;
   PetscErrorCode ierr;
@@ -493,8 +490,7 @@ PetscErrorCode DMDAVecRestoreClosure(DM dm, PetscSection section, Vec v, PetscIn
 #define __FUNCT__ "DMDASetClosureScalar"
 PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,PetscScalar *vArray, const PetscScalar *values, InsertMode mode)
 {
-  DM_DA          *da = (DM_DA*) dm->data;
-  PetscInt       dim = da->dim;
+  PetscInt       dim = dm->dim;
   PetscInt       nVx, nVy, nxF, nXF, nyF, nYF, nzF, nZF, nCx, nCy;
   PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart, yfEnd, zfStart;
   PetscErrorCode ierr;
@@ -640,7 +636,7 @@ PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
 PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell)
 {
   DM_DA          *da = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  const PetscInt dim = dm->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys /*, mz = da->Ze - da->Zs*/;
   const PetscInt il  = s.i - da->Xs/da->w, jl = dim > 1 ? s.j - da->Ys : 0, kl = dim > 2 ? s.k - da->Zs : 0;
 

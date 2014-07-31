@@ -10,9 +10,8 @@
 PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 {
   PetscErrorCode ierr;
-  DM_DA          *da = (DM_DA*) dm->data;
   PetscFunctionBegin;
-  ierr = DMDAGetReducedDMDA(dm,da->dim,cdm);CHKERRQ(ierr);
+  ierr = DMDAGetReducedDMDA(dm,dm->dim,cdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -91,7 +90,7 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
    Not Collective
 
    Input Parameters:
-+  da - the distributed array
++  dm - the DM
 .  nf - coordinate number for the DMDA (0, 1, ... dim-1),
 -  name - the name of the coordinate
 
@@ -101,14 +100,14 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 
 .seealso: DMDAGetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName()
 @*/
-PetscErrorCode  DMDASetCoordinateName(DM da,PetscInt nf,const char name[])
+PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 {
   PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
+  DM_DA          *dd = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (nf < 0 || nf >= dd->dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (nf < 0 || nf >= dm->dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
   ierr = PetscFree(dd->coordinatename[nf]);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&dd->coordinatename[nf]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -122,7 +121,7 @@ PetscErrorCode  DMDASetCoordinateName(DM da,PetscInt nf,const char name[])
    Not Collective
 
    Input Parameter:
-+  da - the distributed array
++  dm - the DM
 -  nf -  number for the DMDA (0, 1, ... dim-1)
 
    Output Parameter:
@@ -134,14 +133,14 @@ PetscErrorCode  DMDASetCoordinateName(DM da,PetscInt nf,const char name[])
 
 .seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName()
 @*/
-PetscErrorCode  DMDAGetCoordinateName(DM da,PetscInt nf,const char **name)
+PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
 {
-  DM_DA *dd = (DM_DA*)da->data;
+  DM_DA *dd = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(name,3);
-  if (nf < 0 || nf >= dd->dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
+  if (nf < 0 || nf >= dm->dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
   *name = dd->coordinatename[nf];
   PetscFunctionReturn(0);
 }
@@ -201,7 +200,7 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
    Not Collective
 
    Input Parameter:
-.  da - the distributed array
+.  dm - the DM
 
    Output Parameters:
 +  lmin - local minimum coordinates (length dim, optional)
@@ -213,7 +212,7 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
 
 .seealso: DMDAGetCoordinateDA(), DMGetCoordinates(), DMDAGetBoundingBox()
 @*/
-PetscErrorCode  DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
+PetscErrorCode DMDAGetLocalBoundingBox(DM dm,PetscReal lmin[],PetscReal lmax[])
 {
   PetscErrorCode    ierr;
   Vec               coords = NULL;
@@ -221,12 +220,11 @@ PetscErrorCode  DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
   const PetscScalar *local_coords;
   PetscReal         min[3]={PETSC_MAX_REAL,PETSC_MAX_REAL,PETSC_MAX_REAL},max[3]={PETSC_MIN_REAL,PETSC_MIN_REAL,PETSC_MIN_REAL};
   PetscInt          N,Ni;
-  DM_DA             *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  dim  = dd->dim;
-  ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dim  = dm->dim;
+  ierr = DMGetCoordinates(dm,&coords);CHKERRQ(ierr);
   if (coords) {
     ierr = VecGetArrayRead(coords,&local_coords);CHKERRQ(ierr);
     ierr = VecGetLocalSize(coords,&N);CHKERRQ(ierr);
@@ -240,7 +238,7 @@ PetscErrorCode  DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
     ierr = VecRestoreArrayRead(coords,&local_coords);CHKERRQ(ierr);
   } else {                      /* Just use grid indices */
     DMDALocalInfo info;
-    ierr   = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+    ierr   = DMDAGetLocalInfo(dm,&info);CHKERRQ(ierr);
     min[0] = info.xs;
     min[1] = info.ys;
     min[2] = info.zs;
@@ -261,7 +259,7 @@ PetscErrorCode  DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
    Collective on DMDA
 
    Input Parameter:
-.  da - the distributed array
+.  dm - the DM
 
    Output Parameters:
 +  gmin - global minimum coordinates (length dim, optional)
@@ -273,19 +271,18 @@ PetscErrorCode  DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
 
 .seealso: DMDAGetCoordinateDA(), DMGetCoordinates(), DMDAGetLocalBoundingBox()
 @*/
-PetscErrorCode  DMDAGetBoundingBox(DM da,PetscReal gmin[],PetscReal gmax[])
+PetscErrorCode DMDAGetBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    count;
   PetscReal      lmin[3],lmax[3];
-  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  ierr = PetscMPIIntCast(dd->dim,&count);CHKERRQ(ierr);
-  ierr = DMDAGetLocalBoundingBox(da,lmin,lmax);CHKERRQ(ierr);
-  if (gmin) {ierr = MPI_Allreduce(lmin,gmin,count,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);}
-  if (gmax) {ierr = MPI_Allreduce(lmax,gmax,count,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscMPIIntCast(dm->dim,&count);CHKERRQ(ierr);
+  ierr = DMDAGetLocalBoundingBox(dm,lmin,lmax);CHKERRQ(ierr);
+  if (gmin) {ierr = MPI_Allreduce(lmin,gmin,count,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);}
+  if (gmax) {ierr = MPI_Allreduce(lmax,gmax,count,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -321,7 +318,7 @@ PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
   PetscInt         cl,rl;
 
   PetscFunctionBegin;
-  dim = dd->dim;
+  dim = da->dim;
   M   = dd->M;
   N   = dd->N;
   P   = dd->P;

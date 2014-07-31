@@ -355,7 +355,7 @@ PetscErrorCode CheckMesh(DM dm, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) {
     refVol *= 2.0;
@@ -422,7 +422,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len) {
     ierr = DMPlexCreateExodusFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
-    ierr = DMPlexGetDimension(*dm, &dim);CHKERRQ(ierr);
+    ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
   } else if (useGenerator) {
     if (cellSimplex) {
       ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, dm);CHKERRQ(ierr);
@@ -434,7 +434,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
   } else {
     ierr = DMCreate(comm, dm);CHKERRQ(ierr);
     ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
+    ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
     switch (dim) {
     case 2:
       if (cellSimplex) {

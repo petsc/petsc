@@ -41,7 +41,6 @@ typedef enum { DMDA_X,DMDA_Y,DMDA_Z } DMDADirection;
 #define MATSEQUSFFT        "sequsfft"
 
 PETSC_EXTERN PetscErrorCode DMDACreate(MPI_Comm,DM*);
-PETSC_EXTERN PetscErrorCode DMDASetDim(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetSizes(DM,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDACreate1d(MPI_Comm,DMBoundaryType,PetscInt,PetscInt,PetscInt,const PetscInt[],DM *);
 PETSC_EXTERN PetscErrorCode DMDACreate2d(MPI_Comm,DMBoundaryType,DMBoundaryType,DMDAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],DM*);

@@ -102,7 +102,7 @@ static PetscErrorCode CheckMeshTopology(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, cStart, &coneSize);CHKERRQ(ierr);
   isSimplex = coneSize == dim+1 ? PETSC_TRUE : PETSC_FALSE;
@@ -122,7 +122,7 @@ static PetscErrorCode CheckMeshGeometry(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, cStart, &coneSize);CHKERRQ(ierr);
   isSimplex = coneSize == dim+1 ? PETSC_TRUE : PETSC_FALSE;

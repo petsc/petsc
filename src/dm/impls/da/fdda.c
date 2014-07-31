@@ -702,7 +702,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   M   = dd->M;
   N   = dd->N;
   P   = dd->P;
-  dim = dd->dim;
+  dim = da->dim;
   dof = dd->w;
   /* ierr = DMDAGetInfo(da,&dim,&M,&N,&P,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr); */
   ierr = DMDAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);

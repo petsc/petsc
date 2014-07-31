@@ -15,29 +15,29 @@
 PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 {
   PetscErrorCode ierr;
-  PetscInt       Nlocal,i,j,k,*lidx,lict = 0;
+  PetscInt       Nlocal,i,j,k,*lidx,lict = 0,dim = da->dim;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   Nlocal = (dd->xe-dd->xs);
-  if (dd->dim > 1) Nlocal *= (dd->ye-dd->ys);
-  if (dd->dim > 2) Nlocal *= (dd->ze-dd->zs);
+  if (dim > 1) Nlocal *= (dd->ye-dd->ys);
+  if (dim > 2) Nlocal *= (dd->ze-dd->zs);
 
   ierr = PetscMalloc1(Nlocal,&lidx);CHKERRQ(ierr);
 
-  if (dd->dim == 1) {
+  if (dim == 1) {
     for (i=dd->xs; i<dd->xe; i++) {
       /*  global number in natural ordering */
       lidx[lict++] = i;
     }
-  } else if (dd->dim == 2) {
+  } else if (dim == 2) {
     for (j=dd->ys; j<dd->ye; j++) {
       for (i=dd->xs; i<dd->xe; i++) {
         /*  global number in natural ordering */
         lidx[lict++] = i + j*dd->M*dd->w;
       }
     }
-  } else if (dd->dim == 3) {
+  } else if (dim == 3) {
     for (k=dd->zs; k<dd->ze; k++) {
       for (j=dd->ys; j<dd->ye; j++) {
         for (i=dd->xs; i<dd->xe; i++) {

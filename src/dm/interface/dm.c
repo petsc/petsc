@@ -3364,6 +3364,55 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm,DM subdm,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGetDimension"
+/*@
+  DMGetDimension - Return the topological dimension of the DM
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. dim - The topological dimension
+
+  Level: beginner
+
+.seealso: DMSetDimension(), DMCreate()
+@*/
+PetscErrorCode DMGetDimension(DM dm, PetscInt *dim)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dim, 2);
+  *dim = dm->dim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetDimension"
+/*@
+  DMSetDimension - Set the topological dimension of the DM
+
+  Collective on dm
+
+  Input Parameters:
++ dm - The DM
+- dim - The topological dimension
+
+  Level: beginner
+
+.seealso: DMGetDimension(), DMCreate()
+@*/
+PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(dm, dim, 2);
+  dm->dim = dim;
+  PetscFunctionReturn(0);
+}
+
 #define __FUNCT__ "DMSetCoordinates"
 /*@
   DMSetCoordinates - Sets into the DM a global vector that holds the coordinates

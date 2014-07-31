@@ -20,7 +20,6 @@ typedef struct {
   DMBoundaryType        bx,by,bz;              /* indicates type of ghost nodes at boundary */
   VecScatter            gtol,ltol;        /* scatters, see below for details */
   DMDAStencilType       stencil_type;          /* stencil, either box or star */
-  PetscInt              dim;                   /* DMDA dimension (1,2, or 3) */
   DMDAInterpolationType interptype;
 
   PetscInt              nlocal,Nlocal;         /* local size of local vector and global vector, includes the * w term */

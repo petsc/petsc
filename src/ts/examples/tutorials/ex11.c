@@ -765,8 +765,8 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   if (!hasLabel) PetscFunctionReturn(0);
   ierr = DMCreate(PetscObjectComm((PetscObject)dm), &sdm);CHKERRQ(ierr);
   ierr = DMSetType(sdm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(sdm, dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(sdm, dim);CHKERRQ(ierr);
 
   ierr = DMPlexGetLabelIdIS(dm, labelName, &idIS);CHKERRQ(ierr);
   ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
@@ -1454,7 +1454,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = DMPlexCreateExodusFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
   {

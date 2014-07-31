@@ -102,7 +102,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = MPI_Bcast(title, PETSC_MAX_PATH_LEN+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&dim, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, title);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMPlexSetChart(*dm, 0, numCells+numVertices);CHKERRQ(ierr);
 
   /* Read cell sets information */
