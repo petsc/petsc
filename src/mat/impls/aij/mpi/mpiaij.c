@@ -4090,7 +4090,7 @@ PetscErrorCode  MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 
    The columns are logically partitioned with the n0 columns belonging
    to 0th partition, the next n1 columns belonging to the next
-   partition etc.. where n0,n1,n2... are the the input parameter 'n'.
+   partition etc.. where n0,n1,n2... are the input parameter 'n'.
 
    The DIAGONAL portion of the local submatrix on any given processor
    is the submatrix corresponding to the rows and columns m,n
