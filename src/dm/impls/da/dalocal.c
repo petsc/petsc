@@ -1203,7 +1203,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
     }
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(dm, section);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dm, PETSC_DETERMINE, section);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);

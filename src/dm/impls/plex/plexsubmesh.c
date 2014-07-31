@@ -281,7 +281,7 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
     ierr = PetscSectionSetFieldDof(newCoordSection, v, 0, dim);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(newCoordSection);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(dmNew, newCoordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dmNew, PETSC_DETERMINE, newCoordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(newCoordSection, &coordSize);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &newCoordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) newCoordinates, "coordinates");CHKERRQ(ierr);

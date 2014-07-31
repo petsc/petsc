@@ -93,10 +93,14 @@ PETSC_EXTERN PetscErrorCode DMConvert(DM,DMType,DM*);
 PETSC_EXTERN PetscErrorCode DMGetDimension(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMSetDimension(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetDimPoints(DM,PetscInt,PetscInt*,PetscInt*);
+
+/* Coordinate support */
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDM(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinateDM(DM,DM);
+PETSC_EXTERN PetscErrorCode DMGetCoordinateDim(DM,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMSetCoordinateDim(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetCoordinateSection(DM,PetscSection*);
-PETSC_EXTERN PetscErrorCode DMSetCoordinateSection(DM,PetscSection);
+PETSC_EXTERN PetscErrorCode DMSetCoordinateSection(DM,PetscInt,PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetCoordinates(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinates(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocal(DM,Vec*);

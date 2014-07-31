@@ -3678,6 +3678,57 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGetCoordinateDim"
+/*@
+  DMGetCoordinateDim - Retrieve the dimension of embedding space for coordinate values.
+
+  Not Collective
+
+  Input Parameter:
+. dm - The DM object
+
+  Output Parameter:
+. dim - The embedding dimension
+
+  Level: intermediate
+
+.keywords: mesh, coordinates
+.seealso: DMSetCoordinateDim(), DMGetCoordinateSection(), DMGetCoordinateDM(), DMGetDefaultSection(), DMSetDefaultSection()
+@*/
+PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dim, 2);
+  *dim = dm->dimEmbed;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetCoordinateDim"
+/*@
+  DMSetCoordinateDim - Set the dimension of the embedding space for coordinate values.
+
+  Not Collective
+
+  Input Parameters:
++ dm  - The DM object
+- dim - The embedding dimension
+
+  Level: intermediate
+
+.keywords: mesh, coordinates
+.seealso: DMGetCoordinateDim(), DMSetCoordinateSection(), DMGetCoordinateSection(), DMGetDefaultSection(), DMSetDefaultSection()
+@*/
+PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dm->dimEmbed = dim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMGetCoordinateSection"
 /*@
   DMGetCoordinateSection - Retrieve the layout of coordinate values over the mesh.
@@ -3717,6 +3768,7 @@ PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
 
   Input Parameters:
 + dm      - The DM object
+. dim     - The embedding dimension, or PETSC_DETERMINE
 - section - The PetscSection object
 
   Level: intermediate
@@ -3724,16 +3776,30 @@ PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
 .keywords: mesh, coordinates
 .seealso: DMGetCoordinateSection(), DMGetDefaultSection(), DMSetDefaultSection()
 @*/
-PetscErrorCode DMSetCoordinateSection(DM dm, PetscSection section)
+PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 {
   DM             cdm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,3);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(cdm, section);CHKERRQ(ierr);
+  if (dim == PETSC_DETERMINE) {
+    PetscInt d = dim;
+    PetscInt pStart, pEnd, vStart, vEnd, v, dd;
+
+    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMGetDimPoints(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    pStart = PetscMax(vStart, pStart);
+    pEnd   = PetscMin(vEnd, pEnd);
+    for (v = pStart; v < pEnd; ++v) {
+      ierr = PetscSectionGetDof(section, v, &dd);CHKERRQ(ierr);
+      if (dd) {d = dd; break;}
+    }
+    ierr = DMSetCoordinateDim(dm, d);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

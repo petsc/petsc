@@ -115,7 +115,7 @@ static PetscErrorCode DMPlexTSSetupGeometry(DM dm, PetscFV fvm, DMTS_Plex *dmple
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   /* Make cell centroids and volumes */
   ierr = DMClone(dm, &dmCell);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(dmCell, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dmCell, PETSC_DETERMINE, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmCell, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionCell);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);

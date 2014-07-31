@@ -3832,7 +3832,7 @@ PetscErrorCode DMPlexLocalizeCoordinates(DM dm)
   ierr = DMRestoreWorkArray(dm, 3, PETSC_SCALAR, &anchor);CHKERRQ(ierr);
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(cVec,        &coords2);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(dm, cSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dm, PETSC_DETERMINE, cSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, cVec);CHKERRQ(ierr);
   ierr = VecDestroy(&cVec);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&cSection);CHKERRQ(ierr);

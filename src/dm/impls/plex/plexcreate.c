@@ -773,7 +773,7 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   ierr = DMSetPointSF(dm, sf);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dmNew, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dmNew, &coords);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(dm, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dm, PETSC_DETERMINE, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coords);CHKERRQ(ierr);
   ierr = DMDestroy_Plex(dm);CHKERRQ(ierr);
   dm->data = dmNew->data;

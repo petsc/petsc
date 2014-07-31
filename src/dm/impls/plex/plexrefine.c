@@ -5447,7 +5447,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
     ierr = PetscSectionSetFieldDof(coordSectionNew, v, 0, spaceDim);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(coordSectionNew);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(rdm, coordSectionNew);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(rdm, PETSC_DETERMINE, coordSectionNew);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSectionNew, &coordSizeNew);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinatesNew);CHKERRQ(ierr);

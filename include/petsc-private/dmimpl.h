@@ -137,6 +137,7 @@ struct _p_DM {
   PetscSection            defaultGlobalSection; /* Layout for global vectors */
   PetscLayout             map;
   /* Coordinates */
+  PetscInt                dimEmbed;             /* The dimension of the embedding space */
   DM                      coordinateDM;         /* Layout for coordinates (default section) */
   Vec                     coordinates;          /* Coordinate values in global vector */
   Vec                     coordinatesLocal;     /* Coordinate values in local  vector */
