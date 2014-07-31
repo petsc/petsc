@@ -48,9 +48,9 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
       mpiexec -n 4 ./ex2 -ts_max_steps 10 -ts_monitor -snes_monitor -ksp_monitor     <a href="../src/ts/examples/tutorials/output/ex2_tut_2.out.html">[Expected output]</a>
     </pre>
   </li>
-  <li> Run with the same options on 16 processors with 64 grid points
+  <li> Run with the same options on 16 processors with 128 grid points
     <pre>
-     mpiexec -n 16 ./ex2 -ts_max_steps 10 -ts_monitor -da_grid_x 64     <a href="../src/ts/examples/tutorials/output/ex2_tut_3.out.html">[Expected output]</a>
+     mpiexec -n 16 ./ex2 -ts_max_steps 10 -ts_monitor -M 128     <a href="../src/ts/examples/tutorials/output/ex2_tut_3.out.html">[Expected output]</a>
     </pre>
   </li>
 </ul>
