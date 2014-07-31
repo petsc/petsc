@@ -1888,7 +1888,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           if (csize%dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate size %d is not divisible by spatial dimension %d", csize, dim);
 
           ierr = PetscCalloc5(dim,&ind,dim,&tup,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
-          ierr = DMPlexComputeCellGeometry(dm, p, v0, J, invJ, &detJ);CHKERRQ(ierr);
+          ierr = DMPlexComputeCellGeometryFEM(dm, p, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
           if (simplex || !lag->continuous) {
             for (o = 0; o <= orderEff; ++o) {
               ierr = PetscMemzero(ind, dim*sizeof(PetscInt));CHKERRQ(ierr);

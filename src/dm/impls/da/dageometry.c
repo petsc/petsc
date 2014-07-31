@@ -687,8 +687,8 @@ PetscErrorCode DMDAComputeCellGeometry_2D(DM dm, const PetscScalar vertices[], c
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAComputeCellGeometry"
-PetscErrorCode DMDAComputeCellGeometry(DM dm, PetscInt cell, PetscQuadrature quad, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal detJ[])
+#define __FUNCT__ "DMDAComputeCellGeometryFEM"
+PetscErrorCode DMDAComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadrature quad, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal detJ[])
 {
   DM               cdm;
   Vec              coordinates;

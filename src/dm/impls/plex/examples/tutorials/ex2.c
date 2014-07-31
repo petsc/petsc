@@ -128,7 +128,7 @@ static PetscErrorCode CheckMeshGeometry(DM dm)
   isSimplex = coneSize == dim+1 ? PETSC_TRUE : PETSC_FALSE;
   ierr = PetscMalloc3(dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for cell %d", detJ, c);
   }
   ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);

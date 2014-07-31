@@ -187,7 +187,7 @@ PETSC_EXTERN PetscErrorCode DMDAGetNumFaces(DM, PetscInt *, PetscInt *, PetscInt
 PETSC_EXTERN PetscErrorCode DMDAGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDACreateSection(DM, const PetscInt[], const PetscInt[], const PetscInt[], PetscSection *);
-PETSC_EXTERN PetscErrorCode DMDAComputeCellGeometry(DM, PetscInt, PetscQuadrature, PetscReal [], PetscReal [], PetscReal [], PetscReal []);
+PETSC_EXTERN PetscErrorCode DMDAComputeCellGeometryFEM(DM, PetscInt, PetscQuadrature, PetscReal [], PetscReal [], PetscReal [], PetscReal []);
 PETSC_EXTERN PetscErrorCode DMDAGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt **);
 PETSC_EXTERN PetscErrorCode DMDARestoreTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt **);
 PETSC_EXTERN PetscErrorCode DMDAVecGetClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar **);

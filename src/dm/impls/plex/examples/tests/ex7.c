@@ -362,7 +362,7 @@ PetscErrorCode CheckMesh(DM dm, AppCtx *user)
   }
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexComputeCellGeometry(dm, c, NULL, J, NULL, &detJ);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, |J| = %g", c, detJ);
     if (user->debug) {PetscPrintf(PETSC_COMM_SELF, "FEM Volume: %g\n", detJ*refVol);CHKERRQ(ierr);}
     if (depth > 1) {

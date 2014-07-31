@@ -1241,7 +1241,7 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal []
   for (c = cStart; c < cEnd; ++c) {
     PetscCellGeometry geom;
 
-    ierr = DMDAComputeCellGeometry(dm, c, q, v0, J, NULL, detJ);CHKERRQ(ierr);
+    ierr = DMDAComputeCellGeometryFEM(dm, c, q, v0, J, NULL, detJ);CHKERRQ(ierr);
     geom.v0   = v0;
     geom.J    = J;
     geom.detJ = detJ;
@@ -1347,7 +1347,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, void (**funcs)(const PetscReal [], Petsc
     PetscScalar *x = NULL;
     PetscReal    elemDiff = 0.0;
 
-    ierr = DMDAComputeCellGeometry(dm, c, quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    ierr = DMDAComputeCellGeometryFEM(dm, c, quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMDAVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
 
@@ -1451,7 +1451,7 @@ PetscErrorCode DMDAComputeL2GradientDiff(DM dm, void (**funcs)(const PetscReal [
     PetscScalar *x = NULL;
     PetscReal    elemDiff = 0.0;
 
-    ierr = DMDAComputeCellGeometry(dm, c, quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    ierr = DMDAComputeCellGeometryFEM(dm, c, quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMDAVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
 

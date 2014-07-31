@@ -149,7 +149,7 @@ PetscErrorCode CheckFEMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscRe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeCellGeometry(dm, cell, v0, J, invJ, &detJ);CHKERRQ(ierr);
+  ierr = DMPlexComputeCellGeometryFEM(dm, cell, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
   for (d = 0; d < spaceDim; ++d) {
     if (v0[d] != v0Ex[d]) {
       switch (spaceDim) {
