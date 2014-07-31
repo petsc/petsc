@@ -92,6 +92,7 @@ PETSC_EXTERN PetscErrorCode DMConvert(DM,DMType,DM*);
 /* Topology support */
 PETSC_EXTERN PetscErrorCode DMGetDimension(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMSetDimension(DM,PetscInt);
+PETSC_EXTERN PetscErrorCode DMGetDimPoints(DM,PetscInt,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDM(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinateDM(DM,DM);
 PETSC_EXTERN PetscErrorCode DMGetCoordinateSection(DM,PetscSection*);

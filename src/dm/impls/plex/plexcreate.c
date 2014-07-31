@@ -935,6 +935,26 @@ static PetscErrorCode DMCreateLocalVector_Plex(DM dm,Vec *vec)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGetDimPoints_Plex"
+static PetscErrorCode DMGetDimPoints_Plex(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd)
+{
+  PetscInt       depth, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  if (depth == 1) {
+    ierr = DMGetDimension(dm, &d);CHKERRQ(ierr);
+    if (dim == 0)      {ierr = DMPlexGetDepthStratum(dm, dim, pStart, pEnd);CHKERRQ(ierr);}
+    else if (dim == d) {ierr = DMPlexGetDepthStratum(dm, 1, pStart, pEnd);CHKERRQ(ierr);}
+    else               {*pStart = 0; *pEnd = 0;}
+  } else {
+    ierr = DMPlexGetDepthStratum(dm, dim, pStart, pEnd);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMInitialize_Plex"
 PetscErrorCode DMInitialize_Plex(DM dm)
 {
@@ -965,6 +985,7 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->localtoglobalend                = NULL;
   dm->ops->destroy                         = DMDestroy_Plex;
   dm->ops->createsubdm                     = DMCreateSubDM_Plex;
+  dm->ops->getdimpoints                    = DMGetDimPoints_Plex;
   dm->ops->locatepoints                    = DMLocatePoints_Plex;
   PetscFunctionReturn(0);
 }

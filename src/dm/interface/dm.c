@@ -3413,6 +3413,45 @@ PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMGetDimPoints"
+/*@
+  DMGetDimPoints - Get the half-open interval for all points of a given dimension
+
+  Collective on DM
+
+  Input Parameters:
++ dm - the DM
+- dim - the dimension
+
+  Output Parameters:
++ pStart - The first point of the given dimension
+. pEnd - The first point following points of the given dimension
+
+  Note:
+  The points are vertices in the Hasse diagram encoding the topology. This is explained in
+  http://arxiv.org/abs/0908.4427. If not points exist of this dimension in the storage scheme,
+  then the interval is empty.
+
+  Level: intermediate
+
+.keywords: point, Hasse Diagram, dimension
+.seealso: DMPLEX, DMPlexGetDepthStratum(), DMPlexGetHeightStratum()
+@*/
+PetscErrorCode DMGetDimPoints(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd)
+{
+  PetscInt       d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDimension(dm, &d);CHKERRQ(ierr);
+  if ((dim < 0) || (dim > d)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d 1", dim, d);
+  ierr = (*dm->ops->getdimpoints)(dm, dim, pStart, pEnd);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSetCoordinates"
 /*@
   DMSetCoordinates - Sets into the DM a global vector that holds the coordinates

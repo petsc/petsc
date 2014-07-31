@@ -307,6 +307,17 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMGetDimPoints_DA"
+static PetscErrorCode DMGetDimPoints_DA(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMDAGetDepthStratum(dm, dim, pStart, pEnd);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
    DMDA = "da" - A DM object that is used to manage data for a structured grid in 1, 2, or 3 dimensions.
          In the global representation of the vector each process stores a non-overlapping rectangular (or slab in 3d) portion of the grid points.
@@ -410,6 +421,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->createfielddecomposition    = DMCreateFieldDecomposition_DA;
   da->ops->createdomaindecomposition   = DMCreateDomainDecomposition_DA;
   da->ops->createddscatters            = DMCreateDomainDecompositionScatters_DA;
+  da->ops->getdimpoints                = DMGetDimPoints_DA;
   PetscFunctionReturn(0);
 }
 

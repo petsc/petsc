@@ -49,6 +49,7 @@ struct _DMOps {
   PetscErrorCode (*createdomaindecomposition)(DM,PetscInt*,char***,IS**,IS**,DM**);
   PetscErrorCode (*createddscatters)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
 
+  PetscErrorCode (*getdimpoints)(DM,PetscInt,PetscInt*,PetscInt*);
   PetscErrorCode (*locatepoints)(DM,Vec,IS*);
 };
 
