@@ -155,7 +155,7 @@ class Configure(config.base.Configure):
       fd.write('Libs: '+plibs.replace(os.path.join(self.petscdir.dir,self.arch.arch),self.framework.argDB['prefix'])+'\n')
     else:
       fd.write('Libs: '+plibs+'\n')
-    fd.write('Libs.private: '+' '.join(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
+    fd.write('Libs.private: '+' '.join(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS)
 
     fd.close()
     return
@@ -337,11 +337,11 @@ prepend-path PATH %s
         self.addMakeMacro(i.PACKAGE.replace('-','_')+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     self.packagelibs = libs
     if self.framework.argDB['with-single-library']:
-      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
+      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+self.CHUD.LIBS
       self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
     else:
-      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
-    self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
+      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+self.CHUD.LIBS
+    self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS+self.CHUD.LIBS
     if self.framework.argDB['prefix'] and self.setCompilers.CSharedLinkerFlag not in ['-L']:
       installdir = self.framework.argDB['prefix']
       lib_basic = self.PETSC_EXTERNAL_LIB_BASIC.replace(self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(installdir,'lib'))
@@ -689,7 +689,7 @@ prepend-path PATH %s
     ## Intel has conspired to make a supremely environment-sensitive compiler.  The Intel compiler looks at the gcc
     ## executable in the environment to determine the language compatibility that it should attempt to emulate.  Some
     ## important Cray installations have built PETSc using the Intel compiler, but with a newer gcc module loaded (e.g.,
-    ## 4.7).  Thus at PETSc configure time, the Intel compiler decides to support the string argument, but the the gcc
+    ## 4.7).  Thus at PETSc configure time, the Intel compiler decides to support the string argument, but the gcc
     ## found in the default user environment is older and does not support the argument.  If GCC and Intel were cool
     ## like Clang and supported __has_attribute, we could avoid configure tests entirely, but they don't.  And that is
     ## why we can't have nice things.

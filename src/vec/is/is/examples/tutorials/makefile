@@ -49,55 +49,55 @@ ex5: ex5.o  chkopts
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1  > ex1.tmp 2>&1;\
 	   if (${DIFF} output/ex1.out ex1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with with ex1, diffs above\n=========================================\n"; fi ;\
+	   else printf "${PWD}\nPossible problem with ex1, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex1.tmp
 
 runex1f:
 	-@${MPIEXEC} -n 1 ./ex1f  | sort > ex1f.tmp 2>&1;\
 	   if (${DIFF} output/ex1f.out ex1f.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with with ex1f, diffs above\n=========================================\n"; fi ;\
+	   else printf "${PWD}\nPossible problem with ex1f, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex1f.tmp
 
 runex1f90:
 	-@${MPIEXEC} -n 1 ./ex1f90  | sort > ex1f90.tmp 2>&1;\
 	   if (${DIFF} output/ex1f90.out ex1f90.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with with ex1f90, diffs above\n=========================================\n"; fi ;\
+	   else printf "${PWD}\nPossible problem with ex1f90, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex1f90.tmp
 
 runex2:
 	-@${MPIEXEC} -n 1 ./ex2  > ex2.tmp 2>&1;\
 	   if (${DIFF} output/ex2.out ex2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with with ex2, diffs above\n=========================================\n"; fi ;\
+	   else printf "${PWD}\nPossible problem with ex2, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex2.tmp
 
 runex2f:
 	-@${MPIEXEC} -n 1 ./ex2f  > ex2f.tmp 2>&1;\
 	   if (${DIFF} output/ex2f.out ex2f.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with with ex2f, diffs above\n=========================================\n"; fi ;\
+	   else printf "${PWD}\nPossible problem with ex2f, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex2f.tmp
 
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3  > ex3.tmp 2>&1;\
 	   if (${DIFF} output/ex3.out ex3.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with with ex3, diffs above\n=========================================\n"; fi ;\
+	   else printf "${PWD}\nPossible problem with ex3, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3.tmp
 
 runex3f90:
 	-@${MPIEXEC} -n 1 ./ex3f90 |sort > ex3f90.tmp 2>&1;\
 	   if (${DIFF} output/ex3f90.out ex3f90.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with with ex3f90, diffs above\n=========================================\n"; fi ;\
+	   else printf "${PWD}\nPossible problem with ex3f90, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3f90.tmp
 
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4  > ex4.tmp 2>&1;\
 	   if (${DIFF} output/ex4_1.out ex4.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with with ex4, diffs above\n=========================================\n"; fi ;\
+	   else printf "${PWD}\nPossible problem with ex4, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex4.tmp
 
 runex5:
 	-@${MPIEXEC} -n 1 ./ex5  > ex5.tmp 2>&1;\
 	   if (${DIFF} output/ex5_1.out ex5.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with with ex5, diffs above\n=========================================\n"; fi ;\
+	   else printf "${PWD}\nPossible problem with ex5, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex5.tmp
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm  ex5.PETSc runex5 ex5.rm

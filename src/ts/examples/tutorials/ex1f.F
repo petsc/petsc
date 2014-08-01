@@ -167,7 +167,7 @@
 !
 !      Set any additional options from the options database. This
 !     includes all options for the nonlinear and linear solvers used
-!     internally the the timestepping routines.
+!     internally the timestepping routines.
 !
 
       call TSSetFromOptions(ts,ierr)

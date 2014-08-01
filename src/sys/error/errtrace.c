@@ -161,7 +161,7 @@ static void PetscErrorPrintfNormal(void)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
-.  p - PETSC_ERROR_INITIAL if this is the first call the the error handler, otherwise PETSC_ERROR_REPEAT
+.  p - PETSC_ERROR_INITIAL if this is the first call the error handler, otherwise PETSC_ERROR_REPEAT
 -  ctx - error handler context
 
    Level: developer

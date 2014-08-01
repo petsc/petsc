@@ -699,7 +699,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     ++ksp->its;
 
     /*************************************************************************/
-    /* Update the the Lanczos tridiagonal matrix.                            */
+    /* Update the Lanczos tridiagonal matrix.                            */
     /*************************************************************************/
 
     ++l_size;
