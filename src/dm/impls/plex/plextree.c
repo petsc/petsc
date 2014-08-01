@@ -1160,7 +1160,7 @@ static PetscErrorCode DMPlexComputeConstraintMatrix_ReferenceTree(DM dm)
     PetscDualSpace space;
     PetscInt i, j, k, nPoints, offset;
     PetscInt fSize, fComp;
-    PetscScalar *B = NULL;
+    PetscReal *B = NULL;
     PetscReal *weights, *pointsRef, *pointsReal;
     Mat Amat, Bmat, Xmat;
 
@@ -1917,7 +1917,7 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
       Vec coords;
       PetscScalar *coordvals;
       PetscInt dof, off;
-      PetscScalar v0[3], J[9], detJ;
+      PetscReal v0[3], J[9], detJ;
 
 #if defined(PETSC_USE_DEBUG)
       ierr = DMPlexGetHeightStratum(K,0,&kStart,&kEnd);CHKERRQ(ierr);
