@@ -428,7 +428,7 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
   }
   ierr = DMCreate(comm,ref);CHKERRQ(ierr);
   ierr = DMSetType(*ref,DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(*ref,dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(*ref,dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(*ref,dim,numDimPoints,coneSizes,unionCones,unionOrientations,unionCoords);CHKERRQ(ierr);
   /* set the tree */
   ierr = PetscSectionCreate(comm,&parentSection);CHKERRQ(ierr);
@@ -926,7 +926,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
     PetscInt d, dim;
 
     /* add the canonical label */
-    ierr = DMPlexGetDimension(dm,&dim);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
     ierr = DMPlexCreateLabel(dm,"canonical");CHKERRQ(ierr);
     for (d = 0; d <= dim; d++) {
       PetscInt p, dStart, dEnd, canon = -1, cNumChildren;
@@ -1152,7 +1152,7 @@ static PetscErrorCode DMPlexComputeConstraintMatrix_ReferenceTree(DM dm)
   ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(cSec,&conStart,&conEnd);CHKERRQ(ierr);
   ierr = DMPlexGetConstraintMatrix(dm,&cMat);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm,&spdim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm,&spdim);CHKERRQ(ierr);
   ierr = PetscMalloc6(spdim,&v0,spdim,&v0parent,spdim,&vtmp,spdim*spdim,&J,spdim*spdim,&Jparent,spdim*spdim,&invJparent);CHKERRQ(ierr);
 
   for (f = 0; f < numFields; f++) {
@@ -1727,9 +1727,9 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMPlexCreate(PetscObjectComm((PetscObject)dm), ncdm);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(*ncdm,dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(*ncdm,dim);CHKERRQ(ierr);
 
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&parentSection);CHKERRQ(ierr);
