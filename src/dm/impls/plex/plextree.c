@@ -29,7 +29,7 @@ PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(ref, DM_CLASSID, 2);
+  if (ref) {PetscValidHeaderSpecific(ref, DM_CLASSID, 2);}
   ierr = PetscObjectReference((PetscObject)ref);CHKERRQ(ierr);
   ierr = DMDestroy(&mesh->referenceTree);CHKERRQ(ierr);
   mesh->referenceTree = ref;
