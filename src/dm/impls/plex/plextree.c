@@ -1244,8 +1244,8 @@ static PetscErrorCode DMPlexComputeConstraintMatrix_ReferenceTree(DM dm)
         continue;
       }
 
-      ierr = DMPlexComputeCellGeometry(dm, c, v0, J, NULL, &detJ);CHKERRQ(ierr);
-      ierr = DMPlexComputeCellGeometry(dm, parent, v0parent, Jparent, invJparent, &detJparent);CHKERRQ(ierr);
+      ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, NULL, &detJ);CHKERRQ(ierr);
+      ierr = DMPlexComputeCellGeometryFEM(dm, parent, NULL, v0parent, Jparent, invJparent, &detJparent);CHKERRQ(ierr);
       for (i = 0; i < nPoints; i++) {
         CoordinatesRefToReal(spdim, spdim, v0, J, &pointsRef[i*spdim],vtmp);CHKERRQ(ierr);
         CoordinatesRealToRef(spdim, spdim, v0parent, invJparent, vtmp, &pointsReal[i*spdim]);CHKERRQ(ierr);
@@ -1922,11 +1922,11 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
 #if defined(PETSC_USE_DEBUG)
       ierr = DMPlexGetHeightStratum(K,0,&kStart,&kEnd);CHKERRQ(ierr);
       for (k = kStart; k < kEnd; k++) {
-        ierr = DMPlexComputeCellGeometry(K, k, v0, J, NULL, &detJ);CHKERRQ(ierr);
+        ierr = DMPlexComputeCellGeometryFEM(K, k, NULL, v0, J, NULL, &detJ);CHKERRQ(ierr);
         if (detJ <= 0.) SETERRQ1 (PETSC_COMM_SELF,PETSC_ERR_PLIB,"reference tree cell %d has bad determinant",k);
       }
 #endif
-      ierr = DMPlexComputeCellGeometry(dm, cell, v0, J, NULL, &detJ);CHKERRQ(ierr);
+      ierr = DMPlexComputeCellGeometryFEM(dm, cell, NULL, v0, J, NULL, &detJ);CHKERRQ(ierr);
       ierr = DMGetCoordinateSection(dm,&vSection);CHKERRQ(ierr);
       ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
       ierr = VecGetArray(coords,&coordvals);CHKERRQ(ierr);
