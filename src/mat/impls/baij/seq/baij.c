@@ -1273,23 +1273,19 @@ PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
+/* used for both SeqBAIJ and SeqSBAIJ matrices */
 #undef __FUNCT__
-#define __FUNCT__ "MatGetRow_SeqBAIJ"
-PetscErrorCode MatGetRow_SeqBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
+#define __FUNCT__ "MatGetRow_SeqBAIJ_private"
+PetscErrorCode MatGetRow_SeqBAIJ_private(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v,PetscInt *ai,PetscInt *aj,PetscScalar *aa)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       itmp,i,j,k,M,*ai,*aj,bs,bn,bp,*idx_i,bs2;
-  MatScalar      *aa,*aa_i;
+  PetscInt       itmp,i,j,k,M,bn,bp,*idx_i,bs,bs2;
+  MatScalar      *aa_i;
   PetscScalar    *v_i;
 
   PetscFunctionBegin;
   bs  = A->rmap->bs;
-  ai  = a->i;
-  aj  = a->j;
-  aa  = a->a;
-  bs2 = a->bs2;
-
+  bs2 = bs*bs;
   if (row < 0 || row >= A->rmap->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D out of range", row);
 
   bn  = row/bs;   /* Block number */
@@ -1320,6 +1316,18 @@ PetscErrorCode MatGetRow_SeqBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,
       }
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetRow_SeqBAIJ"
+PetscErrorCode MatGetRow_SeqBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
+{
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
+  PetscErrorCode ierr;
+ 
+  PetscFunctionBegin;
+  ierr = MatGetRow_SeqBAIJ_private(A,row,nz,idx,v,a->i,a->j,a->a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2385,6 +2393,33 @@ PetscErrorCode MatSeqBAIJRestoreArray_SeqBAIJ(Mat A,PetscScalar *array[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatAXPYGetPreallocation_SeqBAIJ"
+PetscErrorCode MatAXPYGetPreallocation_SeqBAIJ(Mat Y,Mat X,PetscInt *nnz)
+{
+  PetscInt       i,bs=Y->rmap->bs,mbs=Y->rmap->N/bs;
+  Mat_SeqBAIJ    *x  = (Mat_SeqBAIJ*)X->data;
+  Mat_SeqBAIJ    *y  = (Mat_SeqBAIJ*)Y->data;
+  const PetscInt *xi = x->i,*yi = y->i;
+
+  PetscFunctionBegin;
+  /* Set the number of nonzeros in the new matrix */
+  printf("Y: mbs %d, m %d\n",mbs, Y->rmap->N);
+  for (i=0; i<mbs; i++) {
+    PetscInt       j,k,nzx = xi[i+1] - xi[i],nzy = yi[i+1] - yi[i];
+    const PetscInt *xj = x->j+xi[i],*yj = y->j+yi[i];
+    nnz[i] = 0;
+    for (j=0,k=0; j<nzx; j++) {                   /* Point in X */
+      for (; k<nzy && yj[k]<xj[j]; k++) nnz[i]++; /* Catch up to X */
+      if (k<nzy && yj[k]==xj[j]) k++;             /* Skip duplicate */
+      nnz[i]++;
+    }
+    for (; k<nzy; k++) nnz[i]++;
+  }
+  PetscFunctionReturn(0);
+}
+
+#include <petsctime.h>
+#undef __FUNCT__
 #define __FUNCT__ "MatAXPY_SeqBAIJ"
 PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
@@ -2420,7 +2455,25 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
     ierr = PetscInfo3(Y,"ratio of nnz(X)/nnz(Y): %D/%D = %g\n",bs2*x->nz,bs2*y->nz,(double)((PetscReal)(bs2*x->nz)/(bs2*y->nz)));CHKERRQ(ierr);
   } else {
-    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+    Mat      B;
+    PetscInt *nnz;
+    if (bs != X->rmap->bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrices must have same block size");
+    ierr = PetscMalloc1(Y->rmap->N,&nnz);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)Y),&B);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)B,((PetscObject)Y)->name);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetBlockSizesFromMats(B,Y,Y);CHKERRQ(ierr);
+    ierr = MatSetType(B,(MatType) ((PetscObject)Y)->type_name);CHKERRQ(ierr);
+    ierr = MatAXPYGetPreallocation_SeqBAIJ(Y,X,nnz);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocation(B,bs,0,nnz);CHKERRQ(ierr);
+
+    PetscLogDouble t0,t1;
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
+    ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
+    printf("Time for baij MatAXPY_BasicWithPreallocation: %g\n",t1-t0);
+    ierr = MatHeaderReplace(Y,B);CHKERRQ(ierr);
+    ierr = PetscFree(nnz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
