@@ -13,8 +13,50 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
 </ul>
 
 <!--------------------------------------------------------------------------->
+<h2>Example 1: Linear Poisson equation on a 2D grid</h2>
 
-<h2>Example 1: Nonlinear ODE arising from a time-dependent one dimensional PDE</h2>
+<p>WHAT THIS EXAMPLE DEMONSTRATES:</p>
+<ul>
+  <li>Using command line options</li>
+  <li>Using Linear Solvers</li>
+  <li>Handling a simple structured grid</li>
+</ul>
+
+<p>FURTHER DETAILS:</p>
+<ul>
+  <li><a href="../src/ksp/ksp/examples/tutorials/ex50.c.html#line1">Mathematical discription of the problem</a></li>
+  <li><a href="../src/ksp/ksp/examples/tutorials/ex50.c.html#line21">the source code</a></li>
+</ul>
+
+<p>DO THE FOLLOWING:</p>
+<ul>
+  <li> Compile src/ksp/ksp/examples/tutorials/ex50.c
+    <pre>
+      cd petsc/src/ksp/ksp/examples/tutorials
+      make ex50
+  </pre>
+  </li>
+  <li> Run a 1 processor example with a 3x3 mesh and view the matrix assembled
+    <pre>
+     mpiexec -n 1 ./ex50  -da_grid_x 4 -da_grid_y 4 -mat_view     <a href="../src/ksp/ksp/examples/tutorials/output/ex50_tut_1.out.html">[Expected output]</a>
+    </pre>
+  </li>
+  <li> Run with a 120x120 mesh on 16 processors using superlu_dist and view the solver options used
+    <pre>
+      mpiexec -n 16 ./ex50  -da_grid_x 120 -da_grid_y 120 -pc_type lu -pc_factor_mat_solver_package superlu_dist -ksp_monitor -ksp_view     <a href="../src/ksp/ksp/examples/tutorials/output/ex50_tut_2.out.html">[Expected output]</a>
+    </pre>
+  </li>
+  <li> Run with a 2049x2049 grid using multigrid solver on 16 processors with 10 multigrid levels
+    <pre>
+     mpiexec -n 16 ./ex50 -da_grid_x 2049 -da_grid_y 2049 -pc_type mg -pc_mg_levels 10 -ksp_monitor     <a href="../src/ksp/ksp/examples/tutorials/output/ex50_tut_3.out.html">[Expected output]</a>
+    </pre>
+  </li>
+</ul>
+
+
+<!--------------------------------------------------------------------------->
+
+<h2>Example 2: Nonlinear ODE arising from a time-dependent one dimensional PDE</h2>
 
 <p>WHAT THIS EXAMPLE DEMONSTRATES:</p>
 <ul>
@@ -58,7 +100,7 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
 
 <!--------------------------------------------------------------------------->
 
-<h2>Example 2: Nonlinear PDE on a structured grid</h2>
+<h2>Example 3: Nonlinear PDE on a structured grid</h2>
 
 <p>WHAT THIS EXAMPLE DEMONSTRATES:</p>
 <ul>
@@ -129,7 +171,7 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
 
 <!--------------------------------------------------------------------------->
 
-<h2>Example 3: Linear Stokes-type PDE on a structured grid</h2>
+<h2>Example 4: Linear Stokes-type PDE on a structured grid</h2>
 
 <p>WHAT THIS EXAMPLE DEMONSTRATES:</p>
 <ul>
@@ -175,7 +217,7 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
 
 <!--------------------------------------------------------------------------->
 
-<h2>Example 4: Nonlinear time dependent PDE on Unstructured Grid</h2>
+<h2>Example 5: Nonlinear time dependent PDE on Unstructured Grid</h2>
 
 <p>WHAT THIS EXAMPLE DEMONSTRATES:</p>
 <ul>
