@@ -295,6 +295,10 @@ ex59: ex59.o chkopts
 	-${CLINKER} -o ex59 ex59.o ${PETSC_KSP_LIB}
 	${RM} ex59.o
 
+ex60: ex60.o  chkopts
+	-${CLINKER} -o ex60 ex60.o  ${PETSC_KSP_LIB}
+	${RM} ex60.o
+
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -1154,6 +1158,16 @@ runex59_3:
 	-@${MPIEXEC} -n 4 ./ex59 -npx 2 -npy 2 -npz 1 -nex 2 -ney 2 -nez 1 > ex59_3.tmp 2>&1;         \
 	${DIFF} output/ex59_3.out ex59_3.tmp || printf "${PWD}\nPossible problem with ex59_3, diffs above\n=========================================\n"; \
 	${RM} -f ex59_3.tmp
+runex60:
+	-@${MPIEXEC} -n 2 ./ex60 -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 1 -ksp_type fcg -ksp_fcg_mmax 1 -eta 0.1 > ex60_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex60_1.out ex60_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex60_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex60_1.tmp
+runex60_2:
+	-@${MPIEXEC} -n 2 ./ex60 -ksp_monitor_short -ksp_rtol 1e-6 -diagfunc 3 -ksp_type fcg -ksp_fcg_mmax 10000 -eta 0.3333 > ex60_2.tmp 2>&1;	  \
+	   if (${DIFF} output/ex60_2.out ex60_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex60_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex60_2.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 \
@@ -1170,7 +1184,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex45.PETSc runex45 runex45_2 ex45.rm \
                                  ex49.PETSc runex49 runex49_2 runex49_3 runex49_5 ex49.rm ex53.PETSc runex53 ex53.rm ex55.PETSc runex55_Classical ex55.rm\
                                  ex56.PETSc runex56_nns runex56 ex56.rm \
-                                 ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm
+                                 ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm \
+                                 ex60.PETSc runex60 ex60.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm 
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
