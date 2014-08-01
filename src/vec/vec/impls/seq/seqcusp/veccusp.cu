@@ -67,10 +67,10 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
 
       ((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked = PETSC_FALSE;
       /* If the array is already allocated, one can register it as (page-locked) mapped.
-	 This can substantially accelerate data transfer across the PCI Express */
+         This can substantially accelerate data transfer across the PCI Express */
       if (s->array) {
-	err = cudaHostRegister(s->array, v->map->n*sizeof(PetscScalar),cudaHostRegisterMapped);CHKERRCUSP(err);
-	((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked = PETSC_TRUE;
+        err = cudaHostRegister(s->array, v->map->n*sizeof(PetscScalar),cudaHostRegisterMapped);CHKERRCUSP(err);
+        ((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked = PETSC_TRUE;
       }
       v->ops->destroy = VecDestroy_SeqCUSP;
     } catch(char *ex) {
@@ -213,8 +213,7 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
 
     /* Note : this code copies the smallest contiguous chunk of data
        containing ALL of the indices */
-    err = cudaMemcpyAsync(cpuPtr, gpuPtr, ptop_scatter->ns*sizeof(PetscScalar),
-			   cudaMemcpyDeviceToHost, stream);CHKERRCUSP(err);
+    err = cudaMemcpyAsync(cpuPtr, gpuPtr, ptop_scatter->ns*sizeof(PetscScalar), cudaMemcpyDeviceToHost, stream);CHKERRCUSP(err);
     err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
 
     ierr = VecCUSPRestoreArrayRead(v,&varray);CHKERRQ(ierr);
@@ -1824,11 +1823,10 @@ PetscErrorCode VecDestroy_SeqCUSP(Vec v)
     if (v->spptr) {
       delete ((Vec_CUSP*)v->spptr)->GPUarray;
       err = cudaStreamDestroy(((Vec_CUSP*)v->spptr)->stream);CHKERRCUSP(err);
-
       /* If the host array has been registered as (page-locked) mapped,
-	 one must unregister the buffer */
+         one must unregister the buffer */
       if (((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked) {
-	err = cudaHostUnregister(s->array);CHKERRCUSP(err);
+        err = cudaHostUnregister(s->array);CHKERRCUSP(err);
       }
       delete (Vec_CUSP*) v->spptr;
     }

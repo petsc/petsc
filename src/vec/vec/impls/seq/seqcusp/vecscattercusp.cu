@@ -273,7 +273,7 @@ PetscErrorCode VecScatterCUSP_StoS(Vec x,Vec y,PetscCUSPIndices ci,InsertMode ad
   ierr = VecCUSPAllocateCheck(x);CHKERRQ(ierr);
   ierr = VecCUSPAllocateCheck(y);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecCUSPGetArrayWrite(y,&yarray);CHKERRQ(ierr);
+  ierr = VecCUSPGetArrayReadWrite(y,&yarray);CHKERRQ(ierr);
   if (stos_scatter->n) {
     if (addv == INSERT_VALUES)
       VecScatterCUSP_StoS_Dispatcher(xarray,yarray,ci,mode,Insert());
@@ -288,6 +288,6 @@ PetscErrorCode VecScatterCUSP_StoS(Vec x,Vec y,PetscCUSPIndices ci,InsertMode ad
     err = cudaStreamSynchronize(stos_scatter->stream);CHKERRCUSP((int)err);
   }
   ierr = VecCUSPRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecCUSPRestoreArrayWrite(y,&yarray);CHKERRQ(ierr);
+  ierr = VecCUSPRestoreArrayReadWrite(y,&yarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
