@@ -745,6 +745,37 @@ runex10_mumps_redundant:
 	   else printf "${PWD}\nPossible problem with ex10_mumps_redundant, diffs above\n=========================================\n"; fi; \
 	${RM} -f ex10_mumps_redundant.tmp;
 
+runex10_pastix_lu_1:
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2 > ex10_pastix_lu_1.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mumps.out ex10_pastix_lu_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_pastix_lu_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_pastix_lu_1.tmp
+runex10_pastix_lu_2:
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type mpiaij -pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2 > ex10_pastix_lu_2.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mumps.out ex10_pastix_lu_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_pastix_lu_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_pastix_lu_2.tmp
+runex10_pastix_cholesky_1:
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular > ex10_pastix_cholesky_1.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mumps.out ex10_pastix_cholesky_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_pastix_cholesky_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_pastix_cholesky_1.tmp
+runex10_pastix_cholesky_2:
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular > ex10_pastix_cholesky_2.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mumps.out ex10_pastix_cholesky_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_pastix_cholesky_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_pastix_cholesky_2.tmp
+
+NSUBCOMM = 8 7 6 5 4 3 2 1
+runex10_pastix_redundant:
+	-@touch ex10_pastix_redundant.tmp
+	-@for nsubcomm in ${NSUBCOMM}; do \
+	${MPIEXEC} -n 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number $$nsubcomm -redundant_pc_factor_mat_solver_package pastix -num_numfac 2 -num_rhs 2 >> ex10_pastix_redundant.tmp 2>&1; \
+	done;
+	-@if (${DIFF} output/ex10_mumps_redundant.out ex10_pastix_redundant.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_pastix_redundant, diffs above\n=========================================\n"; fi; \
+	${RM} -f ex10_pastix_redundant.tmp;
+
 runex10_superlu_dist_redundant:
 	-@touch ex10_superlu_dist_redundant.tmp
 	-@for nsubcomm in ${NSUBCOMM}; do \
@@ -1169,6 +1200,9 @@ TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_
 				 runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
                                  runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm ex53.PETSc runex53 runex53_2 ex53.rm \
                                  ex52.PETSc runex52_mumps runex52_mumps_2 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
+TESTEXAMPLES_PASTIX            = ex10.PETSc runex10_pastix_lu_1 runex10_pastix_lu_2  \
+				 runex10_pastix_cholesky_1 runex10_pastix_cholesky_2  runex10_pastix_redundant \
+                                 ex10.rm 
 TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu ex52.rm
 TESTEXAMPLES_FFTW              =
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
