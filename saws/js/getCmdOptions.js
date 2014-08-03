@@ -82,10 +82,10 @@ function getSimpleDescription(endtag)
     if(index == -1)
         return "";
 
-    ret += "pc_type " + matInfo[index].pc_type + endl;
-    ret += "ksp_type " + matInfo[index].ksp_type + endl;
+    ret += /*"ksp_type " +*/ matInfo[index].ksp_type + endl;
+    ret += /*"pc_type " +*/ matInfo[index].pc_type + endl;
 
-    var pc_type = matInfo[index].pc_type;
+    /*var pc_type = matInfo[index].pc_type;
 
     if(pc_type == "mg") { //add extra info related to mg
         ret += "pc_mg_type " + matInfo[index].pc_mg_type + endl;
@@ -104,7 +104,7 @@ function getSimpleDescription(endtag)
     }
     else if(pc_type == "redundant") {
         ret += "pc_redundant_number " + matInfo[index].pc_redundant_number + endl;
-    }
+    }*/
 
     return ret;
 }

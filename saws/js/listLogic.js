@@ -262,7 +262,7 @@ $(document).on("change","select[id^='pc_type']",function() {
             var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
 
             $("#" + parentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + i + " Options (Mat Properties: Symm:<input type=\"checkbox\" id=\"symm" + childEndtag + "\"> Posdef:<input type=\"checkbox\" id=\"posdef" + childEndtag + "\"> Logstruc:<input type=\"checkbox\" id=\"logstruc" + childEndtag + "\">)</b>");
+            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + i + " Options (Matrix is Symmetric:<input type=\"checkbox\" id=\"symm" + childEndtag + "\"> Matrix is Positive Definite:<input type=\"checkbox\" id=\"posdef" + childEndtag + "\"> Matrix is Logically Block Structured:<input type=\"checkbox\" id=\"logstruc" + childEndtag + "\">)</b>");
 
             //special for fieldsplit
             if(matInfo[writeLoc].symm)
@@ -293,6 +293,7 @@ $(document).on("change","select[id^='pc_type']",function() {
             $("#pc_type" + childEndtag).trigger("change");
         }
     }
+    refresh(); //refresh diagrams after any change in pc
 });
 
 //called when a ksp option is changed
@@ -305,6 +306,7 @@ $(document).on("change","select[id^='ksp_type']",function() {
     var index      = getIndex(matInfo,endtag);
 
     matInfo[index].ksp_type = kspValue;
+    refresh(); //refresh diagrams after any change in ksp
 });
 
 //need to add a bunch of methods here for changing each variable: pc_fieldsplit_blocks, pc_asm_blocks, pc_redundant_number, etc
@@ -327,7 +329,6 @@ $(document).on("change","select[id^='pc_fieldsplit_type']",function() {
     var index           = getIndex(matInfo,endtag);
 
     matInfo[index].pc_fieldsplit_type = fieldsplitType;
-
 });
 
 $(document).on("keyup","input[id^='pc_asm_blocks']",function() {
@@ -341,6 +342,7 @@ $(document).on("keyup","input[id^='pc_asm_blocks']",function() {
     var val    = $(this).val();
 
     matInfo[index].pc_asm_blocks = val;
+    refresh(); //refresh diagrams
 });
 
 $(document).on("keyup","input[id^='pc_asm_overlap']",function() {
@@ -367,6 +369,7 @@ $(document).on("keyup","input[id^='pc_bjacobi_blocks']",function() {
     var val    = $(this).val();
 
     matInfo[index].pc_bjacobi_blocks = val;
+    refresh(); //refresh diagrams
 });
 
 $(document).on("keyup","input[id^='pc_redundant_number']",function() {
@@ -513,6 +516,7 @@ $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
         }
         matInfo[index].pc_fieldsplit_blocks = val;
     }
+    refresh(); //refresh diagrams
 });
 
 /*
@@ -602,4 +606,5 @@ $(document).on('keyup', "input[id^='pc_mg_levels']", function()
         }
         matInfo[index].pc_mg_levels = val;
     }
+    refresh(); //refresh diagrams
 });

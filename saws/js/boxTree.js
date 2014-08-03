@@ -6,19 +6,18 @@
  * 1) No overlapping text
  * 2) When switching directions, the entire subtree in the new direction should be seen as one of the nodes in the original direction
  * 3) Sister nodes are shown on the same line
- * 4) No overlapping subtrees
- * 5) Parent is centered at the middle of its children
+ * 4) Parent is centered at the middle of its children
  *
  */
 
-var node_radius = 5; //adjust this global variable to change the size of the drawn node
+var node_radius = 4; //adjust this global variable to change the size of the drawn node
 
 //generates svg code for the given input parameters
 //the x, y coordinates are the upper left hand coordinate of the drawing. should start with (0,0)
 function getBoxTree(data, endtag, x, y) {
 
     var ret         = ""; //the svg code to return
-    var index       = getIndex(data,endtag);
+    var index       = getIndex(data,endtag); if(index == -1) return;
     var numChildren = getNumChildren(data,endtag);
     var pc_type     = data[index].pc_type;
 
@@ -31,46 +30,37 @@ function getBoxTree(data, endtag, x, y) {
     var description = getSimpleDescription(endtag);
     var numLines    = countNumOccurances("<br>",description);
 
-    //ret += "<rect x=\"" + centered_x + "\" y=\"" + centered_y + "\" width=\"" + text_size.width + "\" height=\"" + text_size.height + "\" style=\"fill:rgb(0,0,255);stroke-width:2;stroke:rgb(0,0,0)\" />"; //don't delete this code. this is very useful for debugging purposes
-    //ret += "<circle cx=\"" + (x + visualLoc.x) + "\" cy=\"" + (y + visualLoc.y) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"blue\" />";
-
-    /*for(var i = 0; i<numLines; i++) {
-        var indx  = description.indexOf("<br>");
-        var chunk = description.substring(0,indx);
-        description = description.substring(indx+4,description.length);
-        ret += "<text x=\"" + (x + visualLoc.x + 1.2*node_radius) + "\" y=\"" + (y + visualLoc.y + 2*node_radius + 12*i) + "\" fill=\"black\" font-size=\"12px\">" + chunk + "</text>";
-    }*/
-
     //recursively draw all the children (if any)
     var elapsedDist = 0;
 
     for(var i = 0; i<numChildren; i++) {
         var childEndtag    = endtag + "_" + i;
         var childIndex     = getIndex(data,childEndtag);
+        if(childIndex == -1)
+            return;
         var childTotalSize = data[childIndex].total_size;
 
         if(pc_type == "mg") {
-            //ret += getBoxTree(data, childEndtag, x+text_size.width+data[index].indentations[i], y+elapsedDist); //remember to indent !!
-
             //draw the appropriate line from the parent to the child
             ret += getCurve(x + visualLoc.x, y + visualLoc.y, x+text_size.width+data[index].indentations[i]+data[childIndex].visual_loc.x, y+elapsedDist+data[childIndex].visual_loc.y,"east");
 
+            //draw the child
             ret += getBoxTree(data, childEndtag, x+text_size.width+data[index].indentations[i], y+elapsedDist); //remember to indent !!
 
             elapsedDist += childTotalSize.height;
         }
         else {
-            //ret += getBoxTree(data, childEndtag, x+elapsedDist, y+text_size.height+data[index].indentations[i]); //remember to indent !!
-
             //draw the appropriate line from the parent to the child
             ret += getCurve(x + visualLoc.x, y + visualLoc.y, x+elapsedDist+data[childIndex].visual_loc.x, y+text_size.height+data[index].indentations[i]+data[childIndex].visual_loc.y ,"south");
 
+            //draw the child
             ret += getBoxTree(data, childEndtag, x+elapsedDist, y+text_size.height+data[index].indentations[i]); //remember to indent !!
 
             elapsedDist += childTotalSize.width;
         }
     }
 
+    //draw the node itself last so that the text is on top of everything
     ret += "<circle cx=\"" + (x + visualLoc.x) + "\" cy=\"" + (y + visualLoc.y) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"blue\" />";
 
     for(var i = 0; i<numLines; i++) {
@@ -89,7 +79,7 @@ function getTextSize(data, endtag) {
     var index   = getIndex(data,endtag);
     var pc_type = data[index].pc_type;
     var ret     = new Object();
-    ret.width   = 150;
+    ret.width   = 70;
 
     var description = getSimpleDescription(endtag);
     var height = 2*node_radius + 12 * countNumOccurances("<br>",description); //make each line 15 pixels tall
@@ -108,7 +98,7 @@ function getTextSize(data, endtag) {
 
 function calculateSizes(data, endtag) {
 
-    var index       = getIndex(data,endtag);
+    var index       = getIndex(data,endtag); if(index == -1) return;
     var text_size   = getTextSize(data,endtag); //return an object containing 'width' and 'height'
     var numChildren = getNumChildren(data,endtag);
     var pc_type     = data[index].pc_type;
@@ -136,6 +126,8 @@ function calculateSizes(data, endtag) {
 	for(var i=0; i<numChildren; i++) { //iterate thru the children to get the total height and most extreme visual node location
 	    var childEndtag  = endtag + "_" + i;
 	    var childIndex   = getIndex(data,childEndtag);
+            if(childIndex == -1)
+                return;
 
             var childSize    = data[childIndex].total_size;
             var visualLoc    = data[childIndex].visual_loc;
@@ -224,6 +216,8 @@ function calculateSizes(data, endtag) {
 	for(var i=0; i<numChildren; i++) { //iterate thru the children to get the total width and most extreme visual node location
 	    var childEndtag = endtag + "_" + i;
 	    var childIndex  = getIndex(data,childEndtag);
+            if(childIndex == -1)
+                return;
 
 	    var childSize   = data[childIndex].total_size;
             var visualLoc   = data[childIndex].visual_loc;

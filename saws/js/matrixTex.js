@@ -5,8 +5,11 @@
 //this function gets the information from matInfo[]
 function getMatrixTex(currentMatrix) {//weird because the longer the string is, the more deep the recursion is. "0" is the top level. digits are only added. never removed
 
+    var index = getIndex(matInfo,currentMatrix);
+    if(index == -1)
+        return;
     //case 1: not logstruc. base case.
-    if(!matInfo[getIndex(matInfo,currentMatrix)].logstruc) {
+    if(!matInfo[index].logstruc) {
         //return the appropriate tex
 
         /*if(currentMatrix == currentAsk) //make red and bold

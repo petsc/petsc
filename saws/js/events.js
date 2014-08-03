@@ -82,7 +82,8 @@ $(document).on("click","#copyToClipboard",function(){
     //Note: Because of security reasons, copying to clipboard on click is actually quite complicated. This is a much simpler way to get the job done.
 });
 
-$(document).on("click","#refresh",function(){
+//call this method to refresh all the diagram (only the ones that are checked will be displayed)
+function refresh() {
     if(displayCmdOptions) {
         $("#rightPanel").html(""); //clear the rightPanel
         var cmdOptions = getCmdOptions("0","","newline");
@@ -117,7 +118,7 @@ $(document).on("click","#refresh",function(){
     else
         $("#matrixPic").html("");
 
-    if(displayDiagram) {
+    /*if(displayDiagram) {
         $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex("0") + "\\)" + "</center>");
         $("#matrixPic1").html("<center>" + "\\(" + getSpecificMatrixTex2(0) + "\\)" + "</center>");
         MathJax.Hub.Config({ TeX: { extensions: ["AMSMath.js"] }});
@@ -126,24 +127,28 @@ $(document).on("click","#refresh",function(){
     else {
         $("#matrixPic1").html("");
         $("#matrixPic2").html("");
-    }
-});
+    }*/
+}
 
 $(document).on("change","#displayCmdOptions",function(){
     displayCmdOptions = $(this).prop("checked");
+    refresh();
 });
 
 $(document).on("change","#displayTree",function(){
     displayTree = $(this).prop("checked");
+    refresh();
 });
 
 $(document).on("change","#displayMatrix",function(){
     displayMatrix = $(this).prop("checked");
+    refresh();
 });
 
-$(document).on("change","#displayDiagram",function(){
+/*$(document).on("change","#displayDiagram",function(){
     displayDiagram = $(this).prop("checked");
-});
+    refresh();
+});*/
 
 /*
 //this piece of code is useless right now, but will be restored eventually
