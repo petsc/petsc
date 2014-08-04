@@ -1149,24 +1149,14 @@ PetscErrorCode MatSeqSBAIJRestoreArray_SeqSBAIJ(Mat A,PetscScalar *array[])
 #define __FUNCT__ "MatAXPYGetPreallocation_SeqSBAIJ"
 PetscErrorCode MatAXPYGetPreallocation_SeqSBAIJ(Mat Y,Mat X,PetscInt *nnz)
 {
-  PetscInt        i,bs=Y->rmap->bs,mbs=Y->rmap->N/bs;
-  Mat_SeqSBAIJ    *x  = (Mat_SeqSBAIJ*)X->data;
-  Mat_SeqSBAIJ    *y  = (Mat_SeqSBAIJ*)Y->data;
-  const PetscInt  *xi = x->i,*yi = y->i;
+  PetscInt       bs = Y->rmap->bs,mbs = Y->rmap->N/bs;
+  Mat_SeqSBAIJ   *x = (Mat_SeqSBAIJ*)X->data;
+  Mat_SeqSBAIJ   *y = (Mat_SeqSBAIJ*)Y->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Set the number of nonzeros in the new matrix */
-  for (i=0; i<mbs; i++) {
-    PetscInt       j,k,nzx = xi[i+1] - xi[i],nzy = yi[i+1] - yi[i];
-    const PetscInt *xj = x->j+xi[i],*yj = y->j+yi[i];
-    nnz[i] = 0;
-    for (j=0,k=0; j<nzx; j++) {                   /* Point in X */
-      for (; k<nzy && yj[k]<xj[j]; k++) nnz[i]++; /* Catch up to X */
-      if (k<nzy && yj[k]==xj[j]) k++;             /* Skip duplicate */
-      nnz[i]++;
-    }
-    for (; k<nzy; k++) nnz[i]++;
-  }
+  ierr = MatAXPYGetPreallocation_SeqX_private(mbs,x->i,x->j,y->i,y->j,nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
