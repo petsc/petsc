@@ -897,7 +897,7 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
 -  PC_MG_CYCLE_V or PC_MG_CYCLE_W
 
    Options Database Key:
-$  -pc_mg_cycle_type v or w
+$  -pc_mg_cycle_type <v,w>
 
    Level: advanced
 
@@ -1127,7 +1127,7 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 
    Options Database Keys:
 +  -pc_mg_levels <nlevels> - number of levels including finest
-.  -pc_mg_cycles v or w
+.  -pc_mg_cycles <v,w> -
 .  -pc_mg_smoothup <n> - number of smoothing steps after interpolation
 .  -pc_mg_smoothdown <n> - number of smoothing steps before applying restriction operator
 .  -pc_mg_type <additive,multiplicative,full,kaskade> - multiplicative is the default
