@@ -3,7 +3,8 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download     = ['https://gforge.inria.fr/frs/download.php/file/33841/pastix_5.2.2.12.tar.bz2']
+    self.download     = ['https://gforge.inria.fr/frs/download.php/file/33841/pastix_5.2.2.12.tar.bz2',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pastix_5.2.2.12.tar.bz2']
     self.liblist      = [['libpastix.a'],
                          ['libpastix.a','libpthread.a','librt.a']]
     self.functions    = ['pastix']

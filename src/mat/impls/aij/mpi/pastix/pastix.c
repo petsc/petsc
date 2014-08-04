@@ -6,7 +6,7 @@
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 
-#if defined(PETSC_USE_COMPLEX) && defined(__cplusplus)
+#if defined(PETSC_USE_COMPLEX)
 #define _H_COMPLEX
 #endif
 
@@ -18,11 +18,9 @@ EXTERN_C_END
 #if defined(PETSC_USE_REAL_SINGLE)
 #define PASTIX_CALL c_pastix
 #define PASTIX_CHECKMATRIX c_pastix_checkMatrix
-#define PastixScalar COMPLEX
 #else
 #define PASTIX_CALL z_pastix
 #define PASTIX_CHECKMATRIX z_pastix_checkMatrix
-#define PastixScalar DCOMPLEX
 #endif
 
 #else /* PETSC_USE_COMPLEX */
@@ -30,14 +28,14 @@ EXTERN_C_END
 #if defined(PETSC_USE_REAL_SINGLE)
 #define PASTIX_CALL s_pastix
 #define PASTIX_CHECKMATRIX s_pastix_checkMatrix
-#define PastixScalar float
 #else
 #define PASTIX_CALL d_pastix
 #define PASTIX_CHECKMATRIX d_pastix_checkMatrix
-#define PastixScalar double
 #endif
 
 #endif /* PETSC_USE_COMPLEX */
+
+typedef PetscScalar PastixScalar;
 
 typedef struct Mat_Pastix_ {
   pastix_data_t *pastix_data;    /* Pastix data storage structure                        */
