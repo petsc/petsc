@@ -788,10 +788,10 @@ PetscErrorCode  MatSetUp(Mat A)
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
 .  -mat_view socket - Sends matrix to socket, can be accessed from Matlab (see Users-Manual: ch_matlab for details)
-.  -viewer_socket_machine <machine>
-.  -viewer_socket_port <port>
+.  -viewer_socket_machine <machine> -
+.  -viewer_socket_port <port> -
 .  -mat_view binary - save matrix to file in binary format
--  -viewer_binary_filename <name>
+-  -viewer_binary_filename <name> -
    Level: beginner
 
    Notes: see the manual page for MatLoad() for the exact format of the binary file when the binary
