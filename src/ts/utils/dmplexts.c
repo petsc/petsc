@@ -505,7 +505,7 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
     ierr = DMPlexPointLocalRead(dm, cell, x, &cx);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(dmCell, cell, cellgeom, &cg);CHKERRQ(ierr);
     ierr = DMPlexPointGlobalRef(dmplexts->dmGrad, cell, grad, &cgrad);CHKERRQ(ierr);
-    if (!cgrad) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Supposedly ghost cell %d, but this should be impossible", cell);
+    if (!cgrad) continue; /* Unowned overlap cell, we do not compute */
     /* Limiter will be minimum value over all neighbors */
     for (d = 0; d < pdim; ++d) cellPhi[d] = PETSC_MAX_REAL;
     for (f = 0; f < coneSize; ++f) {
