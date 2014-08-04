@@ -1156,7 +1156,6 @@ PetscErrorCode MatAXPYGetPreallocation_SeqSBAIJ(Mat Y,Mat X,PetscInt *nnz)
 
   PetscFunctionBegin;
   /* Set the number of nonzeros in the new matrix */
-  printf("Y: mbs %d, m %d\n",mbs, Y->rmap->N);
   for (i=0; i<mbs; i++) {
     PetscInt       j,k,nzx = xi[i+1] - xi[i],nzy = yi[i+1] - yi[i];
     const PetscInt *xj = x->j+xi[i],*yj = y->j+yi[i];
@@ -1224,7 +1223,6 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     
     ierr = MatHeaderReplace(Y,B);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
-    //ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
     ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
     ierr = MatRestoreRowUpperTriangular(Y);CHKERRQ(ierr);
   }

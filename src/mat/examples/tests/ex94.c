@@ -24,8 +24,8 @@ int main(int argc,char **args)
   char           file[4][128];
   PetscBool      flg,preload = PETSC_TRUE;
   PetscScalar    *a,rval,alpha,none = -1.0;
-  //PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatMatTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_MatRARt=PETSC_TRUE,Test_MatMatMatMult=PETSC_TRUE;
-  PetscBool      Test_MatMatMult=PETSC_FALSE,Test_MatMatTr=PETSC_FALSE,Test_MatPtAP=PETSC_FALSE,Test_MatRARt=PETSC_FALSE,Test_MatMatMatMult=PETSC_FALSE,Test_MatAXPY=PETSC_TRUE;
+  PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatMatTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_MatRARt=PETSC_TRUE,Test_MatMatMatMult=PETSC_TRUE;
+  PetscBool      Test_MatAXPY=PETSC_FALSE;
   PetscInt       pm,pn,pM,pN;
   MatInfo        info;
 
@@ -79,21 +79,27 @@ int main(int argc,char **args)
 
   /* Test MatAXPY()    */
   /*-------------------*/
-  //ierr = PetscOptionsHasName(NULL,"-test_MatAXPY",&Test_MatAXPY);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-test_MatAXPY",&Test_MatAXPY);CHKERRQ(ierr);
   if (Test_MatAXPY) {
     Mat Btmp;
-    printf("Loading matrices is done...\n");
+    if (!rank) printf(" Loading matrices is done...\n");
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatDuplicate(B,MAT_COPY_VALUES,&Btmp);CHKERRQ(ierr);
     ierr = MatAXPY(A,-1.0,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A = -B + A_save */
 
-    printf(" Test_MatAXPY is done, now checking accuracy ...\n");
+    if (!rank) printf(" Test_MatAXPY is done, now checking accuracy ...\n");
     ierr = MatScale(A,-1.0);CHKERRQ(ierr); /* A = -A = B - A_save */
     ierr = MatAXPY(Btmp,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* Btmp = -A + B = A_save */
     ierr = MatMultEqual(A_save,Btmp,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,0,"MatAXPY() is incorrect\n");
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = MatDestroy(&Btmp);CHKERRQ(ierr);
+
+    Test_MatMatMult    = PETSC_FALSE;
+    Test_MatMatTr      = PETSC_FALSE;
+    Test_MatPtAP       = PETSC_FALSE;
+    Test_MatRARt       = PETSC_FALSE;
+    Test_MatMatMatMult = PETSC_FALSE;
   }
 
   /* Test MatMatMult() */

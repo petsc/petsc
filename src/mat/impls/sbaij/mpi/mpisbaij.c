@@ -1396,9 +1396,27 @@ PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one));
     ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   } else {
+    Mat      B;
+    PetscInt *nnz_d,*nnz_o,bs=Y->rmap->bs;
+    if (bs != X->rmap->bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrices must have same block size");
     ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
-    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+    ierr = MatGetRowUpperTriangular(Y);CHKERRQ(ierr);
+    ierr = PetscMalloc1(yy->A->rmap->N,&nnz_d);CHKERRQ(ierr);
+    ierr = PetscMalloc1(yy->B->rmap->N,&nnz_o);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)Y),&B);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)B,((PetscObject)Y)->name);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetBlockSizesFromMats(B,Y,Y);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATMPISBAIJ);CHKERRQ(ierr);
+    ierr = MatAXPYGetPreallocation_SeqSBAIJ(yy->A,xx->A,nnz_d);CHKERRQ(ierr);
+    ierr = MatAXPYGetPreallocation_MPIBAIJ(yy->B,yy->garray,xx->B,xx->garray,nnz_o);CHKERRQ(ierr);
+    ierr = MatMPISBAIJSetPreallocation(B,bs,0,nnz_d,0,nnz_o);CHKERRQ(ierr);
+    ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(Y,B);CHKERRQ(ierr);
+    ierr = PetscFree(nnz_d);CHKERRQ(ierr);
+    ierr = PetscFree(nnz_o);CHKERRQ(ierr);
     ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
+    ierr = MatRestoreRowUpperTriangular(Y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -157,4 +157,6 @@ PETSC_INTERN PetscErrorCode MatSOR_SeqSBAIJ(Mat,Vec,PetscReal,MatSORType,PetscRe
 PETSC_INTERN PetscErrorCode MatLoad_SeqSBAIJ(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat,PetscBool);
 
+PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqSBAIJ(Mat,Mat,PetscInt*);
+
 #endif

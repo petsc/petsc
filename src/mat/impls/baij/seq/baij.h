@@ -221,6 +221,7 @@ PETSC_INTERN PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat,PetscB
 PETSC_INTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool);
 
 PETSC_INTERN PetscErrorCode MatGetRow_SeqBAIJ_private(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**,PetscInt*,PetscInt*,PetscScalar*);
+PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqBAIJ(Mat,Mat,PetscInt*);
 
 /*
   PetscKernel_A_gets_A_times_B_2: A = A * B with size bs=2

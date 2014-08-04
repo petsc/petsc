@@ -1981,6 +1981,32 @@ PetscErrorCode MatSetUp_MPIBAIJ(Mat A)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatAXPYGetPreallocation_MPIBAIJ"
+/* This is the same as MatAXPYGetPreallocation_SeqAIJ, except that the local-to-global map is provided */
+PetscErrorCode MatAXPYGetPreallocation_MPIBAIJ(Mat Y,const PetscInt *yltog,Mat X,const PetscInt *xltog,PetscInt *nnz)
+{
+  PetscInt        i,bs=Y->rmap->bs,m=Y->rmap->N/bs;
+  Mat_SeqBAIJ     *x  = (Mat_SeqBAIJ*)X->data;
+  Mat_SeqBAIJ     *y  = (Mat_SeqBAIJ*)Y->data;
+  const PetscInt  *xi = x->i,*yi = y->i;
+
+  PetscFunctionBegin;
+  /* Set the number of nonzeros in the new matrix */
+  for (i=0; i<m; i++) {
+    PetscInt       j,k,nzx = xi[i+1] - xi[i],nzy = yi[i+1] - yi[i];
+    const PetscInt *xj = x->j+xi[i],*yj = y->j+yi[i];
+    nnz[i] = 0;
+    for (j=0,k=0; j<nzx; j++) {                   /* Point in X */
+      for (; k<nzy && yltog[yj[k]]<xltog[xj[j]]; k++) nnz[i]++; /* Catch up to X */
+      if (k<nzy && yltog[yj[k]]==xltog[xj[j]]) k++;             /* Skip duplicate */
+      nnz[i]++;
+    }
+    for (; k<nzy; k++) nnz[i]++;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatAXPY_MPIBAIJ"
 PetscErrorCode MatAXPY_MPIBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
@@ -2002,7 +2028,23 @@ PetscErrorCode MatAXPY_MPIBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
     ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   } else {
-    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+    Mat      B;
+    PetscInt *nnz_d,*nnz_o,bs=Y->rmap->bs;
+    ierr = PetscMalloc1(yy->A->rmap->N,&nnz_d);CHKERRQ(ierr);
+    ierr = PetscMalloc1(yy->B->rmap->N,&nnz_o);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)Y),&B);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)B,((PetscObject)Y)->name);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetBlockSizesFromMats(B,Y,Y);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATMPIBAIJ);CHKERRQ(ierr);
+    ierr = MatAXPYGetPreallocation_SeqBAIJ(yy->A,xx->A,nnz_d);CHKERRQ(ierr);
+    ierr = MatAXPYGetPreallocation_MPIBAIJ(yy->B,yy->garray,xx->B,xx->garray,nnz_o);CHKERRQ(ierr);
+    ierr = MatMPIBAIJSetPreallocation(B,bs,0,nnz_d,0,nnz_o);CHKERRQ(ierr);
+    /* MatAXPY_BasicWithPreallocation() for BAIJ matrix is much slower than AIJ, even for bs=1 ! */
+    ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(Y,B);CHKERRQ(ierr);
+    ierr = PetscFree(nnz_d);CHKERRQ(ierr);
+    ierr = PetscFree(nnz_o);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

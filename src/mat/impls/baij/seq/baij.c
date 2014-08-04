@@ -2403,7 +2403,6 @@ PetscErrorCode MatAXPYGetPreallocation_SeqBAIJ(Mat Y,Mat X,PetscInt *nnz)
 
   PetscFunctionBegin;
   /* Set the number of nonzeros in the new matrix */
-  printf("Y: mbs %d, m %d\n",mbs, Y->rmap->N);
   for (i=0; i<mbs; i++) {
     PetscInt       j,k,nzx = xi[i+1] - xi[i],nzy = yi[i+1] - yi[i];
     const PetscInt *xj = x->j+xi[i],*yj = y->j+yi[i];
@@ -2418,7 +2417,6 @@ PetscErrorCode MatAXPYGetPreallocation_SeqBAIJ(Mat Y,Mat X,PetscInt *nnz)
   PetscFunctionReturn(0);
 }
 
-#include <petsctime.h>
 #undef __FUNCT__
 #define __FUNCT__ "MatAXPY_SeqBAIJ"
 PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
@@ -2466,12 +2464,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = MatSetType(B,(MatType) ((PetscObject)Y)->type_name);CHKERRQ(ierr);
     ierr = MatAXPYGetPreallocation_SeqBAIJ(Y,X,nnz);CHKERRQ(ierr);
     ierr = MatSeqBAIJSetPreallocation(B,bs,0,nnz);CHKERRQ(ierr);
-
-    PetscLogDouble t0,t1;
-    ierr = PetscTime(&t0);CHKERRQ(ierr);
     ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
-    ierr = PetscTime(&t1);CHKERRQ(ierr);
-    printf("Time for baij MatAXPY_BasicWithPreallocation: %g\n",t1-t0);
     ierr = MatHeaderReplace(Y,B);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
   }
