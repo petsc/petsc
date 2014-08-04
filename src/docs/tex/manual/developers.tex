@@ -249,7 +249,6 @@ never
    else \{.
 \end{tabbing}
  The closing bracket \} should {\bf always} be on its own line.
-\item Do not use NULL in the source code, use PETSC\_NULL.
 \item Do not leave chunks of commented out code in the source files.
 \item In function declaration the open bracket \{ should be on the {\bf next} line, not on the same line as the function name and
       arguments. This is an exception to the rule above.
@@ -285,7 +284,7 @@ instead write
 \item Do not use the {\em register} directive.
 \item Never use a local variable counter like PetscInt flops = 0; to accumulate flops and then call PetscLogFlops() {\em always} just
       call PetscLogFlops() directly when needed.
-\item Do not use {\em if (rank == 0)} or {\em if (v == PETSC\_NULL)} or {\em if (flg == PETSC\_TRUE)} or {\em if (flg == PETSC\_FALSE)}
+\item Do not use {\em if (rank == 0)} or {\em if (v == NULL)} or {\em if (flg == PETSC\_TRUE)} or {\em if (flg == PETSC\_FALSE)}
 instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg)}.
 \item Do not use {\em \#ifdef} or {\em \#ifndef} rather use {\em \#if defined(...} or {\em \#if !defined(...}
 \item MPI routines and macros that are not part of the 1.0 or 1.1 standard should not be used in PETSc without appropriate ./configure checks and \#if defined() checks the code. Code should also be provided that works if the MPI feature is not available. For example,
