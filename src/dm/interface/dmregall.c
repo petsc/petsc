@@ -147,6 +147,13 @@ PetscErrorCode PetscFERegisterAll()
 #include <petscfv.h>     /*I  "petscfv.h"  I*/
 
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Sin(PetscLimiter);
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Zero(PetscLimiter);
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_None(PetscLimiter);
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Minmod(PetscLimiter);
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanLeer(PetscLimiter);
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanAlbada(PetscLimiter);
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter);
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLimiterRegisterAll"
@@ -171,6 +178,13 @@ PetscErrorCode PetscLimiterRegisterAll()
   PetscLimiterRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscLimiterRegister(PETSCLIMITERSIN,       PetscLimiterCreate_Sin);CHKERRQ(ierr);
+  ierr = PetscLimiterRegister(PETSCLIMITERZERO,      PetscLimiterCreate_Zero);CHKERRQ(ierr);
+  ierr = PetscLimiterRegister(PETSCLIMITERNONE,      PetscLimiterCreate_None);CHKERRQ(ierr);
+  ierr = PetscLimiterRegister(PETSCLIMITERMINMOD,    PetscLimiterCreate_Minmod);CHKERRQ(ierr);
+  ierr = PetscLimiterRegister(PETSCLIMITERVANLEER,   PetscLimiterCreate_VanLeer);CHKERRQ(ierr);
+  ierr = PetscLimiterRegister(PETSCLIMITERVANALBADA, PetscLimiterCreate_VanAlbada);CHKERRQ(ierr);
+  ierr = PetscLimiterRegister(PETSCLIMITERSUPERBEE,  PetscLimiterCreate_Superbee);CHKERRQ(ierr);
+  ierr = PetscLimiterRegister(PETSCLIMITERMC,        PetscLimiterCreate_MC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

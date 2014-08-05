@@ -18,6 +18,13 @@ PETSC_EXTERN PetscClassId PETSCLIMITER_CLASSID;
 J*/
 typedef const char *PetscLimiterType;
 #define PETSCLIMITERSIN       "sin"
+#define PETSCLIMITERZERO      "zero"
+#define PETSCLIMITERNONE      "none"
+#define PETSCLIMITERMINMOD    "minmod"
+#define PETSCLIMITERVANLEER   "vanleer"
+#define PETSCLIMITERVANALBADA "vanalbada"
+#define PETSCLIMITERSUPERBEE  "superbee"
+#define PETSCLIMITERMC        "mc"
 
 PETSC_EXTERN PetscFunctionList PetscLimiterList;
 PETSC_EXTERN PetscBool         PetscLimiterRegisterAllCalled;
