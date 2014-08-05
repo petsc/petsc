@@ -561,7 +561,7 @@ PetscErrorCode PetscLimiterView_None_Ascii(PetscLimiter fv, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Sin Slope Limiter:\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "None Slope Limiter:\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
