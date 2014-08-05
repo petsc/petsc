@@ -6532,10 +6532,10 @@ PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *
   ierr = CellRefinerSetCones(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
   /* Step 5: Stratify */
   ierr = DMPlexStratify(rdm);CHKERRQ(ierr);
-  /* Step 6: Set coordinates for vertices */
-  ierr = CellRefinerSetCoordinates(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
-  /* Step 7: Create pointSF */
+  /* Step 6: Create pointSF */
   ierr = CellRefinerCreateSF(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
+  /* Step 7: Set coordinates for vertices */
+  ierr = CellRefinerSetCoordinates(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
   /* Step 8: Create labels */
   ierr = CellRefinerCreateLabels(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
   ierr = PetscFree(depthSize);CHKERRQ(ierr);
