@@ -82,12 +82,12 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(NULL,"-test_MatAXPY",&Test_MatAXPY);CHKERRQ(ierr);
   if (Test_MatAXPY) {
     Mat Btmp;
-    if (!rank) printf(" Loading matrices is done...\n");
+    /* if (!rank) printf(" Loading matrices is done...\n"); */
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatDuplicate(B,MAT_COPY_VALUES,&Btmp);CHKERRQ(ierr);
     ierr = MatAXPY(A,-1.0,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A = -B + A_save */
 
-    if (!rank) printf(" Test_MatAXPY is done, now checking accuracy ...\n");
+    /* if (!rank) printf(" Test_MatAXPY is done, now checking accuracy ...\n"); */
     ierr = MatScale(A,-1.0);CHKERRQ(ierr); /* A = -A = B - A_save */
     ierr = MatAXPY(Btmp,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* Btmp = -A + B = A_save */
     ierr = MatMultEqual(A_save,Btmp,10,&flg);CHKERRQ(ierr);

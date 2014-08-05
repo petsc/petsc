@@ -2131,29 +2131,45 @@ PetscErrorCode MatSetUp_MPIAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+/*
+   Computes the number of nonzeros per row needed for preallocation when X and Y
+   have different nonzero structure.
+*/
 #undef __FUNCT__
-#define __FUNCT__ "MatAXPYGetPreallocation_MPIAIJ"
-/* This is the same as MatAXPYGetPreallocation_SeqAIJ, except that the local-to-global map is provided */
-static PetscErrorCode MatAXPYGetPreallocation_MPIAIJ(Mat Y,const PetscInt *yltog,Mat X,const PetscInt *xltog,PetscInt *nnz)
+#define __FUNCT__ "MatAXPYGetPreallocation_MPIX_private"
+PetscErrorCode MatAXPYGetPreallocation_MPIX_private(PetscInt m,const PetscInt *xi,const PetscInt *xj,const PetscInt *xltog,const PetscInt *yi,const PetscInt *yj,const PetscInt *yltog,PetscInt *nnz)
 {
-  PetscInt       i,m=Y->rmap->N;
-  Mat_SeqAIJ     *x  = (Mat_SeqAIJ*)X->data;
-  Mat_SeqAIJ     *y  = (Mat_SeqAIJ*)Y->data;
-  const PetscInt *xi = x->i,*yi = y->i;
+  PetscInt       i,j,k,nzx,nzy;
 
   PetscFunctionBegin;
   /* Set the number of nonzeros in the new matrix */
   for (i=0; i<m; i++) {
-    PetscInt       j,k,nzx = xi[i+1] - xi[i],nzy = yi[i+1] - yi[i];
-    const PetscInt *xj = x->j+xi[i],*yj = y->j+yi[i];
+    const PetscInt *xjj = xj+xi[i],*yjj = yj+yi[i];
+    nzx = xi[i+1] - xi[i];
+    nzy = yi[i+1] - yi[i];
     nnz[i] = 0;
     for (j=0,k=0; j<nzx; j++) {                   /* Point in X */
-      for (; k<nzy && yltog[yj[k]]<xltog[xj[j]]; k++) nnz[i]++; /* Catch up to X */
-      if (k<nzy && yltog[yj[k]]==xltog[xj[j]]) k++;             /* Skip duplicate */
+      for (; k<nzy && yltog[yjj[k]]<xltog[xjj[j]]; k++) nnz[i]++; /* Catch up to X */
+      if (k<nzy && yltog[yjj[k]]==xltog[xjj[j]]) k++;             /* Skip duplicate */
       nnz[i]++;
     }
     for (; k<nzy; k++) nnz[i]++;
   }
+  PetscFunctionReturn(0);
+}
+
+/* This is the same as MatAXPYGetPreallocation_SeqAIJ, except that the local-to-global map is provided */
+#undef __FUNCT__
+#define __FUNCT__ "MatAXPYGetPreallocation_MPIAIJ"
+static PetscErrorCode MatAXPYGetPreallocation_MPIAIJ(Mat Y,const PetscInt *yltog,Mat X,const PetscInt *xltog,PetscInt *nnz)
+{
+  PetscErrorCode ierr;
+  PetscInt       m = Y->rmap->N;
+  Mat_SeqAIJ     *x = (Mat_SeqAIJ*)X->data;
+  Mat_SeqAIJ     *y = (Mat_SeqAIJ*)Y->data;
+
+  PetscFunctionBegin;
+  ierr = MatAXPYGetPreallocation_MPIX_private(m,x->i,x->j,xltog,y->i,y->j,yltog,nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
