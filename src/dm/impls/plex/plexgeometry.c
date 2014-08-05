@@ -744,7 +744,7 @@ static PetscErrorCode DMPlexComputeIsoparametricGeometry_Internal(DM dm, PetscFE
       for (k = 0; k < pdim; ++k)
         for (j = 0; j < dim; ++j)
           for (i = 0; i < cdim; ++i)
-            J[(q*cdim + i)*dim + j] += basisDer[(q*pdim + k)*dim + j] * coords[k*cdim + i];
+            J[(q*cdim + i)*dim + j] += basisDer[(q*pdim + k)*dim + j] * PetscRealPart(coords[k*cdim + i]);
       PetscLogFlops(2.0*pdim*dim*cdim);
       if (cdim > dim) {
         for (c = dim; c < cdim; ++c)
