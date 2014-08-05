@@ -63,7 +63,6 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
     if (*ierr) return; \
     *ierr = PetscStrncpy(b,a,n+1); \
     if (*ierr) return; \
-    b[n] = 0; \
   } \
 }
 

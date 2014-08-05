@@ -18,8 +18,7 @@ static PetscErrorCode RealpathPhonyFile(const char *path,char *buf,size_t len)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrncpy(dir,path,sizeof dir);CHKERRQ(ierr);
-  dir[sizeof dir-1] = 0;
+  ierr = PetscStrncpy(dir,path,sizeof(dir));CHKERRQ(ierr);
   ierr = PetscStrlen(dir,&dlen);CHKERRQ(ierr);
   last = dir + dlen - 1;
   while (last > dir && *last == '/') *last-- = 0; /* drop trailing slashes */
@@ -38,8 +37,7 @@ static PetscErrorCode RealpathPhonyFile(const char *path,char *buf,size_t len)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"realpath()");
   }
 #else
-  ierr = PetscStrncpy(rpath,dir,sizeof rpath);CHKERRQ(ierr);
-  rpath[sizeof rpath-1] = 0;
+  ierr = PetscStrncpy(rpath,dir,sizeof(rpath));CHKERRQ(ierr);
 #endif
   ierr = PetscStrlen(rpath,&dlen);CHKERRQ(ierr);
   ierr = PetscMemcpy(buf,rpath,PetscMin(dlen,len-1));CHKERRQ(ierr);
@@ -58,15 +56,16 @@ static PetscErrorCode CheckLen(const char *path,size_t len,size_t *used)
   PetscErrorCode ierr;
   FILE           *fp;
   PetscBool      match;
+  int            rval;
 
   PetscFunctionBegin;
   /* dynamically allocate so valgrind and PETSc can check for overflow */
   ierr = PetscMalloc(len,&buf);CHKERRQ(ierr);
   ierr = PetscGetFullPath(path,buf,len);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(cmd,sizeof cmd,"printf %%s %s",path);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(cmd,sizeof(cmd),"printf %%s %s",path);CHKERRQ(ierr);
   ierr = PetscPOpen(PETSC_COMM_SELF,NULL,cmd,"r",&fp);CHKERRQ(ierr);
-  if (!fgets(spath,sizeof spath,fp)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in shell command: %s",cmd);
-  ierr = PetscPClose(PETSC_COMM_SELF,fp,NULL);CHKERRQ(ierr);
+  if (!fgets(spath,sizeof(spath),fp)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in shell command: %s",cmd);
+  ierr = PetscPClose(PETSC_COMM_SELF,fp,&rval);CHKERRQ(ierr);
   ierr = RealpathPhonyFile(spath,rpath,len);CHKERRQ(ierr);
   ierr = PetscStrcmp(rpath,buf,&match);CHKERRQ(ierr);
   if (!match) {
@@ -104,7 +103,7 @@ int main(int argc,char **argv)
 #if defined(PETSC_HAVE_POPEN)
   ierr = Check("~/file-name");CHKERRQ(ierr);
   ierr = PetscGetUserName(user,256);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(buf,sizeof buf,"~%s/file-name",user);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(buf,sizeof(buf),"~%s/file-name",user);CHKERRQ(ierr);
   ierr = Check(buf);CHKERRQ(ierr);
   ierr = Check("/dev/null");CHKERRQ(ierr);
   ierr = Check("./this-dir");CHKERRQ(ierr);
