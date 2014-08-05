@@ -1262,6 +1262,7 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"Stages = {}\n");CHKERRQ(ierr);
   for (stage=0; stage<numStages; stage++) {
     ierr = PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"] = {}\n",stageLog->stageInfo[stage].name);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"][\"summary\"] = {}\n",stageLog->stageInfo[stage].name);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
     for (event = 0; event < numEvents; event++) {
       ierr = PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"][\"%s\"] = {}\n",stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name);CHKERRQ(ierr);
