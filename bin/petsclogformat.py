@@ -234,7 +234,7 @@ def ComputeTotals(localTimes,localFlops,localMessages,localMessageLens,localRedu
   return time,flops,messages,messagelens,reductions
 
 def ComputeSums(Stages):
-  ''' Computes the sum over all processes for each event; removes events with zero counts'''
+  ''' Computes the sum over all processes for each event; removes events with zero count and summaries'''
   sumStages = {}
   for stages in Stages:
     sumStages[stages] = {}
@@ -247,7 +247,7 @@ def ComputeSums(Stages):
 
   for stages in Stages:
     for events in Stages[stages]:
-      if not sumStages[stages][events]["count"] or events.startswith('Thread') or events == 'TSFunctionEval' or events == 'TSJacobianEval':
+      if events == "summary" or not sumStages[stages][events]["count"] or events.startswith('Thread') or events == 'TSFunctionEval' or events == 'TSJacobianEval':
         sumStages[stages].pop(events,None)
   return sumStages
 
