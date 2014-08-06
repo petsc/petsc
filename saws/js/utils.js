@@ -75,3 +75,9 @@ function countNumOccurances(small_string, big_string) {
 
     return count;
 }
+
+//scrolls the page
+function scrollTo(id)
+{
+    $('html,body').animate({scrollTop: $("#"+id).offset().top},'fast');
+}

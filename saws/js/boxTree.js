@@ -62,7 +62,7 @@ function getBoxTree(data, endtag, x, y) {
 
     //draw the node itself last so that the text is on top of everything
     var color = colors[getNumUnderscores(endtag) % colors.length];
-    ret += "<circle cx=\"" + (x + visualLoc.x) + "\" cy=\"" + (y + visualLoc.y) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"" + color + "\" />";
+    ret += "<circle id=\"" + "node" + endtag + "\" cx=\"" + (x + visualLoc.x) + "\" cy=\"" + (y + visualLoc.y) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"" + color + "\" />";
 
     for(var i = 0; i<numLines; i++) {
         var indx  = description.indexOf("<br>");
@@ -73,6 +73,13 @@ function getBoxTree(data, endtag, x, y) {
 
     return ret;
 }
+
+$(document).on("click","circle[id^='node']",function(){
+
+    var id     = $(this).attr("id");//really should not be used in this method. there are better ways of getting information
+    var endtag = id.substring(id.indexOf("0"),id.length);
+    scrollTo("solver"+endtag);
+});
 
 //this function should be pretty straightforward
 function getTextSize(data, endtag) {

@@ -28,7 +28,7 @@ $(document).ready(function(){
     $("#results").append("<div id=\"leftPanel\" style=\"float:left;\"> </div> <div id=\"rightPanel\" style=\"float:left;padding-left:30px;\"></div>");
     $("#leftPanel").append("<div id=\"solver0\"> </div>");
 
-    $("#solver0").append("<b>Root Solver Options (Matrix is Symmetric:<input type=\"checkbox\" id=\"symm0\"> Matrix is Positive Definite:<input type=\"checkbox\" id=\"posdef0\"> Matrix is Logically Block Structured:<input type=\"checkbox\" id=\"logstruc0\">)</b><br>");//text: Solver Level: 0
+    $("#solver0").append("<b>Root Solver Options (Matrix is <input type=\"checkbox\" id=\"symm0\">symmetric, <input type=\"checkbox\" id=\"posdef0\">positive definite, <input type=\"checkbox\" id=\"logstruc0\">logically block structured)</b><br>");//text: Solver Level: 0
     $("#solver0").append("<br><b>KSP &nbsp;</b><select id=\"ksp_type0\"></select>");
     $("#solver0").append("<br><b>PC &nbsp;&nbsp;&nbsp;</b><select id=\"pc_type0\"></select>");
 
@@ -47,4 +47,11 @@ $(document).ready(function(){
     $("#displayTree").attr("checked",true);
     $("#displayMatrix").attr("checked",true);
     //$("#displayDiagram").attr("checked",true);
+
+    var iScroll = $(window).scrollTop();
+    iScroll = iScroll + 200;
+    $('html, body').animate({
+        scrollTop: iScroll
+    }, 1000);
+
 });
