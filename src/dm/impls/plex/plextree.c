@@ -1945,14 +1945,16 @@ PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
       ierr = VecGetArray(coords,&coordvals);CHKERRQ(ierr);
       ierr = DMPlexGetDepthStratum(K,0,&kStart,&kEnd);CHKERRQ(ierr);
       for (v = kStart; v < kEnd; v++) {
-        PetscInt vPerm = perm[v];
-        PetscInt kParent;
+        PetscReal coord[3];
+        PetscInt  vPerm = perm[v];
+        PetscInt  kParent;
 
         ierr = DMPlexGetTreeParent(K,v,&kParent,NULL);CHKERRQ(ierr);
         if (kParent != v) {
           /* this is a new vertex */
           ierr = PetscSectionGetOffset(vSection,vPerm,&off);CHKERRQ(ierr);
-          CoordinatesRefToReal(dim, dim, v0, J, &coordvals[off],&newVertexCoords[offset]);CHKERRQ(ierr);
+          for (l = 0; l < dim; ++l) coord[l] = coordvals[off+l];
+          CoordinatesRefToReal(dim, dim, v0, J, coord,&newVertexCoords[offset]);CHKERRQ(ierr);
           offset += dim;
         }
       }
