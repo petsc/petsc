@@ -1821,6 +1821,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
     ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(*mat,0,NULL,0,NULL);CHKERRQ(ierr);
   }
+  ierr = MatSetOption(*mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   for (i=0; i<M; i++) {
 
