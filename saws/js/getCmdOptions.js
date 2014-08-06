@@ -28,6 +28,10 @@ function getCmdOptions(endtag,prefix,option)
         ret += "-" + prefix + "pc_mg_type " + matInfo[index].pc_mg_type + endl;
         ret += "-" + prefix + "pc_mg_levels " + matInfo[index].pc_mg_levels + endl;
     }
+    else if(pc_type == "gamg") {
+        ret += "-" + prefix + "pc_gamg_type " + matInfo[index].pc_mg_type + endl;
+        ret += "-" + prefix + "pc_gamg_levels " + matInfo[index].pc_mg_levels + endl;
+    }
     else if(pc_type == "fieldsplit") {
         ret += "-" + prefix + "pc_fieldsplit_type " + matInfo[index].pc_fieldsplit_type + endl;
         ret += "-" + prefix + "pc_fieldsplit_blocks " + matInfo[index].pc_fieldsplit_blocks + endl;

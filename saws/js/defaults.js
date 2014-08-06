@@ -41,6 +41,17 @@ function getDefaults(solver,symm,posdef,logstruc,child_symm,child_posdef,child_l
             ret.sub_pc_type = "fieldsplit";
     }
 
+    else if(solver == "gamg") {
+        ret = {
+            sub_pc_type: "sor",
+            sub_ksp_type: "chebyshev",
+            pc_gamg_levels: 2,
+            pc_gamg_type: "multiplicative"
+        }
+        if(child_logstruc)
+            ret.sub_pc_type = "fieldsplit";
+    }
+
     else if(solver == "fieldsplit") {
         ret = {
             sub_pc_type: "sor",

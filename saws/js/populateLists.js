@@ -19,6 +19,16 @@ function populateMgList(endtag)
     $(list).append("<option value=\"kaskade\">kaskade</option>")
 }
 
+//populate gamg list
+function populateGamgList(endtag)
+{
+    var list = "#pc_gamg_type" + endtag;
+    $(list).append("<option value=\"multiplicative\">multiplicative</option>")
+    $(list).append("<option value=\"additive\">additive</option>")
+    $(list).append("<option value=\"full\">full</option>")
+    $(list).append("<option value=\"kaskade\">kaskade</option>")
+}
+
 /*
   populateKspList - populate the ksp list
   input

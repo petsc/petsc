@@ -40,7 +40,7 @@ function getBoxTree(data, endtag, x, y) {
             return;
         var childTotalSize = data[childIndex].total_size;
 
-        if(pc_type == "mg") {
+        if(pc_type == "mg" || pc_type == "gamg") {
             //draw the appropriate line from the parent to the child
             ret += getCurve(x + visualLoc.x, y + visualLoc.y, x+text_size.width+data[index].indentations[i]+data[childIndex].visual_loc.x, y+elapsedDist+data[childIndex].visual_loc.y,"east");
 
@@ -98,7 +98,7 @@ function getTextSize(data, endtag) {
 
 /*
  * This method recursively calculates each node's total-size (the total size the its subtree takes up)
- * Children of mg are put to the east of the parent node and children of anything else are put to the south
+ * Children of mg and gamg are put to the east of the parent node and children of anything else are put to the south
  * If the node has children, this method also calculates the data on how the child nodes should be indented (so that all sister nodes line up)
  * Also calculates and records the location (the center coordinates) of the visual node
  *
@@ -126,7 +126,7 @@ function calculateSizes(data, endtag) {
 	calculateSizes(data,childEndtag); //recursively calculate the data of all the children !!
     }
 
-    if(pc_type == "mg") { //put children to the east
+    if(pc_type == "mg" || pc_type == "gamg") { //put children to the east
 
 	var totalHeight = 0; //get the total heights of all the children. and the most extreme visual node location
         var mostShifted = 0; //of the child nodes, find the most x_shifted visual node
