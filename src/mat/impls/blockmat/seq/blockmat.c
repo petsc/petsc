@@ -1027,7 +1027,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateBlockMat"
 /*@C
-   MatCreateBlockMat - Creates a new matrix based sparse Mat storage
+   MatCreateBlockMat - Creates a new matrix in which each block contains a uniform-size sequential Mat object
 
   Collective on MPI_Comm
 
@@ -1045,19 +1045,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 
    Level: intermediate
 
-   PETSc requires that matrices and vectors being used for certain
-   operations are partitioned accordingly.  For example, when
-   creating a bmat matrix, A, that supports parallel matrix-vector
-   products using MatMult(A,x,y) the user should set the number
-   of local matrix rows to be the number of local elements of the
-   corresponding result vector, y. Note that this is information is
-   required for use of the matrix interface routines, even though
-   the bmat matrix may not actually be physically partitioned.
-   For example,
+   Notes: Matrices of this type are nominally-sparse matrices in which each "entry" is a Mat object.  Each Mat must
+   have the same size and be sequential.  The local and global sizes must be compatible with this decomposition.
+
+   For matrices containing parallel submatrices and variable block sizes, see MATNEST.
 
 .keywords: matrix, bmat, create
 
-.seealso: MATBLOCKMAT
+.seealso: MATBLOCKMAT, MatCreateNest()
 @*/
 PetscErrorCode  MatCreateBlockMat(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt bs,PetscInt nz,PetscInt *nnz, Mat *A)
 {
@@ -1070,6 +1065,3 @@ PetscErrorCode  MatCreateBlockMat(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt b
   ierr = MatBlockMatSetPreallocation(*A,bs,nz,nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
