@@ -29,8 +29,8 @@ function getCmdOptions(endtag,prefix,option)
         ret += "-" + prefix + "pc_mg_levels " + matInfo[index].pc_mg_levels + endl;
     }
     else if(pc_type == "gamg") {
-        ret += "-" + prefix + "pc_gamg_type " + matInfo[index].pc_mg_type + endl;
-        ret += "-" + prefix + "pc_gamg_levels " + matInfo[index].pc_mg_levels + endl;
+        ret += "-" + prefix + "pc_gamg_type " + matInfo[index].pc_gamg_type + endl;
+        ret += "-" + prefix + "pc_gamg_levels " + matInfo[index].pc_gamg_levels + endl;
     }
     else if(pc_type == "fieldsplit") {
         ret += "-" + prefix + "pc_fieldsplit_type " + matInfo[index].pc_fieldsplit_type + endl;
@@ -59,6 +59,8 @@ function getCmdOptions(endtag,prefix,option)
         //first determine appropriate prefix
         if(pc_type == "mg")
             childPrefix = "mg_levels_" + i + "_";
+        if(pc_type == "gamg")
+            childPrefix = "gamg_levels_" + i + "_";
         else if(pc_type == "fieldsplit")
             childPrefix = "fieldsplit_" + i + "_";
         else if(pc_type == "bjacobi")
