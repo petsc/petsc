@@ -26,7 +26,7 @@ $(document).ready(function(){
 
     //to start, append the first div (div0) in the table and the first pc/ksp options dropdown
     $("#results").append("<div id=\"leftPanel\" style=\"float:left;\"> </div> <div id=\"rightPanel\" style=\"float:left;padding-left:30px;\"></div>");
-    $("#leftPanel").append("<div id=\"solver0\"> </div>");
+    $("#leftPanel").append("<div id=\"solver0\"> </div><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>");
 
     $("#solver0").append("<b>Root Solver Options (Matrix is <input type=\"checkbox\" id=\"symm0\">symmetric, <input type=\"checkbox\" id=\"posdef0\">positive definite, <input type=\"checkbox\" id=\"logstruc0\">logically block structured)</b><br>");//text: Solver Level: 0
     $("#solver0").append("<br><b>KSP &nbsp;</b><select id=\"ksp_type0\"></select>");
@@ -47,11 +47,5 @@ $(document).ready(function(){
     $("#displayTree").attr("checked",true);
     $("#displayMatrix").attr("checked",true);
     //$("#displayDiagram").attr("checked",true);
-
-    var iScroll = $(window).scrollTop();
-    iScroll = iScroll + 200;
-    $('html, body').animate({
-        scrollTop: iScroll
-    }, 1000);
 
 });
