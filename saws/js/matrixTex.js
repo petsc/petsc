@@ -12,14 +12,11 @@ function getMatrixTex(currentMatrix) {//weird because the longer the string is, 
     if(!matInfo[index].logstruc) {
         //return the appropriate tex
 
-        /*if(currentMatrix == currentAsk) //make red and bold
-            return "\\color{red}{\\mathbf{A_{" + currentMatrix +" } }}";
-        else //return black text*/
         var depth = getNumUnderscores(currentMatrix);
         var color = colors[depth%colors.length];
 
         var subscript = currentMatrix.replace(/_/g, ",");
-        return "{\\color{"+color+"}" + "A_{" + subscript + "}" + "}";
+        return "{\\color{"+color+"}" + "\\left[A_{" + subscript + "}" + "\\right]}";
     }
 
     //case 2: has more children. recursive case.
