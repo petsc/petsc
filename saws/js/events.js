@@ -70,8 +70,10 @@ function setDefaults(endtag) {
         };
     }
 
-    $("#pc_type" + endtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
-    $("#ksp_type" + endtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
+    //$("#pc_type" + endtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
+    //$("#ksp_type" + endtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
+    $("#pc_type" + endtag).val(defaults.pc_type);
+    $("#ksp_type" + endtag).val(defaults.ksp_type);
     //trigger both to add additional options
     $("#ksp_type" + endtag).trigger("change");
     $("#pc_type" + endtag).trigger("change");

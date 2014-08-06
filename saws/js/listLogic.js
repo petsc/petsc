@@ -30,7 +30,8 @@ $(document).on("change","select[id^='pc_type']",function() {
         populateMgList(endtag);
 
         $("#pc_mg_levels" + endtag).val(defaultMgLevels);
-        $("#pc_mg_type" + endtag).find("option[value=\"" + defaults.pc_mg_type + "\"]").attr("selected","selected");
+        //$("#pc_mg_type" + endtag).find("option[value=\"" + defaults.pc_mg_type + "\"]").attr("selected","selected");
+        $("#pc_mg_type" + endtag).val(defaults.pc_mg_type);
 
         //display options for each level
         for(var i=defaultMgLevels-1; i>=0; i--) {
@@ -61,8 +62,10 @@ $(document).on("change","select[id^='pc_type']",function() {
             populatePcList(childEndtag);
 
 	    //set defaults
-	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
-	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+	    //$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	    //$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+            $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
+	    $("#pc_type" + childEndtag).val(defaults.sub_pc_type);
             //trigger both to add additional options
             $("#ksp_type" + childEndtag).trigger("change");
             $("#pc_type" + childEndtag).trigger("change");
@@ -84,7 +87,8 @@ $(document).on("change","select[id^='pc_type']",function() {
         populateGamgList(endtag);
 
         $("#pc_gamg_levels" + endtag).val(defaultGamgLevels);
-        $("#pc_gamg_type" + endtag).find("option[value=\"" + defaults.pc_gamg_type + "\"]").attr("selected","selected");
+        //$("#pc_gamg_type" + endtag).find("option[value=\"" + defaults.pc_gamg_type + "\"]").attr("selected","selected");
+        $("#pc_gamg_type" + endtag).val(defaults.pc_gamg_type);
 
         //display options for each level
         for(var i=defaultGamgLevels-1; i>=0; i--) {
@@ -115,8 +119,10 @@ $(document).on("change","select[id^='pc_type']",function() {
             populatePcList(childEndtag);
 
 	    //set defaults
-	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
-	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+	    //$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	    //$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+            $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
+	    $("#pc_type" + childEndtag).val(defaults.sub_pc_type);
             //trigger both to add additional options
             $("#ksp_type" + childEndtag).trigger("change");
             $("#pc_type" + childEndtag).trigger("change");
@@ -155,8 +161,10 @@ $(document).on("change","select[id^='pc_type']",function() {
         populatePcList(childEndtag);
 
         //set defaults
-	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
-	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+	//$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	//$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+        $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
+	$("#pc_type" + childEndtag).val(defaults.sub_pc_type);
         //trigger both to add additional options
         $("#ksp_type" + childEndtag).trigger("change");
         $("#pc_type" + childEndtag).trigger("change");
@@ -195,8 +203,10 @@ $(document).on("change","select[id^='pc_type']",function() {
         populatePcList(childEndtag);
 
         //set defaults
-	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
-	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+	//$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	//$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+        $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
+	$("#pc_type" + childEndtag).val(defaults.sub_pc_type);
         //trigger both to add additional options
         $("#ksp_type" + childEndtag).trigger("change");
         $("#pc_type" + childEndtag).trigger("change");
@@ -240,8 +250,10 @@ $(document).on("change","select[id^='pc_type']",function() {
         populatePcList(childEndtag);
 
         //set defaults
-	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
-	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+	//$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	//$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+        $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
+	$("#pc_type" + childEndtag).val(defaults.sub_pc_type);
         //trigger both to add additional options
         $("#ksp_type" + childEndtag).trigger("change");
         $("#pc_type" + childEndtag).trigger("change");
@@ -273,8 +285,10 @@ $(document).on("change","select[id^='pc_type']",function() {
         populatePcList(childEndtag);
 
         //set defaults
-	$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
-	$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+	//$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	//$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+        $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
+	$("#pc_type" + childEndtag).val(defaults.sub_pc_type);
         //trigger both to add additional options
         $("#ksp_type" + childEndtag).trigger("change");
         $("#pc_type" + childEndtag).trigger("change");
@@ -298,7 +312,8 @@ $(document).on("change","select[id^='pc_type']",function() {
         populateFieldsplitList(endtag);
 
         $("#pc_fieldsplit_blocks" + endtag).val(defaultFieldsplitBlocks);
-        $("#pc_fieldsplit_type" + endtag).find("option[value=\"" + defaults.pc_fieldsplit_type + "\"]").attr("selected","selected");
+        //$("#pc_fieldsplit_type" + endtag).find("option[value=\"" + defaults.pc_fieldsplit_type + "\"]").attr("selected","selected");
+        $("#pc_fieldsplit_type" + endtag).val(defaults.pc_fieldsplit_type);
 
         for(var i=defaultFieldsplitBlocks-1; i>=0; i--) {
             var childEndtag = endtag + "_" + i;
@@ -340,8 +355,10 @@ $(document).on("change","select[id^='pc_type']",function() {
             populatePcList(childEndtag);
 
 	    //set defaults
-	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
-	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+	    //$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	    //$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+            $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
+	    $("#pc_type" + childEndtag).val(defaults.sub_pc_type);
             //trigger both to add additional options
             $("#ksp_type" + childEndtag).trigger("change");
             $("#pc_type" + childEndtag).trigger("change");
@@ -572,8 +589,10 @@ $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
             populatePcList(childEndtag);
 
             //set defaults
-	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
-	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+	    //$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	    //$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+            $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
+	    $("#pc_type" + childEndtag).val(defaults.sub_pc_type);
             //trigger both to add additional options
             $("#ksp_type" + childEndtag).trigger("change");
             $("#pc_type" + childEndtag).trigger("change");
@@ -662,8 +681,10 @@ $(document).on('keyup', "input[id^='pc_mg_levels']", function()
             populatePcList(childEndtag);
 
             //set defaults
-	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
-	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+	    //$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	    //$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+            $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
+	    $("#pc_type" + childEndtag).val(defaults.sub_pc_type);
             //trigger both to add additional options
             $("#ksp_type" + childEndtag).trigger("change");
             $("#pc_type" + childEndtag).trigger("change");
@@ -749,8 +770,10 @@ $(document).on('keyup', "input[id^='pc_gamg_levels']", function()
             populatePcList(childEndtag);
 
             //set defaults
-	    $("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
-	    $("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+	    //$("#ksp_type" + childEndtag).find("option[value=\"" + defaults.sub_ksp_type + "\"]").attr("selected","selected");
+	    //$("#pc_type" + childEndtag).find("option[value=\"" + defaults.sub_pc_type + "\"]").attr("selected","selected");
+            $("#ksp_type" + childEndtag).val(defaults.sub_ksp_type);
+	    $("#pc_type" + childEndtag).val(defaults.sub_pc_type);
             //trigger both to add additional options
             $("#ksp_type" + childEndtag).trigger("change");
             $("#pc_type" + childEndtag).trigger("change");
