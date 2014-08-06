@@ -61,7 +61,8 @@ function getBoxTree(data, endtag, x, y) {
     }
 
     //draw the node itself last so that the text is on top of everything
-    ret += "<circle cx=\"" + (x + visualLoc.x) + "\" cy=\"" + (y + visualLoc.y) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"blue\" />";
+    var color = colors[getNumUnderscores(endtag) % colors.length];
+    ret += "<circle cx=\"" + (x + visualLoc.x) + "\" cy=\"" + (y + visualLoc.y) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"" + color + "\" />";
 
     for(var i = 0; i<numLines; i++) {
         var indx  = description.indexOf("<br>");

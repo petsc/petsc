@@ -112,7 +112,7 @@ function refresh() {
         /*//display matrix pic. manually add square braces the first time
     $("#matrixPic").html("<center>" + "\\(\\left[" + getMatrixTex("0") + "\\right]\\)" + "</center>");
     MathJax.Hub.Queue(["Typeset",MathJax.Hub]);*/
-         $("#matrixPic").html("<center>" + "\\(" + getMatrixTex("0") + "\\)" + "</center>");
+         $("#matrixPic").html("<center>" + "\\(\\require{color}\\)" + "\\(" + getMatrixTex("0") + "\\)" + "</center>");
         MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
     }
     else

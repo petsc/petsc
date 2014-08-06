@@ -15,12 +15,18 @@ function getMatrixTex(currentMatrix) {//weird because the longer the string is, 
         /*if(currentMatrix == currentAsk) //make red and bold
             return "\\color{red}{\\mathbf{A_{" + currentMatrix +" } }}";
         else //return black text*/
+        var depth = getNumUnderscores(currentMatrix);
+        var color = colors[depth%colors.length];
+
         var subscript = currentMatrix.replace(/_/g, ",");
-        return "A_{" + subscript + "}";
+        return "{\\color{"+color+"}" + "A_{" + subscript + "}" + "}";
     }
 
     //case 2: has more children. recursive case.
     else {
+        var depth = getNumUnderscores(currentMatrix);
+        var color = colors[depth%colors.length];
+
         var ret = "";
 
         var blocks = matInfo[getIndex(matInfo,currentMatrix)].pc_fieldsplit_blocks;
@@ -32,7 +38,7 @@ function getMatrixTex(currentMatrix) {//weird because the longer the string is, 
         }
         justify += "c";
 
-        ret += "\\left[ \\begin{array}{"+justify+"}";//begin the matrix
+        ret += "\\color{"+color+"}" + "\\left[" + "\\color{black}" + "\\begin{array}{"+justify+"}";//begin the matrix
 
         for(var i=0; i<blocks; i++) {//NEED TO ADD STARS
             for(var j=0; j<i; j++) {//add the stars that go BEFORE the diagonal element

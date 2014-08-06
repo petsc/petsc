@@ -10,11 +10,15 @@ var displayMatrix     = true;
 //holds the cmd options to copy to the clipboard
 var clipboardText     = "";
 
+//holds the colors used in the diagram drawing
+var colors = ["black","red","blue","green"];
+
 //  This function is run when the page is first visited
 $(document).ready(function(){
 
     matInfo[0] = { //all false by default
         endtag: "0",
+        matLoc: "0",
         logstruc: false,
         symm: false,
         posdef: false,
