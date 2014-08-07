@@ -62,7 +62,8 @@ PETSc.displayDirectory = function(sub,divEntry)
         var data = drawDiagrams(sawsInfo,"0",parsePrefix(sawsInfo,SAWs_prefix).endtag,5,5);
 
         if(data != "") {
-            $("#diagram").html("<svg id=\"svgCanvas\" width='700' height='700' viewBox='0 0 2000 2000'>"+data+"</svg>");
+            //$("#diagram").html("<svg id=\"svgCanvas\" width='700' height='700' viewBox='0 0 2000 2000'>"+data+"</svg>");
+            $("#diagram").html("<svg id=\"svgCanvas\" width=\"" + sawsInfo[0].x_extreme/4 + "\" height=\"" + sawsInfo[0].y_extreme/4 + "\" viewBox=\"0 0 " + sawsInfo[0].x_extreme + " " +sawsInfo[0].y_extreme + "\">"+data+"</svg>");
             //IMPORTANT: Viewbox determines the coordinate system for drawing. width and height will rescale the SVG to the given width and height. Things should NEVER be appended to an svg element because then we would need to use a hacky refresh which works in Chrome, but no other browsers that I know of.
         }
         calculateSizes(sawsInfo,"0");

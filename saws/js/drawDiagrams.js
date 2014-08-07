@@ -4,6 +4,11 @@
 //this function returns a string that needs to be put into an svg in the html page
 function drawDiagrams(data,endtag,target_endtag,x,y) {
 
+    if(data[getIndex(data,"0")].x_extreme == undefined)
+        data[getIndex(data,"0")].x_extreme = 0;
+    if(data[getIndex(data,"0")].y_extreme == undefined)
+        data[getIndex(data,"0")].y_extreme = 0;
+
     var numChildren = getNumChildren(data,endtag);
 
     if(numChildren == 0) //base case. no children.
@@ -13,6 +18,21 @@ function drawDiagrams(data,endtag,target_endtag,x,y) {
 
     var index = getIndex(data,endtag);
     var ret   = "";
+
+    if(data[index].pc_type == "fieldsplit") {
+        if(x+400 > data[getIndex(data,"0")].x_extreme)
+            data[getIndex(data,"0")].x_extreme = x+400;
+        if(y+400 > data[getIndex(data,"0")].y_extreme)
+            data[getIndex(data,"0")].y_extreme = y+400;
+    }
+    else if(data[index].pc_type == "mg") {
+        var mg_levels = data[index].mg_levels;
+        var global_downshift = 141*mg_levels + 68*mg_levels;
+        if(x+465 > data[getIndex(data,"0")].x_extreme)
+            data[getIndex(data,"0")].x_extreme = x+465;
+        if(y+global_downshift > data[getIndex(data,"0")].y_extreme)
+            data[getIndex(data,"0")].y_extreme = y+global_downshift;
+    }
 
     if(data[index].pc_type == "fieldsplit") { //draw fieldsplit diagram
         var colors = ["green","blue","red"];
@@ -77,7 +97,6 @@ function drawDiagrams(data,endtag,target_endtag,x,y) {
         //generate a parallelogram for each layer
         for(var i=0; i<numChildren; i++) { //i represents the multigrid level (i=0 would be coarse)
             var dim = 3+2*i;//dimxdim grid
-            //ret += "<polygon points=\"0,141 141,0 465,0 324,141\" style=\"fill:khaki;stroke:black;stroke-width:1\"> </polygon>";
             var global_downshift = 141*i + 68*i;
 
             ret += "<polygon points=\""+x+","+(y+141+global_downshift)+" "+ (x+141)+","+(y+global_downshift)+" "+(x+465)+","+(y+global_downshift)+" "+(x+324)+","+(y+141+global_downshift)+"\" style=\"fill:khaki;stroke:black;stroke-width:1\"> </polygon>";
