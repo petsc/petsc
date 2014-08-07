@@ -7,6 +7,7 @@
  * 2) When switching directions, the entire subtree in the new direction should be seen as one of the nodes in the original direction
  * 3) Sister nodes are shown on the same line
  * 4) Parent is centered at the middle of its children
+ * 5) Parent is above/to the left of all children
  *
  */
 
@@ -27,7 +28,7 @@ function getBoxTree(data, endtag, x, y) {
     //draw the node itself (centering it properly)
     var visualLoc  = data[index].visual_loc;
 
-    var description = getSimpleDescription(endtag);
+    var description = getSimpleDescription(data,endtag);
     var numLines    = countNumOccurances("<br>",description);
 
     //recursively draw all the children (if any)
@@ -92,7 +93,7 @@ function getTextSize(data, endtag) {
     var ret     = new Object();
     ret.width   = 100;//70 is enough for chrome, but svg font in safari/firefox shows up bigger so we need more space (although the font-size is always 12px)
 
-    var description = getSimpleDescription(endtag);
+    var description = getSimpleDescription(data,endtag);
     var height = 2*node_radius + 12 * countNumOccurances("<br>",description); //make each line 15 pixels tall
     ret.height = height;
 

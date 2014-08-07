@@ -70,8 +70,6 @@ function setDefaults(endtag) {
         };
     }
 
-    //$("#pc_type" + endtag).find("option[value=\"" + defaults.pc_type + "\"]").attr("selected","selected");
-    //$("#ksp_type" + endtag).find("option[value=\"" + defaults.ksp_type + "\"]").attr("selected","selected");
     $("#pc_type" + endtag).val(defaults.pc_type);
     $("#ksp_type" + endtag).val(defaults.ksp_type);
     //trigger both to add additional options
@@ -88,8 +86,8 @@ $(document).on("click","#copyToClipboard",function(){
 function refresh() {
     if(displayCmdOptions) {
         $("#rightPanel").html(""); //clear the rightPanel
-        var cmdOptions = getCmdOptions("0","","newline");
-        clipboardText  = getCmdOptions("0","","space");
+        var cmdOptions = getCmdOptions(matInfo,"0","","newline");
+        clipboardText  = getCmdOptions(matInfo,"0","","space");
         $("#rightPanel").append("<b>Command Line Options:</b>");
         $("#rightPanel").append("<input type=button value=\"Copy to Clipboard\" id=\"copyToClipboard\" style=\"float:right;font-size:12px;\"><br><br>");
         $("#rightPanel").append(cmdOptions);

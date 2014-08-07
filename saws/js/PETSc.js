@@ -2,11 +2,17 @@
 
 PETSc = {};
 
-var sawsInfo = [];//this variable is used to organize all the data from SAWs
+//this variable is used to organize all the data from SAWs
+var sawsInfo = [];
 
-var init = false;//record if initialized the page (added appropriate divs for the diagrams and such)
+//record if initialized the page (added appropriate divs for the diagrams and such)
+var init = false;
 
-var iteration = 0;//record what iteration we are on (remove text on second iteration)
+//record what iteration we are on (remove text on second iteration)
+var iteration = 0;
+
+//holds the colors used in the tree drawing
+var colors = ["black","red","blue","green"];
 
 //This Function is called once (document).ready. The javascript for this was written by the PETSc code into index.html
 PETSc.getAndDisplayDirectory = function(names,divEntry){
@@ -16,9 +22,13 @@ PETSc.getAndDisplayDirectory = function(names,divEntry){
         $("head").append('<script src="js/recordSawsData.js"></script>');//reuse the code for organizing data into sawsInfo
         $("head").append('<script src="js/utils.js"></script>');//necessary for the two js files above
         $("head").append('<script src="js/drawDiagrams.js"></script>');//contains the code to draw diagrams of the solver structure. in particular, fieldsplit and multigrid
+        $("head").append('<script src="js/boxTree.js"></script>');//contains the code to draw the tree
+        $("head").append('<script src="js/getCmdOptions.js"></script>');//contains the code to draw the tree
         $("body").append("<div id=\"leftDiv\" style=\"float:left;\"></div>");
         $(divEntry).appendTo("#leftDiv");
         $("body").append("<div id=\"diagram\"></div>");
+        $("body").append("<div id=\"tree\"></div");
+
         init = true;
     }
 
@@ -41,8 +51,8 @@ PETSc.displayDirectory = function(sub,divEntry)
     if($("#leftDiv").children(0).is("center")) //remove the title of the options if needed
         $("#leftDiv").children().get(0).remove();
 
-    if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options") {
-        var SAWs_pcVal  = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0];
+    if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options" || sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Krylov Method (KSP) options") {
+        //var SAWs_pcVal  = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0];
         var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];
 
         if(SAWs_prefix == "(null)")
@@ -55,6 +65,9 @@ PETSc.displayDirectory = function(sub,divEntry)
             $("#diagram").html("<svg id=\"svgCanvas\" width='700' height='700' viewBox='0 0 2000 2000'>"+data+"</svg>");
             //IMPORTANT: Viewbox determines the coordinate system for drawing. width and height will rescale the SVG to the given width and height. Things should NEVER be appended to an svg element because then we would need to use a hacky refresh which works in Chrome, but no other browsers that I know of.
         }
+        calculateSizes(sawsInfo,"0");
+        var svgString = getBoxTree(sawsInfo,"0",0,0);
+        $("#tree").html("<svg id=\"treeCanvas\" width=\"" + sawsInfo[0].total_size.width + "\" height=\"" + sawsInfo[0].total_size.height + "\" viewBox=\"0 0 " + sawsInfo[0].total_size.width + " " + sawsInfo[0].total_size.height + "\">" + svgString + "</svg>");
     }
 
     PETSc.displayDirectoryRecursive(sub.directories,divEntry,0,"");//this method is recursive on itself and actually fills the div with text and dropdown lists

@@ -1,13 +1,13 @@
 
   See https://bitbucket.org/saws/saws/wiki/Home for a short introduction to SAWs.
 
-  Install SAWs in your home directory 
+  Install SAWs in your home directory
 
-  Configure PETSc with the additional options --with-saws=yes --with-saws-dir=~saws/build 
+  Configure PETSc with the additional options --with-saws=yes --with-saws-dir=~saws/build
 
   pushd $PETSC_DIR/saws/js
   ln -s ~saws/js/jsSAWs.js
-  popd 
+  popd
 
 
   Example usage: after starting each example below go to localhost:8080 in browser
@@ -24,7 +24,7 @@ bjacobi
 
 hierarchical Krylov methods
 --------------------------
-./ex19 -saws_root ${PETSC_DIR}/saws -saws_options -ksp_type fgmres -pc_type bjacobi -sub_ksp_type gmres -sub_pc_type bjacobi -sub_pc_bjacobi_blocks 2 -pc_bjacobi_blocks 3 
+./ex19 -saws_root ${PETSC_DIR}/saws -saws_options -ksp_type fgmres -pc_type bjacobi -sub_ksp_type gmres -sub_pc_type bjacobi -sub_pc_bjacobi_blocks 2 -pc_bjacobi_blocks 3
 
 ./ex19 -saws_root ${PETSC_DIR}/saws -saws_options -ksp_type fgmres -pc_type bjacobi -sub_ksp_type gmres -sub_pc_type bjacobi -sub_pc_bjacobi_blocks 3 -pc_bjacobi_blocks 2 -sub_sub_pc_type bjacobi -sub_sub_ksp_type preonly -sub_sub_pc_bjacobi_blocks 2
 
