@@ -331,7 +331,7 @@ $(document).on("change","select[id^='pc_type']",function() {
             var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
 
             $("#" + parentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + i + " Options (Matrix is <input type=\"checkbox\" id=\"symm" + childEndtag + "\">symmetric,  <input type=\"checkbox\" id=\"posdef" + childEndtag + "\">positive definite, <input type=\"checkbox\" id=\"logstruc" + childEndtag + "\">logically block structured)</b>");
+            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + i + " Options (Matrix is <input type=\"checkbox\" id=\"symm" + childEndtag + "\">symmetric,  <input type=\"checkbox\" id=\"posdef" + childEndtag + "\">positive definite, <input type=\"checkbox\" id=\"logstruc" + childEndtag + "\">block structured)</b>");
 
             //special for fieldsplit
             if(matInfo[writeLoc].symm)
@@ -565,7 +565,7 @@ $(document).on('keyup', "input[id^='pc_fieldsplit_blocks']", function() {
 
             var margin = 30 * getNumUnderscores(childEndtag);  //indent based on the level of the solver (number of underscores)
             $(currentDiv).after("<div id=\"solver" + childEndtag + "\" style=\"margin-left:" + margin + "px;\"></div>");
-            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + i + " Options (Matrix is <input type=\"checkbox\" id=\"symm" + childEndtag + "\">symmetric, <input type=\"checkbox\" id=\"posdef" + childEndtag + "\">positive definite, <input type=\"checkbox\" id=\"logstruc" + childEndtag + "\">logically block structured)</b>");
+            $("#solver" + childEndtag).append("<br><b>Fieldsplit " + i + " Options (Matrix is <input type=\"checkbox\" id=\"symm" + childEndtag + "\">symmetric, <input type=\"checkbox\" id=\"posdef" + childEndtag + "\">positive definite, <input type=\"checkbox\" id=\"logstruc" + childEndtag + "\">block structured)</b>");
 
             //special for fieldsplit
             if(matInfo[writeLoc].symm)

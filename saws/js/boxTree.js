@@ -60,6 +60,9 @@ function getBoxTree(data, endtag, x, y) {
         }
     }
 
+    //useful for debugging purposes (don't delete)
+    //ret += "<rect x=\"" + x + "\" y=\"" + y + "\" width=\"" + total_size.width + "\" height=\"" + total_size.height + "\" style=\"fill:black;fill-opacity:.1\" />";
+
     //draw the node itself last so that the text is on top of everything
     var color = colors[getNumUnderscores(endtag) % colors.length];
     ret += "<circle id=\"" + "node" + endtag + "\" cx=\"" + (x + visualLoc.x) + "\" cy=\"" + (y + visualLoc.y) + "\" r=\"" + node_radius + "\" stroke=\"black\" stroke-width=\"1\" fill=\"" + color + "\" />";
@@ -87,7 +90,7 @@ function getTextSize(data, endtag) {
     var index   = getIndex(data,endtag);
     var pc_type = data[index].pc_type;
     var ret     = new Object();
-    ret.width   = 70;
+    ret.width   = 100;//70 is enough for chrome, but svg font in safari/firefox shows up bigger so we need more space (although the font-size is always 12px)
 
     var description = getSimpleDescription(endtag);
     var height = 2*node_radius + 12 * countNumOccurances("<br>",description); //make each line 15 pixels tall
