@@ -2797,27 +2797,40 @@ PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
    have different nonzero structure.
 */
 #undef __FUNCT__
-#define __FUNCT__ "MatAXPYGetPreallocation_SeqAIJ"
-PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat Y,Mat X,PetscInt *nnz)
+#define __FUNCT__ "MatAXPYGetPreallocation_SeqX_private"
+PetscErrorCode MatAXPYGetPreallocation_SeqX_private(PetscInt m,const PetscInt *xi,const PetscInt *xj,const PetscInt *yi,const PetscInt *yj,PetscInt *nnz)
 {
-  PetscInt       i,m=Y->rmap->N;
-  Mat_SeqAIJ     *x  = (Mat_SeqAIJ*)X->data;
-  Mat_SeqAIJ     *y  = (Mat_SeqAIJ*)Y->data;
-  const PetscInt *xi = x->i,*yi = y->i;
+  PetscInt       i,j,k,nzx,nzy; 
 
   PetscFunctionBegin;
   /* Set the number of nonzeros in the new matrix */
   for (i=0; i<m; i++) {
-    PetscInt       j,k,nzx = xi[i+1] - xi[i],nzy = yi[i+1] - yi[i];
-    const PetscInt *xj = x->j+xi[i],*yj = y->j+yi[i];
+    const PetscInt *xjj = xj+xi[i],*yjj = yj+yi[i];
+    nzx = xi[i+1] - xi[i];
+    nzy = yi[i+1] - yi[i];
     nnz[i] = 0;
     for (j=0,k=0; j<nzx; j++) {                   /* Point in X */
-      for (; k<nzy && yj[k]<xj[j]; k++) nnz[i]++; /* Catch up to X */
-      if (k<nzy && yj[k]==xj[j]) k++;             /* Skip duplicate */
+      for (; k<nzy && yjj[k]<xjj[j]; k++) nnz[i]++; /* Catch up to X */
+      if (k<nzy && yjj[k]==xjj[j]) k++;             /* Skip duplicate */
       nnz[i]++;
     }
     for (; k<nzy; k++) nnz[i]++;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAXPYGetPreallocation_SeqAIJ"
+PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat Y,Mat X,PetscInt *nnz)
+{
+  PetscInt       m = Y->rmap->N;
+  Mat_SeqAIJ     *x = (Mat_SeqAIJ*)X->data;
+  Mat_SeqAIJ     *y = (Mat_SeqAIJ*)Y->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Set the number of nonzeros in the new matrix */
+  ierr = MatAXPYGetPreallocation_SeqX_private(m,x->i,x->j,y->i,y->j,nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
