@@ -863,6 +863,97 @@ PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobal
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexDistributeSF"
+PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, PetscSection partSection, IS part, PetscSection origPartSection, IS origPart, DM dmParallel)
+{
+  DM_Plex               *mesh  = (DM_Plex*) dm->data;
+  DM_Plex               *pmesh = (DM_Plex*) (dmParallel)->data;
+  PetscMPIInt            rank, numProcs;
+  MPI_Comm               comm;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dmParallel,7);
+
+  /* Create point SF for parallel mesh */
+  ierr = PetscLogEventBegin(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  {
+    const PetscInt *leaves;
+    PetscSFNode    *remotePoints, *rowners, *lowners;
+    PetscInt        numRoots, numLeaves, numGhostPoints = 0, p, gp, *ghostPoints;
+    PetscInt        pStart, pEnd;
+
+    ierr = DMPlexGetChart(dmParallel, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(migrationSF, &numRoots, &numLeaves, &leaves, NULL);CHKERRQ(ierr);
+    ierr = PetscMalloc2(numRoots,&rowners,numLeaves,&lowners);CHKERRQ(ierr);
+    for (p=0; p<numRoots; p++) {
+      rowners[p].rank  = -1;
+      rowners[p].index = -1;
+    }
+    if (origPart) {
+      /* Make sure points in the original partition are not assigned to other procs */
+      const PetscInt *origPoints;
+
+      ierr = ISGetIndices(origPart, &origPoints);CHKERRQ(ierr);
+      for (p = 0; p < numProcs; ++p) {
+        PetscInt dof, off, d;
+
+        ierr = PetscSectionGetDof(origPartSection, p, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(origPartSection, p, &off);CHKERRQ(ierr);
+        for (d = off; d < off+dof; ++d) {
+          rowners[origPoints[d]].rank = p;
+        }
+      }
+      ierr = ISRestoreIndices(origPart, &origPoints);CHKERRQ(ierr);
+    }
+    ierr = PetscSFBcastBegin(migrationSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(migrationSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
+    for (p = 0; p < numLeaves; ++p) {
+      if (lowners[p].rank < 0 || lowners[p].rank == rank) { /* Either put in a bid or we know we own it */
+        lowners[p].rank  = rank;
+        lowners[p].index = leaves ? leaves[p] : p;
+      } else if (lowners[p].rank >= 0) { /* Point already claimed so flag so that MAXLOC does not listen to us */
+        lowners[p].rank  = -2;
+        lowners[p].index = -2;
+      }
+    }
+    for (p=0; p<numRoots; p++) { /* Root must not participate in the rediction, flag so that MAXLOC does not use */
+      rowners[p].rank  = -3;
+      rowners[p].index = -3;
+    }
+    ierr = PetscSFReduceBegin(migrationSF, MPIU_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(migrationSF, MPIU_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(migrationSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(migrationSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
+    for (p = 0; p < numLeaves; ++p) {
+      if (lowners[p].rank < 0 || lowners[p].index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cell partition corrupt: point not claimed");
+      if (lowners[p].rank != rank) ++numGhostPoints;
+    }
+    ierr = PetscMalloc1(numGhostPoints,    &ghostPoints);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numGhostPoints, &remotePoints);CHKERRQ(ierr);
+    for (p = 0, gp = 0; p < numLeaves; ++p) {
+      if (lowners[p].rank != rank) {
+        ghostPoints[gp]        = leaves ? leaves[p] : p;
+        remotePoints[gp].rank  = lowners[p].rank;
+        remotePoints[gp].index = lowners[p].index;
+        ++gp;
+      }
+    }
+    ierr = PetscFree2(rowners,lowners);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph((dmParallel)->sf, pEnd - pStart, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFSetFromOptions((dmParallel)->sf);CHKERRQ(ierr);
+  }
+  pmesh->useCone    = mesh->useCone;
+  pmesh->useClosure = mesh->useClosure;
+  ierr = PetscLogEventEnd(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexDistribute"
 /*@C
   DMPlexDistribute - Distributes the mesh and any associated sections.
@@ -894,8 +985,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   DM_Plex               *mesh   = (DM_Plex*) dm->data, *pmesh;
   MPI_Comm               comm;
   PetscInt               dim, numRemoteRanks;
-  IS                     origCellPart,        origPart,        cellPart,        part;
-  PetscSection           origCellPartSection, origPartSection, cellPartSection, partSection;
+  IS                     origCellPart=NULL,        origPart=NULL,        cellPart,        part;
+  PetscSection           origCellPartSection=NULL, origPartSection=NULL, cellPartSection, partSection;
   PetscSFNode           *remoteRanks;
   PetscSF                partSF, pointSF;
   ISLocalToGlobalMapping renumbering;
@@ -947,13 +1038,13 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   }
   /* Close the partition over the mesh */
   ierr = DMPlexCreatePartitionClosure(dm, cellPartSection, cellPart, &partSection, &part);CHKERRQ(ierr);
-  ierr = ISDestroy(&cellPart);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&cellPartSection);CHKERRQ(ierr);
   /* Create new mesh */
   ierr  = DMPlexCreate(comm, dmParallel);CHKERRQ(ierr);
   ierr  = DMSetDimension(*dmParallel, dim);CHKERRQ(ierr);
   ierr  = PetscObjectSetName((PetscObject) *dmParallel, "Parallel Mesh");CHKERRQ(ierr);
   pmesh = (DM_Plex*) (*dmParallel)->data;
+  pmesh->useAnchors = mesh->useAnchors;
+
   /* Distribute sieve points and the global point numbering (replaces creating remote bases) */
   ierr = PetscSFConvertPartition(partSF, partSection, part, &renumbering, &pointSF);CHKERRQ(ierr);
   if (flg) {
@@ -967,85 +1058,11 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   ierr = PetscLogEventEnd(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
 
   ierr = DMPlexDistributeCones(dm, pointSF, renumbering, *dmParallel);CHKERRQ(ierr);
-
-  /* Create point SF for parallel mesh */
-  ierr = PetscLogEventBegin(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
-  {
-    const PetscInt *leaves;
-    PetscSFNode    *remotePoints, *rowners, *lowners;
-    PetscInt        numRoots, numLeaves, numGhostPoints = 0, p, gp, *ghostPoints;
-    PetscInt        pStart, pEnd;
-
-    ierr = DMPlexGetChart(*dmParallel, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &leaves, NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc2(numRoots,&rowners,numLeaves,&lowners);CHKERRQ(ierr);
-    for (p=0; p<numRoots; p++) {
-      rowners[p].rank  = -1;
-      rowners[p].index = -1;
-    }
-    if (origCellPart) {
-      /* Make sure points in the original partition are not assigned to other procs */
-      const PetscInt *origPoints;
-
-      ierr = DMPlexCreatePartitionClosure(dm, origCellPartSection, origCellPart, &origPartSection, &origPart);CHKERRQ(ierr);
-      ierr = ISGetIndices(origPart, &origPoints);CHKERRQ(ierr);
-      for (p = 0; p < numProcs; ++p) {
-        PetscInt dof, off, d;
-
-        ierr = PetscSectionGetDof(origPartSection, p, &dof);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(origPartSection, p, &off);CHKERRQ(ierr);
-        for (d = off; d < off+dof; ++d) {
-          rowners[origPoints[d]].rank = p;
-        }
-      }
-      ierr = ISRestoreIndices(origPart, &origPoints);CHKERRQ(ierr);
-      ierr = ISDestroy(&origPart);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&origPartSection);CHKERRQ(ierr);
-    }
-    ierr = ISDestroy(&origCellPart);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&origCellPartSection);CHKERRQ(ierr);
-
-    ierr = PetscSFBcastBegin(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
-    for (p = 0; p < numLeaves; ++p) {
-      if (lowners[p].rank < 0 || lowners[p].rank == rank) { /* Either put in a bid or we know we own it */
-        lowners[p].rank  = rank;
-        lowners[p].index = leaves ? leaves[p] : p;
-      } else if (lowners[p].rank >= 0) { /* Point already claimed so flag so that MAXLOC does not listen to us */
-        lowners[p].rank  = -2;
-        lowners[p].index = -2;
-      }
-    }
-    for (p=0; p<numRoots; p++) { /* Root must not participate in the rediction, flag so that MAXLOC does not use */
-      rowners[p].rank  = -3;
-      rowners[p].index = -3;
-    }
-    ierr = PetscSFReduceBegin(pointSF, MPIU_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(pointSF, MPIU_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
-    for (p = 0; p < numLeaves; ++p) {
-      if (lowners[p].rank < 0 || lowners[p].index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cell partition corrupt: point not claimed");
-      if (lowners[p].rank != rank) ++numGhostPoints;
-    }
-    ierr = PetscMalloc1(numGhostPoints,    &ghostPoints);CHKERRQ(ierr);
-    ierr = PetscMalloc1(numGhostPoints, &remotePoints);CHKERRQ(ierr);
-    for (p = 0, gp = 0; p < numLeaves; ++p) {
-      if (lowners[p].rank != rank) {
-        ghostPoints[gp]        = leaves ? leaves[p] : p;
-        remotePoints[gp].rank  = lowners[p].rank;
-        remotePoints[gp].index = lowners[p].index;
-        ++gp;
-      }
-    }
-    ierr = PetscFree2(rowners,lowners);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph((*dmParallel)->sf, pEnd - pStart, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
-    ierr = PetscSFSetFromOptions((*dmParallel)->sf);CHKERRQ(ierr);
+  if (origCellPart) {
+    ierr = DMPlexCreatePartitionClosure(dm, origCellPartSection, origCellPart, &origPartSection, &origPart);CHKERRQ(ierr);
   }
-  pmesh->useCone    = mesh->useCone;
-  pmesh->useClosure = mesh->useClosure;
-  pmesh->useAnchors = mesh->useAnchors;
-  ierr = PetscLogEventEnd(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
+  ierr = DMPlexDistributeSF(dm, pointSF, partSection, part, origPartSection, origPart, *dmParallel);CHKERRQ(ierr);
+
   /* Distribute Coordinates */
   {
     PetscSection     originalCoordSection, newCoordSection;
@@ -1171,6 +1188,14 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&partSection);CHKERRQ(ierr);
   ierr = ISDestroy(&part);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&cellPartSection);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellPart);CHKERRQ(ierr);
+  if (origCellPart) {
+    ierr = PetscSectionDestroy(&origPartSection);CHKERRQ(ierr);
+    ierr = ISDestroy(&origPart);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&origCellPartSection);CHKERRQ(ierr);
+    ierr = ISDestroy(&origCellPart);CHKERRQ(ierr);
+  }
   /* Copy BC */
   ierr = DMPlexCopyBoundary(dm, *dmParallel);CHKERRQ(ierr);
   /* Cleanup */
