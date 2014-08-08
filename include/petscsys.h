@@ -2148,17 +2148,13 @@ M*/
     PetscComplex - PETSc type that represents a complex number with precision matching that of PetscReal.
 
    Synopsis:
-   #define PETSC_DESIRE_COMPLEX
    #include <petscsys.h>
    PetscComplex number = 1. + 2.*PETSC_i;
 
    Level: beginner
 
    Note:
-   Complex numbers are automatically available if PETSc was configured --with-scalar-type=complex (in which case
-   PetscComplex will match PetscScalar), otherwise the macro PETSC_DESIRE_COMPLEX must be defined before including any
-   PETSc headers. If the compiler supports complex numbers, PetscComplex and associated variables and functions will be
-   defined and PETSC_HAVE_COMPLEX will be set.
+   Complex numbers are automatically available if PETSc was able to find a working complex implementation
 
 .seealso: PetscReal, PetscComplex, MPIU_COMPLEX, PetscInt, PETSC_i
 M*/

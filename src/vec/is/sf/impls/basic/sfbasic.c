@@ -1,4 +1,4 @@
-#define PETSC_DESIRE_COMPLEX
+
 #include <petsc-private/sfimpl.h> /*I "petscsf.h" I*/
 
 typedef struct _n_PetscSFBasicPack *PetscSFBasicPack;

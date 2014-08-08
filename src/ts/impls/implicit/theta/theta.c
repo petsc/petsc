@@ -1,7 +1,6 @@
 /*
   Code for timestepping with implicit Theta method
 */
-#define PETSC_DESIRE_COMPLEX
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscsnes.h>
 #include <petscdm.h>
