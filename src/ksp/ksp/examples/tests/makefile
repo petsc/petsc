@@ -4,7 +4,7 @@ FFLAGS    =
 CPPFLAGS  =
 FPPFLAGS  =
 LOCDIR    = src/ksp/ksp/examples/tests/
-EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c ex11.c ex14.c \
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
                 ex33.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
@@ -261,12 +261,12 @@ runex7:
 	   else printf "${PWD}\nPossible problem with with ex7_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_1.tmp
 runex8:
-	-@${MPIEXEC} -n 1 ./ex8 -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -ksp_monitor_short > ex8_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex8 > ex8_1.tmp 2>&1; \
 	   if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex8_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex8_1.tmp
 runex8_2:
-	-@${MPIEXEC} -n 2 ./ex8 -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -ksp_monitor_short \
+	-@${MPIEXEC} -n 1 ./ex8 -sameA \
 	   -ksp_rtol .000001 > ex8_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex8_2.out ex8_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with with ex8_2, diffs above\n=========================================\n"; fi; \
@@ -938,7 +938,8 @@ runex44:
 	done
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
-                                 runex4_5 ex4.rm ex7.PETSc ex7.rm ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm \
+                                 runex4_5 ex4.rm ex8.PETSc runex8 runex8_2 ex8.rm \
+                                 ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex22.PETSc runex22 runex22_2 ex22.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
