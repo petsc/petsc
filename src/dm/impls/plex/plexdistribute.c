@@ -796,6 +796,73 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexDistributeCones"
+PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping renumbering, DM dmParallel)
+{
+  DM_Plex               *pmesh   = (DM_Plex*) (dmParallel)->data;
+  MPI_Comm               comm;
+  PetscSF                coneSF;
+  PetscSection           originalConeSection, newConeSection;
+  PetscInt              *remoteOffsets, *cones, *newCones, newConesSize;
+  PetscBool              flg;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dmParallel,4);
+  ierr = PetscLogEventBegin(DMPLEX_DistributeCones,dm,0,0,0);CHKERRQ(ierr);
+
+  /* Distribute cone section */
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSection(dm, &originalConeSection);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSection(dmParallel, &newConeSection);CHKERRQ(ierr);
+  ierr = PetscSFDistributeSection(migrationSF, originalConeSection, &remoteOffsets, newConeSection);CHKERRQ(ierr);
+  ierr = DMSetUp(dmParallel);CHKERRQ(ierr);
+  {
+    PetscInt pStart, pEnd, p;
+
+    ierr = PetscSectionGetChart(newConeSection, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt coneSize;
+      ierr               = PetscSectionGetDof(newConeSection, p, &coneSize);CHKERRQ(ierr);
+      pmesh->maxConeSize = PetscMax(pmesh->maxConeSize, coneSize);
+    }
+  }
+  /* Communicate and renumber cones */
+  ierr = PetscSFCreateSectionSF(migrationSF, originalConeSection, remoteOffsets, newConeSection, &coneSF);CHKERRQ(ierr);
+  ierr = DMPlexGetCones(dm, &cones);CHKERRQ(ierr);
+  ierr = DMPlexGetCones(dmParallel, &newCones);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(newConeSection, &newConesSize);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApplyBlock(renumbering, IS_GTOLM_MASK, newConesSize, newCones, NULL, newCones);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-cones_view", &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscPrintf(comm, "Serial Cone Section:\n");CHKERRQ(ierr);
+    ierr = PetscSectionView(originalConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Parallel Cone Section:\n");CHKERRQ(ierr);
+    ierr = PetscSectionView(newConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscSFView(coneSF, NULL);CHKERRQ(ierr);
+  }
+  ierr = DMPlexGetConeOrientations(dm, &cones);CHKERRQ(ierr);
+  ierr = DMPlexGetConeOrientations(dmParallel, &newCones);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&coneSF);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMPLEX_DistributeCones,dm,0,0,0);CHKERRQ(ierr);
+  /* Create supports and stratify sieve */
+  {
+    PetscInt pStart, pEnd;
+
+    ierr = PetscSectionGetChart(pmesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(pmesh->supportSection, pStart, pEnd);CHKERRQ(ierr);
+  }
+  ierr = DMPlexSymmetrize(dmParallel);CHKERRQ(ierr);
+  ierr = DMPlexStratify(dmParallel);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexDistribute"
 /*@C
   DMPlexDistribute - Distributes the mesh and any associated sections.
@@ -830,11 +897,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   IS                     origCellPart,        origPart,        cellPart,        part;
   PetscSection           origCellPartSection, origPartSection, cellPartSection, partSection;
   PetscSFNode           *remoteRanks;
-  PetscSF                partSF, pointSF, coneSF;
+  PetscSF                partSF, pointSF;
   ISLocalToGlobalMapping renumbering;
-  PetscSection           originalConeSection, newConeSection;
-  PetscInt              *remoteOffsets;
-  PetscInt              *cones, *newCones, newConesSize;
   PetscBool              flg;
   PetscMPIInt            rank, numProcs, p;
   PetscErrorCode         ierr;
@@ -901,53 +965,9 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     ierr = ISLocalToGlobalMappingView(renumbering, NULL);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(DMPLEX_DistributeCones,dm,0,0,0);CHKERRQ(ierr);
-  /* Distribute cone section */
-  ierr = DMPlexGetConeSection(dm, &originalConeSection);CHKERRQ(ierr);
-  ierr = DMPlexGetConeSection(*dmParallel, &newConeSection);CHKERRQ(ierr);
-  ierr = PetscSFDistributeSection(pointSF, originalConeSection, &remoteOffsets, newConeSection);CHKERRQ(ierr);
-  ierr = DMSetUp(*dmParallel);CHKERRQ(ierr);
-  {
-    PetscInt pStart, pEnd, p;
 
-    ierr = PetscSectionGetChart(newConeSection, &pStart, &pEnd);CHKERRQ(ierr);
-    for (p = pStart; p < pEnd; ++p) {
-      PetscInt coneSize;
-      ierr               = PetscSectionGetDof(newConeSection, p, &coneSize);CHKERRQ(ierr);
-      pmesh->maxConeSize = PetscMax(pmesh->maxConeSize, coneSize);
-    }
-  }
-  /* Communicate and renumber cones */
-  ierr = PetscSFCreateSectionSF(pointSF, originalConeSection, remoteOffsets, newConeSection, &coneSF);CHKERRQ(ierr);
-  ierr = DMPlexGetCones(dm, &cones);CHKERRQ(ierr);
-  ierr = DMPlexGetCones(*dmParallel, &newCones);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(newConeSection, &newConesSize);CHKERRQ(ierr);
-  ierr = ISGlobalToLocalMappingApplyBlock(renumbering, IS_GTOLM_MASK, newConesSize, newCones, NULL, newCones);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-cones_view", &flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscPrintf(comm, "Serial Cone Section:\n");CHKERRQ(ierr);
-    ierr = PetscSectionView(originalConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "Parallel Cone Section:\n");CHKERRQ(ierr);
-    ierr = PetscSectionView(newConeSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscSFView(coneSF, NULL);CHKERRQ(ierr);
-  }
-  ierr = DMPlexGetConeOrientations(dm, &cones);CHKERRQ(ierr);
-  ierr = DMPlexGetConeOrientations(*dmParallel, &newCones);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&coneSF);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(DMPLEX_DistributeCones,dm,0,0,0);CHKERRQ(ierr);
-  /* Create supports and stratify sieve */
-  {
-    PetscInt pStart, pEnd;
+  ierr = DMPlexDistributeCones(dm, pointSF, renumbering, *dmParallel);CHKERRQ(ierr);
 
-    ierr = PetscSectionGetChart(pmesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = PetscSectionSetChart(pmesh->supportSection, pStart, pEnd);CHKERRQ(ierr);
-  }
-  ierr = DMPlexSymmetrize(*dmParallel);CHKERRQ(ierr);
-  ierr = DMPlexStratify(*dmParallel);CHKERRQ(ierr);
   /* Create point SF for parallel mesh */
   ierr = PetscLogEventBegin(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
   {
