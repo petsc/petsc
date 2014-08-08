@@ -1427,7 +1427,7 @@ PetscErrorCode TaoCancelMonitors(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDefaultMonitor"
-/*@C
+/*@
    TaoDefaultMonitor - Default routine for monitoring progress of the
    Tao solvers (default).  This monitor prints the function value and gradient
    norm at each iteration.  It can be turned on from the command line using the
@@ -1470,7 +1470,7 @@ PetscErrorCode TaoDefaultMonitor(Tao tao, void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDefaultSMonitor"
-/*@C
+/*@
    TaoDefaultSMonitor - Default routine for monitoring progress of the
    solver. Same as TaoDefaultMonitor() except
    it prints fewer digits of the residual as the residual gets smaller.
@@ -1522,7 +1522,7 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDefaultCMonitor"
-/*@C
+/*@
    TaoDefaultCMonitor - same as TaoDefaultMonitor() except
    it prints the norm of the constraints function. It can be turned on
    from the command line using the -tao_cmonitor option
@@ -1809,7 +1809,7 @@ PetscErrorCode TaoSeparableObjectiveMonitor(Tao tao, void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDefaultConvergenceTest"
-/*@C
+/*@
    TaoDefaultConvergenceTest - Determines whether the solver should continue iterating
    or terminate.
 
