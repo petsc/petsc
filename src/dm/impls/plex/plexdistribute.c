@@ -940,6 +940,48 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, PetscSection p
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexDistributeSetupHybrid"
+PetscErrorCode DMPlexDistributeSetupHybrid(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping renumbering, DM dmParallel)
+{
+  DM_Plex        *mesh  = (DM_Plex*) dm->data;
+  DM_Plex        *pmesh = (DM_Plex*) (dmParallel)->data;
+  MPI_Comm        comm;
+  const PetscInt *gpoints;
+  PetscInt        dim, depth, n, d;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dmParallel, 4);
+
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+
+  /* Setup hybrid structure */
+  for (d = 0; d <= dim; ++d) {pmesh->hybridPointMax[d] = mesh->hybridPointMax[d];}
+  ierr = MPI_Bcast(pmesh->hybridPointMax, dim+1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(renumbering, &n);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(renumbering, &gpoints);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  for (d = 0; d <= dim; ++d) {
+    PetscInt pmax = pmesh->hybridPointMax[d], newmax = 0, pEnd, stratum[2], p;
+
+    if (pmax < 0) continue;
+    ierr = DMPlexGetDepthStratum(dm, d > depth ? depth : d, &stratum[0], &stratum[1]);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dmParallel, d, NULL, &pEnd);CHKERRQ(ierr);
+    ierr = MPI_Bcast(stratum, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
+    for (p = 0; p < n; ++p) {
+      const PetscInt point = gpoints[p];
+
+      if ((point >= stratum[0]) && (point < stratum[1]) && (point >= pmax)) ++newmax;
+    }
+    if (newmax > 0) pmesh->hybridPointMax[d] = pEnd - newmax;
+    else            pmesh->hybridPointMax[d] = -1;
+  }
+  ierr = ISLocalToGlobalMappingRestoreIndices(renumbering, &gpoints);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 #undef __FUNCT__
@@ -1140,38 +1182,12 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   ierr = DMPlexDistributeCones(dm, pointSF, renumbering, *dmParallel);CHKERRQ(ierr);
   ierr = DMPlexDistributeCoordinates(dm, pointSF, *dmParallel);CHKERRQ(ierr);
   ierr = DMPlexDistributeLabels(dm, pointSF, partSection, part, renumbering, *dmParallel);CHKERRQ(ierr);
+  ierr = DMPlexDistributeSetupHybrid(dm, pointSF, renumbering, *dmParallel);CHKERRQ(ierr);
   if (origCellPart) {
     ierr = DMPlexCreatePartitionClosure(dm, origCellPartSection, origCellPart, &origPartSection, &origPart);CHKERRQ(ierr);
   }
   ierr = DMPlexDistributeSF(dm, pointSF, partSection, part, origPartSection, origPart, *dmParallel);CHKERRQ(ierr);
 
-  /* Setup hybrid structure */
-  {
-    const PetscInt *gpoints;
-    PetscInt        depth, n, d;
-
-    for (d = 0; d <= dim; ++d) {pmesh->hybridPointMax[d] = mesh->hybridPointMax[d];}
-    ierr = MPI_Bcast(pmesh->hybridPointMax, dim+1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetSize(renumbering, &n);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetIndices(renumbering, &gpoints);CHKERRQ(ierr);
-    ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-    for (d = 0; d <= dim; ++d) {
-      PetscInt pmax = pmesh->hybridPointMax[d], newmax = 0, pEnd, stratum[2], p;
-
-      if (pmax < 0) continue;
-      ierr = DMPlexGetDepthStratum(dm, d > depth ? depth : d, &stratum[0], &stratum[1]);CHKERRQ(ierr);
-      ierr = DMPlexGetDepthStratum(*dmParallel, d, NULL, &pEnd);CHKERRQ(ierr);
-      ierr = MPI_Bcast(stratum, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      for (p = 0; p < n; ++p) {
-        const PetscInt point = gpoints[p];
-
-        if ((point >= stratum[0]) && (point < stratum[1]) && (point >= pmax)) ++newmax;
-      }
-      if (newmax > 0) pmesh->hybridPointMax[d] = pEnd - newmax;
-      else            pmesh->hybridPointMax[d] = -1;
-    }
-    ierr = ISLocalToGlobalMappingRestoreIndices(renumbering, &gpoints);CHKERRQ(ierr);
-  }
   /* Set up tree */
   {
     DM              refTree;
