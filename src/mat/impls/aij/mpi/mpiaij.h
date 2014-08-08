@@ -146,6 +146,8 @@ PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,const MatFa
 PETSC_INTERN PetscErrorCode MatSolve_MPIAIJ(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatILUFactor_MPIAIJ(Mat,IS,IS,const MatFactorInfo*);
 
+PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_MPIX_private(PetscInt,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*);
+
 extern PetscErrorCode MatGetDiagonalBlock_MPIAIJ(Mat,Mat*);
 extern PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
 

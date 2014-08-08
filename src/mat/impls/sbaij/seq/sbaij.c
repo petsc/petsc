@@ -234,75 +234,16 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetRow_SeqSBAIJ"
-PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **cols,PetscScalar **v)
+PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       itmp,i,j,k,M,*ai,*aj,bs,bn,bp,*cols_i,bs2;
-  MatScalar      *aa,*aa_i;
-  PetscScalar    *v_i;
 
   PetscFunctionBegin;
   if (A && !a->getrow_utriangular) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatGetRow is not supported for SBAIJ matrix format. Getting the upper triangular part of row, run with -mat_getrow_uppertriangular, call MatSetOption(mat,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE) or MatGetRowUpperTriangular()");
+
   /* Get the upper triangular part of the row */
-  bs  = A->rmap->bs;
-  ai  = a->i;
-  aj  = a->j;
-  aa  = a->a;
-  bs2 = a->bs2;
-
-  if (row < 0 || row >= A->rmap->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Row %D out of range", row);
-
-  bn     = row/bs; /* Block number */
-  bp     = row % bs; /* Block position */
-  M      = ai[bn+1] - ai[bn];
-  *ncols = bs*M;
-
-  if (v) {
-    *v = 0;
-    if (*ncols) {
-      ierr = PetscMalloc1((*ncols+row),v);CHKERRQ(ierr);
-      for (i=0; i<M; i++) { /* for each block in the block row */
-        v_i  = *v + i*bs;
-        aa_i = aa + bs2*(ai[bn] + i);
-        for (j=bp,k=0; j<bs2; j+=bs,k++) v_i[k] = aa_i[j];
-      }
-    }
-  }
-
-  if (cols) {
-    *cols = 0;
-    if (*ncols) {
-      ierr = PetscMalloc1((*ncols+row),cols);CHKERRQ(ierr);
-      for (i=0; i<M; i++) { /* for each block in the block row */
-        cols_i = *cols + i*bs;
-        itmp   = bs*aj[ai[bn] + i];
-        for (j=0; j<bs; j++) cols_i[j] = itmp++;
-      }
-    }
-  }
-
-  /*search column A(0:row-1,row) (=A(row,0:row-1)). Could be expensive! */
-  /* this segment is currently removed, so only entries in the upper triangle are obtained */
-#if defined(column_search)
-  v_i    = *v    + M*bs;
-  cols_i = *cols + M*bs;
-  for (i=0; i<bn; i++) { /* for each block row */
-    M = ai[i+1] - ai[i];
-    for (j=0; j<M; j++) {
-      itmp = aj[ai[i] + j];    /* block column value */
-      if (itmp == bn) {
-        aa_i = aa + bs2*(ai[i] + j) + bs*bp;
-        for (k=0; k<bs; k++) {
-          *cols_i++ = i*bs+k;
-          *v_i++    = aa_i[k];
-        }
-        *ncols += bs;
-        break;
-      }
-    }
-  }
-#endif
+  ierr = MatGetRow_SeqBAIJ_private(A,row,nz,idx,v,a->i,a->j,a->a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1205,6 +1146,21 @@ PetscErrorCode MatSeqSBAIJRestoreArray_SeqSBAIJ(Mat A,PetscScalar *array[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatAXPYGetPreallocation_SeqSBAIJ"
+PetscErrorCode MatAXPYGetPreallocation_SeqSBAIJ(Mat Y,Mat X,PetscInt *nnz)
+{
+  PetscInt       bs = Y->rmap->bs,mbs = Y->rmap->N/bs;
+  Mat_SeqSBAIJ   *x = (Mat_SeqSBAIJ*)X->data;
+  Mat_SeqSBAIJ   *y = (Mat_SeqSBAIJ*)Y->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Set the number of nonzeros in the new matrix */
+  ierr = MatAXPYGetPreallocation_SeqX_private(mbs,x->i,x->j,y->i,y->j,nnz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatAXPY_SeqSBAIJ"
 PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
@@ -1239,9 +1195,26 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
     ierr = PetscInfo3(Y,"ratio of nnz_s(X)/nnz_s(Y): %D/%D = %g\n",bs2*x->nz,bs2*y->nz,(double)((PetscReal)(bs2*x->nz)/(PetscReal)(bs2*y->nz)));CHKERRQ(ierr);
   } else {
+    Mat      B;
+    PetscInt *nnz;
+    if (bs != X->rmap->bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrices must have same block size");
     ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
-    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+    ierr = MatGetRowUpperTriangular(Y);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Y->rmap->N,&nnz);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)Y),&B);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)B,((PetscObject)Y)->name);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,Y->rmap->n,Y->cmap->n,Y->rmap->N,Y->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetBlockSizesFromMats(B,Y,Y);CHKERRQ(ierr);
+    ierr = MatSetType(B,(MatType) ((PetscObject)Y)->type_name);CHKERRQ(ierr);
+    ierr = MatAXPYGetPreallocation_SeqSBAIJ(Y,X,nnz);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(B,bs,0,nnz);CHKERRQ(ierr);
+    
+    ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
+    
+    ierr = MatHeaderReplace(Y,B);CHKERRQ(ierr);
+    ierr = PetscFree(nnz);CHKERRQ(ierr);
     ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
+    ierr = MatRestoreRowUpperTriangular(Y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

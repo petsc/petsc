@@ -1540,6 +1540,39 @@ runex94_2_mattransposematmult_matmatmult:
 	   else printf "${PWD}\nPossible problem with ex94_2_mattransposematmult, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex94_2.tmp
 
+runex94_axpy_seqaij:
+	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY > ex94_1.tmp 2>&1; \
+	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex94_axpy_seqaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex94_1.tmp
+runex94_axpy_mpiaij:
+	-@${MPIEXEC} -n 8 ./ex94 -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY > ex94_1.tmp 2>&1; \
+	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex94_axpy_mpiaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex94_1.tmp
+
+runex94_axpy_seqbaij:
+	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY -mat_type baij > ex94_1.tmp 2>&1; \
+	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex94_axpy_seqbaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex94_1.tmp
+runex94_axpy_mpibaij:
+	-@${MPIEXEC} -n 8 ./ex94 -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY -mat_type baij > ex94_1.tmp 2>&1; \
+	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex94_axpy_mpibaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex94_1.tmp
+
+runex94_axpy_seqsbaij:
+	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY -mat_type sbaij > ex94_1.tmp 2>&1; \
+	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex94_axpy_seqsbaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex94_1.tmp
+runex94_axpy_mpisbaij:
+	-@${MPIEXEC} -n 8 ./ex94 -f0 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_stiff20.dat -f1 ${DATAFILESPATH}/matrices/EigenProblems/jifengzhao/petsc_mass20.dat -test_MatAXPY -mat_type sbaij > ex94_1.tmp 2>&1; \
+	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex94_axpy_mpisbaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex94_1.tmp
+
 runex95:
 	-@${MPIEXEC} -n 3 ./ex95 | grep -v "MPI processes" > ex95_1.tmp 2>&1; \
 	   if (${DIFF} output/ex95_1.out ex95_1.tmp) then true; \
@@ -2035,7 +2068,9 @@ TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm  ex50.PETSc ex50.rm \
 TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm ex42.PETSc runex42 \
                                  ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
                                  ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_scalable0 runex94_scalable1 \
-                                 runex94_2_mattransposematmult_nonscalable runex94_2_mattransposematmult_matmatmult ex94.rm \
+                                 runex94_2_mattransposematmult_nonscalable runex94_2_mattransposematmult_matmatmult \
+                                 runex94_axpy_seqaij runex94_axpy_mpiaij runex94_axpy_seqbaij runex94_axpy_mpibaij \
+                                 runex94_axpy_seqsbaij runex94_axpy_mpisbaij ex94.rm \
                                  ex136.PETSc runex136 runex136_2 runex136_3 \
                                  runex136_4 runex136_5 runex136_6 ex136.rm \
                                  ex138.PETSc runex138_1 runex138_2 ex138.rm \
