@@ -23,7 +23,7 @@ struct _LineSearchOps {
 struct _p_LineSearch {
   PETSCHEADER(struct _LineSearchOps);
 
-  SNES                snes;     /* temporary -- so we can pull out the function evaluation */
+  SNES                snes;
 
   void                *data;
 
