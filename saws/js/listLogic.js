@@ -373,6 +373,7 @@ $(document).on("change","select[id^='pc_mg_type']",function() {
     var index      = getIndex(matInfo,endtag);
 
     matInfo[index].pc_mg_type = mgType;
+    refresh();
 });
 
 $(document).on("change","select[id^='pc_gamg_type']",function() {
@@ -383,6 +384,7 @@ $(document).on("change","select[id^='pc_gamg_type']",function() {
     var index      = getIndex(matInfo,endtag);
 
     matInfo[index].pc_gamg_type = gamgType;
+    refresh();
 });
 
 $(document).on("change","select[id^='pc_fieldsplit_type']",function() {
@@ -393,6 +395,7 @@ $(document).on("change","select[id^='pc_fieldsplit_type']",function() {
     var index           = getIndex(matInfo,endtag);
 
     matInfo[index].pc_fieldsplit_type = fieldsplitType;
+    refresh();
 });
 
 $(document).on("keyup","input[id^='pc_asm_blocks']",function() {
@@ -420,6 +423,7 @@ $(document).on("keyup","input[id^='pc_asm_overlap']",function() {
     var val    = $(this).val();
 
     matInfo[index].pc_asm_overlap = val;
+    refresh();
 });
 
 $(document).on("keyup","input[id^='pc_bjacobi_blocks']",function() {
@@ -447,6 +451,7 @@ $(document).on("keyup","input[id^='pc_redundant_number']",function() {
     var val    = $(this).val();
 
     matInfo[index].pc_redundant_number = val;
+    refresh();
 });
 
 

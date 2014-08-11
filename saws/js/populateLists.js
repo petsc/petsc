@@ -1,7 +1,8 @@
 //populate fieldsplit list
-function populateFieldsplitList(endtag)
+function populateFieldsplitList(endtag,list)
 {
-    var list = "#pc_fieldsplit_type" + endtag;
+    if(list == undefined)
+        list = "#pc_fieldsplit_type" + endtag;
     $(list).append("<option value=\"multiplicative\">multiplicative</option>")
     $(list).append("<option value=\"additive\">additive</option>")
     $(list).append("<option value=\"symmetric_multiplicative\">symmetric_multiplicative</option>")
@@ -10,9 +11,10 @@ function populateFieldsplitList(endtag)
 }
 
 //populate mg list
-function populateMgList(endtag)
+function populateMgList(endtag,list)
 {
-    var list = "#pc_mg_type" + endtag;
+    if(list == undefined)
+        list = "#pc_mg_type" + endtag;
     $(list).append("<option value=\"multiplicative\">multiplicative</option>")
     $(list).append("<option value=\"additive\">additive</option>")
     $(list).append("<option value=\"full\">full</option>")
@@ -20,9 +22,10 @@ function populateMgList(endtag)
 }
 
 //populate gamg list
-function populateGamgList(endtag)
+function populateGamgList(endtag,list)
 {
-    var list = "#pc_gamg_type" + endtag;
+    if(list==undefined)
+        list = "#pc_gamg_type" + endtag;
     $(list).append("<option value=\"multiplicative\">multiplicative</option>")
     $(list).append("<option value=\"additive\">additive</option>")
     $(list).append("<option value=\"full\">full</option>")
@@ -34,9 +37,10 @@ function populateGamgList(endtag)
   input
     endtag - string
 */
-function populateKspList(endtag)
+function populateKspList(endtag,list)
 {
-    var list = "#ksp_type" + endtag;
+    if(list == undefined)
+        list = "#ksp_type" + endtag;
 
     //all options without parenthesis are for nonsymmetric (and, therefore, non pd) KSP list
     $(list).append("<option value=\"bcgs\">bcgs</option>");
@@ -72,9 +76,10 @@ function populateKspList(endtag)
   input:
     endtag - string
 */
-function populatePcList(endtag)
+function populatePcList(endtag,list)
 {
-    var list="#pc_type" + endtag;
+    if(list == undefined)
+        list="#pc_type" + endtag;
 
     $(list).append("<option value=\"asa\">asa</option>");
     $(list).append("<option value=\"asm\">asm</option>");

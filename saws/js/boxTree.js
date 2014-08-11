@@ -78,11 +78,40 @@ function getBoxTree(data, endtag, x, y) {
     return ret;
 }
 
+//this shouldn't be in boxTree. this should be in events.
 $(document).on("click","circle[id^='node']",function(){
 
     var id     = $(this).attr("id");//really should not be used in this method. there are better ways of getting information
     var endtag = id.substring(id.indexOf("0"),id.length);
-    scrollTo("solver"+endtag);
+    var parentEndtag = getParent(endtag);
+    var parentIndex  = getIndex(matInfo,parentEndtag);
+    //scrollTo("solver"+endtag);
+    var x = $(this).attr("cx");
+    var y = $(this).attr("cy");
+
+    //append an absolute-positioned div to display options for that node
+    var svgCanvas = $(this).parent().get(0);
+    var parent    = $(svgCanvas).parent().get(0);
+    var parent_x = parseFloat($(svgCanvas).offset().left) + parseFloat(x) + node_radius;
+    var parent_y = parseFloat($(svgCanvas).offset().top) + parseFloat(y) + node_radius;
+    $(parent).append("<div id=\"tempInput\" style=\"z-index:1;position:absolute;left:" + (parent_x) + "px;top:" + (parent_y) + "px;font-size:14px;opacity:1;border:2px solid lightblue;border-radius:" + node_radius + "px;\"></div>");
+    $("#tempInput").css("background", "#dddddd");
+
+    var solverText = "";
+    if(endtag == "0")
+        solverText = "Root Solver Options";
+    else if(matInfo[parentIndex].pc_type == "bjacobi")
+        solverText = "Bjacobi Solver Options";
+
+    $("#tempInput").append("<b>" + solverText + "</b>");
+    $("#tempInput").append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"temp_ksp_type" + endtag  + "\"></select>");
+    $("#tempInput").append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"temp_pc_type" + endtag + "\"></select>");
+
+    populatePcList(endtag,"#temp_pc_type" + endtag); //this is kind of stupid right now. I'll fix this later
+    populateKspList(endtag,"#temp_ksp_type" + endtag);
+
+    $("#tempInput").append("<br><input type=\"button\" value=\"Set Options\" id=\"setOptions\">");
+
 });
 
 //this function should be pretty straightforward
