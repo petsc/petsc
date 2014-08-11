@@ -22,6 +22,9 @@ int main(int argc,char **args)
 #if defined(PETSC_USE_LOG)
   PetscLogStage stage;
 #endif
+#if !defined(PETSC_HAVE_MUMPS)
+  PetscMPIInt    size;
+#endif
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
