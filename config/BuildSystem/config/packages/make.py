@@ -77,29 +77,12 @@ class Configure(config.package.Package):
 
   def configureCheckGNUMake(self):
     '''Check for GNU make'''
-    self.getExecutable('strings', getFullPath = 1,setMakeMacro = 0)
-    if hasattr(self, 'strings'):
-      try:
-        (output, error, status) = config.base.Configure.executeShellCommand(self.strings+' '+self.make, log = self.framework.log)
-        if not status and output.find('GNU Make') >= 0:
-          self.haveGNUMake = 1
-      except RuntimeError, e:
-        self.framework.log.write('Make check failed: '+str(e)+'\n')
-      if not self.haveGNUMake:
-        try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.strings+' '+self.make+'.exe', log = self.framework.log)
-          if not status and output.find('GNU Make') >= 0:
-            self.haveGNUMake = 1
-        except RuntimeError, e:
-          self.framework.log.write('Make check failed: '+str(e)+'\n')
-    # mac has fat binaries where 'string' check fails
-    if not self.haveGNUMake:
-      try:
-        (output, error, status) = config.base.Configure.executeShellCommand(self.make+' -v dummy-foobar', log = self.framework.log)
-        if not status and output.find('GNU Make') >= 0:
-          self.haveGNUMake = 1
-      except RuntimeError, e:
-        self.framework.log.write('Make check failed: '+str(e)+'\n')
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(self.make+' --version', log = self.framework.log)
+      if not status and output.find('GNU Make') >= 0:
+        self.haveGNUMake = 1
+    except RuntimeError, e:
+      self.framework.log.write('GNUMake check failed: '+str(e)+'\n')
 
     # Setup make flags
     if self.haveGNUMake:
