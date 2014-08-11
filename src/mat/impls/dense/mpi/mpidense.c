@@ -562,11 +562,20 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
 
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArray_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreArray_C",NULL);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ELEMENTAL)
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",NULL);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIDenseSetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultNumeric_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMult_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMultSymbolic_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMultNumeric_mpiaij_mpidense_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1253,6 +1262,15 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatConvert_MPIDense_Elemental"
+PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for requested operation");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIDense"
 PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
 {
@@ -1280,7 +1298,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseGetArray_C",MatDenseGetArray_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDenseRestoreArray_C",MatDenseRestoreArray_MPIDense);CHKERRQ(ierr);
-
+#if defined(PETSC_HAVE_ELEMENTAL)
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpidense_elemental_C",MatConvert_MPIDense_Elemental);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIDenseSetPreallocation_C",MatMPIDenseSetPreallocation_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_mpiaij_mpidense_C",MatMatMult_MPIAIJ_MPIDense);CHKERRQ(ierr);
