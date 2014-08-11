@@ -141,9 +141,11 @@ class Package(config.base.Configure):
     return ''
 
   def getWindowsNonOptFlags(self,cflags):
-    for flag in ['-MT','-MTd','-MD','-MDd','-threads']:
-      if cflags.find(flag) >=0: return flag
-    return ''
+    outflags = []
+    for flag in cflags.split():
+      if flag in ['-MT','-MTd','-MD','-MDd','-threads']:
+        outflags.append(flag)
+    return ' '.join(outflags)
 
   def getDefaultLanguage(self):
     '''The language in which to run tests'''
