@@ -216,6 +216,7 @@ PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
   ls->data = (void*)neP;
 
   ls->ops->setup = 0;
+  ls->ops->reset = 0;
   ls->ops->apply=TaoLineSearchApply_GPCG;
   ls->ops->view =TaoLineSearchView_GPCG;
   ls->ops->destroy=TaoLineSearchDestroy_GPCG;
