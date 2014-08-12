@@ -7,9 +7,9 @@ PETSC_STATIC_INLINE PetscErrorCode GetDepthStart_Private(PetscInt depth, PetscIn
 {
   PetscFunctionBegin;
   if (cStart) *cStart = 0;
-  if (vStart) *vStart = depthSize[depth];
-  if (fStart) *fStart = depthSize[depth] + depthSize[0];
-  if (eStart) *eStart = depthSize[depth] + depthSize[0] + depthSize[depth-1];
+  if (vStart) *vStart = depth < 0 ? 0 : depthSize[depth];
+  if (fStart) *fStart = depth < 0 ? 0 : depthSize[depth] + depthSize[0];
+  if (eStart) *eStart = depth < 0 ? 0 : depthSize[depth] + depthSize[0] + depthSize[depth-1];
   PetscFunctionReturn(0);
 }
 
@@ -18,10 +18,10 @@ PETSC_STATIC_INLINE PetscErrorCode GetDepthStart_Private(PetscInt depth, PetscIn
 PETSC_STATIC_INLINE PetscErrorCode GetDepthEnd_Private(PetscInt depth, PetscInt depthSize[], PetscInt *cEnd, PetscInt *fEnd, PetscInt *eEnd, PetscInt *vEnd)
 {
   PetscFunctionBegin;
-  if (cEnd) *cEnd = depthSize[depth];
-  if (vEnd) *vEnd = depthSize[depth] + depthSize[0];
-  if (fEnd) *fEnd = depthSize[depth] + depthSize[0] + depthSize[depth-1];
-  if (eEnd) *eEnd = depthSize[depth] + depthSize[0] + depthSize[depth-1] + depthSize[1];
+  if (cEnd) *cEnd = depth < 0 ? 0 : depthSize[depth];
+  if (vEnd) *vEnd = depth < 0 ? 0 : depthSize[depth] + depthSize[0];
+  if (fEnd) *fEnd = depth < 0 ? 0 : depthSize[depth] + depthSize[0] + depthSize[depth-1];
+  if (eEnd) *eEnd = depth < 0 ? 0 : depthSize[depth] + depthSize[0] + depthSize[depth-1] + depthSize[1];
   PetscFunctionReturn(0);
 }
 
