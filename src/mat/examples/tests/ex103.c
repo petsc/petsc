@@ -1,4 +1,5 @@
-static char help[] = "Test MatConvert() from MATDENSE to MATELEMENTAL. Modified from the code contributed by Yaning Liu @lbl.gov \n\n";
+static char help[] = "Test MatSetValues() by converting MATDENSE to MATELEMENTAL. \n\
+Modified from the code contributed by Yaning Liu @lbl.gov \n\n";
 /*
  Example:
    mpiexec -n <np> ./ex103 -mat_view
@@ -28,6 +29,7 @@ int main(int argc, char** argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
+  /* Creat a matrix */
   ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD, &mat_dense);CHKERRQ(ierr);
@@ -46,7 +48,6 @@ int main(int argc, char** argv)
 
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      //PetscScalar sum = i + j;
       v[i*ncols+j] = (PetscScalar)rank; 
     }
   }
@@ -55,11 +56,8 @@ int main(int argc, char** argv)
   ierr = MatAssemblyEnd(mat_dense, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%D] local nrows %D, ncols %D\n",rank,nrows,ncols);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = PetscFree(v);CHKERRQ(ierr);
 
-  /* Test MatConvert() */
+  /* Test MatSetValues() by converting mat_dense to mat_elemental */
   ierr = MatGetType(mat_dense,&type);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectTypeCompare((PetscObject)mat_dense,MATSEQDENSE,&isDense);CHKERRQ(ierr);
@@ -67,12 +65,28 @@ int main(int argc, char** argv)
     ierr = PetscObjectTypeCompare((PetscObject)mat_dense,MATMPIDENSE,&isDense);CHKERRQ(ierr);
   }
   if (isDense) {
-    ierr = MatConvert(mat_dense, MATELEMENTAL, MAT_INITIAL_MATRIX, &mat_elemental);CHKERRQ(ierr);
+    //ierr = MatConvert(mat_dense, MATELEMENTAL, MAT_INITIAL_MATRIX, &mat_elemental);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD, &mat_elemental);CHKERRQ(ierr);
+    ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+    ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(mat_elemental);CHKERRQ(ierr);
+    ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+    for (i=0; i<nrows; i++) {
+      for (j=0; j<ncols; j++) {
+        /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
+        ierr = MatSetValues(mat_elemental,1,&rows[i],1,&cols[j],v+i*ncols+j,ADD_VALUES);CHKERRQ(ierr);
+      }
+    }
+    ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatDestroy(&mat_elemental);CHKERRQ(ierr); 
   }
 
+  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
+  ierr = PetscFree(v);CHKERRQ(ierr);
   ierr = MatDestroy(&mat_dense);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
