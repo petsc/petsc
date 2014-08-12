@@ -2,6 +2,7 @@
   Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
 */
+#define PETSC_SKIP_COMPLEX
 
 #include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
