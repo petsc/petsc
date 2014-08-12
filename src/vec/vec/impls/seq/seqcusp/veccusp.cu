@@ -2,6 +2,8 @@
    Implements the sequential cusp vectors.
 */
 
+#define PETSC_SKIP_COMPLEX
+
 #include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
 #include <petsc-private/vecimpl.h>          /*I "petscvec.h" I*/
