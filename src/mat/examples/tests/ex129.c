@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
 
   ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
-  ierr = DMDASetDim(da,3);CHKERRQ(ierr);
+  ierr = DMSetDimension(da,3);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(da,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetStencilType(da,DMDA_STENCIL_STAR);CHKERRQ(ierr);
   ierr = DMDASetSizes(da,M,M,M);CHKERRQ(ierr);
