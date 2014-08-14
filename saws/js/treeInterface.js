@@ -18,6 +18,39 @@ function submitOptions(){
     var endtag = boxEndtag;
     var index = getIndex(matInfo,endtag);
 
+    var parentEndtag = getParent(endtag);
+    var parentIndex  = getIndex(matInfo,parentEndtag);
+
+    //check if matrix properties are valid
+    var symm     = $("#temp_symm").prop("checked");
+    var posdef   = $("#temp_posdef").prop("checked");
+    var logstruc = $("#temp_logstruc").prop("checked");
+
+    if(!symm && posdef) {
+        alert("Error: Cannot be non-symmetric yet positive definite");
+        return 0;
+    }
+
+    if(endtag != "0") { //check for discrepancies with parent
+         var parentSymm = matInfo[parentIndex].symm;
+        var parentPosdef = matInfo[parentIndex].posdef;
+        var parentLogstruc = matInfo[parentIndex].logstruc;
+        if(parentSymm && !symm) {
+            alert("Error: Cannot have symmetric parent yet be non-symmetric");
+            return 0;
+        }
+        if(parentPosdef && !posdef) {
+            alert("Error: Cannot have positive definite parent yet be non-positive definite");
+            return 0;
+        }
+    }
+
+    //write matrix properties
+    matInfo[index].symm = symm;
+    matInfo[index].posdef = posdef;
+    matInfo[index].logstruc = logstruc;
+
+
     var oldPc = matInfo[index].pc_type;
     var newPc = $("#temp_pc_type").val();
 
@@ -35,6 +68,10 @@ function submitOptions(){
         var blocks = $("#temp_pc_fieldsplit_blocks").val();
         if(blocks.match(/[^0-9]/) || blocks < 1) {
             alert("Error: Must have at least 1 block for fieldsplit");
+            return 0;
+        }
+        if(!matInfo[index].logstruc) {
+            alert("Error: Cannot use fieldsplit on non-logically block structured matrix");
             return 0;
         }
 
@@ -80,7 +117,7 @@ function submitOptions(){
     else if(pc_type == "ksp") {
         //ksp doesn't have any additional options, but it has one child
     }
-
+    return 1;
 }
 
 //this function ensures that all children are properly generated and initialized
@@ -197,10 +234,41 @@ $(document).on("click","input[id='setOptions']",function(){
         boxPresent = false;
         refresh();
     }
-    else
-        alert("Error in fields");
-
 });
+
+//this function is still needed !!
+function setDefaults2() {
+    var symm     = $("#temp_symm").prop("checked");
+    var posdef   = $("#temp_posdef").prop("checked");
+    var logstruc = $("#temp_logstruc").prop("checked");
+
+    var endtag = boxEndtag;
+
+    var defaults;
+    if(endtag == "0") { //has no parent
+        defaults = getDefaults("",symm,posdef,logstruc);
+    }
+    else { //otherwise, we should generate a more appropriate default
+        var parentIndex     = getParentIndex(matInfo,endtag);
+        var parent_pc_type  = matInfo[parentIndex].pc_type;
+        var parent_symm     = matInfo[parentIndex].symm;
+        var parent_posdef   = matInfo[parentIndex].posdef;
+        var parent_logstruc = matInfo[parentIndex].logstruc;
+        defaults            = getDefaults(parent_pc_type,parent_symm,parent_posdef,parent_logstruc,symm,posdef,logstruc); //if this current solver is a sub-solver, then we should set defaults according to its parent. this suggestion will be better.
+        var sub_pc_type   = defaults.sub_pc_type;
+        var sub_ksp_type  = defaults.sub_ksp_type;
+        defaults = {
+            pc_type: sub_pc_type,
+            ksp_type: sub_ksp_type
+        };
+    }
+
+    $("#pc_type" + endtag).val(defaults.pc_type);
+    $("#ksp_type" + endtag).val(defaults.ksp_type);
+    //trigger both to add additional options
+    $("#ksp_type" + endtag).trigger("change");
+    $("#pc_type" + endtag).trigger("change");
+}
 
 //this function displays the appropriate options for each pc_type when pc_type dropdown is changed (for example, bjacobi blocks, fieldsplit type, etc)
 $(document).on("change","select[id='temp_pc_type']", function(){
@@ -213,26 +281,38 @@ $(document).on("change","select[id='temp_pc_type']", function(){
     $("#temp_pc_type").nextAll().remove();//remove the options in the same level solver
 
     if(pc_type == "fieldsplit") { //add the extra options that fieldsplit requires
-        $("#tempInput").append("<br><b>Fieldsplit Type &nbsp;&nbsp;</b><select id=\"temp_pc_fieldsplit_type" + "\"></select>");
-        $("#tempInput").append("<br><b>Fieldsplit Blocks </b><input type='text' id=\"temp_pc_fieldsplit_blocks" + "\" maxlength='4'>");
-        populateFieldsplitList(endtag, "#temp_pc_fieldsplit_type");
-
-        var defaults = "";
+        appendExtraOptions("fieldsplit");
+        var defaults = getDefaults("fieldsplit",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        $("#temp_pc_fieldsplit_type").val(defaults.pc_fieldsplit_type);
+        $("#temp_pc_fieldsplit_blocks").val(defaults.pc_fieldsplit_blocks);
     }
     else if(pc_type == "mg") {
-
+        appendExtraOptions("mg");
+        var defaults = getDefaults("mg",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        $("#temp_pc_mg_type").val(defaults.pc_mg_type);
+        $("#temp_pc_mg_levels").val(defaults.pc_mg_levels);
     }
     else if(pc_type == "bjacobi") {
-
+        appendExtraOptions("bjacobi");
+        var defaults = getDefaults("bjacobi",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        $("#temp_pc_bjacobi_blocks").val(defaults.pc_bjacobi_blocks);
     }
     else if(pc_type == "gamg") {
-
+        appendExtraOptions("gamg");
+        var defaults = getDefaults("gamg",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        $("#temp_pc_gamg_type").val(defaults.pc_gamg_type);
+        $("#temp_pc_gamg_levels").val(defaults.pc_gamg_levels);
     }
     else if(pc_type == "redundant") {
-
+        appendExtraOptions("redundant");
+        var defaults = getDefaults("redundant",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        $("#temp_pc_redundant_number").val(defaults.pc_redundant_number);
     }
     else if(pc_type == "asm") {
-
+        appendExtraOptions("asm");
+        var defaults = getDefaults("asm",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        $("#temp_pc_asm_blocks").val(defaults.pc_asm_blocks);
+        $("#temp_pc_asm_overlap").val(defaults.pc_asm_overlap);
     }
 
     $("#tempInput").append("<br><input type=\"button\" value=\"Set Options\" id=\"setOptions\">"); //put the button back because we still want that (was removed in the nextAll().remove())
@@ -309,38 +389,30 @@ $(document).on("click","circle[id^='node']",function(){
 
 
     if(matInfo[index].pc_type == "fieldsplit") { //append extra options for fieldsplit
-        $("#tempInput").append("<br><b>Fieldsplit Type &nbsp;&nbsp;</b><select id=\"temp_pc_fieldsplit_type" + "\"></select>");
-        $("#tempInput").append("<br><b>Fieldsplit Blocks </b><input type='text' id=\"temp_pc_fieldsplit_blocks" + "\" maxlength='4'>");
-
-        populateFieldsplitList(endtag, "#temp_pc_fieldsplit_type");
+        appendExtraOptions("fieldsplit");
         $("#temp_pc_fieldsplit_type").val(matInfo[index].pc_fieldsplit_type);
         $("#temp_pc_fieldsplit_blocks").val(matInfo[index].pc_fieldsplit_blocks);
     }
     else if(matInfo[index].pc_type == "bjacobi") { //append extra options for bjacobi
-        $("#tempInput").append("<br><b>Bjacobi Blocks </b><input type='text' id=\'temp_pc_bjacobi_blocks" + "\' maxlength='4'>");
+        appendExtraOptions("bjacobi");
         $("#temp_pc_bjacobi_blocks").val(matInfo[index].pc_bjacobi_blocks);
     }
     else if(matInfo[index].pc_type == "redundant") {
-        $("#tempInput").append("<br><b>Redundant Number </b><input type='text' id=\'temp_pc_redundant_number" + "\' maxlength='4'>");
+        appendExtraOptions("redundant");
         $("#temp_pc_redundant_number").val(matInfo[index].pc_redundant_number);
     }
     else if(matInfo[index].pc_type == "asm") {
-        $("#tempInput").append("<br><b>ASM blocks   &nbsp;&nbsp;</b><input type='text' id=\"temp_pc_asm_blocks" + "\" maxlength='4'>");
-	$("#tempInput").append("<br><b>ASM overlap   </b><input type='text' id=\"temp_pc_asm_overlap" + "\" maxlength='4'>");
+        appendExtraOptions("asm");
         $("#temp_pc_asm_blocks").val(matInfo[index].pc_asm_blocks);
         $("#temp_pc_asm_overlap").val(matInfo[index].pc_asm_overlap);
     }
     else if(matInfo[index].pc_type == "mg") {
-        $("#tempInput").append("<br><b>MG Type &nbsp;&nbsp;</b><select id=\"temp_pc_mg_type" + "\"></select>");
-        $("#tempInput").append("<br><b>MG Levels </b><input type='text' id=\'temp_pc_mg_levels" + "\' maxlength='4'>");
-        populateMgList(endtag,"#temp_pc_mg_type");
+        appendExtraOptions("mg");
         $("#temp_pc_mg_type").val(matInfo[index].pc_mg_type);
         $("#temp_pc_mg_levels").val(matInfo[index].pc_mg_levels);
     }
     else if(matInfo[index].pc_type == "gamg") {
-        $("#tempInput").append("<br><b>GAMG Type &nbsp;&nbsp;</b><select id=\"temp_pc_gamg_type" + "\"></select>");
-        $("#tempInput").append("<br><b>GAMG Levels </b><input type='text' id=\'temp_pc_gamg_levels" + "\' maxlength='4'>");
-        populateGamgList(endtag,"#temp_pc_gamg_type");
+        appendExtraOptions("gamg");
         $("#temp_pc_gamg_type").val(matInfo[index].pc_gamg_type);
         $("#temp_pc_gamg_levels").val(matInfo[index].pc_gamg_levels);
     }
@@ -349,6 +421,36 @@ $(document).on("click","circle[id^='node']",function(){
     $("#tempInput").append("<br><input type=\"button\" value=\"Set Options\" id=\"setOptions\">");
 
 });
+
+//this function only appends the appropriate html. it does NOT select the appropriate defaults
+function appendExtraOptions(pc_type) {
+
+    if(pc_type == "fieldsplit") { //append extra options for fieldsplit
+        $("#tempInput").append("<br><b>Fieldsplit Type &nbsp;&nbsp;</b><select id=\"temp_pc_fieldsplit_type" + "\"></select>");
+        $("#tempInput").append("<br><b>Fieldsplit Blocks </b><input type='text' id=\"temp_pc_fieldsplit_blocks" + "\" maxlength='4'>");
+        populateFieldsplitList("", "#temp_pc_fieldsplit_type");
+    }
+    else if(pc_type == "bjacobi") { //append extra options for bjacobi
+        $("#tempInput").append("<br><b>Bjacobi Blocks </b><input type='text' id=\'temp_pc_bjacobi_blocks" + "\' maxlength='4'>");
+    }
+    else if(pc_type == "redundant") {
+        $("#tempInput").append("<br><b>Redundant Number </b><input type='text' id=\'temp_pc_redundant_number" + "\' maxlength='4'>");
+    }
+    else if(pc_type == "asm") {
+        $("#tempInput").append("<br><b>ASM blocks   &nbsp;&nbsp;</b><input type='text' id=\"temp_pc_asm_blocks" + "\" maxlength='4'>");
+	$("#tempInput").append("<br><b>ASM overlap   </b><input type='text' id=\"temp_pc_asm_overlap" + "\" maxlength='4'>");
+    }
+    else if(pc_type == "mg") {
+        $("#tempInput").append("<br><b>MG Type &nbsp;&nbsp;</b><select id=\"temp_pc_mg_type" + "\"></select>");
+        $("#tempInput").append("<br><b>MG Levels </b><input type='text' id=\'temp_pc_mg_levels" + "\' maxlength='4'>");
+        populateMgList("","#temp_pc_mg_type");
+    }
+    else if(pc_type == "gamg") {
+        $("#tempInput").append("<br><b>GAMG Type &nbsp;&nbsp;</b><select id=\"temp_pc_gamg_type" + "\"></select>");
+        $("#tempInput").append("<br><b>GAMG Levels </b><input type='text' id=\'temp_pc_gamg_levels" + "\' maxlength='4'>");
+        populateGamgList("","#temp_pc_gamg_type");
+    }
+}
 
 //deletes all children from matInfo
 function deleteAllChildren(endtag) {
@@ -370,6 +472,9 @@ function deleteAllChildren(endtag) {
     //adjust variables in matInfo (shouldn't really be needed)
     if(matInfo[index].pc_type == "mg") {
         matInfo[index].pc_mg_levels = 0;
+    }
+    else if(matInfo[index].pc_type == "gamg") {
+        matInfo[index].pc_gamg_levels = 0;
     }
     else if(matInfo[index].pc_type == "fieldsplit") {
         matInfo[index].pc_fieldsplit_blocks = 0;
