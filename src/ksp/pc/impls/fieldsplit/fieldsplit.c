@@ -2,13 +2,6 @@
 #include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscdm.h>
 
-/*
-  There is a nice discussion of block preconditioners in
-
-[El08] A taxonomy and comparison of parallel block multi-level preconditioners for the incompressible Navier-Stokes equations
-       Howard Elman, V.E. Howle, John Shadid, Robert Shuttleworth, Ray Tuminaro, Journal of Computational Physics 227 (2008) 1790--1808
-       http://chess.cs.umd.edu/~elman/papers/tax.pdf
-*/
 
 const char *const PCFieldSplitSchurPreTypes[] = {"SELF","SELFP","A11","USER","FULL","PCFieldSplitSchurPreType","PC_FIELDSPLIT_SCHUR_PRE_",0};
 const char *const PCFieldSplitSchurFactTypes[] = {"DIAG","LOWER","UPPER","FULL","PCFieldSplitSchurFactType","PC_FIELDSPLIT_SCHUR_FACT_",0};
@@ -2165,6 +2158,12 @@ $              (  0   S  )
      inside a smoother resulting in "Distributive Smoothers".
 
    Concepts: physics based preconditioners, block preconditioners
+
+   There is a nice discussion of block preconditioners in
+
+[El08] A taxonomy and comparison of parallel block multi-level preconditioners for the incompressible Navier-Stokes equations
+       Howard Elman, V.E. Howle, John Shadid, Robert Shuttleworth, Ray Tuminaro, Journal of Computational Physics 227 (2008) 1790--1808
+       http://chess.cs.umd.edu/~elman/papers/tax.pdf
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, Block_Preconditioners, PCLSC,
            PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre()
