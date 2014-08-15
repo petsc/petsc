@@ -149,7 +149,6 @@ function submitOptions(){
             }
             matInfo[index].pc_fieldsplit_blocks = $("#temp_pc_fieldsplit_blocks").val();
         }
-        return 1;
     }
     else if(pc_type == "mg") { //extra options for mg
         var levels = $("#temp_pc_mg_levels").val();
@@ -171,7 +170,6 @@ function submitOptions(){
             }
             matInfo[index].pc_mg_levels = $("#temp_pc_mg_levels").val();
         }
-        return 1;
     }
     else if(pc_type == "gamg") {
         var levels = $("#temp_pc_gamg_levels").val();
@@ -194,7 +192,6 @@ function submitOptions(){
             }
             matInfo[index].pc_gamg_levels = $("#temp_pc_gamg_levels").val();
         }
-        return 1;
     }
     else if(pc_type == "bjacobi") {
         matInfo[index].pc_bjacobi_blocks = $("#temp_pc_bjacobi_blocks").val();
@@ -213,7 +210,38 @@ function submitOptions(){
         //ksp doesn't have any additional options, but it has one child
         generateChildren(endtag);
     }
+
+    enforceProperties(endtag);
+
     return 1;
+}
+
+
+//this function
+function enforceProperties(endtag) {
+
+    var index = getIndex(matInfo,endtag);
+    var symm  = matInfo[index].symm;
+    var posdef = matInfo[index].posdef;
+
+    if(symm) { //if symm, then all children must be symm
+        for(var i=0; i<matInfo.length; i++) {
+
+            if(matInfo[i].endtag.indexOf(endtag) == 0) { //if it is indeed a child
+                matInfo[i].symm = true;
+            }
+        }
+    }
+
+    if(posdef) { //if posdef, then all children must be posdef
+        for(var i=0; i<matInfo.length; i++) {
+
+            if(matInfo[i].endtag.indexOf(endtag) == 0) { //if it is indeed a child
+                matInfo[i].posdef = true;
+            }
+        }
+    }
+
 }
 
 //this function ensures that all children are properly generated and initialized
@@ -423,16 +451,16 @@ $(document).on("change","select[id='temp_pc_type']", function(){
     $("#tempInput").append("<br><input type=\"button\" value=\"Set Options\" id=\"setOptions\">"); //put the button back because we still want that (was removed in the nextAll().remove())
 });
 
-//remove the box when the user clicks sufficiently outside of it
-$(document).on("click", function(e) {
+//remove the box when the user clicks sufficiently outside of it (still needs debugging)
+/*$(document).on("click", function(e) {
 
-    if(e.pageX < (box_x-node_radius-5) || e.pageX > (box_x + box_size.width) || e.pageY < (box_y-node_radius-5) || e.pageY > (box_y + box_size.height)) {
-
+    if(e.pageX < (box_x-node_radius-5) || e.pageX > (box_x + box_size.width) || e.pageY < (box_y-node_radius-5)) {
+        //note: the reason we dont have the 'greater than y' term is because the dropdown menu goes below the box
         removeBox();
+        alert('removed');
         boxPresent = false;
     }
-
-});
+});*/
 
 //upon a user click, present the user with the currently selected options that the user can change
 $(document).on("click","circle[id^='node']",function() {
