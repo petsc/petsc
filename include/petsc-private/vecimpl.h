@@ -85,6 +85,8 @@ struct _VecOps {
   PetscErrorCode (*restorearrayread)(Vec,const PetscScalar**);
   PetscErrorCode (*stridesubsetgather)(Vec,PetscInt,const PetscInt[],const PetscInt[],Vec,InsertMode);
   PetscErrorCode (*stridesubsetscatter)(Vec,PetscInt,const PetscInt[],const PetscInt[],Vec,InsertMode);
+  PetscErrorCode (*viewnative)(Vec,PetscViewer);
+  PetscErrorCode (*loadnative)(Vec,PetscViewer);
 };
 
 /*

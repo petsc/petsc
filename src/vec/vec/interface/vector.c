@@ -580,12 +580,12 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
   if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
 
   ierr = PetscLogEventBegin(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscInt rows,bs;
 
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)vec,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = VecGetSize(vec,&rows);CHKERRQ(ierr);
@@ -598,7 +598,11 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
-  ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_NATIVE && vec->ops->viewnative) {
+    ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
+  } else {
+    ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -925,6 +929,7 @@ PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isbinary,ishdf5;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(newvec,VEC_CLASSID,1);
@@ -937,7 +942,12 @@ PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
   if (!((PetscObject)newvec)->type_name && !newvec->ops->create) {
     ierr = VecSetType(newvec, VECSTANDARD);CHKERRQ(ierr);
   }
-  ierr = (*newvec->ops->load)(newvec,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_NATIVE && newvec->ops->loadnative) {
+    ierr = (*newvec->ops->loadnative)(newvec,viewer);CHKERRQ(ierr);
+  } else {
+    ierr = (*newvec->ops->load)(newvec,viewer);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1008,10 +1018,15 @@ $      ierr = VecSetOperation(x,VECOP_VIEW,(void(*)(void))userview);
 
 .seealso: VecCreate(), MatShellSetOperation()
 @*/
-PetscErrorCode  VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
+PetscErrorCode VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
+  if (op == VECOP_VIEW && !vec->ops->viewnative) {
+    vec->ops->viewnative = vec->ops->view;
+  } else if (op == VECOP_LOAD && !vec->ops->loadnative) {
+    vec->ops->loadnative = vec->ops->load;
+  }
   (((void(**)(void))vec->ops)[(int)op]) = f;
   PetscFunctionReturn(0);
 }

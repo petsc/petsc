@@ -165,7 +165,9 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 0,
                                 0,
                                 VecStrideSubSetGather_Default,
-                                VecStrideSubSetScatter_Default
+                                VecStrideSubSetScatter_Default,
+                                0,
+                                0
 };
 
 #undef __FUNCT__
