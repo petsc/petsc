@@ -423,10 +423,19 @@ $(document).on("change","select[id='temp_pc_type']", function(){
     $("#tempInput").append("<br><input type=\"button\" value=\"Set Options\" id=\"setOptions\">"); //put the button back because we still want that (was removed in the nextAll().remove())
 });
 
-//this shouldn't be in boxTree. this should be in events.
-//upon a user click, we present the user with the currently selected options that the user can change
-//this method does NOT handle changes in the selected pc option
-$(document).on("click","circle[id^='node']",function(){
+//remove the box when the user clicks sufficiently outside of it
+$(document).on("click", function(e) {
+
+    if(e.pageX < (box_x-node_radius-5) || e.pageX > (box_x + box_size.width) || e.pageY < (box_y-node_radius-5) || e.pageY > (box_y + box_size.height)) {
+
+        removeBox();
+        boxPresent = false;
+    }
+
+});
+
+//upon a user click, present the user with the currently selected options that the user can change
+$(document).on("click","circle[id^='node']",function() {
 
     var id     = $(this).attr("id");//really should not be used in this method. there are better ways of getting information
     var endtag = id.substring(id.indexOf("0"),id.length);
@@ -459,6 +468,9 @@ $(document).on("click","circle[id^='node']",function(){
     var parent_y = parseFloat($(svgCanvas).offset().top) + parseFloat(y) + node_radius;
     $(parent).append("<div id=\"tempInput\" style=\"z-index:1;position:absolute;left:" + (parent_x) + "px;top:" + (parent_y) + "px;font-size:14px;opacity:1;border:2px solid lightblue;border-radius:" + node_radius + "px;\"></div>");
     $("#tempInput").css("background", "#dddddd");
+
+    box_x = parent_x;
+    box_y = parent_y;
 
     var childNum = endtag.substring(endtag.lastIndexOf("_")+1, endtag.length);
 
@@ -530,6 +542,11 @@ $(document).on("click","circle[id^='node']",function(){
 
     //append the submit button
     $("#tempInput").append("<br><input type=\"button\" value=\"Set Options\" id=\"setOptions\">");
+
+    box_size = {
+        height: $("#tempInput").height(),
+        width: $("#tempInput").width()
+    };
 
 });
 
