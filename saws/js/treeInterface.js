@@ -21,18 +21,32 @@ function submitOptions(){
     var parentEndtag = getParent(endtag);
     var parentIndex  = getIndex(matInfo,parentEndtag);
 
-    //check if matrix properties are valid
-    var symm     = $("#temp_symm").prop("checked");
-    var posdef   = $("#temp_posdef").prop("checked");
-    var logstruc = $("#temp_logstruc").prop("checked");
+    var selectedPc = $("#temp_pc_type").val();
 
+    var symm;
+    var posdef;
+    var logstruc;
+
+    if($("#temp_symm").length == 0) { //if the checkbox options were not displayed
+        symm = matInfo[index].symm;
+        posdef = matInfo[index].posdef;
+        logstruc = matInfo[index].logstruc;
+    }
+
+    else {
+        symm     = $("#temp_symm").prop("checked");
+        posdef   = $("#temp_posdef").prop("checked");
+        logstruc = $("#temp_logstruc").prop("checked");
+    }
+
+    //check if matrix properties are valid
     if(!symm && posdef) {
         alert("Error: Cannot be non-symmetric yet positive definite");
         return 0;
     }
 
     if(endtag != "0") { //check for discrepancies with parent
-         var parentSymm = matInfo[parentIndex].symm;
+        var parentSymm = matInfo[parentIndex].symm;
         var parentPosdef = matInfo[parentIndex].posdef;
         var parentLogstruc = matInfo[parentIndex].logstruc;
         if(parentSymm && !symm) {
@@ -45,18 +59,70 @@ function submitOptions(){
         }
     }
 
-    //write matrix properties
+    //check for more invalid setups
+    if(selectedPc == "fieldsplit") {
+        var blocks = $("#temp_pc_fieldsplit_blocks").val();
+        if(blocks.match(/[^0-9]/) || blocks < 1) {
+            alert("Error: Must have at least 1 block for fieldsplit");
+            return 0;
+        }
+        if(!logstruc) {
+            alert("Error: Cannot use fieldsplit on non-logically block structured matrix");
+            return 0;
+        }
+    }
+    else if(selectedPc == "mg") { //extra options for mg
+        var levels = $("#temp_pc_mg_levels").val();
+        if(levels.match(/[^0-9]/) || levels < 1) {
+            alert("Error: Must have at least 1 level for multigrid");
+            return 0;
+        }
+    }
+    else if(selectedPc == "gamg") {
+        var levels = $("#temp_pc_gamg_levels").val();
+        if(levels.match(/[^0-9]/) || levels < 1) {
+            alert("Error: Must have at least 1 level for geometric algebraic multigrid");
+            return 0;
+        }
+    }
+    else if(selectedPc == "bjacobi") {
+        var blocks = $("#temp_pc_bjacobi_blocks").val();
+        if(blocks.match(/[^0-9]/) || blocks < 1) {
+            alert("Error: Must have at least 1 block for bjacobi");
+            return 0;
+        }
+    }
+    else if(selectedPc == "redundant") {
+        var number = $("#temp_pc_redundant_number").val();
+        if(number.match(/[^0-9]/) || number < 1) {
+            alert("Error: Redundant Number must be at least 1");
+            return 0;
+        }
+    }
+    else if(selectedPc == "asm") {
+        var blocks = $("#temp_pc_asm_blocks").val();
+        if(blocks.match(/[^0-9]/) || blocks < 1) {
+            alert("Error: Must have at least 1 block for Additive Schwarz Method");
+            return 0;
+        }
+        var overlap = $("#temp_pc_asm_overlap").val();
+        if(overlap.match(/[^0-9]/) || overlap < 1) {
+            alert("Error: Must have overlap of at least 1 for Additive Schwarz Method");
+            return 0;
+        }
+    }
+
+
+    //only preserve some options if the pc_type didn't change
+    var oldPc = matInfo[index].pc_type;
+    var newPc = $("#temp_pc_type").val();
+    if(oldPc != newPc)
+        deleteAllChildren(endtag);
+
+    //write options to matInfo
     matInfo[index].symm = symm;
     matInfo[index].posdef = posdef;
     matInfo[index].logstruc = logstruc;
-
-
-    var oldPc = matInfo[index].pc_type;
-    var newPc = $("#temp_pc_type").val();
-
-    var changedPc = true;
-    if(oldPc == newPc)
-        changedPc = false;
 
     matInfo[index].pc_type = $("#temp_pc_type").val();
     matInfo[index].ksp_type = $("#temp_ksp_type").val();
@@ -64,17 +130,7 @@ function submitOptions(){
     var pc_type = matInfo[index].pc_type;
 
     if(pc_type == "fieldsplit") { //extra options for fieldsplit
-        //first make sure inputted options are valid
         var blocks = $("#temp_pc_fieldsplit_blocks").val();
-        if(blocks.match(/[^0-9]/) || blocks < 1) {
-            alert("Error: Must have at least 1 block for fieldsplit");
-            return 0;
-        }
-        if(!matInfo[index].logstruc) {
-            alert("Error: Cannot use fieldsplit on non-logically block structured matrix");
-            return 0;
-        }
-
         matInfo[index].pc_fieldsplit_type = $("#temp_pc_fieldsplit_type").val();
 
         if(matInfo[index].pc_fieldsplit_blocks == undefined)
@@ -93,29 +149,69 @@ function submitOptions(){
             }
             matInfo[index].pc_fieldsplit_blocks = $("#temp_pc_fieldsplit_blocks").val();
         }
-
         return 1;
     }
     else if(pc_type == "mg") { //extra options for mg
+        var levels = $("#temp_pc_mg_levels").val();
         matInfo[index].pc_mg_type = $("#temp_pc_mg_type").val();
-        matInfo[index].pc_mg_levels = $("#temp_pc_mg_levels").val();
+
+        if(matInfo[index].pc_mg_levels == undefined)
+            matInfo[index].pc_mg_levels = 0;
+
+        //case 1: more blocks required
+        if(matInfo[index].pc_mg_levels  < levels) {
+            matInfo[index].pc_mg_levels = $("#temp_pc_mg_levels").val();
+            generateChildren(endtag); //simply ask for the children to be generated
+        }
+        //case 2: some blocks need to be removed
+        else if(matInfo[index].pc_mg_levels > levels) {
+            for(var i=blocks; i<matInfo[index].pc_mg_levels; i++) {
+                var childEndtag = endtag + "_" + i;
+                deleteAllChildren(childEndtag); //delete the necessary children
+            }
+            matInfo[index].pc_mg_levels = $("#temp_pc_mg_levels").val();
+        }
+        return 1;
     }
     else if(pc_type == "gamg") {
+        var levels = $("#temp_pc_gamg_levels").val();
+
         matInfo[index].pc_gamg_type = $("#temp_pc_gamg_type").val();
-        matInfo[index].pc_gamg_levels = $("#temp_pc_gamg_levels").val();
+
+        if(matInfo[index].pc_gamg_levels == undefined)
+            matInfo[index].pc_gamg_levels = 0;
+
+        //case 1: more blocks required
+        if(matInfo[index].pc_gamg_levels  < levels) {
+            matInfo[index].pc_gamg_levels = $("#temp_pc_gamg_levels").val();
+            generateChildren(endtag); //simply ask for the children to be generated
+        }
+        //case 2: some blocks need to be removed
+        else if(matInfo[index].pc_gamg_levels > levels) {
+            for(var i=blocks; i<matInfo[index].pc_gamg_levels; i++) {
+                var childEndtag = endtag + "_" + i;
+                deleteAllChildren(childEndtag); //delete the necessary children
+            }
+            matInfo[index].pc_gamg_levels = $("#temp_pc_gamg_levels").val();
+        }
+        return 1;
     }
     else if(pc_type == "bjacobi") {
         matInfo[index].pc_bjacobi_blocks = $("#temp_pc_bjacobi_blocks").val();
+        generateChildren(endtag);
     }
     else if(pc_type == "redundant") {
         matInfo[index].pc_redundant_number = $("#temp_pc_redundant_number").val();
+        generateChildren(endtag);
     }
     else if(pc_type == "asm") {
         matInfo[index].pc_asm_blocks = $("#temp_pc_asm_blocks").val();
         matInfo[index].pc_asm_overlap = $("#temp_pc_asm_overlap").val();
+        generateChildren(endtag);
     }
     else if(pc_type == "ksp") {
         //ksp doesn't have any additional options, but it has one child
+        generateChildren(endtag);
     }
     return 1;
 }
@@ -179,7 +275,7 @@ function generateChildren(endtag) {
                     ksp_type: defaults.sub_ksp_type,
                     symm:     matInfo[index].symm, //inherit !!
                     posdef:   matInfo[index].posdef,
-                    logstruc: true
+                    logstruc: matInfo[index].logstruc
                 }
                 generateChildren(childEndtag);
             }
@@ -199,7 +295,7 @@ function generateChildren(endtag) {
                     ksp_type: defaults.sub_ksp_type,
                     symm:     matInfo[index].symm, //inherit !!
                     posdef:   matInfo[index].posdef,
-                    logstruc: true
+                    logstruc: matInfo[index].logstruc
                 }
                 generateChildren(childEndtag);
             }
@@ -236,7 +332,19 @@ $(document).on("click","input[id='setOptions']",function(){
     }
 });
 
-//this function is still needed !!
+$(document).on("change","input[id='temp_symm']",function(){
+    setDefaults2();
+});
+
+$(document).on("change","input[id='temp_posdef']",function(){
+    setDefaults2();
+});
+
+$(document).on("change","input[id='temp_logstruc']",function(){
+    setDefaults2();
+});
+
+//this function sets default ksp/pc when the properties of the matrix are changed
 function setDefaults2() {
     var symm     = $("#temp_symm").prop("checked");
     var posdef   = $("#temp_posdef").prop("checked");
@@ -255,19 +363,16 @@ function setDefaults2() {
         var parent_posdef   = matInfo[parentIndex].posdef;
         var parent_logstruc = matInfo[parentIndex].logstruc;
         defaults            = getDefaults(parent_pc_type,parent_symm,parent_posdef,parent_logstruc,symm,posdef,logstruc); //if this current solver is a sub-solver, then we should set defaults according to its parent. this suggestion will be better.
-        var sub_pc_type   = defaults.sub_pc_type;
-        var sub_ksp_type  = defaults.sub_ksp_type;
         defaults = {
-            pc_type: sub_pc_type,
-            ksp_type: sub_ksp_type
+            pc_type: defaults.sub_pc_type,
+            ksp_type: defaults.sub_ksp_type
         };
     }
 
-    $("#pc_type" + endtag).val(defaults.pc_type);
-    $("#ksp_type" + endtag).val(defaults.ksp_type);
-    //trigger both to add additional options
-    $("#ksp_type" + endtag).trigger("change");
-    $("#pc_type" + endtag).trigger("change");
+    $("#temp_pc_type").val(defaults.pc_type);
+    $("#temp_ksp_type").val(defaults.ksp_type);
+
+    $("#temp_pc_type").trigger("change"); //display the correct options
 }
 
 //this function displays the appropriate options for each pc_type when pc_type dropdown is changed (for example, bjacobi blocks, fieldsplit type, etc)
@@ -377,7 +482,6 @@ $(document).on("click","circle[id^='node']",function(){
             solverText = "<b>Smoothing (Level " + childNum + ")  </b>";
     }
 
-
     $("#tempInput").append(solverText);
     $("#tempInput").append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"temp_ksp_type" + "\"></select>");
     $("#tempInput").append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"temp_pc_type" + "\"></select>");
@@ -387,6 +491,13 @@ $(document).on("click","circle[id^='node']",function(){
     $("#temp_pc_type").val(matInfo[index].pc_type);
     $("#temp_ksp_type").val(matInfo[index].ksp_type);
 
+    //fill in the currently selected properties
+    if(matInfo[index].symm)
+        $("#temp_symm").attr("checked", true);
+    if(matInfo[index].posdef)
+        $("#temp_posdef").attr("checked", true);
+    if(matInfo[index].logstruc)
+        $("#temp_logstruc").attr("checked", true);
 
     if(matInfo[index].pc_type == "fieldsplit") { //append extra options for fieldsplit
         appendExtraOptions("fieldsplit");
