@@ -468,6 +468,7 @@ cdef extern from * nogil:
         PetscErrorCode (*getdiagonal)(PetscMat,PetscVec) except IERR
         PetscErrorCode (*setdiagonal"diagonalset")(PetscMat,PetscVec,InsertMode) except IERR
         PetscErrorCode (*diagonalscale)(PetscMat,PetscVec,PetscVec) except IERR
+        PetscErrorCode (*norm)(PetscMat,NormType,PetscReal*) except IERR
         PetscErrorCode (*realpart)(PetscMat) except IERR
         PetscErrorCode (*imagpart"imaginarypart")(PetscMat) except IERR
         PetscErrorCode (*conjugate)(PetscMat) except IERR
@@ -552,6 +553,7 @@ cdef PetscErrorCode MatCreate_Python(
     ops.getdiagonal       = MatGetDiagonal_Python
     ops.setdiagonal       = MatSetDiagonal_Python
     ops.diagonalscale     = MatDiagonalScale_Python
+    ops.norm              = MatNorm_Python
     ops.realpart          = MatRealPart_Python
     ops.imagpart          = MatImagPart_Python
     ops.conjugate         = MatConjugate_Python
@@ -1034,6 +1036,19 @@ cdef PetscErrorCode MatDiagonalScale_Python(
     cdef diagonalScale = PyMat(mat).diagonalScale
     if diagonalScale is None: return UNSUPPORTED(b"diagonalScale")
     diagonalScale(Mat_(mat), Vec_(l), Vec_(r))
+    return FunctionEnd()
+
+cdef PetscErrorCode MatNorm_Python(
+    PetscMat mat,
+    NormType ntype,
+    PetscReal *nrm,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"MatNorm_Python")
+    cdef norm = PyMat(mat).norm
+    if norm is None: return UNSUPPORTED(b"norm")
+    retval = norm(Mat_(mat), ntype)
+    nrm[0] = <PetscReal>retval
     return FunctionEnd()
 
 cdef PetscErrorCode MatRealPart_Python(
