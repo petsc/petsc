@@ -144,8 +144,8 @@ OptDB = PETSc.Options()
 
 n  = OptDB.getInt('n', 16)
 nx = OptDB.getInt('nx', n)
-ny = OptDB.getInt('nz', n)
-nz = OptDB.getInt('ny', n)
+ny = OptDB.getInt('ny', n)
+nz = OptDB.getInt('nz', n)
 lambda_ = OptDB.getReal('lambda', 6.0)
 
 da = PETSc.DMDA().create([nx, ny, nz], stencil_width=1)
