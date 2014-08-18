@@ -392,6 +392,12 @@ cdef class PC(Object):
         if pre is not None: pmat = pre.mat
         CHKERR( PCFieldSplitSetSchurPre(self.pc, pval, pmat) )
 
+    def setReusePreconditioner(self, flag):
+        cdef PetscBool cflag = PETSC_FALSE
+        if flag:
+            cflag = PETSC_TRUE
+        CHKERR( PCSetReusePreconditioner(self.pc, cflag) )
+
     # --- KSP ---
 
     def getKSP(self):

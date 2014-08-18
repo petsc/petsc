@@ -172,6 +172,8 @@ cdef extern from * nogil:
 
     int PCKSPGetKSP(PetscPC,PetscKSP*)
 
+    int PCSetReusePreconditioner(PetscPC,PetscBool)
+
     # --- MG ---
     int PCMGSetInterpolation(PetscPC,PetscInt,PetscMat)
     int PCMGGetInterpolation(PetscPC,PetscInt,PetscMat*)
