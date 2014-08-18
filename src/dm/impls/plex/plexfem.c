@@ -344,7 +344,12 @@ PetscErrorCode DMPlexProjectFunction(DM dm, void (**funcs)(const PetscReal [], P
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
   if (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES) {
-    ierr = DMPlexProjectConstraints_Internal(dm, localX, X);CHKERRQ(ierr);
+    Mat cMat;
+
+    ierr = DMPlexGetConstraintMatrix(dm, &cMat);CHKERRQ(ierr);
+    if (cMat) {
+      ierr = DMGlobalToLocalSolve(dm, localX, X);CHKERRQ(ierr);
+    }
   }
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -465,7 +470,12 @@ PetscErrorCode DMPlexProjectField(DM dm, Vec U, void (**funcs)(const PetscScalar
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
   if (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES) {
-    ierr = DMPlexProjectConstraints_Internal(dm, localX, X);CHKERRQ(ierr);
+    Mat cMat;
+
+    ierr = DMPlexGetConstraintMatrix(dm, &cMat);CHKERRQ(ierr);
+    if (cMat) {
+      ierr = DMGlobalToLocalSolve(dm, localX, X);CHKERRQ(ierr);
+    }
   }
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localU);CHKERRQ(ierr);
