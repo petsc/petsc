@@ -66,10 +66,10 @@ function submitOptions(){
             alert("Error: Must have at least 1 block for fieldsplit");
             return 0;
         }
-        if(!logstruc) {
+        /*if(!logstruc) {
             alert("Error: Cannot use fieldsplit on non-logically block structured matrix");
             return 0;
-        }
+        }*/
     }
     else if(selectedPc == "mg") { //extra options for mg
         var levels = $("#temp_pc_mg_levels").val();
@@ -126,6 +126,21 @@ function submitOptions(){
 
     matInfo[index].pc_type = $("#temp_pc_type").val();
     matInfo[index].ksp_type = $("#temp_ksp_type").val();
+
+    //update dropdown list interface
+    $("#symm" + endtag).prop("checked",symm);
+    $("#posdef" + endtag).prop("checked",posdef);
+    $("#logstruc" + endtag).prop("checked",logstruc);
+
+    if(!symm)
+        $("#posdef" + endtag).attr("disabled", true);
+    if(symm)
+        $("#posdef" + endtag).attr("disabled", false);
+
+    $("#pc_type" + endtag).val(matInfo[index].pc_type);
+    $("#ksp_type" + endtag).val(matInfo[index].ksp_type);
+
+    $("#pc_type" + endtag).trigger("change");
 
     var pc_type = matInfo[index].pc_type;
 
@@ -451,13 +466,18 @@ $(document).on("change","select[id='temp_pc_type']", function(){
     $("#tempInput").append("<br><input type=\"button\" value=\"Set Options\" id=\"setOptions\">"); //put the button back because we still want that (was removed in the nextAll().remove())
 });
 
-//remove the box when the user clicks sufficiently outside of it (still needs debugging)
+//remove the box when the user clicks sufficiently outside of it (still needs major debugging)
 /*$(document).on("click", function(e) {
 
     if(e.pageX < (box_x-node_radius-5) || e.pageX > (box_x + box_size.width) || e.pageY < (box_y-node_radius-5)) {
         //note: the reason we dont have the 'greater than y' term is because the dropdown menu goes below the box
         removeBox();
-        alert('removed');
+        //alert('removed');
+        //alert(e.pageX < (box_x-node_radius-5));
+        //alert(e.pageX > (box_x + box_size.width));
+        //alert(e.pageY < (box_y-node_radius-5));
+        console.log(e.pageX);
+        console.log(e.pageY);
         boxPresent = false;
     }
 });*/
@@ -623,6 +643,7 @@ function deleteAllChildren(endtag) {
             removeAllChildren(childEndtag);//recursive call to remove all children of that child
         }
         matInfo[childIndex].endtag = "-1";//make sure this location is never accessed again.
+        $("#solver" + childEndtag).remove();
     }
 
     //adjust variables in matInfo (shouldn't really be needed)

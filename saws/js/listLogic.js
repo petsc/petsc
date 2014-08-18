@@ -281,10 +281,10 @@ $(document).on("change","select[id^='pc_type']",function() {
     }
 
     else if (pcValue == "fieldsplit") {
-        if(!matInfo[index].logstruc) {//do nothing if not logstruc
+        /*if(!matInfo[index].logstruc) {//do nothing if not logstruc
             alert("Error: Fieldsplit can only be used on logically block-structured matrix!");
             return;
-        }
+        }*/
         var defaults = getDefaults("fieldsplit",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
         var defaultFieldsplitBlocks = defaults.pc_fieldsplit_blocks;
 
