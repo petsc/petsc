@@ -5,6 +5,7 @@ static char help[] = "Check that a DM can accurately represent and interpolate f
 #include <petscdmda.h>
 #include <petscfe.h>
 #include <petscds.h>
+#include <petscksp.h>
 
 typedef struct {
   PetscInt  debug;             /* The debugging level */

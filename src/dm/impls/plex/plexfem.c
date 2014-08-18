@@ -315,47 +315,6 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexProjectFunction"
-/*@C
-  DMPlexProjectFunction - This projects the given function into the function space provided.
-
-  Input Parameters:
-+ dm      - The DM
-. funcs   - The coordinate functions to evaluate, one per field
-. ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
-- mode    - The insertion mode for values
-
-  Output Parameter:
-. X - vector
-
-  Level: developer
-
-.seealso: DMPlexComputeL2Diff()
-@*/
-PetscErrorCode DMPlexProjectFunction(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
-{
-  Vec            localX;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMPlexProjectFunctionLocal(dm, funcs, ctxs, mode, localX);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
-  if (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES) {
-    Mat cMat;
-
-    ierr = DMPlexGetConstraintMatrix(dm, &cMat);CHKERRQ(ierr);
-    if (cMat) {
-      ierr = DMGlobalToLocalSolve(dm, localX, X);CHKERRQ(ierr);
-    }
-  }
-  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMPlexProjectFieldLocal"
 PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal [], PetscScalar []), InsertMode mode, Vec localX)
 {
@@ -434,51 +393,6 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
   }
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexProjectField"
-/*@C
-  DMPlexProjectField - This projects the given function of the fields into the function space provided.
-
-  Input Parameters:
-+ dm      - The DM
-. U       - The input field vector
-. funcs   - The functions to evaluate, one per field
-- mode    - The insertion mode for values
-
-  Output Parameter:
-. X       - The output vector
-
-  Level: developer
-
-.seealso: DMPlexProjectFunction(), DMPlexComputeL2Diff()
-@*/
-PetscErrorCode DMPlexProjectField(DM dm, Vec U, void (**funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal [], PetscScalar []), InsertMode mode, Vec X)
-{
-  Vec            localX, localU;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &localU);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm, U, INSERT_VALUES, localU);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm, U, INSERT_VALUES, localU);CHKERRQ(ierr);
-  ierr = DMPlexProjectFieldLocal(dm, localU, funcs, mode, localX);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
-  if (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES) {
-    Mat cMat;
-
-    ierr = DMPlexGetConstraintMatrix(dm, &cMat);CHKERRQ(ierr);
-    if (cMat) {
-      ierr = DMGlobalToLocalSolve(dm, localX, X);CHKERRQ(ierr);
-    }
-  }
-  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
