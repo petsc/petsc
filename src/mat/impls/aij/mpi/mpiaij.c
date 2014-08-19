@@ -822,7 +822,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
 {
   Mat_MPIAIJ        *l = (Mat_MPIAIJ*)A->data;
   PetscErrorCode    ierr;
-  PetscMPIInt       size = l->size,n = A->rmap->n,lastidx = -1;
+  PetscMPIInt       n = A->rmap->n;
   PetscInt          i,j,r,m,p = 0,len = 0;
   PetscInt          *lrows,*owners = A->rmap->range;
   PetscSFNode       *rrows;
@@ -833,9 +833,6 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   Mat_SeqAIJ        *aij = (Mat_SeqAIJ*)l->B->data;
   const PetscInt    *aj, *ii,*ridx;
   PetscScalar       *aa;
-#if defined(PETSC_DEBUG)
-  PetscBool found = PETSC_FALSE;
-#endif
 
   PetscFunctionBegin;
   /* Create SF where leaves are input rows and roots are owned rows */
@@ -844,19 +841,12 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   ierr = PetscMalloc1(N, &rrows);CHKERRQ(ierr);
   for (r = 0; r < N; ++r) {
     const PetscInt idx   = rows[r];
-    PetscBool      found = PETSC_FALSE;
-    /* Trick for efficient searching for sorted rows */
-    if (lastidx > idx) p = 0;
-    lastidx = idx;
-    for (; p < size; ++p) {
-      if (idx >= owners[p] && idx < owners[p+1]) {
-        rrows[r].rank  = p;
-        rrows[r].index = rows[r] - owners[p];
-        found = PETSC_TRUE;
-        break;
-      }
+    if (idx < 0 || A->rmap->N <= idx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D out of range [0,%D)",idx,A->rmap->N);
+    if (idx < owners[p] || owners[p+1] <= idx) { /* short-circuit the search if the last p owns this row too */
+      ierr = PetscLayoutFindOwner(A->rmap,idx,&p);CHKERRQ(ierr);
     }
-    if (!found) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %d not found in matrix distribution", idx);
+    rrows[r].rank  = p;
+    rrows[r].index = rows[r] - owners[p];
   }
   ierr = PetscSFCreate(PetscObjectComm((PetscObject) A), &sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, rrows, PETSC_OWN_POINTER);CHKERRQ(ierr);
