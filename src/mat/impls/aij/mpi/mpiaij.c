@@ -754,24 +754,31 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   /* Create SF where leaves are input rows and roots are owned rows */
   ierr = PetscMalloc1(n, &lrows);CHKERRQ(ierr);
   for (r = 0; r < n; ++r) lrows[r] = -1;
-  ierr = PetscMalloc1(N, &rrows);CHKERRQ(ierr);
+  if (!A->nooffproczerorows) {ierr = PetscMalloc1(N, &rrows);CHKERRQ(ierr);}
   for (r = 0; r < N; ++r) {
     const PetscInt idx   = rows[r];
     if (idx < 0 || A->rmap->N <= idx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D out of range [0,%D)",idx,A->rmap->N);
     if (idx < owners[p] || owners[p+1] <= idx) { /* short-circuit the search if the last p owns this row too */
       ierr = PetscLayoutFindOwner(A->rmap,idx,&p);CHKERRQ(ierr);
     }
-    rrows[r].rank = p;
-    rrows[r].index = rows[r] - owners[p];
+    if (A->nooffproczerorows) {
+      if (p != mat->rank) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"MAT_NO_OFF_PROC_ZERO_ROWS set, but row %D is not owned by rank %d",idx,mat->rank);
+      lrows[len++] = idx - owners[p];
+    } else {
+      rrows[r].rank = p;
+      rrows[r].index = rows[r] - owners[p];
+    }
   }
-  ierr = PetscSFCreate(PetscObjectComm((PetscObject) A), &sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, rrows, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  /* Collect flags for rows to be zeroed */
-  ierr = PetscSFReduceBegin(sf, MPIU_INT, (PetscInt *) rows, lrows, MPI_LOR);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf, MPIU_INT, (PetscInt *) rows, lrows, MPI_LOR);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  /* Compress and put in row numbers */
-  for (r = 0; r < n; ++r) if (lrows[r] >= 0) lrows[len++] = r;
+  if (!A->nooffproczerorows) {
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject) A), &sf);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, rrows, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    /* Collect flags for rows to be zeroed */
+    ierr = PetscSFReduceBegin(sf, MPIU_INT, rows, lrows, MPI_LOR);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf, MPIU_INT, rows, lrows, MPI_LOR);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+    /* Compress and put in row numbers */
+    for (r = 0; r < n; ++r) if (lrows[r] >= 0) lrows[len++] = r;
+  }
   /* fix right hand side if needed */
   if (x && b) {
     const PetscScalar *xx;
@@ -784,7 +791,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
     ierr = VecRestoreArray(b, &bb);CHKERRQ(ierr);
   }
   /* Must zero l->B before l->A because the (diag) case below may put values into l->B*/
-  ierr = MatZeroRows(mat->B, len, lrows, 0.0, 0,0);CHKERRQ(ierr);
+  ierr = MatZeroRows(mat->B, len, lrows, 0.0, NULL, NULL);CHKERRQ(ierr);
   if ((diag != 0.0) && (mat->A->rmap->N == mat->A->cmap->N)) {
     ierr = MatZeroRows(mat->A, len, lrows, diag, NULL, NULL);CHKERRQ(ierr);
   } else if (diag != 0.0) {
