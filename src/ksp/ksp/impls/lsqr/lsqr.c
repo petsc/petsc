@@ -472,7 +472,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;
   ksp->data    = (void*)lsqr;
-  ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_LSQR;
   ksp->ops->solve          = KSPSolve_LSQR;

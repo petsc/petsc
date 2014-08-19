@@ -373,7 +373,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
   ctx->n_restarts = 0;
   ksp->data       = (void*)ctx;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,3);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_GCR;
   ksp->ops->solve          = KSPSolve_GCR;
