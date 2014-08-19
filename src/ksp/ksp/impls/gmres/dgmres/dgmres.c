@@ -1256,8 +1256,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   ierr      = PetscNewLog(ksp,&dgmres);CHKERRQ(ierr);
   ksp->data = (void*) dgmres;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
 
   ksp->ops->buildsolution                = KSPBuildSolution_DGMRES;
   ksp->ops->setup                        = KSPSetUp_DGMRES;

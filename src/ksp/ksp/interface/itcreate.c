@@ -360,8 +360,9 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
    which norms and preconditioner sides are supported. Users should not need to call this
    function.
 
-   KSP_NORM_NONE is supported by default with all KSP methods and any PC side. If a KSP explicitly does not support
-   KSP_NORM_NONE, it should set this by setting priority=0.
+   KSP_NORM_NONE is supported by default with all KSP methods and any PC side at priority 1.  If a KSP explicitly does
+   not support KSP_NORM_NONE, it should set this by setting priority=0.  Since defaulting to KSP_NORM_NONE is usually
+   undesirable, more desirable norms should usually have priority 2 or higher.
 
 .seealso: KSPSetNormType(), KSPSetPCSide()
 @*/
@@ -402,9 +403,6 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcsid
       if ((ksp->normtype == KSP_NORM_DEFAULT || ksp->normtype == i)
           && (ksp->pc_side == PC_SIDE_DEFAULT || ksp->pc_side == j)
           && (ksp->normsupporttable[i][j] > best)) {
-        if (ksp->normtype == KSP_NORM_DEFAULT && i == KSP_NORM_NONE && ksp->normsupporttable[i][j] <= 1) {
-          continue; /* Skip because we don't want to default to no norms unless set by the KSP (preonly). */
-        }
         best  = ksp->normsupporttable[i][j];
         ibest = i;
         jbest = j;

@@ -203,7 +203,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
 
   ierr           = PetscNewLog(ksp,&symmlq);CHKERRQ(ierr);
   symmlq->haptol = 1.e-18;
