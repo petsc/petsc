@@ -845,7 +845,7 @@ PetscErrorCode  KSPSetPCSide(KSP ksp,PCSide side)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveEnum(ksp,side,2);
-  ksp->pc_side = side;
+  ksp->pc_side = ksp->pc_side_set = side;
   PetscFunctionReturn(0);
 }
 

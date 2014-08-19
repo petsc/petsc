@@ -102,6 +102,9 @@ struct _p_KSP {
 
   KSPNormType    normtype;          /* type of norm used for convergence tests */
 
+  PCSide         pc_side_set;   /* PC type set explicitly by user */
+  KSPNormType    normtype_set;  /* Norm type set explicitly by user */
+
   /*   Allow diagonally scaling the matrix before computing the preconditioner or using
        the Krylov method. Note this is NOT just Jacobi preconditioning */
 

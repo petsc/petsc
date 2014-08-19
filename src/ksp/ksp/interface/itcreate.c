@@ -259,7 +259,7 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveEnum(ksp,normtype,2);
-  ksp->normtype = normtype;
+  ksp->normtype = ksp->normtype_set = normtype;
   if (normtype == KSP_NORM_NONE) {
     ierr = KSPSetConvergenceTest(ksp,KSPConvergedSkip,0,0);CHKERRQ(ierr);
     ierr = PetscInfo(ksp,"Warning: setting KSPNormType to skip computing the norm\n\
@@ -384,6 +384,8 @@ PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
   ierr = PetscMemzero(ksp->normsupporttable,sizeof(ksp->normsupporttable));CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
+  ksp->pc_side  = ksp->pc_side_set;
+  ksp->normtype = ksp->normtype_set;
   PetscFunctionReturn(0);
 }
 
@@ -704,7 +706,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
 
   ksp->max_it  = 10000;
-  ksp->pc_side = PC_SIDE_DEFAULT;
+  ksp->pc_side = ksp->pc_side_set = PC_SIDE_DEFAULT;
   ksp->rtol    = 1.e-5;
 #if defined(PETSC_USE_REAL_SINGLE)
   ksp->abstol  = 1.e-25;
@@ -714,7 +716,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->divtol  = 1.e4;
 
   ksp->chknorm        = -1;
-  ksp->normtype       = KSP_NORM_DEFAULT;
+  ksp->normtype       = ksp->normtype_set = KSP_NORM_DEFAULT;
   ksp->rnorm          = 0.0;
   ksp->its            = 0;
   ksp->guess_zero     = PETSC_TRUE;
