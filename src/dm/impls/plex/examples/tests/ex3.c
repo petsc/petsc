@@ -570,7 +570,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   PetscReal       constants[3] = {1.0, 2.0, 3.0};
   void           *exactCtxs[3] = {NULL, NULL, NULL};
   DM              rdm, idm, fdm;
-  Mat             I;
+  Mat             II;
   Vec             iu, fu, scaling;
   MPI_Comm        comm;
   PetscInt        dim  = user->dim;
@@ -616,7 +616,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   ierr = DMGetGlobalVector(fdm, &fu);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(dm, user);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(rdm, user);CHKERRQ(ierr);
-  ierr = DMCreateInterpolation(dm, rdm, &I, &scaling);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(dm, rdm, &II, &scaling);CHKERRQ(ierr);
   /* Project function into initial FE function space */
   if (isPlex) {
     ierr = DMPlexProjectFunction(idm, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu);CHKERRQ(ierr);
@@ -624,8 +624,8 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
     ierr = DMDAProjectFunction(idm, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "No FEM projection routine for this type of DM");
   /* Interpolate function into final FE function space */
-  if (checkRestrict) {ierr = MatRestrict(I, iu, fu);CHKERRQ(ierr);ierr = VecPointwiseMult(fu, scaling, fu);CHKERRQ(ierr);}
-  else               {ierr = MatInterpolate(I, iu, fu);CHKERRQ(ierr);}
+  if (checkRestrict) {ierr = MatRestrict(II, iu, fu);CHKERRQ(ierr);ierr = VecPointwiseMult(fu, scaling, fu);CHKERRQ(ierr);}
+  else               {ierr = MatInterpolate(II, iu, fu);CHKERRQ(ierr);}
   /* Compare approximation to exact in L_2 */
   if (isPlex) {
     ierr = DMPlexComputeL2Diff(fdm, exactFuncs, exactCtxs, fu, &error);CHKERRQ(ierr);
@@ -641,7 +641,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   else                {ierr = PetscPrintf(comm, "Interpolation tests pass for order %d derivatives at tolerance %g\n", order, tol);CHKERRQ(ierr);}
   ierr = DMRestoreGlobalVector(idm, &iu);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(fdm, &fu);CHKERRQ(ierr);
-  ierr = MatDestroy(&I);CHKERRQ(ierr);
+  ierr = MatDestroy(&II);CHKERRQ(ierr);
   ierr = VecDestroy(&scaling);CHKERRQ(ierr);
   ierr = DMDestroy(&rdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
