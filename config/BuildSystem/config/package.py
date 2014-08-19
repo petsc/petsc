@@ -352,8 +352,10 @@ class Package(config.base.Configure):
         yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+self.getInstallDir()+'\n')
 
-    if not self.lookforbydefault:
-      raise RuntimeError('You must specify a path for '+self.name+' with --with-'+self.package+'-dir=<directory>\nIf you do not want '+self.name+', then give --with-'+self.package+'=0\nYou might also consider using --download-'+self.package+' instead')
+    if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.framework.argDB['with-'+self.package]):
+      mesg = 'Unable to find '+self.package+' in default locations!\nPerhaps you can specify with --with-'+self.package+'-dir=<directory>\nIf you do not want '+self.name+', then give --with-'+self.package+'=0'
+      if self.download: mesg +='\nYou might also consider using --download-'+self.package+' instead'
+      raise RuntimeError(mesg)
 
   def checkDownload(self, requireDownload = 1):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
@@ -562,7 +564,7 @@ class Package(config.base.Configure):
           self.directory = directory
           self.framework.packages.append(self)
           return
-    if not self.lookforbydefault:
+    if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.framework.argDB['with-'+self.package]):
       raise RuntimeError('Could not find a functional '+self.name+'\n')
 
   def checkSharedLibrary(self):
@@ -1134,5 +1136,5 @@ class GNUPackage(Package):
           self.directory = directory
           self.framework.packages.append(self)
           return
-    if not self.lookforbydefault:
+    if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.framework.argDB['with-'+self.package]):
       raise RuntimeError('Could not find a functional '+self.name+'\n')
