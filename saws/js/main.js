@@ -36,12 +36,12 @@ $(document).ready(function(){
     populateKspList("0");
 
     $("#pc_type0").trigger("change");//display options for sub-solvers (if any)
-    $("#ksp_type0").trigger("change");//just to record ksp. (ask Dr. Smith or Dr. Zhang for proper defaults)
+    $("#ksp_type0").trigger("change");//just to record ksp (see listLogic.js)
     $("#symm0").trigger("change");//blur out posdef. will also set the default root pc/ksp for the first time (see events.js)
 
-    $(function() { //needed for jqueryUI tool tip to override native javascript tooltip
+    /* $(function() { //needed for jqueryUI tool tip to override native javascript tooltip
         $(document).tooltip();
-    });
+    });*/
 
     $("#displayCmdOptions").attr("checked",true);
     $("#displayTree").attr("checked",true);

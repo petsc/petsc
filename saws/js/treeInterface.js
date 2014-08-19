@@ -116,7 +116,8 @@ function submitOptions(){
     //only preserve some options if the pc_type didn't change
     var oldPc = matInfo[index].pc_type;
     var newPc = $("#temp_pc_type").val();
-    if(oldPc != newPc)
+    var changedPc = (oldPc != newPc);
+    if(changedPc)
         deleteAllChildren(endtag);
 
     //write options to matInfo
@@ -140,90 +141,75 @@ function submitOptions(){
     $("#pc_type" + endtag).val(matInfo[index].pc_type);
     $("#ksp_type" + endtag).val(matInfo[index].ksp_type);
 
-    $("#pc_type" + endtag).trigger("change");
-
     var pc_type = matInfo[index].pc_type;
 
     if(pc_type == "fieldsplit") { //extra options for fieldsplit
         var blocks = $("#temp_pc_fieldsplit_blocks").val();
-        matInfo[index].pc_fieldsplit_type = $("#temp_pc_fieldsplit_type").val();
+        var type   = $("#temp_pc_fieldsplit_type").val();
 
-        if(matInfo[index].pc_fieldsplit_blocks == undefined)
-            matInfo[index].pc_fieldsplit_blocks = 0;
+        if(changedPc)
+            $("#pc_type" + endtag).trigger("change");
 
-        //case 1: more blocks required
-        if(matInfo[index].pc_fieldsplit_blocks  < blocks) {
-            matInfo[index].pc_fieldsplit_blocks = $("#temp_pc_fieldsplit_blocks").val();
-            generateChildren(endtag); //simply ask for the children to be generated
-        }
-        //case 2: some blocks need to be removed
-        else if(matInfo[index].pc_fieldsplit_blocks > blocks) {
-            for(var i=blocks; i<matInfo[index].pc_fieldsplit_blocks; i++) {
-                var childEndtag = endtag + "_" + i;
-                deleteAllChildren(childEndtag); //delete the necessary children
-            }
-            matInfo[index].pc_fieldsplit_blocks = $("#temp_pc_fieldsplit_blocks").val();
-        }
+        //set the appropriate option and then trigger the change in the field (this writes to matInfo)
+        $("#pc_fieldsplit_type" + endtag).val(type);
+        $("#pc_fieldsplit_type" + endtag).trigger("change");
+        $("#pc_fieldsplit_blocks" + endtag).val(blocks);
+        $("#pc_fieldsplit_blocks" + endtag).trigger("keyup");
     }
     else if(pc_type == "mg") { //extra options for mg
         var levels = $("#temp_pc_mg_levels").val();
-        matInfo[index].pc_mg_type = $("#temp_pc_mg_type").val();
+        var type   = $("#temp_pc_mg_type").val();
 
-        if(matInfo[index].pc_mg_levels == undefined)
-            matInfo[index].pc_mg_levels = 0;
+        if(changedPc)
+            $("#pc_type" + endtag).trigger("change");
 
-        //case 1: more blocks required
-        if(matInfo[index].pc_mg_levels  < levels) {
-            matInfo[index].pc_mg_levels = $("#temp_pc_mg_levels").val();
-            generateChildren(endtag); //simply ask for the children to be generated
-        }
-        //case 2: some blocks need to be removed
-        else if(matInfo[index].pc_mg_levels > levels) {
-            for(var i=blocks; i<matInfo[index].pc_mg_levels; i++) {
-                var childEndtag = endtag + "_" + i;
-                deleteAllChildren(childEndtag); //delete the necessary children
-            }
-            matInfo[index].pc_mg_levels = $("#temp_pc_mg_levels").val();
-        }
+        //set the appropriate option and then trigger the change in the field (this writes to matInfo)
+        $("#pc_mg_type" + endtag).val(type);
+        $("#pc_mg_type" + endtag).trigger("change");
+        $("#pc_mg_levels" + endtag).val(levels);
+        $("#pc_mg_levels" + endtag).trigger("keyup");
     }
     else if(pc_type == "gamg") {
         var levels = $("#temp_pc_gamg_levels").val();
+        var type   = $("#temp_pc_gamg_type").val();
 
-        matInfo[index].pc_gamg_type = $("#temp_pc_gamg_type").val();
+        if(changedPc)
+            $("#pc_type" + endtag).trigger("change");
 
-        if(matInfo[index].pc_gamg_levels == undefined)
-            matInfo[index].pc_gamg_levels = 0;
-
-        //case 1: more blocks required
-        if(matInfo[index].pc_gamg_levels  < levels) {
-            matInfo[index].pc_gamg_levels = $("#temp_pc_gamg_levels").val();
-            generateChildren(endtag); //simply ask for the children to be generated
-        }
-        //case 2: some blocks need to be removed
-        else if(matInfo[index].pc_gamg_levels > levels) {
-            for(var i=blocks; i<matInfo[index].pc_gamg_levels; i++) {
-                var childEndtag = endtag + "_" + i;
-                deleteAllChildren(childEndtag); //delete the necessary children
-            }
-            matInfo[index].pc_gamg_levels = $("#temp_pc_gamg_levels").val();
-        }
+        //set the appropriate option and then trigger the change in the field (this writes to matInfo)
+        $("#pc_gamg_type" + endtag).val(type);
+        $("#pc_gamg_type" + endtag).trigger("change");
+        $("#pc_gamg_levels" + endtag).val(levels);
+        $("#pc_gamg_levels" + endtag).trigger("keyup");
     }
     else if(pc_type == "bjacobi") {
-        matInfo[index].pc_bjacobi_blocks = $("#temp_pc_bjacobi_blocks").val();
-        generateChildren(endtag);
+        var blocks = $("#temp_pc_bjacobi_blocks").val();
+        if(changedPc)
+            $("#pc_type" + endtag).trigger("change");
+        $("#pc_bjacobi_blocks" + endtag).val(blocks);
+        $("#pc_bjacobi_blocks" + endtag).trigger("keyup");
     }
     else if(pc_type == "redundant") {
-        matInfo[index].pc_redundant_number = $("#temp_pc_redundant_number").val();
-        generateChildren(endtag);
+        var number = $("#temp_pc_redundant_number").val();
+        if(changedPc)
+            $("#pc_type" + endtag).trigger("change");
+        $("#pc_redundant_number" + endtag).val(number);
+        $("#pc_redundant_number" + endtag).trigger("keyup");
     }
     else if(pc_type == "asm") {
-        matInfo[index].pc_asm_blocks = $("#temp_pc_asm_blocks").val();
-        matInfo[index].pc_asm_overlap = $("#temp_pc_asm_overlap").val();
-        generateChildren(endtag);
+        var blocks  = $("#temp_pc_asm_blocks").val();
+        var overlap = $("#temp_pc_asm_overlap").val();
+        if(changedPc)
+            $("#pc_type" + endtag).trigger("change");
+        $("#pc_asm_blocks" + endtag).val(blocks);
+        $("#pc_asm_blocks" + endtag).trigger("keyup");
+        $("#pc_asm_overlap" + endtag).val(overlap);
+        $("#pc_asm_overlap" + endtag).trigger("keyup");
     }
     else if(pc_type == "ksp") {
         //ksp doesn't have any additional options, but it has one child
-        generateChildren(endtag);
+        if(changedPc)
+            $("#pc_type" + endtag).trigger("change");
     }
 
     enforceProperties(endtag);
