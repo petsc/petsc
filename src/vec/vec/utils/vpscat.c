@@ -2607,7 +2607,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 #else
     to->use_alltoallw   = PETSC_FALSE;
     from->use_alltoallw = PETSC_FALSE;
-    ctx->copy           = VecScatterCopy_PtoP_AllToAll;
+    ctx->ops->copy      = VecScatterCopy_PtoP_AllToAll;
 #endif
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
   } else if (to->use_window) {
