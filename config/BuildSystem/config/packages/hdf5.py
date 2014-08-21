@@ -77,7 +77,7 @@ class Configure(config.package.Package):
       # PETSc does not need the Fortran interface, but some users will call the Fortran interface
       # and expect our standard linking to be sufficient.  Thus we try to link the Fortran
       # libraries, but fall back to linking only C.
-      self.liblist = [['libhdf5_fortran.a'] + libs for libs in self.liblist] + self.liblist
+      self.liblist = [['libhdf5hl_fortran.a','libhdf5_fortran.a'] + libs for libs in self.liblist] + self.liblist
     config.package.Package.configureLibrary(self)
     if self.libraries.check(self.dlib, 'H5Pset_fapl_mpio'):
       self.addDefine('HAVE_H5PSET_FAPL_MPIO', 1)
