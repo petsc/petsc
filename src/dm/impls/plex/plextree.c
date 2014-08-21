@@ -1715,7 +1715,7 @@ PetscErrorCode DMPlexComputeConstraintMatrix_Tree(DM dm)
 PetscErrorCode DMPlexTreeRefineCell (DM dm, PetscInt cell, DM *ncdm)
 {
   DM K;
-  PetscInt rank;
+  PetscMPIInt rank;
   PetscInt dim, *pNewStart, *pNewEnd, *pNewCount, *pOldStart, *pOldEnd, offset, d, pStart, pEnd;
   PetscInt numNewCones, *newConeSizes, *newCones, *newOrientations;
   PetscInt *Kembedding;
