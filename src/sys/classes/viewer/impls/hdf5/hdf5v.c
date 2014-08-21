@@ -276,7 +276,7 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidCharPointer(name,2);
+  PetscValidPointer(name,2);
   if (hdf5->groups) *name = hdf5->groups->name;
   else *name = NULL;
   PetscFunctionReturn(0);

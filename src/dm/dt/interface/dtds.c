@@ -116,7 +116,7 @@ PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   if (!PetscDSRegisterAllCalled) {ierr = PetscDSRegisterAll();CHKERRQ(ierr);}
   *name = ((PetscObject) prob)->type_name;
   PetscFunctionReturn(0);
