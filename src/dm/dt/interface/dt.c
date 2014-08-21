@@ -34,6 +34,7 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
   ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(*q,_p_PetscQuadrature,int,PETSC_OBJECT_CLASSID,"PetscQuadrature","Quadrature","DT",comm,PetscQuadratureDestroy,PetscQuadratureView);CHKERRQ(ierr);
   (*q)->dim       = -1;
+  (*q)->order     = -1;
   (*q)->numPoints = 0;
   (*q)->points    = NULL;
   (*q)->weights   = NULL;
@@ -56,6 +57,57 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
   ierr = PetscFree((*q)->points);CHKERRQ(ierr);
   ierr = PetscFree((*q)->weights);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(q);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscQuadratureGetOrder"
+/*@
+  PetscQuadratureGetOrder - Return the quadrature information
+
+  Not collective
+
+  Input Parameter:
+. q - The PetscQuadrature object
+
+  Output Parameter:
+. order - The order of the quadrature, i.e. the highest degree polynomial that is exactly integrated
+
+  Output Parameter:
+
+  Level: intermediate
+
+.seealso: PetscQuadratureSetOrder(), PetscQuadratureGetData(), PetscQuadratureSetData()
+@*/
+PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature q, PetscInt *order)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidPointer(order, 2);
+  *order = q->order;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscQuadratureSetOrder"
+/*@
+  PetscQuadratureSetOrder - Return the quadrature information
+
+  Not collective
+
+  Input Parameters:
++ q - The PetscQuadrature object
+- order - The order of the quadrature, i.e. the highest degree polynomial that is exactly integrated
+
+  Level: intermediate
+
+.seealso: PetscQuadratureGetOrder(), PetscQuadratureGetData(), PetscQuadratureSetData()
+@*/
+PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  q->order = order;
   PetscFunctionReturn(0);
 }
 
@@ -320,6 +372,7 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt npoints, Pets
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, npoints);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*q, dim, totpoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -535,6 +588,7 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, order);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*q, dim, npoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

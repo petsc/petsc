@@ -1748,6 +1748,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
     ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
     ierr = PetscMalloc1(1, &qpoints);CHKERRQ(ierr);
     ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
+    ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
     ierr = PetscQuadratureSetData(sp->functional[f], PETSC_DETERMINE, 1, qpoints, qweights);CHKERRQ(ierr);
     qpoints[0]  = 0.0;
     qweights[0] = 1.0;
@@ -1774,6 +1775,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
           ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
           ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
+          ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
           ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
           ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
           ierr = PetscSectionGetDof(csection, p, &dof);CHKERRQ(ierr);
@@ -1797,6 +1799,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
             ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
             ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
             ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
+            ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
             ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
             for (d = 0; d < dim; ++d) {qpoints[d] = k*PetscRealPart(coords[1*dim+d] - coords[0*dim+d])/order + PetscRealPart(coords[0*dim+d]);}
             qweights[0] = 1.0;
@@ -1836,6 +1839,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
                 ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
                 ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
                 ierr = PetscMalloc1(1,   &qweights);CHKERRQ(ierr);
+                ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
                 ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
                 ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
                 for (d = 0; d < dim; ++d) {
@@ -1851,6 +1855,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
               ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
               ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
               ierr = PetscMalloc1(1,   &qweights);CHKERRQ(ierr);
+              ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
               ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
               ierr = TensorPoint_Internal(dim, orderEff+1, ind, tup);CHKERRQ(ierr);
               for (d = 0; d < dim; ++d) {
@@ -4899,7 +4904,7 @@ PetscErrorCode PetscFECompositeExpandQuadrature(PetscFE fem, PetscQuadrature q, 
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
   const PetscReal   *points,    *weights;
   PetscReal         *pointsRef, *weightsRef;
-  PetscInt           dim, npoints, npointsRef, c, p, d, e;
+  PetscInt           dim, order, npoints, npointsRef, c, p, d, e;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -4907,6 +4912,7 @@ PetscErrorCode PetscFECompositeExpandQuadrature(PetscFE fem, PetscQuadrature q, 
   PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 2);
   PetscValidPointer(qref, 3);
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, qref);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
   npointsRef = npoints*cmp->numSubelements;
   ierr = PetscMalloc1(npointsRef*dim,&pointsRef);CHKERRQ(ierr);
@@ -4923,6 +4929,7 @@ PetscErrorCode PetscFECompositeExpandQuadrature(PetscFE fem, PetscQuadrature q, 
       weightsRef[c*npoints+p] = weights[p]/cmp->numSubelements;
     }
   }
+  ierr = PetscQuadratureSetOrder(*qref, order);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*qref, dim, npointsRef, pointsRef, weightsRef);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
