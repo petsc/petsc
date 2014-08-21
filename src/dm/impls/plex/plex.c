@@ -5317,7 +5317,7 @@ static PetscErrorCode DMPlexConstraintsModifyMat(DM dm, PetscSection section, Pe
   IS              aIS;
   PetscInt        aStart = -1, aEnd = -1;
   const PetscInt  *anchors;
-  PetscInt        numFields, f, p, q, newP;
+  PetscInt        numFields, f, p, q, newP = 0;
   PetscInt        newNumPoints = 0, newNumIndices = 0;
   PetscInt        *newPoints, *indices, *newIndices;
   PetscInt        maxAnchor, maxDof;
