@@ -5346,7 +5346,6 @@ PetscErrorCode PetscFECreateDefault(DM dm, PetscInt dim, PetscInt numComp, Petsc
   ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
   ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialSetTensor(P, isSimplex ? PETSC_FALSE : PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
   ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
