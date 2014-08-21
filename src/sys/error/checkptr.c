@@ -100,7 +100,7 @@ PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
       break;
     }
     case PETSC_CHAR:{
-      PETSC_UNUSED char *x = *(char*volatile*)ptr;
+      PETSC_UNUSED char x = *(volatile char*)ptr;
       break;
     }
     case PETSC_OBJECT:{
