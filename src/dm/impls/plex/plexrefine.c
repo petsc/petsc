@@ -7,9 +7,9 @@ PETSC_STATIC_INLINE PetscErrorCode GetDepthStart_Private(PetscInt depth, PetscIn
 {
   PetscFunctionBegin;
   if (cStart) *cStart = 0;
-  if (vStart) *vStart = depthSize[depth];
-  if (fStart) *fStart = depthSize[depth] + depthSize[0];
-  if (eStart) *eStart = depthSize[depth] + depthSize[0] + depthSize[depth-1];
+  if (vStart) *vStart = depth < 0 ? 0 : depthSize[depth];
+  if (fStart) *fStart = depth < 0 ? 0 : depthSize[depth] + depthSize[0];
+  if (eStart) *eStart = depth < 0 ? 0 : depthSize[depth] + depthSize[0] + depthSize[depth-1];
   PetscFunctionReturn(0);
 }
 
@@ -18,10 +18,10 @@ PETSC_STATIC_INLINE PetscErrorCode GetDepthStart_Private(PetscInt depth, PetscIn
 PETSC_STATIC_INLINE PetscErrorCode GetDepthEnd_Private(PetscInt depth, PetscInt depthSize[], PetscInt *cEnd, PetscInt *fEnd, PetscInt *eEnd, PetscInt *vEnd)
 {
   PetscFunctionBegin;
-  if (cEnd) *cEnd = depthSize[depth];
-  if (vEnd) *vEnd = depthSize[depth] + depthSize[0];
-  if (fEnd) *fEnd = depthSize[depth] + depthSize[0] + depthSize[depth-1];
-  if (eEnd) *eEnd = depthSize[depth] + depthSize[0] + depthSize[depth-1] + depthSize[1];
+  if (cEnd) *cEnd = depth < 0 ? 0 : depthSize[depth];
+  if (vEnd) *vEnd = depth < 0 ? 0 : depthSize[depth] + depthSize[0];
+  if (fEnd) *fEnd = depth < 0 ? 0 : depthSize[depth] + depthSize[0] + depthSize[depth-1];
+  if (eEnd) *eEnd = depth < 0 ? 0 : depthSize[depth] + depthSize[0] + depthSize[depth-1] + depthSize[1];
   PetscFunctionReturn(0);
 }
 
@@ -5937,8 +5937,8 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
           remotePointsNew[m].index = rfStartNew[n] + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*4 + (rp - rcStart[n])*8 + r;
           remotePointsNew[m].rank  = rrank;
         }
-        localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)*3     + (p  - cStart)*1     + r;
-        remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*3 + (rp - rcStart[n])*1 + r;
+        localPointsNew[m]        = eStartNew     + (eMax                        - eStart)*2     + (fMax                              - fStart)*3     + (p  - cStart)*1     + 0;
+        remotePointsNew[m].index = reStartNew[n] + (rdepthMaxOld[n*(depth+1)+1] - reStart[n])*2 + (rdepthMaxOld[n*(depth+1)+depth-1] - rfStart[n])*3 + (rp - rcStart[n])*1 + 0;
         remotePointsNew[m].rank  = rrank;
         ++m;
       } else if ((p >= cMax) && (p < cEnd)) {
@@ -6063,7 +6063,10 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
     ierr = PetscMalloc1(numLeavesNew,&idx);CHKERRQ(ierr);
     ierr = PetscMalloc1(numLeavesNew, &lp);CHKERRQ(ierr);
     ierr = PetscMalloc1(numLeavesNew, &rp);CHKERRQ(ierr);
-    for (i = 0; i < numLeavesNew; ++i) idx[i] = i;
+    for (i = 0; i < numLeavesNew; ++i) {
+      if ((localPointsNew[i] < pStartNew) || (localPointsNew[i] >= pEndNew)) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local SF point %d (%d) not in [%d, %d)", localPointsNew[i], i, pStartNew, pEndNew);
+      idx[i] = i;
+    }
     ierr = PetscSortIntWithPermutation(numLeavesNew, localPointsNew, idx);CHKERRQ(ierr);
     for (i = 0; i < numLeavesNew; ++i) {
       lp[i] = localPointsNew[idx[i]];
