@@ -25,6 +25,21 @@ const char       GaussCitation[] = "@article{GolubWelsch1969,\n"
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscQuadratureCreate"
+/*@
+  PetscQuadratureCreate - Create a PetscQuadrature object
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. comm - The comm
+
+  Output Parameter:
+. q - The PetscQuadrature object
+
+  Level: beginner
+
+.seealso: PetscQuadratureDestroy(), PetscQuadratureGetData(), PetscQuadratureSetData()
+@*/
 PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 {
   PetscErrorCode ierr;
@@ -43,6 +58,18 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscQuadratureDestroy"
+/*@
+  PetscQuadratureDestroy - Destroy a PetscQuadrature object
+
+  Collective on PetscQuadrature
+
+  Input Parameter:
+. q - The PetscQuadrature object
+
+  Level: beginner
+
+.seealso: PetscQuadratureCreate(), PetscQuadratureGetData(), PetscQuadratureSetData()
+@*/
 PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 {
   PetscErrorCode ierr;
@@ -113,6 +140,24 @@ PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscQuadratureGetData"
+/*@C
+  PetscQuadratureGetData - Return the quadrature information
+
+  Not collective
+
+  Input Parameter:
+. q - The PetscQuadrature object
+
+  Output Parameters:
++ dim     - The spatial dimension
+. npoints - The number of quadrature points
+. points  - The coordinates of the quadrature points
+- weights - The quadrature weights
+
+  Level: intermediate
+
+.seealso: PetscQuadratureSetData(), PetscQuadratureGetOrder(), PetscQuadratureSetOrder()
+@*/
 PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt *npoints, const PetscReal *points[], const PetscReal *weights[])
 {
   PetscFunctionBegin;
@@ -138,6 +183,22 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscQuadratureSetData"
+/*@C
+  PetscQuadratureSetData - Set the quadrature information
+
+  Not collective
+
+  Input Parameters:
++ q       - The PetscQuadrature object
+. dim     - The spatial dimension
+. npoints - The number of quadrature points
+. points  - The coordinates of the quadrature points
+- weights - The quadrature weights
+
+  Level: intermediate
+
+.seealso: PetscQuadratureGetData(), PetscQuadratureGetOrder(), PetscQuadratureSetOrder()
+@*/
 PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt npoints, const PetscReal points[], const PetscReal weights[])
 {
   PetscFunctionBegin;
@@ -157,6 +218,19 @@ PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscQuadratureView"
+/*@
+  PetscQuadratureView - View a PetscQuadrature object
+
+  Collective on MPI_Comm
+
+  Input Parameters:
++ q - The PetscQuadrature object
+- viewer - The PetscViewer object
+
+  Level: beginner
+
+.seealso: PetscQuadratureCreate(), PetscQuadratureGetData(), PetscQuadratureSetData()
+@*/
 PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 {
   PetscInt       q, d;
