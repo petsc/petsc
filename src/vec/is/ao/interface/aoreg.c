@@ -73,7 +73,7 @@ PetscErrorCode  AOGetType(AO ao, AOType *type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
-  PetscValidCharPointer(type,2);
+  PetscValidPointer(type,2);
   if (!AORegisterAllCalled) {
     ierr = AORegisterAll();CHKERRQ(ierr);
   }

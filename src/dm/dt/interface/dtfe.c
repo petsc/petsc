@@ -168,7 +168,7 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   if (!PetscSpaceRegisterAllCalled) {
     ierr = PetscSpaceRegisterAll();CHKERRQ(ierr);
   }
@@ -1149,7 +1149,7 @@ PetscErrorCode PetscDualSpaceGetType(PetscDualSpace sp, PetscDualSpaceType *name
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   if (!PetscDualSpaceRegisterAllCalled) {
     ierr = PetscDualSpaceRegisterAll();CHKERRQ(ierr);
   }
@@ -2267,7 +2267,7 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   if (!PetscFERegisterAllCalled) {
     ierr = PetscFERegisterAll();CHKERRQ(ierr);
   }

@@ -125,7 +125,7 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   if (!PetscLimiterRegisterAllCalled) {ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);}
   *name = ((PetscObject) lim)->type_name;
   PetscFunctionReturn(0);
@@ -1161,7 +1161,7 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   if (!PetscFVRegisterAllCalled) {ierr = PetscFVRegisterAll();CHKERRQ(ierr);}
   *name = ((PetscObject) fvm)->type_name;
   PetscFunctionReturn(0);

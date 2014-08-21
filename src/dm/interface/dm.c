@@ -2545,7 +2545,7 @@ PetscErrorCode  DMGetType(DM dm, DMType *type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID,1);
-  PetscValidCharPointer(type,2);
+  PetscValidPointer(type,2);
   if (!DMRegisterAllCalled) {
     ierr = DMRegisterAll();CHKERRQ(ierr);
   }
