@@ -391,7 +391,7 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
 @*/
 PetscErrorCode  DMDestroy(DM *dm)
 {
-  PetscInt       i, cnt = 0, Nf = 0, f;
+  PetscInt       i, cnt = 0;
   DMNamedVecLink nlink,nnext;
   PetscErrorCode ierr;
 
@@ -399,18 +399,6 @@ PetscErrorCode  DMDestroy(DM *dm)
   if (!*dm) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*dm),DM_CLASSID,1);
 
-  if ((*dm)->prob) {
-    PetscObject disc;
-
-    /* I think it makes sense to dump all attached things when you are destroyed, which also eliminates circular references */
-    ierr = PetscDSGetNumFields((*dm)->prob, &Nf);CHKERRQ(ierr);
-    for (f = 0; f < Nf; ++f) {
-      ierr = PetscDSGetDiscretization((*dm)->prob, f, &disc);CHKERRQ(ierr);
-      ierr = PetscObjectCompose(disc, "pmat", NULL);CHKERRQ(ierr);
-      ierr = PetscObjectCompose(disc, "nullspace", NULL);CHKERRQ(ierr);
-      ierr = PetscObjectCompose(disc, "nearnullspace", NULL);CHKERRQ(ierr);
-    }
-  }
   /* count all the circular references of DM and its contained Vecs */
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     if ((*dm)->localin[i])  cnt++;
