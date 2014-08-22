@@ -167,7 +167,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   const PetscInt    *leaves;
   const PetscSFNode *remotes;
   PetscInt           dim, pStart, pEnd, numDof, globalOffStart, globalOffEnd, numCols;
-  PetscInt          *tmpAdj = NULL, *adj, *rootAdj, *anchorAdj, *cols, *remoteOffsets;
+  PetscInt          *tmpAdj = NULL, *adj, *rootAdj, *anchorAdj = NULL, *cols, *remoteOffsets;
   PetscInt           adjSize;
   PetscLayout        rLayout;
   PetscInt           locRows, rStart, rEnd, r;
