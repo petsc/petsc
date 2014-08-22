@@ -182,7 +182,7 @@ for root, dirs, filenames in os.walk(sys.argv[2]):
       #
       # Check if some logs are missing. If so, don't process further and write 'incomplete' to table:
       #
-      if not os.path.isfile(logfile_configure_full) or not os.path.isfile(logfile_make_full) or not logfile_examples_full:
+      if not os.path.isfile(logfile_configure_full) or not os.path.isfile(logfile_make_full) or not os.path.isfile(logfile_examples_full):
         print "  -- incomplete logs!"
 
         # Configure section
