@@ -4489,8 +4489,13 @@ PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
   ierr = KSPGetTolerances(ksp,&kctx->rtol_last,0,0,0);CHKERRQ(ierr);
   kctx->norm_last = snes->norm;
   if (kctx->version == 1) {
+    PC        pc;
+    PetscBool isNone;
+
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject) pc, PCNONE, &isNone);CHKERRQ(ierr);
     ierr = KSPGetPCSide(ksp,&pcside);CHKERRQ(ierr);
-    if (pcside == PC_RIGHT) { /* XXX Should we also test KSP_UNPRECONDITIONED_NORM ? */
+     if (pcside == PC_RIGHT || isNone) { /* XXX Should we also test KSP_UNPRECONDITIONED_NORM ? */
       /* KSP residual is true linear residual */
       ierr = KSPGetResidualNorm(ksp,&kctx->lresid_last);CHKERRQ(ierr);
     } else {
