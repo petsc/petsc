@@ -532,7 +532,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   }
 
   /* compute other basis functions for non-symmetric problems */
-  ierr = MatIsSymmetric(pc->pmat,1.e-4,&pcbddc->issym);CHKERRQ(ierr);
+  ierr = MatIsSymmetric(pc->pmat,0.,&pcbddc->issym);CHKERRQ(ierr);
   if (!pcbddc->issym) {
     if (!pcbddc->coarse_psi_B) {
       ierr = MatCreate(PETSC_COMM_SELF,&pcbddc->coarse_psi_B);CHKERRQ(ierr);
