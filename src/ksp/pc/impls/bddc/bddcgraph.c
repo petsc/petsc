@@ -109,6 +109,9 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
 
   PetscFunctionBegin;
   /* loop on ccs to evalute number of faces, edges and vertices */
+  ISForFaces = NULL;
+  ISForEdges = NULL;
+  ISForVertices = NULL;
   nfc = 0;
   nec = 0;
   nvc = 0;
