@@ -1520,11 +1520,13 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   Vec            coordinates;
   PetscSection   coordSection;
   PetscScalar    *coords;
-  PetscInt       coordSize, firstVertex = -1, pStart = 0, pEnd = 0, p, v, dim, d, off;
+  PetscInt       coordSize, firstVertex = -1, pStart = 0, pEnd = 0, p, v, dim, dimEmbed, d, off;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
+  if (dimEmbed < dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Embedding dimension %d cannot be less than intrinsic dimension %d",dimEmbed,dim);
   for (d = 0; d <= depth; ++d) pEnd += numPoints[d];
   ierr = DMPlexSetChart(dm, pStart, pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
@@ -1544,16 +1546,16 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   /* Build coordinates */
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSection, 0, dimEmbed);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numPoints[0]);CHKERRQ(ierr);
   for (v = firstVertex; v < firstVertex+numPoints[0]; ++v) {
-    ierr = PetscSectionSetDof(coordSection, v, dim);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldDof(coordSection, v, 0, dim);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(coordSection, v, dimEmbed);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSection, v, 0, dimEmbed);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinates, dimEmbed);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(coordinates,VECSTANDARD);CHKERRQ(ierr);
@@ -1562,8 +1564,8 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
     PetscInt off;
 
     ierr = PetscSectionGetOffset(coordSection, v+firstVertex, &off);CHKERRQ(ierr);
-    for (d = 0; d < dim; ++d) {
-      coords[off+d] = vertexCoords[v*dim+d];
+    for (d = 0; d < dimEmbed; ++d) {
+      coords[off+d] = vertexCoords[v*dimEmbed+d];
     }
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
