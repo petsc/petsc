@@ -328,7 +328,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__
 #define __FUNCT__ "VecGetHDF5ChunkSize"
-static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep, hsize_t *chunkDims)
+static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension, PetscInt timestep, hsize_t *chunkDims)
 {
   PetscMPIInt comm_size;
   PetscErrorCode ierr;
@@ -377,7 +377,7 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep,
       ++dim;
     }
     /* prefer to split z-axis, even down to planar slices */
-    if (da->dim == 3) {
+    if (dimension == 3) {
       chunkDims[dim++] = (hsize_t) da->P/zslices;
       chunkDims[dim++] = (hsize_t) da->N/yslices;
       chunkDims[dim++] = (hsize_t) da->M/xslices;
@@ -395,7 +395,7 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt timestep,
 	++dim;
       }
       /* prefer to split z-axis, even down to planar slices */
-      if (da->dim == 3) {
+      if (dimension == 3) {
 	/* try splitting the z-axis to core-size bits, i.e. divide chunk size by # comm_size in z-direction */
 	if (target_size >= chunk_size/da->p) {
 	  /* just make chunks the size of <local_z>x<whole_world_y>x<whole_world_x>x<dof> */
@@ -447,7 +447,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   herr_t         status;
   hsize_t        dim;
   hsize_t        maxDims[6]={0}, dims[6]={0}, chunkDims[6]={0}, count[6]={0}, offset[6]={0}; /* we depend on these being sane later on  */
-  PetscInt       timestep;
+  PetscInt       timestep, dimension;
   PetscScalar    *x;
   const char     *vecname;
   PetscErrorCode ierr;
@@ -459,6 +459,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   ierr = VecGetDM(xin,&dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
   da = (DM_DA*)dm->data;
+  ierr = DMGetDimension(dm, &dimension);CHKERRQ(ierr);
 
   /* Create the dataspace for the dataset.
    *
@@ -478,13 +479,13 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     chunkDims[dim] = 1;
     ++dim;
   }
-  if (da->dim == 3) {
+  if (dimension == 3) {
     ierr           = PetscHDF5IntCast(da->P,dims+dim);CHKERRQ(ierr);
     maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
     ++dim;
   }
-  if (da->dim > 1) {
+  if (dimension > 1) {
     ierr           = PetscHDF5IntCast(da->N,dims+dim);CHKERRQ(ierr);
     maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
@@ -507,7 +508,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   ++dim;
 #endif
 
-  ierr = VecGetHDF5ChunkSize(da, xin, timestep, chunkDims); CHKERRQ(ierr);
+  ierr = VecGetHDF5ChunkSize(da, xin, dimension, timestep, chunkDims); CHKERRQ(ierr);
 
   filespace = H5Screate_simple(dim, dims, maxDims);
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
@@ -546,8 +547,8 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     offset[dim] = timestep;
     ++dim;
   }
-  if (da->dim == 3) {ierr = PetscHDF5IntCast(da->zs,offset + dim++);CHKERRQ(ierr);}
-  if (da->dim > 1)  {ierr = PetscHDF5IntCast(da->ys,offset + dim++);CHKERRQ(ierr);}
+  if (dimension == 3) {ierr = PetscHDF5IntCast(da->zs,offset + dim++);CHKERRQ(ierr);}
+  if (dimension > 1)  {ierr = PetscHDF5IntCast(da->ys,offset + dim++);CHKERRQ(ierr);}
   ierr = PetscHDF5IntCast(da->xs/da->w,offset + dim++);CHKERRQ(ierr);
   if (da->w > 1) offset[dim++] = 0;
 #if defined(PETSC_USE_COMPLEX)
@@ -558,8 +559,8 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     count[dim] = 1;
     ++dim;
   }
-  if (da->dim == 3) {ierr = PetscHDF5IntCast(da->ze - da->zs,count + dim++);CHKERRQ(ierr);}
-  if (da->dim > 1)  {ierr = PetscHDF5IntCast(da->ye - da->ys,count + dim++);CHKERRQ(ierr);}
+  if (dimension == 3) {ierr = PetscHDF5IntCast(da->ze - da->zs,count + dim++);CHKERRQ(ierr);}
+  if (dimension > 1)  {ierr = PetscHDF5IntCast(da->ye - da->ys,count + dim++);CHKERRQ(ierr);}
   ierr = PetscHDF5IntCast((da->xe - da->xs)/da->w,count + dim++);CHKERRQ(ierr);
   if (da->w > 1) {ierr = PetscHDF5IntCast(da->w,count + dim++);CHKERRQ(ierr);}
 #if defined(PETSC_USE_COMPLEX)
@@ -643,7 +644,7 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
   ierr       = PetscMPIIntCast(dd->xs/dof,lstarts+1);CHKERRQ(ierr);
   ierr       = PetscMPIIntCast(dd->ys,lstarts+2);CHKERRQ(ierr);
   ierr       = PetscMPIIntCast(dd->zs,lstarts+3);CHKERRQ(ierr);
-  ierr       = MPI_Type_create_subarray(dd->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
+  ierr       = MPI_Type_create_subarray(da->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
   ierr       = MPI_Type_commit(&view);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
@@ -786,7 +787,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   hsize_t        dim;
   hsize_t        count[5];
   hsize_t        offset[5];
-  PetscInt       cnt = 0;
+  PetscInt       cnt = 0, dimension;
   PetscScalar    *x;
   const char     *vecname;
   hid_t          filespace; /* file dataspace identifier */
@@ -801,9 +802,10 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
   ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   dd   = (DM_DA*)da->data;
+  ierr = DMGetDimension(da, &dimension);CHKERRQ(ierr);
 
   /* Create the dataspace for the dataset */
-  ierr = PetscHDF5IntCast(dd->dim + ((dd->w == 1) ? 0 : 1),&dim);CHKERRQ(ierr);
+  ierr = PetscHDF5IntCast(dimension + ((dd->w == 1) ? 0 : 1),&dim);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   dim++;
 #endif
@@ -820,16 +822,16 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
   cnt = 0;
-  if (dd->dim == 3) {ierr = PetscHDF5IntCast(dd->zs,offset + cnt++);CHKERRQ(ierr);}
-  if (dd->dim > 1)  {ierr = PetscHDF5IntCast(dd->ys,offset + cnt++);CHKERRQ(ierr);}
+  if (dimension == 3) {ierr = PetscHDF5IntCast(dd->zs,offset + cnt++);CHKERRQ(ierr);}
+  if (dimension > 1)  {ierr = PetscHDF5IntCast(dd->ys,offset + cnt++);CHKERRQ(ierr);}
   ierr = PetscHDF5IntCast(dd->xs/dd->w,offset + cnt++);CHKERRQ(ierr);
   if (dd->w > 1) offset[cnt++] = 0;
 #if defined(PETSC_USE_COMPLEX)
   offset[cnt++] = 0;
 #endif
   cnt = 0;
-  if (dd->dim == 3) {ierr = PetscHDF5IntCast(dd->ze - dd->zs,count + cnt++);CHKERRQ(ierr);}
-  if (dd->dim > 1)  {ierr = PetscHDF5IntCast(dd->ye - dd->ys,count + cnt++);CHKERRQ(ierr);}
+  if (dimension == 3) {ierr = PetscHDF5IntCast(dd->ze - dd->zs,count + cnt++);CHKERRQ(ierr);}
+  if (dimension > 1)  {ierr = PetscHDF5IntCast(dd->ye - dd->ys,count + cnt++);CHKERRQ(ierr);}
   ierr = PetscHDF5IntCast((dd->xe - dd->xs)/dd->w,count + cnt++);CHKERRQ(ierr);
   if (dd->w > 1) {ierr = PetscHDF5IntCast(dd->w,count + cnt++);CHKERRQ(ierr);}
 #if defined(PETSC_USE_COMPLEX)

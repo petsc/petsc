@@ -135,8 +135,8 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   PetscValidPointer(pdm, 3);
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), pdm);CHKERRQ(ierr);
   ierr = DMSetType(*pdm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(*pdm, dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(*pdm, dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   if (section) {
     ierr = PetscSectionPermute(section, perm, &sectionNew);CHKERRQ(ierr);

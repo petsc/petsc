@@ -49,7 +49,6 @@ struct _n_Boundary {
 
 typedef struct {
   PetscInt             refct;
-  PetscInt             dim;               /* Topological mesh dimension */
 
   /* Sieve */
   PetscSection         coneSection;       /* Layout of cones (inedges for DAG) */

@@ -91,12 +91,15 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   PetscSF        sf;
   Vec            coords;
   void          *ctx;
+  PetscInt       dim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(newdm,2);
   ierr = DMCreate(PetscObjectComm((PetscObject)dm), newdm);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(*newdm, dim);CHKERRQ(ierr);
   if (dm->ops->clone) {
     ierr = (*dm->ops->clone)(dm, newdm);CHKERRQ(ierr);
   }
@@ -3364,6 +3367,94 @@ static PetscErrorCode DMSubDomainHook_Coordinates(DM dm,DM subdm,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGetDimension"
+/*@
+  DMGetDimension - Return the topological dimension of the DM
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. dim - The topological dimension
+
+  Level: beginner
+
+.seealso: DMSetDimension(), DMCreate()
+@*/
+PetscErrorCode DMGetDimension(DM dm, PetscInt *dim)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dim, 2);
+  *dim = dm->dim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetDimension"
+/*@
+  DMSetDimension - Set the topological dimension of the DM
+
+  Collective on dm
+
+  Input Parameters:
++ dm - The DM
+- dim - The topological dimension
+
+  Level: beginner
+
+.seealso: DMGetDimension(), DMCreate()
+@*/
+PetscErrorCode DMSetDimension(DM dm, PetscInt dim)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(dm, dim, 2);
+  dm->dim = dim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetDimPoints"
+/*@
+  DMGetDimPoints - Get the half-open interval for all points of a given dimension
+
+  Collective on DM
+
+  Input Parameters:
++ dm - the DM
+- dim - the dimension
+
+  Output Parameters:
++ pStart - The first point of the given dimension
+. pEnd - The first point following points of the given dimension
+
+  Note:
+  The points are vertices in the Hasse diagram encoding the topology. This is explained in
+  http://arxiv.org/abs/0908.4427. If not points exist of this dimension in the storage scheme,
+  then the interval is empty.
+
+  Level: intermediate
+
+.keywords: point, Hasse Diagram, dimension
+.seealso: DMPLEX, DMPlexGetDepthStratum(), DMPlexGetHeightStratum()
+@*/
+PetscErrorCode DMGetDimPoints(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd)
+{
+  PetscInt       d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDimension(dm, &d);CHKERRQ(ierr);
+  if ((dim < 0) || (dim > d)) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d 1", dim, d);
+  ierr = (*dm->ops->getdimpoints)(dm, dim, pStart, pEnd);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSetCoordinates"
 /*@
   DMSetCoordinates - Sets into the DM a global vector that holds the coordinates
@@ -3590,6 +3681,57 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGetCoordinateDim"
+/*@
+  DMGetCoordinateDim - Retrieve the dimension of embedding space for coordinate values.
+
+  Not Collective
+
+  Input Parameter:
+. dm - The DM object
+
+  Output Parameter:
+. dim - The embedding dimension
+
+  Level: intermediate
+
+.keywords: mesh, coordinates
+.seealso: DMSetCoordinateDim(), DMGetCoordinateSection(), DMGetCoordinateDM(), DMGetDefaultSection(), DMSetDefaultSection()
+@*/
+PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dim, 2);
+  *dim = dm->dimEmbed;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetCoordinateDim"
+/*@
+  DMSetCoordinateDim - Set the dimension of the embedding space for coordinate values.
+
+  Not Collective
+
+  Input Parameters:
++ dm  - The DM object
+- dim - The embedding dimension
+
+  Level: intermediate
+
+.keywords: mesh, coordinates
+.seealso: DMGetCoordinateDim(), DMSetCoordinateSection(), DMGetCoordinateSection(), DMGetDefaultSection(), DMSetDefaultSection()
+@*/
+PetscErrorCode DMSetCoordinateDim(DM dm, PetscInt dim)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dm->dimEmbed = dim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMGetCoordinateSection"
 /*@
   DMGetCoordinateSection - Retrieve the layout of coordinate values over the mesh.
@@ -3629,6 +3771,7 @@ PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
 
   Input Parameters:
 + dm      - The DM object
+. dim     - The embedding dimension, or PETSC_DETERMINE
 - section - The PetscSection object
 
   Level: intermediate
@@ -3636,16 +3779,30 @@ PetscErrorCode DMGetCoordinateSection(DM dm, PetscSection *section)
 .keywords: mesh, coordinates
 .seealso: DMGetCoordinateSection(), DMGetDefaultSection(), DMSetDefaultSection()
 @*/
-PetscErrorCode DMSetCoordinateSection(DM dm, PetscSection section)
+PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 {
   DM             cdm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,3);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(cdm, section);CHKERRQ(ierr);
+  if (dim == PETSC_DETERMINE) {
+    PetscInt d = dim;
+    PetscInt pStart, pEnd, vStart, vEnd, v, dd;
+
+    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMGetDimPoints(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    pStart = PetscMax(vStart, pStart);
+    pEnd   = PetscMin(vEnd, pEnd);
+    for (v = pStart; v < pEnd; ++v) {
+      ierr = PetscSectionGetDof(section, v, &dd);CHKERRQ(ierr);
+      if (dd) {d = dd; break;}
+    }
+    ierr = DMSetCoordinateDim(dm, d);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

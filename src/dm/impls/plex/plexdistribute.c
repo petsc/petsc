@@ -415,7 +415,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   *dmParallel = NULL;
   if (numProcs == 1) PetscFunctionReturn(0);
 
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   /* Create cell partition - We need to rewrite to use IS, use the MatPartition stuff */
   ierr = PetscLogEventBegin(DMPLEX_Partition,dm,0,0,0);CHKERRQ(ierr);
   if (overlap > 1) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Overlap > 1 not yet implemented");
@@ -448,7 +448,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   ierr = PetscSectionDestroy(&cellPartSection);CHKERRQ(ierr);
   /* Create new mesh */
   ierr  = DMPlexCreate(comm, dmParallel);CHKERRQ(ierr);
-  ierr  = DMPlexSetDimension(*dmParallel, dim);CHKERRQ(ierr);
+  ierr  = DMSetDimension(*dmParallel, dim);CHKERRQ(ierr);
   ierr  = PetscObjectSetName((PetscObject) *dmParallel, "Parallel Mesh");CHKERRQ(ierr);
   pmesh = (DM_Plex*) (*dmParallel)->data;
   /* Distribute sieve points and the global point numbering (replaces creating remote bases) */

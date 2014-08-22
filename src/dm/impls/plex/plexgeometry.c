@@ -12,7 +12,7 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_2D_Internal(DM dm, const PetscSc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
+  ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
   xi  = invJ[0*embedDim+0]*(x - v0[0]) + invJ[0*embedDim+1]*(y - v0[1]);
   eta = invJ[1*embedDim+0]*(x - v0[0]) + invJ[1*embedDim+1]*(y - v0[1]);
 
@@ -68,7 +68,7 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_3D_Internal(DM dm, const PetscSc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
+  ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
   xi   = invJ[0*embedDim+0]*(x - v0[0]) + invJ[0*embedDim+1]*(y - v0[1]) + invJ[0*embedDim+2]*(z - v0[2]);
   eta  = invJ[1*embedDim+0]*(x - v0[0]) + invJ[1*embedDim+1]*(y - v0[1]) + invJ[1*embedDim+2]*(z - v0[2]);
   zeta = invJ[2*embedDim+0]*(x - v0[0]) + invJ[2*embedDim+1]*(y - v0[1]) + invJ[2*embedDim+2]*(z - v0[2]);
@@ -145,7 +145,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
@@ -635,9 +635,9 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeCellGeometry"
+#define __FUNCT__ "DMPlexComputeCellGeometryAffineFEM"
 /*@C
-  DMPlexComputeCellGeometry - Compute the Jacobian, inverse Jacobian, and Jacobian determinant for a given cell
+  DMPlexComputeCellGeometryAffineFEM - Assuming an affine map, compute the Jacobian, inverse Jacobian, and Jacobian determinant for a given cell
 
   Collective on DM
 
@@ -657,9 +657,9 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
   Since it returns arrays, this routine is only available in Fortran 90, and you must
   include petsc.h90 in your code.
 
-.seealso: DMGetCoordinateSection(), DMGetCoordinateVec()
+.seealso: DMPlexComputeCellGeometryFEM(), DMGetCoordinateSection(), DMGetCoordinateVec()
 @*/
-PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
+PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
   PetscInt       depth, dim, coneSize;
   PetscErrorCode ierr;
@@ -668,74 +668,142 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
   if (depth == 1) {
-    ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-    switch (dim) {
-    case 1:
-      ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-      break;
-    case 2:
-      switch (coneSize) {
-      case 3:
-        ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-        break;
-      case 4:
-        ierr = DMPlexComputeRectangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-        break;
-      default:
-        SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
-      }
-      break;
-    case 3:
-      switch (coneSize) {
-      case 4:
-        ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-        break;
-      case 8:
-        ierr = DMPlexComputeHexahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-        break;
-      default:
-        SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
-      }
-      break;
-    default:
-      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D for element geometry computation", dim);
-    }
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   } else {
-    /* We need to keep a pointer to the depth label */
-    ierr = DMPlexGetLabelValue(dm, "depth", cell, &dim);CHKERRQ(ierr);
-    /* Cone size is now the number of faces */
-    switch (dim) {
-    case 1:
-      ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-      break;
-    case 2:
-      switch (coneSize) {
-      case 3:
-        ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-        break;
-      case 4:
-        ierr = DMPlexComputeRectangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-        break;
-      default:
-        SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
-      }
-      break;
+    DMLabel depth;
+
+    ierr = DMPlexGetDepthLabel(dm, &depth);CHKERRQ(ierr);
+    ierr = DMLabelGetValue(depth, cell, &dim);CHKERRQ(ierr);
+  }
+  switch (dim) {
+  case 1:
+    ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+    break;
+  case 2:
+    switch (coneSize) {
     case 3:
-      switch (coneSize) {
-      case 4:
-        ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-        break;
-      case 6:
-        ierr = DMPlexComputeHexahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-        break;
-      default:
-        SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
-      }
+      ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+      break;
+    case 4:
+      ierr = DMPlexComputeRectangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D in cell %D for element geometry computation", dim, cell);
+      SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of faces %D in cell %D for element geometry computation", coneSize, cell);
+    }
+    break;
+  case 3:
+    switch (coneSize) {
+    case 4:
+      ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+      break;
+    case 6: /* Faces */
+    case 8: /* Vertices */
+      ierr = DMPlexComputeHexahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+      break;
+    default:
+        SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of faces %D in cell %D for element geometry computation", coneSize, cell);
+    }
+      break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D for element geometry computation", dim);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeIsoparametricGeometry_Internal"
+static PetscErrorCode DMPlexComputeIsoparametricGeometry_Internal(DM dm, PetscFE fe, PetscInt point, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
+{
+  PetscQuadrature  quad;
+  PetscSection     coordSection;
+  Vec              coordinates;
+  PetscScalar     *coords = NULL;
+  const PetscReal *quadPoints;
+  PetscReal       *basisDer;
+  PetscInt         dim, cdim, pdim, qdim, Nq, numCoords, d, q;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, point, &numCoords, &coords);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
+  ierr = PetscFEGetDimension(fe, &pdim);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(quad, &qdim, &Nq, &quadPoints, NULL);CHKERRQ(ierr);
+  ierr = PetscFEGetDefaultTabulation(fe, NULL, &basisDer, NULL);CHKERRQ(ierr);
+  *detJ = 0.0;
+  if (qdim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Point dimension %d != quadrature dimension %d", dim, qdim);
+  if (numCoords != pdim*cdim) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "There are %d coordinates for point %d != %d*%d", numCoords, point, pdim, cdim);
+  if (v0) {for (d = 0; d < cdim; d++) v0[d] = PetscRealPart(coords[d]);}
+  if (J) {
+    for (q = 0; q < Nq; ++q) {
+      PetscInt i, j, k, c, r;
+
+      /* J = dx_i/d\xi_j = sum[k=0,n-1] dN_k/d\xi_j * x_i(k) */
+      for (k = 0; k < pdim; ++k)
+        for (j = 0; j < dim; ++j)
+          for (i = 0; i < cdim; ++i)
+            J[(q*cdim + i)*dim + j] += basisDer[(q*pdim + k)*dim + j] * PetscRealPart(coords[k*cdim + i]);
+      PetscLogFlops(2.0*pdim*dim*cdim);
+      if (cdim > dim) {
+        for (c = dim; c < cdim; ++c)
+          for (r = 0; r < cdim; ++r)
+            J[r*cdim+c] = r == c ? 1.0 : 0.0;
+      }
+      switch (cdim) {
+      case 3:
+        DMPlex_Det3D_Internal(detJ, J);
+        if (invJ) {DMPlex_Invert3D_Internal(invJ, J, *detJ);}
+        break;
+      case 2:
+        DMPlex_Det2D_Internal(detJ, J);
+        if (invJ) {DMPlex_Invert2D_Internal(invJ, J, *detJ);}
+        break;
+      case 1:
+        *detJ = J[0];
+        if (invJ) invJ[0] = 1.0/J[0];
+      }
     }
   }
+  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, point, &numCoords, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeCellGeometryFEM"
+/*@C
+  DMPlexComputeCellGeometryFEM - Compute the Jacobian, inverse Jacobian, and Jacobian determinant at each quadrature point in the given cell
+
+  Collective on DM
+
+  Input Arguments:
++ dm   - the DM
+. cell - the cell
+- fe   - the finite element containing the quadrature
+
+  Output Arguments:
++ v0   - the translation part of this transform
+. J    - the Jacobian of the transform from the reference element at each quadrature point
+. invJ - the inverse of the Jacobian at each quadrature point
+- detJ - the Jacobian determinant at each quadrature point
+
+  Level: advanced
+
+  Fortran Notes:
+  Since it returns arrays, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+.seealso: DMGetCoordinateSection(), DMGetCoordinateVec()
+@*/
+PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscFE fe, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!fe) {ierr = DMPlexComputeCellGeometryAffineFEM(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);}
+  else     {ierr = DMPlexComputeIsoparametricGeometry_Internal(dm, fe, cell, v0, J, invJ, detJ);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -957,7 +1025,7 @@ PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol
 
   PetscFunctionBegin;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (depth != dim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated");
   /* We need to keep a pointer to the depth label */
   ierr = DMPlexGetLabelValue(dm, "depth", cell, &depth);CHKERRQ(ierr);

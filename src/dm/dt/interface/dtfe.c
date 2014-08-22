@@ -1625,7 +1625,7 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
   PetscFunctionBeginUser;
   ierr = DMCreate(PetscObjectComm((PetscObject) sp), &rdm);CHKERRQ(ierr);
   ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(rdm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(rdm, dim);CHKERRQ(ierr);
   switch (dim) {
   case 0:
   {
@@ -1733,7 +1733,7 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeome
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(value, 5);
   ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetFunctional(sp, f, &quad);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
   for (c = 0; c < numComp; ++c) value[c] = 0.0;
@@ -1758,7 +1758,7 @@ static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSp
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(sp->dm, &n);CHKERRQ(ierr);
+  ierr = DMGetDimension(sp->dm, &n);CHKERRQ(ierr);
   if (lag->simplex || !lag->continuous) {
     for (i = 1; i <= n; ++i) {
       D *= ((PetscReal) (order+i))/i;
@@ -1789,7 +1789,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
   PetscFunctionBegin;
   /* Classify element type */
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = PetscCalloc1(dim+1, &lag->numDof);CHKERRQ(ierr);
   ierr = PetscMalloc2(depth+1,&pStart,depth+1,&pEnd);CHKERRQ(ierr);
@@ -1888,7 +1888,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           if (csize%dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate size %d is not divisible by spatial dimension %d", csize, dim);
 
           ierr = PetscCalloc5(dim,&ind,dim,&tup,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
-          ierr = DMPlexComputeCellGeometry(dm, p, v0, J, invJ, &detJ);CHKERRQ(ierr);
+          ierr = DMPlexComputeCellGeometryFEM(dm, p, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
           if (simplex || !lag->continuous) {
             for (o = 0; o <= orderEff; ++o) {
               ierr = PetscMemzero(ind, dim*sizeof(PetscInt));CHKERRQ(ierr);
@@ -1997,7 +1997,7 @@ PetscErrorCode PetscDualSpaceGetDimension_Lagrange(PetscDualSpace sp, PetscInt *
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetDM(sp, &K);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetNumDof(sp, &numDof);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(K, &spatialDim);CHKERRQ(ierr);
+  ierr = DMGetDimension(K, &spatialDim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(K, 0, NULL, &Nc);CHKERRQ(ierr);
   if (Nc == 1) {ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, sp->order, dim);CHKERRQ(ierr); PetscFunctionReturn(0);}
   for (d = 0; d <= spatialDim; ++d) {
@@ -2518,7 +2518,7 @@ PetscErrorCode PetscFEGetSpatialDimension(PetscFE fem, PetscInt *dim)
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidPointer(dim, 2);
   ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2667,7 +2667,7 @@ PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
     PetscInt dim, d;
 
     ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
-    ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = PetscMalloc1((dim+1), &fem->numDof);CHKERRQ(ierr);
     for (d = 0; d <= dim; ++d) {
       fem->numDof[d] = fem->numComponents*numDofDual[d];
@@ -2714,7 +2714,7 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
   if (D) PetscValidPointer(D, 5);
   if (H) PetscValidPointer(H, 6);
   ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &comp);CHKERRQ(ierr);
   if (B) {ierr = DMGetWorkArray(dm, npoints*pdim*comp, PETSC_REAL, B);CHKERRQ(ierr);}
@@ -2870,7 +2870,7 @@ PetscErrorCode PetscFEGetTabulation_Basic(PetscFE fem, PetscInt npoints, const P
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &comp);CHKERRQ(ierr);
   /* Evaluate the prime basis functions at all points */
@@ -4738,7 +4738,7 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   PetscFunctionBegin;
   /* Get affine mapping from reference cell to each subcell */
   ierr = PetscDualSpaceGetDM(fem->dualSpace, &K);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(K, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(K, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetCellRefiner_Internal(K, &cmp->cellRefiner);CHKERRQ(ierr);
   ierr = CellRefinerGetAffineTransforms_Internal(cmp->cellRefiner, &cmp->numSubelements, &cmp->v0, &cmp->jac, &cmp->invjac);CHKERRQ(ierr);
   /* Determine dof embedding into subelements */
@@ -4814,7 +4814,7 @@ PetscErrorCode PetscFEGetTabulation_Composite(PetscFE fem, PetscInt npoints, con
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscSpaceGetDimension(fem->basisSpace, &spdim);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &comp);CHKERRQ(ierr);

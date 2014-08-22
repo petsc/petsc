@@ -849,7 +849,7 @@ PetscErrorCode  DMDACreate2d(MPI_Comm comm,DMBoundaryType bx,DMBoundaryType by,D
 
   PetscFunctionBegin;
   ierr = DMDACreate(comm, da);CHKERRQ(ierr);
-  ierr = DMDASetDim(*da, 2);CHKERRQ(ierr);
+  ierr = DMSetDimension(*da, 2);CHKERRQ(ierr);
   ierr = DMDASetSizes(*da, M, N, 1);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, m, n, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(*da, bx, by, DM_BOUNDARY_NONE);CHKERRQ(ierr);

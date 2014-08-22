@@ -49,6 +49,7 @@ struct _DMOps {
   PetscErrorCode (*createdomaindecomposition)(DM,PetscInt*,char***,IS**,IS**,DM**);
   PetscErrorCode (*createddscatters)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
 
+  PetscErrorCode (*getdimpoints)(DM,PetscInt,PetscInt*,PetscInt*);
   PetscErrorCode (*locatepoints)(DM,Vec,IS*);
 };
 
@@ -126,6 +127,8 @@ struct _p_DM {
   DMRefineHookLink        refinehook;
   DMSubDomainHookLink     subdomainhook;
   DMGlobalToLocalHookLink gtolhook;
+  /* Topology */
+  PetscInt                dim;                  /* The topological dimension */
   /* Flexible communication */
   PetscSF                 sf;                   /* SF for parallel point overlap */
   PetscSF                 defaultSF;            /* SF for parallel dof overlap using default section */
@@ -134,6 +137,7 @@ struct _p_DM {
   PetscSection            defaultGlobalSection; /* Layout for global vectors */
   PetscLayout             map;
   /* Coordinates */
+  PetscInt                dimEmbed;             /* The dimension of the embedding space */
   DM                      coordinateDM;         /* Layout for coordinates (default section) */
   Vec                     coordinates;          /* Coordinate values in global vector */
   Vec                     coordinatesLocal;     /* Coordinate values in local  vector */
