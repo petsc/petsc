@@ -53,6 +53,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->defaultGlobalSection = NULL;
   v->L                    = NULL;
   v->maxCell              = NULL;
+  v->dimEmbed             = PETSC_DEFAULT;
   {
     PetscInt i;
     for (i = 0; i < 10; ++i) {
@@ -3762,6 +3763,9 @@ PetscErrorCode DMGetCoordinateDim(DM dm, PetscInt *dim)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(dim, 2);
+  if (dm->dimEmbed == PETSC_DEFAULT) {
+    dm->dimEmbed = dm->dim;
+  }
   *dim = dm->dimEmbed;
   PetscFunctionReturn(0);
 }
