@@ -920,15 +920,15 @@ prepend-path PATH %s
   def configureInstall(self):
     '''Setup the directories for installation'''
     if self.framework.argDB['prefix']:
-      self.installdir = self.framework.argDB['prefix']
       self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do:"',\
-                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"',\
+                                              '-@echo "'+self.installdir.installSudo+'make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"',\
                                               '-@echo "========================================="'])
+      self.installdir = self.framework.argDB['prefix']
     else:
-      self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
       self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do:"',\
                                               '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} test"',\
                                               '-@echo "========================================="'])
+      self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
       return
 
   def configureGCOV(self):

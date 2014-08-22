@@ -38,12 +38,16 @@ class Configure(PETSc.package.NewPackage):
     fd.write(args)
     fd.close()
     if self.installNeeded(self.package):
+      self.logPrintBox('Configuring sowing; this may take several minutes')
       try:
         output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on Sowing (install manually): '+str(e))
       try:
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make &&  make install && make clean', timeout=2500, log = self.framework.log)
+        self.logPrintBox('Running make on sowing; this may take several minutes')
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make', timeout=2500, log = self.framework.log)
+        self.logPrintBox('Running make install on sowing')
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+' make install && make clean', timeout=100, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on Sowing (install manually): '+str(e))
       self.framework.actions.addArgument('Sowing', 'Install', 'Installed Sowing into '+self.installDir)

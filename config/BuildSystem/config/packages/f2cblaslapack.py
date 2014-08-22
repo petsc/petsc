@@ -63,7 +63,8 @@ class Configure(config.package.Package):
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && mv -f libf2cblas.'+self.setCompilers.AR_LIB_SUFFIX+' libf2clapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)
+      self.logPrintBox('Installing F2CBLASLAPACK')
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && '+self.installSudo+'cp -f libf2cblas.'+self.setCompilers.AR_LIB_SUFFIX+' libf2clapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=3000, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
 

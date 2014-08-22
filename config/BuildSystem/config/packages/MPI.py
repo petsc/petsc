@@ -335,12 +335,6 @@ class Configure(config.package.Package):
     if self.framework.argDB['download-mpich'] and self.framework.argDB['download-openmpi']:
       raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration. \nUse different PETSC_ARCH if you want to be able to switch between two')
 
-    if self.framework.argDB['download-openmpi'] and self.framework.argDB['prefix']:
-      raise RuntimeError('Currently --download-openmpi option does not work with --prefix install.\nSuggest installing OpenMPI separately, and then configuring PETSc with --with-mpi-dir option.')
-
-    if self.framework.argDB['download-mpich'] and self.framework.argDB['prefix']:
-      raise RuntimeError('Currently --download-mpich option does not work with --prefix install.\nSuggest installing MPICH separately, and then configuring PETSc with --with-mpi-dir option.')
-
     # Check for MPICH
     if self.framework.argDB['download-mpich']:
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
@@ -435,15 +429,16 @@ class Configure(config.package.Package):
     f.close()
     if self.installNeeded('args.petsc'):
       try:
-        self.logPrintBox('Configuring OPENMPI/MPI; this may take several minutes')
+        self.logPrintBox('Configuring OPENMPI; this may take several minutes')
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && ./configure '+args, timeout=1500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on OPENMPI/MPI: '+str(e))
       try:
-        self.logPrintBox('Compiling OPENMPI/MPI; this may take several minutes')
+        self.logPrintBox('Running make on OPENMPI; this may take several minutes')
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make_jnp+' all', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' install', timeout=6000, log = self.framework.log)
+        self.logPrintBox('Running make install on OPENMPI')
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.installSudo+self.make.make+' install', timeout=6000, log = self.framework.log)
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on OPENMPI/MPI: '+str(e))
@@ -473,8 +468,6 @@ class Configure(config.package.Package):
   def InstallMPICH(self):
     mpichDir = self.getDir()
     installDir = self.installDir
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
 
     # Configure and Build MPICH
     self.pushLanguage('C')
@@ -561,8 +554,9 @@ class Configure(config.package.Package):
         self.logPrintBox('Running make on MPICH; this may take several minutes')
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make_jnp+' all', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make+' install', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
+        self.logPrintBox('Running make install on MPICH')
+        #bug in MPICH requires sudo on make clean
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.installSudo+self.make.make+' install clean', timeout=6000, log = self.framework.log)
       except RuntimeError, e:
         import sys
         if sys.platform.startswith('cygwin'):

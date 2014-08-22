@@ -55,6 +55,7 @@ class Package(config.base.Configure):
     self.downloadonWindows   = 0  # 1 means the --download-package works on Microsoft Windows
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
+    self.installSudo      = '' # if user does not have write access to prefix directory then this is set to sudo
     return
 
   def __str__(self):
@@ -211,14 +212,11 @@ class Package(config.base.Configure):
 
   def getInstallDir(self):
     self.installDir = self.defaultInstallDir
-    self.confDir    = os.path.join(self.installDir, 'conf')
+    self.confDir    = self.installDirProvider.confDir
+    self.installSudo= self.installDirProvider.installSudo
     self.includeDir = os.path.join(self.installDir, 'include')
     self.libDir     = os.path.join(self.installDir, 'lib')
     self.packageDir = self.getDir()
-    if not os.path.isdir(self.installDir): os.mkdir(self.installDir)
-    if not os.path.isdir(self.libDir):     os.mkdir(self.libDir)
-    if not os.path.isdir(self.includeDir): os.mkdir(self.includeDir)
-    if not os.path.isdir(self.confDir):    os.mkdir(self.confDir)
     return os.path.abspath(self.Install())
 
   def getChecksum(self,source, chunkSize = 1024*1024):
