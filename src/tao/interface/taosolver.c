@@ -924,6 +924,33 @@ PetscErrorCode TaoGetMaximumFunctionEvaluations(Tao tao,PetscInt *nfcn)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TaoGetCurrentFunctionEvaluations"
+/*@
+   TaoGetCurrentFunctionEvaluations - Get current number of
+   function evaluations.
+
+   Not Collective
+
+   Input Parameters:
+.  tao - the Tao solver context
+
+   Output Parameters:
+.  nfuncs - the current number of function evaluations
+
+   Level: intermediate
+
+.seealso: TaoSetMaximumFunctionEvaluations(), TaoGetMaximumFunctionEvaluations(), TaoGetMaximumIterations()
+@*/
+
+PetscErrorCode TaoGetCurrentFunctionEvaluations(Tao tao,PetscInt *nfuncs)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
+  *nfuncs=PetscMax(tao->nfuncs,tao->nfuncgrads);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TaoSetMaximumIterations"
 /*@
    TaoSetMaximumIterations - Sets a maximum number of iterates.
