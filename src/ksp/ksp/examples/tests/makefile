@@ -938,7 +938,7 @@ runex44:
 	done
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
-                                 runex4_5 ex4.rm ex8.PETSc runex8 runex8_2 ex8.rm \
+                                 runex4_5 ex4.rm \
                                  ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex22.PETSc runex22 runex22_2 ex22.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
@@ -953,7 +953,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
                                  ex44.PETSc runex44 ex44.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
-TESTEXAMPLES_C_NOCOMPLEX       = ex33.PETSc runex33 ex33.rm
+TESTEXAMPLES_C_NOCOMPLEX       = ex8.PETSc runex8 runex8_2 ex8.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm ex16f.PETSc ex16f.rm
 TESTEXAMPLES_C_X_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
