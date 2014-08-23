@@ -138,16 +138,16 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)is,ISBLOCK,&isblock);CHKERRQ(ierr);
-  ierr = ISGetBlockSize(is,&bs);CHKERRQ(ierr);
-  /*  if (!isblock) { */
+  if (!isblock) {
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingCreate(comm,1,n,indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
-    /*  } else {
+  } else {
+    ierr = ISGetBlockSize(is,&bs);CHKERRQ(ierr);
     ierr = ISBlockGetIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingCreate(comm,bs,n,indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
     ierr = ISBlockRestoreIndices(is,&indices);CHKERRQ(ierr);
-     }*/
+  }
   PetscFunctionReturn(0);
 }
 
@@ -417,20 +417,24 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscI
 #undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingApplyBlock"
 /*@
-   ISLocalToGlobalMappingApplyBlock - Takes a list of integers in a local numbering  and converts them to the global numbering.
+   ISLocalToGlobalMappingApplyBlock - Takes a list of integers in a local block numbering  and converts them to the global block numbering
 
    Not collective
 
    Input Parameters:
 +  mapping - the local to global mapping context
 .  N - number of integers
--  in - input indices in local numbering
+-  in - input indices in local block numbering
 
    Output Parameter:
-.  out - indices in global numbering
+.  out - indices in global block numbering
 
    Notes:
    The in and out array parameters may be identical.
+
+   Example:
+     If the index values are {0,1,6,7} set with a call to ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,2,2,{0,3}) then the mapping applied to 0
+     (the first block) would produce 0 and the mapping applied to 1 (the second block) would produce 3.
 
    Level: advanced
 
