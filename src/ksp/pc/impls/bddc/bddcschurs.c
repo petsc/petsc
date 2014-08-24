@@ -159,6 +159,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I
         ierr = PCBDDCAdjGetNextLayer_Private(local_numbering+n_local_dofs,n_prev_added,touched,xadj,adjncy,&n_added);CHKERRQ(ierr);
         n_prev_added = n_added;
         n_local_dofs += n_added;
+        if (!n_added) break;
       }
 
       /* IS for I dofs in original numbering and in I numbering */
