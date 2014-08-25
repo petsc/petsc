@@ -2,8 +2,8 @@
 ALL: lib
 
 SOURCEH  =
-DIRS     = is sf ao utils examples
-LOCDIR   = src/vec/is/
+DIRS     = tests
+LOCDIR   = src/vec/is/examples
 MANSEC   = IS
 
 include ${PETSC_DIR}/conf/variables
