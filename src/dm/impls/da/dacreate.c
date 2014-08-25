@@ -271,7 +271,7 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
     DM da;
 
     ierr = DMDACreate(PetscObjectComm((PetscObject)dm), &da);CHKERRQ(ierr);
-    ierr = DMSetDimension(da, da->dim);CHKERRQ(ierr);
+    ierr = DMSetDimension(da, dm->dim);CHKERRQ(ierr);
     ierr = DMDASetSizes(da, dd->M, dd->N, dd->P);CHKERRQ(ierr);
     ierr = DMDASetNumProcs(da, dd->m, dd->n, dd->p);CHKERRQ(ierr);
     ierr = DMDASetBoundaryType(da, dd->bx, dd->by, dd->bz);CHKERRQ(ierr);
