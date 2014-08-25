@@ -105,6 +105,23 @@ ok2:;
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDiagonalSet_MPIAIJ"
+PetscErrorCode  MatDiagonalSet_MPIAIJ(Mat Y,Vec D,InsertMode is)
+{
+  PetscErrorCode    ierr;
+  Mat_MPIAIJ        *aij = (Mat_MPIAIJ*) Y->data;
+
+  PetscFunctionBegin;
+  if (Y->assembled && Y->rmap->rstart == Y->cmap->rstart && Y->rmap->rend == Y->cmap->rend) {
+    ierr = MatDiagonalSet(aij->A,D,is);CHKERRQ(ierr);
+  } else {
+    ierr = MatDiagonalSet_Default(Y,D,is);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "MatFindZeroDiagonals_MPIAIJ"
 PetscErrorCode MatFindZeroDiagonals_MPIAIJ(Mat M,IS *zrows)
 {
@@ -3111,7 +3128,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                 /*44*/ MatGetRowMax_MPIAIJ,
                                        MatScale_MPIAIJ,
                                        0,
-                                       0,
+                                       MatDiagonalSet_MPIAIJ,
                                        MatZeroRowsColumns_MPIAIJ,
                                 /*49*/ MatSetRandom_MPIAIJ,
                                        0,

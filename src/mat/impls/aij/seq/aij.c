@@ -166,19 +166,20 @@ ok1:;
 #define __FUNCT__ "MatDiagonalSet_SeqAIJ"
 PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
 {
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*) Y->data;
-  PetscInt       i,*diag, m = Y->rmap->n;
-  MatScalar      *aa = aij->a;
-  PetscScalar    *v;
-  PetscBool      missing;
+  PetscErrorCode    ierr;
+  Mat_SeqAIJ        *aij = (Mat_SeqAIJ*) Y->data;
+  PetscInt          i,m = Y->rmap->n;
+  const PetscInt    *diag;
+  MatScalar         *aa = aij->a;
+  const PetscScalar *v;
+  PetscBool         missing;
 
   PetscFunctionBegin;
   if (Y->assembled) {
     ierr = MatMissingDiagonal_SeqAIJ(Y,&missing,NULL);CHKERRQ(ierr);
     if (!missing) {
       diag = aij->diag;
-      ierr = VecGetArray(D,&v);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(D,&v);CHKERRQ(ierr);
       if (is == INSERT_VALUES) {
         for (i=0; i<m; i++) {
           aa[diag[i]] = v[i];
@@ -188,7 +189,7 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
           aa[diag[i]] += v[i];
         }
       }
-      ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(D,&v);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
