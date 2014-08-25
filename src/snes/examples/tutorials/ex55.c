@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   AppCtx         user; /* Application context */
   Vec            xl,xu; /* Upper and lower bounds on variables */
   Mat            J;
-  PetscScalar    t=0.0;
+  PetscReal      t=0.0;
   PetscViewer    view_out, view_q, view1;
 
   PetscInitialize(&argc,&argv, (char*)0, help);
@@ -232,7 +232,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
   const PetscInt    *ele;
   Vec               coords, rand1, rand2;
   const PetscScalar *_coords;
-  PetscScalar       x[3],y[3];
+  PetscReal         x[3],y[3];
   PetscInt          idx[3];
   PetscScalar       *xx,*w1,*w2,*u1,*u2,*u3;
   PetscViewer       view_out;
@@ -257,15 +257,15 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
   /* Get local element info */
   ierr = DMDAGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
   for (i=0; i < nele; i++) {
-    idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
-    x[0]   = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
-    x[1]   = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
-    x[2]   = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
-
     PetscScalar vals1[3],vals2[3],valsrand[3];
     PetscInt    r;
+    idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
+    x[0]   = PetscRealPart(_coords[2*idx[0]]); y[0] = PetscRealPart(_coords[2*idx[0]+1]);
+    x[1]   = PetscRealPart(_coords[2*idx[1]]); y[1] = PetscRealPart(_coords[2*idx[1]+1]);
+    x[2]   = PetscRealPart(_coords[2*idx[2]]); y[2] = PetscRealPart(_coords[2*idx[2]+1]);
+
     for (r=0; r<3; r++) {
-      valsrand[r]=5*x[r]*(1-x[r])*y[r]*(1-y[r]);
+      valsrand[r]=5.0*x[r]*(1.0-x[r])*y[r]*(1.0-y[r]);
       if (x[r]>=0.5 && y[r]>=0.5) {
         vals1[r]=0.75;
         vals2[r]=0.0;
@@ -301,12 +301,12 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
 
   for (i=0; i<n/4; i++) {
     xx[4*i] = w1[i];
-    if (xx[4*i]>1) xx[4*i]=1;
+    if (PetscRealPart(xx[4*i])>1.0) xx[4*i]=1;
 
     xx[4*i+1] = w2[i];
-    if (xx[4*i+1]>1) xx[4*i+1]=1;
+    if (PetscRealPart(xx[4*i+1])>1.0) xx[4*i+1]=1;
 
-    if (xx[4*i]+xx[4*i+1]>1) xx[4*i+1] = 1.0 - xx[4*i];
+    if (PetscRealPart(xx[4*i]+xx[4*i+1])>1) xx[4*i+1] = 1.0 - xx[4*i];
 
     xx[4*i+2] = 1.0 - xx[4*i] - xx[4*i+1];
     xx[4*i+3] = 0.0;
