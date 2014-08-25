@@ -4354,7 +4354,7 @@ PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
 
   ierr  = MPI_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
   *norm = PetscSqrtReal(gsum / N);
-  if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  if (PetscIsInfOrNanReal(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   PetscFunctionReturn(0);
 }
 

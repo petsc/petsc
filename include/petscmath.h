@@ -100,7 +100,7 @@ typedef __float128 PetscReal;
     Complex number definitions
  */
 #if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX) && !defined(PETSC_USE_REAL___FLOAT128)
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX)) || defined(PETSC_DESIRE_COMPLEX)
+#if !defined(PETSC_SKIP_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 /* C++ support of complex number */
 #if defined(PETSC_HAVE_CUSP)
@@ -136,12 +136,10 @@ typedef complexlib::complex<double> PetscComplex;
 typedef complexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
 PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 #endif  /* PETSC_USE_REAL_ */
-#endif  /* PETSC_USE_COMPLEX || PETSC_DESIRE_COMPLEX */
+#endif  /* ! PETSC_SKIP_COMPLEX */
 
 #elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX)
-/* Use C99 _Complex for the type. Do not include complex.h by default to define "complex" because of symbol conflicts in Hypre. */
-/* Compilation units that can safely use complex should define PETSC_DESIRE_COMPLEX before including any headers */
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX)) || defined(PETSC_DESIRE_COMPLEX)
+#if !defined(PETSC_SKIP_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 #include <complex.h>
 
@@ -209,7 +207,7 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128 PetscAttrMPITypeTag(__complex128);
 #endif /* PETSC_USE_REAL_* */
 #elif (defined(PETSC_USE_COMPLEX) && !defined(PETSC_SKIP_COMPLEX))
 #error "PETSc was configured --with-scalar-type=complex, but a language-appropriate complex library is not available"
-#endif /* PETSC_USE_COMPLEX || PETSC_DESIRE_COMPLEX */
+#endif /* !PETSC_SKIP_COMPLEX */
 #endif /* (__cplusplus && PETSC_HAVE_CXX_COMPLEX) else-if (!__cplusplus && PETSC_HAVE_C99_COMPLEX) */
 
 #if defined(PETSC_HAVE_COMPLEX)
@@ -489,9 +487,9 @@ M*/
 #define PETSC_INFINITY                PETSC_MAX_REAL/4.0
 #define PETSC_NINFINITY              -PETSC_INFINITY
 
-PETSC_EXTERN PetscErrorCode PetscIsInfOrNanScalar(PetscScalar);
+#define PetscIsInfOrNanScalar(v) PetscIsInfOrNanReal(PetscAbsScalar(v))
+#define PetscIsNormalScalar(v) PetscIsNormalReal(PetscAbsScalar(v))
 PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
-PETSC_EXTERN PetscBool PetscIsNormalScalar(PetscScalar);
 PETSC_EXTERN PetscBool PetscIsNormalReal(PetscReal);
 
 /* ----------------------------------------------------------------------------*/

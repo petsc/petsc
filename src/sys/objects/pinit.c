@@ -2,7 +2,6 @@
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
-#define PETSC_DESIRE_COMPLEX
 #include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #include <petscviewer.h>
 

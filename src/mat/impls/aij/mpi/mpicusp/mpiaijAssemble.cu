@@ -1,3 +1,5 @@
+#define PETSC_SKIP_COMPLEX
+
 #include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
