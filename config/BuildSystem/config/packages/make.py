@@ -27,7 +27,7 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-    args = ['--prefix='+self.installDir]
+    args = ['--prefix='+self.confDir]
     args.append('--program-prefix=g')
     if self.framework.argDB.has_key('download-make-cc'):
       args.append('CC="'+self.framework.argDB['download-make-cc']+'"')
@@ -52,10 +52,10 @@ class Configure(config.package.Package):
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on GNU Make (install manually): '+str(e))
       self.postInstall(output+err,'make.args')
-    self.binDir = os.path.join(self.installDir, 'bin')
+    self.binDir = os.path.join(self.confDir, 'bin')
     self.make = os.path.join(self.binDir, 'gmake')
     self.addMakeMacro('MAKE',self.make)
-    return self.installDir
+    return self.confDir
 
   def configureMake(self):
     '''Check for user specified make - or gmake, make'''

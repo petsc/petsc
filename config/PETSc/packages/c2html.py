@@ -12,9 +12,9 @@ class Configure(PETSc.package.NewPackage):
   def Install(self):
     import os
     if self.framework.argDB['with-batch']:
-       args = ['--prefix='+self.installDir]
+       args = ['--prefix='+self.confDir]
     else:
-       args = ['--prefix='+self.installDir, '--with-cc='+'"'+self.setCompilers.CC+'"']
+       args = ['--prefix='+self.confDir, '--with-cc='+'"'+self.setCompilers.CC+'"']
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'c2html.args'), 'w')
     fd.write(args)
@@ -37,11 +37,11 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running make; make install on c2html: '+str(e)+'.\n\
  Try disable c2html with --with-c2html=0')
       output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'c2html.args')+' '+self.confDir+'/c2html', timeout=5, log = self.framework.log)
-      self.framework.actions.addArgument('C2HTML', 'Install', 'Installed c2html into '+self.installDir)
-    self.binDir = os.path.join(self.installDir, 'bin')
+      self.framework.actions.addArgument('C2HTML', 'Install', 'Installed c2html into '+self.confDir)
+    self.binDir = os.path.join(self.confDir, 'bin')
     self.c2html = os.path.join(self.binDir, 'c2html')
     self.addMakeMacro('C2HTML',self.c2html)
-    return self.installDir
+    return self.confDir
 
   def alternateConfigureLibrary(self):
     self.checkDownload(1)

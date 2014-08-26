@@ -24,7 +24,7 @@ class Configure(PETSc.package.NewPackage):
 
   def Install(self):
     import os
-    args = ['--prefix='+self.installDir]
+    args = ['--prefix='+self.confDir]
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'cmake.args'), 'w')
     fd.write(args)
@@ -41,10 +41,10 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on cmake: '+str(e))
       self.postInstall(output+err,'cmake.args')
-    self.binDir = os.path.join(self.installDir, 'bin')
+    self.binDir = os.path.join(self.confDir, 'bin')
     self.cmake = os.path.join(self.binDir, 'cmake')
     self.addMakeMacro('CMAKE',self.cmake)
-    return self.installDir
+    return self.confDir
 
   def alternateConfigureLibrary(self):
     self.checkDownload(1)

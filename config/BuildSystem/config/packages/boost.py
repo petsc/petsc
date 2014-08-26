@@ -16,11 +16,17 @@ class Configure(config.package.Package):
     self.framework.log.write('boostDir = '+self.packageDir+' installDir '+self.installDir+'\n')
     srcdir = os.path.join(self.packageDir,'boost')
     destdir = os.path.join(self.installDir,'include','boost')
-    try:
-      if os.path.isdir(destdir): shutil.rmtree(destdir)
-      shutil.copytree(srcdir,destdir)
-    except RuntimeError,e:
-      raise RuntimeError('Error installing Boost include files: '+str(e))
+    if self.installSudo:
+      try:
+        output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+destdir+' && '+self.installSudo+'rm -rf '+destdir+'  && '+self.installSudo+'cp -rf '+srcdir+' '+destdir, timeout=6000, log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error copying Scientific Python files from '+os.path.join(self.packageDir, 'Scientific')+' to '+packageDir)
+    else:
+      try:
+        if os.path.isdir(destdir): shutil.rmtree(destdir)
+        shutil.copytree(srcdir,destdir)
+      except RuntimeError,e:
+        raise RuntimeError('Error installing Boost include files: '+str(e))
     return self.installDir
 
   def getSearchDirectories(self):

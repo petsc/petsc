@@ -1062,7 +1062,7 @@ class GNUPackage(Package):
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
-      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && make && make install', timeout=6000, log = self.framework.log)
+      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && make && '+self.installSudo+'make install', timeout=6000, log = self.framework.log)
       output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && make clean', timeout=200, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))

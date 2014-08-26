@@ -10,20 +10,6 @@ class Configure(config.package.Package):
     self.cxx             = 0
     return
 
-  def Install(self):
-    import shutil
-    import os
-    self.framework.log.write('thrustDir = '+self.packageDir+' installDir '+self.installDir+'\n')
-    srcdir = self.packageDir
-    destdir = os.path.join(self.installDir, 'include', 'thrust')
-    try:
-      if os.path.isdir(destdir): shutil.rmtree(destdir)
-      shutil.copytree(srcdir,destdir)
-    except RuntimeError,e:
-      raise RuntimeError('Error installing Thrust include files: '+str(e))
-    self.includedir = 'include' # default and --download have different includedirs
-    return self.installDir
-
   def getSearchDirectories(self):
     import os
     yield ''

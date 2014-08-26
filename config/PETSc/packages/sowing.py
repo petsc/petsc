@@ -22,7 +22,7 @@ class Configure(PETSc.package.NewPackage):
 
   def Install(self):
     import os
-    args = ['--prefix='+self.installDir]
+    args = ['--prefix='+self.confDir]
     if 'download-sowing-cc' in self.framework.argDB and self.framework.argDB['download-sowing-cc']:
       args.append('CC="'+self.framework.argDB['download-sowing-cc']+'"')
     if 'download-sowing-cxx' in self.framework.argDB and self.framework.argDB['download-sowing-cxx']:
@@ -47,11 +47,11 @@ class Configure(PETSc.package.NewPackage):
         self.logPrintBox('Running make on sowing; this may take several minutes')
         output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make', timeout=2500, log = self.framework.log)
         self.logPrintBox('Running make install on sowing')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+' make install && make clean', timeout=100, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' &&  make install && make clean', timeout=100, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on Sowing (install manually): '+str(e))
-      self.framework.actions.addArgument('Sowing', 'Install', 'Installed Sowing into '+self.installDir)
-    self.binDir   = os.path.join(self.installDir, 'bin')
+      self.framework.actions.addArgument('Sowing', 'Install', 'Installed Sowing into '+self.confDir)
+    self.binDir   = os.path.join(self.confDir, 'bin')
     self.bfort    = os.path.join(self.binDir, 'bfort')
     self.doctext  = os.path.join(self.binDir, 'doctext')
     self.mapnames = os.path.join(self.binDir, 'mapnames')
@@ -69,7 +69,7 @@ class Configure(PETSc.package.NewPackage):
     self.addMakeMacro('MAPNAMES ', self.mapnames)
     self.addMakeMacro('BIB2HTML ', self.bib2html)
     self.getExecutable('pdflatex', getFullPath = 1)
-    return self.installDir
+    return self.confDir
 
   def buildFortranStubs(self):
     if hasattr(self.compilers, 'FC'):
