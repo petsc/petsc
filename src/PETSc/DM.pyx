@@ -62,6 +62,16 @@ cdef class DM(Object):
         CHKERR( DMGetType(self.dm, &cval) )
         return bytes2str(cval)
 
+    def getDimension(self):
+        cdef PetscInt dim = 0
+        CHKERR( DMGetDimension(self.dm, &dim) )
+        return toInt(dim)
+
+    def setDimension(self, dim):
+        cdef PetscInt cdim = asInt(dim)
+        CHKERR( DMSetDimension(self.dm, cdim) )
+
+
     def setOptionsPrefix(self, prefix):
         cdef const_char *cval = NULL
         prefix = str2bytes(prefix, &cval)
