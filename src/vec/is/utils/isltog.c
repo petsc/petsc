@@ -145,7 +145,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *map
   } else {
     ierr = ISGetBlockSize(is,&bs);CHKERRQ(ierr);
     ierr = ISBlockGetIndices(is,&indices);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingCreate(comm,bs,n,indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(comm,bs,n/bs,indices,PETSC_COPY_VALUES,mapping);CHKERRQ(ierr);
     ierr = ISBlockRestoreIndices(is,&indices);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -238,8 +238,8 @@ PetscErrorCode  ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mappin
     Input Parameters:
 +   comm - MPI communicator
 .   bs - the block size
-.   n - the number of local elements
-.   indices - the global index for each local element, these do not need to be in increasing order (sorted), these values should not be scaled by the blocksize bs
+.   n - the number of local elements divided by the block size, or equivalently the number of block indices
+.   indices - the global index for each local element, these do not need to be in increasing order (sorted), these values should not be scaled (i.e. multiplied) by the blocksize bs
 -   mode - see PetscCopyMode
 
     Output Parameter:
