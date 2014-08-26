@@ -10,8 +10,6 @@ cdef extern from * nogil:
     int DMPlexCreateFromCellList(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscBool,int[],PetscInt,double[],PetscDM*)
     #int DMPlexCreateFromDAG(PetscDM,PetscInt,const_PetscInt[],const_PetscInt[],const_PetscInt[],const_PetscInt[],const_PetscScalar[])
 
-    int DMPlexGetDimension(PetscDM,PetscInt*)
-    int DMPlexSetDimension(PetscDM,PetscInt)
     int DMPlexGetChart(PetscDM,PetscInt*,PetscInt*)
     int DMPlexSetChart(PetscDM,PetscInt,PetscInt)
     int DMPlexGetConeSize(PetscDM,PetscInt,PetscInt*)

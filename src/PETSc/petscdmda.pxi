@@ -26,7 +26,6 @@ cdef extern from * nogil:
                      PetscInt,                         # stencil width
                      PetscDM*)
     
-    int DMDASetDim(PetscDM,PetscInt)
     int DMDASetDof(PetscDM,PetscInt)
     int DMDASetSizes(PetscDM,PetscInt,PetscInt,PetscInt)
     int DMDASetNumProcs(PetscDM,PetscInt,PetscInt,PetscInt)
