@@ -884,6 +884,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     if (same && mfqP->delta == deltaold) {
       PetscInfo(tao,"Identical model used in successive iterations");
       reason = TAO_CONVERGED_STEPTOL;
+      tao->reason = TAO_CONVERGED_STEPTOL;
     }
   }
   PetscFunctionReturn(0);
