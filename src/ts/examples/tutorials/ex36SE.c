@@ -2,8 +2,8 @@
 static char help[] = "Transistor amplifier (semi-explicit).\n";
 
 /*F
-  [I 0] [y] = f(t,y,z)
-  [0 0] [z] = g(t,y,z)
+  [I 0] [y'] = f(t,y,z)
+  [0 0] [z'] = g(t,y,z)
   Useful options: -ts_monitor_lg_solution -ts_monitor_lg_timestep -lg_indicate_data_points 0
 F*/
 
@@ -63,7 +63,7 @@ static PetscErrorCode IFunctionSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Vec
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-static PetscErrorCode IJacobianSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
+static PetscErrorCode IJacobianSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,PetscReal a,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       rowcol[] = {0,1,2,3,4};
@@ -95,18 +95,17 @@ static PetscErrorCode IJacobianSemiExplicit(TS ts,PetscReal t,Vec Y,Vec Ydot,Pet
   J[4][3]=-99/(2.6e6* PetscExpReal((500*(y[0] + y[1] - y[3]))/13.));
   J[4][4]=-0.00022222222222222223;
 
-  ierr    = MatSetValues(*B,5,rowcol,5,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = MatSetValues(B,5,rowcol,5,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   
   ierr    = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(Ydot,&ydot);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -156,8 +155,8 @@ int main(int argc,char **argv)
   ierr = TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1);CHKERRQ(ierr);
   ierr = TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE);CHKERRQ(ierr);
   /*ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);*/
-  ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunctionSemiExplicit,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobianSemiExplicit,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,PETSC_NULL,IFunctionSemiExplicit,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,A,A,IJacobianSemiExplicit,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
