@@ -61,6 +61,7 @@ PETSC_EXTERN PetscClassId PETSCDUALSPACE_CLASSID;
 J*/
 typedef const char *PetscDualSpaceType;
 #define PETSCDUALSPACELAGRANGE "lagrange"
+#define PETSCDUALSPACESIMPLE   "simple"
 
 PETSC_EXTERN PetscFunctionList PetscDualSpaceList;
 PETSC_EXTERN PetscBool         PetscDualSpaceRegisterAllCalled;
@@ -89,6 +90,9 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscC
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceLagrangeSetContinuity(PetscDualSpace, PetscBool);
+
+PETSC_EXTERN PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceSimpleSetFunctional(PetscDualSpace, PetscInt, PetscQuadrature);
 
 PETSC_EXTERN PetscClassId PETSCFE_CLASSID;
 

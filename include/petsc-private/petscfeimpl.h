@@ -61,6 +61,10 @@ typedef struct {
   PetscBool continuous;
 } PetscDualSpace_Lag;
 
+typedef struct {
+  PetscInt dim;
+} PetscDualSpace_Simple;
+
 typedef struct _PetscFEOps *PetscFEOps;
 struct _PetscFEOps {
   PetscErrorCode (*setfromoptions)(PetscFE);
