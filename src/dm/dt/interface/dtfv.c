@@ -1378,7 +1378,7 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
   Logically collective on PetscFV
 
   Input Parameters:
-+ fvm - the PetscFV object to destroy
++ fvm - the PetscFV object
 - lim - The PetscLimiter
 
   Level: developer
@@ -1406,7 +1406,7 @@ PetscErrorCode PetscFVSetLimiter(PetscFV fvm, PetscLimiter lim)
   Not collective
 
   Input Parameter:
-. fvm - the PetscFV object to destroy
+. fvm - the PetscFV object
 
   Output Parameter:
 . lim - The PetscLimiter
@@ -1432,7 +1432,7 @@ PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim)
   Logically collective on PetscFV
 
   Input Parameters:
-+ fvm - the PetscFV object to destroy
++ fvm - the PetscFV object
 - comp - The number of components
 
   Level: developer
@@ -1459,7 +1459,7 @@ PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp)
   Not collective
 
   Input Parameter:
-. fvm - the PetscFV object to destroy
+. fvm - the PetscFV object
 
   Output Parameter:
 , comp - The number of components
@@ -1485,7 +1485,7 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
   Logically collective on PetscFV
 
   Input Parameters:
-+ fvm - the PetscFV object to destroy
++ fvm - the PetscFV object
 - dim - The spatial dimension
 
   Level: developer
@@ -1508,7 +1508,7 @@ PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim)
   Logically collective on PetscFV
 
   Input Parameter:
-. fvm - the PetscFV object to destroy
+. fvm - the PetscFV object
 
   Output Parameter:
 . dim - The spatial dimension
@@ -1534,7 +1534,7 @@ PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim)
   Logically collective on PetscFV
 
   Input Parameters:
-+ fvm - the PetscFV object to destroy
++ fvm - the PetscFV object
 - computeGradients - Flag to compute cell gradients
 
   Level: developer
@@ -1557,7 +1557,7 @@ PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradient
   Not collective
 
   Input Parameter:
-. fvm - the PetscFV object to destroy
+. fvm - the PetscFV object
 
   Output Parameter:
 . computeGradients - Flag to compute cell gradients
