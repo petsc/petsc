@@ -987,7 +987,7 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
     } else if (fas->fastype ==SNES_FAS_KASKADE) {
       ierr = SNESFASCycle_Kaskade(snes, X);CHKERRQ(ierr);
     } else {
-      SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported FAS type");CHKERRQ(ierr);
+      SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported FAS type");
     }
 
     /* check for FAS cycle divergence */
