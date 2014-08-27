@@ -6170,13 +6170,6 @@ PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, VecScatter *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateDefaultSection_Plex"
-/* Pointwise interpolation
-     Just code FEM for now
-     u^f = I u^c
-     sum_k u^f_k phi^f_k = I sum_l u^c_l phi^c_l
-     u^f_i = sum_l int psi^f_i I phi^c_l u^c_l
-     I_{ij} = int psi^f_i phi^c_j
-*/
 PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
 {
   PetscSection   section;
