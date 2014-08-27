@@ -17,7 +17,6 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-clean=<bool>',         nargs.ArgBool(None, 0, 'Delete prior build files including externalpackages'))
-    help.addArgument('PETSc', '-prefix-sudo-password',      nargs.ArgString(None, 0, 'Password for sudo installs to prefix location'))
     return
 
   def setupDependencies(self, framework):
@@ -26,7 +25,7 @@ class Configure(config.base.Configure):
     return
 
   def setInstallDir(self):
-    ''' setup installDir to either prefix or if that is not set PETSC_DIR/PETSC_ARCH'''
+    ''' setup installDir to either prefix or if that is not set to PETSC_DIR/PETSC_ARCH'''
     self.installSudo = ''
     if self.framework.argDB['prefix']:
       self.dir = self.framework.argDB['prefix']
@@ -34,11 +33,8 @@ class Configure(config.base.Configure):
         os.makedirs(os.path.join(self.dir,'PETScTestDirectory'))
         os.rmdir(os.path.join(self.dir,'PETScTestDirectory'))
       except:
-        if self.framework.argDB['prefix-sudo-password']:
-          self.installSudo = 'echo '+self.framework.argDB['prefix-sudo-password']+' | sudo -S '
-        else:
-          self.logPrintBox('You do not have write permissions to the --prefix directory '+self.dir+'\nYou will be prompted for the sudo password for any external package installs')
-          self.installSudo = 'sudo '
+        self.logPrintBox('You do not have write permissions to the --prefix directory '+self.dir+'\nYou will be prompted for the sudo password for any external package installs')
+        self.installSudo = 'sudo '
     else:
       self.dir = os.path.abspath(os.path.join(self.arch.arch))
     self.confDir = os.path.abspath(os.path.join(self.arch.arch))
