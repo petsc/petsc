@@ -268,4 +268,26 @@ PETSC_STATIC_INLINE void UpdateElementVec(PetscInt dim, PetscInt Nq, PetscInt Nb
 #endif
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEInterpolate_Static"
+PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const PetscScalar x[], PetscInt q, PetscScalar interpolant[])
+{
+  PetscReal     *basis;
+  PetscInt       Nb, Nc, fc, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+  ierr = PetscFEGetDefaultTabulation(fe, &basis, NULL, NULL);CHKERRQ(ierr);
+  for (fc = 0; fc < Nc; ++fc) {
+    interpolant[fc] = 0.0;
+    for (f = 0; f < Nb; ++f) {
+      const PetscInt fidx = f*Nc+fc;
+      interpolant[fc] += x[fidx]*basis[q*Nb*Nc+fidx];
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 #endif
