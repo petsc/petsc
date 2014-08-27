@@ -54,7 +54,7 @@ class Configure(PETSc.package.NewPackage):
         self.compilers.CPPFLAGS = oldFlags
       except:
         pass
-      if not found and (self.setCompilers.isDarwin() or self.setCompilers.isLinux()):
+      if not found and self.setCompilers.isLinux():
         self.logPrintBox('It appears you do not have valgrind installed on your system.\n\
 We HIGHLY recommend you install it from www.valgrind.org\n\
 Or install valgrind-devel or equivalent using your package manager.\n\
