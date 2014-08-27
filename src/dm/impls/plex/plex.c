@@ -6242,14 +6242,25 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
   ierr = PetscMalloc2(numFields,&numComp,numFields*(dim+1),&numDof);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
-    PetscFE         fe;
-    const PetscInt *numFieldDof;
-    PetscInt        d;
+    PetscObject  obj;
+    PetscClassId id;
 
-    ierr = DMGetField(dm, f, (PetscObject *) &fe);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe, &numComp[f]);CHKERRQ(ierr);
-    ierr = PetscFEGetNumDof(fe, &numFieldDof);CHKERRQ(ierr);
-    for (d = 0; d < dim+1; ++d) numDof[f*(dim+1)+d] = numFieldDof[d];
+    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      PetscFE         fe = (PetscFE) obj;
+      const PetscInt *numFieldDof;
+      PetscInt        d;
+
+      ierr = PetscFEGetNumComponents(fe, &numComp[f]);CHKERRQ(ierr);
+      ierr = PetscFEGetNumDof(fe, &numFieldDof);CHKERRQ(ierr);
+      for (d = 0; d < dim+1; ++d) numDof[f*(dim+1)+d] = numFieldDof[d];
+    } else if (id == PETSCFV_CLASSID) {
+      PetscFV fv = (PetscFV) obj;
+
+      ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
+      numDof[f*(dim+1)+dim] = numComp[f];
+    } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
   }
   for (f = 0; f < numFields; ++f) {
     PetscInt d;

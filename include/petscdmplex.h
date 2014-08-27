@@ -8,6 +8,7 @@
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfe.h>
+#include <petscfv.h>
 
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCohesiveSubmesh(DM, PetscBool, const char [], PetscInt, DM *);
