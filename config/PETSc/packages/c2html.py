@@ -36,7 +36,7 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on c2html: '+str(e)+'.\n\
  Try disable c2html with --with-c2html=0')
-      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'c2html.args')+' '+self.confDir+'/c2html', timeout=5, log = self.framework.log)
+      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'c2html.args')+' '+os.path.join(self.confDir,'conf','c2html'), timeout=5, log = self.framework.log)
       self.framework.actions.addArgument('C2HTML', 'Install', 'Installed c2html into '+self.confDir)
     self.binDir = os.path.join(self.confDir, 'bin')
     self.c2html = os.path.join(self.binDir, 'c2html')

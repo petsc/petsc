@@ -63,7 +63,7 @@ class Configure(PETSc.package.NewPackage):
     for prog in [self.bfort, self.doctext, self.mapnames]:
       if not (os.path.isfile(prog) and os.access(prog, os.X_OK)):
         raise RuntimeError('Error in Sowing installation: Could not find '+prog)
-      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'sowing')+' '+self.confDir+'/sowing', timeout=5, log = self.framework.log)
+      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'sowing')+' '+os.path.join(self.confDir,'conf','sowing'), timeout=5, log = self.framework.log)
     self.addMakeMacro('BFORT ', self.bfort)
     self.addMakeMacro('DOCTEXT ', self.doctext)
     self.addMakeMacro('MAPNAMES ', self.mapnames)

@@ -212,10 +212,10 @@ class Package(config.base.Configure):
 
   def getInstallDir(self):
     self.installDir = self.defaultInstallDir
-    self.confDir    = self.installDirProvider.confDir
     self.installSudo= self.installDirProvider.installSudo
     self.includeDir = os.path.join(self.installDir, 'include')
     self.libDir     = os.path.join(self.installDir, 'lib')
+    self.confDir    = self.installDirProvider.confDir
     self.packageDir = self.getDir()
     return os.path.abspath(self.Install())
 
@@ -385,7 +385,7 @@ class Package(config.base.Configure):
 
   def installNeeded(self, mkfile):
     makefile      = os.path.join(self.packageDir, mkfile)
-    makefileSaved = os.path.join(self.confDir, self.name)
+    makefileSaved = os.path.join(self.confDir, 'conf',self.name)
     if not os.path.isfile(makefileSaved) or not (self.getChecksum(makefileSaved) == self.getChecksum(makefile)):
       self.framework.log.write('Have to rebuild '+self.name+', '+makefile+' != '+makefileSaved+'\n')
       return 1
@@ -398,7 +398,7 @@ class Package(config.base.Configure):
     self.framework.log.write('********Output of running make on '+self.name+' follows *******\n')
     self.framework.log.write(output)
     self.framework.log.write('********End of Output of running make on '+self.name+' *******\n')
-    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir, self.name), timeout=5, log = self.framework.log)
+    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir,'conf', self.name), timeout=5, log = self.framework.log)
     self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.name+' into '+self.installDir)
 
   def matchExcludeDir(self,dir):
@@ -780,9 +780,10 @@ Brief overview of how BuildSystem\'s configuration of packages works.
             ...
             set the following instance variables, creating directories, if necessary:
             self.installDir   /* This is where the package will be installed, after it is built. */
-            self.confDir      /* subdir of self.installDir */
             self.includeDir   /* subdir of self.installDir */
             self.libDir       /* subdir of self.installDir */
+            self.confDir      /* where packages private to the configure/build process are built, such as --download-make */
+                              /* The subdirectory of this 'conf' is where where the configuration information will be stored for the package */
             self.packageDir = /* this dir is where the source is unpacked and built */
             self.getDir():
               ...

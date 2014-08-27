@@ -455,11 +455,11 @@ class Configure(config.package.Package):
         pass
 
       try:
-        fd = file(os.path.join(self.confDir, self.name), 'w')
+        fd = file(os.path.join(self.confDir, 'conf',self.name), 'w')
         fd.write(args)
         fd.close()
       except:
-        self.framework.logPrint('Unable to output configure arguments into '+os.path.join(self.confDir, self.name))
+        self.framework.logPrint('Unable to output configure arguments into '+os.path.join(self.confDir, 'conf',self.name))
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed OPENMPI/MPI into '+installDir)
 
     self.updateCompilers(installDir,'mpicc','mpic++','mpif77','mpif90')
@@ -570,11 +570,11 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running make; make install on MPICH: '+str(e))
 
       try:
-        fd = file(os.path.join(self.confDir, self.name), 'w')
+        fd = file(os.path.join(self.confDir, 'conf',self.name), 'w')
         fd.write(args)
         fd.close()
       except:
-        self.framework.logPrint('Unable to output configure arguments into '+os.path.join(self.confDir, self.name))
+        self.framework.logPrint('Unable to output configure arguments into '+os.path.join(self.confDir, 'conf',self.name))
       if self.argDB['download-mpich-pm'] == 'mpd':
         homedir = os.getenv('HOME')
         if homedir:
