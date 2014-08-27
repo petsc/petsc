@@ -80,6 +80,8 @@ PETSC_EXTERN PetscErrorCode PetscFVSetSpatialDimension(PetscFV, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscFVGetSpatialDimension(PetscFV, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFVSetComputeGradients(PetscFV, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscFVGetComputeGradients(PetscFV, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscFVSetQuadrature(PetscFV, PetscQuadrature);
+PETSC_EXTERN PetscErrorCode PetscFVGetQuadrature(PetscFV, PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode PetscFVComputeGradient(PetscFV, PetscInt, PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV, PetscInt, PetscInt, PetscFV[], PetscInt, PetscCellGeometry, PetscCellGeometry, PetscScalar[], PetscScalar[],

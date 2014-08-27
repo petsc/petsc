@@ -70,6 +70,7 @@ struct _p_PetscFV {
   PetscInt        dim;              /* The spatial dimension */
   PetscBool       computeGradients; /* Flag for gradient computation */
   PetscScalar    *fluxWork;         /* The work array for flux calculation */
+  PetscQuadrature quadrature;       /* Suitable quadrature on the volume */
 };
 
 typedef struct {

@@ -1576,6 +1576,59 @@ PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradien
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscFVSetQuadrature"
+/*@
+  PetscFVSetQuadrature - Set the quadrature object
+
+  Logically collective on PetscFV
+
+  Input Parameters:
++ fvm - the PetscFV object
+- q - The PetscQuadrature
+
+  Level: developer
+
+.seealso: PetscFVGetQuadrature()
+@*/
+PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  ierr = PetscQuadratureDestroy(&fvm->quadrature);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) q);CHKERRQ(ierr);
+  fvm->quadrature = q;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVGetQuadrature"
+/*@
+  PetscFVGetQuadrature - Get the quadrature object
+
+  Not collective
+
+  Input Parameter:
+. fvm - the PetscFV object
+
+  Output Parameter:
+. lim - The PetscQuadrature
+
+  Level: developer
+
+.seealso: PetscFVSetQuadrature()
+@*/
+PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  PetscValidPointer(q, 2);
+  *q = fvm->quadrature;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscFVComputeGradient"
 /*@C
   PetscFVComputeGradient - Compute the gradient reconstruction matrix for a given cell
