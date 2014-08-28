@@ -66,7 +66,7 @@ class Configure(PETSc.package.NewPackage):
       try:
         self.logPrintBox('Compiling Scalapack; this may take several minutes')
         libDir = os.path.join(self.installDir, self.libdir)
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make lib && mv libscalapack.* '+libDir, timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make lib && '+self.installSudo+'mkdir -p '+libDir+' && '+self.installSudo+'cp libscalapack.* '+libDir, timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
       self.postInstall(output,'SLmake.inc')

@@ -57,10 +57,12 @@ class Configure(PETSc.package.NewPackage):
     g.close()
     if self.installNeeded('make.inc'):
       try:
-        self.logPrintBox('Compiling superlu; this may take several minutes')
+        self.logPrintBox('Compiling and installing superlu; this may take several minutes')
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make superlulib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX="" && cp -f lib/*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' &&  cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make superlulib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX="" && '+self.installSudo+'cp -f lib/*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' &&  '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
       self.postInstall(output+err,'make.inc')

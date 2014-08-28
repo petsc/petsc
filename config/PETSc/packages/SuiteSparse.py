@@ -59,16 +59,19 @@ class Configure(PETSc.package.NewPackage):
 
     if self.installNeeded(mkfile):
       try:
-        self.logPrintBox('Compiling SuiteSparse; this may take several minutes')
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+self.make.make+' && '+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/AMD && '+self.make.make+' library && '+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/COLAMD && '+self.make.make+' library && '+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/BTF && '+self.make.make+' library && '+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/CAMD && '+self.make.make+' library && '+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/CCOLAMD && '+self.make.make+' library && '+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/CHOLMOD && '+self.make.make+' library && '+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/UMFPACK && '+self.make.make+' library && '+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/KLU && '+self.make.make+' library && '+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
+        self.logPrintBox('Compiling and installing SuiteSparse; this may take several minutes')
+        # SuiteSparse install does not create missing directories, hence we need to create them first 
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+self.make.make+' && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/AMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/COLAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/BTF && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/CAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/CCOLAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/CHOLMOD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/UMFPACK && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+'/KLU && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
 
         self.addDefine('HAVE_SUITESPARSE',1)
       except RuntimeError, e:

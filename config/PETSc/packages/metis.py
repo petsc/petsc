@@ -77,7 +77,7 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running configure on METIS: '+str(e))
       try:
         self.logPrintBox('Compiling METIS; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && make && make install', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && make && '+self.installSudo+'make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on METIS: '+str(e))
       self.postInstall(output1+err1+output2+err2,'metis')

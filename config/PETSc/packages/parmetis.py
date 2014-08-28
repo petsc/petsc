@@ -79,7 +79,7 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running configure on ParMETIS: '+str(e))
       try:
         self.logPrintBox('Compiling ParMETIS; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && make && make install', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && make && '+self.installSudo+'make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ParMETIS: '+str(e))
       self.postInstall(output1+err1+output2+err2,'parmetis')
