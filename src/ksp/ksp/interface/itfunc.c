@@ -2068,9 +2068,14 @@ $  func(KSP ksp,Mat A,Mat B,void *ctx)
 .  B - preconditioning matrix
 -  ctx - optional user-provided context
 
+   Notes: The user provided func() will be called automatically at the very next call to KSPSolve(). It will not be called at future KSPSolve() calls
+          unless either KSPSetComputeOperators() or KSPSetOperators() is called before that KSPSolve() is called.
+
+          To reuse the same preconditioner for the next KSPSolve() and not compute a new one based on the most recently computed matrix call KSPSetReusePreconditioner()
+
    Level: beginner
 
-.seealso: KSPSetOperators(), KSPSetComputeRHS(), DMKSPSetComputeOperators()
+.seealso: KSPSetOperators(), KSPSetComputeRHS(), DMKSPSetComputeOperators(), KSPSetComputeInitialGuess()
 @*/
 PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
 {
