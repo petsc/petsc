@@ -122,6 +122,12 @@ cdef class DMDA(DM):
 
     #
 
+    def setDim(self, dim):
+        return self.setDimension(dim)
+
+    def getDim(self):
+        return self.getDimension()
+
     def setDof(self, dof):
         cdef PetscInt ndof = asInt(dof)
         CHKERR( DMDASetDof(self.dm, ndof) )
