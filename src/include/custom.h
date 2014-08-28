@@ -557,7 +557,7 @@ DMDACreateND(MPI_Comm comm,
   PetscFunctionBegin;
   PetscValidPointer(dm,18);
   ierr = DMDACreate(comm,&da);CHKERRQ(ierr);
-  ierr = DMDASetDim(da,dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(da,dim);CHKERRQ(ierr);
   ierr = DMDASetDof(da,dof);CHKERRQ(ierr);
   ierr = DMDASetSizes(da,M,N,P);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(da,m,n,p);CHKERRQ(ierr);

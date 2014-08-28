@@ -123,15 +123,6 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexCreateCohesiveSubmesh(self.dm, flag, NULL, cvalue, &subdm.dm) )
         return subdm
 
-    def getDimension(self):
-        cdef PetscInt dim = 0
-        CHKERR( DMPlexGetDimension(self.dm, &dim) )
-        return toInt(dim)
-
-    def setDimension(self, dim):
-        cdef PetscInt cdim = asInt(dim)
-        CHKERR( DMPlexSetDimension(self.dm, cdim) )
-
     def getChart(self):
         cdef PetscInt pStart = 0, pEnd = 0
         CHKERR( DMPlexGetChart(self.dm, &pStart, &pEnd) )
@@ -501,7 +492,7 @@ cdef class DMPlex(DM):
     def createSection(self, numComp, numDof, bcField=None, bcPoints=None, IS perm=None):
         # topological dimension
         cdef PetscInt dim = 0
-        CHKERR( DMPlexGetDimension(self.dm, &dim) )
+        CHKERR( DMGetDimension(self.dm, &dim) )
         # components and DOFs
         cdef PetscInt ncomp = 0, ndof = 0
         cdef PetscInt *icomp = NULL, *idof = NULL
@@ -566,7 +557,7 @@ cdef class DMPlex(DM):
     def computeCellGeometryFVM(self, cell):
         cdef PetscInt dim = 0
         cdef PetscInt ccell = asInt(cell)
-        CHKERR( DMPlexGetDimension(self.dm, &dim) )
+        CHKERR( DMGetDimension(self.dm, &dim) )
         cdef PetscReal vol = 0, centroid[3], normal[3]
         CHKERR( DMPlexComputeCellGeometryFVM(self.dm, ccell, &vol, centroid, normal) )
         return (toReal(vol), array_r(dim, centroid), array_r(dim, normal))

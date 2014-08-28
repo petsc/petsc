@@ -123,19 +123,10 @@ cdef class DMDA(DM):
     #
 
     def setDim(self, dim):
-        cdef PetscInt ndim = asInt(dim)
-        CHKERR( DMDASetDim(self.dm, ndim) )
-        
+        return self.setDimension(dim)
+
     def getDim(self):
-        cdef PetscInt dim = 0
-        CHKERR( DMDAGetInfo(self.dm,
-                            &dim,
-                            NULL, NULL, NULL,
-                            NULL, NULL, NULL,
-                            NULL, NULL,
-                            NULL, NULL, NULL,
-                            NULL) )
-        return toInt(dim)
+        return self.getDimension()
 
     def setDof(self, dof):
         cdef PetscInt ndof = asInt(dof)
@@ -162,7 +153,7 @@ cdef class DMDA(DM):
         cdef PetscInt dim = PETSC_DECIDE
         CHKERR( DMDAGetDim(self.dm, &dim) )
         if dim == PETSC_DECIDE:
-            CHKERR( DMDASetDim(self.dm, gdim) )
+            CHKERR( DMSetDimension(self.dm, gdim) )
         CHKERR( DMDASetSizes(self.dm, M, N, P) )
 
     def getSizes(self):
@@ -189,7 +180,7 @@ cdef class DMDA(DM):
         cdef PetscInt dim = PETSC_DECIDE
         CHKERR( DMDAGetDim(self.dm, &dim) )
         if dim == PETSC_DECIDE:
-            CHKERR( DMDASetDim(self.dm, pdim) )
+            CHKERR( DMSetDimension(self.dm, pdim) )
         CHKERR( DMDASetNumProcs(self.dm, m, n, p) )
 
     def getProcSizes(self):
