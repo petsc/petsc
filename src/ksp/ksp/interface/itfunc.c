@@ -2061,7 +2061,7 @@ PetscErrorCode  KSPGetDiagonalScaleFix(KSP ksp,PetscBool  *fix)
 -  ctx - optional context
 
    Calling sequence of func:
-$  func(KSP ksp,Mat *A,Mat *B,MatStructure *mstruct,void *ctx)
+$  func(KSP ksp,Mat A,Mat B,void *ctx)
 
 +  ksp - the KSP context
 .  A - the linear operator
@@ -2070,7 +2070,7 @@ $  func(KSP ksp,Mat *A,Mat *B,MatStructure *mstruct,void *ctx)
 
    Level: beginner
 
-.seealso: KSPSetOperators(), DMKSPSetComputeOperators()
+.seealso: KSPSetOperators(), KSPSetComputeRHS(), DMKSPSetComputeOperators()
 @*/
 PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
 {
@@ -2104,9 +2104,11 @@ $  func(KSP ksp,Vec b,void *ctx)
 .  b - right hand side of linear system
 -  ctx - optional user-provided context
 
+   Notes: The routine you provide will be called EACH you call KSPSolve() to prepare the new right hand side for that solve
+
    Level: beginner
 
-.seealso: KSPSolve(), DMKSPSetComputeRHS()
+.seealso: KSPSolve(), DMKSPSetComputeRHS(), KSPSetComputeOperators()
 @*/
 PetscErrorCode KSPSetComputeRHS(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {
@@ -2141,7 +2143,7 @@ $  func(KSP ksp,Vec x,void *ctx)
 
    Level: beginner
 
-.seealso: KSPSolve(), DMKSPSetComputeInitialGuess()
+.seealso: KSPSolve(), KSPSetComputeRHS(), KSPSetComputeOperators(), DMKSPSetComputeInitialGuess()
 @*/
 PetscErrorCode KSPSetComputeInitialGuess(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {
