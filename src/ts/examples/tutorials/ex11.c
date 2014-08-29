@@ -1067,87 +1067,6 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SetUpLocalSpace"
-PetscErrorCode SetUpLocalSpace(DM dm, User user)
-{
-  PetscSection   stateSection;
-  Physics        phys;
-  PetscInt       dof = user->model->physics->dof, *cind, d, stateSize, cStart, cEnd, cEndInterior, c, i;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &stateSection);CHKERRQ(ierr);
-  phys = user->model->physics;
-  ierr = PetscSectionSetNumFields(stateSection,phys->nfields);CHKERRQ(ierr);
-  for (i=0; i<phys->nfields; i++) {
-    ierr = PetscSectionSetFieldName(stateSection,i,phys->field_desc[i].name);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldComponents(stateSection,i,phys->field_desc[i].dof);CHKERRQ(ierr);
-  }
-  ierr = PetscSectionSetChart(stateSection, cStart, cEnd);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
-    for (i=0; i<phys->nfields; i++) {
-      ierr = PetscSectionSetFieldDof(stateSection,c,i,phys->field_desc[i].dof);CHKERRQ(ierr);
-    }
-    ierr = PetscSectionSetDof(stateSection, c, dof);CHKERRQ(ierr);
-  }
-  for (c = cEndInterior; c < cEnd; ++c) {
-    ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);
-  }
-  ierr = PetscSectionSetUp(stateSection);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dof, &cind);CHKERRQ(ierr);
-  for (d = 0; d < dof; ++d) cind[d] = d;
-#if 0
-  for (c = cStart; c < cEnd; ++c) {
-    PetscInt val;
-
-    ierr = DMPlexGetLabelValue(dm, "vtk", c, &val);CHKERRQ(ierr);
-    if (val < 0) {ierr = PetscSectionSetConstraintIndices(stateSection, c, cind);CHKERRQ(ierr);}
-  }
-#endif
-  for (c = cEndInterior; c < cEnd; ++c) {
-    ierr = PetscSectionSetConstraintIndices(stateSection, c, cind);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(cind);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(stateSection, &stateSize);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(dm,stateSection);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&stateSection);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#if 0
-#undef __FUNCT__
-#define __FUNCT__ "SetUpBoundaries"
-PetscErrorCode SetUpBoundaries(DM dm, User user)
-{
-  Model          mod = user->model;
-  PetscErrorCode ierr;
-  BoundaryLink   b;
-
-  PetscFunctionBeginUser;
-  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)dm),NULL,"Boundary condition options","");CHKERRQ(ierr);
-  for (b = mod->boundary; b; b=b->next) {
-    char      optname[512];
-    PetscInt  ids[512],len = 512;
-    PetscBool flg;
-    ierr = PetscSNPrintf(optname,sizeof optname,"-bc_%s",b->name);CHKERRQ(ierr);
-    ierr = PetscMemzero(ids,sizeof(ids));CHKERRQ(ierr);
-    ierr = PetscOptionsIntArray(optname,"List of boundary IDs","",ids,&len,&flg);CHKERRQ(ierr);
-    if (flg) {
-      /* TODO: check all IDs to make sure they exist in the mesh */
-      ierr      = PetscFree(b->ids);CHKERRQ(ierr);
-      b->numids = len;
-      ierr      = PetscMalloc1(len,&b->ids);CHKERRQ(ierr);
-      ierr      = PetscMemcpy(b->ids,ids,len*sizeof(PetscInt));CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
-#undef __FUNCT__
 #define __FUNCT__ "ModelSolutionSetDefault"
 /* Behavior will be different for multi-physics or when using non-default boundary conditions */
 static PetscErrorCode ModelSolutionSetDefault(Model mod,SolutionFunction func,void *ctx)
@@ -1403,6 +1322,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
 int main(int argc, char **argv)
 {
   MPI_Comm          comm;
+  PetscDS           prob;
   PetscFV           fvm;
   User              user;
   Model             mod;
@@ -1500,13 +1420,14 @@ int main(int argc, char **argv)
 
   ierr = PetscFVCreate(comm, &fvm);CHKERRQ(ierr);
   ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);
-  ierr = DMSetNumFields(dm, phys->nfields);CHKERRQ(ierr);
-  for (f = 0; f < phys->nfields; ++f) {ierr = DMSetField(dm, f, (PetscObject) fvm);CHKERRQ(ierr);}
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  for (f = 0; f < phys->nfields; ++f) {
+    ierr = PetscDSAddDiscretization(prob, (PetscObject) fvm);CHKERRQ(ierr);
+    ierr = PetscDSSetRiemannSolver(prob, f, user->model->physics->riemann);CHKERRQ(ierr);
+    ierr = PetscDSSetContext(prob, f, user->model->physics);CHKERRQ(ierr);
+  }
   ierr = PetscFVSetNumComponents(fvm, phys->dof);CHKERRQ(ierr);
   ierr = PetscFVSetSpatialDimension(fvm, dim);CHKERRQ(ierr);
-
-  /* Set up DM with section describing local vector and configure local vector. */
-  ierr = SetUpLocalSpace(dm, user);CHKERRQ(ierr);
 
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts, TSSSP);CHKERRQ(ierr);
