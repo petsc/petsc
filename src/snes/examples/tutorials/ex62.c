@@ -285,7 +285,6 @@ PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  DMLabel        label;
   PetscInt       dim             = user->dim;
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
@@ -297,8 +296,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);}
   else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
-  ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
-  if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
   {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
