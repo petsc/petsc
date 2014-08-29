@@ -310,6 +310,8 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   PetscObject   *tmpd, *tmpdbd;
   PointFunc     *tmpobj, *tmpf, *tmpg;
   BdPointFunc   *tmpfbd, *tmpgbd;
+  RiemannFunc   *tmpr;
+  void         **tmpctx;
   PetscInt       Nf = prob->Nf, f;
   PetscErrorCode ierr;
 
@@ -323,17 +325,23 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   ierr = PetscFree(prob->disc);CHKERRQ(ierr);
   prob->Nf   = NfNew;
   prob->disc = tmpd;
-  ierr = PetscCalloc3(NfNew, &tmpobj, NfNew*2, &tmpf, NfNew*NfNew*4, &tmpg);CHKERRQ(ierr);
+  ierr = PetscCalloc5(NfNew, &tmpobj, NfNew*2, &tmpf, NfNew*NfNew*4, &tmpg, NfNew, &tmpr, NfNew, &tmpctx);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) tmpobj[f] = prob->obj[f];
   for (f = 0; f < Nf*2; ++f) tmpf[f] = prob->f[f];
   for (f = 0; f < Nf*Nf*4; ++f) tmpg[f] = prob->g[f];
+  for (f = 0; f < Nf; ++f) tmpr[f] = prob->r[f];
+  for (f = 0; f < Nf; ++f) tmpctx[f] = prob->ctx[f];
   for (f = Nf; f < NfNew; ++f) tmpobj[f] = NULL;
   for (f = Nf*2; f < NfNew*2; ++f) tmpf[f] = NULL;
   for (f = Nf*Nf*4; f < NfNew*NfNew*4; ++f) tmpg[f] = NULL;
-  ierr = PetscFree3(prob->obj, prob->f, prob->g);CHKERRQ(ierr);
+  for (f = Nf; f < NfNew; ++f) tmpr[f] = NULL;
+  for (f = Nf; f < NfNew; ++f) tmpctx[f] = NULL;
+  ierr = PetscFree5(prob->obj, prob->f, prob->g, prob->r, prob->ctx);CHKERRQ(ierr);
   prob->obj = tmpobj;
   prob->f   = tmpf;
   prob->g   = tmpg;
+  prob->r   = tmpr;
+  prob->ctx = tmpctx;
   ierr = PetscMalloc1(NfNew, &tmpdbd);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) tmpdbd[f] = prob->discBd[f];
   for (f = Nf; f < NfNew; ++f) tmpdbd[f] = NULL;
@@ -382,7 +390,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
   }
   ierr = PetscFree((*prob)->disc);CHKERRQ(ierr);
   ierr = PetscFree((*prob)->discBd);CHKERRQ(ierr);
-  ierr = PetscFree3((*prob)->obj,(*prob)->f,(*prob)->g);CHKERRQ(ierr);
+  ierr = PetscFree5((*prob)->obj,(*prob)->f,(*prob)->g,(*prob)->r,(*prob)->ctx);CHKERRQ(ierr);
   ierr = PetscFree2((*prob)->fBd,(*prob)->gBd);CHKERRQ(ierr);
   if ((*prob)->ops->destroy) {ierr = (*(*prob)->ops->destroy)(*prob);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(prob);CHKERRQ(ierr);
@@ -677,6 +685,113 @@ PetscErrorCode PetscDSSetJacobian(PetscDS prob, PetscInt f, PetscInt g,
   prob->g[(f*prob->Nf + g)*4+1] = g1;
   prob->g[(f*prob->Nf + g)*4+2] = g2;
   prob->g[(f*prob->Nf + g)*4+3] = g3;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSGetRiemannSolver"
+/*@C
+  PetscDSGetRiemannSolver - Returns the Riemann solver for the given field
+
+  Not collective
+
+  Input Arguments:
++ prob - The PetscDS object
+- f    - The field number
+
+  Output Argument:
+. r    - Riemann solver
+
+  Calling sequence for r:
+
+$ r(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
+
++ x    - The coordinates at a point on the interface
+. n    - The normal vector to the interface
+. uL   - The state vector to the left of the interface
+. uR   - The state vector to the right of the interface
+. flux - output array of flux through the interface
+- ctx  - optional user context
+
+  Level: intermediate
+
+.seealso: PetscDSSetRiemannSolver()
+@*/
+PetscErrorCode PetscDSGetRiemannSolver(PetscDS prob, PetscInt f,
+                                       void (**r)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  PetscValidPointer(r, 3);
+  *r = prob->r[f];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSSetRiemannSolver"
+/*@C
+  PetscDSSetRiemannSolver - Sets the Riemann solver for the given field
+
+  Not collective
+
+  Input Arguments:
++ prob - The PetscDS object
+. f    - The field number
+- r    - Riemann solver
+
+  Calling sequence for r:
+
+$ r(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
+
++ x    - The coordinates at a point on the interface
+. n    - The normal vector to the interface
+. uL   - The state vector to the left of the interface
+. uR   - The state vector to the right of the interface
+. flux - output array of flux through the interface
+- ctx  - optional user context
+
+  Level: intermediate
+
+.seealso: PetscDSGetRiemannSolver()
+@*/
+PetscErrorCode PetscDSSetRiemannSolver(PetscDS prob, PetscInt f,
+                                       void (*r)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidFunction(r, 3);
+  if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
+  prob->r[f] = r;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSGetContext"
+PetscErrorCode PetscDSGetContext(PetscDS prob, PetscInt f, void **ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  PetscValidPointer(ctx, 3);
+  *ctx = prob->ctx[f];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSSetContext"
+PetscErrorCode PetscDSSetContext(PetscDS prob, PetscInt f, void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
+  prob->ctx[f] = ctx;
   PetscFunctionReturn(0);
 }
 
