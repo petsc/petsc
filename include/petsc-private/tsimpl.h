@@ -192,6 +192,8 @@ struct _p_DMTS {
 
   void *data;
 
+  PetscReal minradius; /* Minimum distance from centroid to face */
+
   /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way
    * copy-on-write. When DMGetDMTSWrite() sees a request using a different DM, it makes a copy. Thus, if a user
    * only interacts directly with one level, e.g., using TSSetIFunction(), then coarse levels of a multilevel item

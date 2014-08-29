@@ -792,3 +792,60 @@ PetscErrorCode DMTSSetIJacobianSerialize(DM dm,PetscErrorCode (*view)(void*,Pets
   tsdm->ops->ijacobianload = load;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSGetMinRadius"
+/*@C
+  DMTSGetMinRadius - Returns the minimum distance from the centroid of a cell to a face
+
+  Not collective
+
+  Input Argument:
+. dm - the DM
+
+  Output Argument:
+. minradius - the minium cell radius
+
+  Level: developer
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+@*/
+PetscErrorCode DMTSGetMinRadius(DM dm, PetscReal *minradius)
+{
+  DMTS           dmts;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(minradius,2);
+  ierr = DMGetDMTS(dm, &dmts);CHKERRQ(ierr);
+  *minradius = dmts->minradius;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSSetMinRadius"
+/*@C
+  DMTSSetMinRadius - Sets the minimum distance from the centroid of a cell to a face
+
+  Logically collective
+
+  Input Arguments:
++ dm - the DM
+- minradius - the minium cell radius
+
+  Level: developer
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+@*/
+PetscErrorCode DMTSSetMinRadius(DM dm, PetscReal minradius)
+{
+  DMTS           dmts;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm, &dmts);CHKERRQ(ierr);
+  dmts->minradius = minradius;
+  PetscFunctionReturn(0);
+}

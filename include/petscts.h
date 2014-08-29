@@ -319,6 +319,8 @@ PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*)
 PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,PetscErrorCode (*)(TS,PetscReal,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMTSGetForcingFunction(DM,PetscErrorCode (**)(TS,PetscReal,Vec,void*),void**);
+PETSC_EXTERN PetscErrorCode DMTSGetMinRadius(DM,PetscReal*);
+PETSC_EXTERN PetscErrorCode DMTSSetMinRadius(DM,PetscReal);
 
 PETSC_EXTERN PetscErrorCode DMTSSetIFunctionLocal(DM,PetscErrorCode (*)(DM,PetscReal,Vec,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobianLocal(DM,PetscErrorCode (*)(DM,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*),void*);
@@ -338,8 +340,7 @@ PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM,InsertMode,PetscErrorCode
 PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,void*),void *);
 
 PETSC_EXTERN PetscErrorCode DMPlexTSGetGeometry(DM, Vec *, Vec *, PetscReal *);
-PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionLocalDMPlex(DM, PetscReal, Vec, Vec, void *);
-PETSC_EXTERN PetscErrorCode DMPlexTSSetRHSFunctionLocal(DM, void (*)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *), void *);
+PETSC_EXTERN PetscErrorCode DMPlexTSSetRHSFunctionLocal(DM, PetscErrorCode (*)(DM, PetscReal, Vec, Vec, void *), void *);
 
 typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 typedef struct {

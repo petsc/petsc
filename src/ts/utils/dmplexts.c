@@ -1,66 +1,12 @@
 #include <petscdmplex.h>          /*I "petscdmplex.h" I*/
 #include <petsc-private/tsimpl.h>   /*I "petscts.h" I*/
+#include <petscds.h>
 #include <petscfv.h>
 
 PETSC_STATIC_INLINE void WaxpyD(PetscInt dim, PetscReal a, const PetscReal *x, const PetscReal *y, PetscReal *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
 PETSC_STATIC_INLINE PetscReal DotD(PetscInt dim, const PetscScalar *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += PetscRealPart(x[d])*y[d]; return sum;}
 PETSC_STATIC_INLINE PetscReal DotRealD(PetscInt dim, const PetscReal *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
 PETSC_STATIC_INLINE PetscReal NormD(PetscInt dim, const PetscReal *x) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*x[d]; return PetscSqrtReal(sum);}
-
-typedef struct {
-  PetscBool setupGeom; /* Flag for geometry setup */
-  PetscBool setupGrad; /* Flag for gradient calculation setup */
-  Vec       facegeom;  /* FaceGeom struct for each face */
-  Vec       cellgeom;  /* CellGeom struct for each cell */
-  DM        dmGrad;    /* Layout for the gradient data */
-  PetscReal minradius; /* Minimum distance from centroid to face */
-  void    (*riemann)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *);
-  void     *rhsfunctionlocalctx;
-} DMTS_Plex;
-
-#undef __FUNCT__
-#define __FUNCT__ "DMTSDestroy_Plex"
-static PetscErrorCode DMTSDestroy_Plex(DMTS dmts)
-{
-  DMTS_Plex     *dmplexts = (DMTS_Plex *) dmts->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMDestroy(&dmplexts->dmGrad);CHKERRQ(ierr);
-  ierr = VecDestroy(&dmplexts->facegeom);CHKERRQ(ierr);
-  ierr = VecDestroy(&dmplexts->cellgeom);CHKERRQ(ierr);
-  ierr = PetscFree(dmts->data);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMTSDuplicate_Plex"
-static PetscErrorCode DMTSDuplicate_Plex(DMTS olddmts, DMTS dmts)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscNewLog(dmts, (DMTS_Plex **) &dmts->data);CHKERRQ(ierr);
-  if (olddmts->data) {ierr = PetscMemcpy(dmts->data, olddmts->data, sizeof(DMTS_Plex));CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexTSGetContext"
-static PetscErrorCode DMPlexTSGetContext(DM dm, DMTS dmts, DMTS_Plex **dmplexts)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  *dmplexts = NULL;
-  if (!dmts->data) {
-    ierr = PetscNewLog(dm, (DMTS_Plex **) &dmts->data);CHKERRQ(ierr);
-    dmts->ops->destroy   = DMTSDestroy_Plex;
-    dmts->ops->duplicate = DMTSDuplicate_Plex;
-  }
-  *dmplexts = (DMTS_Plex *) dmts->data;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexTSGetGeometry"
@@ -82,34 +28,60 @@ static PetscErrorCode DMPlexTSGetContext(DM dm, DMTS dmts, DMTS_Plex **dmplexts)
 PetscErrorCode DMPlexTSGetGeometry(DM dm, Vec *facegeom, Vec *cellgeom, PetscReal *minRadius)
 {
   DMTS           dmts;
-  DMTS_Plex     *dmplexts;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTS(dm, &dmts);CHKERRQ(ierr);
-  ierr = DMPlexTSGetContext(dm, dmts, &dmplexts);CHKERRQ(ierr);
-  if (facegeom)  *facegeom  = dmplexts->facegeom;
-  if (cellgeom)  *cellgeom  = dmplexts->cellgeom;
-  if (minRadius) *minRadius = dmplexts->minradius;
+  if (facegeom) {PetscValidPointer(facegeom, 2); ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_facegeom", (PetscObject *) facegeom);CHKERRQ(ierr);}
+  if (cellgeom) {PetscValidPointer(cellgeom, 3); ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_cellgeom", (PetscObject *) cellgeom);CHKERRQ(ierr);}
+  if (minRadius) {ierr = DMTSGetMinRadius(dm, minRadius);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexTSGetGradientDM"
+/*@
+  DMPlexTSGetGradientDM - Return gradient data layout
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. dmGrad - The layout for gradient values
+
+  Level: developer
+
+.seealso: DMPlexTSGetGeometry(), DMPlexTSSetRHSFunctionLocal()
+@*/
+PetscErrorCode DMPlexTSGetGradientDM(DM dm, DM *dmGrad)
+{
+  DMTS           dmts;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(dmGrad,2);
+  ierr = DMGetDMTS(dm, &dmts);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_dmgrad", (PetscObject *) dmGrad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexTSSetupGeometry"
-static PetscErrorCode DMPlexTSSetupGeometry(DM dm, PetscFV fvm, DMTS_Plex *dmplexts)
+static PetscErrorCode DMPlexTSSetupGeometry(DM dm, PetscFV fvm, DMTS dmts)
 {
   DM             dmFace, dmCell;
   DMLabel        ghostLabel;
   PetscSection   sectionFace, sectionCell;
   PetscSection   coordSection;
-  Vec            coordinates;
-  PetscReal      minradius;
+  Vec            coordinates, cellgeom, facegeom;
   PetscScalar   *fgeom, *cgeom;
+  PetscReal      minradius, gminradius;
   PetscInt       dim, cStart, cEnd, cEndInterior, c, fStart, fEnd, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dmplexts->setupGeom) PetscFunctionReturn(0);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -125,8 +97,8 @@ static PetscErrorCode DMPlexTSSetupGeometry(DM dm, PetscFV fvm, DMTS_Plex *dmple
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dmCell, sectionCell);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(dmCell, &dmplexts->cellgeom);CHKERRQ(ierr);
-  ierr = VecGetArray(dmplexts->cellgeom, &cgeom);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(dmCell, &cellgeom);CHKERRQ(ierr);
+  ierr = VecGetArray(cellgeom, &cgeom);CHKERRQ(ierr);
   for (c = cStart; c < cEndInterior; ++c) {
     CellGeom *cg;
 
@@ -143,8 +115,8 @@ static PetscErrorCode DMPlexTSSetupGeometry(DM dm, PetscFV fvm, DMTS_Plex *dmple
   ierr = PetscSectionSetUp(sectionFace);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dmFace, sectionFace);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionFace);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(dmFace, &dmplexts->facegeom);CHKERRQ(ierr);
-  ierr = VecGetArray(dmplexts->facegeom, &fgeom);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(dmFace, &facegeom);CHKERRQ(ierr);
+  ierr = VecGetArray(facegeom, &fgeom);CHKERRQ(ierr);
   ierr = DMPlexGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
   minradius = PETSC_MAX_REAL;
   for (f = fStart; f < fEnd; ++f) {
@@ -188,7 +160,8 @@ static PetscErrorCode DMPlexTSSetupGeometry(DM dm, PetscFV fvm, DMTS_Plex *dmple
       }
     }
   }
-  ierr = MPI_Allreduce(&minradius, &dmplexts->minradius, 1, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = DMTSSetMinRadius(dm, gminradius);CHKERRQ(ierr);
   /* Compute centroids of ghost cells */
   for (c = cEndInterior; c < cEnd; ++c) {
     FaceGeom       *fg;
@@ -218,11 +191,14 @@ static PetscErrorCode DMPlexTSSetupGeometry(DM dm, PetscFV fvm, DMTS_Plex *dmple
       }
     }
   }
-  ierr = VecRestoreArray(dmplexts->facegeom, &fgeom);CHKERRQ(ierr);
-  ierr = VecRestoreArray(dmplexts->cellgeom, &cgeom);CHKERRQ(ierr);
+  ierr = VecRestoreArray(facegeom, &fgeom);CHKERRQ(ierr);
+  ierr = VecRestoreArray(cellgeom, &cgeom);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) dmts, "DMPlexTS_facegeom", (PetscObject) facegeom);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) dmts, "DMPlexTS_cellgeom", (PetscObject) cellgeom);CHKERRQ(ierr);
+  ierr = VecDestroy(&facegeom);CHKERRQ(ierr);
+  ierr = VecDestroy(&cellgeom);CHKERRQ(ierr);
   ierr = DMDestroy(&dmCell);CHKERRQ(ierr);
   ierr = DMDestroy(&dmFace);CHKERRQ(ierr);
-  dmplexts->setupGeom = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -287,47 +263,48 @@ static PetscErrorCode BuildGradientReconstruction(DM dm, PetscFV fvm, DM dmFace,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexTSSetupGradient"
-static PetscErrorCode DMPlexTSSetupGradient(DM dm, PetscFV fvm, DMTS_Plex *dmplexts)
+static PetscErrorCode DMPlexTSSetupGradient(DM dm, PetscFV fvm, DMTS dmts)
 {
-  DM             dmFace, dmCell;
+  DM             dmFace, dmCell, dmGrad;
+  Vec            facegeom, cellgeom;
   PetscScalar   *fgeom, *cgeom;
   PetscSection   sectionGrad;
   PetscInt       dim, pdim, cStart, cEnd, cEndInterior, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dmplexts->setupGrad) PetscFunctionReturn(0);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   /* Construct the interpolant corresponding to each face from the leat-square solution over the cell neighborhood */
-  ierr = VecGetDM(dmplexts->facegeom, &dmFace);CHKERRQ(ierr);
-  ierr = VecGetDM(dmplexts->cellgeom, &dmCell);CHKERRQ(ierr);
-  ierr = VecGetArray(dmplexts->facegeom, &fgeom);CHKERRQ(ierr);
-  ierr = VecGetArray(dmplexts->cellgeom, &cgeom);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGeometry(dm, &facegeom, &cellgeom, NULL);CHKERRQ(ierr);
+  ierr = VecGetDM(facegeom, &dmFace);CHKERRQ(ierr);
+  ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
+  ierr = VecGetArray(facegeom, &fgeom);CHKERRQ(ierr);
+  ierr = VecGetArray(cellgeom, &cgeom);CHKERRQ(ierr);
   ierr = BuildGradientReconstruction(dm, fvm, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
-  ierr = VecRestoreArray(dmplexts->facegeom, &fgeom);CHKERRQ(ierr);
-  ierr = VecRestoreArray(dmplexts->cellgeom, &cgeom);CHKERRQ(ierr);
+  ierr = VecRestoreArray(facegeom, &fgeom);CHKERRQ(ierr);
+  ierr = VecRestoreArray(cellgeom, &cgeom);CHKERRQ(ierr);
   /* Create storage for gradients */
-  ierr = DMClone(dm, &dmplexts->dmGrad);CHKERRQ(ierr);
+  ierr = DMClone(dm, &dmGrad);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionGrad);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionGrad, cStart, cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionGrad, c, pdim*dim);CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionGrad);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(dmplexts->dmGrad, sectionGrad);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(dmGrad, sectionGrad);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionGrad);CHKERRQ(ierr);
-  dmplexts->setupGrad = PETSC_TRUE;
+  ierr = PetscObjectCompose((PetscObject) dmts, "DMPlexTS_dmgrad", (PetscObject) dmGrad);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmGrad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexInsertBoundaryValuesFVM_Static"
-static PetscErrorCode DMPlexInsertBoundaryValuesFVM_Static(DM dm, PetscFV fvm, PetscReal time, Vec locX, Vec Grad, DMTS_Plex *dmplexts)
+static PetscErrorCode DMPlexInsertBoundaryValuesFVM_Static(DM dm, PetscFV fvm, PetscReal time, Vec locX, Vec Grad)
 {
-  Vec                faceGeometry = dmplexts->facegeom;
-  Vec                cellGeometry = dmplexts->cellgeom;
-  DM                 dmFace, dmCell;
+  Vec                faceGeometry, cellGeometry;
+  DM                 dmFace, dmCell, dmGrad;
   const PetscScalar *facegeom, *cellgeom, *grad;
   PetscScalar       *x, *fx;
   PetscInt           numBd, b, dim, pdim, fStart, fEnd;
@@ -335,6 +312,8 @@ static PetscErrorCode DMPlexInsertBoundaryValuesFVM_Static(DM dm, PetscFV fvm, P
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGeometry(dm, &faceGeometry, &cellGeometry, NULL);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGradientDM(dm, &dmGrad);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
@@ -382,7 +361,7 @@ static PetscErrorCode DMPlexInsertBoundaryValuesFVM_Static(DM dm, PetscFV fvm, P
 
           ierr = DMPlexPointLocalRead(dmCell, cells[0], cellgeom, &cg);CHKERRQ(ierr);
           ierr = DMPlexPointLocalRead(dm, cells[0], x, &cx);CHKERRQ(ierr);
-          ierr = DMPlexPointLocalRead(dmplexts->dmGrad, cells[0], grad, &cgrad);CHKERRQ(ierr);
+          ierr = DMPlexPointLocalRead(dmGrad, cells[0], grad, &cgrad);CHKERRQ(ierr);
           ierr = DMPlexPointLocalRef(dm, cells[1], x, &xG);CHKERRQ(ierr);
           WaxpyD(dim, -1, cg->centroid, fg->centroid, dx);
           for (d = 0; d < pdim; ++d) fx[d] = cx[d] + DotD(dim, &cgrad[d*dim], dx);
@@ -410,18 +389,17 @@ static PetscErrorCode DMPlexInsertBoundaryValuesFVM_Static(DM dm, PetscFV fvm, P
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSComputeRHSFunction_DMPlex"
-static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, Vec F, void *ctx)
+#define __FUNCT__ "DMPlexTSComputeRHSFunctionFVM"
+PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *ctx)
 {
-  DM                 dm;
-  DMTS_Plex         *dmplexts = (DMTS_Plex *) ctx;
-  void             (*riemann)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *) = dmplexts->riemann;
+  PetscDS            prob;
+  void             (*riemann)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *);
+  void              *rctx;
   PetscFV            fvm;
   PetscLimiter       lim;
-  Vec                faceGeometry = dmplexts->facegeom;
-  Vec                cellGeometry = dmplexts->cellgeom;
-  Vec                Grad = NULL, locGrad, locX;
-  DM                 dmFace, dmCell;
+  Vec                faceGeometry, cellGeometry;
+  Vec                Grad = NULL, locGrad;
+  DM                 dmFace, dmCell, dmGrad;
   DMLabel            ghostLabel;
   PetscCellGeometry  fgeom, cgeom;
   const PetscScalar *facegeom, *cellgeom, *x, *lgrad;
@@ -432,15 +410,14 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(locX,VEC_CLASSID,3);
   PetscValidHeaderSpecific(F,VEC_CLASSID,5);
-  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
-  ierr = VecZeroEntries(locX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
-  ierr = VecZeroEntries(F);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGeometry(dm, &faceGeometry, &cellGeometry, NULL);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGradientDM(dm, &dmGrad);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetRiemannSolver(prob, 0, &riemann);CHKERRQ(ierr);
+  ierr = PetscDSGetContext(prob, 0, &rctx);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = DMGetField(dm, 0, (PetscObject *) &fvm);CHKERRQ(ierr);
@@ -448,7 +425,7 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   ierr = PetscFVGetComputeGradients(fvm, &computeGradients);CHKERRQ(ierr);
   if (computeGradients) {
-    ierr = DMGetGlobalVector(dmplexts->dmGrad, &Grad);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(dmGrad, &Grad);CHKERRQ(ierr);
     ierr = VecZeroEntries(Grad);CHKERRQ(ierr);
     ierr = VecGetArray(Grad, &grad);CHKERRQ(ierr);
   }
@@ -478,7 +455,7 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
     ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
     for (c = 0; c < 2; ++c) {
       ierr = DMPlexPointLocalRead(dm, cells[c], x, &cx[c]);CHKERRQ(ierr);
-      ierr = DMPlexPointGlobalRef(dmplexts->dmGrad, cells[c], grad, &cgrad[c]);CHKERRQ(ierr);
+      ierr = DMPlexPointGlobalRef(dmGrad, cells[c], grad, &cgrad[c]);CHKERRQ(ierr);
     }
     for (pd = 0; pd < pdim; ++pd) {
       PetscScalar delta = cx[1][pd] - cx[0][pd];
@@ -504,7 +481,7 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
     ierr = DMPlexGetCone(dm, cell, &faces);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(dm, cell, x, &cx);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(dmCell, cell, cellgeom, &cg);CHKERRQ(ierr);
-    ierr = DMPlexPointGlobalRef(dmplexts->dmGrad, cell, grad, &cgrad);CHKERRQ(ierr);
+    ierr = DMPlexPointGlobalRef(dmGrad, cell, grad, &cgrad);CHKERRQ(ierr);
     if (!cgrad) continue; /* Unowned overlap cell, we do not compute */
     /* Limiter will be minimum value over all neighbors */
     for (d = 0; d < pdim; ++d) cellPhi[d] = PETSC_MAX_REAL;
@@ -538,13 +515,13 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
       for (d = 0; d < dim; ++d) cgrad[pd*dim+d] *= cellPhi[pd];
   }
   ierr = DMRestoreWorkArray(dm, pdim, PETSC_REAL, &cellPhi);CHKERRQ(ierr);
-  ierr = DMPlexInsertBoundaryValuesFVM_Static(dm, fvm, time, locX, Grad, dmplexts);CHKERRQ(ierr);
+  ierr = DMPlexInsertBoundaryValuesFVM_Static(dm, fvm, time, locX, Grad);CHKERRQ(ierr);
   if (computeGradients) {
     ierr = VecRestoreArray(Grad, &grad);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(dmplexts->dmGrad, &locGrad);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dmplexts->dmGrad, Grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(dmplexts->dmGrad, Grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(dmplexts->dmGrad, &Grad);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(dmGrad, &locGrad);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dmGrad, Grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dmGrad, Grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dmGrad, &Grad);CHKERRQ(ierr);
     ierr = VecGetArrayRead(locGrad, &lgrad);CHKERRQ(ierr);
   }
   ierr = PetscMalloc7(numFaces*dim,&centroid,numFaces*dim,&normal,numFaces*2,&vol,numFaces*pdim,&uL,numFaces*pdim,&uR,numFaces*pdim,&fluxL,numFaces*pdim,&fluxR);CHKERRQ(ierr);
@@ -567,8 +544,8 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
     if (computeGradients) {
       PetscReal dxL[3], dxR[3];
 
-      ierr = DMPlexPointLocalRead(dmplexts->dmGrad, cells[0], lgrad, &gL);CHKERRQ(ierr);
-      ierr = DMPlexPointLocalRead(dmplexts->dmGrad, cells[1], lgrad, &gR);CHKERRQ(ierr);
+      ierr = DMPlexPointLocalRead(dmGrad, cells[0], lgrad, &gL);CHKERRQ(ierr);
+      ierr = DMPlexPointLocalRead(dmGrad, cells[1], lgrad, &gR);CHKERRQ(ierr);
       WaxpyD(dim, -1, cgL->centroid, fg->centroid, dxL);
       WaxpyD(dim, -1, cgR->centroid, fg->centroid, dxR);
       for (d = 0; d < pdim; ++d) {
@@ -591,7 +568,7 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
   }
   if (computeGradients) {
     ierr = VecRestoreArrayRead(locGrad,&lgrad);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dmplexts->dmGrad, &locGrad);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dmGrad, &locGrad);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(locX, &x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
@@ -600,7 +577,7 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
   fgeom.n   = normal;
   cgeom.vol = vol;
   /* Riemann solve */
-  ierr = PetscFVIntegrateRHSFunction(fvm, numFaces, Nf, &fvm, 0, fgeom, cgeom, uL, uR, riemann, fluxL, fluxR, dmplexts->rhsfunctionlocalctx);CHKERRQ(ierr);
+  ierr = PetscFVIntegrateRHSFunction(fvm, numFaces, Nf, &fvm, 0, fgeom, cgeom, uL, uR, riemann, fluxL, fluxR, rctx);CHKERRQ(ierr);
   /* Insert fluxes */
   ierr = VecGetArray(F, &f);CHKERRQ(ierr);
   for (face = fStart, iface = 0; face < fEnd; ++face) {
@@ -621,7 +598,6 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
   }
   ierr = VecRestoreArray(F, &f);CHKERRQ(ierr);
   ierr = PetscFree7(centroid,normal,vol,uL,uR,fluxL,fluxR);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -633,29 +609,17 @@ static PetscErrorCode TSComputeRHSFunction_DMPlex(TS ts, PetscReal time, Vec X, 
   Logically Collective
 
   Input Arguments:
-+ dm      - DM to associate callback with
-. riemann - Riemann solver
-- ctx     - optional context for Riemann solve
-
-  Calling sequence for riemann:
-
-$ riemann(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
-
-+ x    - The coordinates at a point on the interface
-. n    - The normal vector to the interface
-. uL   - The state vector to the left of the interface
-. uR   - The state vector to the right of the interface
-. flux - output array of flux through the interface
-- ctx  - optional user context
++ dm - DM to associate callback with
+. func - the RHS evaluation function
+- ctx - an optional user context
 
   Level: beginner
 
 .seealso: DMTSSetRHSFunctionLocal()
 @*/
-PetscErrorCode DMPlexTSSetRHSFunctionLocal(DM dm, void (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx), void *ctx)
+PetscErrorCode DMPlexTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM dm, PetscReal time, Vec X, Vec F, void *ctx), void *ctx)
 {
   DMTS           dmts;
-  DMTS_Plex     *dmplexts;
   PetscFV        fvm;
   PetscInt       Nf;
   PetscBool      computeGradients;
@@ -664,14 +628,11 @@ PetscErrorCode DMPlexTSSetRHSFunctionLocal(DM dm, void (*riemann)(const PetscRea
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMGetDMTSWrite(dm, &dmts);CHKERRQ(ierr);
-  ierr = DMPlexTSGetContext(dm, dmts, &dmplexts);CHKERRQ(ierr);
-  dmplexts->riemann             = riemann;
-  dmplexts->rhsfunctionlocalctx = ctx;
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = DMGetField(dm, 0, (PetscObject *) &fvm);CHKERRQ(ierr);
-  ierr = DMPlexTSSetupGeometry(dm, fvm, dmplexts);CHKERRQ(ierr);
+  ierr = DMPlexTSSetupGeometry(dm, fvm, dmts);CHKERRQ(ierr);
   ierr = PetscFVGetComputeGradients(fvm, &computeGradients);CHKERRQ(ierr);
-  if (computeGradients) {ierr = DMPlexTSSetupGradient(dm, fvm, dmplexts);CHKERRQ(ierr);}
-  ierr = DMTSSetRHSFunction(dm, TSComputeRHSFunction_DMPlex, dmplexts);CHKERRQ(ierr);
+  if (computeGradients) {ierr = DMPlexTSSetupGradient(dm, fvm, dmts);CHKERRQ(ierr);}
+  ierr = DMTSSetRHSFunctionLocal(dm, func, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
