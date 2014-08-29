@@ -436,6 +436,21 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *prob)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetNumFields"
+/*@
+  PetscDSGetNumFields - Returns the number of fields in the DS
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. Nf - The number of fields
+
+  Level: beginner
+
+.seealso: PetscDSGetSpatialDimension(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 {
   PetscFunctionBegin;
@@ -447,6 +462,21 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetSpatialDimension"
+/*@
+  PetscDSGetSpatialDimension - Returns the spatial dimension of the DS
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. dim - The spatial dimension
+
+  Level: beginner
+
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
 {
   PetscErrorCode ierr;
@@ -461,6 +491,21 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetTotalDimension"
+/*@
+  PetscDSGetTotalDimension - Returns the total size of the approximation space for this system
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. dim - The total problem dimension
+
+  Level: beginner
+
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim)
 {
   PetscErrorCode ierr;
@@ -475,6 +520,21 @@ PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetTotalBdDimension"
+/*@
+  PetscDSGetTotalDimension - Returns the total size of the boundary approximation space for this system
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. dim - The total boundary problem dimension
+
+  Level: beginner
+
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetTotalBdDimension(PetscDS prob, PetscInt *dim)
 {
   PetscErrorCode ierr;
@@ -489,6 +549,21 @@ PetscErrorCode PetscDSGetTotalBdDimension(PetscDS prob, PetscInt *dim)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetTotalComponents"
+/*@
+  PetscDSGetTotalComponents - Returns the total number of components in this system
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. dim - The total number of components
+
+  Level: beginner
+
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc)
 {
   PetscErrorCode ierr;
@@ -503,6 +578,22 @@ PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetDiscretization"
+/*@
+  PetscDSGetDiscretization - Returns the discretization object for the given field
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- f - The field number
+
+  Output Parameter:
+. disc - The discretization object
+
+  Level: beginner
+
+.seealso: PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *disc)
 {
   PetscFunctionBegin;
@@ -515,6 +606,22 @@ PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *d
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetBdDiscretization"
+/*@
+  PetscDSGetBdDiscretization - Returns the boundary discretization object for the given field
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- f - The field number
+
+  Output Parameter:
+. disc - The boundary discretization object
+
+  Level: beginner
+
+.seealso: PetscDSSetBdDiscretization(), PetscDSAddBdDiscretization(), PetscDSGetDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetBdDiscretization(PetscDS prob, PetscInt f, PetscObject *disc)
 {
   PetscFunctionBegin;
@@ -527,6 +634,20 @@ PetscErrorCode PetscDSGetBdDiscretization(PetscDS prob, PetscInt f, PetscObject 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSSetDiscretization"
+/*@
+  PetscDSSetDiscretization - Sets the discretization object for the given field
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+. f - The field number
+- disc - The discretization object
+
+  Level: beginner
+
+.seealso: PetscDSGetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject disc)
 {
   PetscErrorCode ierr;
@@ -544,6 +665,20 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSSetBdDiscretization"
+/*@
+  PetscDSSetBdDiscretization - Sets the boundary discretization object for the given field
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+. f - The field number
+- disc - The boundary discretization object
+
+  Level: beginner
+
+.seealso: PetscDSGetBdDiscretization(), PetscDSAddBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSSetBdDiscretization(PetscDS prob, PetscInt f, PetscObject disc)
 {
   PetscErrorCode ierr;
@@ -561,6 +696,19 @@ PetscErrorCode PetscDSSetBdDiscretization(PetscDS prob, PetscInt f, PetscObject 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSAddDiscretization"
+/*@
+  PetscDSAddDiscretization - Adds a discretization object
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- disc - The boundary discretization object
+
+  Level: beginner
+
+.seealso: PetscDSGetDiscretization(), PetscDSSetDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSAddDiscretization(PetscDS prob, PetscObject disc)
 {
   PetscErrorCode ierr;
@@ -572,6 +720,19 @@ PetscErrorCode PetscDSAddDiscretization(PetscDS prob, PetscObject disc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSAddBdDiscretization"
+/*@
+  PetscDSAddBdDiscretization - Adds a boundary discretization object
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- disc - The boundary discretization object
+
+  Level: beginner
+
+.seealso: PetscDSGetBdDiscretization(), PetscDSSetBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSAddBdDiscretization(PetscDS prob, PetscObject disc)
 {
   PetscErrorCode ierr;
@@ -873,6 +1034,22 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetFieldOffset"
+/*@
+  PetscDSGetFieldOffset - Returns the offset of the given field in the full space basis
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- f - The field number
+
+  Output Parameter:
+. off - The offset
+
+  Level: beginner
+
+.seealso: PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 {
   PetscInt       g;
@@ -896,6 +1073,22 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetBdFieldOffset"
+/*@
+  PetscDSGetFieldOffset - Returns the offset of the given field in the full space boundary basis
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- f - The field number
+
+  Output Parameter:
+. off - The boundary offset
+
+  Level: beginner
+
+.seealso: PetscDSGetFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetBdFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 {
   PetscInt       g;
@@ -994,7 +1187,7 @@ PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSDestroy_Basic"
-PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
+static PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1002,7 +1195,7 @@ PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSInitialize_Basic"
-PetscErrorCode PetscDSInitialize_Basic(PetscDS prob)
+static PetscErrorCode PetscDSInitialize_Basic(PetscDS prob)
 {
   PetscFunctionBegin;
   prob->ops->setfromoptions = NULL;
