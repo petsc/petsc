@@ -15,14 +15,10 @@ class Configure(config.package.Package):
     self.CUSPVersion   = '200' #Version 0.2.0
     self.ThrustVersion = '100400' #Version 1.4.0
 #
-#   obtain thrust and cusp with
-#   hg clone https://thrust.googlecode.com/hg/ thrust
-#   hg clone https://cusp-library.googlecode.com/hg/ cusp
-#     put them in /usr/local/cuda
+#   Obtain cusp with
+#   git clone https://github.com/cusplibrary/cusplibrary.git cusp
+#   Put cusp in /usr/local/cuda
 #
-
-    # Get Thrust from hg clone https://thrust.googlecode.com/hg/ thrust
-    # Get CUSP from hg clone https://cusp-library.googlecode.com/hg/
 
     self.CUDAVersionStr = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)%100)
     self.ThrustVersionStr = str(int(self.ThrustVersion)/100000) + '.' + str(int(self.ThrustVersion)/100%1000) + '.' + str(int(self.ThrustVersion)%100)
@@ -38,7 +34,6 @@ class Configure(config.package.Package):
     import nargs
     config.package.Package.setupHelp(self, help)
     help.addArgument('CUDA', '-with-cuda-arch=<arch>', nargs.Arg(None, None, 'Target architecture for nvcc, e.g. sm_13'))
-    help.addArgument('CUDA', '-with-cuda-only=<bool>', nargs.ArgBool(None, 1, 'Allows CUDA compiles without Thrust and Cusp'))
     return
 
   def setupDependencies(self, framework):
@@ -47,8 +42,6 @@ class Configure(config.package.Package):
     self.headers      = framework.require('config.headers',self)
     self.scalartypes  = framework.require('PETSc.utilities.scalarTypes', self)
     self.languages    = framework.require('PETSc.utilities.languages',   self)
-    self.cusp         = framework.require('config.packages.cusp',        self)
-    self.thrust       = framework.require('config.packages.thrust',      self)
     return
 
   def getSearchDirectories(self):
@@ -128,29 +121,12 @@ class Configure(config.package.Package):
     elif not self.argDB['with-batch']:
       self.pushLanguage('CUDA')
       oldFlags = self.compilers.CUDAPPFLAGS
-      self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
       if not self.checkRun('#include <cuda.h>\n#include <stdio.h>', 'if (CUDA_VERSION < ' + self.CUDAVersion +') {printf("Invalid version %d\\n", CUDA_VERSION); return 1;}'):
         raise RuntimeError('CUDA version error: PETSC currently requires CUDA version '+self.CUDAVersionStr+' or higher - when compiling with CUDA')
       self.compilers.CUDAPPFLAGS = oldFlags
       self.popLanguage()
     else:
       raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-cuda-version')
-    return
-
-  def checkThrustVersion(self):
-    if 'known-thrust-version' in self.argDB:
-      if self.argDB['known-thrust-version'] < self.ThrustVersion:
-        raise RuntimeError('Thrust version error '+self.argDB['known-thrust-version']+' < '+self.ThrustVersion+': PETSC currently requires Thrust version '+self.ThrustVersionStr+' or higher when compiling with CUDA')
-    elif not self.argDB['with-batch']:
-      self.pushLanguage('CUDA')
-      oldFlags = self.compilers.CUDAPPFLAGS
-      self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
-      if not self.checkRun('#include <thrust/version.h>\n#include <stdio.h>', 'if (THRUST_VERSION < ' + self.ThrustVersion +') {printf("Invalid version %d\\n", THRUST_VERSION); return 1;}'):
-        raise RuntimeError('Thrust version error: PETSC currently requires Thrust version '+self.ThrustVersionStr+' or higher - when compiling with CUDA')
-      self.compilers.CUDAPPFLAGS = oldFlags
-      self.popLanguage()
-    else:
-      raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-thrust-version')
     return
 
   def checkNVCCDoubleAlign(self):
@@ -184,32 +160,10 @@ class Configure(config.package.Package):
       raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-cuda-align-double')
     return
 
-  def checkCUSPVersion(self):
-    if 'known-cusp-version' in self.argDB:
-      if self.argDB['known-cusp-version'] < self.CUSPVersion:
-        raise RuntimeError('CUSP version error '+self.argDB['known-cusp-version']+' < '+self.CUSPVersion+': PETSC currently requires CUSP version '+self.CUSPVersionStr+' or higher when compiling with CUDA')
-    elif not self.argDB['with-batch']:
-      self.pushLanguage('CUDA')
-      oldFlags = self.compilers.CUDAPPFLAGS
-      self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.cusp.include)
-      self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
-      if not self.checkRun('#include <cusp/version.h>\n#include <stdio.h>', 'if (CUSP_VERSION < ' + self.CUSPVersion +') {printf("Invalid version %d\\n", CUSP_VERSION); return 1;}'):
-        raise RuntimeError('CUSP version error: PETSC currently requires CUSP version '+self.CUSPVersionStr+' or higher - when compiling with CUDA')
-      self.compilers.CUDAPPFLAGS = oldFlags
-      self.popLanguage()
-    else:
-      raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-cusp-version')
-    return
-
   def configureLibrary(self):
     config.package.Package.configureLibrary(self)
     self.checkCUDAVersion()
     self.checkNVCCDoubleAlign()
-    if not self.framework.argDB['with-cuda-only']:
-      if not self.cusp.found or not self.thrust.found:
-        raise RuntimeError('PETSc CUDA support requires the CUSP and Thrust packages\nRerun configure using --with-cusp-dir and --with-thrust-dir')
-      self.checkThrustVersion()
-      self.checkCUSPVersion()
     if self.languages.clanguage == 'C':
       self.addDefine('CUDA_EXTERN_C_BEGIN','extern "C" {')
       self.addDefine('CUDA_EXTERN_C_END','}')
