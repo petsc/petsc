@@ -521,7 +521,7 @@ PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetTotalBdDimension"
 /*@
-  PetscDSGetTotalDimension - Returns the total size of the boundary approximation space for this system
+  PetscDSGetTotalBdDimension - Returns the total size of the boundary approximation space for this system
 
   Not collective
 
@@ -1074,7 +1074,7 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetBdFieldOffset"
 /*@
-  PetscDSGetFieldOffset - Returns the offset of the given field in the full space boundary basis
+  PetscDSGetBdFieldOffset - Returns the offset of the given field in the full space boundary basis
 
   Not collective
 
