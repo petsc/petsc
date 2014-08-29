@@ -48,7 +48,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('PREFIX           = '+self.installDir+'\n')
     g.write('LIBDIR           = '+libDir+'\n')
     g.write('INSTALL_LIB_DIR  = '+libDir+'\n')
-    g.write('TRIANGLELIB      = $(LIBDIR)/libtriangle.$(AR_LIB_SUFFIX)\n')
+    g.write('TRIANGLELIB      = libtriangle.$(AR_LIB_SUFFIX)\n')
     g.write('SHLIB            = libtriangle\n')
 
     self.setCompilers.pushLanguage('C')
@@ -111,10 +111,13 @@ triangle_shared:
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling & installing Triangle; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make '+os.path.join(libDir, 'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' && make clean', timeout=2500, log = self.framework.log)
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make libtriangle.'+self.setCompilers.AR_LIB_SUFFIX+' && make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on Triangle: '+str(e))
-      output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=5, log = self.framework.log)
+      output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
+      output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
+      output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir,'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.framework.log)
+      output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=5, log = self.framework.log)
       self.postInstall(output1+err1+output2+err2,'make.inc')
     return self.installDir
 

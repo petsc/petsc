@@ -3,8 +3,10 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    #self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/elemental-dev-072512.tar.gz']
-    self.download   = ['/home/xzhou/temp/clique.tgz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/elemental-dev-072512.tar.gz']
+    #self.download   = ['/home/xzhou/temp/clique.tgz']
+    self.gitcommit  = 'b52d45697eb1643d12b132fe6c58b71c03054449'
+    self.giturls    = ['https://github.com/poulson/Clique']
     self.liblist    = [['libclique.a','libparmetis-addons.a','libmetis-addons.a']]
     self.includes   = ['clique.hpp']
     self.cxx              = 1
@@ -79,8 +81,8 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running configure on Clique: '+str(e))
       try:
-        self.logPrintBox('Compiling Clique; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && make && make install', timeout=2500, log = self.framework.log)
+        self.logPrintBox('Compiling and installing Clique; this may take several minutes')
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && make && '+self.installSudo+'make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on Clique: '+str(e))
       self.postInstall(output1+err1+output2+err2,'clique')

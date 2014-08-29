@@ -73,8 +73,9 @@ GL_LIBS    = -lGL -lGLU
         output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make '+args+' zoltan', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ZOLTAN: '+str(e))
-
-      output3,err3,ret3  = PETSc.package.NewPackage.executeShellCommand('mv -f '+os.path.join(self.packageDir, 'Obj_'+self.arch)+'/lib* '+os.path.join(self.installDir, 'lib'))
-      output4,err4,ret4  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include')+'/*.h '+os.path.join(self.installDir, 'include'))
+      output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
+      output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
+      output3,err3,ret3  = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'Obj_'+self.arch)+'/lib* '+os.path.join(self.installDir, 'lib'))
+      output4,err4,ret4  = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'include')+'/*.h '+os.path.join(self.installDir, 'include'))
       self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4,'Zoltanconfig')
     return self.installDir

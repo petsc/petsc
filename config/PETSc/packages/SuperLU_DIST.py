@@ -63,7 +63,7 @@ class Configure(PETSc.package.NewPackage):
         self.logPrintBox('Compiling superlu_dist; this may take several minutes')
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make lib LAAUX="" && mv -f *.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make lib LAAUX="" && '+self.installSudo+'cp -f *.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
       self.postInstall(output+err,'make.inc')

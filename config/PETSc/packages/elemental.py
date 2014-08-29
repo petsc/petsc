@@ -21,6 +21,8 @@ class Configure(PETSc.package.NewPackage):
     self.cmake           = framework.require('PETSc.packages.cmake',self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.deps            = [self.mpi,self.cmake,self.blasLapack]
+    #
+    # also requires the ./configure option --with-cxx-dialect=C++11
     return
 
   def Install(self):
@@ -87,8 +89,8 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running configure on Elemental: '+str(e))
       try:
-        self.logPrintBox('Compiling Elemental; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && make && make install', timeout=2500, log = self.framework.log)
+        self.logPrintBox('Compiling and installing Elemental; this may take several minutes')
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && make && '+self.installSudo+'make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on Elemental: '+str(e))
       self.postInstall(output1+err1+output2+err2,'elemental')

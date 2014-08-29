@@ -110,11 +110,11 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
         self.logPrintBox('Compiling hypre; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make install', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make && '+self.installSudo+' make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))
       try:
-        output3,err3,ret3  = PETSc.package.NewPackage.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)
+        output3,err3,ret3  = PETSc.package.NewPackage.executeShellCommand(self.installSudo+self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on HYPRE libraries: '+str(e))
       self.postInstall(output1+err1+output2+err2+output3+err3,'hypre')
