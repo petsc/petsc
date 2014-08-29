@@ -340,6 +340,7 @@ PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM,InsertMode,PetscErrorCode
 PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,void*),void *);
 
 PETSC_EXTERN PetscErrorCode DMPlexTSGetGeometry(DM, Vec *, Vec *, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMPlexTSGetGradientDM(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexTSSetRHSFunctionLocal(DM, PetscErrorCode (*)(DM, PetscReal, Vec, Vec, void *), void *);
 
 typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
