@@ -55,7 +55,8 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running configure on MPE: '+str(e))
       # Build MPE
       try:
-        self.logPrintBox('Compiling mpe; this may take several minutes')
+        self.logPrintBox('Compiling and install mpe; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
         output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make && '+self.installSudo+' make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on MPE: '+str(e))

@@ -85,8 +85,9 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running configure on SUNDIALS: '+str(e))
       try:
-        self.logPrintBox('Compiling sundials; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && make install && make clean', timeout=2500, log = self.framework.log)
+        self.logPrintBox('Compiling and installing sundials; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && '+self.installSudo+'make install && make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUNDIALS: '+str(e))
       self.postInstall(output1+err1+output2+err2,'sundials')

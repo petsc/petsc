@@ -25,11 +25,18 @@ class Configure(PETSc.package.NewPackage):
     #includeDir = self.packageDir
     srcdir     = os.path.join(self.packageDir, 'viennacl')
     destdir    = os.path.join(self.installDir, 'include', 'viennacl')
-    try:
-      if os.path.isdir(destdir): shutil.rmtree(destdir)
-      shutil.copytree(srcdir,destdir)
-    except RuntimeError,e:
-      raise RuntimeError('Error installing ViennaCL include files: '+str(e))
+    if self.installSudo:
+      self.installDirProvider.printSudoPasswordMessage()
+      try:
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+destdir+' && '+self.installSudo+'rm -rf '+destdir+'  && '+self.installSudo+'cp -rf '+srcdir+' '+destdir, timeout=6000, log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error copying ViennaCL include files from '+os.path.join(self.packageDir, 'ViennaCL')+' to '+packageDir)
+    else:
+      try:
+        if os.path.isdir(destdir): shutil.rmtree(destdir)
+        shutil.copytree(srcdir,destdir)
+      except RuntimeError,e:
+        raise RuntimeError('Error installing ViennaCL include files: '+str(e))
     return self.installDir
 
   def getSearchDirectories(self):

@@ -34,8 +34,9 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running configure on yaml: '+str(e))
       try:
-        self.logPrintBox('Compiling yaml; this may take several minutes')
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && make install', timeout=2500, log = self.framework.log)
+        self.logPrintBox('Compiling and installing yaml; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
+        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && '+self.installSudo+'make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on yaml: '+str(e))
       self.postInstall(output1+err1+output2+err2,'yaml')

@@ -17,10 +17,11 @@ class Configure(config.package.Package):
     srcdir = os.path.join(self.packageDir,'boost')
     destdir = os.path.join(self.installDir,'include','boost')
     if self.installSudo:
+      self.installDirProvider.printSudoPasswordMessage()
       try:
         output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+destdir+' && '+self.installSudo+'rm -rf '+destdir+'  && '+self.installSudo+'cp -rf '+srcdir+' '+destdir, timeout=6000, log = self.framework.log)
       except RuntimeError, e:
-        raise RuntimeError('Error copying Scientific Python files from '+os.path.join(self.packageDir, 'Scientific')+' to '+packageDir)
+        raise RuntimeError('Error copying Boost files from '+os.path.join(self.packageDir, 'Boost')+' to '+packageDir)
     else:
       try:
         if os.path.isdir(destdir): shutil.rmtree(destdir)

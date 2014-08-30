@@ -24,6 +24,7 @@ class Configure(config.package.Package):
     installLoc = os.path.join(self.installDir, self.altlibdir)
     packageDir = os.path.join(installLoc, 'FIAT')
     if self.installSudo:
+      self.installDirProvider.printSudoPasswordMessage()
       try:
         output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+installLoc+' && '+self.installSudo+'rm -rf '+packageDir+'  && '+self.installSudo+'cp -rf '+os.path.join(self.packageDir, 'FIAT')+' '+packageDir, timeout=6000, log = self.framework.log)
       except RuntimeError, e:

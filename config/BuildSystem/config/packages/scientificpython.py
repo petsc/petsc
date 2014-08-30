@@ -25,6 +25,7 @@ class Configure(config.package.Package):
     initfile   = os.path.join(installLoc, '__init__.py')
     packageDir = os.path.join(installLoc, 'Scientific')
     if self.installSudo:
+      self.installDirProvider.printSudoPasswordMessage()
       try:
         output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+installLoc+' && '+self.installSudo+'rm -rf '+packageDir+'  && '+self.installSudo+'cp -rf '+os.path.join(self.packageDir, 'Scientific')+' '+packageDir, timeout=6000, log = self.framework.log)
       except RuntimeError, e:

@@ -24,16 +24,23 @@ class Configure(config.base.Configure):
     self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
+  def printSudoPasswordMessage(self):
+    '''Prints a message that sudo password will be needed for installs of packages'''
+    if self.installSudoMessage:
+      self.logPrintBox(self.installSudoMessage)
+      self.installSudoMessage = ''
+
   def setInstallDir(self):
     ''' setup installDir to either prefix or if that is not set to PETSC_DIR/PETSC_ARCH'''
-    self.installSudo = ''
+    self.installSudo        = ''
+    self.installSudoMessage = ''
     if self.framework.argDB['prefix']:
       self.dir = self.framework.argDB['prefix']
       try:
         os.makedirs(os.path.join(self.dir,'PETScTestDirectory'))
         os.rmdir(os.path.join(self.dir,'PETScTestDirectory'))
       except:
-        self.logPrintBox('You do not have write permissions to the --prefix directory '+self.dir+'\nYou will be prompted for the sudo password for any external package installs')
+        self.installSudoMessage = 'You do not have write permissions to the --prefix directory '+self.dir+'\nYou will be prompted for the sudo password for any external package installs'
         self.installSudo = 'sudo '
     else:
       self.dir = os.path.abspath(os.path.join(self.arch.arch))

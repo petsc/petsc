@@ -90,6 +90,7 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Error running configure on Elemental: '+str(e))
       try:
         self.logPrintBox('Compiling and installing Elemental; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
         output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+folder+' && make && '+self.installSudo+'make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on Elemental: '+str(e))

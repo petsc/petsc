@@ -438,6 +438,7 @@ class Configure(config.package.Package):
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make_jnp+' all', timeout=6000, log = self.framework.log)
         self.logPrintBox('Running make install on OPENMPI')
+        self.installDirProvider.printSudoPasswordMessage()
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.installSudo+self.make.make+' install', timeout=6000, log = self.framework.log)
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
       except RuntimeError, e:
@@ -556,6 +557,7 @@ class Configure(config.package.Package):
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make_jnp+' all', timeout=6000, log = self.framework.log)
         self.logPrintBox('Running make install on MPICH')
         #bug in MPICH requires sudo on make clean
+        self.installDirProvider.printSudoPasswordMessage()
         output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.installSudo+self.make.make+' install clean', timeout=6000, log = self.framework.log)
       except RuntimeError, e:
         import sys

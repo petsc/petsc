@@ -64,7 +64,8 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         pass
       try:
-        self.logPrintBox('Compiling Scalapack; this may take several minutes')
+        self.logPrintBox('Compiling and installing Scalapack; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
         libDir = os.path.join(self.installDir, self.libdir)
         output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make lib && '+self.installSudo+'mkdir -p '+libDir+' && '+self.installSudo+'cp libscalapack.* '+libDir, timeout=2500, log = self.framework.log)
       except RuntimeError, e:

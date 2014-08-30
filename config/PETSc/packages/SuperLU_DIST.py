@@ -60,7 +60,9 @@ class Configure(PETSc.package.NewPackage):
 
     if self.installNeeded('make.inc'):
       try:
-        self.logPrintBox('Compiling superlu_dist; this may take several minutes')
+        self.logPrintBox('Compiling and installing superlu_dist; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
+
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
         output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make lib LAAUX="" && '+self.installSudo+'cp -f *.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)

@@ -60,6 +60,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded(mkfile):
       try:
         self.logPrintBox('Compiling and installing SuiteSparse; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
         # SuiteSparse install does not create missing directories, hence we need to create them first 
         output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
         output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)

@@ -35,7 +35,8 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running configure on hwloc: '+str(e))
       try:
-        self.logPrintBox('Compiling hwloc; this may take several minutes')
+        self.logPrintBox('Compiling and installing hwloc; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
         output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && '+self.installSudo+'make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on hwloc: '+str(e))

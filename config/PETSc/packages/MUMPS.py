@@ -129,6 +129,8 @@ class Configure(PETSc.package.NewPackage):
         output2,err2,ret2 = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' &&  make alllib',timeout=2500, log = self.framework.log)
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
+        self.logPrintBox('Installing Mumps; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
         output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.packageDir+' && '+self.installSudo+'cp -f lib/*.* '+libDir+'/. && '+self.installSudo+'cp -f include/*.* '+includeDir+'/.', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on MUMPS: '+str(e))

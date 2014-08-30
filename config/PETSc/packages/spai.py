@@ -34,11 +34,13 @@ class Configure(PETSc.package.NewPackage):
     fd.close()
 
     if self.installNeeded('Makefile.in'):
-      self.logPrintBox('Configuring and compiling Spai; this may take several minutes')
-      output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && make clean && make && mv -f libspai.a '+os.path.join(self.installDir,'lib','libspai.a'),timeout=250, log = self.framework.log)
-      output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && cp -f *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)
+      self.logPrintBox('Configuring, compiling and installing Spai; this may take several minutes')
+      self.installDirProvider.printSudoPasswordMessage()
+      output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
+      output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && make clean && make && '+self.installSudo+' cp -f libspai.a '+os.path.join(self.installDir,'lib','libspai.a'),timeout=250, log = self.framework.log)
+      output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && '+self.installSudo+' cp -f *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)
       try:
-        output3,err3,ret3  = PETSc.package.NewPackage.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libspai.a', timeout=250, log = self.framework.log)
+        output3,err3,ret3  = PETSc.package.NewPackage.executeShellCommand(self.installSudo+self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libspai.a', timeout=250, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on SPAI libraries: '+str(e))
       self.postInstall(output1+err1+output2+err2+output3+err3,'Makefile.in')

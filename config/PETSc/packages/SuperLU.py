@@ -10,7 +10,7 @@ class Configure(PETSc.package.NewPackage):
     self.double       = 0
     self.complex      = 1
     # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
-    self.excludedDirs = ['SuperLU_DIST']
+    self.excludedDirs = ['SuperLU_DIST','SuperLU_MT']
     # SuperLU does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.
     self.downloadonWindows= 1
@@ -58,6 +58,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling and installing superlu; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
         output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
         output,err,ret = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
         if not os.path.exists(os.path.join(self.packageDir,'lib')):

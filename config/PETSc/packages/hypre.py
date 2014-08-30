@@ -109,7 +109,8 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
-        self.logPrintBox('Compiling hypre; this may take several minutes')
+        self.logPrintBox('Compiling and installing hypre; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
         output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make && '+self.installSudo+' make install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))
