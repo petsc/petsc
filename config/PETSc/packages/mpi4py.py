@@ -46,7 +46,6 @@ class Configure(PETSc.package.NewPackage):
     self.addMakeRule('mpi4pyinstall','', \
                        ['@echo "*** Installing mpi4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           python setup.py clean --all && \\\n\
            '+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/conf/mpi4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building mpi4py. Check ${PETSC_ARCH}/conf/mpi4py.log" && \\\n\
@@ -70,4 +69,5 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('mpi4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
 
   def alternateConfigureLibrary(self):
-    self.addMakeRule('mpi4py','')
+    self.addMakeRule('mpi4py-build','')
+    self.addMakeRule('mpi4py-install','')

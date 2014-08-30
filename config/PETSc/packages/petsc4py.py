@@ -33,15 +33,32 @@ class Configure(PETSc.package.NewPackage):
         archflags = "ARCHFLAGS=\'-arch i386\' "
       else:
         archflags = "ARCHFLAGS=\'-arch x86_64\' "
-#
-#  This should be split into one part that is run at make all time and one that is run at make install time
-#  when the prefix requires sudo to install
-    self.addMakeRule('petsc4py','', \
+
+    # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
+    if self.framework.argDB['prefix']:
+       newdir = 'PETSC_DIR='+self.framework.argDB['prefix']+' '+'PETSC_ARCH= MPICC=${PCC} '
+    else:
+       newdir = 'MPICC=${PCC} '
+
+    #  if installing as Superuser than want to return to regular user for clean and build
+    if self.installSudo:
+       newuser = self.installSudo+' -u $${SUDO_USER} '
+    else:
+       newuser = ''
+
+    self.addMakeRule('petsc4pybuild','', \
                        ['@echo "*** Building petsc4py ***"',\
+                          '@(cd '+self.packageDir+' && \\\n\
+           '+newuser+newdir+'python setup.py clean --all && \\\n\
+           '+newuser+newdir+archflags+'python setup.py build ) > ${PETSC_ARCH}/conf/petsc4py.log 2>&1 || \\\n\
+             (echo "**************************ERROR*************************************" && \\\n\
+             echo "Error building petsc4py. Check ${PETSC_ARCH}/conf/petsc4py.log" && \\\n\
+             echo "********************************************************************" && \\\n\
+             exit 1)'])
+    self.addMakeRule('petsc4pyinstall','', \
+                       ['@echo "*** Installing petsc4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           python setup.py clean --all && \\\n\
-           '+archflags+'python setup.py build  && \\\n\
-           '+archflags+self.installSudo+'PETSC_DIR=$${PETSC_DIR} python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') > ${PETSC_ARCH}/conf/petsc4py.log 2>&1 || \\\n\
+           '+newdir+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/conf/petsc4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py. Check ${PETSC_ARCH}/conf/petsc4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
@@ -49,6 +66,13 @@ class Configure(PETSc.package.NewPackage):
                           '@echo "====================================="',\
                           '@echo "To use petsc4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
+    if self.framework.argDB['prefix']:
+      self.addMakeRule('petsc4py-build','')
+      # the build must be done at install time because PETSc shared libraries must be in final location before building petsc4py
+      self.addMakeRule('petsc4py-install','petsc4pybuild petsc4pyinstall')
+    else:
+      self.addMakeRule('petsc4py-build','petsc4pybuild petsc4pyinstall')
+      self.addMakeRule('petsc4py-install','')
 
     return self.installDir
 
@@ -76,5 +100,6 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('Unable to find Python dynamic library at prefix '+prefix)
 
   def alternateConfigureLibrary(self):
-    self.addMakeRule('petsc4py','')
+    self.addMakeRule('petsc4py-build','')
+    self.addMakeRule('petsc4py-install','')
 
