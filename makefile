@@ -57,11 +57,11 @@ all-cmake:
 all-legacy:
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" MAKE_IS_GNUMAKE="" all
 
-all-gnumake-local: chk_makej info gnumake matlabbin mpi4py petsc4py
+all-gnumake-local: chk_makej info gnumake matlabbin mpi4py-build petsc4py
 
-all-cmake-local: chk_makej info cmakegen cmake matlabbin mpi4py petsc4py
+all-cmake-local: chk_makej info cmakegen cmake matlabbin mpi4py-build petsc4py
 
-all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build matlabbin shared_nomesg mpi4py petsc4py
+all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build matlabbin shared_nomesg mpi4py-build petsc4py
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -248,6 +248,7 @@ reconfigure:
 #
 install:
 	@${PYTHON} ./config/install.py -destDir=${DESTDIR}
+	${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} mpi4py-install
 
 newall:
 	-@cd src/sys;  @${PYTHON} ${PETSC_DIR}/config/builder.py

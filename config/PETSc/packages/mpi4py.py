@@ -33,22 +33,34 @@ class Configure(PETSc.package.NewPackage):
         archflags = "ARCHFLAGS=\'-arch i386\' "
       else:
         archflags = "ARCHFLAGS=\'-arch x86_64\' "
-#
-#  This should be split into one part that is run at make all time and one that is run at make install time
-#  when the prefix requires sudo to install
-    self.addMakeRule('mpi4py','', \
+
+    self.addMakeRule('mpi4pybuild','', \
                        ['@echo "*** Building mpi4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
            python setup.py clean --all && \\\n\
-           '+archflags+'python setup.py build  && \\\n\
-           '+archflags+self.installSudo+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') > ${PETSC_ARCH}/conf/petsc4py.log 2>&1 || \\\n\
+           '+archflags+'python setup.py build ) > ${PETSC_ARCH}/conf/mpi4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building mpi4py. Check ${PETSC_ARCH}/conf/petsc4py.log" && \\\n\
+             echo "Error building mpi4py. Check ${PETSC_ARCH}/conf/mpi4py.log" && \\\n\
+             echo "********************************************************************" && \\\n\
+             exit 1)'])
+    self.addMakeRule('mpi4pyinstall','', \
+                       ['@echo "*** Installing mpi4py ***"',\
+                          '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
+           python setup.py clean --all && \\\n\
+           '+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/conf/mpi4py.log 2>&1 || \\\n\
+             (echo "**************************ERROR*************************************" && \\\n\
+             echo "Error building mpi4py. Check ${PETSC_ARCH}/conf/mpi4py.log" && \\\n\
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\
                           '@echo "To use mpi4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
+    if self.framework.argDB['prefix']:
+      self.addMakeRule('mpi4py-build','mpi4pybuild')
+      self.addMakeRule('mpi4py-install','mpi4pyinstall')
+    else:
+      self.addMakeRule('mpi4py-build','mpi4pybuild mpi4pyinstall')
+      self.addMakeRule('mpi4py-install','')
 
     return self.installDir
 
