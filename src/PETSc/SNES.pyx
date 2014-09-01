@@ -567,6 +567,18 @@ cdef class SNES(Object):
         py_type = str2bytes(py_type, &cval)
         CHKERR( SNESPythonSetType(self.snes, cval) )
 
+    # --- Composite ---
+
+    def getCompositeSNES(self, n):
+        cdef PetscInt cn
+        cdef SNES snes = SNES()
+        cn = asInt(n)
+
+        CHKERR( SNESCompositeGetSNES(self.snes, cn, &snes.snes) )
+        PetscINCREF(snes.obj)
+
+        return snes
+
     # --- application context ---
 
     property appctx:
