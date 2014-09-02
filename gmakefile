@@ -73,7 +73,7 @@ else				# Show the full command line
   quiet = $($1)
 endif
 
-$(PETSC_ARCH)/conf/files :
+$(PETSC_ARCH)/conf/files : $(PETSC_ARCH)/include/petscconf.h
 	$(PYTHON) conf/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 -include $(generated)
