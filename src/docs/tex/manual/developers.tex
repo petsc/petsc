@@ -370,7 +370,7 @@ PETSc  uses a ``call error handler; then (depending on result) return
 error code'' model when problems are detected in the running code.
 
 The public include file for error handling is
- \href{http://www.mcs.anl.gov/petsc/petsc-dev/include/petscerror.h.html}{include/petscerror.h}, the
+ \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html}{include/petscerror.h}, the
 source code for the PETSc error handling is in
 \trl{src/sys/error/}.
 
@@ -423,7 +423,7 @@ Pe\=tscErrorCode PetscError(\=MPI\_Comm,int line,const char *func,const char* fi
 \}
 \end{tabbing}
 The variable \trl{eh} is the current error handler context and is defined in
- \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/sys/error/err.c.html}{src/sys/error/err.c} as
+ \href{http://www.mcs.anl.gov/petsc/petsc-master/src/sys/error/err.c.html}{src/sys/error/err.c} as
 \begin{tabbing}
 ty\=pedef struct \_EH*\= EH;\\
 struct \_EH \{\\
@@ -483,7 +483,7 @@ PETSc provides several default error handlers
 
 The PETSc error handler takes a generic error code.
 The generic error codes are defined in
-\href{http://www.mcs.anl.gov/petsc/petsc-dev/include/petscerror.h.html}{include/petscerror.h}, the same generic
+\href{http://www.mcs.anl.gov/petsc/petsc-master/include/petscerror.h.html}{include/petscerror.h}, the same generic
 error code would be used many times in the libraries. For example the
 generic error code \trl{PETSC_ERR_MEM} is used whenever requested memory allocation
 is not available.
@@ -509,7 +509,7 @@ stderr with the command line options \trl{-error_output_stderr}.
 This section provides details about the implementation of event
 logging and profiling within the PETSc kernel.
 The interface for profiling in PETSc is contained in the file
-\href{http://www.mcs.anl.gov/petsc/petsc-dev/include/petsclog.h.html}{include/petsclog.h}. The source code for the profile logging
+\href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsclog.h.html}{include/petsclog.h}. The source code for the profile logging
 is in \trl{src/sys/plog/}.
 
 \subsection{Profiling Object Create and Destruction}
@@ -554,7 +554,7 @@ pair \findex{PetscLogEventBegin()}
    PetscLogEventEnd(PetscLogEvent event,PetscObject o1,...,PetscObject o4);
 \end{tabbing}
 This logging is usually done in the abstract
-interface file for the operations, for example, \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/mat/interface/matrix.c.html}{src/mat/interface/matrix.c}.
+interface file for the operations, for example, \href{http://www.mcs.anl.gov/petsc/petsc-master/src/mat/interface/matrix.c.html}{src/mat/interface/matrix.c}.
 
 \subsection{Controling Profiling}
 
@@ -658,7 +658,7 @@ without altering or recompiling the application code.
 \section{Common Object Header}
 
 All PETSc/PETSc objects have the following common header structures
-defined in \href{http://www.mcs.anl.gov/petsc/petsc-dev/include/petsc-private/petscimpl.h.html}{include/petsc-private/petscimpl.h}
+defined in \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc-private/petscimpl.h.html}{include/petsc-private/petscimpl.h}
 
 \begin{tabbing}
 \\
@@ -861,7 +861,7 @@ not have to ``reinvent the wheel.''
 
 \subsection{Compose and Query}
 
-In \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/objects/olist.c.html}{src/sys/objects/olist.c} PETSc defines a C struct
+In \href{http://www.mcs.anl.gov/petsc/petsc-master/src/objects/olist.c.html}{src/sys/objects/olist.c} PETSc defines a C struct
 \begin{tabbing}
 typedef struct \_PetscObjectList *PetscObjectList;\\
 struct \_PetscObjectList \{\\
@@ -882,7 +882,7 @@ The function PetscObjectListAdd() will create the initial PetscObjectList if the
 \trl{fl} points to a null.
 
 The PETSc object \trl{compose()} and \trl{query()} functions are then simply
-(defined in \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/objects/inherit.c.html}{src/sys/objects/inherit.c})
+(defined in \href{http://www.mcs.anl.gov/petsc/petsc-master/src/objects/inherit.c.html}{src/sys/objects/inherit.c})
 \begin{tabbing}
   PetscErrorCode PetscObjectCompose\_Petsc(PetscObject obj,const char *name,PetscObject ptr)\\
   \{\\
@@ -905,7 +905,7 @@ The PETSc object \trl{compose()} and \trl{query()} functions are then simply
 
 \subsection{Compose and Query Function}
 
-PETSc allows one to compose functions bying name and function pointer. In \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/sys/dll/reg.c.html}{src/sys/dll/reg.c},
+PETSc allows one to compose functions bying name and function pointer. In \href{http://www.mcs.anl.gov/petsc/petsc-master/src/sys/dll/reg.c.html}{src/sys/dll/reg.c},
 PETSc defines the linked list structure
 
 \begin{tabbing}
@@ -961,20 +961,20 @@ vs \_p\_Vec.
 
 \subsection{Preconditioners: PC}
 
-The base PETSc PC object is defined in the  \href{http://www.mcs.anl.gov/petsc/petsc-dev/include/petsc-private/pcimpl.h.html}{include/petsc-private/pcimpl.h} include file.
+The base PETSc PC object is defined in the  \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc-private/pcimpl.h.html}{include/petsc-private/pcimpl.h} include file.
 A carefully commented implementation of a PC object can be found in
-\href{http://www.mcs.anl.gov/petsc/petsc-dev/src/ksp/pc/impls/jacobi/jacobi.c.html}{src/ksp/pc/impls/jacobi/jacobi.c}.
+\href{http://www.mcs.anl.gov/petsc/petsc-master/src/ksp/pc/impls/jacobi/jacobi.c.html}{src/ksp/pc/impls/jacobi/jacobi.c}.
 
 
 \subsection{Krylov Solvers: KSP}
-The base PETSc KSP object is defined in the \href{http://www.mcs.anl.gov/petsc/petsc-dev/include/petsc-private/kspimpl.h.html}{include/petsc-private/kspimpl.h} include file.
+The base PETSc KSP object is defined in the \href{http://www.mcs.anl.gov/petsc/petsc-master/include/petsc-private/kspimpl.h.html}{include/petsc-private/kspimpl.h} include file.
 A carefully commented implementation of a KSP object can be found in
-\href{http://www.mcs.anl.gov/petsc/petsc-dev/src/ksp/ksp/impls/cg/cg.c.html}{src/ksp/ksp/impls/cg/cg.c}.
+\href{http://www.mcs.anl.gov/petsc/petsc-master/src/ksp/ksp/impls/cg/cg.c.html}{src/ksp/ksp/impls/cg/cg.c}.
 
 \subsection{Registering New Methods}
 \label{sec:registeringnewmethods}
 
-See \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/ksp/ksp/examples/tutorials/ex12.c.html}{src/ksp/examples/tutorials/ex12.c} for an example of registering a new
+See \href{http://www.mcs.anl.gov/petsc/petsc-master/src/ksp/ksp/examples/tutorials/ex12.c.html}{src/ksp/examples/tutorials/ex12.c} for an example of registering a new
 preconditioning (PC) method.
 
 
