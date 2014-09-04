@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zdtf90.c
+SOURCEC  = zdtf90.c zdtdsf90.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscdm
