@@ -349,7 +349,7 @@ docsetdate: chk_petscdir
         version_minor=`grep '^#define PETSC_VERSION_MINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
         version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
         if  [ $${version_release} = 0 ]; then \
-          petscversion=petsc-dev; \
+          petscversion=petsc-master; \
           export petscversion; \
         elif [ $${version_release} = 1 ]; then \
           petscversion=petsc-$${version_major}.$${version_minor}.$${version_subminor}; \
@@ -400,19 +400,19 @@ dist:
 # This target works only if you can do 'ssh petsc@login.mcs.anl.gov'
 # also copy the file over to ftp site.
 web-snapshot:
-	@if [ ! -f "${HOME}/petsc-dev.tar.gz" ]; then \
-	    echo "~/petsc-dev.tar.gz missing! cannot update petsc-dev snapshot on mcs-web-site"; \
+	@if [ ! -f "${HOME}/petsc-master.tar.gz" ]; then \
+	    echo "~/petsc-master.tar.gz missing! cannot update petsc-master snapshot on mcs-web-site"; \
 	  else \
-            echo "updating petsc-dev snapshot on mcs-web-site"; \
+            echo "updating petsc-master snapshot on mcs-web-site"; \
 	    tmpdir=`mktemp -d -t petsc-doc.XXXXXXXX`; \
-	    cd $${tmpdir}; tar -xzf ${HOME}/petsc-dev.tar.gz; \
-	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc-dev/ \
-              petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-dev ;\
-	    /bin/cp -f /home/petsc/petsc-dev.tar.gz /mcs/ftp/pub/petsc/petsc-dev.tar.gz;\
+	    cd $${tmpdir}; tar -xzf ${HOME}/petsc-master.tar.gz; \
+	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc-master/ \
+              petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-master ;\
+	    /bin/cp -f /home/petsc/petsc-master.tar.gz /mcs/ftp/pub/petsc/petsc-master.tar.gz;\
 	    ${RM} -rf $${tmpdir} ;\
 	  fi
 
-# build the tarfile - and then update petsc-dev snapshot on mcs-web-site
+# build the tarfile - and then update petsc-master snapshot on mcs-web-site
 update-web-snapshot: dist web-snapshot
 
 # This target updates website main pages

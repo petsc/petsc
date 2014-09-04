@@ -4,8 +4,8 @@
 #
 # Usage: builddist petscrepo [branch] [name]
 # example usages:
-#   builddist /sandbox/petsc/petsc.clone balay/foo [petsc-dev-balay-foo.tar.bz]
-#   builddist /sandbox/petsc/petsc.clone master [petsc-dev.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone balay/foo [petsc-balay-foo.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone master [petsc-master.tar.bz]
 #   builddist /sandbox/petsc/petsc.clone maint [petsc-3.4.1.tar.bz]
 #   builddist /sandbox/petsc/petsc.clone maint release-snapshot [petsc-release-snapshot.tar.bz]
 #
@@ -93,11 +93,7 @@ version_git=`git describe`
 version_date_git=`git log -1 --pretty=format:%ci`
 if [ ${version}foo = foo ]; then
   if  [ ${version_release} = 0 ]; then
-    if [ "$branch" = "master" ]; then
-      version=-dev
-    else
-      version=-`echo ${branch} | sed s~/~-~g`
-    fi
+    version=-`echo ${branch} | sed s~/~-~g`
   elif [ ${version_release} = 1 ]; then
     version=-${version_major}.${version_minor}.${version_subminor}
   else
