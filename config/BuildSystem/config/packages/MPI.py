@@ -11,9 +11,6 @@ from stat import *
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.1.tar.gz',
-                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-1.8.1.tar.gz']
-    self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
     liblist_mpich         = [['fmpich2.lib','fmpich2g.lib','fmpich2s.lib','mpi.lib'],
@@ -56,7 +53,6 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
     import nargs
-    help.addArgument('MPI', '-download-openmpi=<no,yes,filename>',               nargs.ArgDownload(None, 0, 'Download and install OpenMPI'))
     help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-known-mpi-shared-libraries=<bool>',                nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
@@ -65,7 +61,8 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.mpich = framework.require('config.packages.MPICH', self)
+    self.mpich   = framework.require('config.packages.MPICH', self)
+    self.openmpi = framework.require('config.packages.OpenMPI', self)
     return
 
   # search many obscure locations for MPI
@@ -329,122 +326,7 @@ class Configure(config.package.Package):
 
     if self.framework.argDB['download-mpich'] and self.framework.argDB['download-openmpi']:
       raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration. \nUse different PETSC_ARCH if you want to be able to switch between two')
-
-    # Check for OpenMPI
-    if self.framework.argDB['download-openmpi']:
-      if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
-        raise RuntimeError('Sorry, cannot download-install OpenMPI on Windows. Sugest installing windows version of MPICH manually')
-      self.liblist      = [[]]
-      self.download         = self.download_openmpi
-      self.downloadname     = 'openmpi'
-      self.downloadfilename = 'openmpi'
-      return config.package.Package.checkDownload(self, requireDownload)
     return None
-
-  def Install(self):
-    if self.framework.argDB['download-openmpi']:
-      return self.InstallOpenMPI()
-    else:
-      raise RuntimeError('Internal Error!')
-
-  def InstallOpenMPI(self):
-    openmpiDir = self.getDir()
-
-    # Get the OPENMPI directories
-    installDir = self.installDir
-    args = ['--prefix='+installDir,'--with-rsh=ssh']
-    args.append('MAKE='+self.make.make)
-    # Configure and Build OPENMPI
-    self.pushLanguage('C')
-    flags = self.getCompilerFlags()
-    if config.setCompilers.Configure.isDarwin():
-      # OpenMPI configure crashes on Apple if -g or -g3 flag is passed in here
-      flags = flags.replace('-g3','')
-      flags = flags.replace('-g','')
-    args.append('CC="'+self.getCompiler()+'"')
-    args.append('CFLAGS="'+flags+'"')
-    if self.framework.argDB['with-shared-libraries']:
-      if self.setCompilers.staticLibraries:
-        raise RuntimeError('Configuring with shared libraries - but the system/compilers do not support this')
-      args.append('--enable-shared')
-    self.popLanguage()
-    # c++ can't be disabled with OPENMPI
-    if hasattr(self.compilers, 'CXX'):
-      self.pushLanguage('Cxx')
-      flags = self.getCompilerFlags()
-      if config.setCompilers.Configure.isDarwin():
-        flags = flags.replace('-g3','')
-        flags = flags.replace('-g','')
-      args.append('CXX="'+self.getCompiler()+'"')
-      args.append('CXXFLAGS="'+flags+'"')
-      self.popLanguage()
-    else:
-      raise RuntimeError('Error: OpenMPI requires C++ compiler. None specified')
-    # no separate F90 options for OPENMPI
-    if hasattr(self.compilers, 'FC'):
-      self.pushLanguage('FC')
-      args.append('F77="'+self.getCompiler()+'"')
-      args.append('FFLAGS="'+self.getCompilerFlags()+'"')
-      if self.compilers.fortranIsF90:
-        args.append('FC="'+self.getCompiler()+'"')
-        args.append('FCFLAGS="'+self.getCompilerFlags()+'"')
-      else:
-        args.append('--disable-mpi-f90')
-        args.append('FC=""')
-      self.popLanguage()
-    else:
-      args.append('--disable-mpi-f77')
-      args.append('--disable-mpi-f90')
-      args.append('F77=""')
-      args.append('FC=""')
-    if not self.framework.argDB['with-shared-libraries']:
-      args.append('--enable-shared=no')
-      args.append('--enable-static=yes')
-    # openmpi install breaks with papi-5?
-    args.append('--disable-vt')
-    args = ' '.join(args)
-
-    f = file(os.path.join(self.packageDir, 'args.petsc'), 'w')
-    f.write(args)
-    f.close()
-    if self.installNeeded('args.petsc'):
-      try:
-        self.logPrintBox('Configuring OPENMPI; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && ./configure '+args, timeout=1500, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running configure on OPENMPI/MPI: '+str(e))
-      try:
-        self.logPrintBox('Running make on OPENMPI; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make_jnp+' all', timeout=6000, log = self.framework.log)
-        self.logPrintBox('Running make install on OPENMPI')
-        self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.installSudo+self.make.make+' install', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running make on OPENMPI/MPI: '+str(e))
-      if not os.path.isdir(os.path.join(installDir,'lib')):
-        self.framework.log.write('Error running make on OPENMPI/MPI   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on OPENMPI follows *******\n')
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on OPENMPI *******\n')
-        raise RuntimeError('Error running make on OPENMPI, libraries not installed')
-      try:
-        # OpenMPI puts Fortran 90 modules into lib instead of include like we want
-        output,err,ret  = config.base.Configure.executeShellCommand('cp '+os.path.join(installDir,'lib*','*.mod ')+os.path.join(installDir,'include'), timeout=30, log = self.framework.log)
-      except RuntimeError, e:
-        pass
-
-      try:
-        fd = file(os.path.join(self.confDir, 'conf',self.name), 'w')
-        fd.write(args)
-        fd.close()
-      except:
-        self.framework.logPrint('Unable to output configure arguments into '+os.path.join(self.confDir, 'conf',self.name))
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed OPENMPI/MPI into '+installDir)
-
-    self.updateCompilers(installDir,'mpicc','mpicxx','mpif77','mpif90')
-    return installDir
 
   def updateCompilers(self, installDir, mpiccName, mpicxxName, mpif77Name, mpif90Name):
     '''Check if mpicc, mpicxx etc binaries exist - and update setCompilers() database.

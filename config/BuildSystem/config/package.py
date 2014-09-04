@@ -82,6 +82,7 @@ class Package(config.base.Configure):
     # force MPICH to be the first package configured since all other packages
     # may depend on its compilers defined here
     self.mpich         = framework.require('config.packages.MPICH',self)
+    self.openmpi       = framework.require('config.packages.OpenMPI',self)
 
     return
 
