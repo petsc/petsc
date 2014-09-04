@@ -46,8 +46,11 @@ class Configure(config.package.GNUPackage):
     return args
 
   def GNUConfigureRmArgs(self,args):
-    '''MPICH configure errors out if given --xxx-f90 arguments'''
-    return [arg for arg in args if not arg.endswith('f90') and not arg.startswith('F90')]
+    '''MPICH configure errors out if given certain F90 arguments'''
+    rejects = ['--disable-f90','--enable-f90']
+    rejects.extend([arg for arg in args if arg.startswith('F90=') or arg.startswith('F90FLAGS=')])
+    self.logPrint('MPICH is rejecting configure arguments '+str(rejects))
+    return [arg for arg in args if not arg in rejects]
 
   def MPICHInstall(self):
     '''MPICH requires a custom install since make clean requires sudo!'''

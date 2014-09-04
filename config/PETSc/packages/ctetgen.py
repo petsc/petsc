@@ -15,6 +15,7 @@ class Configure(PETSc.package.NewPackage):
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     framework.require('PETSc.packages.openmp',self)
+    self.mpi = framework.require('config.packages.MPI',self)
     self.deps       = []
     return
 
