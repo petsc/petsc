@@ -20,6 +20,7 @@ class Configure(PETSc.package.NewPackage):
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.openmp     = framework.require('PETSc.packages.openmp',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
+    self.mpi             = framework.require('config.packages.MPI',self)
     self.deps       = [self.mpi,self.blasLapack]
     return
 

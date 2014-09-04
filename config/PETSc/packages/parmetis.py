@@ -20,6 +20,7 @@ class Configure(PETSc.package.NewPackage):
     self.cmake           = framework.require('PETSc.packages.cmake',self)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
     self.metis           = framework.require('PETSc.packages.metis',self)
+    self.mpi             = framework.require('config.packages.MPI',self)
     self.deps            = [self.mpi, self.metis]
     return
 

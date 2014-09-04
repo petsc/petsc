@@ -59,6 +59,7 @@ class Configure(config.base.Configure):
     self.make          = framework.require('config.packages.make',      self)
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
     self.externalpackagesdir = framework.require('PETSc.utilities.externalpackagesdir',self)
+    self.mpi             = framework.require('config.packages.MPI',self)
 
     if os.path.isdir(os.path.join('config', 'PETSc')):
       for d in ['utilities', 'packages']:

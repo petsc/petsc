@@ -20,6 +20,7 @@ class Configure(PETSc.package.NewPackage):
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.cmake           = framework.require('PETSc.packages.cmake',self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
+    self.mpi             = framework.require('config.packages.MPI',self)
     self.deps            = [self.mpi,self.cmake,self.blasLapack]
     #
     # also requires the ./configure option --with-cxx-dialect=C++11

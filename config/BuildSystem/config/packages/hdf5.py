@@ -16,6 +16,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.mpi             = framework.require('config.packages.MPI',self)
     self.deps = [self.mpi]
     return
 

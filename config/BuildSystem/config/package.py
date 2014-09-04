@@ -72,13 +72,16 @@ class Package(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.setCompilers  = framework.require('config.setCompilers', self)
     self.compilers     = framework.require('config.compilers', self)
+    self.compilerFlags = framework.require('config.compilerFlags', self)
     self.types         = framework.require('config.types', self)
     self.headers       = framework.require('config.headers', self)
     self.libraries     = framework.require('config.libraries', self)
     self.programs      = framework.require('config.programs', self)
     self.sourceControl = framework.require('config.sourceControl',self)
     self.make          = framework.require('config.packages.make',self)
-    self.mpi           = framework.require('config.packages.MPI',self)
+    # force MPICH to be the first package configured since all other packages
+    # may depend on its compilers defined here
+    self.mpich         = framework.require('config.packages.MPICH',self)
 
     return
 
@@ -607,6 +610,41 @@ class Package(config.base.Configure):
     else:
       self.executeTest(self.alternateConfigureLibrary)
     return
+
+  def updateCompilers(self, installDir, mpiccName, mpicxxName, mpif77Name, mpif90Name):
+    '''Check if mpicc, mpicxx etc binaries exist - and update setCompilers() database.
+    The input arguments are the names of the binaries specified by the respective pacakges
+    This should really be part of compilers.py but it also uses compilerFlags.configure() so
+    I am putting it here and Matt can fix it'''
+
+    # Both MPICH and MVAPICH now depend on LD_LIBRARY_PATH for sharedlibraries.
+    # So using LD_LIBRARY_PATH in configure - and -Wl,-rpath in makefiles
+    if self.framework.argDB['with-shared-libraries']:
+      config.setCompilers.Configure.addLdPath(os.path.join(installDir,'lib'))
+    # Initialize to empty
+    mpicc=''
+    mpicxx=''
+    mpifc=''
+
+    mpicc = os.path.join(installDir,"bin",mpiccName)
+    if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
+    if hasattr(self.compilers, 'CXX'):
+      mpicxx = os.path.join(installDir,"bin",mpicxxName)
+      if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
+    if hasattr(self.compilers, 'FC'):
+      if self.compilers.fortranIsF90:
+        mpifc = os.path.join(installDir,"bin",mpif90Name)
+      else:
+        mpifc = os.path.join(installDir,"bin",mpif77Name)
+      if not os.path.isfile(mpifc): raise RuntimeError('Could not locate installed MPI compiler: '+mpifc)
+    # redo compiler detection
+    self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
+    self.compilers.__init__(self.framework)
+    self.compilers.headerPrefix = self.headerPrefix
+    self.compilers.configure()
+    self.compilerFlags.configure()
+    return
+
 '''
 config.package.GNUPackage is a helper class whose intent is to simplify writing configure modules
 for GNU-style packages that are installed using the "configure; make; make install" idiom.
@@ -970,6 +1008,10 @@ class GNUPackage(Package):
     args = []
     return args
 
+  def GNUConfigureRmArgs(self,args):
+    '''Intended to be overridden by subclasses to remove args that error out particular package'''
+    return args
+
   def formGNUConfigureDepArgs(self):
     '''Add args corresponding to --with-<deppackage>=<deppackage-dir>.'''
     args = []
@@ -997,6 +1039,8 @@ class GNUPackage(Package):
     compiler = self.getCompiler()
     args.append('CC="'+self.getCompiler()+'"')
     args.append('CFLAGS="'+self.getCompilerFlags()+'"')
+    args.append('AR="'+self.setCompilers.AR+'"')
+    args.append('ARFLAGS="'+self.setCompilers.AR_FLAGS+'"')
     self.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('Cxx')
@@ -1025,7 +1069,7 @@ class GNUPackage(Package):
       args.append('F77="'+fc+'"')
       args.append('FFLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
       args.append('FC="'+fc+'"')
-      args.append('FCLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
+      args.append('FCFLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
       self.popLanguage()
     else:
       args.append('--disable-fortran')
@@ -1038,12 +1082,11 @@ class GNUPackage(Package):
       args.append('--disable-shared')
     args.extend(self.formGNUConfigureDepArgs())
     args.extend(self.formGNUConfigureExtraArgs())
+    args = self.GNUConfigureRmArgs(args)
     return args
 
   def Install(self):
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     ### Build the configure arg list, dump it into a conffile
     args = self.formGNUConfigureArgs()
     args = ' '.join(args)
