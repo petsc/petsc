@@ -4,10 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.downloadpath     = 'http://www.mpich.org/static/downloads/3.1/'
-    self.downloadname     = 'mpich'
-    self.downloadext      = 'tar.gz'
-    self.downloadversion  = '3.1'
+    self.download         = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz']
     self.downloadfilename = 'mpich'
     return
 

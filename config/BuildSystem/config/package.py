@@ -94,7 +94,7 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.Arg(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
-    if self.download and not self.download[0] == 'redefine':
+    if self.download:
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
     return
 
@@ -921,22 +921,6 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   at the appropriate times, automatically determining whether a rebuild is necessary, saving
   a GNU configure arguments stamp to perform the check in the future, etc.
 
-  setupDownload:
-  -------------
-  GNUPackage provides a new callback
-    setupDownload
-  which is called only when the package is downloaded (as opposed to being used from a tar file).
-  By default this method constructs self.download from the other instance variables as follows:
-    self.download = [self.downloadpath+self.downloadname+self.downloadversion+self.downloadext]
-  Variables self.downloadpath, self.downloadext and self.downloadversion can be set in __init__ or
-  using the following hook, which is called at the beginning of setupDownload:
-    setupVersion
-  is provided that will set self.downloadversion from the command-line argument "--download-"+self.package+"-version",
-  prompting for user input, if necessary.
-  Clearly, both setupDownload and setupDownloadVersion can be overridden by specific package configure subclasses.
-  They are intended to be a convenient hooks for isolating the download url management based on the command-line arguments
-  and user input.
-
   setupHelp:
   ---------
   This method extends config.Package.setupHelp by adding two command-line arguments:
@@ -964,45 +948,17 @@ Brief overview of how BuildSystem\'s configuration of packages works.
 class GNUPackage(Package):
   def __init__(self, framework):
     Package.__init__(self,framework)
-    self.downloadpath=''
-    self.downloadversion=''
-    self.downloadext=''
-    self.setupDefaultDownload()
     return
 
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
     import nargs
-    downloadversion = None
-    if hasattr(self, 'downloadversion'):
-      downloadversion = self.downloadversion
-    help.addArgument(self.PACKAGE, '-download-'+self.package+'-version=<string>',  nargs.Arg(None, downloadversion, 'Version number of '+self.PACKAGE+' to download'))
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))
 
   def setupDependencies(self,framework):
     config.package.Package.setupDependencies(self, framework)
     # optional dependencies, that will be turned off in GNU configure, if they are absent
     self.odeps = []
-
-  def setupDownloadVersion(self):
-    '''Use this to construct a valid download URL.'''
-    if self.framework.argDB['download-'+self.package+'-version']:
-      self.downloadversion = self.framework.argDB['download-'+self.package+'-version']
-
-  def setupDefaultDownload(self):
-    '''This is used to set up the default download url, without potentially prompting for user input,
-    to make sure that the package configuration is not skipped by configureLibrary.'''
-    if hasattr(self,'downloadpath') and hasattr(self,'downloadname') and hasattr(self,'downloadversion') and hasattr(self,'downloadext'):
-      self.download = [self.downloadpath+self.downloadname+'-'+self.downloadversion+'.'+self.downloadext]
-
-  def setupDownload(self):
-    '''Override this, if necessary, to set up a custom download URL.'''
-    self.setupDownloadVersion()
-    self.setupDefaultDownload()
-
-  def checkDownload(self, requireDownload = 1):
-    self.setupDownload()
-    return Package.checkDownload(self,requireDownload)
 
   def formGNUConfigureExtraArgs(self):
     '''Intended to be overridden by subclasses'''
@@ -1013,28 +969,13 @@ class GNUPackage(Package):
     '''Intended to be overridden by subclasses to remove args that error out particular package'''
     return args
 
-  def formGNUConfigureDepArgs(self):
-    '''Add args corresponding to --with-<deppackage>=<deppackage-dir>.'''
-    args = []
-    for d in self.deps:
-      if d.directory is not None and not d.directory == "":
-        args.append('--with-'+d.package+'='+d.directory)
-    for d in self.odeps:
-      if hasattr(d,'found') and d.found:
-        if d.directory:
-          args.append('--with-'+d.package+'='+d.directory)
-        else:
-          args.append('--with-'+d.package)
-      else:
-        args.append('--without-'+d.package)
-    return args
-
   def formGNUConfigureArgs(self):
     '''This sets up the prefix, compiler flags, shared flags, and other generic arguments
        that are fed into the configure script supplied with the package.'''
     args=[]
     ## prefix
     args.append('--prefix='+self.installDir)
+    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     ## compiler args
     self.pushLanguage('C')
     compiler = self.getCompiler()
@@ -1081,7 +1022,6 @@ class GNUPackage(Package):
       args.append('--enable-shared')
     else:
       args.append('--disable-shared')
-    args.extend(self.formGNUConfigureDepArgs())
     args.extend(self.formGNUConfigureExtraArgs())
     args = self.GNUConfigureRmArgs(args)
     return args
@@ -1116,10 +1056,6 @@ class GNUPackage(Package):
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1+output2+err2+output3+err3, self.package)
     return self.installDir
-
-  def configure(self):
-    self.setupDefaultDownload()
-    Package.configure(self)
 
   def checkDependencies(self, libs = None, incls = None):
     Package.checkDependencies(self, libs, incls)
