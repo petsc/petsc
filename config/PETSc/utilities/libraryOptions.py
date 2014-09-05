@@ -33,17 +33,7 @@ class Configure(config.base.Configure):
     self.scalarTypes = framework.require('PETSc.utilities.scalarTypes', self)
     return
 
-  def isBGL(self):
-    '''Returns true if compiler is IBM cross compiler for BGL'''
-    if not hasattr(self, '_isBGL'):
-      self.logPrint('**********Checking if running on BGL/IBM detected')
-      if (self.libraries.check('', 'bgl_perfctr_void') or self.libraries.check('','ADIOI_BGL_Open')) and self.libraries.check('', '_xlqadd'):
-        self.logPrint('*********BGL/IBM detected')
-        self._isBGL = 1
-      else:
-        self.logPrint('*********BGL/IBM test failure')
-        self._isBGL = 0
-    return self._isBGL
+
 
   def configureLibraryOptions(self):
     '''Sets PETSC_USE_DEBUG, PETSC_USE_INFO, PETSC_USE_LOG, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
@@ -67,7 +57,7 @@ class Configure(config.base.Configure):
       self.addDefine('USE_CTABLE', '1')
 
     # used in src/mat/impls/sbaij/seq/relax.h
-    if not self.isBGL():
+    if not self.libraries.isBGL():
       self.addDefine('USE_BACKWARD_LOOP','1')
 
     self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
@@ -75,12 +65,12 @@ class Configure(config.base.Configure):
       raise RuntimeError('Cannot use fortran kernels without a Fortran compiler')
     if self.useFortranKernels:
       self.addDefine('USE_FORTRAN_KERNELS', 1)
-      if self.isBGL():
+      if self.libraries.isBGL():
         self.addDefine('AssertAlignx(a,b)','call ALIGNX(a,b)')
       else:
         self.addDefine('AssertAlignx(a,b)','  ')
 
-    if self.isBGL():
+    if self.libraries.isBGL():
       self.addDefine('Alignx(a,b)','__alignx(a,b)')
     else:
       self.addDefine('Alignx(a,b)','  ')
