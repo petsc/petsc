@@ -142,8 +142,6 @@ class Configure(config.package.Package):
   def configure(self):
     '''Determine whether (GNU) make exist or not'''
 
-    if self.framework.argDB['with-make'] == '0':
-      return
     if (self.framework.argDB['download-make']):
       config.package.Package.configure(self)
     else:
