@@ -1547,7 +1547,7 @@ if (dlclose(handle)) {
     '''Check that a given library can be linked into a shared library'''
     import sys
     if not self.checkCompile(includes = 'char *'+symbol+'(void);\n',body = 'return '+symbol+'();\n', cleanup = 0, codeBegin = 'char* testroutine(void){', codeEnd = '}'):
-      raise RunTimeError('Unable to compile test file with symbol: '+symbol)
+      raise RuntimeError('Unable to compile test file with symbol: '+symbol)
     oldLibs = self.LIBS
     self.LIBS = self.libraries.toStringNoDupes(lib) + ' '+self.LIBS
     ret = self.checkLink(includes = 'char *'+symbol+'(void);\n',body = 'return '+symbol+'();\n', cleanup = 0, codeBegin = 'char* testroutine(void){', codeEnd = '}',shared =1)
