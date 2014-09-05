@@ -25,8 +25,9 @@ class Configure(config.package.GNUPackage):
       self.download         = self.download_solaris
     return config.package.Package.checkDownload(self, requireDownload)
 
-  def formGNUConfigureExtraArgs(self):
-    args = []
+  def formGNUConfigureArgs(self):
+    '''MPICH has many specific extra configure arguments'''
+    args = config.package.GNUPackage.formGNUConfigureArgs(self)
     if self.framework.argDB['download-mpich-shared']:
       args.append('--enable-shared') # --enable-sharedlibs can now be removed?
       if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
@@ -48,10 +49,7 @@ class Configure(config.package.GNUPackage):
     # make MPICH behave properly for valgrind
     args.append('--enable-g=meminit')
     args.append('--enable-fast')
-    return args
-
-  def GNUConfigureRmArgs(self,args):
-    '''MPICH configure errors out if given certain F90 arguments'''
+    # MPICH configure errors out on certain standard configure arguments
     rejects = ['--disable-f90','--enable-f90']
     rejects.extend([arg for arg in args if arg.startswith('F90=') or arg.startswith('F90FLAGS=')])
     self.logPrint('MPICH is rejecting configure arguments '+str(rejects))

@@ -31,9 +31,9 @@ class Configure(config.package.GNUPackage):
     self.liblist = list
     return config.package.Package.generateLibList(self,framework)
 
-  def formGNUConfigureExtraArgs(self):
+  def formGNUConfigureArgs(self):
     ''' Add HDF5 specific --enable-parallel flag and enable Fortran if available '''
-    args = []
+    args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('--enable-parallel')
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')

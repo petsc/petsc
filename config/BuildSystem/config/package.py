@@ -698,7 +698,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     self.package          - lowercase name                                [string]
     self.PACKAGE          - uppercase name                                [string]
     self.downloadname     - same as self.name (usage a bit inconsistent)  [string]
-    self.downloadfilename     - same as self.name (usage a bit inconsistent)  [string]
+    self.downloadfilename - same as self.name (usage a bit inconsistent)  [string]
   Package subclass typically sets up the following state variables:
     self.download         - url to download source from                   [string]
     self.includes         - names of header files to locate               [list of strings]
@@ -744,17 +744,6 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     The package subclass should add package-specific dependencies via the "require" mechanism,
     as well as list them in self.deps [list].  This list is used during the location/installation
     stage to ensure that the package\'s dependencies have been configured correctly.
-
-  Comment:
-    There appears to be no good reason for separating setupHelp and setupDependencies
-  from the init stage: these hooks are called immediately following configure object
-  construction and do no depend on any other intervening computation.
-    It appears that hooks/callbacks are necessary only when a customizable action must be carried out
-  at a specific point in the configure process, which is not known a priori and/or is controlled by the framework.
-  For example, setupDownload (see GNUPackage below) must be called only after it has been determined
-  (by the code outside of the package class) that a download is necessary.  Otherwise (e.g., if setupDownload
-  is called from __init__), setupDownload will prompt the user for the version of the package to download even
-  when no download is necessary (and this is annoying).
 
   Location/installation:
   ---------------------
@@ -880,7 +869,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   Extending package class:
   -----------------------
   Generally, extending the parent package configure class is done by overriding some
-  or all of its methods (see config/PETSc/packages/hdf5.py, for example).
+  or all of its methods (see config/BuildSystem/config/packages/hdf5.py, for example).
   Because convenient (i.e., localized) hooks are available onto to some parts of the
   configure process, frequently writing a custom configure class amounts to overriding
   configureLibrary so that pre- and post-code can be inserted before calling to
@@ -903,24 +892,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   The main contribution is in the implementation of a generic Install method, which attempts
   to automate the building of a package based on the mostly standard instance variables.
 
-  Install:
-  -------
-  GNUPackage.Install defines a new list of optional dependendies in __init__
-    self.odeps (Cf. self.deps),
-  which can be, like self.deps set in the setupDependencies callback, as well as a new callback
-    formGNUConfigureDepArgs,
-  which constructs the GNU configure options based on self.deps and self.odeps the following way:
-    for each d in self.deps and in self.odeps, configure option \'--with-\'+d.package+\'=\'+d.directory
-    is added to the argument list.
-  The formGNUConfigureDepArgs method is called from another callback
-    formGNUConfigureArgs,
-  which adds the prefix and compiler arguments to the list of GNU configure arguments.
-  GNUPackage.Install then runs GNU configure on the package with the arguments obtained from formGNUConfigureArgs.
-  Each of the formGNUConfigure*Args callbacks can be overriden to provide more specific options.
-  Note that dependencies on self.odeps are optional in the sense that if they are not found,
-  the package is still configured, but the corresponding "--with-" argument is omitted from the GNU
-  configure options.
-
+  
   Besides running GNU configure, GNUPackage.Install runs installNeeded, make and postInstall
   at the appropriate times, automatically determining whether a rebuild is necessary, saving
   a GNU configure arguments stamp to perform the check in the future, etc.
@@ -946,7 +918,6 @@ Brief overview of how BuildSystem\'s configuration of packages works.
       as appropriate
     - override setupDownload to control the precise download URL and/or
     - override setupDownloadVersion to control the self.downloadversion string inserted into self.download between self.downloadpath and self.downloadext
-    - override formGNUConfigureDepArgs and/or formGNUConfigureArgs to control the GNU configure options
 '''
 
 class GNUPackage(Package):
@@ -964,18 +935,10 @@ class GNUPackage(Package):
     # optional dependencies, that will be turned off in GNU configure, if they are absent
     self.odeps = []
 
-  def formGNUConfigureExtraArgs(self):
-    '''Intended to be overridden by subclasses'''
-    args = []
-    return args
-
-  def GNUConfigureRmArgs(self,args):
-    '''Intended to be overridden by subclasses to remove args that error out particular package'''
-    return args
-
   def formGNUConfigureArgs(self):
     '''This sets up the prefix, compiler flags, shared flags, and other generic arguments
-       that are fed into the configure script supplied with the package.'''
+       that are fed into the configure script supplied with the package.
+       Override this to set options needed by a particular package'''
     args=[]
     ## prefix
     args.append('--prefix='+self.installDir)
@@ -1027,13 +990,10 @@ class GNUPackage(Package):
       args.append('--enable-shared')
     else:
       args.append('--disable-shared')
-    args.extend(self.formGNUConfigureExtraArgs())
-    args = self.GNUConfigureRmArgs(args)
     return args
 
   def Install(self):
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
-    ### Build the configure arg list, dump it into a conffile
     args = self.formGNUConfigureArgs()
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package)
@@ -1072,56 +1032,3 @@ class GNUPackage(Package):
       if hasattr(package, 'include') and not incls is None: incls += package.include
     return
 
-  def configureLibrary(self):
-    '''Find an installation and check if it can work with PETSc'''
-    self.framework.log.write('==================================================================================\n')
-    self.framework.logPrint('Checking for a functional '+self.name)
-    foundLibrary = 0
-    foundHeader  = 0
-
-    # get any libraries and includes we depend on
-    libs         = []
-    incls        = []
-    self.checkDependencies(libs, incls)
-    if self.needsMath:
-      if self.libraries.math is None:
-        raise RuntimeError('Math library [libm.a or equivalent] is not found')
-      libs += self.libraries.math
-    if self.needsCompression:
-      if self.libraries.compression is None:
-        raise RuntimeError('Compression [libz.a or equivalent] library not found')
-      libs += self.libraries.compression
-
-    for location, directory, lib, incl in self.generateGuesses():
-      if directory and not os.path.isdir(directory):
-        self.framework.logPrint('Directory does not exist: %s (while checking "%s" for "%r")' % (directory,location,lib))
-        continue
-      if lib == '': lib = []
-      elif not isinstance(lib, list): lib = [lib]
-      if incl == '': incl = []
-      elif not isinstance(incl, list): incl = [incl]
-      testedincl = list(incl)
-      # weed out duplicates when adding fincs
-      for loc in self.compilers.fincs:
-        if not loc in incl:
-          incl.append(loc)
-      if self.functions:
-        self.framework.logPrint('Checking for library in '+location+': '+str(lib))
-        if directory: self.framework.logPrint('Contents: '+str(os.listdir(directory)))
-      else:
-        self.framework.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
-      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
-        self.lib = lib
-        self.framework.logPrint('Checking for headers '+location+': '+str(incl))
-        if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
-          if self.includes:
-            self.include = testedincl
-          self.found     = 1
-          self.dlib      = self.lib+libs
-          if not hasattr(self.framework, 'packages'):
-            self.framework.packages = []
-          self.directory = directory
-          self.framework.packages.append(self)
-          return
-    if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.framework.argDB['with-'+self.package]):
-      raise RuntimeError('Could not find a functional '+self.name+'\n')

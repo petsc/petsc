@@ -8,8 +8,9 @@ class Configure(config.package.GNUPackage):
     self.downloadfilename = 'openmpi'
     return
 
-  def formGNUConfigureExtraArgs(self):
-    args = ['--with-rsh=ssh']
+  def formGNUConfigureArgs(self):
+    args = config.package.GNUPackage.formGNUConfigureArgs(self)
+    args.append('--with-rsh=ssh')
     args.append('MAKE='+self.make.make)
     if not hasattr(self.compilers, 'CXX'):
       raise RuntimeError('Error: OpenMPI requires C++ compiler. None specified')

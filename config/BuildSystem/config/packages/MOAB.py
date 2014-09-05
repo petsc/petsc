@@ -25,8 +25,9 @@ class Configure(config.package.GNUPackage):
     self.odeps     = [self.mpi, self.hdf5, self.netcdf]
     return
 
-  def formGNUConfigureExtraArgs(self):
-    args = []
+  def formGNUConfigureArgs(self):
+    '''Add MOAB specific configure arguments'''
+    args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('--with-mpi="'+self.mpi.directory+'"')
     if self.hdf5.found:
       args.append('--with-hdf5="'+self.hdf5.directory+'"')

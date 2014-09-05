@@ -19,9 +19,9 @@ class Configure(config.package.GNUPackage):
     self.deps  = [self.mpi, self.hdf5]
     return
 
-  def formGNUConfigureExtraArgs(self):
+  def formGNUConfigureArgs(self):
     ''' disable DAP and HDF4, enable NetCDF4'''
-    args = []
+    args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('CPPFLAGS="'+self.headers.toString(self.hdf5.include)+'"')
     args.append('LIBS="'+self.libraries.toString(self.hdf5.lib)+'"')
     args.append('--enable-netcdf-4')
