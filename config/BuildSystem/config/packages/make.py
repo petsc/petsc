@@ -78,9 +78,15 @@ class Configure(config.package.Package):
   def configureCheckGNUMake(self):
     '''Check for GNU make'''
     try:
+      import re
+      # set self.haveGNUMake only if using gnumake version > 3.80 [as older version break with gmakefile]
       (output, error, status) = config.base.Configure.executeShellCommand(self.make+' --version', log = self.framework.log)
-      if not status and output.find('GNU Make') >= 0:
-        self.haveGNUMake = 1
+      gver = re.compile('GNU Make ([0-9]+).([0-9]+)').match(output)
+      if not status and gver:
+        major = int(gver.group(1))
+        minor = int(gver.group(2))
+        if ((major > 3) or (major == 3 and minor > 80)):
+          self.haveGNUMake = 1
     except RuntimeError, e:
       self.framework.log.write('GNUMake check failed: '+str(e)+'\n')
 
