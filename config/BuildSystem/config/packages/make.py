@@ -95,6 +95,8 @@ class Configure(config.package.Package):
       self.printdirflag = ' --print-directory'
       self.noprintdirflag = ' --no-print-directory'
       self.addMakeMacro('MAKE_IS_GNUMAKE',1)
+    else:
+      self.logPrintBox('Warning: '+self.make+' is not GNUMake (3.81 or higher). Suggest using --download-make')
 
     # Check to see if make allows rules which look inside archives
     if self.haveGNUMake:
