@@ -50,7 +50,7 @@ class Configure(config.package.GNUPackage):
     return [arg for arg in args if not arg in rejects]
 
   def MPICHInstall(self):
-    '''MPICH requires a custom install since make clean requires sudo!'''
+    '''MPICH requires a custom install since make clean requires sudo! Remove this when you update the MPICH tarball'''
     args = self.formGNUConfigureArgs()
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package)
@@ -69,11 +69,11 @@ class Configure(config.package.GNUPackage):
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
-      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && make ', timeout=6000, log = self.framework.log)
+      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.make.make_jnp, timeout=6000, log = self.framework.log)
       self.logPrintBox('Running make install on '+self.PACKAGE+'; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage()
-      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+'make install', timeout=300, log = self.framework.log)
-      output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+'make clean', timeout=200, log = self.framework.log)
+      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+self.make.make+' install', timeout=300, log = self.framework.log)
+      output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+self.make.make+' clean', timeout=200, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1+output2+err2+output3+err3, self.package)
