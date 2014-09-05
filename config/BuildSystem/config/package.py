@@ -52,7 +52,9 @@ class Package(config.base.Configure):
     self.includedir       = 'include' # location of includes in the package directory tree
     self.license          = None # optional license text
     self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
-    self.downloadonWindows   = 0  # 1 means the --download-package works on Microsoft Windows
+    self.downloadonWindows= 0  # 1 means the --download-package works on Microsoft Windows
+    self.requirescxx11    = 0
+
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
     self.installSudo      = '' # if user does not have write access to prefix directory then this is set to sudo
@@ -587,6 +589,8 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
+      if self.requirescxx11 and self.compilers.cxxdialect != 'C++11':
+        raise RuntimeError('Cannot use '+self.name+' without enabling C++11, see --with-cxx-dialect=C++11')
       if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
     if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
@@ -594,7 +598,7 @@ class Package(config.base.Configure):
     return
 
   def configure(self):
-    if self.download and not self.download[0] == 'redefine' and self.framework.argDB['download-'+self.downloadname.lower()]:
+    if self.download and self.framework.argDB['download-'+self.downloadname.lower()]:
       self.framework.argDB['with-'+self.package] = 1
     if 'with-'+self.package+'-dir' in self.framework.argDB or 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
