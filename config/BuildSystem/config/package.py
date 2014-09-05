@@ -979,6 +979,7 @@ class GNUPackage(Package):
     args=[]
     ## prefix
     args.append('--prefix='+self.installDir)
+    args.append('MAKE='+self.make.make)
     args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     ## compiler args
     self.pushLanguage('C')
