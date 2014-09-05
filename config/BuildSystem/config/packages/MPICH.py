@@ -5,6 +5,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.download         = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz']
+    self.download_solaris = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich-master-v3.0.4-106-g3adb59c.tar.gz']
     self.downloadfilename = 'mpich'
     return
 
@@ -16,6 +17,13 @@ class Configure(config.package.GNUPackage):
     help.addArgument('MPI', '-download-mpich-mpe=<bool>',                              nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
     help.addArgument('MPI', '-download-mpich-shared=<bool>',                           nargs.ArgBool(None, 1, 'Install MPICH with shared libraries'))
     return
+
+  def checkDownload(self, requireDownload = 1):
+    if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
+      raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')
+    if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-gcov']:
+      self.download         = self.download_solaris
+    return config.package.Package.checkDownload(self, requireDownload)
 
   def formGNUConfigureExtraArgs(self):
     args = []
