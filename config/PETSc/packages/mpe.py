@@ -1,37 +1,30 @@
-import PETSc.package
+import config.package
 
-class Configure(PETSc.package.NewPackage):
+class Configure(config.package.GNUPackage):
   def __init__(self, framework):
-    PETSc.package.NewPackage.__init__(self, framework)
+    config.package.GNUPackage.__init__(self, framework)
     self.download  = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpe/mpe2.tar.gz']
     self.functions = ['MPE_Log_event']
     self.includes  = ['mpe.h']
     #self.liblist   = [['libmpe_f2cmpi.a','liblmpe.a','libmpe.a']] # log mpi events aswell? provide another configure opton? how?
     self.liblist   = [[],['libmpe.a']]
-    self.complex   = 1
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.mpi             = framework.require('config.packages.MPI',self)
+    config.package.GNUPackage.setupDependencies(self, framework)
+    self.mpi  = framework.require('config.packages.MPI',self)
     self.deps = [self.mpi]
     return
 
-  def Install(self):
-    import os
-
-    args = ['--prefix='+self.installDir]
-    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
+  def formGNUConfigureArgs(self):
+    args = config.package.GNUPackage.formGNUConfigureArgs(self)
     self.framework.pushLanguage('C')
-    args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     args.append('MPI_CFLAGS="'+self.framework.getCompilerFlags()+'"')
-    args.append('CC="'+self.framework.getCompiler()+'"')
     args.append('MPI_CC="'+self.framework.getCompiler()+'"')
     self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
-      args.append('FFLAGS="'+self.framework.getCompilerFlags()+'"')
       args.append('MPI_FFLAGS="'+self.framework.getCompilerFlags()+'"')
       args.append('F77="'+self.framework.getCompiler()+'"')
       args.append('MPI_F77="'+self.framework.getCompiler()+'"')
@@ -41,24 +34,5 @@ class Configure(PETSc.package.NewPackage):
 
     args.append('MPI_INC="'+self.headers.toString(self.mpi.include)+'"')
     args.append('MPI_LIBS="'+self.libraries.toStringNoDupes(self.mpi.lib)+'"')
+    return args
 
-    args = ' '.join(args)
-
-    fd = file(os.path.join(self.packageDir,'mpe'), 'w')
-    fd.write(args)
-    fd.close()
-
-    if self.installNeeded('mpe'):
-      try:
-        self.logPrintBox('Configuring mpe; this may take several minutes')
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.framework.log)[0]
-      except RuntimeError, e:
-        raise RuntimeError('Error running configure on MPE: '+str(e))
-      # Build MPE
-      try:
-        self.logPrintBox('Compiling and install mpe; this may take several minutes')
-        self.installDirProvider.printSudoPasswordMessage()
-        output  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make && '+self.installSudo+' make install', timeout=2500, log = self.framework.log)[0]
-      except RuntimeError, e:
-        raise RuntimeError('Error running make on MPE: '+str(e))
-    return self.installDir
