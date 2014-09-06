@@ -88,6 +88,7 @@ class Configure(config.package.GNUPackage):
   def Install(self):
     '''After downloading and installing MPICH we need to reset the compilers to use those defined by the MPICH install'''
     installDir = self.MPICHInstall()
+    self.download = ''
     self.updateCompilers(installDir,'mpicc','mpicxx','mpif77','mpif90')
     return installDir
 
