@@ -63,7 +63,7 @@ class Configure(config.package.GNUPackage):
       self.getExecutable('bib2html', getFullPath = 1)
       self.getExecutable('pdflatex', getFullPath = 1)
 
-      if hasattr(self, 'bfort'):
+      if hasattr(self, 'bfort') and not self.framework.argDB['download-sowing']:
         self.framework.logPrint('Found bfort, not installing sowing')
       else:
         self.framework.logPrint('Bfort not found. Installing sowing for FortranStubs')

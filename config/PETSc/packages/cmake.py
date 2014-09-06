@@ -1,63 +1,42 @@
-import PETSc.package
+import config.package
+import os
 
-class Configure(PETSc.package.NewPackage):
+class Configure(config.package.GNUPackage):
   def __init__(self, framework):
-    PETSc.package.NewPackage.__init__(self, framework)
+    config.package.GNUPackage.__init__(self, framework)
     self.download          = ['http://www.cmake.org/files/v2.8/cmake-2.8.12.2.tar.gz']
-    self.download_sol      = ['http://www.cmake.org/files/v2.8/cmake-2.8.10.2.tar.gz']
-    self.complex           = 1
-    self.double            = 0
-    self.requires32bitint  = 0
     self.downloadonWindows = 1
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-cmake=<prog>', nargs.Arg(None, 'cmake', 'Specify cmake'))
-    help.addArgument('PETSc', '-download-cmake=<no,yes,filename>', nargs.ArgDownload(None, 0, 'Download and install cmake'))
+    config.package.GNUPackage.setupHelp(self, help)
+    help.addArgument('Cmake', '-download-cmake-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for cmake configure'))
+    help.addArgument('Cmake', '-download-cmake-configure-options=<options>',   nargs.Arg(None, None, 'additional options for cmake configure'))
     return
 
-  def checkDownload(self,requireDownload = 1):
-    import config.base
-    if config.setCompilers.Configure.isSolaris():
-      self.download         = self.download_sol
-    return config.package.Package.checkDownload(self, requireDownload)
-
-  def Install(self):
-    import os
+  def formGNUConfigureArgs(self):
+    '''Does not use the standard arguments at all since this does not use the MPI compilers etc
+       Cmake will chose its own compilers if they are not provided explicitly here'''
     args = ['--prefix='+self.confDir]
-    args = ' '.join(args)
-    fd = file(os.path.join(self.packageDir,'cmake.args'), 'w')
-    fd.write(args)
-    fd.close()
-    if self.installNeeded('cmake.args'):
-      try:
-        self.logPrintBox('Configuring CMake; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=900, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running configure on cmake: '+str(e))
-      try:
-        self.logPrintBox('Compiling CMake; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && '+self.make.make_jnp+' && '+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running make; make install on cmake: '+str(e))
-      self.postInstall(output+err,'cmake.args')
-    self.binDir = os.path.join(self.confDir, 'bin')
-    self.cmake = os.path.join(self.binDir, 'cmake')
-    self.addMakeMacro('CMAKE',self.cmake)
-    return self.confDir
+    if 'download-cmake-cc' in self.framework.argDB and self.framework.argDB['download-cmake-cc']:
+      args.append('CC="'+self.framework.argDB['download-cmake-cc']+'"')
+    if 'download-cmake-configure-options' in self.framework.argDB and self.framework.argDB['download-cmake-configure-options']:
+      args.append(self.framework.argDB['download-cmake-configure-options'])
+    return args
 
   def alternateConfigureLibrary(self):
     self.checkDownload(1)
 
   def configure(self):
-    '''Determine whether the cmake exist or not'''
-
-    if (not self.framework.argDB['with-cmake']):
-      self.framework.logPrint("Not checking cmake on user request\n")
-      return
-
-    if (self.framework.argDB['download-cmake']):
-      PETSc.package.NewPackage.configure(self)
-    elif self.getExecutable(self.framework.argDB['with-cmake'], getFullPath = 1,resultName='cmake'):
+    '''Locate cmake and download it if requested'''
+    if self.framework.argDB['download-cmake']:
+      config.package.GNUPackage.configure(self)
+      self.getExecutable('cmake',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
+    elif self.framework.argDB['with-cmake']:
+      if self.framework.argDB['with-cmake']  == 1 or self.framework.argDB['with-cmake']  == 'yes':
+        self.getExecutable('cmake', getFullPath = 1,resultName='cmake')
+      elif not self.framework.argDB['with-cmake']  == 0 and not self.framework.argDB['with-cmake']  == 'no':
+        self.getExecutable(self.framework.argDB['with-cmake'], getFullPath = 1,resultName='cmake')
+    if not hasattr(self, 'cmake'):
       self.found = 1
     return
