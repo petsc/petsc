@@ -1,9 +1,9 @@
-import PETSc.package
+import config.package
 import os
 
-class Configure(PETSc.package.NewPackage):
+class Configure(config.package.Package):
   def __init__(self, framework):
-    PETSc.package.NewPackage.__init__(self, framework)
+    config.package.Package.__init__(self, framework)
     self.download        = ['http://downloads.sourceforge.net/project/viennacl/1.5.x/ViennaCL-1.5.2.tar.gz']
     self.downloadfilename = str('ViennaCL-1.5.2')
     self.includes        = ['viennacl/forwards.h']
@@ -13,8 +13,8 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.opencl  = framework.require('PETSc.packages.opencl',self)
+    config.package.Package.setupDependencies(self, framework)
+    self.opencl  = framework.require('config.packages.opencl',self)
     self.deps = [self.opencl]
     return
 
@@ -28,7 +28,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installSudo:
       self.installDirProvider.printSudoPasswordMessage()
       try:
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand(self.installSudo+'mkdir -p '+destdir+' && '+self.installSudo+'rm -rf '+destdir+'  && '+self.installSudo+'cp -rf '+srcdir+' '+destdir, timeout=6000, log = self.framework.log)
+        output,err,ret  = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+destdir+' && '+self.installSudo+'rm -rf '+destdir+'  && '+self.installSudo+'cp -rf '+srcdir+' '+destdir, timeout=6000, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error copying ViennaCL include files from '+os.path.join(self.packageDir, 'ViennaCL')+' to '+packageDir)
     else:

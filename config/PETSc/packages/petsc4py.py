@@ -1,17 +1,16 @@
-import PETSc.package
+import config.package
 
-class Configure(PETSc.package.NewPackage):
+class Configure(config.package.Package):
   def __init__(self, framework):
-    PETSc.package.NewPackage.__init__(self, framework)
+    config.package.Package.__init__(self, framework)
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-418f86b7e1b8.tar.gz']
     self.functions         = []
     self.includes          = []
     self.liblist           = []
-    self.complex           = 1
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.NewPackage.setupDependencies(self, framework)
+    config.package.Package.setupDependencies(self, framework)
     self.petscconfigure  = framework.require('PETSc.Configure',self)
     self.numpy           = framework.require('config.packages.Numpy',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
