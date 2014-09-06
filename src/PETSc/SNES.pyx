@@ -573,10 +573,8 @@ cdef class SNES(Object):
         cdef PetscInt cn
         cdef SNES snes = SNES()
         cn = asInt(n)
-
         CHKERR( SNESCompositeGetSNES(self.snes, cn, &snes.snes) )
         PetscINCREF(snes.obj)
-
         return snes
 
     # --- application context ---
