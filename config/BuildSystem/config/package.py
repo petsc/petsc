@@ -233,7 +233,7 @@ class Package(config.base.Configure):
     installDir = self.Install()
     if not installDir:
       raise RuntimeError(self.package+' forgot to return the install directory from the method Install()\n')
-    return os.path.abspath(self.Install())
+    return os.path.abspath(installDir)
 
   def getChecksum(self,source, chunkSize = 1024*1024):
     '''Return the md5 checksum for a given file, which may also be specified by its filename
