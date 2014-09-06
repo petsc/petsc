@@ -230,6 +230,9 @@ class Package(config.base.Configure):
       self.installSudo= ''
     self.includeDir = os.path.join(self.installDir, 'include')
     self.libDir     = os.path.join(self.installDir, 'lib')
+    installDir = self.Install()
+    if not installDir:
+      raise RuntimeError(self.package+' forgot to return the install directory from the method Install()\n')
     return os.path.abspath(self.Install())
 
   def getChecksum(self,source, chunkSize = 1024*1024):

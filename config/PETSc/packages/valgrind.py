@@ -1,40 +1,33 @@
-import PETSc.package
+import config.package
 import os
 
-class Configure(PETSc.package.NewPackage):
+class Configure(config.package.Package):
   def __init__(self, framework):
-    PETSc.package.NewPackage.__init__(self, framework)
+    config.package.Package.__init__(self, framework)
     self.download  = 0
     self.functions = []
     self.includes  = ['valgrind/valgrind.h']
     self.liblist   = ['']
     self.needsMath = 0
-    self.complex   = 1
     self.required  = 1
-    self.double    = 0
-    self.requires32bitint = 0
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.NewPackage.setupDependencies(self, framework)
+    config.package.Package.setupDependencies(self, framework)
     self.deps = []
     return
 
   def setup(self):
-    PETSc.package.NewPackage.setup(self)
+    config.package.Package.setup(self)
     if 'with-'+self.package+'-lib' in self.framework.argDB:
       raise RuntimeError('It is incorrect to specify library for valgrind, please remove --with-valgrind-lib')
     return
 
   def getSearchDirectories(self):
-    '''By default, do not search any particular directories'''
     yield ''
     yield os.path.join('/usr','local')
     yield os.path.join('/opt','local')
     return
-
-  def Install(self):
-    raise RuntimeError('--download-valgrind not supported\n')
 
   def configure(self):
     '''By default we look for valgrind, but do not stop if it is not found'''
@@ -54,7 +47,7 @@ class Configure(PETSc.package.NewPackage):
         self.compilers.CPPFLAGS = oldFlags
       except:
         pass
-      if not found and (self.setCompilers.isDarwin() or self.setCompilers.isLinux()):
+      if not found and self.setCompilers.isLinux():
         self.logPrintBox('It appears you do not have valgrind installed on your system.\n\
 We HIGHLY recommend you install it from www.valgrind.org\n\
 Or install valgrind-devel or equivalent using your package manager.\n\

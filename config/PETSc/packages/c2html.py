@@ -38,7 +38,7 @@ class Configure(config.package.GNUPackage):
       self.framework.logPrint('PETSc clone, checking for c2html\n')
       self.getExecutable('c2html', getFullPath = 1)
 
-      if hasattr(self, 'c2html'):
+      if hasattr(self, 'c2html') and not self.framework.argDB.get('download-c2html'):
         self.framework.logPrint('Found c2html, will not install c2html')
       else:
         self.framework.logPrint('Installing c2html')
