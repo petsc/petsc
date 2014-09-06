@@ -24,9 +24,10 @@ class Configure(config.base.Configure):
     self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
-  def printSudoPasswordMessage(self):
+  def printSudoPasswordMessage(self,needsudo = 1):
     '''Prints a message that sudo password will be needed for installs of packages'''
-    if self.installSudoMessage:
+    '''Packages like sowing and make that are never installed in an sudo location would pass 0 for needsudo'''
+    if needsudo and self.installSudoMessage:
       self.logPrintBox(self.installSudoMessage)
       self.installSudoMessage = ''
 

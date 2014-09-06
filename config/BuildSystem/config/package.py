@@ -54,6 +54,9 @@ class Package(config.base.Configure):
     self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
     self.downloadonWindows= 0  # 1 means the --download-package works on Microsoft Windows
     self.requirescxx11    = 0
+    self.publicInstall    = 1  # Installs the package in the --prefix directory if it was given. Packages that are only used
+                               # during the configuration/installation process such as sowing, make etc should be marked as 0
+    self.parallelMake     = 1  # 1 indicates the package supports make -j np option
 
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
@@ -217,12 +220,16 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
-    self.installDir = self.defaultInstallDir
-    self.installSudo= self.installDirProvider.installSudo
+    self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
+    self.packageDir = self.getDir()
+    if self.publicInstall:
+      self.installDir = self.defaultInstallDir
+      self.installSudo= self.installDirProvider.installSudo
+    else:
+      self.installDir = self.confDir
+      self.installSudo= ''
     self.includeDir = os.path.join(self.installDir, 'include')
     self.libDir     = os.path.join(self.installDir, 'lib')
-    self.confDir    = self.installDirProvider.confDir
-    self.packageDir = self.getDir()
     return os.path.abspath(self.Install())
 
   def getChecksum(self,source, chunkSize = 1024*1024):
@@ -996,7 +1003,7 @@ class GNUPackage(Package):
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
     args = self.formGNUConfigureArgs()
     args = ' '.join(args)
-    conffile = os.path.join(self.packageDir,self.package)
+    conffile = os.path.join(self.packageDir,self.package+'.petscconf')
     fd = file(conffile, 'w')
     fd.write(args)
     fd.close()
@@ -1012,14 +1019,17 @@ class GNUPackage(Package):
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
+      if self.parallelMake: pmake = self.make.make_jnp
+      else: pmake = self.make.make
+
       output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
-      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.make.make_jnp, timeout=6000, log = self.framework.log)
+      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+pmake, timeout=6000, log = self.framework.log)
       self.logPrintBox('Running make install on '+self.PACKAGE+'; this may take several minutes')
-      self.installDirProvider.printSudoPasswordMessage()
+      self.installDirProvider.printSudoPasswordMessage(self.installSudo)
       output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+self.make.make+' install', timeout=300, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
-    self.postInstall(output1+err1+output2+err2+output3+err3, self.package)
+    self.postInstall(output1+err1+output2+err2+output3+err3, conffile)
     return self.installDir
 
   def checkDependencies(self, libs = None, incls = None):

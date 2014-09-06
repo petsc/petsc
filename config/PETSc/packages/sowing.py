@@ -1,18 +1,21 @@
-import PETSc.package
+import config.package
+import os
 
-class Configure(PETSc.package.NewPackage):
+class Configure(config.package.GNUPackage):
   def __init__(self, framework):
-    PETSc.package.NewPackage.__init__(self, framework)
+    config.package.GNUPackage.__init__(self, framework)
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.16g.tar.gz']
     self.complex           = 1
     self.double            = 0
     self.requires32bitint  = 0
     self.downloadonWindows = 1
+    self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
+    self.parallelMake      = 0  # sowing does not support make -j np
     return
 
   def setupHelp(self, help):
     import nargs
-    PETSc.package.NewPackage.setupHelp(self, help)
+    config.package.GNUPackage.setupHelp(self, help)
     help.addArgument('SOWING', '-download-sowing-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for sowing configure'))
     help.addArgument('SOWING', '-download-sowing-cxx=<prog>',                    nargs.Arg(None, None, 'CXX compiler for sowing configure'))
     help.addArgument('SOWING', '-download-sowing-cpp=<prog>',                    nargs.Arg(None, None, 'CPP for sowing configure'))
@@ -20,8 +23,15 @@ class Configure(PETSc.package.NewPackage):
     help.addArgument('SOWING', '-download-sowing-configure-options=<options>',   nargs.Arg(None, None, 'additional options for sowing configure'))
     return
 
-  def Install(self):
-    import os
+  def setupDependencies(self, framework):
+    config.package.GNUPackage.setupDependencies(self, framework)
+    self.petscdir       = framework.require('PETSc.utilities.petscdir', self.setCompilers)
+    self.petscclone     = framework.require('PETSc.utilities.petscclone',self.setCompilers)
+    return
+
+  def formGNUConfigureArgs(self):
+    '''Does not use the standard arguments at all since this does not use the MPI compilers etc
+       Sowing will chose its own compilers if they are not provided explicitly here'''
     args = ['--prefix='+self.confDir]
     if 'download-sowing-cc' in self.framework.argDB and self.framework.argDB['download-sowing-cc']:
       args.append('CC="'+self.framework.argDB['download-sowing-cc']+'"')
@@ -33,43 +43,43 @@ class Configure(PETSc.package.NewPackage):
       args.append('CXXCPP="'+self.framework.argDB['download-sowing-cxxcpp']+'"')
     if 'download-sowing-configure-options' in self.framework.argDB and self.framework.argDB['download-sowing-configure-options']:
       args.append(self.framework.argDB['download-sowing-configure-options'])
-    args = ' '.join(args)
-    fd = file(os.path.join(self.packageDir,self.package), 'w')
-    fd.write(args)
-    fd.close()
-    if self.installNeeded(self.package):
-      self.logPrintBox('Configuring sowing; this may take several minutes')
-      try:
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=900, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running configure on Sowing (install manually): '+str(e))
-      try:
-        self.logPrintBox('Running make on sowing; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make', timeout=2500, log = self.framework.log)
-        self.logPrintBox('Running make install on sowing')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' &&  make install && make clean', timeout=100, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running make; make install on Sowing (install manually): '+str(e))
-      self.framework.actions.addArgument('Sowing', 'Install', 'Installed Sowing into '+self.confDir)
-    self.binDir   = os.path.join(self.confDir, 'bin')
-    self.bfort    = os.path.join(self.binDir, 'bfort')
-    self.doctext  = os.path.join(self.binDir, 'doctext')
-    self.mapnames = os.path.join(self.binDir, 'mapnames')
-    # bug does not install bib2html so use original location if needed
-    if os.path.isfile(os.path.join(self.binDir, 'bib2html')):
-      self.bib2html = os.path.join(self.binDir, 'bib2html')
+    return args
+
+  def alternateConfigureLibrary(self):
+    self.checkDownload(1)
+
+  def configure(self):
+    if (self.framework.clArgDB.has_key('with-sowing') and not self.framework.argDB['with-sowing']) or \
+          (self.framework.clArgDB.has_key('download-sowing') and not self.framework.argDB['download-sowing']):
+      self.framework.logPrint("Not checking sowing on user request\n")
+      return
+
+    if self.petscclone.isClone:
+      self.framework.logPrint('PETSc clone, checking for Sowing \n')
+
+      self.getExecutable('bfort', getFullPath = 1)
+      self.getExecutable('doctext', getFullPath = 1)
+      self.getExecutable('mapnames', getFullPath = 1)
+      self.getExecutable('bib2html', getFullPath = 1)
+      self.getExecutable('pdflatex', getFullPath = 1)
+
+      if hasattr(self, 'bfort'):
+        self.framework.logPrint('Found bfort, not installing sowing')
+      else:
+        self.framework.logPrint('Bfort not found. Installing sowing for FortranStubs')
+        self.framework.argDB['download-sowing'] = 1
+        config.package.GNUPackage.configure(self)
+
+        installDir = os.path.join(self.installDir,'bin')
+        self.getExecutable('bfort',    path=installDir, getFullPath = 1)
+        self.getExecutable('doctext',  path=installDir, getFullPath = 1)
+        self.getExecutable('mapnames', path=installDir, getFullPath = 1)
+        self.getExecutable('bib2html', path=installDir, getFullPath = 1)
+
+      self.buildFortranStubs()
     else:
-      self.bib2html = os.path.join(self.packageDir,'bin', 'bib2html')
-    for prog in [self.bfort, self.doctext, self.mapnames]:
-      if not (os.path.isfile(prog) and os.access(prog, os.X_OK)):
-        raise RuntimeError('Error in Sowing installation: Could not find '+prog)
-      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'sowing')+' '+os.path.join(self.confDir,'conf','sowing'), timeout=5, log = self.framework.log)
-    self.addMakeMacro('BFORT ', self.bfort)
-    self.addMakeMacro('DOCTEXT ', self.doctext)
-    self.addMakeMacro('MAPNAMES ', self.mapnames)
-    self.addMakeMacro('BIB2HTML ', self.bib2html)
-    self.getExecutable('pdflatex', getFullPath = 1)
-    return self.confDir
+      self.framework.logPrint("Not a clone of PETSc, don't need Sowing\n")
+    return
 
   def buildFortranStubs(self):
     if hasattr(self.compilers, 'FC'):
@@ -90,46 +100,3 @@ class Configure(PETSc.package.NewPackage):
         except RuntimeError, e:
           raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
     return
-
-  def alternateConfigureLibrary(self):
-    self.checkDownload(1)
-
-  def configure(self):
-    '''Determine whether the Sowing exist or not'''
-
-    if (self.framework.clArgDB.has_key('with-sowing') and not self.framework.argDB['with-sowing']) or \
-          (self.framework.clArgDB.has_key('download-sowing') and not self.framework.argDB['download-sowing']):
-      self.framework.logPrint("Not checking sowing on user request\n")
-      return
-
-    # If download option is specified always build sowing
-    if self.framework.argDB['download-sowing']:
-      PETSc.package.NewPackage.configure(self)
-      if self.petscclone.isClone:
-        self.framework.logPrint('PETSc clone, Building FortranStubs [with download-sowing=1]\n')
-        self.buildFortranStubs()
-      else:
-        self.framework.logPrint('Not a clone, skipping FortranStubs [with download-sowing=1]\n')
-      return
-
-    # autodetect if sowing/bfort is required
-    if self.petscclone.isClone:
-      self.framework.logPrint('PETSc clone, checking for Sowing or if it is needed\n')
-
-      self.getExecutable('bfort', getFullPath = 1)
-      self.getExecutable('doctext', getFullPath = 1)
-      self.getExecutable('mapnames', getFullPath = 1)
-      self.getExecutable('bib2html', getFullPath = 1)
-      self.getExecutable('pdflatex', getFullPath = 1)
-
-      if hasattr(self, 'bfort'):
-        self.framework.logPrint('Found bfort, not installing sowing')
-      else:
-        self.framework.logPrint('Bfort not found. Installing sowing for FortranStubs')
-        self.framework.argDB['download-sowing'] = 1
-        PETSc.package.NewPackage.configure(self)
-      self.buildFortranStubs()
-    else:
-      self.framework.logPrint("Not a clone of PETSc, don't need Sowing\n")
-    return
-
