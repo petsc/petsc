@@ -9,8 +9,6 @@ class Configure(PETSc.package.NewPackage):
     self.includes  = ['triangle.h']
     self.liblist   = [['libtriangle.a']]
     self.needsMath = 1
-    self.complex   = 1
-    self.double    = 0
     return
 
   def setupDependencies(self, framework):

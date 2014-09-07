@@ -7,9 +7,6 @@ class Configure(PETSc.package.NewPackage):
     self.includes     = ['mkl.h']
     self.functions    = ['pardisoinit']
     self.liblist      = [[]] # use MKL detected by BlasLapack.py
-    self.double       = 0
-    self.requires32bitint = 0
-    self.complex      = 1
     return
 
   def setupDependencies(self, framework):

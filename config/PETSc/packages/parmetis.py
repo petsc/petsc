@@ -9,9 +9,6 @@ class Configure(PETSc.package.NewPackage):
     self.includes          = ['parmetis.h']
     self.liblist           = [['libparmetis.a']]
     self.needsMath         = 1
-    self.double            = 0
-    self.complex           = 1
-    self.requires32bitint  = 0
     return
 
   def setupDependencies(self, framework):
@@ -19,6 +16,7 @@ class Configure(PETSc.package.NewPackage):
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.cmake           = framework.require('PETSc.packages.cmake',self)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
+    self.cmake           = framework.require('PETSc.packages.cmake', self)
     self.metis           = framework.require('PETSc.packages.metis',self)
     self.mpi             = framework.require('config.packages.MPI',self)
     self.deps            = [self.mpi, self.metis]

@@ -120,7 +120,6 @@ class Configure(PETSc.package.NewPackage):
     self.liblist   = [['libtet.a']]
     self.cxx       = 1
     self.needsMath = 1
-    self.complex   = 1
     return
 
   def setupDependencies(self, framework):

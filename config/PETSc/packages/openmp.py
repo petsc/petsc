@@ -7,9 +7,6 @@ class Configure(PETSc.package.NewPackage):
     self.functions         = []
     self.includes          = ['omp.h']
     self.liblist           = []
-    self.complex           = 1   # 0 means cannot use complex
-    self.double            = 0   # 1 means requires double precision
-    self.requires32bitint  = 0;  # 1 means that the package will not work with 64 bit integers
     return
 
   def setupDependencies(self, framework):

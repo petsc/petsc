@@ -58,6 +58,10 @@ class Package(config.base.Configure):
                                # during the configuration/installation process such as sowing, make etc should be marked as 0
     self.parallelMake     = 1  # 1 indicates the package supports make -j np option
 
+    self.double           = 0   # 1 means requires double precision
+    self.complex          = 1   # 0 means cannot use complex
+    self.requires32bitint = 0;  # 1 means that the package will not work with 64 bit integers
+
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
     self.installSudo      = '' # if user does not have write access to prefix directory then this is set to sudo
@@ -603,6 +607,12 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without enabling C++11, see --with-cxx-dialect=C++11')
       if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
+#      if self.double and not self.scalartypes.precision.lower() == 'double':
+#        raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')
+#      if not self.complex and self.scalartypes.scalartype.lower() == 'complex':
+#        raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
+#      if self.libraryOptions.integerSize == 64 and self.requires32bitint:
+#        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
     if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return

@@ -8,10 +8,7 @@ class Configure(PETSc.package.NewPackage):
     self.includes         = []
     self.liblist          = [[],['libscalapack.a']]
     self.functions        = ['pssytrd']
-    self.requires32bitint = 0
     self.functionsFortran = 1
-    self.double           = 0
-    self.complex          = 1
     self.useddirectly     = 0 # PETSc does not use ScaLAPACK, it is only used by MUMPS
     self.downloadonWindows= 1
     return

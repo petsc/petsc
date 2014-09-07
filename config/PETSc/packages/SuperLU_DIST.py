@@ -9,8 +9,6 @@ class Configure(PETSc.package.NewPackage):
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
     self.liblist    = [['libsuperlu_dist_3.3.a']]
-    self.requires32bitint = 0
-    self.complex          = 1
     # SuperLU_Dist does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.
     self.downloadonWindows= 1

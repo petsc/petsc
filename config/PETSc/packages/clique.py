@@ -10,8 +10,6 @@ class Configure(PETSc.package.NewPackage):
     self.liblist    = [['libclique.a','libparmetis-addons.a','libmetis-addons.a']]
     self.includes   = ['clique.hpp']
     self.cxx              = 1
-    self.requires32bitint = 0
-    self.complex          = 1
     self.downloadonWindows= 0
     return
 

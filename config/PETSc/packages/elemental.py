@@ -10,8 +10,6 @@ class Configure(PETSc.package.NewPackage):
     self.includes   = ['elemental.hpp']
     self.cxx              = 1
     self.requirescxx11    = 1
-    self.requires32bitint = 0
-    self.complex          = 1
     self.downloadonWindows= 0
     return
 

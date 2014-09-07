@@ -6,7 +6,6 @@ import os
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.double            = 0
     return
 
   def setupHelp(self, help):

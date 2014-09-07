@@ -10,8 +10,6 @@ class Configure(PETSc.package.NewPackage):
     self.functions    = ['pastix']
     self.includes     = ['pastix.h']
     self.downloadfilename = 'pastix'
-    self.requires32bitint = 0
-    self.complex      = 1
     self.fc           = 1
     return
 

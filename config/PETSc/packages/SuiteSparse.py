@@ -12,8 +12,6 @@ class Configure(PETSc.package.NewPackage):
     self.functions = ['umfpack_dl_wsolve','cholmod_l_solve','klu_l_solve']
     self.includes  = ['umfpack.h','cholmod.h','klu.h']
     self.needsMath = 1
-    self.complex   = 1
-    self.requires32bitint = 0
     return
 
   def setupDependencies(self, framework):

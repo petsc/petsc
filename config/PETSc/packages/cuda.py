@@ -10,8 +10,6 @@ class Configure(PETSc.package.NewPackage):
                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib']]
     self.double           = 0   # 1 means requires double precision
     self.cxx              = 0
-    self.requires32bitint = 0
-    self.complex          = 1
     self.cudaArch      = ''
     self.CUDAVersion   = '4000' # Version 4.0
     self.CUSPVersion   = '200' #Version 0.2.0

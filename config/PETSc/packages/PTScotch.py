@@ -9,8 +9,6 @@ class Configure(PETSc.package.NewPackage):
     self.liblist      = [['libptesmumps.a','libptscotch.a','libptscotcherr.a','libscotch.a','libscotcherr.a']]
     self.functions    = ['SCOTCH_archBuild']
     self.includes     = ['ptscotch.h']
-    self.requires32bitint = 0
-    self.complex      = 1
     self.needsMath    = 1
     return
 

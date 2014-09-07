@@ -6,9 +6,6 @@ class Configure(PETSc.package.NewPackage):
     self.functions        = ['PAMI_Client_create']
     self.includes         = ['pami.h']
     self.liblist          = [['libpami.a']]
-    self.complex          = 1
-    self.double           = 0
-    self.requires32bitint = 0
     return
 
   def setupDependencies(self, framework):

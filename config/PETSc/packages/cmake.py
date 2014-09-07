@@ -37,6 +37,8 @@ class Configure(config.package.GNUPackage):
         self.getExecutable('cmake', getFullPath = 1,resultName='cmake')
       elif not self.framework.argDB['with-cmake']  == 0 and not self.framework.argDB['with-cmake']  == 'no':
         self.getExecutable(self.framework.argDB['with-cmake'], getFullPath = 1,resultName='cmake')
-    if not hasattr(self, 'cmake'):
+    else:
+        self.getExecutable('cmake', getFullPath = 1,resultName='cmake')
+    if hasattr(self, 'cmake'):
       self.found = 1
     return

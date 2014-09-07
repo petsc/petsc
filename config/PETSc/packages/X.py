@@ -7,11 +7,8 @@ class Configure(PETSc.package.NewPackage):
     self.functions        = ['XSetWMName']
     self.includes         = ['X11/Xlib.h']
     self.liblist          = [['libX11.a']]
-    self.double           = 0
-    self.complex          = 1
     self.lookforbydefault = 1
     self.pkgname          = 'x11'
-    self.requires32bitint = 0;  # 1 means that the package will not work with 64 bit integers
     return
 
   def getSearchDirectories(self):

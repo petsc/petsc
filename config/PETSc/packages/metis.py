@@ -8,9 +8,6 @@ class Configure(PETSc.package.NewPackage):
     self.includes          = ['metis.h']
     self.liblist           = [['libmetis.a']]
     self.needsMath         = 1
-    self.complex           = 1
-    self.double            = 0
-    self.requires32bitint  = 0
     return
 
   def setupDependencies(self, framework):
@@ -19,6 +16,7 @@ class Configure(PETSc.package.NewPackage):
     self.cmake           = framework.require('PETSc.packages.cmake',self)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
     self.scalartypes     = framework.require('PETSc.utilities.scalarTypes', self)
+    self.cmake           = framework.require('PETSc.packages.cmake', self)
     self.deps = []
     return
 

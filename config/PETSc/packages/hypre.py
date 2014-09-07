@@ -11,7 +11,6 @@ class Configure(PETSc.package.NewPackage):
     self.license   = 'https://computation.llnl.gov/casc/linear_solvers/sls_hypre.html'
     # Per hypre users guide section 7.5 - install manually on windows for MS compilers.
     self.downloadonWindows= 0
-    self.requires32bitint = 0
 
     return
 

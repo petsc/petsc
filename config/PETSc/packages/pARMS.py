@@ -7,7 +7,6 @@ class Configure(PETSc.package.NewPackage):
     self.functions = ['parms_PCCreate']
     self.includes  = ['parms.h']
     self.liblist   = [['libparms.a']]
-    self.complex   = 1
     #self.license   = 'http://www-users.cs.umn.edu/~saad/software/pARMS'
     return
 

@@ -8,8 +8,6 @@ class Configure(PETSc.package.NewPackage):
     self.liblist       = [['libAfterImage.a']]
     self.includedir    = ''
     self.libdir        = '../../lib'
-    self.double        = 0
-    self.complex       = 1
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)

@@ -7,9 +7,8 @@ class Configure(PETSc.package.NewPackage):
     self.functions    = ['set_default_options']
     self.includes     = ['slu_ddefs.h']
     self.liblist      = [['libsuperlu_4.3.a']]
-    self.double       = 0
-    self.complex      = 1
     # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
+    self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
     self.excludedDirs = ['SuperLU_DIST','SuperLU_MT']
     # SuperLU does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.
