@@ -52,6 +52,7 @@
       PetscEnum PETSC_VIEWER_VTK_VTU
       PetscEnum PETSC_VIEWER_BINARY_MATLAB
       PetscEnum PETSC_VIEWER_NATIVE
+      PetscEnum PETSC_VIEWER_HDF5_VIZ
       PetscEnum PETSC_VIEWER_NOFORMAT
 
       parameter (PETSC_VIEWER_DEFAULT = 0)
@@ -81,7 +82,8 @@
       parameter (PETSC_VIEWER_VTK_VTU = 24)
       parameter (PETSC_VIEWER_BINARY_MATLAB = 25)
       parameter (PETSC_VIEWER_NATIVE = 26)
-      parameter (PETSC_VIEWER_NOFORMAT = 27)
+      parameter (PETSC_VIEWER_HDF5_VIZ = 27)
+      parameter (PETSC_VIEWER_NOFORMAT = 28)
 !
 !  End of Fortran include file for the PetscViewer package in PETSc
 
