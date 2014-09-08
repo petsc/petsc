@@ -2509,6 +2509,21 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetSpatialDimension"
+/*@
+  PetscFEGetSpatialDimension - Returns the spatial dimension of the element
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameter:
+. dim - The spatial dimension
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFEGetSpatialDimension(PetscFE fem, PetscInt *dim)
 {
   DM             dm;
@@ -2524,6 +2539,19 @@ PetscErrorCode PetscFEGetSpatialDimension(PetscFE fem, PetscInt *dim)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFESetNumComponents"
+/*@
+  PetscFESetNumComponents - Sets the number of components in the element
+
+  Not collective
+
+  Input Parameters:
++ fem - The PetscFE object
+- comp - The number of field components
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFESetNumComponents(PetscFE fem, PetscInt comp)
 {
   PetscFunctionBegin;
@@ -2534,6 +2562,21 @@ PetscErrorCode PetscFESetNumComponents(PetscFE fem, PetscInt comp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetNumComponents"
+/*@
+  PetscFEGetNumComponents - Returns the number of components in the element
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameter:
+. comp - The number of field components
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFEGetNumComponents(PetscFE fem, PetscInt *comp)
 {
   PetscFunctionBegin;
@@ -2545,6 +2588,22 @@ PetscErrorCode PetscFEGetNumComponents(PetscFE fem, PetscInt *comp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFESetTileSizes"
+/*@
+  PetscFESetTileSizes - Sets the tile sizes for evaluation
+
+  Not collective
+
+  Input Parameters:
++ fem - The PetscFE object
+. blockSize - The number of elements in a block
+. numBlocks - The number of blocks in a batch
+. batchSize - The number of elements in a batch
+- numBatches - The number of batches in a chunk
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFESetTileSizes(PetscFE fem, PetscInt blockSize, PetscInt numBlocks, PetscInt batchSize, PetscInt numBatches)
 {
   PetscFunctionBegin;
@@ -2558,6 +2617,24 @@ PetscErrorCode PetscFESetTileSizes(PetscFE fem, PetscInt blockSize, PetscInt num
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetTileSizes"
+/*@
+  PetscFEGetTileSizes - Returns the tile sizes for evaluation
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameters:
++ blockSize - The number of elements in a block
+. numBlocks - The number of blocks in a batch
+. batchSize - The number of elements in a batch
+- numBatches - The number of batches in a chunk
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFEGetTileSizes(PetscFE fem, PetscInt *blockSize, PetscInt *numBlocks, PetscInt *batchSize, PetscInt *numBatches)
 {
   PetscFunctionBegin;
@@ -2575,6 +2652,21 @@ PetscErrorCode PetscFEGetTileSizes(PetscFE fem, PetscInt *blockSize, PetscInt *n
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetBasisSpace"
+/*@
+  PetscFEGetBasisSpace - Returns the PetscSpace used for approximation of the solution
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameter:
+. sp - The PetscSpace object
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFEGetBasisSpace(PetscFE fem, PetscSpace *sp)
 {
   PetscFunctionBegin;
@@ -2586,6 +2678,19 @@ PetscErrorCode PetscFEGetBasisSpace(PetscFE fem, PetscSpace *sp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFESetBasisSpace"
+/*@
+  PetscFESetBasisSpace - Sets the PetscSpace used for approximation of the solution
+
+  Not collective
+
+  Input Parameters:
++ fem - The PetscFE object
+- sp - The PetscSpace object
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFESetBasisSpace(PetscFE fem, PetscSpace sp)
 {
   PetscErrorCode ierr;
@@ -2601,6 +2706,21 @@ PetscErrorCode PetscFESetBasisSpace(PetscFE fem, PetscSpace sp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetDualSpace"
+/*@
+  PetscFEGetDualSpace - Returns the PetscDualSpace used to define the inner product
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameter:
+. sp - The PetscDualSpace object
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFEGetDualSpace(PetscFE fem, PetscDualSpace *sp)
 {
   PetscFunctionBegin;
@@ -2612,6 +2732,19 @@ PetscErrorCode PetscFEGetDualSpace(PetscFE fem, PetscDualSpace *sp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFESetDualSpace"
+/*@
+  PetscFESetDualSpace - Sets the PetscDualSpace used to define the inner product
+
+  Not collective
+
+  Input Parameters:
++ fem - The PetscFE object
+- sp - The PetscDualSpace object
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFESetDualSpace(PetscFE fem, PetscDualSpace sp)
 {
   PetscErrorCode ierr;
@@ -2627,6 +2760,21 @@ PetscErrorCode PetscFESetDualSpace(PetscFE fem, PetscDualSpace sp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetQuadrature"
+/*@
+  PetscFEGetQuadrature - Returns the PetscQuadreture used to calculate inner products
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameter:
+. q - The PetscQuadrature object
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFEGetQuadrature(PetscFE fem, PetscQuadrature *q)
 {
   PetscFunctionBegin;
@@ -2638,6 +2786,19 @@ PetscErrorCode PetscFEGetQuadrature(PetscFE fem, PetscQuadrature *q)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFESetQuadrature"
+/*@
+  PetscFESetQuadrature - Sets the PetscQuadreture used to calculate inner products
+
+  Not collective
+
+  Input Parameters:
++ fem - The PetscFE object
+- q - The PetscQuadrature object
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
 PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
 {
   PetscErrorCode ierr;
