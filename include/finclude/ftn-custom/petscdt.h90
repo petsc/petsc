@@ -6,7 +6,8 @@
 #include "finclude/ftn-custom/petscdthide.h90"
 
       Interface
-        Subroutine PetscQuadratureGetData(q,dim,npoints,points,weights,ierr)
+        Subroutine PetscQuadratureGetData(q,dim,npoints,points,weights, &
+     &    ierr)
           USE_PETSCQUADRATURE_HIDE
           PetscInt     dim, npoints
           PetscReal, pointer :: points(:)
@@ -17,7 +18,8 @@
       End Interface
 
       Interface
-        Subroutine PetscQuadratureRestoreData(q,dim,npoints,points,weights,ierr)
+        Subroutine PetscQuadratureRestoreData(q,dim,npoints,points,     &
+     &    weights,ierr)
           USE_PETSCQUADRATURE_HIDE
           PetscInt     dim, npoints
           PetscReal, pointer :: points(:)
@@ -28,7 +30,8 @@
       End Interface
 
       Interface
-        Subroutine PetscQuadratureSetData(q,dim,npoints,points,weights,ierr)
+        Subroutine PetscQuadratureSetData(q,dim,npoints,points,weights, &
+     &    ierr)
           USE_PETSCQUADRATURE_HIDE
           PetscInt     dim, npoints
           PetscReal, pointer :: points(:)
@@ -72,7 +75,8 @@
       End Interface
 
       Interface
-        Subroutine PetscDSRestoreBdTabulation(prob,f,basis,basisDer,ierr)
+        Subroutine PetscDSRestoreBdTabulation(prob,f,basis,basisDer,    &
+     &    ierr)
           USE_PETSCDS_HIDE
           PetscInt     f
           PetscReal, pointer :: basis(:)
