@@ -78,9 +78,15 @@ class Configure(config.package.Package):
   def configureCheckGNUMake(self):
     '''Check for GNU make'''
     try:
+      import re
+      # set self.haveGNUMake only if using gnumake version > 3.80 [as older version break with gmakefile]
       (output, error, status) = config.base.Configure.executeShellCommand(self.make+' --version', log = self.framework.log)
-      if not status and output.find('GNU Make') >= 0:
-        self.haveGNUMake = 1
+      gver = re.compile('GNU Make ([0-9]+).([0-9]+)').match(output)
+      if not status and gver:
+        major = int(gver.group(1))
+        minor = int(gver.group(2))
+        if ((major > 3) or (major == 3 and minor > 80)):
+          self.haveGNUMake = 1
     except RuntimeError, e:
       self.framework.log.write('GNUMake check failed: '+str(e)+'\n')
 
@@ -89,6 +95,8 @@ class Configure(config.package.Package):
       self.printdirflag = ' --print-directory'
       self.noprintdirflag = ' --no-print-directory'
       self.addMakeMacro('MAKE_IS_GNUMAKE',1)
+    else:
+      self.logPrintBox('Warning: '+self.make+' is not GNUMake (3.81 or higher). Suggest using --download-make')
 
     # Check to see if make allows rules which look inside archives
     if self.haveGNUMake:
@@ -136,8 +144,6 @@ class Configure(config.package.Package):
   def configure(self):
     '''Determine whether (GNU) make exist or not'''
 
-    if self.framework.argDB['with-make'] == '0':
-      return
     if (self.framework.argDB['download-make']):
       config.package.Package.configure(self)
     else:

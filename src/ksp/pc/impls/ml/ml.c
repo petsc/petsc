@@ -1126,6 +1126,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
 #else
     partindx = 1;
     ierr     = PetscOptionsEList("-pc_ml_repartitionType", "Repartitioning library to use","ML_Repartition_Set_Partitioner",part,2,part[1],&partindx,NULL);CHKERRQ(ierr);
+    pc_ml->RepartitionType = partindx;
     if (!partindx) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP_SYS,"ML not compiled with Zoltan");
 #endif
     ierr = PetscOptionsBool("-pc_ml_Aux","Aggregate using auxiliary coordinate-based laplacian","None",pc_ml->Aux,&pc_ml->Aux,NULL);CHKERRQ(ierr);
