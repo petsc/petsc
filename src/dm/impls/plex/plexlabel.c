@@ -95,7 +95,7 @@ static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label)
 PetscErrorCode DMLabelGetName(DMLabel label, const char **name)
 {
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 2);
+  PetscValidPointer(name, 2);
   *name = label->name;
   PetscFunctionReturn(0);
 }
@@ -1181,7 +1181,7 @@ PetscErrorCode DMPlexGetLabelName(DM dm, PetscInt n, const char **name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 3);
+  PetscValidPointer(name, 3);
   while (next) {
     if (l == n) {
       *name = next->name;
