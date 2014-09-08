@@ -31,6 +31,8 @@ class Configure(config.base.Configure):
       features += '#define _POSIX_C_SOURCE 200112L\n'
     if self.ftm.defines.get('_BSD_SOURCE'):
       features += '#define _BSD_SOURCE\n'
+    if self.ftm.defines.get('_DEFAULT_SOURCE'):
+      features += '#define _DEFAULT_SOURCE\n'
     if self.ftm.defines.get('_GNU_SOURCE'):
       features += '#define _GNU_SOURCE\n'
     return features
