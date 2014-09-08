@@ -1724,42 +1724,41 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
   Mat_MPIBAIJ   *l      = (Mat_MPIBAIJ *) A->data;
   PetscInt      *owners = A->rmap->range;
   PetscInt       n      = A->rmap->n;
-  PetscMPIInt    size   = l->size;
   PetscSF        sf;
   PetscInt      *lrows;
   PetscSFNode   *rrows;
-  PetscInt       lastidx = -1, r, p = 0, len = 0;
+  PetscInt       r, p = 0, len = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Create SF where leaves are input rows and roots are owned rows */
   ierr = PetscMalloc1(n, &lrows);CHKERRQ(ierr);
   for (r = 0; r < n; ++r) lrows[r] = -1;
-  ierr = PetscMalloc1(N, &rrows);CHKERRQ(ierr);
+  if (!A->nooffproczerorows) {ierr = PetscMalloc1(N, &rrows);CHKERRQ(ierr);}
   for (r = 0; r < N; ++r) {
     const PetscInt idx   = rows[r];
-    PetscBool      found = PETSC_FALSE;
-    /* Trick for efficient searching for sorted rows */
-    if (lastidx > idx) p = 0;
-    lastidx = idx;
-    for (; p < size; ++p) {
-      if (idx >= owners[p] && idx < owners[p+1]) {
-        rrows[r].rank  = p;
-        rrows[r].index = rows[r] - owners[p];
-        found = PETSC_TRUE;
-        break;
-      }
+    if (idx < 0 || A->rmap->N <= idx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D out of range [0,%D)",idx,A->rmap->N);
+    if (idx < owners[p] || owners[p+1] <= idx) { /* short-circuit the search if the last p owns this row too */
+      ierr = PetscLayoutFindOwner(A->rmap,idx,&p);CHKERRQ(ierr);
     }
-    if (!found) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %d not found in matrix distribution", idx);
+    if (A->nooffproczerorows) {
+      if (p != l->rank) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"MAT_NO_OFF_PROC_ZERO_ROWS set, but row %D is not owned by rank %d",idx,l->rank);
+      lrows[len++] = idx - owners[p];
+    } else {
+      rrows[r].rank = p;
+      rrows[r].index = rows[r] - owners[p];
+    }
   }
-  ierr = PetscSFCreate(PetscObjectComm((PetscObject) A), &sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, rrows, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  /* Collect flags for rows to be zeroed */
-  ierr = PetscSFReduceBegin(sf, MPIU_INT, (PetscInt *) rows, lrows, MPI_LOR);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf, MPIU_INT, (PetscInt *) rows, lrows, MPI_LOR);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  /* Compress and put in row numbers */
-  for (r = 0; r < n; ++r) if (lrows[r] >= 0) lrows[len++] = r;
+  if (!A->nooffproczerorows) {
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject) A), &sf);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, rrows, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    /* Collect flags for rows to be zeroed */
+    ierr = PetscSFReduceBegin(sf, MPIU_INT, (PetscInt *) rows, lrows, MPI_LOR);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf, MPIU_INT, (PetscInt *) rows, lrows, MPI_LOR);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+    /* Compress and put in row numbers */
+    for (r = 0; r < n; ++r) if (lrows[r] >= 0) lrows[len++] = r;
+  }
   /* fix right hand side if needed */
   if (x && b) {
     const PetscScalar *xx;
@@ -1781,9 +1780,9 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
 
   */
   /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
-  ierr = MatZeroRows_SeqBAIJ(l->B,len,lrows,0.0,0,0);CHKERRQ(ierr);
+  ierr = MatZeroRows_SeqBAIJ(l->B,len,lrows,0.0,NULL,NULL);CHKERRQ(ierr);
   if ((diag != 0.0) && (l->A->rmap->N == l->A->cmap->N)) {
-    ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,diag,0,0);CHKERRQ(ierr);
+    ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,diag,NULL,NULL);CHKERRQ(ierr);
   } else if (diag != 0.0) {
     ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,0.0,0,0);CHKERRQ(ierr);
     if (((Mat_SeqBAIJ*)l->A->data)->nonew) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatZeroRows() on rectangular matrices cannot be used with the Mat options \n\
@@ -1795,7 +1794,7 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else {
-    ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,0.0,0,0);CHKERRQ(ierr);
+    ierr = MatZeroRows_SeqBAIJ(l->A,len,lrows,0.0,NULL,NULL);CHKERRQ(ierr);
   }
   ierr = PetscFree(lrows);CHKERRQ(ierr);
 
@@ -1813,7 +1812,7 @@ PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[]
 {
   Mat_MPIBAIJ       *l = (Mat_MPIBAIJ*)A->data;
   PetscErrorCode    ierr;
-  PetscMPIInt       size = l->size,n = A->rmap->n,lastidx = -1;
+  PetscMPIInt       n = A->rmap->n;
   PetscInt          i,j,k,r,p = 0,len = 0,row,col,count;
   PetscInt          *lrows,*owners = A->rmap->range;
   PetscSFNode       *rrows;
@@ -1824,9 +1823,6 @@ PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[]
   Mat_SeqBAIJ       *baij = (Mat_SeqBAIJ*)l->B->data;
   PetscInt           bs = A->rmap->bs, bs2 = baij->bs2;
   PetscScalar       *aa;
-#if defined(PETSC_DEBUG)
-  PetscBool found = PETSC_FALSE;
-#endif
 
   PetscFunctionBegin;
   /* Create SF where leaves are input rows and roots are owned rows */
@@ -1835,19 +1831,12 @@ PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[]
   ierr = PetscMalloc1(N, &rrows);CHKERRQ(ierr);
   for (r = 0; r < N; ++r) {
     const PetscInt idx   = rows[r];
-    PetscBool      found = PETSC_FALSE;
-    /* Trick for efficient searching for sorted rows */
-    if (lastidx > idx) p = 0;
-    lastidx = idx;
-    for (; p < size; ++p) {
-      if (idx >= owners[p] && idx < owners[p+1]) {
-        rrows[r].rank  = p;
-        rrows[r].index = rows[r] - owners[p];
-        found = PETSC_TRUE;
-        break;
-      }
+    if (idx < 0 || A->rmap->N <= idx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D out of range [0,%D)",idx,A->rmap->N);
+    if (idx < owners[p] || owners[p+1] <= idx) { /* short-circuit the search if the last p owns this row too */
+      ierr = PetscLayoutFindOwner(A->rmap,idx,&p);CHKERRQ(ierr);
     }
-    if (!found) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %d not found in matrix distribution", idx);
+    rrows[r].rank  = p;
+    rrows[r].index = rows[r] - owners[p];
   }
   ierr = PetscSFCreate(PetscObjectComm((PetscObject) A), &sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, rrows, PETSC_OWN_POINTER);CHKERRQ(ierr);
