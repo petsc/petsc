@@ -221,7 +221,8 @@
       End Interface
 
       Interface
-        Subroutine DMPlexComputeCellGeometry(m,cell,v0,J,invJ,detJ,ierr)
+        Subroutine DMPlexComputeCellGeometryAffineFEM(m,cell,v0,J,invJ, &
+     &    detJ,ierr)
           USE_DMPLEX_HIDE
           PetscInt   cell
           PetscReal, pointer :: v0(:)
@@ -229,6 +230,22 @@
           PetscReal, pointer :: invJ(:)
           PetscReal  detJ
           PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexComputeCellGeometryFEM(m,cell,fe,v0,J,invJ,    &
+     &    detJ,ierr)
+          USE_DMPLEX_HIDE
+          USE_PETSCFE_HIDE
+          PetscInt   cell
+          PetscReal, pointer :: v0(:)
+          PetscReal, pointer :: J(:)
+          PetscReal, pointer :: invJ(:)
+          PetscReal  detJ
+          PetscErrorCode ierr
+          PETSCFE_HIDE fe
           DM_HIDE m
         End Subroutine
       End Interface
