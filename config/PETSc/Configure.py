@@ -73,15 +73,17 @@ class Configure(config.base.Configure):
             utilityObj.externalPackagesDirProvider = self.externalpackagesdir
             setattr(self, utilityName.lower(), utilityObj)
 
-    for package in config.packages.all:
-      if not package == 'PETSc':
-        packageObj                    = framework.require('config.packages.'+package, self)
-        packageObj.archProvider       = self.arch
-        packageObj.languageProvider   = self.languages
-        packageObj.precisionProvider  = self.scalartypes
-        packageObj.installDirProvider = self.installdir
-        packageObj.externalPackagesDirProvider = self.externalpackagesdir
-        setattr(self, package.lower(), packageObj)
+    if os.path.isdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
+      for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
+        (packageName, ext) = os.path.splitext(package)
+        if not packageName.startswith('.') and not packageName.startswith('#') and ext == '.py' and not packageName == '__init__' and not packageName == 'PETSc':
+          packageObj                    = framework.require('config.packages.'+packageName, self)
+          packageObj.archProvider       = self.arch
+          packageObj.languageProvider   = self.languages
+          packageObj.precisionProvider  = self.scalartypes
+          packageObj.installDirProvider = self.installdir
+          packageObj.externalPackagesDirProvider = self.externalpackagesdir
+          setattr(self, packageName.lower(), packageObj)
     # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.utilities.scalarTypes', self.f2cblaslapack)
     framework.require('PETSc.utilities.scalarTypes', self.fblaslapack)
