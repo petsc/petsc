@@ -8,7 +8,8 @@ class Configure(PETSc.package.NewPackage):
     self.includes          = ['openssl/ssl.h']
     self.liblist           = [['libssl.a','libcrypto.a']]
     self.lookforbydefault  = 1
-    return
+    self.double            = 0   # 1 means requires double precision
+    self.complex           = 1   # 0 means cannot use complex
 
   def setupHelp(self, help):
     import nargs
@@ -18,11 +19,9 @@ class Configure(PETSc.package.NewPackage):
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.deps = []
-    return
 
   def getSearchDirectories(self):
     yield ''
-    return
 
   def configureLibrary(self):
     if self.framework.argDB['with-ios']: 

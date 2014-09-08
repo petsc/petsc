@@ -1055,3 +1055,80 @@ class GNUPackage(Package):
       if hasattr(package, 'include') and not incls is None: incls += package.include
     return
 
+
+
+class CMakePackage(Package):
+  def __init__(self, framework):
+    Package.__init__(self, framework)
+    return
+
+  def setupHelp(self, help):
+    config.package.Package.setupHelp(self,help)
+    import nargs
+    help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))
+
+  def setupDependencies(self, framework):
+    Package.setupDependencies(self, framework)
+    self.cmake = framework.require('PETSc.packages.cmake',self)
+    return
+
+  def formCMakeConfigureArgs(self):
+    import os
+    import shlex
+    if not self.cmake.found:
+      raise RuntimeError('CMake > 2.5 is needed to build METIS')
+
+    args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
+    args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
+    self.framework.pushLanguage('C')
+    args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
+    args.append('-DCMAKE_AR='+self.setCompilers.AR)
+    ranlib = shlex.split(self.setCompilers.RANLIB)[0]
+    args.append('-DCMAKE_RANLIB='+ranlib)
+    cflags = self.setCompilers.getCompilerFlags()
+    args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
+    self.framework.popLanguage()
+    if hasattr(self.compilers, 'Cxx'):
+      self.framework.pushLanguage('Cxx')
+      args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
+      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.framework.getCompilerFlags()+'"')
+      self.framework.popLanguage()
+
+    if hasattr(self.compilers, 'FC'):
+      self.framework.pushLanguage('FC')
+      args.append('-DCMAKE_FORTRAN_COMPILER="'+self.framework.getCompiler()+'"')
+      args.append('-DCMAKE_FORTRAN_FLAGS:STRING="'+self.framework.getCompilerFlags()+'"')
+      self.framework.popLanguage()
+    return args
+
+  def Install(self):
+    import os
+    args = self.formCMakeConfigureArgs()
+    args = ' '.join(args)
+    conffile = os.path.join(self.packageDir,self.package+'.petscconf')
+    fd = file(conffile, 'w')
+    fd.write(args)
+    fd.close()
+
+    if self.installNeeded(conffile):
+
+      # effectively, this is 'make clean'
+      folder = os.path.join(self.packageDir, 'build')
+      if os.path.isdir(folder):
+        import shutil
+        shutil.rmtree(folder)
+      os.mkdir(folder)
+
+      try:
+        self.logPrintBox('Configuring '+self.PACKAGE+' with cmake, this may take several minutes')
+        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+folder+' && '+self.cmake.cmake+' .. '+args, timeout=900, log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error configuring '+self.PACKAGE+' with cmake '+str(e))
+      try:
+        self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
+        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+folder+' && make && '+self.installSudo+'make install', timeout=2500, log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error running make on  '+self.PACKAGE+': '+str(e))
+      self.postInstall(output1+err1+output2+err2,conffile)
+    return self.installDir
