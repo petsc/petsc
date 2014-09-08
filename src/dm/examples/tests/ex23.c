@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscMPIInt      size;
   PetscInt         N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,M=8,dof=1,stencil_width=1,P=5,pt = 0,st = 0;
   PetscErrorCode   ierr;
-  PetscBool        flg2,flg3;
+  PetscBool        flg2,flg3,native = PETSC_FALSE;
   DMBoundaryType   bx           = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE,bz = DM_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_STAR;
   DM               da;
@@ -29,6 +29,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-periodic",&pt,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-native",&native,NULL);CHKERRQ(ierr);
   if (pt == 1) bx = DM_BOUNDARY_PERIODIC;
   if (pt == 2) by = DM_BOUNDARY_PERIODIC;
   if (pt == 3) {bx = DM_BOUNDARY_PERIODIC; by = DM_BOUNDARY_PERIODIC;}
@@ -56,6 +57,7 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&global4);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+  if (native) {ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);}
   ierr = VecSetRandom(global1,rdm);CHKERRQ(ierr);
   ierr = VecView(global1,viewer);CHKERRQ(ierr);
   ierr = VecSetRandom(global3,rdm);CHKERRQ(ierr);
@@ -63,9 +65,29 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  if (native) {ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);}
   ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
   ierr = VecLoad(global4,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+
+  if (native) {
+    Vec filenative;
+    PetscBool same;
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+    ierr = DMDACreateNaturalVector(da,&filenative);CHKERRQ(ierr);
+    /* DMDA "natural" Vec does not commandeer VecLoad.  The following load will only work when run on the same process
+     * layout, where as the standard VecView/VecLoad (using DMDA and not PETSC_VIEWER_NATIVE) can be read on a different
+     * number of processors. */
+    ierr = VecLoad(filenative,viewer);CHKERRQ(ierr);
+    ierr = VecEqual(global2,filenative,&same);CHKERRQ(ierr);
+    if (!same) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"ex23: global vector does not match contents of file\n");CHKERRQ(ierr);
+      ierr = VecView(global2,0);CHKERRQ(ierr);
+      ierr = VecView(filenative,0);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = VecDestroy(&filenative);CHKERRQ(ierr);
+  }
 
   ierr = VecAXPY(global2,mone,global1);CHKERRQ(ierr);
   ierr = VecNorm(global2,NORM_MAX,&norm);CHKERRQ(ierr);
