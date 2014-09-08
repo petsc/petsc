@@ -42,8 +42,8 @@ class Configure(config.base.Configure):
 
   def replaceDefaultDescriptors(self, codeStr):
     '''Autoconf defines several default file descriptors, which we must assign'''
-    newCode = re.sub('AC_FD_MSG', self.acMsgFD, codeStr)
-    newCode = re.sub('AC_FD_CC',  self.getAcCCFD(),  newCode)
+    newCode = codeStr.replace('AC_FD_MSG', self.acMsgFD)
+    newCode = newCode.replace('AC_FD_CC',  self.getAcCCFD())
     return newCode
 
   def findUndefinedMacros(self, codeStr):
@@ -74,7 +74,7 @@ class Configure(config.base.Configure):
     shellCode = self.replaceDefaultDescriptors(out)
     self.findUndefinedMacros(shellCode)
     output.close()
-    return (re.sub('__oline__', '0', shellCode), self.getMacroVariables(macro))
+    return (shellCode.replace('__oline__', '0'), self.getMacroVariables(macro))
 
   def getDefaultVariables(self):
     '''These shell variables are set by Autoconf, and seem to be necessary to run any given macro'''
