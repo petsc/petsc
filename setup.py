@@ -12,12 +12,12 @@ all message-passing communication.
 
 .. tip::
 
-  You can also install `petsc-dev`_ with::
+  You can also install `petsc-master`_ with::
 
-    $ pip install petsc==dev
+    $ pip install petsc==master
 
-  .. _petsc-dev: https://bitbucket.org/petsc/
-                 petsc/get/master.tar.gz#egg=petsc-dev
+  .. _petsc-master: https://bitbucket.org/petsc/
+                 petsc/get/master.tar.gz#egg=petsc-master
 """
 
 import sys, os
