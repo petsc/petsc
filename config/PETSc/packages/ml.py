@@ -1,22 +1,26 @@
-import PETSc.package
+import config.package
+import os
 
-class Configure(PETSc.package.NewPackage):
+class Configure(config.package.GNUPackage):
   def __init__(self, framework):
-    PETSc.package.NewPackage.__init__(self, framework)
-    self.gitcommit = 'a7394f847c8953e1d3bdf35ba8569134b769b4a6'
-    self.giturls   = ['https://bitbucket.org/petsc/pkg-ml.git']
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2-win.tar.gz']
-    self.functions = ['ML_Set_PrintLevel']
-    self.includes  = ['ml_include.h']
-    self.liblist   = [['libml.a']]
-    self.license   = 'http://trilinos.sandia.gov/'
-    self.fc        = 1
+    config.package.GNUPackage.__init__(self, framework)
+    self.gitcommit         = 'a7394f847c8953e1d3bdf35ba8569134b769b4a6'
+    self.giturls           = ['https://bitbucket.org/petsc/pkg-ml.git']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2-win.tar.gz']
+    self.functions         = ['ML_Set_PrintLevel']
+    self.includes          = ['ml_include.h']
+    self.liblist           = [['libml.a']]
+    self.license           = 'http://trilinos.sandia.gov/'
+    self.fc                = 1
+    self.double            = 1
+    self.complex           = 0
     self.downloadonWindows = 1
     return
 
   def setupDependencies(self, framework):
-    PETSc.package.NewPackage.setupDependencies(self, framework)
+    config.package.GNUPackage.setupDependencies(self, framework)
     self.mpi        = framework.require('config.packages.MPI',self)
+    self.languages  = framework.require('PETSc.utilities.languages',   self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.mpi,self.blasLapack]
     return
@@ -35,25 +39,20 @@ class Configure(PETSc.package.NewPackage):
       alllibs.extend(self.compilers.cxxlibs)
     return [alllibs]
 
-  def Install(self):
-    import os
-
-    args = ['--prefix='+self.installDir]
-    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
+  def formGNUConfigureArgs(self):
+    args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('--disable-ml-epetra')
     args.append('--disable-ml-aztecoo')
     args.append('--disable-ml-examples')
     args.append('--disable-tests')
 
     self.framework.pushLanguage('C')
-    args.append('CC="'+self.framework.getCompiler()+'"')
     args.append('--with-cflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.mpi.include)+'"')
     self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
-      args.append('F77="'+self.framework.getCompiler()+'"')
       args.append('--with-fflags="'+self.framework.getCompilerFlags()+' '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
       self.framework.popLanguage()
     else:
@@ -61,7 +60,6 @@ class Configure(PETSc.package.NewPackage):
 
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
-      args.append('CXX="'+self.framework.getCompiler()+'"')
       args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX '+ self.headers.toStringNoDupes(self.mpi.include)+'"')
       self.framework.popLanguage()
     else:
@@ -71,34 +69,10 @@ class Configure(PETSc.package.NewPackage):
     args.append('--enable-mpi')
     args.append('--with-mpi-libs="'+self.libraries.toString(self.mpi.lib)+'"')
     args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"')
-    args = ' '.join(args)
-    fd = file(os.path.join(self.packageDir,'ml'), 'w')
-    fd.write(args)
-    fd.write('\n')
-    fd.close()
-
-    if self.installNeeded('ml'):
-      try:
-        self.logPrintBox('Configuring ml; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=900, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running configure on ML: '+str(e))
-      try:
-        self.logPrintBox('Compiling and installing ml; this may take several minutes')
-        self.installDirProvider.printSudoPasswordMessage()
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make && '+self.installSudo+'make install', timeout=2500, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running make on ML: '+str(e))
-      try:
-        output3,err3,ret3  = PETSc.package.NewPackage.executeShellCommand(self.installSudo+self.setCompilers.RANLIB+' '+os.path.join(self.installDir,self.libdir,'lib*.a'), timeout=2500, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running ranlib on ML libraries: '+str(e))
-
-      self.postInstall(output1+err1+output2+err2+output3+err3,'ml')
-    return self.installDir
+    return args
 
   def consistencyChecks(self):
-    PETSc.package.NewPackage.consistencyChecks(self)
+    config.package.GNUPackage.consistencyChecks(self)
     if self.framework.argDB['with-'+self.package]:
       # ML requires LAPACK routine dgels() ?
       if not self.blasLapack.checkForRoutine('dgels'):
@@ -107,4 +81,4 @@ class Configure(PETSc.package.NewPackage):
         raise RuntimeError('ML requires the LAPACK routine dsteqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
       self.framework.log.write('Found dsteqr() in Lapack library as needed by ML\n')
       self.framework.log.write('Found dgels() in Lapack library as needed by ML\n')
-    return
+

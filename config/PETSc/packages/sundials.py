@@ -1,40 +1,28 @@
-import PETSc.package
+import config.package
 
-class Configure(PETSc.package.NewPackage):
+class Configure(config.package.GNUPackage):
   def __init__(self, framework):
-    PETSc.package.NewPackage.__init__(self, framework)
+    config.package.GNUPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials-2.5.0.tar.gz']
     self.functions = ['CVSpgmr']
     self.includes  = ['sundials/sundials_nvector.h']
     self.liblist   = [['libsundials_cvode.a','libsundials_nvecserial.a','libsundials_nvecparallel.a']] #currently only support CVODE
     self.license   = 'http://www.llnl.gov/CASC/sundials/download/download.html'
     self.needsMath = 1
-    return
 
   def setupDependencies(self, framework):
-    PETSc.package.NewPackage.setupDependencies(self, framework)
+    config.package.GNUPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.mpi             = framework.require('config.packages.MPI',self)
-    self.deps = [self.mpi,self.blasLapack]
-    return
+    self.mpi        = framework.require('config.packages.MPI',self)
+    self.deps       = [self.mpi,self.blasLapack]
 
-  def Install(self):
+  def formGNUConfigureArgs(self):
     import os
-    self.framework.pushLanguage('C')
-    ccompiler=self.framework.getCompiler()
-    args = ['--prefix='+self.installDir]
-    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
-    args.append('CC="'+self.framework.getCompiler()+'"')
-    args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
-    self.framework.popLanguage()
-    if hasattr(self.compilers, 'CXX'):
-      self.framework.pushLanguage('Cxx')
-      args.append('CXX="'+self.framework.getCompiler()+'"')
-      args.append('CXXFLAGS="'+self.framework.getCompilerFlags()+'"')
-      self.framework.popLanguage()
+    args = config.package.GNUPackage.formGNUConfigureArgs(self)
 
+    self.framework.pushLanguage('C')
     # use --with-mpi-root if we know it works
-    if self.mpi.directory and (os.path.realpath(ccompiler)).find(os.path.realpath(self.mpi.directory)) >=0:
+    if self.mpi.directory and (os.path.realpath(self.framework.getCompiler())).find(os.path.realpath(self.mpi.directory)) >=0:
       self.framework.log.write('Sundials configure: using --with-mpi-root='+self.mpi.directory+'\n')
       args.append('--with-mpi-root="'+self.mpi.directory+'"')
     # else provide everything!
@@ -42,7 +30,7 @@ class Configure(PETSc.package.NewPackage):
       #print a message if the previous check failed
       if self.mpi.directory:
         self.framework.log.write('Sundials configure: --with-mpi-dir specified - but could not use it\n')
-        self.framework.log.write(str(os.path.realpath(ccompiler))+' '+str(os.path.realpath(self.mpi.directory))+'\n')
+        self.framework.log.write(str(os.path.realpath(self.framework.getCompiler()))+' '+str(os.path.realpath(self.mpi.directory))+'\n')
 
       args.append('--without-mpicc')
       if self.mpi.include:
@@ -65,6 +53,7 @@ class Configure(PETSc.package.NewPackage):
         args.append('--with-mpi-libdir="/usr/lib"')  # dummy case
         args.append('--with-mpi-libs="-lc"')
 
+    self.framework.popLanguage()
     args.append('--without-mpif77')
     args.append('--disable-examples')
     args.append('--disable-cvodes')
@@ -73,23 +62,4 @@ class Configure(PETSc.package.NewPackage):
     args.append('--disable-f77') #does not work? Use 'F77=no' instead
     args.append('F77=no')
     args.append('--disable-libtool-lock')
-
-    args = ' '.join(args)
-    fd = file(os.path.join(self.packageDir,'sundials'), 'w')
-    fd.write(args)
-    fd.close()
-
-    if self.installNeeded('sundials'):
-      try:
-        self.logPrintBox('Configuring sundials; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=900, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running configure on SUNDIALS: '+str(e))
-      try:
-        self.logPrintBox('Compiling and installing sundials; this may take several minutes')
-        self.installDirProvider.printSudoPasswordMessage()
-        output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && '+self.installSudo+'make install && make clean', timeout=2500, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running make on SUNDIALS: '+str(e))
-      self.postInstall(output1+err1+output2+err2,'sundials')
-    return self.installDir
+    return args
