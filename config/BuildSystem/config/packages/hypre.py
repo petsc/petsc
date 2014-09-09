@@ -17,12 +17,12 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.openmp     = framework.require('config.packages.openmp',self)
+    self.openmp         = framework.require('config.packages.openmp',self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
-    self.languages    = framework.require('PETSc.utilities.languages',   self)
-    self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.mpi        = framework.require('config.packages.MPI',self)
-    self.deps       = [self.mpi,self.blasLapack]
+    self.languages      = framework.require('PETSc.utilities.languages',   self)
+    self.blasLapack     = framework.require('config.packages.BlasLapack',self)
+    self.mpi            = framework.require('config.packages.MPI',self)
+    self.deps           = [self.mpi,self.blasLapack]
 
   def generateLibList(self,dir):
     '''Normally the one in package.py is used, but hypre requires the extra C++ library'''

@@ -112,18 +112,19 @@ class tetgenio {
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download = ['http://tetgen.org/files/tetgen1.4.3.tar.gz',
-                     'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/tetgen1.4.3.tar.gz']
-    self.functions = ['tetrahedralize']
+    self.download     = ['http://tetgen.org/files/tetgen1.4.3.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/tetgen1.4.3.tar.gz']
+    self.functions    = ['tetrahedralize']
     self.functionsCxx = [1, structDecl+'void tetrahedralize(char *switches, tetgenio *in, tetgenio *out, tetgenio *addin = NULL, tetgenio *bgmin = NULL);', 'tetrahedralize((char *) "", NULL, NULL)']
-    self.includes  = ['tetgen.h']
-    self.liblist   = [['libtet.a']]
-    self.cxx       = 1
-    self.needsMath = 1
+    self.includes     = ['tetgen.h']
+    self.liblist      = [['libtet.a']]
+    self.cxx          = 1
+    self.needsMath    = 1
     return
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
+    self.languages       = framework.require('PETSc.utilities.languages',   self)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
     self.deps            = []
     return
