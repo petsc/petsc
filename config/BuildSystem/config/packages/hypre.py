@@ -83,7 +83,7 @@ class Configure(config.package.GNUPackage):
     # hypre configure assumes the AR flags are passed in with AR
     args = [arg for arg in args if not arg.startswith('AR')]
     args.append('AR="'+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'"')
-    return args
+    return [arg for arg in args if not arg in ['--enable-shared']]
 
   def consistencyChecks(self):
     config.package.GNUPackage.consistencyChecks(self)

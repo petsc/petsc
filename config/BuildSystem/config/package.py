@@ -268,7 +268,9 @@ class Package(config.base.Configure):
           libs.append(libSet[0])
       for library in libSet[1:]:
         # if the library name doesn't start with lib - then add the fullpath
-        if library.startswith('lib') or self.libdir == directory:
+        if library.startswith('-l'):
+          libs.append(library)
+        elif library.startswith('lib') or self.libdir == directory:
           libs.append(library)
         else:
           libs.append(os.path.join(directory, library))
@@ -526,7 +528,9 @@ class Package(config.base.Configure):
         if self.framework.argDB['with-'+package.package] == 1:
           raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
         else:
-          raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package+' or --download-'+package.package)
+          str = ''
+          if package.download: str = ' or --download-'+package.package
+          raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package+str)
       if hasattr(package, 'dlib')    and not libs  is None: libs  += package.dlib
       if hasattr(package, 'include') and not incls is None: incls += package.include
     return

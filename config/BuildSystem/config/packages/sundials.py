@@ -32,7 +32,6 @@ class Configure(config.package.GNUPackage):
         self.framework.log.write('Sundials configure: --with-mpi-dir specified - but could not use it\n')
         self.framework.log.write(str(os.path.realpath(self.framework.getCompiler()))+' '+str(os.path.realpath(self.mpi.directory))+'\n')
 
-      args.append('--without-mpicc')
       if self.mpi.include:
         args.append('--with-mpi-incdir="'+self.mpi.include[0]+'"')
       else:
@@ -62,4 +61,4 @@ class Configure(config.package.GNUPackage):
     args.append('--disable-f77') #does not work? Use 'F77=no' instead
     args.append('F77=no')
     args.append('--disable-libtool-lock')
-    return args
+    return [arg for arg in args if not arg in ['--enable-shared']]
