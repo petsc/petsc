@@ -33,7 +33,7 @@ class Configure(config.base.Configure):
         self.logPrint('This repository clone is obtained as a tarball as neither .hg nor .git dirs exist!')
     else:
       if os.path.exists(os.path.join(self.petscdir.dir, '.git')) or os.path.exists(os.path.join(self.petscdir.dir, '.hg')):
-        raise RuntimeError('Your petsc-dev directory is broken, remove the entire directory and start all over again')
+        raise RuntimeError('Your petsc source tree is broken. Use "git status" to check, or remove the entire directory and start all over again')
       else:
         self.logPrint('This is a tarball installation')
         self.isClone = 0
