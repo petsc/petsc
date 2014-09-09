@@ -299,7 +299,7 @@ SCRIPTS    = bin/maint/builddist  bin/maint/wwwman bin/maint/xclude bin/maint/bu
              bin/maint/lex.py  bin/maint/mapnameslatex.py bin/maint/startnightly bin/maint/startnightly.tao bin/maint/submitPatch.py \
              bin/maint/update-docs.py  bin/maint/wwwindex.py bin/maint/xcludebackup bin/maint/xcludecblas bin/maint/zap bin/maint/zapall \
              config/PETSc/Configure.py config/PETSc/Options.py \
-             config/PETSc/packages/*.py config/PETSc/utilities/*.py
+             config/PETSc/utilities/*.py
 
 
 # Builds all the documentation - should be done every night

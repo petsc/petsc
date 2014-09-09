@@ -1083,7 +1083,7 @@ class PETScConfigureInfo(object):
     self.fortrancpp      = self.framework.require('PETSc.utilities.fortranCPP', None)
     self.debuggers       = self.framework.require('PETSc.utilities.debuggers', None)
     self.sharedLibraries = self.framework.require('PETSc.utilities.sharedLibraries', None)
-    self.sowing          = self.framework.require('PETSc.packages.sowing', None)
+    self.sowing          = self.framework.require('config.packages.sowing', None)
     return
 
 class PETScMaker(script.Script):

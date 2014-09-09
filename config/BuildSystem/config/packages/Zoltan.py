@@ -1,0 +1,84 @@
+import config.package
+
+class Configure(config.package.Package):
+  def __init__(self, framework):
+    config.package.Package.__init__(self, framework)
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zoltan_distrib.tar.gz']
+    self.functions = ['Zoltan_LB_Partition']
+    self.includes  = ['zoltan.h']
+    self.liblist   = [['libzoltan.a']]
+    self.license   = 'http://www.cs.sandia.gov/Zoltan/Zoltan.html'
+    return
+
+  def setupDependencies(self, framework):
+    config.package.Package.setupDependencies(self, framework)
+    self.x        = framework.require('config.packages.X',self)
+    self.parmetis = framework.require('config.packages.parmetis',self)
+    self.mpi             = framework.require('config.packages.MPI',self)
+    self.deps = [self.mpi, self.parmetis]
+    return
+
+  def Install(self):
+    import os
+    self.framework.pushLanguage('C')
+    ccompiler=self.framework.getCompiler()
+    args = ['ZOLTAN_ARCH="'+self.arch+'"']
+    args.append('CC="'+self.framework.getCompiler()+'"')
+    args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
+    self.framework.popLanguage()
+    if hasattr(self.compilers, 'CXX'):
+      self.framework.pushLanguage('Cxx')
+      args.append('CPPC="'+self.framework.getCompiler()+'"')
+      self.framework.popLanguage()
+    args.append('AR="'+self.compilers.AR+' '+self.compilers.AR_FLAGS+'"')
+    args.append('RANLIB="'+self.compilers.RANLIB+'"')
+    if self.x.found:
+      args.append('X_LIBS="'+str(self.x.lib)+'"')
+    if self.mpi.found:
+      if self.mpi.include:
+        args.append('MPI_INCPATH="'+' '.join([self.headers.getIncludeArgument(inc) for inc in self.mpi.include])+'"')
+      if self.mpi.lib:
+        args.append('MPI_LIB="'+' '.join([self.libraries.getLibArgument(lib) for lib in self.mpi.lib])+'"')
+    if self.parmetis.found:
+      if self.parmetis.include:
+        args.append('PARMETIS_INCPATH="'+' '.join([self.headers.getIncludeArgument(inc) for inc in self.parmetis.include])+'"')
+      if self.parmetis.lib:
+        args.append('PARMETIS_LIBPATH="'+' '.join([self.libraries.getLibArgument(lib) for lib in self.parmetis.lib])+'"')
+    args = ' '.join(args)
+
+    fd = file(os.path.join(self.packageDir, 'Zoltanconfig'),'w')
+    fd.write(args)
+    fd.close()
+
+    if self.installNeeded('Zoltanconfig'):
+      fd = file(os.path.join(self.packageDir, 'Utilities', 'Config', 'Config.'+self.arch), 'w')
+      fd.write('''
+##############################################################################
+#  Environment variables for compiling the Zoltan and test drivers using PETSc
+##############################################################################
+# The location of the VTK libraries, built with OpenGL
+#   We do not do these correctly
+VTK_LIBPATH =
+VTK_INCPATH =
+# The location of the GL or Mesa libraries, and the libraries
+#   We do not do these correctly
+GL_LIBPATH = -L/usr/lib
+GL_INCPATH = -I/usr/include
+GL_LIBS    = -lGL -lGLU
+# Have no idea about VTK_OFFSCREEN_* and MESA_* stuff
+''')
+      fd.close()
+      try:
+        self.logPrintBox('Compiling zoltan; this may take several minutes')
+        output1,err1,ret1  = config.package.Package.executeShellCommand('rm -f '+self.installDir+'lib/libzoltan*', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make '+args+' zoltan', timeout=2500, log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error running make on ZOLTAN: '+str(e))
+      self.logPrintBox('Installing zoltan; this may take several minutes')
+      self.installDirProvider.printSudoPasswordMessage()
+      output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
+      output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
+      output3,err3,ret3  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'Obj_'+self.arch)+'/lib* '+os.path.join(self.installDir, 'lib'))
+      output4,err4,ret4  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'include')+'/*.h '+os.path.join(self.installDir, 'include'))
+      self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4,'Zoltanconfig')
+    return self.installDir

@@ -1069,7 +1069,7 @@ class CMakePackage(Package):
 
   def setupDependencies(self, framework):
     Package.setupDependencies(self, framework)
-    self.cmake = framework.require('PETSc.packages.cmake',self)
+    self.cmake = framework.require('config.packages.cmake',self)
     return
 
   def formCMakeConfigureArgs(self):
