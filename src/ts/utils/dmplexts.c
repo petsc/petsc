@@ -4,9 +4,9 @@
 #include <petscfv.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexTSGetGeometry"
+#define __FUNCT__ "DMPlexTSGetGeometryFVM"
 /*@
-  DMPlexTSGetGeometry - Return precomputed geometric data
+  DMPlexTSGetGeometryFVM - Return precomputed geometric data
 
   Input Parameter:
 . dm - The DM
@@ -20,7 +20,7 @@
 
 .seealso: DMPlexTSSetRHSFunctionLocal()
 @*/
-PetscErrorCode DMPlexTSGetGeometry(DM dm, Vec *facegeom, Vec *cellgeom, PetscReal *minRadius)
+PetscErrorCode DMPlexTSGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, PetscReal *minRadius)
 {
   DMTS           dmts;
   PetscObject    obj;
@@ -29,18 +29,18 @@ PetscErrorCode DMPlexTSGetGeometry(DM dm, Vec *facegeom, Vec *cellgeom, PetscRea
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMTS(dm, &dmts);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_facegeom", &obj);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_facegeom_fvm", &obj);CHKERRQ(ierr);
   if (!obj) {
     Vec cellgeom, facegeom;
 
     ierr = DMPlexComputeGeometryFVM(dm, &cellgeom, &facegeom);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dmts, "DMPlexTS_facegeom", (PetscObject) facegeom);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) dmts, "DMPlexTS_cellgeom", (PetscObject) cellgeom);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) dmts, "DMPlexTS_facegeom_fvm", (PetscObject) facegeom);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) dmts, "DMPlexTS_cellgeom_fvm", (PetscObject) cellgeom);CHKERRQ(ierr);
     ierr = VecDestroy(&facegeom);CHKERRQ(ierr);
     ierr = VecDestroy(&cellgeom);CHKERRQ(ierr);
   }
-  if (facegeom) {PetscValidPointer(facegeom, 2); ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_facegeom", (PetscObject *) facegeom);CHKERRQ(ierr);}
-  if (cellgeom) {PetscValidPointer(cellgeom, 3); ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_cellgeom", (PetscObject *) cellgeom);CHKERRQ(ierr);}
+  if (facegeom) {PetscValidPointer(facegeom, 2); ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_facegeom_fvm", (PetscObject *) facegeom);CHKERRQ(ierr);}
+  if (cellgeom) {PetscValidPointer(cellgeom, 3); ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_cellgeom_fvm", (PetscObject *) cellgeom);CHKERRQ(ierr);}
   if (minRadius) {ierr = DMPlexGetMinRadius(dm, minRadius);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -58,7 +58,7 @@ PetscErrorCode DMPlexTSGetGeometry(DM dm, Vec *facegeom, Vec *cellgeom, PetscRea
 
   Level: developer
 
-.seealso: DMPlexTSGetGeometry(), DMPlexTSSetRHSFunctionLocal()
+.seealso: DMPlexTSGetGeometryFVM(), DMPlexTSSetRHSFunctionLocal()
 @*/
 PetscErrorCode DMPlexTSGetGradientDM(DM dm, DM *dmGrad)
 {
@@ -149,7 +149,7 @@ static PetscErrorCode DMPlexTSSetupGradient(DM dm, PetscFV fvm, DMTS dmts)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   /* Construct the interpolant corresponding to each face from the leat-square solution over the cell neighborhood */
-  ierr = DMPlexTSGetGeometry(dm, &facegeom, &cellgeom, NULL);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGeometryFVM(dm, &facegeom, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecGetDM(facegeom, &dmFace);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
   ierr = VecGetArray(facegeom, &fgeom);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ static PetscErrorCode DMPlexInsertBoundaryValuesFVM_Static(DM dm, PetscFV fvm, P
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexTSGetGeometry(dm, &faceGeometry, &cellGeometry, NULL);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGeometryFVM(dm, &faceGeometry, &cellGeometry, NULL);CHKERRQ(ierr);
   ierr = DMPlexTSGetGradientDM(dm, &dmGrad);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
@@ -272,10 +272,10 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   Vec                Grad = NULL, locGrad;
   DM                 dmFace, dmCell, dmGrad;
   DMLabel            ghostLabel;
-  PetscCellGeometry  fgeom, cgeom;
+  PetscFVFaceGeom   *fgeom;
   const PetscScalar *facegeom, *cellgeom, *x, *lgrad;
   PetscScalar       *grad, *f, *uL, *uR, *fluxL, *fluxR;
-  PetscReal         *centroid, *normal, *vol, *cellPhi;
+  PetscReal         *vol, *cellPhi;
   PetscBool          computeGradients;
   PetscInt           Nf, dim, pdim, fStart, fEnd, numFaces = 0, face, iface, cell, cStart, cEnd, cEndInterior;
   PetscErrorCode     ierr;
@@ -284,7 +284,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(locX,VEC_CLASSID,3);
   PetscValidHeaderSpecific(F,VEC_CLASSID,5);
-  ierr = DMPlexTSGetGeometry(dm, &faceGeometry, &cellGeometry, NULL);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGeometryFVM(dm, &faceGeometry, &cellGeometry, NULL);CHKERRQ(ierr);
   ierr = DMPlexTSGetGradientDM(dm, &dmGrad);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetRiemannSolver(prob, 0, &riemann);CHKERRQ(ierr);
@@ -395,7 +395,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
     ierr = DMRestoreGlobalVector(dmGrad, &Grad);CHKERRQ(ierr);
     ierr = VecGetArrayRead(locGrad, &lgrad);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc7(numFaces*dim,&centroid,numFaces*dim,&normal,numFaces*2,&vol,numFaces*pdim,&uL,numFaces*pdim,&uR,numFaces*pdim,&fluxL,numFaces*pdim,&fluxR);CHKERRQ(ierr);
+  ierr = PetscMalloc6(numFaces,&fgeom,numFaces*2,&vol,numFaces*pdim,&uL,numFaces*pdim,&uR,numFaces*pdim,&fluxL,numFaces*pdim,&fluxR);CHKERRQ(ierr);
   /* Read out values */
   for (face = fStart, iface = 0; face < fEnd; ++face) {
     const PetscInt        *cells;
@@ -430,8 +430,8 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
       }
     }
     for (d = 0; d < dim; ++d) {
-      centroid[iface*dim+d] = fg->centroid[d];
-      normal[iface*dim+d]   = fg->normal[d];
+      fgeom[iface].centroid[d] = fg->centroid[d];
+      fgeom[iface].normal[d]   = fg->normal[d];
     }
     vol[iface*2+0] = cgL->volume;
     vol[iface*2+1] = cgR->volume;
@@ -444,11 +444,8 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   ierr = VecRestoreArrayRead(locX, &x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
-  fgeom.v0  = centroid;
-  fgeom.n   = normal;
-  cgeom.vol = vol;
   /* Riemann solve */
-  ierr = PetscFVIntegrateRHSFunction(fvm, numFaces, Nf, &fvm, 0, fgeom, cgeom, uL, uR, riemann, fluxL, fluxR, rctx);CHKERRQ(ierr);
+  ierr = PetscFVIntegrateRHSFunction(fvm, numFaces, Nf, &fvm, 0, fgeom, vol, uL, uR, riemann, fluxL, fluxR, rctx);CHKERRQ(ierr);
   /* Insert fluxes */
   ierr = VecGetArray(F, &f);CHKERRQ(ierr);
   for (face = fStart, iface = 0; face < fEnd; ++face) {
@@ -468,7 +465,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
     ++iface;
   }
   ierr = VecRestoreArray(F, &f);CHKERRQ(ierr);
-  ierr = PetscFree7(centroid,normal,vol,uL,uR,fluxL,fluxR);CHKERRQ(ierr);
+  ierr = PetscFree6(fgeom,vol,uL,uR,fluxL,fluxR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

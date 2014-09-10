@@ -339,7 +339,7 @@ PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM,PetscErrorCode (*)(DMDA
 PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*),void *);
 PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,void*),void *);
 
-PETSC_EXTERN PetscErrorCode DMPlexTSGetGeometry(DM, Vec *, Vec *, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMPlexTSGetGeometryFVM(DM, Vec *, Vec *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexTSGetGradientDM(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexTSSetRHSFunctionLocal(DM, PetscErrorCode (*)(DM, PetscReal, Vec, Vec, void *), void *);
 

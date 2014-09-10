@@ -57,7 +57,7 @@ struct _PetscFVOps {
   PetscErrorCode (*view)(PetscFV,PetscViewer);
   PetscErrorCode (*destroy)(PetscFV);
   PetscErrorCode (*computegradient)(PetscFV, PetscInt, const PetscScalar[], PetscScalar []);
-  PetscErrorCode (*integraterhsfunction)(PetscFV, PetscInt, PetscInt, PetscFV[], PetscInt, PetscCellGeometry, PetscCellGeometry, PetscScalar[], PetscScalar[],
+  PetscErrorCode (*integraterhsfunction)(PetscFV, PetscInt, PetscInt, PetscFV[], PetscInt, PetscFVFaceGeom *, PetscReal *, PetscScalar[], PetscScalar[],
                                          void (*)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *),
                                          PetscScalar[], PetscScalar[], void *);
 };
