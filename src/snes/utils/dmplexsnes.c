@@ -1,5 +1,5 @@
 #include <petsc-private/dmpleximpl.h>   /*I "petscdmplex.h" I*/
-#include <petscsnes.h>                  /*I "petscsnes.h"   I*/
+#include <petsc-private/snesimpl.h>     /*I "petscsnes.h"   I*/
 #include <petscds.h>
 #include <petsc-private/petscimpl.h>
 
@@ -801,6 +801,42 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, void
 }
 
 /********************* Residual Computation **************************/
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexSNESGetGeometryFEM"
+/*@
+  DMPlexSNESGetGeometryFEM - Return precomputed geometric data
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameters:
+. cellgeom - The values precomputed from cell geometry
+
+  Level: developer
+
+.seealso: DMPlexSNESSetFunctionLocal()
+@*/
+PetscErrorCode DMPlexSNESGetGeometryFEM(DM dm, Vec *cellgeom)
+{
+  DMSNES         dmsnes;
+  PetscObject    obj;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMSNES(dm, &dmsnes);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) dmsnes, "DMPlexSNES_cellgeom_fem", &obj);CHKERRQ(ierr);
+  if (!obj) {
+    Vec cellgeom;
+
+    ierr = DMPlexComputeGeometryFEM(dm, &cellgeom);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) dmsnes, "DMPlexSNES_cellgeom_fem", (PetscObject) cellgeom);CHKERRQ(ierr);
+    ierr = VecDestroy(&cellgeom);CHKERRQ(ierr);
+  }
+  if (cellgeom) {PetscValidPointer(cellgeom, 3); ierr = PetscObjectQuery((PetscObject) dmsnes, "DMPlexSNES_cellgeom_fem", (PetscObject *) cellgeom);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeResidual_Internal"
