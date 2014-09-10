@@ -87,6 +87,10 @@ typedef struct {
   /* Problem definition */
   DMBoundary           boundary;          /* List of boundary conditions */
 
+  /* Geometry */
+  PetscReal            minradius;         /* Minimum distance from cell centroid to face */
+
+
   /* Debugging */
   PetscBool            printSetValues;
   PetscInt             printFEM;

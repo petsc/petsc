@@ -35,7 +35,7 @@ PetscErrorCode DMPlexTSGetGeometry(DM dm, Vec *facegeom, Vec *cellgeom, PetscRea
   ierr = DMGetDMTS(dm, &dmts);CHKERRQ(ierr);
   if (facegeom) {PetscValidPointer(facegeom, 2); ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_facegeom", (PetscObject *) facegeom);CHKERRQ(ierr);}
   if (cellgeom) {PetscValidPointer(cellgeom, 3); ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_cellgeom", (PetscObject *) cellgeom);CHKERRQ(ierr);}
-  if (minRadius) {ierr = DMTSGetMinRadius(dm, minRadius);CHKERRQ(ierr);}
+  if (minRadius) {ierr = DMPlexGetMinRadius(dm, minRadius);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
