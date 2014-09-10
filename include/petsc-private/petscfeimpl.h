@@ -74,12 +74,12 @@ struct _PetscFEOps {
   PetscErrorCode (*getdimension)(PetscFE,PetscInt*);
   PetscErrorCode (*gettabulation)(PetscFE,PetscInt,const PetscReal*,PetscReal*,PetscReal*,PetscReal*);
   /* Element integration */
-  PetscErrorCode (*integrate)(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], PetscDS, const PetscScalar[], PetscReal[]);
-  PetscErrorCode (*integrateresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratebdresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratejacobianaction)(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratejacobian)(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratebdjacobian)(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integrate)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscReal[]);
+  PetscErrorCode (*integrateresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratebdresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratejacobianaction)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratejacobian)(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratebdjacobian)(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
 };
 
 struct _p_PetscFE {

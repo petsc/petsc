@@ -871,9 +871,8 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
   Vec               localX, A;
   PetscDS           prob, probAux = NULL;
   PetscQuadrature   q;
-  PetscCellGeometry geom;
   PetscSection      section, sectionAux;
-  PetscReal        *v0, *J, *invJ, *detJ;
+  PetscFECellGeom  *cgeom;
   PetscScalar      *u, *a = NULL;
   PetscInt          dim, Nf, f, numCells, cStart, cEnd, c;
   PetscInt          totDim, totDimAux;
@@ -900,14 +899,14 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
   }
   ierr = DMPlexInsertBoundaryValuesFEM(dm, localX);CHKERRQ(ierr);
-  ierr = PetscMalloc5(numCells*totDim,&u,numCells*dim,&v0,numCells*dim*dim,&J,numCells*dim*dim,&invJ,numCells,&detJ);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numCells*totDim,&u,numCells,&cgeom);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscMalloc1(numCells*totDimAux, &a);CHKERRQ(ierr);}
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscInt     i;
 
-    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, &v0[c*dim], &J[c*dim*dim], &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
-    if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
+    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, cgeom[c].v0, cgeom[c].J, cgeom[c].invJ, &cgeom[c].detJ);CHKERRQ(ierr);
+    if (cgeom[c].detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", cgeom[c].detJ, c);
     ierr = DMPlexVecGetClosure(dm, section, localX, c, NULL, &x);CHKERRQ(ierr);
     for (i = 0; i < totDim; ++i) u[c*totDim+i] = x[i];
     ierr = DMPlexVecRestoreClosure(dm, section, localX, c, NULL, &x);CHKERRQ(ierr);
@@ -937,18 +936,10 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
     Ne        = numChunks*numBatches*batchSize;
     Nr        = numCells % (numBatches*batchSize);
     offset    = numCells - Nr;
-    geom.v0   = v0;
-    geom.J    = J;
-    geom.invJ = invJ;
-    geom.detJ = detJ;
-    ierr = PetscFEIntegrate(fe, prob, f, Ne, geom, u, probAux, a, integral);CHKERRQ(ierr);
-    geom.v0   = &v0[offset*dim];
-    geom.J    = &J[offset*dim*dim];
-    geom.invJ = &invJ[offset*dim*dim];
-    geom.detJ = &detJ[offset];
-    ierr = PetscFEIntegrate(fe, prob, f, Nr, geom, &u[offset*totDim], probAux, &a[offset*totDimAux], integral);CHKERRQ(ierr);
+    ierr = PetscFEIntegrate(fe, prob, f, Ne, cgeom, u, probAux, a, integral);CHKERRQ(ierr);
+    ierr = PetscFEIntegrate(fe, prob, f, Nr, &cgeom[offset], &u[offset*totDim], probAux, &a[offset*totDimAux], integral);CHKERRQ(ierr);
   }
-  ierr = PetscFree5(u,v0,J,invJ,detJ);CHKERRQ(ierr);
+  ierr = PetscFree2(u,cgeom);CHKERRQ(ierr);
   if (dmAux) {ierr = PetscFree(a);CHKERRQ(ierr);}
   if (mesh->printFEM) {
     ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Local integral:");CHKERRQ(ierr);
