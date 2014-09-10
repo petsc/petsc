@@ -1220,7 +1220,6 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal []
   PetscQuadrature q;
   PetscSection    section;
   PetscScalar    *values;
-  PetscReal      *v0, *J, *detJ;
   PetscInt        numFields, numComp, numPoints, dim, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
   PetscErrorCode  ierr;
 
@@ -1237,14 +1236,10 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal []
   if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
   ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(q, NULL, &numPoints, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc3(dim*numPoints,&v0,dim*dim*numPoints,&J,numPoints,&detJ);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscCellGeometry geom;
+    PetscFECellGeom geom;
 
-    ierr = DMDAComputeCellGeometryFEM(dm, c, q, v0, J, NULL, detJ);CHKERRQ(ierr);
-    geom.v0   = v0;
-    geom.J    = J;
-    geom.detJ = detJ;
+    ierr = DMDAComputeCellGeometryFEM(dm, c, q, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
     for (f = 0, v = 0; f < numFields; ++f) {
       void * const ctx = ctxs ? ctxs[f] : NULL;
 
@@ -1253,14 +1248,13 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal []
       ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(sp, &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
-        ierr = PetscDualSpaceApply(sp, d, geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+        ierr = PetscDualSpaceApply(sp, d, &geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
         v += numComp;
       }
     }
     ierr = DMDAVecSetClosure(dm, section, localX, c, values, mode);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
-  ierr = PetscFree3(v0,J,detJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
