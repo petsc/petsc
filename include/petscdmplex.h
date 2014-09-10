@@ -192,6 +192,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateSection(DM, PetscInt, PetscInt,const Pet
 
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFEM(DM, PetscInt, PetscFE, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeGeometryFEM(DM, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexVecGetClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode DMPlexVecRestoreClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode DMPlexVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar[], InsertMode);

@@ -1047,6 +1047,49 @@ PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeGeometryFEM"
+/* This should also take a PetscFE argument I think */
+PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
+{
+  DM             dmCell;
+  Vec            coordinates;
+  PetscSection   coordSection, sectionCell;
+  PetscScalar   *cgeom;
+  PetscInt       cStart, cEnd, cMax, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMClone(dm, &dmCell);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dmCell, PETSC_DETERMINE, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dmCell, coordinates);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionCell);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  cEnd = cMax < 0 ? cEnd : cMax;
+  ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
+  /* TODO This needs to be multiplied by Nq for non-affine */
+  for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionCell, c, sizeof(PetscFECellGeom)/sizeof(PetscScalar));CHKERRQ(ierr);}
+  ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(dmCell, sectionCell);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
+  ierr = VecGetArray(*cellgeom, &cgeom);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscFECellGeom *cg;
+
+    ierr = DMPlexPointLocalRef(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
+    ierr = PetscMemzero(cg, sizeof(*cg));CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFEM(dmCell, c, NULL, cg->v0, cg->J, cg->invJ, &cg->detJ);CHKERRQ(ierr);
+    if (cg->detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", cg->detJ, c);
+  }
+  ierr = VecRestoreArray(*cellgeom, &cgeom);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmCell);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeGeometryFVM"
 PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
 {

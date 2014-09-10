@@ -8,6 +8,15 @@
 #include <petscfetypes.h>
 #include <petscdstypes.h>
 
+/* Assuming dim <= 3 */
+typedef struct {
+  PetscReal v0[3];
+  PetscReal J[9];
+  PetscReal invJ[9];
+  PetscReal detJ;
+  PetscReal n[3];
+} PetscFECellGeom;
+
 PETSC_EXTERN PetscErrorCode PetscFEInitializePackage(void);
 
 PETSC_EXTERN PetscClassId PETSCSPACE_CLASSID;
