@@ -493,6 +493,13 @@ checkbadfortranstubs:
 	grep "$$OBJ \*" *.c | tr -s ' ' | tr -s ':' ' ' | \
 	cut -d'(' -f1 | cut -d' ' -f1,3; \
 	done
+
+checkpackagetests:
+	-@echo "Missing package tests"
+	-@cat config/examples/*.py > configexamples; pushd config/BuildSystem/config/packages/; packages=`ls *.py | sed "s/\\.py//g"`;popd; for i in $${packages}; do j=`echo $${i} | tr '[:upper:]' '[:lower:]'`; printf $${j} ; egrep "(with-$${j}|download-$${j})" configexamples | grep -v "=0" | wc -l ; done
+	-@echo "Missing download package tests"
+	-@cat config/examples/*.py > configexamples; pushd config/BuildSystem/config/packages/; packages=`grep -l "download " *.py  | sed "s/\\.py//g"`;popd; for i in $${packages}; do j=`echo $${i} | tr '[:upper:]' '[:lower:]'`; printf $${j} ; egrep "(download-$${j})" configexamples | grep -v "=0" | wc -l ; done
+
 #
 # Automatically generates PETSc exercises in html from the tutorial examples.
 #
