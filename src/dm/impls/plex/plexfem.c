@@ -188,7 +188,6 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
   PetscDualSpace *sp;
   PetscSection    section;
   PetscScalar    *values;
-  PetscReal      *v0, *J, detJ;
   PetscBool      *fieldActive;
   PetscInt        numFields, numComp, dim, spDim, totDim = 0, numValues, cStart, cEnd, f, d, v, i, comp;
   PetscErrorCode  ierr;
@@ -197,7 +196,7 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr = PetscMalloc3(numFields,&sp,dim,&v0,dim*dim,&J);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numFields,&sp);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
     ierr = PetscFEGetDualSpace(fe[f], &sp[f]);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents(fe[f], &numComp);CHKERRQ(ierr);
@@ -219,21 +218,18 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
     ierr = ISGetLocalSize(pointIS, &n);CHKERRQ(ierr);
     ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
     for (p = 0; p < n; ++p) {
-      const PetscInt    point = points[p];
-      PetscCellGeometry geom;
+      const PetscInt  point = points[p];
+      PetscFECellGeom geom;
 
       if ((point < cStart) || (point >= cEnd)) continue;
-      ierr = DMPlexComputeCellGeometryFEM(dm, point, NULL, v0, J, NULL, &detJ);CHKERRQ(ierr);
-      geom.v0   = v0;
-      geom.J    = J;
-      geom.detJ = &detJ;
+      ierr = DMPlexComputeCellGeometryFEM(dm, point, NULL, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
       for (f = 0, v = 0; f < numFields; ++f) {
         void * const ctx = ctxs ? ctxs[f] : NULL;
         ierr = PetscFEGetNumComponents(fe[f], &numComp);CHKERRQ(ierr);
         ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
         for (d = 0; d < spDim; ++d) {
           if (funcs[f]) {
-            ierr = PetscDualSpaceApply(sp[f], d, geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+            ierr = PetscDualSpaceApply(sp[f], d, &geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
           } else {
             for (comp = 0; comp < numComp; ++comp) values[v+comp] = 0.0;
           }
@@ -247,7 +243,7 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
   }
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm, numFields, PETSC_BOOL, &fieldActive);CHKERRQ(ierr);
-  ierr = PetscFree3(sp,v0,J);CHKERRQ(ierr);
+  ierr = PetscFree(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -259,7 +255,6 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
   PetscInt       *numComp;
   PetscSection    section;
   PetscScalar    *values;
-  PetscReal      *v0, *J, detJ;
   PetscInt        numFields, dim, spDim, totDim = 0, numValues, cStart, cEnd, c, f, d, v, comp;
   PetscErrorCode  ierr;
 
@@ -299,21 +294,17 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
   ierr = DMPlexVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
   if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
   ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
-  ierr = PetscMalloc2(dim,&v0,dim*dim,&J);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscCellGeometry geom;
+    PetscFECellGeom geom;
 
-    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, NULL, &detJ);CHKERRQ(ierr);
-    geom.v0   = v0;
-    geom.J    = J;
-    geom.detJ = &detJ;
+    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
     for (f = 0, v = 0; f < numFields; ++f) {
       void *const ctx = ctxs ? ctxs[f] : NULL;
 
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
         if (funcs[f]) {
-          ierr = PetscDualSpaceApply(sp[f], d, geom, numComp[f], funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+          ierr = PetscDualSpaceApply(sp[f], d, &geom, numComp[f], funcs[f], ctx, &values[v]);CHKERRQ(ierr);
         } else {
           for (comp = 0; comp < numComp[f]; ++comp) values[v+comp] = 0.0;
         }
@@ -323,7 +314,6 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
     ierr = DMPlexVecSetClosure(dm, section, localX, c, values, mode);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
-  ierr = PetscFree2(v0,J);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {ierr = PetscDualSpaceDestroy(&sp[f]);CHKERRQ(ierr);}
   ierr = PetscFree2(sp, numComp);CHKERRQ(ierr);
   PetscFunctionReturn(0);

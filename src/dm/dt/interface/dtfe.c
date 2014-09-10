@@ -1718,12 +1718,10 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
 
 .seealso: PetscDualSpaceCreate()
 @*/
-PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeometry geom, PetscInt numComp, void (*func)(const PetscReal [], PetscScalar *, void *), void *ctx, PetscScalar *value)
+PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscFECellGeom *geom, PetscInt numComp, void (*func)(const PetscReal [], PetscScalar *, void *), void *ctx, PetscScalar *value)
 {
   DM               dm;
   PetscQuadrature  quad;
-  const PetscReal *v0 = geom.v0;
-  const PetscReal *J  = geom.J;
   PetscReal        x[3];
   PetscScalar     *val;
   PetscInt         dim, q, c;
@@ -1738,7 +1736,7 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeome
   ierr = DMGetWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
   for (c = 0; c < numComp; ++c) value[c] = 0.0;
   for (q = 0; q < quad->numPoints; ++q) {
-    CoordinatesRefToReal(dim, dim, v0, J, &quad->points[q*dim], x);
+    CoordinatesRefToReal(dim, dim, geom->v0, geom->J, &quad->points[q*dim], x);
     (*func)(x, val, ctx);
     for (c = 0; c < numComp; ++c) {
       value[c] += val[c]*quad->weights[q];
