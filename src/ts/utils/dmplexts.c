@@ -46,34 +46,6 @@ PetscErrorCode DMPlexTSGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, Petsc
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexTSGetGradientDM"
-/*@
-  DMPlexTSGetGradientDM - Return gradient data layout
-
-  Input Parameter:
-. dm - The DM
-
-  Output Parameter:
-. dmGrad - The layout for gradient values
-
-  Level: developer
-
-.seealso: DMPlexTSGetGeometryFVM(), DMPlexTSSetRHSFunctionLocal()
-@*/
-PetscErrorCode DMPlexTSGetGradientDM(DM dm, DM *dmGrad)
-{
-  DMTS           dmts;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(dmGrad,2);
-  ierr = DMGetDMTS(dm, &dmts);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_dmgrad", (PetscObject *) dmGrad);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "BuildGradientReconstruction"
 static PetscErrorCode BuildGradientReconstruction(DM dm, PetscFV fvm, DM dmFace, PetscScalar *fgeom, DM dmCell, PetscScalar *cgeom)
 {
@@ -133,10 +105,10 @@ static PetscErrorCode BuildGradientReconstruction(DM dm, PetscFV fvm, DM dmFace,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexTSSetupGradient"
-static PetscErrorCode DMPlexTSSetupGradient(DM dm, PetscFV fvm, DMTS dmts)
+#define __FUNCT__ "DMPlexTSSetupGradientFVM_Internal"
+static PetscErrorCode DMPlexTSSetupGradientFVM_Internal(DM dm, PetscFV fvm, DM *dmGrad)
 {
-  DM             dmFace, dmCell, dmGrad;
+  DM             dmFace, dmCell;
   Vec            facegeom, cellgeom;
   PetscScalar   *fgeom, *cgeom;
   PetscSection   sectionGrad;
@@ -148,7 +120,7 @@ static PetscErrorCode DMPlexTSSetupGradient(DM dm, PetscFV fvm, DMTS dmts)
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  /* Construct the interpolant corresponding to each face from the leat-square solution over the cell neighborhood */
+  /* Construct the interpolant corresponding to each face from the least-square solution over the cell neighborhood */
   ierr = DMPlexTSGetGeometryFVM(dm, &facegeom, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecGetDM(facegeom, &dmFace);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
@@ -158,15 +130,55 @@ static PetscErrorCode DMPlexTSSetupGradient(DM dm, PetscFV fvm, DMTS dmts)
   ierr = VecRestoreArray(facegeom, &fgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(cellgeom, &cgeom);CHKERRQ(ierr);
   /* Create storage for gradients */
-  ierr = DMClone(dm, &dmGrad);CHKERRQ(ierr);
+  ierr = DMClone(dm, dmGrad);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionGrad);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionGrad, cStart, cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionGrad, c, pdim*dim);CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(sectionGrad);CHKERRQ(ierr);
-  ierr = DMSetDefaultSection(dmGrad, sectionGrad);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(*dmGrad, sectionGrad);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionGrad);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) dmts, "DMPlexTS_dmgrad", (PetscObject) dmGrad);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmGrad);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexTSGetGradientDM"
+/*@C
+  DMPlexTSGetGradientDM - Return gradient data layout
+
+  Input Parameters:
++ dm - The DM
+- fv - The PetscFV
+
+  Output Parameter:
+. dmGrad - The layout for gradient values
+
+  Level: developer
+
+.seealso: DMPlexTSGetGeometryFVM(), DMPlexTSSetRHSFunctionLocal()
+@*/
+PetscErrorCode DMPlexTSGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
+{
+  DMTS           dmts;
+  PetscObject    obj;
+  PetscBool      computeGradients;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(fv,PETSCFV_CLASSID,2);
+  PetscValidPointer(dmGrad,3);
+  ierr = PetscFVGetComputeGradients(fv, &computeGradients);CHKERRQ(ierr);
+  if (!computeGradients) {*dmGrad = NULL; PetscFunctionReturn(0);}
+  ierr = DMGetDMTS(dm, &dmts);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_dmgrad_fvm", &obj);CHKERRQ(ierr);
+  if (!obj) {
+    DM dmGrad;
+
+    ierr = DMPlexTSSetupGradientFVM_Internal(dm, fv, &dmGrad);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) dmts, "DMPlexTS_dmgrad_fvm", (PetscObject) dmGrad);CHKERRQ(ierr);
+    ierr = DMDestroy(&dmGrad);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectQuery((PetscObject) dmts, "DMPlexTS_dmgrad_fvm", (PetscObject *) dmGrad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -184,7 +196,7 @@ static PetscErrorCode DMPlexInsertBoundaryValuesFVM_Static(DM dm, PetscFV fvm, P
   PetscFunctionBegin;
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, &faceGeometry, &cellGeometry, NULL);CHKERRQ(ierr);
-  ierr = DMPlexTSGetGradientDM(dm, &dmGrad);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGradientDM(dm, fvm, &dmGrad);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
@@ -285,13 +297,13 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   PetscValidHeaderSpecific(locX,VEC_CLASSID,3);
   PetscValidHeaderSpecific(F,VEC_CLASSID,5);
   ierr = DMPlexTSGetGeometryFVM(dm, &faceGeometry, &cellGeometry, NULL);CHKERRQ(ierr);
-  ierr = DMPlexTSGetGradientDM(dm, &dmGrad);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetRiemannSolver(prob, 0, &riemann);CHKERRQ(ierr);
   ierr = PetscDSGetContext(prob, 0, &rctx);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = DMGetField(dm, 0, (PetscObject *) &fvm);CHKERRQ(ierr);
+  ierr = DMPlexTSGetGradientDM(dm, fvm, &dmGrad);CHKERRQ(ierr);
   ierr = PetscFVGetLimiter(fvm, &lim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
   ierr = PetscFVGetComputeGradients(fvm, &computeGradients);CHKERRQ(ierr);
@@ -466,41 +478,6 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   }
   ierr = VecRestoreArray(F, &f);CHKERRQ(ierr);
   ierr = PetscFree6(fgeom,vol,uL,uR,fluxL,fluxR);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexTSSetRHSFunctionLocal"
-/*@C
-  DMPlexTSSetRHSFunctionLocal - set a local residual evaluation function
-
-  Logically Collective
-
-  Input Arguments:
-+ dm - DM to associate callback with
-. func - the RHS evaluation function
-- ctx - an optional user context
-
-  Level: beginner
-
-.seealso: DMTSSetRHSFunctionLocal()
-@*/
-PetscErrorCode DMPlexTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM dm, PetscReal time, Vec X, Vec F, void *ctx), void *ctx)
-{
-  DMTS           dmts;
-  PetscFV        fvm;
-  PetscInt       Nf;
-  PetscBool      computeGradients;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDMTSWrite(dm, &dmts);CHKERRQ(ierr);
-  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
-  ierr = DMGetField(dm, 0, (PetscObject *) &fvm);CHKERRQ(ierr);
-  ierr = PetscFVGetComputeGradients(fvm, &computeGradients);CHKERRQ(ierr);
-  if (computeGradients) {ierr = DMPlexTSSetupGradient(dm, fvm, dmts);CHKERRQ(ierr);}
-  ierr = DMTSSetRHSFunctionLocal(dm, func, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
