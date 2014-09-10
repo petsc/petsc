@@ -57,7 +57,11 @@ class Configure(config.package.GNUPackage):
     args.append('--disable-examples')
     args.append('--disable-cvodes')
     args.append('--disable-ida')
+    args.append('--disable-idas')
+    args.append('--disable-cpodes')
+    args.append('--disable-fcmix')
     args.append('--disable-kinsol')
+
     args.append('--disable-f77') #does not work? Use 'F77=no' instead
     args.append('F77=no')
     args.append('--disable-libtool-lock')
