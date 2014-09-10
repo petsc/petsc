@@ -90,16 +90,16 @@ PETSC_EXTERN PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV, PetscInt, Petsc
 
 PETSC_EXTERN PetscErrorCode PetscFVLeastSquaresSetMaxFaces(PetscFV, PetscInt);
 
-/* Assuming dim == 3 */
+/* Assuming dim <= 3 */
 typedef struct {
   PetscReal   normal[3];   /* Area-scaled normals */
   PetscReal   centroid[3]; /* Location of centroid (quadrature point) */
   PetscScalar grad[2][3];  /* Face contribution to gradient in left and right cell */
-} FaceGeom;
+} PetscFVFaceGeom;
 
 typedef struct {
   PetscReal centroid[3];
   PetscReal volume;
-} CellGeom;
+} PetscFVCellGeom;
 
 #endif

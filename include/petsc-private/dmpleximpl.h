@@ -176,4 +176,21 @@ PETSC_STATIC_INLINE void DMPlex_Det3D_Internal(PetscReal *detJ, PetscReal J[])
   PetscLogFlops(12.0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMPlex_WaxpyD_Internal"
+PETSC_STATIC_INLINE void DMPlex_WaxpyD_Internal(PetscInt dim, PetscReal a, const PetscReal *x, const PetscReal *y, PetscReal *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlex_DotD_Internal"
+PETSC_STATIC_INLINE PetscReal DMPlex_DotD_Internal(PetscInt dim, const PetscScalar *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += PetscRealPart(x[d])*y[d]; return sum;}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlex_DotRealD_Internal"
+PETSC_STATIC_INLINE PetscReal DMPlex_DotRealD_Internal(PetscInt dim, const PetscReal *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlex_NormD_Internal"
+PETSC_STATIC_INLINE PetscReal DMPlex_NormD_Internal(PetscInt dim, const PetscReal *x) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*x[d]; return PetscSqrtReal(sum);}
+
+
 #endif /* _PLEXIMPL_H */

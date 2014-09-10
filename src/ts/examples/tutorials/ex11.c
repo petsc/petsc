@@ -1023,10 +1023,10 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   ierr = DMGetCoordinateDM(dm, &dmCoord);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
-    const PetscInt    *faces;
-    const FaceGeom    *fgA, *fgB, *cg;
-    const PetscScalar *vertex;
-    PetscInt          numFaces, sides[2], f, g;
+    const PetscInt        *faces;
+    const PetscFVFaceGeom *fgA, *fgB, *cg;
+    const PetscScalar     *vertex;
+    PetscInt               numFaces, sides[2], f, g;
 
     ierr = DMPlexPointLocalRead(dmCoord, v, coords, &vertex);CHKERRQ(ierr);
     ierr = DMPlexGetSupportSize(dmMass, v, &numFaces);CHKERRQ(ierr);
@@ -1176,8 +1176,8 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
   ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
   ierr = VecGetArray(X, &x);CHKERRQ(ierr);
   for (c = cStart; c < cEndInterior; ++c) {
-    const CellGeom *cg;
-    PetscScalar    *xc;
+    const PetscFVCellGeom *cg;
+    PetscScalar           *xc;
 
     ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
     ierr = DMPlexPointGlobalRef(dm,c,x,&xc);CHKERRQ(ierr);
@@ -1239,8 +1239,8 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
     ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
     for (c = cStart; c < cEndInterior; ++c) {
-      const CellGeom    *cg;
-      const PetscScalar *cx;
+      const PetscFVCellGeom *cg;
+      const PetscScalar     *cx;
       ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
       ierr = DMPlexPointGlobalRead(dm,c,x,&cx);CHKERRQ(ierr);
       if (!cx) continue;        /* not a global cell */
