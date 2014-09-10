@@ -12,9 +12,10 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.mpi             = framework.require('config.packages.MPI',self)
-    self.deps       = [self.mpi,self.blasLapack]
+    self.scalartypes =  framework.require('PETSc.utilities.scalarTypes',self)
+    self.blasLapack  = framework.require('config.packages.BlasLapack',self)
+    self.mpi         = framework.require('config.packages.MPI',self)
+    self.deps        = [self.mpi,self.blasLapack]
     return
 
   def Install(self):

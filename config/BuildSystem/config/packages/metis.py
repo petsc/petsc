@@ -19,6 +19,9 @@ class Configure(config.package.CMakePackage):
     return
 
   def formCMakeConfigureArgs(self):
+    if not self.cmake.found:
+      raise RuntimeError('CMake > 2.5 is needed to build METIS')
+
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DGKLIB_PATH=../GKlib') 
     if self.sharedLibraries.useShared:

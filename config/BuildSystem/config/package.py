@@ -1079,9 +1079,7 @@ class CMakePackage(Package):
   def formCMakeConfigureArgs(self):
     import os
     import shlex
-    if not self.cmake.found:
-      raise RuntimeError('CMake > 2.5 is needed to build METIS')
-
+ 
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
     self.framework.pushLanguage('C')
