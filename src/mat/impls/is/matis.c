@@ -13,6 +13,72 @@
 */
 
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
+#include <petscsf.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "MatISSetPreallocation"
+PetscErrorCode  MatISSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(B,MAT_CLASSID,1);
+  PetscValidType(B,1);
+  ierr = PetscTryMethod(B,"MatISSetPreallocation_C",(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]),(B,d_nz,d_nnz,o_nz,o_nnz));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatISSetPreallocation_IS"
+PetscErrorCode  MatISSetPreallocation_IS(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+{
+  Mat_IS         *matis = (Mat_IS*)(B->data);
+  PetscSF        sf;
+  PetscInt       bs,i,nroots,*rootdata,nleaves,*leafdata,nlocalcols;
+  const PetscInt *gidxs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!matis->A) {
+    SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"You should first call MatSetLocalToGlobalMapping");
+  }
+  ierr = MatGetLocalSize(B,&nroots,NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(matis->A,&nleaves,&nlocalcols);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(matis->A,&bs);CHKERRQ(ierr);
+  ierr = PetscCalloc2(nroots,&rootdata,nleaves,&leafdata);CHKERRQ(ierr);
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)B),&sf);CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(matis->mapping,&gidxs);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(sf,B->rmap,nleaves,NULL,PETSC_COPY_VALUES,gidxs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(matis->mapping,&gidxs);CHKERRQ(ierr);
+  if (!d_nnz) {
+    for (i=0;i<nroots;i++) rootdata[i] += d_nz;
+  } else {
+    for (i=0;i<nroots;i++) rootdata[i] += d_nnz[i];
+  }
+  if (!o_nnz) {
+    for (i=0;i<nroots;i++) rootdata[i] += o_nz;
+  } else {
+    for (i=0;i<nroots;i++) rootdata[i] += o_nnz[i];
+  }
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
+  for (i=0;i<nleaves;i++) {
+    leafdata[i] = PetscMin(leafdata[i],nlocalcols);
+  }
+  ierr = MatSeqAIJSetPreallocation(matis->A,0,leafdata);CHKERRQ(ierr);
+  for (i=0;i<nleaves/bs;i++) {
+    leafdata[i] = leafdata[i*bs]/bs;
+  }
+  ierr = MatSeqBAIJSetPreallocation(matis->A,bs,0,leafdata);CHKERRQ(ierr);
+  for (i=0;i<nleaves/bs;i++) {
+    leafdata[i] = leafdata[i]-i;
+  }
+  ierr = MatSeqSBAIJSetPreallocation(matis->A,bs,0,leafdata);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISGetMPIXAIJ_IS"
@@ -359,6 +425,7 @@ PetscErrorCode MatDestroy_IS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetMPIXAIJ_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetPreallocation_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -495,8 +562,13 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
 
   /* Create the local matrix A */
   ierr = ISLocalToGlobalMappingGetSize(rmapping,&n);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockSize(rmapping,&bs);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&is->A);CHKERRQ(ierr);
+  if (bs > 1) {
+    ierr = MatSetType(is->A,MATSEQBAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(is->A,MATSEQAIJ);CHKERRQ(ierr);
+  }
   ierr = MatSetSizes(is->A,n,n,n,n);CHKERRQ(ierr);
   ierr = MatSetBlockSize(is->A,bs);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(is->A,((PetscObject)A)->prefix);CHKERRQ(ierr);
@@ -924,6 +996,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",MatISSetLocalMat_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetMPIXAIJ_C",MatISGetMPIXAIJ_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
