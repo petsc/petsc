@@ -322,6 +322,7 @@ PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
   ls->data = (void*)ctx;
   ls->initstep = 1.0;
   ls->ops->setup=0;
+  ls->ops->reset=0;
   ls->ops->apply=TaoLineSearchApply_MT;
   ls->ops->view =TaoLineSearchView_MT;
   ls->ops->destroy=TaoLineSearchDestroy_MT;
