@@ -127,6 +127,8 @@ PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM, PetscInt, cons
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, const PetscScalar[], InsertMode);
 
+PETSC_EXTERN PetscErrorCode DMPlexComputeResidualFEM_Internal(DM, Vec, Vec, Vec, void *);
+
 #undef __FUNCT__
 #define __FUNCT__ "DMPlex_Invert2D_Internal"
 PETSC_STATIC_INLINE void DMPlex_Invert2D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)

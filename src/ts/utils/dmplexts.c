@@ -506,3 +506,31 @@ PetscErrorCode DMPlexTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM dm, 
   ierr = DMTSSetRHSFunctionLocal(dm, func, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexTSComputeIFunctionFEM"
+/*@
+  DMPlexTSComputeIFunctionFEM - Form the local residual F from the local input X using pointwise functions specified by the user
+
+  Input Parameters:
++ dm - The mesh
+. t - The time
+. X  - Local solution
+. X_t - Local solution time derivative, or NULL
+- user - The user context
+
+  Output Parameter:
+. F  - Local output vector
+
+  Level: developer
+
+.seealso: DMPlexComputeJacobianActionFEM()
+@*/
+PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec X, Vec X_t, Vec F, void *user)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexComputeResidualFEM_Internal(dm, X, X_t, F, user);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
