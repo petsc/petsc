@@ -179,8 +179,13 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateCoarsePointIS(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetNumFaceVertices(DM, PetscInt, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexGetOrientedFace(DM, PetscInt, PetscInt, const PetscInt [], PetscInt, PetscInt [], PetscInt [], PetscInt [], PetscBool *);
 
+/* Geometry Support */
+PETSC_EXTERN PetscErrorCode DMPlexGetMinRadius(DM, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMPlexSetMinRadius(DM, PetscReal);
+
 /* FVM Support */
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFVM(DM, PetscInt, PetscReal *, PetscReal [], PetscReal []);
+PETSC_EXTERN PetscErrorCode DMPlexComputeGeometryFVM(DM, Vec *, Vec *);
 
 /* FEM Support */
 PETSC_EXTERN PetscErrorCode DMPlexCreateSection(DM, PetscInt, PetscInt,const PetscInt [],const PetscInt [], PetscInt,const PetscInt [],const IS [], IS, PetscSection *);
