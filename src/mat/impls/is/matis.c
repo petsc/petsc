@@ -17,6 +17,41 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISSetPreallocation"
+/*
+   MatISSetPreallocation - Preallocates memory for a MATIS parallel matrix.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  B - the matrix
+.  d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
+           (same value is used for all local rows)
+.  d_nnz - array containing the number of nonzeros in the various rows of the
+           DIAGONAL portion of the local submatrix (possibly different for each row)
+           or NULL, if d_nz is used to specify the nonzero structure.
+           The size of this array is equal to the number of local rows, i.e 'm'.
+           For matrices that will be factored, you must leave room for (and set)
+           the diagonal entry even if it is zero.
+.  o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
+           submatrix (same value is used for all local rows).
+-  o_nnz - array containing the number of nonzeros in the various rows of the
+           OFF-DIAGONAL portion of the local submatrix (possibly different for
+           each row) or NULL, if o_nz is used to specify the nonzero
+           structure. The size of this array is equal to the number
+           of local rows, i.e 'm'.
+
+   If the *_nnz parameter is given then the *_nz parameter is ignored
+
+   Level: intermediate
+
+   Notes: This function has the same interface as the MPIAIJ preallocation routine in order to simplify the transition
+          from the asssembled format to the unassembled one. It overestimates the preallocation of MATIS local
+          matrices; for exact preallocation, the user should set the preallocation directly on local matrix objects.
+
+.keywords: matrix
+
+.seealso: MatCreate(), MatCreateIS(), MatMPIAIJSetPreallocation(), MatISGetLocalMat()
+@*/
 PetscErrorCode  MatISSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   PetscErrorCode ierr;
