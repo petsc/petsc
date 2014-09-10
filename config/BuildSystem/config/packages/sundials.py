@@ -3,12 +3,13 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials-2.5.0.tar.gz']
-    self.functions = ['CVSpgmr']
-    self.includes  = ['sundials/sundials_nvector.h']
-    self.liblist   = [['libsundials_cvode.a','libsundials_nvecserial.a','libsundials_nvecparallel.a']] #currently only support CVODE
-    self.license   = 'http://www.llnl.gov/CASC/sundials/download/download.html'
-    self.needsMath = 1
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials-2.5.0p1.tar.gz']
+    self.functions    = ['CVSpgmr']
+    self.includes     = ['sundials/sundials_nvector.h']
+    self.liblist      = [['libsundials_cvode.a','libsundials_nvecserial.a','libsundials_nvecparallel.a']] #currently only support CVODE
+    self.license      = 'http://www.llnl.gov/CASC/sundials/download/download.html'
+    self.needsMath    = 1
+    self.parallelMake = 0  # uses recursive make so better be safe and not use make -j np
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
