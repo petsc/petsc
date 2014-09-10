@@ -230,6 +230,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ierr = TaoMonitor(tao,iter++,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),
                             qp->pinfeas, step, &reason);CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING) break;
+    tao->ksp_its=0;
 
     /*
        Dual Infeasibility Direction should already be in the right
@@ -281,6 +282,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ierr = KSPSolve(tao->ksp, qp->RHS, tao->stepdirection);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
     tao->ksp_its+=its;
+    tao->ksp_tot_its+=its;
 
     ierr = VecScale(qp->DiagAxpy, -1.0);CHKERRQ(ierr);
     ierr = MatDiagonalSet(tao->hessian, qp->DiagAxpy, ADD_VALUES);CHKERRQ(ierr);
@@ -331,6 +333,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
       ierr = KSPSolve(tao->ksp, qp->RHS2, tao->stepdirection);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
+      tao->ksp_tot_its+=its;
 
       ierr = MatDiagonalSet(tao->hessian, qp->HDiag, INSERT_VALUES);CHKERRQ(ierr);
       ierr = QPComputeStepDirection(qp,tao);CHKERRQ(ierr);

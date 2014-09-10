@@ -87,6 +87,6 @@ Tao Object: 1 MPI processes
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
   Residual in Function/Gradient:=5.48164e-06
   Objective value=2384.48
-  total number of iterations=40,                          (max: 2000)
+  total number of iterations=40,                          (max: 100)
   total number of function evaluations=44,                  max: 4000
   Solution converged:    ||g(X)||/|f(X)| <= grtol

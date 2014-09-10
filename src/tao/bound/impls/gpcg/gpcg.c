@@ -218,7 +218,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
       ierr = KSPSolve(tao->ksp,gpcg->R,gpcg->DXFree);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
-
+      tao->ksp_tot_its+=its;
       ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
       ierr = VecISAXPY(tao->stepdirection,gpcg->Free_Local,1.0,gpcg->DXFree);CHKERRQ(ierr);
 
