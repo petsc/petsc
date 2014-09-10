@@ -4014,7 +4014,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_clique(Mat,MatFactorType,Mat*);
    Not Collective
 
    Input Parameter:
-.  mat - a MATSEQDENSE matrix
+.  mat - a MATSEQAIJ matrix
 
    Output Parameter:
 .   array - pointer to the data
@@ -4040,7 +4040,7 @@ PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
    Not Collective
 
    Input Parameter:
-.  mat - a MATSEQDENSE matrix
+.  mat - a MATSEQAIJ matrix
 
    Output Parameter:
 .   nz - the maximum number of nonzeros in any row
@@ -4061,12 +4061,12 @@ PetscErrorCode  MatSeqAIJGetMaxRowNonzeros(Mat A,PetscInt *nz)
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqAIJRestoreArray"
 /*@C
-   MatSeqAIJRestoreArray - returns access to the array where the data for a SeqSeqAIJ matrix is stored obtained by MatSeqAIJGetArray()
+   MatSeqAIJRestoreArray - returns access to the array where the data for a MATSEQAIJ matrix is stored obtained by MatSeqAIJGetArray()
 
    Not Collective
 
    Input Parameters:
-.  mat - a MATSEQDENSE matrix
+.  mat - a MATSEQAIJ matrix
 .  array - pointer to the data
 
    Level: intermediate

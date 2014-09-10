@@ -82,7 +82,10 @@ iter =  40, Function value 2384.48, Residual: 5.48164e-06
    2384.4769950856239       5.48163666544335195E-006
 Tao Object: 1 MPI processes
   type: pounders
-      Subproblem solver: tron
+      initial delta: 0.1
+      final delta: 0.0015625
+      model points: 7
+      subproblem solver: tron
   convergence tolerances: fatol=0,   frtol=0
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
   Residual in Function/Gradient:=5.48164e-06

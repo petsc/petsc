@@ -52,7 +52,7 @@ PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine
 
    Input Parameters:
 +     mmat - a MATLAB sparse matris
--     mat - a already created MATSEQAIJ
+-     mat - an already created MATSEQAIJ
 
   Level: intermediate
 
