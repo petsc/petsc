@@ -186,6 +186,7 @@ PETSC_EXTERN PetscErrorCode TaoGetOptionsPrefix(Tao, const char *p[]);
 PETSC_EXTERN PetscErrorCode TaoResetStatistics(Tao);
 
 PETSC_EXTERN PetscErrorCode TaoGetKSP(Tao, KSP*);
+PETSC_EXTERN PetscErrorCode TaoGetLinearSolveIterations(Tao,PetscInt *);
 
 #include <petsctaolinesearch.h>
 PETSC_EXTERN PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch, Tao);
