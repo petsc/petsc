@@ -76,6 +76,7 @@ PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
 {
   PetscFunctionBegin;
   ls->ops->setup = 0;
+  ls->ops->reset = 0;
   ls->ops->apply = TaoLineSearchApply_Unit;
   ls->ops->view = TaoLineSearchView_Unit;
   ls->ops->destroy = TaoLineSearchDestroy_Unit;
