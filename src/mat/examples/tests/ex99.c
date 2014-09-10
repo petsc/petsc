@@ -141,7 +141,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g\n",nzeros[1],(double)ntols[1]);CHKERRQ(ierr);
   }
 
-  /* Convert aij matrix to MatSeqDense for LAPACK */
+  /* Convert aij matrix to MATSEQDENSE for LAPACK */
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A_dense);CHKERRQ(ierr);

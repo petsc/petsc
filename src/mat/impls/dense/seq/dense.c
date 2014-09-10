@@ -1482,7 +1482,7 @@ PetscErrorCode MatDenseRestoreArray_SeqDense(Mat A,PetscScalar *array[])
    Not Collective
 
    Input Parameter:
-.  mat - a MATSEQDENSE matrix
+.  mat - a MATSEQDENSE or MATMPIDENSE matrix
 
    Output Parameter:
 .   array - pointer to the data
@@ -1503,12 +1503,12 @@ PetscErrorCode  MatDenseGetArray(Mat A,PetscScalar **array)
 #undef __FUNCT__
 #define __FUNCT__ "MatDenseRestoreArray"
 /*@C
-   MatDenseRestoreArray - returns access to the array where the data for a SeqDense matrix is stored obtained by MatDenseGetArray()
+   MatDenseRestoreArray - returns access to the array where the data for a dense matrix is stored obtained by MatDenseGetArray()
 
    Not Collective
 
    Input Parameters:
-.  mat - a MATSEQDENSE matrix
+.  mat - a MATSEQDENSE or MATMPIDENSE matrix
 .  array - pointer to the data
 
    Level: intermediate
