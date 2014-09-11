@@ -875,9 +875,19 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     /*  final criticality test */
     ierr = TaoMonitor(tao, iter, minnorm, gnorm, 0.0, step, &reason);CHKERRQ(ierr);
     /* test for repeated model */
-    same = (mfqP->nmodelpoints==mfqP->last_nmodelpoints);
+    if (mfqP->nmodelpoints==mfqP->last_nmodelpoints) {
+      same = PETSC_TRUE;
+    } else {
+      same = PETSC_FALSE;
+    }
     for (i=0;i<mfqP->nmodelpoints;i++) {
-      same = same && (mfqP->model_indices[i] == mfqP->last_model_indices[i]); 
+      if (same) {
+        if (mfqP->model_indices[i] == mfqP->last_model_indices[i]) {
+          same = PETSC_TRUE;
+        } else {
+          same = PETSC_FALSE;
+        }
+      }
       mfqP->last_model_indices[i] = mfqP->model_indices[i];
     }
     mfqP->last_nmodelpoints = mfqP->nmodelpoints;
