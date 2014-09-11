@@ -486,6 +486,16 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = dmParallel
         return sf
 
+    def distributeOverlap(self, LGMap renumbering not None, overlap=0):
+        cdef PetscDM dmOverlap = NULL
+        cdef SF sf = SF()
+        cdef PetscInt coverlap = asInt(overlap)
+        CHKERR( DMPlexDistributeOverlap(self.dm, coverlap,
+                                        renumbering.lgm,
+                                        &sf.sf, &dmOverlap) )
+        PetscCLEAR(self.obj); self.dm = dmOverlap
+        return sf
+
     def createSection(self, numComp, numDof, bcField=None, bcPoints=None, IS perm=None):
         # topological dimension
         cdef PetscInt dim = 0

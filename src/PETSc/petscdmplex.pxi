@@ -109,6 +109,7 @@ cdef extern from * nogil:
     #int DMPlexCreatePartition(PetscDM,const_char[],PetscInt,PetscBool,PetscSection*,PetscIS*,PetscSection*,PetscIS*)
     #int DMPlexCreatePartitionClosure(PetscDM,PetscSection,PetscIS,PetscSection*,PetscIS*)
     int DMPlexDistribute(PetscDM,PetscInt,PetscSF*,PetscDM*)
+    int DMPlexDistributeOverlap(PetscDM,PetscInt,PetscLGMap,PetscSF*,PetscDM*)
     #int DMPlexDistributeField(PetscDM,PetscSF,PetscSection,Vec,PetscSection,Vec)
     #int DMPlexDistributeData(PetscDM,PetscSF,PetscSection,MPI_Datatype,void*,PetscSection,void**)
 
