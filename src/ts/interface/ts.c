@@ -835,7 +835,7 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
 .keywords: TS, timestep, set, right-hand-side, function
 
-.seealso: TSSetRHSJacobian(), TSSetIJacobian()
+.seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSSetIFunction()
 @*/
 PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
@@ -966,31 +966,20 @@ PetscErrorCode  TSSetForcingFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,
          Jacobian evaluation routine (may be NULL)
 
    Calling sequence of func:
-$     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
+$     func (TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
 
 +  t - current timestep
 .  u - input vector
 .  Amat - (approximate) Jacobian matrix
 .  Pmat - matrix from which preconditioner is to be constructed (usually the same as Amat)
-.  flag - flag indicating information about the preconditioner matrix
-          structure (same as flag in KSPSetOperators())
 -  ctx - [optional] user-defined context for matrix evaluation routine
 
-   Notes:
-   See KSPSetOperators() for important information about setting the flag
-   output parameter in the routine func().  Be sure to read this information!
-
-   The routine func() takes Mat * as the matrix arguments rather than Mat.
-   This allows the matrix evaluation routine to replace A and/or B with a
-   completely new matrix structure (not just different matrix elements)
-   when appropriate, for instance, if the nonzero structure is changing
-   throughout the global iterations.
 
    Level: beginner
 
 .keywords: TS, timestep, set, right-hand-side, Jacobian
 
-.seealso: SNESComputeJacobianDefaultColor(), TSSetRHSFunction(), TSRHSJacobianSetReuse()
+.seealso: SNESComputeJacobianDefaultColor(), TSSetRHSFunction(), TSRHSJacobianSetReuse(), TSSetIJacobian()
 
 @*/
 PetscErrorCode  TSSetRHSJacobian(TS ts,Mat Amat,Mat Pmat,TSRHSJacobian f,void *ctx)
@@ -1165,7 +1154,7 @@ PetscErrorCode TSGetRHSFunction(TS ts,Vec *r,TSRHSFunction *func,void **ctx)
 #define __FUNCT__ "TSSetIJacobian"
 /*@C
    TSSetIJacobian - Set the function to compute the matrix dF/dU + a*dF/dU_t where F(t,U,U_t) is the function
-        you provided with TSSetIFunction().
+        provided with TSSetIFunction().
 
    Logically Collective on TS
 
@@ -1177,7 +1166,7 @@ PetscErrorCode TSGetRHSFunction(TS ts,Vec *r,TSRHSFunction *func,void **ctx)
 -  ctx - user-defined context for private data for the Jacobian evaluation routine (may be NULL)
 
    Calling sequence of f:
-$  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *Amat,Mat *Pmat,MatStructure *flag,void *ctx);
+$  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat Pmat,void *ctx);
 
 +  t    - time at step/stage being solved
 .  U    - state vector
@@ -1185,8 +1174,6 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *Amat,Mat *Pmat,MatStructur
 .  a    - shift
 .  Amat - (approximate) Jacobian of F(t,U,W+a*U), equivalent to dF/dU + a*dF/dU_t
 .  Pmat - matrix used for constructing preconditioner, usually the same as Amat
-.  flag - flag indicating information about the preconditioner matrix
-          structure (same as flag in KSPSetOperators())
 -  ctx  - [optional] user-defined context for matrix evaluation routine
 
    Notes:
@@ -1203,7 +1190,7 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *Amat,Mat *Pmat,MatStructur
 
 .keywords: TS, timestep, DAE, Jacobian
 
-.seealso: TSSetIFunction(), TSSetRHSJacobian(), SNESComputeJacobianDefaultColor(), SNESComputeJacobianDefault()
+.seealso: TSSetIFunction(), TSSetRHSJacobian(), SNESComputeJacobianDefaultColor(), SNESComputeJacobianDefault(), TSSetRHSFunction()
 
 @*/
 PetscErrorCode  TSSetIJacobian(TS ts,Mat Amat,Mat Pmat,TSIJacobian f,void *ctx)
