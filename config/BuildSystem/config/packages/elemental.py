@@ -39,7 +39,13 @@ class Configure(config.package.CMakePackage):
        raise RuntimeError('Sorry, Elemental does not compile with Oracle/Solaris/Sun compilers')
     args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
     self.framework.popLanguage()
+
+    if hasattr(self.compilers, 'FC'):
+      self.framework.pushLanguage('FC')
+      args.append('-DMPI_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
+      self.framework.popLanguage()
     return args
+
 
 
 

@@ -1090,7 +1090,7 @@ class CMakePackage(Package):
     cflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()
-    if hasattr(self.compilers, 'Cxx'):
+    if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
       args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.framework.getCompilerFlags()+'"')
@@ -1098,8 +1098,8 @@ class CMakePackage(Package):
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
-      args.append('-DCMAKE_FORTRAN_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DCMAKE_FORTRAN_FLAGS:STRING="'+self.framework.getCompilerFlags()+'"')
+      args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
+      args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
     return args
 
