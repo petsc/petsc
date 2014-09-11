@@ -38,6 +38,9 @@ int main(int argc, char *argv[])
   char           fname[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN] = "";
 
   PetscInitialize(&argc,&argv,NULL,help);
+#if defined(PETSC_USE_64BIT_INDICES)
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"This example only works with 32 bit indices\n");
+#endif
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
