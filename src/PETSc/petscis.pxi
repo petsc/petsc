@@ -65,6 +65,7 @@ cdef extern from * nogil:
 
     int ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscCopyMode,PetscLGMap*)
     int ISLocalToGlobalMappingCreateIS(PetscIS,PetscLGMap*)
+    int ISLocalToGlobalMappingCreateSF(PetscSF,PetscInt,PetscLGMap*)
     int ISLocalToGlobalMappingView(PetscLGMap,PetscViewer)
     int ISLocalToGlobalMappingDestroy(PetscLGMap*)
     int ISLocalToGlobalMappingGetSize(PetscLGMap,PetscInt*)
