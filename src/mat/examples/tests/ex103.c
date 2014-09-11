@@ -2,7 +2,7 @@ static char help[] = "Test MatSetValues() by converting MATDENSE to MATELEMENTAL
 Modified from the code contributed by Yaning Liu @lbl.gov \n\n";
 /*
  Example:
-   mpiexec -n <np> ./ex103 -mat_view
+   mpiexec -n <np> ./ex103 
    mpiexec -n <np> ./ex103 -mat_type elemental -mat_view
 */
     
@@ -48,7 +48,11 @@ int main(int argc, char** argv)
 
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      v[i*ncols+j] = (PetscScalar)rank; 
+      if (size == 1) {
+        v[i*ncols+j] = (PetscScalar)(i+j);  
+      } else {
+        v[i*ncols+j] = (PetscScalar)rank;
+      }
     }
   }
   ierr = MatSetValues(mat_dense,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -65,20 +69,14 @@ int main(int argc, char** argv)
     ierr = PetscObjectTypeCompare((PetscObject)mat_dense,MATMPIDENSE,&isDense);CHKERRQ(ierr);
   }
   if (isDense) {
-    //ierr = MatConvert(mat_dense, MATELEMENTAL, MAT_INITIAL_MATRIX, &mat_elemental);CHKERRQ(ierr);
-    ierr = MatCreate(PETSC_COMM_WORLD, &mat_elemental);CHKERRQ(ierr);
-    ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-    ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(mat_elemental);CHKERRQ(ierr);
-    ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
-    for (i=0; i<nrows; i++) {
-      for (j=0; j<ncols; j++) {
-        /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
-        ierr = MatSetValues(mat_elemental,1,&rows[i],1,&cols[j],v+i*ncols+j,ADD_VALUES);CHKERRQ(ierr);
-      }
-    }
-    ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatConvert(mat_dense, MATELEMENTAL, MAT_INITIAL_MATRIX, &mat_elemental);CHKERRQ(ierr);
+    if (!rank) printf("\n Outplace MatConvert, mat_elemental:\n");
+    ierr = MatView(mat_elemental,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+    /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
+    if (!rank) printf("\n Inplace MatConvert:\n");
+    ierr = MatConvert(mat_dense, MATELEMENTAL, MAT_REUSE_MATRIX, &mat_dense);CHKERRQ(ierr);
+    ierr = MatView(mat_dense,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = MatDestroy(&mat_elemental);CHKERRQ(ierr); 
   }
 
