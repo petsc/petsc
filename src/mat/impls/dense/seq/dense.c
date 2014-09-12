@@ -2227,9 +2227,6 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqDense_Elemental(Mat A, MatType newtype
   PetscInt       M=A->rmap->N,N=A->cmap->N,i,j,k,*rows,*cols;
 
   PetscFunctionBegin;
-#if !defined(PETSC_HAVE_ELEMENTAL)
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This function requires ELEMENTAL");
-#endif
   ierr = PetscMalloc3(M*N,&v_colwise,M,&rows,N,&cols);CHKERRQ(ierr);
   ierr = MatDenseGetArray(A,&array);CHKERRQ(ierr);
   /* convert column-wise array into row-wise v_colwise, see MatSetValues_Elemental() */
