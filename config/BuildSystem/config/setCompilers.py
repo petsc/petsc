@@ -636,7 +636,7 @@ class Configure(config.base.Configure):
       yield self.framework.argDB['CUDAPP']
     else:
       if hasattr(self, 'CUDAC'):
-        yield self.CUDAC+' -arch=sm_13 -E'
+        yield self.CUDAC+' -arch=sm_20 -E'
     return
 
   def checkCUDAPreprocessor(self):
