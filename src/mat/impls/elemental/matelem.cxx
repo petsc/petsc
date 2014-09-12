@@ -854,6 +854,38 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqAIJ_Elemental"
+PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat               mat_elemental;
+  PetscErrorCode    ierr;
+  PetscInt          M=A->rmap->N,N=A->cmap->N,row,ncols;
+  const PetscInt    *cols;
+  const PetscScalar *vals;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
+  ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  for (row=0; row<M; row++) {
+    ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+    /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
+    ierr = MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
+  } else {
+    *newmat = mat_elemental;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Elemental"
 static PetscErrorCode MatDestroy_Elemental(Mat A)
 {

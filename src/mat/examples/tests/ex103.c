@@ -20,7 +20,7 @@ int main(int argc, char** argv)
   const PetscInt *rows,*cols;
   PetscScalar    *v;
   MatType        type;
-  PetscBool      isDense;
+  PetscBool      isDense,isAIJ;
 
   PetscInitialize(&argc, &argv, (char*)0, help);
 #if !defined(PETSC_HAVE_ELEMENTAL)
@@ -65,10 +65,13 @@ int main(int argc, char** argv)
   ierr = MatGetType(mat_dense,&type);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectTypeCompare((PetscObject)mat_dense,MATSEQDENSE,&isDense);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)mat_dense,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectTypeCompare((PetscObject)mat_dense,MATMPIDENSE,&isDense);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)mat_dense,MATMPIAIJ,&isAIJ);CHKERRQ(ierr);
   }
-  if (isDense) {
+
+  if (isDense || isAIJ) {
     ierr = MatConvert(mat_dense, MATELEMENTAL, MAT_INITIAL_MATRIX, &mat_elemental);CHKERRQ(ierr);
     if (!rank) printf("\n Outplace MatConvert, mat_elemental:\n");
     ierr = MatView(mat_elemental,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
