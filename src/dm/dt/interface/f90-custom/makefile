@@ -4,11 +4,11 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zplexf90.c zplexgeometryf90.c
+SOURCEC  = zdtf90.c zdtdsf90.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscdm
-LOCDIR   = src/dm/impls/plex/f90-custom/
+LOCDIR   = src/dm/dt/interface/f90-custom/
 
 
 include ${PETSC_DIR}/conf/variables

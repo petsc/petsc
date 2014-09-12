@@ -804,6 +804,22 @@ PetscErrorCode PetscDSGetBdFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetTabulation"
+/*@C
+  PetscDSGetTabulation - Return the basis tabulation at quadrature points for the volume discretization
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameters:
++ basis - The basis function tabulation at quadrature points
+- basisDer - The basis function derivative tabulation at quadrature points
+
+  Level: intermediate
+
+.seealso: PetscDSGetBdTabulation(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscReal ***basis, PetscReal ***basisDer)
 {
   PetscErrorCode ierr;
@@ -818,6 +834,22 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscReal ***basis, PetscReal 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetBdTabulation"
+/*@C
+  PetscDSGetBdTabulation - Return the basis tabulation at quadrature points for the boundary discretization
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameters:
++ basis - The basis function tabulation at quadrature points
+- basisDer - The basis function derivative tabulation at quadrature points
+
+  Level: intermediate
+
+.seealso: PetscDSGetTabulation(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetBdTabulation(PetscDS prob, PetscReal ***basis, PetscReal ***basisDer)
 {
   PetscErrorCode ierr;

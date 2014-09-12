@@ -1,16 +1,18 @@
+#requiresdefine   'PETSC_HAVE_FORTRAN'
 
-#requiresdefine 'PETSC_USING_F90'
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zplexf90.c zplexgeometryf90.c
+SOURCEC  = zdtf.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscdm
-LOCDIR   = src/dm/impls/plex/f90-custom/
-
+MANSEC   = DM
+LOCDIR   = src/dm/dt/interface/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
+
+
