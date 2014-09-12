@@ -11,6 +11,11 @@ class Configure(config.package.GNUPackage):
     self.includes          = []
     return
 
+  def setupDependencies(self, framework):
+    config.package.GNUPackage.setupDependencies(self, framework)
+    self.petscdir       = framework.require('PETSc.utilities.petscdir', self.setCompilers)
+    return
+
   def Install(self):
     try:
       self.installDirProvider.printSudoPasswordMessage(1)
@@ -37,7 +42,7 @@ class Configure(config.package.GNUPackage):
     try:
       self.logPrintBox('Compiling Ctetgen; this may take several minutes')
       # uses the regular PETSc library builder and then moves result 
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('rm -rf '+os.path.join(self.installDirProvider.confDir,'lib','libpetsc.a')+' && cd '+self.packageDir+' && '+self.make.make+' && '+self.installDirProvider.installSudo+'mv '+os.path.join(self.installDirProvider.confDir,'lib','libpetsc.a')+' '+os.path.join(self.installDir,'lib','libctetgen.a'),timeout=1000, log = self.framework.log)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('rm -rf '+os.path.join(self.installDirProvider.confDir,'lib','libpetsc.a')+' && cd '+self.packageDir+' && '+self.make.make+' PETSC_DIR='+self.petscdir.dir+' && '+self.installDirProvider.installSudo+'mv '+os.path.join(self.installDirProvider.confDir,'lib','libpetsc.a')+' '+os.path.join(self.installDir,'lib','libctetgen.a'),timeout=1000, log = self.framework.log)
       self.framework.log.write(output+err)
     except RuntimeError, e:
       raise RuntimeError('Error running make on Ctetgen: '+str(e))
