@@ -288,7 +288,6 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   const PetscScalar *facegeom, *cellgeom, *x, *lgrad;
   PetscScalar       *grad, *f, *uL, *uR, *fluxL, *fluxR;
   PetscReal         *vol, *cellPhi;
-  PetscBool          computeGradients;
   PetscInt           Nf, dim, pdim, fStart, fEnd, numFaces = 0, face, iface, cell, cStart, cEnd, cEndInterior;
   PetscErrorCode     ierr;
 
@@ -296,28 +295,30 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(locX,VEC_CLASSID,3);
   PetscValidHeaderSpecific(F,VEC_CLASSID,5);
-  ierr = DMPlexTSGetGeometryFVM(dm, &faceGeometry, &cellGeometry, NULL);CHKERRQ(ierr);
+  /* 1: Get sizes from dm and dmAux */
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetRiemannSolver(prob, 0, &riemann);CHKERRQ(ierr);
   ierr = PetscDSGetContext(prob, 0, &rctx);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = DMGetField(dm, 0, (PetscObject *) &fvm);CHKERRQ(ierr);
-  ierr = DMPlexTSGetGradientDM(dm, fvm, &dmGrad);CHKERRQ(ierr);
   ierr = PetscFVGetLimiter(fvm, &lim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
-  ierr = PetscFVGetComputeGradients(fvm, &computeGradients);CHKERRQ(ierr);
-  if (computeGradients) {
+  ierr = DMPlexGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  /* 2: Get geometric data */
+  ierr = DMPlexTSGetGeometryFVM(dm, &faceGeometry, &cellGeometry, NULL);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
+  ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
+  ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
+  /* 3: Get gradient data */
+  ierr = DMPlexTSGetGradientDM(dm, fvm, &dmGrad);CHKERRQ(ierr);
+  if (dmGrad) {
     ierr = DMGetGlobalVector(dmGrad, &Grad);CHKERRQ(ierr);
     ierr = VecZeroEntries(Grad);CHKERRQ(ierr);
     ierr = VecGetArray(Grad, &grad);CHKERRQ(ierr);
   }
-  ierr = DMPlexGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
-  ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX, &x);CHKERRQ(ierr);
   /* Count faces and reconstruct gradients */
   for (face = fStart; face < fEnd; ++face) {
@@ -331,7 +332,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
     ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
     if (ghost >= 0) continue;
     ++numFaces;
-    if (!computeGradients) continue;
+    if (!dmGrad) continue;
     ierr = DMPlexIsBoundaryPoint(dm, face, &boundary);CHKERRQ(ierr);
     if (boundary) continue;
     ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
@@ -353,7 +354,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, pdim, PETSC_REAL, &cellPhi);CHKERRQ(ierr);
-  for (cell = computeGradients && lim ? cStart : cEnd; cell < cEndInterior; ++cell) {
+  for (cell = dmGrad && lim ? cStart : cEnd; cell < cEndInterior; ++cell) {
     const PetscInt        *faces;
     const PetscScalar     *cx;
     const PetscFVCellGeom *cg;
@@ -398,8 +399,9 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
       for (d = 0; d < dim; ++d) cgrad[pd*dim+d] *= cellPhi[pd];
   }
   ierr = DMRestoreWorkArray(dm, pdim, PETSC_REAL, &cellPhi);CHKERRQ(ierr);
+  /* Handle boundary values */
   ierr = DMPlexInsertBoundaryValuesFVM_Static(dm, fvm, time, locX, Grad);CHKERRQ(ierr);
-  if (computeGradients) {
+  if (dmGrad) {
     ierr = VecRestoreArray(Grad, &grad);CHKERRQ(ierr);
     ierr = DMGetLocalVector(dmGrad, &locGrad);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dmGrad, Grad, INSERT_VALUES, locGrad);CHKERRQ(ierr);
@@ -424,7 +426,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
     ierr = DMPlexPointLocalRead(dmCell, cells[1], cellgeom, &cgR);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(dm, cells[0], x, &xL);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRead(dm, cells[1], x, &xR);CHKERRQ(ierr);
-    if (computeGradients) {
+    if (dmGrad) {
       PetscReal dxL[3], dxR[3];
 
       ierr = DMPlexPointLocalRead(dmGrad, cells[0], lgrad, &gL);CHKERRQ(ierr);
@@ -449,7 +451,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
     vol[iface*2+1] = cgR->volume;
     ++iface;
   }
-  if (computeGradients) {
+  if (dmGrad) {
     ierr = VecRestoreArrayRead(locGrad,&lgrad);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dmGrad, &locGrad);CHKERRQ(ierr);
   }
