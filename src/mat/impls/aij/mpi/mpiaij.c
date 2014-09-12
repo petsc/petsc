@@ -1188,6 +1188,9 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocationCSR_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpisbaij_C",NULL);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ELEMENTAL)
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_elemental_C",NULL);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -5461,6 +5464,9 @@ PetscErrorCode  MatGetCommunicationStructs(Mat A, Vec *lvec, PetscInt *colmap[],
 PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat,MatType,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJPERM(Mat,MatType,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat,MatType,MatReuse,Mat*);
+#if defined(PETSC_HAVE_ELEMENTAL)
+PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_MPIDense_MPIAIJ"
@@ -5618,6 +5624,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijperm_C",MatConvert_MPIAIJ_MPIAIJPERM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijcrl_C",MatConvert_MPIAIJ_MPIAIJCRL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpisbaij_C",MatConvert_MPIAIJ_MPISBAIJ);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ELEMENTAL)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_elemental_C",MatConvert_MPIAIJ_Elemental);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_mpidense_mpiaij_C",MatMatMult_MPIDense_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_mpidense_mpiaij_C",MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_mpidense_mpiaij_C",MatMatMultNumeric_MPIDense_MPIAIJ);CHKERRQ(ierr);

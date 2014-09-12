@@ -4,6 +4,7 @@ Modified from the code contributed by Yaning Liu @lbl.gov \n\n";
  Example:
    mpiexec -n <np> ./ex103 
    mpiexec -n <np> ./ex103 -mat_type elemental -mat_view
+   mpiexec -n <np> ./ex103 -mat_type aij 
 */
     
 #include <petscmat.h>
