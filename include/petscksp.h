@@ -153,22 +153,23 @@ PETSC_EXTERN PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscRe
 
 /*E
 
-  KSPFCGTruncationStrategy - Define how many stored directions are used to orthogonalize in FCG
+  KSPFCGTruncationType - Define how stored directions are used to orthogonalize in FCG
 
-  KSP_FCG_TRUNCATION_STRATEGY_STANDARD uses all (up to mmax) stored directions
-  KSP_FCG_TRUNCATION_STRATEGY_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
+  KSP_FCG_TRUNCATION_TYPE_STANDARD uses all (up to mmax) stored directions
+  KSP_FCG_TRUNCATION_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
 
-.seealso : KSPFCG,KSPFCGSetTruncationStrategy(),KSPFCGGetTruncationStrategy()
+.seealso : KSPFCG,KSPFCGSetTruncationType(),KSPFCGGetTruncationType()
 
 E*/
-typedef enum {KSP_FCG_TRUNCATION_STRATEGY_STANDARD,KSP_FCG_TRUNCATION_STRATEGY_NOTAY} KSPFCGTruncationStrategy;
+typedef enum {KSP_FCG_TRUNCATION_TYPE_STANDARD,KSP_FCG_TRUNCATION_TYPE_NOTAY} KSPFCGTruncationType;
+PETSC_EXTERN const char *const KSPFCGTruncationTypes[];
 
 PETSC_EXTERN PetscErrorCode KSPFCGSetMmax(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPFCGGetMmax(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPFCGSetNprealloc(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPFCGGetNprealloc(KSP,PetscInt*);
-PETSC_EXTERN PetscErrorCode KSPFCGSetTruncationStrategy(KSP,KSPFCGTruncationStrategy);
-PETSC_EXTERN PetscErrorCode KSPFCGGetTruncationStrategy(KSP,KSPFCGTruncationStrategy*);
+PETSC_EXTERN PetscErrorCode KSPFCGSetTruncationType(KSP,KSPFCGTruncationType);
+PETSC_EXTERN PetscErrorCode KSPFCGGetTruncationType(KSP,KSPFCGTruncationType*);
 
 PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt*);

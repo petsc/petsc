@@ -934,7 +934,7 @@ runex29:
 	   ${RM} -f ex29_1.tmp
 
 runex29_2:
-	-@${MPIEXEC} -n 1 ./ex29  -bc_type neumann -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 8 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero > ex29_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex29  -bc_type neumann -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -da_refine 8 -mg_coarse_pc_factor_shift_type nonzero > ex29_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex29_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex29_2.tmp

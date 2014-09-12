@@ -1,16 +1,16 @@
 /*
     This file implements the FCG (Flexible Conjugate Gradient) method
-    Reference:  Notay, 2000
 
-    Contributed by Patrick Sanan
- */
+*/
 
 #include <../src/ksp/ksp/impls/fcg/fcgimpl.h>       /*I  "petscksp.h"  I*/
+
+const char *const KSPFCGTruncationTypes[]     = {"STANDARD","NOTAY","KSPFCGTrunctionTypes","KSP_FCG_TRUNCATION_TYPE_",0};
 
 #define KSPFCG_DEFAULT_MMAX 30
 #define KSPFCG_DEFAULT_NPREALLOC 10
 #define KSPFCG_DEFAULT_VECB 5
-#define KSPFCG_DEFAULT_TRUNCSTRAT KSP_FCG_TRUNCATION_STRATEGY_NOTAY
+#define KSPFCG_DEFAULT_TRUNCSTRAT KSP_FCG_TRUNCATION_TYPE_NOTAY
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPAllocateVectors_FCG"
@@ -20,10 +20,10 @@ static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, Pets
   PetscInt        i;
   KSP_FCG         *fcg;
   PetscInt        nnewvecs, nvecsprev;
-  
+
   PetscFunctionBegin;
   fcg = (KSP_FCG*)ksp->data;
-  
+
   /* Allocate enough new vectors to add chunksize new vectors, reach nvecsneedtotal, or to reach mmax+1, whichever is smallest */
   if(fcg->nvecs < PetscMin(fcg->mmax+1,nvecsneeded)){
     nvecsprev = fcg->nvecs;
@@ -54,10 +54,10 @@ PetscErrorCode    KSPSetUp_FCG(KSP ksp)
   PetscFunctionBegin;
   fcg = (KSP_FCG*)ksp->data;
 
-  /* Allocate "standard" work vectors (not including the basis and transformed basis vectors) */ 
+  /* Allocate "standard" work vectors (not including the basis and transformed basis vectors) */
   ierr = KSPSetWorkVecs(ksp,nworkstd);CHKERRQ(ierr);
-  
-  /* Allocated space for pointers to additional work vectors 
+
+  /* Allocated space for pointers to additional work vectors
    note that mmax is the number of previous directions, so we add 1 for the current direction,
    and an extra 1 for the prealloc (which might be empty) */
   ierr = PetscMalloc5(
@@ -71,11 +71,11 @@ PetscErrorCode    KSPSetUp_FCG(KSP ksp)
     (fcg->mmax + 1) * 2 * sizeof(Vec*) +
     (fcg->mmax + 1) * 2 * sizeof(Vec**) +
     (fcg->mmax + 2)     * sizeof(PetscInt)
-  );CHKERRQ(ierr); 
-  
+  );CHKERRQ(ierr);
+
   /* Preallocate additional work vectors */
   ierr = KSPAllocateVectors_FCG(ksp,fcg->nprealloc,fcg->nprealloc);CHKERRQ(ierr);
-   
+
   PetscFunctionReturn(0);
 }
 
@@ -92,7 +92,7 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
   Mat            Amat,Pmat;
 
   PetscFunctionBegin;
-  
+
 #define VecXDot(x,y,a) (((fcg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
 #define VecXMDot(a,b,c,d) (((fcg->type) == (KSP_CG_HERMITIAN)) ? VecMDot(a,b,c,d) : VecMTDot(a,b,c,d))
 
@@ -141,7 +141,7 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
     ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   }
   if (ksp->reason) PetscFunctionReturn(0);
-  
+
   /* Apply PC if not already done for convergence check */
   if(ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->normtype == KSP_NORM_NONE){
     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*   z <- Br         */
@@ -161,11 +161,11 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
 
     /* Compute a new column of P (Currently does not support modified G-S or iterative refinement)*/
     switch(fcg->truncstrat){
-      case KSP_FCG_TRUNCATION_STRATEGY_NOTAY :
-        mi = PetscMax(1,i%(fcg->mmax+1)); 
+      case KSP_FCG_TRUNCATION_TYPE_NOTAY :
+        mi = PetscMax(1,i%(fcg->mmax+1));
         break;
-      case KSP_FCG_TRUNCATION_STRATEGY_STANDARD :
-        mi = fcg->mmax; 
+      case KSP_FCG_TRUNCATION_TYPE_STANDARD :
+        mi = fcg->mmax;
         break;
       default:
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unrecognized FCG Truncation Strategy");CHKERRQ(ierr);
@@ -230,7 +230,7 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;
-    
+
     /* Apply PC if not already done for convergence check */
     if(ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->normtype == KSP_NORM_NONE){
       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*   z <- Br         */
@@ -256,7 +256,7 @@ PetscErrorCode KSPDestroy_FCG(KSP ksp)
 
   PetscFunctionBegin;
   fcg = (KSP_FCG*)ksp->data;
-  
+
   /* Destroy "standard" work vecs */
   VecDestroyVecs(ksp->nwork,&ksp->work);
 
@@ -285,9 +285,9 @@ PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
 
-  if(fcg->truncstrat == KSP_FCG_TRUNCATION_STRATEGY_STANDARD){
+  if(fcg->truncstrat == KSP_FCG_TRUNCATION_TYPE_STANDARD){
     truncstr = "Using standard truncation strategy";
-  }else if(fcg->truncstrat == KSP_FCG_TRUNCATION_STRATEGY_NOTAY){
+  }else if(fcg->truncstrat == KSP_FCG_TRUNCATION_TYPE_NOTAY){
     truncstr = "Using Notay's truncation strategy";
   }else{
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCG truncation strategy");
@@ -306,11 +306,11 @@ PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "KSPFCGSetMmax"
 /*@
-  KSPFCGSetMmax - set the maximum number of previous directions FCG will store for orthogonalization 
-  
+  KSPFCGSetMmax - set the maximum number of previous directions FCG will store for orthogonalization
+
   Note: mmax + 1 directions are stored (mmax previous ones along with a current one)
-  and whether all are used in each iteration also depends on the truncation strategy 
-  (see KSPFCGSetTruncationStrategy)
+  and whether all are used in each iteration also depends on the truncation strategy
+  (see KSPFCGSetTruncationType())
 
   Logically Collective on KSP
 
@@ -323,7 +323,7 @@ PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
   Options Database:
 . -ksp_fcg_mmax <N>
 
-.seealso: KSPFCG, KSPFCGGetTruncationStrategy(), KSPFCGGetNprealloc()
+.seealso: KSPFCG, KSPFCGGetTruncationType(), KSPFCGGetNprealloc()
 @*/
 PetscErrorCode KSPFCGSetMmax(KSP ksp,PetscInt mmax)
 {
@@ -358,13 +358,13 @@ PetscErrorCode KSPFCGSetMmax(KSP ksp,PetscInt mmax)
 
 .keywords: KSP, FCG, truncation
 
-.seealso: KSPFCG, KSPFCGGetTruncationStrategy(), KSPFCGGetNprealloc(), KSPFCGSetMmax()
+.seealso: KSPFCG, KSPFCGGetTruncationType(), KSPFCGGetNprealloc(), KSPFCGSetMmax()
 @*/
 
 PetscErrorCode KSPFCGGetMmax(KSP ksp,PetscInt *mmax)
 {
   KSP_FCG        *fcg=(KSP_FCG*)ksp->data;;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   *mmax=fcg->mmax;
@@ -374,8 +374,8 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp,PetscInt *mmax)
 #undef __FUNCT__
 #define __FUNCT__ "KSPFCGSetNprealloc"
 /*@
-  KSPFCGSetNprealloc - set the number of directions to preallocate with FCG 
-  
+  KSPFCGSetNprealloc - set the number of directions to preallocate with FCG
+
   Logically Collective on KSP
 
   Input Parameters:
@@ -387,7 +387,7 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp,PetscInt *mmax)
   Options Database:
 . -ksp_fcg_nprealloc <N>
 
-.seealso: KSPFCG, KSPFCGGetTruncationStrategy(), KSPFCGGetNprealloc()
+.seealso: KSPFCG, KSPFCGGetTruncationType(), KSPFCGGetNprealloc()
 @*/
 PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 {
@@ -423,12 +423,12 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 
 .keywords: KSP, FCG, truncation
 
-.seealso: KSPFCG, KSPFCGGetTruncationStrategy(), KSPFCGSetNprealloc()
+.seealso: KSPFCG, KSPFCGGetTruncationType(), KSPFCGSetNprealloc()
 @*/
 PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 {
   KSP_FCG        *fcg=(KSP_FCG*)ksp->data;;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   *nprealloc = fcg->nprealloc;
@@ -436,14 +436,14 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPFCGSetTruncationStrategy"
+#define __FUNCT__ "KSPFCGSetTruncationType"
 /*@
-  KSPFCGSetTruncationStrategy - specify how many of its stored previous directions FCG uses during orthoganalization
-  
+  KSPFCGSetTruncationType - specify how many of its stored previous directions FCG uses during orthoganalization
+
   Logically Collective on KSP
 
-  KSP_FCG_TRUNCATION_STRATEGY_STANDARD uses all (up to mmax) stored directions
-  KSP_FCG_TRUNCATION_STRATEGY_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
+  KSP_FCG_TRUNCATION_TYPE_STANDARD uses all (up to mmax) stored directions
+  KSP_FCG_TRUNCATION_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -452,11 +452,11 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
   Level: intermediate
 
   Options Database:
-. -ksp_fcg_truncation_standard, -ksp_fcg_truncation_notay 
+. -ksp_fcg_truncation_type <standard, notay>
 
-  .seealso: KSPFCGTruncationStrategy, KSPFCGGetTruncationStrategy
+  .seealso: KSPFCGTruncationType, KSPFCGGetTruncationType
 @*/
-PetscErrorCode KSPFCGSetTruncationStrategy(KSP ksp,KSPFCGTruncationStrategy truncstrat)
+PetscErrorCode KSPFCGSetTruncationType(KSP ksp,KSPFCGTruncationType truncstrat)
 {
   KSP_FCG        *fcg=(KSP_FCG*)ksp->data;;
 
@@ -468,9 +468,9 @@ PetscErrorCode KSPFCGSetTruncationStrategy(KSP ksp,KSPFCGTruncationStrategy trun
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPFCGGetTruncationStrategy"
+#define __FUNCT__ "KSPFCGGetTruncationType"
 /*@
-  KSPFCGGetTruncationStrategy - get the truncation strategy employed by FCG 
+  KSPFCGGetTruncationType - get the truncation strategy employed by FCG
 
    Not Collective
 
@@ -481,18 +481,18 @@ PetscErrorCode KSPFCGSetTruncationStrategy(KSP ksp,KSPFCGTruncationStrategy trun
 .  truncstrat - the strategy type
 
   Options Database:
-. -ksp_fcg_truncation_standard, -ksp_fcg_truncation_notay 
+. -ksp_fcg_truncation_type <standard, notay>
 
    Level: intermediate
 
 .keywords: KSP, FCG, truncation
 
-.seealso: KSPFCG, KSPFCGSetTruncationStrategy, KSPFCGTruncationStrategy
+.seealso: KSPFCG, KSPFCGSetTruncationType, KSPFCGTruncationType
 @*/
-PetscErrorCode KSPFCGGetTruncationStrategy(KSP ksp,KSPFCGTruncationStrategy *truncstrat)
+PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCGTruncationType *truncstrat)
 {
   KSP_FCG        *fcg=(KSP_FCG*)ksp->data;;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   *truncstrat=fcg->truncstrat;
@@ -514,20 +514,13 @@ PetscErrorCode KSPSetFromOptions_FCG(KSP ksp)
   if (flg) { ierr = KSPFCGSetMmax(ksp,mmax);CHKERRQ(ierr); }
   ierr = PetscOptionsInt("-ksp_fcg_nprealloc","Number of directions to preallocate","KSPFCGSetNprealloc",fcg->nprealloc,&nprealloc,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPFCGSetNprealloc(ksp,nprealloc);CHKERRQ(ierr); }
-  ierr = PetscOptionsBoolGroupBegin("-ksp_fcg_truncation_standard","Use all stored vectors to orthogonalize","KSPFCGSetTruncationStrategy",&flg);CHKERRQ(ierr);
-  if(flg){
-    ierr = KSPFCGSetTruncationStrategy(ksp,KSP_FCG_TRUNCATION_STRATEGY_STANDARD);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsBoolGroupEnd("-ksp_fcg_truncation_notay","Use max(1,mod(i,mmax+1)) previous directions to orthogonalize","KSPFCGSetTruncationStrategy",&flg);CHKERRQ(ierr);
-  if(flg){
-    ierr = KSPFCGSetTruncationStrategy(ksp,KSP_FCG_TRUNCATION_STRATEGY_NOTAY);CHKERRQ(ierr);
-  }
+  ierr = PetscOptionsEnum("-ksp_fcg_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCGTruncationTypes,(PetscEnum)fcg->truncstrat,(PetscEnum*)&fcg->truncstrat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*MC
-  Implements the Flexible Conjugate Gradient method (FCG)
+      KSPCG - Implements the Flexible Conjugate Gradient method (FCG)
 
   References:
     1) Notay, Y.
@@ -537,17 +530,19 @@ PetscErrorCode KSPSetFromOptions_FCG(KSP ksp)
     2) Axelsson, O. and Vassilevski, P. S.
     "A Black Box Generalized Conjugate Gradient Solver with Inner Iterations and Variable-Step Preconditioning",
     SIAM J. Matrix Anal. Appl. 12:4, pp 625-44, 1991
- 
+
  Options Database Keys:
  -ksp_fcg_mmax <N>
  -ksp_fcg_nprealloc <N>
  -ksp_fcg_truncation_standard
  -ksp_fcg_trancation_notay
- 
+
+    Contributed by Patrick Sanan
+
  Supports left preconditioning only.
- 
- .seealso : KSPGCR, KSPFGMRES, KSPCG, KSPFCGSetMmax(), KSPFCGGetMmax(), KSPFCGSetNprealloc(), KSPFCGGetNprealloc(), KSPFCGSetTruncationStrategy(), KSPFCGGetTruncationStrategy()
- 
+
+ .seealso : KSPGCR, KSPFGMRES, KSPCG, KSPFCGSetMmax(), KSPFCGGetMmax(), KSPFCGSetNprealloc(), KSPFCGGetNprealloc(), KSPFCGSetTruncationType(), KSPFCGGetTruncationType()
+
 MC*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_FCG"
