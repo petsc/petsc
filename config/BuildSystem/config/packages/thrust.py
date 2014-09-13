@@ -24,15 +24,3 @@ class Configure(config.package.Package):
     yield os.path.join('/usr','local','cuda','thrust')
     return
 
-  def configure(self):
-    if self.cuda.found:
-      self.framework.argDB['with-'+self.package] = 1
-    else:
-      raise RuntimeError('thrust needs CUDA --- configure with --with-cuda=1')
-    config.package.Package.configure(self)
-
-  def configureLibrary(self):
-    '''Calls the regular package configureLibrary and then does an additional tests needed by Thrust'''
-    config.package.Package.configureLibrary(self)
-    return
-
