@@ -14,6 +14,7 @@
 
 #define KSPType character*(80)
 #define KSPCGType PetscEnum
+#define KSPFCGTruncationType PetscEnum
 #define KSPConvergedReason PetscEnum
 #define KSPNormType PetscEnum
 #define KSPGMRESCGSRefinementType PetscEnum
@@ -28,6 +29,7 @@
 #define KSPNASH 'nash'
 #define KSPSTCG 'stcg'
 #define KSPGLTR 'gltr'
+#define KSPFCG 'fcg'
 #define KSPGMRES 'gmres'
 #define KSPFGMRES 'fgmres'
 #define KSPLGMRES 'lgmres'
