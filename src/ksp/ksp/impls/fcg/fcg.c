@@ -520,7 +520,7 @@ PetscErrorCode KSPSetFromOptions_FCG(KSP ksp)
 }
 
 /*MC
-      KSPCG - Implements the Flexible Conjugate Gradient method (FCG)
+      KSPFCG - Implements the Flexible Conjugate Gradient method (FCG)
 
   References:
     1) Notay, Y.
