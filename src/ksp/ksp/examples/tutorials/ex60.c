@@ -9,7 +9,7 @@ Accepts an option -diagfunc [1,2,3] to select from different eigenvalue distribu
    Concepts: KSP^using nested solves
    Concepts: KSP^using flexible Krylov methods
    Concepts: PC^using PCShell to define custom PCs
-   Concepts: PC^using composite PCs 
+   Concepts: PC^using composite PCs
    Processors: n
 T*/
 
@@ -24,10 +24,10 @@ T*/
   The default behavior is to use a composite PC which combines (additively) an identity preconditioner with a preconditioner which
   replaces the input with scaled noise.
 
-  To test with an inner Krylov method instead of noise, use PCKSP,  e.g. 
+  To test with an inner Krylov method instead of noise, use PCKSP,  e.g.
   $PETSC_DIR/bin/petscmpiexec -n 2 ./ex60 -eta 0 -ksp_type fcg -pc_type ksp -ksp_ksp_rtol 1e-1 -ksp_ksp_type cg -ksp_pc_type none
   (note that eta is ignored here, and we specify the analogous quantity, the tolerance of the inner KSP solve,with -ksp_ksp_rtol)
-  
+
   To test by adding noise to a PC of your choosing (say ilu), run e.g.
   $PETSC_DIR/bin/petscmpiexec -n 2 ./ex60 -eta 0.1 -ksp_type fcg -sub_0_pc_type ilu
 
@@ -49,7 +49,7 @@ PetscErrorCode PCApply_Noise(PC pc,Vec xin,Vec xout)
   PetscErrorCode ierr;
   PCNoise_Ctx    *ctx;
   PetscReal      nrmin, nrmnoise;
-  
+
   PetscFunctionBeginUser;
   ierr = PCShellGetContext(pc,(void**)&ctx);CHKERRQ(ierr);
 
@@ -68,12 +68,12 @@ PetscErrorCode PCSetup_Noise(PC pc)
 {
   PetscErrorCode ierr;
   PCNoise_Ctx    *ctx;
-  
+
   PetscFunctionBeginUser;
   ierr = PCShellGetContext(pc,(void**)&ctx);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ctx->random);CHKERRQ(ierr);
   ierr = PetscRandomSetType(ctx->random,PETSCRAND);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(ctx->random,-1.0,1.0);CHKERRQ(ierr); 
+  ierr = PetscRandomSetInterval(ctx->random,-1.0,1.0);CHKERRQ(ierr);
 
   /* ctx->random could be randomly seeded here if desired */
 
@@ -86,7 +86,7 @@ PetscErrorCode PCDestroy_Noise(PC pc)
 {
   PetscErrorCode ierr;
   PCNoise_Ctx    *ctx;
-  
+
   PetscFunctionBeginUser;
   ierr = PCShellGetContext(pc,(void**)&ctx);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&ctx->random);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ PetscErrorCode PCDestroy_Noise(PC pc)
 PetscScalar diagFunc1(PetscInt i, PetscInt n)
 {
   const PetscScalar kappa = 5.0;
-  return 1 + (kappa*i)/(n-1);
+  return 1 + (kappa*(PetscScalar)i)/(PetscScalar)(n-1);
 }
 
 #undef __FUNCT__
@@ -106,7 +106,7 @@ PetscScalar diagFunc1(PetscInt i, PetscInt n)
 PetscScalar diagFunc2(PetscInt i, PetscInt n)
 {
   const PetscScalar kappa = 50.0;
-  return 1 + (kappa*i)/(n-1);
+  return 1 + (kappa*(PetscScalar)i)/(PetscScalar)(n-1);
 }
 
 #undef __FUNCT__
@@ -117,8 +117,8 @@ PetscScalar diagFunc3(PetscInt i, PetscInt n)
   if(!i){
     return 1e-2;
   }else{
-    return 1 + (kappa*(i-1))/(n-2);
-  } 
+    return 1 + (kappa*((PetscScalar)(i-1)))/(PetscScalar)(n-2);
+  }
 }
 
 #undef __FUNCT__
@@ -128,7 +128,7 @@ static PetscErrorCode AssembleDiagonalMatrix(Mat A, PetscScalar (*diagfunc)(Pets
   PetscErrorCode ierr;
   PetscInt       i,rstart,rend,n;
   PetscScalar    val;
-  
+
   PetscFunctionBeginUser;
   ierr = MatGetSize(A,NULL,&n);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
@@ -197,7 +197,7 @@ int main(int argc, char **argv)
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
   /* Set up a composite preconditioner */
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr); 
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCCOMPOSITE);CHKERRQ(ierr); /* default composite with single Identity PC */
   ierr = PCCompositeSetType(pc,PC_COMPOSITE_ADDITIVE);CHKERRQ(ierr);
   ierr = PCCompositeAddPC(pc,PCNONE);CHKERRQ(ierr);
@@ -211,8 +211,8 @@ int main(int argc, char **argv)
     ierr = PCShellSetDestroy(pcnoise,PCDestroy_Noise);CHKERRQ(ierr);
     ierr = PCShellSetName(pcnoise,"Noise PC");CHKERRQ(ierr);
   }
- 
-  /* Set KSP from options (this can override the PC just defined) */ 
+
+  /* Set KSP from options (this can override the PC just defined) */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* Solve */
