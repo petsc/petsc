@@ -327,7 +327,7 @@ PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
 @*/
 PetscErrorCode KSPFCGSetMmax(KSP ksp,PetscInt mmax)
 {
-  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;;
+  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -363,7 +363,7 @@ PetscErrorCode KSPFCGSetMmax(KSP ksp,PetscInt mmax)
 
 PetscErrorCode KSPFCGGetMmax(KSP ksp,PetscInt *mmax)
 {
-  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;;
+  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -391,7 +391,7 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp,PetscInt *mmax)
 @*/
 PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 {
-  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;;
+  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -427,7 +427,7 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 @*/
 PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 {
-  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;;
+  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -458,7 +458,7 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 @*/
 PetscErrorCode KSPFCGSetTruncationType(KSP ksp,KSPFCGTruncationType truncstrat)
 {
-  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;;
+  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -491,7 +491,7 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp,KSPFCGTruncationType truncstrat)
 @*/
 PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCGTruncationType *truncstrat)
 {
-  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;;
+  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -504,7 +504,7 @@ PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCGTruncationType *truncstrat)
 PetscErrorCode KSPSetFromOptions_FCG(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;;
+  KSP_FCG        *fcg=(KSP_FCG*)ksp->data;
   PetscInt       mmax,nprealloc;
   PetscBool      flg;
 
