@@ -148,7 +148,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsGetIntArray(NULL,"-ts_eimex_row_col",eimex_rowcol,&two,NULL);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"order %11s %18s %37s\n","dt","norm","final solution components 0 and 1");CHKERRQ(ierr);
   ierr = VecGetArray(x,&x_ptr);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"(%D,%D) %10.8F %18.15F %18.15F %18.15F\n",eimex_rowcol[0],eimex_rowcol[1],dt,norm,PetscRealPart(x_ptr[0]),PetscRealPart(x_ptr[1]));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"(%D,%D) %10.8f %18.15f %18.15f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm,(double)PetscRealPart(x_ptr[0]),(double)PetscRealPart(x_ptr[1]));CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&x_ptr);CHKERRQ(ierr);
 
   /* Write line in convergence log */
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
   ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_APPEND);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer,"eimex_nonstiff_vdp.txt");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%D %D %10.8F %18.15F\n",eimex_rowcol[0],eimex_rowcol[1],dt,norm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%D %D %10.8f %18.15f\n",eimex_rowcol[0],eimex_rowcol[1],(double)dt,(double)norm);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
