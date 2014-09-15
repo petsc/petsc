@@ -1619,6 +1619,37 @@ PetscErrorCode DMGlobalToLocalHookAdd(DM dm,PetscErrorCode (*beginhook)(DM,Vec,I
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalHook_Constraints"
+static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode mode, Vec l, void *ctx)
+{
+  Mat cMat;
+  Vec cVec;
+  PetscSection section, cSec;
+  PetscInt pStart, pEnd, p, dof;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDefaultConstraints(dm,&cSec,&cMat);CHKERRQ(ierr);
+  if (cMat && (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES)) {
+    ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+    ierr = MatGetVecs(cMat,NULL,&cVec);CHKERRQ(ierr);
+    ierr = MatMult(cMat,l,cVec);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(cSec,&pStart,&pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; p++) {
+      ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
+      if (dof) {
+        PetscScalar *vals;
+        ierr = VecGetValuesSection(cVec,cSec,p,&vals);CHKERRQ(ierr);
+        ierr = VecSetValuesSection(l,section,p,vals,INSERT_ALL_VALUES);CHKERRQ(ierr);
+      }
+    }
+    ierr = VecDestroy(&cVec);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMGlobalToLocalBegin"
 /*@
     DMGlobalToLocalBegin - Begins updating local vectors from global vector
@@ -1706,6 +1737,7 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
   } else {
     ierr = (*dm->ops->globaltolocalend)(dm,g,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),l);CHKERRQ(ierr);
   }
+  ierr = DMGlobalToLocalHook_Constraints(dm,g,mode,l,NULL);CHKERRQ(ierr);
   for (link=dm->gtolhook; link; link=link->next) {
     if (link->endhook) {ierr = (*link->endhook)(dm,g,mode,l,link->ctx);CHKERRQ(ierr);}
   }
@@ -1766,6 +1798,43 @@ PetscErrorCode DMLocalToGlobalHookAdd(DM dm,PetscErrorCode (*beginhook)(DM,Vec,I
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalHook_Constraints"
+static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode mode, Vec g, void *ctx)
+{
+  Mat cMat;
+  Vec cVec;
+  PetscSection section, cSec;
+  PetscInt pStart, pEnd, p, dof;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetDefaultConstraints(dm,&cSec,&cMat);CHKERRQ(ierr);
+  if (cMat && (mode == ADD_VALUES || mode == ADD_ALL_VALUES || mode == ADD_BC_VALUES)) {
+    ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
+    ierr = MatGetVecs(cMat,NULL,&cVec);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(cSec,&pStart,&pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; p++) {
+      ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
+      if (dof) {
+        PetscInt d;
+        PetscScalar *vals;
+        ierr = VecGetValuesSection(l,section,p,&vals);CHKERRQ(ierr);
+        ierr = VecSetValuesSection(cVec,cSec,p,vals,mode);CHKERRQ(ierr);
+        /* for this to be the true transpose, we have to zero the values that
+         * we just extracted */
+        for (d = 0; d < dof; d++) {
+          vals[d] = 0.;
+        }
+      }
+    }
+    ierr = MatMultTransposeAdd(cMat,cVec,l,l);CHKERRQ(ierr);
+    ierr = VecDestroy(&cVec);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLocalToGlobalBegin"
 /*@
     DMLocalToGlobalBegin - updates global vectors from local vectors
@@ -1801,6 +1870,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
       ierr = (*link->beginhook)(dm,l,mode,g,link->ctx);CHKERRQ(ierr);
     }
   }
+  ierr = DMLocalToGlobalHook_Constraints(dm,l,mode,g,NULL);CHKERRQ(ierr);
   ierr = DMGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   if (sf) {
     MPI_Op      op;
