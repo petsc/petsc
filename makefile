@@ -57,11 +57,11 @@ all-cmake:
 all-legacy:
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" MAKE_IS_GNUMAKE="" all
 
-all-gnumake-local: chk_makej info gnumake matlabbin mpi4py petsc4py
+all-gnumake-local: chk_makej info gnumake matlabbin mpi4py-build petsc4py-build
 
-all-cmake-local: chk_makej info cmakegen cmake matlabbin mpi4py petsc4py
+all-cmake-local: chk_makej info cmakegen cmake matlabbin mpi4py-build petsc4py-build
 
-all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build matlabbin shared_nomesg mpi4py petsc4py
+all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build matlabbin shared_nomesg mpi4py-build petsc4py-build
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -248,6 +248,7 @@ reconfigure:
 #
 install:
 	@${PYTHON} ./config/install.py -destDir=${DESTDIR}
+	${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} mpi4py-install petsc4py-install
 
 newall:
 	-@cd src/sys;  @${PYTHON} ${PETSC_DIR}/config/builder.py
@@ -298,7 +299,7 @@ SCRIPTS    = bin/maint/builddist  bin/maint/wwwman bin/maint/xclude bin/maint/bu
              bin/maint/lex.py  bin/maint/mapnameslatex.py bin/maint/startnightly bin/maint/startnightly.tao bin/maint/submitPatch.py \
              bin/maint/update-docs.py  bin/maint/wwwindex.py bin/maint/xcludebackup bin/maint/xcludecblas bin/maint/zap bin/maint/zapall \
              config/PETSc/Configure.py config/PETSc/Options.py \
-             config/PETSc/packages/*.py config/PETSc/utilities/*.py
+             config/PETSc/utilities/*.py
 
 
 # Builds all the documentation - should be done every night
@@ -492,6 +493,13 @@ checkbadfortranstubs:
 	grep "$$OBJ \*" *.c | tr -s ' ' | tr -s ':' ' ' | \
 	cut -d'(' -f1 | cut -d' ' -f1,3; \
 	done
+
+checkpackagetests:
+	-@echo "Missing package tests"
+	-@cat config/examples/*.py > configexamples; pushd config/BuildSystem/config/packages/; packages=`ls *.py | sed "s/\\.py//g"`;popd; for i in $${packages}; do j=`echo $${i} | tr '[:upper:]' '[:lower:]'`; printf $${j} ; egrep "(with-$${j}|download-$${j})" configexamples | grep -v "=0" | wc -l ; done
+	-@echo "Missing download package tests"
+	-@cat config/examples/*.py > configexamples; pushd config/BuildSystem/config/packages/; packages=`grep -l "download " *.py  | sed "s/\\.py//g"`;popd; for i in $${packages}; do j=`echo $${i} | tr '[:upper:]' '[:lower:]'`; printf $${j} ; egrep "(download-$${j})" configexamples | grep -v "=0" | wc -l ; done
+
 #
 # Automatically generates PETSc exercises in html from the tutorial examples.
 #

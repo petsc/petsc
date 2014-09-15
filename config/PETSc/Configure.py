@@ -58,20 +58,31 @@ class Configure(config.base.Configure):
     self.atomics       = framework.require('config.atomics',            self)
     self.make          = framework.require('config.packages.make',      self)
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
+    self.cmake         = framework.require('config.packages.cmake',self)
     self.externalpackagesdir = framework.require('PETSc.utilities.externalpackagesdir',self)
+    self.mpi             = framework.require('config.packages.MPI',self)
 
-    if os.path.isdir(os.path.join('config', 'PETSc')):
-      for d in ['utilities', 'packages']:
-        for utility in os.listdir(os.path.join('config', 'PETSc', d)):
-          (utilityName, ext) = os.path.splitext(utility)
-          if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
-            utilityObj                    = self.framework.require('PETSc.'+d+'.'+utilityName, self)
-            utilityObj.headerPrefix       = self.headerPrefix
-            utilityObj.archProvider       = self.arch
-            utilityObj.languageProvider   = self.languages
-            utilityObj.installDirProvider = self.installdir
-            utilityObj.externalPackagesDirProvider = self.externalpackagesdir
-            setattr(self, utilityName.lower(), utilityObj)
+    for utility in os.listdir(os.path.join('config','PETSc','utilities')):
+      (utilityName, ext) = os.path.splitext(utility)
+      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
+        utilityObj                    = self.framework.require('PETSc.utilities.'+utilityName, self)
+        utilityObj.headerPrefix       = self.headerPrefix
+        utilityObj.archProvider       = self.arch
+        utilityObj.languageProvider   = self.languages
+        utilityObj.installDirProvider = self.installdir
+        utilityObj.externalPackagesDirProvider = self.externalpackagesdir
+        setattr(self, utilityName.lower(), utilityObj)
+
+    for utility in os.listdir(os.path.join('config','BuildSystem','config','packages')):
+      (utilityName, ext) = os.path.splitext(utility)
+      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
+        utilityObj                    = self.framework.require('config.packages.'+utilityName, self)
+        utilityObj.headerPrefix       = self.headerPrefix
+        utilityObj.archProvider       = self.arch
+        utilityObj.languageProvider   = self.languages
+        utilityObj.installDirProvider = self.installdir
+        utilityObj.externalPackagesDirProvider = self.externalpackagesdir
+        setattr(self, utilityName.lower(), utilityObj)
 
     if os.path.isdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
       for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
@@ -922,15 +933,15 @@ prepend-path PATH %s
   def configureInstall(self):
     '''Setup the directories for installation'''
     if self.framework.argDB['prefix']:
-      self.installdir = self.framework.argDB['prefix']
       self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do:"',\
-                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"',\
+                                              '-@echo "'+self.installdir.installSudo+'make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"',\
                                               '-@echo "========================================="'])
+      self.installdir = self.framework.argDB['prefix']
     else:
-      self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
       self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do:"',\
                                               '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} test"',\
                                               '-@echo "========================================="'])
+      self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
       return
 
   def configureGCOV(self):

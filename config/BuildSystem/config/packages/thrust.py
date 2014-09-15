@@ -10,29 +10,17 @@ class Configure(config.package.Package):
     self.cxx             = 0
     return
 
-  def Install(self):
-    import shutil
-    import os
-    self.framework.log.write('thrustDir = '+self.packageDir+' installDir '+self.installDir+'\n')
-    srcdir = self.packageDir
-    destdir = os.path.join(self.installDir, 'include', 'thrust')
-    try:
-      if os.path.isdir(destdir): shutil.rmtree(destdir)
-      shutil.copytree(srcdir,destdir)
-    except RuntimeError,e:
-      raise RuntimeError('Error installing Thrust include files: '+str(e))
-    self.includedir = 'include' # default and --download have different includedirs
-    return self.installDir
+  def setupDependencies(self, framework):
+    config.package.Package.setupDependencies(self, framework)
+    self.cuda = framework.require('packages.cuda', self)
+    self.deps = [self.cuda]
+    return
 
   def getSearchDirectories(self):
     import os
     yield ''
+    yield self.cuda.directory
     yield os.path.join('/usr','local','cuda')
     yield os.path.join('/usr','local','cuda','thrust')
-    return
-
-  def configureLibrary(self):
-    '''Calls the regular package configureLibrary and then does an additional tests needed by Thrust'''
-    config.package.Package.configureLibrary(self)
     return
 

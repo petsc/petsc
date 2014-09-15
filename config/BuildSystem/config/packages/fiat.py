@@ -21,14 +21,20 @@ class Configure(config.package.Package):
     import shutil
     # We could make a check of the md5 of the current configure framework
     self.logPrintBox('Installing FIAT')
-    # Copy FIAT into $PETSC_ARCH/lib/python/site-packages
     installLoc = os.path.join(self.installDir, self.altlibdir)
     packageDir = os.path.join(installLoc, 'FIAT')
-    if not os.path.isdir(installLoc):
-      os.makedirs(installLoc)
-    if os.path.exists(packageDir):
-      shutil.rmtree(packageDir)
-    shutil.copytree(os.path.join(self.packageDir, 'FIAT'), packageDir)
+    if self.installSudo:
+      self.installDirProvider.printSudoPasswordMessage()
+      try:
+        output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+installLoc+' && '+self.installSudo+'rm -rf '+packageDir+'  && '+self.installSudo+'cp -rf '+os.path.join(self.packageDir, 'FIAT')+' '+packageDir, timeout=6000, log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error copying FIAT files from '+os.path.join(self.packageDir, 'FIAT')+' to '+packageDir)
+    else:
+      if not os.path.isdir(installLoc):
+        os.makedirs(installLoc)
+      if os.path.exists(packageDir):
+        shutil.rmtree(packageDir)
+      shutil.copytree(os.path.join(self.packageDir, 'FIAT'), packageDir)
     self.framework.actions.addArgument('FIAT', 'Install', 'Installed FIAT into '+self.installDir)
     return self.installDir
 

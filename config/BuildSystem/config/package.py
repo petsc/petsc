@@ -52,9 +52,19 @@ class Package(config.base.Configure):
     self.includedir       = 'include' # location of includes in the package directory tree
     self.license          = None # optional license text
     self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
-    self.downloadonWindows   = 0  # 1 means the --download-package works on Microsoft Windows
+    self.downloadonWindows= 0  # 1 means the --download-package works on Microsoft Windows
+    self.requirescxx11    = 0
+    self.publicInstall    = 1  # Installs the package in the --prefix directory if it was given. Packages that are only used
+                               # during the configuration/installation process such as sowing, make etc should be marked as 0
+    self.parallelMake     = 1  # 1 indicates the package supports make -j np option
+
+    self.double           = 0   # 1 means requires double precision
+    self.complex          = 1   # 0 means cannot use complex
+    self.requires32bitint = 0;  # 1 means that the package will not work with 64 bit integers
+
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
+    self.installSudo      = '' # if user does not have write access to prefix directory then this is set to sudo
     return
 
   def __str__(self):
@@ -71,13 +81,17 @@ class Package(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.setCompilers  = framework.require('config.setCompilers', self)
     self.compilers     = framework.require('config.compilers', self)
+    self.compilerFlags = framework.require('config.compilerFlags', self)
     self.types         = framework.require('config.types', self)
     self.headers       = framework.require('config.headers', self)
     self.libraries     = framework.require('config.libraries', self)
     self.programs      = framework.require('config.programs', self)
     self.sourceControl = framework.require('config.sourceControl',self)
     self.make          = framework.require('config.packages.make',self)
-    self.mpi           = framework.require('config.packages.MPI',self)
+    # force MPICH to be the first package configured since all other packages
+    # may depend on its compilers defined here
+    self.mpich         = framework.require('config.packages.MPICH',self)
+    self.openmpi       = framework.require('config.packages.OpenMPI',self)
 
     return
 
@@ -89,7 +103,7 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.Arg(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
-    if self.download and not self.download[0] == 'redefine':
+    if self.download:
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
     return
 
@@ -210,16 +224,20 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
-    self.installDir = self.defaultInstallDir
-    self.confDir    = os.path.join(self.installDir, 'conf')
+    self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
+    self.packageDir = self.getDir()
+    if self.publicInstall:
+      self.installDir = self.defaultInstallDir
+      self.installSudo= self.installDirProvider.installSudo
+    else:
+      self.installDir = self.confDir
+      self.installSudo= ''
     self.includeDir = os.path.join(self.installDir, 'include')
     self.libDir     = os.path.join(self.installDir, 'lib')
-    self.packageDir = self.getDir()
-    if not os.path.isdir(self.installDir): os.mkdir(self.installDir)
-    if not os.path.isdir(self.libDir):     os.mkdir(self.libDir)
-    if not os.path.isdir(self.includeDir): os.mkdir(self.includeDir)
-    if not os.path.isdir(self.confDir):    os.mkdir(self.confDir)
-    return os.path.abspath(self.Install())
+    installDir = self.Install()
+    if not installDir:
+      raise RuntimeError(self.package+' forgot to return the install directory from the method Install()\n')
+    return os.path.abspath(installDir)
 
   def getChecksum(self,source, chunkSize = 1024*1024):
     '''Return the md5 checksum for a given file, which may also be specified by its filename
@@ -250,7 +268,9 @@ class Package(config.base.Configure):
           libs.append(libSet[0])
       for library in libSet[1:]:
         # if the library name doesn't start with lib - then add the fullpath
-        if library.startswith('lib') or self.libdir == directory:
+        if library.startswith('-l'):
+          libs.append(library)
+        elif library.startswith('lib') or self.libdir == directory:
           libs.append(library)
         else:
           libs.append(os.path.join(directory, library))
@@ -387,7 +407,7 @@ class Package(config.base.Configure):
 
   def installNeeded(self, mkfile):
     makefile      = os.path.join(self.packageDir, mkfile)
-    makefileSaved = os.path.join(self.confDir, self.name)
+    makefileSaved = os.path.join(self.confDir, 'conf',self.name)
     if not os.path.isfile(makefileSaved) or not (self.getChecksum(makefileSaved) == self.getChecksum(makefile)):
       self.framework.log.write('Have to rebuild '+self.name+', '+makefile+' != '+makefileSaved+'\n')
       return 1
@@ -400,7 +420,7 @@ class Package(config.base.Configure):
     self.framework.log.write('********Output of running make on '+self.name+' follows *******\n')
     self.framework.log.write(output)
     self.framework.log.write('********End of Output of running make on '+self.name+' *******\n')
-    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir, self.name), timeout=5, log = self.framework.log)
+    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir,'conf', self.name), timeout=5, log = self.framework.log)
     self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.name+' into '+self.installDir)
 
   def matchExcludeDir(self,dir):
@@ -508,7 +528,9 @@ class Package(config.base.Configure):
         if self.framework.argDB['with-'+package.package] == 1:
           raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
         else:
-          raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package+' or --download-'+package.package)
+          str = ''
+          if package.download: str = ' or --download-'+package.package
+          raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package+str)
       if hasattr(package, 'dlib')    and not libs  is None: libs  += package.dlib
       if hasattr(package, 'include') and not incls is None: incls += package.include
     return
@@ -585,14 +607,22 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
+      if self.requirescxx11 and self.compilers.cxxdialect != 'C++11':
+        raise RuntimeError('Cannot use '+self.name+' without enabling C++11, see --with-cxx-dialect=C++11')
       if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
+#      if self.double and not self.scalartypes.precision.lower() == 'double':
+#        raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')
+#      if not self.complex and self.scalartypes.scalartype.lower() == 'complex':
+#        raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
+#      if self.libraryOptions.integerSize == 64 and self.requires32bitint:
+#        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
     if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return
 
   def configure(self):
-    if self.download and not self.download[0] == 'redefine' and self.framework.argDB['download-'+self.downloadname.lower()]:
+    if self.download and self.framework.argDB['download-'+self.downloadname.lower()]:
       self.framework.argDB['with-'+self.package] = 1
     if 'with-'+self.package+'-dir' in self.framework.argDB or 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
@@ -609,6 +639,41 @@ class Package(config.base.Configure):
     else:
       self.executeTest(self.alternateConfigureLibrary)
     return
+
+  def updateCompilers(self, installDir, mpiccName, mpicxxName, mpif77Name, mpif90Name):
+    '''Check if mpicc, mpicxx etc binaries exist - and update setCompilers() database.
+    The input arguments are the names of the binaries specified by the respective pacakges
+    This should really be part of compilers.py but it also uses compilerFlags.configure() so
+    I am putting it here and Matt can fix it'''
+
+    # Both MPICH and MVAPICH now depend on LD_LIBRARY_PATH for sharedlibraries.
+    # So using LD_LIBRARY_PATH in configure - and -Wl,-rpath in makefiles
+    if self.framework.argDB['with-shared-libraries']:
+      config.setCompilers.Configure.addLdPath(os.path.join(installDir,'lib'))
+    # Initialize to empty
+    mpicc=''
+    mpicxx=''
+    mpifc=''
+
+    mpicc = os.path.join(installDir,"bin",mpiccName)
+    if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
+    if hasattr(self.compilers, 'CXX'):
+      mpicxx = os.path.join(installDir,"bin",mpicxxName)
+      if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
+    if hasattr(self.compilers, 'FC'):
+      if self.compilers.fortranIsF90:
+        mpifc = os.path.join(installDir,"bin",mpif90Name)
+      else:
+        mpifc = os.path.join(installDir,"bin",mpif77Name)
+      if not os.path.isfile(mpifc): raise RuntimeError('Could not locate installed MPI compiler: '+mpifc)
+    # redo compiler detection
+    self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
+    self.compilers.__init__(self.framework)
+    self.compilers.headerPrefix = self.headerPrefix
+    self.compilers.configure()
+    self.compilerFlags.configure()
+    return
+
 '''
 config.package.GNUPackage is a helper class whose intent is to simplify writing configure modules
 for GNU-style packages that are installed using the "configure; make; make install" idiom.
@@ -657,7 +722,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     self.package          - lowercase name                                [string]
     self.PACKAGE          - uppercase name                                [string]
     self.downloadname     - same as self.name (usage a bit inconsistent)  [string]
-    self.downloadfilename     - same as self.name (usage a bit inconsistent)  [string]
+    self.downloadfilename - same as self.name (usage a bit inconsistent)  [string]
   Package subclass typically sets up the following state variables:
     self.download         - url to download source from                   [string]
     self.includes         - names of header files to locate               [list of strings]
@@ -703,17 +768,6 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     The package subclass should add package-specific dependencies via the "require" mechanism,
     as well as list them in self.deps [list].  This list is used during the location/installation
     stage to ensure that the package\'s dependencies have been configured correctly.
-
-  Comment:
-    There appears to be no good reason for separating setupHelp and setupDependencies
-  from the init stage: these hooks are called immediately following configure object
-  construction and do no depend on any other intervening computation.
-    It appears that hooks/callbacks are necessary only when a customizable action must be carried out
-  at a specific point in the configure process, which is not known a priori and/or is controlled by the framework.
-  For example, setupDownload (see GNUPackage below) must be called only after it has been determined
-  (by the code outside of the package class) that a download is necessary.  Otherwise (e.g., if setupDownload
-  is called from __init__), setupDownload will prompt the user for the version of the package to download even
-  when no download is necessary (and this is annoying).
 
   Location/installation:
   ---------------------
@@ -782,9 +836,10 @@ Brief overview of how BuildSystem\'s configuration of packages works.
             ...
             set the following instance variables, creating directories, if necessary:
             self.installDir   /* This is where the package will be installed, after it is built. */
-            self.confDir      /* subdir of self.installDir */
             self.includeDir   /* subdir of self.installDir */
             self.libDir       /* subdir of self.installDir */
+            self.confDir      /* where packages private to the configure/build process are built, such as --download-make */
+                              /* The subdirectory of this 'conf' is where where the configuration information will be stored for the package */
             self.packageDir = /* this dir is where the source is unpacked and built */
             self.getDir():
               ...
@@ -838,7 +893,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   Extending package class:
   -----------------------
   Generally, extending the parent package configure class is done by overriding some
-  or all of its methods (see config/PETSc/packages/hdf5.py, for example).
+  or all of its methods (see config/BuildSystem/config/packages/hdf5.py, for example).
   Because convenient (i.e., localized) hooks are available onto to some parts of the
   configure process, frequently writing a custom configure class amounts to overriding
   configureLibrary so that pre- and post-code can be inserted before calling to
@@ -861,43 +916,10 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   The main contribution is in the implementation of a generic Install method, which attempts
   to automate the building of a package based on the mostly standard instance variables.
 
-  Install:
-  -------
-  GNUPackage.Install defines a new list of optional dependendies in __init__
-    self.odeps (Cf. self.deps),
-  which can be, like self.deps set in the setupDependencies callback, as well as a new callback
-    formGNUConfigureDepArgs,
-  which constructs the GNU configure options based on self.deps and self.odeps the following way:
-    for each d in self.deps and in self.odeps, configure option \'--with-\'+d.package+\'=\'+d.directory
-    is added to the argument list.
-  The formGNUConfigureDepArgs method is called from another callback
-    formGNUConfigureArgs,
-  which adds the prefix and compiler arguments to the list of GNU configure arguments.
-  GNUPackage.Install then runs GNU configure on the package with the arguments obtained from formGNUConfigureArgs.
-  Each of the formGNUConfigure*Args callbacks can be overriden to provide more specific options.
-  Note that dependencies on self.odeps are optional in the sense that if they are not found,
-  the package is still configured, but the corresponding "--with-" argument is omitted from the GNU
-  configure options.
-
+  
   Besides running GNU configure, GNUPackage.Install runs installNeeded, make and postInstall
   at the appropriate times, automatically determining whether a rebuild is necessary, saving
   a GNU configure arguments stamp to perform the check in the future, etc.
-
-  setupDownload:
-  -------------
-  GNUPackage provides a new callback
-    setupDownload
-  which is called only when the package is downloaded (as opposed to being used from a tar file).
-  By default this method constructs self.download from the other instance variables as follows:
-    self.download = [self.downloadpath+self.downloadname+self.downloadversion+self.downloadext]
-  Variables self.downloadpath, self.downloadext and self.downloadversion can be set in __init__ or
-  using the following hook, which is called at the beginning of setupDownload:
-    setupVersion
-  is provided that will set self.downloadversion from the command-line argument "--download-"+self.package+"-version",
-  prompting for user input, if necessary.
-  Clearly, both setupDownload and setupDownloadVersion can be overridden by specific package configure subclasses.
-  They are intended to be a convenient hooks for isolating the download url management based on the command-line arguments
-  and user input.
 
   setupHelp:
   ---------
@@ -920,25 +942,16 @@ Brief overview of how BuildSystem\'s configuration of packages works.
       as appropriate
     - override setupDownload to control the precise download URL and/or
     - override setupDownloadVersion to control the self.downloadversion string inserted into self.download between self.downloadpath and self.downloadext
-    - override formGNUConfigureDepArgs and/or formGNUConfigureArgs to control the GNU configure options
 '''
 
 class GNUPackage(Package):
   def __init__(self, framework):
     Package.__init__(self,framework)
-    self.downloadpath=''
-    self.downloadversion=''
-    self.downloadext=''
-    self.setupDefaultDownload()
     return
 
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
     import nargs
-    downloadversion = None
-    if hasattr(self, 'downloadversion'):
-      downloadversion = self.downloadversion
-    help.addArgument(self.PACKAGE, '-download-'+self.package+'-version=<string>',  nargs.Arg(None, downloadversion, 'Version number of '+self.PACKAGE+' to download'))
     help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))
 
   def setupDependencies(self,framework):
@@ -946,58 +959,22 @@ class GNUPackage(Package):
     # optional dependencies, that will be turned off in GNU configure, if they are absent
     self.odeps = []
 
-  def setupDownloadVersion(self):
-    '''Use this to construct a valid download URL.'''
-    if self.framework.argDB['download-'+self.package+'-version']:
-      self.downloadversion = self.framework.argDB['download-'+self.package+'-version']
-
-  def setupDefaultDownload(self):
-    '''This is used to set up the default download url, without potentially prompting for user input,
-    to make sure that the package configuration is not skipped by configureLibrary.'''
-    if hasattr(self,'downloadpath') and hasattr(self,'downloadname') and hasattr(self,'downloadversion') and hasattr(self,'downloadext'):
-      self.download = [self.downloadpath+self.downloadname+'-'+self.downloadversion+'.'+self.downloadext]
-
-  def setupDownload(self):
-    '''Override this, if necessary, to set up a custom download URL.'''
-    self.setupDownloadVersion()
-    self.setupDefaultDownload()
-
-  def checkDownload(self, requireDownload = 1):
-    self.setupDownload()
-    return Package.checkDownload(self,requireDownload)
-
-  def formGNUConfigureExtraArgs(self):
-    '''Intended to be overridden by subclasses'''
-    args = []
-    return args
-
-  def formGNUConfigureDepArgs(self):
-    '''Add args corresponding to --with-<deppackage>=<deppackage-dir>.'''
-    args = []
-    for d in self.deps:
-      if d.directory is not None and not d.directory == "":
-        args.append('--with-'+d.package+'='+d.directory)
-    for d in self.odeps:
-      if hasattr(d,'found') and d.found:
-        if d.directory:
-          args.append('--with-'+d.package+'='+d.directory)
-        else:
-          args.append('--with-'+d.package)
-      else:
-        args.append('--without-'+d.package)
-    return args
-
   def formGNUConfigureArgs(self):
     '''This sets up the prefix, compiler flags, shared flags, and other generic arguments
-       that are fed into the configure script supplied with the package.'''
+       that are fed into the configure script supplied with the package.
+       Override this to set options needed by a particular package'''
     args=[]
     ## prefix
     args.append('--prefix='+self.installDir)
+    args.append('MAKE='+self.make.make)
+    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     ## compiler args
     self.pushLanguage('C')
     compiler = self.getCompiler()
     args.append('CC="'+self.getCompiler()+'"')
     args.append('CFLAGS="'+self.getCompilerFlags()+'"')
+    args.append('AR="'+self.setCompilers.AR+'"')
+    args.append('ARFLAGS="'+self.setCompilers.AR_FLAGS+'"')
     self.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('Cxx')
@@ -1026,7 +1003,7 @@ class GNUPackage(Package):
       args.append('F77="'+fc+'"')
       args.append('FFLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
       args.append('FC="'+fc+'"')
-      args.append('FCLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
+      args.append('FCFLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
       self.popLanguage()
     else:
       args.append('--disable-fortran')
@@ -1037,18 +1014,13 @@ class GNUPackage(Package):
       args.append('--enable-shared')
     else:
       args.append('--disable-shared')
-    args.extend(self.formGNUConfigureDepArgs())
-    args.extend(self.formGNUConfigureExtraArgs())
     return args
 
   def Install(self):
     ##### getInstallDir calls this, and it sets up self.packageDir (source download), self.confDir and self.installDir
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
-    ### Build the configure arg list, dump it into a conffile
     args = self.formGNUConfigureArgs()
     args = ' '.join(args)
-    conffile = os.path.join(self.packageDir,self.package)
+    conffile = os.path.join(self.packageDir,self.package+'.petscconf')
     fd = file(conffile, 'w')
     fd.write(args)
     fd.close()
@@ -1064,16 +1036,18 @@ class GNUPackage(Package):
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
-      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && make && make install', timeout=6000, log = self.framework.log)
-      output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && make clean', timeout=200, log = self.framework.log)
+      if self.parallelMake: pmake = self.make.make_jnp
+      else: pmake = self.make.make
+
+      output2,err2,ret2  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
+      output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+pmake, timeout=6000, log = self.framework.log)
+      self.logPrintBox('Running make install on '+self.PACKAGE+'; this may take several minutes')
+      self.installDirProvider.printSudoPasswordMessage(self.installSudo)
+      output4,err4,ret4  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+self.make.make+' install', timeout=300, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
-    self.postInstall(output1+err1+output2+err2+output3+err3, self.package)
+    self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
     return self.installDir
-
-  def configure(self):
-    self.setupDefaultDownload()
-    Package.configure(self)
 
   def checkDependencies(self, libs = None, incls = None):
     Package.checkDependencies(self, libs, incls)
@@ -1085,56 +1059,78 @@ class GNUPackage(Package):
       if hasattr(package, 'include') and not incls is None: incls += package.include
     return
 
-  def configureLibrary(self):
-    '''Find an installation and check if it can work with PETSc'''
-    self.framework.log.write('==================================================================================\n')
-    self.framework.logPrint('Checking for a functional '+self.name)
-    foundLibrary = 0
-    foundHeader  = 0
 
-    # get any libraries and includes we depend on
-    libs         = []
-    incls        = []
-    self.checkDependencies(libs, incls)
-    if self.needsMath:
-      if self.libraries.math is None:
-        raise RuntimeError('Math library [libm.a or equivalent] is not found')
-      libs += self.libraries.math
-    if self.needsCompression:
-      if self.libraries.compression is None:
-        raise RuntimeError('Compression [libz.a or equivalent] library not found')
-      libs += self.libraries.compression
 
-    for location, directory, lib, incl in self.generateGuesses():
-      if directory and not os.path.isdir(directory):
-        self.framework.logPrint('Directory does not exist: %s (while checking "%s" for "%r")' % (directory,location,lib))
-        continue
-      if lib == '': lib = []
-      elif not isinstance(lib, list): lib = [lib]
-      if incl == '': incl = []
-      elif not isinstance(incl, list): incl = [incl]
-      testedincl = list(incl)
-      # weed out duplicates when adding fincs
-      for loc in self.compilers.fincs:
-        if not loc in incl:
-          incl.append(loc)
-      if self.functions:
-        self.framework.logPrint('Checking for library in '+location+': '+str(lib))
-        if directory: self.framework.logPrint('Contents: '+str(os.listdir(directory)))
-      else:
-        self.framework.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
-      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
-        self.lib = lib
-        self.framework.logPrint('Checking for headers '+location+': '+str(incl))
-        if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
-          if self.includes:
-            self.include = testedincl
-          self.found     = 1
-          self.dlib      = self.lib+libs
-          if not hasattr(self.framework, 'packages'):
-            self.framework.packages = []
-          self.directory = directory
-          self.framework.packages.append(self)
-          return
-    if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.framework.argDB['with-'+self.package]):
-      raise RuntimeError('Could not find a functional '+self.name+'\n')
+class CMakePackage(Package):
+  def __init__(self, framework):
+    Package.__init__(self, framework)
+    return
+
+  def setupHelp(self, help):
+    config.package.Package.setupHelp(self,help)
+    import nargs
+    help.addArgument(self.PACKAGE, '-download-'+self.package+'-shared=<bool>',     nargs.ArgBool(None, 0, 'Install '+self.PACKAGE+' with shared libraries'))
+
+  def setupDependencies(self, framework):
+    Package.setupDependencies(self, framework)
+    self.cmake = framework.require('config.packages.cmake',self)
+    return
+
+  def formCMakeConfigureArgs(self):
+    import os
+    import shlex
+ 
+    args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
+    args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
+    self.framework.pushLanguage('C')
+    args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
+    args.append('-DCMAKE_AR='+self.setCompilers.AR)
+    ranlib = shlex.split(self.setCompilers.RANLIB)[0]
+    args.append('-DCMAKE_RANLIB='+ranlib)
+    cflags = self.setCompilers.getCompilerFlags()
+    args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
+    self.framework.popLanguage()
+    if hasattr(self.compilers, 'CXX'):
+      self.framework.pushLanguage('Cxx')
+      args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
+      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.framework.getCompilerFlags()+'"')
+      self.framework.popLanguage()
+
+    if hasattr(self.compilers, 'FC'):
+      self.framework.pushLanguage('FC')
+      args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
+      args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.framework.getCompilerFlags()+'"')
+      self.framework.popLanguage()
+    return args
+
+  def Install(self):
+    import os
+    args = self.formCMakeConfigureArgs()
+    args = ' '.join(args)
+    conffile = os.path.join(self.packageDir,self.package+'.petscconf')
+    fd = file(conffile, 'w')
+    fd.write(args)
+    fd.close()
+
+    if self.installNeeded(conffile):
+
+      # effectively, this is 'make clean'
+      folder = os.path.join(self.packageDir, 'build')
+      if os.path.isdir(folder):
+        import shutil
+        shutil.rmtree(folder)
+      os.mkdir(folder)
+
+      try:
+        self.logPrintBox('Configuring '+self.PACKAGE+' with cmake, this may take several minutes')
+        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+folder+' && '+self.cmake.cmake+' .. '+args, timeout=900, log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error configuring '+self.PACKAGE+' with cmake '+str(e))
+      try:
+        self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
+        self.installDirProvider.printSudoPasswordMessage()
+        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+folder+' && make && '+self.installSudo+'make install', timeout=2500, log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error running make on  '+self.PACKAGE+': '+str(e))
+      self.postInstall(output1+err1+output2+err2,conffile)
+    return self.installDir

@@ -53,7 +53,7 @@ class PETScMaker(script.Script):
    self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
    self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
-   self.cmake         = self.framework.require('PETSc.packages.cmake',       None)
+   self.cmake         = self.framework.require('config.packages.cmake',       None)
    self.CHUD          = self.framework.require('PETSc.utilities.CHUD',        None)
    self.compilers     = self.framework.require('config.compilers',            None)
    self.types         = self.framework.require('config.types',                None)
@@ -104,7 +104,7 @@ class PETScMaker(script.Script):
      self.setCompilers.pushLanguage(petsclanguage)
      compiler = self.setCompilers.getCompiler()
      if (cmakelanguage == 'CUDA'):
-       self.cuda = self.framework.require('PETSc.packages.cuda',       None)
+       self.cuda = self.framework.require('config.packages.cuda',       None)
        if (self.cuda.directory != None):
          options.append('CUDA_TOOLKIT_ROOT_DIR ' + self.cuda.directory + ' CACHE FILEPATH')
        options.append('CUDA_NVCC_FLAGS ' + self.setCompilers.getCompilerFlags() + ' CACHE STRING')

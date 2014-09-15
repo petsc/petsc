@@ -24,21 +24,41 @@ class Configure(config.base.Configure):
     self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
+  def printSudoPasswordMessage(self,needsudo = 1):
+    '''Prints a message that sudo password will be needed for installs of packages'''
+    '''Packages like sowing and make that are never installed in an sudo location would pass 0 for needsudo'''
+    if needsudo and self.installSudoMessage:
+      self.logPrintBox(self.installSudoMessage)
+      self.installSudoMessage = ''
+
   def setInstallDir(self):
-    ''' setup installDir to PETSC_DIR/PETSC_ARCH'''
-    self.dir = os.path.abspath(os.path.join(self.arch.arch))
+    ''' setup installDir to either prefix or if that is not set to PETSC_DIR/PETSC_ARCH'''
+    self.installSudo        = ''
+    self.installSudoMessage = ''
+    if self.framework.argDB['prefix']:
+      self.dir = self.framework.argDB['prefix']
+      try:
+        os.makedirs(os.path.join(self.dir,'PETScTestDirectory'))
+        os.rmdir(os.path.join(self.dir,'PETScTestDirectory'))
+      except:
+        self.installSudoMessage = 'You do not have write permissions to the --prefix directory '+self.dir+'\nYou will be prompted for the sudo password for any external package installs'
+        self.installSudo = 'sudo '
+    else:
+      self.dir = os.path.abspath(os.path.join(self.arch.arch))
+    self.confDir = os.path.abspath(os.path.join(self.arch.arch))
 
   def configureInstallDir(self):
-    '''Makes  installDir subdirectories if it does not exist'''
-    if not os.path.exists(self.dir):
-      os.makedirs(self.dir)
+    '''Makes  installDir subdirectories if it does not exist for both prefix install location and PETSc work install location'''
+    dir = os.path.abspath(os.path.join(self.arch.arch))
+    if not os.path.exists(dir):
+      os.makedirs(dir)
     for i in ['include','lib','bin','conf']:
-      newdir = os.path.join(self.dir,i)
+      newdir = os.path.join(dir,i)
       if not os.path.exists(newdir):
         os.makedirs(newdir)
     if os.path.isfile(self.framework.argDB.saveFilename):
       os.remove(self.framework.argDB.saveFilename)
-    confdir = os.path.join(self.dir,'conf')
+    confdir = os.path.join(dir,'conf')
     self.framework.argDB.saveFilename = os.path.abspath(os.path.join(confdir, 'RDict.db'))
     self.framework.logPrint('Changed persistence directory to '+confdir)
     return
