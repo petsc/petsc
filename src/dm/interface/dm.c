@@ -44,16 +44,18 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr = PetscMemzero(v->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
 
 
-  v->ltogmap              = NULL;
-  v->bs                   = 1;
-  v->coloringtype         = IS_COLORING_GLOBAL;
-  ierr                    = PetscSFCreate(comm, &v->sf);CHKERRQ(ierr);
-  ierr                    = PetscSFCreate(comm, &v->defaultSF);CHKERRQ(ierr);
-  v->defaultSection       = NULL;
-  v->defaultGlobalSection = NULL;
-  v->L                    = NULL;
-  v->maxCell              = NULL;
-  v->dimEmbed             = PETSC_DEFAULT;
+  v->ltogmap                  = NULL;
+  v->bs                       = 1;
+  v->coloringtype             = IS_COLORING_GLOBAL;
+  ierr                        = PetscSFCreate(comm, &v->sf);CHKERRQ(ierr);
+  ierr                        = PetscSFCreate(comm, &v->defaultSF);CHKERRQ(ierr);
+  v->defaultSection           = NULL;
+  v->defaultGlobalSection     = NULL;
+  v->defaultConstraintSection = NULL;
+  v->defaultConstraintMat     = NULL;
+  v->L                        = NULL;
+  v->maxCell                  = NULL;
+  v->dimEmbed                 = PETSC_DEFAULT;
   {
     PetscInt i;
     for (i = 0; i < 10; ++i) {
@@ -514,6 +516,8 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = PetscSectionDestroy(&(*dm)->defaultSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&(*dm)->defaultGlobalSection);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*dm)->map);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&(*dm)->defaultConstraintSection);CHKERRQ(ierr);
+  ierr = MatDestroy(&(*dm)->defaultConstraintMat);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
 
