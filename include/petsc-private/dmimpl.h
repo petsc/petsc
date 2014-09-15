@@ -16,6 +16,7 @@ struct _DMOps {
   PetscErrorCode (*setfromoptions)(DM);
   PetscErrorCode (*setup)(DM);
   PetscErrorCode (*createdefaultsection)(DM);
+  PetscErrorCode (*createdefaultconstraints)(DM);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   PetscErrorCode (*createlocalvector)(DM,Vec*);
   PetscErrorCode (*getlocaltoglobalmapping)(DM);
@@ -145,6 +146,9 @@ struct _p_DM {
   PetscSection            defaultSection;       /* Layout for local vectors */
   PetscSection            defaultGlobalSection; /* Layout for global vectors */
   PetscLayout             map;
+  /* Constraints */
+  PetscSection            defaultConstraintSection;
+  Mat                     defaultConstraintMat;
   /* Coordinates */
   PetscInt                dimEmbed;             /* The dimension of the embedding space */
   DM                      coordinateDM;         /* Layout for coordinates (default section) */

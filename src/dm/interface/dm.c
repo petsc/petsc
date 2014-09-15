@@ -2951,6 +2951,77 @@ PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGetDefaultConstraints"
+/*@
+  DMGetDefaultConstraints - Get the PetscSection and Mat the specify the local constraint interpolation. See DMSetDefaultConstraints() for a description of the purpose of constraint interpolation.
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
++ section - The PetscSection describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.  Returns NULL if there are no local constraints.
+- mat - The Mat that interpolates local constraints: its width should be the layout size of the default section.  Returns NULL if there are no local constraints.
+
+  Level: advanced
+
+  Note: This gets borrowed references, so the user should not destroy the PetscSection or the Mat.
+
+.seealso: DMSetDefaultConstraints()
+@*/
+PetscErrorCode DMGetDefaultConstraints(DM dm, PetscSection *section, Mat *mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(section, 2);
+  PetscValidPointer(mat, 3);
+  if (!dm->defaultConstraintSection && !dm->defaultConstraintMat && dm->ops->createdefaultconstraints) {ierr = (*dm->ops->createdefaultconstraints)(dm);CHKERRQ(ierr);}
+  *section = dm->defaultConstraintSection;
+  *mat = dm->defaultConstraintMat;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetDefaultConstraints"
+/*@
+  DMSetDefaultConstraints - Set the PetscSection and Mat the specify the local constraint interpolation.
+
+  If a constraint matrix is specified, then it is applied during DMGlobalToLocalEnd() when mode is INSERT_VALUES, INSERT_BC_VALUES, or INSERT_ALL_VALUES.  Without a constraint matrix, the local vector l returned by DMGlobalToLocalEnd() contains values that have been scattered from a global vector without modification; with a constraint matrix A, l is modified by computing c = A * l, l[s[i]] = c[i], where the scatter s is defined by the PetscSection returned by DMGetDefaultConstraintMatrix().
+
+  If a constraint matrix is specified, then its adjoint is applied during DMLocalToGlobalBegin() when mode is ADD_VALUES, ADD_BC_VALUES, or ADD_ALL_VALUES.  Without a constraint matrix, the local vector l is accumulated into a global vector without modification; with a constraint matrix A, l is first modified by computing c[i] = l[s[i]], l[s[i]] = 0, l = l + A'*c, which is the adjoint of the operation described above.
+
+  Input Parameters:
++ dm - The DM
++ section - The PetscSection describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.
+- mat - The Mat that interpolates local constraints: its width should be the layout size of the default section:  NULL indicates no constraints.
+
+  Level: advanced
+
+  Note: This increments the references of the PetscSection and the Mat, so they user can destroy them
+
+.seealso: DMGetDefaultConstraints()
+@*/
+PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
+{
+  PetscInt       numFields;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (section) {PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);}
+  if (mat) {PetscValidHeaderSpecific(mat,MAT_CLASSID,3);}
+  ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&dm->defaultConstraintSection);CHKERRQ(ierr);
+  dm->defaultConstraintSection = section;
+  ierr = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&dm->defaultConstraintMat);CHKERRQ(ierr);
+  dm->defaultConstraintMat = mat;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMGetDefaultGlobalSection"
 /*@
   DMGetDefaultGlobalSection - Get the PetscSection encoding the global data layout for the DM.
