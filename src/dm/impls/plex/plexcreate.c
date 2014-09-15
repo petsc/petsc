@@ -969,6 +969,7 @@ PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscIn
 extern PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, VecScatter *ctx);
 extern PetscErrorCode DMCreateDefaultSection_Plex(DM dm);
+extern PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm);
 extern PetscErrorCode DMCreateMatrix_Plex(DM dm,  Mat *J);
 extern PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm);
 extern PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined);
@@ -1196,6 +1197,7 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->clone                           = DMClone_Plex;
   dm->ops->setup                           = DMSetUp_Plex;
   dm->ops->createdefaultsection            = DMCreateDefaultSection_Plex;
+  dm->ops->createdefaultconstraints        = DMCreateDefaultConstraints_Plex;
   dm->ops->createglobalvector              = DMCreateGlobalVector_Plex;
   dm->ops->createlocalvector               = DMCreateLocalVector_Plex;
   dm->ops->getlocaltoglobalmapping         = NULL;

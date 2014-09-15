@@ -7124,14 +7124,13 @@ PetscErrorCode DMPlexSetConstraints(DM dm, PetscSection anchorSection, IS anchor
 #define __FUNCT__ "DMPlexCreateConstraintSection"
 static PetscErrorCode DMPlexCreateConstraintSection(DM dm, PetscSection *cSec)
 {
-  DM_Plex *plex = (DM_Plex *)dm->data;
   PetscSection section, anchorSection;
   PetscInt pStart, pEnd, p, dof, numFields, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  anchorSection = plex->anchorSection;
+  ierr = DMPlexGetConstraints(dm,&anchorSection,NULL);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)section),cSec);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section,&numFields);CHKERRQ(ierr);
@@ -7191,11 +7190,11 @@ PetscErrorCode DMPlexGetConstraintSection(DM dm, PetscSection *cSec)
 #define __FUNCT__ "DMPlexCreateConstraintMatrix"
 static PetscErrorCode DMPlexCreateConstraintMatrix(DM dm, Mat *cMat)
 {
-  DM_Plex *plex = (DM_Plex *)dm->data;
   PetscSection section, aSec, cSec;
   PetscInt pStart, pEnd, p, dof, aDof, aOff, off, nnz, annz, m, n, q, a, offset, *i, *j;
   const PetscInt *anchors;
   PetscInt numFields, f;
+  IS aIS;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -7207,8 +7206,8 @@ static PetscErrorCode DMPlexCreateConstraintMatrix(DM dm, Mat *cMat)
   ierr = MatCreate(PETSC_COMM_SELF,cMat);CHKERRQ(ierr);
   ierr = MatSetSizes(*cMat,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*cMat,MATSEQAIJ);
-  aSec = plex->anchorSection;
-  ierr = ISGetIndices(plex->anchorIS,&anchors);CHKERRQ(ierr);
+  ierr = DMPlexGetConstraints(dm,&aSec,&aIS);CHKERRQ(ierr);
+  ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(aSec,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscMalloc1(m+1,&i);CHKERRQ(ierr);
   i[0] = 0;
@@ -7293,7 +7292,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix(DM dm, Mat *cMat)
   }
   ierr = MatSeqAIJSetPreallocationCSR(*cMat,i,j,NULL);CHKERRQ(ierr);
   ierr = PetscFree2(i,j);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(plex->anchorIS,&anchors);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(aIS,&anchors);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -7362,5 +7361,26 @@ PetscErrorCode DMPlexSetConstraintMatrix(DM dm, Mat cMat)
   ierr = PetscObjectReference((PetscObject)cMat);CHKERRQ(ierr);
   ierr = MatDestroy(&plex->constraintMat);CHKERRQ(ierr);
   plex->constraintMat = cMat;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateDefaultConstraints_Plex"
+PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm)
+{
+  PetscSection anchorSection, cSec;
+  Mat cMat;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetConstraints(dm,&anchorSection,NULL);CHKERRQ(ierr);
+  if (anchorSection) {
+    ierr = DMPlexCreateConstraintSection(dm,&cSec);CHKERRQ(ierr);
+    ierr = DMPlexCreateConstraintMatrix(dm,&cMat);CHKERRQ(ierr);
+    ierr = DMSetDefaultConstraints(dm,cSec,cMat);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&cSec);CHKERRQ(ierr);
+    ierr = MatDestroy(&cMat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
