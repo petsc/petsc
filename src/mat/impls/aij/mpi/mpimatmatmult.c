@@ -80,8 +80,8 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ"
-PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
+#define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable"
+PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
 {
   PetscErrorCode ierr;
   Mat_MPIAIJ     *a  =(Mat_MPIAIJ*)A->data,*c=(Mat_MPIAIJ*)C->data;
@@ -335,6 +335,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
 
   ptap->destroy        = Cmpi->ops->destroy;
   ptap->duplicate      = Cmpi->ops->duplicate;
+  Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
   Cmpi->ops->destroy   = MatDestroy_MPIAIJ_MatMatMult;
   Cmpi->ops->duplicate = MatDuplicate_MPIAIJ_MatMatMult;
 
@@ -550,8 +551,8 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable"
-PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,Mat C)
+#define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ"
+PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 {
   PetscErrorCode ierr;
   Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data,*c=(Mat_MPIAIJ*)C->data;
@@ -805,7 +806,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 
   ptap->destroy             = Cmpi->ops->destroy;
   ptap->duplicate           = Cmpi->ops->duplicate;
-  Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable;
+  Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ;
   Cmpi->ops->destroy        = MatDestroy_MPIAIJ_MatMatMult;
   Cmpi->ops->duplicate      = MatDuplicate_MPIAIJ_MatMatMult;
 
