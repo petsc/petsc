@@ -5208,12 +5208,15 @@ PetscErrorCode  MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt *
   PetscInt               i,j,k,l,ll,nrecvs,nsends,nrows,*srow,*rstarts,*rstartsj = 0,*sstarts,*sstartsj,len;
   MPI_Request            *rwaits = NULL,*swaits = NULL;
   MPI_Status             *sstatus,rstatus;
-  PetscMPIInt            jj;
+  PetscMPIInt            jj,size;
   PetscInt               *cols,sbs,rbs;
   PetscScalar            *vals;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) PetscFunctionReturn(0);
+
   if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend) {
     SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%d, %d) != (%d,%d)",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
   }

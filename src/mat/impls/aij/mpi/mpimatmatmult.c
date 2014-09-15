@@ -552,8 +552,13 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,Mat C)
   PetscInt       *api,*apj,*apJ,i,j,k,row;
   PetscInt       cstart = C->cmap->rstart;
   PetscInt       cdnz,conz,k0,k1,nextp;
+  MPI_Comm       comm;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
   /*-----------------------------------------------------*/
   /* update numerical values of P_oth and P_loc */
@@ -564,9 +569,11 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,Mat C)
   /*----------------------------------------------------------*/
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ*)(ptap->P_loc)->data;
-  p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
   pi_loc=p_loc->i; pj_loc=p_loc->j; pa_loc=p_loc->a;
-  pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
+  if (size >1) {
+    p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
+    pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
+  }
 
   api = ptap->api;
   apj = ptap->apj;
@@ -655,6 +662,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 {
   PetscErrorCode     ierr;
   MPI_Comm           comm;
+  PetscMPIInt        size;
   Mat                Cmpi;
   Mat_PtAPMPI        *ptap;
   PetscFreeSpaceList free_space = NULL,current_space=NULL;
@@ -670,19 +678,24 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
   /* create struct Mat_PtAPMPI and attached it to C later */
   ierr = PetscNew(&ptap);CHKERRQ(ierr);
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
   ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
-
+  
   /* get P_loc by taking all local rows of P */
   ierr = MatMPIAIJGetLocalMat(P,MAT_INITIAL_MATRIX,&ptap->P_loc);CHKERRQ(ierr);
 
   p_loc  = (Mat_SeqAIJ*)(ptap->P_loc)->data;
-  p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
   pi_loc = p_loc->i; pj_loc = p_loc->j;
-  pi_oth = p_oth->i; pj_oth = p_oth->j;
+  if (size > 1) {
+    p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
+    pi_oth = p_oth->i; 
+    pj_oth = p_oth->j;
+  } 
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
   /*-------------------------------------------------------------------*/
@@ -691,8 +704,12 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   api[0]    = 0;
 
   /* create and initialize a linked list */
-  armax    = ad->rmax+ao->rmax;
-  prmax    = PetscMax(p_loc->rmax,p_oth->rmax);
+  armax = ad->rmax+ao->rmax;
+  if (size >1) {
+    prmax = PetscMax(p_loc->rmax,p_oth->rmax);
+  } else {
+    prmax = p_loc->rmax;
+  }
   nlnk_max = armax*prmax;
   if (!nlnk_max || nlnk_max > pN) nlnk_max = pN;
   ierr = PetscLLCondensedCreate_Scalable(nlnk_max,&lnk);CHKERRQ(ierr);
