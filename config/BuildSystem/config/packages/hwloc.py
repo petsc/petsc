@@ -11,9 +11,10 @@ class Configure(config.package.GNUPackage):
     return
 
   def formGNUConfigureArgs(self):
-    '''Don't require x libraries since they may not always be available or hwloc may not be able to locate them (on Apple)'''
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    args.append('--without-x')
+    # Don't require x libraries since they may not always be available or hwloc may not be able to locate them on Apple
+    if self.setCompilers.isDarwin():
+      args.append('--without-x')
     return args
 
 
