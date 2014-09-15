@@ -4955,16 +4955,27 @@ PetscErrorCode  MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
   PetscInt       am=A->rmap->n,i,j,k,cstart=A->cmap->rstart;
   PetscInt       *ci,*cj,col,ncols_d,ncols_o,jo;
   PetscBool      match;
+  MPI_Comm       comm;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&match);CHKERRQ(ierr);
   if (!match) SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MPIAIJ matrix as input");
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1 && scall == MAT_REUSE_MATRIX) PetscFunctionReturn(0);
+    
   ierr = PetscLogEventBegin(MAT_Getlocalmat,A,0,0,0);CHKERRQ(ierr);
   a = (Mat_SeqAIJ*)(mpimat->A)->data;
   b = (Mat_SeqAIJ*)(mpimat->B)->data;
   ai = a->i; aj = a->j; bi = b->i; bj = b->j;
   aa = a->a; ba = b->a;
   if (scall == MAT_INITIAL_MATRIX) {
+    if (size == 1) {
+      ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,am,A->cmap->N,ai,aj,aa,A_loc);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+
     ierr  = PetscMalloc1((1+am),&ci);CHKERRQ(ierr);
     ci[0] = 0;
     for (i=0; i<am; i++) {
