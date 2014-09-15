@@ -17,5 +17,15 @@ class Configure(config.package.GNUPackage):
       args.append('--without-x')
     return args
 
+  def configure(self):
+    '''Download by default '''
+    if self.framework.clArgDB.has_key('download-hwloc') and not self.framework.argDB['download-hwloc']:
+      self.framework.logPrint("Not downloading hwloc on user request\n")
+      return
+    if self.argDB['with-batch']:
+      return
+    self.framework.argDB['download-hwloc'] = 1
+    config.package.GNUPackage.configure(self)
+
 
 
