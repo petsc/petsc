@@ -1632,6 +1632,22 @@ runex102:
 	   else printf "${PWD}\nPossible problem with ex102, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex102.tmp
 
+runex103:
+	-@${MPIEXEC} -n 6 ./ex103 > ex103.tmp 2>&1; \
+	   if (${DIFF} output/ex103.out ex103.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex103, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex103.tmp
+runex103_1:
+	-@${MPIEXEC} -n 6 ./ex103 -mat_type aij > ex103.tmp 2>&1; \
+	   if (${DIFF} output/ex103.out ex103.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex103_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex103.tmp
+runex103_2:
+	-@${MPIEXEC} -n 6 ./ex103 -mat_type elemental > ex103.tmp 2>&1; \
+	   if (${DIFF} output/ex103.out ex103.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex103_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex103.tmp
+
 runex104:
 	-@${MPIEXEC} -n 1 ./ex104 > ex104.tmp 2>&1; \
 	   if (${DIFF} output/ex104.out ex104.tmp) then true; \
@@ -2097,6 +2113,7 @@ TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_3 runex112_4 ex1
 TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm
 TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm \
                                  ex39.PETSc runex39 runex39_2 ex39.rm \
+                                 ex103.PETSc runex103 runex103_1 runex103_2 ex103.rm \
                                  ex104.PETSc runex104_elemental runex104_elemental_2 ex104.rm \
                                  ex145.PETSc runex145 runex145_2 ex145.rm
 

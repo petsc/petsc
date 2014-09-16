@@ -1265,8 +1265,43 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
 #define __FUNCT__ "MatConvert_MPIDense_Elemental"
 PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
+  Mat            mat_elemental;
+  PetscErrorCode ierr;
+  PetscScalar    *array,*v_colwise;
+  PetscInt       m=A->rmap->n,N=A->cmap->N,rstart=A->rmap->rstart,i,j,k,*rows,*cols;
+  
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for requested operation");
+  ierr = PetscMalloc3(m*N,&v_colwise,m,&rows,N,&cols);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(A,&array);CHKERRQ(ierr);
+  /* convert column-wise array into row-wise v_colwise, see MatSetValues_Elemental() */
+  k = 0;
+  for (j=0; j<N; j++) {
+    cols[j] = j;
+    for (i=0; i<m; i++) {
+      v_colwise[j*m+i] = array[k++];
+    }
+  }
+  for (i=0; i<m; i++) {
+    rows[i] = rstart + i;
+  }
+  ierr = MatDenseRestoreArray(A,&array);CHKERRQ(ierr);
+
+  ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
+  ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
+  ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  
+  /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
+  ierr = MatSetValues(mat_elemental,m,rows,N,cols,v_colwise,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscFree3(v_colwise,rows,cols);CHKERRQ(ierr);
+
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
+  } else {
+    *newmat = mat_elemental;
+  }
   PetscFunctionReturn(0);
 }
 
