@@ -95,7 +95,7 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
    KSPComputeEigenvalues() does not usually provide accurate estimates; it is
    intended only for assistance in understanding the convergence of iterative
    methods, not for eigenanalysis. For accurate computation of eigenvalues we recommend using
-   the excellant package SLEPc.
+   the excellent package SLEPc.
 
    One must call KSPSetComputeEigenvalues() before calling KSPSetUp()
    in order for this routine to work correctly.
