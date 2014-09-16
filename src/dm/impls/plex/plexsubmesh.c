@@ -1379,7 +1379,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   IS              dimIS, subpointIS, facePosIS, faceNegIS, crossEdgeIS = NULL;
   const PetscInt *points, *subpoints;
   const PetscInt  rev   = flip ? -1 : 1;
-  PetscInt        shift = 100, shift2 = 200, dim, dep, cStart, cEnd, fStart, fEnd, vStart, vEnd, numPoints, numSubpoints, p, val;
+  PetscInt        shift = 100, shift2 = 200, dim, dep, cStart, cEnd, cMax, fStart, fEnd, vStart, vEnd, numPoints, numSubpoints, p, val;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1500,6 +1500,8 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   /* Search for other cells/faces/edges connected to the fault by a vertex */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  cMax = cMax < 0 ? cEnd : cMax;
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMLabelGetStratumIS(label, 0, &dimIS);CHKERRQ(ierr);
   if (blabel) {ierr = DMLabelGetStratumIS(blabel, 2, &crossEdgeIS);CHKERRQ(ierr);}
@@ -1528,7 +1530,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
         const PetscInt *cone;
         PetscInt        coneSize, c;
 
-        if ((point < cStart) || (point >= cEnd)) continue;
+        if ((point < cStart) || (point >= cMax)) continue;
         ierr = DMLabelGetValue(label, point, &val);CHKERRQ(ierr);
         if (val != -1) continue;
         again = again == 1 ? 1 : 2;
@@ -1584,7 +1586,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
         for (ss = 0; ss < sstarSize*2; ss += 2) {
           const PetscInt spoint = sstar[ss];
 
-          if ((spoint < cStart) || (spoint >= cEnd)) continue;
+          if ((spoint < cStart) || (spoint >= cMax)) continue;
           ierr = DMLabelGetValue(label, spoint, &val);CHKERRQ(ierr);
           if (val == -1) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Cell %d in star of %d does not have a valid label", spoint, point);
           ierr = DMLabelGetValue(depthLabel, point, &dep);CHKERRQ(ierr);
