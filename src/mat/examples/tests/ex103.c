@@ -21,7 +21,7 @@ int main(int argc, char** argv)
   const PetscInt *rows,*cols;
   PetscScalar    *v;
   MatType        type;
-  PetscBool      isDense,isAIJ;
+  PetscBool      isDense,isAIJ,flg;
 
   PetscInitialize(&argc, &argv, (char*)0, help);
 #if !defined(PETSC_HAVE_ELEMENTAL)
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
   ierr = MatSetValues(A,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%D] local nrows %D, ncols %D\n",rank,nrows,ncols);CHKERRQ(ierr);
+  //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%D] local nrows %D, ncols %D\n",rank,nrows,ncols);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Test MatSetValues() by converting A to A_elemental */
@@ -74,13 +74,17 @@ int main(int argc, char** argv)
 
   if (isDense || isAIJ) {
     ierr = MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &A_elemental);CHKERRQ(ierr);
-    if (!rank) printf("\n Outplace MatConvert, A_elemental:\n");
-    ierr = MatView(A_elemental,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    //if (!rank) printf("\n Outplace MatConvert, A_elemental:\n");
+    //ierr = MatView(A_elemental,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
     /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
-    if (!rank) printf("\n Inplace MatConvert:\n");
     ierr = MatConvert(A, MATELEMENTAL, MAT_REUSE_MATRIX, &A);CHKERRQ(ierr);
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    //if (!rank) printf("\n Inplace MatConvert:\n");
+    //ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+    /* Test accuracy */
+    ierr = MatMultEqual(A,A_elemental,5,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != A_elemental.");
     ierr = MatDestroy(&A_elemental);CHKERRQ(ierr); 
   }
 
