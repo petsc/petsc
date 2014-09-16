@@ -81,8 +81,6 @@ typedef struct {
   IS                   anchorIS;           /* anchors indexed by the above section */
   PetscErrorCode     (*createanchors)(DM); /* automatically compute anchors (probably from tree constraints) */
   PetscErrorCode     (*computeanchormatrix)(DM,PetscSection,PetscSection,Mat);
-  PetscSection         constraintSection;  /* maps points to rows in the constraint matrix below */
-  Mat                  constraintMat;      /* (m x n), m = constrained dofs in the default section, n = dofs in the default section */
 
   /* Tree: automatically construct constraints for hierarchically non-conforming meshes */
   PetscSection         parentSection;     /* dof == 1 if point has parent */

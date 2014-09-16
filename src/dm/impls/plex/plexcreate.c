@@ -1287,8 +1287,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->anchorSection       = NULL;
   mesh->anchorIS            = NULL;
   mesh->createanchors       = NULL;
-  mesh->constraintSection   = NULL;
-  mesh->constraintMat       = NULL;
+  mesh->computeanchormatrix = NULL;
   mesh->parentSection       = NULL;
   mesh->parents             = NULL;
   mesh->childIDs            = NULL;

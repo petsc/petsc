@@ -537,8 +537,6 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = BoundaryDestroy(&mesh->boundary);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->anchorSection);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->anchorIS);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&mesh->constraintSection);CHKERRQ(ierr);
-  ierr = MatDestroy(&mesh->constraintMat);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->parentSection);CHKERRQ(ierr);
   ierr = PetscFree(mesh->parents);CHKERRQ(ierr);
   ierr = PetscFree(mesh->childIDs);CHKERRQ(ierr);
