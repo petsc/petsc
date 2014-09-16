@@ -5,6 +5,7 @@
 #include <petscsf.h>
 #include <petscksp.h>
 #include <petscpc.h>
+#include <petscds.h>
 
 /* Logging support */
 PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
@@ -6880,7 +6881,7 @@ PetscErrorCode DMPlexSetCoarseDM(DM dm, DM cdm)
   DMPlexGetAnchors - Get the layout of the anchor (point-to-point) constraints.  Typically, the user will not have to
   call DMPlexGetAnchors() directly: if there are anchors, then DMPlexGetAnchors() is called during DMGetConstraints().
 
-  collective on DM
+  not collective
 
   Input Parameters:
 . dm - The DMPlex object
@@ -6917,12 +6918,12 @@ PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS
   After specifying the layout of constraints with DMPlexSetAnchors(), one specifies the constraints by calling
   DMGetConstraints() and filling in the entries in the constraint matrix.
 
-  logically collective
+  collective on dm
 
   Input Parameters:
 + dm - The DMPlex object
-. anchorSection - The section that describes the mapping from constrained points to the anchor points listed in anchorIS.
-- anchorIS - The list of all anchor points.
+. anchorSection - The section that describes the mapping from constrained points to the anchor points listed in anchorIS.  Must have a local communicator (PETSC_COMM_SELF or derivative).
+- anchorIS - The list of all anchor points.  Must have a local communicator (PETSC_COMM_SELF or derivative).
 
   The reference counts of anchorSection and anchorIS are incremented.
 
@@ -6933,10 +6934,21 @@ PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS
 PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
+  PetscMPIInt result;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (anchorSection) {
+    PetscValidHeaderSpecific(anchorSection,PETSC_SECTION_CLASSID,2);
+    ierr = MPI_Comm_compare(PETSC_COMM_SELF,PetscObjectComm((PetscObject)anchorSection),&result);CHKERRQ(ierr);
+    if (result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"anchor section must have local communicator");
+  }
+  if (anchorIS) {
+    PetscValidHeaderSpecific(anchorIS,IS_CLASSID,3);
+    ierr = MPI_Comm_compare(PETSC_COMM_SELF,PetscObjectComm((PetscObject)anchorIS),&result);CHKERRQ(ierr);
+    if (result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"anchor IS must have local communicator");
+  }
 
   ierr = PetscObjectReference((PetscObject)anchorSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&plex->anchorSection);CHKERRQ(ierr);
@@ -6989,7 +7001,7 @@ static PetscErrorCode DMPlexCreateConstraintSection_Anchors(DM dm, PetscSection 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetAnchors(dm,&anchorSection,NULL);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)section),cSec);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PETSC_COMM_SELF,cSec);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section,&numFields);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(*cSec,numFields);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(anchorSection,&pStart,&pEnd);CHKERRQ(ierr);
@@ -7121,19 +7133,24 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
 #define __FUNCT__ "DMCreateDefaultConstraints_Plex"
 PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm)
 {
-  DM_Plex *plex = (DM_Plex *)dm->data;
-  PetscSection anchorSection, section, cSec;
-  Mat cMat;
+  DM_Plex        *plex = (DM_Plex *)dm->data;
+  PetscSection   anchorSection, section, cSec;
+  Mat            cMat;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetAnchors(dm,&anchorSection,NULL);CHKERRQ(ierr);
   if (anchorSection) {
+    PetscDS  ds;
+    PetscInt nf;
+
     ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
     ierr = DMPlexCreateConstraintSection_Anchors(dm,section,&cSec);CHKERRQ(ierr);
     ierr = DMPlexCreateConstraintMatrix_Anchors(dm,section,cSec,&cMat);CHKERRQ(ierr);
-    if (plex->computeanchormatrix) {ierr = (*plex->computeanchormatrix)(dm,section,cSec,cMat);CHKERRQ(ierr);}
+    ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
+    ierr = PetscDSGetNumFields(ds,&nf);
+    if (nf && plex->computeanchormatrix) {ierr = (*plex->computeanchormatrix)(dm,section,cSec,cMat);CHKERRQ(ierr);}
     ierr = DMSetDefaultConstraints(dm,cSec,cMat);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&cSec);CHKERRQ(ierr);
     ierr = MatDestroy(&cMat);CHKERRQ(ierr);

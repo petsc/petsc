@@ -253,6 +253,9 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+#if 1
+  comm = PETSC_COMM_SELF;
+#endif
   /* create a reference element */
   ierr = DMPlexCreateReferenceCell(comm, dim, simplex, &K);CHKERRQ(ierr);
   ierr = DMPlexCreateLabel(K, "identity");CHKERRQ(ierr);
@@ -720,7 +723,7 @@ static PetscErrorCode DMPlexCreateAnchors_Tree(DM dm)
     aMin = -1;
     aMax = -1;
   }
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&aSec);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PETSC_COMM_SELF,&aSec);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(aSec,aMin,aMax);CHKERRQ(ierr);
   for (p = aMin; p < aMax; p++) {
     PetscInt parent, ancestor = p;
@@ -773,7 +776,7 @@ static PetscErrorCode DMPlexCreateAnchors_Tree(DM dm)
       ierr = DMPlexRestoreTransitiveClosure(dm,ancestor,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
     }
   }
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),size,anchors,PETSC_OWN_POINTER,&aIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,size,anchors,PETSC_OWN_POINTER,&aIS);CHKERRQ(ierr);
   {
     PetscSection aSecNew = aSec;
     IS           aISNew  = aIS;
@@ -810,7 +813,7 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   /* symmetrize the hierarchy */
   ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&newSupportSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)(mesh->supportSection)),&newSupportSection);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(newSupportSection,pStart,pEnd);CHKERRQ(ierr);
   ierr = PetscCalloc1(pEnd,&offsets);CHKERRQ(ierr);

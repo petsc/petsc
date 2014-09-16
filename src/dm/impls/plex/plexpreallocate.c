@@ -173,7 +173,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   PetscInt           locRows, rStart, rEnd, r;
   PetscMPIInt        size;
   PetscBool          doCommLocal, doComm, debug = PETSC_FALSE, isSymBlock, isSymSeqBlock, isSymMPIBlock;
-  PetscBool          useConstraints;
+  PetscBool          useAnchors;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -219,7 +219,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   /*   Fill in the ghost dofs on the interface */
   ierr = PetscSFGetGraph(sf, NULL, &nleaves, &leaves, &remotes);CHKERRQ(ierr);
   /* use constraints in finding adjacency in this routine */
-  ierr = DMPlexGetAdjacencyUseAnchors(dm,&useConstraints);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacencyUseAnchors(dm,&useAnchors);CHKERRQ(ierr);
   ierr = DMPlexSetAdjacencyUseAnchors(dm,PETSC_TRUE);CHKERRQ(ierr);
 
   /*
@@ -661,8 +661,8 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  /* restore original useConstraints */
-  ierr = DMPlexSetAdjacencyUseAnchors(dm,useConstraints);CHKERRQ(ierr);
+  /* restore original useAnchors */
+  ierr = DMPlexSetAdjacencyUseAnchors(dm,useAnchors);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionAdj);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Preallocate,dm,0,0,0);CHKERRQ(ierr);

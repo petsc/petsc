@@ -3029,6 +3029,8 @@ PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section)
 /*@
   DMGetDefaultConstraints - Get the PetscSection and Mat the specify the local constraint interpolation. See DMSetDefaultConstraints() for a description of the purpose of constraint interpolation.
 
+  not collective
+
   Input Parameter:
 . dm - The DM
 
@@ -3063,10 +3065,12 @@ PetscErrorCode DMGetDefaultConstraints(DM dm, PetscSection *section, Mat *mat)
 
   If a constraint matrix is specified, then its adjoint is applied during DMLocalToGlobalBegin() when mode is ADD_VALUES, ADD_BC_VALUES, or ADD_ALL_VALUES.  Without a constraint matrix, the local vector l is accumulated into a global vector without modification; with a constraint matrix A, l is first modified by computing c[i] = l[s[i]], l[s[i]] = 0, l = l + A'*c, which is the adjoint of the operation described above.
 
+  collective on dm
+
   Input Parameters:
 + dm - The DM
-+ section - The PetscSection describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.
-- mat - The Mat that interpolates local constraints: its width should be the layout size of the default section:  NULL indicates no constraints.
++ section - The PetscSection describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.  Must have a local communicator (PETSC_COMM_SELF or derivative).
+- mat - The Mat that interpolates local constraints: its width should be the layout size of the default section:  NULL indicates no constraints.  Must have a local communicator (PETSC_COMM_SELF or derivative).
 
   Level: advanced
 
@@ -3076,12 +3080,21 @@ PetscErrorCode DMGetDefaultConstraints(DM dm, PetscSection *section, Mat *mat)
 @*/
 PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
 {
+  PetscMPIInt result;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (section) {PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);}
-  if (mat) {PetscValidHeaderSpecific(mat,MAT_CLASSID,3);}
+  if (section) {
+    PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
+    ierr = MPI_Comm_compare(PETSC_COMM_SELF,PetscObjectComm((PetscObject)section),&result);CHKERRQ(ierr);
+    if (result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"constraint section must have local communicator");
+  }
+  if (mat) {
+    PetscValidHeaderSpecific(mat,MAT_CLASSID,3);
+    ierr = MPI_Comm_compare(PETSC_COMM_SELF,PetscObjectComm((PetscObject)mat),&result);CHKERRQ(ierr);
+    if (result != MPI_CONGRUENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"constraint matrix must have local communicator");
+  }
   ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&dm->defaultConstraintSection);CHKERRQ(ierr);
   dm->defaultConstraintSection = section;
