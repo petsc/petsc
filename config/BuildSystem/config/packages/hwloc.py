@@ -18,14 +18,17 @@ class Configure(config.package.GNUPackage):
     return args
 
   def configure(self):
-    '''Download by default '''
+    '''Download by default and just continue if it does not build '''
     if self.framework.clArgDB.has_key('download-hwloc') and not self.framework.argDB['download-hwloc']:
       self.framework.logPrint("Not downloading hwloc on user request\n")
       return
     if self.argDB['with-batch']:
       return
     self.framework.argDB['download-hwloc'] = 1
-    config.package.GNUPackage.configure(self)
+    try:
+      config.package.GNUPackage.configure(self)
+    except:
+      self.found = 0
 
 
 
