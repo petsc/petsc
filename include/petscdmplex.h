@@ -147,8 +147,8 @@ PETSC_EXTERN PetscErrorCode DMPlexSetAdjacencyUseCone(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetAdjacencyUseCone(DM,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMPlexSetAdjacencyUseClosure(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetAdjacencyUseClosure(DM,PetscBool*);
-PETSC_EXTERN PetscErrorCode DMPlexSetAdjacencyUseConstraints(DM,PetscBool);
-PETSC_EXTERN PetscErrorCode DMPlexGetAdjacencyUseConstraints(DM,PetscBool*);
+PETSC_EXTERN PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM,PetscBool);
+PETSC_EXTERN PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM,PetscBool*);
 PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency(DM, PetscInt, PetscInt *, PetscInt *[]);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetOrdering(DM, MatOrderingType, IS *);
@@ -246,9 +246,9 @@ PETSC_EXTERN PetscErrorCode DMPlexTSComputeIFunctionFEM(DM, PetscReal, Vec, Vec,
 
 PETSC_EXTERN PetscErrorCode DMPlexComputeRHSFunctionFVM(DM, PetscReal, Vec, Vec, void *);
 
-/* constraints */
-PETSC_EXTERN PetscErrorCode DMPlexGetConstraints(DM, PetscSection*, IS*);
-PETSC_EXTERN PetscErrorCode DMPlexSetConstraints(DM, PetscSection, IS);
+/* anchors */
+PETSC_EXTERN PetscErrorCode DMPlexGetAnchors(DM, PetscSection*, IS*);
+PETSC_EXTERN PetscErrorCode DMPlexSetAnchors(DM, PetscSection, IS);
 PETSC_EXTERN PetscErrorCode DMPlexGetConstraintSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMPlexGetConstraintMatrix(DM, Mat*);
 PETSC_EXTERN PetscErrorCode DMPlexSetConstraintMatrix(DM, Mat);

@@ -18,7 +18,7 @@ static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscSection section
   ierr = PetscSectionGetChart(section,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(adjSec,pStart,pEnd);CHKERRQ(ierr);
 
-  ierr = DMPlexGetConstraints(dm,&aSec,&aIS);CHKERRQ(ierr);
+  ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
   if (aSec) {
     const PetscInt *anchors;
     PetscInt       p, q, a, aSize, *offsets, aStart, aEnd, *inverse, iSize, *adj, adjSize;
@@ -219,8 +219,8 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   /*   Fill in the ghost dofs on the interface */
   ierr = PetscSFGetGraph(sf, NULL, &nleaves, &leaves, &remotes);CHKERRQ(ierr);
   /* use constraints in finding adjacency in this routine */
-  ierr = DMPlexGetAdjacencyUseConstraints(dm,&useConstraints);CHKERRQ(ierr);
-  ierr = DMPlexSetAdjacencyUseConstraints(dm,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacencyUseAnchors(dm,&useConstraints);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseAnchors(dm,PETSC_TRUE);CHKERRQ(ierr);
 
   /*
    section        - maps points to (# dofs, local dofs)
@@ -662,7 +662,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   /* restore original useConstraints */
-  ierr = DMPlexSetAdjacencyUseConstraints(dm,useConstraints);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseAnchors(dm,useConstraints);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionAdj);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Preallocate,dm,0,0,0);CHKERRQ(ierr);

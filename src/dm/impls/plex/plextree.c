@@ -790,7 +790,7 @@ static PetscErrorCode DMPlexComputeConstraints_Tree(DM dm)
       ierr    = AnchorsFlatten(aSec,aIS,&aSecNew,&aISNew);CHKERRQ(ierr);
     }
   }
-  ierr = DMPlexSetConstraints(dm,aSec,aIS);CHKERRQ(ierr);
+  ierr = DMPlexSetAnchors(dm,aSec,aIS);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&aSec);CHKERRQ(ierr);
   ierr = ISDestroy(&aIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -982,7 +982,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
 
   Level: intermediate
 
-.seealso: DMPlexGetTree(), DMPlexSetReferenceTree(), DMPlexSetConstraints(), DMPlexGetTreeParent(), DMPlexGetTreeChildren()
+.seealso: DMPlexGetTree(), DMPlexSetReferenceTree(), DMPlexSetAnchors(), DMPlexGetTreeParent(), DMPlexGetTreeChildren()
 @*/
 PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents[], PetscInt childIDs[])
 {
@@ -1013,7 +1013,7 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
 
   Level: intermediate
 
-.seealso: DMPlexSetTree(), DMPlexSetReferenceTree(), DMPlexSetConstraints(), DMPlexGetTreeParent(), DMPlexGetTreeChildren()
+.seealso: DMPlexSetTree(), DMPlexSetReferenceTree(), DMPlexSetAnchors(), DMPlexGetTreeParent(), DMPlexGetTreeChildren()
 @*/
 PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *parents[], PetscInt *childIDs[], PetscSection *childSection, PetscInt *children[])
 {
@@ -1148,7 +1148,7 @@ static PetscErrorCode DMPlexComputeConstraintMatrix_ReferenceTree(DM dm)
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
   ierr = DMPlexGetConstraintSection(dm,&cSec);CHKERRQ(ierr);
-  ierr = DMPlexGetConstraints(dm,&aSec,&aIS);CHKERRQ(ierr);
+  ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
   ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(cSec,&conStart,&conEnd);CHKERRQ(ierr);
   ierr = DMPlexGetConstraintMatrix(dm,&cMat);CHKERRQ(ierr);
@@ -1405,8 +1405,8 @@ PetscErrorCode DMPlexComputeConstraintMatrix_Tree(DM dm)
   ierr = DMPlexComputeConstraintMatrix_ReferenceTree(refTree);CHKERRQ(ierr);
   ierr = DMPlexGetConstraintMatrix(refTree,&refCmat);CHKERRQ(ierr);
   ierr = DMPlexGetChart(refTree,&pRefStart,&pRefEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetConstraints(refTree,&refAnSec,&refAnIS);CHKERRQ(ierr);
-  ierr = DMPlexGetConstraints(dm,&anSec,&anIS);CHKERRQ(ierr);
+  ierr = DMPlexGetAnchors(refTree,&refAnSec,&refAnIS);CHKERRQ(ierr);
+  ierr = DMPlexGetAnchors(dm,&anSec,&anIS);CHKERRQ(ierr);
   ierr = ISGetIndices(refAnIS,&refAnchors);CHKERRQ(ierr);
   ierr = ISGetIndices(anIS,&anchors);CHKERRQ(ierr);
   ierr = DMPlexGetConstraintSection(refTree,&refConSec);CHKERRQ(ierr);

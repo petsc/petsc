@@ -4108,7 +4108,7 @@ PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC,const PetscInt bcF
     }
     ierr = ISRestoreIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
   }
-  ierr = DMPlexGetConstraints(dm, &aSec, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetAnchors(dm, &aSec, NULL);CHKERRQ(ierr);
   if (aSec) {
     PetscInt aStart, aEnd, a;
 
@@ -4330,7 +4330,7 @@ PetscErrorCode DMPlexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const
   ierr = DMPlexCreateSectionBCDof(dm, numBC, bcField, bcPoints, PETSC_DETERMINE, *section);CHKERRQ(ierr);
   if (perm) {ierr = PetscSectionSetPermutation(*section, perm);CHKERRQ(ierr);}
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
-  ierr = DMPlexGetConstraints(dm,&aSec,NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetAnchors(dm,&aSec,NULL);CHKERRQ(ierr);
   if (numBC || aSec) {ierr = DMPlexCreateSectionBCIndicesAll(dm, *section);CHKERRQ(ierr);}
   ierr = PetscSectionViewFromOptions(*section,NULL,"-section_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5334,7 +5334,7 @@ static PetscErrorCode DMPlexConstraintsModifyMat(DM dm, PetscSection section, Pe
   PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
 
-  ierr = DMPlexGetConstraints(dm,&aSec,&aIS);CHKERRQ(ierr);
+  ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
   /* if there are point-to-point constraints */
   if (aSec) {
     ierr = PetscMemzero(newOffsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
@@ -6876,11 +6876,11 @@ PetscErrorCode DMPlexSetCoarseDM(DM dm, DM cdm)
 
 /* constraints */
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexGetConstraints"
+#define __FUNCT__ "DMPlexGetAnchors"
 /*@
-  DMPlexGetConstraints - Get the layout of the local point-to-point constraints
+  DMPlexGetAnchors - Get the layout of the local point-to-point constraints
 
-  not collective
+  collective on DM
 
   Input Parameters:
 . dm - The DMPlex object
@@ -6892,9 +6892,9 @@ PetscErrorCode DMPlexSetCoarseDM(DM dm, DM cdm)
 
   Level: intermediate
 
-.seealso: DMPlexSetConstraints(), DMPlexGetConstraintSection(), DMPlexGetConstraintMatrix(), DMPlexSetConstraintMatrix()
+.seealso: DMPlexSetAnchors(), DMPlexGetConstraintSection(), DMPlexGetConstraintMatrix(), DMPlexSetConstraintMatrix()
 @*/
-PetscErrorCode DMPlexGetConstraints(DM dm, PetscSection *anchorSection, IS *anchorIS)
+PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
 
@@ -6978,13 +6978,13 @@ static PetscErrorCode DMLocalToGlobalHook_Plex_constraints(DM dm, Vec l, InsertM
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexSetConstraints"
+#define __FUNCT__ "DMPlexSetAnchors"
 /*@
-  DMPlexSetConstraints - Set the layout of the local point-to-point constraints.  Unlike boundary conditions, when a
+  DMPlexSetAnchors - Set the layout of the local point-to-point constraints.  Unlike boundary conditions, when a
   point's degrees of freedom in a section are constrained to an outside value, the point-to-point constraints set a
   point's degrees of freedom to be a linear combination of other points' degrees of freedom.
 
-  After specifying the layout of constraints with DMPlexSetConstraints(), one specifies the constraints by calling
+  After specifying the layout of constraints with DMPlexSetAnchors(), one specifies the constraints by calling
   DMPlexGetConstraintMatrix() and filling in the entries.  This matrix will be used fill in the constrained values
   from the anchor values in local vectors in DMGlobalToLocalEnd() with mode = INSERT_VALUES, and its transpose is used
   to sum constrained values back to their anchor values in DMLocalToGlobalBegin() with mode = ADD_VALUES.
@@ -7001,9 +7001,9 @@ static PetscErrorCode DMLocalToGlobalHook_Plex_constraints(DM dm, Vec l, InsertM
 
   Level: intermediate
 
-.seealso: DMPlexGetConstraints(), DMPlexGetConstraintSection(), DMPlexGetConstraintMatrix(), DMPlexSetConstraintMatrix()
+.seealso: DMPlexGetAnchors(), DMPlexGetConstraintSection(), DMPlexGetConstraintMatrix(), DMPlexSetConstraintMatrix()
 @*/
-PetscErrorCode DMPlexSetConstraints(DM dm, PetscSection anchorSection, IS anchorIS)
+PetscErrorCode DMPlexSetAnchors(DM dm, PetscSection anchorSection, IS anchorIS)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
   PetscErrorCode ierr;
@@ -7130,7 +7130,7 @@ static PetscErrorCode DMPlexCreateConstraintSection(DM dm, PetscSection *cSec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMPlexGetConstraints(dm,&anchorSection,NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetAnchors(dm,&anchorSection,NULL);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)section),cSec);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section,&numFields);CHKERRQ(ierr);
@@ -7170,7 +7170,7 @@ static PetscErrorCode DMPlexCreateConstraintSection(DM dm, PetscSection *cSec)
 
   Level: intermediate
 
-.seealso: DMPlexGetConstraints(), DMPlexSetConstraints(), DMPlexGetConstraintMatrix(), DMPlexSetConstraintMatrix()
+.seealso: DMPlexGetAnchors(), DMPlexSetAnchors(), DMPlexGetConstraintMatrix(), DMPlexSetConstraintMatrix()
 @*/
 PetscErrorCode DMPlexGetConstraintSection(DM dm, PetscSection *cSec)
 {
@@ -7206,7 +7206,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix(DM dm, Mat *cMat)
   ierr = MatCreate(PETSC_COMM_SELF,cMat);CHKERRQ(ierr);
   ierr = MatSetSizes(*cMat,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*cMat,MATSEQAIJ);
-  ierr = DMPlexGetConstraints(dm,&aSec,&aIS);CHKERRQ(ierr);
+  ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
   ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(aSec,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscMalloc1(m+1,&i);CHKERRQ(ierr);
@@ -7313,7 +7313,7 @@ static PetscErrorCode DMPlexCreateConstraintMatrix(DM dm, Mat *cMat)
 
   Level: intermediate
 
-.seealso: DMPlexGetConstraints(), DMPlexSetConstraints(), DMPlexGetConstraintSection(), DMPlexSetConstraintMatrix()
+.seealso: DMPlexGetAnchors(), DMPlexSetAnchors(), DMPlexGetConstraintSection(), DMPlexSetConstraintMatrix()
 @*/
 PetscErrorCode DMPlexGetConstraintMatrix(DM dm, Mat *cMat)
 {
@@ -7346,10 +7346,9 @@ PetscErrorCode DMPlexGetConstraintMatrix(DM dm, Mat *cMat)
 
   The reference count of cMat is incremented.
 
-
   Level: advanced.
 
-.seealso: DMPlexGetConstraints(), DMPlexSetConstraints(), DMPlexGetConstraintSection(), DMPlexGetConstraintMatrix()
+.seealso: DMPlexGetAnchors(), DMPlexSetAnchors(), DMPlexGetConstraintSection(), DMPlexGetConstraintMatrix()
 @*/
 PetscErrorCode DMPlexSetConstraintMatrix(DM dm, Mat cMat)
 {
@@ -7374,7 +7373,7 @@ PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMPlexGetConstraints(dm,&anchorSection,NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetAnchors(dm,&anchorSection,NULL);CHKERRQ(ierr);
   if (anchorSection) {
     ierr = DMPlexCreateConstraintSection(dm,&cSec);CHKERRQ(ierr);
     ierr = DMPlexCreateConstraintMatrix(dm,&cMat);CHKERRQ(ierr);

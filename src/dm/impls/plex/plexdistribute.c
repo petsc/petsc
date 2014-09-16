@@ -120,9 +120,9 @@ PetscErrorCode DMPlexGetAdjacencyUseClosure(DM dm, PetscBool *useClosure)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexSetAdjacencyUseConstraints"
+#define __FUNCT__ "DMPlexSetAdjacencyUseAnchors"
 /*@
-  DMPlexSetAdjacencyUseConstraints - Define adjacency in the mesh using the point-to-point constraints.
+  DMPlexSetAdjacencyUseAnchors - Define adjacency in the mesh using the point-to-point constraints.
 
   Input Parameters:
 + dm      - The DM object
@@ -130,9 +130,9 @@ PetscErrorCode DMPlexGetAdjacencyUseClosure(DM dm, PetscBool *useClosure)
 
   Level: intermediate
 
-.seealso: DMPlexGetAdjacencyUseClosure(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetConstraints()
+.seealso: DMPlexGetAdjacencyUseClosure(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetAnchors()
 @*/
-PetscErrorCode DMPlexSetAdjacencyUseConstraints(DM dm, PetscBool useConstraints)
+PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM dm, PetscBool useConstraints)
 {
   DM_Plex *mesh = (DM_Plex *) dm->data;
 
@@ -143,9 +143,9 @@ PetscErrorCode DMPlexSetAdjacencyUseConstraints(DM dm, PetscBool useConstraints)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexGetAdjacencyUseConstraints"
+#define __FUNCT__ "DMPlexGetAdjacencyUseAnchors"
 /*@
-  DMPlexGetAdjacencyUseConstraints - Query whether adjacency in the mesh uses the point-to-point constraints.
+  DMPlexGetAdjacencyUseAnchors - Query whether adjacency in the mesh uses the point-to-point constraints.
 
   Input Parameter:
 . dm      - The DM object
@@ -155,9 +155,9 @@ PetscErrorCode DMPlexSetAdjacencyUseConstraints(DM dm, PetscBool useConstraints)
 
   Level: intermediate
 
-.seealso: DMPlexSetAdjacencyUseConstraints(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetConstraints()
+.seealso: DMPlexSetAdjacencyUseAnchors(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetAnchors()
 @*/
-PetscErrorCode DMPlexGetAdjacencyUseConstraints(DM dm, PetscBool *useConstraints)
+PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM dm, PetscBool *useConstraints)
 {
   DM_Plex *mesh = (DM_Plex *) dm->data;
 
@@ -267,7 +267,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
 
   PetscFunctionBeginHot;
   if (useConstraints) {
-    ierr = DMPlexGetConstraints(dm,&aSec,&aIS);CHKERRQ(ierr);
+    ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
     if (aSec) {
       ierr = PetscSectionGetMaxDof(aSec,&maxAnchors);CHKERRQ(ierr);
       maxAnchors = PetscMax(1,maxAnchors);

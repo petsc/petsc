@@ -315,7 +315,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     ierr = PetscSectionSetUp(aSec);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,numConst,anchors,PETSC_OWN_POINTER,&aIS);CHKERRQ(ierr);
 
-    ierr = DMPlexSetConstraints(dm,aSec,aIS);CHKERRQ(ierr);
+    ierr = DMPlexSetAnchors(dm,aSec,aIS);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&aSec);CHKERRQ(ierr);
     ierr = ISDestroy(&aIS);CHKERRQ(ierr);
   }
@@ -338,7 +338,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     PetscSection aSec;
     IS           aIS;
 
-    ierr = DMPlexGetConstraints(dm,&aSec,&aIS);CHKERRQ(ierr);
+    ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
     if (aSec) {
       PetscDS         ds;
       PetscSection    cSec, section;
