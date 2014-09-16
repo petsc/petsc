@@ -77,10 +77,11 @@ typedef struct {
   IS                   globalCellNumbers;
 
   /* Constraints */
-  PetscSection         anchorSection;     /* maps constrained points to anchor points */
-  IS                   anchorIS;          /* anchors indexed by the above section */
-  PetscSection         constraintSection; /* maps points to rows in the constraint matrix below */
-  Mat                  constraintMat;     /* (m x n), m = constrained dofs in the default section, n = dofs in the default section */
+  PetscSection         anchorSection;      /* maps constrained points to anchor points */
+  IS                   anchorIS;           /* anchors indexed by the above section */
+  PetscErrorCode     (*createanchors)(DM); /* compute anchors (probably from tree constraints */
+  PetscSection         constraintSection;  /* maps points to rows in the constraint matrix below */
+  Mat                  constraintMat;      /* (m x n), m = constrained dofs in the default section, n = dofs in the default section */
 
   /* Tree: automatically construct constraints for hierarchically non-conforming meshes */
   PetscSection         parentSection;     /* dof == 1 if point has parent */

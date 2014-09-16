@@ -6897,9 +6897,11 @@ PetscErrorCode DMPlexSetCoarseDM(DM dm, DM cdm)
 PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!plex->anchorSection && !plex->anchorIS && plex->createanchors) {ierr = (*plex->createanchors)(dm);CHKERRQ(ierr);}
   if (anchorSection) *anchorSection = plex->anchorSection;
   if (anchorIS) *anchorIS = plex->anchorIS;
   PetscFunctionReturn(0);

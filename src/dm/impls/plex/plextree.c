@@ -959,6 +959,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
   if (exchangeSupports) {
     ierr = DMPlexTreeExchangeSupports(dm);CHKERRQ(ierr);
   }
+  mesh->createanchors = DMPlexComputeConstraints_Tree;
   ierr = DMPlexComputeConstraints_Tree(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
