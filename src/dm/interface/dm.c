@@ -3048,11 +3048,9 @@ PetscErrorCode DMGetDefaultConstraints(DM dm, PetscSection *section, Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(section, 2);
-  PetscValidPointer(mat, 3);
   if (!dm->defaultConstraintSection && !dm->defaultConstraintMat && dm->ops->createdefaultconstraints) {ierr = (*dm->ops->createdefaultconstraints)(dm);CHKERRQ(ierr);}
-  *section = dm->defaultConstraintSection;
-  *mat = dm->defaultConstraintMat;
+  if (section) {*section = dm->defaultConstraintSection;}
+  if (mat) {*mat = dm->defaultConstraintMat;}
   PetscFunctionReturn(0);
 }
 
