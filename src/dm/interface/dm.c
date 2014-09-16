@@ -3076,7 +3076,6 @@ PetscErrorCode DMGetDefaultConstraints(DM dm, PetscSection *section, Mat *mat)
 @*/
 PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
 {
-  PetscInt       numFields;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3086,7 +3085,6 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
   ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&dm->defaultConstraintSection);CHKERRQ(ierr);
   dm->defaultConstraintSection = section;
-  ierr = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   ierr = MatDestroy(&dm->defaultConstraintMat);CHKERRQ(ierr);
   dm->defaultConstraintMat = mat;

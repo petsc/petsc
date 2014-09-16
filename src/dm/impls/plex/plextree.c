@@ -687,8 +687,8 @@ static PetscErrorCode AnchorsFlatten (PetscSection section, IS is, PetscSection 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeConstraints_Tree"
-static PetscErrorCode DMPlexComputeConstraints_Tree(DM dm)
+#define __FUNCT__ "DMPlexCreateAnchors_Tree"
+static PetscErrorCode DMPlexCreateAnchors_Tree(DM dm)
 {
   PetscInt       p, pStart, pEnd, *anchors, size;
   PetscInt       aMin = PETSC_MAX_INT, aMax = PETSC_MIN_INT;
@@ -878,6 +878,9 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM,PetscSection,PetscSection,Mat);
+static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM,PetscSection,PetscSection,Mat);
+
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetTree_Internal"
 static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, PetscInt *parents, PetscInt *childIDs, PetscBool computeCanonical, PetscBool exchangeSupports)
@@ -920,6 +923,10 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
         }
       }
     }
+    mesh->computeanchormatrix = DMPlexComputeAnchorMatrix_Tree_FromReference;
+  }
+  else {
+    mesh->computeanchormatrix = DMPlexComputeAnchorMatrix_Tree_Direct;
   }
   ierr = DMPlexTreeSymmetrize(dm);CHKERRQ(ierr);
   if (computeCanonical) {
@@ -959,8 +966,9 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
   if (exchangeSupports) {
     ierr = DMPlexTreeExchangeSupports(dm);CHKERRQ(ierr);
   }
-  mesh->createanchors = DMPlexComputeConstraints_Tree;
-  ierr = DMPlexComputeConstraints_Tree(dm);CHKERRQ(ierr);
+  mesh->createanchors = DMPlexCreateAnchors_Tree;
+  /* reset anchors */
+  ierr = DMPlexSetAnchors(dm,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1129,15 +1137,14 @@ PetscErrorCode DMPlexGetTreeChildren(DM dm, PetscInt point, PetscInt *numChildre
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeConstraintMatrix_ReferenceTree"
-static PetscErrorCode DMPlexComputeConstraintMatrix_ReferenceTree(DM dm)
+#define __FUNCT__ "DMPlexComputeAnchorMatrix_Tree_Direct"
+static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection section, PetscSection cSec, Mat cMat)
 {
   PetscDS        ds;
   PetscInt       spdim;
   PetscInt       numFields, f, c, cStart, cEnd, pStart, pEnd, conStart, conEnd;
   const PetscInt *anchors;
-  PetscSection   section, cSec, aSec;
-  Mat            cMat;
+  PetscSection   aSec;
   PetscReal      *v0, *v0parent, *vtmp, *J, *Jparent, *invJparent, detJ, detJparent;
   IS             aIS;
   PetscErrorCode ierr;
@@ -1147,12 +1154,9 @@ static PetscErrorCode DMPlexComputeConstraintMatrix_ReferenceTree(DM dm)
   ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(ds,&numFields);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
-  ierr = DMPlexGetConstraintSection(dm,&cSec);CHKERRQ(ierr);
   ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
   ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(cSec,&conStart,&conEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetConstraintMatrix(dm,&cMat);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&spdim);CHKERRQ(ierr);
   ierr = PetscMalloc6(spdim,&v0,spdim,&v0parent,spdim,&vtmp,spdim*spdim,&J,spdim*spdim,&Jparent,spdim*spdim,&invJparent);CHKERRQ(ierr);
 
@@ -1384,15 +1388,15 @@ static PetscErrorCode DMPlexComputeConstraintMatrix_ReferenceTree(DM dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeConstraintMatrix_Tree"
-PetscErrorCode DMPlexComputeConstraintMatrix_Tree(DM dm)
+#define __FUNCT__ "DMPlexComputeAnchorMatrix_Tree_FromReference"
+static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscSection section, PetscSection conSec, Mat cMat)
 {
   DM             refTree;
   PetscDS        ds;
-  Mat            refCmat, cMat;
+  Mat            refCmat;
   PetscInt       numFields, f, pRefStart, pRefEnd, p, *rows, *cols, maxDof, maxAnDof, *perm, *iperm, pStart, pEnd, conStart, conEnd, **refPointFieldN;
   PetscScalar ***refPointFieldMats, *pointWork;
-  PetscSection   refConSec, conSec, refAnSec, anSec, section, refSection;
+  PetscSection   refConSec, refAnSec, anSec, refSection;
   IS             refAnIS, anIS;
   const PetscInt *refAnchors, *anchors;
   PetscErrorCode ierr;
@@ -1403,17 +1407,13 @@ PetscErrorCode DMPlexComputeConstraintMatrix_Tree(DM dm)
   ierr = PetscDSGetNumFields(ds,&numFields);CHKERRQ(ierr);
   ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
   ierr = DMSetDS(refTree,ds);CHKERRQ(ierr);
-  ierr = DMPlexComputeConstraintMatrix_ReferenceTree(refTree);CHKERRQ(ierr);
-  ierr = DMPlexGetConstraintMatrix(refTree,&refCmat);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(refTree,&refConSec,&refCmat);CHKERRQ(ierr);
   ierr = DMPlexGetChart(refTree,&pRefStart,&pRefEnd);CHKERRQ(ierr);
   ierr = DMPlexGetAnchors(refTree,&refAnSec,&refAnIS);CHKERRQ(ierr);
   ierr = DMPlexGetAnchors(dm,&anSec,&anIS);CHKERRQ(ierr);
   ierr = ISGetIndices(refAnIS,&refAnchors);CHKERRQ(ierr);
   ierr = ISGetIndices(anIS,&anchors);CHKERRQ(ierr);
-  ierr = DMPlexGetConstraintSection(refTree,&refConSec);CHKERRQ(ierr);
-  ierr = DMPlexGetConstraintSection(dm,&conSec);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(refTree,&refSection);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(refConSec,&pRefStart,&pRefEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(conSec,&conStart,&conEnd);CHKERRQ(ierr);
   ierr = PetscMalloc1(pRefEnd-pRefStart,&refPointFieldMats);CHKERRQ(ierr);
@@ -1533,7 +1533,6 @@ PetscErrorCode DMPlexComputeConstraintMatrix_Tree(DM dm)
     const PetscInt *ia, *ja;
     PetscScalar *vals;
 
-    ierr = DMPlexGetConstraintMatrix(dm,&cMat);CHKERRQ(ierr);
     ierr = MatGetRowIJ(cMat,0,PETSC_FALSE,PETSC_FALSE,&nRows,&ia,&ja,&done);CHKERRQ(ierr);
     if (!done) SETERRQ(PetscObjectComm((PetscObject)cMat),PETSC_ERR_PLIB,"Could not get RowIJ of constraint matrix");
     nnz  = ia[nRows];

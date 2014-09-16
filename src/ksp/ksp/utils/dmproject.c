@@ -57,9 +57,9 @@ PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
 
   Note: If the DM is of type DMPLEX, then y is the solution of L' * D * L * y = L' * D * x, where D is a diagonal mask that is 1 for every point in
   the union of the closures of the local cells and 0 otherwise.  This difference is only relevant if there are anchor points that are not in the
-  closure of any local cell (see DMPlexGetConstraints()/DMPlexSetConstraints()).
+  closure of any local cell (see DMPlexGetAnchors()/DMPlexSetAnchors()).
 
-.seealso: DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToGlobalEnd(), DMPlexGetConstraints(), DMPlexSetConstraints()
+.seealso: DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToGlobalEnd(), DMPlexGetAnchors(), DMPlexSetAnchors()
 @*/
 PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 {
@@ -160,7 +160,7 @@ PetscErrorCode DMPlexProjectFunction(DM dm, void (**funcs)(const PetscReal [], P
   if (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES) {
     Mat cMat;
 
-    ierr = DMPlexGetConstraintMatrix(dm, &cMat);CHKERRQ(ierr);
+    ierr = DMGetDefaultConstraints(dm, NULL, &cMat);CHKERRQ(ierr);
     if (cMat) {
       ierr = DMGlobalToLocalSolve(dm, localX, X);CHKERRQ(ierr);
     }
@@ -204,7 +204,7 @@ PetscErrorCode DMPlexProjectField(DM dm, Vec U, void (**funcs)(const PetscScalar
   if (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES) {
     Mat cMat;
 
-    ierr = DMPlexGetConstraintMatrix(dm, &cMat);CHKERRQ(ierr);
+    ierr = DMGetDefaultConstraints(dm, NULL, &cMat);CHKERRQ(ierr);
     if (cMat) {
       ierr = DMGlobalToLocalSolve(dm, localX, X);CHKERRQ(ierr);
     }

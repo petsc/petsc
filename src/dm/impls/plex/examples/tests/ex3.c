@@ -350,8 +350,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
       ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
       /* this creates the matrix and preallocates the matrix structure: we
        * just have to fill in the values */
-      ierr = DMPlexGetConstraintMatrix(dm,&cMat);CHKERRQ(ierr);
-      ierr = DMPlexGetConstraintSection(dm,&cSec);CHKERRQ(ierr);
+      ierr = DMGetDefaultConstraints(dm,&cSec,&cMat);CHKERRQ(ierr);
       ierr = PetscSectionGetChart(cSec,&cStart,&cEnd);CHKERRQ(ierr);
       ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
       ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
@@ -443,7 +442,6 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 
     ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(ds,0,0,NULL,NULL,NULL,symmetric_gradient_inner_product);CHKERRQ(ierr);
-    ierr = DMPlexComputeConstraintMatrix_Tree(dm);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm,&E);CHKERRQ(ierr);
     ierr = DMGetLocalVector(dm,&local);CHKERRQ(ierr);
     ierr = DMPlexSNESComputeJacobianFEM(dm,local,E,E,NULL);CHKERRQ(ierr);
