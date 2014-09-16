@@ -126,19 +126,19 @@ PetscErrorCode DMPlexGetAdjacencyUseClosure(DM dm, PetscBool *useClosure)
 
   Input Parameters:
 + dm      - The DM object
-- useConstraints - Flag to use the constraints.  If PETSC_TRUE, then constrained points are omitted from DMPlexGetAdjacency(), and their anchor points appear in their place.
+- useAnchors - Flag to use the constraints.  If PETSC_TRUE, then constrained points are omitted from DMPlexGetAdjacency(), and their anchor points appear in their place.
 
   Level: intermediate
 
 .seealso: DMPlexGetAdjacencyUseClosure(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetAnchors()
 @*/
-PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM dm, PetscBool useConstraints)
+PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM dm, PetscBool useAnchors)
 {
   DM_Plex *mesh = (DM_Plex *) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  mesh->useConstraints = useConstraints;
+  mesh->useAnchors = useAnchors;
   PetscFunctionReturn(0);
 }
 
@@ -151,20 +151,20 @@ PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM dm, PetscBool useConstraints)
 . dm      - The DM object
 
   Output Parameter:
-. useConstraints - Flag to use the closure.  If PETSC_TRUE, then constrained points are omitted from DMPlexGetAdjacency(), and their anchor points appear in their place.
+. useAnchors - Flag to use the closure.  If PETSC_TRUE, then constrained points are omitted from DMPlexGetAdjacency(), and their anchor points appear in their place.
 
   Level: intermediate
 
 .seealso: DMPlexSetAdjacencyUseAnchors(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator(), DMPlexSetAnchors()
 @*/
-PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM dm, PetscBool *useConstraints)
+PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM dm, PetscBool *useAnchors)
 {
   DM_Plex *mesh = (DM_Plex *) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(useConstraints, 2);
-  *useConstraints = mesh->useConstraints;
+  PetscValidIntPointer(useAnchors, 2);
+  *useAnchors = mesh->useAnchors;
   PetscFunctionReturn(0);
 }
 
@@ -254,7 +254,7 @@ static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetAdjacency_Internal"
-PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone, PetscBool useTransitiveClosure, PetscBool useConstraints, PetscInt *adjSize, PetscInt *adj[])
+PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone, PetscBool useTransitiveClosure, PetscBool useAnchors, PetscInt *adjSize, PetscInt *adj[])
 {
   static PetscInt asiz = 0;
   PetscInt maxAnchors = 1;
@@ -266,7 +266,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
   PetscErrorCode  ierr;
 
   PetscFunctionBeginHot;
-  if (useConstraints) {
+  if (useAnchors) {
     ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
     if (aSec) {
       ierr = PetscSectionGetMaxDof(aSec,&maxAnchors);CHKERRQ(ierr);
@@ -297,7 +297,7 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
   } else {
     ierr = DMPlexGetAdjacency_Support_Internal(dm, p, adjSize, *adj);CHKERRQ(ierr);
   }
-  if (useConstraints && aSec) {
+  if (useAnchors && aSec) {
     PetscInt origSize = *adjSize;
     PetscInt numAdj = origSize;
     PetscInt i = 0, j;
@@ -367,7 +367,7 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(adjSize,3);
   PetscValidPointer(adj,4);
-  ierr = DMPlexGetAdjacency_Internal(dm, p, mesh->useCone, mesh->useClosure, mesh->useConstraints, adjSize, adj);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacency_Internal(dm, p, mesh->useCone, mesh->useClosure, mesh->useAnchors, adjSize, adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -690,9 +690,9 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     ierr = PetscSFSetGraph((*dmParallel)->sf, pEnd - pStart, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFSetFromOptions((*dmParallel)->sf);CHKERRQ(ierr);
   }
-  pmesh->useCone        = mesh->useCone;
-  pmesh->useClosure     = mesh->useClosure;
-  pmesh->useConstraints = mesh->useConstraints;
+  pmesh->useCone    = mesh->useCone;
+  pmesh->useClosure = mesh->useClosure;
+  pmesh->useAnchors = mesh->useAnchors;
   ierr = PetscLogEventEnd(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
   /* Distribute Coordinates */
   {

@@ -96,7 +96,7 @@ typedef struct {
   /* Adjacency */
   PetscBool            useCone;           /* Use cone() first when defining adjacency */
   PetscBool            useClosure;        /* Use the transitive closure when defining adjacency */
-  PetscBool            useConstraints;    /* Replace constrained points with their anchors in adjacency lists */
+  PetscBool            useAnchors;        /* Replace constrained points with their anchors in adjacency lists */
 
   /* Output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
