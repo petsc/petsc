@@ -1490,7 +1490,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
           ierr = DMLabelGetValue(blabel, cone[0], &valA);CHKERRQ(ierr);
           ierr = DMLabelGetValue(blabel, cone[1], &valB);CHKERRQ(ierr);
           ierr = DMLabelGetValue(blabel, support[s], &valE);CHKERRQ(ierr);
-          if ((valE < 0) && (valA >= 0) && (valB >= 0)) {ierr = DMLabelSetValue(blabel, support[s], 2);CHKERRQ(ierr);}
+          if ((valE < 0) && (valA >= 0) && (valB >= 0) && (cone[0] != cone[1])) {ierr = DMLabelSetValue(blabel, support[s], 2);CHKERRQ(ierr);}
         }
       }
     }
