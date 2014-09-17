@@ -189,6 +189,8 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeGeometryFVM(DM, Vec *, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeGradientFVM(DM, PetscFV, Vec, Vec, DM *);
 
 /* FEM Support */
+PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValues(DM, Vec, PetscReal, Vec, Vec, Vec);
+
 PETSC_EXTERN PetscErrorCode DMPlexCreateSection(DM, PetscInt, PetscInt,const PetscInt [],const PetscInt [], PetscInt,const PetscInt [],const IS [], IS, PetscSection *);
 
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryAffineFEM(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
@@ -234,7 +236,6 @@ typedef struct {
   void *user;
 } JacActionCtx;
 
-PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValuesFEM(DM, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexProjectFunction(DM, void (**)(const PetscReal [], PetscScalar *, void *), void **, InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexProjectFunctionLocal(DM, void (**)(const PetscReal [], PetscScalar *, void *), void **, InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexProjectField(DM, Vec, void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal [], PetscScalar []), InsertMode, Vec);

@@ -69,7 +69,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
       ierr = DMGetField(dm, 0, &fe);CHKERRQ(ierr);
       if (fe->classid == PETSCFE_CLASSID) fem = PETSC_TRUE;
     }
-    if (fem) {ierr = DMPlexInsertBoundaryValuesFEM(dm, v);CHKERRQ(ierr);}
+    if (fem) {ierr = DMPlexInsertBoundaryValues(dm, v, 0.0, NULL, NULL, NULL);CHKERRQ(ierr);}
   }
   if (isvtk) {
     PetscSection            section;
