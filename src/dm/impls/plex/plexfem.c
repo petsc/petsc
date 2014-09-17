@@ -198,7 +198,7 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscSection section, PetscSection g
 
   Level: advanced
 
-.seealso: DMPlexGetMaxProjectionHeight(), DMPlexProjectFieldLocal(), DMPlexProjectFunctionLocal(), DMPlexProjectFunctionLabelLocal()
+.seealso: DMPlexGetMaxProjectionHeight(), DMPlexProjectFunctionLocal(), DMPlexProjectFunctionLabelLocal()
 @*/
 PetscErrorCode DMPlexSetMaxProjectionHeight(DM dm, PetscInt height)
 {
@@ -224,7 +224,7 @@ PetscErrorCode DMPlexSetMaxProjectionHeight(DM dm, PetscInt height)
 
   Level: intermediate
 
-.seealso: DMPlexSetMaxProjectionHeight(), DMPlexProjectFieldLocal(), DMPlexProjectFunctionLocal(), DMPlexProjectFunctionLabelLocal()
+.seealso: DMPlexSetMaxProjectionHeight(), DMPlexProjectFunctionLocal(), DMPlexProjectFunctionLabelLocal()
 @*/
 PetscErrorCode DMPlexGetMaxProjectionHeight(DM dm, PetscInt *height)
 {
@@ -257,6 +257,9 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
   if (maxHeight < 0 || maxHeight > dim) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"maximum projection height %d not in [0, %d)\n", maxHeight,dim);}
   if (maxHeight > 0) {
     ierr = PetscMalloc1(numFields,&cellsp);CHKERRQ(ierr);
+  }
+  else {
+    cellsp = sp;
   }
   for (h = 0; h <= maxHeight; h++) {
     ierr = DMPlexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
@@ -350,10 +353,13 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
   if (maxHeight > 0) {
     ierr = PetscMalloc1(numFields,&cellsp);CHKERRQ(ierr);
   }
+  else {
+    cellsp = sp;
+  }
   ierr = PetscMalloc2(dim,&v0,dim*dim,&J);CHKERRQ(ierr);
   for (h = 0; h <= maxHeight; h++) {
     ierr = DMPlexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
-    if (pStart <= pEnd) continue;
+    if (pEnd <= pStart) continue;
     totDim = 0;
     for (f = 0; f < numFields; ++f) {
       PetscFE fe;
@@ -458,10 +464,12 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
   PetscSection      section, sectionAux;
   PetscScalar      *values, *u, *u_x, *a, *a_x;
   PetscReal        *x, *v0, *J, *invJ, detJ, **basisField, **basisFieldDer, **basisFieldAux, **basisFieldDerAux;
-  PetscInt          Nf, dim, spDim, totDim, numValues, cStart, cEnd, c, f, d, v, comp;
+  PetscInt          Nf, dim, spDim, totDim, numValues, cStart, cEnd, c, f, d, v, comp, maxHeight;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexGetMaxProjectionHeight(dm,&maxHeight);CHKERRQ(ierr);
+  if (maxHeight > 0) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Field projection for height > 0 not supported yet");}
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
