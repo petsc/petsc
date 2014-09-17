@@ -175,7 +175,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
   PetscBool      symset,flg;
-  PetscInt       i,m,m_local,firstRow,lastRow;
+  PetscInt       i,m,m_local;
   MatReuse       scall = MAT_REUSE_MATRIX;
   IS             isl;
   KSP            ksp;
@@ -266,8 +266,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     ierr = PetscMalloc1(osm->n_local,&osm->x);CHKERRQ(ierr);
     ierr = PetscMalloc1(osm->n_local,&osm->y);CHKERRQ(ierr);
     ierr = PetscMalloc1(osm->n_local,&osm->y_local);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(vec, &firstRow, &lastRow);CHKERRQ(ierr);
-    for (i=0; i<osm->n_local_true; ++i, firstRow += m_local) {
+    for (i=0; i<osm->n_local_true; ++i) {
       ierr = ISGetLocalSize(osm->is[i],&m);CHKERRQ(ierr);
       ierr = VecCreateSeq(PETSC_COMM_SELF,m,&osm->x[i]);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
@@ -308,7 +307,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = PetscObjectReference((PetscObject) osm->restriction[i]);CHKERRQ(ierr);
       }
     }
-    if (firstRow != lastRow) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Specified ASM subdomain sizes were invalid: %d != %d", firstRow, lastRow);
     for (i=osm->n_local_true; i<osm->n_local; i++) {
       ierr = VecCreateSeq(PETSC_COMM_SELF,0,&osm->x[i]);CHKERRQ(ierr);
       ierr = VecDuplicate(osm->x[i],&osm->y[i]);CHKERRQ(ierr);
