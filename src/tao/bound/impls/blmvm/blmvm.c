@@ -259,10 +259,9 @@ static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
 
   Level: beginner
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BLMVM"
-PetscErrorCode TaoCreate_BLMVM(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
 {
   TAO_BLMVM      *blmP;
   const char     *morethuente_type = TAOLINESEARCHMT;
@@ -288,5 +287,4 @@ PetscErrorCode TaoCreate_BLMVM(Tao tao)
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

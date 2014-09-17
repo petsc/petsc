@@ -296,10 +296,9 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
 
    Level: beginner
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_ASFLS"
-PetscErrorCode TaoCreate_ASFLS(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_ASFLS(Tao tao)
 {
   TAO_SSLS       *asls;
   PetscErrorCode ierr;
@@ -348,9 +347,6 @@ PetscErrorCode TaoCreate_ASFLS(Tao tao)
   tao->gatol = 1.0e-16;
   tao->fmin = 1.0e-8;
 #endif
-
-
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

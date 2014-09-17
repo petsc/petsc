@@ -1213,7 +1213,6 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Moab"
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
@@ -1253,5 +1252,4 @@ PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
   dm->ops->localtoglobalend         = DMLocalToGlobalEnd_Moab;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

@@ -1151,10 +1151,9 @@ static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
  
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_POUNDERS"
-PetscErrorCode TaoCreate_POUNDERS(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
 {
   TAO_POUNDERS   *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;
@@ -1194,5 +1193,5 @@ PetscErrorCode TaoCreate_POUNDERS(Tao tao)
   mfqP->workxvec = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

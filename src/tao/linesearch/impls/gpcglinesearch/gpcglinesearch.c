@@ -192,10 +192,9 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
 }
 
 /* ---------------------------------------------------------- */
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchCreate_GPCG"
-PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
 {
   PetscErrorCode     ierr;
   TaoLineSearch_GPCG *neP;
@@ -223,4 +222,4 @@ PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
   ls->ops->setfromoptions=0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

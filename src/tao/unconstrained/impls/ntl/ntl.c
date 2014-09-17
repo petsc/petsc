@@ -970,10 +970,9 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NTL"
-PetscErrorCode TaoCreate_NTL(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
 {
   TAO_NTL        *tl;
   PetscErrorCode ierr;
@@ -1063,7 +1062,7 @@ PetscErrorCode TaoCreate_NTL(Tao tao)
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 
 
 
