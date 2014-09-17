@@ -80,6 +80,9 @@ typedef struct {
   PetscBool            useCone;           /* Use cone() first when defining adjacency */
   PetscBool            useClosure;        /* Use the transitive closure when defining adjacency */
 
+  /* Projection */
+  PetscInt             maxProjectionHeight; /* maximum height of cells used in DMPlexProject functions */
+
   /* Output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
   PetscReal            scale[NUM_PETSC_UNITS];   /* The scale for each SI unit */

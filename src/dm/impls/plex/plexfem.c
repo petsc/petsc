@@ -182,6 +182,61 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscSection section, PetscSection g
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexSetMaxProjectionHeight"
+/*@
+  DMPlexSetMaxProjectionHeight - In DMPlexProjectXXXLocal() functions, the projected values of a basis function's dofs
+  are computed by associating the basis function with one of the mesh points in its transitively-closed support, and
+  evaluating the dual space basis of that point.  A basis function is associated with the point in its
+  transitively-closed support whose mesh height is highest (w.r.t. DAG height), but not greater than the maximum
+  projection height, which is set with this function.  By default, the maximum projection height is zero, which means
+  that only mesh cells are used to project basis functions.  A height of one, for example, evaluates a cell-interior
+  basis functions using its cells dual space basis, but all other basis functions with the dual space basis of a face.
+
+  Input Parameters:
++ dm - the DMPlex object
+- height - the maximum projection height >= 0
+
+  Level: advanced
+
+.seealso: DMPlexGetMaxProjectionHeight(), DMPlexProjectFieldLocal(), DMPlexProjectFunctionLocal(), DMPlexProjectFunctionLabelLocal()
+@*/
+PetscErrorCode DMPlexSetMaxProjectionHeight(DM dm, PetscInt height)
+{
+  DM_Plex *plex = (DM_Plex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  plex->maxProjectionHeight = height;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetMaxProjectionHeight"
+/*@
+  DMPlexGetMaxProjectionHeight - Get the maximum height (w.r.t. DAG) of mesh points used to evaluate dual bases in
+  DMPlexProjectXXXLocal() functions.
+
+  Input Parameters:
+. dm - the DMPlex object
+
+  Output Parameters:
+. height - the maximum projection height
+
+  Level: intermediate
+
+.seealso: DMPlexSetMaxProjectionHeight(), DMPlexProjectFieldLocal(), DMPlexProjectFunctionLocal(), DMPlexProjectFunctionLabelLocal()
+@*/
+PetscErrorCode DMPlexGetMaxProjectionHeight(DM dm, PetscInt *height)
+{
+  DM_Plex *plex = (DM_Plex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  *height = plex->maxProjectionHeight;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexProjectFunctionLabelLocal"
 PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscFE fe[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
