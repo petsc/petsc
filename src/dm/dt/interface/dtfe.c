@@ -1749,6 +1749,40 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeome
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceGetHeightSubspace"
+/*@
+  PetscDualSpaceGetHeightSubspace - Get the subset of the dual space basis that is supported on a mesh point of a given height.
+
+  If the dual space is not defined on mesh points of the given height (e.g. if the space is discontinuous and
+  pointwise values are not defined on the element boundaries), or if the implementation of PetscDualSpace does not
+  support extracting subspaces, then NULL is returned.
+
+  Input Parameters:
++ sp - the PetscDualSpace object
+- height - the height of the mesh point for which the subspace is desired
+
+  Output Parameters:
+  bdsp - the subspace: must be destroyed by the user
+
+  Level: advanced
+
+.seealso: PetscDualSpace
+@*/
+PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt height, PetscDualSpace *bdsp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(bdsp,2);
+  *bdsp = NULL;
+  if (sp->ops->getheightsubspace) {
+    ierr = (*sp->ops->getheightsubspace)(sp,height,bdsp);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetDimension_SingleCell_Lagrange"
 static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSpace sp, PetscInt order, PetscInt *dim)
 {
@@ -2106,17 +2140,53 @@ PetscErrorCode PetscDualSpaceLagrangeSetContinuity(PetscDualSpace sp, PetscBool 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceGetHeightSubspace_Lagrange"
+PetscErrorCode PetscDualSpaceGetHeightSubspace_Lagrange(PetscDualSpace sp, PetscInt height, PetscDualSpace *bdsp)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
+  PetscBool          continuous;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(bdsp,2);
+  ierr = PetscDualSpaceLagrangeGetContinuity(sp,&continuous);CHKERRQ(ierr);
+  if (height == 0) {
+    ierr = PetscObjectReference((PetscObject)sp);CHKERRQ(ierr);
+    *bdsp = sp;
+  }
+  else if (continuous == PETSC_FALSE) {
+    *bdsp = NULL;
+  }
+  else {
+    DM dm, K;
+    PetscInt dim;
+
+    ierr = PetscDualSpaceGetDM(sp,&dm);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+    if (height > dim || height < 0) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Asked for dual space at height %d for dimension %d reference element\n",height,dim);}
+    ierr = PetscDualSpaceDuplicate(sp,bdsp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceCreateReferenceCell(*bdsp, dim-height, lag->simplex, &K);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSetDM(*bdsp, K);CHKERRQ(ierr);
+    ierr = DMDestroy(&K);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSetUp(*bdsp);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceInitialize_Lagrange"
 PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
 {
   PetscFunctionBegin;
-  sp->ops->setfromoptions = PetscDualSpaceSetFromOptions_Lagrange;
-  sp->ops->setup          = PetscDualSpaceSetUp_Lagrange;
-  sp->ops->view           = NULL;
-  sp->ops->destroy        = PetscDualSpaceDestroy_Lagrange;
-  sp->ops->duplicate      = PetscDualSpaceDuplicate_Lagrange;
-  sp->ops->getdimension   = PetscDualSpaceGetDimension_Lagrange;
-  sp->ops->getnumdof      = PetscDualSpaceGetNumDof_Lagrange;
+  sp->ops->setfromoptions    = PetscDualSpaceSetFromOptions_Lagrange;
+  sp->ops->setup             = PetscDualSpaceSetUp_Lagrange;
+  sp->ops->view              = NULL;
+  sp->ops->destroy           = PetscDualSpaceDestroy_Lagrange;
+  sp->ops->duplicate         = PetscDualSpaceDuplicate_Lagrange;
+  sp->ops->getdimension      = PetscDualSpaceGetDimension_Lagrange;
+  sp->ops->getnumdof         = PetscDualSpaceGetNumDof_Lagrange;
+  sp->ops->getheightsubspace = PetscDualSpaceGetHeightSubspace_Lagrange;
   PetscFunctionReturn(0);
 }
 

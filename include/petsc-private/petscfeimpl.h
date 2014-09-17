@@ -45,6 +45,7 @@ struct _PetscDualSpaceOps {
   PetscErrorCode (*duplicate)(PetscDualSpace,PetscDualSpace*);
   PetscErrorCode (*getdimension)(PetscDualSpace,PetscInt*);
   PetscErrorCode (*getnumdof)(PetscDualSpace,const PetscInt**);
+  PetscErrorCode (*getheightsubspace)(PetscDualSpace,const PetscInt,PetscDualSpace *);
 };
 
 struct _p_PetscDualSpace {
