@@ -11,10 +11,24 @@ class Configure(config.package.GNUPackage):
     return
 
   def formGNUConfigureArgs(self):
-    '''Don't require x libraries since they may not always be available or hwloc may not be able to locate them (on Apple)'''
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    args.append('--without-x')
+    # Don't require x libraries since they may not always be available or hwloc may not be able to locate them on Apple
+    if self.setCompilers.isDarwin():
+      args.append('--without-x')
     return args
+
+  def configure(self):
+    '''Download by default and just continue if it does not build '''
+    if self.framework.clArgDB.has_key('download-hwloc') and not self.framework.argDB['download-hwloc']:
+      self.framework.logPrint("Not downloading hwloc on user request\n")
+      return
+    if self.argDB['with-batch']:
+      return
+    self.framework.argDB['download-hwloc'] = 1
+    try:
+      config.package.GNUPackage.configure(self)
+    except:
+      self.found = 0
 
 
 
