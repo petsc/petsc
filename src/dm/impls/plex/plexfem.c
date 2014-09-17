@@ -183,8 +183,9 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscSection section, PetscSection g
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexProjectFunctionLabelLocal"
-PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscFE fe[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
+  PetscFE         fe;
   PetscDualSpace *sp;
   PetscSection    section;
   PetscScalar    *values;
@@ -198,8 +199,9 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   ierr = PetscMalloc1(numFields,&sp);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
-    ierr = PetscFEGetDualSpace(fe[f], &sp[f]);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe[f], &numComp);CHKERRQ(ierr);
+    ierr = DMGetField(dm, f, (PetscObject *) &fe);CHKERRQ(ierr);
+    ierr = PetscFEGetDualSpace(fe, &sp[f]);CHKERRQ(ierr);
+    ierr = PetscFEGetNumComponents(fe, &numComp);CHKERRQ(ierr);
     ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
     totDim += spDim*numComp;
   }
@@ -225,7 +227,9 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
       ierr = DMPlexComputeCellGeometryFEM(dm, point, NULL, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
       for (f = 0, v = 0; f < numFields; ++f) {
         void * const ctx = ctxs ? ctxs[f] : NULL;
-        ierr = PetscFEGetNumComponents(fe[f], &numComp);CHKERRQ(ierr);
+
+        ierr = DMGetField(dm, f, (PetscObject *) &fe);CHKERRQ(ierr);
+        ierr = PetscFEGetNumComponents(fe, &numComp);CHKERRQ(ierr);
         ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
         for (d = 0; d < spDim; ++d) {
           if (funcs[f]) {
