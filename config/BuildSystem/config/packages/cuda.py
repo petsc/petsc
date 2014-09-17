@@ -12,17 +12,7 @@ class Configure(config.package.Package):
     self.cxx              = 0
     self.cudaArch      = ''
     self.CUDAVersion   = '4000' # Version 4.0
-    self.CUSPVersion   = '200' #Version 0.2.0
-    self.ThrustVersion = '100400' #Version 1.4.0
-#
-#   Obtain cusp with
-#   git clone https://github.com/cusplibrary/cusplibrary.git cusp
-#   Put cusp in /usr/local/cuda
-#
-
     self.CUDAVersionStr = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)%100)
-    self.ThrustVersionStr = str(int(self.ThrustVersion)/100000) + '.' + str(int(self.ThrustVersion)/100%1000) + '.' + str(int(self.ThrustVersion)%100)
-    self.CUSPVersionStr   = str(int(self.CUSPVersion)/100000) + '.' + str(int(self.CUSPVersion)/100%1000) + '.' + str(int(self.CUSPVersion)%100)
     return
 
   def __str__(self):
