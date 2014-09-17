@@ -259,17 +259,29 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   prob->totDim = prob->totDimBd = prob->totComp = 0;
   ierr = PetscMalloc4(Nf,&prob->basis,Nf,&prob->basisDer,Nf,&prob->basisBd,Nf,&prob->basisDerBd);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    PetscFE         fe   = (PetscFE) prob->disc[f];
     PetscFE         feBd = (PetscFE) prob->discBd[f];
+    PetscObject     obj;
+    PetscClassId    id;
     PetscQuadrature q;
-    PetscInt        Nq, Nb, Nc;
+    PetscInt        Nq = 0, Nb, Nc;
 
-    /* TODO Dispatch on discretization type*/
-    ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
-    ierr = PetscQuadratureGetData(q, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
-    ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-    ierr = PetscFEGetDefaultTabulation(fe, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID)      {
+      PetscFE fe = (PetscFE) obj;
+
+      ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
+      ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+      ierr = PetscFEGetDefaultTabulation(fe, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      PetscFV fv = (PetscFV) obj;
+
+      ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
+      Nb   = 1;
+      ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
+    if (q) {ierr = PetscQuadratureGetData(q, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
     NqMax          = PetscMax(NqMax, Nq);
     NcMax          = PetscMax(NcMax, Nc);
     prob->totDim  += Nb*Nc;
@@ -485,7 +497,16 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(dim, 2);
   *dim = 0;
-  if (prob->Nf) {ierr = PetscFEGetSpatialDimension((PetscFE) prob->disc[0], dim);CHKERRQ(ierr);}
+  if (prob->Nf) {
+    PetscObject  obj;
+    PetscClassId id;
+
+    ierr = PetscDSGetDiscretization(prob, 0, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetSpatialDimension((PetscFE) obj, dim);CHKERRQ(ierr);}
+    else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetSpatialDimension((PetscFV) obj, dim);CHKERRQ(ierr);}
+    else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
+  }
   PetscFunctionReturn(0);
 }
 
