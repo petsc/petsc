@@ -1329,7 +1329,7 @@ int main(int argc, char **argv)
   PetscViewer       viewer;
   PetscMPIInt       rank;
   PetscBool         vtkCellGeom, splitFaces;
-  PetscInt          overlap, f;
+  PetscInt          overlap;
   char              filename[PETSC_MAX_PATH_LEN] = "sevenside.exo";
   PetscErrorCode    ierr;
 
@@ -1413,14 +1413,13 @@ int main(int argc, char **argv)
 
   ierr = PetscFVCreate(comm, &fvm);CHKERRQ(ierr);
   ierr = PetscFVSetFromOptions(fvm);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  for (f = 0; f < phys->nfields; ++f) {
-    ierr = PetscDSAddDiscretization(prob, (PetscObject) fvm);CHKERRQ(ierr);
-    ierr = PetscDSSetRiemannSolver(prob, f, user->model->physics->riemann);CHKERRQ(ierr);
-    ierr = PetscDSSetContext(prob, f, user->model->physics);CHKERRQ(ierr);
-  }
   ierr = PetscFVSetNumComponents(fvm, phys->dof);CHKERRQ(ierr);
   ierr = PetscFVSetSpatialDimension(fvm, dim);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  /* FV is now structured with one field having all physics as components */
+  ierr = PetscDSAddDiscretization(prob, (PetscObject) fvm);CHKERRQ(ierr);
+  ierr = PetscDSSetRiemannSolver(prob, 0, user->model->physics->riemann);CHKERRQ(ierr);
+  ierr = PetscDSSetContext(prob, 0, user->model->physics);CHKERRQ(ierr);
 
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts, TSSSP);CHKERRQ(ierr);
