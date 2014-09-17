@@ -1268,3 +1268,115 @@ PetscErrorCode DMPlexSetMinRadius(DM dm, PetscReal minradius)
   ((DM_Plex*) dm->data)->minradius = minradius;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "BuildGradientReconstruction_Internal"
+static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, DM dmFace, PetscScalar *fgeom, DM dmCell, PetscScalar *cgeom)
+{
+  DMLabel        ghostLabel;
+  PetscScalar   *dx, *grad, **gref;
+  PetscInt       dim, cStart, cEnd, c, cEndInterior, maxNumFaces;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetMaxSizes(dm, &maxNumFaces, NULL);CHKERRQ(ierr);
+  ierr = PetscFVLeastSquaresSetMaxFaces(fvm, maxNumFaces);CHKERRQ(ierr);
+  ierr = DMPlexGetLabel(dm, "ghost", &ghostLabel);CHKERRQ(ierr);
+  ierr = PetscMalloc3(maxNumFaces*dim, &dx, maxNumFaces*dim, &grad, maxNumFaces, &gref);CHKERRQ(ierr);
+  for (c = cStart; c < cEndInterior; c++) {
+    const PetscInt        *faces;
+    PetscInt               numFaces, usedFaces, f, d;
+    const PetscFVCellGeom *cg;
+    PetscBool              boundary;
+    PetscInt               ghost;
+
+    ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, c, &numFaces);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, c, &faces);CHKERRQ(ierr);
+    if (numFaces < dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction", c, numFaces);
+    for (f = 0, usedFaces = 0; f < numFaces; ++f) {
+      const PetscFVCellGeom *cg1;
+      PetscFVFaceGeom       *fg;
+      const PetscInt        *fcells;
+      PetscInt               ncell, side;
+
+      ierr = DMLabelGetValue(ghostLabel, faces[f], &ghost);CHKERRQ(ierr);
+      ierr = DMPlexIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
+      if ((ghost >= 0) || boundary) continue;
+      ierr  = DMPlexGetSupport(dm, faces[f], &fcells);CHKERRQ(ierr);
+      side  = (c != fcells[0]); /* c is on left=0 or right=1 of face */
+      ncell = fcells[!side];    /* the neighbor */
+      ierr  = DMPlexPointLocalRef(dmFace, faces[f], fgeom, &fg);CHKERRQ(ierr);
+      ierr  = DMPlexPointLocalRead(dmCell, ncell, cgeom, &cg1);CHKERRQ(ierr);
+      for (d = 0; d < dim; ++d) dx[usedFaces*dim+d] = cg1->centroid[d] - cg->centroid[d];
+      gref[usedFaces++] = fg->grad[side];  /* Gradient reconstruction term will go here */
+    }
+    if (!usedFaces) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Mesh contains isolated cell (no neighbors). Is it intentional?");
+    ierr = PetscFVComputeGradient(fvm, usedFaces, dx, grad);CHKERRQ(ierr);
+    for (f = 0, usedFaces = 0; f < numFaces; ++f) {
+      ierr = DMLabelGetValue(ghostLabel, faces[f], &ghost);CHKERRQ(ierr);
+      ierr = DMPlexIsBoundaryPoint(dm, faces[f], &boundary);CHKERRQ(ierr);
+      if ((ghost >= 0) || boundary) continue;
+      for (d = 0; d < dim; ++d) gref[usedFaces][d] = grad[usedFaces*dim+d];
+      ++usedFaces;
+    }
+  }
+  ierr = PetscFree3(dx, grad, gref);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeGradientFVM"
+/*@
+  DMPlexComputeGradientFVM - Compute geometric factors for gradient reconstruction, which are stored in the geometry data, and compute layout for gradient data
+
+  Collective on DM
+
+  Input Arguments:
++ dm  - The DM
+. fvm - The PetscFV
+. faceGeometry - The face geometry from DMPlexGetFaceGeometryFVM()
+- cellGeometry - The face geometry from DMPlexGetCellGeometryFVM()
+
+  Output Parameters:
++ faceGeometry - The geometric factors for gradient calculation are inserted
+- dmGrad - The DM describing the layout of gradient data
+
+  Level: developer
+
+.seealso: DMPlexGetFaceGeometryFVM(), DMPlexGetCellGeometryFVM()
+@*/
+PetscErrorCode DMPlexComputeGradientFVM(DM dm, PetscFV fvm, Vec faceGeometry, Vec cellGeometry, DM *dmGrad)
+{
+  DM             dmFace, dmCell;
+  PetscScalar   *fgeom, *cgeom;
+  PetscSection   sectionGrad;
+  PetscInt       dim, pdim, cStart, cEnd, cEndInterior, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
+  /* Construct the interpolant corresponding to each face from the least-square solution over the cell neighborhood */
+  ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
+  ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
+  ierr = VecGetArray(faceGeometry, &fgeom);CHKERRQ(ierr);
+  ierr = VecGetArray(cellGeometry, &cgeom);CHKERRQ(ierr);
+  ierr = BuildGradientReconstruction_Internal(dm, fvm, dmFace, fgeom, dmCell, cgeom);CHKERRQ(ierr);
+  ierr = VecRestoreArray(faceGeometry, &fgeom);CHKERRQ(ierr);
+  ierr = VecRestoreArray(cellGeometry, &cgeom);CHKERRQ(ierr);
+  /* Create storage for gradients */
+  ierr = DMClone(dm, dmGrad);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &sectionGrad);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(sectionGrad, cStart, cEnd);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {ierr = PetscSectionSetDof(sectionGrad, c, pdim*dim);CHKERRQ(ierr);}
+  ierr = PetscSectionSetUp(sectionGrad);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(*dmGrad, sectionGrad);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&sectionGrad);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
