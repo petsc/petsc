@@ -6,6 +6,7 @@
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfvtypes.h>
+#include <petscdstypes.h>
 
 /* Assuming dim <= 3 */
 typedef struct {
@@ -96,9 +97,7 @@ PETSC_EXTERN PetscErrorCode PetscFVSetQuadrature(PetscFV, PetscQuadrature);
 PETSC_EXTERN PetscErrorCode PetscFVGetQuadrature(PetscFV, PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode PetscFVComputeGradient(PetscFV, PetscInt, PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV, PetscInt, PetscInt, PetscFV[], PetscInt, PetscFVFaceGeom *, PetscReal *, PetscScalar[], PetscScalar[],
-                                                        void (*)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *),
-                                                        PetscScalar[], PetscScalar[], void *);
+PETSC_EXTERN PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV, PetscDS, PetscInt, PetscInt, PetscFVFaceGeom *, PetscReal *, PetscScalar[], PetscScalar[], PetscScalar[], PetscScalar[]);
 
 PETSC_EXTERN PetscErrorCode PetscFVLeastSquaresSetMaxFaces(PetscFV, PetscInt);
 
