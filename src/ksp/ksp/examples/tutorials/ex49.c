@@ -30,7 +30,7 @@ Options: \n\
                       \n\
                          Parameters: \n\
                               -brick_E    : a comma separated list of Young's modulii \n\
-                              -brick_nu   : a comma separated list of Poisson ratio's  \n\
+                              -brick_nu   : a comma separated list of Poisson ratios  \n\
                               -brick_span : the number of elements in x and y each brick will span \n\
           -c_str 3 => Setup for a sponge-like material with alternating properties. \n\
                       Repeats the following pattern throughout the domain \n\
