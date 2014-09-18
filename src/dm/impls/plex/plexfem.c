@@ -280,6 +280,7 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
     }
     ierr = DMPlexVecGetClosure(dm, section, localX, pStart, &numValues, NULL);CHKERRQ(ierr);
     if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section point closure size %d != dual space dimension %d", numValues, totDim);
+    if (!totDim) continue;
     ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
     ierr = DMGetWorkArray(dm, numFields, PETSC_BOOL, &fieldActive);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) fieldActive[f] = funcs[f] ? PETSC_TRUE : PETSC_FALSE;
@@ -381,6 +382,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
     }
     ierr = DMPlexVecGetClosure(dm, section, localX, pStart, &numValues, NULL);CHKERRQ(ierr);
     if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section point closure size %d != dual space dimension %d", numValues, totDim);
+    if (!totDim) continue;
     ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscCellGeometry geom;
