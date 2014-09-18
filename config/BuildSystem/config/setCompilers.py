@@ -591,6 +591,10 @@ class Configure(config.base.Configure):
     elif self.framework.argDB.has_key('CUDAC'):
       yield self.framework.argDB['CUDAC']
       raise RuntimeError('CUDA compiler you provided with -CUDAC='+self.framework.argDB['CUDAC']+' does not work.'+'\n'+self.mesg)
+    elif self.framework.argDB.has_key('with-cuda-dir'):
+      import os
+      nvccPath = os.path.join(self.framework.argDB['with-cuda-dir'], 'bin','nvcc')
+      yield nvccPath
     else:
       vendor = self.vendor
       if not self.vendor is None:
