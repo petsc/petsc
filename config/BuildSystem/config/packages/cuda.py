@@ -36,6 +36,11 @@ class Configure(config.package.Package):
 
   def getSearchDirectories(self):
     import os
+    self.getExecutable('nvcc',getFullPath=1,resultName='systemNvcc')
+    if hasattr(self, 'systemNvcc'):
+      nvccDir = os.path.dirname(self.systemNvcc)
+      cudaDir = os.path.split(nvccDir)[0]
+      yield cudaDir
     yield ''
     yield os.path.join('/Developer','NVIDIA','CUDA-5.5')
     yield os.path.join('/usr','local','cuda')
