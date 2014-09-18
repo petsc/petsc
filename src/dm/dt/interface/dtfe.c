@@ -2145,17 +2145,19 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace_Lagrange(PetscDualSpace sp, Petsc
 {
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
   PetscBool          continuous;
+  PetscInt           order;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(bdsp,2);
   ierr = PetscDualSpaceLagrangeGetContinuity(sp,&continuous);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetOrder(sp,&order);CHKERRQ(ierr);
   if (height == 0) {
     ierr = PetscObjectReference((PetscObject)sp);CHKERRQ(ierr);
     *bdsp = sp;
   }
-  else if (continuous == PETSC_FALSE) {
+  else if (continuous == PETSC_FALSE || !order) {
     *bdsp = NULL;
   }
   else {
