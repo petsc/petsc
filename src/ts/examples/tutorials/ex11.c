@@ -1327,7 +1327,6 @@ int main(int argc, char **argv)
   TSConvergedReason reason;
   Vec               X;
   PetscViewer       viewer;
-  PetscMPIInt       rank;
   PetscBool         vtkCellGeom, splitFaces;
   PetscInt          overlap;
   char              filename[PETSC_MAX_PATH_LEN] = "sevenside.exo";
@@ -1335,7 +1334,6 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
   ierr = PetscNew(&user);CHKERRQ(ierr);
   ierr = PetscNew(&user->model);CHKERRQ(ierr);
