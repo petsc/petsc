@@ -118,6 +118,8 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
   if (size >1) {
     p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
     pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
+  } else {
+    pi_oth=NULL; pj_oth=NULL; pa_oth=NULL;
   }
 
   /* get apa for storing dense row A[i,:]*P */
@@ -712,7 +714,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
     p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
     pi_oth = p_oth->i; 
     pj_oth = p_oth->j;
-  } 
+  } else {
+    pi_oth = NULL;
+    pj_oth = NULL;
+  }
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
   /*-------------------------------------------------------------------*/
