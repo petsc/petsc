@@ -2756,7 +2756,7 @@ user {\em must} explicitly call KSPSetUp()
 before calling PCBJacobiGetSubKSP() or
 PCASMGetSubKSP().
 For further details, see the
-example \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex7.c}.
+examples \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex7.c} or \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex8.c}.
 
 The block Jacobi, block Gauss-Seidel, and additive Schwarz
 preconditioners allow the user
@@ -2767,7 +2767,7 @@ are \sindex{block Jacobi} \sindex{block Gauss-Seidel}
 \findex{-pc_bjacobi_blocks} \findex{-pc_bgs_blocks}
 \begin{tabbing}
   PCBJacobiSetTotalBlocks(PC pc,int blocks,int *size);\\
-  PCASMSetTotalSubdomains(PC pc,int n,IS *is);\\
+  PCASMSetTotalSubdomains(PC pc,int n,IS *is,IS *is_local);\\
   PCASMSetType(PC pc,PCASMType type);
 \end{tabbing}
 The
@@ -2805,7 +2805,7 @@ The user can also set the number of blocks and sizes on a per-process
 basis with the commands
 \begin{tabbing}
   PCBJacobiSetLocalBlocks(PC pc,int blocks,int *size);\\
-  PCASMSetLocalSubdomains(PC pc,int N,IS *is);
+  PCASMSetLocalSubdomains(PC pc,int N,IS *is,IS *is_local);
 \end{tabbing}
 
 For the ASM preconditioner one can use the following command to set
