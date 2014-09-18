@@ -1210,7 +1210,7 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
     const PetscFVFaceGeom *fg;
     const PetscFVCellGeom *cgL, *cgR;
     PetscFVFaceGeom       *fgeoml = *fgeom;
-    PetscScalar           *voll = *vol;
+    PetscReal             *voll   = *vol;
     PetscInt               ghost, d;
 
     ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
@@ -1561,7 +1561,8 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
   cellChunkSize = (cEnd - cStart)/numChunks;
   faceChunkSize = (fEnd - fStart)/numChunks;
   for (chunk = 0; chunk < numChunks; ++chunk) {
-    PetscScalar     *elemVec, *fluxL, *fluxR, *vol;
+    PetscScalar     *elemVec, *fluxL, *fluxR;
+    PetscReal       *vol;
     PetscFVFaceGeom *fgeom;
     PetscInt         cS = cStart+chunk*cellChunkSize, cE = PetscMin(cS+cellChunkSize, cEnd), numCells = cE - cS, cell;
     PetscInt         fS = fStart+chunk*faceChunkSize, fE = PetscMin(fS+faceChunkSize, fEnd), numFaces = fE - fS, face;
