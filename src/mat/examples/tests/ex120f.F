@@ -1,5 +1,5 @@
 !
-!   This program tests MatGetVecs() for Shell Matrix
+!   This program tests MatCreateVecs() for Shell Matrix
 !
       subroutine mymatgetvecs(A,x,y,ierr)
       implicit none
@@ -43,7 +43,7 @@
       call MatAssemblyBegin(m,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(m,MAT_FINAL_ASSEMBLY,ierr)
       call MatShellSetOperation(m,MATOP_GET_VECS,mymatgetvecs,ierr)
-      call MatGetVecs(m,x,y,ierr)
+      call MatCreateVecs(m,x,y,ierr)
       call MatDestroy(m,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(y,ierr)

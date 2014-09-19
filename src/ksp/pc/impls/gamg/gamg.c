@@ -796,8 +796,8 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           Mat Lmat = Aarr[level];
           Vec bb, xx;
 
-          ierr = MatGetVecs(Lmat, &bb, 0);CHKERRQ(ierr);
-          ierr = MatGetVecs(Lmat, &xx, 0);CHKERRQ(ierr);
+          ierr = MatCreateVecs(Lmat, &bb, 0);CHKERRQ(ierr);
+          ierr = MatCreateVecs(Lmat, &xx, 0);CHKERRQ(ierr);
           {
             PetscRandom rctx;
             ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);

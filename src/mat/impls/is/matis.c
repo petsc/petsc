@@ -95,7 +95,7 @@ PetscErrorCode MatISGetMPIXAIJ_IS(Mat mat, MatReuse reuse, Mat *M)
        Preallocation macros cannot do the job.
        Note that preallocation is not exact, since it overestimates nonzeros
     */
-    ierr = MatGetVecs(new_mat,NULL,&vec_dnz);CHKERRQ(ierr);
+    ierr = MatCreateVecs(new_mat,NULL,&vec_dnz);CHKERRQ(ierr);
     /* ierr = VecSetLocalToGlobalMapping(vec_dnz,rmapping);CHKERRQ(ierr); */
     ierr = VecSetLocalToGlobalMapping(vec_dnz,matis->mapping);CHKERRQ(ierr);
     ierr = VecDuplicate(vec_dnz,&vec_onz);CHKERRQ(ierr);
@@ -515,7 +515,7 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   /* setup the global to local scatter */
   ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&to);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApplyIS(rmapping,to,&from);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&global,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&global,NULL);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,is->x,to,&is->ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
@@ -605,7 +605,7 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
     */
     Vec         counter;
     PetscScalar one=1.0, zero=0.0;
-    ierr = MatGetVecs(A,&counter,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A,&counter,NULL);CHKERRQ(ierr);
     ierr = VecSet(counter,zero);CHKERRQ(ierr);
     ierr = VecSet(is->x,one);CHKERRQ(ierr);
     ierr = VecScatterBegin(is->ctx,is->x,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);

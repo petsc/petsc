@@ -50,7 +50,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Form vectors */
-  ierr = MatGetVecs(C,&x,&y);CHKERRQ(ierr);
+  ierr = MatCreateVecs(C,&x,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&ldim);
   ierr = VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {

@@ -660,7 +660,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       Vec rscale;
       if (!mglevels[i]->smoothd->dm->x) {
         Vec *vecs;
-        ierr = KSPGetVecs(mglevels[i]->smoothd,1,&vecs,0,NULL);CHKERRQ(ierr);
+        ierr = KSPCreateVecs(mglevels[i]->smoothd,1,&vecs,0,NULL);CHKERRQ(ierr);
 
         mglevels[i]->smoothd->dm->x = vecs[0];
 
@@ -702,7 +702,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     for (i=0; i<n-1; i++) {
       if (!mglevels[i]->b) {
         Vec *vec;
-        ierr = KSPGetVecs(mglevels[i]->smoothd,1,&vec,0,NULL);CHKERRQ(ierr);
+        ierr = KSPCreateVecs(mglevels[i]->smoothd,1,&vec,0,NULL);CHKERRQ(ierr);
         ierr = PCMGSetRhs(pc,i,*vec);CHKERRQ(ierr);
         ierr = VecDestroy(vec);CHKERRQ(ierr);
         ierr = PetscFree(vec);CHKERRQ(ierr);
@@ -721,7 +721,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (n != 1 && !mglevels[n-1]->r) {
       /* PCMGSetR() on the finest level if user did not supply it */
       Vec *vec;
-      ierr = KSPGetVecs(mglevels[n-1]->smoothd,1,&vec,0,NULL);CHKERRQ(ierr);
+      ierr = KSPCreateVecs(mglevels[n-1]->smoothd,1,&vec,0,NULL);CHKERRQ(ierr);
       ierr = PCMGSetR(pc,n-1,*vec);CHKERRQ(ierr);
       ierr = VecDestroy(vec);CHKERRQ(ierr);
       ierr = PetscFree(vec);CHKERRQ(ierr);

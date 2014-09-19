@@ -58,7 +58,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     ierr = MatConvert(pc->pmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
   }
   if (!jac->diag) {    /* assume square matrices */
-    ierr = MatGetVecs(jac->A,&jac->diag,&jac->work);CHKERRQ(ierr);
+    ierr = MatCreateVecs(jac->A,&jac->diag,&jac->work);CHKERRQ(ierr);
   }
   if (!jac->U) {
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->U);CHKERRQ(ierr);

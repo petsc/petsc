@@ -188,7 +188,7 @@ PetscErrorCode  MatGetTrace(Mat mat,PetscScalar *trace)
   Vec            diag;
 
   PetscFunctionBegin;
-  ierr = MatGetVecs(mat,&diag,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(mat,&diag,NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(mat,diag);CHKERRQ(ierr);
   ierr = VecSum(diag,trace);CHKERRQ(ierr);
   ierr = VecDestroy(&diag);CHKERRQ(ierr);
@@ -1892,7 +1892,7 @@ PetscErrorCode  MatGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmappin
 
    Level: advanced
 
-.seealso:  MatGetVecs(), MatGetLocalToGlobalMapping()
+.seealso:  MatCreateVecs(), MatGetLocalToGlobalMapping()
 @*/
 PetscErrorCode  MatGetLayouts(Mat A,PetscLayout *rmap,PetscLayout *cmap)
 {
@@ -3145,7 +3145,7 @@ PetscErrorCode  MatMatSolve_Basic(Mat A,Mat B,Mat X)
   ierr = MatDenseGetArray(X,&xx);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);  /* number local rows */
   ierr = MatGetSize(B,NULL,&N);CHKERRQ(ierr);       /* total columns in dense matrix */
-  ierr = MatGetVecs(A,&x,&b);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     ierr = VecPlaceArray(b,bb + i*m);CHKERRQ(ierr);
     ierr = VecPlaceArray(x,xx + i*m);CHKERRQ(ierr);
@@ -8152,9 +8152,9 @@ PetscErrorCode  MatStashGetInfo(Mat mat,PetscInt *nstash,PetscInt *reallocs,Pets
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecs"
+#define __FUNCT__ "MatCreateVecs"
 /*@C
-   MatGetVecs - Get vector(s) compatible with the matrix, i.e. with the same
+   MatCreateVecs - Get vector(s) compatible with the matrix, i.e. with the same
      parallel layout
 
    Collective on Mat
@@ -8166,11 +8166,13 @@ PetscErrorCode  MatStashGetInfo(Mat mat,PetscInt *nstash,PetscInt *reallocs,Pets
 +   right - (optional) vector that the matrix can be multiplied against
 -   left - (optional) vector that the matrix vector product can be stored in
 
+  Notes: These are new vectors which are not owned by the Mat, they should be destroyed in VecDestroy() when no longer needed
+
   Level: advanced
 
-.seealso: MatCreate()
+.seealso: MatCreate(), VecDestroy()
 @*/
-PetscErrorCode  MatGetVecs(Mat mat,Vec *right,Vec *left)
+PetscErrorCode  MatCreateVecs(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
 

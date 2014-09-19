@@ -23,13 +23,13 @@ PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC pc, Mat coarse_mat, MatNullSpace
   if (coarse_mat) {
     ierr = PetscMalloc1((nsp_size+1),&coarse_nsp_vecs);CHKERRQ(ierr);
     for (i=0;i<nsp_size+1;i++) {
-      ierr = MatGetVecs(coarse_mat,&coarse_nsp_vecs[i],NULL);CHKERRQ(ierr);
+      ierr = MatCreateVecs(coarse_mat,&coarse_nsp_vecs[i],NULL);CHKERRQ(ierr);
     }
     if (pcbddc->dbg_flag) {
-      ierr = MatGetVecs(coarse_mat,&wcoarse_vec,&wcoarse_rhs);CHKERRQ(ierr);
+      ierr = MatCreateVecs(coarse_mat,&wcoarse_vec,&wcoarse_rhs);CHKERRQ(ierr);
     }
   }
-  ierr = MatGetVecs(pcbddc->ConstraintMatrix,&local_vec,&local_primal_vec);CHKERRQ(ierr);
+  ierr = MatCreateVecs(pcbddc->ConstraintMatrix,&local_vec,&local_primal_vec);CHKERRQ(ierr);
   if (nsp_has_cnst) {
     ierr = VecSet(local_vec,1.0);CHKERRQ(ierr);
     ierr = MatMult(pcbddc->ConstraintMatrix,local_vec,local_primal_vec);CHKERRQ(ierr);

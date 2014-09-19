@@ -27,8 +27,8 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
   ierr = KSPAppendOptionsPrefix(lsc->kspL,"lsc_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(lsc->kspL);CHKERRQ(ierr);
   ierr = MatSchurComplementGetSubMatrices(pc->mat,&A,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&lsc->x0,&lsc->y0);CHKERRQ(ierr);
-  ierr = MatGetVecs(pc->pmat,&lsc->x1,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&lsc->x0,&lsc->y0);CHKERRQ(ierr);
+  ierr = MatCreateVecs(pc->pmat,&lsc->x1,NULL);CHKERRQ(ierr);
   if (lsc->scalediag) {
     ierr = VecDuplicate(lsc->x0,&lsc->scale);CHKERRQ(ierr);
   }
