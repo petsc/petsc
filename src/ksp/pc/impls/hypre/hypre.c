@@ -1029,6 +1029,7 @@ static PetscErrorCode PCHYPRESetEdgeConstantVectors_HYPRE_AMS(PC pc,Vec ozz, Vec
 {
   PC_HYPRE           *jac = (PC_HYPRE*)pc->data;
   HYPRE_ParVector    par_ozz,par_zoz,par_zzo;
+  PetscInt           dim;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -1045,12 +1046,15 @@ static PetscErrorCode PCHYPRESetEdgeConstantVectors_HYPRE_AMS(PC pc,Vec ozz, Vec
   ierr = VecHYPRE_IJVectorCreate(zoz,&jac->constants[1]);CHKERRQ(ierr);
   ierr = VecHYPRE_IJVectorCopy(zoz,jac->constants[1]);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_IJVectorGetObject,(jac->constants[1],(void**)(&par_zoz)));
+  dim = 2;
   if (zzo) {
     ierr = VecHYPRE_IJVectorCreate(zzo,&jac->constants[2]);CHKERRQ(ierr);
     ierr = VecHYPRE_IJVectorCopy(zzo,jac->constants[2]);CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_IJVectorGetObject,(jac->constants[2],(void**)(&par_zzo)));
+    dim++;
   }
   PetscStackCallStandard(HYPRE_AMSSetEdgeConstantVectors,(jac->hsolver,par_ozz,par_zoz,par_zzo));
+  PetscStackCallStandard(HYPRE_AMSSetDimension,(jac->hsolver,dim));
   PetscFunctionReturn(0);
 }
 
