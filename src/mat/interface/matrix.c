@@ -1584,7 +1584,7 @@ PetscErrorCode  MatSetStencil(Mat mat,PetscInt dim,const PetscInt dims[],const P
    The values in idxm would be 1 2; that is the first index for each block divided by
    the block size.
 
-   Note that you must call MatSetBlockSize() when constructing this matrix (after
+   Note that you must call MatSetBlockSize() when constructing this matrix (before
    preallocating it).
 
    By default the values, v, are row-oriented, so the layout of
@@ -6565,8 +6565,7 @@ PetscErrorCode  MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
 #undef __FUNCT__
 #define __FUNCT__ "MatGetBlockSize"
 /*@
-   MatGetBlockSize - Returns the matrix block size; useful especially for the
-   block row and block diagonal formats.
+   MatGetBlockSize - Returns the matrix block size.
 
    Not Collective
 
@@ -6577,9 +6576,9 @@ PetscErrorCode  MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
 .  bs - block size
 
    Notes:
-   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ.
+    Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ. These formats ALWAYS have square block storage in the matrix.
 
-   If the block size has not been set yet this routine returns -1.
+   If the block size has not been set yet this routine returns 1.
 
    Level: intermediate
 
@@ -6599,8 +6598,7 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 #undef __FUNCT__
 #define __FUNCT__ "MatGetBlockSizes"
 /*@
-   MatGetBlockSizes - Returns the matrix block row and column sizes;
-   useful especially for the block row and block diagonal formats.
+   MatGetBlockSizes - Returns the matrix block row and column sizes.
 
    Not Collective
 
@@ -6612,15 +6610,16 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 .  cbs - coumn block size
 
    Notes:
-   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ.
+    Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ. These formats ALWAYS have square block storage in the matrix.
+    If you pass a different block size for the columns than the rows, the row block size determines the square block storage.
 
-   If a block size has not been set yet this routine returns -1.
+   If a block size has not been set yet this routine returns 1.
 
    Level: intermediate
 
    Concepts: matrices^block size
 
-.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize()
+.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize(), MatSetBlockSize(), MatSetBlockSizes()
 @*/
 PetscErrorCode  MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
 {
@@ -6645,13 +6644,15 @@ PetscErrorCode  MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
 -  bs - block size
 
    Notes:
+    Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ. These formats ALWAYS have square block storage in the matrix.
+
      This must be called before MatSetUp() or MatXXXSetPreallocation() (or will default to 1) and the block size cannot be changed later
 
    Level: intermediate
 
    Concepts: matrices^block size
 
-.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize()
+.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize(), MatSetBlockSizes(), MatGetBlockSizes()
 @*/
 PetscErrorCode  MatSetBlockSize(Mat mat,PetscInt bs)
 {
@@ -6678,13 +6679,18 @@ PetscErrorCode  MatSetBlockSize(Mat mat,PetscInt bs)
 -  cbs - column block size
 
    Notes:
-     This must be called before MatSetUp() or MatXXXSetPreallocation() (or will default to 1) and the block size cannot be changed later
+    Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ. These formats ALWAYS have square block storage in the matrix.
+    If you pass a different block size for the columns than the rows, the row block size determines the square block storage.
+
+    This must be called before MatSetUp() or MatXXXSetPreallocation() (or will default to 1) and the block size cannot be changed later
+
+    The row and column block size determine the blocksize of the "row" and "column" vectors returned by MatCreateVecs().
 
    Level: intermediate
 
    Concepts: matrices^block size
 
-.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize()
+.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize(), MatSetBlockSize(), MatGetBlockSizes()
 @*/
 PetscErrorCode  MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
 {
@@ -8166,6 +8172,9 @@ PetscErrorCode  MatStashGetInfo(Mat mat,PetscInt *nstash,PetscInt *reallocs,Pets
 +   right - (optional) vector that the matrix can be multiplied against
 -   left - (optional) vector that the matrix vector product can be stored in
 
+   Notes:
+    The blocksize of the returned vectors is determined by the row and column block sizes set with MatSetBlockSizes() or the single blocksize (same for both) set by MatSetBlockSize().
+
   Notes: These are new vectors which are not owned by the Mat, they should be destroyed in VecDestroy() when no longer needed
 
   Level: advanced
@@ -8184,7 +8193,7 @@ PetscErrorCode  MatCreateVecs(Mat mat,Vec *right,Vec *left)
     ierr = (*mat->ops->getvecs)(mat,right,left);CHKERRQ(ierr);
   } else {
     PetscMPIInt size;
-    PetscInt rbs,cbs;
+    PetscInt    rbs,cbs;
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size);CHKERRQ(ierr);
     ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
     if (right) {
