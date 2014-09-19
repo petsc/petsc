@@ -860,7 +860,7 @@ PetscErrorCode PCBDDCSetUpLocalMatrices(PC pc)
     }
 
     /* TODO: HOW TO WORK WITH BAIJ and SBAIJ and SEQDENSE? */
-    ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQBAIJ,&isseqaij);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
     if (isseqaij) {
       ierr = MatPtAP(matis->A,change_mat_all[0],reuse,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
     } else {
