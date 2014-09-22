@@ -243,6 +243,9 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   if (size > 1) {
     p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
     pi_oth = p_oth->i; pj_oth = p_oth->j;
+  } else {
+    p_oth = NULL;
+    pi_oth = NULL; pj_oth = NULL;
   }
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
@@ -588,10 +591,12 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   /*----------------------------------------------------------*/
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ*)(ptap->P_loc)->data;
-  pi_loc=p_loc->i; pj_loc=p_loc->j; pa_loc=p_loc->a;
+  pi_loc = p_loc->i; pj_loc = p_loc->j; pa_loc = p_loc->a;
   if (size >1) {
     p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
-    pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
+    pi_oth = p_oth->i; pj_oth = p_oth->j; pa_oth = p_oth->a;
+  } else {
+    p_oth = NULL; pi_oth = NULL; pj_oth = NULL; pa_oth = NULL;
   }
 
   api = ptap->api;
@@ -712,11 +717,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   pi_loc = p_loc->i; pj_loc = p_loc->j;
   if (size > 1) {
     p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
-    pi_oth = p_oth->i; 
-    pj_oth = p_oth->j;
+    pi_oth = p_oth->i; pj_oth = p_oth->j;
   } else {
-    pi_oth = NULL;
-    pj_oth = NULL;
+    p_oth  = NULL;
+    pi_oth = NULL; pj_oth = NULL;
   }
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
