@@ -68,6 +68,10 @@ ex11: ex11.o  chkopts
 	-${CLINKER} -o ex11 ex11.o  ${PETSC_TS_LIB}
 	${RM} ex11.o
 
+ex11_sa: ex11_sa.o chkopts
+	-${CLINKER} -o ex11_sa ex11_sa.o ${PETSC_TS_LIB}
+	${RM} ex11_sa.o
+
 ex12: ex12.o  chkopts
 	-${CLINKER} -o ex12 ex12.o  ${PETSC_TS_LIB}
 	${RM} ex12.o

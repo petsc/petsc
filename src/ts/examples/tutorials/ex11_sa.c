@@ -1399,6 +1399,75 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "OutputBIN"
+static PetscErrorCode OutputBIN(DM dm, const char *filename, PetscViewer *viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscViewerCreate(PetscObjectComm((PetscObject)dm), viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(*viewer, filename);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TestMonitor"
+static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal time)
+{
+  Vec            odesolution;
+  PetscBool      equal;
+  PetscReal      timeread;
+  PetscViewer    viewer;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&odesolution);CHKERRQ(ierr);
+  ierr = VecLoad(odesolution,viewer);CHKERRQ(ierr);
+  VecEqual(X,odesolution,&equal);
+  if(!equal) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the vec data from file");
+  } else {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for Vec\n");CHKERRQ(ierr);
+  }
+  ierr = PetscViewerBinaryRead(viewer,&timeread,1,PETSC_DOUBLE);CHKERRQ(ierr);
+
+  if(timeread!=time) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the scalar data from file");
+  } else {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for PetscReal\n");CHKERRQ(ierr);
+  }
+   
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&odesolution);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MonitorBIN"
+static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,void *ctx)
+{
+  User           user = (User)ctx;
+  DM             dm;
+  PetscViewer    viewer;
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof filename,"ex11-SA-%06d.bin",stepnum);CHKERRQ(ierr);
+  ierr = OutputBIN(dm,filename,&viewer);CHKERRQ(ierr);
+  ierr = VecView(X,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_DOUBLE,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr); 
+  ierr = TestMonitor(dm,filename,X,time);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
@@ -1511,7 +1580,8 @@ int main(int argc, char **argv)
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts, TSSSP);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorVTK,user,NULL);CHKERRQ(ierr);
+  //ierr = TSMonitorSet(ts,MonitorVTK,user,NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,MonitorBIN,user,NULL);CHKERRQ(ierr);
   ierr = DMPlexTSSetRHSFunctionLocal(dm, user->model->physics->riemann, user->model->physics);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
