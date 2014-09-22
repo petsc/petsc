@@ -1432,7 +1432,7 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for Vec\n");CHKERRQ(ierr);
   }
-  ierr = PetscViewerBinaryRead(viewer,&timeread,1,PETSC_DOUBLE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&timeread,1,PETSC_REAL);CHKERRQ(ierr);
 
   if(timeread!=time) {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the scalar data from file");
@@ -1460,7 +1460,7 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = PetscSNPrintf(filename,sizeof filename,"ex11-SA-%06d.bin",stepnum);CHKERRQ(ierr);
   ierr = OutputBIN(dm,filename,&viewer);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_DOUBLE,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr); 
   ierr = TestMonitor(dm,filename,X,time);
   PetscFunctionReturn(0);
