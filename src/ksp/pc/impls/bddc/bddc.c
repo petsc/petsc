@@ -740,7 +740,7 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(xadj,3);
-  PetscValidIntPointer(xadj,4);
+  PetscValidIntPointer(adjncy,4);
   if (copymode != PETSC_COPY_VALUES && copymode != PETSC_OWN_POINTER) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %d in %s\n",copymode,__FUNCT__);
   }
