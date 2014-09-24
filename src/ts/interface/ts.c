@@ -72,6 +72,12 @@ struct _n_TSMonitorDrawCtx {
 .  -ts_max_steps maxsteps - maximum number of time-steps to take
 .  -ts_final_time time - maximum time to compute to
 .  -ts_dt dt - initial time step
+.  -ts_exact_final_time <stepover,interpolate,matchstep> whether to stop at the exact given final time and how to compute the solution at that ti,e
+.  -ts_max_snes_failures <maxfailures> - Maximum number of nonlinear solve failures allowed
+.  -ts_max_reject <maxrejects> - Maximum number of step rejections before step fails
+.  -ts_error_if_step_fails <true,false> - Error if no step succeeds
+.  -ts_rtol <rtol> - relative tolerance for local truncation error
+.  -ts_atol <atol> Absolute tolerance for local truncation error
 .  -ts_monitor - print information at each timestep
 .  -ts_monitor_lg_timestep - Monitor timestep size graphically
 .  -ts_monitor_lg_solution - Monitor solution graphically
@@ -4208,6 +4214,10 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 .  vatol - vector of absolute tolerances or NULL, used in preference to atol if present
 .  rtol - scalar relative tolerances, PETSC_DECIDE to leave current value
 -  vrtol - vector of relative tolerances or NULL, used in preference to atol if present
+
+   Options Database keys:
++  -ts_rtol <rtol> - relative tolerance for local truncation error
+-  -ts_atol <atol> Absolute tolerance for local truncation error
 
    Level: beginner
 
