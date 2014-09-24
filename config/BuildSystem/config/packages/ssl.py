@@ -24,7 +24,7 @@ class Configure(config.package.Package):
     yield ''
 
   def configureLibrary(self):
-    if self.framework.argDB['with-ios']: 
+    if 'with-ios' in self.framework.argDB and self.framework.argDB['with-ios']: 
       self.found = 0
       return
     config.package.Package.configureLibrary(self)
