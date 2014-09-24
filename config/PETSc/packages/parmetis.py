@@ -32,6 +32,7 @@ class Configure(PETSc.package.NewPackage):
 
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
+    args.append('-DMPI_INCLUDE_PATH='+self.mpi.include[0])
     args.append('-DGKLIB_PATH=../headers') # assumes that the 'build' folder is only one directory down
 
     self.framework.pushLanguage('C')
