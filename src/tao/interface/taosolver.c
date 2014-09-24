@@ -1173,7 +1173,7 @@ PetscErrorCode  TaoGetLinearSolveIterations(Tao tao,PetscInt *lits)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidIntPointer(lits,2);
-  *lits = tao->ksp_its;
+  *lits = tao->ksp_tot_its;
   PetscFunctionReturn(0);
 }
 

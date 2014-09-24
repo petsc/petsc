@@ -532,6 +532,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
         }
         ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
         tao->ksp_its += its;
+        tao->ksp_tot_its += its;
       }
 
       ierr = MatMultTranspose(tao->jacobian_design,lclP->lamda,lclP->g2);CHKERRQ(ierr);

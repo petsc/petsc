@@ -102,6 +102,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   /* Initialized variables */
   pert = nlsP->sval;
 
+  /* Number of times ksp stopped because of these reasons */
   nlsP->ksp_atol = 0;
   nlsP->ksp_rtol = 0;
   nlsP->ksp_dtol = 0;
