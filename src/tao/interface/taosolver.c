@@ -2386,7 +2386,7 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
 .  obj   - array to hold objective value history
 .  resid - array to hold residual history
 .  cnorm - array to hold constraint violation history
-.  lits - integer array holds the number of linear iterations for each solve
+.  lits - integer array holds the number of linear iterations for each Tao iteration
 .  na  - size of obj, resid, and cnorm
 -  reset - PetscTrue indicates each new minimization resets the history counter to zero,
            else it continues storing new values for new minimizations after the old ones
@@ -2396,7 +2396,7 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
    information at each iteration.  If 'obj','resid','cnorm','lits' are
    *all* NULL then space (using size na, or 1000 if na is PETSC_DECIDE or
    PETSC_DEFAULT) is allocated for the history.
-   If not all are NULL, then only the Non-NULL information categories
+   If not all are NULL, then only the non-NULL information categories
    will be stored, the others will be ignored.
 
    Any convergence information after iteration number 'na' will not be stored.
