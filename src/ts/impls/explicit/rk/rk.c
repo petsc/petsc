@@ -782,6 +782,19 @@ PetscErrorCode  TSRKSetType_RK(TS ts,TSRKType rktype)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSGetStages_RK"
+static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
+{
+  TS_RK          *rk = (TS_RK*)ts->data;
+
+  PetscFunctionBegin;
+  *ns = rk->tableau->s;
+  *Y  = rk->Y;
+  PetscFunctionReturn(0);
+}
+
+
 /* ------------------------------------------------------------ */
 /*MC
       TSRK - ODE and DAE solver using Runge-Kutta schemes
@@ -819,6 +832,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ts->ops->interpolate    = TSInterpolate_RK;
   ts->ops->evaluatestep   = TSEvaluateStep_RK;
   ts->ops->setfromoptions = TSSetFromOptions_RK;
+  ts->ops->getstages      = TSGetStages_RK;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

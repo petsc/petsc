@@ -236,6 +236,7 @@ PETSC_EXTERN PetscErrorCode TSGetSNESFailures(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetMaxSNESFailures(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSetErrorIfStepFails(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRollBack(TS);
+PETSC_EXTERN PetscErrorCode TSGetStages(TS,PetscInt*,Vec**);
 
 PETSC_EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTimeStep(TS,PetscReal*);
@@ -369,6 +370,7 @@ PETSC_EXTERN PetscErrorCode TSGetKSP(TS,KSP*);
 PETSC_EXTERN PetscErrorCode TSView(TS,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSLoad(TS,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode TSViewFromOptions(TS A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+
 
 #define TS_FILE_CLASSID 1211225
 

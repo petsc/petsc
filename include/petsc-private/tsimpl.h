@@ -35,6 +35,7 @@ struct _TSOps {
   PetscErrorCode (*linearstability)(TS,PetscReal,PetscReal,PetscReal*,PetscReal*);
   PetscErrorCode (*load)(TS,PetscViewer);
   PetscErrorCode (*rollback)(TS);
+  PetscErrorCode (*getstages)(TS,PetscInt*,Vec**);
 };
 
 /* 

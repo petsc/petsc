@@ -4991,3 +4991,34 @@ PetscErrorCode  TSRollBack(TS ts)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSGetStages"
+/*@
+   TSGetStages - Get the number of stages and stage values 
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: advanced
+
+.keywords: TS, getstages
+
+.seealso: TSCreate()
+@*/
+PetscErrorCode  TSGetStages(TS ts,PetscInt *ns, Vec **Y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  PetscValidPointer(ns,2);
+
+  if (!ts->ops->getstages) *ns=0;
+  else {
+    ierr = (*ts->ops->getstages)(ts,ns,Y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+
