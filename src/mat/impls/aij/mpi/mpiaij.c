@@ -876,7 +876,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   /* zero diagonal part of matrix */
   ierr = MatZeroRowsColumns(l->A,len,lrows,diag,x,b);CHKERRQ(ierr);
   /* handle off diagonal part of matrix */
-  ierr = MatGetVecs(A,&xmask,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&xmask,NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(l->lvec,&lmask);CHKERRQ(ierr);
   ierr = VecGetArray(xmask,&bb);CHKERRQ(ierr);
   for (i=0; i<len; i++) bb[lrows[i]] = 1;
@@ -1553,7 +1553,7 @@ PetscErrorCode MatSOR_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,Pe
     ierr = VecScatterBegin(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(mat->Mvctx,xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (!mat->diag) {
-      ierr = MatGetVecs(matin,&mat->diag,NULL);CHKERRQ(ierr);
+      ierr = MatCreateVecs(matin,&mat->diag,NULL);CHKERRQ(ierr);
       ierr = MatGetDiagonal(matin,mat->diag);CHKERRQ(ierr);
     }
     ierr = MatHasOperation(matin,MATOP_MULT_DIAGONAL_BLOCK,&hasop);CHKERRQ(ierr);

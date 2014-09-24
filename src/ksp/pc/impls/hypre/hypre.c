@@ -114,7 +114,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   }
   if (!jac->b) { /* create the vectors the first time through */
     Vec x,b;
-    ierr = MatGetVecs(pc->pmat,&x,&b);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&x,&b);CHKERRQ(ierr);
     ierr = VecHYPRE_IJVectorCreate(x,&jac->x);CHKERRQ(ierr);
     ierr = VecHYPRE_IJVectorCreate(b,&jac->b);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);

@@ -183,11 +183,11 @@ int main(int argc, char **argv)
   ierr = AssembleDiagonalMatrix(A,diagfunc);CHKERRQ(ierr);
 
   /* Allocate vectors and manufacture an exact solution and rhs */
-  ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,NULL);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)x,"Computed Solution");CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&b,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&b,NULL);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)b,"RHS");CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&u,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&u,NULL);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)u,"Reference Solution");CHKERRQ(ierr);
   ierr = VecSet(u,1.0);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);

@@ -259,7 +259,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       }
     }
     /* Create the local work vectors and scatter contexts */
-    ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
     ierr = PetscMalloc1(osm->n_local,&osm->restriction);CHKERRQ(ierr);
     if (osm->is_local) {ierr = PetscMalloc1(osm->n_local,&osm->localization);CHKERRQ(ierr);}
     ierr = PetscMalloc1(osm->n_local,&osm->prolongation);CHKERRQ(ierr);

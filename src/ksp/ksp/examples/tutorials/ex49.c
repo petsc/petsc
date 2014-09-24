@@ -1022,7 +1022,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   ierr = MatNullSpaceCreateRigidBody(vel_coords,&matnull);CHKERRQ(ierr);
   ierr = MatSetNearNullSpace(A,matnull);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&matnull);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&f,&X);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&f,&X);CHKERRQ(ierr);
 
   /* assemble A11 */
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
@@ -1311,7 +1311,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
   /* get new matrix */
   ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,AA);CHKERRQ(ierr);
   /* get new vector */
-  ierr = MatGetVecs(*AA,NULL,ff);CHKERRQ(ierr);
+  ierr = MatCreateVecs(*AA,NULL,ff);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(f,is,*ff,NULL,&scat);CHKERRQ(ierr);
   ierr = VecScatterBegin(scat,f,*ff,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

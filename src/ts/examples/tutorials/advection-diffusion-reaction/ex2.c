@@ -126,7 +126,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&U,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
 
   ctx.k1     = 1.0e-5;
   ctx.k2     = 1.0e5;

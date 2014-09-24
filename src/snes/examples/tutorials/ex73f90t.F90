@@ -300,7 +300,7 @@
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
 !     vectors that are the same types
-      call MatGetVecs(KKTmat,x,PETSC_NULL_OBJECT,ierr)
+      call MatCreateVecs(KKTmat,x,PETSC_NULL_OBJECT,ierr)
       call VecDuplicate(x,r,ierr)
 
       call SNESCreate(PETSC_COMM_WORLD,mysnes,ierr)

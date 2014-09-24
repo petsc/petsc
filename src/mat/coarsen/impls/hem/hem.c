@@ -521,15 +521,15 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
     }
 
     /* set max edge on nodes */
-    ierr = MatGetVecs(cMat, &locMaxEdge, 0);CHKERRQ(ierr);
-    ierr = MatGetVecs(cMat, &locMaxPE, 0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(cMat, &locMaxEdge, 0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(cMat, &locMaxPE, 0);CHKERRQ(ierr);
 
     /* get 'cpcol_pe' & 'cpcol_gid' & init. 'cpcol_matched' using 'mpimat->lvec' */
     if (mpimat) {
       Vec         vec;
       PetscScalar vval;
 
-      ierr = MatGetVecs(cMat, &vec, 0);CHKERRQ(ierr);
+      ierr = MatCreateVecs(cMat, &vec, 0);CHKERRQ(ierr);
       /* cpcol_pe */
       vval = (PetscScalar)(rank);
       for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
@@ -1063,7 +1063,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
       ierr = MatDestroy(&P);CHKERRQ(ierr);
       ierr = MatDestroy(&cMat);CHKERRQ(ierr);
       cMat = tMat;
-      ierr = MatGetVecs(cMat, &diag, 0);CHKERRQ(ierr);
+      ierr = MatCreateVecs(cMat, &diag, 0);CHKERRQ(ierr);
       ierr = MatGetDiagonal(cMat, diag);CHKERRQ(ierr); /* effectively PCJACOBI */
       ierr = VecReciprocal(diag);CHKERRQ(ierr);
       ierr = VecSqrtAbs(diag);CHKERRQ(ierr);

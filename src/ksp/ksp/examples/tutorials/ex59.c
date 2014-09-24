@@ -446,7 +446,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   {
     Vec       lvec,rvec;
     PetscReal norm;
-    ierr = MatGetVecs(temp_local_mat,&lvec,&rvec);CHKERRQ(ierr);
+    ierr = MatCreateVecs(temp_local_mat,&lvec,&rvec);CHKERRQ(ierr);
     ierr = VecSet(lvec,1.0);CHKERRQ(ierr);
     ierr = MatMult(temp_local_mat,lvec,rvec);CHKERRQ(ierr);
     ierr = VecNorm(rvec,NORM_INFINITY,&norm);CHKERRQ(ierr);
@@ -632,7 +632,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   {
     Vec       lvec,rvec;
     PetscReal norm;
-    ierr = MatGetVecs(glldata->elem_mat,&lvec,&rvec);CHKERRQ(ierr);
+    ierr = MatCreateVecs(glldata->elem_mat,&lvec,&rvec);CHKERRQ(ierr);
     ierr = VecSet(lvec,1.0);CHKERRQ(ierr);
     ierr = MatMult(glldata->elem_mat,lvec,rvec);CHKERRQ(ierr);
     ierr = VecNorm(rvec,NORM_INFINITY,&norm);CHKERRQ(ierr);
@@ -754,7 +754,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   {
     Vec       lvec,rvec;
     PetscReal norm;
-    ierr = MatGetVecs(temp_A,&lvec,&rvec);CHKERRQ(ierr);
+    ierr = MatCreateVecs(temp_A,&lvec,&rvec);CHKERRQ(ierr);
     ierr = VecSet(lvec,1.0);CHKERRQ(ierr);
     ierr = MatMult(temp_A,lvec,rvec);CHKERRQ(ierr);
     ierr = VecNorm(rvec,NORM_INFINITY,&norm);CHKERRQ(ierr);
@@ -854,7 +854,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
 #if 0
   Vec vecs[2];
   PetscRandom rctx;
-  ierr = MatGetVecs(A,&vecs[0],&vecs[1]);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&vecs[0],&vecs[1]);CHKERRQ(ierr);
   ierr = PetscRandomCreate(dd.gcomm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetType(rctx,PETSCRAND);CHKERRQ(ierr);
   ierr = VecSetRandom(vecs[0],rctx);CHKERRQ(ierr);
@@ -1011,7 +1011,7 @@ int main(int argc,char **args)
   /* assemble global matrix */
   ierr = ComputeMatrix(dd,&A);CHKERRQ(ierr);
   /* get work vectors */
-  ierr = MatGetVecs(A,&bddc_solution,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&bddc_solution,NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(bddc_solution,&bddc_rhs);CHKERRQ(ierr);
   ierr = VecDuplicate(bddc_solution,&fetidp_solution_all);CHKERRQ(ierr);
   ierr = VecDuplicate(bddc_solution,&exact_solution);CHKERRQ(ierr);
@@ -1052,7 +1052,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
   /* assemble fetidp rhs on the space of Lagrange multipliers */
   ierr = KSPGetOperators(KSPwithFETIDP,&F,NULL);CHKERRQ(ierr);
-  ierr = MatGetVecs(F,&fetidp_solution,&fetidp_rhs);CHKERRQ(ierr);
+  ierr = MatCreateVecs(F,&fetidp_solution,&fetidp_rhs);CHKERRQ(ierr);
   ierr = PCBDDCMatFETIDPGetRHS(F,bddc_rhs,fetidp_rhs);CHKERRQ(ierr);
   ierr = VecSet(fetidp_solution,0.0);CHKERRQ(ierr);
   /* test ksp with FETIDP */

@@ -3347,7 +3347,8 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
 
    Input Parameters:
 +  comm - MPI communicator, set to PETSC_COMM_SELF
-.  bs - size of block
+.  bs - size of block, the blocks are ALWAYS square. One can use MatSetBlockSizes() to set a different row and column blocksize but the row
+          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with MatCreateVecs()
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzero blocks  per block row (same for all rows)
@@ -3411,7 +3412,8 @@ PetscErrorCode  MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
 
    Input Parameters:
 +  B - the matrix
-.  bs - size of block
+.  bs - size of block, the blocks are ALWAYS square. One can use MatSetBlockSizes() to set a different row and column blocksize but the row
+          blocksize always defines the size of the blocks. The column blocksize sets the blocksize of the vectors obtained with MatCreateVecs()
 .  nz - number of block nonzeros per block row (same for all rows)
 -  nnz - array containing the number of block nonzeros in the various block rows
          (possibly different for each block row) or NULL

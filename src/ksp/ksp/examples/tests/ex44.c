@@ -39,7 +39,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&x,&b);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
 
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = VecSet(b,1.0);CHKERRQ(ierr);

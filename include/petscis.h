@@ -249,7 +249,7 @@ struct _n_PetscLayout{
                                        * problems). Defaults to -1 and can be arbitrarily lazy so always use
                                        * PetscAbs(map->bs) when accessing directly and expecting result to be
                                        * positive. Do NOT multiply above numbers by bs */
-  PetscInt               refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+  PetscInt               refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatCreateVecs() reuse map of input object */
   ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
   PetscInt               *trstarts;   /* local start for each thread */
 };
