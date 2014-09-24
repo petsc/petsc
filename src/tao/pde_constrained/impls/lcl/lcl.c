@@ -590,10 +590,9 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
   Level: beginner
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_LCL"
-PetscErrorCode TaoCreate_LCL(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
 {
   TAO_LCL        *lclP;
   PetscErrorCode ierr;
@@ -635,7 +634,6 @@ PetscErrorCode TaoCreate_LCL(Tao tao)
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "LCLComputeLagrangianAndGradient"

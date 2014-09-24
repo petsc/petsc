@@ -339,10 +339,9 @@ static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU) {
 
   Level: beginner
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_TRON"
-PetscErrorCode TaoCreate_TRON(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
 {
   TAO_TRON       *tron;
   PetscErrorCode ierr;
@@ -407,4 +406,4 @@ PetscErrorCode TaoCreate_TRON(Tao tao)
   ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

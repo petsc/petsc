@@ -301,10 +301,9 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchCreate_Armijo"
-PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
 {
   TaoLineSearch_ARMIJO *armP;
   PetscErrorCode       ierr;
@@ -332,4 +331,4 @@ PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
   ls->ops->setfromoptions = TaoLineSearchSetFromOptions_Armijo;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

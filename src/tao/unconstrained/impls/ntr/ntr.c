@@ -775,10 +775,9 @@ static PetscErrorCode TaoView_NTR(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NTR"
-PetscErrorCode TaoCreate_NTR(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
 {
   TAO_NTR *tr;
   PetscErrorCode ierr;
@@ -852,12 +851,8 @@ PetscErrorCode TaoCreate_NTR(Tao tao)
 
   /* Set linear solver to default for trust region */
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
-
-
 }
-EXTERN_C_END
 
 
 #undef __FUNCT__
