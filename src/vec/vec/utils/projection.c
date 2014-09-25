@@ -852,7 +852,7 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
 
   ierr = VecRestoreArray(Vec1,&v1);CHKERRQ(ierr);
   ierr = VecRestoreArray(Vec2,&v2);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Vec3,&v2);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Vec3,&v3);CHKERRQ(ierr);
 
   if (VMedian!=Vec1 && VMedian != Vec2 && VMedian != Vec3){
     ierr = VecRestoreArray(VMedian,&vmed);CHKERRQ(ierr);
