@@ -11,6 +11,12 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 1
     return
 
+  def getSearchDirectories(self):
+    yield '/usr'
+    yield os.path.join('/usr','local')
+    yield os.path.join('/opt','local')
+    return
+
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     # Don't require x libraries since they may not always be available or hwloc may not be able to locate them on Apple
