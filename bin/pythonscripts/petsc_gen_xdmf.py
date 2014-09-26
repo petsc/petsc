@@ -205,7 +205,10 @@ def generateXdmf(hdfFilename, xdmfFilename = None):
   numCells    = cells.shape[0]
   numCorners  = cells.shape[1]
   cellDim     = topo['cells'].attrs['cell_dim']
-  time        = np.array(h5['time']).flatten()
+  if 'time' in h5:
+    time      = np.array(h5['time']).flatten()
+  else:
+    time      = [-1]
   vfields     = []
   cfields     = []
   if 'vertex_fields' in h5: vfields = h5['vertex_fields'].items()
