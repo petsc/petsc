@@ -3918,3 +3918,112 @@ PetscErrorCode  MatCreateMPIBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
   ierr = MatSetOption(*mat,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateMPIBAIJConcatenateSeqBAIJSymbolic"
+PetscErrorCode MatCreateMPIBAIJConcatenateSeqBAIJSymbolic(MPI_Comm comm,Mat inmat,PetscInt n,Mat *outmat)
+{
+  PetscErrorCode ierr;
+  PetscInt       m,N,i,rstart,nnz,*dnz,*onz,sum,bs,cbs;
+  PetscInt       *indx;
+
+  PetscFunctionBegin;
+  /* This routine will ONLY return MPIBAIJ type matrix */
+  ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
+  ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
+  if (n == PETSC_DECIDE) {
+    ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
+  }
+  /* Check sum(n) = N */
+  ierr = MPI_Allreduce(&n,&sum,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  if (sum != N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local columns != global columns %d",N);
+
+  ierr    = MPI_Scan(&m, &rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+  rstart -= m;
+
+  ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    ierr = MatGetRow_SeqBAIJ(inmat,i,&nnz,&indx,NULL);CHKERRQ(ierr);
+    ierr = MatPreallocateSet(i+rstart,nnz,indx,dnz,onz);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqBAIJ(inmat,i,&nnz,&indx,NULL);CHKERRQ(ierr);
+  }
+
+  ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*outmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(*outmat,bs,cbs);CHKERRQ(ierr);
+  ierr = MatSetType(*outmat,MATMPIBAIJ);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(*outmat,bs,0,dnz,0,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateMPIBAIJConcatenateSeqBAIJNumeric"
+PetscErrorCode MatCreateMPIBAIJConcatenateSeqBAIJNumeric(MPI_Comm comm,Mat inmat,PetscInt n,Mat outmat)
+{
+  PetscErrorCode ierr;
+  PetscInt       m,N,i,rstart,nnz,Ii;
+  PetscInt       *indx;
+  PetscScalar    *values;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(outmat,&rstart,NULL);CHKERRQ(ierr);
+  
+  for (i=0; i<m; i++) {
+    ierr = MatGetRow_SeqBAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+    Ii   = i + rstart;
+    ierr = MatSetValues(outmat,1,&Ii,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqBAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateMPIBAIJConcatenateSeqBAIJ"
+/*@
+      MatCreateMPIBAIJConcatenateSeqBAIJ - Creates a single large PETSc matrix by concatenating sequential
+                 matrices from each processor
+
+    Collective on MPI_Comm
+
+   Input Parameters:
++    comm - the communicators the parallel matrix will live on
+.    inmat - the input sequential matrices
+.    n - number of local columns (or PETSC_DECIDE)
+-    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
+.    outmat - the parallel matrix generated
+
+    Level: advanced
+
+   Notes: The number of columns of the matrix in EACH processor MUST be the same.
+
+@*/
+PetscErrorCode MatCreateMPIBAIJConcatenateSeqBAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  /* same as MatCreateMPIAIJConcatenateSeqAIJ() */
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Merge,inmat,0,0,0);CHKERRQ(ierr);
+  if (size == 1) {
+    if (scall == MAT_INITIAL_MATRIX) {
+      ierr = MatDuplicate(inmat,MAT_COPY_VALUES,outmat);CHKERRQ(ierr);
+    } else {
+      ierr = MatCopy(inmat,*outmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+  } else {
+    if (scall == MAT_INITIAL_MATRIX) {
+      ierr = MatCreateMPIBAIJConcatenateSeqBAIJSymbolic(comm,inmat,n,outmat);CHKERRQ(ierr);
+    } 
+    ierr = MatCreateMPIBAIJConcatenateSeqBAIJNumeric(comm,inmat,n,*outmat);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(MAT_Merge,inmat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

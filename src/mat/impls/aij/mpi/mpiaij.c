@@ -4333,7 +4333,7 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,PetscInt nl,void *advalues)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateMPIAIJConcatenateSeqAIJSymbolic"
-PetscErrorCode  MatCreateMPIAIJConcatenateSeqAIJSymbolic(MPI_Comm comm,Mat inmat,PetscInt n,Mat *outmat)
+PetscErrorCode MatCreateMPIAIJConcatenateSeqAIJSymbolic(MPI_Comm comm,Mat inmat,PetscInt n,Mat *outmat)
 {
   PetscErrorCode ierr;
   PetscInt       m,N,i,rstart,nnz,*dnz,*onz,sum,bs,cbs;
@@ -4414,7 +4414,7 @@ PetscErrorCode  MatCreateMPIAIJConcatenateSeqAIJNumeric(MPI_Comm comm,Mat inmat,
    Notes: The number of columns of the matrix in EACH processor MUST be the same.
 
 @*/
-PetscErrorCode  MatCreateMPIAIJConcatenateSeqAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+PetscErrorCode MatCreateMPIAIJConcatenateSeqAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
