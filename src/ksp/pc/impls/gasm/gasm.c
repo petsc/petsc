@@ -360,7 +360,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       on  += oni;
     }
     ierr = ISCreateGeneral(((PetscObject)(pc))->comm, on, oidx, PETSC_OWN_POINTER, &gois);CHKERRQ(ierr);
-    ierr = MatGetVecs(pc->pmat,&x,&y);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&x,&y);CHKERRQ(ierr);
     ierr = VecCreateMPI(PetscObjectComm((PetscObject)pc), on, PETSC_DECIDE, &osm->gx);CHKERRQ(ierr);
     ierr = VecDuplicate(osm->gx,&osm->gy);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(osm->gx, &gofirst, NULL);CHKERRQ(ierr);

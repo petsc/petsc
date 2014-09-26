@@ -111,7 +111,7 @@ int main(int argc,char **args)
       ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
 
       /* Create FFTW vectors that are compatible with parallel layout of A */
-      ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
+      ierr = MatCreateVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);

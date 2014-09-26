@@ -119,8 +119,8 @@ struct _p_Tao {
     PetscInt  njac_state;
     PetscInt  njac_design;
 
-    PetscInt  ksp_its;
-    PetscInt  ksp_tot_its;
+    PetscInt  ksp_its; /* KSP iterations for this solver iteration */
+    PetscInt  ksp_tot_its; /* Total (cumulative) KSP iterations */
 
 
     TaoLineSearch linesearch;

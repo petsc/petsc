@@ -36,7 +36,7 @@
       call MatPythonSetType(A,'example1.py:Laplace1D',ierr)
       call MatSetUp(A,ierr)
 
-      call MatGetVecs(A,x,b,ierr)
+      call MatCreateVecs(A,x,b,ierr)
       call VecSet(b,one,ierr)
 
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)

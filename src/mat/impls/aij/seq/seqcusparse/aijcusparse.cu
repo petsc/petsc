@@ -1336,8 +1336,8 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecs_SeqAIJCUSPARSE"
-static PetscErrorCode MatGetVecs_SeqAIJCUSPARSE(Mat mat, Vec *right, Vec *left)
+#define __FUNCT__ "MatCreateVecs_SeqAIJCUSPARSE"
+static PetscErrorCode MatCreateVecs_SeqAIJCUSPARSE(Mat mat, Vec *right, Vec *left)
 {
   PetscErrorCode ierr;
   PetscInt rbs,cbs;
@@ -1856,7 +1856,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
 
   B->ops->assemblyend      = MatAssemblyEnd_SeqAIJCUSPARSE;
   B->ops->destroy          = MatDestroy_SeqAIJCUSPARSE;
-  B->ops->getvecs          = MatGetVecs_SeqAIJCUSPARSE;
+  B->ops->getvecs          = MatCreateVecs_SeqAIJCUSPARSE;
   B->ops->setfromoptions   = MatSetFromOptions_SeqAIJCUSPARSE;
   B->ops->mult             = MatMult_SeqAIJCUSPARSE;
   B->ops->multadd          = MatMultAdd_SeqAIJCUSPARSE;

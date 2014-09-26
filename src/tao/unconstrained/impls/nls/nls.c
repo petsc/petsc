@@ -102,6 +102,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
   /* Initialized variables */
   pert = nlsP->sval;
 
+  /* Number of times ksp stopped because of these reasons */
   nlsP->ksp_atol = 0;
   nlsP->ksp_rtol = 0;
   nlsP->ksp_dtol = 0;
@@ -1106,10 +1107,9 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NLS"
-PetscErrorCode TaoCreate_NLS(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_NLS(Tao tao)
 {
   TAO_NLS        *nlsP;
   const char     *morethuente_type = TAOLINESEARCHMT;
@@ -1212,7 +1212,6 @@ PetscErrorCode TaoCreate_NLS(Tao tao)
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLMVMSolveShell"

@@ -50,8 +50,8 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecs_MPIAIJCUSP"
-PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
+#define __FUNCT__ "MatCreateVecs_MPIAIJCUSP"
+PetscErrorCode  MatCreateVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
   PetscInt rbs,cbs;
@@ -201,7 +201,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat A)
   PetscFunctionBegin;
   ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJCUSP);CHKERRQ(ierr);
-  A->ops->getvecs        = MatGetVecs_MPIAIJCUSP;
+  A->ops->getvecs        = MatCreateVecs_MPIAIJCUSP;
   A->ops->setvaluesbatch = MatSetValuesBatch_MPIAIJCUSP;
 
   a          = (Mat_MPIAIJ*)A->data;

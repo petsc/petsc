@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
   ierr = MatGetSubMatrix(A,isrow,iscol,MAT_INITIAL_MATRIX,&Asub);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(B,isrow,iscol,MAT_INITIAL_MATRIX,&Bsub);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(Asub,&right,&left);CHKERRQ(ierr);
+  ierr = MatCreateVecs(Asub,&right,&left);CHKERRQ(ierr);
   ierr = VecDuplicate(right,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(right,&X1);CHKERRQ(ierr);
   ierr = VecDuplicate(left,&Y);CHKERRQ(ierr);

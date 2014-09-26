@@ -1691,7 +1691,7 @@ PetscErrorCode KSPMonitorStokesBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *d
 
   PetscFunctionBeginUser;
   ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&w,&v);CHKERRQ(ierr);
 
   ierr = KSPBuildResidual(ksp,v,w,&Br);CHKERRQ(ierr);
 

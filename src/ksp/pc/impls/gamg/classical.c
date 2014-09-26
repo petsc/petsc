@@ -876,7 +876,7 @@ PetscErrorCode PCGAMGOptProl_Classical_Jacobi(PC pc,const Mat A,Mat *P)
     }
     ierr = MatRestoreRow(*P,i,&ncols,&pcols,&pvals);CHKERRQ(ierr);
   }
-  ierr = MatGetVecs(A,&diag,0);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&diag,0);CHKERRQ(ierr);
   ierr = MatGetDiagonal(A,diag);CHKERRQ(ierr);
   ierr = VecReciprocal(diag);CHKERRQ(ierr);
   for (i=0;i<cls->nsmooths;i++) {

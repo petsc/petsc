@@ -337,10 +337,9 @@ static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
 M*/
 
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_OWLQN"
-PetscErrorCode TaoCreate_OWLQN(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao)
 {
   TAO_OWLQN      *lmP;
   const char     *owarmijo_type = TAOLINESEARCHOWARMIJO;
@@ -372,5 +371,5 @@ PetscErrorCode TaoCreate_OWLQN(Tao tao)
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

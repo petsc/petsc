@@ -61,7 +61,7 @@ int main(int argc, char **argv)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,user.mx,user.mx);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Create time stepping solver context

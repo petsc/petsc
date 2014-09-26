@@ -1352,6 +1352,8 @@ PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBoo
    line search application, X should contain the new solution, and F the
    function evaluated at the new solution.
 
+   These vectors are owned by the SNESLineSearch and should not be destroyed by the caller
+
    Level: advanced
 
 .seealso: SNESLineSearchGetNorms(), SNESLineSearchSetVecs()

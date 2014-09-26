@@ -287,10 +287,9 @@ nonlinear conjugate gradient solver for nonlinear optimization.
 M*/
 
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_CG"
-PetscErrorCode TaoCreate_CG(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
 {
   TAO_CG         *cgP;
   const char     *morethuente_type = TAOLINESEARCHMT;
@@ -324,4 +323,3 @@ PetscErrorCode TaoCreate_CG(Tao tao)
   cgP->cg_type = CG_PolakRibierePlus;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

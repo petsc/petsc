@@ -1,9 +1,9 @@
 static char help[] =  "   Solves the compressible plane strain elasticity equations in 2d on the unit domain using Q1 finite elements. \n\
-   Material properties E (Youngs moduls) and nu (Poisson ratio) may vary as a function of space. \n\
-   The model utilisse boundary conditions which produce compression in the x direction. \n\
+   Material properties E (Youngs modulus) and nu (Poisson ratio) may vary as a function of space. \n\
+   The model utilises boundary conditions which produce compression in the x direction. \n\
 Options: \n\
-     -mx : number elements in x-direciton \n\
-     -my : number elements in y-direciton \n\
+     -mx : number of elements in x-direction \n\
+     -my : number of elements in y-direction \n\
      -c_str : indicates the structure of the coefficients to use. \n\
           -c_str 0 => Setup for an isotropic material with constant coefficients. \n\
                          Parameters: \n\
@@ -29,8 +29,8 @@ Options: \n\
                       -------------------------\n\
                       \n\
                          Parameters: \n\
-                              -brick_E    : a comma seperated list of Young's modulii \n\
-                              -brick_nu   : a comma seperated list of Poisson ratio's  \n\
+                              -brick_E    : a comma separated list of Young's modulii \n\
+                              -brick_nu   : a comma separated list of Poisson ratios  \n\
                               -brick_span : the number of elements in x and y each brick will span \n\
           -c_str 3 => Setup for a sponge-like material with alternating properties. \n\
                       Repeats the following pattern throughout the domain \n\
@@ -51,10 +51,10 @@ Options: \n\
                       <--------  t + w + t ------->\n\
                       \n\
                          Parameters: \n\
-                              -sponge_E0  : Youngs moduls of the surrounding material \n\
-                              -sponge_E1  : Youngs moduls of the inclusio \n\
+                              -sponge_E0  : Youngs modulus of the surrounding material \n\
+                              -sponge_E1  : Youngs modulus of the inclusion \n\
                               -sponge_nu0 : Poisson ratio of the surrounding material \n\
-                              -sponge_nu1 : Poisson ratio of the inclusio \n\
+                              -sponge_nu1 : Poisson ratio of the inclusion \n\
                               -sponge_t   : the number of elements defining the border around each inclusion \n\
                               -sponge_w   : the number of elements in x and y each inclusion will span\n\
      -use_gp_coords : Evaluate the Youngs modulus, Poisson ratio and the body force at the global coordinates of the quadrature points.\n\
@@ -1023,7 +1023,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   ierr = MatNullSpaceCreateRigidBody(vel_coords,&matnull);CHKERRQ(ierr);
   ierr = MatSetNearNullSpace(A,matnull);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&matnull);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&f,&X);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&f,&X);CHKERRQ(ierr);
 
   /* assemble A11 */
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
@@ -1316,7 +1316,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
   /* get new matrix */
   ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,AA);CHKERRQ(ierr);
   /* get new vector */
-  ierr = MatGetVecs(*AA,NULL,ff);CHKERRQ(ierr);
+  ierr = MatCreateVecs(*AA,NULL,ff);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(f,is,*ff,NULL,&scat);CHKERRQ(ierr);
   ierr = VecScatterBegin(scat,f,*ff,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

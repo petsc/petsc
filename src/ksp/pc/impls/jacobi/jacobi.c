@@ -129,7 +129,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
        For most preconditioners the code would begin here something like
 
   if (pc->setupcalled == 0) { allocate space the first time this is ever called
-    ierr = MatGetVecs(pc->mat,&jac->diag);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->mat,&jac->diag);CHKERRQ(ierr);
     PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diag);
   }
 
@@ -212,7 +212,7 @@ static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
-  ierr = MatGetVecs(pc->pmat,&jac->diagsqrt,0);CHKERRQ(ierr);
+  ierr = MatCreateVecs(pc->pmat,&jac->diagsqrt,0);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diagsqrt);CHKERRQ(ierr);
   ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -234,7 +234,7 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
-  ierr = MatGetVecs(pc->pmat,&jac->diag,0);CHKERRQ(ierr);
+  ierr = MatCreateVecs(pc->pmat,&jac->diag,0);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diag);CHKERRQ(ierr);
   ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

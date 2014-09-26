@@ -13,22 +13,22 @@ typedef struct {
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecs_SchurComplement"
-PetscErrorCode MatGetVecs_SchurComplement(Mat N,Vec *right,Vec *left)
+#define __FUNCT__ "MatCreateVecs_SchurComplement"
+PetscErrorCode MatCreateVecs_SchurComplement(Mat N,Vec *right,Vec *left)
 {
   Mat_SchurComplement *Na = (Mat_SchurComplement*)N->data;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   if (Na->D) {
-    ierr = MatGetVecs(Na->D,right,left);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Na->D,right,left);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (right) {
-    ierr = MatGetVecs(Na->B,right,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Na->B,right,NULL);CHKERRQ(ierr);
   }
   if (left) {
-    ierr = MatGetVecs(Na->C,NULL,left);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Na->C,NULL,left);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -76,8 +76,8 @@ PetscErrorCode MatMultTranspose_SchurComplement(Mat N,Vec x,Vec y)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
-  if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
+  if (!Na->work1) {ierr = MatCreateVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
+  if (!Na->work2) {ierr = MatCreateVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
   ierr = MatMultTranspose(Na->C,x,Na->work1);CHKERRQ(ierr);
   ierr = KSPSolveTranspose(Na->ksp,Na->work1,Na->work2);CHKERRQ(ierr);
   ierr = MatMultTranspose(Na->B,Na->work2,y);CHKERRQ(ierr);
@@ -99,8 +99,8 @@ PetscErrorCode MatMult_SchurComplement(Mat N,Vec x,Vec y)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
-  if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
+  if (!Na->work1) {ierr = MatCreateVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
+  if (!Na->work2) {ierr = MatCreateVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
   ierr = MatMult(Na->B,x,Na->work1);CHKERRQ(ierr);
   ierr = KSPSolve(Na->ksp,Na->work1,Na->work2);CHKERRQ(ierr);
   ierr = MatMult(Na->C,Na->work2,y);CHKERRQ(ierr);
@@ -122,8 +122,8 @@ PetscErrorCode MatMultAdd_SchurComplement(Mat N,Vec x,Vec y,Vec z)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
-  if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
+  if (!Na->work1) {ierr = MatCreateVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
+  if (!Na->work2) {ierr = MatCreateVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
   ierr = MatMult(Na->B,x,Na->work1);CHKERRQ(ierr);
   ierr = KSPSolve(Na->ksp,Na->work1,Na->work2);CHKERRQ(ierr);
   if (y == z) {
@@ -810,7 +810,7 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
     Mat         AdB,Sp;
     Vec         diag;
 
-    ierr = MatGetVecs(A00,&diag,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A00,&diag,NULL);CHKERRQ(ierr);
     if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
       ierr = MatGetRowSum(A00,diag);CHKERRQ(ierr);
     } else if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
@@ -912,7 +912,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)
   N->data = (void*) Na;
 
   N->ops->destroy        = MatDestroy_SchurComplement;
-  N->ops->getvecs        = MatGetVecs_SchurComplement;
+  N->ops->getvecs        = MatCreateVecs_SchurComplement;
   N->ops->view           = MatView_SchurComplement;
   N->ops->mult           = MatMult_SchurComplement;
   N->ops->multtranspose  = MatMultTranspose_SchurComplement;

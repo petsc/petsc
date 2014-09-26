@@ -269,10 +269,9 @@ static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BMRM"
-PetscErrorCode TaoCreate_BMRM(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
 {
   TAO_BMRM       *bmrm;
   PetscErrorCode ierr;
@@ -298,7 +297,6 @@ PetscErrorCode TaoCreate_BMRM(Tao tao)
 
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "init_df_solver"

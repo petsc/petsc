@@ -546,10 +546,9 @@ static PetscErrorCode TaoView_BQPIP(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BQPIP"
-PetscErrorCode TaoCreate_BQPIP(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
 {
   TAO_BQPIP      *qp;
   PetscErrorCode ierr;
@@ -592,4 +591,4 @@ PetscErrorCode TaoCreate_BQPIP(Tao tao)
   ierr = KSPSetTolerances(tao->ksp, 1e-14, 1e-30, 1e30, PetscMax(10,qp->n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

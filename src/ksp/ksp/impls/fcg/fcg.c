@@ -28,9 +28,9 @@ static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, Pets
   if(fcg->nvecs < PetscMin(fcg->mmax+1,nvecsneeded)){
     nvecsprev = fcg->nvecs;
     nnewvecs = PetscMin(PetscMin(nvecsneeded-fcg->nvecs,fcg->mmax+1-fcg->nvecs),chunksize);
-    ierr = KSPGetVecs(ksp,nnewvecs,&fcg->pCvecs[fcg->nchunks],0,NULL);CHKERRQ(ierr);
+    ierr = KSPCreateVecs(ksp,nnewvecs,&fcg->pCvecs[fcg->nchunks],0,NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParents((PetscObject)ksp,nnewvecs,fcg->pCvecs[fcg->nchunks]);CHKERRQ(ierr);
-    ierr = KSPGetVecs(ksp,nnewvecs,&fcg->pPvecs[fcg->nchunks],0,NULL);CHKERRQ(ierr);
+    ierr = KSPCreateVecs(ksp,nnewvecs,&fcg->pPvecs[fcg->nchunks],0,NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParents((PetscObject)ksp,nnewvecs,fcg->pPvecs[fcg->nchunks]);CHKERRQ(ierr);
     fcg->nvecs += nnewvecs;
     for(i=0;i<nnewvecs;++i){

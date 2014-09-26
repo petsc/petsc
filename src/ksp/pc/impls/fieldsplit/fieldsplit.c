@@ -532,7 +532,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   if (!jac->pmat) {
     Vec xtmp;
 
-    ierr = MatGetVecs(pc->pmat,&xtmp,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&xtmp,NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(nsplit,&jac->pmat);CHKERRQ(ierr);
     ierr = PetscMalloc2(nsplit,&jac->x,nsplit,&jac->y);CHKERRQ(ierr);
     for (i=0; i<nsplit; i++) {
@@ -555,7 +555,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = MatViewFromOptions(jac->pmat[i],NULL,"-mat_view");CHKERRQ(ierr);
       }
       /* create work vectors for each split */
-      ierr     = MatGetVecs(jac->pmat[i],&jac->x[i],&jac->y[i]);CHKERRQ(ierr);
+      ierr     = MatCreateVecs(jac->pmat[i],&jac->x[i],&jac->y[i]);CHKERRQ(ierr);
       ilink->x = jac->x[i]; ilink->y = jac->y[i]; ilink->z = NULL;
       /* compute scatter contexts needed by multiplicative versions and non-default splits */
       ierr = VecScatterCreate(xtmp,ilink->is,jac->x[i],NULL,&ilink->sctx);CHKERRQ(ierr);

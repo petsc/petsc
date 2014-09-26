@@ -789,8 +789,8 @@ PetscErrorCode  PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt cou
    Input Parameters:
 +  viewer - the binary viewer
 .  data - location of data
-.  count - number of items of data to read
-.  dtype - type of data to read
+.  count - number of items of data to write
+.  dtype - type of data to write
 -  istemp - data may be overwritten
 
    Level: beginner

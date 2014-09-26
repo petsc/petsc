@@ -290,10 +290,9 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
   Level: beginner 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_ASILS"
-PetscErrorCode TaoCreate_ASILS(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
 {
   TAO_SSLS       *asls;
   PetscErrorCode ierr;
@@ -345,5 +344,5 @@ PetscErrorCode TaoCreate_ASILS(Tao tao)
 #endif
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

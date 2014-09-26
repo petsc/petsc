@@ -374,6 +374,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
       ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
+      tao->ksp_tot_its+=its;
       ierr = KSPGLTRGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
     }
 
@@ -399,18 +400,21 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
           ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
           ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
           tao->ksp_its+=its;
+          tao->ksp_tot_its+=its;
           ierr = KSPNASHGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
         } else if (NTL_KSP_STCG == tl->ksp_type) {
           ierr = KSPSTCGSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
           ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
           ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
           tao->ksp_its+=its;
+          tao->ksp_tot_its+=its;
           ierr = KSPSTCGGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
         } else { /* NTL_KSP_GLTR */
           ierr = KSPGLTRSetRadius(tao->ksp,tl->max_radius);CHKERRQ(ierr);
           ierr = KSPSolve(tao->ksp, tao->gradient, tao->stepdirection);CHKERRQ(ierr);
           ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
           tao->ksp_its+=its;
+          tao->ksp_tot_its+=its;
           ierr = KSPGLTRGetNormD(tao->ksp, &norm_d);CHKERRQ(ierr);
         }
 
@@ -970,10 +974,9 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NTL"
-PetscErrorCode TaoCreate_NTL(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
 {
   TAO_NTL        *tl;
   PetscErrorCode ierr;
@@ -1063,7 +1066,7 @@ PetscErrorCode TaoCreate_NTL(Tao tao)
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 
 
 
