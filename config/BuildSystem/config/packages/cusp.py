@@ -8,12 +8,14 @@ class Configure(config.package.Package):
     self.includedir      = ['','include']
     self.forceLanguage   = 'CUDA'
     self.cxx             = 0
+    self.CUSPVersion     = '0400' # Minimal cusp version is 0.4 
+    self.CUSPVersionStr  = str(int(self.CUSPVersion)/1000) + '.' + str(int(self.CUSPVersion)%100)
     return
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.thrust = framework.require('config.packages.thrust', self)
-    self.deps   = [self.thrust]
+    self.cuda = framework.require('config.packages.cuda', self)
+    self.deps   = [self.cuda]
     return
 
   def getSearchDirectories(self):
@@ -23,22 +25,25 @@ class Configure(config.package.Package):
     yield os.path.join('/usr','local','cuda','cusp')
     return
 
-  def configurePC(self):
-    self.pushLanguage('CUDA')
-    oldFlags = self.compilers.CUDAPPFLAGS
-    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
-    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
-    if self.checkCompile('#include <cusp/version.h>\n#if CUSP_VERSION >= 400\n#include <cusp/precond/aggregation/smoothed_aggregation.h>\n#else\n#include <cusp/precond/smoothed_aggregation.h>\n#endif\n', ''):
-      self.addDefine('HAVE_CUSP_SMOOTHED_AGGREGATION','1')
-    self.compilers.CUDAPPFLAGS = oldFlags
-    self.popLanguage()
+  def checkCUSPVersion(self):
+    if 'known-cusp-version' in self.argDB:
+      if self.argDB['known-cusp-version'] < self.CUSPVersion:
+        raise RuntimeError('CUSP version error '+self.argDB['known-cusp-version']+' < '+self.CUSPVersion+': PETSC currently requires CUSP version '+self.CUSPVersionStr+' or higher')
+    elif not self.argDB['with-batch']:
+      self.pushLanguage('CUDA')
+      oldFlags = self.compilers.CUDAPPFLAGS
+      self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.include)
+      if not self.checkRun('#include <cusp/version.h>\n#include <stdio.h>', 'if (CUSP_VERSION < ' + self.CUSPVersion +') {printf("Invalid version %d\\n", CUSP_VERSION); return 1;}'):
+        raise RuntimeError('CUSP version error: PETSC currently requires CUSP version '+self.CUSPVersionStr+' or higher.')
+      self.compilers.CUDAPPFLAGS = oldFlags
+      self.popLanguage()
+    else:
+      raise RuntimeError('Batch configure does not work with CUDA\nOverride all CUDA configuration with options, such as --known-cusp-version')
     return
 
   def configureLibrary(self):
-    '''Calls the regular package configureLibrary and then does an additional tests needed by CUSP'''
-    if not self.thrust.found:
-      raise RuntimeError('CUSP support requires the THRUST package\nRerun configure using --with-thrust-dir')
+    '''Calls the regular package configureLibrary and then does a additional tests needed by CUSP'''
     config.package.Package.configureLibrary(self)
-    self.executeTest(self.configurePC)
+    self.checkCUSPVersion()
     return
 
