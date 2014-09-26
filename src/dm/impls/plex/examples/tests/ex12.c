@@ -39,7 +39,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim         = user->dim;
   PetscBool      cellSimplex = user->cellSimplex;
   const char    *filename    = user->filename;
-  PetscInt       overlap     = user->overlap;
+  PetscInt       overlap     = user->overlap >= 0 ? user->overlap : 0;
   size_t         len;
   PetscErrorCode ierr;
 
@@ -79,6 +79,59 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
+#include <petscsf.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "ParallelOverlap"
+PetscErrorCode ParallelOverlap(DM dm, AppCtx *user)
+{
+  PetscSF            sf;
+  const PetscSFNode *remote;
+  const PetscInt    *local;
+  DMLabel            ovStar;
+  PetscInt          *adj = NULL;
+  PetscInt           nleaves, l;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  if (user->overlap >= 0) PetscFunctionReturn(0);
+  ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Calculating parallel overlap partition\n");
+  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  /* Collect cl(st(overlap)) */
+  /*   Use a DMLabel to separate the points for now (can make it faster by specifying the range) */
+  ierr = DMLabelCreate("overlap adjacency", &ovStar);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, NULL, &nleaves, &local, &remote);CHKERRQ(ierr);
+  for (l = 0; l < nleaves; ++l) {
+    PetscInt adjSize = PETSC_DETERMINE, a;
+
+    ierr = DMPlexGetAdjacency(dm, local[l], &adjSize, &adj);CHKERRQ(ierr);
+    for (a = 0; a < adjSize; ++a) {ierr = DMLabelSetValue(ovStar, adj[a], remote[l].rank);CHKERRQ(ierr);}
+  }
+  ierr = PetscFree(adj);CHKERRQ(ierr);
+  ierr = DMLabelView(ovStar, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&ovStar);CHKERRQ(ierr);
+#if 0
+
+  \item Get closure of star and record depths
+
+  \item Send points+cone sizes+depths to remote meshes
+
+  \item Renumber points locally (looking up points in overlap to translate)
+
+  \item Create new local mesh with room for new points at correct depths and for cones
+
+  \item Send cones to remote meshes
+
+  \item Fill in cones and symmetrize mesh
+
+  \item recreate labels
+
+  \item recreate SF
+#endif
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
@@ -90,6 +143,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
+  ierr = ParallelOverlap(dm, &user);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
