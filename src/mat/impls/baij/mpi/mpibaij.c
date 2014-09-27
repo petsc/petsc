@@ -3924,13 +3924,16 @@ PetscErrorCode  MatCreateMPIBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
 PetscErrorCode MatCreateMPIBAIJConcatenateSeqBAIJSymbolic(MPI_Comm comm,Mat inmat,PetscInt n,Mat *outmat)
 {
   PetscErrorCode ierr;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)inmat->data;
   PetscInt       m,N,i,rstart,nnz,*dnz,*onz,sum,bs,cbs;
-  PetscInt       *indx;
+  PetscInt       *indx,*bindx,rmax=a->rmax,j;
+  
 
   PetscFunctionBegin;
   /* This routine will ONLY return MPIBAIJ type matrix */
   ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
   ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
+  m = m/bs; N = N/cbs;
   if (n == PETSC_DECIDE) {
     ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   }
@@ -3941,15 +3944,19 @@ PetscErrorCode MatCreateMPIBAIJConcatenateSeqBAIJSymbolic(MPI_Comm comm,Mat inma
   ierr    = MPI_Scan(&m, &rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   rstart -= m;
 
+  ierr = PetscMalloc1(rmax,&bindx);CHKERRQ(ierr);
   ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
-    ierr = MatGetRow_SeqBAIJ(inmat,i,&nnz,&indx,NULL);CHKERRQ(ierr);
-    ierr = MatPreallocateSet(i+rstart,nnz,indx,dnz,onz);CHKERRQ(ierr);
-    ierr = MatRestoreRow_SeqBAIJ(inmat,i,&nnz,&indx,NULL);CHKERRQ(ierr);
+    ierr = MatGetRow_SeqBAIJ(inmat,i*bs,&nnz,&indx,NULL);CHKERRQ(ierr); /* non-blocked nnz and indx */
+    nnz = nnz/bs;
+    for (j=0; j<nnz; j++) bindx[j] = indx[j*bs]/bs;
+    ierr = MatPreallocateSet(i+rstart,nnz,bindx,dnz,onz);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqBAIJ(inmat,i*bs,&nnz,&indx,NULL);CHKERRQ(ierr);
   }
+  ierr = PetscFree(bindx);CHKERRQ(ierr);
 
   ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*outmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetSizes(*outmat,m*bs,n*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(*outmat,bs,cbs);CHKERRQ(ierr);
   ierr = MatSetType(*outmat,MATMPIBAIJ);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(*outmat,bs,0,dnz,0,onz);CHKERRQ(ierr);
@@ -3962,14 +3969,15 @@ PetscErrorCode MatCreateMPIBAIJConcatenateSeqBAIJSymbolic(MPI_Comm comm,Mat inma
 PetscErrorCode MatCreateMPIBAIJConcatenateSeqBAIJNumeric(MPI_Comm comm,Mat inmat,PetscInt n,Mat outmat)
 {
   PetscErrorCode ierr;
-  PetscInt       m,N,i,rstart,nnz,Ii;
+  PetscInt       m,N,i,rstart,nnz,Ii,bs,cbs;
   PetscInt       *indx;
   PetscScalar    *values;
 
   PetscFunctionBegin;
   ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
+   ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(outmat,&rstart,NULL);CHKERRQ(ierr);
-  
+
   for (i=0; i<m; i++) {
     ierr = MatGetRow_SeqBAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
     Ii   = i + rstart;

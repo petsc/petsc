@@ -1930,6 +1930,7 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   A->info.mallocs    += a->reallocs;
   a->reallocs         = 0;
   A->info.nz_unneeded = (PetscReal)fshift*bs2;
+  a->rmax             = rmax;
 
   ierr = MatCheckCompressedRow(A,a->nonzerorowcnt,&a->compressedrow,a->i,mbs,ratio);CHKERRQ(ierr);
   PetscFunctionReturn(0);
