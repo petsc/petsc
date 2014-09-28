@@ -1046,6 +1046,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   mesh->facesTmp = NULL;
 
+  mesh->tetgenOpts   = NULL;
+  mesh->triangleOpts = NULL;
+
   mesh->subpointMap = NULL;
 
   for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) mesh->scale[unit] = 1.0;

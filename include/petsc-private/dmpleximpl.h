@@ -67,6 +67,10 @@ typedef struct {
   /* Hierarchy */
   DM                   coarseMesh;        /* This mesh was obtained from coarse mesh using DMRefineHierarchy() */
 
+  /* Generation */
+  char                *tetgenOpts;
+  char                *triangleOpts;
+
   /* Submesh */
   DMLabel              subpointMap;       /* Label each original mesh point in the submesh with its depth, subpoint are the implicit numbering */
 
