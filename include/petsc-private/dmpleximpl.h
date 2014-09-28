@@ -87,6 +87,10 @@ typedef struct {
   /* Problem definition */
   DMBoundary           boundary;          /* List of boundary conditions */
 
+  /* Geometry */
+  PetscReal            minradius;         /* Minimum distance from cell centroid to face */
+
+
   /* Debugging */
   PetscBool            printSetValues;
   PetscInt             printFEM;
@@ -122,6 +126,8 @@ PETSC_EXTERN PetscErrorCode DMPlexInvertCell_Internal(PetscInt, PetscInt, PetscI
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, const PetscScalar[], InsertMode);
+
+PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscReal, Vec, Vec, Vec, void *);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlex_Invert2D_Internal"
@@ -171,5 +177,22 @@ PETSC_STATIC_INLINE void DMPlex_Det3D_Internal(PetscReal *detJ, PetscReal J[])
            J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
   PetscLogFlops(12.0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlex_WaxpyD_Internal"
+PETSC_STATIC_INLINE void DMPlex_WaxpyD_Internal(PetscInt dim, PetscReal a, const PetscReal *x, const PetscReal *y, PetscReal *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlex_DotD_Internal"
+PETSC_STATIC_INLINE PetscReal DMPlex_DotD_Internal(PetscInt dim, const PetscScalar *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += PetscRealPart(x[d])*y[d]; return sum;}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlex_DotRealD_Internal"
+PETSC_STATIC_INLINE PetscReal DMPlex_DotRealD_Internal(PetscInt dim, const PetscReal *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlex_NormD_Internal"
+PETSC_STATIC_INLINE PetscReal DMPlex_NormD_Internal(PetscInt dim, const PetscReal *x) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*x[d]; return PetscSqrtReal(sum);}
+
 
 #endif /* _PLEXIMPL_H */

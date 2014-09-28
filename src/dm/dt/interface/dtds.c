@@ -259,17 +259,29 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
   prob->totDim = prob->totDimBd = prob->totComp = 0;
   ierr = PetscMalloc4(Nf,&prob->basis,Nf,&prob->basisDer,Nf,&prob->basisBd,Nf,&prob->basisDerBd);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    PetscFE         fe   = (PetscFE) prob->disc[f];
     PetscFE         feBd = (PetscFE) prob->discBd[f];
+    PetscObject     obj;
+    PetscClassId    id;
     PetscQuadrature q;
-    PetscInt        Nq, Nb, Nc;
+    PetscInt        Nq = 0, Nb, Nc;
 
-    /* TODO Dispatch on discretization type*/
-    ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
-    ierr = PetscQuadratureGetData(q, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
-    ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
-    ierr = PetscFEGetDefaultTabulation(fe, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
+    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID)      {
+      PetscFE fe = (PetscFE) obj;
+
+      ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
+      ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+      ierr = PetscFEGetDefaultTabulation(fe, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      PetscFV fv = (PetscFV) obj;
+
+      ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
+      Nb   = 1;
+      ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
+    if (q) {ierr = PetscQuadratureGetData(q, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
     NqMax          = PetscMax(NqMax, Nq);
     NcMax          = PetscMax(NcMax, Nc);
     prob->totDim  += Nb*Nc;
@@ -310,6 +322,8 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   PetscObject   *tmpd, *tmpdbd;
   PointFunc     *tmpobj, *tmpf, *tmpg;
   BdPointFunc   *tmpfbd, *tmpgbd;
+  RiemannFunc   *tmpr;
+  void         **tmpctx;
   PetscInt       Nf = prob->Nf, f;
   PetscErrorCode ierr;
 
@@ -323,17 +337,23 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   ierr = PetscFree(prob->disc);CHKERRQ(ierr);
   prob->Nf   = NfNew;
   prob->disc = tmpd;
-  ierr = PetscCalloc3(NfNew, &tmpobj, NfNew*2, &tmpf, NfNew*NfNew*4, &tmpg);CHKERRQ(ierr);
+  ierr = PetscCalloc5(NfNew, &tmpobj, NfNew*2, &tmpf, NfNew*NfNew*4, &tmpg, NfNew, &tmpr, NfNew, &tmpctx);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) tmpobj[f] = prob->obj[f];
   for (f = 0; f < Nf*2; ++f) tmpf[f] = prob->f[f];
   for (f = 0; f < Nf*Nf*4; ++f) tmpg[f] = prob->g[f];
+  for (f = 0; f < Nf; ++f) tmpr[f] = prob->r[f];
+  for (f = 0; f < Nf; ++f) tmpctx[f] = prob->ctx[f];
   for (f = Nf; f < NfNew; ++f) tmpobj[f] = NULL;
   for (f = Nf*2; f < NfNew*2; ++f) tmpf[f] = NULL;
   for (f = Nf*Nf*4; f < NfNew*NfNew*4; ++f) tmpg[f] = NULL;
-  ierr = PetscFree3(prob->obj, prob->f, prob->g);CHKERRQ(ierr);
+  for (f = Nf; f < NfNew; ++f) tmpr[f] = NULL;
+  for (f = Nf; f < NfNew; ++f) tmpctx[f] = NULL;
+  ierr = PetscFree5(prob->obj, prob->f, prob->g, prob->r, prob->ctx);CHKERRQ(ierr);
   prob->obj = tmpobj;
   prob->f   = tmpf;
   prob->g   = tmpg;
+  prob->r   = tmpr;
+  prob->ctx = tmpctx;
   ierr = PetscMalloc1(NfNew, &tmpdbd);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) tmpdbd[f] = prob->discBd[f];
   for (f = Nf; f < NfNew; ++f) tmpdbd[f] = NULL;
@@ -382,7 +402,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *prob)
   }
   ierr = PetscFree((*prob)->disc);CHKERRQ(ierr);
   ierr = PetscFree((*prob)->discBd);CHKERRQ(ierr);
-  ierr = PetscFree3((*prob)->obj,(*prob)->f,(*prob)->g);CHKERRQ(ierr);
+  ierr = PetscFree5((*prob)->obj,(*prob)->f,(*prob)->g,(*prob)->r,(*prob)->ctx);CHKERRQ(ierr);
   ierr = PetscFree2((*prob)->fBd,(*prob)->gBd);CHKERRQ(ierr);
   if ((*prob)->ops->destroy) {ierr = (*(*prob)->ops->destroy)(*prob);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(prob);CHKERRQ(ierr);
@@ -428,6 +448,21 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *prob)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetNumFields"
+/*@
+  PetscDSGetNumFields - Returns the number of fields in the DS
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. Nf - The number of fields
+
+  Level: beginner
+
+.seealso: PetscDSGetSpatialDimension(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 {
   PetscFunctionBegin;
@@ -439,6 +474,21 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetSpatialDimension"
+/*@
+  PetscDSGetSpatialDimension - Returns the spatial dimension of the DS
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. dim - The spatial dimension
+
+  Level: beginner
+
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
 {
   PetscErrorCode ierr;
@@ -447,12 +497,36 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(dim, 2);
   *dim = 0;
-  if (prob->Nf) {ierr = PetscFEGetSpatialDimension((PetscFE) prob->disc[0], dim);CHKERRQ(ierr);}
+  if (prob->Nf) {
+    PetscObject  obj;
+    PetscClassId id;
+
+    ierr = PetscDSGetDiscretization(prob, 0, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetSpatialDimension((PetscFE) obj, dim);CHKERRQ(ierr);}
+    else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetSpatialDimension((PetscFV) obj, dim);CHKERRQ(ierr);}
+    else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
+  }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetTotalDimension"
+/*@
+  PetscDSGetTotalDimension - Returns the total size of the approximation space for this system
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. dim - The total problem dimension
+
+  Level: beginner
+
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim)
 {
   PetscErrorCode ierr;
@@ -467,6 +541,21 @@ PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetTotalBdDimension"
+/*@
+  PetscDSGetTotalBdDimension - Returns the total size of the boundary approximation space for this system
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. dim - The total boundary problem dimension
+
+  Level: beginner
+
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetTotalBdDimension(PetscDS prob, PetscInt *dim)
 {
   PetscErrorCode ierr;
@@ -481,6 +570,21 @@ PetscErrorCode PetscDSGetTotalBdDimension(PetscDS prob, PetscInt *dim)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetTotalComponents"
+/*@
+  PetscDSGetTotalComponents - Returns the total number of components in this system
+
+  Not collective
+
+  Input Parameter:
+. prob - The PetscDS object
+
+  Output Parameter:
+. dim - The total number of components
+
+  Level: beginner
+
+.seealso: PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc)
 {
   PetscErrorCode ierr;
@@ -495,6 +599,22 @@ PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetDiscretization"
+/*@
+  PetscDSGetDiscretization - Returns the discretization object for the given field
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- f - The field number
+
+  Output Parameter:
+. disc - The discretization object
+
+  Level: beginner
+
+.seealso: PetscDSSetDiscretization(), PetscDSAddDiscretization(), PetscDSGetBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *disc)
 {
   PetscFunctionBegin;
@@ -507,6 +627,22 @@ PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *d
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetBdDiscretization"
+/*@
+  PetscDSGetBdDiscretization - Returns the boundary discretization object for the given field
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- f - The field number
+
+  Output Parameter:
+. disc - The boundary discretization object
+
+  Level: beginner
+
+.seealso: PetscDSSetBdDiscretization(), PetscDSAddBdDiscretization(), PetscDSGetDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetBdDiscretization(PetscDS prob, PetscInt f, PetscObject *disc)
 {
   PetscFunctionBegin;
@@ -519,6 +655,20 @@ PetscErrorCode PetscDSGetBdDiscretization(PetscDS prob, PetscInt f, PetscObject 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSSetDiscretization"
+/*@
+  PetscDSSetDiscretization - Sets the discretization object for the given field
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+. f - The field number
+- disc - The discretization object
+
+  Level: beginner
+
+.seealso: PetscDSGetDiscretization(), PetscDSAddDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject disc)
 {
   PetscErrorCode ierr;
@@ -536,6 +686,20 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSSetBdDiscretization"
+/*@
+  PetscDSSetBdDiscretization - Sets the boundary discretization object for the given field
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+. f - The field number
+- disc - The boundary discretization object
+
+  Level: beginner
+
+.seealso: PetscDSGetBdDiscretization(), PetscDSAddBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSSetBdDiscretization(PetscDS prob, PetscInt f, PetscObject disc)
 {
   PetscErrorCode ierr;
@@ -553,6 +717,19 @@ PetscErrorCode PetscDSSetBdDiscretization(PetscDS prob, PetscInt f, PetscObject 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSAddDiscretization"
+/*@
+  PetscDSAddDiscretization - Adds a discretization object
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- disc - The boundary discretization object
+
+  Level: beginner
+
+.seealso: PetscDSGetDiscretization(), PetscDSSetDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSAddDiscretization(PetscDS prob, PetscObject disc)
 {
   PetscErrorCode ierr;
@@ -564,6 +741,19 @@ PetscErrorCode PetscDSAddDiscretization(PetscDS prob, PetscObject disc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSAddBdDiscretization"
+/*@
+  PetscDSAddBdDiscretization - Adds a boundary discretization object
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- disc - The boundary discretization object
+
+  Level: beginner
+
+.seealso: PetscDSGetBdDiscretization(), PetscDSSetBdDiscretization(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSAddBdDiscretization(PetscDS prob, PetscObject disc)
 {
   PetscErrorCode ierr;
@@ -681,6 +871,113 @@ PetscErrorCode PetscDSSetJacobian(PetscDS prob, PetscInt f, PetscInt g,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDSGetRiemannSolver"
+/*@C
+  PetscDSGetRiemannSolver - Returns the Riemann solver for the given field
+
+  Not collective
+
+  Input Arguments:
++ prob - The PetscDS object
+- f    - The field number
+
+  Output Argument:
+. r    - Riemann solver
+
+  Calling sequence for r:
+
+$ r(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
+
++ x    - The coordinates at a point on the interface
+. n    - The normal vector to the interface
+. uL   - The state vector to the left of the interface
+. uR   - The state vector to the right of the interface
+. flux - output array of flux through the interface
+- ctx  - optional user context
+
+  Level: intermediate
+
+.seealso: PetscDSSetRiemannSolver()
+@*/
+PetscErrorCode PetscDSGetRiemannSolver(PetscDS prob, PetscInt f,
+                                       void (**r)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  PetscValidPointer(r, 3);
+  *r = prob->r[f];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSSetRiemannSolver"
+/*@C
+  PetscDSSetRiemannSolver - Sets the Riemann solver for the given field
+
+  Not collective
+
+  Input Arguments:
++ prob - The PetscDS object
+. f    - The field number
+- r    - Riemann solver
+
+  Calling sequence for r:
+
+$ r(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
+
++ x    - The coordinates at a point on the interface
+. n    - The normal vector to the interface
+. uL   - The state vector to the left of the interface
+. uR   - The state vector to the right of the interface
+. flux - output array of flux through the interface
+- ctx  - optional user context
+
+  Level: intermediate
+
+.seealso: PetscDSGetRiemannSolver()
+@*/
+PetscErrorCode PetscDSSetRiemannSolver(PetscDS prob, PetscInt f,
+                                       void (*r)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidFunction(r, 3);
+  if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
+  prob->r[f] = r;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSGetContext"
+PetscErrorCode PetscDSGetContext(PetscDS prob, PetscInt f, void **ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  PetscValidPointer(ctx, 3);
+  *ctx = prob->ctx[f];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSSetContext"
+PetscErrorCode PetscDSSetContext(PetscDS prob, PetscInt f, void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  if (f < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be non-negative", f);
+  ierr = PetscDSEnlarge_Static(prob, f+1);CHKERRQ(ierr);
+  prob->ctx[f] = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDSGetBdResidual"
 PetscErrorCode PetscDSGetBdResidual(PetscDS prob, PetscInt f,
                                          void (**f0)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], const PetscReal n[], PetscScalar f0[]),
@@ -758,6 +1055,22 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS prob, PetscInt f, PetscInt g,
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetFieldOffset"
+/*@
+  PetscDSGetFieldOffset - Returns the offset of the given field in the full space basis
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- f - The field number
+
+  Output Parameter:
+. off - The offset
+
+  Level: beginner
+
+.seealso: PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 {
   PetscInt       g;
@@ -781,6 +1094,22 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSGetBdFieldOffset"
+/*@
+  PetscDSGetBdFieldOffset - Returns the offset of the given field in the full space boundary basis
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- f - The field number
+
+  Output Parameter:
+. off - The boundary offset
+
+  Level: beginner
+
+.seealso: PetscDSGetFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
 PetscErrorCode PetscDSGetBdFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 {
   PetscInt       g;
@@ -911,7 +1240,7 @@ PetscErrorCode PetscDSGetRefCoordArrays(PetscDS prob, PetscReal **x, PetscScalar
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSDestroy_Basic"
-PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
+static PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -919,7 +1248,7 @@ PetscErrorCode PetscDSDestroy_Basic(PetscDS prob)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSInitialize_Basic"
-PetscErrorCode PetscDSInitialize_Basic(PetscDS prob)
+static PetscErrorCode PetscDSInitialize_Basic(PetscDS prob)
 {
   PetscFunctionBegin;
   prob->ops->setfromoptions = NULL;

@@ -69,7 +69,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
       ierr = DMGetField(dm, 0, &fe);CHKERRQ(ierr);
       if (fe->classid == PETSCFE_CLASSID) fem = PETSC_TRUE;
     }
-    if (fem) {ierr = DMPlexInsertBoundaryValuesFEM(dm, v);CHKERRQ(ierr);}
+    if (fem) {ierr = DMPlexInsertBoundaryValues(dm, v, 0.0, NULL, NULL, NULL);CHKERRQ(ierr);}
   }
   if (isvtk) {
     PetscSection            section;
@@ -6170,33 +6170,55 @@ PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, VecScatter *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateDefaultSection_Plex"
-/* Pointwise interpolation
-     Just code FEM for now
-     u^f = I u^c
-     sum_k u^f_k phi^f_k = I sum_l u^c_l phi^c_l
-     u^f_i = sum_l int psi^f_i I phi^c_l u^c_l
-     I_{ij} = int psi^f_i phi^c_j
-*/
 PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
 {
   PetscSection   section;
   IS            *bcPoints;
+  PetscBool     *isFE;
   PetscInt      *bcFields, *numComp, *numDof;
-  PetscInt       depth, dim, numBd, numBC = 0, numFields, bd, bc, f;
+  PetscInt       depth, dim, numBd, numBC = 0, numFields, bd, bc = 0, f;
+  PetscInt       cStart, cEnd, cEndInterior;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Handle boundary conditions */
+  ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
+  /* FE and FV boundary conditions are handled slightly differently */
+  ierr = PetscMalloc1(numFields, &isFE);CHKERRQ(ierr);
+  for (f = 0; f < numFields; ++f) {
+    PetscObject  obj;
+    PetscClassId id;
+
+    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
+    else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
+    else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
+  }
+  /* Allocate boundary point storage */
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
     PetscBool isEssential;
     ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     if (isEssential) ++numBC;
   }
+  for (f = 0; f < numFields; ++f) if (!isFE[f] && cEndInterior >= 0) ++numBC;
   ierr = PetscMalloc2(numBC,&bcFields,numBC,&bcPoints);CHKERRQ(ierr);
-  for (bd = 0, bc = 0; bd < numBd; ++bd) {
+  /* Constrain ghost cells for FV */
+  for (f = 0; f < numFields; ++f) {
+    PetscInt *newidx, c;
+
+    if (isFE[f] || cEndInterior < 0) continue;
+    ierr = PetscMalloc1(cEnd-cEndInterior,&newidx);CHKERRQ(ierr);
+    for (c = cEndInterior; c < cEnd; ++c) newidx[c-cEndInterior] = c;
+    bcFields[bc] = f;
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cEnd-cEndInterior, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]);CHKERRQ(ierr);
+  }
+  /* Handle FEM Dirichlet boundaries */
+  for (bd = 0; bd < numBd; ++bd) {
     const char     *bdLabel;
     DMLabel         label;
     const PetscInt *values;
@@ -6204,52 +6226,81 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     PetscBool       isEssential, duplicate = PETSC_FALSE;
 
     ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
-    if (numValues != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Bug me and I will fix this");
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
-    /* Only want to do this for FEM, and only once */
+    /* Only want to modify label once */
     for (bd2 = 0; bd2 < bd; ++bd2) {
       const char *bdname;
       ierr = DMPlexGetBoundary(dm, bd2, NULL, NULL, &bdname, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
       ierr = PetscStrcmp(bdname, bdLabel, &duplicate);CHKERRQ(ierr);
       if (duplicate) break;
     }
-    if (!duplicate) {
+    if (!duplicate && (isFE[field])) {
       ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
       ierr = DMPlexLabelAddCells(dm, label);CHKERRQ(ierr);
     }
-    /* Filter out cells, if you actually want to constraint cells you need to do things by hand right now */
+    /* Filter out cells, if you actually want to constrain cells you need to do things by hand right now */
     if (isEssential) {
-      IS              tmp;
       PetscInt       *newidx;
-      const PetscInt *idx;
-      PetscInt        cStart, cEnd, n, p, newn = 0;
+      PetscInt        n, newn = 0, p, v;
 
       bcFields[bc] = field;
-      ierr = DMPlexGetStratumIS(dm, bdLabel, values[0], &tmp);CHKERRQ(ierr);
-      ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(tmp, &n);CHKERRQ(ierr);
-      ierr = ISGetIndices(tmp, &idx);CHKERRQ(ierr);
-      for (p = 0; p < n; ++p) if ((idx[p] < cStart) || (idx[p] >= cEnd)) ++newn;
+      for (v = 0; v < numValues; ++v) {
+        IS              tmp;
+        const PetscInt *idx;
+
+        ierr = DMPlexGetStratumIS(dm, bdLabel, values[v], &tmp);CHKERRQ(ierr);
+        if (!tmp) continue;
+        ierr = ISGetLocalSize(tmp, &n);CHKERRQ(ierr);
+        ierr = ISGetIndices(tmp, &idx);CHKERRQ(ierr);
+        if (isFE[field]) {
+          for (p = 0; p < n; ++p) if ((idx[p] < cStart) || (idx[p] >= cEnd)) ++newn;
+        } else {
+          for (p = 0; p < n; ++p) if ((idx[p] >= cStart) || (idx[p] < cEnd)) ++newn;
+        }
+        ierr = ISRestoreIndices(tmp, &idx);CHKERRQ(ierr);
+        ierr = ISDestroy(&tmp);CHKERRQ(ierr);
+      }
       ierr = PetscMalloc1(newn,&newidx);CHKERRQ(ierr);
       newn = 0;
-      for (p = 0; p < n; ++p) if ((idx[p] < cStart) || (idx[p] >= cEnd)) newidx[newn++] = idx[p];
+      for (v = 0; v < numValues; ++v) {
+        IS              tmp;
+        const PetscInt *idx;
+
+        ierr = DMPlexGetStratumIS(dm, bdLabel, values[v], &tmp);CHKERRQ(ierr);
+        if (!tmp) continue;
+        ierr = ISGetLocalSize(tmp, &n);CHKERRQ(ierr);
+        ierr = ISGetIndices(tmp, &idx);CHKERRQ(ierr);
+        if (isFE[field]) {
+          for (p = 0; p < n; ++p) if ((idx[p] < cStart) || (idx[p] >= cEnd)) newidx[newn++] = idx[p];
+        } else {
+          for (p = 0; p < n; ++p) if ((idx[p] >= cStart) || (idx[p] < cEnd)) newidx[newn++] = idx[p];
+        }
+        ierr = ISRestoreIndices(tmp, &idx);CHKERRQ(ierr);
+        ierr = ISDestroy(&tmp);CHKERRQ(ierr);
+      }
       ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), newn, newidx, PETSC_OWN_POINTER, &bcPoints[bc++]);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(tmp, &idx);CHKERRQ(ierr);
-      ierr = ISDestroy(&tmp);CHKERRQ(ierr);
     }
   }
   /* Handle discretization */
-  ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
-  ierr = PetscMalloc2(numFields,&numComp,numFields*(dim+1),&numDof);CHKERRQ(ierr);
+  ierr = PetscCalloc2(numFields,&numComp,numFields*(dim+1),&numDof);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
-    PetscFE         fe;
-    const PetscInt *numFieldDof;
-    PetscInt        d;
+    PetscObject obj;
 
-    ierr = DMGetField(dm, f, (PetscObject *) &fe);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe, &numComp[f]);CHKERRQ(ierr);
-    ierr = PetscFEGetNumDof(fe, &numFieldDof);CHKERRQ(ierr);
-    for (d = 0; d < dim+1; ++d) numDof[f*(dim+1)+d] = numFieldDof[d];
+    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
+    if (isFE[f]) {
+      PetscFE         fe = (PetscFE) obj;
+      const PetscInt *numFieldDof;
+      PetscInt        d;
+
+      ierr = PetscFEGetNumComponents(fe, &numComp[f]);CHKERRQ(ierr);
+      ierr = PetscFEGetNumDof(fe, &numFieldDof);CHKERRQ(ierr);
+      for (d = 0; d < dim+1; ++d) numDof[f*(dim+1)+d] = numFieldDof[d];
+    } else {
+      PetscFV fv = (PetscFV) obj;
+
+      ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
+      numDof[f*(dim+1)+dim] = numComp[f];
+    }
   }
   for (f = 0; f < numFields; ++f) {
     PetscInt d;
@@ -6271,6 +6322,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
   for (bc = 0; bc < numBC; ++bc) {ierr = ISDestroy(&bcPoints[bc]);CHKERRQ(ierr);}
   ierr = PetscFree2(bcFields,bcPoints);CHKERRQ(ierr);
   ierr = PetscFree2(numComp,numDof);CHKERRQ(ierr);
+  ierr = PetscFree(isFE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

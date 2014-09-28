@@ -3815,6 +3815,8 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscFree(dm->L);CHKERRQ(ierr);
+  ierr = PetscFree(dm->maxCell);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetBlockSize(coordinates, &dim);CHKERRQ(ierr);
   ierr = PetscMalloc1(dim,&dm->L);CHKERRQ(ierr);

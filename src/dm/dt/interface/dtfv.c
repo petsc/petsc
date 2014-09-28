@@ -1,5 +1,6 @@
 #include <petsc-private/petscfvimpl.h> /*I "petscfv.h" I*/
 #include <petscdmplex.h>
+#include <petscds.h>
 
 PetscClassId PETSCLIMITER_CLASSID = 0;
 
@@ -1378,7 +1379,7 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
   Logically collective on PetscFV
 
   Input Parameters:
-+ fvm - the PetscFV object to destroy
++ fvm - the PetscFV object
 - lim - The PetscLimiter
 
   Level: developer
@@ -1406,7 +1407,7 @@ PetscErrorCode PetscFVSetLimiter(PetscFV fvm, PetscLimiter lim)
   Not collective
 
   Input Parameter:
-. fvm - the PetscFV object to destroy
+. fvm - the PetscFV object
 
   Output Parameter:
 . lim - The PetscLimiter
@@ -1432,7 +1433,7 @@ PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim)
   Logically collective on PetscFV
 
   Input Parameters:
-+ fvm - the PetscFV object to destroy
++ fvm - the PetscFV object
 - comp - The number of components
 
   Level: developer
@@ -1459,7 +1460,7 @@ PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp)
   Not collective
 
   Input Parameter:
-. fvm - the PetscFV object to destroy
+. fvm - the PetscFV object
 
   Output Parameter:
 , comp - The number of components
@@ -1485,7 +1486,7 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
   Logically collective on PetscFV
 
   Input Parameters:
-+ fvm - the PetscFV object to destroy
++ fvm - the PetscFV object
 - dim - The spatial dimension
 
   Level: developer
@@ -1508,7 +1509,7 @@ PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim)
   Logically collective on PetscFV
 
   Input Parameter:
-. fvm - the PetscFV object to destroy
+. fvm - the PetscFV object
 
   Output Parameter:
 . dim - The spatial dimension
@@ -1534,7 +1535,7 @@ PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim)
   Logically collective on PetscFV
 
   Input Parameters:
-+ fvm - the PetscFV object to destroy
++ fvm - the PetscFV object
 - computeGradients - Flag to compute cell gradients
 
   Level: developer
@@ -1557,7 +1558,7 @@ PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradient
   Not collective
 
   Input Parameter:
-. fvm - the PetscFV object to destroy
+. fvm - the PetscFV object
 
   Output Parameter:
 . computeGradients - Flag to compute cell gradients
@@ -1572,6 +1573,59 @@ PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradien
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(computeGradients, 2);
   *computeGradients = fvm->computeGradients;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVSetQuadrature"
+/*@
+  PetscFVSetQuadrature - Set the quadrature object
+
+  Logically collective on PetscFV
+
+  Input Parameters:
++ fvm - the PetscFV object
+- q - The PetscQuadrature
+
+  Level: developer
+
+.seealso: PetscFVGetQuadrature()
+@*/
+PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  ierr = PetscQuadratureDestroy(&fvm->quadrature);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) q);CHKERRQ(ierr);
+  fvm->quadrature = q;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVGetQuadrature"
+/*@
+  PetscFVGetQuadrature - Get the quadrature object
+
+  Not collective
+
+  Input Parameter:
+. fvm - the PetscFV object
+
+  Output Parameter:
+. lim - The PetscQuadrature
+
+  Level: developer
+
+.seealso: PetscFVSetQuadrature()
+@*/
+PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  PetscValidPointer(q, 2);
+  *q = fvm->quadrature;
   PetscFunctionReturn(0);
 }
 
@@ -1608,30 +1662,26 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
 
   Input Parameters:
 + fvm          - The PetscFV object for the field being integrated
-. Nface        - The number of faces in the chunk
-. Nf           - The number of physical fields
-. fv           - The PetscFV objects for each field
+. prob         - The PetscDS specifing the discretizations and continuum functions
 . field        - The field being integrated
+. Nf           - The number of faces in the chunk
 . fgeom        - The face geometry for each face in the chunk
-. cgeom        - The cell geometry for each pair of cells in the chunk
+. neighborVol  - The volume for each pair of cells in the chunk
 . uL           - The state from the cell on the left
-. uR           - The state from the cell on the right
-. riemann      - Riemann solver
-- ctx          - User context passed to Riemann solve
+- uR           - The state from the cell on the right
 
   Output Parameter
 + fluxL        - the left fluxes for each face
 - fluxR        - the right fluxes for each face
 */
-PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscInt Nfaces, PetscInt Nf, PetscFV fv[], PetscInt field, PetscCellGeometry fgeom, PetscCellGeometry cgeom, PetscScalar uL[], PetscScalar uR[],
-                                           void (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx),
-                                           PetscScalar fluxL[], PetscScalar fluxR[], void *ctx)
+PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
+                                           PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  if (fvm->ops->integraterhsfunction) {ierr = (*fvm->ops->integraterhsfunction)(fvm, Nfaces, Nf, fv, field, fgeom, cgeom, uL, uR, riemann, fluxL, fluxR, ctx);CHKERRQ(ierr);}
+  if (fvm->ops->integraterhsfunction) {ierr = (*fvm->ops->integraterhsfunction)(fvm, prob, field, Nf, fgeom, neighborVol, uL, uR, fluxL, fluxR);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1693,27 +1743,28 @@ PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm)
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVIntegrateRHSFunction_Upwind"
 /*
-  fgeom[f]=>v0 is the centroid
-  cgeom->vol[f*2+0] contains the left  geom
-  cgeom->vol[f*2+1] contains the right geom
+  neighborVol[f*2+0] contains the left  geom
+  neighborVol[f*2+1] contains the right geom
 */
-PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscInt Nfaces, PetscInt Nf, PetscFV fv[], PetscInt field, PetscCellGeometry fgeom, PetscCellGeometry cgeom,
-                                                  PetscScalar xL[], PetscScalar xR[],
-                                                  void (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx),
-                                                  PetscScalar fluxL[], PetscScalar fluxR[], void *ctx)
+PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
+                                                  PetscScalar xL[], PetscScalar xR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
+  void         (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
+  void          *rctx;
   PetscScalar   *flux = fvm->fluxWork;
   PetscInt       dim, pdim, f, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDSGetRiemannSolver(prob, field, &riemann);CHKERRQ(ierr);
+  ierr = PetscDSGetContext(prob, field, &rctx);CHKERRQ(ierr);
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
-  for (f = 0; f < Nfaces; ++f) {
-    (*riemann)(&fgeom.v0[f*dim], &fgeom.n[f*dim], &xL[f*pdim], &xR[f*pdim], flux, ctx);
+  for (f = 0; f < Nf; ++f) {
+    (*riemann)(fgeom[f].centroid, fgeom[f].normal, &xL[f*pdim], &xR[f*pdim], flux, rctx);
     for (d = 0; d < pdim; ++d) {
-      fluxL[f*pdim+d] = flux[d] / cgeom.vol[f*2+0];
-      fluxR[f*pdim+d] = flux[d] / cgeom.vol[f*2+1];
+      fluxL[f*pdim+d] = flux[d] / neighborVol[f*2+0];
+      fluxR[f*pdim+d] = flux[d] / neighborVol[f*2+1];
     }
   }
   PetscFunctionReturn(0);
@@ -1998,27 +2049,28 @@ PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt numFace
 #undef __FUNCT__
 #define __FUNCT__ "PetscFVIntegrateRHSFunction_LeastSquares"
 /*
-  fgeom[f]=>v0 is the centroid
-  cgeom->vol[f*2+0] contains the left  geom
-  cgeom->vol[f*2+1] contains the right geom
+  neighborVol[f*2+0] contains the left  geom
+  neighborVol[f*2+1] contains the right geom
 */
-PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscInt Nfaces, PetscInt Nf, PetscFV fv[], PetscInt field, PetscCellGeometry fgeom, PetscCellGeometry cgeom,
-                                                        PetscScalar xL[], PetscScalar xR[],
-                                                        void (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx),
-                                                        PetscScalar fluxL[], PetscScalar fluxR[], void *ctx)
+PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol,
+                                                        PetscScalar xL[], PetscScalar xR[], PetscScalar fluxL[], PetscScalar fluxR[])
 {
+  void         (*riemann)(const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx);
+  void          *rctx;
   PetscScalar   *flux = fvm->fluxWork;
   PetscInt       dim, pdim, f, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDSGetRiemannSolver(prob, field, &riemann);CHKERRQ(ierr);
+  ierr = PetscDSGetContext(prob, field, &rctx);CHKERRQ(ierr);
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   ierr = PetscFVGetNumComponents(fvm, &pdim);CHKERRQ(ierr);
-  for (f = 0; f < Nfaces; ++f) {
-    (*riemann)(&fgeom.v0[f*dim], &fgeom.n[f*dim], &xL[f*pdim], &xR[f*pdim], flux, ctx);
+  for (f = 0; f < Nf; ++f) {
+    (*riemann)(fgeom[f].centroid, fgeom[f].normal, &xL[f*pdim], &xR[f*pdim], flux, rctx);
     for (d = 0; d < pdim; ++d) {
-      fluxL[f*pdim+d] = flux[d] / cgeom.vol[f*2+0];
-      fluxR[f*pdim+d] = flux[d] / cgeom.vol[f*2+1];
+      fluxL[f*pdim+d] = flux[d] / neighborVol[f*2+0];
+      fluxR[f*pdim+d] = flux[d] / neighborVol[f*2+1];
     }
   }
   PetscFunctionReturn(0);
