@@ -12,9 +12,9 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
   PetscErrorCode ierr;
-  PetscInt       n = 2,issize;
+  PetscInt       n = 2,issize,M,N;
   PetscMPIInt    rank;
-  IS             isrow,iscol,irow[2],icol[2];
+  IS             isrow,iscol,irow[n],icol[n];
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -31,14 +31,17 @@ int main(int argc,char **args)
   ierr = MatLoad(SBAIJ,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
-  ierr   = MatGetSize(BAIJ,&issize,0);CHKERRQ(ierr);
-  issize = 9;
+  ierr   = MatGetSize(BAIJ,&M,&N);CHKERRQ(ierr);
+  issize = M/4;
   ierr   = ISCreateStride(PETSC_COMM_SELF,issize,0,1,&isrow);CHKERRQ(ierr);
   irow[0] = irow[1] = isrow;
-  issize = 9;
+  issize = N/2;
   ierr   = ISCreateStride(PETSC_COMM_SELF,issize,0,1,&iscol);CHKERRQ(ierr);
   icol[0] = icol[1] = iscol;
   ierr   = MatGetSubMatrices(BAIJ,n,irow,icol,MAT_INITIAL_MATRIX,&subBAIJ);CHKERRQ(ierr);
+
+  /* irow and icol must be same for SBAIJ matrices! */
+  icol[0] = icol[1] = isrow;
   ierr   = MatGetSubMatrices(SBAIJ,n,irow,icol,MAT_INITIAL_MATRIX,&subSBAIJ);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
