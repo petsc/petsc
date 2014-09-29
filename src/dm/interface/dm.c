@@ -1633,7 +1633,7 @@ static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode m
   ierr = DMGetDefaultConstraints(dm,&cSec,&cMat);CHKERRQ(ierr);
   if (cMat && (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES)) {
     ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
-    ierr = MatGetVecs(cMat,NULL,&cVec);CHKERRQ(ierr);
+    ierr = MatCreateVecs(cMat,NULL,&cVec);CHKERRQ(ierr);
     ierr = MatMult(cMat,l,cVec);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(cSec,&pStart,&pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; p++) {
@@ -1812,7 +1812,7 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
   ierr = DMGetDefaultConstraints(dm,&cSec,&cMat);CHKERRQ(ierr);
   if (cMat && (mode == ADD_VALUES || mode == ADD_ALL_VALUES || mode == ADD_BC_VALUES)) {
     ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
-    ierr = MatGetVecs(cMat,NULL,&cVec);CHKERRQ(ierr);
+    ierr = MatCreateVecs(cMat,NULL,&cVec);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(cSec,&pStart,&pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; p++) {
       ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
