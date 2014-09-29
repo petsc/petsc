@@ -3,23 +3,177 @@
 #include <petscsf.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeAnchorAdjacencies"
+/* get adjacencies due to point-to-point constraints that can't be found with DMPlexGetAdjacency() */
+static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscSection section, PetscSection sectionGlobal, PetscSection *anchorSectionAdj, PetscInt *anchorAdj[])
+{
+  PetscInt       pStart, pEnd;
+  PetscSection   adjSec, aSec;
+  IS             aIS;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)section),&adjSec);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(section,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(adjSec,pStart,pEnd);CHKERRQ(ierr);
+
+  ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
+  if (aSec) {
+    const PetscInt *anchors;
+    PetscInt       p, q, a, aSize, *offsets, aStart, aEnd, *inverse, iSize, *adj, adjSize;
+    PetscInt       *tmpAdjP = NULL, *tmpAdjQ = NULL;
+    PetscSection   inverseSec;
+
+    /* invert the constraint-to-anchor map */
+    ierr = PetscSectionCreate(PetscObjectComm((PetscObject)aSec),&inverseSec);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(inverseSec,pStart,pEnd);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(aIS, &aSize);CHKERRQ(ierr);
+    ierr = ISGetIndices(aIS, &anchors);CHKERRQ(ierr);
+
+    for (p = 0; p < aSize; p++) {
+      PetscInt a = anchors[p];
+
+      ierr = PetscSectionAddDof(inverseSec,a,1);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetUp(inverseSec);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(inverseSec,&iSize);CHKERRQ(ierr);
+    ierr = PetscMalloc1(iSize,&inverse);CHKERRQ(ierr);
+    ierr = PetscCalloc1(pEnd-pStart,&offsets);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(aSec,&aStart,&aEnd);CHKERRQ(ierr);
+    for (p = aStart; p < aEnd; p++) {
+      PetscInt dof, off;
+
+      ierr = PetscSectionGetDof(aSec, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(aSec, p, &off);CHKERRQ(ierr);
+
+      for (q = 0; q < dof; q++) {
+        PetscInt iOff;
+
+        a = anchors[off + q];
+        ierr = PetscSectionGetOffset(inverseSec, a, &iOff);CHKERRQ(ierr);
+        inverse[iOff + offsets[a-pStart]++] = p;
+      }
+    }
+    ierr = ISRestoreIndices(aIS, &anchors);CHKERRQ(ierr);
+    ierr = PetscFree(offsets);CHKERRQ(ierr);
+
+    /* construct anchorAdj and adjSec
+     *
+     * loop over anchors:
+     *   construct anchor adjacency
+     *   loop over constrained:
+     *     construct constrained adjacency
+     *     if not in anchor adjacency, add to dofs
+     * setup adjSec, allocate anchorAdj
+     * loop over anchors:
+     *   construct anchor adjacency
+     *   loop over constrained:
+     *     construct constrained adjacency
+     *     if not in anchor adjacency
+     *       if not already in list, put in list
+     *   sort, unique, reduce dof count
+     * optional: compactify
+     */
+    for (p = pStart; p < pEnd; p++) {
+      PetscInt iDof, iOff, i, r, s, numAdjP = PETSC_DETERMINE;
+
+      ierr = PetscSectionGetDof(inverseSec,p,&iDof);CHKERRQ(ierr);
+      if (!iDof) continue;
+      ierr = PetscSectionGetOffset(inverseSec,p,&iOff);CHKERRQ(ierr);
+      ierr = DMPlexGetAdjacency(dm,p,&numAdjP,&tmpAdjP);CHKERRQ(ierr);
+      for (i = 0; i < iDof; i++) {
+        PetscInt iNew = 0, qAdj, qAdjDof, qAdjCDof, numAdjQ = PETSC_DETERMINE;
+
+        q = inverse[iOff + i];
+        ierr = DMPlexGetAdjacency(dm,q,&numAdjQ,&tmpAdjQ);CHKERRQ(ierr);
+        for (r = 0; r < numAdjQ; r++) {
+          qAdj = tmpAdjQ[r];
+          if ((qAdj < pStart) || (qAdj >= pEnd)) continue;
+          for (s = 0; s < numAdjP; s++) {
+            if (qAdj == tmpAdjP[s]) break;
+          }
+          if (s < numAdjP) continue;
+          ierr  = PetscSectionGetDof(section,qAdj,&qAdjDof);CHKERRQ(ierr);
+          ierr  = PetscSectionGetConstraintDof(section,qAdj,&qAdjCDof);CHKERRQ(ierr);
+          iNew += qAdjDof - qAdjCDof;
+        }
+        ierr = PetscSectionAddDof(adjSec,p,iNew);CHKERRQ(ierr);
+      }
+    }
+
+    ierr = PetscSectionSetUp(adjSec);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(adjSec,&adjSize);CHKERRQ(ierr);
+    ierr = PetscMalloc1(adjSize,&adj);CHKERRQ(ierr);
+
+    for (p = pStart; p < pEnd; p++) {
+      PetscInt iDof, iOff, i, r, s, aOff, aOffOrig, aDof, numAdjP = PETSC_DETERMINE;
+
+      ierr = PetscSectionGetDof(inverseSec,p,&iDof);CHKERRQ(ierr);
+      if (!iDof) continue;
+      ierr = PetscSectionGetOffset(inverseSec,p,&iOff);CHKERRQ(ierr);
+      ierr = DMPlexGetAdjacency(dm,p,&numAdjP,&tmpAdjP);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(adjSec,p,&aDof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(adjSec,p,&aOff);CHKERRQ(ierr);
+      aOffOrig = aOff;
+      for (i = 0; i < iDof; i++) {
+        PetscInt qAdj, qAdjDof, qAdjCDof, qAdjOff, nd, numAdjQ = PETSC_DETERMINE;
+
+        q = inverse[iOff + i];
+        ierr = DMPlexGetAdjacency(dm,q,&numAdjQ,&tmpAdjQ);CHKERRQ(ierr);
+        for (r = 0; r < numAdjQ; r++) {
+          qAdj = tmpAdjQ[r];
+          if ((qAdj < pStart) || (qAdj >= pEnd)) continue;
+          for (s = 0; s < numAdjP; s++) {
+            if (qAdj == tmpAdjP[s]) break;
+          }
+          if (s < numAdjP) continue;
+          ierr  = PetscSectionGetDof(section,qAdj,&qAdjDof);CHKERRQ(ierr);
+          ierr  = PetscSectionGetConstraintDof(section,qAdj,&qAdjCDof);CHKERRQ(ierr);
+          ierr  = PetscSectionGetOffset(sectionGlobal,qAdj,&qAdjOff);CHKERRQ(ierr);
+          for (nd = 0; nd < qAdjDof-qAdjCDof; ++nd) {
+            adj[aOff++] = (qAdjOff < 0 ? -(qAdjOff+1) : qAdjOff) + nd;
+          }
+        }
+      }
+      ierr = PetscSortRemoveDupsInt(&aDof,&adj[aOffOrig]);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(adjSec,p,aDof);CHKERRQ(ierr);
+    }
+    *anchorAdj = adj;
+
+    /* clean up */
+    ierr = PetscSectionDestroy(&inverseSec);CHKERRQ(ierr);
+    ierr = PetscFree(inverse);CHKERRQ(ierr);
+    ierr = PetscFree(tmpAdjP);CHKERRQ(ierr);
+    ierr = PetscFree(tmpAdjQ);CHKERRQ(ierr);
+  }
+  else {
+    *anchorAdj = NULL;
+    ierr = PetscSectionSetUp(adjSec);CHKERRQ(ierr);
+  }
+  *anchorSectionAdj = adjSec;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexPreallocateOperator"
 PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscSection sectionGlobal, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {
   MPI_Comm           comm;
   MatType            mtype;
   PetscSF            sf, sfDof, sfAdj;
-  PetscSection       leafSectionAdj, rootSectionAdj, sectionAdj;
+  PetscSection       leafSectionAdj, rootSectionAdj, sectionAdj, anchorSectionAdj;
   PetscInt           nroots, nleaves, l, p;
   const PetscInt    *leaves;
   const PetscSFNode *remotes;
   PetscInt           dim, pStart, pEnd, numDof, globalOffStart, globalOffEnd, numCols;
-  PetscInt          *tmpAdj = NULL, *adj, *rootAdj, *cols, *remoteOffsets;
+  PetscInt          *tmpAdj = NULL, *adj, *rootAdj, *anchorAdj = NULL, *cols, *remoteOffsets;
   PetscInt           adjSize;
   PetscLayout        rLayout;
   PetscInt           locRows, rStart, rEnd, r;
   PetscMPIInt        size;
   PetscBool          doCommLocal, doComm, debug = PETSC_FALSE, isSymBlock, isSymSeqBlock, isSymMPIBlock;
+  PetscBool          useAnchors;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -64,6 +218,9 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = PetscSectionSetChart(rootSectionAdj, 0, numDof);CHKERRQ(ierr);
   /*   Fill in the ghost dofs on the interface */
   ierr = PetscSFGetGraph(sf, NULL, &nleaves, &leaves, &remotes);CHKERRQ(ierr);
+  /* use constraints in finding adjacency in this routine */
+  ierr = DMPlexGetAdjacencyUseAnchors(dm,&useAnchors);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseAnchors(dm,PETSC_TRUE);CHKERRQ(ierr);
 
   /*
    section        - maps points to (# dofs, local dofs)
@@ -76,6 +233,8 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
    sfDof - describes shared dofs across procs
    sfAdj - describes shared adjacent dofs across procs
    ** The bootstrapping process involves six rounds with similar structure of visiting neighbors of each point.
+  (0). If there are point-to-point constraints, add the adjacencies of constrained points to anchors in anchorAdj
+       (This is done in DMPlexComputeAnchorAdjacencies())
     1. Visit unowned points on interface, count adjacencies placing in leafSectionAdj
        Reduce those counts to rootSectionAdj (now redundantly counting some interface points)
     2. Visit owned points on interface, count adjacencies placing in rootSectionAdj
@@ -91,8 +250,10 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
    ** Knowing all the column adjacencies, check ownership and sum into dnz and onz
   */
 
+  ierr = DMPlexComputeAnchorAdjacencies(dm,section,sectionGlobal,&anchorSectionAdj,&anchorAdj);CHKERRQ(ierr);
+
   for (l = 0; l < nleaves; ++l) {
-    PetscInt dof, off, d, q;
+    PetscInt dof, off, d, q, anDof;
     PetscInt p = leaves[l], numAdj = PETSC_DETERMINE;
 
     if ((p < pStart) || (p >= pEnd)) continue;
@@ -108,6 +269,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
       ierr = PetscSectionGetConstraintDof(section, padj, &ncdof);CHKERRQ(ierr);
       for (d = off; d < off+dof; ++d) {
         ierr = PetscSectionAddDof(leafSectionAdj, d, ndof-ncdof);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscSectionGetDof(anchorSectionAdj, p, &anDof);CHKERRQ(ierr);
+    if (anDof) {
+      for (d = off; d < off+dof; ++d) {
+        ierr = PetscSectionAddDof(leafSectionAdj, d, anDof);CHKERRQ(ierr);
       }
     }
   }
@@ -127,7 +294,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   }
   /* Add in local adjacency sizes for owned dofs on interface (roots) */
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt numAdj = PETSC_DETERMINE, adof, dof, off, d, q;
+    PetscInt numAdj = PETSC_DETERMINE, adof, dof, off, d, q, anDof;
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
@@ -144,6 +311,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
       ierr = PetscSectionGetConstraintDof(section, padj, &ncdof);CHKERRQ(ierr);
       for (d = off; d < off+dof; ++d) {
         ierr = PetscSectionAddDof(rootSectionAdj, d, ndof-ncdof);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscSectionGetDof(anchorSectionAdj, p, &anDof);CHKERRQ(ierr);
+    if (anDof) {
+      for (d = off; d < off+dof; ++d) {
+        ierr = PetscSectionAddDof(rootSectionAdj, d, anDof);CHKERRQ(ierr);
       }
     }
   }
@@ -165,13 +338,15 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = PetscSectionGetStorageSize(leafSectionAdj, &adjSize);CHKERRQ(ierr);
   ierr = PetscCalloc1(adjSize, &adj);CHKERRQ(ierr);
   for (l = 0; l < nleaves; ++l) {
-    PetscInt dof, off, d, q;
+    PetscInt dof, off, d, q, anDof, anOff;
     PetscInt p = leaves[l], numAdj = PETSC_DETERMINE;
 
     if ((p < pStart) || (p >= pEnd)) continue;
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
     ierr = DMPlexGetAdjacency(dm, p, &numAdj, &tmpAdj);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(anchorSectionAdj, p, &anDof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(anchorSectionAdj, p, &anOff);CHKERRQ(ierr);
     for (d = off; d < off+dof; ++d) {
       PetscInt aoff, i = 0;
 
@@ -188,6 +363,10 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
           adj[aoff+i] = (ngoff < 0 ? -(ngoff+1) : ngoff) + nd;
           ++i;
         }
+      }
+      for (q = 0; q < anDof; q++) {
+        adj[aoff+i] = anchorAdj[anOff+q];
+        ++i;
       }
     }
   }
@@ -219,7 +398,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   }
   /* Add in local adjacency indices for owned dofs on interface (roots) */
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt numAdj = PETSC_DETERMINE, adof, dof, off, d, q;
+    PetscInt numAdj = PETSC_DETERMINE, adof, dof, off, d, q, anDof, anOff;
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
@@ -227,12 +406,18 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
     if (adof <= 0) continue;
     ierr = DMPlexGetAdjacency(dm, p, &numAdj, &tmpAdj);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(anchorSectionAdj, p, &anDof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(anchorSectionAdj, p, &anOff);CHKERRQ(ierr);
     for (d = off; d < off+dof; ++d) {
       PetscInt adof, aoff, i;
 
       ierr = PetscSectionGetDof(rootSectionAdj, d, &adof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(rootSectionAdj, d, &aoff);CHKERRQ(ierr);
       i    = adof-1;
+      for (q = 0; q < anDof; q++) {
+        rootAdj[aoff+i] = anchorAdj[anOff+q];
+        --i;
+      }
       for (q = 0; q < numAdj; ++q) {
         const PetscInt padj = tmpAdj[q];
         PetscInt ndof, ncdof, ngoff, nd;
@@ -290,7 +475,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = PetscSectionCreate(comm, &sectionAdj);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionAdj, globalOffStart, globalOffEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt  numAdj = PETSC_DETERMINE, dof, cdof, off, goff, d, q;
+    PetscInt  numAdj = PETSC_DETERMINE, dof, cdof, off, goff, d, q, anDof;
     PetscBool found  = PETSC_TRUE;
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
@@ -326,6 +511,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
         ierr = PetscSectionAddDof(sectionAdj, d, ndof-ncdof);CHKERRQ(ierr);
       }
     }
+    ierr = PetscSectionGetDof(anchorSectionAdj, p, &anDof);CHKERRQ(ierr);
+    if (anDof) {
+      for (d = goff; d < goff+dof-cdof; ++d) {
+        ierr = PetscSectionAddDof(sectionAdj, d, anDof);CHKERRQ(ierr);
+      }
+    }
   }
   ierr = PetscSectionSetUp(sectionAdj);CHKERRQ(ierr);
   if (debug) {
@@ -336,7 +527,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = PetscSectionGetStorageSize(sectionAdj, &numCols);CHKERRQ(ierr);
   ierr = PetscMalloc1(numCols, &cols);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt  numAdj = PETSC_DETERMINE, dof, cdof, off, goff, d, q;
+    PetscInt  numAdj = PETSC_DETERMINE, dof, cdof, off, goff, d, q, anDof, anOff;
     PetscBool found  = PETSC_TRUE;
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
@@ -362,6 +553,8 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     }
     if (found) continue;
     ierr = DMPlexGetAdjacency(dm, p, &numAdj, &tmpAdj);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(anchorSectionAdj, p, &anDof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(anchorSectionAdj, p, &anOff);CHKERRQ(ierr);
     for (d = goff; d < goff+dof-cdof; ++d) {
       PetscInt adof, aoff, i = 0;
 
@@ -382,11 +575,16 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
           cols[aoff+i] = ngoff < 0 ? -(ngoff+1)+nd : ngoff+nd;
         }
       }
+      for (q = 0; q < anDof; q++, i++) {
+        cols[aoff+i] = anchorAdj[anOff + q];
+      }
       if (i != adof) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %D != %D for dof %D (point %D)", i, adof, d, p);
     }
   }
+  ierr = PetscSectionDestroy(&anchorSectionAdj);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&leafSectionAdj);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&rootSectionAdj);CHKERRQ(ierr);
+  ierr = PetscFree(anchorAdj);CHKERRQ(ierr);
   ierr = PetscFree(rootAdj);CHKERRQ(ierr);
   ierr = PetscFree(tmpAdj);CHKERRQ(ierr);
   /* Debugging */
@@ -463,6 +661,8 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  /* restore original useAnchors */
+  ierr = DMPlexSetAdjacencyUseAnchors(dm,useAnchors);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&sectionAdj);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Preallocate,dm,0,0,0);CHKERRQ(ierr);

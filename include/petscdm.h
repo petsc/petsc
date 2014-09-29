@@ -81,6 +81,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolationScale(DM,DM,Mat,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateAggregates(DM,DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalHookAdd(DM,PetscErrorCode (*)(DM,Vec,InsertMode,Vec,void*),PetscErrorCode (*)(DM,Vec,InsertMode,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode DMLocalToGlobalHookAdd(DM,PetscErrorCode (*)(DM,Vec,InsertMode,Vec,void*),PetscErrorCode (*)(DM,Vec,InsertMode,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalBegin(DM,Vec,InsertMode,Vec);
@@ -151,6 +152,8 @@ PETSC_EXTERN PetscErrorCode DMPrintLocalVec(DM, const char [], PetscReal, Vec);
 
 PETSC_EXTERN PetscErrorCode DMGetDefaultSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultSection(DM, PetscSection);
+PETSC_EXTERN PetscErrorCode DMGetDefaultConstraints(DM, PetscSection *, Mat *);
+PETSC_EXTERN PetscErrorCode DMSetDefaultConstraints(DM, PetscSection, Mat);
 PETSC_EXTERN PetscErrorCode DMGetDefaultGlobalSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultGlobalSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetDefaultSF(DM, PetscSF *);

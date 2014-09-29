@@ -147,6 +147,20 @@ PETSC_STATIC_INLINE void CoordinatesRefToReal(PetscInt dimReal, PetscInt dimRef,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CoordinatesRealToRef"
+PETSC_STATIC_INLINE void CoordinatesRealToRef(PetscInt dimReal, PetscInt dimRef, const PetscReal v0[], const PetscReal invJ[], const PetscReal x[], PetscReal xi[])
+{
+  PetscInt d, e;
+
+  for (d = 0; d < dimRef; ++d) {
+    xi[d] = -1.;
+    for (e = 0; e < dimReal; ++e) {
+      xi[d] += invJ[d*dimRef+e]*(x[e] - v0[e]);
+    }
+  }
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "EvaluateFieldJets"
 PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscDS prob, PetscBool bd, PetscInt q, const PetscReal invJ[], const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscScalar u[], PetscScalar u_x[], PetscScalar u_t[])
 {

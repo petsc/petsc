@@ -38,8 +38,13 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
       ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
       ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
       if (supportSize == 2) {
-        ++off[support[0]-cStart+1];
-        ++off[support[1]-cStart+1];
+        PetscInt numChildren;
+
+        ierr = DMPlexGetTreeChildren(dm,f,&numChildren,NULL);CHKERRQ(ierr);
+        if (!numChildren) {
+          ++off[support[0]-cStart+1];
+          ++off[support[1]-cStart+1];
+        }
       }
     }
     /* Prefix sum */
@@ -57,8 +62,13 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
         ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
         ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
         if (supportSize == 2) {
-          adj[tmp[support[0]-cStart]++] = support[1];
-          adj[tmp[support[1]-cStart]++] = support[0];
+          PetscInt numChildren;
+
+          ierr = DMPlexGetTreeChildren(dm,f,&numChildren,NULL);CHKERRQ(ierr);
+          if (!numChildren) {
+            adj[tmp[support[0]-cStart]++] = support[1];
+            adj[tmp[support[1]-cStart]++] = support[0];
+          }
         }
       }
 #if defined(PETSC_USE_DEBUG)
@@ -96,7 +106,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
   for (cell = cStart; cell < cEnd; ++cell) {
     PetscInt numNeighbors = PETSC_DETERMINE, n;
 
-    ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, &numNeighbors, &neighborCells);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &numNeighbors, &neighborCells);CHKERRQ(ierr);
     /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
     for (n = 0; n < numNeighbors; ++n) {
       PetscInt        cellPair[2];
@@ -133,7 +143,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
       PetscInt numNeighbors = PETSC_DETERMINE, n;
       PetscInt cellOffset   = 0;
 
-      ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, &numNeighbors, &neighborCells);CHKERRQ(ierr);
+      ierr = DMPlexGetAdjacency_Internal(dm, cell, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, &numNeighbors, &neighborCells);CHKERRQ(ierr);
       /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
       for (n = 0; n < numNeighbors; ++n) {
         PetscInt        cellPair[2];
@@ -534,6 +544,33 @@ PetscErrorCode DMPlexCreatePartition(DM dm, const char name[], PetscInt height, 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexMarkTreeClosure"
+static PetscErrorCode DMPlexMarkTreeClosure(DM dm, PetscSegBuffer segpart, PetscBT bt, PetscInt point, PetscInt *partSize)
+{
+  PetscInt       parent, closureSize, *closure = NULL, i, pStart, pEnd;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetTreeParent(dm,point,&parent,NULL);CHKERRQ(ierr);
+  if (parent == point) PetscFunctionReturn(0);
+  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+  for (i = 0; i < closureSize; i++) {
+    PetscInt cpoint = closure[2*i];
+
+    if (!PetscBTLookupSet(bt,cpoint-pStart)) {
+      PetscInt *PETSC_RESTRICT pt;
+      (*partSize)++;
+      ierr = PetscSegBufferGetInts(segpart,1,&pt);CHKERRQ(ierr);
+      *pt = cpoint;
+    }
+    ierr = DMPlexMarkTreeClosure(dm,segpart,bt,cpoint,partSize);CHKERRQ(ierr);
+  }
+  ierr = DMPlexRestoreTransitiveClosure(dm,parent,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexCreatePartitionClosure"
 PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS pointPartition, PetscSection *section, IS *partition)
 {
@@ -573,6 +610,7 @@ PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS
           ierr = PetscSegBufferGetInts(segpart,1,&pt);CHKERRQ(ierr);
           *pt = cpoint;
         }
+        ierr = DMPlexMarkTreeClosure(dm,segpart,bt,cpoint,&partSize);CHKERRQ(ierr);
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }

@@ -632,8 +632,9 @@ static PetscErrorCode TensorPoint_Internal(PetscInt len, PetscInt max, PetscInt 
     tup[0] = ind[0];
     ierr = TensorPoint_Internal(len-1, max, &ind[1], &tup[1]);CHKERRQ(ierr);
     if (ind[1] < 0) {
+      ind[1] = 0;
       if (ind[0] == max-1) {ind[0] = -1;}
-      else                 {ind[1] = 0; ++ind[0];}
+      else                 {++ind[0];}
     }
   }
   PetscFunctionReturn(0);
@@ -1619,82 +1620,10 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
 @*/
 PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim, PetscBool simplex, DM *refdm)
 {
-  DM             rdm;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMCreate(PetscObjectComm((PetscObject) sp), &rdm);CHKERRQ(ierr);
-  ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetDimension(rdm, dim);CHKERRQ(ierr);
-  switch (dim) {
-  case 0:
-  {
-    PetscInt    numPoints[1]        = {1};
-    PetscInt    coneSize[1]         = {0};
-    PetscInt    cones[1]            = {0};
-    PetscInt    coneOrientations[1] = {0};
-    PetscScalar vertexCoords[1]     = {0.0};
-
-    ierr = DMPlexCreateFromDAG(rdm, 0, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-  }
-  break;
-  case 1:
-  {
-    PetscInt    numPoints[2]        = {2, 1};
-    PetscInt    coneSize[3]         = {2, 0, 0};
-    PetscInt    cones[2]            = {1, 2};
-    PetscInt    coneOrientations[2] = {0, 0};
-    PetscScalar vertexCoords[2]     = {-1.0,  1.0};
-
-    ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-  }
-  break;
-  case 2:
-    if (simplex) {
-      PetscInt    numPoints[2]        = {3, 1};
-      PetscInt    coneSize[4]         = {3, 0, 0, 0};
-      PetscInt    cones[3]            = {1, 2, 3};
-      PetscInt    coneOrientations[3] = {0, 0, 0};
-      PetscScalar vertexCoords[6]     = {-1.0, -1.0,  1.0, -1.0,  -1.0, 1.0};
-
-      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    } else {
-      PetscInt    numPoints[2]        = {4, 1};
-      PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
-      PetscInt    cones[4]            = {1, 2, 3, 4};
-      PetscInt    coneOrientations[4] = {0, 0, 0, 0};
-      PetscScalar vertexCoords[8]     = {-1.0, -1.0,  1.0, -1.0,  1.0, 1.0,  -1.0, 1.0};
-
-      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    }
-  break;
-  case 3:
-    if (simplex) {
-      PetscInt    numPoints[2]        = {4, 1};
-      PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
-      PetscInt    cones[4]            = {1, 3, 2, 4};
-      PetscInt    coneOrientations[4] = {0, 0, 0, 0};
-      PetscScalar vertexCoords[12]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  -1.0, -1.0, 1.0};
-
-      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    } else {
-      PetscInt    numPoints[2]        = {8, 1};
-      PetscInt    coneSize[9]         = {8, 0, 0, 0, 0, 0, 0, 0, 0};
-      PetscInt    cones[8]            = {1, 4, 3, 2, 5, 6, 7, 8};
-      PetscInt    coneOrientations[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-      PetscScalar vertexCoords[24]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  1.0, 1.0, -1.0,  -1.0, 1.0, -1.0,
-                                         -1.0, -1.0,  1.0,  1.0, -1.0,  1.0,  1.0, 1.0,  1.0,  -1.0, 1.0,  1.0};
-
-      ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    }
-  break;
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_WRONG, "Cannot create reference cell for dimension %d", dim);
-  }
-  *refdm = NULL;
-  ierr = DMPlexInterpolate(rdm, refdm);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(rdm, *refdm);CHKERRQ(ierr);
-  ierr = DMDestroy(&rdm);CHKERRQ(ierr);
+  ierr = DMPlexCreateReferenceCell(PetscObjectComm((PetscObject) sp), dim, simplex, refdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1781,7 +1710,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   Vec                 coordinates;
   PetscReal          *qpoints, *qweights;
   PetscInt           *closure = NULL, closureSize, c;
-  PetscInt            depth, dim, pdimMax, *pStart, *pEnd, cell, coneSize, d, n, f = 0;
+  PetscInt            depth, dim, pdimMax, pMax = 0, *pStart, *pEnd, cell, coneSize, d, n, f = 0;
   PetscBool           simplex;
   PetscErrorCode      ierr;
 
@@ -1795,17 +1724,29 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   ierr = DMPlexGetConeSize(dm, pStart[depth], &coneSize);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &csection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  if      (coneSize == dim+1)    simplex = PETSC_TRUE;
-  else if (coneSize == 1 << dim) simplex = PETSC_FALSE;
-  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
+  if (depth == 1) {
+    if      (coneSize == dim+1)    simplex = PETSC_TRUE;
+    else if (coneSize == 1 << dim) simplex = PETSC_FALSE;
+    else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
+  }
+  else if (depth == dim) {
+    if      (coneSize == dim+1)   simplex = PETSC_TRUE;
+    else if (coneSize == 2 * dim) simplex = PETSC_FALSE;
+    else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support simplices and tensor product cells");
+  }
+  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support cell-vertex meshes or interpolated meshes");
   lag->simplex = simplex;
   ierr = PetscDualSpaceGetDimension_SingleCell_Lagrange(sp, sp->order, &pdimMax);CHKERRQ(ierr);
   pdimMax *= (pEnd[dim] - pStart[dim]);
   ierr = PetscMalloc1(pdimMax, &sp->functional);CHKERRQ(ierr);
+  for (d = 0; d <= depth; d++) {
+    pMax = PetscMax(pMax,pEnd[d]);
+  }
   if (!dim) {
     ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
     ierr = PetscMalloc1(1, &qpoints);CHKERRQ(ierr);
     ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
+    ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
     ierr = PetscQuadratureSetData(sp->functional[f], PETSC_DETERMINE, 1, qpoints, qweights);CHKERRQ(ierr);
     qpoints[0]  = 0.0;
     qweights[0] = 1.0;
@@ -1814,8 +1755,8 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   } else {
     PetscBT seen;
 
-    ierr = PetscBTCreate(pEnd[dim-1], &seen);CHKERRQ(ierr);
-    ierr = PetscBTMemzero(pEnd[dim-1], seen);CHKERRQ(ierr);
+    ierr = PetscBTCreate(pMax, &seen);CHKERRQ(ierr);
+    ierr = PetscBTMemzero(pMax, seen);CHKERRQ(ierr);
     for (cell = pStart[depth]; cell < pEnd[depth]; ++cell) {
       ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (c = 0; c < closureSize*2; c += 2) {
@@ -1832,6 +1773,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
           ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
           ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
           ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
+          ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
           ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
           ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
           ierr = PetscSectionGetDof(csection, p, &dof);CHKERRQ(ierr);
@@ -1855,6 +1797,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
             ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
             ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
             ierr = PetscMalloc1(1, &qweights);CHKERRQ(ierr);
+            ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
             ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
             for (d = 0; d < dim; ++d) {qpoints[d] = k*PetscRealPart(coords[1*dim+d] - coords[0*dim+d])/order + PetscRealPart(coords[0*dim+d]);}
             qweights[0] = 1.0;
@@ -1894,6 +1837,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
                 ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
                 ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
                 ierr = PetscMalloc1(1,   &qweights);CHKERRQ(ierr);
+                ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
                 ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
                 ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
                 for (d = 0; d < dim; ++d) {
@@ -1909,6 +1853,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
               ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &sp->functional[f]);CHKERRQ(ierr);
               ierr = PetscMalloc1(dim, &qpoints);CHKERRQ(ierr);
               ierr = PetscMalloc1(1,   &qweights);CHKERRQ(ierr);
+              ierr = PetscQuadratureSetOrder(sp->functional[f], 0);CHKERRQ(ierr);
               ierr = PetscQuadratureSetData(sp->functional[f], dim, 1, qpoints, qweights);CHKERRQ(ierr);
               ierr = TensorPoint_Internal(dim, orderEff+1, ind, tup);CHKERRQ(ierr);
               for (d = 0; d < dim; ++d) {
@@ -5318,7 +5263,7 @@ PetscErrorCode PetscFECompositeExpandQuadrature(PetscFE fem, PetscQuadrature q, 
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
   const PetscReal   *points,    *weights;
   PetscReal         *pointsRef, *weightsRef;
-  PetscInt           dim, npoints, npointsRef, c, p, d, e;
+  PetscInt           dim, order, npoints, npointsRef, c, p, d, e;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -5326,6 +5271,7 @@ PetscErrorCode PetscFECompositeExpandQuadrature(PetscFE fem, PetscQuadrature q, 
   PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 2);
   PetscValidPointer(qref, 3);
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, qref);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
   npointsRef = npoints*cmp->numSubelements;
   ierr = PetscMalloc1(npointsRef*dim,&pointsRef);CHKERRQ(ierr);
@@ -5342,6 +5288,7 @@ PetscErrorCode PetscFECompositeExpandQuadrature(PetscFE fem, PetscQuadrature q, 
       weightsRef[c*npoints+p] = weights[p]/cmp->numSubelements;
     }
   }
+  ierr = PetscQuadratureSetOrder(*qref, order);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*qref, dim, npointsRef, pointsRef, weightsRef);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
