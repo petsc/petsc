@@ -276,6 +276,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ksptol = PetscMin(ksptol,0.001);
 
     ierr = MatDiagonalSet(tao->hessian, qp->DiagAxpy, ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, qp->RHS, tao->stepdirection);CHKERRQ(ierr);
@@ -284,6 +286,8 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 
     ierr = VecScale(qp->DiagAxpy, -1.0);CHKERRQ(ierr);
     ierr = MatDiagonalSet(tao->hessian, qp->DiagAxpy, ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecScale(qp->DiagAxpy, -1.0);CHKERRQ(ierr);
     ierr = QPComputeStepDirection(qp,tao);CHKERRQ(ierr);
     ierr = QPStepLength(qp); CHKERRQ(ierr);
@@ -328,11 +332,15 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 
       /* Approximately solve the linear system */
       ierr = MatDiagonalSet(tao->hessian, qp->DiagAxpy, ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = KSPSolve(tao->ksp, qp->RHS2, tao->stepdirection);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
 
       ierr = MatDiagonalSet(tao->hessian, qp->HDiag, INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = QPComputeStepDirection(qp,tao);CHKERRQ(ierr);
       ierr = QPStepLength(qp);CHKERRQ(ierr);
 
