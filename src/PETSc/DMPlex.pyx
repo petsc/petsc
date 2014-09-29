@@ -498,6 +498,11 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = pardm
         return pointsf
 
+    def createCoarsePointIS(self):
+        cdef IS fpoint = IS()
+        CHKERR( DMPlexCreateCoarsePointIS(self.dm, &fpoint.iset) )
+        return fpoint
+
     def createSection(self, numComp, numDof, bcField=None, bcPoints=None, IS perm=None):
         # topological dimension
         cdef PetscInt dim = 0

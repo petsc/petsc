@@ -123,6 +123,7 @@ cdef extern from * nogil:
     #int DMPlexSetSubpointMap(PetscDM,PetscDMLabel)
     #int DMPlexCreateSubpointIS(PetscDM,PetscIS*)
 
+    int DMPlexCreateCoarsePointIS(PetscDM,PetscIS*)
     int DMPlexMarkBoundaryFaces(PetscDM,PetscDMLabel)
     #int DMPlexLabelComplete(PetscDM,PetscDMLabel)
     #int DMPlexLabelCohesiveComplete(PetscDM,PetscDMLabel,PetscBool,PetscDM)
