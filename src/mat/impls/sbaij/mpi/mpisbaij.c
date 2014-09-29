@@ -2818,8 +2818,23 @@ PetscErrorCode  MatMPISBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt 
 PetscErrorCode MatGetRedundantMatrix_MPISBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
 {
   PetscErrorCode ierr;
+  Mat            matBaij,matredundantBaij;
 
   PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Not done yet");
+  /* Using MatConvert(), not efficient! */
+  ierr = MatSetOption(mat,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatConvert(mat,MATBAIJ,MAT_INITIAL_MATRIX,&matBaij);CHKERRQ(ierr);
+  ierr = MatSetOption(mat,MAT_GETROW_UPPERTRIANGULAR,PETSC_FALSE);CHKERRQ(ierr);
+
+  ierr = MatGetRedundantMatrix_MPIBAIJ(matBaij,nsubcomm,subcomm,MAT_INITIAL_MATRIX,&matredundantBaij);CHKERRQ(ierr);
+
+  ierr = MatSetOption(matredundantBaij,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  if (reuse != MAT_INITIAL_MATRIX) {
+    ierr = MatDestroy(matredundant);CHKERRQ(ierr);
+  }
+  ierr = MatConvert(matredundantBaij,MATSBAIJ,MAT_INITIAL_MATRIX,matredundant);CHKERRQ(ierr);
+
+  ierr = MatDestroy(&matBaij);CHKERRQ(ierr);
+  ierr = MatDestroy(&matredundantBaij);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

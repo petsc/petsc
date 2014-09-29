@@ -4103,7 +4103,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm 
     iscol  = redund->iscol;
     matseq = redund->matseq;
   }
-  ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices_MPIBAIJ(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
   ierr = MatCreateMPIBAIJConcatenateSeqBAIJ(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
 
   if (reuse == MAT_INITIAL_MATRIX) {
