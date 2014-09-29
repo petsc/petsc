@@ -1550,7 +1550,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        MatGetRowUpperTriangular_MPISBAIJ,
                                        MatRestoreRowUpperTriangular_MPISBAIJ,
                                /*109*/ 0,
-                                       0,
+                                       MatGetRedundantMatrix_MPISBAIJ,
                                        0,
                                        0,
                                        0,
@@ -2813,4 +2813,13 @@ PetscErrorCode  MatMPISBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetRedundantMatrix_MPISBAIJ"
+PetscErrorCode MatGetRedundantMatrix_MPISBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
+{
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Not done yet");
+  PetscFunctionReturn(0);
+}

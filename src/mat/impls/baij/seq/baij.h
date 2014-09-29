@@ -18,12 +18,12 @@
   PetscScalar *sor_work;             /* work array for SOR */                                        \
   MatScalar   *saved_values;                                                                    \
                                                                                                      \
-  Mat sbaijMat;                      /* mat in sbaij format */                                       \
+  Mat         sbaijMat;                      /* mat in sbaij format */                                       \
                                                                                                      \
                                                                                                      \
-  MatScalar *idiag;                  /* inverse of block diagonal  */                                \
-  PetscBool idiagvalid              /* if above has correct/current values */
-
+  MatScalar     *idiag;            /* inverse of block diagonal  */                                \
+  PetscBool     idiagvalid;        /* if above has correct/current values */ \
+  Mat_Redundant *redundant;        /* used by MatGetRedundantMatrix() */
 
 typedef struct {
   SEQAIJHEADER(MatScalar);

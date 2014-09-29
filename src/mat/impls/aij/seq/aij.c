@@ -1103,8 +1103,6 @@ PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
 }
 #endif
 
-extern PetscErrorCode MatDestroy_Redundant(Mat_Redundant **);
-
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqAIJ"
 PetscErrorCode MatDestroy_SeqAIJ(Mat A)

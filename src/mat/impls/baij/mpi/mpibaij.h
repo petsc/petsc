@@ -61,7 +61,8 @@
   PetscInt  setvalueslen;       /* only used for single precision computations */              \
   MatScalar *setvaluescopy;     /* area double precision values in MatSetValuesXXX() are copied*/ \
                                 /* before calling MatSetValuesXXX_MPIBAIJ_MatScalar() */       \
-  PetscBool ijonly              /* used in  MatGetSubMatrices_MPIBAIJ_local() for getting ij structure only */
+  PetscBool ijonly;             /* used in  MatGetSubMatrices_MPIBAIJ_local() for getting ij structure only */\
+  Mat_Redundant *redundant;        /* used by MatGetRedundantMatrix() */
 
 typedef struct {
   MPIBAIJHEADER;
@@ -80,4 +81,5 @@ PETSC_INTERN PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat,ISColoring,MatFDColor
 PETSC_INTERN PetscErrorCode MatFDColoringApply_BAIJ(Mat,MatFDColoring,Vec,void*);
 
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_MPIBAIJ(Mat,const PetscInt *,Mat,const PetscInt*,PetscInt*);
+PETSC_INTERN PetscErrorCode MatGetRedundantMatrix_MPIBAIJ(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
 #endif
