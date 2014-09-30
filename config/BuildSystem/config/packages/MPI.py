@@ -534,12 +534,3 @@ class Configure(config.package.Package):
     if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_fixed_nbc_progress"):
       # Indicates that this bug was fixed: http://trac.mpich.org/projects/mpich/ticket/1785
       self.addDefine('HAVE_MPICH_CH3_SOCK_FIXED_NBC_PROGRESS', 1)
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()
