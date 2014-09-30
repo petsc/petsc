@@ -59,7 +59,6 @@ static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec x,PetscReal *
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchCreate_Unit"
 /*@C
@@ -72,7 +71,7 @@ EXTERN_C_BEGIN
 
 .keywords: Tao, linesearch
 @*/
-PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
 {
   PetscFunctionBegin;
   ls->ops->setup = 0;
@@ -83,5 +82,5 @@ PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
   ls->ops->setfromoptions = TaoLineSearchSetFromOptions_Unit;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

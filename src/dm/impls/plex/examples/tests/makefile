@@ -24,7 +24,7 @@ ex2f90: ex2f90.o  chkopts
 	${RM} -f ex2f90.o
 
 ex3: ex3.o  chkopts
-	-${CLINKER} -o ex3 ex3.o ${PETSC_DM_LIB}
+	-${CLINKER} -o ex3 ex3.o ${PETSC_KSP_LIB}
 	${RM} -f ex3.o
 
 #--------------------------------------------------------------------------
@@ -96,6 +96,32 @@ runex3_9:
 	   if (${DIFF} output/ex3_8.out ex3_8.tmp) then true ;  \
 	   else printf "${PWD}\nPossible problem with runex3_9, diffs above\n=========================================\n"; fi ;\
 	   ${RM} -f ex3_8.tmp
+runex3_constraints:
+	-@${MPIEXEC} -n 1 ./ex3 -simplex 0 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -constraints > ex3_constraints.tmp 2>&1;\
+	   if (${DIFF} output/ex3_constraints.out ex3_constraints.tmp) then true ;  \
+	   else printf "${PWD}\nPossible problem with with runex3_constraints, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex3_constraints.tmp
+runex3_nonconforming_simplex_2:
+	-@${MPIEXEC} -n 4 ./ex3 -tree -simplex 1 -dim 2 -petscspace_order 1 -qorder 1 -mat_null_space_test_view -dm_view ascii::ASCII_INFO_DETAIL > ex3_nonconforming_simplex_2.tmp 2>&1;\
+	   if (${DIFF} output/ex3_nonconforming_simplex_2.out ex3_nonconforming_simplex_2.tmp) then true ;\
+	   else printf "${PWD}\nPossible problem with with runex3_nonconforming_simplex_2, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex3_nonconforming_simplex_2.tmp ex3_nonconforming_simplex_2.vtk
+runex3_nonconforming_simplex_3:
+	-@${MPIEXEC} -n 4 ./ex3 -tree -simplex 1 -dim 3 -petscspace_order 1 -qorder 1 -mat_null_space_test_view -dm_view ascii::ASCII_INFO_DETAIL > ex3_nonconforming_simplex_3.tmp 2>&1;\
+	   if (${DIFF} output/ex3_nonconforming_simplex_3.out ex3_nonconforming_simplex_3.tmp) then true ;\
+	   else printf "${PWD}\nPossible problem with with runex3_nonconforming_simplex_3, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex3_nonconforming_simplex_3.tmp ex3_nonconforming_simplex_3.vtk
+runex3_nonconforming_tensor_2:
+	-@${MPIEXEC} -n 4 ./ex3 -tree -simplex 0 -dim 2 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -mat_null_space_test_view -dm_view ascii::ASCII_INFO_DETAIL > ex3_nonconforming_tensor_2.tmp 2>&1;\
+	   if (${DIFF} output/ex3_nonconforming_tensor_2.out ex3_nonconforming_tensor_2.tmp) then true ;\
+	   else printf "${PWD}\nPossible problem with with runex3_nonconforming_tensor_2, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex3_nonconforming_tensor_2.tmp ex3_nonconforming_tensor_2.vtk
+runex3_nonconforming_tensor_3:
+	-@${MPIEXEC} -n 4 ./ex3 -tree -simplex 0 -dim 3 -petscspace_poly_tensor -petscspace_order 1 -qorder 1 -mat_null_space_test_view -dm_view ascii::ASCII_INFO_DETAIL > ex3_nonconforming_tensor_3.tmp 2>&1;\
+	   if (${DIFF} output/ex3_nonconforming_tensor_3.out ex3_nonconforming_tensor_3.tmp) then true ;\
+	   else printf "${PWD}\nPossible problem with with runex3_nonconforming_tensor_3, diffs above\n=========================================\n"; fi ;\
+	   ${RM} -f ex3_nonconforming_tensor_3.tmp ex3_nonconforming_tensor_3.vtk
+
 
 TESTEXAMPLES_CTETGEN = ex1.PETSc runex1 runex1_2 ex1.rm ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 runex3_5 runex3_6 runex3_7 runex3_8 runex3_9 ex3.rm
 TESTEXAMPLES_FORTRAN = ex1f90.PETSc runex1f90 ex1f90.rm ex2f90.PETSc runex2f90 ex2f90.rm

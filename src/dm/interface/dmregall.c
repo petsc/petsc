@@ -80,6 +80,7 @@ PetscErrorCode PetscSpaceRegisterAll()
 }
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceRegisterAll"
@@ -104,6 +105,7 @@ PetscErrorCode PetscDualSpaceRegisterAll()
   PetscDualSpaceRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscDualSpaceRegister(PETSCDUALSPACELAGRANGE, PetscDualSpaceCreate_Lagrange);CHKERRQ(ierr);
+  ierr = PetscDualSpaceRegister(PETSCDUALSPACESIMPLE,   PetscDualSpaceCreate_Simple);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

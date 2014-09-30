@@ -1510,7 +1510,7 @@ PetscErrorCode  PetscOptionsBoolArray(const char opt[],const char text[],const c
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   See PetscOptionsGetVieweer() for the format of the supplied viewer and its options
+   See PetscOptionsGetViewer() for the format of the supplied viewer and its options
 
 .seealso: PetscOptionsGetViewer(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -1520,7 +1520,7 @@ PetscErrorCode  PetscOptionsBoolArray(const char opt[],const char text[],const c
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsViewer(const char opt[],const char text[],const char man[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
+PetscErrorCode  PetscOptionsViewer(const char opt[],const char text[],const char man[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool *set)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;

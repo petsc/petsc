@@ -325,7 +325,7 @@ $       This will require 1 more iteration of the solver than usual.
 .   -ksp_monitor <optional filename> - print residual norm at each iteration
 .   -ksp_monitor_lg_residualnorm - plot residual norm at each iteration
 .   -ksp_monitor_solution - plot solution at each iteration
--   -ksp_monitor_singular_value - monitor extremem singular values at each iteration
+-   -ksp_monitor_singular_value - monitor extreme singular values at each iteration
 
    Notes:
    To see all options, run your program with the -help option

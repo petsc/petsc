@@ -59,8 +59,8 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,con
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecs_MPIAIJCUSPARSE"
-PetscErrorCode  MatGetVecs_MPIAIJCUSPARSE(Mat mat,Vec *right,Vec *left)
+#define __FUNCT__ "MatCreateVecs_MPIAIJCUSPARSE"
+PetscErrorCode  MatCreateVecs_MPIAIJCUSPARSE(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
   PetscInt rbs,cbs;
@@ -254,7 +254,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   stat = cusparseCreate(&(cusparseStruct->handle));CHKERRCUSP(stat);
   err = cudaStreamCreate(&(cusparseStruct->stream));CHKERRCUSP(err);
 
-  A->ops->getvecs        = MatGetVecs_MPIAIJCUSPARSE;
+  A->ops->getvecs        = MatCreateVecs_MPIAIJCUSPARSE;
   A->ops->mult           = MatMult_MPIAIJCUSPARSE;
   A->ops->multtranspose  = MatMultTranspose_MPIAIJCUSPARSE;
   A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSPARSE;

@@ -324,7 +324,7 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
 
   ierr = MatGetLocalSize(inmat,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(inmat,&M,&N);CHKERRQ(ierr);
-  ierr = MatGetVecs(inmat,&in,&out);CHKERRQ(ierr);
+  ierr = MatCreateVecs(inmat,&in,&out);CHKERRQ(ierr);
   ierr = VecSetOption(in,VEC_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(out,&start,&end);CHKERRQ(ierr);
   ierr = PetscMalloc1(m,&rows);CHKERRQ(ierr);

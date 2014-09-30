@@ -80,8 +80,8 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ"
-PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
+#define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable"
+PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,Mat C)
 {
   PetscErrorCode ierr;
   Mat_MPIAIJ     *a  =(Mat_MPIAIJ*)A->data,*c=(Mat_MPIAIJ*)C->data;
@@ -97,8 +97,13 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscInt       *api,*apj,*apJ,i,j,k,row;
   PetscInt       cstart=C->cmap->rstart;
   PetscInt       cdnz,conz,k0,k1;
+  MPI_Comm       comm;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
   /*-----------------------------------------------------*/
   /* update numerical values of P_oth and P_loc */
@@ -109,9 +114,13 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   /*----------------------------------------------------------*/
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ*)(ptap->P_loc)->data;
-  p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
   pi_loc=p_loc->i; pj_loc=p_loc->j; pa_loc=p_loc->a;
-  pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
+  if (size >1) {
+    p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
+    pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
+  } else {
+    pi_oth=NULL; pj_oth=NULL; pa_oth=NULL;
+  }
 
   /* get apa for storing dense row A[i,:]*P */
   apa = ptap->apa;
@@ -197,6 +206,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
 {
   PetscErrorCode     ierr;
   MPI_Comm           comm;
+  PetscMPIInt        size;
   Mat                Cmpi;
   Mat_PtAPMPI        *ptap;
   PetscFreeSpaceList free_space=NULL,current_space=NULL;
@@ -213,6 +223,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
   if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend) {
     SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
   }
@@ -227,9 +239,14 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
   ierr = MatMPIAIJGetLocalMat(P,MAT_INITIAL_MATRIX,&ptap->P_loc);CHKERRQ(ierr);
 
   p_loc  = (Mat_SeqAIJ*)(ptap->P_loc)->data;
-  p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
   pi_loc = p_loc->i; pj_loc = p_loc->j;
-  pi_oth = p_oth->i; pj_oth = p_oth->j;
+  if (size > 1) {
+    p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
+    pi_oth = p_oth->i; pj_oth = p_oth->j;
+  } else {
+    p_oth = NULL;
+    pi_oth = NULL; pj_oth = NULL;
+  }
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
   /*-------------------------------------------------------------------*/
@@ -239,7 +256,11 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
 
   /* create and initialize a linked list */
   armax    = ad->rmax+ao->rmax;
-  prmax    = PetscMax(p_loc->rmax,p_oth->rmax);
+  if (size >1) {
+    prmax    = PetscMax(p_loc->rmax,p_oth->rmax);
+  } else {
+    prmax = p_loc->rmax;
+  }
   nlnk_max = armax*prmax;
   if (!nlnk_max || nlnk_max > pN) nlnk_max = pN;
   ierr = PetscLLCondensedCreate(nlnk_max,pN,&lnk,&lnkbt);CHKERRQ(ierr);
@@ -319,6 +340,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscRea
 
   ptap->destroy        = Cmpi->ops->destroy;
   ptap->duplicate      = Cmpi->ops->duplicate;
+  Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
   Cmpi->ops->destroy   = MatDestroy_MPIAIJ_MatMatMult;
   Cmpi->ops->duplicate = MatDuplicate_MPIAIJ_MatMatMult;
 
@@ -534,8 +556,8 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable"
-PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,Mat C)
+#define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ"
+PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 {
   PetscErrorCode ierr;
   Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data,*c=(Mat_MPIAIJ*)C->data;
@@ -552,8 +574,13 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,Mat C)
   PetscInt       *api,*apj,*apJ,i,j,k,row;
   PetscInt       cstart = C->cmap->rstart;
   PetscInt       cdnz,conz,k0,k1,nextp;
+  MPI_Comm       comm;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
   /*-----------------------------------------------------*/
   /* update numerical values of P_oth and P_loc */
@@ -564,9 +591,13 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,Mat C)
   /*----------------------------------------------------------*/
   /* get data from symbolic products */
   p_loc = (Mat_SeqAIJ*)(ptap->P_loc)->data;
-  p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
-  pi_loc=p_loc->i; pj_loc=p_loc->j; pa_loc=p_loc->a;
-  pi_oth=p_oth->i; pj_oth=p_oth->j; pa_oth=p_oth->a;
+  pi_loc = p_loc->i; pj_loc = p_loc->j; pa_loc = p_loc->a;
+  if (size >1) {
+    p_oth = (Mat_SeqAIJ*)(ptap->P_oth)->data;
+    pi_oth = p_oth->i; pj_oth = p_oth->j; pa_oth = p_oth->a;
+  } else {
+    p_oth = NULL; pi_oth = NULL; pj_oth = NULL; pa_oth = NULL;
+  }
 
   api = ptap->api;
   apj = ptap->apj;
@@ -655,6 +686,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 {
   PetscErrorCode     ierr;
   MPI_Comm           comm;
+  PetscMPIInt        size;
   Mat                Cmpi;
   Mat_PtAPMPI        *ptap;
   PetscFreeSpaceList free_space = NULL,current_space=NULL;
@@ -670,19 +702,26 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
   /* create struct Mat_PtAPMPI and attached it to C later */
   ierr = PetscNew(&ptap);CHKERRQ(ierr);
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
   ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_INITIAL_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
-
+  
   /* get P_loc by taking all local rows of P */
   ierr = MatMPIAIJGetLocalMat(P,MAT_INITIAL_MATRIX,&ptap->P_loc);CHKERRQ(ierr);
 
   p_loc  = (Mat_SeqAIJ*)(ptap->P_loc)->data;
-  p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
   pi_loc = p_loc->i; pj_loc = p_loc->j;
-  pi_oth = p_oth->i; pj_oth = p_oth->j;
+  if (size > 1) {
+    p_oth  = (Mat_SeqAIJ*)(ptap->P_oth)->data;
+    pi_oth = p_oth->i; pj_oth = p_oth->j;
+  } else {
+    p_oth  = NULL;
+    pi_oth = NULL; pj_oth = NULL;
+  }
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
   /*-------------------------------------------------------------------*/
@@ -691,8 +730,12 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   api[0]    = 0;
 
   /* create and initialize a linked list */
-  armax    = ad->rmax+ao->rmax;
-  prmax    = PetscMax(p_loc->rmax,p_oth->rmax);
+  armax = ad->rmax+ao->rmax;
+  if (size >1) {
+    prmax = PetscMax(p_loc->rmax,p_oth->rmax);
+  } else {
+    prmax = p_loc->rmax;
+  }
   nlnk_max = armax*prmax;
   if (!nlnk_max || nlnk_max > pN) nlnk_max = pN;
   ierr = PetscLLCondensedCreate_Scalable(nlnk_max,&lnk);CHKERRQ(ierr);
@@ -772,7 +815,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 
   ptap->destroy             = Cmpi->ops->destroy;
   ptap->duplicate           = Cmpi->ops->duplicate;
-  Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable;
+  Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ;
   Cmpi->ops->destroy        = MatDestroy_MPIAIJ_MatMatMult;
   Cmpi->ops->duplicate      = MatDuplicate_MPIAIJ_MatMatMult;
 

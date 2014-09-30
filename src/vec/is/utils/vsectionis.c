@@ -1576,6 +1576,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   ierr = PetscFree2(s->atlasDof, s->atlasOff);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&s->clSection);CHKERRQ(ierr);
   ierr = ISDestroy(&s->clPoints);CHKERRQ(ierr);
+  ierr = ISDestroy(&s->perm);CHKERRQ(ierr);
 
   s->pStart    = -1;
   s->pEnd      = -1;

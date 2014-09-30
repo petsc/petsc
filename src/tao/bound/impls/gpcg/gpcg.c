@@ -185,6 +185,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   ierr=TaoMonitor(tao,iter,f,gpcg->gnorm,0.0,tao->step,&reason);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING){
+    tao->ksp_its=0;
 
     ierr = GPCGGradProjections(tao);CHKERRQ(ierr);
     ierr = ISGetSize(gpcg->Free_Local,&gpcg->n_free);CHKERRQ(ierr);
@@ -328,10 +329,9 @@ static PetscErrorCode TaoComputeDual_GPCG(Tao tao, Vec DXL, Vec DXU)
 
   Level: beginner
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_GPCG"
-PetscErrorCode TaoCreate_GPCG(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
 {
   TAO_GPCG       *gpcg;
   PetscErrorCode ierr;
@@ -382,7 +382,7 @@ PetscErrorCode TaoCreate_GPCG(Tao tao)
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch, GPCGObjectiveAndGradient, tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 
 
 

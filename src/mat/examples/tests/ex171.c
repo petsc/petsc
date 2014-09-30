@@ -26,7 +26,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(A,x);CHKERRQ(ierr);
   ierr = VecScale(x,-1.0);CHKERRQ(ierr);
   ierr = MatDiagonalSet(A,x,ADD_VALUES);CHKERRQ(ierr);

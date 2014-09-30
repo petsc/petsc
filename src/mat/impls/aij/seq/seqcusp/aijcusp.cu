@@ -284,8 +284,8 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecs_SeqAIJCUSP"
-PetscErrorCode MatGetVecs_SeqAIJCUSP(Mat mat, Vec *right, Vec *left)
+#define __FUNCT__ "MatCreateVecs_SeqAIJCUSP"
+PetscErrorCode MatCreateVecs_SeqAIJCUSP(Mat mat, Vec *right, Vec *left)
 {
   PetscErrorCode ierr;
   PetscInt rbs,cbs;
@@ -590,7 +590,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
 
   B->ops->assemblyend    = MatAssemblyEnd_SeqAIJCUSP;
   B->ops->destroy        = MatDestroy_SeqAIJCUSP;
-  B->ops->getvecs        = MatGetVecs_SeqAIJCUSP;
+  B->ops->getvecs        = MatCreateVecs_SeqAIJCUSP;
   B->ops->setvaluesbatch = MatSetValuesBatch_SeqAIJCUSP;
   B->ops->setfromoptions = MatSetFromOptions_SeqAIJCUSP;
 

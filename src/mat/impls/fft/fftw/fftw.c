@@ -385,9 +385,9 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecsFFTW"
+#define __FUNCT__ "MatCreateVecsFFTW"
 /*@
-   MatGetVecsFFTW - Get vector(s) compatible with the matrix, i.e. with the
+   MatCreateVecsFFTW - Get vector(s) compatible with the matrix, i.e. with the
      parallel layout determined by FFTW
 
    Collective on Mat
@@ -417,18 +417,18 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
 
 .seealso: MatCreateFFTW()
 @*/
-PetscErrorCode MatGetVecsFFTW(Mat A,Vec *x,Vec *y,Vec *z)
+PetscErrorCode MatCreateVecsFFTW(Mat A,Vec *x,Vec *y,Vec *z)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"MatGetVecsFFTW_C",(Mat,Vec*,Vec*,Vec*),(A,x,y,z));CHKERRQ(ierr);
+  ierr = PetscTryMethod(A,"MatCreateVecsFFTW_C",(Mat,Vec*,Vec*,Vec*),(A,x,y,z));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecsFFTW_FFTW"
-PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
+#define __FUNCT__ "MatCreateVecsFFTW_FFTW"
+PetscErrorCode  MatCreateVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
@@ -1273,7 +1273,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
   A->assembled    = PETSC_TRUE;
   A->preallocated = PETSC_TRUE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetVecsFFTW_C",MatGetVecsFFTW_FFTW);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCreateVecsFFTW_C",MatCreateVecsFFTW_FFTW);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"VecScatterPetscToFFTW_C",VecScatterPetscToFFTW_FFTW);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"VecScatterFFTWToPetsc_C",VecScatterFFTWToPetsc_FFTW);CHKERRQ(ierr);
 

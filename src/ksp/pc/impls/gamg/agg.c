@@ -418,7 +418,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
   if (isMPI) {
     Vec tempVec;
     /* get 'cpcol_1_state' */
-    ierr = MatGetVecs(Gmat_1, &tempVec, 0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Gmat_1, &tempVec, 0);CHKERRQ(ierr);
     for (kk=0,j=my0; kk<nloc; kk++,j++) {
       PetscScalar v = (PetscScalar)lid_state[kk];
       ierr = VecSetValues(tempVec, 1, &j, &v, INSERT_VALUES);CHKERRQ(ierr);
@@ -537,7 +537,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
     GAMGHashTable gid_cpid;
 
     ierr = VecGetSize(mpimat_2->lvec, &nghost_2);CHKERRQ(ierr);
-    ierr = MatGetVecs(Gmat_2, &tempVec, 0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Gmat_2, &tempVec, 0);CHKERRQ(ierr);
 
     /* get 'cpcol_2_parent' */
     for (kk=0,j=my0; kk<nloc; kk++,j++) {
@@ -1261,8 +1261,8 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,const Mat Amat,Mat *a_P)
       KSP eksp;
       Vec bb, xx;
       PC  epc;
-      ierr = MatGetVecs(Amat, &bb, 0);CHKERRQ(ierr);
-      ierr = MatGetVecs(Amat, &xx, 0);CHKERRQ(ierr);
+      ierr = MatCreateVecs(Amat, &bb, 0);CHKERRQ(ierr);
+      ierr = MatCreateVecs(Amat, &xx, 0);CHKERRQ(ierr);
       {
         PetscRandom rctx;
         ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
@@ -1326,7 +1326,7 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,const Mat Amat,Mat *a_P)
 
     /* smooth P1 := (I - omega/lam D^{-1}A)P0 */
     ierr  = MatMatMult(Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat);CHKERRQ(ierr);
-    ierr  = MatGetVecs(Amat, &diag, 0);CHKERRQ(ierr);
+    ierr  = MatCreateVecs(Amat, &diag, 0);CHKERRQ(ierr);
     ierr  = MatGetDiagonal(Amat, diag);CHKERRQ(ierr); /* effectively PCJACOBI */
     ierr  = VecReciprocal(diag);CHKERRQ(ierr);
     ierr  = MatDiagonalScale(tMat, diag, 0);CHKERRQ(ierr);

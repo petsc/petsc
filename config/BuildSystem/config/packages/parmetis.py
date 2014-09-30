@@ -22,7 +22,8 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     '''Requires the same CMake options as Metis'''
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
-    args.append('-DGKLIB_PATH=../headers') 
+    args.append('-DGKLIB_PATH=../headers')
+    args.append('-DMPI_INCLUDE_PATH='+self.mpi.include[0])
     if self.sharedLibraries.useShared:
       args.append('-DSHARED=1')
     if self.compilerFlags.debugging:

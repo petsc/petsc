@@ -124,10 +124,9 @@ PetscErrorCode TaoDestroy_SSFLS(Tao tao)
    Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_SSFLS"
-PetscErrorCode TaoCreate_SSFLS(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_SSFLS(Tao tao)
 {
   TAO_SSLS       *ssls;
   PetscErrorCode ierr;
@@ -166,5 +165,5 @@ PetscErrorCode TaoCreate_SSFLS(Tao tao)
 #endif
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

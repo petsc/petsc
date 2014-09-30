@@ -76,14 +76,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM             distributedMesh = NULL;
-  DMLabel        label;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMPlexCreateBoxMesh(comm, user->dim, PETSC_TRUE, dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
-  if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
   ierr = DMPlexDistribute(*dm, NULL, 0, NULL, &distributedMesh);CHKERRQ(ierr);
   if (distributedMesh) {
     ierr = DMDestroy(dm);CHKERRQ(ierr);

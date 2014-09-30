@@ -62,6 +62,10 @@ typedef struct {
   PetscBool continuous;
 } PetscDualSpace_Lag;
 
+typedef struct {
+  PetscInt dim;
+} PetscDualSpace_Simple;
+
 typedef struct _PetscFEOps *PetscFEOps;
 struct _PetscFEOps {
   PetscErrorCode (*setfromoptions)(PetscFE);
@@ -71,12 +75,12 @@ struct _PetscFEOps {
   PetscErrorCode (*getdimension)(PetscFE,PetscInt*);
   PetscErrorCode (*gettabulation)(PetscFE,PetscInt,const PetscReal*,PetscReal*,PetscReal*,PetscReal*);
   /* Element integration */
-  PetscErrorCode (*integrate)(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], PetscDS, const PetscScalar[], PetscReal[]);
-  PetscErrorCode (*integrateresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratebdresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratejacobianaction)(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratejacobian)(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratebdjacobian)(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integrate)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscReal[]);
+  PetscErrorCode (*integrateresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratebdresidual)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratejacobianaction)(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratejacobian)(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratebdjacobian)(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
 };
 
 struct _p_PetscFE {
@@ -139,6 +143,20 @@ PETSC_STATIC_INLINE void CoordinatesRefToReal(PetscInt dimReal, PetscInt dimRef,
     x[d] = v0[d];
     for (e = 0; e < dimRef; ++e) {
       x[d] += J[d*dimReal+e]*(xi[e] + 1.0);
+    }
+  }
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CoordinatesRealToRef"
+PETSC_STATIC_INLINE void CoordinatesRealToRef(PetscInt dimReal, PetscInt dimRef, const PetscReal v0[], const PetscReal invJ[], const PetscReal x[], PetscReal xi[])
+{
+  PetscInt d, e;
+
+  for (d = 0; d < dimRef; ++d) {
+    xi[d] = -1.;
+    for (e = 0; e < dimReal; ++e) {
+      xi[d] += invJ[d*dimRef+e]*(x[e] - v0[e]);
     }
   }
 }
@@ -263,6 +281,28 @@ PETSC_STATIC_INLINE void UpdateElementVec(PetscInt dim, PetscInt Nq, PetscInt Nb
     }
   }
 #endif
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEInterpolate_Static"
+PETSC_STATIC_INLINE PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const PetscScalar x[], PetscInt q, PetscScalar interpolant[])
+{
+  PetscReal     *basis;
+  PetscInt       Nb, Nc, fc, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+  ierr = PetscFEGetDefaultTabulation(fe, &basis, NULL, NULL);CHKERRQ(ierr);
+  for (fc = 0; fc < Nc; ++fc) {
+    interpolant[fc] = 0.0;
+    for (f = 0; f < Nb; ++f) {
+      const PetscInt fidx = f*Nc+fc;
+      interpolant[fc] += x[fidx]*basis[q*Nb*Nc+fidx];
+    }
+  }
+  PetscFunctionReturn(0);
 }
 
 #endif

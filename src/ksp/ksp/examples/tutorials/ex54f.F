@@ -102,7 +102,7 @@
       call MatGetOwnershipRange( Amat, Istart, Iend, ierr )
 !  Create vectors.  Note that we form 1 vector from scratch and
 !  then duplicate as needed.
-      call MatGetVecs( Amat, PETSC_NULL_OBJECT, xvec, ierr )
+      call MatCreateVecs( Amat, PETSC_NULL_OBJECT, xvec, ierr )
       call VecSetFromOptions( xvec, ierr )
       call VecDuplicate( xvec, bvec, ierr )
       call VecDuplicate( xvec, uvec, ierr )

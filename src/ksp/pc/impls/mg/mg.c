@@ -660,7 +660,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       Vec rscale;
       if (!mglevels[i]->smoothd->dm->x) {
         Vec *vecs;
-        ierr = KSPGetVecs(mglevels[i]->smoothd,1,&vecs,0,NULL);CHKERRQ(ierr);
+        ierr = KSPCreateVecs(mglevels[i]->smoothd,1,&vecs,0,NULL);CHKERRQ(ierr);
 
         mglevels[i]->smoothd->dm->x = vecs[0];
 
@@ -702,7 +702,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     for (i=0; i<n-1; i++) {
       if (!mglevels[i]->b) {
         Vec *vec;
-        ierr = KSPGetVecs(mglevels[i]->smoothd,1,&vec,0,NULL);CHKERRQ(ierr);
+        ierr = KSPCreateVecs(mglevels[i]->smoothd,1,&vec,0,NULL);CHKERRQ(ierr);
         ierr = PCMGSetRhs(pc,i,*vec);CHKERRQ(ierr);
         ierr = VecDestroy(vec);CHKERRQ(ierr);
         ierr = PetscFree(vec);CHKERRQ(ierr);
@@ -721,7 +721,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (n != 1 && !mglevels[n-1]->r) {
       /* PCMGSetR() on the finest level if user did not supply it */
       Vec *vec;
-      ierr = KSPGetVecs(mglevels[n-1]->smoothd,1,&vec,0,NULL);CHKERRQ(ierr);
+      ierr = KSPCreateVecs(mglevels[n-1]->smoothd,1,&vec,0,NULL);CHKERRQ(ierr);
       ierr = PCMGSetR(pc,n-1,*vec);CHKERRQ(ierr);
       ierr = VecDestroy(vec);CHKERRQ(ierr);
       ierr = PetscFree(vec);CHKERRQ(ierr);
@@ -897,7 +897,7 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
 -  PC_MG_CYCLE_V or PC_MG_CYCLE_W
 
    Options Database Key:
-$  -pc_mg_cycle_type v or w
+$  -pc_mg_cycle_type <v,w>
 
    Level: advanced
 
@@ -1127,7 +1127,7 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 
    Options Database Keys:
 +  -pc_mg_levels <nlevels> - number of levels including finest
-.  -pc_mg_cycles v or w
+.  -pc_mg_cycles <v,w> -
 .  -pc_mg_smoothup <n> - number of smoothing steps after interpolation
 .  -pc_mg_smoothdown <n> - number of smoothing steps before applying restriction operator
 .  -pc_mg_type <additive,multiplicative,full,kaskade> - multiplicative is the default

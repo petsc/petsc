@@ -405,7 +405,7 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
     KSPCreate_CG - Creates the data structure for the Krylov method CG and sets the
        function pointers for all the routines it needs to call (KSPSolve_CG() etc)
 
-    It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
+    It must be labeled as PETSC_EXTERN to be dynamically linkable in C++
 */
 /*MC
      KSPCG - The preconditioned conjugate gradient (PCG) iterative method

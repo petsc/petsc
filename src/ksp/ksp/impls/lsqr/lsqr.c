@@ -42,11 +42,11 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   if (lsqr->vwork_n) {
     ierr = VecDestroyVecs(lsqr->nwork_n,&lsqr->vwork_n);CHKERRQ(ierr);
   }
-  ierr = KSPGetVecs(ksp,lsqr->nwork_n,&lsqr->vwork_n,lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
+  ierr = KSPCreateVecs(ksp,lsqr->nwork_n,&lsqr->vwork_n,lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
   if (lsqr->se_flg && !lsqr->se) {
     /* lsqr->se is not set by user, get it from pmat */
     Vec *se;
-    ierr     = KSPGetVecs(ksp,1,&se,0,NULL);CHKERRQ(ierr);
+    ierr     = KSPCreateVecs(ksp,1,&se,0,NULL);CHKERRQ(ierr);
     lsqr->se = *se;
     ierr     = PetscFree(se);CHKERRQ(ierr);
   }

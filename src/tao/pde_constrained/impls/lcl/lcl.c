@@ -532,6 +532,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
         }
         ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
         tao->ksp_its += its;
+        tao->ksp_tot_its += its;
       }
 
       ierr = MatMultTranspose(tao->jacobian_design,lclP->lamda,lclP->g2);CHKERRQ(ierr);
@@ -590,10 +591,9 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
 
   Level: beginner
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_LCL"
-PetscErrorCode TaoCreate_LCL(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
 {
   TAO_LCL        *lclP;
   PetscErrorCode ierr;
@@ -635,7 +635,6 @@ PetscErrorCode TaoCreate_LCL(Tao tao)
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "LCLComputeLagrangianAndGradient"

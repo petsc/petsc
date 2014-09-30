@@ -236,7 +236,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.outputMakeRuleHeader(self.makeRuleHeader)
       self.log.write('**** ' + self.makeRuleHeader + ' ****\n')
       self.outputMakeRuleHeader(self.log)
-      self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeMacroHeader)
+      self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeRuleHeader)
     if self.header:
       self.outputHeader(self.header)
       self.log.write('**** ' + self.header + ' ****\n')

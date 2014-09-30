@@ -285,7 +285,6 @@ PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  DMLabel        label;
   PetscInt       dim             = user->dim;
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
@@ -297,8 +296,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   if (user->simplex) {ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);}
   else               {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);}
-  ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
-  if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
   {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
@@ -356,21 +353,21 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 #define __FUNCT__ "SetupDiscretization"
 PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
-  DM             cdm   = dm;
-  const PetscInt dim   = user->dim;
-  const PetscInt id    = 1;
-  PetscFE        fe[2];
-  PetscSpace     P;
-  PetscDS        prob;
-  PetscInt       order;
-  PetscErrorCode ierr;
+  DM              cdm   = dm;
+  const PetscInt  dim   = user->dim;
+  const PetscInt  id    = 1;
+  PetscFE         fe[2];
+  PetscQuadrature q;
+  PetscDS         prob;
+  PetscInt        order;
+  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
   ierr = PetscFECreateDefault(dm, dim, dim, user->simplex, "vel_", -1, &fe[0]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[0], "velocity");CHKERRQ(ierr);
-  ierr = PetscFEGetBasisSpace(fe[0], &P);CHKERRQ(ierr);
-  ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe[0], &q);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
   ierr = PetscFECreateDefault(dm, dim, 1, user->simplex, "pres_", order, &fe[1]);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) fe[1], "pressure");CHKERRQ(ierr);
   /* Set discretization and boundary conditions for each mesh */

@@ -155,7 +155,7 @@ PetscErrorCode KSPSetUp_GCR(KSP ksp)
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
-  ierr = MatGetVecs(A, &ctx->R, NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, &ctx->R, NULL);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->VV);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->SS);CHKERRQ(ierr);
 

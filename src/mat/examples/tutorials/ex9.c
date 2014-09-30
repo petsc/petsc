@@ -55,7 +55,7 @@ int main(int argc,char **args)
   ierr = MatShift(A[1],1.0);CHKERRQ(ierr);
   ierr = MatShift(A[1],2.0);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A[0],&x,&y);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A[0],&x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(y,&work);CHKERRQ(ierr);
   ierr = VecDuplicate(y,&z);CHKERRQ(ierr);
 

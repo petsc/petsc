@@ -1098,10 +1098,9 @@ PetscErrorCode IPMScatterStep(Tao tao, Vec STEP, Vec X1, Vec X2, Vec X3, Vec X4)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_IPM"
-PetscErrorCode TaoCreate_IPM(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao)
 {
   TAO_IPM        *ipmP;
   PetscErrorCode ierr;
@@ -1128,5 +1127,5 @@ PetscErrorCode TaoCreate_IPM(Tao tao)
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

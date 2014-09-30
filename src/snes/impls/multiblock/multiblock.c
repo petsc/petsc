@@ -365,8 +365,8 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
       ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);
 
       ierr     = PetscMalloc2(2,&jac->x,2,&jac->y);CHKERRQ(ierr);
-      ierr     = MatGetVecs(jac->pmat[0],&jac->x[0],&jac->y[0]);CHKERRQ(ierr);
-      ierr     = MatGetVecs(jac->pmat[1],&jac->x[1],&jac->y[1]);CHKERRQ(ierr);
+      ierr     = MatCreateVecs(jac->pmat[0],&jac->x[0],&jac->y[0]);CHKERRQ(ierr);
+      ierr     = MatCreateVecs(jac->pmat[1],&jac->x[1],&jac->y[1]);CHKERRQ(ierr);
       ilink    = jac->head;
       ilink->x = jac->x[0]; ilink->y = jac->y[0];
       ilink    = ilink->next;
@@ -395,7 +395,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     Vec xtmp;
 
     blocks = mb->blocks;
-    ierr   = MatGetVecs(snes->jacobian_pre, &xtmp, NULL);CHKERRQ(ierr);
+    ierr   = MatCreateVecs(snes->jacobian_pre, &xtmp, NULL);CHKERRQ(ierr);
     while (blocks) {
       ierr   = VecScatterCreate(xtmp, blocks->is, blocks->x, NULL, &blocks->sctx);CHKERRQ(ierr);
       blocks = blocks->next;

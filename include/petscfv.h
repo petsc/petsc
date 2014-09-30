@@ -6,6 +6,19 @@
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfvtypes.h>
+#include <petscdstypes.h>
+
+/* Assuming dim <= 3 */
+typedef struct {
+  PetscReal   normal[3];   /* Area-scaled normals */
+  PetscReal   centroid[3]; /* Location of centroid (quadrature point) */
+  PetscScalar grad[2][3];  /* Face contribution to gradient in left and right cell */
+} PetscFVFaceGeom;
+
+typedef struct {
+  PetscReal centroid[3];
+  PetscReal volume;
+} PetscFVCellGeom;
 
 PETSC_EXTERN PetscClassId PETSCLIMITER_CLASSID;
 
@@ -80,24 +93,12 @@ PETSC_EXTERN PetscErrorCode PetscFVSetSpatialDimension(PetscFV, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscFVGetSpatialDimension(PetscFV, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFVSetComputeGradients(PetscFV, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscFVGetComputeGradients(PetscFV, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscFVSetQuadrature(PetscFV, PetscQuadrature);
+PETSC_EXTERN PetscErrorCode PetscFVGetQuadrature(PetscFV, PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode PetscFVComputeGradient(PetscFV, PetscInt, PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV, PetscInt, PetscInt, PetscFV[], PetscInt, PetscCellGeometry, PetscCellGeometry, PetscScalar[], PetscScalar[],
-                                                        void (*)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *),
-                                                        PetscScalar[], PetscScalar[], void *);
+PETSC_EXTERN PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV, PetscDS, PetscInt, PetscInt, PetscFVFaceGeom *, PetscReal *, PetscScalar[], PetscScalar[], PetscScalar[], PetscScalar[]);
 
 PETSC_EXTERN PetscErrorCode PetscFVLeastSquaresSetMaxFaces(PetscFV, PetscInt);
-
-/* Assuming dim == 3 */
-typedef struct {
-  PetscReal   normal[3];   /* Area-scaled normals */
-  PetscReal   centroid[3]; /* Location of centroid (quadrature point) */
-  PetscScalar grad[2][3];  /* Face contribution to gradient in left and right cell */
-} FaceGeom;
-
-typedef struct {
-  PetscReal centroid[3];
-  PetscReal volume;
-} CellGeom;
 
 #endif

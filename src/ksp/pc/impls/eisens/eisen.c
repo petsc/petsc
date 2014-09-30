@@ -193,7 +193,7 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (!pc->setupcalled) {
-    ierr = MatGetVecs(pc->pmat,&eis->diag,0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&eis->diag,0);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)eis->diag);CHKERRQ(ierr);
   }
   ierr = MatGetDiagonal(pc->pmat,eis->diag);CHKERRQ(ierr);
