@@ -6,6 +6,8 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.download          = ['http://www.cmake.org/files/v3.0/cmake-3.0.1.tar.gz']
     self.downloadonWindows = 1
+    self.lookforbydefault  = 1
+    return
 
   def setupHelp(self, help):
     import nargs
