@@ -344,7 +344,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
   PetscInt       *numComp;
   PetscSection    section;
   PetscScalar    *values;
-  PetscInt        numFields, dim, spDim, totDim, numValues, pStart, pEnd, p, f, d, v, comp, h, maxHeight;
+  PetscInt        numFields, dim, dimEmbed, spDim, totDim, numValues, pStart, pEnd, p, f, d, v, comp, h, maxHeight;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -409,11 +409,10 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
     for (p = pStart; p < pEnd; ++p) {
       PetscFECellGeom geom;
 
-      ierr          = DMPlexComputeCellGeometryFEM(dm, p, NULL, &geom.v0, &geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
+      ierr          = DMPlexComputeCellGeometryFEM(dm, p, NULL, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
       geom.dim      = dim = h;
       geom.dimEmbed = dimEmbed;
       for (f = 0, v = 0; f < numFields; ++f) {
-        PetscFE      fe;
         void * const ctx = ctxs ? ctxs[f] : NULL;
 
         if (!sp[f]) continue;
