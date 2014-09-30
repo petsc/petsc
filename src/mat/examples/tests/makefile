@@ -859,6 +859,17 @@ runex9_3:
 	   if (${DIFF} output/ex9_3.out ex9.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex9_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex9.tmp
+runex9_3_baij:
+	-@${MPIEXEC} -n 3 ./ex9 -mat_type baij -nsubcomms 2 -view_mat > ex9.tmp 2>&1;   \
+	   if (${DIFF} output/ex9_3_baij.out ex9.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex9_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex9.tmp
+runex9_3_sbaij:
+	-@${MPIEXEC} -n 3 ./ex9 -mat_type sbaij -nsubcomms 2 -view_mat > ex9.tmp 2>&1;   \
+	   if (${DIFF} output/ex9_3_sbaij.out ex9.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex9_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex9.tmp
+
 runex10:
 	-@${MPIEXEC} -n 1  ./ex10 > ex10_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
@@ -2042,8 +2053,9 @@ runex171:
 	   ${RM} -f ex171.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
-                                 ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex10.PETSc \
-                                 runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
+                                 ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
+                                 ex9.PETSc runex9 runex9_2 runex9_3 runex9_3_baij runex9_3_sbaij ex9.rm \
+                                 ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
                                  runex14 ex14.rm ex15.PETSc runex15 ex15.rm \
                                  ex18.PETSc runex18 runex18_1 runex18_2 runex18_3 runex18_4 runex18_5 runex18_6 runex18_7 runex18_8 runex18_9 runex18_10 runex18_11 runex18_12 runex18_13 runex18_14 ex18.rm \
                                  ex19.PETSc ex19.rm ex20.PETSc runex20 \
