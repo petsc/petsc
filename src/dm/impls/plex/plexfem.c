@@ -190,13 +190,14 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
   PetscSection    section;
   PetscScalar    *values;
   PetscBool      *fieldActive;
-  PetscInt        numFields, numComp, dim, spDim, totDim = 0, numValues, cStart, cEnd, f, d, v, i, comp;
+  PetscInt        numFields, numComp, dim, dimEmbed, spDim, totDim = 0, numValues, cStart, cEnd, f, d, v, i, comp;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   if (cEnd <= cStart) PetscFunctionReturn(0);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   ierr = PetscMalloc1(numFields,&sp);CHKERRQ(ierr);
@@ -225,7 +226,9 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
       PetscFECellGeom geom;
 
       if ((point < cStart) || (point >= cEnd)) continue;
-      ierr = DMPlexComputeCellGeometryFEM(dm, point, NULL, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
+      ierr          = DMPlexComputeCellGeometryFEM(dm, point, NULL, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
+      geom.dim      = dim;
+      geom.dimEmbed = dimEmbed;
       for (f = 0, v = 0; f < numFields; ++f) {
         void * const ctx = ctxs ? ctxs[f] : NULL;
 
@@ -260,7 +263,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
   PetscInt       *numComp;
   PetscSection    section;
   PetscScalar    *values;
-  PetscInt        numFields, dim, spDim, totDim = 0, numValues, cStart, cEnd, c, f, d, v, comp;
+  PetscInt        numFields, dim, dimEmbed, spDim, totDim = 0, numValues, cStart, cEnd, c, f, d, v, comp;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -297,13 +300,16 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
     totDim += spDim*numComp[f];
   }
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
   if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
   ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscFECellGeom geom;
 
-    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
+    ierr          = DMPlexComputeCellGeometryFEM(dm, c, NULL, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
+    geom.dim      = dim;
+    geom.dimEmbed = dimEmbed;
     for (f = 0, v = 0; f < numFields; ++f) {
       void *const ctx = ctxs ? ctxs[f] : NULL;
 

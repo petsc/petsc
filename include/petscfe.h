@@ -15,6 +15,8 @@ typedef struct {
   PetscReal invJ[9];
   PetscReal detJ;
   PetscReal n[3];
+  PetscInt  dim;
+  PetscInt  dimEmbed;
 } PetscFECellGeom;
 
 PETSC_EXTERN PetscErrorCode PetscFEInitializePackage(void);

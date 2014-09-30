@@ -1659,13 +1659,13 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscFECellGeo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(value, 5);
+  dim  = geom->dim;
   ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetFunctional(sp, f, &quad);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
   for (c = 0; c < numComp; ++c) value[c] = 0.0;
   for (q = 0; q < quad->numPoints; ++q) {
-    CoordinatesRefToReal(dim, dim, geom->v0, geom->J, &quad->points[q*dim], x);
+    CoordinatesRefToReal(geom->dimEmbed, dim, geom->v0, geom->J, &quad->points[q*dim], x);
     (*func)(x, val, ctx);
     for (c = 0; c < numComp; ++c) {
       value[c] += val[c]*quad->weights[q];
