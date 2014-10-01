@@ -1083,7 +1083,6 @@ class PETScConfigureInfo(object):
     self.languages       = self.framework.require('PETSc.utilities.languages',   None)
     self.debugging       = self.framework.require('PETSc.utilities.debugging',   None)
     self.debuggers       = self.framework.require('PETSc.utilities.debuggers',   None)
-    self.CHUD            = self.framework.require('PETSc.utilities.CHUD',        None)
     self.compilers       = self.framework.require('config.compilers',            None)
     self.types           = self.framework.require('config.types',                None)
     self.headers         = self.framework.require('config.headers',              None)
@@ -1266,7 +1265,7 @@ class PETScMaker(script.Script):
    includes = ['-I'+inc for inc in [os.path.join(self.petscDir, self.petscArch, 'include'), os.path.join(self.petscDir, 'include')]]
    flags    = []
    flags.append(self.configInfo.setCompilers.getCompilerFlags())                        # Add PCC_FLAGS
-   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
+   flags.extend([self.configInfo.setCompilers.CPPFLAGS) # Add CPP_FLAGS
    if self.configInfo.compilers.generateDependencies[language]:
      flags.append(self.configInfo.compilers.dependenciesGenerationFlag[language])
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
@@ -1322,7 +1321,7 @@ class PETScMaker(script.Script):
    includes = ['-I'+inc for inc in [os.path.join(self.petscDir, self.petscArch, 'include'), os.path.join(self.petscDir, 'include')]]
    flags    = []
    flags.append(self.configInfo.setCompilers.getCompilerFlags())                        # Add PCC_FLAGS
-   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
+   flags.extend([self.configInfo.setCompilers.CPPFLAGS]) # Add CPP_FLAGS
    if self.configInfo.compilers.generateDependencies[language]:
      flags.append(self.configInfo.compilers.dependenciesGenerationFlag[language])
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
@@ -1405,7 +1404,7 @@ class PETScMaker(script.Script):
    linker      = self.configInfo.setCompilers.getSharedLinker()
    linkerFlags = self.configInfo.setCompilers.getLinkerFlags()
    packageIncludes, packageLibs = self.getPackageInfo()
-   extraLibs = self.configInfo.libraries.toStringNoDupes(self.configInfo.compilers.flibs+self.configInfo.compilers.cxxlibs+self.configInfo.compilers.LIBS.split(' '))+self.configInfo.CHUD.LIBS
+   extraLibs = self.configInfo.libraries.toStringNoDupes(self.configInfo.compilers.flibs+self.configInfo.compilers.cxxlibs+self.configInfo.compilers.LIBS.split(' '))
    sysLib      = ''
    sysLib.replace('-Wl,-rpath', '-L')
    externalLib = packageLibs+' '+extraLibs

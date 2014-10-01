@@ -54,7 +54,6 @@ class PETScMaker(script.Script):
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
    self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
    self.cmake         = self.framework.require('config.packages.cmake',       None)
-   self.CHUD          = self.framework.require('PETSc.utilities.CHUD',        None)
    self.compilers     = self.framework.require('config.compilers',            None)
    self.types         = self.framework.require('config.types',                None)
    self.headers       = self.framework.require('config.headers',              None)
@@ -110,8 +109,7 @@ class PETScMaker(script.Script):
        options.append('CUDA_NVCC_FLAGS ' + self.setCompilers.getCompilerFlags() + ' CACHE STRING')
      else:
        flags = [self.setCompilers.getCompilerFlags(),
-                self.setCompilers.CPPFLAGS,
-                self.CHUD.CPPFLAGS]
+                self.setCompilers.CPPFLAGS]
        if compiler.split()[0].endswith('win32fe'): # Hack to support win32fe without changing the rest of configure
          win32fe = compiler.split()[0] + '.exe'
          compiler = ' '.join(compiler.split()[1:])

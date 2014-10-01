@@ -176,9 +176,6 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_CHUD)
-#include <CHUD/CHUD.h>
-#endif
 #if defined(PETSC_HAVE_PAPI)
 #include <papi.h>
 int PAPIEventSet = PAPI_NULL;
@@ -212,24 +209,6 @@ PetscErrorCode  PetscLogBegin_Private(void)
   /* Setup default logging structures */
   ierr = PetscStageLogCreate(&petsc_stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CHUD)
-  ierr = chudInitialize();CHKERRQ(ierr);
-  ierr = chudAcquireSamplingFacility(CHUD_BLOCKING);CHKERRQ(ierr);
-  ierr = chudSetSamplingDevice(chudCPU1Dev);CHKERRQ(ierr);
-  ierr = chudSetStartDelay(0,chudNanoSeconds);CHKERRQ(ierr);
-  ierr = chudClearPMCMode(chudCPU1Dev,chudUnused);CHKERRQ(ierr);
-  ierr = chudClearPMCs();CHKERRQ(ierr);
-  /* ierr = chudSetPMCMuxPosition(chudCPU1Dev,0,0);CHKERRQ(ierr); */
-  printf("%s\n",chudGetEventName(chudCPU1Dev,PMC_1,193));
-  printf("%s\n",chudGetEventDescription(chudCPU1Dev,PMC_1,193));
-  printf("%s\n",chudGetEventNotes(chudCPU1Dev,PMC_1,193));
-  ierr = chudSetPMCEvent(chudCPU1Dev,PMC_1,193);CHKERRQ(ierr);
-  ierr = chudSetPMCMode(chudCPU1Dev,PMC_1,chudCounter);CHKERRQ(ierr);
-  ierr = chudSetPrivilegeFilter(chudCPU1Dev,PMC_1,chudCountUserEvents);CHKERRQ(ierr);
-  ierr = chudSetPMCEventMask(chudCPU1Dev,PMC_1,0xFE);CHKERRQ(ierr);
-  if (!chudIsEventValid(chudCPU1Dev,PMC_1,193)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Event is not valid %d",193);
-  ierr = chudStartPMCs();CHKERRQ(ierr);
-#endif
 #if defined(PETSC_HAVE_PAPI)
   ierr = PAPI_library_init(PAPI_VER_CURRENT);
   if (ierr != PAPI_VER_CURRENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot initialize PAPI");
