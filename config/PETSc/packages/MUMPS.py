@@ -59,6 +59,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('LPORDDIR   = $(topdir)/PORD/lib/\n')
     g.write('IPORD      = -I$(topdir)/PORD/include/\n')
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
+    g.write('PLAT       = \n')
     orderingsc = '-Dpord'
     orderingsf = self.compilers.FortranDefineCompilerOption+'pord'
     # Disable threads on BGL
