@@ -5,11 +5,23 @@
   This is not included automatically by petscsys.h because some external packages include their own prototypes for
   certain BLAS/LAPACK functions that conflict with the ones given here. Hence this should only be included when needed.
 
+  The BLAS/LAPACK name mangling is almost (but not always) the same as the Fortran mangling; and exists even if there is
+  not Fortran compiler.
+
+  PETSC_BLASLAPACK_STDCALL  is for Microsoft Windows compiles, it also implicitly has capitalized function names
+  PETSC_BLASLAPACK_UNDERSCORE BLAS/LAPACK function have an underscore at the end of each function name
+  PETSC_BLASLAPACK_CAPS BLAS/LAPACK function names are all in capital letters
+  PETSC_BLASLAPACK_C BLAS/LAPACK function names have no mangling
+
+  PETSC_BLASLAPACK_SINGLEISDOUBLE - for Cray systems where the BLAS/LAPACK single precision (i.e. Fortran single precision is actually 64 bits)
+                                    old Cray vector machines used to be this way, it is is not clear if any exist now.
+
+  PetscBLASInt is almost always 32 bit integers but can be 64 bit integers for certain usages of MKL BLAS/LAPACK libraries
+
 */
 #if !defined(_BLASLAPACK_H)
 #define _BLASLAPACK_H
 
-/* Do not use PetscStackPush/PetscStackPop because  */
 #define PetscStackCallBLAS(name,routine) do {                   \
     PetscStackPushNoCheck(name,PETSC_FALSE,PETSC_TRUE);         \
     routine;                                                    \
