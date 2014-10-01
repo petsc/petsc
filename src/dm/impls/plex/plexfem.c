@@ -410,7 +410,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
       PetscFECellGeom geom;
 
       ierr          = DMPlexComputeCellGeometryFEM(dm, p, NULL, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
-      geom.dim      = dim = h;
+      geom.dim      = dim - h;
       geom.dimEmbed = dimEmbed;
       for (f = 0, v = 0; f < numFields; ++f) {
         void * const ctx = ctxs ? ctxs[f] : NULL;
