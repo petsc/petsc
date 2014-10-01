@@ -283,7 +283,7 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
 
   Level: developer
 
-.seealso: DMPlexDistribute(), DMPlexDistributeData()
+.seealso: DMPlexDistribute(), DMPlexDistributeFieldIS(), DMPlexDistributeData()
 @*/
 PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection originalSection, Vec originalVec, PetscSection newSection, Vec newVec)
 {
@@ -313,6 +313,52 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexDistributeFieldIS"
+/*@
+  DMPlexDistributeFieldIS - Distribute field data to match a given PetscSF, usually the SF from mesh distribution
+
+  Collective on DM
+
+  Input Parameters:
++ dm - The DMPlex object
+. pointSF - The PetscSF describing the communication pattern
+. originalSection - The PetscSection for existing data layout
+- originalIS - The existing data
+
+  Output Parameters:
++ newSection - The PetscSF describing the new data layout
+- newIS - The new data
+
+  Level: developer
+
+.seealso: DMPlexDistribute(), DMPlexDistributeField(), DMPlexDistributeData()
+@*/
+PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection originalSection, IS originalIS, PetscSection newSection, IS *newIS)
+{
+  PetscSF         fieldSF;
+  PetscInt       *newValues, *remoteOffsets, fieldSize;
+  const PetscInt *originalValues;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMPLEX_DistributeField,dm,0,0,0);CHKERRQ(ierr);
+  ierr = PetscSFDistributeSection(pointSF, originalSection, &remoteOffsets, newSection);CHKERRQ(ierr);
+
+  ierr = PetscSectionGetStorageSize(newSection, &fieldSize);CHKERRQ(ierr);
+  ierr = PetscMalloc(fieldSize * sizeof(PetscInt), &newValues);CHKERRQ(ierr);
+
+  ierr = ISGetIndices(originalIS, &originalValues);CHKERRQ(ierr);
+  ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(fieldSF, MPIU_INT, originalValues, newValues);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(fieldSF, MPIU_INT, originalValues, newValues);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(originalIS, &originalValues);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) pointSF), fieldSize, newValues, PETSC_OWN_POINTER, newIS);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMPLEX_DistributeField,dm,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexDistributeData"
 /*@
   DMPlexDistributeData - Distribute field data to match a given PetscSF, usually the SF from mesh distribution
@@ -327,7 +373,7 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 - originalData - The existing data
 
   Output Parameters:
-+ newSection - The PetscSF describing the new data layout
++ newSection - The PetscSection describing the new data layout
 - newData - The new data
 
   Level: developer
