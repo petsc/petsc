@@ -419,7 +419,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
     /* keep track of block size for A matrices */
     ierr = MatSetBlockSize (A,mlmat->num_PDEs);CHKERRQ(ierr);
     ierr = PetscMalloc3(m,&nnzA,m,&nnzB,m,&nnz);CHKERRQ(ierr);
-    ierr = MPI_Scan(&m,&rstart,1,MPIU_INT,MPIU_SUM,mlmat->comm->USR_comm);CHKERRQ(ierr);
+    ierr = MPI_Scan(&m,&rstart,1,MPIU_INT,MPI_SUM,mlmat->comm->USR_comm);CHKERRQ(ierr);
     rstart -= m;
 
     for (i=0; i<m; i++) {
