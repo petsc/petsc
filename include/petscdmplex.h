@@ -4,10 +4,10 @@
 #if !defined(__PETSCDMPLEX_H)
 #define __PETSCDMPLEX_H
 
-#include <petscsftypes.h>
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfe.h>
+#include <petscsftypes.h>
 
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCohesiveSubmesh(DM, PetscBool, const char [], PetscInt, DM *);
