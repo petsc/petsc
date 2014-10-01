@@ -263,6 +263,291 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
   ierr = DMPlexGetAdjacency_Internal(dm, p, mesh->useCone, mesh->useClosure, adjSize, adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateTwoSidedProcessSF"
+/*@
+  DMPlexCreateTwoSidedProcessSF - Create an SF which just has process connectivity
+
+  Collective on DM
+
+  Input Parameters:
++ dm      - The DM
+- sfPoint - The PetscSF which encodes point connectivity
+
+  Output Parameters:
++ processRanks - A list of process neighbors, or NULL
+- sfProcess    - An SF encoding the two-sided process connectivity, or NULL
+
+  Level: developer
+
+.seealso: PetscSFCreate(), DMPlexCreateProcessSF()
+@*/
+PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSection rootRankSection, IS rootRanks, PetscSection leafRankSection, IS leafRanks, IS *processRanks, PetscSF *sfProcess)
+{
+  const PetscSFNode *remotePoints;
+  PetscInt          *localPointsNew;
+  PetscSFNode       *remotePointsNew;
+  const PetscInt    *nranks;
+  PetscInt          *ranksNew;
+  PetscBT            neighbors;
+  PetscInt           pStart, pEnd, p, numLeaves, l, numNeighbors, n;
+  PetscMPIInt        numProcs, proc, rank;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(sfPoint, PETSCSF_CLASSID, 2);
+  if (processRanks) {PetscValidPointer(processRanks, 3);}
+  if (sfProcess)    {PetscValidPointer(sfProcess, 4);}
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfPoint, NULL, &numLeaves, NULL, &remotePoints);CHKERRQ(ierr);
+  ierr = PetscBTCreate(numProcs, &neighbors);CHKERRQ(ierr);
+  ierr = PetscBTMemzero(numProcs, neighbors);CHKERRQ(ierr);
+  /* Compute root-to-leaf process connectivity */
+  ierr = PetscSectionGetChart(rootRankSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = ISGetIndices(rootRanks, &nranks);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt ndof, noff, n;
+
+    ierr = PetscSectionGetDof(rootRankSection, p, &ndof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(rootRankSection, p, &noff);CHKERRQ(ierr);
+    for (n = 0; n < ndof; ++n) {ierr = PetscBTSet(neighbors, nranks[noff+n]);}
+  }
+  ierr = ISRestoreIndices(rootRanks, &nranks);CHKERRQ(ierr);
+  /* Compute leaf-to-neighbor process connectivity */
+  ierr = PetscSectionGetChart(leafRankSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = ISGetIndices(leafRanks, &nranks);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt ndof, noff, n;
+
+    ierr = PetscSectionGetDof(leafRankSection, p, &ndof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(leafRankSection, p, &noff);CHKERRQ(ierr);
+    for (n = 0; n < ndof; ++n) {ierr = PetscBTSet(neighbors, nranks[noff+n]);}
+  }
+  ierr = ISRestoreIndices(leafRanks, &nranks);CHKERRQ(ierr);
+  /* Compute leaf-to-root process connectivity */
+  for (l = 0; l < numLeaves; ++l) {PetscBTSet(neighbors, remotePoints[l].rank);}
+  /* Calculate edges */
+  PetscBTClear(neighbors, rank);
+  for(proc = 0, numNeighbors = 0; proc < numProcs; ++proc) {if (PetscBTLookup(neighbors, proc)) ++numNeighbors;}
+  ierr = PetscMalloc1(numNeighbors, &ranksNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numNeighbors, &localPointsNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numNeighbors, &remotePointsNew);CHKERRQ(ierr);
+  for(proc = 0, n = 0; proc < numProcs; ++proc) {
+    if (PetscBTLookup(neighbors, proc)) {
+      ranksNew[n]              = proc;
+      localPointsNew[n]        = proc;
+      remotePointsNew[n].index = rank;
+      remotePointsNew[n].rank  = proc;
+      ++n;
+    }
+  }
+  ierr = PetscBTDestroy(&neighbors);CHKERRQ(ierr);
+  if (processRanks) {ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), numNeighbors, ranksNew, PETSC_OWN_POINTER, processRanks);CHKERRQ(ierr);}
+  else              {ierr = PetscFree(ranksNew);CHKERRQ(ierr);}
+  if (sfProcess) {
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfProcess);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) *sfProcess, "Two-Sided Process SF");CHKERRQ(ierr);
+    ierr = PetscSFSetFromOptions(*sfProcess);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(*sfProcess, numProcs, numNeighbors, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexDistributeOwnership"
+/*@
+  DMPlexDistributeOwnership - Compute owner information for shared points. This basically gets two-sided for an SF.
+
+  Collective on DM
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameters:
++ rootSection - The number of leaves for a given root point
+. rootrank    - The rank of each edge into the root point
+. leafSection - The number of processes sharing a given leaf point
+- leafrank    - The rank of each process sharing a leaf point
+
+  Level: developer
+
+.seealso: DMPlexCreateOverlap()
+@*/
+PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *rootrank, PetscSection leafSection, IS *leafrank)
+{
+  MPI_Comm        comm;
+  PetscSF         sfPoint;
+  const PetscInt *rootdegree;
+  PetscInt       *myrank, *remoterank;
+  PetscInt        pStart, pEnd, p, nedges;
+  PetscMPIInt     rank;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  /* Compute number of leaves for each root */
+  ierr = PetscObjectSetName((PetscObject) rootSection, "Root Section");CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(rootSection, pStart, pEnd);CHKERRQ(ierr);
+  ierr = PetscSFComputeDegreeBegin(sfPoint, &rootdegree);CHKERRQ(ierr);
+  ierr = PetscSFComputeDegreeEnd(sfPoint, &rootdegree);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {ierr = PetscSectionSetDof(rootSection, p, rootdegree[p-pStart]);CHKERRQ(ierr);}
+  ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
+  /* Gather rank of each leaf to root */
+  ierr = PetscSectionGetStorageSize(rootSection, &nedges);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pEnd-pStart, &myrank);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nedges,  &remoterank);CHKERRQ(ierr);
+  for (p = 0; p < pEnd-pStart; ++p) myrank[p] = rank;
+  ierr = PetscSFGatherBegin(sfPoint, MPIU_INT, myrank, remoterank);CHKERRQ(ierr);
+  ierr = PetscSFGatherEnd(sfPoint, MPIU_INT, myrank, remoterank);CHKERRQ(ierr);
+  ierr = PetscFree(myrank);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm, nedges, remoterank, PETSC_OWN_POINTER, rootrank);CHKERRQ(ierr);
+  /* Distribute remote ranks to leaves */
+  ierr = PetscObjectSetName((PetscObject) leafSection, "Leaf Section");CHKERRQ(ierr);
+  ierr = DMPlexDistributeFieldIS(dm, sfPoint, rootSection, *rootrank, leafSection, leafrank);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateOverlap"
+/*@
+  DMPlexCreateOverlap - Compute owner information for shared points. This basically gets two-sided for an SF.
+
+  Collective on DM
+
+  Input Parameters:
++ dm          - The DM
+. rootSection - The number of leaves for a given root point
+. rootrank    - The rank of each edge into the root point
+. leafSection - The number of processes sharing a given leaf point
+- leafrank    - The rank of each process sharing a leaf point
+
+  Output Parameters:
++ ovRootSection - The number of new overlap points for each neighboring process
+. ovRootPoints  - The new overlap points for each neighboring process
+. ovLeafSection - The number of new overlap points from each neighboring process
+- ovLeafPoints  - The new overlap points from each neighboring process
+
+  Level: developer
+
+.seealso: DMPlexDistributeOwnership()
+@*/
+PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, PetscSection ovRootSection, PetscSFNode **ovRootPoints, PetscSection ovLeafSection, PetscSFNode **ovLeafPoints)
+{
+  DMLabel            ovAdjByRank; /* A DMLabel containing all points adjacent to shared points, separated by rank (value in label) */
+  PetscSF            sfPoint, sfProc;
+  IS                 valueIS;
+  const PetscSFNode *remote;
+  const PetscInt    *local;
+  const PetscInt    *nrank, *rrank, *neighbors;
+  PetscInt          *adj = NULL;
+  PetscInt           pStart, pEnd, p, sStart, sEnd, nleaves, l, numNeighbors, n, ovSize;
+  PetscMPIInt        rank, numProcs;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(leafSection, &sStart, &sEnd);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfPoint, NULL, &nleaves, &local, &remote);CHKERRQ(ierr);
+  ierr = DMLabelCreate("Overlap adjacency", &ovAdjByRank);CHKERRQ(ierr);
+  /* Handle leaves: shared with the root point */
+  for (l = 0; l < nleaves; ++l) {
+    PetscInt adjSize = PETSC_DETERMINE, a;
+
+    ierr = DMPlexGetAdjacency(dm, local[l], &adjSize, &adj);CHKERRQ(ierr);
+    for (a = 0; a < adjSize; ++a) {ierr = DMLabelSetValue(ovAdjByRank, adj[a], remote[l].rank);CHKERRQ(ierr);}
+  }
+  ierr = ISGetIndices(rootrank, &rrank);CHKERRQ(ierr);
+  ierr = ISGetIndices(leafrank, &nrank);CHKERRQ(ierr);
+  /* Handle roots */
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt adjSize = PETSC_DETERMINE, neighbors = 0, noff, n, a;
+
+    if ((p >= sStart) && (p < sEnd)) {
+      /* Some leaves share a root with other leaves on different processes */
+      ierr = PetscSectionGetDof(leafSection, p, &neighbors);CHKERRQ(ierr);
+      if (neighbors) {
+        ierr = PetscSectionGetOffset(leafSection, p, &noff);CHKERRQ(ierr);
+        ierr = DMPlexGetAdjacency(dm, p, &adjSize, &adj);CHKERRQ(ierr);
+        for (n = 0; n < neighbors; ++n) {
+          const PetscInt remoteRank = nrank[noff+n];
+
+          if (remoteRank == rank) continue;
+          for (a = 0; a < adjSize; ++a) {ierr = DMLabelSetValue(ovAdjByRank, adj[a], remoteRank);CHKERRQ(ierr);}
+        }
+      }
+    }
+    /* Roots are shared with leaves */
+    ierr = PetscSectionGetDof(rootSection, p, &neighbors);CHKERRQ(ierr);
+    if (!neighbors) continue;
+    ierr = PetscSectionGetOffset(rootSection, p, &noff);CHKERRQ(ierr);
+    ierr = DMPlexGetAdjacency(dm, p, &adjSize, &adj);CHKERRQ(ierr);
+    for (n = 0; n < neighbors; ++n) {
+      const PetscInt remoteRank = rrank[noff+n];
+
+      if (remoteRank == rank) continue;
+      for (a = 0; a < adjSize; ++a) {ierr = DMLabelSetValue(ovAdjByRank, adj[a], remoteRank);CHKERRQ(ierr);}
+    }
+  }
+  ierr = PetscFree(adj);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(rootrank, &rrank);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(leafrank, &nrank);CHKERRQ(ierr);
+  {
+    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMLabelView(ovAdjByRank, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+  /* Convert to (point, rank) and use actual owners */
+  ierr = PetscSectionSetChart(ovRootSection, 0, numProcs);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(ovAdjByRank, &valueIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(valueIS, &numNeighbors);CHKERRQ(ierr);
+  ierr = ISGetIndices(valueIS, &neighbors);CHKERRQ(ierr);
+  for (n = 0; n < numNeighbors; ++n) {
+    PetscInt numPoints;
+
+    ierr = DMLabelGetStratumSize(ovAdjByRank, neighbors[n], &numPoints);CHKERRQ(ierr);
+    ierr = PetscSectionAddDof(ovRootSection, neighbors[n], numPoints);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(ovRootSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(ovRootSection, &ovSize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ovSize, ovRootPoints);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfPoint, NULL, &nleaves, &local, &remote);CHKERRQ(ierr);
+  for (n = 0; n < numNeighbors; ++n) {
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        off, numPoints, p;
+
+    ierr = PetscSectionGetOffset(ovRootSection, neighbors[n], &off);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(ovAdjByRank, neighbors[n], &pointIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; ++p) {
+      ierr = PetscFindInt(points[p], nleaves, local, &l);CHKERRQ(ierr);
+      if (l >= 0) {(*ovRootPoints)[off+p] = remote[l];}
+      else        {(*ovRootPoints)[off+p].index = points[p]; (*ovRootPoints)[off+p].rank = rank;}
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(valueIS, &neighbors);CHKERRQ(ierr);
+  ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&ovAdjByRank);CHKERRQ(ierr);
+  /* Make process SF */
+  ierr = DMPlexCreateTwoSidedProcessSF(dm, sfPoint, rootSection, rootrank, leafSection, leafrank, NULL, &sfProc);CHKERRQ(ierr);
+  {
+    ierr = PetscSFView(sfProc, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+  /* Communicate overlap */
+  ierr = DMPlexDistributeData(dm, sfProc, ovRootSection, MPIU_2INT, (void *) *ovRootPoints, ovLeafSection, (void **) ovLeafPoints);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sfProc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexDistributeField"
