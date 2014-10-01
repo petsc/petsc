@@ -170,25 +170,6 @@ class Framework(base.Base):
     self.argDB['projectDependenceGraph'] = self.dependenceGraph
     return self.dependenceGraph
 
-  def getSIDLTemplate(self):
-    if not hasattr(self, '_sidlTemplate'):
-      import build.templates.SIDL
-
-      self._sidlTemplate = build.templates.SIDL.Template(self.sourceDB, self.project, self.dependenceGraph)
-      # Add default client languages
-      map(self._sidlTemplate.addClient, self.argDB['clientLanguages'])
-    return self._sidlTemplate
-  sidlTemplate = property(getSIDLTemplate, doc = 'This is the default template for SIDL operations')
-
-  def getCompileTemplate(self):
-    if not hasattr(self, '_compileTemplate'):
-      import build.templates.Compile
-
-      packages = map(lambda f: os.path.splitext(os.path.basename(f))[0], self.filesets['sidl'])
-      self._compileTemplate = build.templates.Compile.Template(self.argDB, self.sourceDB, self.project, self.dependenceGraph, self.sidlTemplate.usingSIDL, packages)
-    return self._compileTemplate
-  compileTemplate = property(getCompileTemplate, doc = 'This is the default template for source operations')
-
   def t_getDependencies(self):
     '''Return a list of the URLs for projects upon which this one depends'''
     return []
@@ -243,44 +224,6 @@ class Framework(base.Base):
       framework.storeSubstitutions(self.argDB)
     return
 
-  def t_sidl(self):
-    '''Recompile the SIDL for this project'''
-    return self.executeGraph(self.sidlTemplate.getTarget(), input = self.filesets['sidl'])
-
-  def buildClient(self, proj, lang):
-    import build.buildGraph
-
-    clientDir = self.compileTemplate.usingSIDL.getClientRootDir(lang)
-    self.debugPrint('Building '+lang+' client in '+proj.getRoot(), 1, 'build')
-    maker  = self.getMakeModule(proj.getRoot()).PetscMake(None, self.argDB)
-    maker.setupProject()
-    maker.setupDependencies()
-    maker.setupSourceDB(maker.project)
-    sidlGraph    = maker.sidlTemplate.getClientTarget(lang, fullTarget = 1, forceRebuild = 1)
-    compileGraph = maker.compileTemplate.getClientTarget(lang)
-    compileGraph.prependGraph(sidlGraph)
-    maker.executeGraph(compileGraph, input = maker.filesets['sidl'])
-    return
-
-  def missingClients(self):
-    '''Check that this project has built all the clients, and if not return True'''
-    import build.buildGraph
-
-    for lang in self.compileTemplate.usingSIDL.clientLanguages:
-      clientDir = self.compileTemplate.usingSIDL.getClientRootDir(lang)
-      if not os.path.isdir(os.path.join(self.project.getRoot(), clientDir)):
-        self.debugPrint('Building missing '+lang+' client in '+self.project.getRoot(), 1, 'build')
-        return 1
-    return 0
-
-  def getProjectCompileGraph(self, forceRebuild = 0):
-    '''Return the compile graph for the given project without dependencies'''
-    input        = {None: self.filesets['sidl']}
-    sidlGraph    = self.sidlTemplate.getTarget(forceRebuild = forceRebuild)
-    compileGraph = self.compileTemplate.getTarget()
-    compileGraph.prependGraph(sidlGraph)
-    return (compileGraph, input)
-
   def getCompileGraph(self):
     if 'checkpoint' in self.argDB:
       input        = {}
@@ -312,41 +255,6 @@ class Framework(base.Base):
         except ImportError:
           self.debugPrint('No make module present in '+p.getRoot(), 2, 'build')
     return (compileGraph, input)
-
-  def t_sidlCheckpoint(self):
-    '''Recompile the SIDL for this project'''
-    import build.buildGraph
-
-    # Add project dependency compile graphs
-    # TODO: Remove all "forward" edges in dependenceGraph (edges which connect further down to already reachable nodes)
-    depGraphs = []
-    for v in self.dependenceGraph.outEdges[self.project]:
-      try:
-        maker = self.getMakeModule(v.getRoot()).PetscMake(None, self.argDB)
-        maker.setupProject()
-        maker.setupDependencies()
-        maker.setupSourceDB(maker.project)
-        maker.setupBuild()
-        depGraphs.append(maker.executeTarget('sidlCheckpoint'))
-      except ImportError:
-        self.debugPrint('No make module present in '+v.getRoot(), 2, 'build')
-
-    sidlGraph    = self.sidlTemplate.getTarget()
-    articGraph   = build.buildGraph.BuildGraph([build.transform.Transform()])
-    compileGraph = self.compileTemplate.getTarget()
-    startVertex  = build.buildGraph.BuildGraph.getRoots(sidlGraph)[0]
-    input        = {startVertex: self.filesets['sidl']}
-    endVertex    = build.buildGraph.BuildGraph.getRoots(articGraph)[0]
-    compileGraph.prependGraph(articGraph)
-    compileGraph.prependGraph(sidlGraph)
-
-    output = self.executeGraph(compileGraph, start = startVertex, input = input, end = endVertex)
-    compileGraph.removeSubgraph(sidlGraph)
-    for g in depGraphs:
-      compileGraph.prependGraph(g)
-    self.builder.currentVertex = None
-    self.argDB['checkpoint']   = cPickle.dumps(self.builder)
-    return compileGraph
 
   def t_compile(self):
     '''Recompile the entire source for this project'''
@@ -424,8 +332,6 @@ class Framework(base.Base):
     import build.buildGraph
 
     stamp  = {}
-#    bsProj = self.getInstalledProject('bk://sidl.bkbits.net/BuildSystem')
-#    stamp[bsProj.getUrl()] = self.getHeadRevision(bsProj)
     for p in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project):
       stamp[p.getUrl()] = self.getHeadRevision(p)
     return stamp
@@ -482,73 +388,6 @@ class Framework(base.Base):
       self.sourceDB.save()
     return
 
-  def t_printSIDLHTML(self):
-    '''Print all the SIDL dependencies as HTML'''
-    import build.compile.SIDL
-
-    self.argDB.target = []
-    for v in self.sidlTemplate.getClientTarget('Python').vertices:
-      if hasattr(v, 'getIncludeFlags'):
-        includes = v.getIncludeFlags(None)
-    mod      = build.compile.SIDL.Compiler(self.sourceDB, 'Python', None, 0, self.sidlTemplate.usingSIDL).getCompilerModule('scandalDoc')
-    args     = ['-printer=[ANL.SIDL.PrettyPrinterHTML]']+includes+self.filesets['sidl']
-    self.debugPrint('Running scandalDoc with arguments '+str(args), 3, 'build')
-    compiler = mod.ScandalDoc(args)
-    compiler.run()
-    return compiler.outputFiles
-
-  def t_printSIDL(self):
-    '''Print all the SIDL dependencies as plain text'''
-    import build.compile.SIDL
-
-    self.argDB.target = []
-    for v in self.sidlTemplate.getClientTarget('Python').vertices:
-      if hasattr(v, 'getIncludeFlags'):
-        includes = v.getIncludeFlags(None)
-    mod      = build.compile.SIDL.Compiler(self.sourceDB, 'Python', None, 0, self.sidlTemplate.usingSIDL).getCompilerModule('scandalDoc')
-    args     = ['-printer=[ANL.SIDL.PrettyPrinter]']+includes+self.filesets['sidl']
-    self.debugPrint('Running scandalDoc with arguments '+str(args), 3, 'build')
-    compiler = mod.ScandalDoc(args)
-    compiler.run()
-    return compiler.outputFiles
-
-  def t_printSIDLBabel(self,exportDir):
-    '''Print the SIDL for this project and all dependent projects in
-       a format Babel can parse'''
-    import build.compile.SIDL
-
-    self.argDB.target = []
-    for v in self.sidlTemplate.getClientTarget('Python').vertices:
-      if hasattr(v, 'getIncludeFlags'):
-        includes = v.getIncludeFlags(None)
-    mod      = build.compile.SIDL.Compiler(self.sourceDB, 'Python', None, 0, self.sidlTemplate.usingSIDL).getCompilerModule('scandalDoc')
-    args     = ['-filename='+os.path.join(exportDir,'allsidl.sidl')]+['-printer=[ANL.SIDL.PrettyPrinterBabel]']+includes+self.filesets['sidl']
-    self.debugPrint('Running scandalDoc with arguments '+str(args), 3, 'build')
-    compiler = mod.ScandalDoc(args)
-    compiler.run()
-    return compiler.outputFiles
-
-  def t_exportBabel(self):
-    '''Exports all the SIDL projects and impls in a form that Babel can handle'''
-    self.argDB.setType('exportDir', nargs.ArgString(key='exportDir', help='Directory to export for Babel'))
-    exportDir = self.argDB['exportDir']
-    if not os.path.isdir(exportDir): os.makedirs(exportDir)
-    self.t_printSIDLBabel(exportDir)
-
-    directories = self.getDependencyPaths()
-    import getsplicers
-    getsplicers.getSplicers(directories)
-    try:
-      #output = self.executeShellCommand('cd '+exportDir+'; babel --server=C allsidl.sidl')
-      import commands
-      (status,output) = commands.getstatusoutput('cd '+exportDir+';babel --server=C++ allsidl.sidl')
-    except:
-      pass
-    print status
-    print output
-    import setsplicers
-    setsplicers.setSplicers(exportDir)
-
   def getDependencyPaths(self):
     directories = [self.project.getRoot()]
     ip          = self.argDB['installedprojects']
@@ -560,25 +399,6 @@ class Framework(base.Base):
           for d in dirs:
             if not d in directories: directories.append(d)
     return directories
-
-  def t_updateBootstrap(self):
-    '''Create a bootstrap tarball and copy it to the FTP site'''
-    import install.installerclass
-
-    installer = install.installerclass.Installer()
-    tarball   = installer.backup(self.project.getUrl())
-    #self.executeShellCommand('scp '+tarball+' petsc@terra.mcs.anl.gov://mcs/ftp/pub/petsc/sidl/'+tarball)
-    os.rmdir('backup')
-    raise RuntimeError('Need to fix the path')
-    return
-
-
-  def t_updateWebsite(self):
-    '''Print all the SIDL dependencies as HTML and move to the website'''
-    for f in self.executeTarget('printSIDLHTML'):
-      self.executeShellCommand('scp '+f+' '+self.project.getWebDirectory()+'/'+f)
-      os.remove(f)
-    return
 
   def cpFile(self, localFile, remoteDirectory, remoteFile = None, recursive = 0):
     cmd = 'scp '
