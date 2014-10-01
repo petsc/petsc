@@ -59,7 +59,7 @@ class FrameworkTest (unittest.TestCase):
     self.framework.addChild(mod)
     for package in os.listdir(os.path.dirname(config.__file__)):
       (packageName, ext) = os.path.splitext(package)
-      if not packageName.startswith('.') and not packageName.startswith('#') and not packageName.endswith('-old') and ext == '.py' and not packageName in ['__init__', 'base', 'framework', 'autoconf']:
+      if not packageName.startswith('.') and not packageName.startswith('#') and not packageName.endswith('-old') and ext == '.py' and not packageName in ['__init__', 'base', 'framework']:
         packageObj = self.framework.require('config.'+packageName, mod)
     self.failUnless(self.framework.configure())
     return
