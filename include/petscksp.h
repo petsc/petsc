@@ -649,5 +649,4 @@ PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM,PetscErrorCode(**)(KS
 
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalSolve(DM,Vec,Vec);
 PETSC_EXTERN PetscErrorCode DMPlexProjectField(DM, Vec, void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal [], PetscScalar []), InsertMode, Vec);
-PETSC_EXTERN PetscErrorCode DMPlexProjectFunction(DM, void (**)(const PetscReal [], PetscScalar *, void *), void **, InsertMode, Vec);
 #endif
