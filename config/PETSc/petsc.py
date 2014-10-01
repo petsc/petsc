@@ -90,7 +90,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.languages  = framework.require('PETSc.utilities.languages', self)
+    self.languages  = framework.require('PETSc.options.languages', self)
     self.compilers  = framework.require('config.compilers', self)
     self.headers    = framework.require('config.headers', self)
     self.libraries  = framework.require('config.libraries', self)

@@ -9,7 +9,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     self.sourceControl = framework.require('config.sourceControl',self)
-    self.petscdir = framework.require('PETSc.utilities.petscdir', self)
+    self.petscdir = framework.require('PETSc.options.petscdir', self)
     return
 
   def configureInstallationMethod(self):

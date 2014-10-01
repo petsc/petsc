@@ -124,8 +124,8 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.languages       = framework.require('PETSc.utilities.languages',   self)
-    self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
+    self.languages       = framework.require('PETSc.options.languages',   self)
+    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.deps            = []
     return
 

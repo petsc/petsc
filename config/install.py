@@ -49,8 +49,8 @@ class Installer(script.Script):
 
   def setupModules(self):
     self.setCompilers  = self.framework.require('config.setCompilers',         None)
-    self.arch          = self.framework.require('PETSc.utilities.arch',        None)
-    self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
+    self.arch          = self.framework.require('PETSc.options.arch',        None)
+    self.petscdir      = self.framework.require('PETSc.options.petscdir',    None)
     self.compilers     = self.framework.require('config.compilers',            None)
     return
 

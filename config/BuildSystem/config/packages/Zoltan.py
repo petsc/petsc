@@ -12,7 +12,7 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
     self.x              = framework.require('config.packages.X',self)
     self.parmetis       = framework.require('config.packages.parmetis',self)
     self.ptscotch       = framework.require('config.packages.PTScotch',self)

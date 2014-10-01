@@ -22,7 +22,7 @@ class Configure(config.base.Configure):
     self.compilers = framework.require('config.compilers', self)
     self.functions = framework.require('config.functions', self)
     self.libraries = framework.require('config.libraries', self)
-    self.ftm = framework.require('PETSc.utilities.featureTestMacros', self)
+    self.ftm = framework.require('config.utilities.featureTestMacros', self)
     return
 
   def featureTestMacros(self):

@@ -22,13 +22,12 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('PETSc', '-with-precision=<single,double,__float128>', nargs.Arg(None, 'double', 'Specify numerical precision'))
     help.addArgument('PETSc', '-with-scalar-type=<real or complex>', nargs.Arg(None, 'real', 'Specify real or complex numbers'))
-    help.addArgument('PETSc', '-with-mixed-precision=<bool>', nargs.ArgBool(None, 0, 'Allow single precision linear solve'))
     return
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.types     = framework.require('config.types', self)
-    self.languages = framework.require('PETSc.utilities.languages', self)
+    self.languages = framework.require('PETSc.options.languages', self)
     self.compilers = framework.require('config.compilers', self)
     self.libraries = framework.require('config.libraries',self)
     self.mpi       = framework.require('config.packages.MPI',self)
@@ -80,11 +79,6 @@ class Configure(config.base.Configure):
     self.precision = self.framework.argDB['with-precision'].lower()
     if self.precision == 'single':
       self.addDefine('USE_REAL_SINGLE', '1')
-    elif self.precision == '_quad': # source code currently does not support this
-      self.pushLanguage('C')
-      if not config.setCompilers.Configure.isIntel(self.compilers.getCompiler()): raise RuntimeError('Only Intel compiler supports _quad')
-      self.popLanguage()
-      self.addDefine('USE_REAL__QUAD', '1')
     elif self.precision == 'double':
       self.addDefine('USE_REAL_DOUBLE', '1')
     elif self.precision == '__float128':  # supported by gcc 4.6
@@ -95,8 +89,6 @@ class Configure(config.base.Configure):
     else:
       raise RuntimeError('--with-precision must be single, double,__float128')
     self.framework.logPrint('Precision is '+str(self.precision))
-    if self.framework.argDB['with-mixed-precision']:
-      self.addDefine('USE_MIXED_PRECISION', '1')
     return
 
   def configure(self):

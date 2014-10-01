@@ -44,11 +44,11 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.programs      = framework.require('config.programs',           self)
     self.setCompilers  = framework.require('config.setCompilers',       self)
-    self.arch          = framework.require('PETSc.utilities.arch',      self.setCompilers)
-    self.petscdir      = framework.require('PETSc.utilities.petscdir',  self.arch)
-    self.installdir    = framework.require('PETSc.utilities.installDir',self)
-    self.languages     = framework.require('PETSc.utilities.languages', self.setCompilers)
-    self.debugging     = framework.require('PETSc.utilities.debugging', self.setCompilers)
+    self.arch          = framework.require('PETSc.options.arch',      self.setCompilers)
+    self.petscdir      = framework.require('PETSc.options.petscdir',  self.arch)
+    self.installdir    = framework.require('PETSc.options.installDir',self)
+    self.languages     = framework.require('PETSc.options.languages', self.setCompilers)
+    self.debugging     = framework.require('PETSc.options.debugging', self.setCompilers)
     self.compilers     = framework.require('config.compilers',          self)
     self.types         = framework.require('config.types',              self)
     self.headers       = framework.require('config.headers',            self)
@@ -58,13 +58,24 @@ class Configure(config.base.Configure):
     self.make          = framework.require('config.packages.make',      self)
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
     self.cmake         = framework.require('config.packages.cmake',self)
-    self.externalpackagesdir = framework.require('PETSc.utilities.externalpackagesdir',self)
+    self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
     self.mpi             = framework.require('config.packages.MPI',self)
 
-    for utility in os.listdir(os.path.join('config','PETSc','utilities')):
+    for utility in os.listdir(os.path.join('config','PETSc','options')):
       (utilityName, ext) = os.path.splitext(utility)
       if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
-        utilityObj                    = self.framework.require('PETSc.utilities.'+utilityName, self)
+        utilityObj                    = self.framework.require('PETSc.options.'+utilityName, self)
+        utilityObj.headerPrefix       = self.headerPrefix
+        utilityObj.archProvider       = self.arch
+        utilityObj.languageProvider   = self.languages
+        utilityObj.installDirProvider = self.installdir
+        utilityObj.externalPackagesDirProvider = self.externalpackagesdir
+        setattr(self, utilityName.lower(), utilityObj)
+
+    for utility in os.listdir(os.path.join('config','BuildSystem','config','utilities')):
+      (utilityName, ext) = os.path.splitext(utility)
+      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
+        utilityObj                    = self.framework.require('config.utilities.'+utilityName, self)
         utilityObj.headerPrefix       = self.headerPrefix
         utilityObj.archProvider       = self.arch
         utilityObj.languageProvider   = self.languages
@@ -95,9 +106,10 @@ class Configure(config.base.Configure):
           packageObj.externalPackagesDirProvider = self.externalpackagesdir
           setattr(self, packageName.lower(), packageObj)
     # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
-    framework.require('PETSc.utilities.scalarTypes', self.f2cblaslapack)
-    framework.require('PETSc.utilities.scalarTypes', self.fblaslapack)
-    framework.require('PETSc.utilities.scalarTypes', self.blaslapack)
+    framework.require('PETSc.options.scalarTypes', self.f2cblaslapack)
+    framework.require('PETSc.options.scalarTypes', self.fblaslapack)
+    framework.require('PETSc.options.scalarTypes', self.blaslapack)
+    framework.require('PETSc.Regression', self)
 
     self.programs.headerPrefix   = self.headerPrefix
     self.compilers.headerPrefix  = self.headerPrefix

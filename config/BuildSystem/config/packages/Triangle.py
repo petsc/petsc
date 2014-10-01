@@ -13,7 +13,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
+    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.x               = framework.require('config.packages.X', self)
     self.deps = []
     return

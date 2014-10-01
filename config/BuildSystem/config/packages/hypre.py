@@ -18,8 +18,8 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.openmp         = framework.require('config.packages.openmp',self)
-    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
-    self.languages      = framework.require('PETSc.utilities.languages',   self)
+    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
+    self.languages      = framework.require('PETSc.options.languages',   self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
     self.mpi            = framework.require('config.packages.MPI',self)
     self.deps           = [self.mpi,self.blasLapack]

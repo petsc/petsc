@@ -25,8 +25,8 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.petscdir       = framework.require('PETSc.utilities.petscdir', self.setCompilers)
-    self.petscclone     = framework.require('PETSc.utilities.petscclone',self.setCompilers)
+    self.petscdir       = framework.require('PETSc.options.petscdir', self.setCompilers)
+    self.petscclone     = framework.require('PETSc.options.petscclone',self.setCompilers)
     return
 
   def formGNUConfigureArgs(self):
