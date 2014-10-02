@@ -142,15 +142,9 @@
 !
 ! F90 uses real(), conjg() when KIND parameter is used.
 !
-#if defined (PETSC_MISSING_DREAL)
 #define PetscRealPart(a) real(a)
 #define PetscConj(a) conjg(a)
 #define PetscImaginaryPart(a) aimag(a)
-#else
-#define PetscRealPart(a) dreal(a)
-#define PetscConj(a) dconjg(a)
-#define PetscImaginaryPart(a) daimag(a)
-#endif
 #else
 #if defined (PETSC_USE_REAL_SINGLE)
 #define PetscScalar PetscFortranFloat
