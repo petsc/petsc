@@ -2841,6 +2841,7 @@ PetscErrorCode MatCreateMPISBAIJConcatenateSeqSBAIJSymbolic(MPI_Comm comm,Mat in
 
   ierr = PetscMalloc1(rmax,&bindx);CHKERRQ(ierr);
   ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);
+  ierr = MatSetOption(inmat,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ierr = MatGetRow_SeqSBAIJ(inmat,i*bs,&nnz,&indx,NULL);CHKERRQ(ierr); /* non-blocked nnz and indx */
     nnz = nnz/bs;
@@ -2848,6 +2849,7 @@ PetscErrorCode MatCreateMPISBAIJConcatenateSeqSBAIJSymbolic(MPI_Comm comm,Mat in
     ierr = MatPreallocateSet(i+rstart,nnz,bindx,dnz,onz);CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqSBAIJ(inmat,i*bs,&nnz,&indx,NULL);CHKERRQ(ierr);
   }
+  ierr = MatSetOption(inmat,MAT_GETROW_UPPERTRIANGULAR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscFree(bindx);CHKERRQ(ierr);
 
   ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
@@ -2873,12 +2875,14 @@ PetscErrorCode MatCreateMPISBAIJConcatenateSeqSBAIJNumeric(MPI_Comm comm,Mat inm
    ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(outmat,&rstart,NULL);CHKERRQ(ierr);
 
+  ierr = MatSetOption(inmat,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ierr = MatGetRow_SeqSBAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
     Ii   = i + rstart;
     ierr = MatSetValues(outmat,1,&Ii,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqSBAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
   }
+  ierr = MatSetOption(inmat,MAT_GETROW_UPPERTRIANGULAR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
