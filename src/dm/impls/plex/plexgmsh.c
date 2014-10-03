@@ -29,8 +29,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords, *coordsIn = NULL;
-  PetscInt       dim = 0, tdim = 0, coordSize, c, v, d, numCorners;
-  int            numVertices = 0, numCells = 0, trueNumCells = 0, numFacets = 0, cone[8], tags[2], cellNum, snum;
+  PetscInt       dim = 0, tdim = 0, coordSize, c, v, d, numCorners, cell;
+  int            numVertices = 0, numCells = 0, trueNumCells = 0, cone[8], tags[2], cellNum, snum;
   long           fpos = 0;
   PetscMPIInt    num_proc, rank;
   char           line[PETSC_MAX_PATH_LEN];
@@ -92,17 +92,17 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         tdim = dim;
         trueNumCells = 0;
       }
-      trueNumCells++;
+      if (dim == tdim) trueNumCells++;
     }
   }
   ierr = DMPlexSetChart(*dm, 0, trueNumCells+numVertices);CHKERRQ(ierr);
-  numFacets = numCells - trueNumCells;
   if (!rank) {
     ierr = fseek(fd, fpos, SEEK_SET);CHKERRQ(ierr);
-    for (c = 0; c < numCells; ++c) {
+    for (cell = 0, c = 0; c < numCells; ++c) {
       ierr = DMPlexCreateGmsh_ReadElement(fd, &dim, &cellNum, &numCorners, cone, tags);CHKERRQ(ierr);
       if (dim == tdim) {
-        ierr = DMPlexSetConeSize(*dm, c-numFacets, numCorners);CHKERRQ(ierr);
+        ierr = DMPlexSetConeSize(*dm, cell, numCorners);CHKERRQ(ierr);
+        cell++;
       }
       if (cellNum != c+1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell number %d should be %d", cellNum, c+1);
     }
@@ -112,11 +112,12 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     PetscInt pcone[8], corner;
 
     ierr = fseek(fd, fpos, SEEK_SET);CHKERRQ(ierr);
-    for (c = 0; c < numCells; ++c) {
+    for (cell = 0, c = 0; c < numCells; ++c) {
       ierr = DMPlexCreateGmsh_ReadElement(fd, &dim, &cellNum, &numCorners, cone, tags);CHKERRQ(ierr);
       if (dim == tdim) {
         for (corner = 0; corner < numCorners; ++corner) pcone[corner] = cone[corner] + trueNumCells-1;
-        ierr = DMPlexSetCone(*dm, c-numFacets, (const PetscInt *) pcone);CHKERRQ(ierr);
+        ierr = DMPlexSetCone(*dm, cell, (const PetscInt *) pcone);CHKERRQ(ierr);
+        cell++;
       }
       if (cellNum != c+1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell number %d should be %d", cellNum, c+1);
     }
@@ -125,7 +126,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
   }
   ierr = MPI_Bcast(&dim, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(*dm, tdim);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
   if (interpolate) {
