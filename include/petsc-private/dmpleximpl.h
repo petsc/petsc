@@ -69,6 +69,16 @@ struct _n_PlexLabel {
 };
 typedef struct _n_PlexLabel *PlexLabel;
 
+/* Utility struct to store the contents of a Gmsh file in memory */
+typedef struct {
+  PetscInt dim;      /* Entity dimension */
+  PetscInt id;       /* Element number */
+  PetscInt numNodes; /* Size of node array */
+  int *nodes;        /* Node array */
+  PetscInt numTags;  /* Size of tag array */
+  int *tags;         /* Tag array */
+} GmshElement;
+
 struct _n_Boundary {
   const char *name;
   const char *labelname;
@@ -180,7 +190,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGetCellRefiner_Internal(DM,CellRefiner*);
 PETSC_EXTERN PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
 PETSC_EXTERN PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefiner, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
 PETSC_EXTERN PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner, const PetscReal[], PetscBool *);
-PETSC_EXTERN PetscErrorCode DMPlexCreateGmsh_ReadElement(FILE *, PetscInt *, int *, PetscInt *, int[], int[]);
+PETSC_EXTERN PetscErrorCode DMPlexCreateGmsh_ReadElement(FILE *, GmshElement *);
 PETSC_EXTERN PetscErrorCode DMPlexInvertCell_Internal(PetscInt, PetscInt, PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
