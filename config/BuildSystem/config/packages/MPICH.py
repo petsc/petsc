@@ -39,6 +39,8 @@ class Configure(config.package.GNUPackage):
         args.append('--enable-sharedlibs=solaris-cc')
       else:
         args.append('--enable-sharedlibs=libtool')
+    else:
+      args.append('--disaable-shared')
     if 'download-mpich-device' in self.argDB:
       args.append('--with-device='+self.argDB['download-mpich-device'])
     if self.argDB['download-mpich-mpe']:
