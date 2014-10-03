@@ -137,6 +137,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%D, NZ=%D",A->rmap->N,a->nz);
 #endif
+  ierr = MatDestroy_Redundant(&a->redundant);CHKERRQ(ierr);
   ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
   if (a->free_diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
   ierr = ISDestroy(&a->row);CHKERRQ(ierr);
@@ -214,8 +215,7 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_SYMMETRY_ETERNAL:
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix must be symmetric");
-    ierr = PetscInfo1(A,"Option %s not relevent\n",MatOptions[op]);CHKERRQ(ierr);
+    /* These options are handled directly by MatSetOption() */
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
     a->ignore_ltriangular = flg;
@@ -838,6 +838,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   a->reallocs         = 0;
   A->info.nz_unneeded = (PetscReal)fshift*bs2;
   a->idiagvalid       = PETSC_FALSE;
+  a->rmax             = rmax;
 
   if (A->cmap->n < 65536 && A->cmap->bs == 1) {
     if (a->jshort && a->free_jshort) {
@@ -1542,7 +1543,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
 {
   Mat_SeqSBAIJ   *b = (Mat_SeqSBAIJ*)B->data;
   PetscErrorCode ierr;
-  PetscInt       i,mbs,bs2;
+  PetscInt       i,mbs,nbs,bs2;
   PetscBool      skipallocation = PETSC_FALSE,flg = PETSC_FALSE,realalloc = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -1555,9 +1556,10 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
   ierr = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);
 
   mbs = B->rmap->N/bs;
+  nbs = B->cmap->n/bs;
   bs2 = bs*bs;
 
-  if (mbs*bs != B->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows, cols must be divisible by blocksize");
+  if (mbs*bs != B->rmap->N || nbs*bs!=B->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows, cols must be divisible by blocksize");
 
   if (nz == MAT_SKIP_ALLOCATION) {
     skipallocation = PETSC_TRUE;
@@ -1627,7 +1629,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
   }
 
   b->mbs = mbs;
-  b->nbs = mbs;
+  b->nbs = nbs;
   if (!skipallocation) {
     if (!b->imax) {
       ierr = PetscMalloc2(mbs,&b->imax,mbs,&b->ilen);CHKERRQ(ierr);
