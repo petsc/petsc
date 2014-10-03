@@ -525,6 +525,8 @@ class Configure(config.package.Package):
         args.append('--enable-sharedlibs=solaris-cc')
       else:
         args.append('--enable-sharedlibs=libtool')
+    else:
+      args.append('--disable-shared')
     if 'download-mpich-device' in self.argDB:
       args.append('--with-device='+self.argDB['download-mpich-device'])
     if self.argDB['download-mpich-mpe']:
