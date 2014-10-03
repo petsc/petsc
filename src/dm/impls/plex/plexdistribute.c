@@ -928,15 +928,17 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     ierr = DMGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinateSection(*dmParallel, &newCoordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &originalCoordinates);CHKERRQ(ierr);
-    ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) newCoordinates, name);CHKERRQ(ierr);
+    if (originalCoordinates) {
+      ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
+      ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) newCoordinates, name);CHKERRQ(ierr);
 
-    ierr = DMPlexDistributeField(dm, pointSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates);CHKERRQ(ierr);
-    ierr = DMSetCoordinatesLocal(*dmParallel, newCoordinates);CHKERRQ(ierr);
-    ierr = VecGetBlockSize(originalCoordinates, &bs);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(newCoordinates, bs);CHKERRQ(ierr);
-    ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
+      ierr = DMPlexDistributeField(dm, pointSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates);CHKERRQ(ierr);
+      ierr = DMSetCoordinatesLocal(*dmParallel, newCoordinates);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(originalCoordinates, &bs);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(newCoordinates, bs);CHKERRQ(ierr);
+      ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
+    }
     ierr = DMGetPeriodicity(dm, &maxCell, &L);CHKERRQ(ierr);
     if (L) {ierr = DMSetPeriodicity(*dmParallel, maxCell, L);CHKERRQ(ierr);}
   }
