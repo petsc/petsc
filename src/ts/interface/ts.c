@@ -2773,6 +2773,61 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSolveADJ"
+/*@
+   TSSolveADJ - Steps the requested number of timesteps backward.
+
+   Collective on TS
+
+   Input Parameter:
++  ts - the TS context obtained from TSCreate()
+-  u - the solution vector  (can be null if TSSetSolution() was used, otherwise must contain the initial conditions)
+
+   Level: beginner
+
+.keywords: TS, timestep, solve
+
+.seealso: TSCreate(), TSSetSolution(), TSStep()
+@*/
+PetscErrorCode TSSolveADJ(TS tsadj,Vec lambda)
+{
+  PetscInt          i;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;  
+  PetscValidHeaderSpecific(tsadj,TS_CLASSID,1);
+  if (lambda) PetscValidHeaderSpecific(lambda,VEC_CLASSID,2);
+
+  ierr = TSSetSolution(tsadj,lambda);CHKERRQ(ierr);
+  ierr = TSSetUp(tsadj);CHKERRQ(ierr);
+
+  /* reset time step and iteration counters */
+  tsadj->steps             = 0;
+  tsadj->ksp_its           = 0;
+  tsadj->snes_its          = 0;
+  tsadj->num_snes_failures = 0;
+  tsadj->reject            = 0;
+  tsadj->reason            = TS_CONVERGED_ITERATING;
+
+  // to do: if tsadj->max_steps is not set, complain somewhere. 
+ 
+  for (i=tsadj->max_steps; i>0; i--) {
+    ierr = TSMonitor(tsadj,i,tsadj->ptime,lambda);CHKERRQ(ierr);
+    ierr = TSStep(tsadj);CHKERRQ(ierr);
+  }
+  
+  if (lambda) {ierr = VecCopy(tsadj->vec_sol,lambda);CHKERRQ(ierr);}
+  tsadj->solvetime = tsadj->ptime;
+
+  //ierr = TSMonitor(tsadj,tsadj->steps,tsadj->ptime,lambda);CHKERRQ(ierr);
+  //ierr = VecViewFromOptions(u, ((PetscObject) tsadj)->prefix, "-ts_view_solution");CHKERRQ(ierr);
+  //ierr = TSViewFromOptions(tsadj,NULL,"-ts_view");CHKERRQ(ierr);
+  ierr = PetscObjectSAWsBlock((PetscObject)tsadj);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitor"
 /*@
    TSMonitor - Runs all user-provided monitor routines set using TSMonitorSet()
@@ -2946,6 +3001,34 @@ PetscErrorCode  TSGetTime(TS ts,PetscReal *t)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidRealPointer(t,2);
   *t = ts->ptime;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetPrevTime"
+/*@
+   TSGetPrevTime - Gets the starting time of the previously completed step.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameter:
+.  t  - the previous time
+
+   Level: beginner
+
+.seealso: TSSetInitialTimeStep(), TSGetTimeStep()
+
+.keywords: TS, get, time
+@*/
+PetscErrorCode  TSGetPrevTime(TS ts,PetscReal *t)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidRealPointer(t,2);
+  *t = ts->ptime_prev;
   PetscFunctionReturn(0);
 }
 

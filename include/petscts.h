@@ -223,6 +223,7 @@ PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTKDestroy(void*);
 PETSC_EXTERN PetscErrorCode TSStep(TS);
 PETSC_EXTERN PetscErrorCode TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSSolve(TS,Vec);
+PETSC_EXTERN PetscErrorCode TSSolveADJ(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSGetEquationType(TS,TSEquationType*);
 PETSC_EXTERN PetscErrorCode TSSetEquationType(TS,TSEquationType);
 PETSC_EXTERN PetscErrorCode TSGetConvergedReason(TS,TSConvergedReason*);
@@ -244,6 +245,7 @@ PETSC_EXTERN PetscErrorCode TSGetTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetTime(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTimeStepNumber(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetTimeStep(TS,PetscReal);
+PETSC_EXTERN PetscErrorCode TSGetPrevTime(TS,PetscReal*);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunction)(TS,PetscReal,Vec,Vec,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobian)(TS,PetscReal,Vec,Mat,Mat,void*);
