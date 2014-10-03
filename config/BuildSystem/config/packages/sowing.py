@@ -56,25 +56,39 @@ class Configure(config.package.GNUPackage):
 
     if self.petscclone.isClone:
       self.framework.logPrint('PETSc clone, checking for Sowing \n')
-
-      self.getExecutable('bfort', getFullPath = 1)
-      self.getExecutable('doctext', getFullPath = 1)
-      self.getExecutable('mapnames', getFullPath = 1)
-      self.getExecutable('bib2html', getFullPath = 1)
       self.getExecutable('pdflatex', getFullPath = 1)
 
-      if hasattr(self, 'bfort') and not self.framework.argDB['download-sowing']:
-        self.framework.logPrint('Found bfort, not installing sowing')
-      else:
-        self.framework.logPrint('Bfort not found. Installing sowing for FortranStubs')
-        self.framework.argDB['download-sowing'] = 1
-        config.package.GNUPackage.configure(self)
+      if self.framework.clArgDB.has_key('with-sowing-dir') and self.framework.argDB['with-sowing-dir']:
+        installDir = os.path.join(self.framework.argDB['with-sowing-dir'],'bin')
 
-        installDir = os.path.join(self.installDir,'bin')
         self.getExecutable('bfort',    path=installDir, getFullPath = 1)
         self.getExecutable('doctext',  path=installDir, getFullPath = 1)
         self.getExecutable('mapnames', path=installDir, getFullPath = 1)
         self.getExecutable('bib2html', path=installDir, getFullPath = 1)
+        if hasattr(self, 'bfort'):
+          self.framework.logPrint('Found bfort in user provided directory, not installing sowing')
+          self.found = 1
+        else:
+          raise RuntimeError('You passed --with-sowing-dir='+installDir+' but it does not contain sowings bfort')
+
+      else:
+        self.getExecutable('bfort', getFullPath = 1)
+        self.getExecutable('doctext', getFullPath = 1)
+        self.getExecutable('mapnames', getFullPath = 1)
+        self.getExecutable('bib2html', getFullPath = 1)
+
+        if hasattr(self, 'bfort') and not self.framework.argDB['download-sowing']:
+          self.framework.logPrint('Found bfort, not installing sowing')
+        else:
+          self.framework.logPrint('Bfort not found. Installing sowing for FortranStubs')
+          self.framework.argDB['download-sowing'] = 1
+          config.package.GNUPackage.configure(self)
+
+          installDir = os.path.join(self.installDir,'bin')
+          self.getExecutable('bfort',    path=installDir, getFullPath = 1)
+          self.getExecutable('doctext',  path=installDir, getFullPath = 1)
+          self.getExecutable('mapnames', path=installDir, getFullPath = 1)
+          self.getExecutable('bib2html', path=installDir, getFullPath = 1)
 
       self.buildFortranStubs()
     else:
