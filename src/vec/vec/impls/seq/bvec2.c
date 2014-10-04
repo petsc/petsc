@@ -943,7 +943,7 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (file) {
     if (((PetscObject)xin)->prefix) {
-      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%s_vecload_block_size %D\n",((PetscObject)xin)->prefix,PetscAbs(xin->map->bs));CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%svecload_block_size %D\n",((PetscObject)xin)->prefix,PetscAbs(xin->map->bs));CHKERRQ(ierr);
     } else {
       ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",PetscAbs(xin->map->bs));CHKERRQ(ierr);
     }
