@@ -546,10 +546,21 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 -    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a
          format common among all vector types
 
+   Notes: You can pass any number of vector objects, or other PETSc objects to the same viewer.
+
+   Notes for binary viewer: If you pass multiply vectors to a binary viewer you can read them back in in the same order
+$     with VecLoad().
+$
+$    If the blocksize of the vector is greater than one then you must provide a unique prefix to
+$    the vector with PetscObjectSetOptionsPrefix((PetscObject)vec,"uniqueprefix"); BEFORE calling VecView() on the
+$    vector to be stored and then set that same unique prefix on the vector that you pass to VecLoad(). The blocksize
+$    information is stored in an ASCII file with the same name as the binary file plus a ".info" appended to the
+$    filename. If you copy the binary file, make sure you copy the associated .info file with it.
+
    Notes for HDF5 Viewer: the name of the Vec (given with PetscObjectSetName() is the name that is used
-   for the object in the HDF5 file. If you wish to store the same vector to the HDF5 viewer (with different values,
-   obviously) several times, you must change its name each time before calling the VecView(). The name you use
-   here should equal the name that you use in the Vec object that you use with VecLoad().
+$    for the object in the HDF5 file. If you wish to store the same vector to the HDF5 viewer (with different values,
+$    obviously) several times, you must change its name each time before calling the VecView(). The name you use
+$    here should equal the name that you use in the Vec object that you use with VecLoad().
 
    See the manual page for VecLoad() on the exact format the binary viewer stores
    the values in the file.
@@ -897,10 +908,16 @@ PetscErrorCode  VecResetArray(Vec vec)
   written by the routine VecView().
 
   If the type or size of newvec is not set before a call to VecLoad, PETSc
-  sets the type and the local and global sizes.If type and/or
+  sets the type and the local and global sizes. If type and/or
   sizes are already set, then the same are used.
 
-  IF using HDF5, you must assign the Vec the same name as was used in the Vec
+  If using binary and the blocksize of the vector is greater than one then you must provide a unique prefix to
+  the vector with PetscObjectSetOptionsPrefix((PetscObject)vec,"uniqueprefix"); BEFORE calling VecView() on the
+  vector to be stored and then set that same unique prefix on the vector that you pass to VecLoad(). The blocksize
+  information is stored in an ASCII file with the same name as the binary file plus a ".info" appended to the
+  filename. If you copy the binary file, make sure you copy the associated .info file with it.
+
+  If using HDF5, you must assign the Vec the same name as was used in the Vec
   that was stored in the file using PetscObjectSetName(). Otherwise you will
   get the error message: "Cannot H5DOpen2() with Vec name NAMEOFOBJECT"
 
