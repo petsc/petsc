@@ -115,6 +115,54 @@ PetscErrorCode  SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnor
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPMonitorSNES"
+/*@C
+   KSPMonitorSNES - Print the residual norm of the nonlinear function at each iteration of the linear iterative solver.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp   - iterative context
+.  n     - iteration number
+.  rnorm - 2-norm (preconditioned) residual value (may be estimated).
+-  dummy - unused monitor context
+
+   Level: intermediate
+
+.keywords: KSP, default, monitor, residual
+
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGResidualNormCreate()
+@*/
+PetscErrorCode  KSPMonitorSNES(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+{
+  PetscErrorCode ierr;
+  PetscViewer    viewer;
+  SNES           snes = (SNES) dummy;
+  Vec            snes_solution,work1,work2;
+  PetscReal      snorm;
+
+  PetscFunctionBegin;
+  ierr = SNESGetSolution(snes,&snes_solution);CHKERRQ(ierr);
+  ierr = VecDuplicate(snes_solution,&work1);CHKERRQ(ierr);
+  ierr = VecDuplicate(snes_solution,&work2);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp,work1,NULL);CHKERRQ(ierr);
+  ierr = VecAYPX(work1,-1.0,snes_solution);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,work1,work2);CHKERRQ(ierr);
+  ierr = VecNorm(work2,NORM_2,&snorm);CHKERRQ(ierr);
+  ierr = VecDestroy(&work1);CHKERRQ(ierr);
+  ierr = VecDestroy(&work2);CHKERRQ(ierr);
+
+  ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
+  if (n == 0 && ((PetscObject)ksp)->prefix) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Residual norm %5.3e KSP Residual norm %5.3e \n",n,(double)snorm,(double)rnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESMonitorDefault"
 /*@C
    SNESMonitorDefault - Monitors progress of the SNES solvers (default).

@@ -714,6 +714,11 @@ runex19_14:
 	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_14, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_14.tmp
+runex19_17:
+	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_ksp -snes_monitor_short  -ksp_pc_side right  -snes_rtol 1.e-12 -ksp_rtol 1.e-12 > ex19_17.tmp 2>&1; \
+	   if (${DIFF} output/ex19_17.out ex19_17.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_17, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_17.tmp
 runex19_14_ds:
 	-@${MPIEXEC} -n 4 ./ex19 -snes_converged_reason -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres -mat_fd_type ds > ex19_14.tmp 2>&1; \
 	   if (${DIFF} output/ex19_2.out ex19_14.tmp) then true; \

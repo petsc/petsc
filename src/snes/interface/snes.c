@@ -2131,9 +2131,6 @@ PetscErrorCode  SNESComputeNGS(SNES snes,Vec b,Vec x)
    Most users should not need to explicitly call this routine, as it
    is used internally within the nonlinear solvers.
 
-   See KSPSetOperators() for important information about setting the
-   flag parameter.
-
    Level: developer
 
 .keywords: SNES, compute, Jacobian, matrix
@@ -4544,12 +4541,19 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
   PetscValidPointer(ksp,2);
 
   if (!snes->ksp) {
+    PetscBool monitor = PETSC_FALSE;
+
     ierr = KSPCreate(PetscObjectComm((PetscObject)snes),&snes->ksp);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)snes->ksp,(PetscObject)snes,1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)snes,(PetscObject)snes->ksp);CHKERRQ(ierr);
 
     ierr = KSPSetPreSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))KSPPreSolve_SNESEW,snes);CHKERRQ(ierr);
     ierr = KSPSetPostSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))KSPPostSolve_SNESEW,snes);CHKERRQ(ierr);
+
+    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_monitor_ksp",&monitor,NULL);CHKERRQ(ierr);
+    if (monitor) {
+      ierr = KSPMonitorSet(snes->ksp,KSPMonitorSNES,snes,NULL);CHKERRQ(ierr);
+    }
   }
   *ksp = snes->ksp;
   PetscFunctionReturn(0);
