@@ -40,7 +40,7 @@ class Configure(config.package.GNUPackage):
       else:
         args.append('--enable-sharedlibs=libtool')
     else:
-      args.append('--disaable-shared')
+      args.append('--disable-shared')
     if 'download-mpich-device' in self.argDB:
       args.append('--with-device='+self.argDB['download-mpich-device'])
     if self.argDB['download-mpich-mpe']:
