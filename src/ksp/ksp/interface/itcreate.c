@@ -244,13 +244,16 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 .   -ksp_norm_type <none,preconditioned,unpreconditioned,natural>
 
    Notes:
+   For some methods (such as GMRES) the normtype is determined by if left or right preconditioning has been set with KSPSetPCSide().
+
    Currently only works with the CG, Richardson, Bi-CG-stab, CR, and CGS methods.
+
 
    Level: advanced
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetCheckNormIteration()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetCheckNormIteration(), KSPSetPCSide(), KSPGetPCSide()
 @*/
 PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
