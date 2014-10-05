@@ -332,8 +332,12 @@ PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
   PetscFunctionBegin;
   if (t && !s) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
   if (t) {
-    strncpy(s,t,n-1);
-    s[n-1] = '\0';
+    if (n > 1) {
+      strncpy(s,t,n-1);
+      s[n-1] = '\0';
+    } else {
+      s[0] = '\0';
+    }
   } else if (s) s[0] = 0;
   PetscFunctionReturn(0);
 }

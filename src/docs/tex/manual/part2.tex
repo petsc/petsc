@@ -4566,7 +4566,7 @@ To solve an ODE or DAE one uses:
     TSSetRHSFunction(TS ts,Vec R,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *funP);
   \end{tabbing}
 
-\item Jacobian $F_u + (shift)F_{\dot{u}}$ \\
+\item Jacobian $ (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^n,u^n,\dot{u}^n) $ \\
   If using a fully implicit or semi-implicit (IMEX) method one also can provide an appropriate (approximate) Jacobian matrix of $F()$.
   \begin{tabbing}
     TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
@@ -4574,21 +4574,34 @@ To solve an ODE or DAE one uses:
   \end{tabbing}
   The arguments for the function \trl{fjac()}
   are the timestep context, current time, input state $u$, input
-  derivative $\dot{u}$, $shift$, matrix $A$, preconditioning matrix
-  $B$, flag describing structure of preconditioning matrix (see the
-  discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
-  details), and the (optional) user-provided context \trl{jacP}.
-  This form for Jacobian arises because for all implicit and semi-implicit time integrator in PETSc $\dot{u}^n$ is approximated by $(shift) u^n + g(u^{n-1},...)$
-  where the $shift$ is positive and $ g(u^{n-1},...)$ depends on previous iterations;
-  for example for backward Euler $\dot{u} = (u^n - u^{n-1})/\delta t = u^n/\delta t - u^{n-1}/\delta t.$  Hence
+  derivative $\dot{u}$, input $shift$, matrix $A$, preconditioning matrix
+  $B$, and the (optional) user-provided context \trl{jacP}.
+
+  The Jacobian needed for the nonlinear system is, by the chain rule,
 \begin{eqnarray*}
-    \frac{d F}{d u^n} &  = &  \frac{\partial F}{\partial \dot{u}}\frac{\partial \dot{u}}{\partial u} + \frac{\partial F}{\partial u}\\
-                      & = &   (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^t,u^n,\dot{u}^n).
+    \frac{d F}{d u^n} &  = &  \frac{\partial F}{\partial \dot{u}}|_{u^n} \frac{\partial \dot{u}}{\partial u}|_{u^n} + \frac{\partial F}{\partial u}|_{u^n}.
 \end{eqnarray*}
-  For example, again with the backwards Euler method, one obtains
+For any ODE integration method the approximation of $ \dot{u} $ is linear in $ u^n$ hence $ \frac{\partial \dot{u}}{\partial u}|_{u^n} = (shift) $, where shift depends on the
+ODE integrator and time step but not on the function being integrated. Thus
 \begin{eqnarray*}
-    \frac{d F}{d u^n} & = &   u^n/\delta t + F_u(t^t,u^n,\dot{u}^n).
+    \frac{d F}{d u^n} &  = &    (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^n,u^n,\dot{u}^n).
 \end{eqnarray*}
+This explains why the user provide Jacobian is in the given form for all integration methods. An equivalent way to derive the formula is to note that
+\[
+   F(t^n,u^n,\dot{u}^n) = F(t^n,u^n,w+shift*u^n)
+\]
+where $ w $ is some linear combination of previous time solutions of $u$ so that
+\[
+\frac{d F}{d u^n} = (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^n,u^n,\dot{u}^n)
+\]
+again by the chain rule.
+
+  For example, consider backward Euler's method applied to the ODE $ F(t, u, \dot{u}) = \dot{u} - f(t, u) $ with $ \dot{u} = (u^n - u^{n-1})/\delta t$ and
+$ \frac{\partial \dot{u}}{\partial u}|_{u^n} = 1/\delta t $ resulting in
+\begin{eqnarray*}
+    \frac{d F}{d u^n} & = &   (1/\delta t)F_{\dot{u}} + F_u(t^n,u^n,\dot{u}^n).
+\end{eqnarray*}
+But $ F_{\dot{u}} = 1 $, in this special case, resulting in the expected Jacobian $ I/\delta t - f_u(t,u^n)$.
 
 \item Jacobian $G_u$ \\
   If using a fully implicit method and the function $ G() $ is provided, one also can provide an appropriate (approximate) Jacobian matrix of $G()$.
@@ -4598,9 +4611,7 @@ To solve an ODE or DAE one uses:
   \end{tabbing}
   The arguments for the function \trl{fjac()}
   are the timestep context, current time, input state $u$, matrix $A$, preconditioning matrix
-  $B$, flag describing structure of preconditioning matrix (see the
-  discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
-  details), and the (optional) user-provided context \trl{jacP}.
+  $B$, and the (optional) user-provided context \trl{jacP}.
 \end{itemize}
 
 Providing appropriate $ F() $ and $G() $ for your problem allows for the easy runtime switching between explicit, semi-implicit (IMEX), and fully implicit method.
