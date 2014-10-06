@@ -15,7 +15,7 @@ F*/
 
 PetscInt spatialDim = 0;
 
-typedef enum {CONSTANT, GAUSSIAN} PorosityDistribution;
+typedef enum {ZERO, CONSTANT, GAUSSIAN} PorosityDistribution;
 
 typedef struct {
   /* Domain and mesh definition */
@@ -41,7 +41,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->xbd       = DM_BOUNDARY_PERIODIC;
   options->ybd       = DM_BOUNDARY_PERIODIC;
   options->useFV     = PETSC_FALSE;
-  options->porosityDist = CONSTANT;
+  options->porosityDist = ZERO;
 
   ierr = PetscOptionsBegin(comm, "", "Magma Dynamics Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
@@ -194,9 +194,14 @@ void initialVelocity(const PetscReal x[], PetscScalar *u, void *ctx)
   for (d = 0; d < spatialDim; ++d) u[d] = 0.0;
 }
 
-void constant_phi(const PetscReal x[], PetscScalar *u, void *ctx)
+void zero_phi(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
+}
+
+void constant_phi(const PetscReal x[], PetscScalar *u, void *ctx)
+{
+  u[0] = 1.0;
 }
 
 void gaussian_phi_2d(const PetscReal x[], PetscScalar *u, void *ctx)
@@ -228,6 +233,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   case 2:
     user->initialGuess[0] = quadratic_u_2d/*initialVelocity*/;
     switch(user->porosityDist) {
+    case ZERO:     user->initialGuess[1] = zero_phi;break;
     case CONSTANT: user->initialGuess[1] = constant_phi;break;
     case GAUSSIAN: user->initialGuess[1] = gaussian_phi_2d;break;
     }
