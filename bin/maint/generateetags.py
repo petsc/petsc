@@ -142,8 +142,12 @@ def main(ctags):
   else:
     ctagfile = None
   flist = []
-  os.path.walk(os.getcwd(),processDir,flist)
-  processFiles(os.getcwd(),flist)
+  (status,output) = commands.getstatusoutput('git ls-files| egrep -v \(^\(systems/\|share/petsc/datafiles/\)\|/output/\|\.\(png\|pdf\|ps\|ppt\|jpg\)$\)')
+  if status:
+    flist = output.split('\n')
+  else:
+    os.path.walk(os.getcwd(),processDir,flist)
+    processFiles(os.getcwd(),flist)
   createTags(flist,etagfile,ctagfile)
   addFileNameTags(etagfile)
   try: os.unlink('ETAGS')
