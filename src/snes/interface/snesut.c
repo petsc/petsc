@@ -162,6 +162,124 @@ PetscErrorCode  KSPMonitorSNES(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
+#include <petscdraw.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorSNESLGResidualNormCreate"
+/*@C
+   KSPMonitorSNESLGResidualNormCreate - Creates a line graph context for use with
+   KSP to monitor convergence of preconditioned residual norms.
+
+   Collective on KSP
+
+   Input Parameters:
++  host - the X display to open, or null for the local machine
+.  label - the title to put in the title bar
+.  x, y - the screen coordinates of the upper left coordinate of
+          the window
+-  m, n - the screen width and height in pixels
+
+   Output Parameter:
+.  draw - the drawing context
+
+   Options Database Key:
+.  -ksp_monitor_lg_residualnorm - Sets line graph monitor
+
+   Notes:
+   Use KSPMonitorSNESLGResidualNormDestroy() to destroy this line graph; do not use PetscDrawLGDestroy().
+
+   Level: intermediate
+
+.keywords: KSP, monitor, line graph, residual, create
+
+.seealso: KSPMonitorSNESLGResidualNormDestroy(), KSPMonitorSet(), KSPMonitorSNESLGTrueResidualCreate()
+@*/
+PetscErrorCode  KSPMonitorSNESLGResidualNormCreate(const char host[],const char label[],int x,int y,int m,int n,PetscObject **objs)
+{
+  PetscDraw      draw;
+  PetscErrorCode ierr;
+  PetscDrawAxis  axis;
+  PetscDrawLG    drawlg;
+  const char     *names[] = {"Linear residual","Nonlinear residual"};
+
+  PetscFunctionBegin;
+  ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(draw,2,&drawlg);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetAxis(drawlg,&axis);CHKERRQ(ierr);
+  ierr = PetscDrawAxisSetLabels(axis,"Convergence of Residual Norm","Iteration","Residual Norm");CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLegend(drawlg,names);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)drawlg,(PetscObject)draw);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(2,objs);CHKERRQ(ierr);
+  (*objs)[1] = (PetscObject)drawlg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorSNESLGResidualNorm"
+PetscErrorCode  KSPMonitorSNESLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,PetscObject *objs)
+{
+  PetscDrawLG    lg = (PetscDrawLG) objs[1];
+  PetscErrorCode ierr;
+  PetscReal      y[2];
+  SNES           snes = (SNES) objs[0];
+  Vec            snes_solution,work1,work2;
+
+  PetscFunctionBegin;
+  if (rnorm > 0.0) y[0] = PetscLog10Real(rnorm);
+  else y[0] = -15.0;
+
+  ierr = SNESGetSolution(snes,&snes_solution);CHKERRQ(ierr);
+  ierr = VecDuplicate(snes_solution,&work1);CHKERRQ(ierr);
+  ierr = VecDuplicate(snes_solution,&work2);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp,work1,NULL);CHKERRQ(ierr);
+  ierr = VecAYPX(work1,-1.0,snes_solution);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,work1,work2);CHKERRQ(ierr);
+  ierr = VecNorm(work2,NORM_2,y+1);CHKERRQ(ierr);
+  if (y[1] > 0.0) y[1] = PetscLog10Real(y[1]);
+  else y[1] = -15.0;
+  ierr = VecDestroy(&work1);CHKERRQ(ierr);
+  ierr = VecDestroy(&work2);CHKERRQ(ierr);
+
+  ierr = PetscDrawLGAddPoint(lg,NULL,y);CHKERRQ(ierr);
+  if (n < 20 || !(n % 5)) {
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorSNESLGResidualNormDestroy"
+/*@
+   KSPMonitorSNESLGResidualNormDestroy - Destroys a line graph context that was created
+   with KSPMonitorSNESLGResidualNormCreate().
+
+   Collective on KSP
+
+   Input Parameter:
+.  draw - the drawing context
+
+   Level: intermediate
+
+.keywords: KSP, monitor, line graph, destroy
+
+.seealso: KSPMonitorSNESLGResidualNormCreate(), KSPMonitorSNESLGTrueResidualDestroy(), KSPMonitorSet()
+@*/
+PetscErrorCode  KSPMonitorSNESLGResidualNormDestroy(PetscObject **objs)
+{
+  PetscDraw      draw;
+  PetscErrorCode ierr;
+  PetscDrawLG    drawlg = (PetscDrawLG) (*objs)[1];
+
+  PetscFunctionBegin;
+  ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(&drawlg);CHKERRQ(ierr);
+  ierr = PetscFree(*objs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESMonitorDefault"
 /*@C

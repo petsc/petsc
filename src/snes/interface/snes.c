@@ -4550,9 +4550,17 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
     ierr = KSPSetPreSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))KSPPreSolve_SNESEW,snes);CHKERRQ(ierr);
     ierr = KSPSetPostSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))KSPPostSolve_SNESEW,snes);CHKERRQ(ierr);
 
-    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_monitor_ksp",&monitor,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-ksp_monitor_snes",&monitor,NULL);CHKERRQ(ierr);
     if (monitor) {
       ierr = KSPMonitorSet(snes->ksp,KSPMonitorSNES,snes,NULL);CHKERRQ(ierr);
+    }
+    monitor = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-ksp_monitor_snes_lg",&monitor,NULL);CHKERRQ(ierr);
+    if (monitor) {
+      PetscObject *objs;
+      ierr = KSPMonitorSNESLGResidualNormCreate(0,0,PETSC_DECIDE,PETSC_DECIDE,600,600,&objs);CHKERRQ(ierr);
+      objs[0] = (PetscObject) snes;
+      ierr = KSPMonitorSet(snes->ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorSNESLGResidualNorm,objs,(PetscErrorCode (*)(void**))KSPMonitorSNESLGResidualNormDestroy);CHKERRQ(ierr);
     }
   }
   *ksp = snes->ksp;
