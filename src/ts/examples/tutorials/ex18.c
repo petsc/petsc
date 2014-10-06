@@ -121,8 +121,8 @@ static void f0_advection(const PetscScalar u[], const PetscScalar u_t[], const P
                          const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[])
 {
   PetscInt d;
-  f0[0] = u_t[spatialDim+1];
-  for (d = 0; d < spatialDim; ++d) f0[0] -= u[spatialDim+1]*u_x[d*spatialDim+d] + u_x[(spatialDim+1)*spatialDim+d]*u[d];
+  f0[0] = u_t[spatialDim];
+  for (d = 0; d < spatialDim; ++d) f0[0] -= u[spatialDim]*u_x[d*spatialDim+d] + u_x[spatialDim*spatialDim+d]*u[d];
 }
 
 static void f1_advection(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
