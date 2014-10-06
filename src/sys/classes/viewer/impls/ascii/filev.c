@@ -877,6 +877,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
   viewer->ops->getsubcomm       = PetscViewerGetSubcomm_ASCII;
   viewer->ops->restoresubcomm   = PetscViewerRestoreSubcomm_ASCII;
   viewer->ops->view             = PetscViewerView_ASCII;
+  viewer->ops->read             = PetscViewerASCIIRead;
 
   /* defaults to stdout unless set with PetscViewerFileSetName() */
   vascii->fd        = PETSC_STDOUT;
