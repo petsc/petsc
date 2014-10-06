@@ -64,6 +64,13 @@ def endsWithSuffix(file,suffixes):
       return 1
   return 0
 
+def startsWithPrefix(file,prefixes):
+  # returns 1 if any of the prefix match - else return 0
+  for prefix in prefixes:
+    if file.startswith(prefix):
+      return 1
+  return 0
+
 def badWebIndex(dirname,file):
   # checks if the file is bad index.html document [i.e not generated]
   if file != 'index.html':
@@ -76,10 +83,11 @@ def badWebIndex(dirname,file):
 def processDir(flist,dirname,names):
   newls = []
   gsfx = ['.py','.c','.cu','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile','.bib','.jl']
+  bpfx = ['.#']
   hsfx = ['.html']
   bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html','.gcov.html','.cu.html','.cache.html']
   for l in names:
-    if endsWithSuffix(l,gsfx):
+    if endsWithSuffix(l,gsfx) and not startsWithPrefix(l,bpfx):
       newls.append(l)
     elif endsWithSuffix(l,hsfx)  and not endsWithSuffix(l,bsfx) and not badWebIndex(dirname,l):
       # if html - and not bad suffix - and not badWebIndex - then add to etags-list
