@@ -215,6 +215,7 @@ void gaussian_phi_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 {
   PetscDS        prob;
+  PetscBool      check;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -231,7 +232,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   ierr = PetscDSSetRiemannSolver(prob, 1, riemann_advection);CHKERRQ(ierr);
   switch (user->dim) {
   case 2:
-    user->initialGuess[0] = quadratic_u_2d/*initialVelocity*/;
+    user->initialGuess[0] = initialVelocity;
     switch(user->porosityDist) {
     case ZERO:     user->initialGuess[1] = zero_phi;break;
     case CONSTANT: user->initialGuess[1] = constant_phi;break;
@@ -250,6 +251,11 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     break;
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+  }
+  ierr = PetscOptionsHasName(NULL, "-dmts_check", &check);CHKERRQ(ierr);
+  if (check) {
+    user->initialGuess[0] = user->exactFuncs[0];
+    user->initialGuess[1] = user->exactFuncs[1];
   }
   PetscFunctionReturn(0);
 }
