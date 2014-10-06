@@ -117,6 +117,12 @@ static void f0_lap_periodic_u(const PetscScalar u[], const PetscScalar u_t[], co
   f0[1] = 2.0*PETSC_PI*x[1]*cos(2.0*PETSC_PI*x[0]);
 }
 
+static void f0_lap_doubly_periodic_u(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[])
+{
+  f0[0] = -2.0*sin(2.0*PETSC_PI*x[0])*cos(2.0*PETSC_PI*x[1]);
+  f0[1] =  2.0*sin(2.0*PETSC_PI*x[1])*cos(2.0*PETSC_PI*x[0]);
+}
+
 static void f0_advection(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
                          const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[])
 {
@@ -188,6 +194,29 @@ void periodic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
   u[1] = -x[1]*cos(2.0*PETSC_PI*x[0])/(2.0*PETSC_PI);
 }
 
+/*
+  In 2D we use the exact, doubly periodic solution:
+
+    u   =  sin(2 pi x) cos(2 pi y)/4 pi^2
+    v   = -sin(2 pi y) cos(2 pi x)/4 pi^2
+    phi = h(x + y + (u + v) t)
+    f_x = -2sin(2 pi x) cos(2 pi y)
+    f_y =  2sin(2 pi y) cos(2 pi x)
+
+  so that
+
+    -\Delta u + f = <2 sin(2pi x) cos(2pi y),  -2 sin(2pi y) cos(2pi x)> + <-2 sin(2pi x) cos(2pi y), 2 sin(2pi y) cos(2pi x)> = 0
+
+We will conserve phi since
+
+    \nabla \cdot u = cos(2pi x) cos(2pi y)/2pi - cos(2pi y) cos(2pi x)/2pi = 0
+*/
+void doubly_periodic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
+{
+  u[0] =  sin(2.0*PETSC_PI*x[0])*cos(2.0*PETSC_PI*x[1])/PetscSqr(2.0*PETSC_PI);
+  u[1] = -sin(2.0*PETSC_PI*x[1])*cos(2.0*PETSC_PI*x[0])/PetscSqr(2.0*PETSC_PI);
+}
+
 void initialVelocity(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   PetscInt d;
@@ -222,7 +251,14 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   switch (user->xbd) {
   case DM_BOUNDARY_PERIODIC:
-    ierr = PetscDSSetResidual(prob, 0, f0_lap_periodic_u, f1_lap_u);CHKERRQ(ierr);
+    switch (user->ybd) {
+    case DM_BOUNDARY_PERIODIC:
+      ierr = PetscDSSetResidual(prob, 0, f0_lap_doubly_periodic_u, f1_lap_u);CHKERRQ(ierr);
+      break;
+    default:
+      ierr = PetscDSSetResidual(prob, 0, f0_lap_periodic_u, f1_lap_u);CHKERRQ(ierr);
+      break;
+    }
     break;
   default:
     ierr = PetscDSSetResidual(prob, 0, f0_lap_u, f1_lap_u);CHKERRQ(ierr);
@@ -240,8 +276,16 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     }
     switch (user->xbd) {
     case DM_BOUNDARY_PERIODIC:
-      user->exactFuncs[0] = periodic_u_2d;
-      user->exactFuncs[1] = user->initialGuess[1];
+      switch (user->ybd) {
+      case DM_BOUNDARY_PERIODIC:
+        user->exactFuncs[0] = doubly_periodic_u_2d;
+        user->exactFuncs[1] = user->initialGuess[1];
+        break;
+      default:
+        user->exactFuncs[0] = periodic_u_2d;
+        user->exactFuncs[1] = user->initialGuess[1];
+        break;
+      }
       break;
     default:
       user->exactFuncs[0] = quadratic_u_2d;
