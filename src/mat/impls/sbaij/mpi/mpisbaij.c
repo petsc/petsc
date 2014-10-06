@@ -1618,9 +1618,9 @@ PetscErrorCode  MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt 
   B->rmap->bs = bs;
   b->bs2      = bs*bs;
   b->mbs      = mbs;
-  b->nbs      = mbs;
   b->Mbs      = Mbs;
-  b->Nbs      = Mbs;
+  b->nbs      = B->cmap->n/bs;
+  b->Nbs      = B->cmap->N/bs;
 
   for (i=0; i<=b->size; i++) {
     b->rangebs[i] = B->rmap->range[i]/bs;
