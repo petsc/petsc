@@ -916,7 +916,7 @@ prepend-path PATH %s
       if nargs.Arg.parseArgument(args['configModules'])[1] == 'PETSc.Configure':
         del args['configModules']
     if 'optionsModule' in args:
-      if nargs.Arg.parseArgument(args['optionsModule'])[1] == 'PETSc.compilerOptions':
+      if nargs.Arg.parseArgument(args['optionsModule'])[1] == 'config.compilerOptions':
         del args['optionsModule']
     if not 'PETSC_ARCH' in args:
       args['PETSC_ARCH'] = 'PETSC_ARCH='+str(self.arch.arch)
