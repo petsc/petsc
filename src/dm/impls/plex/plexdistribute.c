@@ -863,6 +863,86 @@ PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobal
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexDistributeCoordinates"
+PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmParallel)
+{
+  MPI_Comm         comm;
+  PetscSection     originalCoordSection, newCoordSection;
+  Vec              originalCoordinates, newCoordinates;
+  PetscInt         bs;
+  const char      *name;
+  const PetscReal *maxCell, *L;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dmParallel, 3);
+
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dmParallel, &newCoordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &originalCoordinates);CHKERRQ(ierr);
+  if (originalCoordinates) {
+    ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) newCoordinates, name);CHKERRQ(ierr);
+
+    ierr = DMPlexDistributeField(dm, migrationSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates);CHKERRQ(ierr);
+    ierr = DMSetCoordinatesLocal(dmParallel, newCoordinates);CHKERRQ(ierr);
+    ierr = VecGetBlockSize(originalCoordinates, &bs);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(newCoordinates, bs);CHKERRQ(ierr);
+    ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
+  }
+  ierr = DMGetPeriodicity(dm, &maxCell, &L);CHKERRQ(ierr);
+  if (L) {ierr = DMSetPeriodicity(dmParallel, maxCell, L);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexDistributeLabels"
+PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, PetscSection partSection, IS part, ISLocalToGlobalMapping renumbering, DM dmParallel)
+{
+  DM_Plex       *mesh      = (DM_Plex*) dm->data;
+  DM_Plex       *pmesh     = (DM_Plex*) (dmParallel)->data;
+  MPI_Comm       comm;
+  PetscMPIInt    rank;
+  DMLabel        next      = mesh->labels, newNext = pmesh->labels;
+  PetscInt       numLabels = 0, l;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(dmParallel, 6);
+  ierr = PetscLogEventBegin(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+
+  /* Bcast number of labels */
+  while (next) {++numLabels; next = next->next;}
+  ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  next = mesh->labels;
+  for (l = 0; l < numLabels; ++l) {
+    DMLabel   labelNew;
+    PetscBool isdepth;
+
+    /* Skip "depth" because it is recreated */
+    if (!rank) {ierr = PetscStrcmp(next->name, "depth", &isdepth);CHKERRQ(ierr);}
+    ierr = MPI_Bcast(&isdepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
+    if (isdepth) {if (!rank) next = next->next; continue;}
+    ierr = DMLabelDistribute(next, partSection, part, renumbering, &labelNew);CHKERRQ(ierr);
+    /* Insert into list */
+    if (newNext) newNext->next = labelNew;
+    else         pmesh->labels = labelNew;
+    newNext = labelNew;
+    if (!rank) next = next->next;
+  }
+  ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexDistributeSF"
 PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, PetscSection partSection, IS part, PetscSection origPartSection, IS origPart, DM dmParallel)
 {
@@ -1058,63 +1138,13 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   ierr = PetscLogEventEnd(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
 
   ierr = DMPlexDistributeCones(dm, pointSF, renumbering, *dmParallel);CHKERRQ(ierr);
+  ierr = DMPlexDistributeCoordinates(dm, pointSF, *dmParallel);CHKERRQ(ierr);
+  ierr = DMPlexDistributeLabels(dm, pointSF, partSection, part, renumbering, *dmParallel);CHKERRQ(ierr);
   if (origCellPart) {
     ierr = DMPlexCreatePartitionClosure(dm, origCellPartSection, origCellPart, &origPartSection, &origPart);CHKERRQ(ierr);
   }
   ierr = DMPlexDistributeSF(dm, pointSF, partSection, part, origPartSection, origPart, *dmParallel);CHKERRQ(ierr);
 
-  /* Distribute Coordinates */
-  {
-    PetscSection     originalCoordSection, newCoordSection;
-    Vec              originalCoordinates, newCoordinates;
-    PetscInt         bs;
-    const char      *name;
-    const PetscReal *maxCell, *L;
-
-    ierr = DMGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
-    ierr = DMGetCoordinateSection(*dmParallel, &newCoordSection);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm, &originalCoordinates);CHKERRQ(ierr);
-    if (originalCoordinates) {
-      ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
-      ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) newCoordinates, name);CHKERRQ(ierr);
-
-      ierr = DMPlexDistributeField(dm, pointSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates);CHKERRQ(ierr);
-      ierr = DMSetCoordinatesLocal(*dmParallel, newCoordinates);CHKERRQ(ierr);
-      ierr = VecGetBlockSize(originalCoordinates, &bs);CHKERRQ(ierr);
-      ierr = VecSetBlockSize(newCoordinates, bs);CHKERRQ(ierr);
-      ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
-    }
-    ierr = DMGetPeriodicity(dm, &maxCell, &L);CHKERRQ(ierr);
-    if (L) {ierr = DMSetPeriodicity(*dmParallel, maxCell, L);CHKERRQ(ierr);}
-  }
-  /* Distribute labels */
-  ierr = PetscLogEventBegin(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
-  {
-    DMLabel  next      = mesh->labels, newNext = pmesh->labels;
-    PetscInt numLabels = 0, l;
-
-    /* Bcast number of labels */
-    while (next) {++numLabels; next = next->next;}
-    ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-    next = mesh->labels;
-    for (l = 0; l < numLabels; ++l) {
-      DMLabel   labelNew;
-      PetscBool isdepth;
-
-      /* Skip "depth" because it is recreated */
-      if (!rank) {ierr = PetscStrcmp(next->name, "depth", &isdepth);CHKERRQ(ierr);}
-      ierr = MPI_Bcast(&isdepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
-      if (isdepth) {if (!rank) next = next->next; continue;}
-      ierr = DMLabelDistribute(next, partSection, part, renumbering, &labelNew);CHKERRQ(ierr);
-      /* Insert into list */
-      if (newNext) newNext->next = labelNew;
-      else         pmesh->labels = labelNew;
-      newNext = labelNew;
-      if (!rank) next = next->next;
-    }
-  }
-  ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
   /* Setup hybrid structure */
   {
     const PetscInt *gpoints;
