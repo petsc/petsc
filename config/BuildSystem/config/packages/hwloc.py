@@ -7,9 +7,14 @@ class Configure(config.package.GNUPackage):
     self.download          = ['http://www.open-mpi.org/software/hwloc/v1.9/downloads/hwloc-1.9.1.tar.gz']
     self.functions         = ['hwloc_topology_init']
     self.includes          = ['hwloc.h']
-    self.liblist           = [['libhwloc.a']]
+    self.liblist           = [['libhwloc.a'],['libhwloc.a','libxml2.a']]
     self.downloadonWindows = 1
     return
+
+  def setupDependencies(self, framework):
+    '''Depend on MPI since many MPI's include hwloc in their install'''
+    config.package.GNUPackage.setupDependencies(self, framework)
+    self.mpi            = framework.require('config.packages.MPI',self)
 
   def getSearchDirectories(self):
     yield ''
