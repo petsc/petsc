@@ -414,7 +414,7 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateOverlap"
-/*@
+/*@C
   DMPlexCreateOverlap - Compute owner information for shared points. This basically gets two-sided for an SF.
 
   Collective on DM
