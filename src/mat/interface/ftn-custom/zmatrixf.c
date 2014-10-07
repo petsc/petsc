@@ -29,7 +29,7 @@
 #define matzerorowscolumnslocal_         MATZEROROWSCOLUMNSLOCAL
 #define matzerorowscolumnslocalis_       MATZEROROWSCOLUMNSLOCALIS
 #define matsetoptionsprefix_             MATSETOPTIONSPREFIX
-#define matcreate_                       MATCREATE
+#define matcreatevecs_                   MATCREATEVECS
 #define matnullspaceremove_              MATNULLSPACEREMOVE
 #define matgetinfo_                      MATGETINFO
 #define matlufactor_                     MATLUFACTOR
@@ -49,7 +49,7 @@
 #define matdestroymatrices_              matdestroymatrices_
 #define matgetfactor_                    matgetfactor
 #define matfactorgetsolverpackage_       matfactorgetsolverpackage
-#define matcreate_                       matcreate
+#define matcreatevecs_                   matcreatevecs
 #define matgetrowij_                     matgetrowij
 #define matrestorerowij_                 matrestorerowij
 #define matgetrow_                       matgetrow
