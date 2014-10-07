@@ -29,7 +29,7 @@
 #define matzerorowscolumnslocal_         MATZEROROWSCOLUMNSLOCAL
 #define matzerorowscolumnslocalis_       MATZEROROWSCOLUMNSLOCALIS
 #define matsetoptionsprefix_             MATSETOPTIONSPREFIX
-#define matgetvecs_                      MATGETVECS
+#define matcreate_                       MATCREATE
 #define matnullspaceremove_              MATNULLSPACEREMOVE
 #define matgetinfo_                      MATGETINFO
 #define matlufactor_                     MATLUFACTOR
@@ -49,7 +49,7 @@
 #define matdestroymatrices_              matdestroymatrices_
 #define matgetfactor_                    matgetfactor
 #define matfactorgetsolverpackage_       matfactorgetsolverpackage
-#define matgetvecs_                      matgetvecs
+#define matcreate_                       matcreate
 #define matgetrowij_                     matgetrowij
 #define matrestorerowij_                 matrestorerowij
 #define matgetrow_                       matgetrow
@@ -57,9 +57,9 @@
 #define matview_                         matview
 #define matload_                         matload
 #define matseqaijgetarray_               matseqaijgetarray
-#define matseqaijrestorearray_                 matseqaijrestorearray
-#define matdensegetarray_             matdensegetarray
-#define matdenserestorearray_         matdenserestorearray
+#define matseqaijrestorearray_           matseqaijrestorearray
+#define matdensegetarray_                matdensegetarray
+#define matdenserestorearray_            matdenserestorearray
 #define matconvert_                      matconvert
 #define matgetsubmatrices_               matgetsubmatrices
 #define matzerorowscolumns_              matzerorowscolumns
@@ -105,7 +105,7 @@ PETSC_EXTERN void PETSC_STDCALL matnullspacesetfunction_(MatNullSpace *sp, Petsc
   *ierr = MatNullSpaceSetFunction(*sp,ournullfunction,ctx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matgetvecs_(Mat *mat,Vec *right,Vec *left, int *ierr)
+PETSC_EXTERN void PETSC_STDCALL matcreatevecs_(Mat *mat,Vec *right,Vec *left, int *ierr)
 {
   CHKFORTRANNULLOBJECT(right);
   CHKFORTRANNULLOBJECT(left);
