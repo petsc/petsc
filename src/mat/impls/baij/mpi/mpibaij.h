@@ -62,7 +62,7 @@
   MatScalar *setvaluescopy;     /* area double precision values in MatSetValuesXXX() are copied*/ \
                                 /* before calling MatSetValuesXXX_MPIBAIJ_MatScalar() */       \
   PetscBool ijonly;             /* used in  MatGetSubMatrices_MPIBAIJ_local() for getting ij structure only */\
-  Mat_Redundant *redundant;        /* used by MatGetRedundantMatrix() */
+  Mat_Redundant *redundant      /* used by MatGetRedundantMatrix() */
 
 typedef struct {
   MPIBAIJHEADER;

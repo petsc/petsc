@@ -23,7 +23,7 @@
                                                                                                      \
   MatScalar     *idiag;            /* inverse of block diagonal  */                                \
   PetscBool     idiagvalid;        /* if above has correct/current values */ \
-  Mat_Redundant *redundant;        /* used by MatGetRedundantMatrix() */
+  Mat_Redundant *redundant         /* used by MatGetRedundantMatrix() */
 
 typedef struct {
   SEQAIJHEADER(MatScalar);
