@@ -21,7 +21,6 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
   (*label)->pStart         = -1;
   (*label)->pEnd           = -1;
   (*label)->bt             = NULL;
-  (*label)->next           = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -817,7 +816,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
 PetscErrorCode DMPlexCreateLabel(DM dm, const char name[])
 {
   DM_Plex        *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
+  PlexLabel      next  = mesh->labels;
   PetscBool      flg   = PETSC_FALSE;
   PetscErrorCode ierr;
 
@@ -825,16 +824,17 @@ PetscErrorCode DMPlexCreateLabel(DM dm, const char name[])
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   while (next) {
-    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, next->label->name, &flg);CHKERRQ(ierr);
     if (flg) break;
     next = next->next;
   }
   if (!flg) {
-    DMLabel tmpLabel = mesh->labels;
+    PlexLabel tmpLabel;
 
-    ierr = DMLabelCreate(name, &mesh->labels);CHKERRQ(ierr);
-
-    mesh->labels->next = tmpLabel;
+    ierr = PetscCalloc1(1, &tmpLabel);CHKERRQ(ierr);
+    ierr = DMLabelCreate(name, &tmpLabel->label);CHKERRQ(ierr);
+    tmpLabel->next = mesh->labels;
+    mesh->labels   = tmpLabel;
   }
   PetscFunctionReturn(0);
 }
@@ -1140,16 +1140,13 @@ PetscErrorCode DMPlexClearLabelStratum(DM dm, const char name[], PetscInt value)
 PetscErrorCode DMPlexGetNumLabels(DM dm, PetscInt *numLabels)
 {
   DM_Plex  *mesh = (DM_Plex*) dm->data;
-  DMLabel  next  = mesh->labels;
-  PetscInt n     = 0;
+  PlexLabel next = mesh->labels;
+  PetscInt  n    = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(numLabels, 2);
-  while (next) {
-    ++n;
-    next = next->next;
-  }
+  while (next) {++n; next = next->next;}
   *numLabels = n;
   PetscFunctionReturn(0);
 }
@@ -1176,15 +1173,15 @@ PetscErrorCode DMPlexGetNumLabels(DM dm, PetscInt *numLabels)
 PetscErrorCode DMPlexGetLabelName(DM dm, PetscInt n, const char **name)
 {
   DM_Plex  *mesh = (DM_Plex*) dm->data;
-  DMLabel  next  = mesh->labels;
-  PetscInt l     = 0;
+  PlexLabel next = mesh->labels;
+  PetscInt  l    = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(name, 3);
   while (next) {
     if (l == n) {
-      *name = next->name;
+      *name = next->label->name;
       PetscFunctionReturn(0);
     }
     ++l;
@@ -1214,8 +1211,8 @@ PetscErrorCode DMPlexGetLabelName(DM dm, PetscInt n, const char **name)
 @*/
 PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 {
-  DM_Plex        *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PlexLabel      next = mesh->labels;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1224,7 +1221,7 @@ PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
   PetscValidPointer(hasLabel, 3);
   *hasLabel = PETSC_FALSE;
   while (next) {
-    ierr = PetscStrcmp(name, next->name, hasLabel);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, next->label->name, hasLabel);CHKERRQ(ierr);
     if (*hasLabel) break;
     next = next->next;
   }
@@ -1252,8 +1249,8 @@ PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 @*/
 PetscErrorCode DMPlexGetLabel(DM dm, const char name[], DMLabel *label)
 {
-  DM_Plex        *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PlexLabel      next = mesh->labels;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
@@ -1263,14 +1260,53 @@ PetscErrorCode DMPlexGetLabel(DM dm, const char name[], DMLabel *label)
   PetscValidPointer(label, 3);
   *label = NULL;
   while (next) {
-    ierr = PetscStrcmp(name, next->name, &hasLabel);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, next->label->name, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
-      *label = next;
+      *label = next->label;
       break;
     }
     next = next->next;
   }
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetLabelByNum"
+/*@C
+  DMPlexGetLabelByNum - Return the nth label
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMPlex object
+- n  - the label number
+
+  Output Parameter:
+. label - the label
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
+@*/
+PetscErrorCode DMPlexGetLabelByNum(DM dm, PetscInt n, DMLabel *label)
+{
+  DM_Plex  *mesh = (DM_Plex*) dm->data;
+  PlexLabel next = mesh->labels;
+  PetscInt  l    = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(label, 3);
+  while (next) {
+    if (l == n) {
+      *label = next->label;
+      PetscFunctionReturn(0);
+    }
+    ++l;
+    next = next->next;
+  }
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %d does not exist in this DM", n);
 }
 
 #undef __FUNCT__
@@ -1291,7 +1327,8 @@ PetscErrorCode DMPlexGetLabel(DM dm, const char name[], DMLabel *label)
 @*/
 PetscErrorCode DMPlexAddLabel(DM dm, DMLabel label)
 {
-  DM_Plex        *mesh = (DM_Plex*) dm->data;
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PlexLabel      tmpLabel;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
@@ -1299,8 +1336,10 @@ PetscErrorCode DMPlexAddLabel(DM dm, DMLabel label)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexHasLabel(dm, label->name, &hasLabel);CHKERRQ(ierr);
   if (hasLabel) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %s already exists in this DM", label->name);
-  label->next  = mesh->labels;
-  mesh->labels = label;
+  ierr = PetscCalloc1(1, &tmpLabel);CHKERRQ(ierr);
+  tmpLabel->label = label;
+  tmpLabel->next  = mesh->labels;
+  mesh->labels    = tmpLabel;
   PetscFunctionReturn(0);
 }
 
@@ -1325,9 +1364,9 @@ PetscErrorCode DMPlexAddLabel(DM dm, DMLabel label)
 @*/
 PetscErrorCode DMPlexRemoveLabel(DM dm, const char name[], DMLabel *label)
 {
-  DM_Plex        *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
-  DMLabel        last  = NULL;
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PlexLabel      next = mesh->labels;
+  PlexLabel      last = NULL;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
@@ -1337,16 +1376,92 @@ PetscErrorCode DMPlexRemoveLabel(DM dm, const char name[], DMLabel *label)
   *label = NULL;
   if (!hasLabel) PetscFunctionReturn(0);
   while (next) {
-    ierr = PetscStrcmp(name, next->name, &hasLabel);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, next->label->name, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
       if (last) last->next   = next->next;
       else      mesh->labels = next->next;
       next->next = NULL;
-      *label     = next;
+      *label     = next->label;
+      ierr = PetscFree(next);CHKERRQ(ierr);
       break;
     }
     last = next;
     next = next->next;
   }
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetLabelOutput"
+/*@C
+  DMPlexGetLabelOutput - Get the output flag for a given label
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMPlex object
+- name - The label name
+
+  Output Parameter:
+. output - The flag for output
+
+  Level: developer
+
+.keywords: mesh
+.seealso: DMPlexSetLabelOutput(), DMPlexCreateLabel(), DMPlexHasLabel(), DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
+@*/
+PetscErrorCode DMPlexGetLabelOutput(DM dm, const char name[], PetscBool *output)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PlexLabel      next = mesh->labels;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(name, 2);
+  PetscValidPointer(output, 3);
+  while (next) {
+    PetscBool flg;
+
+    ierr = PetscStrcmp(name, next->label->name, &flg);CHKERRQ(ierr);
+    if (flg) {*output = next->output; PetscFunctionReturn(0);}
+    next = next->next;
+  }
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No label named %s was present in this mesh", name);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexSetLabelOutput"
+/*@C
+  DMPlexSetLabelOutput - Set the output flag for a given label
+
+  Not Collective
+
+  Input Parameters:
++ dm     - The DMPlex object
+. name   - The label name
+- output - The flag for output
+
+  Level: developer
+
+.keywords: mesh
+.seealso: DMPlexGetLabelOutput(), DMPlexCreateLabel(), DMPlexHasLabel(), DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
+@*/
+PetscErrorCode DMPlexSetLabelOutput(DM dm, const char name[], PetscBool output)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PlexLabel      next = mesh->labels;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(name, 2);
+  while (next) {
+    PetscBool flg;
+
+    ierr = PetscStrcmp(name, next->label->name, &flg);CHKERRQ(ierr);
+    if (flg) {next->output = output; PetscFunctionReturn(0);}
+    next = next->next;
+  }
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No label named %s was present in this mesh", name);
 }

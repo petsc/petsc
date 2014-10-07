@@ -184,17 +184,14 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   }
   /* Reorder labels */
   {
-    DMLabel label = plex->labels, labelNew = NULL;
+    PetscInt numLabels, l;
+    DMLabel  label, labelNew;
 
-    while (label) {
-      if (!plexNew->labels) {
-        ierr = DMLabelPermute(label, perm, &plexNew->labels);CHKERRQ(ierr);
-        labelNew = plexNew->labels;
-      } else {
-        ierr = DMLabelPermute(label, perm, &labelNew->next);CHKERRQ(ierr);
-        labelNew = labelNew->next;
-      }
-      label = label->next;
+    ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+    for (l = numLabels-1; l >= 0; --l) {
+      ierr = DMPlexGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
+      ierr = DMLabelPermute(label, perm, &labelNew);CHKERRQ(ierr);
+      ierr = DMPlexAddLabel(*pdm, labelNew);CHKERRQ(ierr);
     }
     if (plex->subpointMap) {ierr = DMLabelPermute(plex->subpointMap, perm, &plexNew->subpointMap);CHKERRQ(ierr);}
   }
