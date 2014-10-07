@@ -301,6 +301,16 @@ typedef struct {
 } Mat_CompressedRow;
 PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat,PetscInt,Mat_CompressedRow*,PetscInt*,PetscInt,PetscReal);
 
+typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
+  PetscInt     nzlocal,nsends,nrecvs;
+  PetscMPIInt  *send_rank,*recv_rank;
+  PetscInt     *sbuf_nz,*rbuf_nz,*sbuf_j,**rbuf_j;
+  PetscScalar  *sbuf_a,**rbuf_a;
+  PetscSubcomm psubcomm;
+  IS           isrow,iscol;
+  Mat          *matseq;
+} Mat_Redundant;
+
 struct _p_Mat {
   PETSCHEADER(struct _MatOps);
   PetscLayout            rmap,cmap;
@@ -331,6 +341,7 @@ struct _p_Mat {
   MatSolverPackage       solvertype;
   PetscBool              checksymmetryonassembly,checknullspaceonassembly;
   PetscReal              checksymmetrytol;
+  Mat_Redundant          *redundant;        /* used by MatGetRedundantMatrix() */
   };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);

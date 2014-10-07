@@ -73,9 +73,6 @@ typedef struct {
   /* used by MatMatMatMult() */
   Mat_MatMatMatMult *matmatmatmult;
 
-  /* used by MatGetRedundantMatrix() */
-  Mat_Redundant *redundant;
-
   /* Used by MPICUSP and MPICUSPARSE classes */
   void * spptr;
 

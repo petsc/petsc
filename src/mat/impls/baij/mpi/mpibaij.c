@@ -1270,7 +1270,7 @@ PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)mat,"Rows=%D,Cols=%D",mat->rmap->N,mat->cmap->N);
 #endif
-  ierr = MatDestroy_Redundant(&baij->redundant);CHKERRQ(ierr);
+  ierr = MatDestroy_Redundant(&mat->redundant);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&mat->bstash);CHKERRQ(ierr);
   ierr = MatDestroy(&baij->A);CHKERRQ(ierr);
@@ -4067,13 +4067,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm 
     } else { /* retrieve psubcomm and subcomm */
       ierr = PetscObjectGetComm((PetscObject)(*matredundant),&subcomm);CHKERRQ(ierr);
       ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
-      if (subsize == 1) {
-        Mat_SeqBAIJ *c = (Mat_SeqBAIJ*)(*matredundant)->data;
-        redund = c->redundant;
-      } else {
-        Mat_MPIBAIJ *c = (Mat_MPIBAIJ*)(*matredundant)->data;
-        redund = c->redundant;
-      }
+      redund   = (*matredundant)->redundant;
       psubcomm = redund->psubcomm;
     }
     if (psubcomm->type == PETSC_SUBCOMM_INTERLACED) {
@@ -4092,13 +4086,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm 
     ierr = ISCreateStride(PETSC_COMM_SELF,mloc_sub,rstart,1,&isrow);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
   } else { /* reuse == MAT_REUSE_MATRIX */
-    if (subsize == 1) {
-      Mat_SeqBAIJ *c = (Mat_SeqBAIJ*)(*matredundant)->data;
-      redund = c->redundant;
-    } else {
-      Mat_MPIBAIJ *c = (Mat_MPIBAIJ*)(*matredundant)->data;
-      redund = c->redundant;
-    }
+    redund = (*matredundant)->redundant;
     isrow  = redund->isrow;
     iscol  = redund->iscol;
     matseq = redund->matseq;
@@ -4109,17 +4097,11 @@ PetscErrorCode MatGetRedundantMatrix_MPIBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm 
   if (reuse == MAT_INITIAL_MATRIX) {
     /* create a supporting struct and attach it to C for reuse */
     ierr = PetscNewLog(*matredundant,&redund);CHKERRQ(ierr);
-    if (subsize == 1) {
-      Mat_SeqBAIJ *c = (Mat_SeqBAIJ*)(*matredundant)->data;
-      c->redundant = redund;
-    } else {
-      Mat_MPIBAIJ *c = (Mat_MPIBAIJ*)(*matredundant)->data;
-      c->redundant = redund;
-    }
-    redund->isrow    = isrow;
-    redund->iscol    = iscol;
-    redund->matseq   = matseq;
-    redund->psubcomm = psubcomm;
+    (*matredundant)->redundant = redund;
+    redund->isrow              = isrow;
+    redund->iscol              = iscol;
+    redund->matseq             = matseq;
+    redund->psubcomm           = psubcomm;
   }
   PetscFunctionReturn(0);
 }
