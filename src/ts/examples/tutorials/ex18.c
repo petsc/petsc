@@ -32,15 +32,15 @@ typedef struct {
 #define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *porosityDist[2]  = {"constant", "Gaussian"};
+  const char    *porosityDist[3]  = {"zero", "constant", "Gaussian"};
   PetscInt       bd, pd;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->dim       = 2;
-  options->xbd       = DM_BOUNDARY_PERIODIC;
-  options->ybd       = DM_BOUNDARY_PERIODIC;
-  options->useFV     = PETSC_FALSE;
+  options->dim          = 2;
+  options->xbd          = DM_BOUNDARY_PERIODIC;
+  options->ybd          = DM_BOUNDARY_PERIODIC;
+  options->useFV        = PETSC_FALSE;
   options->porosityDist = ZERO;
 
   ierr = PetscOptionsBegin(comm, "", "Magma Dynamics Options", "DMPLEX");CHKERRQ(ierr);
@@ -54,7 +54,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->ybd = (DMBoundaryType) bd;
   ierr = PetscOptionsBool("-use_fv", "Use the finite volume method for advection", "ex18.c", options->useFV, &options->useFV, NULL);CHKERRQ(ierr);
   pd   = options->porosityDist;
-  ierr = PetscOptionsEList("-porosity_dist","Initial porosity distribution type","ex18.c",porosityDist,2,porosityDist[options->porosityDist],&pd,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-porosity_dist","Initial porosity distribution type","ex18.c",porosityDist,3,porosityDist[options->porosityDist],&pd,NULL);CHKERRQ(ierr);
   options->porosityDist = (PorosityDistribution) pd;
   ierr = PetscOptionsEnd();
 
@@ -128,7 +128,7 @@ static void f0_advection(const PetscScalar u[], const PetscScalar u_t[], const P
 {
   PetscInt d;
   f0[0] = u_t[spatialDim];
-  for (d = 0; d < spatialDim; ++d) f0[0] -= u[spatialDim]*u_x[d*spatialDim+d] + u_x[spatialDim*spatialDim+d]*u[d];
+  for (d = 0; d < spatialDim; ++d) f0[0] += u[spatialDim]*u_x[d*spatialDim+d] + u_x[spatialDim*spatialDim+d]*u[d];
 }
 
 static void f1_advection(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
