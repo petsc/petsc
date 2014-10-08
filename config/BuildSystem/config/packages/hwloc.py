@@ -23,6 +23,8 @@ class Configure(config.package.GNUPackage):
     # Don't require x libraries since they may not always be available or hwloc may not be able to locate them on Apple
     if self.setCompilers.isDarwin():
       args.append('--without-x')
+    # don't require unneeded external dependency
+    args.append('--disable-libxml2')
     return args
 
   def configure(self):

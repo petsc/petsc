@@ -29,6 +29,8 @@ class Configure(config.package.GNUPackage):
       args.append('--enable-shared=no')
       args.append('--enable-static=yes')
     args.append('--disable-vt')
+    # have OpenMPI build its own private copy of hwloc to prevent possible conflict with one used by PETSc
+    args.append('--with-hwloc=internal')
     return args
 
   def Install(self):
