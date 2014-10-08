@@ -133,7 +133,7 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
     DM distributedMesh = NULL;
 
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*newdm, NULL, 0, NULL, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*newdm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(newdm);CHKERRQ(ierr);
       *newdm = distributedMesh;
