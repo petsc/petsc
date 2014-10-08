@@ -1392,10 +1392,15 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   ierr = DMPlexDistributeSF(dm, pointSF, partSection, part, NULL, NULL, *dmParallel);CHKERRQ(ierr);
 
   if (overlap > 0) {
+    ierr = PetscLogEventBegin(DMPLEX_DistributeOverlap,dm,0,0,0);CHKERRQ(ierr);
     /* Add the partition overlap to the distributed DM */
     ierr = DMPlexDistributeOverlap(*dmParallel, overlap, renumbering, &overlapSF, &dmOverlap);CHKERRQ(ierr);
     ierr = DMDestroy(dmParallel);CHKERRQ(ierr);
     *dmParallel = dmOverlap;
+    if (flg) {
+      ierr = PetscPrintf(comm, "Overlap Migration SF:\n");CHKERRQ(ierr);
+      ierr = PetscSFView(overlapSF, NULL);CHKERRQ(ierr);
+    }
 
     /* Re-map the pointSF to establish the full migration pattern */
     ierr = PetscSFGetGraph(pointSF, &nroots, NULL, NULL, &oldRemote);CHKERRQ(ierr);
@@ -1407,6 +1412,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     ierr = PetscSFSetGraph(overlapPointSF, nroots, nleaves, NULL, PETSC_OWN_POINTER, newRemote, PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
     pointSF = overlapPointSF;
+    ierr = PetscLogEventEnd(DMPLEX_DistributeOverlap,dm,0,0,0);CHKERRQ(ierr);
   }
   /* Cleanup Partition */
   ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
