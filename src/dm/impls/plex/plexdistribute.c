@@ -715,6 +715,101 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateOverlapMigrationSF"
+PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF *migrationSF)
+{
+  MPI_Comm           comm;
+  PetscMPIInt        rank, numProcs;
+  PetscInt           d, dim, p, pStart, pEnd, nroots, nleaves, newLeaves, point, numSharedPoints;
+  PetscInt          *pointDepths, *remoteDepths, *ilocal;
+  PetscInt          *depthRecv, *depthShift, *depthIdx;
+  PetscSFNode       *iremote;
+  PetscSF            pointSF;
+  const PetscInt    *sharedLocal;
+  const PetscSFNode *overlapRemote, *sharedRemote;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+
+  /* Before building the migration SF we need to know the new stratum offsets */
+  ierr = PetscSFGetGraph(overlapSF, &nroots, &nleaves, NULL, &overlapRemote);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nroots, &pointDepths, nleaves, &remoteDepths);CHKERRQ(ierr);
+  for (d=0; d<dim+1; d++) {
+    ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p=pStart; p<pEnd; p++) pointDepths[p] = d;
+  }
+  for (p=0; p<nleaves; p++) remoteDepths[p] = -1;
+  ierr = PetscSFBcastBegin(overlapSF, MPIU_INT, pointDepths, remoteDepths);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(overlapSF, MPIU_INT, pointDepths, remoteDepths);CHKERRQ(ierr);
+
+  /* Count recevied points in each stratum and compute the internal strata shift */
+  ierr = PetscMalloc3(dim+1, &depthRecv, dim+1, &depthShift, dim+1, &depthIdx);CHKERRQ(ierr);
+  for (d=0; d<dim+1; d++) depthRecv[d]=0;
+  for (p=0; p<nleaves; p++) depthRecv[remoteDepths[p]]++;
+  depthShift[dim] = 0;
+  for (d=0; d<dim; d++) depthShift[d] = depthRecv[dim];
+  for (d=1; d<dim; d++) depthShift[d] += depthRecv[0];
+  for (d=dim-2; d>0; d--) depthShift[d] += depthRecv[d+1];
+  for (d=0; d<dim+1; d++) {
+    ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+    depthIdx[d] = pStart + depthShift[d];
+  }
+
+  /* Form the overlap SF build an SF that describes the full overlap migration SF */
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  newLeaves = pEnd - pStart + nleaves;
+  ierr = PetscMalloc2(newLeaves, &ilocal, newLeaves, &iremote);CHKERRQ(ierr);
+  /* First map local points to themselves */
+  for (d=0; d<dim+1; d++) {
+    ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p=pStart; p<pEnd; p++) {
+      point = p + depthShift[d];
+      ilocal[point] = point;
+      iremote[point].index = p;
+      iremote[point].rank = rank;
+      depthIdx[d]++;
+    }
+  }
+
+  /* Add in the remote roots for currently shared points */
+  ierr = DMGetPointSF(dm, &pointSF);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(pointSF, NULL, &numSharedPoints, &sharedLocal, &sharedRemote);CHKERRQ(ierr);
+  for (d=0; d<dim+1; d++) {
+    ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p=0; p<numSharedPoints; p++) {
+      if (pStart <= sharedLocal[p] && sharedLocal[p] < pEnd) {
+        point = sharedLocal[p] + depthShift[d];
+        iremote[point].index = sharedRemote[p].index;
+        iremote[point].rank = sharedRemote[p].rank;
+      }
+    }
+  }
+
+  /* Now add the incoming overlap points */
+  for (p=0; p<nleaves; p++) {
+    point = depthIdx[remoteDepths[p]];
+    ilocal[point] = point;
+    iremote[point].index = overlapRemote[p].index;
+    iremote[point].rank = overlapRemote[p].rank;
+    depthIdx[remoteDepths[p]]++;
+  }
+
+  ierr = PetscSFCreate(comm, migrationSF);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *migrationSF, "Overlap Migration SF");CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(*migrationSF);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*migrationSF, pEnd-pStart, newLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+
+  ierr = PetscFree3(depthRecv, depthShift, depthIdx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexDistributeField"
 /*@
   DMPlexDistributeField - Distribute field data to match a given PetscSF, usually the SF from mesh distribution

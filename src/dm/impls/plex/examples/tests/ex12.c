@@ -89,7 +89,7 @@ PetscErrorCode ParallelOverlap(DM dm, AppCtx *user)
   PetscSF            sfPoint;
   PetscSection       rootSection, leafSection;
   IS                 rootrank, leafrank;
-  PetscSF            overlapSF;
+  PetscSF            overlapSF, migrationSF;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -132,6 +132,12 @@ PetscErrorCode ParallelOverlap(DM dm, AppCtx *user)
   ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
   ierr = ISDestroy(&leafrank);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
+  /* Build migration SF that re-maps local points and adds remote ones */
+  ierr = DMPlexCreateOverlapMigrationSF(dm, overlapSF, &migrationSF);CHKERRQ(ierr);
+  {
+    ierr = PetscPrintf(comm, "Overlap Migration SF\n");CHKERRQ(ierr);
+    ierr = PetscSFView(migrationSF, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
 #if 0
 
   \item Get closure of star and record depths
