@@ -2,7 +2,7 @@ static char help[] = "Poisson Problem in 2d and 3d with simplicial finite elemen
 We solve the Poisson problem in a rectangular\n\
 domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\
 This example supports discretized auxiliary fields (conductivity) as well as\n\
-multilevel nonlienar solvers.\n\n\n";
+multilevel nonlinear solvers.\n\n\n";
 
 #include <petscdmplex.h>
 #include <petscsnes.h>

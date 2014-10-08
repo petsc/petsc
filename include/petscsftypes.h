@@ -16,4 +16,18 @@
 S*/
 typedef struct _p_PetscSF* PetscSF;
 
+/*S
+   PetscSFNode - specifier of owner and index
+
+   Level: beginner
+
+  Concepts: indexing, stride, distribution
+
+.seealso: PetscSFSetGraph()
+S*/
+typedef struct {
+  PetscInt rank;                /* Rank of owner */
+  PetscInt index;               /* Index of node on rank */
+} PetscSFNode;
+
 #endif
