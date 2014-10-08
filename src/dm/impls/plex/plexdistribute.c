@@ -1055,12 +1055,9 @@ PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmPara
 #define __FUNCT__ "DMPlexDistributeLabels"
 PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
 {
-  DM_Plex       *mesh      = (DM_Plex*) dm->data;
-  DM_Plex       *pmesh     = (DM_Plex*) (dmParallel)->data;
   MPI_Comm       comm;
   PetscMPIInt    rank;
-  DMLabel        next      = mesh->labels, newNext = pmesh->labels;
-  PetscInt       numLabels = 0, l;
+  PetscInt       numLabels, l;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1071,23 +1068,21 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
   /* Bcast number of labels */
-  while (next) {++numLabels; next = next->next;}
+  ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
   ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  next = mesh->labels;
-  for (l = 0; l < numLabels; ++l) {
-    DMLabel   labelNew;
-    PetscBool isdepth;
+  for (l = numLabels-1; l >= 0; --l) {
+    DMLabel     label = NULL, labelNew = NULL;
+    PetscBool   isdepth;
 
-    /* Skip "depth" because it is recreated */
-    if (!rank) {ierr = PetscStrcmp(next->name, "depth", &isdepth);CHKERRQ(ierr);}
+    if (!rank) {
+      ierr = DMPlexGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
+      /* Skip "depth" because it is recreated */
+      ierr = PetscStrcmp(label->name, "depth", &isdepth);CHKERRQ(ierr);
+    }
     ierr = MPI_Bcast(&isdepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
-    if (isdepth) {if(next) next = next->next; continue;}
-    ierr = DMLabelDistribute(next, migrationSF, &labelNew);CHKERRQ(ierr);
-    /* Insert into list */
-    if (newNext) newNext->next = labelNew;
-    else         pmesh->labels = labelNew;
-    newNext = labelNew;
-    if (next) next = next->next;
+    if (isdepth) continue;
+    ierr = DMLabelDistribute(label, migrationSF, &labelNew);CHKERRQ(ierr);
+    ierr = DMPlexAddLabel(dmParallel, labelNew);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

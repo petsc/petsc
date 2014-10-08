@@ -512,7 +512,7 @@ static PetscErrorCode BoundaryDestroy(DMBoundary *boundary)
 PetscErrorCode DMDestroy_Plex(DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
+  PlexLabel      next = mesh->labels;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -527,9 +527,10 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = PetscFree(mesh->triangleOpts);CHKERRQ(ierr);
   ierr = PetscPartitionerDestroy(&mesh->partitioner);CHKERRQ(ierr);
   while (next) {
-    DMLabel tmp = next->next;
+    PlexLabel tmp = next->next;
 
-    ierr = DMLabelDestroy(&next);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
+    ierr = PetscFree(next);CHKERRQ(ierr);
     next = tmp;
   }
   ierr = DMDestroy(&mesh->coarseMesh);CHKERRQ(ierr);
