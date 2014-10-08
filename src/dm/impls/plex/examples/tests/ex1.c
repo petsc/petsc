@@ -9,7 +9,6 @@ typedef struct {
   /* Domain and mesh definition */
   PetscInt  dim;                   /* The topological mesh dimension */
   PetscBool interpolate;           /* Generate intermediate mesh elements */
-  PetscBool refinementUniform;     /* Uniformly refine the mesh */
   PetscReal refinementLimit;       /* The largest allowable cell volume */
   PetscBool cellSimplex;           /* Use simplices or hexes */
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
@@ -25,7 +24,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->debug             = 0;
   options->dim               = 2;
   options->interpolate       = PETSC_FALSE;
-  options->refinementUniform = PETSC_FALSE;
   options->refinementLimit   = 0.0;
   options->cellSimplex       = PETSC_TRUE;
   options->filename[0]       = '\0';
@@ -34,7 +32,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex1.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-refinement_uniform", "Uniformly refine the mesh", "ex1.c", options->refinementUniform, &options->refinementUniform, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex1.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex1.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex7.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
@@ -50,11 +47,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim               = user->dim;
   PetscBool      interpolate       = user->interpolate;
-  PetscBool      refinementUniform = user->refinementUniform;
   PetscReal      refinementLimit   = user->refinementLimit;
   PetscBool      cellSimplex       = user->cellSimplex;
   const char    *filename          = user->filename;
-  const char    *partitioner       = "chaco";
   size_t         len;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -65,7 +60,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len) {
     const char *extGmsh = ".msh";
-    size_t      slen;
     PetscBool   isGmsh;
 
     ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGmsh, 4, &isGmsh);CHKERRQ(ierr);
@@ -101,22 +95,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = refinedMesh;
     }
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
-      ierr = DMViewFromOptions(distributedMesh, NULL, "-dm_view");CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
-    }
-    if (refinementUniform) {
-      ierr = DMPlexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
-      ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
-      if (refinedMesh) {
-        ierr = DMDestroy(dm);CHKERRQ(ierr);
-        *dm  = refinedMesh;
-      }
+    } else {
+      ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     }
   }
-  ierr = PetscObjectSetName((PetscObject) *dm, "Simplical Mesh");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   user->dm = *dm;
