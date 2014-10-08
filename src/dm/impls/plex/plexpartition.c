@@ -619,7 +619,7 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   Level: developer
 
 .seealso DMPlexDistribute(), PetscPartitionerSetPointHeight(), PetscPartitionerCreate()
-*/
+@*/
 PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscBool enlarge, PetscSection partSection, IS *partition, PetscSection origPartSection, IS *origPartition)
 {
   PetscMPIInt    size;
