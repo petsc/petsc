@@ -113,7 +113,7 @@ PETSC_EXTERN PetscErrorCode DMLabelHasValue(DMLabel, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMLabelHasPoint(DMLabel, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMLabelFilter(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelPermute(DMLabel, IS, DMLabel *);
-PETSC_EXTERN PetscErrorCode DMLabelDistribute(DMLabel, PetscSection, IS, ISLocalToGlobalMapping, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMLabelDistribute(DMLabel, PetscSF, DMLabel *);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateLabel(DM, const char []);
 PETSC_EXTERN PetscErrorCode DMPlexGetLabelValue(DM, const char[], PetscInt, PetscInt *);
