@@ -543,22 +543,29 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
 
 .seealso: DMPlexDistributeOwnership()
 @*/
-PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, PetscSection ovRootSection, PetscSFNode **ovRootPoints, PetscSection ovLeafSection, PetscSFNode **ovLeafPoints)
+PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, PetscSF *overlapSF)
 {
+  MPI_Comm           comm;
   DMLabel            ovAdjByRank; /* A DMLabel containing all points adjacent to shared points, separated by rank (value in label) */
   PetscSF            sfPoint, sfProc;
   IS                 valueIS;
+  DMLabel            ovLeafLabel;
   const PetscSFNode *remote;
   const PetscInt    *local;
   const PetscInt    *nrank, *rrank, *neighbors;
+  PetscSFNode       *ovRootPoints, *ovLeafPoints, *remotePoints;
+  PetscSection       ovRootSection, ovLeafSection;
   PetscInt          *adj = NULL;
   PetscInt           pStart, pEnd, p, sStart, sEnd, nleaves, l, numNeighbors, n, ovSize;
+  PetscInt           idx, numRemote;
   PetscMPIInt        rank, numProcs;
+  PetscBool          flg;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(leafSection, &sStart, &sEnd);CHKERRQ(ierr);
@@ -606,11 +613,14 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank,
   ierr = PetscFree(adj);CHKERRQ(ierr);
   ierr = ISRestoreIndices(rootrank, &rrank);CHKERRQ(ierr);
   ierr = ISRestoreIndices(leafrank, &nrank);CHKERRQ(ierr);
-  {
+  ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-overlap_view", &flg);CHKERRQ(ierr);
+  if (flg) {
     ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMLabelView(ovAdjByRank, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   /* Convert to (point, rank) and use actual owners */
+  ierr = PetscSectionCreate(comm, &ovRootSection);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) ovRootSection, "Overlap Root Section");CHKERRQ(ierr);
   ierr = PetscSectionSetChart(ovRootSection, 0, numProcs);CHKERRQ(ierr);
   ierr = DMLabelGetValueIS(ovAdjByRank, &valueIS);CHKERRQ(ierr);
   ierr = ISGetLocalSize(valueIS, &numNeighbors);CHKERRQ(ierr);
@@ -623,7 +633,7 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank,
   }
   ierr = PetscSectionSetUp(ovRootSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(ovRootSection, &ovSize);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ovSize, ovRootPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ovSize, &ovRootPoints);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, NULL, &nleaves, &local, &remote);CHKERRQ(ierr);
   for (n = 0; n < numNeighbors; ++n) {
     IS              pointIS;
@@ -636,8 +646,8 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank,
     ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
     for (p = 0; p < numPoints; ++p) {
       ierr = PetscFindInt(points[p], nleaves, local, &l);CHKERRQ(ierr);
-      if (l >= 0) {(*ovRootPoints)[off+p] = remote[l];}
-      else        {(*ovRootPoints)[off+p].index = points[p]; (*ovRootPoints)[off+p].rank = rank;}
+      if (l >= 0) {ovRootPoints[off+p] = remote[l];}
+      else        {ovRootPoints[off+p].index = points[p]; ovRootPoints[off+p].rank = rank;}
     }
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
@@ -647,12 +657,60 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank,
   ierr = DMLabelDestroy(&ovAdjByRank);CHKERRQ(ierr);
   /* Make process SF */
   ierr = DMPlexCreateTwoSidedProcessSF(dm, sfPoint, rootSection, rootrank, leafSection, leafrank, NULL, &sfProc);CHKERRQ(ierr);
-  {
+  if (flg) {
     ierr = PetscSFView(sfProc, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   /* Communicate overlap */
-  ierr = DMPlexDistributeData(dm, sfProc, ovRootSection, MPIU_2INT, (void *) *ovRootPoints, ovLeafSection, (void **) ovLeafPoints);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(comm, &ovLeafSection);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) ovLeafSection, "Overlap Leaf Section");CHKERRQ(ierr);
+  ierr = DMPlexDistributeData(dm, sfProc, ovRootSection, MPIU_2INT, ovRootPoints, ovLeafSection, (void**) &ovLeafPoints);CHKERRQ(ierr);
+  /* Filter remote contributions (ovLeafPoints) into the overlapSF */
+  ierr = DMLabelCreate("ovLeafs", &ovLeafLabel);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(ovLeafSection, &ovSize);CHKERRQ(ierr);
+  for (p = 0; p < ovSize; p++) {
+    /* Don't import points from yourself */
+    if (ovLeafPoints[p].rank == rank) continue;
+    ierr = DMLabelSetValue(ovLeafLabel, ovLeafPoints[p].index, ovLeafPoints[p].rank);CHKERRQ(ierr);
+  }
+  /* Don't import points already in the pointSF */
+  for (l = 0; l < nleaves; ++l) {
+    ierr = DMLabelClearValue(ovLeafLabel, remote[l].index, remote[l].rank);CHKERRQ(ierr);
+  }
+  for (numRemote = 0, n = 0; n < numProcs; ++n) {
+    PetscInt numPoints;
+    ierr = DMLabelGetStratumSize(ovLeafLabel, n, &numPoints);CHKERRQ(ierr);
+    numRemote += numPoints;
+  }
+  ierr = PetscMalloc1(numRemote, &remotePoints);CHKERRQ(ierr);
+  for (idx = 0, n = 0; n < numProcs; ++n) {
+    IS remoteRootIS;
+    PetscInt numPoints;
+    const PetscInt *remoteRoots;
+    ierr = DMLabelGetStratumSize(ovLeafLabel, n, &numPoints);CHKERRQ(ierr);
+    if (numPoints <= 0) continue;
+    ierr = DMLabelGetStratumIS(ovLeafLabel, n, &remoteRootIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; p++) {
+      remotePoints[idx].index = remoteRoots[p];
+      remotePoints[idx].rank = n;
+      idx++;
+    }
+    ierr = ISRestoreIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
+  }
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject) dm), overlapSF);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *overlapSF, "Overlap SF");CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(*overlapSF);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*overlapSF, pEnd-pStart, numRemote, NULL, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscPrintf(comm, "Overlap SF\n");CHKERRQ(ierr);
+    ierr = PetscSFView(*overlapSF, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+  /* Clean up */
   ierr = PetscSFDestroy(&sfProc);CHKERRQ(ierr);
+  ierr = PetscFree(ovRootPoints);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&ovRootSection);CHKERRQ(ierr);
+  ierr = PetscFree(ovLeafPoints);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&ovLeafSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

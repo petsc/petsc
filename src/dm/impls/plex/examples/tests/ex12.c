@@ -89,8 +89,7 @@ PetscErrorCode ParallelOverlap(DM dm, AppCtx *user)
   PetscSF            sfPoint;
   PetscSection       rootSection, leafSection;
   IS                 rootrank, leafrank;
-  PetscSection       ovRootSection, ovLeafSection;
-  PetscSFNode       *ovRootPoints, *ovLeafPoints;
+  PetscSF            overlapSF;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -124,59 +123,15 @@ PetscErrorCode ParallelOverlap(DM dm, AppCtx *user)
     ierr = ISView(leafrank, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   /* Collect cl(st(overlap)), use a DMLabel to separate the points by rank */
-  ierr = PetscSectionCreate(comm, &ovRootSection);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) ovRootSection, "Overlap Root Section");CHKERRQ(ierr);
-  ierr = PetscSectionCreate(comm, &ovLeafSection);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) ovLeafSection, "Overlap Leaf Section");CHKERRQ(ierr);
-  ierr = DMPlexCreateOverlap(dm, rootSection, rootrank, leafSection, leafrank, ovRootSection, &ovRootPoints, ovLeafSection, &ovLeafPoints);CHKERRQ(ierr);
+  ierr = DMPlexCreateOverlap(dm, rootSection, rootrank, leafSection, leafrank, &overlapSF);CHKERRQ(ierr);
+  {
+    ierr = PetscPrintf(comm, "Overlap SF\n");CHKERRQ(ierr);
+    ierr = PetscSFView(overlapSF, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   ierr = ISDestroy(&rootrank);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
   ierr = ISDestroy(&leafrank);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
-  {
-    PetscInt    procStart, procEnd;
-    PetscMPIInt numProcs, proc, rank;
-
-    ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = PetscSectionView(ovRootSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "Overlap root points\n");CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf(comm, "Rank %d:\n", rank);CHKERRQ(ierr);
-    for (proc = 0; proc < numProcs; ++proc) {
-      PetscInt dof, off, d;
-
-      ierr = PetscSectionGetDof(ovRootSection, proc, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(ovRootSection, proc, &off);CHKERRQ(ierr);
-      if (dof) {ierr = PetscSynchronizedPrintf(comm, "  Neighbor %d:", proc);CHKERRQ(ierr);}
-      for (d = 0; d < dof; ++d) {
-        ierr = PetscSynchronizedPrintf(comm, " (%d, %d)", ovRootPoints[off+d].rank, ovRootPoints[off+d].index);CHKERRQ(ierr);
-      }
-      if (dof) {ierr = PetscSynchronizedPrintf(comm, "\n");CHKERRQ(ierr);}
-    }
-    ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
-
-    ierr = PetscSectionView(ovLeafSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "Overlap leaf points\n");CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf(comm, "Rank %d:\n", rank);CHKERRQ(ierr);
-    ierr = PetscSectionGetChart(ovLeafSection, &procStart, &procEnd);CHKERRQ(ierr);
-    for (proc = procStart; proc < procEnd; ++proc) {
-      PetscInt dof, off, d;
-
-      ierr = PetscSectionGetDof(ovLeafSection, proc, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(ovLeafSection, proc, &off);CHKERRQ(ierr);
-      if (dof) {ierr = PetscSynchronizedPrintf(comm, "  Neighbor %d:", proc);CHKERRQ(ierr);}
-      for (d = 0; d < dof; ++d) {
-        ierr = PetscSynchronizedPrintf(comm, " (%d, %d)", ovLeafPoints[off+d].rank, ovLeafPoints[off+d].index);CHKERRQ(ierr);
-      }
-      if (dof) {ierr = PetscSynchronizedPrintf(comm, "\n");CHKERRQ(ierr);}
-    }
-    ierr = PetscSynchronizedPrintf(comm, "\n");CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(ovRootPoints);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&ovRootSection);CHKERRQ(ierr);
-  ierr = PetscFree(ovLeafPoints);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&ovLeafSection);CHKERRQ(ierr);
 #if 0
 
   \item Get closure of star and record depths
