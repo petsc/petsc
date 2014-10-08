@@ -568,7 +568,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       numRefinements = user->numRefinements;
   PetscBool      cellHybrid     = user->cellHybrid;
   PetscBool      cellSimplex    = user->cellSimplex;
-  const char    *partitioner    = "chaco";
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -617,7 +616,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscInt r;
 
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMViewFromOptions(distributedMesh, NULL, "-dm_view");CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);

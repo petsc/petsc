@@ -29,7 +29,6 @@ typedef struct {
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
   PetscBool     refinementUniform; /* Uniformly refine the mesh */
   PetscInt      refinementRounds;  /* The number of uniform refinements */
-  char          partitioner[2048]; /* The graph partitioner */
   /* Problem definition */
   BCType        bcType;
   CoeffType     variableCoefficient;
@@ -276,8 +275,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex12.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-refinement_uniform", "Uniformly refine the mesh", "ex52.c", options->refinementUniform, &options->refinementUniform, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-refinement_rounds", "The number of uniform refinements", "ex52.c", options->refinementRounds, &options->refinementRounds, NULL);CHKERRQ(ierr);
-  ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
   bc   = options->bcType;
   ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,3,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
@@ -313,7 +310,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscReal      refinementLimit   = user->refinementLimit;
   PetscBool      refinementUniform = user->refinementUniform;
   PetscInt       refinementRounds  = user->refinementRounds;
-  const char    *partitioner       = user->partitioner;
   size_t         len;
   PetscErrorCode ierr;
 
@@ -332,7 +328,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscMPIInt rank;
 
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = DMPlexCreateExodusFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
     /* Must have boundary marker for Dirichlet conditions */
   }
@@ -352,7 +348,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = refinedMesh;
     }
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;

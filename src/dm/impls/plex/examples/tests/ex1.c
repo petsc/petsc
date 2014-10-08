@@ -48,15 +48,16 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim               = user->dim;
-  PetscBool      interpolate       = user->interpolate;
-  PetscReal      refinementLimit   = user->refinementLimit;
-  PetscBool      cellSimplex       = user->cellSimplex;
-  const char    *filename          = user->filename;
-  PetscInt       triSizes[2]       = {4, 4};
-  PetscInt       triPoints[8]      = {3, 5, 6, 7, 0, 1, 2, 4};
-  PetscInt       quadSizes[2]      = {2, 2};
-  PetscInt       quadPoints[8]     = {2, 3, 0, 1};
+  PetscInt       dim             = user->dim;
+  PetscBool      interpolate     = user->interpolate;
+  PetscReal      refinementLimit = user->refinementLimit;
+  PetscBool      cellSimplex     = user->cellSimplex;
+  const char    *filename        = user->filename;
+  PetscInt       triSizes[2]     = {4, 4};
+  PetscInt       triPoints[8]    = {3, 5, 6, 7, 0, 1, 2, 4};
+  PetscInt       quadSizes[2]    = {2, 2};
+  PetscInt       quadPoints[8]   = {2, 3, 0, 1};
+  const PetscInt cells[3]        = {2, 2, 2};
   size_t         len;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -65,30 +66,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-  if (len) {
-    const char *extGmsh = ".msh";
-    PetscBool   isGmsh;
-
-    ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGmsh, 4, &isGmsh);CHKERRQ(ierr);
-    if (isGmsh) {
-      PetscViewer viewer;
-
-      ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-      ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-      ierr = DMPlexCreateGmsh(comm, viewer, interpolate, dm);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    } else {
-      ierr = DMPlexCreateCGNSFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
-    }
-  } else if (cellSimplex) {
-    ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
-  } else {
-    const PetscInt cells[3] = {2, 2, 2};
-
-    ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);
-  }
+  if (len)              {ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);}
+  else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);}
+  else                  {ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);}
   {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;

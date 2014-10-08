@@ -34,60 +34,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 #define __FUNCT__ "CreateMesh"
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscBool      interpolate = user->interpolate;
-  const char    *filename    = user->filename;
-  const char    *extGmsh     = ".msh";
-  const char    *extCGNS     = ".cgns";
-  const char    *extExodus   = ".exo";
-  size_t         len;
-  PetscBool      isGmsh, isCGNS, isExodus;
-  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-  if (!len) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must provide input file using -filename");
-  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extGmsh,   4, &isGmsh);CHKERRQ(ierr);
-  ierr = PetscStrncmp(&filename[PetscMax(0,len-5)], extCGNS,   5, &isCGNS);CHKERRQ(ierr);
-  ierr = PetscStrncmp(&filename[PetscMax(0,len-4)], extExodus, 4, &isExodus);CHKERRQ(ierr);
-  if (isGmsh) {
-    PetscViewer viewer;
-
-    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-    ierr = DMPlexCreateGmsh(comm, viewer, interpolate, dm);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  } else if (isCGNS) {
-#if defined(PETSC_HAVE_CGNS)
-    int cgid = -1;
-
-    if (!rank) {
-      ierr = cg_open(filename, CG_MODE_READ, &cgid);CHKERRQ(ierr);
-      if (cgid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "cg_open(\"%s\",...) did not return a valid file ID", filename);
-    }
-    ierr = DMPlexCreateCGNS(comm, cgid, interpolate, dm);CHKERRQ(ierr);
-    if (!rank) {ierr = cg_close(cgid);CHKERRQ(ierr);}
-#else
-    SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires CGNS support. Reconfigure using --with-cgns-dir");
-#endif
-  } else if (isExodus) {
-#if defined(PETSC_HAVE_EXODUSII)
-    int   CPU_word_size = 0, IO_word_size = 0, exoid;
-    float version;
-
-    if (!rank) {
-      exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
-      if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ex_open(\"%s\",...) did not return a valid file ID",filename);
-    }
-    ierr = DMPlexCreateExodus(comm, exoid, interpolate, dm);CHKERRQ(ierr);
-    if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
-#else
-    SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires Exodus support. Reconfigure using --download-exodusii");
-#endif
-  } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
+  ierr = DMPlexCreateFromFile(comm, user->filename, user->interpolate, dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);

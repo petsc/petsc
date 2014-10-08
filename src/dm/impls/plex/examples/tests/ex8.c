@@ -24,7 +24,7 @@ PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *d
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DMPlexCreateExodusFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromFile(comm, filename, PETSC_FALSE, dm);CHKERRQ(ierr);
   if (user->interpolate) {
     DM interpolatedMesh = NULL;
 
