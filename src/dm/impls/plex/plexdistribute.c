@@ -1313,10 +1313,11 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   DM_Plex               *mesh   = (DM_Plex*) dm->data, *pmesh;
   MPI_Comm               comm;
   PetscInt               dim, numRemoteRanks;
-  IS                     origCellPart=NULL,        origPart=NULL,        cellPart,        part;
-  PetscSection           origCellPartSection=NULL, origPartSection=NULL, cellPartSection, partSection;
+  DM                     dmOverlap;
+  IS                     cellPart,        part;
+  PetscSection           cellPartSection, partSection;
   PetscSFNode           *remoteRanks;
-  PetscSF                partSF, pointSF;
+  PetscSF                partSF, pointSF, overlapSF;
   ISLocalToGlobalMapping renumbering;
   PetscBool              flg;
   PetscMPIInt            rank, numProcs, p;
@@ -1340,8 +1341,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   ierr = PetscLogEventBegin(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
   if (overlap > 1) SETERRQ(comm, PETSC_ERR_SUP, "Overlap > 1 not yet implemented");
   ierr = PetscSectionCreate(comm, &cellPartSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(comm, &origCellPartSection);CHKERRQ(ierr);
-  ierr = PetscPartitionerPartition(mesh->partitioner, dm, overlap > 0 ? PETSC_TRUE : PETSC_FALSE, cellPartSection, &cellPart, origCellPartSection, &origCellPart);CHKERRQ(ierr);
+  ierr = PetscPartitionerPartition(mesh->partitioner, dm, PETSC_FALSE, cellPartSection, &cellPart, NULL, NULL);CHKERRQ(ierr);
   /* Create SF assuming a serial partition for all processes: Could check for IS length here */
   if (!rank) numRemoteRanks = numProcs;
   else       numRemoteRanks = 0;
@@ -1354,14 +1354,9 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   ierr = PetscSFSetGraph(partSF, 1, numRemoteRanks, NULL, PETSC_OWN_POINTER, remoteRanks, PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-partition_view", &flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscPrintf(comm, "Cell Partition:\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Original Cell Partition:\n");CHKERRQ(ierr);
     ierr = PetscSectionView(cellPartSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = ISView(cellPart, NULL);CHKERRQ(ierr);
-    if (origCellPart) {
-      ierr = PetscPrintf(comm, "Original Cell Partition:\n");CHKERRQ(ierr);
-      ierr = PetscSectionView(origCellPartSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = ISView(origCellPart, NULL);CHKERRQ(ierr);
-    }
     ierr = PetscSFView(partSF, NULL);CHKERRQ(ierr);
   }
   /* Close the partition over the mesh */
@@ -1385,16 +1380,22 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   }
   ierr = PetscLogEventEnd(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
 
+  /* Migrate data to a non-overlapping parallel DM */
   ierr = DMPlexDistributeCones(dm, pointSF, renumbering, *dmParallel);CHKERRQ(ierr);
   ierr = DMPlexDistributeCoordinates(dm, pointSF, *dmParallel);CHKERRQ(ierr);
   ierr = DMPlexDistributeLabels(dm, pointSF, *dmParallel);CHKERRQ(ierr);
   ierr = DMPlexDistributeSetupHybrid(dm, pointSF, renumbering, *dmParallel);CHKERRQ(ierr);
   ierr = DMPlexDistributeSetupTree(dm, pointSF, renumbering, *dmParallel);CHKERRQ(ierr);
-  if (origCellPart) {
-    ierr = DMPlexCreatePartitionClosure(dm, origCellPartSection, origCellPart, &origPartSection, &origPart);CHKERRQ(ierr);
-  }
-  ierr = DMPlexDistributeSF(dm, pointSF, partSection, part, origPartSection, origPart, *dmParallel);CHKERRQ(ierr);
 
+  /* Build the point SF without overlap */
+  ierr = DMPlexDistributeSF(dm, pointSF, partSection, part, NULL, NULL, *dmParallel);CHKERRQ(ierr);
+
+  if (overlap > 0) {
+    /* Add the partition overlap to the distributed DM */
+    ierr = DMPlexDistributeOverlap(*dmParallel, overlap, renumbering, &overlapSF, &dmOverlap);CHKERRQ(ierr);
+    ierr = DMDestroy(dmParallel);CHKERRQ(ierr);
+    *dmParallel = dmOverlap;
+  }
   /* Cleanup Partition */
   ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
@@ -1402,12 +1403,6 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   ierr = ISDestroy(&part);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&cellPartSection);CHKERRQ(ierr);
   ierr = ISDestroy(&cellPart);CHKERRQ(ierr);
-  if (origCellPart) {
-    ierr = PetscSectionDestroy(&origPartSection);CHKERRQ(ierr);
-    ierr = ISDestroy(&origPart);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&origCellPartSection);CHKERRQ(ierr);
-    ierr = ISDestroy(&origCellPart);CHKERRQ(ierr);
-  }
   /* Copy BC */
   ierr = DMPlexCopyBoundary(dm, *dmParallel);CHKERRQ(ierr);
   /* Cleanup */
@@ -1415,5 +1410,126 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   else    {ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);}
   ierr = DMSetFromOptions(*dmParallel);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexDistributeOverlap"
+/*@C
+  DMPlexDistribute - Add partition overlap to a distributed non-overlapping DM.
+
+  Not Collective
+
+  Input Parameter:
++ dm  - The non-overlapping distrbuted DMPlex object
+- overlap - The overlap of partitions, 0 is the default
+
+  Output Parameter:
++ sf - The PetscSF used for point distribution
+- dmOverlap - The overlapping distributed DMPlex object, or NULL
+
+  Note: If the mesh was not distributed, the return value is NULL.
+
+  The user can control the definition of adjacency for the mesh using DMPlexGetAdjacencyUseCone() and
+  DMPlexSetAdjacencyUseClosure(). They should choose the combination appropriate for the function
+  representation on the mesh.
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: DMPlexCreate(), DMPlexDistributeByFace(), DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure()
+@*/
+PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, ISLocalToGlobalMapping renumbering, PetscSF *sf, DM *dmOverlap)
+{
+  MPI_Comm               comm;
+  PetscMPIInt            rank;
+  PetscSection           rootSection, leafSection;
+  IS                     rootrank, leafrank;
+  PetscSection           coneSection;
+  PetscSF                overlapSF, migrationSF, pointSF, newPointSF;
+  PetscSFNode           *ghostRemote;
+  const PetscSFNode     *overlapRemote;
+  ISLocalToGlobalMapping overlapRenumbering;
+  const PetscInt        *renumberingArray, *overlapLocal;
+  PetscInt               dim, p, pStart, pEnd, conesSize, idx;
+  PetscInt               numGhostPoints, numOverlapPoints, numSharedPoints, overlapLeaves;
+  PetscInt              *cones, *ghostLocal, *overlapRenumberingArray, *pointIDs, *recvPointIDs;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (sf) PetscValidPointer(sf, 3);
+  PetscValidPointer(dmOverlap, 4);
+
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+
+  /* Compute point overlap with neighbouring processes on the distributed DM */
+  ierr = PetscLogEventBegin(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(comm, &rootSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
+  ierr = DMPlexDistributeOwnership(dm, rootSection, &rootrank, leafSection, &leafrank);CHKERRQ(ierr);
+  ierr = DMPlexCreateOverlap(dm, rootSection, rootrank, leafSection, leafrank, &overlapSF);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
+
+  /* Build dense migration SF that maps the non-overlapping partition to the overlapping one */
+  ierr = DMPlexCreateOverlapMigrationSF(dm, overlapSF, &migrationSF);CHKERRQ(ierr);
+
+  /* Convert cones to global numbering before migrating them */
+  ierr = DMPlexGetConeSection(dm, &coneSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(coneSection, &conesSize);CHKERRQ(ierr);
+  ierr = DMPlexGetCones(dm, &cones);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyBlock(renumbering, conesSize, cones, cones);CHKERRQ(ierr);
+
+  /* Derive the new local-to-global mapping from the old one */
+  ierr = PetscSFGetGraph(migrationSF, NULL, &overlapLeaves, &overlapLocal, &overlapRemote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(overlapLeaves, &overlapRenumberingArray);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockIndices(renumbering, &renumberingArray);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(migrationSF, MPIU_INT, renumberingArray, overlapRenumberingArray);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(migrationSF, MPIU_INT, renumberingArray, overlapRenumberingArray);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm, 1, overlapLeaves, (const PetscInt*) overlapRenumberingArray, PETSC_OWN_POINTER, &overlapRenumbering);CHKERRQ(ierr);
+
+  /* Build the overlapping DM */
+  ierr = DMPlexCreate(comm, dmOverlap);CHKERRQ(ierr);
+  ierr = DMSetDimension(*dmOverlap, dim);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *dmOverlap, "Parallel Mesh");CHKERRQ(ierr);
+  ierr = DMPlexDistributeCones(dm, migrationSF, overlapRenumbering, *dmOverlap);CHKERRQ(ierr);
+  ierr = DMPlexDistributeCoordinates(dm, migrationSF, *dmOverlap);CHKERRQ(ierr);
+  ierr = DMPlexDistributeLabels(dm, migrationSF, *dmOverlap);CHKERRQ(ierr);
+  ierr = DMPlexDistributeSetupHybrid(dm, migrationSF, overlapRenumbering, *dmOverlap);CHKERRQ(ierr);
+
+  /* Build the new point SF by propagating the depthShift generate remote root indices */
+  ierr = DMGetPointSF(dm, &pointSF);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(pointSF, NULL, &numSharedPoints, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(overlapSF, NULL, &numOverlapPoints, NULL, NULL);CHKERRQ(ierr);
+  numGhostPoints = numSharedPoints + numOverlapPoints;
+  ierr = PetscMalloc2(numGhostPoints, &ghostLocal, numGhostPoints, &ghostRemote);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc2(pEnd-pStart, &pointIDs, overlapLeaves, &recvPointIDs);CHKERRQ(ierr);
+  for (p=0; p<overlapLeaves; p++) {
+    if (overlapRemote[p].rank == rank) pointIDs[overlapRemote[p].index] = overlapLocal[p];
+  }
+  ierr = PetscSFBcastBegin(migrationSF, MPIU_INT, pointIDs, recvPointIDs);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(migrationSF, MPIU_INT, pointIDs, recvPointIDs);CHKERRQ(ierr);
+  for (idx=0, p=0; p<overlapLeaves; p++) {
+    if (overlapRemote[p].rank != rank) {
+      ghostLocal[idx] = overlapLocal[p];
+      ghostRemote[idx].index = recvPointIDs[p];
+      ghostRemote[idx].rank = overlapRemote[p].rank;
+      idx++;
+    }
+  }
+  ierr = DMPlexGetChart(*dmOverlap, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSFCreate(comm, &newPointSF);;CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(newPointSF, pEnd - pStart, numGhostPoints, ghostLocal, PETSC_OWN_POINTER, ghostRemote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = DMSetPointSF(*dmOverlap, newPointSF);CHKERRQ(ierr);
+  /* Cleanup overlap partition */
+  ierr = ISLocalToGlobalMappingDestroy(&overlapRenumbering);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&overlapSF);CHKERRQ(ierr);
+  ierr = PetscFree2(pointIDs, recvPointIDs);CHKERRQ(ierr);
+  if (sf) *sf = migrationSF;
+  else    {ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);}
+  ierr = DMSetFromOptions(*dmOverlap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

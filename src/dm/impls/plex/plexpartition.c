@@ -633,7 +633,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscBool
   if (enlarge) {PetscValidHeaderSpecific(origPartSection, PETSC_SECTION_CLASSID, 6);}
   if (enlarge) {PetscValidPointer(origPartition, 7);}
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject) part), &size);CHKERRQ(ierr);
-  *origPartition = NULL;
+  if (origPartition) *origPartition = NULL;
   if (size == 1) {
     PetscInt *points;
     PetscInt  cStart, cEnd, c;
