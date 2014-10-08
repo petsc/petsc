@@ -7,7 +7,37 @@
 #include <petsc-private/dmimpl.h>
 #include <../src/sys/utils/hash.h>
 
-PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
+
+PETSC_EXTERN PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner);
+
+typedef struct _PetscPartitionerOps *PetscPartitionerOps;
+struct _PetscPartitionerOps {
+  PetscErrorCode (*setfromoptions)(PetscPartitioner);
+  PetscErrorCode (*setup)(PetscPartitioner);
+  PetscErrorCode (*view)(PetscPartitioner,PetscViewer);
+  PetscErrorCode (*destroy)(PetscPartitioner);
+  PetscErrorCode (*partition)(PetscPartitioner, DM, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscSection, IS *);
+};
+
+struct _p_PetscPartitioner {
+  PETSCHEADER(struct _PetscPartitionerOps);
+  void           *data;             /* Implementation object */
+  PetscInt        height;           /* Height of points to partition into non-overlapping subsets */
+};
+
+typedef struct {
+  PetscInt dummy;
+} PetscPartitioner_Chaco;
+
+typedef struct {
+  PetscInt dummy;
+} PetscPartitioner_ParMetis;
+
+typedef struct {
+  PetscSection section;   /* Sizes for each partition */
+  IS           partition; /* Points in each partition */
+} PetscPartitioner_Shell;
 
 /* This is an integer map, in addition it is also a container class
    Design points:
@@ -70,6 +100,7 @@ typedef struct {
   /* Generation */
   char                *tetgenOpts;
   char                *triangleOpts;
+  PetscPartitioner     partitioner;
 
   /* Submesh */
   DMLabel              subpointMap;       /* Label each original mesh point in the submesh with its depth, subpoint are the implicit numbering */
