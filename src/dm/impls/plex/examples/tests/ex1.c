@@ -7,11 +7,12 @@ typedef struct {
   PetscInt      debug;             /* The debugging level */
   PetscLogEvent createMeshEvent;
   /* Domain and mesh definition */
-  PetscInt  dim;                   /* The topological mesh dimension */
-  PetscBool interpolate;           /* Generate intermediate mesh elements */
-  PetscReal refinementLimit;       /* The largest allowable cell volume */
-  PetscBool cellSimplex;           /* Use simplices or hexes */
-  char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
+  PetscInt      dim;                          /* The topological mesh dimension */
+  PetscBool     interpolate;                  /* Generate intermediate mesh elements */
+  PetscReal     refinementLimit;              /* The largest allowable cell volume */
+  PetscBool     cellSimplex;                  /* Use simplices or hexes */
+  char          filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
+  PetscBool     testPartition;                /* Use a fixed partitioning for testing */
 } AppCtx;
 
 #undef __FUNCT__
@@ -27,6 +28,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->refinementLimit   = 0.0;
   options->cellSimplex       = PETSC_TRUE;
   options->filename[0]       = '\0';
+  options->testPartition     = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -35,6 +37,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex1.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex1.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex7.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex1.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
@@ -50,6 +53,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscReal      refinementLimit   = user->refinementLimit;
   PetscBool      cellSimplex       = user->cellSimplex;
   const char    *filename          = user->filename;
+  PetscInt       triSizes[2]       = {4, 4};
+  PetscInt       triPoints[8]      = {3, 5, 6, 7, 0, 1, 2, 4};
+  PetscInt       quadSizes[2]      = {2, 2};
+  PetscInt       quadPoints[8]     = {2, 3, 0, 1};
   size_t         len;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -93,6 +100,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (refinedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = refinedMesh;
+    }
+    if (user->testPartition) {
+      const PetscInt  *sizes  = !rank ? dim == 2 ? cellSimplex ? triSizes  : quadSizes  : NULL : NULL;
+      const PetscInt  *points = !rank ? dim == 2 ? cellSimplex ? triPoints : quadPoints : NULL : NULL;
+      PetscPartitioner part;
+
+      ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+      ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
+      ierr = PetscPartitionerShellSetPartition(part, 2, sizes, points);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);

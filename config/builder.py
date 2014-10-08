@@ -27,12 +27,12 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  # Test 2D LaTex and ASCII output 2-9
                                                                  {'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_latex'},
                                                                  {'numProcs': 1, 'args': '-dim 2 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -dm_refine 1 -interpolate 1 -dm_view ::ascii_latex'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex'},
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -dm_refine 1 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -dm_view ::ascii_latex'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex'},
                                                                  # CGNS tests 10-11 (need to find smaller test meshes)
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/tut21.cgns -interpolate 1 -dm_view', 'requires': ['cgns']},
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/StaticMixer.cgns -interpolate 1 -dm_view', 'requires': ['cgns']},
