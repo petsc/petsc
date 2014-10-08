@@ -542,6 +542,11 @@ cdef class SNES(Object):
     def setVariableBounds(self, Vec xl not None, Vec xu not None):
         CHKERR( SNESVISetVariableBounds(self.snes, xl.vec, xu.vec) )
 
+    def getVIInactiveSet(self):
+        cdef IS inact = IS()
+        CHKERR( SNESVIGetInactiveSet(self.snes, &inact.iset) )
+        return inact
+
     # --- Python ---
 
     def createPython(self, context=None, comm=None):
