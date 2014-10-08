@@ -1278,6 +1278,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
 
   mesh->tetgenOpts   = NULL;
   mesh->triangleOpts = NULL;
+  ierr = PetscPartitionerCreate(PetscObjectComm((PetscObject)dm), &mesh->partitioner);CHKERRQ(ierr);
+  ierr = PetscPartitionerSetTypeFromOptions_Internal(mesh->partitioner);CHKERRQ(ierr);
 
   mesh->subpointMap = NULL;
 

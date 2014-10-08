@@ -10,6 +10,37 @@
 #include <petscfv.h>
 #include <petscsftypes.h>
 
+PETSC_EXTERN PetscClassId PETSCPARTITIONER_CLASSID;
+
+/*J
+  PetscPartitionerType - String with the name of a PETSc graph partitioner
+
+  Level: beginner
+
+.seealso: PetscPartitionerSetType(), PetscPartitioner
+J*/
+typedef const char *PetscPartitionerType;
+#define PETSCPARTITIONERCHACO    "chaco"
+#define PETSCPARTITIONERPARMETIS "parmetis"
+#define PETSCPARTITIONERSHELL    "shell"
+
+PETSC_EXTERN PetscFunctionList PetscPartitionerList;
+PETSC_EXTERN PetscBool         PetscPartitionerRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate(MPI_Comm, PetscPartitioner *);
+PETSC_EXTERN PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *);
+PETSC_EXTERN PetscErrorCode PetscPartitionerSetType(PetscPartitioner, PetscPartitionerType);
+PETSC_EXTERN PetscErrorCode PetscPartitionerGetType(PetscPartitioner, PetscPartitionerType *);
+PETSC_EXTERN PetscErrorCode PetscPartitionerSetUp(PetscPartitioner);
+PETSC_EXTERN PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner);
+PETSC_EXTERN PetscErrorCode PetscPartitionerViewFromOptions(PetscPartitioner, const char[], const char[]);
+PETSC_EXTERN PetscErrorCode PetscPartitionerView(PetscPartitioner, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscPartitionerRegister(const char [], PetscErrorCode (*)(PetscPartitioner));
+PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
+PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterDestroy(void);
+
+PETSC_EXTERN PetscErrorCode PetscPartitionerPartition(PetscPartitioner, DM, PetscBool, PetscSection, IS *, PetscSection, IS *);
+
+
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCohesiveSubmesh(DM, PetscBool, const char [], PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromCellList(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, const int[], PetscInt, const double[], DM*);
