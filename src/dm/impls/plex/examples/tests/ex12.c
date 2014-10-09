@@ -69,7 +69,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);
   }
-  ierr = DMPlexDistribute(*dm, NULL, overlap, NULL, &distMesh);CHKERRQ(ierr);
+  ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
   if (distMesh) {
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = distMesh;
