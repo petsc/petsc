@@ -634,8 +634,8 @@ PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection orig
 
   ierr = ISGetIndices(originalIS, &originalValues);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(fieldSF, MPIU_INT, originalValues, newValues);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(fieldSF, MPIU_INT, originalValues, newValues);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(fieldSF, MPIU_INT, (PetscInt *) originalValues, newValues);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(fieldSF, MPIU_INT, (PetscInt *) originalValues, newValues);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
   ierr = ISRestoreIndices(originalIS, &originalValues);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject) pointSF), fieldSize, newValues, PETSC_OWN_POINTER, newIS);CHKERRQ(ierr);
