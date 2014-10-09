@@ -2767,7 +2767,7 @@ are \sindex{block Jacobi} \sindex{block Gauss-Seidel}
 \findex{-pc_bjacobi_blocks} \findex{-pc_bgs_blocks}
 \begin{tabbing}
   PCBJacobiSetTotalBlocks(PC pc,int blocks,int *size);\\
-  PCASMSetTotalSubdomains(PC pc,int n,IS *is,IS *is_local);\\
+  PCASMSetTotalSubdomains(PC pc,int n,IS *is,IS *islocal);\\
   PCASMSetType(PC pc,PCASMType type);
 \end{tabbing}
 The
@@ -2805,7 +2805,7 @@ The user can also set the number of blocks and sizes on a per-process
 basis with the commands
 \begin{tabbing}
   PCBJacobiSetLocalBlocks(PC pc,int blocks,int *size);\\
-  PCASMSetLocalSubdomains(PC pc,int N,IS *is,IS *is_local);
+  PCASMSetLocalSubdomains(PC pc,int N,IS *is,IS *islocal);
 \end{tabbing}
 
 For the ASM preconditioner one can use the following command to set

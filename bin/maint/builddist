@@ -13,13 +13,14 @@
 #
 #echo "------- Have you done ALL of the following?? -----------------------------"
 #echo "(0) Excluded any directories not for public release"
-#echo "(1) Set the version number in manual.tex, and intro.tex, website/index.html?"
+#echo "(1) Set the version number in manual.tex (several places), and intro.tex, website/index.html?"
 #echo "(2) Set the version number and release date in petscversion.h?"
 #echo "(3) Made sure Fortran include files match C ones?"
 #echo "(4) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on login.mcs"
 #echo "(5) Update update-docs.py with additional docs on the petsc web page (for eg new changes file)"
 #echo "(6) Update version info on all petsc web pages"
 #echo "(7) tag the new release with 'hg' and make a new clone for the release"
+#echo "(8) got the users manual CLEARED by ANL publications for release"
 
 # If version specified on the commandline, set the version
 echo "Starting date: `date`"
