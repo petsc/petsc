@@ -228,7 +228,8 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                         'src/dm/impls/plex/examples/tests/ex12': [{'numProcs': 1, 'args': '-dm_view ascii:mesh.tex:ascii_latex'},
                                                                   {'numProcs': 8, 'args': '-dm_view'},
                                                                   {'numProcs': 8, 'args': '-overlap 1 -dm_view'},
-                                                                  {'numProcs': 8, 'args': '-overlap -1 -dm_view'}],
+                                                                  {'numProcs': 8, 'args': '-overlap -1 -dm_view'},
+                                                                  {'numProcs': 3, 'args': '-overlap 1 -dm_view'}],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tutorials/ex1': [{'numProcs': 1, 'args': ''},
@@ -1087,7 +1088,6 @@ class PETScConfigureInfo(object):
     self.languages       = self.framework.require('PETSc.utilities.languages',   None)
     self.debugging       = self.framework.require('PETSc.utilities.debugging',   None)
     self.debuggers       = self.framework.require('PETSc.utilities.debuggers',   None)
-    self.CHUD            = self.framework.require('PETSc.utilities.CHUD',        None)
     self.compilers       = self.framework.require('config.compilers',            None)
     self.types           = self.framework.require('config.types',                None)
     self.headers         = self.framework.require('config.headers',              None)
@@ -1270,7 +1270,7 @@ class PETScMaker(script.Script):
    includes = ['-I'+inc for inc in [os.path.join(self.petscDir, self.petscArch, 'include'), os.path.join(self.petscDir, 'include')]]
    flags    = []
    flags.append(self.configInfo.setCompilers.getCompilerFlags())                        # Add PCC_FLAGS
-   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
+   flags.extend([self.configInfo.setCompilers.CPPFLAGS]) # Add CPP_FLAGS
    if self.configInfo.compilers.generateDependencies[language]:
      flags.append(self.configInfo.compilers.dependenciesGenerationFlag[language])
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
