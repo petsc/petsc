@@ -1335,6 +1335,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       ierr = VecScatterCreate(X,is,Z,NULL,&scatter);CHKERRQ(ierr);
       ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)Z,"VecGetSubVector_Scatter",(PetscObject)scatter);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
     }
   }
@@ -1377,18 +1378,12 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
     PetscBool valid;
     ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,dummystate,valid);CHKERRQ(ierr);
     if (!valid) {
-      /* We might need to copy entries back, first check whether we have no-copy view */
-      PetscInt  gstart,gend,start;
-      PetscBool contiguous,gcontiguous;
-      ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
-      ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
-      if (!gcontiguous) {
-        VecScatter scatter;
-        ierr = VecScatterCreate(*Y,NULL,X,is,&scatter);CHKERRQ(ierr);
-        ierr = VecScatterBegin(scatter,*Y,X,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecScatterEnd(scatter,*Y,X,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
+      VecScatter scatter;
+
+      ierr = PetscObjectQuery((PetscObject)*Y,"VecGetSubVector_Scatter",(PetscObject*)&scatter);CHKERRQ(ierr);
+      if (scatter) {
+        ierr = VecScatterBegin(scatter,*Y,X,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = VecScatterEnd(scatter,*Y,X,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       }
     }
     ierr = VecDestroy(Y);CHKERRQ(ierr);
