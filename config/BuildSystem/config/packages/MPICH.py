@@ -5,6 +5,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.download         = ['http://www.mpich.org/static/downloads/3.1.3/mpich-3.1.3.tar.gz']
+    self.download_cygwin  = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz']
     self.downloadfilename = 'mpich'
     return
 
@@ -16,8 +17,11 @@ class Configure(config.package.GNUPackage):
     return
 
   def checkDownload(self, requireDownload = 1):
-    if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
-      raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')
+    if config.setCompilers.Configure.isCygwin():
+      if config.setCompilers.Configure.isGNU(self.setCompilers.CC):
+        self.download = self.download_cygwin
+      else:
+        raise RuntimeError('Sorry, cannot download-install MPICH on Windows with Microsoft or Intel Compilers. Suggest installing Windows version of MPICH manually')
     return config.package.Package.checkDownload(self, requireDownload)
 
   def formGNUConfigureArgs(self):
