@@ -1499,8 +1499,8 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, ISLocalToGlobalM
   ierr = PetscSFGetGraph(migrationSF, NULL, &overlapLeaves, &overlapLocal, &overlapRemote);CHKERRQ(ierr);
   ierr = PetscMalloc1(overlapLeaves, &overlapRenumberingArray);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetBlockIndices(renumbering, &renumberingArray);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(migrationSF, MPIU_INT, renumberingArray, overlapRenumberingArray);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(migrationSF, MPIU_INT, renumberingArray, overlapRenumberingArray);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(migrationSF, MPIU_INT, (PetscInt *) renumberingArray, overlapRenumberingArray);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(migrationSF, MPIU_INT, (PetscInt *) renumberingArray, overlapRenumberingArray);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(comm, 1, overlapLeaves, (const PetscInt*) overlapRenumberingArray, PETSC_OWN_POINTER, &overlapRenumbering);CHKERRQ(ierr);
 
   /* Build the overlapping DM */
