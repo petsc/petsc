@@ -10,13 +10,15 @@ class Configure(config.package.GNUPackage):
     self.requires32bitint  = 0
     self.downloadonWindows = 1
     self.publicInstall     = 0  # always install in PETSC_DIR/PETSC_ARCH (not --prefix) since this is not used by users
-    self.parallelMake      = 0  
+    self.parallelMake      = 0
+    self.lookforbydefault  = 1
 
   def setupHelp(self, help):
     import nargs
     config.package.GNUPackage.setupHelp(self, help)
     help.addArgument('C2html', '-download-c2html-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for c2html'))
     help.addArgument('C2html', '-download-c2html-configure-options=<options>',   nargs.Arg(None, None, 'additional options for c2html'))
+    help.addArgument('C2html', '-with-c2html-exec=<executable>',                 nargs.Arg(None, None, 'C2html executable to look for'))
     return
 
   def formGNUConfigureArgs(self):
@@ -29,6 +31,15 @@ class Configure(config.package.GNUPackage):
       args.append(self.framework.argDB['download-c2html-configure-options'])
     return args
 
+  def locateC2html(self):
+    if 'with-c2html-exec' in self.framework.argDB:
+      self.framework.log.write('Looking for specified C2html executable '+self.framework.argDB['with-c2html-exec']+'\n')
+      self.getExecutable(self.framework.argDB['with-c2html-exec'], getFullPath=1, resultName='c2html')
+    else:
+      self.framework.log.write('Looking for default C2html executable\n')
+      self.getExecutable('c2html', getFullPath=1, resultName='c2html')
+    return
+
   def Install(self):
     # check if flex or lex are in PATH
     self.getExecutable('flex')
@@ -37,3 +48,15 @@ class Configure(config.package.GNUPackage):
       raise RuntimeError('Cannot build c2html. It requires either "flex" or "lex" in PATH. Please install flex and retry.\nOr disable c2html with --with-c2html=0')
     return config.package.GNUPackage.Install(self)
 
+  def configure(self):
+    '''Locate c2html and download it if requested'''
+    if self.framework.argDB['download-c2html']:
+      self.framework.log.write('Building c2html\n')
+      config.package.GNUPackage.configure(self)
+      self.getExecutable('c2html',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
+    elif (not self.framework.argDB['with-c2html']  == 0 and not self.framework.argDB['with-c2html']  == 'no') or 'with-c2html-exec' in self.framework.argDB:
+      self.executeTest(self.locateC2html)
+    else:
+      self.framework.log.write('Not checking for C2html\n')
+    if hasattr(self, 'c2html'): self.found = 1
+    return
