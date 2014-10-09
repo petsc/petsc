@@ -5,24 +5,14 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.functions        = ['cublasInit', 'cufftDestroy']
-    self.includes         = ['cublas.h', 'cufft.h','cusparse.h']
+    self.includes         = ['cublas.h','cufft.h','cusparse.h','thrust/version.h']
     self.liblist          = [['libcufft.a', 'libcublas.a','libcudart.a','libcusparse.a'],
                              ['cufft.lib','cublas.lib','cudart.lib','cusparse.lib']]
     self.double           = 0   # 1 means requires double precision
     self.cxx              = 0
     self.cudaArch      = ''
-    self.CUDAVersion   = '4000' # Version 4.0
-    self.CUSPVersion   = '200' #Version 0.2.0
-    self.ThrustVersion = '100400' #Version 1.4.0
-#
-#   Obtain cusp with
-#   git clone https://github.com/cusplibrary/cusplibrary.git cusp
-#   Put cusp in /usr/local/cuda
-#
-
+    self.CUDAVersion   = '4200' # Minimal cuda version is 4.2
     self.CUDAVersionStr = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)%100)
-    self.ThrustVersionStr = str(int(self.ThrustVersion)/100000) + '.' + str(int(self.ThrustVersion)/100%1000) + '.' + str(int(self.ThrustVersion)%100)
-    self.CUSPVersionStr   = str(int(self.CUSPVersion)/100000) + '.' + str(int(self.CUSPVersion)/100%1000) + '.' + str(int(self.CUSPVersion)%100)
     return
 
   def __str__(self):
@@ -46,6 +36,14 @@ class Configure(config.package.Package):
 
   def getSearchDirectories(self):
     import os
+    self.pushLanguage('CUDA')
+    petscNvcc = self.getCompiler()
+    self.popLanguage()
+    self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
+    if hasattr(self,'systemNvcc'):
+      nvccDir = os.path.dirname(self.systemNvcc)
+      cudaDir = os.path.split(nvccDir)[0]
+      yield cudaDir
     yield ''
     yield os.path.join('/Developer','NVIDIA','CUDA-5.5')
     yield os.path.join('/usr','local','cuda')
