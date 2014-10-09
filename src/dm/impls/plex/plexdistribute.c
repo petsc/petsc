@@ -696,7 +696,9 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank,
       idx++;
     }
     ierr = ISRestoreIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
+    ierr = ISDestroy(&remoteRootIS);CHKERRQ(ierr);
   }
+  ierr = DMLabelDestroy(&ovLeafLabel);CHKERRQ(ierr);
   ierr = PetscSFCreate(PetscObjectComm((PetscObject) dm), overlapSF);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *overlapSF, "Overlap SF");CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(*overlapSF);CHKERRQ(ierr);
@@ -798,6 +800,7 @@ PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF 
     iremote[point].rank = overlapRemote[p].rank;
     depthIdx[remoteDepths[p]]++;
   }
+  ierr = PetscFree2(pointDepths,remoteDepths);CHKERRQ(ierr);
 
   ierr = PetscSFCreate(comm, migrationSF);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *migrationSF, "Overlap Migration SF");CHKERRQ(ierr);
@@ -1385,6 +1388,10 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
 
   /* Build the point SF without overlap */
   ierr = DMPlexDistributeSF(dm, pointSF, partSection, part, NULL, NULL, *dmParallel);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscPrintf(comm, "Point SF:\n");CHKERRQ(ierr);
+    ierr = PetscSFView((*dmParallel)->sf, NULL);CHKERRQ(ierr);
+  }
 
   if (overlap > 0) {
     ierr = PetscLogEventBegin(DMPLEX_DistributeOverlap,dm,0,0,0);CHKERRQ(ierr);
@@ -1405,6 +1412,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     ierr = PetscSFBcastEnd(overlapSF, MPIU_2INT, oldRemote, newRemote);CHKERRQ(ierr);
     ierr = PetscSFCreate(comm, &overlapPointSF);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(overlapPointSF, nroots, nleaves, NULL, PETSC_OWN_POINTER, newRemote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&overlapSF);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
     pointSF = overlapPointSF;
     ierr = PetscLogEventEnd(DMPLEX_DistributeOverlap,dm,0,0,0);CHKERRQ(ierr);
@@ -1484,6 +1492,10 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, ISLocalToGlobalM
   ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
   ierr = DMPlexDistributeOwnership(dm, rootSection, &rootrank, leafSection, &leafrank);CHKERRQ(ierr);
   ierr = DMPlexCreateOverlap(dm, rootSection, rootrank, leafSection, leafrank, &overlapSF);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
+  ierr = ISDestroy(&rootrank);CHKERRQ(ierr);
+  ierr = ISDestroy(&leafrank);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
 
   /* Build dense migration SF that maps the non-overlapping partition to the overlapping one */
@@ -1537,6 +1549,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, ISLocalToGlobalM
   ierr = PetscSFCreate(comm, &newPointSF);;CHKERRQ(ierr);
   ierr = PetscSFSetGraph(newPointSF, pEnd - pStart, numGhostPoints, ghostLocal, PETSC_OWN_POINTER, ghostRemote, PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = DMSetPointSF(*dmOverlap, newPointSF);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&newPointSF);CHKERRQ(ierr);
   /* Cleanup overlap partition */
   ierr = ISLocalToGlobalMappingDestroy(&overlapRenumbering);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&overlapSF);CHKERRQ(ierr);

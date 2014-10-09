@@ -786,8 +786,11 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
       (*labelNew)->points[(*labelNew)->stratumOffsets[stratum] + strataIdx[stratum]++] = p;
     }
   }
-  PetscFree2(rootStrata, leafStrata);CHKERRQ(ierr);
-  PetscFree2(rootIdx, strataIdx);CHKERRQ(ierr);
+  ierr = PetscFree2(rootStrata, leafStrata);CHKERRQ(ierr);
+  ierr = PetscFree2(rootIdx, strataIdx);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&labelSF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
