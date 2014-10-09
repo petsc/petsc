@@ -1295,7 +1295,6 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 {
   PetscErrorCode   ierr;
   Vec              Z;
-  PetscObjectState state;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
@@ -1341,8 +1340,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
   }
   /* Record the state when the subvector was gotten so we know whether its values need to be put back */
   if (VecGetSubVectorSavedStateId < 0) {ierr = PetscObjectComposedDataRegister(&VecGetSubVectorSavedStateId);CHKERRQ(ierr);}
-  ierr = PetscObjectStateGet((PetscObject)Z,&state);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataSetInt((PetscObject)Z,VecGetSubVectorSavedStateId,state);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataSetInt((PetscObject)Z,VecGetSubVectorSavedStateId,1);CHKERRQ(ierr);
   *Y   = Z;
   PetscFunctionReturn(0);
 }
@@ -1375,13 +1373,10 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   if (X->ops->restoresubvector) {
     ierr = (*X->ops->restoresubvector)(X,is,Y);CHKERRQ(ierr);
   } else {
-    PetscObjectState savedstate=0,newstate;
+    PETSC_UNUSED PetscObjectState dummystate = 0;
     PetscBool valid;
-    ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,savedstate,valid);CHKERRQ(ierr);
-    ierr = PetscObjectStateGet((PetscObject)*Y,&newstate);CHKERRQ(ierr);
-    /* !valid means that the state has changed, no need to compare savedstate.*/
-    /* (savedstate < newstate) is equivalent to (!valid) and is here just to avoid compilation warnings.*/
-    if (!valid || (savedstate < newstate)) {
+    ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,dummystate,valid);CHKERRQ(ierr);
+    if (!valid) {
       /* We might need to copy entries back, first check whether we have no-copy view */
       PetscInt  gstart,gend,start;
       PetscBool contiguous,gcontiguous;
