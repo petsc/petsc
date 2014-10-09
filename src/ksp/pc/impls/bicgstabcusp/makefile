@@ -1,4 +1,4 @@
-#requiresdefine 'PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION'
+#requiresdefine 'PETSC_HAVE_CUSP'
 ALL: lib
 
 CFLAGS   =
