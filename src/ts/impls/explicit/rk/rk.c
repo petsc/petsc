@@ -471,6 +471,18 @@ reject_step: continue;
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSStepAdj_RK"
+static PetscErrorCode TSStepAdj_RK(TS tsadj)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+
+  ierr = TSStep_RK(tsadj);CHKERRQ(ierr);
+ 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSInterpolate_RK"
 static PetscErrorCode TSInterpolate_RK(TS ts,PetscReal itime,Vec X)
 {
@@ -577,6 +589,32 @@ static PetscErrorCode DMSubDomainRestrictHook_TSRK(DM dm,VecScatter gscat,VecSca
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "RKSetAdjCoe"
+static PetscErrorCode RKSetAdjCoe(RKTableau tab)
+{
+  PetscReal *A,*b;
+  PetscInt        s,i,j;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  s    = tab->s;
+  ierr = PetscMalloc2(s*s,&A,s,&b);CHKERRQ(ierr);
+
+  for (i=0; i<s; i++)
+    for (j=0; j<s; j++) {
+      A[i*s+j] = (tab->b[s-1-i]==0) ? 0: -tab->A[s-1-i+(s-1-j)*s] * tab->b[s-1-j] / tab->b[s-1-i];
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Coefficients: A[%D][%D]=%.6f\n",i,j,A[i*s+j]);CHKERRQ(ierr);
+    }
+
+  for (i=0; i<s; i++) b[i] = (tab->b[s-1-i]==0)? 0: -tab->b[s-1-i];
+
+  ierr  = PetscMemcpy(tab->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
+  ierr  = PetscMemcpy(tab->b,b,s*sizeof(b[0]));CHKERRQ(ierr);
+  ierr  = PetscFree2(A,b);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSSetUp_RK"
 static PetscErrorCode TSSetUp_RK(TS ts)
 {
@@ -592,6 +630,9 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   }
   tab  = rk->tableau;
   s    = tab->s;
+  if (ts->reverse_mode) {
+    ierr = RKSetAdjCoe(tab);CHKERRQ(ierr);
+  }
   ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->YdotRHS);CHKERRQ(ierr);
   ierr = PetscMalloc1(s,&rk->work);CHKERRQ(ierr);
@@ -602,6 +643,7 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   }
   PetscFunctionReturn(0);
 }
+
 /*------------------------------------------------------------*/
 
 #undef __FUNCT__
@@ -790,7 +832,7 @@ static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
 
   PetscFunctionBegin;
   *ns = rk->tableau->s;
-  *Y  = rk->Y;
+  if(Y) *Y  = rk->Y;
   PetscFunctionReturn(0);
 }
 
@@ -833,6 +875,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ts->ops->evaluatestep   = TSEvaluateStep_RK;
   ts->ops->setfromoptions = TSSetFromOptions_RK;
   ts->ops->getstages      = TSGetStages_RK;
+  ts->ops->stepadj        = TSStepAdj_RK;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

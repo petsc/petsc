@@ -100,6 +100,10 @@ ex16_sa: ex16_sa.o chkopts
 	-${CLINKER} -o ex16_sa ex16_sa.o ${PETSC_TS_LIB}
 	${RM} ex16_sa.o
 
+ex16adj: ex16adj.o chkopts
+	-${CLINKER} -o ex16adj ex16adj.o ${PETSC_TS_LIB}
+	${RM} ex16adj.o
+
 ex17: ex17.o  chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_TS_LIB}
 	${RM} ex17.o
@@ -307,8 +311,9 @@ runex9_3:
 runex9_sa:
 	-@${MPIEXEC} -n 1 ./ex9_sa -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_final_time 1 
 
-clean_sa:
-	-@${RM} *.bin *.info
+clean_files:
+	-@${RM} *.bin; \
+	  ${RM} *.info
 
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fd \
@@ -390,9 +395,10 @@ runex16:
 	   ${RM} -f ex16_1.tmp
 
 runex16_sa:
-	-@${MPIEXEC} -n 1 ./ex16_sa -monitor 0 -ts_adapt_type none 2>/dev/null; \
-#	   ${DIFF} output/ex16_1.out ex16_1.tmp || printf "${PWD}\nPossible problem with ex16_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex16_1.tmp
+	-@${MPIEXEC} -n 1 ./ex16_sa -monitor 0 ; 
+
+runex16adj:
+	-@${MPIEXEC} -n 1 ./ex16adj -monitor 0 ; 
 
 runex17:
 	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor_short -ksp_monitor_short -ts_monitor > ex17_1.tmp 2>&1; \

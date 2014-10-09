@@ -223,7 +223,6 @@ PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTKDestroy(void*);
 PETSC_EXTERN PetscErrorCode TSStep(TS);
 PETSC_EXTERN PetscErrorCode TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSSolve(TS,Vec);
-PETSC_EXTERN PetscErrorCode TSSolveADJ(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSGetEquationType(TS,TSEquationType*);
 PETSC_EXTERN PetscErrorCode TSSetEquationType(TS,TSEquationType);
 PETSC_EXTERN PetscErrorCode TSGetConvergedReason(TS,TSConvergedReason*);
@@ -237,7 +236,10 @@ PETSC_EXTERN PetscErrorCode TSGetSNESFailures(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetMaxSNESFailures(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSetErrorIfStepFails(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRollBack(TS);
+
 PETSC_EXTERN PetscErrorCode TSGetStages(TS,PetscInt*,Vec**);
+PETSC_EXTERN PetscErrorCode TSSetCheckpoint(TS,PetscBool);
+PETSC_EXTERN PetscErrorCode TSSetReverseMode(TS,PetscBool);
 
 PETSC_EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTimeStep(TS,PetscReal*);

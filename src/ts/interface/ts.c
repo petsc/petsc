@@ -69,6 +69,7 @@ struct _n_TSMonitorDrawCtx {
 
    Options Database Keys:
 +  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSGL, TSSSP
+.  -ts_checkpoint - checkpoint for adjoint sensitivity analysis
 .  -ts_max_steps maxsteps - maximum number of time-steps to take
 .  -ts_final_time time - maximum time to compute to
 .  -ts_dt dt - initial time step
@@ -118,6 +119,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSSetTypeFromOptions_Private(PetscOptionsObject,ts);CHKERRQ(ierr);
 
   /* Handle generic TS options */
+  ierr = PetscOptionsBool("-ts_checkpoint","Checkpoint for adjoint sensitivity analysis","TSSetCheckpoint",ts->checkpoint,&ts->checkpoint,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,NULL);CHKERRQ(ierr);
@@ -346,6 +348,57 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetCheckpoint"
+/*@
+   TSSetCheckpoint - Allows one to checkpoint the forward run,
+   useful for adjoint sensitivity analysis.
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+-  checkpoint - flag that indicates if the forward solution will be checkpointed  
+
+   Level: intermediate
+
+.seealso: 
+
+.keywords: TS, set, checkpoint
+@*/
+PetscErrorCode  TSSetCheckpoint(TS ts,PetscBool checkpoint)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->checkpoint = checkpoint;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetReverseMode"
+/*@
+   TSSetRunMode - Allows one to reset the run mode, 
+   useful for adjoint sensitivity analysis.
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+-  reverse_mode - run in forward (default) or reverse mode
+
+   Level: intermediate
+
+.seealso:
+
+.keywords: TS, set, reverse
+@*/
+PetscErrorCode  TSSetReverseMode(TS ts,PetscBool reverse_mode)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->reverse_mode = reverse_mode;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSJacobian"
 /*@
@@ -2626,7 +2679,15 @@ PetscErrorCode  TSStep(TS ts)
 
   if (!ts->ops->step) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSStep not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
-  ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
+  if(ts->reverse_mode) {
+    if(!ts->ops->stepadj) {
+      SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
+    }else {
+      ierr = (*ts->ops->stepadj)(ts);CHKERRQ(ierr);
+    }
+  }else { 
+    ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
 
   ts->time_step_prev = ts->ptime - ts->ptime_prev;
@@ -2713,7 +2774,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
-  if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
+  if (!ts->reverse_mode && ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     PetscValidHeaderSpecific(u,VEC_CLASSID,2);
     if (!ts->vec_sol || u == ts->vec_sol) {
       ierr = VecDuplicate(u,&solution);CHKERRQ(ierr);
@@ -2724,7 +2785,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   } else if (u) {
     ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   }
-  ierr = TSSetUp(ts);CHKERRQ(ierr);
+  ierr = TSSetUp(ts);CHKERRQ(ierr); /*compute adj coefficients if the reverse mode is on*/
   /* reset time step and iteration counters */
   ts->steps             = 0;
   ts->ksp_its           = 0;
@@ -2740,11 +2801,15 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);
     ts->solvetime = ts->ptime;
   } else {
-    /* steps the requested number of timesteps. */
+    /* steps the requested number of timesteps. */   
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
+    else if (!ts->reverse_mode && ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     while (!ts->reason) {
-      ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      if(!ts->reverse_mode) {
+        ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      }else {
+        ierr = TSMonitor(ts,ts->max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      }
       ierr = TSStep(ts);CHKERRQ(ierr);
       if (ts->event) {
 	ierr = TSEventMonitor(ts);CHKERRQ(ierr);
@@ -2755,7 +2820,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 	ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
     }
-    if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
+    if (!ts->reverse_mode && ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
       ts->solvetime = ts->max_time;
       solution = u;
@@ -2764,66 +2829,14 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ts->solvetime = ts->ptime;
       solution = ts->vec_sol;
     }
-    ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
+    if(!ts->reverse_mode) {
+      ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
+    }
     ierr = VecViewFromOptions(u, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
   }
+
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSSolveADJ"
-/*@
-   TSSolveADJ - Steps the requested number of timesteps backward.
-
-   Collective on TS
-
-   Input Parameter:
-+  ts - the TS context obtained from TSCreate()
--  u - the solution vector  (can be null if TSSetSolution() was used, otherwise must contain the initial conditions)
-
-   Level: beginner
-
-.keywords: TS, timestep, solve
-
-.seealso: TSCreate(), TSSetSolution(), TSStep()
-@*/
-PetscErrorCode TSSolveADJ(TS tsadj,Vec lambda)
-{
-  PetscInt          i;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;  
-  PetscValidHeaderSpecific(tsadj,TS_CLASSID,1);
-  if (lambda) PetscValidHeaderSpecific(lambda,VEC_CLASSID,2);
-
-  ierr = TSSetSolution(tsadj,lambda);CHKERRQ(ierr);
-  ierr = TSSetUp(tsadj);CHKERRQ(ierr);
-
-  /* reset time step and iteration counters */
-  tsadj->steps             = 0;
-  tsadj->ksp_its           = 0;
-  tsadj->snes_its          = 0;
-  tsadj->num_snes_failures = 0;
-  tsadj->reject            = 0;
-  tsadj->reason            = TS_CONVERGED_ITERATING;
-
-  // to do: if tsadj->max_steps is not set, complain somewhere. 
- 
-  for (i=tsadj->max_steps; i>0; i--) {
-    ierr = TSMonitor(tsadj,i,tsadj->ptime,lambda);CHKERRQ(ierr);
-    ierr = TSStep(tsadj);CHKERRQ(ierr);
-  }
-  
-  if (lambda) {ierr = VecCopy(tsadj->vec_sol,lambda);CHKERRQ(ierr);}
-  tsadj->solvetime = tsadj->ptime;
-
-  //ierr = TSMonitor(tsadj,tsadj->steps,tsadj->ptime,lambda);CHKERRQ(ierr);
-  //ierr = VecViewFromOptions(u, ((PetscObject) tsadj)->prefix, "-ts_view_solution");CHKERRQ(ierr);
-  //ierr = TSViewFromOptions(tsadj,NULL,"-ts_view");CHKERRQ(ierr);
-  ierr = PetscObjectSAWsBlock((PetscObject)tsadj);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

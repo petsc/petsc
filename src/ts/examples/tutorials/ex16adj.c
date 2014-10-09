@@ -184,49 +184,6 @@ static PetscErrorCode ADJRHSFunction(TS tsadj,PetscReal t,Vec X,Vec F,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "RegisterMyARK2"
-static PetscErrorCode RegisterMyARK2(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  {
-    const PetscReal
-      A[3][3] = {{0,0,0},
-                 {0.41421356237309504880,0,0},
-                 {0.75,0.25,0}},
-      At[3][3] = {{0,0,0},
-                  {0.12132034355964257320,0.29289321881345247560,0},
-                  {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}},
-      *bembedt = NULL,*bembed = NULL;
-    ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,bembedt,bembed,0,NULL,NULL);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "RegisterRKADJ"
-/* Aij = Aij*Bi/Bj*/
-static PetscErrorCode RegisterRKADJ(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  {
-    const PetscReal
-      A[4][4] = {{0,0,0,0},
-                 {0,0,0,0},
-                 {0,-1.0,0,0},
-                 {0,0,-3.0/4.0,0}},
-      b[4]    = {0,-4.0/9.0,-1.0/3.0,-2.0/9.0},
-      bembed[4] = {7.0/24.0,1.0/4.0,1.0/3.0,1.0/8.0};
-    ierr = TSRKRegister("rk3bsadj",3,4,&A[0][0],b,NULL,bembed,3,b);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
 #define __FUNCT__ "Monitor"
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
@@ -413,8 +370,6 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
-  ierr = RegisterMyARK2();CHKERRQ(ierr);
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -483,68 +438,38 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  TS        tsadj;
-  // SNES      snesadj;
-  DM        dm;
-  PetscInt  i;
-  PetscReal ptime;
-  user.stage   = 0; 
-
   ierr = VecCreate(PETSC_COMM_WORLD,&user.X);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&lambda,NULL);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(lambda,user.nstages,&user.Y);CHKERRQ(ierr);
-
-  ierr = TSCreate(PetscObjectComm((PetscObject)ts),&tsadj);CHKERRQ(ierr);
-
-  //ierr = TSGetSNES(ts,&snesadj);CHKERRQ(ierr);
-  //ierr = TSSetSNES(tsadj,snesadj);CHKERRQ(ierr);
-
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = TSSetDM(tsadj,dm);CHKERRQ(ierr);
-
-  //   Set initial conditions for the adjoint integration
+  //   Redet initial conditions for the adjoint integration
   ierr = VecGetArray(lambda,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 1.0;   x_ptr[1] = 0.0;
+  x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
   ierr = VecRestoreArray(lambda,&x_ptr);CHKERRQ(ierr);
-  ierr = VecView(lambda,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
+  //   Switch to reverse mode
+  ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
   //   Reset start time for the adjoint integration
-  ierr = TSSetTime(tsadj,ftime);CHKERRQ(ierr);
+  ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
   //ierr = TSSetDuration(tsadj,PETSC_DEFAULT,ftime);CHKERRQ(ierr);
 
   //   Register the coefficients for the adjoint integration
-  ierr = RegisterRKADJ();CHKERRQ(ierr);
-  ierr = TSSetType(tsadj,TSRK);CHKERRQ(ierr);
-  ierr = TSRKSetType(tsadj,"rk3bsadj");CHKERRQ(ierr);
+  //ierr = RegisterRKADJ();CHKERRQ(ierr);
+  //ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
+  //ierr = TSRKSetType(ts,"rk3bsadj");CHKERRQ(ierr);
 
-  //   Set RHS function and number of steps for the adjoint integration
-  ierr = TSSetRHSFunction(tsadj,NULL,ADJRHSFunction,&user);CHKERRQ(ierr);
-  ierr = TSSetDuration(tsadj,steps,PETSC_DEFAULT);CHKERRQ(ierr);
+  //   Reset RHS function and number of steps for the adjoint integration
+  ierr = TSSetRHSFunction(ts,NULL,ADJRHSFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
   //   Turn off adapt for the adjoint integration (???)
-  ierr = TSGetAdapt(tsadj,&adapt);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetType(adapt,TSADAPTNONE);CHKERRQ(ierr);
 
   //   Set up monitor
-  ierr = TSMonitorSet(tsadj,MonitorADJ,&user,NULL);CHKERRQ(ierr);
-  
-  ierr = TSSetSolution(tsadj,lambda);CHKERRQ(ierr);
-  ierr = TSSetUp(tsadj);CHKERRQ(ierr);
-  for (i=steps; i>0; i--) {
-    ierr = LoadChkpts(i,&user);
-    ierr = TSGetTime(tsadj,&ptime);CHKERRQ(ierr);
-    ierr = TSGetTimeStepNumber(tsadj,&steps);CHKERRQ(ierr);
-    ierr = TSSetTimeStep(tsadj,-ptime+user.tprev);CHKERRQ(ierr);
-    //ierr = TSMonitor(tsadj,steps,ptime,lambda);CHKERRQ(ierr);
-    ierr = TSStep(tsadj);CHKERRQ(ierr);
-  }
+  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,MonitorADJ,&user,NULL);CHKERRQ(ierr);
 
-  ierr = TSGetSolution(tsadj,&lambda);CHKERRQ(ierr);
-  ierr = TSGetSolveTime(tsadj,&ptime);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(tsadj,&steps);CHKERRQ(ierr);
-  //ierr = TSMonitor(tsadj,steps,ptime,lambda);CHKERRQ(ierr);
-  ierr = TSViewFromOptions(tsadj,NULL,"-ts_view");CHKERRQ(ierr);
-  ierr = PetscObjectSAWsBlock((PetscObject)tsadj);CHKERRQ(ierr);
+  ierr = TSSolve(ts,lambda);CHKERRQ(ierr);
 
   ierr = VecView(lambda,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -36,6 +36,7 @@ struct _TSOps {
   PetscErrorCode (*load)(TS,PetscViewer);
   PetscErrorCode (*rollback)(TS);
   PetscErrorCode (*getstages)(TS,PetscInt*,Vec**);
+  PetscErrorCode (*stepadj)(TS);
 };
 
 /* 
@@ -61,6 +62,10 @@ struct _p_TS {
   PetscErrorCode (*prestage)(TS,PetscReal);
   PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
   PetscErrorCode (*poststep)(TS);
+
+  /* ---------------------- Sensitivity Analysis support -----------------*/
+  PetscBool checkpoint;
+  PetscBool reverse_mode;
 
   /* ---------------------- IMEX support ---------------------------------*/
   /* These extra slots are only used when the user provides both Implicit and RHS */
