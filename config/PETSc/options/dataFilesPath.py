@@ -23,7 +23,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.petscdir = framework.require('PETSc.utilities.petscdir', self)
+    self.petscdir = framework.require('PETSc.options.petscdir', self)
     return
 
   def getDatafilespath(self):

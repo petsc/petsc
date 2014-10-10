@@ -247,7 +247,7 @@ reconfigure:
 	@${PYTHON} ${PETSC_ARCH}/conf/reconfigure-${PETSC_ARCH}.py
 #
 install:
-	@${PYTHON} ./config/install.py -destDir=${DESTDIR}
+	@${PYTHON} ./conf/install.py -destDir=${DESTDIR}
 	${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} mpi4py-install petsc4py-install
 
 newall:

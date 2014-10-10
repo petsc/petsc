@@ -11,7 +11,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.petscclone     = framework.require('PETSc.utilities.petscclone',self.setCompilers)
+    self.petscclone     = framework.require('PETSc.options.petscclone',self.setCompilers)
     return
 
   def Install(self):

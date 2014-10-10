@@ -1078,23 +1078,21 @@ class PETScConfigureInfo(object):
     self.mpi             = self.framework.require('config.packages.MPI',         None)
     self.base            = self.framework.require('config.base',                 None)
     self.setCompilers    = self.framework.require('config.setCompilers',         None)
-    self.arch            = self.framework.require('PETSc.utilities.arch',        None)
-    self.petscdir        = self.framework.require('PETSc.utilities.petscdir',    None)
-    self.languages       = self.framework.require('PETSc.utilities.languages',   None)
-    self.debugging       = self.framework.require('PETSc.utilities.debugging',   None)
-    self.debuggers       = self.framework.require('PETSc.utilities.debuggers',   None)
-    self.CHUD            = self.framework.require('PETSc.utilities.CHUD',        None)
+    self.arch            = self.framework.require('PETSc.options.arch',        None)
+    self.petscdir        = self.framework.require('PETSc.options.petscdir',    None)
+    self.languages       = self.framework.require('PETSc.options.languages',   None)
+    self.debugging       = self.framework.require('PETSc.options.debugging',   None)
+    self.debuggers       = self.framework.require('config.utilities.debuggers',   None)
     self.compilers       = self.framework.require('config.compilers',            None)
     self.types           = self.framework.require('config.types',                None)
     self.headers         = self.framework.require('config.headers',              None)
     self.functions       = self.framework.require('config.functions',            None)
     self.libraries       = self.framework.require('config.libraries',            None)
-    self.scalarType      = self.framework.require('PETSc.utilities.scalarTypes', None)
-    self.memAlign        = self.framework.require('PETSc.utilities.memAlign',    None)
-    self.libraryOptions  = self.framework.require('PETSc.utilities.libraryOptions', None)
-    self.fortrancpp      = self.framework.require('PETSc.utilities.fortranCPP', None)
-    self.debuggers       = self.framework.require('PETSc.utilities.debuggers', None)
-    self.sharedLibraries = self.framework.require('PETSc.utilities.sharedLibraries', None)
+    self.scalarType      = self.framework.require('PETSc.options.scalarTypes', None)
+    self.memAlign        = self.framework.require('PETSc.options.memAlign',    None)
+    self.libraryOptions  = self.framework.require('PETSc.options.libraryOptions', None)
+    self.fortrancpp      = self.framework.require('PETSc.options.fortranCPP', None)
+    self.sharedLibraries = self.framework.require('PETSc.options.sharedLibraries', None)
     self.sowing          = self.framework.require('config.packages.sowing', None)
     return
 
@@ -1266,7 +1264,7 @@ class PETScMaker(script.Script):
    includes = ['-I'+inc for inc in [os.path.join(self.petscDir, self.petscArch, 'include'), os.path.join(self.petscDir, 'include')]]
    flags    = []
    flags.append(self.configInfo.setCompilers.getCompilerFlags())                        # Add PCC_FLAGS
-   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
+   flags.extend([self.configInfo.setCompilers.CPPFLAGS) # Add CPP_FLAGS
    if self.configInfo.compilers.generateDependencies[language]:
      flags.append(self.configInfo.compilers.dependenciesGenerationFlag[language])
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
@@ -1322,7 +1320,7 @@ class PETScMaker(script.Script):
    includes = ['-I'+inc for inc in [os.path.join(self.petscDir, self.petscArch, 'include'), os.path.join(self.petscDir, 'include')]]
    flags    = []
    flags.append(self.configInfo.setCompilers.getCompilerFlags())                        # Add PCC_FLAGS
-   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
+   flags.extend([self.configInfo.setCompilers.CPPFLAGS]) # Add CPP_FLAGS
    if self.configInfo.compilers.generateDependencies[language]:
      flags.append(self.configInfo.compilers.dependenciesGenerationFlag[language])
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
@@ -1405,7 +1403,7 @@ class PETScMaker(script.Script):
    linker      = self.configInfo.setCompilers.getSharedLinker()
    linkerFlags = self.configInfo.setCompilers.getLinkerFlags()
    packageIncludes, packageLibs = self.getPackageInfo()
-   extraLibs = self.configInfo.libraries.toStringNoDupes(self.configInfo.compilers.flibs+self.configInfo.compilers.cxxlibs+self.configInfo.compilers.LIBS.split(' '))+self.configInfo.CHUD.LIBS
+   extraLibs = self.configInfo.libraries.toStringNoDupes(self.configInfo.compilers.flibs+self.configInfo.compilers.cxxlibs+self.configInfo.compilers.LIBS.split(' '))
    sysLib      = ''
    sysLib.replace('-Wl,-rpath', '-L')
    externalLib = packageLibs+' '+extraLibs
@@ -1494,7 +1492,7 @@ class PETScMaker(script.Script):
      if status:
        self.logPrint("ERROR IN LINK ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
-     # TODO: Move dsymutil stuff from PETSc.utilities.debuggers to config.compilers
+     # TODO: Move dsymutil stuff from PETSc.options.debuggers to config.compilers
      if hasattr(self.configInfo.debuggers, 'dsymutil'):
        (output, error, status) = self.executeShellCommand(self.configInfo.debuggers.dsymutil+' '+executable, checkCommand = noCheckCommand, log=self.log)
        if status:

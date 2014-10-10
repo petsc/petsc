@@ -8,8 +8,8 @@ class Configure(config.base.Configure):
     return
 
   def setupDependencies(self, framework):
-    self.installdir    = framework.require('PETSc.utilities.installDir',self)
-    self.arch          = framework.require('PETSc.utilities.arch',self)
+    self.installdir    = framework.require('PETSc.options.installDir',self)
+    self.arch          = framework.require('PETSc.options.arch',self)
     return
 
   def setExternalPackagesDir(self):

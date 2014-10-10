@@ -21,7 +21,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.arch = framework.require('PETSc.utilities.arch', self)
+    self.arch = framework.require('PETSc.options.arch', self)
     return
 
   def printSudoPasswordMessage(self,needsudo = 1):

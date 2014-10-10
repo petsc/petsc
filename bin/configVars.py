@@ -22,7 +22,7 @@ class ConfigReader(script.Script):
     framework = self.loadConfigure()
     mpi = framework.require('config.packages.MPI', None)
     print mpi.include, mpi.lib
-    arch = framework.require('PETSc.utilities.arch', None)
+    arch = framework.require('PETSc.options.arch', None)
     print arch.arch
     print 'Configure is cached:',('configureCache' in self.argDB)
     for k in framework.argDB.keys():

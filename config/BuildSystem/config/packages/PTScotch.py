@@ -14,7 +14,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
     self.mpi            = framework.require('config.packages.MPI',self)
     self.deps = [self.mpi]
     return

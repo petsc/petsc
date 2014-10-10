@@ -26,11 +26,11 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.debugging   = framework.require('PETSc.utilities.debugging', self)
+    self.debugging   = framework.require('PETSc.options.debugging', self)
     self.compilers   = framework.require('config.compilers', self)
     self.libraries   = framework.require('config.libraries', self)
     self.types       = framework.require('config.types', self)
-    self.scalarTypes = framework.require('PETSc.utilities.scalarTypes', self)
+    self.scalarTypes = framework.require('PETSc.options.scalarTypes', self)
     return
 
 

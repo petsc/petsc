@@ -13,9 +13,9 @@ class Configure(config.package.CMakePackage):
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
-    self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
-    self.scalartypes    = framework.require('PETSc.utilities.scalarTypes',self)
-    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
+    self.scalartypes    = framework.require('PETSc.options.scalarTypes',self)
+    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
     return
 
   def formCMakeConfigureArgs(self):
