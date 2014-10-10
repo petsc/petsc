@@ -1418,6 +1418,14 @@ runex86:
 	-@${MPIEXEC} -n 3 ./ex86 > ex86_1.tmp 2>&1;   \
 	   ${DIFF} output/ex86_1.out ex86_1.tmp || printf "${PWD}\nPossible problem with ex86_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex86_1.tmp
+runex86_2:
+	-@${MPIEXEC} -n 3 ./ex86 -mat_type baij > ex86_1.tmp 2>&1;   \
+	   ${DIFF} output/ex86_2.out ex86_1.tmp || printf "${PWD}\nPossible problem with ex86_2, diffs above\n=========================================\n"; \
+	   ${RM} -f ex86_1.tmp
+runex86_3:
+	-@${MPIEXEC} -n 3 ./ex86 -mat_type baij -bs 2 > ex86_1.tmp 2>&1;   \
+	   ${DIFF} output/ex86_3.out ex86_1.tmp || printf "${PWD}\nPossible problem with ex86_3, diffs above\n=========================================\n"; \
+	   ${RM} -f ex86_1.tmp
 
 runex88:
 	-@${MPIEXEC} -n 1  ./ex88 > ex88_1.tmp 2>&1;   \
@@ -2065,7 +2073,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
                                  ex65.rm ex66.PETSc ex66.rm ex68.PETSc runex68 ex68.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
-                                 ex86.PETSc runex86 ex86.rm \
+                                 ex86.PETSc runex86 runex86_2 runex86_3 ex86.rm \
                                  ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 runex92_2 runex92_3 runex92_4 ex92.rm \
                                  ex93.PETSc runex93 runex93_scalable runex93_scalable_fast runex93_heap runex93_btheap runex93_llcondensed \
                                  runex93_2 runex93_3 ex93.rm \

@@ -2748,7 +2748,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                /*139*/ 0,
                                        0,
                                        0,
-                                       MatFDColoringSetUp_SeqXAIJ
+                                       MatFDColoringSetUp_SeqXAIJ,
+                                       0,
+                                /*144*/MatCreateMPIMatConcatenateSeqMat_SeqBAIJ
 };
 
 #undef __FUNCT__
@@ -3578,5 +3580,16 @@ PetscErrorCode  MatCreateSeqBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
 
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateMPIMatConcatenateSeqMat_SeqBAIJ"
+PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqBAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreateMPIMatConcatenateSeqMat_MPIBAIJ(comm,inmat,n,scall,outmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

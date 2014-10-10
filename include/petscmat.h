@@ -209,7 +209,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIAIJWithSplitArrays(MPI_Comm,PetscInt,Pet
 
 PETSC_EXTERN PetscErrorCode MatCreateSeqBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPIBAIJConcatenateSeqBAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+
 PETSC_EXTERN PetscErrorCode MatCreateMPIBAIJConcatenateSeqBAIJSymbolic(MPI_Comm,Mat,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIBAIJConcatenateSeqBAIJNumeric(MPI_Comm,Mat,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode MatCreateMPIBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat*);
