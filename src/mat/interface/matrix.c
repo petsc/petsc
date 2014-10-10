@@ -9566,3 +9566,37 @@ PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
   *state = mat->nonzerostate;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateMPIMatConcatenateSeqMat"
+/*@
+      MatCreateMPIMatConcatenateSeqMat - Creates a single large PETSc matrix by concatenating sequential
+                 matrices from each processor
+
+    Collective on MPI_Comm
+
+   Input Parameters:
++    comm - the communicators the parallel matrix will live on
+.    inmat - the input sequential matrices
+.    n - number of local columns (or PETSC_DECIDE)
+-    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
+.    outmat - the parallel matrix generated
+
+    Level: advanced
+
+   Notes: The number of columns of the matrix in EACH processor MUST be the same.
+
+@*/
+PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(MAT_Merge,inmat,0,0,0);CHKERRQ(ierr);
+  if (!inmat->ops->creatempimatconcatenateseqmat) SETERRQ1(PetscObjectComm((PetscObject)inmat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)inmat)->type_name);
+  ierr = (*inmat->ops->creatempimatconcatenateseqmat)(comm,inmat,n,scall,outmat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Merge,inmat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

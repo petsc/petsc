@@ -1,4 +1,4 @@
-static char help[] = "Testing MatCreateMPIAIJConcatenateSeqAIJ() and MatCreateMPIBAIJConcatenateSeqBAIJ().\n\n";
+static char help[] = "Testing MatCreateMPIMatConcatenateSeqMat().\n\n";
 
 #include <petscmat.h>
 #undef __FUNCT__
@@ -10,7 +10,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank;
   PetscScalar    value[3],*vals;
   PetscInt       i,col[3],n=5,bs=1;
-  PetscBool      isAIJ,isBAIJ;
+  //PetscBool      isAIJ,isBAIJ;
   
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -59,18 +59,22 @@ int main(int argc,char **argv)
     ierr = MatView(seqmat,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
+  ierr = MatCreateMPIMatConcatenateSeqMat(PETSC_COMM_WORLD,seqmat,PETSC_DECIDE,MAT_INITIAL_MATRIX,&mpimat);CHKERRQ(ierr);
+  ierr = MatCreateMPIMatConcatenateSeqMat(PETSC_COMM_WORLD,seqmat,PETSC_DECIDE,MAT_REUSE_MATRIX,&mpimat);CHKERRQ(ierr);
+#if defined(RM)
   ierr = PetscObjectTypeCompare((PetscObject)seqmat,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)seqmat,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);
   if (isAIJ) {
     /* Concatenate seqaij matrices into a single mpiaij matrix */
-    ierr = MatCreateMPIAIJConcatenateSeqAIJ(PETSC_COMM_WORLD,seqmat,PETSC_DECIDE,MAT_INITIAL_MATRIX,&mpimat);CHKERRQ(ierr);
-    ierr = MatCreateMPIAIJConcatenateSeqAIJ(PETSC_COMM_WORLD,seqmat,PETSC_DECIDE,MAT_REUSE_MATRIX,&mpimat);CHKERRQ(ierr);
+    //ierr = MatCreateMPIAIJConcatenateSeqAIJ(PETSC_COMM_WORLD,seqmat,PETSC_DECIDE,MAT_INITIAL_MATRIX,&mpimat);CHKERRQ(ierr);
+    //ierr = MatCreateMPIAIJConcatenateSeqAIJ(PETSC_COMM_WORLD,seqmat,PETSC_DECIDE,MAT_REUSE_MATRIX,&mpimat);CHKERRQ(ierr);
   } else if (isBAIJ){
     ierr = MatCreateMPIBAIJConcatenateSeqBAIJ(PETSC_COMM_WORLD,seqmat,PETSC_DECIDE,MAT_INITIAL_MATRIX,&mpimat);CHKERRQ(ierr);
     ierr = MatCreateMPIBAIJConcatenateSeqBAIJ(PETSC_COMM_WORLD,seqmat,PETSC_DECIDE,MAT_REUSE_MATRIX,&mpimat);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not supported yet");
   }
+#endif
   ierr = MatView(mpimat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = MatDestroy(&seqmat);CHKERRQ(ierr);

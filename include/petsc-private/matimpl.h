@@ -190,6 +190,8 @@ struct _MatOps {
   PetscErrorCode (*fdcoloringsetup)(Mat,ISColoring,MatFDColoring);
   PetscErrorCode (*findoffblockdiagonalentries)(Mat,IS*);
   /*144*/
+  PetscErrorCode (*creatempimatconcatenateseqmat)(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+  
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

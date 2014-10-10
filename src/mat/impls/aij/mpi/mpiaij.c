@@ -2806,7 +2806,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     matseq = redund->matseq;
   }
   ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJConcatenateSeqAIJ(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
+  ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
 
   if (reuse == MAT_INITIAL_MATRIX) {
     /* create a supporting struct and attach it to C for reuse */
@@ -3178,7 +3178,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                 /*139*/0,
                                        0,
                                        0,
-                                       MatFDColoringSetUp_MPIXAIJ
+                                       MatFDColoringSetUp_MPIXAIJ,
+                                       0,
+                                /*144*/MatCreateMPIMatConcatenateSeqMat_MPIAIJ
 };
 
 /* ----------------------------------------------------------------------------------------*/
@@ -4356,28 +4358,8 @@ PetscErrorCode  MatCreateMPIAIJConcatenateSeqAIJNumeric(MPI_Comm comm,Mat inmat,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatCreateMPIAIJConcatenateSeqAIJ"
-/*@
-      MatCreateMPIAIJConcatenateSeqAIJ - Creates a single large PETSc matrix by concatenating sequential
-                 matrices from each processor
-
-    Collective on MPI_Comm
-
-   Input Parameters:
-+    comm - the communicators the parallel matrix will live on
-.    inmat - the input sequential matrices
-.    n - number of local columns (or PETSC_DECIDE)
--    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
-
-   Output Parameter:
-.    outmat - the parallel matrix generated
-
-    Level: advanced
-
-   Notes: The number of columns of the matrix in EACH processor MUST be the same.
-
-@*/
-PetscErrorCode MatCreateMPIAIJConcatenateSeqAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+#define __FUNCT__ "MatCreateMPIMatConcatenateSeqMat_MPIAIJ"
+PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

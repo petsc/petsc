@@ -509,6 +509,7 @@
       parameter(MATOP_AYPX=140)
       parameter(MATOP_RESIDUAL=141)
       parameter(MATOP_FDCOLORING_SETUP=142)
+      parameter(MATOP_MPICONCATENATESEQ=144)
 !
 !
 !

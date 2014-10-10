@@ -3346,7 +3346,8 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         0,
                                         0,
                                         MatFDColoringSetUp_SeqXAIJ,
-                                        MatFindOffBlockDiagonalEntries_SeqAIJ
+                                        MatFindOffBlockDiagonalEntries_SeqAIJ,
+                                 /*144*/MatCreateMPIMatConcatenateSeqMat_SeqAIJ
 };
 
 #undef __FUNCT__
@@ -4648,6 +4649,17 @@ PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat A)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateMPIMatConcatenateSeqMat_SeqAIJ"
+PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreateMPIMatConcatenateSeqMat_MPIAIJ(comm,inmat,n,scall,outmat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
     Special version for direct calls from Fortran
 */
@@ -4747,5 +4759,4 @@ noinsert:;
   }
   PetscFunctionReturnVoid();
 }
-
 
