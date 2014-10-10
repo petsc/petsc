@@ -1,11 +1,11 @@
 /*
-     This file deals with CAPS Fortran 77 naming convention.
+     This file deals with CAPS BLAS/LAPACK naming convention.
 */
 #if !defined(_BLASLAPACK_CAPS_H)
 #define _BLASLAPACK_CAPS_H
 
 #if !defined(PETSC_USE_COMPLEX)
-# if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USES_FORTRAN_SINGLE)
+# if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_BLASLAPACK_SINGLEISDOUBLE)
 /* Real single precision with no character string arguments */
 #  define LAPACKgeqrf_ SGEQRF
 #  define LAPACKungqr_ SORGQR
@@ -94,7 +94,7 @@
 # endif
 
 #else
-# if defined(PETSC_USES_FORTRAN_SINGLE)
+# if defined(PETSC_BLASLAPACK_SINGLEISDOUBLE)
 /* Complex single precision with no character string arguments */
 #  define LAPACKgeqrf_ CGEQRF
 #  define LAPACKungqr_ CUNGQR
