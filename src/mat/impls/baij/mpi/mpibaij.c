@@ -4046,7 +4046,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm 
       ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
       ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
       subcomm = psubcomm->comm;
-    } else { /* retrieve psubcomm and subcomm */
+    } else { /* retrieve subcomm and subcomm */
       ierr = PetscObjectGetComm((PetscObject)(*matredundant),&subcomm);CHKERRQ(ierr);
       ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
       redund   = (*matredundant)->redundant;
@@ -4083,6 +4083,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm 
     redund->isrow              = isrow;
     redund->iscol              = iscol;
     redund->matseq             = matseq;
+    redund->subcomm            = subcomm;
     redund->psubcomm           = psubcomm;
   }
   PetscFunctionReturn(0);
