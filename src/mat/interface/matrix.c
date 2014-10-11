@@ -149,7 +149,6 @@ PetscErrorCode  MatGetDiagonalBlock(Mat A,Mat *a)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(a,3);
-  if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",&f);CHKERRQ(ierr);
