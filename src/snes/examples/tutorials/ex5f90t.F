@@ -365,7 +365,6 @@
 
 !  Declarations for use with local arrays:
       PetscScalar,pointer :: lx_v(:)
-      type(Vec)      localX
 
       ierr = 0
       call SNESGetApplicationContext(mysnes,puser,ierr)
@@ -377,19 +376,15 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call DMGetLocalVector(puser%da,localX,ierr)
-      call VecGetArrayF90(localX,lx_v,ierr)
+      call VecGetArrayF90(X,lx_v,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
       call InitialGuessLocal(puser,lx_v,ierr)
 
 !  Restore vector
-      call VecRestoreArrayF90(localX,lx_v,ierr)
+      call VecRestoreArrayF90(X,lx_v,ierr)
 
 !  Insert values into global vector
-      call DMLocalToGlobalBegin(puser%da,localX,INSERT_VALUES,X,ierr)
-      call DMLocalToGlobalEnd(puser%da,localX,INSERT_VALUES,X,ierr)
-      call DMRestoreLocalVector(puser%da,localX,ierr)
 
       return
       end
@@ -415,8 +410,8 @@
       use f90module
 !  Input/output variables:
       type (userctx)         user
-      PetscScalar  x(user%gxs:user%gxe,                                 &
-     &              user%gys:user%gye)
+      PetscScalar  x(user%xs:user%xe,                                             &
+     &              user%ys:user%ye)
       PetscErrorCode ierr
 
 !  Local variables:

@@ -67,7 +67,7 @@ T*/
 typedef struct {
   PetscReal param;             /* test problem parameter */
   PetscInt  mx,my;             /* discretization in x,y directions */
-  Vec       localX,localF;    /* ghosted local vector */
+  Vec       localX;           /* ghosted local vector */
   DM        da;                /* distributed array data structure */
 } AppCtx;
 
@@ -147,7 +147,6 @@ int main(int argc,char **argv)
   ierr = DMCreateLocalVector(user.da,&user.localX);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
-  ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -276,7 +275,7 @@ int main(int argc,char **argv)
 
   ierr = MatDestroy(&J);CHKERRQ(ierr);           ierr = VecDestroy(&Y);CHKERRQ(ierr);
   ierr = VecDestroy(&user.localX);CHKERRQ(ierr); ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.localF);CHKERRQ(ierr); ierr = VecDestroy(&F);CHKERRQ(ierr);
+  ierr = VecDestroy(&F);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
@@ -300,7 +299,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscInt    i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
   PetscReal   one = 1.0,lambda,temp1,temp,hx,hy;
   PetscScalar *x;
-  Vec         localX = user->localX;
 
   mx    = user->mx;            my = user->my;            lambda = user->param;
   hx    = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -313,7 +311,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries (for 2-dimensional DMDA):
@@ -343,13 +341,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
-
-  /*
-     Insert values into global vector
-  */
-  ierr = DMLocalToGlobalBegin(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -371,7 +363,7 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
   PetscInt       i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
   PetscReal      two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
   PetscScalar    u,uxx,uyy,*x,*f;
-  Vec            localX = user->localX,localF = user->localF;
+  Vec            localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -390,7 +382,7 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
      Get pointers to vector data
   */
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
@@ -420,13 +412,7 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
      Restore vectors
   */
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
-
-  /*
-     Insert values into global vector
-  */
-  ierr = DMLocalToGlobalBegin(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   return 0;
 }

@@ -1722,9 +1722,8 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
            base point.
 - - the global vector
 
-    Notes: In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation. If you would like to simply add the non-ghosted values in the local
-           array into the global array you need to either (1) zero the ghosted locations and use ADD_VALUES or (2) use INSERT_VALUES into a work global array and then add the work
-           global array to the final global array with VecAXPY().
+    Notes: In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation.
+           INSERT_VALUES is not support for DMDA, in that case simply compute the values directly into a global vector instead of a local one.
 
     Level: beginner
 

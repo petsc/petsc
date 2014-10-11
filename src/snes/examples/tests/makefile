@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/snes/examples/tests/
-EXAMPLESC       = ex1.c ex5.c ex7.c ex8.c ex15.c ex16.c ex17.c ex68.c
+EXAMPLESC       = ex1.c ex7.c ex8.c ex15.c ex16.c ex17.c ex68.c
 EXAMPLESF       = ex1f.F ex12f.F ex14f.F
 DIRS	        =
 MANSEC          = SNES
@@ -136,16 +136,7 @@ runex3_2:
 	   if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex3_2.tmp
-runex5:
-	-@${MPIEXEC} -n 1 ./ex5 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex5_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex5_1.tmp
-runex5_2:
-	-@${MPIEXEC} -n 1 ./ex5 -ksp_gmres_cgs_refinement_type refine_always -snes_mf -snes_monitor_short > ex5_2.tmp 2>&1;   \
-	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex5_2.tmp
+
 runex6:
 	-@${MPIEXEC} -n 4 ./ex6 -ksp_gmres_cgs_refinement_type refine_always -snes_mf -Nx 4 -Ny 1 -snes_monitor_short > ex6_1.tmp 2>&1; \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \

@@ -283,6 +283,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt bs,PetscInt n,
     ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
   }
   else SETERRQ(cm,PETSC_ERR_SUP,"Cannot currently use PETSC_USE_POINTER");
+  ierr = PetscStrallocpy("basic",&((PetscObject)*mapping)->type_name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
