@@ -657,8 +657,8 @@ with the command
   DMLocalToGlobalBegin(DM da,Vec l,InsertMode mode,Vec g);
   DMLocalToGlobalEnd(DM da,Vec l,InsertMode mode,Vec g);
 \end{tabbing}
-Note that this function is not
-subdivided into beginning and ending phases, since it is purely local.
+In general this is used with an InsertMode of  ADD\_VALUES, because if one wishes to insert values into the global vector they should
+just access the global vector directly and put in the values.
 
 A third type of distributed array scatter is from a local
 vector (including ghost points that contain irrelevant values) to

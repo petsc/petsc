@@ -1139,7 +1139,7 @@ static void evaluate_MS_FrankKamentski(PetscReal pos[],PetscReal v[],PetscReal *
 static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,PetscInt mz,DM *_da,Vec *_X)
 {
   DM             da,cda;
-  Vec            X,local_X;
+  Vec            X;
   StokesDOF      ***_stokes;
   Vec            coords;
   DMDACoor3d     ***_coords;
@@ -1161,10 +1161,9 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local_X);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,local_X,&_stokes);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,X,&_stokes);CHKERRQ(ierr);
 
-  ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&ei,&ej,&ek);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&si,&sj,&sk,&ei,&ej,&ek);CHKERRQ(ierr);
   for (k = sk; k < sk+ek; k++) {
     for (j = sj; j < sj+ej; j++) {
       for (i = si; i < si+ei; i++) {
@@ -1183,13 +1182,8 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,local_X,&_stokes);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,X,&_stokes);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-
-  ierr = DMLocalToGlobalBegin(da,local_X,INSERT_VALUES,X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(da,local_X,INSERT_VALUES,X);CHKERRQ(ierr);
-
-  ierr = VecDestroy(&local_X);CHKERRQ(ierr);
 
   *_da = da;
   *_X  = X;
