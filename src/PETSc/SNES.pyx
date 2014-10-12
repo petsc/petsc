@@ -545,6 +545,7 @@ cdef class SNES(Object):
     def getVIInactiveSet(self):
         cdef IS inact = IS()
         CHKERR( SNESVIGetInactiveSet(self.snes, &inact.iset) )
+        PetscINCREF(inact.obj)
         return inact
 
     # --- Python ---
