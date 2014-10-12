@@ -559,6 +559,10 @@ cdef class Vec(Object):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR( VecAXPY(self.vec, sval, x.vec) )
 
+    def isaxpy(self, IS idx not None, alpha, Vec x not None):
+        cdef PetscScalar sval = asScalar(alpha)
+        CHKERR( VecISAXPY(self.vec, idx.iset, sval, x.vec) )
+
     def aypx(self, alpha, Vec x not None):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR( VecAYPX(self.vec, sval, x.vec) )

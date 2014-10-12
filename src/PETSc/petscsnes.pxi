@@ -170,6 +170,7 @@ cdef extern from * nogil:
     int SNESVISetVariableBounds(PetscSNES,PetscVec,PetscVec)
     #ctypedef int (*PetscSNESVariableBoundsFunction)(PetscSNES,PetscVec,PetscVec)
     #int SNESVISetComputeVariableBounds(PetscSNES,PetscSNESVariableBoundsFunction)
+    int SNESVIGetInactiveSet(PetscSNES, PetscIS*)
 
     int SNESCompositeGetSNES(PetscSNES,PetscInt,PetscSNES*)
 
