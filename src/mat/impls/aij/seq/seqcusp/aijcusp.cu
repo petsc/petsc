@@ -81,6 +81,7 @@ PetscErrorCode MatCUSPSetFormat(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFo
 #define __FUNCT__ "MatSetFromOptions_SeqAIJCUSP"
 PetscErrorCode MatSetFromOptions_SeqAIJCUSP(Mat A)
 {
+  Mat_SeqAIJCUSP       *cuspMat = (Mat_SeqAIJCUSP*)A->spptr;
   PetscErrorCode       ierr;
   MatCUSPStorageFormat format;
   PetscBool            flg;
@@ -89,12 +90,12 @@ PetscErrorCode MatSetFromOptions_SeqAIJCUSP(Mat A)
   ierr = PetscOptionsHead("SeqAIJCUSP options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   ierr = PetscOptionsEnum("-mat_cusp_mult_storage_format","sets storage format of (seq)aijcusp gpu matrices for SpMV",
-                          "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+                          "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)cuspMat->format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatCUSPSetFormat(A,MAT_CUSP_MULT,format);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnum("-mat_cusp_storage_format","sets storage format of (seq)aijcusp gpu matrices for SpMV",
-                          "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+                          "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)cuspMat->format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatCUSPSetFormat(A,MAT_CUSP_ALL,format);CHKERRQ(ierr);
   }
