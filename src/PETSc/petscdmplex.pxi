@@ -108,7 +108,7 @@ cdef extern from * nogil:
     #int DMPlexCreateNeighborCSR(PetscDM,PetscInt,PetscInt*,PetscInt**,PetscInt**)
     #int DMPlexCreatePartition(PetscDM,const_char[],PetscInt,PetscBool,PetscSection*,PetscIS*,PetscSection*,PetscIS*)
     #int DMPlexCreatePartitionClosure(PetscDM,PetscSection,PetscIS,PetscSection*,PetscIS*)
-    int DMPlexDistribute(PetscDM,const_char[],PetscInt,PetscSF*,PetscDM*)
+    int DMPlexDistribute(PetscDM,PetscInt,PetscSF*,PetscDM*)
     #int DMPlexDistributeField(PetscDM,PetscSF,PetscSection,Vec,PetscSection,Vec)
     #int DMPlexDistributeData(PetscDM,PetscSF,PetscSection,MPI_Datatype,void*,PetscSection,void**)
 

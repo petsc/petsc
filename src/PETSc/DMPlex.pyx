@@ -478,16 +478,13 @@ cdef class DMPlex(DM):
         cdef PetscBool flag = useClosure
         CHKERR( DMPlexSetAdjacencyUseClosure(self.dm, flag) )
 
-    def distribute(self, partitioner=None, overlap=0):
-        cdef PetscDM pardm = NULL
-        cdef PetscSF sf = NULL
-        cdef const_char *cpart = NULL
-        if partitioner: partitioner = str2bytes(partitioner, &cpart)
+    def distribute(self, overlap=0):
+        cdef PetscDM dmParallel = NULL
         cdef PetscInt coverlap = asInt(overlap)
-        cdef SF pointsf = SF()
-        CHKERR( DMPlexDistribute(self.dm, cpart, coverlap, &pointsf.sf, &pardm) )
-        PetscCLEAR(self.obj); self.dm = pardm
-        return pointsf
+        cdef SF sf = SF()
+        CHKERR( DMPlexDistribute(self.dm, coverlap, &sf.sf, &dmParallel) )
+        PetscCLEAR(self.obj); self.dm = dmParallel
+        return sf
 
     def createSection(self, numComp, numDof, bcField=None, bcPoints=None, IS perm=None):
         # topological dimension
