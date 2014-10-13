@@ -1118,9 +1118,8 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
   /* Everyone must have either the same number of labels, or none */
   ierr = DMPlexGetNumLabels(dm, &numLocalLabels);CHKERRQ(ierr);
   numLabels = numLocalLabels;
-  if (numLocalLabels > 1) hasLabels = PETSC_TRUE;
   ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  if (hasLabels && (numLabels != numLocalLabels)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid number of labels %d != %d", numLocalLabels, numLabels);
+  if (numLabels == numLocalLabels) hasLabels = PETSC_TRUE;
   for (l = numLabels-1; l >= 0; --l) {
     DMLabel     label = NULL, labelNew = NULL;
     PetscBool   isdepth;
