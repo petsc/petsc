@@ -1604,6 +1604,5 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, ISLocalToGlobalM
   ierr = PetscFree2(pointIDs, recvPointIDs);CHKERRQ(ierr);
   if (sf) *sf = migrationSF;
   else    {ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);}
-  ierr = DMSetFromOptions(*dmOverlap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
