@@ -473,13 +473,17 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
 #define __FUNCT__ "DMPlexConstructGhostCells_Internal"
 static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, PetscInt *numGhostCells, DM gdm)
 {
+  PetscSF         sf;
   IS              valueIS;
-  const PetscInt *values;
+  const PetscInt *values, *leaves;
   PetscInt       *depthShift;
-  PetscInt        depth = 0, Ng, numFS, fs, fStart, fEnd, ghostCell, cEnd, c;
+  PetscInt        depth = 0, nleaves, loc, Ng, numFS, fs, fStart, fEnd, ghostCell, cEnd, c;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, NULL, &nleaves, &leaves, NULL);CHKERRQ(ierr);
+  nleaves = PetscMax(0, nleaves);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   /* Count ghost cells */
   ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
@@ -495,6 +499,8 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
     ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
     for (f = 0; f < numFaces; ++f) {
+      ierr = PetscFindInt(faces[f], nleaves, leaves, &loc);CHKERRQ(ierr);
+      if (loc >= 0) continue;
       if ((faces[f] >= fStart) && (faces[f] < fEnd)) ++numBdFaces;
     }
     Ng += numBdFaces;
@@ -522,6 +528,8 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
     for (f = 0; f < numFaces; ++f) {
       PetscInt size;
 
+      ierr = PetscFindInt(faces[f], nleaves, leaves, &loc);CHKERRQ(ierr);
+      if (loc >= 0) continue;
       if ((faces[f] < fStart) || (faces[f] >= fEnd)) continue;
       ierr = DMPlexGetSupportSize(dm, faces[f], &size);CHKERRQ(ierr);
       if (size != 1) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DM has boundary face %d with %d support cells", faces[f], size);
@@ -546,6 +554,8 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
     for (f = 0; f < numFaces; ++f) {
       PetscInt newFace = faces[f] + Ng;
 
+      ierr = PetscFindInt(faces[f], nleaves, leaves, &loc);CHKERRQ(ierr);
+      if (loc >= 0) continue;
       if ((faces[f] < fStart) || (faces[f] >= fEnd)) continue;
       ierr = DMPlexSetCone(gdm, ghostCell, &newFace);CHKERRQ(ierr);
       ierr = DMPlexInsertSupport(gdm, newFace, 1, ghostCell);CHKERRQ(ierr);

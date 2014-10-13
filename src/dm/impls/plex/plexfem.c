@@ -1,4 +1,5 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petscsf.h>
 
 #include <petsc-private/petscfeimpl.h>
 #include <petsc-private/petscfvimpl.h>
@@ -432,13 +433,18 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
                                                               PetscInt field, DMLabel label, PetscInt numids, const PetscInt ids[], PetscErrorCode (*func)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*), void *ctx, Vec locX)
 {
   PetscFV            fv;
+  PetscSF            sf;
   DM                 dmFace, dmCell, dmGrad;
   const PetscScalar *facegeom, *cellgeom, *grad;
+  const PetscInt    *leaves;
   PetscScalar       *x, *fx;
-  PetscInt           dim, fStart, fEnd, pdim, i;
+  PetscInt           dim, nleaves, loc, fStart, fEnd, pdim, i;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, NULL, &nleaves, &leaves, NULL);CHKERRQ(ierr);
+  nleaves = PetscMax(0, nleaves);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMGetField(dm, field, (PetscObject *) &fv);CHKERRQ(ierr);
@@ -467,6 +473,8 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
       const PetscFVFaceGeom *fg;
 
       if ((face < fStart) || (face >= fEnd)) continue; /* Refinement adds non-faces to labels */
+      ierr = PetscFindInt(face, nleaves, (PetscInt *) leaves, &loc);CHKERRQ(ierr);
+      if (loc >= 0) continue;
       ierr = DMPlexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
       ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
       if (Grad) {
