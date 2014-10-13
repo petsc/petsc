@@ -995,6 +995,16 @@ PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobal
   ierr = PetscSFBcastEnd(coneSF, MPIU_INT, cones, newCones);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(newConeSection, &newConesSize);CHKERRQ(ierr);
   ierr = ISGlobalToLocalMappingApplyBlock(renumbering, IS_GTOLM_MASK, newConesSize, newCones, NULL, newCones);CHKERRQ(ierr);
+#if PETSC_USE_DEBUG
+  {
+    PetscInt  p;
+    PetscBool valid = PETSC_TRUE;
+    for (p = 0; p < newConesSize; ++p) {
+      if (newCones[p] < 0) {valid = PETSC_FALSE; ierr = PetscPrintf(PETSC_COMM_SELF, "Point %d not in overlap SF\n", p);CHKERRQ(ierr);}
+    }
+    if (!valid) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid global to local map");
+  }
+#endif
   ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-cones_view", &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscPrintf(comm, "Serial Cone Section:\n");CHKERRQ(ierr);
