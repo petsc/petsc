@@ -5,5 +5,5 @@ Simplicial Mesh in 2 dimensions:
   1-cells: 16 14 14
   2-cells: 8 7 7
 Labels:
-  marker: 2 strata of sizes (3, 0)
+  marker: 2 strata of sizes (16, 5)
   depth: 3 strata of sizes (9, 16, 8)
