@@ -1051,8 +1051,9 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscSFCheckGraphSet(sf,1);
   PetscValidPointer(degree,2);
-  if (!sf->degree) {
+  if (!sf->degreeknown) {
     PetscInt i,maxlocal;
+    if (sf->degree) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Calls to PetscSFComputeDegreeBegin() cannot be nested.");
     for (i=0,maxlocal=0; i<sf->nleaves; i++) maxlocal = PetscMax(maxlocal,(sf->mine ? sf->mine[i] : i)+1);
     ierr = PetscMalloc1(sf->nroots,&sf->degree);CHKERRQ(ierr);
     ierr = PetscMalloc1(maxlocal,&sf->degreetmp);CHKERRQ(ierr);
