@@ -1211,7 +1211,7 @@ PetscErrorCode  PetscOptionsBoolGroupEnd(const char opt[],const char text[],cons
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
--  deflt - the default value, if the user does not set a value then this value is returned in flg
+-  currentvalue - the current value
 
    Output Parameter:
 .  flg - PETSC_TRUE or PETSC_FALSE
@@ -1231,7 +1231,7 @@ PetscErrorCode  PetscOptionsBoolGroupEnd(const char opt[],const char text[],cons
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsBool(const char opt[],const char text[],const char man[],PetscBool deflt,PetscBool  *flg,PetscBool  *set)
+PetscErrorCode  PetscOptionsBool(const char opt[],const char text[],const char man[],PetscBool currentvalue,PetscBool  *flg,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscBool      iset;
@@ -1242,15 +1242,12 @@ PetscErrorCode  PetscOptionsBool(const char opt[],const char text[],const char m
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_BOOL,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
 
-    *(PetscBool*)amsopt->data = deflt;
+    *(PetscBool*)amsopt->data = currentvalue;
   }
   ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,&iset);CHKERRQ(ierr);
-  if (!iset) {
-    if (flg) *flg = deflt;
-  }
   if (set) *set = iset;
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    const char *v = PetscBools[deflt];
+    const char *v = PetscBools[currentvalue];
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s: <%s> %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,v,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

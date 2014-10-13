@@ -383,11 +383,11 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
   if (set) {
     ierr = PCMGSetGalerkin(pc,flg);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-pc_mg_smoothup","Number of post-smoothing steps","PCMGSetNumberSmoothUp",1,&m,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_mg_smoothup","Number of post-smoothing steps","PCMGSetNumberSmoothUp",mg->default_smoothu,&m,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCMGSetNumberSmoothUp(pc,m);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-pc_mg_smoothdown","Number of pre-smoothing steps","PCMGSetNumberSmoothDown",1,&m,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_mg_smoothdown","Number of pre-smoothing steps","PCMGSetNumberSmoothDown",mg->default_smoothd,&m,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCMGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
   }

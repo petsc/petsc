@@ -67,24 +67,23 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
 static PetscErrorCode TaoSetFromOptions_LCL(Tao tao)
 {
   TAO_LCL        *lclP = (TAO_LCL*)tao->data;
-  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Linearly-Constrained Augmented Lagrangian Method for PDE-constrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_eps1","epsilon 1 tolerance","",lclP->eps1,&lclP->eps1,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_rhomax","max value for rho","",lclP->rhomax,&lclP->rhomax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_eps1","epsilon 1 tolerance","",lclP->eps1,&lclP->eps1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_rhomax","max value for rho","",lclP->rhomax,&lclP->rhomax,NULL);CHKERRQ(ierr);
   lclP->phase2_niter = 1;
-  ierr = PetscOptionsInt("-tao_lcl_phase2_niter","Number of phase 2 iterations in LCL algorithm","",lclP->phase2_niter,&lclP->phase2_niter,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_lcl_phase2_niter","Number of phase 2 iterations in LCL algorithm","",lclP->phase2_niter,&lclP->phase2_niter,NULL);CHKERRQ(ierr);
   lclP->verbose = PETSC_FALSE;
-  ierr = PetscOptionsBool("-tao_lcl_verbose","Print verbose output","",lclP->verbose,&lclP->verbose,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_lcl_verbose","Print verbose output","",lclP->verbose,&lclP->verbose,NULL);CHKERRQ(ierr);
   lclP->tau[0] = lclP->tau[1] = lclP->tau[2] = lclP->tau[3] = 1.0e-4;
-  ierr = PetscOptionsReal("-tao_lcl_tola","Tolerance for first forward solve","",lclP->tau[0],&lclP->tau[0],&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_tolb","Tolerance for first adjoint solve","",lclP->tau[1],&lclP->tau[1],&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_tolc","Tolerance for second forward solve","",lclP->tau[2],&lclP->tau[2],&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",lclP->tau[3],&lclP->tau[3],&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_tola","Tolerance for first forward solve","",lclP->tau[0],&lclP->tau[0],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_tolb","Tolerance for first adjoint solve","",lclP->tau[1],&lclP->tau[1],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_tolc","Tolerance for second forward solve","",lclP->tau[2],&lclP->tau[2],NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",lclP->tau[3],&lclP->tau[3],NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -573,9 +572,9 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
  TAOLCL - linearly constrained lagrangian method for pde-constrained optimization
 
 + -tao_lcl_eps1 - epsilon 1 tolerance
-. -tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,&flg);CHKERRQ(ierr);
-. -tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,&flg);CHKERRQ(ierr);
-. -tao_lcl_rhomax","max value for rho","",lclP->rhomax,&lclP->rhomax,&flg);CHKERRQ(ierr);
+. -tao_lcl_eps2","epsilon 2 tolerance","",lclP->eps2,&lclP->eps2,NULL);CHKERRQ(ierr);
+. -tao_lcl_rho0","init value for rho","",lclP->rho0,&lclP->rho0,NULL);CHKERRQ(ierr);
+. -tao_lcl_rhomax","max value for rho","",lclP->rhomax,&lclP->rhomax,NULL);CHKERRQ(ierr);
 . -tao_lcl_phase2_niter - Number of phase 2 iterations in LCL algorithm
 . -tao_lcl_verbose - Print verbose output if True
 . -tao_lcl_tola - Tolerance for first forward solve

@@ -482,12 +482,11 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     /* A hack for using dynamic tolerance in preconditioner */
     ierr = PetscOptionsString("-sub_ksp_dynamic_tolerance","Use dynamic tolerance for PC if PC is a KSP","KSPMonitorDynamicTolerance","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      KSPDynTolCtx *scale   = NULL;
-      PetscReal    defaultv = 1.0;
+      KSPDynTolCtx *scale;
       ierr        = PetscMalloc1(1,&scale);CHKERRQ(ierr);
       scale->bnrm = -1.0;
-      scale->coef = defaultv;
-      ierr        = PetscOptionsReal("-sub_ksp_dynamic_tolerance_param","Parameter of dynamic tolerance for inner PCKSP","KSPMonitorDynamicToleranceParam",defaultv,&(scale->coef),&flg);CHKERRQ(ierr);
+      scale->coef = 1.0;
+      ierr        = PetscOptionsReal("-sub_ksp_dynamic_tolerance_param","Parameter of dynamic tolerance for inner PCKSP","KSPMonitorDynamicToleranceParam",scale->coef,&scale->coef,&flg);CHKERRQ(ierr);
       ierr        = KSPMonitorSet(ksp,KSPMonitorDynamicTolerance,scale,KSPMonitorDynamicToleranceDestroy);CHKERRQ(ierr);
     }
   }

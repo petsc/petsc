@@ -123,7 +123,6 @@ int main(int argc, char **argv)
   AppCtx             user;
   IS                 is_allstate,is_alldesign;
   PetscInt           lo,hi,hi2,lo2,ksp_old;
-  PetscBool          flag;
   PetscInt           ntests = 1;
   PetscInt           i;
   int                stages[1];
@@ -131,15 +130,15 @@ int main(int argc, char **argv)
   PetscInitialize(&argc, &argv, (char*)0,help);
 
   user.mx = 32;
-  ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
   user.nt = 16;
-  ierr = PetscOptionsInt("-nt","Number of time steps","",user.nt,&user.nt,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-nt","Number of time steps","",user.nt,&user.nt,NULL);CHKERRQ(ierr);
   user.ndata = 64;
-  ierr = PetscOptionsInt("-ndata","Numbers of data points per sample","",user.ndata,&user.ndata,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ndata","Numbers of data points per sample","",user.ndata,&user.ndata,NULL);CHKERRQ(ierr);
   user.alpha = 10.0;
-  ierr = PetscOptionsReal("-alpha","Regularization parameter","",user.alpha,&user.alpha,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-alpha","Regularization parameter","",user.alpha,&user.alpha,NULL);CHKERRQ(ierr);
   user.T = 1.0/32.0;
-  ierr = PetscOptionsReal("-Tfinal","Final time","",user.T,&user.T,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-Tfinal","Final time","",user.T,&user.T,NULL);CHKERRQ(ierr);
 
   user.m = user.mx*user.mx*user.nt; /*  number of constraints */
   user.n = user.mx*user.mx*3*user.nt; /*  number of variables */
@@ -209,7 +208,7 @@ int main(int argc, char **argv)
   ierr = TaoSetStateDesignIS(tao,user.s_is,user.d_is);CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
-  ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,NULL);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Trials",&stages[0]);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
   user.ksp_its_initial = user.ksp_its;

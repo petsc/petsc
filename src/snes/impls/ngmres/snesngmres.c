@@ -99,7 +99,7 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscErrorCode ierr;
-  PetscBool      debug;
+  PetscBool      debug = PETSC_FALSE;
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;

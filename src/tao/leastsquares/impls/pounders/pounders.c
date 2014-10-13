@@ -1105,12 +1105,12 @@ static PetscErrorCode TaoSetFromOptions_POUNDERS(Tao tao)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("POUNDERS method for least-squares optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_pounders_delta","initial delta","",mfqP->delta,&mfqP->delta0,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_pounders_delta","initial delta","",mfqP->delta,&mfqP->delta0,NULL);CHKERRQ(ierr);
   mfqP->delta = mfqP->delta0;
   mfqP->npmax = PETSC_DEFAULT;
-  ierr = PetscOptionsInt("-tao_pounders_npmax","max number of points in model","",mfqP->npmax,&mfqP->npmax,0);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_pounders_npmax","max number of points in model","",mfqP->npmax,&mfqP->npmax,NULL);CHKERRQ(ierr);
   mfqP->usegqt = PETSC_FALSE;
-  ierr = PetscOptionsBool("-tao_pounders_gqt","use gqt algorithm for subproblem","",mfqP->usegqt,&mfqP->usegqt,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_pounders_gqt","use gqt algorithm for subproblem","",mfqP->usegqt,&mfqP->usegqt,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -470,7 +470,6 @@ static PetscErrorCode TSSetFromOptions_EIMEX(TS ts)
   ierr = PetscOptionsHead("EIMEX ODE solver options");CHKERRQ(ierr);
   {
     PetscBool flg;
-    flg  = PETSC_FALSE;
     ierr = PetscOptionsInt("-ts_eimex_max_rows","Define the maximum number of rows used","TSEIMEXSetMaxRows",nrows,&nrows,&flg);CHKERRQ(ierr); /* default value 3 */
     if(flg){
       ierr = TSEIMEXSetMaxRows(ts,nrows);CHKERRQ(ierr);
