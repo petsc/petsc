@@ -833,8 +833,9 @@ PetscErrorCode DMPlexCreateLabel(DM dm, const char name[])
 
     ierr = PetscCalloc1(1, &tmpLabel);CHKERRQ(ierr);
     ierr = DMLabelCreate(name, &tmpLabel->label);CHKERRQ(ierr);
-    tmpLabel->next = mesh->labels;
-    mesh->labels   = tmpLabel;
+    tmpLabel->output = PETSC_TRUE;
+    tmpLabel->next   = mesh->labels;
+    mesh->labels     = tmpLabel;
   }
   PetscFunctionReturn(0);
 }
@@ -1337,9 +1338,10 @@ PetscErrorCode DMPlexAddLabel(DM dm, DMLabel label)
   ierr = DMPlexHasLabel(dm, label->name, &hasLabel);CHKERRQ(ierr);
   if (hasLabel) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %s already exists in this DM", label->name);
   ierr = PetscCalloc1(1, &tmpLabel);CHKERRQ(ierr);
-  tmpLabel->label = label;
-  tmpLabel->next  = mesh->labels;
-  mesh->labels    = tmpLabel;
+  tmpLabel->label  = label;
+  tmpLabel->output = PETSC_TRUE;
+  tmpLabel->next   = mesh->labels;
+  mesh->labels     = tmpLabel;
   PetscFunctionReturn(0);
 }
 
