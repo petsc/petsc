@@ -1069,11 +1069,13 @@ PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmPara
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexDistributeLabels"
+/* Here we are assuming that process 0 always has everything */
 PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
 {
   MPI_Comm       comm;
   PetscMPIInt    rank;
-  PetscInt       numLabels, l;
+  PetscInt       numLabels, numLocalLabels, l;
+  PetscBool      hasLabels = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1083,14 +1085,17 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
-  /* Bcast number of labels */
-  ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+  /* Everyone must have either the same number of labels, or none */
+  ierr = DMPlexGetNumLabels(dm, &numLocalLabels);CHKERRQ(ierr);
+  numLabels = numLocalLabels;
+  if (numLocalLabels > 1) hasLabels = PETSC_TRUE;
   ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  if (hasLabels && (numLabels != numLocalLabels)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid number of labels %d != %d", numLocalLabels, numLabels);
   for (l = numLabels-1; l >= 0; --l) {
     DMLabel     label = NULL, labelNew = NULL;
     PetscBool   isdepth;
 
-    if (!rank) {
+    if (hasLabels) {
       ierr = DMPlexGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
       /* Skip "depth" because it is recreated */
       ierr = PetscStrcmp(label->name, "depth", &isdepth);CHKERRQ(ierr);
