@@ -392,11 +392,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = PetscMalloc1(radjsize, &remoteadj);CHKERRQ(ierr);
     ierr = PetscSFGatherBegin(sfAdj, MPIU_INT, adj, remoteadj);CHKERRQ(ierr);
     ierr = PetscSFGatherEnd(sfAdj, MPIU_INT, adj, remoteadj);CHKERRQ(ierr);
-    for (p = 0, r = 0; p < adjSize; ++p) {
+    for (p = 0, l = 0, r = 0; p < adjSize; ++p, l = PetscMax(p, l + indegree[p-1])) {
       PetscInt s;
-      for (s = 0; s < indegree[p]; ++s, ++r) rootAdj[p] = remoteadj[r];
+      for (s = 0; s < indegree[p]; ++s, ++r) rootAdj[l+s] = remoteadj[r];
     }
     if (r != radjsize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", r, radjsize);
+    if (l != adjSize)  SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", l, adjSize);
     ierr = PetscFree(remoteadj);CHKERRQ(ierr);
   }
   ierr = PetscSFDestroy(&sfAdj);CHKERRQ(ierr);
