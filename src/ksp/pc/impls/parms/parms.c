@@ -287,9 +287,9 @@ static PetscErrorCode PCSetFromOptions_PARMS(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PARMS Options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-pc_parms_global","Global preconditioner","PCPARMSSetGlobal",PCPARMSGlobalTypes,(PetscEnum)parms->global,(PetscEnum*)&global,&flag);CHKERRQ(ierr);
-  if (flag) { ierr = PCPARMSSetGlobal(pc,global);CHKERRQ(ierr); }
+  if (flag) {ierr = PCPARMSSetGlobal(pc,global);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-pc_parms_local","Local preconditioner","PCPARMSSetLocal",PCPARMSLocalTypes,(PetscEnum)parms->local,(PetscEnum*)&local,&flag);CHKERRQ(ierr);
-  if (flag) { ierr = PCPARMSSetLocal(pc,local);CHKERRQ(ierr); }
+  if (flag) {ierr = PCPARMSSetLocal(pc,local);CHKERRQ(ierr);}
   ierr = PetscOptionsReal("-pc_parms_solve_tol","Tolerance for local solve","PCPARMSSetSolveTolerances",parms->solvetol,&parms->solvetol,&flag);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_parms_levels","Number of levels","None",parms->levels,&parms->levels,&flag);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_parms_nonsymmetric_perm","Use nonsymmetric permutation","PCPARMSSetNonsymPerm",parms->nonsymperm,&parms->nonsymperm,&flag);CHKERRQ(ierr);

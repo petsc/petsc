@@ -90,10 +90,7 @@ PetscErrorCode  CholmodStart(Mat F)
   CHOLMOD_OPTION_SIZE_T(maxrank,"Max rank of update, larger values are faster but use more memory [2,4,8]");
   {
     static const char *const list[] = {"SIMPLICIAL","AUTO","SUPERNODAL","MatCholmodFactorType","MAT_CHOLMOD_FACTOR_",0};
-    PetscEnum                choice = (PetscEnum)c->supernodal;
-
-    ierr = PetscOptionsEnum("-mat_cholmod_factor","Factorization method","None",list,(PetscEnum)c->supernodal,&choice,0);CHKERRQ(ierr);
-    c->supernodal = (int)choice;
+    ierr = PetscOptionsEnum("-mat_cholmod_factor","Factorization method","None",list,(PetscEnum)c->supernodal,(PetscEnum*)&c->supernodal,0);CHKERRQ(ierr);
   }
   if (c->supernodal) CHOLMOD_OPTION_DOUBLE(supernodal_switch,"flop/nnz_L threshold for switching to supernodal factorization");
   CHOLMOD_OPTION_TRUTH(final_asis,"Leave factors \"as is\"");
