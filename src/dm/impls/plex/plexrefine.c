@@ -5595,8 +5595,8 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
     ranks[l] = remotePoints[l].rank;
   }
   ierr = PetscSortRemoveDupsInt(&numLeaves, ranks);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeaves,    &ranksNew);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeaves,    &localPointsNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeaves, &ranksNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeaves, &localPointsNew);CHKERRQ(ierr);
   ierr = PetscMalloc1(numLeaves, &remotePointsNew);CHKERRQ(ierr);
   for (l = 0; l < numLeaves; ++l) {
     ranksNew[l]              = ranks[l];
@@ -5786,7 +5786,7 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
   ierr = MPI_Type_free(&depthType);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfProcess);CHKERRQ(ierr);
   /* Calculate new point SF */
-  ierr = PetscMalloc1(numLeavesNew,    &localPointsNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeavesNew, &localPointsNew);CHKERRQ(ierr);
   ierr = PetscMalloc1(numLeavesNew, &remotePointsNew);CHKERRQ(ierr);
   ierr = ISGetIndices(processRanks, &neighbors);CHKERRQ(ierr);
   for (l = 0, m = 0; l < numLeaves; ++l) {

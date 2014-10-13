@@ -3156,8 +3156,8 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, const char
       ierr = PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC);CHKERRQ(ierr);
       ierr = PetscSFBcastBegin(sfPoint, MPIU_2INT, newOwners, newLocalPoints);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(sfPoint, MPIU_2INT, newOwners, newLocalPoints);CHKERRQ(ierr);
-      ierr = PetscMalloc(numSubleaves * sizeof(PetscInt),    &slocalPoints);CHKERRQ(ierr);
-      ierr = PetscMalloc(numSubleaves * sizeof(PetscSFNode), &sremotePoints);CHKERRQ(ierr);
+      ierr = PetscMalloc1(numSubleaves, &slocalPoints);CHKERRQ(ierr);
+      ierr = PetscMalloc1(numSubleaves, &sremotePoints);CHKERRQ(ierr);
       for (l = 0, sl = 0, ll = 0; l < numLeaves; ++l) {
         const PetscInt point    = localPoints[l];
         const PetscInt subpoint = DMPlexFilterPoint_Internal(point, 0, numSubpoints, subpoints);

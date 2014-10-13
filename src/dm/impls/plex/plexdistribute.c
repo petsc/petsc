@@ -765,7 +765,8 @@ PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF 
   /* Form the overlap SF build an SF that describes the full overlap migration SF */
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   newLeaves = pEnd - pStart + nleaves;
-  ierr = PetscMalloc2(newLeaves, &ilocal, newLeaves, &iremote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(newLeaves, &ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(newLeaves, &iremote);CHKERRQ(ierr);
   /* First map local points to themselves */
   for (d=0; d<dim+1; d++) {
     ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
@@ -1259,7 +1260,7 @@ PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, PetscSection partS
       if (lowners[p].rank < 0 || lowners[p].index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cell partition corrupt: point not claimed");
       if (lowners[p].rank != rank) ++numGhostPoints;
     }
-    ierr = PetscMalloc1(numGhostPoints,    &ghostPoints);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numGhostPoints, &ghostPoints);CHKERRQ(ierr);
     ierr = PetscMalloc1(numGhostPoints, &remotePoints);CHKERRQ(ierr);
     for (p = 0, gp = 0; p < numLeaves; ++p) {
       if (lowners[p].rank != rank) {
@@ -1528,7 +1529,8 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, ISLocalToGlobalM
   ierr = PetscSFGetGraph(pointSF, NULL, &numSharedPoints, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(overlapSF, NULL, &numOverlapPoints, NULL, NULL);CHKERRQ(ierr);
   numGhostPoints = numSharedPoints + numOverlapPoints;
-  ierr = PetscMalloc2(numGhostPoints, &ghostLocal, numGhostPoints, &ghostRemote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numGhostPoints, &ghostLocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numGhostPoints, &ghostRemote);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscMalloc2(pEnd-pStart, &pointIDs, overlapLeaves, &recvPointIDs);CHKERRQ(ierr);
   for (p=0; p<overlapLeaves; p++) {
