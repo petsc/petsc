@@ -33,7 +33,6 @@ struct Mat_SeqAIJCUSP {
   PetscInt             nonzerorow;   /* number of nonzero rows ... used in the flop calculations */
   MatCUSPStorageFormat format;   /* the storage format for the matrix on the device */
   cudaStream_t         stream;   /* a stream for the parallel SpMV ... this is not owned and should not be deleted */
-
 };
 
 PETSC_INTERN PetscErrorCode MatCUSPCopyToGPU(Mat);

@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = KSPGetResidualNorm(ksp,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %1.5G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %1.5g\n",norm);CHKERRQ(ierr);
 
   /* Cleanup */
   ierr = VecDestroy(&X);CHKERRQ(ierr);
