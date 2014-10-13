@@ -378,13 +378,26 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = ISView(tmp, NULL);CHKERRQ(ierr);
     ierr = ISDestroy(&tmp);CHKERRQ(ierr);
   }
-  /* Gather adjacenct indices to root */
+  /* Gather adjacent indices to root */
   ierr = PetscSectionGetStorageSize(rootSectionAdj, &adjSize);CHKERRQ(ierr);
   ierr = PetscMalloc1(adjSize, &rootAdj);CHKERRQ(ierr);
   for (r = 0; r < adjSize; ++r) rootAdj[r] = -1;
   if (doComm) {
-    ierr = PetscSFGatherBegin(sfAdj, MPIU_INT, adj, rootAdj);CHKERRQ(ierr);
-    ierr = PetscSFGatherEnd(sfAdj, MPIU_INT, adj, rootAdj);CHKERRQ(ierr);
+    const PetscInt *indegree;
+    PetscInt       *remoteadj, radjsize = 0;
+
+    ierr = PetscSFComputeDegreeBegin(sfAdj, &indegree);CHKERRQ(ierr);
+    ierr = PetscSFComputeDegreeEnd(sfAdj, &indegree);CHKERRQ(ierr);
+    for (p = 0; p < adjSize; ++p) radjsize += indegree[p];
+    ierr = PetscMalloc1(radjsize, &remoteadj);CHKERRQ(ierr);
+    ierr = PetscSFGatherBegin(sfAdj, MPIU_INT, adj, remoteadj);CHKERRQ(ierr);
+    ierr = PetscSFGatherEnd(sfAdj, MPIU_INT, adj, remoteadj);CHKERRQ(ierr);
+    for (p = 0, r = 0; p < adjSize; ++p) {
+      PetscInt s;
+      for (s = 0; s < indegree[p]; ++s, ++r) rootAdj[p] = remoteadj[r];
+    }
+    if (r != radjsize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", r, radjsize);
+    ierr = PetscFree(remoteadj);CHKERRQ(ierr);
   }
   ierr = PetscSFDestroy(&sfAdj);CHKERRQ(ierr);
   ierr = PetscFree(adj);CHKERRQ(ierr);
