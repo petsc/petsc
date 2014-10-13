@@ -13,9 +13,9 @@
   Level: intermediate
 
   Notes:
-$     FEM:   Two points p and q are adjacent if q \in closure(star(p)), useCone = PETSC_FALSE, useClosure = PETSC_TRUE
-$     FVM:   Two points p and q are adjacent if q \in star(cone(p)),    useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
-$     FVM++: Two points p and q are adjacent if q \in star(closure(p)), useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
+$     FEM:   Two points p and q are adjacent if q \in closure(star(p)),   useCone = PETSC_FALSE, useClosure = PETSC_TRUE
+$     FVM:   Two points p and q are adjacent if q \in support(p+cone(p)), useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
+$     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
 
 .seealso: DMPlexGetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure(), DMPlexGetAdjacencyUseClosure(), DMPlexDistribute(), DMPlexPreallocateOperator()
 @*/
@@ -43,9 +43,9 @@ PetscErrorCode DMPlexSetAdjacencyUseCone(DM dm, PetscBool useCone)
   Level: intermediate
 
   Notes:
-$     FEM:   Two points p and q are adjacent if q \in closure(star(p)), useCone = PETSC_FALSE, useClosure = PETSC_TRUE
-$     FVM:   Two points p and q are adjacent if q \in star(cone(p)),    useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
-$     FVM++: Two points p and q are adjacent if q \in star(closure(p)), useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
+$     FEM:   Two points p and q are adjacent if q \in closure(star(p)),   useCone = PETSC_FALSE, useClosure = PETSC_TRUE
+$     FVM:   Two points p and q are adjacent if q \in support(p+cone(p)), useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
+$     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
 
 .seealso: DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure(), DMPlexGetAdjacencyUseClosure(), DMPlexDistribute(), DMPlexPreallocateOperator()
 @*/
@@ -72,9 +72,9 @@ PetscErrorCode DMPlexGetAdjacencyUseCone(DM dm, PetscBool *useCone)
   Level: intermediate
 
   Notes:
-$     FEM:   Two points p and q are adjacent if q \in closure(star(p)), useCone = PETSC_FALSE, useClosure = PETSC_TRUE
-$     FVM:   Two points p and q are adjacent if q \in star(cone(p)),    useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
-$     FVM++: Two points p and q are adjacent if q \in star(closure(p)), useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
+$     FEM:   Two points p and q are adjacent if q \in closure(star(p)),   useCone = PETSC_FALSE, useClosure = PETSC_TRUE
+$     FVM:   Two points p and q are adjacent if q \in support(p+cone(p)), useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
+$     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
 
 .seealso: DMPlexGetAdjacencyUseClosure(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator()
 @*/
@@ -102,9 +102,9 @@ PetscErrorCode DMPlexSetAdjacencyUseClosure(DM dm, PetscBool useClosure)
   Level: intermediate
 
   Notes:
-$     FEM:   Two points p and q are adjacent if q \in closure(star(p)), useCone = PETSC_FALSE, useClosure = PETSC_TRUE
-$     FVM:   Two points p and q are adjacent if q \in star(cone(p)),    useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
-$     FVM++: Two points p and q are adjacent if q \in star(closure(p)), useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
+$     FEM:   Two points p and q are adjacent if q \in closure(star(p)),   useCone = PETSC_FALSE, useClosure = PETSC_TRUE
+$     FVM:   Two points p and q are adjacent if q \in support(p+cone(p)), useCone = PETSC_TRUE,  useClosure = PETSC_FALSE
+$     FVM++: Two points p and q are adjacent if q \in star(closure(p)),   useCone = PETSC_TRUE,  useClosure = PETSC_TRUE
 
 .seealso: DMPlexSetAdjacencyUseClosure(), DMPlexSetAdjacencyUseCone(), DMPlexGetAdjacencyUseCone(), DMPlexDistribute(), DMPlexPreallocateOperator()
 @*/
@@ -179,12 +179,13 @@ static PetscErrorCode DMPlexGetAdjacency_Cone_Internal(DM dm, PetscInt p, PetscI
   PetscFunctionBeginHot;
   ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
   ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-  for (c = 0; c < coneSize; ++c) {
+  for (c = 0; c <= coneSize; ++c) {
+    const PetscInt  point   = !c ? p : cone[c-1];
     const PetscInt *support = NULL;
     PetscInt        supportSize, s, q;
 
-    ierr = DMPlexGetSupportSize(dm, cone[c], &supportSize);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dm, cone[c], &support);CHKERRQ(ierr);
+    ierr = DMPlexGetSupportSize(dm, point, &supportSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
     for (s = 0; s < supportSize; ++s) {
       for (q = 0; q < numAdj || (adj[numAdj++] = support[s],0); ++q) {
         if (support[s] == adj[q]) break;
@@ -207,12 +208,13 @@ static PetscErrorCode DMPlexGetAdjacency_Support_Internal(DM dm, PetscInt p, Pet
   PetscFunctionBeginHot;
   ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
   ierr = DMPlexGetSupport(dm, p, &support);CHKERRQ(ierr);
-  for (s = 0; s < supportSize; ++s) {
-    const PetscInt *cone = NULL;
+  for (s = 0; s <= supportSize; ++s) {
+    const PetscInt  point = !s ? p : support[s-1];
+    const PetscInt *cone  = NULL;
     PetscInt        coneSize, c, q;
 
-    ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
     for (c = 0; c < coneSize; ++c) {
       for (q = 0; q < numAdj || (adj[numAdj++] = cone[c],0); ++q) {
         if (cone[c] == adj[q]) break;
