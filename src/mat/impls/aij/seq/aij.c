@@ -2410,6 +2410,7 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
     for (i=0; i<nrows; i++) {
       kstart = ai[irow[i]];
       kend   = kstart + ailen[irow[i]];
+      starts[i] = kstart;
       for (k=kstart; k<kend; k++) {
         if (aj[k] >= first) {
           starts[i] = k;
