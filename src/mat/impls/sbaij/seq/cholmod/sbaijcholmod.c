@@ -53,26 +53,26 @@ PetscErrorCode  CholmodStart(Mat F)
 
 #define CHOLMOD_OPTION_DOUBLE(name,help) do {                            \
     PetscReal tmp = (PetscReal)c->name;                                  \
-    ierr    = PetscOptionsReal("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
+    ierr    = PetscOptionsReal("-mat_cholmod_" #name,help,"None",tmp,&tmp,NULL);CHKERRQ(ierr); \
     c->name = (double)tmp;                                               \
 } while (0)
 
 #define CHOLMOD_OPTION_INT(name,help) do {                               \
     PetscInt tmp = (PetscInt)c->name;                                    \
-    ierr    = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
+    ierr    = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,NULL);CHKERRQ(ierr); \
     c->name = (int)tmp;                                                  \
 } while (0)
 
 #define CHOLMOD_OPTION_SIZE_T(name,help) do {                            \
     PetscInt tmp = (PetscInt)c->name;                                    \
-    ierr = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
+    ierr = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,NULL);CHKERRQ(ierr); \
     if (tmp < 0) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_OUTOFRANGE,"value must be positive"); \
     c->name = (size_t)tmp;                                               \
 } while (0)
 
 #define CHOLMOD_OPTION_TRUTH(name,help) do {                             \
     PetscBool tmp = (PetscBool) !!c->name;                              \
-    ierr    = PetscOptionsBool("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
+    ierr    = PetscOptionsBool("-mat_cholmod_" #name,help,"None",tmp,&tmp,NULL);CHKERRQ(ierr); \
     c->name = (int)tmp;                                                  \
 } while (0)
 
@@ -80,7 +80,7 @@ PetscErrorCode  CholmodStart(Mat F)
   /* CHOLMOD handles first-time packing and refactor-packing separately, but we usually want them to be the same. */
   chol->pack = (PetscBool)c->final_pack;
 
-  ierr = PetscOptionsBool("-mat_cholmod_pack","Pack factors after factorization [disable for frequent repeat factorization]","None",chol->pack,&chol->pack,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_cholmod_pack","Pack factors after factorization [disable for frequent repeat factorization]","None",chol->pack,&chol->pack,NULL);CHKERRQ(ierr);
   c->final_pack = (int)chol->pack;
 
   CHOLMOD_OPTION_DOUBLE(dbound,"Minimum absolute value of diagonal entries of D");
@@ -90,7 +90,7 @@ PetscErrorCode  CholmodStart(Mat F)
   CHOLMOD_OPTION_SIZE_T(maxrank,"Max rank of update, larger values are faster but use more memory [2,4,8]");
   {
     static const char *const list[] = {"SIMPLICIAL","AUTO","SUPERNODAL","MatCholmodFactorType","MAT_CHOLMOD_FACTOR_",0};
-    ierr = PetscOptionsEnum("-mat_cholmod_factor","Factorization method","None",list,(PetscEnum)c->supernodal,(PetscEnum*)&c->supernodal,0);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-mat_cholmod_factor","Factorization method","None",list,(PetscEnum)c->supernodal,(PetscEnum*)&c->supernodal,NULL);CHKERRQ(ierr);
   }
   if (c->supernodal) CHOLMOD_OPTION_DOUBLE(supernodal_switch,"flop/nnz_L threshold for switching to supernodal factorization");
   CHOLMOD_OPTION_TRUTH(final_asis,"Leave factors \"as is\"");

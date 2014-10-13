@@ -342,12 +342,9 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Jacobi options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
-                          &jac->userowmax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_jacobi_rowsum","Use row sums for diagonal","PCJacobiSetUseRowSum",jac->userowsum,
-                          &jac->userowsum,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_jacobi_abs","Use absolute values of diagaonal entries","PCJacobiSetUseAbs",jac->useabs,
-                          &jac->useabs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,&jac->userowmax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_jacobi_rowsum","Use row sums for diagonal","PCJacobiSetUseRowSum",jac->userowsum,&jac->userowsum,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_jacobi_abs","Use absolute values of diagaonal entries","PCJacobiSetUseAbs",jac->useabs,&jac->useabs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -964,13 +964,13 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
     Joule    = rd->unit.Joule;
     Watt     = rd->unit.Watt;
 
-    ierr = PetscOptionsBool("-rd_monitor_residual","Display residuals every time they are evaluated","",rd->monitor_residual,&rd->monitor_residual,0);CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-rd_discretization","Discretization type","",DiscretizationTypes,(PetscEnum)rd->discretization,(PetscEnum*)&rd->discretization,0);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-rd_monitor_residual","Display residuals every time they are evaluated","",rd->monitor_residual,&rd->monitor_residual,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-rd_discretization","Discretization type","",DiscretizationTypes,(PetscEnum)rd->discretization,(PetscEnum*)&rd->discretization,NULL);CHKERRQ(ierr);
     if (rd->discretization == DISCRETIZATION_FE) {
       rd->quadrature = QUADRATURE_GAUSS2;
-      ierr = PetscOptionsEnum("-rd_quadrature","Finite element quadrature","",QuadratureTypes,(PetscEnum)rd->quadrature,(PetscEnum*)&rd->quadrature,0);CHKERRQ(ierr);
+      ierr = PetscOptionsEnum("-rd_quadrature","Finite element quadrature","",QuadratureTypes,(PetscEnum)rd->quadrature,(PetscEnum*)&rd->quadrature,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEnum("-rd_jacobian","Type of finite difference Jacobian","",JacobianTypes,(PetscEnum)rd->jacobian,(PetscEnum*)&rd->jacobian,0);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-rd_jacobian","Type of finite difference Jacobian","",JacobianTypes,(PetscEnum)rd->jacobian,(PetscEnum*)&rd->jacobian,NULL);CHKERRQ(ierr);
     switch (rd->initial) {
     case 1:
       rd->leftbc     = BC_ROBIN;

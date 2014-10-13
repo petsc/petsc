@@ -143,8 +143,10 @@ int main(int argc, char **argv)
   user.noise = 0.01;
   ierr = PetscOptionsReal("-noise","Amount of noise to add to data","",user.noise,&user.noise,NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBool("-use_ptap","Use ptap matrix for DSG","",PETSC_FALSE,&user.use_ptap,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_lrc","Use lrc matrix for Js","",PETSC_FALSE,&user.use_lrc,NULL);CHKERRQ(ierr);
+  user.use_ptap = PETSC_FALSE;
+  ierr = PetscOptionsBool("-use_ptap","Use ptap matrix for DSG","",user.use_ptap,&user.use_ptap,NULL);CHKERRQ(ierr);
+  user.use_lrc = PETSC_FALSE;
+  ierr = PetscOptionsBool("-use_lrc","Use lrc matrix for Js","",user.use_lrc,&user.use_lrc,NULL);CHKERRQ(ierr);
 
   user.m = user.ns*user.mx*user.mx*user.mx; /* number of constraints */
   user.nstate =  user.m;

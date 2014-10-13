@@ -470,6 +470,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
   const char        *colperm[]     = {"NATURAL","MMD_AT_PLUS_A","MMD_ATA","METIS_AT_PLUS_A","PARMETIS"};
   const char        *rowperm[]     = {"LargeDiag","NATURAL"};
   const char        *factPattern[] = {"SamePattern","SamePattern_SameRowPerm"};
+  PetscBool         set;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
@@ -526,8 +527,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
   ierr = PetscOptionsEnum("-mat_superlu_dist_matinput","Matrix input mode (global or distributed)","None",SuperLU_MatInputModes,(PetscEnum)lu->MatInputMode,(PetscEnum*)&lu->MatInputMode,NULL);CHKERRQ(ierr);
   if (lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
 
-  ierr = PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr);
-  if (!flg) options.Equil = NO;
+  ierr = PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",options.Equil ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set && !flg) options.Equil = NO;
 
   ierr = PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",rowperm,2,rowperm[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -564,13 +565,13 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
     }
   }
 
-  ierr = PetscOptionsBool("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr);
-  if (!flg) options.ReplaceTinyPivot = NO;
+  ierr = PetscOptionsBool("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",options.ReplaceTinyPivot ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set && !flg) options.ReplaceTinyPivot = NO;
 
   options.ParSymbFact = NO;
 
-  ierr = PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-  if (flg) {
+  ierr = PetscOptionsBool("-mat_superlu_dist_parsymbfact","Parallel symbolic factorization","None",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set && flg) {
 #if defined(PETSC_HAVE_PARMETIS)
     options.ParSymbFact = YES;
     options.ColPerm     = PARMETIS;   /* in v2.2, PARMETIS is forced for ParSymbFact regardless of user ordering setting */
@@ -594,13 +595,15 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
   }
 
   options.IterRefine = NOREFINE;
-  ierr               = PetscOptionsBool("-mat_superlu_dist_iterrefine","Use iterative refinement","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-  if (flg) options.IterRefine = SLU_DOUBLE;
+  ierr               = PetscOptionsBool("-mat_superlu_dist_iterrefine","Use iterative refinement","None",options.IterRefine == NOREFINE ? PETSC_FALSE : PETSC_TRUE ,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    if (flg) options.IterRefine = SLU_DOUBLE;
+    else options.IterRefine = NOREFINE;
+  }
 
   if (PetscLogPrintInfo) options.PrintStat = YES;
   else options.PrintStat = NO;
-  ierr = PetscOptionsBool("-mat_superlu_dist_statprint","Print factorization information","None",
-                          (PetscBool)options.PrintStat,(PetscBool*)&options.PrintStat,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_superlu_dist_statprint","Print factorization information","None",(PetscBool)options.PrintStat,(PetscBool*)&options.PrintStat,NULL);CHKERRQ(ierr);
   PetscOptionsEnd();
 
   lu->options              = options;

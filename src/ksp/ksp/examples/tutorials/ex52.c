@@ -24,7 +24,10 @@ int main(int argc,char **args)
   PetscScalar    v;
   PetscMPIInt    rank;
 #if defined(PETSC_USE_LOG)
-  PetscLogStage stage;
+  PetscLogStage  stage;
+#endif
+#if defined(PETSC_HAVE_MUMPS)
+  Mat            F;
 #endif
 
   PetscInitialize(&argc,&args,(char*)0,help);
@@ -149,7 +152,6 @@ int main(int argc,char **args)
           are equivalent to these procedural calls
   */
 #if defined(PETSC_HAVE_MUMPS)
-  Mat       F;
   flg    = PETSC_FALSE;
   flg_ch = PETSC_FALSE;
   ierr   = PetscOptionsGetBool(NULL,"-use_mumps_lu",&flg,NULL);CHKERRQ(ierr);

@@ -400,10 +400,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
       ierr = TaoSetMonitor(tao,TaoSolutionMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsBool("-tao_converged_reason","Print reason for TAO converged","TaoSolve",flg,&flg,NULL);CHKERRQ(ierr);
-    if (flg) {
-      tao->printreason = PETSC_TRUE;
-    }
+    ierr = PetscOptionsBool("-tao_converged_reason","Print reason for TAO converged","TaoSolve",tao->printreason,&tao->printreason,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-tao_view_gradient","view gradient vector after each evaluation","TaoSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
@@ -441,24 +438,29 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     }
 
 
-    ierr = PetscOptionsBool("-tao_cancelmonitors","cancel all monitors and call any registered destroy routines","TaoCancelMonitors",PETSC_FALSE,&flg,NULL);CHKERRQ(ierr);
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsBool("-tao_cancelmonitors","cancel all monitors and call any registered destroy routines","TaoCancelMonitors",flg,&flg,NULL);CHKERRQ(ierr);
     if (flg) {ierr = TaoCancelMonitors(tao);CHKERRQ(ierr);}
 
-    ierr = PetscOptionsBool("-tao_draw_solution","Plot solution vector at each iteration","TaoSetMonitor",PETSC_FALSE,&flg,NULL);CHKERRQ(ierr);
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsBool("-tao_draw_solution","Plot solution vector at each iteration","TaoSetMonitor",flg,&flg,NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = TaoSetMonitor(tao,TaoDrawSolutionMonitor,NULL,NULL);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsBool("-tao_draw_step","plots step direction at each iteration","TaoSetMonitor",PETSC_FALSE,&flg,NULL);CHKERRQ(ierr);
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsBool("-tao_draw_step","plots step direction at each iteration","TaoSetMonitor",flg,&flg,NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = TaoSetMonitor(tao,TaoDrawStepMonitor,NULL,NULL);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsBool("-tao_draw_gradient","plots gradient at each iteration","TaoSetMonitor",PETSC_FALSE,&flg,NULL);CHKERRQ(ierr);
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsBool("-tao_draw_gradient","plots gradient at each iteration","TaoSetMonitor",flg,&flg,NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = TaoSetMonitor(tao,TaoDrawGradientMonitor,NULL,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsBool("-tao_fd_gradient","compute gradient using finite differences","TaoDefaultComputeGradient",PETSC_FALSE,&flg,NULL);CHKERRQ(ierr);
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsBool("-tao_fd_gradient","compute gradient using finite differences","TaoDefaultComputeGradient",flg,&flg,NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = TaoSetGradientRoutine(tao,TaoDefaultComputeGradient,NULL);CHKERRQ(ierr);
     }

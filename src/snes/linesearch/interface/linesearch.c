@@ -711,8 +711,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
     ierr = SNESLineSearchSetType(linesearch,deft);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsBool("-snes_linesearch_monitor","Print progress of line searches","SNESSNESLineSearchSetMonitor",
-                          linesearch->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_linesearch_monitor","Print progress of line searches","SNESSNESLineSearchSetMonitor",linesearch->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = SNESLineSearchSetMonitor(linesearch,flg);CHKERRQ(ierr);}
 
   /* tolerances */

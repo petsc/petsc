@@ -657,7 +657,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
 @*/
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
-  PetscBool      flg,pcset,persist;
+  PetscBool      flg,pcset,persist,set;
   PetscInt       i,indx,lag,grids;
   const char     *deft        = SNESNEWTONLS;
   const char     *convtests[] = {"default","skip"};
@@ -740,14 +740,14 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsReal("-snes_ksp_ew_threshold","0 < threshold < 1","SNESKSPSetParametersEW",kctx->threshold,&kctx->threshold,NULL);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_check_jacobian","Check each Jacobian with a differenced one","SNESUpdateCheckJacobian",flg,&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
+  ierr = PetscOptionsBool("-snes_check_jacobian","Check each Jacobian with a differenced one","SNESUpdateCheckJacobian",flg,&flg,&set);CHKERRQ(ierr);
+  if (set && flg) {
     ierr = SNESSetUpdate(snes,SNESUpdateCheckJacobian);CHKERRQ(ierr);
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_monitor_cancel","Remove all monitors","SNESMonitorCancel",flg,&flg,NULL);CHKERRQ(ierr);
-  if (flg) {ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);}
+  ierr = PetscOptionsBool("-snes_monitor_cancel","Remove all monitors","SNESMonitorCancel",flg,&flg,&set);CHKERRQ(ierr);
+  if (set && flg) {ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);}
 
   ierr = PetscOptionsString("-snes_monitor","Monitor norm of function","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
