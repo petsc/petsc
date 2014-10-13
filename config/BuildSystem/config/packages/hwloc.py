@@ -11,11 +11,6 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 1
     return
 
-  def setupDependencies(self, framework):
-    '''Depend on MPI since many MPI's include hwloc in their install'''
-    config.package.GNUPackage.setupDependencies(self, framework)
-    self.mpi            = framework.require('config.packages.MPI',self)
-
   def getSearchDirectories(self):
     yield ''
     yield '/usr'
