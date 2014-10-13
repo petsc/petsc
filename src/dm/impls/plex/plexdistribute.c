@@ -1288,7 +1288,6 @@ PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, PetscSection partS
 
   Input Parameter:
 + dm  - The original DMPlex object
-. partitioner - The partitioning package, or NULL for the default
 - overlap - The overlap of partitions, 0 is the default
 
   Output Parameter:
@@ -1306,7 +1305,7 @@ PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, PetscSection partS
 .keywords: mesh, elements
 .seealso: DMPlexCreate(), DMPlexDistributeByFace(), DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure()
 @*/
-PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overlap, PetscSF *sf, DM *dmParallel)
+PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmParallel)
 {
   DM_Plex               *mesh   = (DM_Plex*) dm->data, *pmesh;
   MPI_Comm               comm;

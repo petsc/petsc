@@ -619,7 +619,7 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   Level: developer
 
 .seealso DMPlexDistribute(), PetscPartitionerSetPointHeight(), PetscPartitionerCreate()
-*/
+@*/
 PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscBool enlarge, PetscSection partSection, IS *partition, PetscSection origPartSection, IS *origPartition)
 {
   PetscMPIInt    size;
@@ -718,19 +718,12 @@ PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, DM dm, Pet
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  if (!numVertices) {
-    ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
-    ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject) part), 0, NULL, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   ierr = PetscSectionGetChart(p->section, NULL, &np);CHKERRQ(ierr);
   if (nparts != np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of requested partitions %d != configured partitions %d", nparts, np);
   ierr = ISGetLocalSize(p->partition, &np);CHKERRQ(ierr);
   if (numVertices != np) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of input vertices %d != configured vertices %d", numVertices, np);
-  partSection = p->section;
-  ierr = PetscObjectReference((PetscObject) p->section);CHKERRQ(ierr);
-  *partition  = p->partition;
+  ierr = PetscSectionCopy(p->section, partSection);CHKERRQ(ierr);
+  *partition = p->partition;
   ierr = PetscObjectReference((PetscObject) p->partition);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -767,6 +760,47 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
   part->data = p;
 
   ierr = PetscPartitionerInitialize_Shell(part);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPartitionerShellSetPartition"
+/*@C
+  PetscPartitionerShellSetPartition - Set an artifical partition for a mesh
+
+  Collective on DM
+
+  Input Parameters:
++ part    - The PetscPartitioner
+. dm      - The mesh DM
+- enlarge - Expand each partition with neighbors
+
+  Level: developer
+
+.seealso DMPlexDistribute(), PetscPartitionerCreate()
+@*/
+PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt numProcs, const PetscInt sizes[], const PetscInt points[])
+{
+  PetscPartitioner_Shell *p = (PetscPartitioner_Shell *) part->data;
+  PetscInt                proc, numPoints;
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
+  if (sizes) {PetscValidPointer(sizes, 3);}
+  if (sizes) {PetscValidPointer(points, 4);}
+  ierr = PetscSectionDestroy(&p->section);CHKERRQ(ierr);
+  ierr = ISDestroy(&p->partition);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) part), &p->section);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(p->section, 0, numProcs);CHKERRQ(ierr);
+  if (sizes) {
+    for (proc = 0; proc < numProcs; ++proc) {
+      ierr = PetscSectionSetDof(p->section, proc, sizes[proc]);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSectionSetUp(p->section);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(p->section, &numPoints);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) part), numPoints, points, PETSC_COPY_VALUES, &p->partition);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1120,6 +1154,34 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
 
   ierr = PetscPartitionerInitialize_ParMetis(part);CHKERRQ(ierr);
   ierr = PetscCitationsRegister(ParMetisPartitionerCitation, &ParMetisPartitionercite);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetPartitioner"
+/*@
+  DMPlexGetPartitioner - Get the mesh partitioner
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. part - The PetscPartitioner
+
+  Level: developer
+
+.seealso DMPlexDistribute(), PetscPartitionerCreate()
+@*/
+PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
+{
+  DM_Plex *mesh = (DM_Plex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(part, 2);
+  *part = mesh->partitioner;
   PetscFunctionReturn(0);
 }
 

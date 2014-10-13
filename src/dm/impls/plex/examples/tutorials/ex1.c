@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   /* Create a mesh */
   ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, interpolate, &dm);CHKERRQ(ierr);
   /* Distribute mesh over processes */
-  ierr = DMPlexDistribute(dm, NULL, 0, NULL, &dmDist);CHKERRQ(ierr);
+  ierr = DMPlexDistribute(dm, 0, NULL, &dmDist);CHKERRQ(ierr);
   if (dmDist) {ierr = DMDestroy(&dm);CHKERRQ(ierr); dm = dmDist;}
   /* Create a scalar field u, a vector field v, and a surface vector field w */
   numFields  = 3;

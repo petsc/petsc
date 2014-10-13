@@ -368,6 +368,7 @@ S*/
 typedef struct _p_PetscSection *PetscSection;
 PETSC_EXTERN PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionClone(PetscSection, PetscSection*);
+PETSC_EXTERN PetscErrorCode PetscSectionCopy(PetscSection, PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSectionGetFieldName(PetscSection, PetscInt, const char *[]);
