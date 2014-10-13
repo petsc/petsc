@@ -839,6 +839,9 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
 
     Notes:
     Left preconditioning is used by default for most Krylov methods except KSPFGMRES which only supports right preconditioning.
+
+    For methods changing the side of the preconditioner changes the norm type that is used, see KSPSetNormType().
+
     Symmetric preconditioning is currently available only for the KSPQCG method. Note, however, that
     symmetric preconditioning can be emulated by using either right or left
     preconditioning and a pre or post processing step.
@@ -847,7 +850,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
 
 .keywords: KSP, set, right, left, symmetric, side, preconditioner, flag
 
-.seealso: KSPGetPCSide()
+.seealso: KSPGetPCSide(), KSPSetNormType(), KSPGetNormType()
 @*/
 PetscErrorCode  KSPSetPCSide(KSP ksp,PCSide side)
 {

@@ -185,6 +185,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   ierr=TaoMonitor(tao,iter,f,gpcg->gnorm,0.0,tao->step,&reason);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING){
+    tao->ksp_its=0;
 
     ierr = GPCGGradProjections(tao);CHKERRQ(ierr);
     ierr = ISGetSize(gpcg->Free_Local,&gpcg->n_free);CHKERRQ(ierr);

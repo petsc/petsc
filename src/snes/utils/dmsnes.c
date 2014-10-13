@@ -301,11 +301,8 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc,DM dmdest)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
   PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
-  ierr = DMSNESDestroy((DMSNES*)&dmdest->dmsnes);CHKERRQ(ierr);
-
-  dmdest->dmsnes = dmsrc->dmsnes;
-
-  ierr = PetscObjectReference(dmdest->dmsnes);CHKERRQ(ierr);
+  if (!dmdest->dmsnes) {ierr = DMSNESCreate(PetscObjectComm((PetscObject) dmdest), (DMSNES *) &dmdest->dmsnes);CHKERRQ(ierr);}
+  ierr = DMSNESCopy((DMSNES) dmsrc->dmsnes, (DMSNES) dmdest->dmsnes);CHKERRQ(ierr);
   ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMSNES,NULL,NULL);CHKERRQ(ierr);
   ierr = DMRefineHookAdd(dmdest,DMRefineHook_DMSNES,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,NULL);CHKERRQ(ierr);

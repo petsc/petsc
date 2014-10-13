@@ -1,5 +1,5 @@
 /*
-      This file deals with unmangled Fortran 77 naming convention on systems that do not modify Fortran systems by
+      This file deals with unmangled BLAS/LAPACK naming convention on systems that do not modify BLAS/LAPACK function names
       adding an underscore at the end or changing to CAPS. IBM is one such compiler.
 */
 #if !defined(_BLASLAPACK_C_H)

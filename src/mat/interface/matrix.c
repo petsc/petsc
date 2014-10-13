@@ -149,7 +149,6 @@ PetscErrorCode  MatGetDiagonalBlock(Mat A,Mat *a)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(a,3);
-  if (!A->assembled) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",&f);CHKERRQ(ierr);
@@ -816,7 +815,7 @@ PetscErrorCode  MatSetUp(Mat A)
 PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscInt          rows,cols,bs;
+  PetscInt          rows,cols,rbs,cbs;
   PetscBool         iascii;
   PetscViewerFormat format;
 #if defined(PETSC_HAVE_SAWS)
@@ -849,9 +848,10 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
-      ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
-      if (bs != 1) {
-        ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D, bs=%D\n",rows,cols,bs);CHKERRQ(ierr);
+      ierr = MatGetBlockSizes(mat,&rbs,&cbs);CHKERRQ(ierr);
+      if (rbs != 1 || cbs != 1) {
+        if (rbs != cbs) {ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D, rbs=%D, cbs = %D\n",rows,cols,rbs,cbs);CHKERRQ(ierr);}
+        else            {ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D, bs=%D\n",rows,cols,rbs);CHKERRQ(ierr);}
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"rows=%D, cols=%D\n",rows,cols);CHKERRQ(ierr);
       }

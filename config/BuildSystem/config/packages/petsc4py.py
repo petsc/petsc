@@ -14,7 +14,7 @@ class Configure(config.package.Package):
     self.petscconfigure  = framework.require('PETSc.Configure',self)
     self.numpy           = framework.require('config.packages.Numpy',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
-    self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
+    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     return
 
   def Install(self):

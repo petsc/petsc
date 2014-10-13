@@ -8,6 +8,15 @@
 #include <petscfetypes.h>
 #include <petscdstypes.h>
 
+/* Assuming dim <= 3 */
+typedef struct {
+  PetscReal v0[3];
+  PetscReal J[9];
+  PetscReal invJ[9];
+  PetscReal detJ;
+  PetscReal n[3];
+} PetscFECellGeom;
+
 PETSC_EXTERN PetscErrorCode PetscFEInitializePackage(void);
 
 PETSC_EXTERN PetscClassId PETSCSPACE_CLASSID;
@@ -61,6 +70,7 @@ PETSC_EXTERN PetscClassId PETSCDUALSPACE_CLASSID;
 J*/
 typedef const char *PetscDualSpaceType;
 #define PETSCDUALSPACELAGRANGE "lagrange"
+#define PETSCDUALSPACESIMPLE   "simple"
 
 PETSC_EXTERN PetscFunctionList PetscDualSpaceList;
 PETSC_EXTERN PetscBool         PetscDualSpaceRegisterAllCalled;
@@ -85,10 +95,13 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace, DM *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace, PetscInt, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace, PetscInt, PetscBool, DM *);
 
-PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscCellGeometry, PetscInt, void (*)(const PetscReal [], PetscScalar *, void *), void *, PetscScalar *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceApply(PetscDualSpace, PetscInt, PetscFECellGeom *, PetscInt, void (*)(const PetscReal [], PetscScalar *, void *), void *, PetscScalar *);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceLagrangeSetContinuity(PetscDualSpace, PetscBool);
+
+PETSC_EXTERN PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceSimpleSetFunctional(PetscDualSpace, PetscInt, PetscQuadrature);
 
 PETSC_EXTERN PetscClassId PETSCFE_CLASSID;
 
@@ -140,11 +153,11 @@ PETSC_EXTERN PetscErrorCode PetscFEGetTabulation(PetscFE, PetscInt, const PetscR
 PETSC_EXTERN PetscErrorCode PetscFERestoreTabulation(PetscFE, PetscInt, const PetscReal[], PetscReal **, PetscReal **, PetscReal **);
 PETSC_EXTERN PetscErrorCode PetscFERefine(PetscFE, PetscFE *);
 
-PETSC_EXTERN PetscErrorCode PetscFEIntegrate(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], PetscDS, const PetscScalar[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdResidual(PetscFE, PetscDS, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateJacobian(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrate(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidual(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdResidual(PetscFE, PetscDS, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateJacobian(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE, PetscDS, PetscInt, PetscInt, PetscInt, PetscFECellGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
 
 PETSC_EXTERN PetscErrorCode PetscFEOpenCLSetRealType(PetscFE, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscFEOpenCLGetRealType(PetscFE, PetscDataType *);

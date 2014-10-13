@@ -23,7 +23,7 @@ M*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetObjective"
 /*@C
-   SNESSetObjective - Sets the objective function minimized by the SNES methods.
+   SNESSetObjective - Sets the objective function minimized by some of the SNES linesearch methods.
 
    Logically Collective on SNES
 
@@ -33,9 +33,11 @@ M*/
 -  ctx - [optional] user-defined context for private data for the
          function evaluation routine (may be NULL)
 
-   Level: beginner
+   Level: intermediately
 
-   Note: If not provided then this defaults to the two norm of the function evaluation (set with SNESSetFunction())
+   Note: This is not used in the SNESLINESEARCHCP line search.
+
+         If not provided then this defaults to the two norm of the function evaluation (set with SNESSetFunction())
 
 .keywords: SNES, nonlinear, set, objective
 

@@ -968,7 +968,7 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,DM properties_da,Vec p
 static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc,PetscInt nz,PetscInt mx,PetscInt my,DM *_da,Vec *_X)
 {
   DM             da,cda;
-  Vec            X,local_X;
+  Vec            X;
   StokesDOF      **_stokes;
   Vec            coords;
   DMDACoor2d     **_coords;
@@ -991,10 +991,9 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local_X);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,local_X,&_stokes);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,X,&_stokes);CHKERRQ(ierr);
 
-  ierr = DMDAGetGhostCorners(da,&si,&sj,0,&ei,&ej,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&si,&sj,0,&ei,&ej,0);CHKERRQ(ierr);
   for (j = sj; j < sj+ej; j++) {
     for (i = si; i < si+ei; i++) {
       PetscReal pos[2],pressure,vel[2],total_stress[3],strain_rate[3];
@@ -1009,13 +1008,8 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc
       _stokes[j][i].p_dof = pressure;
     }
   }
-  ierr = DMDAVecRestoreArray(da,local_X,&_stokes);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,X,&_stokes);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
-
-  ierr = DMLocalToGlobalBegin(da,local_X,INSERT_VALUES,X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(da,local_X,INSERT_VALUES,X);CHKERRQ(ierr);
-
-  ierr = VecDestroy(&local_X);CHKERRQ(ierr);
 
   *_da = da;
   *_X  = X;

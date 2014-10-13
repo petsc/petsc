@@ -602,9 +602,6 @@ PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent event)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_CHUD)
-#include <CHUD/CHUD.h>
-#endif
 #if defined(PETSC_HAVE_PAPI)
 #include <papi.h>
 extern int PAPIEventSet;
@@ -631,9 +628,7 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject
   eventLog->eventInfo[event].timeTmp = 0.0;
   PetscTimeSubtract(&eventLog->eventInfo[event].timeTmp);
   eventLog->eventInfo[event].flopsTmp = 0.0;
-#if defined(PETSC_HAVE_CHUD)
-  eventLog->eventInfo[event].flopsTmp -= chudGetPMCEventCount(chudCPU1Dev,PMC_1);
-#elif defined(PETSC_HAVE_PAPI)
+#if defined(PETSC_HAVE_PAPI)
   { long_long values[2];
     ierr = PAPI_read(PAPIEventSet,values);CHKERRQ(ierr);
 
@@ -670,9 +665,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o
   PetscTimeAdd(&eventLog->eventInfo[event].timeTmp);
   eventLog->eventInfo[event].time  += eventLog->eventInfo[event].timeTmp;
   eventLog->eventInfo[event].time2 += eventLog->eventInfo[event].timeTmp*eventLog->eventInfo[event].timeTmp;
-#if defined(PETSC_HAVE_CHUD)
-  eventLog->eventInfo[event].flopsTmp += chudGetPMCEventCount(chudCPU1Dev,PMC_1);
-#elif defined(PETSC_HAVE_PAPI)
+#if defined(PETSC_HAVE_PAPI)
   { long_long values[2];
     ierr = PAPI_read(PAPIEventSet,values);CHKERRQ(ierr);
 

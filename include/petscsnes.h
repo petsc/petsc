@@ -111,6 +111,11 @@ PETSC_EXTERN PetscErrorCode SNESMonitorSolutionUpdate(SNES,PetscInt,PetscReal,vo
 PETSC_EXTERN PetscErrorCode SNESMonitorDefaultShort(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorFields(SNES,PetscInt,PetscReal,void *);
+PETSC_EXTERN PetscErrorCode KSPMonitorSNES(KSP,PetscInt,PetscReal,void*);
+PETSC_EXTERN PetscErrorCode KSPMonitorSNESLGResidualNormCreate(const char[],const char[],int,int,int,int,PetscObject**);
+PETSC_EXTERN PetscErrorCode KSPMonitorSNESLGResidualNorm(KSP,PetscInt,PetscReal,PetscObject*);
+PETSC_EXTERN PetscErrorCode KSPMonitorSNESLGResidualNormDestroy(PetscObject**);
+
 PETSC_EXTERN PetscErrorCode SNESSetTolerances(SNES,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetTrustRegionTolerance(SNES,PetscReal);
@@ -631,6 +636,9 @@ PETSC_EXTERN PetscErrorCode DMDASNESSetFunctionLocal(DM,InsertMode,DMDASNESFunct
 PETSC_EXTERN PetscErrorCode DMDASNESSetJacobianLocal(DM,DMDASNESJacobian,void*);
 PETSC_EXTERN PetscErrorCode DMDASNESSetObjectiveLocal(DM,DMDASNESObjective,void*);
 PETSC_EXTERN PetscErrorCode DMDASNESSetPicardLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*),PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*),void*);
+
+PETSC_EXTERN PetscErrorCode DMPlexSNESGetGeometryFEM(DM,Vec*);
+PETSC_EXTERN PetscErrorCode DMPlexSNESGetGeometryFVM(DM,Vec*,Vec*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode DMSNESSetFunctionLocal(DM,PetscErrorCode (*)(DM,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMSNESSetJacobianLocal(DM,PetscErrorCode (*)(DM,Vec,Mat,Mat,void*),void*);

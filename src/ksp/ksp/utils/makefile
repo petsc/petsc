@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = schurm.c
+SOURCEC  = schurm.c dmproject.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscksp

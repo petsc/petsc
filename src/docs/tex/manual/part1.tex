@@ -16,8 +16,7 @@ paradigms can ease the development of large-scale scientific
 application codes in Fortran, C, C++, and Python.  Begun several years ago,
 the software has evolved into a powerful set of tools for the
 numerical solution of partial differential equations and related problems
-on high-performance computers. PETSc is also callable directly from MATLAB (sequential) to
-allow ``trying out'' PETSc's solvers from prototype MATLAB code.
+on high-performance computers. 
 
 PETSc consists of a variety of libraries (similar to classes in C++),
 which are discussed in detail in Parts II and III of the users manual.
@@ -157,8 +156,12 @@ routines that support direct use of Fortran90 pointers.
 Lisandro Dalcin. This can be done by configuring PETSc with the option \trl{--download-petsc4py}. See the PETSc installation guide
 for more details \href{http://www.mcs.anl.gov/petsc/documentation/installation.html}{http://www.mcs.anl.gov/petsc/documentation/installation.html}.
 
-\noindent{\bf Note to MATLAB Programmers}: This code is not currently supported due to the lack of interest and use. If you are very interested in using and and taking over its maintenance please contact us. To program with PETSc in MATLAB read the information in share/petsc/matlab/classes/PetscInitialize.m. Numerous examples
-are given in share/petsc/matlab/classes/examples/tutorials. Run the program demo in that directory.
+\noindent{\bf Note to MATLAB Programmers}: The code that allows PETSc to be called from MATLAB is not currently supported due to the lack of interest and use.
+If you are very interested in using and and taking over its
+maintenance please contact us. To program with PETSc in MATLAB read the information in
+share/petsc/matlab/classes/PetscInitialize.m. Numerous examples are
+given in share/petsc/matlab/classes/examples/tutorials. Run the
+program demo in that directory.
 
 %-----------------------------------------------------------------------------
 \section{Running PETSc Programs}

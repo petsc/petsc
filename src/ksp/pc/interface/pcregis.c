@@ -44,7 +44,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC);
 #if !defined(PETSC_USE_COMPLEX)
 PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC);
 #endif
-#if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION) && defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_CUSP)
 PETSC_EXTERN PetscErrorCode PCCreate_SACUSP(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_SACUSPPoly(PC);
 PETSC_EXTERN PetscErrorCode PCCreate_BiCGStabCUSP(PC);
@@ -122,7 +122,7 @@ PetscErrorCode  PCRegisterAll(void)
 #if !defined(PETSC_USE_COMPLEX)
   ierr = PCRegister(PCTFS          ,PCCreate_TFS);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION) && defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_CUSP)
   ierr = PCRegister(PCSACUSP       ,PCCreate_SACUSP);CHKERRQ(ierr);
   ierr = PCRegister(PCAINVCUSP     ,PCCreate_AINVCUSP);CHKERRQ(ierr);
   ierr = PCRegister(PCBICGSTABCUSP ,PCCreate_BiCGStabCUSP);CHKERRQ(ierr);

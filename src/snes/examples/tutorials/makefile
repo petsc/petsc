@@ -714,6 +714,16 @@ runex19_14:
 	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_14, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_14.tmp
+runex19_17:
+	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_ksp -snes_monitor_short  -ksp_pc_side right  -snes_rtol 1.e-12 -ksp_rtol 1.e-12 > ex19_17.tmp 2>&1; \
+	   if (${DIFF} output/ex19_17.out ex19_17.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_17, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_17.tmp
+runex19_18:
+	-@${MPIEXEC} -n 1 ./ex19 -ksp_monitor_snes_lg -ksp_rtol 1.e-13 -snes_rtol 1.e-13 -ksp_pc_side right > ex19_18.tmp 2>&1; \
+	   if (${DIFF} output/ex19_18.out ex19_18.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_18, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19_18.tmp
 runex19_14_ds:
 	-@${MPIEXEC} -n 4 ./ex19 -snes_converged_reason -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres -mat_fd_type ds > ex19_14.tmp 2>&1; \
 	   if (${DIFF} output/ex19_2.out ex19_14.tmp) then true; \
@@ -1119,7 +1129,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm ex54.PETSc ex54.rm ex55.PETSc ex55.rm\
                                  ex58.PETSc runex58 runex58_2 ex58.rm ex70.PETSc ex70.rm
-TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw ex19.rm
+TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm  ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 ex9.rm

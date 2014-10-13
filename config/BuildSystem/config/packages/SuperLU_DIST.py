@@ -16,7 +16,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
     self.parmetis       = framework.require('config.packages.parmetis',self)
     self.mpi            = framework.require('config.packages.MPI',self)

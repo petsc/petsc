@@ -13,7 +13,7 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.numpy           = framework.require('config.packages.Numpy',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
-    self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
+    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.petscconfigure  = framework.require('PETSc.Configure',self)
     return
 

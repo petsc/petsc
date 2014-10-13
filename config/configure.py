@@ -266,7 +266,7 @@ def petsc_configure(configure_options):
 
   framework = None
   try:
-    framework = config.framework.Framework(['--configModules=PETSc.Configure','--optionsModule=PETSc.compilerOptions']+sys.argv[1:], loadArgDB = 0)
+    framework = config.framework.Framework(['--configModules=PETSc.Configure','--optionsModule=config.compilerOptions']+sys.argv[1:], loadArgDB = 0)
     framework.setup()
     framework.logPrint('\n'.join(extraLogs))
     framework.configure(out = sys.stdout)

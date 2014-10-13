@@ -22,7 +22,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
                 ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c
-EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F
+EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
@@ -676,6 +676,10 @@ ex169: ex169.o chkopts
 ex171: ex171.o chkopts
 	-${CLINKER} -o ex171 ex171.o ${PETSC_MAT_LIB}
 	${RM} ex171.o
+
+ex171f: ex171f.o chkopts
+	-${FLINKER} -o ex171f ex171f.o ${PETSC_MAT_LIB}
+	${RM} ex171f.o
 
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
@@ -2041,6 +2045,9 @@ runex171:
 	   ${DIFF} output/ex171_1.out ex171.tmp || printf "${PWD}\nPossible problem with ex171, diffs above\n=========================================\n"; \
 	   ${RM} -f ex171.tmp
 
+runex171f:
+	-@${MPIEXEC} -n 1 ./ex171f
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex10.PETSc \
                                  runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
@@ -2081,7 +2088,7 @@ TESTEXAMPLES_C_X	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  runex76_3 ex76.rm ex77.PETSc  ex77.rm ex94.PETSc ex94.rm \
                                  ex96.PETSc runex96 ex96.rm ex95.PETSc runex95 runex95_2 ex95.rm
 TESTEXAMPLES_FORTRAN	       = ex36f.PETSc runex36f ex36f.rm ex63f.PETSc runex63f ex63f.rm ex67f.PETSc ex67f.rm \
-                                 ex85f.PETSc runex85f ex85f.rm ex105f.PETSc ex105f.rm ex126f.PETSc runex126f ex126f.rm
+                                 ex85f.PETSc runex85f ex85f.rm ex105f.PETSc ex105f.rm ex126f.PETSc runex126f ex126f.rm ex171f.PETSc runex171f ex171f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex36f.PETSc runex36f ex36f.rm
 TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex5.PETSc runex5 \
                                  ex5.rm ex6.PETSc runex6 ex6.rm ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm \

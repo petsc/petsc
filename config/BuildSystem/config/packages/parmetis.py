@@ -12,9 +12,9 @@ class Configure(config.package.CMakePackage):
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
-    self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
-    self.scalartypes    = framework.require('PETSc.utilities.scalarTypes',self)
-    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
+    self.scalartypes    = framework.require('PETSc.options.scalarTypes',self)
+    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
     self.mpi             = framework.require('config.packages.MPI',self)
     self.metis           = framework.require('config.packages.metis', self)
     self.deps            = [self.mpi, self.metis]
@@ -23,7 +23,8 @@ class Configure(config.package.CMakePackage):
     '''Requires the same CMake options as Metis'''
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DGKLIB_PATH=../headers')
-    args.append('-DMPI_INCLUDE_PATH='+self.mpi.include[0])
+    if self.mpi.include:
+      args.append('-DMPI_INCLUDE_PATH='+self.mpi.include[0])
     if self.sharedLibraries.useShared:
       args.append('-DSHARED=1')
     if self.compilerFlags.debugging:

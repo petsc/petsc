@@ -236,7 +236,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.outputMakeRuleHeader(self.makeRuleHeader)
       self.log.write('**** ' + self.makeRuleHeader + ' ****\n')
       self.outputMakeRuleHeader(self.log)
-      self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeMacroHeader)
+      self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeRuleHeader)
     if self.header:
       self.outputHeader(self.header)
       self.log.write('**** ' + self.header + ' ****\n')
@@ -884,7 +884,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       body.extend(self.batchCleanup)
       # pretty print repr(args.values())
       for itm in args:
-        if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=PETSc.compilerOptions'):
+        if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=config.compilerOptions'):
           body.append('fprintf(output,"  \''+str(itm)+'\',\\n");')
       body.append('fprintf(output,"]");')
       driver = ['fprintf(output, "\\nif __name__ == \'__main__\':',

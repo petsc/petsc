@@ -98,7 +98,7 @@ PetscErrorCode PCDestroy_Noise(PC pc)
 PetscScalar diagFunc1(PetscInt i, PetscInt n)
 {
   const PetscScalar kappa = 5.0;
-  return 1 + (kappa*(PetscScalar)i)/(PetscScalar)(n-1);
+  return 1.0 + (kappa*(PetscScalar)i)/(PetscScalar)(n-1);
 }
 
 #undef __FUNCT__
@@ -106,7 +106,7 @@ PetscScalar diagFunc1(PetscInt i, PetscInt n)
 PetscScalar diagFunc2(PetscInt i, PetscInt n)
 {
   const PetscScalar kappa = 50.0;
-  return 1 + (kappa*(PetscScalar)i)/(PetscScalar)(n-1);
+  return 1.0 + (kappa*(PetscScalar)i)/(PetscScalar)(n-1);
 }
 
 #undef __FUNCT__
@@ -117,7 +117,7 @@ PetscScalar diagFunc3(PetscInt i, PetscInt n)
   if(!i){
     return 1e-2;
   }else{
-    return 1 + (kappa*((PetscScalar)(i-1)))/(PetscScalar)(n-2);
+    return 1. + (kappa*((PetscScalar)(i-1)))/(PetscScalar)(n-2);
   }
 }
 
