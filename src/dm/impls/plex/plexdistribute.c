@@ -561,7 +561,7 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank,
   PetscInt           pStart, pEnd, p, sStart, sEnd, nleaves, l, numNeighbors, n, ovSize;
   PetscInt           idx, numRemote;
   PetscMPIInt        rank, numProcs;
-  PetscBool          flg;
+  PetscBool          useCone, useClosure, flg;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -615,6 +615,36 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank,
   ierr = PetscFree(adj);CHKERRQ(ierr);
   ierr = ISRestoreIndices(rootrank, &rrank);CHKERRQ(ierr);
   ierr = ISRestoreIndices(leafrank, &nrank);CHKERRQ(ierr);
+  /* We require the closure in the overlap */
+  ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+  if (useCone || !useClosure) {
+    IS              rankIS,   pointIS;
+    const PetscInt *ranks,   *points;
+    PetscInt        numRanks, numPoints, r, p;
+
+    ierr = DMLabelGetValueIS(ovAdjByRank, &rankIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(rankIS, &numRanks);CHKERRQ(ierr);
+    ierr = ISGetIndices(rankIS, &ranks);CHKERRQ(ierr);
+    for (r = 0; r < numRanks; ++r) {
+      const PetscInt rank = ranks[r];
+
+      ierr = DMLabelGetStratumIS(ovAdjByRank, rank, &pointIS);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
+      ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+      for (p = 0; p < numPoints; ++p) {
+        PetscInt *closure = NULL, closureSize, c;
+
+        ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+        for (c = 0; c < closureSize*2; c += 2) {ierr = DMLabelSetValue(ovAdjByRank, closure[c], rank);CHKERRQ(ierr);}
+        ierr = DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(rankIS, &ranks);CHKERRQ(ierr);
+    ierr = ISDestroy(&rankIS);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-overlap_view", &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
