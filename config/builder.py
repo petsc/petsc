@@ -228,7 +228,6 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                         'src/dm/impls/plex/examples/tests/ex12': [{'numProcs': 1, 'args': '-dm_view ascii:mesh.tex:ascii_latex'},
                                                                   {'numProcs': 8, 'args': '-dm_view'},
                                                                   {'numProcs': 8, 'args': '-overlap 1 -dm_view'},
-                                                                  {'numProcs': 8, 'args': '-overlap -1 -dm_view'},
                                                                   {'numProcs': 3, 'args': '-overlap 1 -dm_view'}],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
