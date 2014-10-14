@@ -1,0 +1,802 @@
+DM Object:Simplicial Mesh 8 MPI processes
+  type: plex
+Simplicial Mesh in 2 dimensions:
+  0-cells: 3 3 3 3 3 3 3 3
+  1-cells: 3 3 3 3 3 3 3 3
+  2-cells: 1 1 1 1 1 1 1 1
+Labels:
+  depth: 3 strata of sizes (3, 3, 1)
+  marker: 2 strata of sizes (2, 3)
+Calculating parallel overlap partition
+Rank 0: 0 (0) 1 (0) 2 (0) 3 (0) 4 (0) 5 (0) 6 (0)
+Rank 1: 0 (0) 1 (0) 2 (0) 3 (0) 4 (1) 5 (0) 6 (0)
+Rank 2: 0 (0) 1 (0) 2 (0) 3 (2) 4 (0) 5 (0) 6 (1)
+Rank 3: 0 (0) 1 (0) 2 (0) 3 (2) 4 (0) 5 (1) 6 (0)
+Rank 4: 0 (0) 1 (0) 2 (0) 3 (0) 4 (0) 5 (0) 6 (0)
+Rank 5: 0 (0) 1 (0) 2 (0) 3 (0) 4 (1) 5 (0) 6 (0)
+Rank 6: 0 (0) 1 (2) 2 (0) 3 (1) 4 (1) 5 (0) 6 (1)
+Rank 7: 0 (0) 1 (2) 2 (1) 3 (5) 4 (1) 5 (1) 6 (0)
+PetscSection Object:Root Section 8 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  0 offset   0
+  (   4) dim  0 offset   0
+  (   5) dim  0 offset   0
+  (   6) dim  0 offset   0
+Process 1:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  0 offset   0
+  (   4) dim  1 offset   0
+  (   5) dim  0 offset   1
+  (   6) dim  0 offset   1
+Process 2:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  2 offset   0
+  (   4) dim  0 offset   2
+  (   5) dim  0 offset   2
+  (   6) dim  1 offset   2
+Process 3:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  2 offset   0
+  (   4) dim  0 offset   2
+  (   5) dim  1 offset   2
+  (   6) dim  0 offset   3
+Process 4:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  0 offset   0
+  (   4) dim  0 offset   0
+  (   5) dim  0 offset   0
+  (   6) dim  0 offset   0
+Process 5:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  0 offset   0
+  (   4) dim  1 offset   0
+  (   5) dim  0 offset   1
+  (   6) dim  0 offset   1
+Process 6:
+  (   0) dim  0 offset   0
+  (   1) dim  2 offset   0
+  (   2) dim  0 offset   2
+  (   3) dim  1 offset   2
+  (   4) dim  1 offset   3
+  (   5) dim  0 offset   4
+  (   6) dim  1 offset   4
+Process 7:
+  (   0) dim  0 offset   0
+  (   1) dim  2 offset   0
+  (   2) dim  1 offset   2
+  (   3) dim  5 offset   3
+  (   4) dim  1 offset   8
+  (   5) dim  1 offset   9
+  (   6) dim  0 offset  10
+IS Object: 8 MPI processes
+  type: general
+[0] Number of indices in set 0
+[1] Number of indices in set 1
+[1] 0 0
+[2] Number of indices in set 3
+[2] 0 0
+[2] 1 1
+[2] 2 0
+[3] Number of indices in set 3
+[3] 0 0
+[3] 1 1
+[3] 2 0
+[4] Number of indices in set 0
+[5] Number of indices in set 1
+[5] 0 4
+[6] Number of indices in set 5
+[6] 0 4
+[6] 1 5
+[6] 2 3
+[6] 3 3
+[6] 4 5
+[7] Number of indices in set 10
+[7] 0 4
+[7] 1 5
+[7] 2 2
+[7] 3 0
+[7] 4 2
+[7] 5 3
+[7] 6 5
+[7] 7 6
+[7] 8 5
+[7] 9 2
+PetscSection Object:Leaf Section 8 MPI processes
+  type not yet set
+Process 0:
+  (   1) dim  5 offset   0
+  (   2) dim  2 offset   5
+  (   3) dim  2 offset   7
+  (   4) dim  1 offset   9
+  (   5) dim  1 offset  10
+  (   6) dim  1 offset  11
+Process 1:
+  (   1) dim  2 offset   0
+  (   2) dim  2 offset   2
+Process 2:
+  (   1) dim  1 offset   0
+  (   2) dim  5 offset   1
+  (   3) dim  0 offset   6
+  (   4) dim  1 offset   6
+Process 3:
+  (   1) dim  5 offset   0
+  (   2) dim  1 offset   5
+  (   3) dim  0 offset   6
+  (   4) dim  1 offset   6
+Process 4:
+  (   2) dim  2 offset   0
+  (   3) dim  2 offset   2
+  (   4) dim  0 offset   4
+  (   5) dim  1 offset   4
+Process 5:
+  (   1) dim  2 offset   0
+  (   2) dim  2 offset   2
+  (   3) dim  5 offset   4
+  (   4) dim  0 offset   9
+  (   5) dim  1 offset   9
+  (   6) dim  1 offset  10
+Process 6:
+  (   2) dim  5 offset   0
+Process 7:
+IS Object: 8 MPI processes
+  type: general
+[0] Number of indices in set 12
+[0] 0 0
+[0] 1 2
+[0] 2 3
+[0] 3 5
+[0] 4 6
+[0] 5 0
+[0] 6 1
+[0] 7 0
+[0] 8 1
+[0] 9 0
+[0] 10 0
+[0] 11 0
+[1] Number of indices in set 4
+[1] 0 0
+[1] 1 1
+[1] 2 0
+[1] 3 1
+[2] Number of indices in set 7
+[2] 0 2
+[2] 1 0
+[2] 2 2
+[2] 3 3
+[2] 4 5
+[2] 5 6
+[2] 6 2
+[3] Number of indices in set 7
+[3] 0 0
+[3] 1 2
+[3] 2 3
+[3] 3 5
+[3] 4 6
+[3] 5 3
+[3] 6 3
+[4] Number of indices in set 5
+[4] 0 4
+[4] 1 5
+[4] 2 4
+[4] 3 5
+[4] 4 4
+[5] Number of indices in set 11
+[5] 0 4
+[5] 1 5
+[5] 2 4
+[5] 3 5
+[5] 4 0
+[5] 5 2
+[5] 6 3
+[5] 7 5
+[5] 8 6
+[5] 9 5
+[5] 10 5
+[6] Number of indices in set 5
+[6] 0 0
+[6] 1 2
+[6] 2 3
+[6] 3 5
+[6] 4 6
+[7] Number of indices in set 0
+Label 'Overlap adjacency':
+[0]: 0 (7)
+[0]: 1 (7)
+[0]: 2 (7)
+[0]: 3 (7)
+[0]: 4 (7)
+[0]: 5 (7)
+[0]: 6 (7)
+[0]: 0 (2)
+[0]: 1 (2)
+[0]: 2 (2)
+[0]: 3 (2)
+[0]: 4 (2)
+[0]: 5 (2)
+[0]: 6 (2)
+[0]: 0 (3)
+[0]: 1 (3)
+[0]: 2 (3)
+[0]: 3 (3)
+[0]: 4 (3)
+[0]: 5 (3)
+[0]: 6 (3)
+[0]: 0 (1)
+[0]: 1 (1)
+[0]: 2 (1)
+[0]: 3 (1)
+[0]: 4 (1)
+[0]: 5 (1)
+[0]: 6 (1)
+[0]: 0 (5)
+[0]: 1 (5)
+[0]: 2 (5)
+[0]: 3 (5)
+[0]: 4 (5)
+[0]: 5 (5)
+[0]: 6 (5)
+[0]: 0 (6)
+[0]: 1 (6)
+[0]: 2 (6)
+[0]: 3 (6)
+[0]: 4 (6)
+[0]: 5 (6)
+[0]: 6 (6)
+[1]: 0 (2)
+[1]: 1 (2)
+[1]: 2 (2)
+[1]: 3 (2)
+[1]: 4 (2)
+[1]: 5 (2)
+[1]: 6 (2)
+[1]: 0 (3)
+[1]: 1 (3)
+[1]: 2 (3)
+[1]: 3 (3)
+[1]: 4 (3)
+[1]: 5 (3)
+[1]: 6 (3)
+[1]: 0 (0)
+[1]: 1 (0)
+[1]: 2 (0)
+[1]: 3 (0)
+[1]: 4 (0)
+[1]: 5 (0)
+[1]: 6 (0)
+[2]: 0 (7)
+[2]: 1 (7)
+[2]: 2 (7)
+[2]: 3 (7)
+[2]: 4 (7)
+[2]: 5 (7)
+[2]: 6 (7)
+[2]: 0 (0)
+[2]: 1 (0)
+[2]: 2 (0)
+[2]: 3 (0)
+[2]: 4 (0)
+[2]: 5 (0)
+[2]: 6 (0)
+[2]: 0 (3)
+[2]: 1 (3)
+[2]: 2 (3)
+[2]: 3 (3)
+[2]: 4 (3)
+[2]: 5 (3)
+[2]: 6 (3)
+[2]: 0 (5)
+[2]: 1 (5)
+[2]: 2 (5)
+[2]: 3 (5)
+[2]: 4 (5)
+[2]: 5 (5)
+[2]: 6 (5)
+[2]: 0 (6)
+[2]: 1 (6)
+[2]: 2 (6)
+[2]: 3 (6)
+[2]: 4 (6)
+[2]: 5 (6)
+[2]: 6 (6)
+[2]: 0 (1)
+[2]: 1 (1)
+[2]: 2 (1)
+[2]: 3 (1)
+[2]: 4 (1)
+[2]: 5 (1)
+[2]: 6 (1)
+[3]: 0 (7)
+[3]: 1 (7)
+[3]: 2 (7)
+[3]: 3 (7)
+[3]: 4 (7)
+[3]: 5 (7)
+[3]: 6 (7)
+[3]: 0 (6)
+[3]: 1 (6)
+[3]: 2 (6)
+[3]: 3 (6)
+[3]: 4 (6)
+[3]: 5 (6)
+[3]: 6 (6)
+[3]: 0 (0)
+[3]: 1 (0)
+[3]: 2 (0)
+[3]: 3 (0)
+[3]: 4 (0)
+[3]: 5 (0)
+[3]: 6 (0)
+[3]: 0 (2)
+[3]: 1 (2)
+[3]: 2 (2)
+[3]: 3 (2)
+[3]: 4 (2)
+[3]: 5 (2)
+[3]: 6 (2)
+[3]: 0 (5)
+[3]: 1 (5)
+[3]: 2 (5)
+[3]: 3 (5)
+[3]: 4 (5)
+[3]: 5 (5)
+[3]: 6 (5)
+[3]: 0 (1)
+[3]: 1 (1)
+[3]: 2 (1)
+[3]: 3 (1)
+[3]: 4 (1)
+[3]: 5 (1)
+[3]: 6 (1)
+[4]: 0 (7)
+[4]: 1 (7)
+[4]: 2 (7)
+[4]: 3 (7)
+[4]: 4 (7)
+[4]: 5 (7)
+[4]: 6 (7)
+[4]: 0 (6)
+[4]: 1 (6)
+[4]: 2 (6)
+[4]: 3 (6)
+[4]: 4 (6)
+[4]: 5 (6)
+[4]: 6 (6)
+[4]: 0 (5)
+[4]: 1 (5)
+[4]: 2 (5)
+[4]: 3 (5)
+[4]: 4 (5)
+[4]: 5 (5)
+[4]: 6 (5)
+[5]: 0 (7)
+[5]: 1 (7)
+[5]: 2 (7)
+[5]: 3 (7)
+[5]: 4 (7)
+[5]: 5 (7)
+[5]: 6 (7)
+[5]: 0 (6)
+[5]: 1 (6)
+[5]: 2 (6)
+[5]: 3 (6)
+[5]: 4 (6)
+[5]: 5 (6)
+[5]: 6 (6)
+[5]: 0 (4)
+[5]: 1 (4)
+[5]: 2 (4)
+[5]: 3 (4)
+[5]: 4 (4)
+[5]: 5 (4)
+[5]: 6 (4)
+[5]: 0 (0)
+[5]: 1 (0)
+[5]: 2 (0)
+[5]: 3 (0)
+[5]: 4 (0)
+[5]: 5 (0)
+[5]: 6 (0)
+[5]: 0 (2)
+[5]: 1 (2)
+[5]: 2 (2)
+[5]: 3 (2)
+[5]: 4 (2)
+[5]: 5 (2)
+[5]: 6 (2)
+[5]: 0 (3)
+[5]: 1 (3)
+[5]: 2 (3)
+[5]: 3 (3)
+[5]: 4 (3)
+[5]: 5 (3)
+[5]: 6 (3)
+[6]: 0 (7)
+[6]: 1 (7)
+[6]: 2 (7)
+[6]: 3 (7)
+[6]: 4 (7)
+[6]: 5 (7)
+[6]: 6 (7)
+[6]: 0 (4)
+[6]: 1 (4)
+[6]: 2 (4)
+[6]: 3 (4)
+[6]: 4 (4)
+[6]: 5 (4)
+[6]: 6 (4)
+[6]: 0 (5)
+[6]: 1 (5)
+[6]: 2 (5)
+[6]: 3 (5)
+[6]: 4 (5)
+[6]: 5 (5)
+[6]: 6 (5)
+[6]: 0 (0)
+[6]: 1 (0)
+[6]: 2 (0)
+[6]: 3 (0)
+[6]: 4 (0)
+[6]: 5 (0)
+[6]: 6 (0)
+[6]: 0 (2)
+[6]: 1 (2)
+[6]: 2 (2)
+[6]: 3 (2)
+[6]: 4 (2)
+[6]: 5 (2)
+[6]: 6 (2)
+[6]: 0 (3)
+[6]: 1 (3)
+[6]: 2 (3)
+[6]: 3 (3)
+[6]: 4 (3)
+[6]: 5 (3)
+[6]: 6 (3)
+[7]: 0 (4)
+[7]: 1 (4)
+[7]: 2 (4)
+[7]: 3 (4)
+[7]: 4 (4)
+[7]: 5 (4)
+[7]: 6 (4)
+[7]: 0 (5)
+[7]: 1 (5)
+[7]: 2 (5)
+[7]: 3 (5)
+[7]: 4 (5)
+[7]: 5 (5)
+[7]: 6 (5)
+[7]: 0 (2)
+[7]: 1 (2)
+[7]: 2 (2)
+[7]: 3 (2)
+[7]: 4 (2)
+[7]: 5 (2)
+[7]: 6 (2)
+[7]: 0 (0)
+[7]: 1 (0)
+[7]: 2 (0)
+[7]: 3 (0)
+[7]: 4 (0)
+[7]: 5 (0)
+[7]: 6 (0)
+[7]: 0 (3)
+[7]: 1 (3)
+[7]: 2 (3)
+[7]: 3 (3)
+[7]: 4 (3)
+[7]: 5 (3)
+[7]: 6 (3)
+[7]: 0 (6)
+[7]: 1 (6)
+[7]: 2 (6)
+[7]: 3 (6)
+[7]: 4 (6)
+[7]: 5 (6)
+[7]: 6 (6)
+PetscSF Object:Two-Sided Process SF 8 MPI processes
+  type: basic
+    sort=rank-order
+  [0] Number of roots=8, leaves=6, remote ranks=6
+  [0] 1 <- (1,0)
+  [0] 2 <- (2,0)
+  [0] 3 <- (3,0)
+  [0] 5 <- (5,0)
+  [0] 6 <- (6,0)
+  [0] 7 <- (7,0)
+  [1] Number of roots=8, leaves=3, remote ranks=3
+  [1] 0 <- (0,1)
+  [1] 2 <- (2,1)
+  [1] 3 <- (3,1)
+  [2] Number of roots=8, leaves=6, remote ranks=6
+  [2] 0 <- (0,2)
+  [2] 1 <- (1,2)
+  [2] 3 <- (3,2)
+  [2] 5 <- (5,2)
+  [2] 6 <- (6,2)
+  [2] 7 <- (7,2)
+  [3] Number of roots=8, leaves=6, remote ranks=6
+  [3] 0 <- (0,3)
+  [3] 1 <- (1,3)
+  [3] 2 <- (2,3)
+  [3] 5 <- (5,3)
+  [3] 6 <- (6,3)
+  [3] 7 <- (7,3)
+  [4] Number of roots=8, leaves=3, remote ranks=3
+  [4] 5 <- (5,4)
+  [4] 6 <- (6,4)
+  [4] 7 <- (7,4)
+  [5] Number of roots=8, leaves=6, remote ranks=6
+  [5] 0 <- (0,5)
+  [5] 2 <- (2,5)
+  [5] 3 <- (3,5)
+  [5] 4 <- (4,5)
+  [5] 6 <- (6,5)
+  [5] 7 <- (7,5)
+  [6] Number of roots=8, leaves=6, remote ranks=6
+  [6] 0 <- (0,6)
+  [6] 2 <- (2,6)
+  [6] 3 <- (3,6)
+  [6] 4 <- (4,6)
+  [6] 5 <- (5,6)
+  [6] 7 <- (7,6)
+  [7] Number of roots=8, leaves=6, remote ranks=6
+  [7] 0 <- (0,7)
+  [7] 2 <- (2,7)
+  [7] 3 <- (3,7)
+  [7] 4 <- (4,7)
+  [7] 5 <- (5,7)
+  [7] 6 <- (6,7)
+PetscSection Object:Overlap Root Section 8 MPI processes
+  type not yet set
+Process 0:
+  (   0) dim  0 offset   0
+  (   1) dim  7 offset   0
+  (   2) dim  7 offset   7
+  (   3) dim  7 offset  14
+  (   4) dim  0 offset  21
+  (   5) dim  7 offset  21
+  (   6) dim  7 offset  28
+  (   7) dim  7 offset  35
+Process 1:
+  (   0) dim  7 offset   0
+  (   1) dim  0 offset   7
+  (   2) dim  7 offset   7
+  (   3) dim  7 offset  14
+  (   4) dim  0 offset  21
+  (   5) dim  0 offset  21
+  (   6) dim  0 offset  21
+  (   7) dim  0 offset  21
+Process 2:
+  (   0) dim  7 offset   0
+  (   1) dim  7 offset   7
+  (   2) dim  0 offset  14
+  (   3) dim  7 offset  14
+  (   4) dim  0 offset  21
+  (   5) dim  7 offset  21
+  (   6) dim  7 offset  28
+  (   7) dim  7 offset  35
+Process 3:
+  (   0) dim  7 offset   0
+  (   1) dim  7 offset   7
+  (   2) dim  7 offset  14
+  (   3) dim  0 offset  21
+  (   4) dim  0 offset  21
+  (   5) dim  7 offset  21
+  (   6) dim  7 offset  28
+  (   7) dim  7 offset  35
+Process 4:
+  (   0) dim  0 offset   0
+  (   1) dim  0 offset   0
+  (   2) dim  0 offset   0
+  (   3) dim  0 offset   0
+  (   4) dim  0 offset   0
+  (   5) dim  7 offset   0
+  (   6) dim  7 offset   7
+  (   7) dim  7 offset  14
+Process 5:
+  (   0) dim  7 offset   0
+  (   1) dim  0 offset   7
+  (   2) dim  7 offset   7
+  (   3) dim  7 offset  14
+  (   4) dim  7 offset  21
+  (   5) dim  0 offset  28
+  (   6) dim  7 offset  28
+  (   7) dim  7 offset  35
+Process 6:
+  (   0) dim  7 offset   0
+  (   1) dim  0 offset   7
+  (   2) dim  7 offset   7
+  (   3) dim  7 offset  14
+  (   4) dim  7 offset  21
+  (   5) dim  7 offset  28
+  (   6) dim  0 offset  35
+  (   7) dim  7 offset  35
+Process 7:
+  (   0) dim  7 offset   0
+  (   1) dim  0 offset   7
+  (   2) dim  7 offset   7
+  (   3) dim  7 offset  14
+  (   4) dim  7 offset  21
+  (   5) dim  7 offset  28
+  (   6) dim  7 offset  35
+  (   7) dim  0 offset  42
+Overlap root points
+Rank 0:
+  Neighbor 1: (0, 0) (7, 3) (2, 3) (3, 3) (2, 6) (1, 4) (3, 5)
+  Neighbor 2: (0, 0) (7, 3) (2, 3) (3, 3) (2, 6) (1, 4) (3, 5)
+  Neighbor 3: (0, 0) (7, 3) (2, 3) (3, 3) (2, 6) (1, 4) (3, 5)
+  Neighbor 5: (0, 0) (7, 3) (2, 3) (3, 3) (2, 6) (1, 4) (3, 5)
+  Neighbor 6: (0, 0) (7, 3) (2, 3) (3, 3) (2, 6) (1, 4) (3, 5)
+  Neighbor 7: (0, 0) (7, 3) (2, 3) (3, 3) (2, 6) (1, 4) (3, 5)
+Rank 1:
+  Neighbor 0: (1, 0) (2, 3) (3, 3) (1, 3) (1, 4) (1, 5) (1, 6)
+  Neighbor 2: (1, 0) (2, 3) (3, 3) (1, 3) (1, 4) (1, 5) (1, 6)
+  Neighbor 3: (1, 0) (2, 3) (3, 3) (1, 3) (1, 4) (1, 5) (1, 6)
+Rank 2:
+  Neighbor 0: (2, 0) (7, 2) (7, 3) (2, 3) (7, 5) (2, 5) (2, 6)
+  Neighbor 1: (2, 0) (7, 2) (7, 3) (2, 3) (7, 5) (2, 5) (2, 6)
+  Neighbor 3: (2, 0) (7, 2) (7, 3) (2, 3) (7, 5) (2, 5) (2, 6)
+  Neighbor 5: (2, 0) (7, 2) (7, 3) (2, 3) (7, 5) (2, 5) (2, 6)
+  Neighbor 6: (2, 0) (7, 2) (7, 3) (2, 3) (7, 5) (2, 5) (2, 6)
+  Neighbor 7: (2, 0) (7, 2) (7, 3) (2, 3) (7, 5) (2, 5) (2, 6)
+Rank 3:
+  Neighbor 0: (3, 0) (7, 3) (6, 3) (3, 3) (6, 4) (3, 5) (3, 6)
+  Neighbor 1: (3, 0) (7, 3) (6, 3) (3, 3) (6, 4) (3, 5) (3, 6)
+  Neighbor 2: (3, 0) (7, 3) (6, 3) (3, 3) (6, 4) (3, 5) (3, 6)
+  Neighbor 5: (3, 0) (7, 3) (6, 3) (3, 3) (6, 4) (3, 5) (3, 6)
+  Neighbor 6: (3, 0) (7, 3) (6, 3) (3, 3) (6, 4) (3, 5) (3, 6)
+  Neighbor 7: (3, 0) (7, 3) (6, 3) (3, 3) (6, 4) (3, 5) (3, 6)
+Rank 4:
+  Neighbor 5: (4, 0) (4, 1) (7, 1) (6, 1) (4, 4) (5, 4) (4, 6)
+  Neighbor 6: (4, 0) (4, 1) (7, 1) (6, 1) (4, 4) (5, 4) (4, 6)
+  Neighbor 7: (4, 0) (4, 1) (7, 1) (6, 1) (4, 4) (5, 4) (4, 6)
+Rank 5:
+  Neighbor 0: (5, 0) (7, 1) (6, 1) (7, 3) (5, 4) (6, 6) (7, 4)
+  Neighbor 2: (5, 0) (7, 1) (6, 1) (7, 3) (5, 4) (6, 6) (7, 4)
+  Neighbor 3: (5, 0) (7, 1) (6, 1) (7, 3) (5, 4) (6, 6) (7, 4)
+  Neighbor 4: (5, 0) (7, 1) (6, 1) (7, 3) (5, 4) (6, 6) (7, 4)
+  Neighbor 6: (5, 0) (7, 1) (6, 1) (7, 3) (5, 4) (6, 6) (7, 4)
+  Neighbor 7: (5, 0) (7, 1) (6, 1) (7, 3) (5, 4) (6, 6) (7, 4)
+Rank 6:
+  Neighbor 0: (6, 0) (6, 1) (7, 3) (6, 3) (6, 4) (6, 5) (6, 6)
+  Neighbor 2: (6, 0) (6, 1) (7, 3) (6, 3) (6, 4) (6, 5) (6, 6)
+  Neighbor 3: (6, 0) (6, 1) (7, 3) (6, 3) (6, 4) (6, 5) (6, 6)
+  Neighbor 4: (6, 0) (6, 1) (7, 3) (6, 3) (6, 4) (6, 5) (6, 6)
+  Neighbor 5: (6, 0) (6, 1) (7, 3) (6, 3) (6, 4) (6, 5) (6, 6)
+  Neighbor 7: (6, 0) (6, 1) (7, 3) (6, 3) (6, 4) (6, 5) (6, 6)
+Rank 7:
+  Neighbor 0: (7, 0) (7, 1) (7, 2) (7, 3) (7, 4) (7, 5) (7, 6)
+  Neighbor 2: (7, 0) (7, 1) (7, 2) (7, 3) (7, 4) (7, 5) (7, 6)
+  Neighbor 3: (7, 0) (7, 1) (7, 2) (7, 3) (7, 4) (7, 5) (7, 6)
+  Neighbor 4: (7, 0) (7, 1) (7, 2) (7, 3) (7, 4) (7, 5) (7, 6)
+  Neighbor 5: (7, 0) (7, 1) (7, 2) (7, 3) (7, 4) (7, 5) (7, 6)
+  Neighbor 6: (7, 0) (7, 1) (7, 2) (7, 3) (7, 4) (7, 5) (7, 6)
+PetscSection Object:Overlap Leaf Section 8 MPI processes
+  type not yet set
+Process 0:
+  (   1) dim  7 offset   0
+  (   2) dim  7 offset   7
+  (   3) dim  7 offset  14
+  (   4) dim  0 offset  21
+  (   5) dim  7 offset  21
+  (   6) dim  7 offset  28
+  (   7) dim  7 offset  35
+Process 1:
+  (   0) dim  7 offset   0
+  (   1) dim  0 offset   7
+  (   2) dim  7 offset   7
+  (   3) dim  7 offset  14
+Process 2:
+  (   0) dim  7 offset   0
+  (   1) dim  7 offset   7
+  (   2) dim  0 offset  14
+  (   3) dim  7 offset  14
+  (   4) dim  0 offset  21
+  (   5) dim  7 offset  21
+  (   6) dim  7 offset  28
+  (   7) dim  7 offset  35
+Process 3:
+  (   0) dim  7 offset   0
+  (   1) dim  7 offset   7
+  (   2) dim  7 offset  14
+  (   3) dim  0 offset  21
+  (   4) dim  0 offset  21
+  (   5) dim  7 offset  21
+  (   6) dim  7 offset  28
+  (   7) dim  7 offset  35
+Process 4:
+  (   5) dim  7 offset   0
+  (   6) dim  7 offset   7
+  (   7) dim  7 offset  14
+Process 5:
+  (   0) dim  7 offset   0
+  (   1) dim  0 offset   7
+  (   2) dim  7 offset   7
+  (   3) dim  7 offset  14
+  (   4) dim  7 offset  21
+  (   5) dim  0 offset  28
+  (   6) dim  7 offset  28
+  (   7) dim  7 offset  35
+Process 6:
+  (   0) dim  7 offset   0
+  (   1) dim  0 offset   7
+  (   2) dim  7 offset   7
+  (   3) dim  7 offset  14
+  (   4) dim  7 offset  21
+  (   5) dim  7 offset  28
+  (   6) dim  0 offset  35
+  (   7) dim  7 offset  35
+Process 7:
+  (   0) dim  7 offset   0
+  (   1) dim  0 offset   7
+  (   2) dim  7 offset   7
+  (   3) dim  7 offset  14
+  (   4) dim  7 offset  21
+  (   5) dim  7 offset  28
+  (   6) dim  7 offset  35
+Overlap leaf points
+Rank 0:
+  Neighbor 1: (1, 0) (2, 3) (3, 3) (1, 3) (1, 4) (1, 5) (1, 6)
+  Neighbor 2: (2, 0) (7, 2) (7, 3) (2, 3) (7, 5) (2, 5) (2, 6)
+  Neighbor 3: (3, 0) (7, 3) (6, 3) (3, 3) (6, 4) (3, 5) (3, 6)
+  Neighbor 5: (5, 0) (7, 1) (6, 1) (7, 3) (5, 4) (6, 6) (7, 4)
+  Neighbor 6: (6, 0) (6, 1) (7, 3) (6, 3) (6, 4) (6, 5) (6, 6)
+  Neighbor 7: (7, 0) (7, 1) (7, 2) (7, 3) (7, 4) (7, 5) (7, 6)
+Rank 1:
+  Neighbor 0: (0, 0) (7, 3) (2, 3) (3, 3) (2, 6) (1, 4) (3, 5)
+  Neighbor 2: (2, 0) (7, 2) (7, 3) (2, 3) (7, 5) (2, 5) (2, 6)
+  Neighbor 3: (3, 0) (7, 3) (6, 3) (3, 3) (6, 4) (3, 5) (3, 6)
+Rank 2:
+  Neighbor 0: (0, 0) (7, 3) (2, 3) (3, 3) (2, 6) (1, 4) (3, 5)
+  Neighbor 1: (1, 0) (2, 3) (3, 3) (1, 3) (1, 4) (1, 5) (1, 6)
+  Neighbor 3: (3, 0) (7, 3) (6, 3) (3, 3) (6, 4) (3, 5) (3, 6)
+  Neighbor 5: (5, 0) (7, 1) (6, 1) (7, 3) (5, 4) (6, 6) (7, 4)
+  Neighbor 6: (6, 0) (6, 1) (7, 3) (6, 3) (6, 4) (6, 5) (6, 6)
+  Neighbor 7: (7, 0) (7, 1) (7, 2) (7, 3) (7, 4) (7, 5) (7, 6)
+Rank 3:
+  Neighbor 0: (0, 0) (7, 3) (2, 3) (3, 3) (2, 6) (1, 4) (3, 5)
+  Neighbor 1: (1, 0) (2, 3) (3, 3) (1, 3) (1, 4) (1, 5) (1, 6)
+  Neighbor 2: (2, 0) (7, 2) (7, 3) (2, 3) (7, 5) (2, 5) (2, 6)
+  Neighbor 5: (5, 0) (7, 1) (6, 1) (7, 3) (5, 4) (6, 6) (7, 4)
+  Neighbor 6: (6, 0) (6, 1) (7, 3) (6, 3) (6, 4) (6, 5) (6, 6)
+  Neighbor 7: (7, 0) (7, 1) (7, 2) (7, 3) (7, 4) (7, 5) (7, 6)
+Rank 4:
+  Neighbor 5: (5, 0) (7, 1) (6, 1) (7, 3) (5, 4) (6, 6) (7, 4)
+  Neighbor 6: (6, 0) (6, 1) (7, 3) (6, 3) (6, 4) (6, 5) (6, 6)
+  Neighbor 7: (7, 0) (7, 1) (7, 2) (7, 3) (7, 4) (7, 5) (7, 6)
+Rank 5:
+  Neighbor 0: (0, 0) (7, 3) (2, 3) (3, 3) (2, 6) (1, 4) (3, 5)
+  Neighbor 2: (2, 0) (7, 2) (7, 3) (2, 3) (7, 5) (2, 5) (2, 6)
+  Neighbor 3: (3, 0) (7, 3) (6, 3) (3, 3) (6, 4) (3, 5) (3, 6)
+  Neighbor 4: (4, 0) (4, 1) (7, 1) (6, 1) (4, 4) (5, 4) (4, 6)
+  Neighbor 6: (6, 0) (6, 1) (7, 3) (6, 3) (6, 4) (6, 5) (6, 6)
+  Neighbor 7: (7, 0) (7, 1) (7, 2) (7, 3) (7, 4) (7, 5) (7, 6)
+Rank 6:
+  Neighbor 0: (0, 0) (7, 3) (2, 3) (3, 3) (2, 6) (1, 4) (3, 5)
+  Neighbor 2: (2, 0) (7, 2) (7, 3) (2, 3) (7, 5) (2, 5) (2, 6)
+  Neighbor 3: (3, 0) (7, 3) (6, 3) (3, 3) (6, 4) (3, 5) (3, 6)
+  Neighbor 4: (4, 0) (4, 1) (7, 1) (6, 1) (4, 4) (5, 4) (4, 6)
+  Neighbor 5: (5, 0) (7, 1) (6, 1) (7, 3) (5, 4) (6, 6) (7, 4)
+  Neighbor 7: (7, 0) (7, 1) (7, 2) (7, 3) (7, 4) (7, 5) (7, 6)
+Rank 7:
+  Neighbor 0: (0, 0) (7, 3) (2, 3) (3, 3) (2, 6) (1, 4) (3, 5)
+  Neighbor 2: (2, 0) (7, 2) (7, 3) (2, 3) (7, 5) (2, 5) (2, 6)
+  Neighbor 3: (3, 0) (7, 3) (6, 3) (3, 3) (6, 4) (3, 5) (3, 6)
+  Neighbor 4: (4, 0) (4, 1) (7, 1) (6, 1) (4, 4) (5, 4) (4, 6)
+  Neighbor 5: (5, 0) (7, 1) (6, 1) (7, 3) (5, 4) (6, 6) (7, 4)
+  Neighbor 6: (6, 0) (6, 1) (7, 3) (6, 3) (6, 4) (6, 5) (6, 6)

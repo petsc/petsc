@@ -277,9 +277,8 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 \\usetikzlibrary{backgrounds}\n\
 \\usetikzlibrary{arrows}\n\
 \\begin{document}\n\
-\\section{%s}\n\
-\\begin{center}\n", name, 8.0/scale);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Mesh for process ");CHKERRQ(ierr);
+\\vbox{\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "%s for process ", name);CHKERRQ(ierr);
     for (p = 0; p < size; ++p) {
       if (p > 0 && p == size-1) {
         ierr = PetscViewerASCIIPrintf(viewer, ", and ", colors[p%numColors], p);CHKERRQ(ierr);
@@ -289,7 +288,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, "{\\textcolor{%s}%D}", colors[p%numColors], p);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, ".\n\n\n\
-\\begin{tikzpicture}[scale = %g,font=\\fontsize{8}{8}\\selectfont]\n");CHKERRQ(ierr);
+\\begin{tikzpicture}[scale = %g,font=\\fontsize{8}{8}\\selectfont]\n", 8.0/scale);CHKERRQ(ierr);
     /* Plot vertices */
     ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
@@ -354,7 +353,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "\\end{tikzpicture}\n\\end{center}\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "\\end{tikzpicture}\n}\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "\\end{document}\n", name);CHKERRQ(ierr);
   } else {
     MPI_Comm    comm;
