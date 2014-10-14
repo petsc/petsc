@@ -31,4 +31,15 @@ typedef struct _p_DM* DM;
 E*/
 typedef enum {DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_MIRROR, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_TWIST} DMBoundaryType;
 
+/*S
+  PetscPartitioner - PETSc object that manages a graph partitioner
+
+  Level: intermediate
+
+  Concepts: partition, mesh
+
+.seealso: PetscPartitionerCreate(), PetscPartitionerSetType(), PetscPartitionerType
+S*/
+typedef struct _p_PetscPartitioner *PetscPartitioner;
+
 #endif

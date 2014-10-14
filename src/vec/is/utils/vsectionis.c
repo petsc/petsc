@@ -64,6 +64,85 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionCopy"
+/*@
+  PetscSectionCopy - Creates a shallow (if possible) copy of the PetscSection
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. section - the PetscSection
+
+  Output Parameter:
+. newSection - the copy
+
+  Level: developer
+
+.seealso: PetscSection, PetscSectionCreate(), PetscSectionDestroy()
+@*/
+PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
+{
+  IS             perm;
+  PetscInt       numFields, f, pStart, pEnd, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  if (numFields) {ierr = PetscSectionSetNumFields(newSection, numFields);CHKERRQ(ierr);}
+  for (f = 0; f < numFields; ++f) {
+    const char *name   = NULL;
+    PetscInt   numComp = 0;
+
+    ierr = PetscSectionGetFieldName(section, f, &name);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldName(newSection, f, name);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldComponents(section, f, &numComp);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(newSection, f, numComp);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(newSection, pStart, pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetPermutation(section, &perm);CHKERRQ(ierr);
+  ierr = PetscSectionSetPermutation(newSection, perm);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt dof, cdof, fcdof = 0;
+
+    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(newSection, p, dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
+    if (cdof) {ierr = PetscSectionSetConstraintDof(newSection, p, cdof);CHKERRQ(ierr);}
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionGetFieldDof(section, p, f, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(newSection, p, f, dof);CHKERRQ(ierr);
+      if (cdof) {
+        ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
+        if (fcdof) {ierr = PetscSectionSetFieldConstraintDof(newSection, p, f, fcdof);CHKERRQ(ierr);}
+      }
+    }
+  }
+  ierr = PetscSectionSetUp(newSection);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt       off, cdof, fcdof = 0;
+    const PetscInt *cInd;
+
+    /* Must set offsets in case they do not agree with the prefix sums */
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    ierr = PetscSectionSetOffset(newSection, p, off);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
+    if (cdof) {
+      ierr = PetscSectionGetConstraintIndices(section, p, &cInd);CHKERRQ(ierr);
+      ierr = PetscSectionSetConstraintIndices(newSection, p, cInd);CHKERRQ(ierr);
+      for (f = 0; f < numFields; ++f) {
+        ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
+        if (fcdof) {
+          ierr = PetscSectionGetFieldConstraintIndices(section, p, f, &cInd);CHKERRQ(ierr);
+          ierr = PetscSectionSetFieldConstraintIndices(newSection, p, f, cInd);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionClone"
 /*@
   PetscSectionClone - Creates a shallow (if possible) copy of the PetscSection
@@ -82,64 +161,11 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 @*/
 PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
 {
-  IS             perm;
-  PetscInt       numFields, f, pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) section), newSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  if (numFields) {ierr = PetscSectionSetNumFields(*newSection, numFields);CHKERRQ(ierr);}
-  for (f = 0; f < numFields; ++f) {
-    const char *name   = NULL;
-    PetscInt   numComp = 0;
-
-    ierr = PetscSectionGetFieldName(section, f, &name);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldName(*newSection, f, name);CHKERRQ(ierr);
-    ierr = PetscSectionGetFieldComponents(section, f, &numComp);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldComponents(*newSection, f, numComp);CHKERRQ(ierr);
-  }
-  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(*newSection, pStart, pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionGetPermutation(section, &perm);CHKERRQ(ierr);
-  ierr = PetscSectionSetPermutation(*newSection, perm);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt dof, cdof, fcdof = 0;
-
-    ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionSetDof(*newSection, p, dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
-    if (cdof) {ierr = PetscSectionSetConstraintDof(*newSection, p, cdof);CHKERRQ(ierr);}
-    for (f = 0; f < numFields; ++f) {
-      ierr = PetscSectionGetFieldDof(section, p, f, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldDof(*newSection, p, f, dof);CHKERRQ(ierr);
-      if (cdof) {
-        ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
-        if (fcdof) {ierr = PetscSectionSetFieldConstraintDof(*newSection, p, f, fcdof);CHKERRQ(ierr);}
-      }
-    }
-  }
-  ierr = PetscSectionSetUp(*newSection);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt       off, cdof, fcdof = 0;
-    const PetscInt *cInd;
-
-    /* Must set offsets in case they do not agree with the prefix sums */
-    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
-    ierr = PetscSectionSetOffset(*newSection, p, off);CHKERRQ(ierr);
-    ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
-    if (cdof) {
-      ierr = PetscSectionGetConstraintIndices(section, p, &cInd);CHKERRQ(ierr);
-      ierr = PetscSectionSetConstraintIndices(*newSection, p, cInd);CHKERRQ(ierr);
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
-        if (fcdof) {
-          ierr = PetscSectionGetFieldConstraintIndices(section, p, f, &cInd);CHKERRQ(ierr);
-          ierr = PetscSectionSetFieldConstraintIndices(*newSection, p, f, cInd);CHKERRQ(ierr);
-        }
-      }
-    }
-  }
+  ierr = PetscSectionCopy(section, *newSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
