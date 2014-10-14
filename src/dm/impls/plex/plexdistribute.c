@@ -1053,27 +1053,24 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   /* Distribute labels */
   ierr = PetscLogEventBegin(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
   {
-    DMLabel  next      = mesh->labels, newNext = pmesh->labels;
-    PetscInt numLabels = 0, l;
+    PetscInt numLabels, l;
 
     /* Bcast number of labels */
-    while (next) {++numLabels; next = next->next;}
+    ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
     ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-    next = mesh->labels;
-    for (l = 0; l < numLabels; ++l) {
-      DMLabel   labelNew;
-      PetscBool isdepth;
+    for (l = numLabels-1; l >= 0; --l) {
+      DMLabel     label = NULL, labelNew = NULL;
+      PetscBool   isdepth;
 
-      /* Skip "depth" because it is recreated */
-      if (!rank) {ierr = PetscStrcmp(next->name, "depth", &isdepth);CHKERRQ(ierr);}
+      if (!rank) {
+        ierr = DMPlexGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
+        /* Skip "depth" because it is recreated */
+        ierr = PetscStrcmp(label->name, "depth", &isdepth);CHKERRQ(ierr);
+      }
       ierr = MPI_Bcast(&isdepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
-      if (isdepth) {if (!rank) next = next->next; continue;}
-      ierr = DMLabelDistribute(next, partSection, part, renumbering, &labelNew);CHKERRQ(ierr);
-      /* Insert into list */
-      if (newNext) newNext->next = labelNew;
-      else         pmesh->labels = labelNew;
-      newNext = labelNew;
-      if (!rank) next = next->next;
+      if (isdepth) continue;
+      ierr = DMLabelDistribute(label, partSection, part, renumbering, &labelNew);CHKERRQ(ierr);
+      ierr = DMPlexAddLabel(*dmParallel, labelNew);CHKERRQ(ierr);
     }
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);

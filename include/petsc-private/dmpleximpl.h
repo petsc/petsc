@@ -30,9 +30,14 @@ struct _n_DMLabel {
   /* Index for fast search */
   PetscInt    pStart, pEnd;   /* Bounds for index lookup */
   PetscBT     bt;             /* A bit-wise index */
-  DMLabel     next;           /* Linked list */
 };
 
+struct _n_PlexLabel {
+  DMLabel              label;
+  PetscBool            output;
+  struct _n_PlexLabel *next;
+};
+typedef struct _n_PlexLabel *PlexLabel;
 
 struct _n_Boundary {
   const char *name;
@@ -75,7 +80,7 @@ typedef struct {
   DMLabel              subpointMap;       /* Label each original mesh point in the submesh with its depth, subpoint are the implicit numbering */
 
   /* Labels and numbering */
-  DMLabel              labels;            /* Linked list of labels */
+  PlexLabel            labels;            /* Linked list of labels */
   DMLabel              depthLabel;
   IS                   globalVertexNumbers;
   IS                   globalCellNumbers;

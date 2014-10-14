@@ -93,12 +93,15 @@ PETSC_EXTERN PetscErrorCode DMPlexGetLabelIdIS(DM, const char[], IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetStratumSize(DM, const char [], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexGetStratumIS(DM, const char [], PetscInt, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexClearLabelStratum(DM, const char[], PetscInt);
+PETSC_EXTERN PetscErrorCode DMPlexGetLabelOutput(DM, const char[], PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexSetLabelOutput(DM, const char[], PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection, PetscSF, PetscBool, DMLabel, PetscInt, PetscSection *);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetNumLabels(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexGetLabelName(DM, PetscInt, const char **);
 PETSC_EXTERN PetscErrorCode DMPlexHasLabel(DM, const char [], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexGetLabel(DM, const char *, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMPlexGetLabelByNum(DM, PetscInt, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMPlexAddLabel(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexRemoveLabel(DM, const char [], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMPlexGetCellNumbering(DM, IS *);

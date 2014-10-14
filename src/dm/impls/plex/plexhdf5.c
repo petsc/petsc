@@ -534,12 +534,13 @@ PetscErrorCode DMPlexView_HDF5(DM dm, PetscViewer viewer)
     IS              valueIS, globalValueIS;
     const PetscInt *values;
     PetscInt        numValues, v;
-    PetscBool       isDepth;
+    PetscBool       isDepth, output;
     char            group[PETSC_MAX_PATH_LEN];
 
     ierr = DMPlexGetLabelName(dm, l, &name);CHKERRQ(ierr);
+    ierr = DMPlexGetLabelOutput(dm, name, &output);CHKERRQ(ierr);
     ierr = PetscStrncmp(name, "depth", 10, &isDepth);CHKERRQ(ierr);
-    if (isDepth) continue;
+    if (isDepth || !output) continue;
     ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
     ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "/labels/%s", name);CHKERRQ(ierr);
     ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
