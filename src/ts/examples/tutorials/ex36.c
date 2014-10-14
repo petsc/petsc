@@ -133,7 +133,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&Y,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&Y,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   y[0] = 0.0;
