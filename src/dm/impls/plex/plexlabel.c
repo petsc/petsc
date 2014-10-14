@@ -1,4 +1,5 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petscsf.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelCreate"
@@ -679,11 +680,13 @@ PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelDistribute"
-PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS part, ISLocalToGlobalMapping renumbering, DMLabel *labelNew)
+PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
 {
-  MPI_Comm       comm = PetscObjectComm((PetscObject) partSection);
-  PetscInt      *stratumSizes = NULL, *points = NULL, s, p;
-  PetscMPIInt   *sendcnts = NULL, *offsets = NULL, *displs = NULL, proc;
+  MPI_Comm       comm;
+  PetscSection   rootSection, leafSection;
+  PetscSF        labelSF;
+  PetscInt       p, pStart, pEnd, l, lStart, lEnd, s, nroots, nleaves, size, dof, offset, stratum;
+  PetscInt      *remoteOffsets, *rootStrata, *rootIdx, *leafStrata, *strataIdx;
   char          *name;
   PetscInt       nameSize;
   size_t         len = 0;
@@ -692,6 +695,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
 
   PetscFunctionBegin;
   if (label) {ierr = DMLabelMakeValid_Private(label);CHKERRQ(ierr);}
+  ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   /* Bcast name */
@@ -706,93 +710,87 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
   /* Bcast numStrata */
   if (!rank) (*labelNew)->numStrata = label->numStrata;
   ierr = MPI_Bcast(&(*labelNew)->numStrata, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  ierr = PetscMalloc1((*labelNew)->numStrata, &(*labelNew)->stratumValues);CHKERRQ(ierr);
-  ierr = PetscMalloc2((*labelNew)->numStrata,&(*labelNew)->stratumSizes,(*labelNew)->numStrata+1,&(*labelNew)->stratumOffsets);CHKERRQ(ierr);
   /* Bcast stratumValues */
+  ierr = PetscMalloc1((*labelNew)->numStrata, &(*labelNew)->stratumValues);CHKERRQ(ierr);
   if (!rank) {ierr = PetscMemcpy((*labelNew)->stratumValues, label->stratumValues, label->numStrata * sizeof(PetscInt));CHKERRQ(ierr);}
   ierr = MPI_Bcast((*labelNew)->stratumValues, (*labelNew)->numStrata, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  /* Find size on each process and Scatter: we use the fact that both the stratum points and partArray are sorted */
-  if (!rank) {
-    const PetscInt *partArray;
-    PetscInt        proc;
 
-    ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
-    ierr = PetscCalloc1(numProcs*label->numStrata, &stratumSizes);CHKERRQ(ierr);
-    /* TODO We should switch to using binary search if the label is a lot smaller than partitions */
-    for (proc = 0; proc < numProcs; ++proc) {
-      PetscInt dof, off;
-
-      ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
-      for (s = 0; s < label->numStrata; ++s) {
-        PetscInt lStart = label->stratumOffsets[s], lEnd = label->stratumOffsets[s]+label->stratumSizes[s];
-        PetscInt pStart = off,                      pEnd = off+dof;
-
-        while (pStart < pEnd && lStart < lEnd) {
-          if (partArray[pStart] > label->points[lStart]) {
-            ++lStart;
-          } else if (label->points[lStart] > partArray[pStart]) {
-            ++pStart;
-          } else {
-            ++stratumSizes[proc*label->numStrata+s];
-            ++pStart; ++lStart;
-          }
-        }
+  /* Build a section detailing strata-per-point, distribute and build SF
+     from that and then send our points. */
+  ierr = PetscSFGetGraph(sf, &nroots, &nleaves, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(comm, &rootSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(rootSection, 0, nroots);CHKERRQ(ierr);
+  if (label) {
+    for (s = 0; s < label->numStrata; ++s) {
+      lStart = label->stratumOffsets[s];
+      lEnd = label->stratumOffsets[s]+label->stratumSizes[s];
+      for (l=lStart; l<lEnd; l++) {
+        ierr = PetscSectionGetDof(rootSection, label->points[l], &dof);CHKERRQ(ierr);
+        ierr = PetscSectionSetDof(rootSection, label->points[l], dof+1);CHKERRQ(ierr);
       }
     }
-    ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
   }
-  ierr = MPI_Scatter(stratumSizes, (*labelNew)->numStrata, MPIU_INT, (*labelNew)->stratumSizes, (*labelNew)->numStrata, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
+
+  /* Create a point-wise array of point strata */
+  ierr = PetscSectionGetStorageSize(rootSection, &size);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size, &rootStrata);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nroots, &rootIdx);CHKERRQ(ierr);
+  if (label) {
+    for (s = 0; s < label->numStrata; ++s) {
+      lStart = label->stratumOffsets[s];
+      lEnd = label->stratumOffsets[s]+label->stratumSizes[s];
+      for (l=lStart; l<lEnd; l++) {
+        p = label->points[l];
+        ierr = PetscSectionGetOffset(rootSection, p, &offset);CHKERRQ(ierr);
+        rootStrata[offset+rootIdx[p]++] = s;
+      }
+    }
+  }
+
+  /* Build SF that maps label points to remote processes */
+  ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
+  ierr = PetscSFDistributeSection(sf, rootSection, &remoteOffsets, leafSection);CHKERRQ(ierr);
+  ierr = PetscSFCreateSectionSF(sf, rootSection, remoteOffsets, leafSection, &labelSF);CHKERRQ(ierr);
+
+  /* Send the strata for each point over the derived SF */
+  ierr = PetscSectionGetStorageSize(leafSection, &size);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size, &leafStrata);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(labelSF, MPIU_INT, rootStrata, leafStrata);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(labelSF, MPIU_INT, rootStrata, leafStrata);CHKERRQ(ierr);
+
+  /* Rebuild the point strata on the receiver */
+  ierr = PetscCalloc2((*labelNew)->numStrata,&(*labelNew)->stratumSizes,(*labelNew)->numStrata+1,&(*labelNew)->stratumOffsets);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(leafSection, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p=pStart; p<pEnd; p++) {
+    ierr = PetscSectionGetDof(leafSection, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(leafSection, p, &offset);CHKERRQ(ierr);
+    for (s=0; s<dof; s++) {
+      (*labelNew)->stratumSizes[leafStrata[offset+s]]++;
+    }
+  }
   /* Calculate stratumOffsets */
-  (*labelNew)->stratumOffsets[0] = 0;
-  for (s = 0; s < (*labelNew)->numStrata; ++s) {(*labelNew)->stratumOffsets[s+1] = (*labelNew)->stratumSizes[s] + (*labelNew)->stratumOffsets[s];}
-  /* Pack points and Scatter */
-  if (!rank) {
-    const PetscInt *partArray;
-
-    ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
-    ierr = PetscMalloc3(numProcs,&sendcnts,numProcs,&offsets,numProcs+1,&displs);CHKERRQ(ierr);
-    displs[0] = 0;
-    for (p = 0; p < numProcs; ++p) {
-      sendcnts[p] = 0;
-      for (s = 0; s < label->numStrata; ++s) sendcnts[p] += stratumSizes[p*label->numStrata+s];
-      offsets[p]  = displs[p];
-      displs[p+1] = displs[p] + sendcnts[p];
-    }
-    ierr = PetscMalloc1(displs[numProcs], &points);CHKERRQ(ierr);
-    /* TODO We should switch to using binary search if the label is a lot smaller than partitions */
-    for (proc = 0; proc < numProcs; ++proc) {
-      PetscInt dof, off;
-
-      ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
-      for (s = 0; s < label->numStrata; ++s) {
-        PetscInt lStart = label->stratumOffsets[s], lEnd = label->stratumOffsets[s]+label->stratumSizes[s];
-        PetscInt pStart = off,                     pEnd = off+dof;
-
-        while (pStart < pEnd && lStart < lEnd) {
-          if (partArray[pStart] > label->points[lStart]) {
-            ++lStart;
-          } else if (label->points[lStart] > partArray[pStart]) {
-            ++pStart;
-          } else {
-            points[offsets[proc]++] = label->points[lStart];
-            ++pStart; ++lStart;
-          }
-        }
-      }
-    }
-    ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
+  for (s = 0; s < (*labelNew)->numStrata; ++s) {
+    (*labelNew)->stratumOffsets[s+1] = (*labelNew)->stratumSizes[s] + (*labelNew)->stratumOffsets[s];
   }
-  ierr = PetscMalloc1((*labelNew)->stratumOffsets[(*labelNew)->numStrata], &(*labelNew)->points);CHKERRQ(ierr);
-  ierr = MPI_Scatterv(points, sendcnts, displs, MPIU_INT, (*labelNew)->points, (*labelNew)->stratumOffsets[(*labelNew)->numStrata], MPIU_INT, 0, comm);CHKERRQ(ierr);
-  ierr = PetscFree(points);CHKERRQ(ierr);
-  ierr = PetscFree3(sendcnts,offsets,displs);CHKERRQ(ierr);
-  ierr = PetscFree(stratumSizes);CHKERRQ(ierr);
-  /* Renumber points */
-  ierr = ISGlobalToLocalMappingApplyBlock(renumbering, IS_GTOLM_MASK, (*labelNew)->stratumOffsets[(*labelNew)->numStrata], (*labelNew)->points, NULL, (*labelNew)->points);CHKERRQ(ierr);
-  /* Sort points */
-  for (s = 0; s < (*labelNew)->numStrata; ++s) {ierr = PetscSortInt((*labelNew)->stratumSizes[s], &(*labelNew)->points[(*labelNew)->stratumOffsets[s]]);CHKERRQ(ierr);}
+  ierr = PetscMalloc1((*labelNew)->stratumOffsets[(*labelNew)->numStrata],&(*labelNew)->points);CHKERRQ(ierr);
+
+  /* Insert points into new strata */
+  ierr = PetscCalloc1((*labelNew)->numStrata, &strataIdx);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(leafSection, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p=pStart; p<pEnd; p++) {
+    ierr = PetscSectionGetDof(leafSection, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(leafSection, p, &offset);CHKERRQ(ierr);
+    for (s=0; s<dof; s++) {
+      stratum = leafStrata[offset+s];
+      (*labelNew)->points[(*labelNew)->stratumOffsets[stratum] + strataIdx[stratum]++] = p;
+    }
+  }
+  ierr = PetscFree2(rootStrata, leafStrata);CHKERRQ(ierr);
+  ierr = PetscFree2(rootIdx, strataIdx);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&labelSF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -6,9 +6,8 @@ DM Object:Simplicial Mesh 2 MPI processes
 \usetikzlibrary{backgrounds}
 \usetikzlibrary{arrows}
 \begin{document}
-\section{Simplicial Mesh}
-\begin{center}
-Mesh for process {\textcolor{red}0}, and {\textcolor{blue}1}.
+\vbox{
+Simplicial Mesh for process {\textcolor{red}0}, and {\textcolor{blue}1}.
 \begin{tikzpicture}[scale = 4,font=\fontsize{8}{8}\selectfont]
 \path
 (0,1) node(8_0) [draw,shape=circle,color=red] {8} --
@@ -105,5 +104,5 @@ Mesh for process {\textcolor{red}0}, and {\textcolor{blue}1}.
 \draw[color=blue] (22_1) -- (20_1) -- (13_1) -- (17_1) -- (22_1);
 \draw[color=blue] (19_1) -- (22_1) -- (17_1) -- (12_1) -- (19_1);
 \end{tikzpicture}
-\end{center}
+}
 \end{document}
