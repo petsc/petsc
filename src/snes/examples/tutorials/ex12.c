@@ -348,9 +348,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
+    } else {
+      ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     }
   }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   if (user->bcType == NEUMANN) {
     DMLabel label;
 
