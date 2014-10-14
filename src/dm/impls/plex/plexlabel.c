@@ -1,4 +1,5 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petscsf.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelCreate"
@@ -21,7 +22,6 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
   (*label)->pStart         = -1;
   (*label)->pEnd           = -1;
   (*label)->bt             = NULL;
-  (*label)->next           = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -680,11 +680,13 @@ PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLabelDistribute"
-PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS part, ISLocalToGlobalMapping renumbering, DMLabel *labelNew)
+PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
 {
-  MPI_Comm       comm = PetscObjectComm((PetscObject) partSection);
-  PetscInt      *stratumSizes = NULL, *points = NULL, s, p;
-  PetscMPIInt   *sendcnts = NULL, *offsets = NULL, *displs = NULL, proc;
+  MPI_Comm       comm;
+  PetscSection   rootSection, leafSection;
+  PetscSF        labelSF;
+  PetscInt       p, pStart, pEnd, l, lStart, lEnd, s, nroots, nleaves, size, dof, offset, stratum;
+  PetscInt      *remoteOffsets, *rootStrata, *rootIdx, *leafStrata, *strataIdx;
   char          *name;
   PetscInt       nameSize;
   size_t         len = 0;
@@ -693,6 +695,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
 
   PetscFunctionBegin;
   if (label) {ierr = DMLabelMakeValid_Private(label);CHKERRQ(ierr);}
+  ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   /* Bcast name */
@@ -707,93 +710,87 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
   /* Bcast numStrata */
   if (!rank) (*labelNew)->numStrata = label->numStrata;
   ierr = MPI_Bcast(&(*labelNew)->numStrata, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  ierr = PetscMalloc1((*labelNew)->numStrata, &(*labelNew)->stratumValues);CHKERRQ(ierr);
-  ierr = PetscMalloc2((*labelNew)->numStrata,&(*labelNew)->stratumSizes,(*labelNew)->numStrata+1,&(*labelNew)->stratumOffsets);CHKERRQ(ierr);
   /* Bcast stratumValues */
+  ierr = PetscMalloc1((*labelNew)->numStrata, &(*labelNew)->stratumValues);CHKERRQ(ierr);
   if (!rank) {ierr = PetscMemcpy((*labelNew)->stratumValues, label->stratumValues, label->numStrata * sizeof(PetscInt));CHKERRQ(ierr);}
   ierr = MPI_Bcast((*labelNew)->stratumValues, (*labelNew)->numStrata, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  /* Find size on each process and Scatter: we use the fact that both the stratum points and partArray are sorted */
-  if (!rank) {
-    const PetscInt *partArray;
-    PetscInt        proc;
 
-    ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
-    ierr = PetscCalloc1(numProcs*label->numStrata, &stratumSizes);CHKERRQ(ierr);
-    /* TODO We should switch to using binary search if the label is a lot smaller than partitions */
-    for (proc = 0; proc < numProcs; ++proc) {
-      PetscInt dof, off;
-
-      ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
-      for (s = 0; s < label->numStrata; ++s) {
-        PetscInt lStart = label->stratumOffsets[s], lEnd = label->stratumOffsets[s]+label->stratumSizes[s];
-        PetscInt pStart = off,                      pEnd = off+dof;
-
-        while (pStart < pEnd && lStart < lEnd) {
-          if (partArray[pStart] > label->points[lStart]) {
-            ++lStart;
-          } else if (label->points[lStart] > partArray[pStart]) {
-            ++pStart;
-          } else {
-            ++stratumSizes[proc*label->numStrata+s];
-            ++pStart; ++lStart;
-          }
-        }
+  /* Build a section detailing strata-per-point, distribute and build SF
+     from that and then send our points. */
+  ierr = PetscSFGetGraph(sf, &nroots, &nleaves, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(comm, &rootSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(rootSection, 0, nroots);CHKERRQ(ierr);
+  if (label) {
+    for (s = 0; s < label->numStrata; ++s) {
+      lStart = label->stratumOffsets[s];
+      lEnd = label->stratumOffsets[s]+label->stratumSizes[s];
+      for (l=lStart; l<lEnd; l++) {
+        ierr = PetscSectionGetDof(rootSection, label->points[l], &dof);CHKERRQ(ierr);
+        ierr = PetscSectionSetDof(rootSection, label->points[l], dof+1);CHKERRQ(ierr);
       }
     }
-    ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
   }
-  ierr = MPI_Scatter(stratumSizes, (*labelNew)->numStrata, MPIU_INT, (*labelNew)->stratumSizes, (*labelNew)->numStrata, MPIU_INT, 0, comm);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
+
+  /* Create a point-wise array of point strata */
+  ierr = PetscSectionGetStorageSize(rootSection, &size);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size, &rootStrata);CHKERRQ(ierr);
+  ierr = PetscCalloc1(nroots, &rootIdx);CHKERRQ(ierr);
+  if (label) {
+    for (s = 0; s < label->numStrata; ++s) {
+      lStart = label->stratumOffsets[s];
+      lEnd = label->stratumOffsets[s]+label->stratumSizes[s];
+      for (l=lStart; l<lEnd; l++) {
+        p = label->points[l];
+        ierr = PetscSectionGetOffset(rootSection, p, &offset);CHKERRQ(ierr);
+        rootStrata[offset+rootIdx[p]++] = s;
+      }
+    }
+  }
+
+  /* Build SF that maps label points to remote processes */
+  ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
+  ierr = PetscSFDistributeSection(sf, rootSection, &remoteOffsets, leafSection);CHKERRQ(ierr);
+  ierr = PetscSFCreateSectionSF(sf, rootSection, remoteOffsets, leafSection, &labelSF);CHKERRQ(ierr);
+
+  /* Send the strata for each point over the derived SF */
+  ierr = PetscSectionGetStorageSize(leafSection, &size);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size, &leafStrata);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(labelSF, MPIU_INT, rootStrata, leafStrata);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(labelSF, MPIU_INT, rootStrata, leafStrata);CHKERRQ(ierr);
+
+  /* Rebuild the point strata on the receiver */
+  ierr = PetscCalloc2((*labelNew)->numStrata,&(*labelNew)->stratumSizes,(*labelNew)->numStrata+1,&(*labelNew)->stratumOffsets);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(leafSection, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p=pStart; p<pEnd; p++) {
+    ierr = PetscSectionGetDof(leafSection, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(leafSection, p, &offset);CHKERRQ(ierr);
+    for (s=0; s<dof; s++) {
+      (*labelNew)->stratumSizes[leafStrata[offset+s]]++;
+    }
+  }
   /* Calculate stratumOffsets */
-  (*labelNew)->stratumOffsets[0] = 0;
-  for (s = 0; s < (*labelNew)->numStrata; ++s) {(*labelNew)->stratumOffsets[s+1] = (*labelNew)->stratumSizes[s] + (*labelNew)->stratumOffsets[s];}
-  /* Pack points and Scatter */
-  if (!rank) {
-    const PetscInt *partArray;
-
-    ierr = ISGetIndices(part, &partArray);CHKERRQ(ierr);
-    ierr = PetscMalloc3(numProcs,&sendcnts,numProcs,&offsets,numProcs+1,&displs);CHKERRQ(ierr);
-    displs[0] = 0;
-    for (p = 0; p < numProcs; ++p) {
-      sendcnts[p] = 0;
-      for (s = 0; s < label->numStrata; ++s) sendcnts[p] += stratumSizes[p*label->numStrata+s];
-      offsets[p]  = displs[p];
-      displs[p+1] = displs[p] + sendcnts[p];
-    }
-    ierr = PetscMalloc1(displs[numProcs], &points);CHKERRQ(ierr);
-    /* TODO We should switch to using binary search if the label is a lot smaller than partitions */
-    for (proc = 0; proc < numProcs; ++proc) {
-      PetscInt dof, off;
-
-      ierr = PetscSectionGetDof(partSection, proc, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(partSection, proc, &off);CHKERRQ(ierr);
-      for (s = 0; s < label->numStrata; ++s) {
-        PetscInt lStart = label->stratumOffsets[s], lEnd = label->stratumOffsets[s]+label->stratumSizes[s];
-        PetscInt pStart = off,                     pEnd = off+dof;
-
-        while (pStart < pEnd && lStart < lEnd) {
-          if (partArray[pStart] > label->points[lStart]) {
-            ++lStart;
-          } else if (label->points[lStart] > partArray[pStart]) {
-            ++pStart;
-          } else {
-            points[offsets[proc]++] = label->points[lStart];
-            ++pStart; ++lStart;
-          }
-        }
-      }
-    }
-    ierr = ISRestoreIndices(part, &partArray);CHKERRQ(ierr);
+  for (s = 0; s < (*labelNew)->numStrata; ++s) {
+    (*labelNew)->stratumOffsets[s+1] = (*labelNew)->stratumSizes[s] + (*labelNew)->stratumOffsets[s];
   }
-  ierr = PetscMalloc1((*labelNew)->stratumOffsets[(*labelNew)->numStrata], &(*labelNew)->points);CHKERRQ(ierr);
-  ierr = MPI_Scatterv(points, sendcnts, displs, MPIU_INT, (*labelNew)->points, (*labelNew)->stratumOffsets[(*labelNew)->numStrata], MPIU_INT, 0, comm);CHKERRQ(ierr);
-  ierr = PetscFree(points);CHKERRQ(ierr);
-  ierr = PetscFree3(sendcnts,offsets,displs);CHKERRQ(ierr);
-  ierr = PetscFree(stratumSizes);CHKERRQ(ierr);
-  /* Renumber points */
-  ierr = ISGlobalToLocalMappingApplyBlock(renumbering, IS_GTOLM_MASK, (*labelNew)->stratumOffsets[(*labelNew)->numStrata], (*labelNew)->points, NULL, (*labelNew)->points);CHKERRQ(ierr);
-  /* Sort points */
-  for (s = 0; s < (*labelNew)->numStrata; ++s) {ierr = PetscSortInt((*labelNew)->stratumSizes[s], &(*labelNew)->points[(*labelNew)->stratumOffsets[s]]);CHKERRQ(ierr);}
+  ierr = PetscMalloc1((*labelNew)->stratumOffsets[(*labelNew)->numStrata],&(*labelNew)->points);CHKERRQ(ierr);
+
+  /* Insert points into new strata */
+  ierr = PetscCalloc1((*labelNew)->numStrata, &strataIdx);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(leafSection, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p=pStart; p<pEnd; p++) {
+    ierr = PetscSectionGetDof(leafSection, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(leafSection, p, &offset);CHKERRQ(ierr);
+    for (s=0; s<dof; s++) {
+      stratum = leafStrata[offset+s];
+      (*labelNew)->points[(*labelNew)->stratumOffsets[stratum] + strataIdx[stratum]++] = p;
+    }
+  }
+  ierr = PetscFree2(rootStrata, leafStrata);CHKERRQ(ierr);
+  ierr = PetscFree2(rootIdx, strataIdx);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&labelSF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -817,7 +814,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSection partSection, IS par
 PetscErrorCode DMPlexCreateLabel(DM dm, const char name[])
 {
   DM_Plex        *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
+  PlexLabel      next  = mesh->labels;
   PetscBool      flg   = PETSC_FALSE;
   PetscErrorCode ierr;
 
@@ -825,16 +822,18 @@ PetscErrorCode DMPlexCreateLabel(DM dm, const char name[])
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   while (next) {
-    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, next->label->name, &flg);CHKERRQ(ierr);
     if (flg) break;
     next = next->next;
   }
   if (!flg) {
-    DMLabel tmpLabel = mesh->labels;
+    PlexLabel tmpLabel;
 
-    ierr = DMLabelCreate(name, &mesh->labels);CHKERRQ(ierr);
-
-    mesh->labels->next = tmpLabel;
+    ierr = PetscCalloc1(1, &tmpLabel);CHKERRQ(ierr);
+    ierr = DMLabelCreate(name, &tmpLabel->label);CHKERRQ(ierr);
+    tmpLabel->output = PETSC_TRUE;
+    tmpLabel->next   = mesh->labels;
+    mesh->labels     = tmpLabel;
   }
   PetscFunctionReturn(0);
 }
@@ -1140,16 +1139,13 @@ PetscErrorCode DMPlexClearLabelStratum(DM dm, const char name[], PetscInt value)
 PetscErrorCode DMPlexGetNumLabels(DM dm, PetscInt *numLabels)
 {
   DM_Plex  *mesh = (DM_Plex*) dm->data;
-  DMLabel  next  = mesh->labels;
-  PetscInt n     = 0;
+  PlexLabel next = mesh->labels;
+  PetscInt  n    = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(numLabels, 2);
-  while (next) {
-    ++n;
-    next = next->next;
-  }
+  while (next) {++n; next = next->next;}
   *numLabels = n;
   PetscFunctionReturn(0);
 }
@@ -1176,15 +1172,15 @@ PetscErrorCode DMPlexGetNumLabels(DM dm, PetscInt *numLabels)
 PetscErrorCode DMPlexGetLabelName(DM dm, PetscInt n, const char **name)
 {
   DM_Plex  *mesh = (DM_Plex*) dm->data;
-  DMLabel  next  = mesh->labels;
-  PetscInt l     = 0;
+  PlexLabel next = mesh->labels;
+  PetscInt  l    = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(name, 3);
   while (next) {
     if (l == n) {
-      *name = next->name;
+      *name = next->label->name;
       PetscFunctionReturn(0);
     }
     ++l;
@@ -1214,8 +1210,8 @@ PetscErrorCode DMPlexGetLabelName(DM dm, PetscInt n, const char **name)
 @*/
 PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 {
-  DM_Plex        *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PlexLabel      next = mesh->labels;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1224,7 +1220,7 @@ PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
   PetscValidPointer(hasLabel, 3);
   *hasLabel = PETSC_FALSE;
   while (next) {
-    ierr = PetscStrcmp(name, next->name, hasLabel);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, next->label->name, hasLabel);CHKERRQ(ierr);
     if (*hasLabel) break;
     next = next->next;
   }
@@ -1252,8 +1248,8 @@ PetscErrorCode DMPlexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 @*/
 PetscErrorCode DMPlexGetLabel(DM dm, const char name[], DMLabel *label)
 {
-  DM_Plex        *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PlexLabel      next = mesh->labels;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
@@ -1263,14 +1259,53 @@ PetscErrorCode DMPlexGetLabel(DM dm, const char name[], DMLabel *label)
   PetscValidPointer(label, 3);
   *label = NULL;
   while (next) {
-    ierr = PetscStrcmp(name, next->name, &hasLabel);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, next->label->name, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
-      *label = next;
+      *label = next->label;
       break;
     }
     next = next->next;
   }
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetLabelByNum"
+/*@C
+  DMPlexGetLabelByNum - Return the nth label
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMPlex object
+- n  - the label number
+
+  Output Parameter:
+. label - the label
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
+@*/
+PetscErrorCode DMPlexGetLabelByNum(DM dm, PetscInt n, DMLabel *label)
+{
+  DM_Plex  *mesh = (DM_Plex*) dm->data;
+  PlexLabel next = mesh->labels;
+  PetscInt  l    = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(label, 3);
+  while (next) {
+    if (l == n) {
+      *label = next->label;
+      PetscFunctionReturn(0);
+    }
+    ++l;
+    next = next->next;
+  }
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %d does not exist in this DM", n);
 }
 
 #undef __FUNCT__
@@ -1291,7 +1326,8 @@ PetscErrorCode DMPlexGetLabel(DM dm, const char name[], DMLabel *label)
 @*/
 PetscErrorCode DMPlexAddLabel(DM dm, DMLabel label)
 {
-  DM_Plex        *mesh = (DM_Plex*) dm->data;
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PlexLabel      tmpLabel;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
@@ -1299,8 +1335,11 @@ PetscErrorCode DMPlexAddLabel(DM dm, DMLabel label)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexHasLabel(dm, label->name, &hasLabel);CHKERRQ(ierr);
   if (hasLabel) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %s already exists in this DM", label->name);
-  label->next  = mesh->labels;
-  mesh->labels = label;
+  ierr = PetscCalloc1(1, &tmpLabel);CHKERRQ(ierr);
+  tmpLabel->label  = label;
+  tmpLabel->output = PETSC_TRUE;
+  tmpLabel->next   = mesh->labels;
+  mesh->labels     = tmpLabel;
   PetscFunctionReturn(0);
 }
 
@@ -1325,9 +1364,9 @@ PetscErrorCode DMPlexAddLabel(DM dm, DMLabel label)
 @*/
 PetscErrorCode DMPlexRemoveLabel(DM dm, const char name[], DMLabel *label)
 {
-  DM_Plex        *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
-  DMLabel        last  = NULL;
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PlexLabel      next = mesh->labels;
+  PlexLabel      last = NULL;
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
@@ -1337,16 +1376,92 @@ PetscErrorCode DMPlexRemoveLabel(DM dm, const char name[], DMLabel *label)
   *label = NULL;
   if (!hasLabel) PetscFunctionReturn(0);
   while (next) {
-    ierr = PetscStrcmp(name, next->name, &hasLabel);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, next->label->name, &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
       if (last) last->next   = next->next;
       else      mesh->labels = next->next;
       next->next = NULL;
-      *label     = next;
+      *label     = next->label;
+      ierr = PetscFree(next);CHKERRQ(ierr);
       break;
     }
     last = next;
     next = next->next;
   }
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetLabelOutput"
+/*@C
+  DMPlexGetLabelOutput - Get the output flag for a given label
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMPlex object
+- name - The label name
+
+  Output Parameter:
+. output - The flag for output
+
+  Level: developer
+
+.keywords: mesh
+.seealso: DMPlexSetLabelOutput(), DMPlexCreateLabel(), DMPlexHasLabel(), DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
+@*/
+PetscErrorCode DMPlexGetLabelOutput(DM dm, const char name[], PetscBool *output)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PlexLabel      next = mesh->labels;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(name, 2);
+  PetscValidPointer(output, 3);
+  while (next) {
+    PetscBool flg;
+
+    ierr = PetscStrcmp(name, next->label->name, &flg);CHKERRQ(ierr);
+    if (flg) {*output = next->output; PetscFunctionReturn(0);}
+    next = next->next;
+  }
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No label named %s was present in this mesh", name);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexSetLabelOutput"
+/*@C
+  DMPlexSetLabelOutput - Set the output flag for a given label
+
+  Not Collective
+
+  Input Parameters:
++ dm     - The DMPlex object
+. name   - The label name
+- output - The flag for output
+
+  Level: developer
+
+.keywords: mesh
+.seealso: DMPlexGetLabelOutput(), DMPlexCreateLabel(), DMPlexHasLabel(), DMPlexGetLabelValue(), DMPlexSetLabelValue(), DMPlexGetStratumIS()
+@*/
+PetscErrorCode DMPlexSetLabelOutput(DM dm, const char name[], PetscBool output)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PlexLabel      next = mesh->labels;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(name, 2);
+  while (next) {
+    PetscBool flg;
+
+    ierr = PetscStrcmp(name, next->label->name, &flg);CHKERRQ(ierr);
+    if (flg) {next->output = output; PetscFunctionReturn(0);}
+    next = next->next;
+  }
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No label named %s was present in this mesh", name);
 }

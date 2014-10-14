@@ -8,7 +8,7 @@
 #include <petscds.h>
 
 /* Logging support */
-PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
+PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
@@ -277,9 +277,8 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 \\usetikzlibrary{backgrounds}\n\
 \\usetikzlibrary{arrows}\n\
 \\begin{document}\n\
-\\section{%s}\n\
-\\begin{center}\n", name, 8.0/scale);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Mesh for process ");CHKERRQ(ierr);
+\\vbox{\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "%s for process ", name);CHKERRQ(ierr);
     for (p = 0; p < size; ++p) {
       if (p > 0 && p == size-1) {
         ierr = PetscViewerASCIIPrintf(viewer, ", and ", colors[p%numColors], p);CHKERRQ(ierr);
@@ -289,7 +288,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, "{\\textcolor{%s}%D}", colors[p%numColors], p);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, ".\n\n\n\
-\\begin{tikzpicture}[scale = %g,font=\\fontsize{8}{8}\\selectfont]\n");CHKERRQ(ierr);
+\\begin{tikzpicture}[scale = %g,font=\\fontsize{8}{8}\\selectfont]\n", 8.0/scale);CHKERRQ(ierr);
     /* Plot vertices */
     ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
@@ -354,7 +353,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "\\end{tikzpicture}\n\\end{center}\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "\\end{tikzpicture}\n}\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "\\end{document}\n", name);CHKERRQ(ierr);
   } else {
     MPI_Comm    comm;
@@ -513,7 +512,7 @@ static PetscErrorCode BoundaryDestroy(DMBoundary *boundary)
 PetscErrorCode DMDestroy_Plex(DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
+  PlexLabel      next = mesh->labels;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -526,10 +525,12 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   ierr = PetscFree(mesh->facesTmp);CHKERRQ(ierr);
   ierr = PetscFree(mesh->tetgenOpts);CHKERRQ(ierr);
   ierr = PetscFree(mesh->triangleOpts);CHKERRQ(ierr);
+  ierr = PetscPartitionerDestroy(&mesh->partitioner);CHKERRQ(ierr);
   while (next) {
-    DMLabel tmp = next->next;
+    PlexLabel tmp = next->next;
 
-    ierr = DMLabelDestroy(&next);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&next->label);CHKERRQ(ierr);
+    ierr = PetscFree(next);CHKERRQ(ierr);
     next = tmp;
   }
   ierr = DMDestroy(&mesh->coarseMesh);CHKERRQ(ierr);

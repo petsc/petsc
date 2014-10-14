@@ -1363,7 +1363,7 @@ int main(int argc, char **argv)
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = DMPlexCreateExodusFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
+  ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, &dm);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
 
@@ -1391,13 +1391,14 @@ int main(int argc, char **argv)
 
     ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(dm, "chaco", overlap, NULL, &dmDist);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(dm, overlap, NULL, &dmDist);CHKERRQ(ierr);
     if (dmDist) {
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm   = dmDist;
+    } else {
+      ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
     }
   }
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   {
     DM gdm;
 

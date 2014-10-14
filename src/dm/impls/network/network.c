@@ -546,7 +546,6 @@ PetscErrorCode DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDat
 
   Input Parameter:
 + oldDM - the original DMNetwork object
-. partitioner - The partitioning package, or NULL for the default
 - overlap - The overlap of partitions, 0 is the default
 
   Output Parameter:
@@ -561,7 +560,7 @@ PetscErrorCode DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDat
 
 .seealso: DMNetworkCreate
 @*/
-PetscErrorCode DMNetworkDistribute(DM oldDM, const char partitioner[], PetscInt overlap,DM *distDM)
+PetscErrorCode DMNetworkDistribute(DM oldDM, PetscInt overlap,DM *distDM)
 {
   PetscErrorCode ierr;
   DM_Network     *oldDMnetwork = (DM_Network*)oldDM->data;
@@ -574,7 +573,7 @@ PetscErrorCode DMNetworkDistribute(DM oldDM, const char partitioner[], PetscInt 
   newDMnetwork = (DM_Network*)newDM->data;
   newDMnetwork->dataheadersize = sizeof(struct _p_DMNetworkComponentHeader)/sizeof(DMNetworkComponentGenericDataType);
   /* Distribute plex dm and dof section */
-  ierr = DMPlexDistribute(oldDMnetwork->plex,partitioner,overlap,&pointsf,&newDMnetwork->plex);CHKERRQ(ierr);
+  ierr = DMPlexDistribute(oldDMnetwork->plex,overlap,&pointsf,&newDMnetwork->plex);CHKERRQ(ierr);
   /* Distribute dof section */
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)oldDM),&newDMnetwork->DofSection);CHKERRQ(ierr);
   ierr = PetscSFDistributeSection(pointsf,oldDMnetwork->DofSection,NULL,newDMnetwork->DofSection);CHKERRQ(ierr);

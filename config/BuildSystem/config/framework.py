@@ -280,7 +280,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if isinstance(child, type):
         config = child
         break
-    if config is None and not self.configureParent is None:
+    if config is None and hasattr(self, 'configureParent') and not self.configureParent is None:
       for child in self.configureParent.childGraph.vertices:
         if isinstance(child, type):
           config = child

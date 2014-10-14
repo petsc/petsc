@@ -2,7 +2,7 @@ static char help[] = "Poisson Problem in 2d and 3d with simplicial finite elemen
 We solve the Poisson problem in a rectangular\n\
 domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\
 This example supports discretized auxiliary fields (conductivity) as well as\n\
-multilevel nonlienar solvers.\n\n\n";
+multilevel nonlinear solvers.\n\n\n";
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
@@ -27,7 +27,6 @@ typedef struct {
   char          filename[2048];    /* The optional ExodusII file */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
-  char          partitioner[2048]; /* The graph partitioner */
   /* Problem definition */
   BCType        bcType;
   CoeffType     variableCoefficient;
@@ -270,8 +269,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 #endif
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex12.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex12.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
-  ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
   bc   = options->bcType;
   ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,3,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
@@ -305,7 +302,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   const char    *filename        = user->filename;
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
-  const char    *partitioner       = user->partitioner;
   size_t         len;
   PetscErrorCode ierr;
 
@@ -324,7 +320,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscMPIInt rank;
 
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = DMPlexCreateExodusFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
     /* Must have boundary marker for Dirichlet conditions */
   }
@@ -344,7 +340,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = refinedMesh;
     }
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, 0, NULL, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;

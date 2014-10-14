@@ -5555,7 +5555,24 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateProcessSF"
-static PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, PetscSF *sfProcess)
+/*@
+  DMPlexCreateProcessSF - Create an SF which just has process connectivity
+
+  Collective on DM
+
+  Input Parameters:
++ dm      - The DM
+- sfPoint - The PetscSF which encodes point connectivity
+
+  Output Parameters:
++ processRanks - A list of process neighbors, or NULL
+- sfProcess    - An SF encoding the process connectivity, or NULL
+
+  Level: developer
+
+.seealso: PetscSFCreate(), DMPlexCreateTwoSidedProcessSF()
+@*/
+PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, PetscSF *sfProcess)
 {
   PetscInt           numRoots, numLeaves, l;
   const PetscInt    *localPoints;
@@ -5563,17 +5580,23 @@ static PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processR
   PetscInt          *localPointsNew;
   PetscSFNode       *remotePointsNew;
   PetscInt          *ranks, *ranksNew;
+  PetscMPIInt        numProcs;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(sfPoint, PETSCSF_CLASSID, 2);
+  if (processRanks) {PetscValidPointer(processRanks, 3);}
+  if (sfProcess)    {PetscValidPointer(sfProcess, 4);}
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
   ierr = PetscMalloc1(numLeaves, &ranks);CHKERRQ(ierr);
   for (l = 0; l < numLeaves; ++l) {
     ranks[l] = remotePoints[l].rank;
   }
   ierr = PetscSortRemoveDupsInt(&numLeaves, ranks);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeaves,    &ranksNew);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeaves,    &localPointsNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeaves, &ranksNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeaves, &localPointsNew);CHKERRQ(ierr);
   ierr = PetscMalloc1(numLeaves, &remotePointsNew);CHKERRQ(ierr);
   for (l = 0; l < numLeaves; ++l) {
     ranksNew[l]              = ranks[l];
@@ -5582,10 +5605,14 @@ static PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processR
     remotePointsNew[l].rank  = ranksNew[l];
   }
   ierr = PetscFree(ranks);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), numLeaves, ranksNew, PETSC_OWN_POINTER, processRanks);CHKERRQ(ierr);
-  ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfProcess);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(*sfProcess);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*sfProcess, 1, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  if (processRanks) {ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), numLeaves, ranksNew, PETSC_OWN_POINTER, processRanks);CHKERRQ(ierr);}
+  else              {ierr = PetscFree(ranksNew);CHKERRQ(ierr);}
+  if (sfProcess) {
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfProcess);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) *sfProcess, "Process SF");CHKERRQ(ierr);
+    ierr = PetscSFSetFromOptions(*sfProcess);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(*sfProcess, numProcs, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -5759,7 +5786,7 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
   ierr = MPI_Type_free(&depthType);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfProcess);CHKERRQ(ierr);
   /* Calculate new point SF */
-  ierr = PetscMalloc1(numLeavesNew,    &localPointsNew);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numLeavesNew, &localPointsNew);CHKERRQ(ierr);
   ierr = PetscMalloc1(numLeavesNew, &remotePointsNew);CHKERRQ(ierr);
   ierr = ISGetIndices(processRanks, &neighbors);CHKERRQ(ierr);
   for (l = 0, m = 0; l < numLeaves; ++l) {
