@@ -49,6 +49,7 @@ struct _p_TS {
   DM            dm;
   TSProblemType problem_type;
   Vec           vec_sol;
+  Vec           vec_sensi;
   TSAdapt       adapt;
   TSEvent       event;
 

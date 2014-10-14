@@ -108,41 +108,23 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "IFunction"
-static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
+#define __FUNCT__ "RHSJacobian"
+static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   User           user = (User)ctx;
-  PetscScalar    *x,*xdot,*f;
-
-  PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = xdot[0] + (user->imex ? 0 : x[1]);
-  f[1] = xdot[1] - user->mu*(1. - x[0]*x[0])*x[1] + x[0];
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "IJacobian"
-static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
-{
-  PetscErrorCode ierr;
-  User           user     = (User)ctx;
-  PetscReal      mu       = user->mu;
+  PetscReal      mu   = user->mu;
   PetscInt       rowcol[] = {0,1};
   PetscScalar    *x,J[2][2];
 
   PetscFunctionBeginUser;
-  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
-  J[0][0] = a;                    J[0][1] = (user->imex ? 0 : 1.);
-  J[1][0] = 2.*mu*x[0]*x[1]+1.;   J[1][1] = a - mu*(1. - x[0]*x[0]);
-  ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+
+  J[0][0] = 0;
+  J[1][0] = -2.*mu*x[1]*x[0]+1;
+  J[0][1] = 1.0;
+  J[1][1] = mu*(1.0-x[0]*x[0]);
+  ierr    = MatSetValues(A,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -253,7 +235,6 @@ static PetscErrorCode TestMonitor(const char *filename, Vec X, PetscReal time, P
   //ierr = PetscRealLoad(Nr,&Nr,&timeread,viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer,&timeread,1,PETSC_REAL);CHKERRQ(ierr);
 
-
   for (i=0;i<ns && stepnum >1;i++) {
     ierr = VecLoad(stagesol,viewer);CHKERRQ(ierr);
     VecEqual(Y[i],stagesol,&equal);
@@ -273,7 +254,7 @@ static PetscErrorCode TestMonitor(const char *filename, Vec X, PetscReal time, P
 #undef __FUNCT__
 #define __FUNCT__ "LoadChkpts"
 static PetscErrorCode LoadChkpts(PetscInt stepnum, void *ctx)
-{ 
+{
   User           user = (User)ctx;
   PetscInt       Nr,i;
   PetscViewer    viewer;
@@ -292,7 +273,7 @@ static PetscErrorCode LoadChkpts(PetscInt stepnum, void *ctx)
   for (i=user->nstages-1;i>=0 ;i--) {
     ierr = VecLoad(user->Y[i],viewer);CHKERRQ(ierr);
   }
-  
+
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -344,6 +325,44 @@ static PetscErrorCode MonitorADJ(TS tsadj,PetscInt step,PetscReal t,Vec X,void *
 
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MonitorADJ2"
+/* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
+static PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
+{
+  PetscReal      ptime;
+  Vec            Sol,*Y;
+  PetscInt       Nr,i;
+  PetscViewer    viewer;
+  PetscReal      timepre;
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscSNPrintf(filename,sizeof filename,"ex16-SA-%06d.bin",step);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+
+  ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
+  ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
+
+  Nr   = 1;
+  //ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&timepre,1,PETSC_REAL);CHKERRQ(ierr);
+
+  ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
+  for (i=0;i<Nr ;i++) {
+    ierr = VecLoad(Y[i],viewer);CHKERRQ(ierr);
+  }
+
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+
+  ierr = TSGetTime(ts,&ptime);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,-ptime+timepre);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -438,7 +457,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecCreate(PETSC_COMM_WORLD,&user.X);CHKERRQ(ierr);
+/*  ierr = VecCreate(PETSC_COMM_WORLD,&user.X);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&lambda,NULL);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(lambda,user.nstages,&user.Y);CHKERRQ(ierr);
   //   Redet initial conditions for the adjoint integration
@@ -450,7 +469,6 @@ int main(int argc,char **argv)
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
   //   Reset start time for the adjoint integration
   ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
-  //ierr = TSSetDuration(tsadj,PETSC_DEFAULT,ftime);CHKERRQ(ierr);
 
   //   Register the coefficients for the adjoint integration
   //ierr = RegisterRKADJ();CHKERRQ(ierr);
@@ -471,7 +489,38 @@ int main(int argc,char **argv)
 
   ierr = TSSolve(ts,lambda);CHKERRQ(ierr);
 
+  ierr = VecView(lambda,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Another way to run the Adjoint model
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = MatGetVecs(A,&lambda,NULL);CHKERRQ(ierr);
+  //   Redet initial conditions for the adjoint integration
+  ierr = VecGetArray(lambda,&x_ptr);CHKERRQ(ierr);
+  x_ptr[0] = 1.0;   x_ptr[1] = 0.0;
+  ierr = VecRestoreArray(lambda,&x_ptr);CHKERRQ(ierr);
+  ierr = TSSetSensitivity(ts,lambda);CHKERRQ(ierr);
+
+  //   Switch to reverse mode
+  ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
+  //   Reset start time for the adjoint integration
+  ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
+
+  //   Set RHS Jacobian and number of steps for the adjoint integration
+  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&user);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,steps,PETSC_DEFAULT);CHKERRQ(ierr);
+
+  //   Turn off adapt for the adjoint integration (???)
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetType(adapt,TSADAPTNONE);CHKERRQ(ierr);
+
+  //   Set up monitor
+  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,MonitorADJ2,&user,NULL);CHKERRQ(ierr);
+
+  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+
   ierr = VecView(lambda,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.

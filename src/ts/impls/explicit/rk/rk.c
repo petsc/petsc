@@ -38,6 +38,8 @@ typedef struct {
   RKTableau   tableau;
   Vec          *Y;               /* States computed during the step */
   Vec          *YdotRHS;         /* Function evaluations for the non-stiff part */
+  Vec          *VecDeltaLam;     /* Increament of the adjoint sensitivity variable at stage*/ 
+  Vec          VecSensiTemp;     /* Vector to be timed with Jacobian transpose*/ 
   PetscScalar  *work;            /* Scalar work */
   PetscReal    stage_time;
   TSStepStatus status;
@@ -380,7 +382,6 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
       for (j=0; j<s; j++) w[j] = h*tab->b[j];
       ierr = VecMAXPY(X,s,w,rk->YdotRHS);CHKERRQ(ierr);
     } else {ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);}
-    if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
   } else if (order == tab->order-1) {
     if (!tab->bembed) goto unavailable;
@@ -472,13 +473,47 @@ reject_step: continue;
 
 #undef __FUNCT__
 #define __FUNCT__ "TSStepAdj_RK"
-static PetscErrorCode TSStepAdj_RK(TS tsadj)
+static PetscErrorCode TSStepAdj_RK(TS ts)
 {
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
+  TS_RK           *rk   = (TS_RK*)ts->data;
+  RKTableau        tab  = rk->tableau;
+  const PetscInt   s    = tab->s;
+  const PetscReal *A = tab->A,*b = tab->b,*c = tab->c;
+  PetscScalar     *w    = rk->work;
+  Vec             *Y    = rk->Y,*VecDeltaLam = rk->VecDeltaLam,VecSensiTemp= rk->VecSensiTemp;
+  PetscInt         i,j;
+  PetscReal        t;
+  PetscErrorCode   ierr;
 
-  ierr = TSStep_RK(tsadj);CHKERRQ(ierr);
+  PetscFunctionBegin;
  
+  //ierr = TSStep_RK(ts);CHKERRQ(ierr); // reuse TSStep
+  
+  t          = ts->ptime;
+  rk->status = TS_STEP_INCOMPLETE;
+
+  PetscReal h = ts->time_step; // already obtained from checkpointing
+  ierr = TSPreStep(ts);CHKERRQ(ierr);
+  for (i=s-1; i>=0; i--) {
+    Mat J,Jp;
+    rk->stage_time = t + h*(1.0-c[i]);
+    ierr = VecCopy(ts->vec_sensi,VecSensiTemp);CHKERRQ(ierr);
+    ierr = VecScale(VecSensiTemp,-h*b[i]);
+    for (j=i+1; j<s; j++) {
+      ierr = VecAXPY(VecSensiTemp,-h*A[j*s+i],VecDeltaLam[j]);
+    }
+    ierr = TSGetRHSJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
+    ierr = TSComputeRHSJacobian(ts,rk->stage_time,Y[i],J,Jp);CHKERRQ(ierr);
+    ierr = MatMultTranspose(J,VecSensiTemp,VecDeltaLam[i]);CHKERRQ(ierr);
+  }
+
+  for (j=0; j<s; j++) w[j] = 1.0;
+  ierr = VecMAXPY(ts->vec_sensi,s,w,VecDeltaLam);CHKERRQ(ierr);
+
+  ts->ptime += ts->time_step;
+  ts->steps++;
+  rk->status = TS_STEP_COMPLETE;
+  ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vec_sensi,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -535,6 +570,10 @@ static PetscErrorCode TSReset_RK(TS ts)
   s    = rk->tableau->s;
   ierr = VecDestroyVecs(s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s,&rk->YdotRHS);CHKERRQ(ierr);
+  if(ts->reverse_mode) {
+    ierr = VecDestroyVecs(s,&rk->VecDeltaLam);CHKERRQ(ierr);
+    ierr = VecDestroy(&rk->VecSensiTemp);CHKERRQ(ierr);
+  }
   ierr = PetscFree(rk->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -587,7 +626,7 @@ static PetscErrorCode DMSubDomainRestrictHook_TSRK(DM dm,VecScatter gscat,VecSca
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-
+/*
 #undef __FUNCT__
 #define __FUNCT__ "RKSetAdjCoe"
 static PetscErrorCode RKSetAdjCoe(RKTableau tab)
@@ -613,7 +652,7 @@ static PetscErrorCode RKSetAdjCoe(RKTableau tab)
   ierr  = PetscFree2(A,b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+*/
 #undef __FUNCT__
 #define __FUNCT__ "TSSetUp_RK"
 static PetscErrorCode TSSetUp_RK(TS ts)
@@ -630,11 +669,16 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   }
   tab  = rk->tableau;
   s    = tab->s;
-  if (ts->reverse_mode) {
-    ierr = RKSetAdjCoe(tab);CHKERRQ(ierr);
-  }
+  // old 
+  //if (ts->reverse_mode) {
+  //  ierr = RKSetAdjCoe(tab);CHKERRQ(ierr);
+  //}
   ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->YdotRHS);CHKERRQ(ierr);
+  if (ts->reverse_mode) {
+    ierr = VecDuplicateVecs(ts->vec_sensi,s,&rk->VecDeltaLam);CHKERRQ(ierr);
+    ierr = VecDuplicate(ts->vec_sensi,&rk->VecSensiTemp);CHKERRQ(ierr);
+  }
   ierr = PetscMalloc1(s,&rk->work);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {

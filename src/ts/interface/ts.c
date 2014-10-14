@@ -1727,6 +1727,34 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSGetSensitivity"
+/*@
+   TSGetSensitivity - Returns the sensitivity in the reverse mode.
+
+   Not Collective, but Vec returned is parallel if TS is parallel
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameter:
+.  v - the vector containing the solution
+
+   Level: intermediate
+
+.seealso: TSGetTimeStep()
+
+.keywords: TS, timestep, get, sensitivity
+@*/
+PetscErrorCode  TSGetSensitivity(TS ts,Vec *v)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(v,2);
+  *v = ts->vec_sensi;
+  PetscFunctionReturn(0);
+}
+
 /* ----- Routines to initialize and destroy a timestepper ---- */
 #undef __FUNCT__
 #define __FUNCT__ "TSSetProblemType"
@@ -1839,6 +1867,8 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
+  if (ts->reverse_mode && !ts->vec_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSensitivity() first");
+
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
 
   if (ts->rhsjacobian.reuse) {
@@ -1920,6 +1950,7 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
 
+  if (ts->reverse_mode) {ierr = VecDestroy(&ts->vec_sensi);CHKERRQ(ierr);}
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -2194,6 +2225,40 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
   ierr = VecDestroy(&ts->vec_sol);CHKERRQ(ierr);
 
   ts->vec_sol = u;
+
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMShellSetGlobalVector(dm,u);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetSensitivity"
+/*@
+   TSSetSensitivity - Sets the initial solution vector
+   for use by the TS routines.
+
+   Logically Collective on TS and Vec
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+-  u - the solution vector
+
+   Level: beginner
+
+.keywords: TS, timestep, set, sensitivity, initial conditions
+@*/
+PetscErrorCode  TSSetSensitivity(TS ts,Vec u)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(u,VEC_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)u);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->vec_sensi);CHKERRQ(ierr);
+
+  ts->vec_sensi = u;
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMShellSetGlobalVector(dm,u);CHKERRQ(ierr);
