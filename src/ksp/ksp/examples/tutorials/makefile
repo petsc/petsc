@@ -1041,6 +1041,10 @@ runex50_2:
         ${DIFF} output/ex50_2.out ex50_2.tmp || printf "${PWD}\nPossible problem with ex50_2, diffs above\n=========================================\n"; \
         ${RM} -f ex50_2.tmp
 
+runex52:
+	-@${MPIEXEC} -n 1 ./ex52 -use_petsc_lu > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_2.out ex52.tmp || printf "${PWD}\nPossible problem with ex52, diffs above\n=========================================\n"; \
+	   ${RM} -f ex52.tmp
 runex52_mumps:
 	-@${MPIEXEC} -n 3 ./ex52 -use_mumps_lu > ex52.tmp 2>&1;	  \
 	   ${DIFF} output/ex52_1.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_mumps, diffs above\n=========================================\n"; \
@@ -1051,16 +1055,16 @@ runex52_mumps_2:
 	   ${RM} -f ex52.tmp
 runex52_mumps_3:
 	-@${MPIEXEC} -n 3 ./ex52 -use_mumps_ch -mat_type sbaij > ex52.tmp 2>&1;	  \
-	   ${DIFF} output/ex52_1.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_mumps_2, diffs above\n=========================================\n"; \
+	   ${DIFF} output/ex52_1.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_mumps_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
+runex52_superlu:
+	-@${MPIEXEC} -n 1 ./ex52 -use_superlu_ilu > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_2.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_superlu, diffs above\n=========================================\n"; \
+	   ${RM} -f ex52.tmp
+
 runex52f_mumps:
 	-@${MPIEXEC} -n 3 ./ex52f > ex52.tmp 2>&1;	  \
 	   ${DIFF} output/ex52f_1.out ex52.tmp || printf "${PWD}\nPossible problem with ex52f_mumps, diffs above\n=========================================\n"; \
-	   ${RM} -f ex52.tmp
-
-runex52_superlu:
-	-@${MPIEXEC} -n 1 ./ex52 -use_superlu_ilu > ex52.tmp 2>&1;	  \
-	   ${DIFF} output/ex52_1.out ex52.tmp || printf "${PWD}\nPossible problem with ex52, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 
 runex53:
@@ -1214,7 +1218,7 @@ TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
 				 runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
                                  runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm ex53.PETSc runex53 runex53_2 ex53.rm \
-                                 ex52.PETSc runex52_mumps runex52_mumps_2 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
+                                 ex52.PETSc runex52 runex52_mumps runex52_mumps_2 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
 TESTEXAMPLES_PASTIX            = ex10.PETSc runex10_pastix_lu_1 runex10_pastix_lu_2  \
 				 runex10_pastix_cholesky_1 runex10_pastix_cholesky_2  runex10_pastix_redundant \
                                  ex10.rm 
