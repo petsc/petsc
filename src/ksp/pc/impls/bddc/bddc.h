@@ -49,6 +49,7 @@ typedef struct {
   PetscBool     use_change_on_faces;
   Mat           ChangeOfBasisMatrix;
   Mat           user_ChangeOfBasisMatrix;
+  Mat           new_global_mat;
   Vec           original_rhs;
   Vec           temp_solution;
   Mat           local_mat;
