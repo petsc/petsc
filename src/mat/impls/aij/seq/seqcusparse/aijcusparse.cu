@@ -1221,9 +1221,7 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
   PetscFunctionBegin;
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU) {
     ierr = PetscLogEventBegin(MAT_CUSPARSECopyToGPU,A,0,0,0);CHKERRQ(ierr);
-    if (matstruct) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Data structure should not be initialized.");
-    }
+    Mat_SeqAIJCUSPARSEMultStruct_Destroy(&matstruct,cusparsestruct->format);
     try {
       cusparsestruct->nonzerorow=0;
       for (int j = 0; j<m; j++) cusparsestruct->nonzerorow += ((a->i[j+1]-a->i[j])>0);
