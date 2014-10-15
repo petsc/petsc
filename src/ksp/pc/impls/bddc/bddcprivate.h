@@ -70,5 +70,11 @@ PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
 PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
 PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
 
+/* sub schurs */
+PetscErrorCode PCBDDCSubSchursCreate(PCBDDCSubSchurs*);
+PetscErrorCode PCBDDCSubSchursDestroy(PCBDDCSubSchurs*);
+PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs);
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,Mat,IS,IS,PetscInt,IS[],PetscInt[],PetscInt[],PetscInt);
+
 #endif
 

@@ -2450,6 +2450,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatRestoreRowIJ called in %s\n",__FUNCT__);
     }
     ierr = MatDestroy(&mat_adj);CHKERRQ(ierr);
+    pcbddc->deluxe_compute_rowadj = PETSC_FALSE;
   }
 
   /* Set default dofs' splitting if no information has been provided by the user with PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal */
