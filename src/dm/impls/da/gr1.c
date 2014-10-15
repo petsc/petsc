@@ -15,8 +15,8 @@
   Input Parameters:
 +  da - the distributed array object
 .  xmin,xmax - extremes in the x direction
-.  ymin,ymax - extremes in the y direction (use NULL for 1 dimensional problems)
--  zmin,zmax - extremes in the z direction (use NULL for 1 or 2 dimensional problems)
+.  ymin,ymax - extremes in the y direction (values ignored for 1 dimensional problems)
+-  zmin,zmax - extremes in the z direction (values ignored for 1 or 2 dimensional problems)
 
   Level: beginner
 
