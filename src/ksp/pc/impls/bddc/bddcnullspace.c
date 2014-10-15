@@ -366,6 +366,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
 #define __FUNCT__ "PCBDDCNullSpaceAdaptGlobal"
 PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC pc)
 {
+  PC_IS*         pcis = (PC_IS*)(pc->data);
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
   KSP            inv_change;
   const Vec      *nsp_vecs;
@@ -392,10 +393,7 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC pc)
   if (nsp_has_cnst) {
     new_nsp_size++;
   }
-  ierr = PetscMalloc1(new_nsp_size,&new_nsp_vecs);CHKERRQ(ierr);
-  for (i=0;i<new_nsp_size;i++) {
-    ierr = MatGetVecs(pcbddc->ChangeOfBasisMatrix,&new_nsp_vecs[i],NULL);CHKERRQ(ierr);
-  }
+  ierr = VecDuplicateVecs(pcis->vec1_global,new_nsp_size,&new_nsp_vecs);CHKERRQ(ierr);
 
   start_new = 0;
   if (nsp_has_cnst) {
@@ -419,10 +417,7 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC pc)
   /* free */
   ierr = KSPDestroy(&inv_change);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&new_nsp);CHKERRQ(ierr);
-  for (i=0;i<new_nsp_size;i++) {
-    ierr = VecDestroy(&new_nsp_vecs[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(new_nsp_vecs);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(new_nsp_size,&new_nsp_vecs);CHKERRQ(ierr);
 
   /* check */
   if (pcbddc->dbg_flag) {
