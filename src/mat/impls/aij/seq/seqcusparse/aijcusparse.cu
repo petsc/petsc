@@ -1678,140 +1678,15 @@ PetscErrorCode  MatCreateSeqAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,Pets
 static PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
 {
   PetscErrorCode   ierr;
-  cusparseStatus_t stat;
-  cudaError_t      err;
+
   PetscFunctionBegin;
   if (A->factortype==MAT_FACTOR_NONE) {
-    try {
-      if (A->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
-        Mat_SeqAIJCUSPARSE           *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
-        Mat_SeqAIJCUSPARSEMultStruct *matstruct  = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->mat;
-        Mat_SeqAIJCUSPARSEMultStruct *matstructT = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestruct->matTranspose;
-
-        /* delete all the members in each of the data structures */
-        if (matstruct) {
-          if (matstruct->descr) { stat = cusparseDestroyMatDescr(matstruct->descr);CHKERRCUSP(stat); }
-          if (matstruct->mat) {
-            if (cusparsestruct->format==MAT_CUSPARSE_ELL || cusparsestruct->format==MAT_CUSPARSE_HYB) {
-#if CUDA_VERSION>=4020
-              cusparseHybMat_t hybMat = (cusparseHybMat_t) matstruct->mat;
-              stat = cusparseDestroyHybMat(hybMat);CHKERRCUSP(stat);
-#endif
-            } else {
-	      CsrMatrix* mat = (CsrMatrix*)matstruct->mat;
-	      if (mat->values) delete (THRUSTARRAY*)mat->values;
-	      if (mat->column_indices) delete (THRUSTINTARRAY32*)mat->column_indices;
-	      if (mat->row_offsets) delete (THRUSTINTARRAY32*)mat->row_offsets;
-              delete (CsrMatrix*)matstruct->mat;
-            }
-          }
-	  if (matstruct->alpha) { err=cudaFree(matstruct->alpha);CHKERRCUSP(err); }
-	  if (matstruct->beta) { err=cudaFree(matstruct->beta);CHKERRCUSP(err); }
-          if (matstruct->cprowIndices) delete (THRUSTINTARRAY*)matstruct->cprowIndices;
-          if (matstruct) delete (Mat_SeqAIJCUSPARSEMultStruct*)matstruct;
-        }
-        if (matstructT) {
-          if (matstructT->descr) { stat = cusparseDestroyMatDescr(matstructT->descr);CHKERRCUSP(stat); }
-          if (matstructT->mat) {
-            if (cusparsestruct->format==MAT_CUSPARSE_ELL || cusparsestruct->format==MAT_CUSPARSE_HYB) {
-#if CUDA_VERSION>=4020
-              cusparseHybMat_t hybMat = (cusparseHybMat_t) matstructT->mat;
-              stat = cusparseDestroyHybMat(hybMat);CHKERRCUSP(stat);
-#endif
-            } else {
-	      CsrMatrix* matT = (CsrMatrix*)matstructT->mat;
-	      if (matT->values) delete (THRUSTARRAY*)matT->values;
-	      if (matT->column_indices) delete (THRUSTINTARRAY32*)matT->column_indices;
-	      if (matT->row_offsets) delete (THRUSTINTARRAY32*)matT->row_offsets;
-              delete (CsrMatrix*)matstructT->mat;
-            }
-          }
-	  if (matstructT->alpha) { err=cudaFree(matstructT->alpha);CHKERRCUSP(err); }
-	  if (matstructT->beta) { err=cudaFree(matstructT->beta);CHKERRCUSP(err); }
-          if (matstructT->cprowIndices) delete (THRUSTINTARRAY*)matstructT->cprowIndices;
-          if (matstructT) delete (Mat_SeqAIJCUSPARSEMultStruct*)matstructT;
-        }
-        if (cusparsestruct->workVector) delete (THRUSTARRAY*)cusparsestruct->workVector;
-        if (cusparsestruct->handle) { stat = cusparseDestroy(cusparsestruct->handle);CHKERRCUSP(stat); }
-        if (cusparsestruct) delete (Mat_SeqAIJCUSPARSE*)cusparsestruct;
-        A->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
-      } else {
-        Mat_SeqAIJCUSPARSE *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
-        if (cusparsestruct->handle) { stat = cusparseDestroy(cusparsestruct->handle);CHKERRCUSP(stat); }
-        if (cusparsestruct) delete (Mat_SeqAIJCUSPARSE*)cusparsestruct;
-      }
-    } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
+    if (A->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
+      ierr = Mat_SeqAIJCUSPARSE_Destroy((Mat_SeqAIJCUSPARSE**)&A->spptr);CHKERRQ(ierr);
     }
   } else {
-    /* The triangular factors */
-    try {
-      Mat_SeqAIJCUSPARSETriFactors      *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
-      Mat_SeqAIJCUSPARSETriFactorStruct *loTriFactor = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->loTriFactorPtr;
-      Mat_SeqAIJCUSPARSETriFactorStruct *upTriFactor = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->upTriFactorPtr;
-      Mat_SeqAIJCUSPARSETriFactorStruct *loTriFactorT = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->loTriFactorPtrTranspose;
-      Mat_SeqAIJCUSPARSETriFactorStruct *upTriFactorT = (Mat_SeqAIJCUSPARSETriFactorStruct*)cusparseTriFactors->upTriFactorPtrTranspose;
-
-      /* delete all the members in each of the data structures */
-      if (loTriFactor) {
-        if (loTriFactor->descr) { stat = cusparseDestroyMatDescr(loTriFactor->descr);CHKERRCUSP(stat); }
-        if (loTriFactor->solveInfo) { stat = cusparseDestroySolveAnalysisInfo(loTriFactor->solveInfo);CHKERRCUSP(stat); }
-        if (loTriFactor->csrMat) {
-	  if (loTriFactor->csrMat->values) delete (THRUSTARRAY*)loTriFactor->csrMat->values;
-	  if (loTriFactor->csrMat->column_indices) delete (THRUSTINTARRAY32*)loTriFactor->csrMat->column_indices;
-	  if (loTriFactor->csrMat->row_offsets) delete (THRUSTINTARRAY32*)loTriFactor->csrMat->row_offsets;
-	  delete (CsrMatrix*)loTriFactor->csrMat;
-	}
-        if (loTriFactor) delete (Mat_SeqAIJCUSPARSETriFactorStruct*)loTriFactor;
-      }
-
-      if (upTriFactor) {
-        if (upTriFactor->descr) { stat = cusparseDestroyMatDescr(upTriFactor->descr);CHKERRCUSP(stat); }
-        if (upTriFactor->solveInfo) { stat = cusparseDestroySolveAnalysisInfo(upTriFactor->solveInfo);CHKERRCUSP(stat); }
-        if (upTriFactor->csrMat) {
-	  if (upTriFactor->csrMat->values) delete (THRUSTARRAY*)upTriFactor->csrMat->values;
-	  if (upTriFactor->csrMat->column_indices) delete (THRUSTINTARRAY32*)upTriFactor->csrMat->column_indices;
-	  if (upTriFactor->csrMat->row_offsets) delete (THRUSTINTARRAY32*)upTriFactor->csrMat->row_offsets;
-	  delete (CsrMatrix*)upTriFactor->csrMat;
-	}
-        if (upTriFactor) delete (Mat_SeqAIJCUSPARSETriFactorStruct*)upTriFactor;
-      }
-
-      if (loTriFactorT) {
-        if (loTriFactorT->descr) { stat = cusparseDestroyMatDescr(loTriFactorT->descr);CHKERRCUSP(stat); }
-        if (loTriFactorT->solveInfo) { stat = cusparseDestroySolveAnalysisInfo(loTriFactorT->solveInfo);CHKERRCUSP(stat); }
-        if (loTriFactorT->csrMat) {
-	  if (loTriFactorT->csrMat->values) delete (THRUSTARRAY*)loTriFactorT->csrMat->values;
-	  if (loTriFactorT->csrMat->column_indices) delete (THRUSTINTARRAY32*)loTriFactorT->csrMat->column_indices;
-	  if (loTriFactorT->csrMat->row_offsets) delete (THRUSTINTARRAY32*)loTriFactorT->csrMat->row_offsets;
-	  delete (CsrMatrix*)loTriFactorT->csrMat;
-	}
-        if (loTriFactorT) delete (Mat_SeqAIJCUSPARSETriFactorStruct*)loTriFactorT;
-      }
-
-      if (upTriFactorT) {
-        if (upTriFactorT->descr) { stat = cusparseDestroyMatDescr(upTriFactorT->descr);CHKERRCUSP(stat); }
-        if (upTriFactorT->solveInfo) { stat = cusparseDestroySolveAnalysisInfo(upTriFactorT->solveInfo);CHKERRCUSP(stat); }
-        if (upTriFactorT->csrMat) {
-	  if (upTriFactorT->csrMat->values) delete (THRUSTARRAY*)upTriFactorT->csrMat->values;
-	  if (upTriFactorT->csrMat->column_indices) delete (THRUSTINTARRAY32*)upTriFactorT->csrMat->column_indices;
-	  if (upTriFactorT->csrMat->row_offsets) delete (THRUSTINTARRAY32*)upTriFactorT->csrMat->row_offsets;
-	  delete (CsrMatrix*)upTriFactorT->csrMat;
-	}
-        if (upTriFactorT) delete (Mat_SeqAIJCUSPARSETriFactorStruct*)upTriFactorT;
-      }
-      if (cusparseTriFactors->rpermIndices) delete (THRUSTINTARRAY*)cusparseTriFactors->rpermIndices;
-      if (cusparseTriFactors->cpermIndices) delete (THRUSTINTARRAY*)cusparseTriFactors->cpermIndices;
-      if (cusparseTriFactors->workVector) delete (THRUSTARRAY*)cusparseTriFactors->workVector;
-      if (cusparseTriFactors->handle) { stat = cusparseDestroy(cusparseTriFactors->handle);CHKERRCUSP(stat); }
-      if (cusparseTriFactors) delete (Mat_SeqAIJCUSPARSETriFactors*)cusparseTriFactors;
-    } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
-    }
+    ierr = Mat_SeqAIJCUSPARSETriFactors_Destroy((Mat_SeqAIJCUSPARSETriFactors**)&A->spptr);CHKERRQ(ierr);
   }
-  /*this next line is because MatDestroy tries to PetscFree spptr if it is not zero, and PetscFree only works if the memory was allocated with PetscNew or PetscMalloc, which don't call the constructor */
-  A->spptr = 0;
-
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
