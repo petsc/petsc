@@ -794,7 +794,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
     ierr = PetscMalloc1(sf->nleaves,&remote);CHKERRQ(ierr);
     for (i=0; i<sf->nleaves; i++) {
       remote[i].rank  = sf->remote[i].rank;
-      remote[i].index = outoffset[sf->mine ? sf->mine[i] : 1];
+      remote[i].index = outoffset[sf->mine ? sf->mine[i] : i];
     }
     ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,&sf->multi);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(sf->multi,inoffset[sf->nroots],sf->nleaves,NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
