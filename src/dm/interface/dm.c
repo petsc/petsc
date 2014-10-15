@@ -578,10 +578,10 @@ PetscErrorCode  DMSetUp(DM dm)
 .   dm - the DM object to set options for
 
     Options Database:
-+   -dm_preallocate_only: Only preallocate the matrix for DMCreateMatrix(), but do not fill it with zeros
-.   -dm_vec_type <type>  type of vector to create inside DM
-.   -dm_mat_type <type>  type of matrix to create inside DM
--   -dm_coloring_type <global or ghosted>
++   -dm_preallocate_only - Only preallocate the matrix for DMCreateMatrix(), but do not fill it with zeros
+.   -dm_vec_type <type>  - type of vector to create inside DM
+.   -dm_mat_type <type>  - type of matrix to create inside DM
+-   -dm_coloring_type    - <global or ghosted>
 
     Level: developer
 
