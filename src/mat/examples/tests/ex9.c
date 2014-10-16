@@ -106,6 +106,23 @@ int main(int argc,char **args)
      ierr = MatView(Credundant,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&Credundant);CHKERRQ(ierr);
+   
+    /* Test MatGetRedundantMatrix() with user-provided subcomm */
+    {
+      PetscSubcomm psubcomm;
+
+      ierr = PetscSubcommCreate(PETSC_COMM_WORLD,&psubcomm);CHKERRQ(ierr);
+      ierr = PetscSubcommSetNumber(psubcomm,nsubcomms);CHKERRQ(ierr);
+      ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
+      /* enable runtime switch of psubcomm type, e.g., '-psubcomm_type interlaced */
+      ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
+
+      ierr = MatGetRedundantMatrix(C,nsubcomms,psubcomm->comm,MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);
+      ierr = MatGetRedundantMatrix(C,nsubcomms,psubcomm->comm,MAT_REUSE_MATRIX,&Credundant);CHKERRQ(ierr);
+
+      ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
+      ierr = MatDestroy(&Credundant);CHKERRQ(ierr);
+    }
   }
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);

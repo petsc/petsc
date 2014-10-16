@@ -2948,6 +2948,7 @@ PetscErrorCode MatGetRedundantMatrix_MPISBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm
   MPI_Comm       subcomm_in=subcomm;
   Mat            *matseq;
   IS             isrow,iscol;
+  PetscBool      newsubcomm=PETSC_FALSE;
 
   PetscFunctionBegin;
   if (subcomm_in == MPI_COMM_NULL) { /* user does not provide subcomm */
@@ -2962,6 +2963,7 @@ PetscErrorCode MatGetRedundantMatrix_MPISBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm
       ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
       ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
       ierr = PetscCommDuplicate(psubcomm->comm,&subcomm,NULL);CHKERRQ(ierr);
+      newsubcomm = PETSC_TRUE;
       if (psubcomm->type == PETSC_SUBCOMM_INTERLACED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported");
       ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
     } else { /* retrieve psubcomm and subcomm */
@@ -2995,7 +2997,12 @@ PetscErrorCode MatGetRedundantMatrix_MPISBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm
     redund->isrow              = isrow;
     redund->iscol              = iscol;
     redund->matseq             = matseq;
-    redund->subcomm            = subcomm;
+    if (newsubcomm) {
+      redund->subcomm          = subcomm;
+    } else {
+      redund->subcomm          = MPI_COMM_NULL;
+    }
+    redund->type               = PETSC_SUBCOMM_CONTIGUOUS;
   }
   PetscFunctionReturn(0);
 }
