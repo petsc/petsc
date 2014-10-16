@@ -1172,7 +1172,9 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
 
   Level: developer
 
-.seealso DMPlexDistribute(), PetscPartitionerCreate()
+  Note: This gets a borrowed reference, so the user should not destroy this PetscPartitioner.
+
+.seealso DMPlexDistribute(), DMPlexSetPartitioner(), PetscPartitionerCreate()
 @*/
 PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
 {
