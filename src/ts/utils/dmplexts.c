@@ -153,7 +153,8 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, void (**exactFuncs)(const Pets
   Mat            J, M;
   Vec            sol, r, b;
   MatNullSpace   nullSpace;
-  PetscReal      error = 0.0, res = 0.0;
+  PetscReal     *error, res = 0.0;
+  PetscInt       numFields;
   PetscBool      check;
   PetscErrorCode ierr;
 
@@ -177,9 +178,25 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, void (**exactFuncs)(const Pets
   }
 #endif
   /* Check discretization error */
-  ierr = DMPlexComputeL2Diff(dm, exactFuncs, NULL, u, &error);CHKERRQ(ierr);
-  if (error >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);}
-  else                  {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n", error);CHKERRQ(ierr);}
+  ierr = DMGetNumFields(dm, &numFields);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PetscMax(1, numFields), &error);CHKERRQ(ierr);
+  if (numFields > 1) {
+    PetscInt f;
+
+    ierr = DMPlexComputeL2FieldDiff(dm, exactFuncs, NULL, u, error);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: [");CHKERRQ(ierr);
+    for (f = 0; f < numFields; ++f) {
+      if (f) {ierr = PetscPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}
+      if (error[f] >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "%g", error[f]);CHKERRQ(ierr);}
+      else                     {ierr = PetscPrintf(PETSC_COMM_WORLD, "< 1.0e-11");CHKERRQ(ierr);}
+    }
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "]\n");CHKERRQ(ierr);
+  } else {
+    ierr = DMPlexComputeL2Diff(dm, exactFuncs, NULL, u, &error[0]);CHKERRQ(ierr);
+    if (error[0] >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error[0]);CHKERRQ(ierr);}
+    else                     {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
+  }
+  ierr = PetscFree(error);CHKERRQ(ierr);
   /* Check residual */
   ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
   ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
