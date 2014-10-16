@@ -80,7 +80,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
   if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
-  ierr = DMPlexDistribute(*dm, NULL, 0, NULL, &distributedMesh);CHKERRQ(ierr);
+  ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
   if (distributedMesh) {
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = distributedMesh;
