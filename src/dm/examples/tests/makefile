@@ -178,6 +178,16 @@ runex1:
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1_1.tmp
+runex1_cusp1:
+	-@${MPIEXEC} -n 1 ./ex1 -dm_vec_type cusp -nox | grep -v -i Object > ex1_cusp1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex1_cusp1.out ex1_cusp1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex1_cusp1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex1_cusp1.tmp
+runex1_cusp2:
+	-@${MPIEXEC} -n 2 ./ex1 -dm_vec_type cusp -nox | grep -v -i Object > ex1_cusp2.tmp 2>&1;	  \
+	   if (${DIFF} output/ex1_cusp2.out ex1_cusp2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex1_cusp2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex1_cusp2.tmp
 runex2:
 	-@${MPIEXEC} -n 2 ./ex2 -nox | grep -v "MPI processes" > ex2_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
@@ -384,5 +394,6 @@ TESTEXAMPLES_C_COMPLEX	  =
 TESTEXAMPLES_C_NOCOMPLEX  = ex16.PETSc runex16 runex16_2 ex16.rm ex42.PETSc runex42 ex42.rm
 TESTEXAMPLES_13		  = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc ex11.rm
 TESTEXAMPLES_MATLAB	  = ex12.PETSc runex12 ex12.rm
+TESTEXAMPLES_CUSP = ex1.PETSc runex1_cusp1 runex1_cusp2 ex1.rm
 
 include ${PETSC_DIR}/conf/test

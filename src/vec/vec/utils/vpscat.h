@@ -38,7 +38,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   indices = to->indices;
   sstarts = to->starts;
 #if defined(PETSC_HAVE_CUSP)
-
+  VecCUSPAllocateCheckHost(xin);
   if (xin->valid_GPU_array == PETSC_CUSP_GPU) {
     if (xin->spptr && ctx->spptr) {
       ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
       ierr = VecCUSPCopyFromGPU(xin);CHKERRQ(ierr);
     }
   }
-  xv = *(PetscScalar**)xin->data;
+  xv = *((PetscScalar**)xin->data);
 #else
   ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
 #endif

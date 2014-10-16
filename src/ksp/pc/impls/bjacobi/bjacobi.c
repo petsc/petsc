@@ -659,24 +659,13 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscErrorCode         ierr;
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-  PetscScalar            *x_array,*y_array;
 
   PetscFunctionBegin;
-  /*
-      The VecPlaceArray() is to avoid having to copy the
-    y vector into the bjac->x vector. The reason for
-    the bjac->x vector is that we need a sequential vector
-    for the sequential solve.
-  */
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
-  ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr);
-  ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr);
+  ierr = VecGetLocalVector(x, &bjac->x);CHKERRQ(ierr);
+  ierr = VecGetLocalVectorRead(y, &bjac->y);CHKERRQ(ierr);
   ierr = KSPSolve(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr);
-  ierr = VecResetArray(bjac->x);CHKERRQ(ierr);
-  ierr = VecResetArray(bjac->y);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
+  ierr = VecRestoreLocalVector(x, &bjac->x);CHKERRQ(ierr);
+  ierr = VecRestoreLocalVectorRead(y, &bjac->y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -827,6 +816,10 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     ierr = MatGetSize(pmat,&m,&m);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&bjac->x);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&bjac->y);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_CUSP
+    ierr = VecSetType(bjac->x,VECCUSP);CHKERRQ(ierr);
+    ierr = VecSetType(bjac->y,VECCUSP);CHKERRQ(ierr);
+#endif
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)bjac->x);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)bjac->y);CHKERRQ(ierr);
   } else {
@@ -1066,6 +1059,10 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
       */
       ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&y);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_CUSP
+      ierr = VecSetType(x,VECCUSP);CHKERRQ(ierr);
+      ierr = VecSetType(y,VECCUSP);CHKERRQ(ierr);
+#endif
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)x);CHKERRQ(ierr);
       ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)y);CHKERRQ(ierr);
 
@@ -1251,6 +1248,10 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     ierr = MatGetLocalSize(mpjac->submats,&m,&n);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(subcomm,1,n,PETSC_DECIDE,NULL,&mpjac->xsub);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(subcomm,1,m,PETSC_DECIDE,NULL,&mpjac->ysub);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_CUSP
+    ierr = VecSetType(mpjac->xsub,VECMPICUSP);CHKERRQ(ierr);
+    ierr = VecSetType(mpjac->ysub,VECMPICUSP);CHKERRQ(ierr);
+#endif
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mpjac->xsub);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mpjac->ysub);CHKERRQ(ierr);
 

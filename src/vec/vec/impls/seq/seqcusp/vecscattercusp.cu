@@ -46,6 +46,8 @@ PetscErrorCode VecScatterCUSPIndicesCreate_StoS(PetscInt n,PetscInt toFirst,Pets
       stos_scatter->fromFirst = fromFirst;
       stos_scatter->fromStep = fromStep;
       stos_scatter->fromMode = VEC_SCATTER_CUSP_STRIDED;
+    } else {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide fslots or fromStep.");
     }
   }
 
@@ -66,6 +68,8 @@ PetscErrorCode VecScatterCUSPIndicesCreate_StoS(PetscInt n,PetscInt toFirst,Pets
       stos_scatter->toFirst = toFirst;
       stos_scatter->toStep = toStep;
       stos_scatter->toMode = VEC_SCATTER_CUSP_STRIDED;
+    } else {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide tslots or toStep.");
     }
   }
 

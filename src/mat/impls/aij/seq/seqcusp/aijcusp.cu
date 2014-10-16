@@ -321,6 +321,14 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
   static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
+  /*
+    DM 1/28/2014: As of version 0.4.0 cusp does not handle the case of
+    zero matrices well.  It produces segfaults on some platforms.
+    Therefore we manually check for the case of a zero matrix here.
+  */
+  if (a->nz == 0) {
+    PetscFunctionReturn(0);
+  }
   ierr = PetscCitationsRegister("@incollection{msk2013,\n  author = {Victor Minden and Barry F. Smith and Matthew G. Knepley},\n  title = {Preliminary Implementation of {PETSc} Using {GPUs}},\n  booktitle = {GPU Solutions to Multi-scale Problems in Science and Engineering},\n  series = {Lecture Notes in Earth System Sciences},\n  editor = {David A. Yuen and Long Wang and Xuebin Chi and Lennart Johnsson and Wei Ge and Yaolin Shi},\n  publisher = {Springer Berlin Heidelberg},\n  pages = {131--140},\n  year = {2013},\n}\n",&cite);CHKERRQ(ierr);
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSP
      ierr = MatCUSPCopyToGPU(A);CHKERRQ(ierr); */
@@ -381,8 +389,14 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
   CUSPARRAY      *xarray     = NULL,*yarray=NULL,*zarray=NULL;
 
   PetscFunctionBegin;
-  /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSP
-     ierr = MatCUSPCopyToGPU(A);CHKERRQ(ierr); */
+  /*
+    DM 1/28/2014: As of version 0.4.0 cusp does not handle the case of
+    zero matrices well.  It produces segfaults on some platforms.
+    Therefore we manually check for the case of a zero matrix here.
+  */
+  if (a->nz == 0) {
+    PetscFunctionReturn(0);
+  }
   try {
     ierr = VecCopy_SeqCUSP(yy,zz);CHKERRQ(ierr);
     ierr = VecCUSPGetArrayRead(xx,&xarray);CHKERRQ(ierr);
