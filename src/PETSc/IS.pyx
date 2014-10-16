@@ -374,6 +374,13 @@ cdef class LGMap(Object):
         PetscCLEAR(self.obj); self.lgm = newlgm
         return self
 
+    def createSF(self, SF sf not None, start):
+        cdef PetscLGMap newlgm = NULL
+        cdef PetscInt cstart = asInt(start)
+        CHKERR( ISLocalToGlobalMappingCreateSF(sf.sf, cstart, &newlgm) )
+        PetscCLEAR(self.obj); self.lgm = newlgm
+        return self
+
     def getSize(self):
         cdef PetscInt n = 0
         CHKERR( ISLocalToGlobalMappingGetSize(self.lgm, &n) )
