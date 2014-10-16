@@ -74,15 +74,21 @@ PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_1_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_1(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatForwardSolve_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatBackwardSolve_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_2_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_2(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatForwardSolve_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatBackwardSolve_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
 
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_3_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_3(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatForwardSolve_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
+PETSC_INTERN PetscErrorCode MatBackwardSolve_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
 
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_4_inplace(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_4(Mat,Vec,Vec);

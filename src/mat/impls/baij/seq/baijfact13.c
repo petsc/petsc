@@ -453,6 +453,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B,Mat A,const Ma
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
 
   C->ops->solve          = MatSolve_SeqBAIJ_3_NaturalOrdering;
+  C->ops->forwardsolve   = MatForwardSolve_SeqBAIJ_3_NaturalOrdering;
+  C->ops->backwardsolve  = MatBackwardSolve_SeqBAIJ_3_NaturalOrdering;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_3_NaturalOrdering;
   C->assembled           = PETSC_TRUE;
 

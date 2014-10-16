@@ -229,6 +229,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B,Mat A,const Ma
   ierr = PetscFree2(rtmp,mwork);CHKERRQ(ierr);
 
   C->ops->solve          = MatSolve_SeqBAIJ_2_NaturalOrdering;
+  C->ops->forwardsolve   = MatForwardSolve_SeqBAIJ_2_NaturalOrdering;
+  C->ops->backwardsolve  = MatBackwardSolve_SeqBAIJ_2_NaturalOrdering;
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering;
   C->assembled           = PETSC_TRUE;
 
@@ -571,6 +573,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *inf
   ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
   if (row_identity && col_identity) {
     C->ops->solve          = MatSolve_SeqBAIJ_1_NaturalOrdering;
+    C->ops->forwardsolve   = MatForwardSolve_SeqBAIJ_1_NaturalOrdering;
+    C->ops->backwardsolve  = MatBackwardSolve_SeqBAIJ_1_NaturalOrdering;
     C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_1_NaturalOrdering;
   } else {
     C->ops->solve          = MatSolve_SeqBAIJ_1;
