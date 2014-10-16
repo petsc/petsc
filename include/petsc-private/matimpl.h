@@ -310,7 +310,6 @@ typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
   PetscScalar  *sbuf_a,**rbuf_a;
   MPI_Comm     subcomm;   /* user provide subcomm */
   PetscSubcommType type;  /* user provide subcomm type */
-  PetscSubcomm psubcomm;
   IS           isrow,iscol;
   Mat          *matseq;
 } Mat_Redundant;

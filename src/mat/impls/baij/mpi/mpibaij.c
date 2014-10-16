@@ -4025,7 +4025,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm 
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;
-  PetscMPIInt    size,subsize;
+  PetscMPIInt    size;
   PetscInt       mloc_sub,rstart,rend,M=mat->rmap->N,N=mat->cmap->N;
   Mat_Redundant  *redund=NULL;
   PetscSubcomm   psubcomm=NULL;
@@ -4045,20 +4045,16 @@ PetscErrorCode MatGetRedundantMatrix_MPIBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm 
       ierr = PetscSubcommSetNumber(psubcomm,nsubcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
       ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
-      subcomm = psubcomm->comm;
+      ierr = PetscCommDuplicate(psubcomm->comm,&subcomm,NULL);CHKERRQ(ierr);
+      if (psubcomm->type == PETSC_SUBCOMM_INTERLACED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported");
+      ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
     } else { /* retrieve subcomm and subcomm */
       ierr = PetscObjectGetComm((PetscObject)(*matredundant),&subcomm);CHKERRQ(ierr);
-      ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
       redund   = (*matredundant)->redundant;
-      psubcomm = redund->psubcomm;
-    }
-    if (psubcomm->type == PETSC_SUBCOMM_INTERLACED) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported");
     }
   }
 
   /* use MPI subcomm via MatGetSubMatrices(); use subcomm_in or psubcomm->comm (psubcomm->type != INTERLACED) */
-  ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     /* create a local sequential matrix matseq[0] */
     mloc_sub = PETSC_DECIDE;
@@ -4084,7 +4080,6 @@ PetscErrorCode MatGetRedundantMatrix_MPIBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm 
     redund->iscol              = iscol;
     redund->matseq             = matseq;
     redund->subcomm            = subcomm;
-    redund->psubcomm           = psubcomm;
   }
   PetscFunctionReturn(0);
 }

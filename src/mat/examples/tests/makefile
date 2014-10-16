@@ -857,17 +857,17 @@ runex9_2:
 runex9_3:
 	-@${MPIEXEC} -n 3 ./ex9 -nsubcomms 2 -view_mat -psubcomm_type contiguous > ex9.tmp 2>&1;   \
 	   if (${DIFF} output/ex9_3.out ex9.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex9_2, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex9_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex9.tmp
 runex9_3_baij:
 	-@${MPIEXEC} -n 3 ./ex9 -mat_type baij -nsubcomms 2 -view_mat > ex9.tmp 2>&1;   \
 	   if (${DIFF} output/ex9_3_baij.out ex9.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex9_2, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex9_3_baij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex9.tmp
 runex9_3_sbaij:
 	-@${MPIEXEC} -n 3 ./ex9 -mat_type sbaij -nsubcomms 2 -view_mat > ex9.tmp 2>&1;   \
 	   if (${DIFF} output/ex9_3_sbaij.out ex9.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex9_2, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex9_3_sbaij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex9.tmp
 
 runex10:
