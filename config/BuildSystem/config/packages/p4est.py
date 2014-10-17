@@ -18,4 +18,5 @@ class Configure(config.package.GNUPackage):
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
+    args.append('--enable-mpi')
     return args
