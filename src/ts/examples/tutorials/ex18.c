@@ -157,13 +157,22 @@ static void riemann_advection(const PetscReal *qp, const PetscReal *n, const Pet
 
     -\Delta u + f = <-4, -4> + <4, 4> = 0
     {\partial\phi}{\partial t} - \nabla\cdot \phi u = 0
-    u h_t(x + y + (u + v) t) - u . grad phi - phi div u
+    h_t(x + y + (u + v) t) - u . grad phi - phi div u
   = u h' + v h'              - u h_x - v h_y
   = 0
 
 We will conserve phi since
 
     \nabla \cdot u = 2x - 2x = 0
+
+Also try h((x + ut)^2 + (y + vt)^2), so that
+
+    h_t((x + ut)^2 + (y + vt)^2) - u . grad phi - phi div u
+  = 2 h' (u (x + ut) + v (y + vt)) - u h_x - v h_y
+  = 2 h' (u (x + ut) + v (y + vt)) - u h' 2 (x + u t) - v h' 2 (y + vt)
+  = 2 h' (u (x + ut) + v (y + vt)  - u (x + u t) - v (y + vt))
+  = 0
+
 */
 void quadratic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
@@ -235,8 +244,13 @@ void constant_phi(const PetscReal x[], PetscScalar *u, void *ctx)
 
 void gaussian_phi_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
-  const PetscReal r2 = x[0]*x[0] + x[1]*x[1];
-  u[0] = PetscExpReal(-r2)/(2.0*PETSC_PI);
+  const PetscReal t     = *((PetscReal *) ctx);
+  const PetscReal xi    = x[0] + u[0]*t - 0.5;
+  const PetscReal eta   = x[1] + u[1]*t - 0.5;
+  const PetscReal r2    = xi*xi + eta*eta;
+  const PetscReal sigma = 1.0/6.0;
+
+  u[0] = PetscExpReal(-r2/(2.0*sigma*sigma))/(sigma*sqrt(2.0*PETSC_PI));
 }
 
 #undef __FUNCT__
@@ -366,7 +380,8 @@ int main(int argc, char **argv)
   DM             dm;
   Vec            u;
   AppCtx         user;
-  void          *ctxs[2] = {NULL, NULL};
+  PetscReal      t0, t = 0.0;
+  void          *ctxs[2] = {&t, &t};
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
@@ -388,8 +403,12 @@ int main(int argc, char **argv)
   ierr = DMPlexProjectFunction(dm, user.exactFuncs, ctxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   ierr = DMPlexProjectFunction(dm, user.initialGuess, ctxs, INSERT_VALUES, u);CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, "init_", "-vec_view");CHKERRQ(ierr);
-  ierr = DMTSCheckFromOptions(ts, u, user.exactFuncs);CHKERRQ(ierr);
+  ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
+  t0   = t;
+  ierr = DMTSCheckFromOptions(ts, u, user.exactFuncs, ctxs);CHKERRQ(ierr);
   ierr = TSSolve(ts, u);CHKERRQ(ierr);
+  ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
+  if (t > t0) {ierr = DMTSCheckFromOptions(ts, u, user.exactFuncs, ctxs);CHKERRQ(ierr);}
   ierr = VecViewFromOptions(u, "sol_", "-vec_view");CHKERRQ(ierr);
 
   ierr = VecDestroy(&u);CHKERRQ(ierr);
