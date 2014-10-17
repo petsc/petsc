@@ -298,11 +298,11 @@ class BaseTestMatAnyAIJ(object):
     def _chk_aij(self, A, i, j):
         compressed = bool(self.BSIZE)
         ai, aj = A.getRowIJ(compressed=compressed)
-        if None not in (ai, aj):
+        if ai is not None and aj is not None:
             self.assertTrue(N.all(i==ai))
             self.assertTrue(N.all(j==aj))
         ai, aj = A.getColumnIJ(compressed=compressed)
-        if None not in (ai, aj):
+        if ai is not None and aj is not None:
             self.assertTrue(N.all(i==ai))
             self.assertTrue(N.all(j==aj))
 
@@ -440,12 +440,12 @@ class BaseTestMatSBAIJ(BaseTestMatAnyAIJ, unittest.TestCase):
     def testInvertBlockDiagonal(self): pass
     def _chk_aij(self, A, i, j):
         ai, aj = A.getRowIJ(compressed=True)
-        if None not in (ai, aj):
+        if ai is not None and aj is not None:
             if 0: # XXX Implement
                 self.assertTrue(N.all(i==ai))
                 self.assertTrue(N.all(j==aj))
         ai, aj = A.getColumnIJ(compressed=True)
-        if None not in (ai, aj):
+        if ai is not None and aj is not None:
             if 0: # XXX Implement
                 self.assertTrue(N.all(i==ai))
                 self.assertTrue(N.all(j==aj))
@@ -575,12 +575,12 @@ class BaseTestMatAIJ_B(BaseTestMatAnyAIJ, unittest.TestCase):
     def _chk_aij(self, A, i, j):
         bs = self.BSIZE or 1
         ai, aj = A.getRowIJ()
-        if None not in (ai, aj):  ## XXX map and check !!
+        if ai is not None and aj is not None:  ## XXX map and check !!
             #self.assertTrue(N.all(i==ai))
             #self.assertTrue(N.all(j==aj))
             pass
         ai, aj = A.getColumnIJ(compressed=bool(self.BSIZE))
-        if None not in (ai, aj): ## XXX map and check !!
+        if ai is not None and aj is not None: ## XXX map and check !!
             #self.assertTrue(N.all(i==ai))
             #self.assertTrue(N.all(j==aj))
             pass
@@ -713,12 +713,12 @@ class BaseTestMatAIJ_B(BaseTestMatAnyAIJ, unittest.TestCase):
     def _chk_aij(self, A, i, j):
         bs = self.BSIZE or 1
         ai, aj = A.getRowIJ()
-        if None not in (ai, aj):  ## XXX map and check !!
+        if ai is not None and aj is not None:  ## XXX map and check !!
             #self.assertTrue(N.all(i==ai))
             #self.assertTrue(N.all(j==aj))
             pass
         ai, aj = A.getColumnIJ()
-        if None not in (ai, aj): ## XXX map and check !!
+        if ai is not None and aj is not None: ## XXX map and check !!
             #self.assertTrue(N.all(i==ai))
             #self.assertTrue(N.all(j==aj))
             pass
