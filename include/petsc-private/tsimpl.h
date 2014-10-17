@@ -49,7 +49,6 @@ struct _p_TS {
   DM            dm;
   TSProblemType problem_type;
   Vec           vec_sol;
-  Vec           vec_sensi;
   TSAdapt       adapt;
   TSEvent       event;
 
@@ -65,6 +64,9 @@ struct _p_TS {
   PetscErrorCode (*poststep)(TS);
 
   /* ---------------------- Sensitivity Analysis support -----------------*/
+  Vec       *vecs_sensi;
+  Vec       *vecs_sensip;
+  PetscInt  numberadjs;
   PetscBool checkpoint;
   PetscBool reverse_mode;
 

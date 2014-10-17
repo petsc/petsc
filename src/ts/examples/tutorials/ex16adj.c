@@ -371,7 +371,6 @@ int main(int argc,char **argv)
   TS             ts;            /* nonlinear solver */
   Vec            x;             /* solution, residual vectors */
   Mat            A;             /* Jacobian matrix */
-  Vec            lambda;        /* adjoint variable */
   PetscInt       steps;
   PetscReal      ftime   =0.5;
   PetscBool      monitor = PETSC_FALSE;
@@ -457,6 +456,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  Vec            lambda[2];        /* adjoint variable */
 /*  ierr = VecCreate(PETSC_COMM_WORLD,&user.X);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&lambda,NULL);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(lambda,user.nstages,&user.Y);CHKERRQ(ierr);
@@ -493,12 +493,16 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Another way to run the Adjoint model
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatGetVecs(A,&lambda,NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&lambda[0],NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&lambda[1],NULL);CHKERRQ(ierr);
   //   Redet initial conditions for the adjoint integration
-  ierr = VecGetArray(lambda,&x_ptr);CHKERRQ(ierr);
+  ierr = VecGetArray(lambda[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 1.0;   x_ptr[1] = 0.0;
-  ierr = VecRestoreArray(lambda,&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,lambda);CHKERRQ(ierr);
+  ierr = VecRestoreArray(lambda[0],&x_ptr);CHKERRQ(ierr);
+  ierr = VecGetArray(lambda[1],&x_ptr);CHKERRQ(ierr);
+  x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
+  ierr = VecRestoreArray(lambda[1],&x_ptr);CHKERRQ(ierr);
+  ierr = TSSetSensitivity(ts,lambda,2);CHKERRQ(ierr);
 
   //   Switch to reverse mode
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
@@ -509,17 +513,14 @@ int main(int argc,char **argv)
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
-  //   Turn off adapt for the adjoint integration (???)
-  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptSetType(adapt,TSADAPTNONE);CHKERRQ(ierr);
-
   //   Set up monitor
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorADJ2,&user,NULL);CHKERRQ(ierr);
 
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
 
-  ierr = VecView(lambda,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(lambda[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -527,7 +528,8 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&lambda);CHKERRQ(ierr);
+  ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&lambda[1]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = PetscFinalize();

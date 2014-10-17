@@ -39,7 +39,7 @@ typedef struct {
   Vec          *Y;               /* States computed during the step */
   Vec          *YdotRHS;         /* Function evaluations for the non-stiff part */
   Vec          *VecDeltaLam;     /* Increament of the adjoint sensitivity variable at stage*/ 
-  Vec          VecSensiTemp;     /* Vector to be timed with Jacobian transpose*/ 
+  Vec          *VecSensiTemp;     /* Vector to be timed with Jacobian transpose*/ 
   PetscScalar  *work;            /* Scalar work */
   PetscReal    stage_time;
   TSStepStatus status;
@@ -480,40 +480,44 @@ static PetscErrorCode TSStepAdj_RK(TS ts)
   const PetscInt   s    = tab->s;
   const PetscReal *A = tab->A,*b = tab->b,*c = tab->c;
   PetscScalar     *w    = rk->work;
-  Vec             *Y    = rk->Y,*VecDeltaLam = rk->VecDeltaLam,VecSensiTemp= rk->VecSensiTemp;
-  PetscInt         i,j;
+  Vec             *Y    = rk->Y,*VecDeltaLam = rk->VecDeltaLam,*VecSensiTemp = rk->VecSensiTemp;
+  PetscInt         i,j,nadj;
   PetscReal        t;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
  
-  //ierr = TSStep_RK(ts);CHKERRQ(ierr); // reuse TSStep
+  /*ierr = TSStep_RK(ts);CHKERRQ(ierr); // reuse TSStep */
   
   t          = ts->ptime;
   rk->status = TS_STEP_INCOMPLETE;
-
-  PetscReal h = ts->time_step; // already obtained from checkpointing
+  PetscReal h = ts->time_step;
   ierr = TSPreStep(ts);CHKERRQ(ierr);
   for (i=s-1; i>=0; i--) {
     Mat J,Jp;
     rk->stage_time = t + h*(1.0-c[i]);
-    ierr = VecCopy(ts->vec_sensi,VecSensiTemp);CHKERRQ(ierr);
-    ierr = VecScale(VecSensiTemp,-h*b[i]);
-    for (j=i+1; j<s; j++) {
-      ierr = VecAXPY(VecSensiTemp,-h*A[j*s+i],VecDeltaLam[j]);
+    for (nadj=0; nadj<ts->numberadjs; nadj++) {
+      ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);
+      ierr = VecScale(VecSensiTemp[nadj],-h*b[i]);
+      for (j=i+1; j<s; j++) {
+        ierr = VecAXPY(VecSensiTemp[nadj],-h*A[j*s+i],VecDeltaLam[nadj*s+j]);
+      }
     }
     ierr = TSGetRHSJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
     ierr = TSComputeRHSJacobian(ts,rk->stage_time,Y[i],J,Jp);CHKERRQ(ierr);
-    ierr = MatMultTranspose(J,VecSensiTemp,VecDeltaLam[i]);CHKERRQ(ierr);
+    for (nadj=0; nadj<ts->numberadjs; nadj++) {
+      ierr = MatMultTranspose(J,VecSensiTemp[nadj],VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
+    }
   }
 
   for (j=0; j<s; j++) w[j] = 1.0;
-  ierr = VecMAXPY(ts->vec_sensi,s,w,VecDeltaLam);CHKERRQ(ierr);
-
+  for (nadj=0; nadj<ts->numberadjs; nadj++) {
+    ierr = VecMAXPY(ts->vecs_sensi[nadj],s,w,&VecDeltaLam[nadj*s]);CHKERRQ(ierr);
+  }
   ts->ptime += ts->time_step;
   ts->steps++;
   rk->status = TS_STEP_COMPLETE;
-  ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vec_sensi,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vecs_sensi,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -571,8 +575,8 @@ static PetscErrorCode TSReset_RK(TS ts)
   ierr = VecDestroyVecs(s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s,&rk->YdotRHS);CHKERRQ(ierr);
   if(ts->reverse_mode) {
-    ierr = VecDestroyVecs(s,&rk->VecDeltaLam);CHKERRQ(ierr);
-    ierr = VecDestroy(&rk->VecSensiTemp);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(s*ts->numberadjs,&rk->VecDeltaLam);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(ts->numberadjs,&rk->VecSensiTemp);CHKERRQ(ierr);
   }
   ierr = PetscFree(rk->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -676,8 +680,8 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->YdotRHS);CHKERRQ(ierr);
   if (ts->reverse_mode) {
-    ierr = VecDuplicateVecs(ts->vec_sensi,s,&rk->VecDeltaLam);CHKERRQ(ierr);
-    ierr = VecDuplicate(ts->vec_sensi,&rk->VecSensiTemp);CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numberadjs,&rk->VecDeltaLam);CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numberadjs,&rk->VecSensiTemp);CHKERRQ(ierr);
   }
   ierr = PetscMalloc1(s,&rk->work);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);

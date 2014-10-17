@@ -1746,12 +1746,13 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 
 .keywords: TS, timestep, get, sensitivity
 @*/
-PetscErrorCode  TSGetSensitivity(TS ts,Vec *v)
+PetscErrorCode  TSGetSensitivity(TS ts,Vec **v,PetscInt *numberadjs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(v,2);
-  *v = ts->vec_sensi;
+  *v          = ts->vecs_sensi;
+  if(numberadjs) *numberadjs = ts->numberadjs;
   PetscFunctionReturn(0);
 }
 
@@ -1867,7 +1868,7 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
-  if (ts->reverse_mode && !ts->vec_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSensitivity() first");
+  if (ts->reverse_mode && !ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSensitivity() first");
 
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
 
@@ -1933,10 +1934,12 @@ PetscErrorCode  TSSetUp(TS ts)
 @*/
 PetscErrorCode  TSReset(TS ts)
 {
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+
   if (ts->ops->reset) {
     ierr = (*ts->ops->reset)(ts);CHKERRQ(ierr);
   }
@@ -1949,8 +1952,11 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
-
-  if (ts->reverse_mode) {ierr = VecDestroy(&ts->vec_sensi);CHKERRQ(ierr);}
+  if (ts->reverse_mode) {
+    for (i=0; i<ts->numberadjs; i++) {
+      ierr = VecDestroy(&ts->vecs_sensi[i]);CHKERRQ(ierr);
+    }
+  }
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -2247,21 +2253,28 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
 
 .keywords: TS, timestep, set, sensitivity, initial conditions
 @*/
-PetscErrorCode  TSSetSensitivity(TS ts,Vec u)
+PetscErrorCode  TSSetSensitivity(TS ts,Vec *u,PetscInt numberadjs)
 {
   PetscErrorCode ierr;
   DM             dm;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(u,VEC_CLASSID,2);
-  ierr = PetscObjectReference((PetscObject)u);CHKERRQ(ierr);
-  ierr = VecDestroy(&ts->vec_sensi);CHKERRQ(ierr);
-
-  ts->vec_sensi = u;
+  PetscValidPointer(u,2);
+  for (i=0; i<numberadjs; i++) {
+    ierr = PetscObjectReference((PetscObject)u[i]);CHKERRQ(ierr);
+  }
+  if(ts->vecs_sensi) {
+    ierr = VecDestroyVecs(ts->numberadjs,&ts->vecs_sensi);CHKERRQ(ierr);
+  }
+  ts->vecs_sensi = u;
+  ts->numberadjs = numberadjs;
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMShellSetGlobalVector(dm,u);CHKERRQ(ierr);
+  if(u) {
+    ierr = DMShellSetGlobalVector(dm,u[0]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
