@@ -14,7 +14,7 @@ from petsc4py import PETSc
 execfile('petsc-mat.py')
 execfile('petsc-cg.py')
 
-x, b = A.getVecs()
+x, b = A.createVecs()
 
 ksp = PETSc.KSP().create()
 ksp.setType('cg')

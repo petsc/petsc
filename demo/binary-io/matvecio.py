@@ -21,7 +21,7 @@ for I in xrange(Istart, Iend) :
 A.assemblyBegin()
 A.assemblyEnd()
 
-x, y = A.getVecs()
+x, y = A.createVecs()
 x.set(1)
 A.mult(x,y)
 

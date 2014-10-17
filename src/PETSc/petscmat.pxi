@@ -193,7 +193,7 @@ cdef extern from * nogil:
     int MatIsHermitianKnown(PetscMat,PetscBool*,PetscBool*)
     int MatIsTranspose(PetscMat A,PetscMat B,PetscReal tol,PetscBool *flg)
 
-    int MatGetVecs(PetscMat,PetscVec*,PetscVec*)
+    int MatCreateVecs(PetscMat,PetscVec*,PetscVec*)
 
     int MatSetValue(PetscMat,PetscInt,PetscInt,PetscScalar,PetscInsertMode)
     int MatSetValues(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
@@ -471,7 +471,7 @@ cdef Mat mat_mul(Mat self, other):
         return mat_imul(mat_pos(self), other)
 
 cdef Vec mat_mul_vec(Mat self, Vec other):
-    cdef Vec result = self.getVecLeft()
+    cdef Vec result = self.createVecLeft()
     self.mult(other, result)
     return result
 

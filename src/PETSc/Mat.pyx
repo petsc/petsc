@@ -210,7 +210,7 @@ cdef class Mat(Object):
 
     def __call__(self, x, y=None):
         if y is None:
-            y = self.getVecLeft()
+            y = self.createVecLeft()
         self.mult(x, y)
         return y
     #
@@ -941,27 +941,27 @@ cdef class Mat(Object):
         cdef Vec vecr, vecl
         if side is None:
             vecr = Vec(); vecl = Vec();
-            CHKERR( MatGetVecs(self.mat, &vecr.vec, &vecl.vec) )
+            CHKERR( MatCreateVecs(self.mat, &vecr.vec, &vecl.vec) )
             return (vecr, vecl)
         elif side in ('r', 'R', 'right', 'Right', 'RIGHT'):
             vecr = Vec()
-            CHKERR( MatGetVecs(self.mat, &vecr.vec, NULL) )
+            CHKERR( MatCreateVecs(self.mat, &vecr.vec, NULL) )
             return vecr
         elif side in ('l', 'L', 'left',  'Left', 'LEFT'):
             vecl = Vec()
-            CHKERR( MatGetVecs(self.mat, NULL, &vecl.vec) )
+            CHKERR( MatCreateVecs(self.mat, NULL, &vecl.vec) )
             return vecl
         else:
             raise ValueError("side '%r' not understood" % side)
 
     def createVecRight(self):
         cdef Vec vecr = Vec()
-        CHKERR( MatGetVecs(self.mat, &vecr.vec, NULL) )
+        CHKERR( MatCreateVecs(self.mat, &vecr.vec, NULL) )
         return vecr
 
     def createVecLeft(self):
         cdef Vec vecl = Vec()
-        CHKERR( MatGetVecs(self.mat, NULL, &vecl.vec) )
+        CHKERR( MatCreateVecs(self.mat, NULL, &vecl.vec) )
         return vecl
 
     getVecs = createVecs
@@ -975,7 +975,7 @@ cdef class Mat(Object):
         if result is None:
             result = Vec()
         if result.vec == NULL:
-            CHKERR( MatGetVecs(self.mat, NULL, &result.vec) )
+            CHKERR( MatCreateVecs(self.mat, NULL, &result.vec) )
         CHKERR( MatGetColumnVector(self.mat, result.vec, ival) )
         return result
 
@@ -983,7 +983,7 @@ cdef class Mat(Object):
         if result is None:
             result = Vec()
         if result.vec == NULL:
-            CHKERR( MatGetVecs(self.mat, NULL, &result.vec) )
+            CHKERR( MatCreateVecs(self.mat, NULL, &result.vec) )
         CHKERR( MatGetDiagonal(self.mat, result.vec) )
         return result
 
@@ -991,7 +991,7 @@ cdef class Mat(Object):
         if result is None:
             result = Vec()
         if result.vec == NULL:
-            CHKERR( MatGetVecs(self.mat, NULL, &result.vec) )
+            CHKERR( MatCreateVecs(self.mat, NULL, &result.vec) )
         CHKERR( MatGetRowSum(self.mat, result.vec) )
         return result
 

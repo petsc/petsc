@@ -27,7 +27,7 @@ class Heat(object):
         self.mat.setLGMap(lgmap, lgmap)
 
         # Global and local vectors
-        self.gvec = self.mat.getVecRight()
+        self.gvec = self.mat.createVecRight()
         self.lvec = PETSc.Vec().create(comm=PETSc.COMM_SELF)
         self.lvec.setSizes(self.n+2)
         self.lvec.setUp()

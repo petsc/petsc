@@ -18,7 +18,7 @@ A.setPythonContext(shell)
 A.setUp()
 
 # setup linear system vectors
-x, b = A.getVecs()
+x, b = A.createVecs()
 x.set(0.0)
 b.set(1.0)
 

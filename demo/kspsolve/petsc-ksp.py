@@ -6,7 +6,7 @@ ksp.setType('cg')
 # and incomplete Cholesky
 ksp.getPC().setType('icc')
 # obtain sol & rhs vectors
-x, b = A.getVecs()
+x, b = A.createVecs()
 x.set(0)
 b.set(1)
 # and next solve

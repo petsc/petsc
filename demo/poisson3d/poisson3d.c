@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   MatShellSetOperation(A, MATOP_GET_DIAGONAL,   DEL2MAT_DIAG);
   MatSetUp(A);
   /* setup linear system vectors */
-  MatGetVecs(A, &x, &b);
+  MatCreateVecs(A, &x, &b);
   VecSet(x, 0);
   VecSet(b, 1);
   /* setup Krylov linear solver */
@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   PCSetType(pc, PCNONE);  /* with no preconditioning */
   KSPSetFromOptions(ksp);
   /* iteratively solve linear system of equations A*x=b */
-  KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);
+  KSPSetOperators(ksp,A,A);
   KSPSolve(ksp, b, x);
   /* scale solution vector to account for grid spacing */
   VecScale(x, h*h);

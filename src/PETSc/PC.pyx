@@ -114,7 +114,7 @@ cdef class PC(Object):
 
     def __call__(self, x, y=None):
         if y is None: # XXX do this better
-            y = self.getOperators()[0].getVecLeft()
+            y = self.getOperators()[0].createVecLeft()
         self.apply(x, y)
         return y
 

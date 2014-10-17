@@ -480,7 +480,7 @@ cdef extern from * nogil:
         PetscBool preallocated
         PetscLayout rmap, cmap
 cdef extern from * nogil:
-    PetscErrorCode MatGetVecs(PetscMat,PetscVec*,PetscVec*)
+    PetscErrorCode MatCreateVecs(PetscMat,PetscVec*,PetscVec*)
     PetscErrorCode MatIsSymmetricKnown(PetscMat,PetscBool*,PetscBool*)
     PetscErrorCode MatIsHermitianKnown(PetscMat,PetscBool*,PetscBool*)
     PetscErrorCode MatMult(PetscMat,PetscVec,PetscVec)
@@ -538,7 +538,7 @@ cdef PetscErrorCode MatCreate_Python(
     ops.zeroentries       = MatZeroEntries_Python
     ops.scale             = MatScale_Python
     ops.shift             = MatShift_Python
-    ops.getvecs           = MatGetVecs_Python
+    ops.getvecs           = MatCreateVecs_Python
     ops.mult              = MatMult_Python
     ops.multtranspose     = MatMultTranspose_Python
     ops.multhermitian     = MatMultHermitian_Python
@@ -798,20 +798,20 @@ cdef PetscErrorCode MatShift_Python(
     shift(Mat_(mat), toScalar(s))
     return FunctionEnd()
 
-cdef PetscErrorCode MatGetVecs_Python(
+cdef PetscErrorCode MatCreateVecs_Python(
     PetscMat mat,
     PetscVec *x,
     PetscVec *y,
     ) \
     except IERR with gil:
-    FunctionBegin(b"MatGetVecs_Python")
+    FunctionBegin(b"MatCreateVecs_Python")
     cdef createVecs = PyMat(mat).createVecs
     if createVecs is None:
         try:
             mat.ops.getvecs = NULL
-            CHKERR( MatGetVecs(mat,x,y) )
+            CHKERR( MatCreateVecs(mat,x,y) )
         finally:
-            mat.ops.getvecs = MatGetVecs_Python
+            mat.ops.getvecs = MatCreateVecs_Python
         return FunctionEnd()
     if createVecs is None: return UNSUPPORTED(b"createVecs")
     cdef Vec u, v

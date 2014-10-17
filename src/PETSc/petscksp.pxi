@@ -159,7 +159,7 @@ cdef extern from * nogil:
 
     int KSPComputeExplicitOperator(PetscKSP,PetscMat*)
 
-    int KSPGetVecs(PetscKSP,PetscInt,PetscVec**,PetscInt,PetscVec**)
+    int KSPCreateVecs(PetscKSP,PetscInt,PetscVec**,PetscInt,PetscVec**)
 
     int KSPGMRESSetRestart(PetscKSP,PetscInt)
 

@@ -91,7 +91,7 @@ cdef class KSP(Object):
 
     def __call__(self, b, x=None):
         if x is None: # XXX do this better
-            x = self.getOperators()[0].getVecLeft()
+            x = self.getOperators()[0].createVecLeft()
         self.solve(b, x)
         return x
 
@@ -403,7 +403,7 @@ cdef class KSP(Object):
         if L: nl = asInt(left)
         cdef object vecsr = [] if R else None
         cdef object vecsl = [] if L else None
-        CHKERR( KSPGetVecs(self.ksp, nr, &vr, nl, &vr) )
+        CHKERR( KSPCreateVecs(self.ksp, nr, &vr, nl, &vr) )
         try:
             for i from 0 <= i < nr:
                 vecsr.append(ref_Vec(vr[i]))
