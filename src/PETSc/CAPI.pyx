@@ -234,4 +234,17 @@ cdef api PetscDM PyPetscDM_Get(object arg) except ? NULL:
     retv = ob.dm
     return retv
 
+# -- Partitioner --
+
+cdef api object PyPetscPartitioner_New(PetscPartitioner arg):
+    cdef Partitioner retv = Partitioner()
+    setref(&retv.part, arg)
+    return retv
+
+cdef api PetscPartitioner PyPetscPartitioner_Get(object arg) except ? NULL:
+    cdef PetscPartitioner retv = NULL
+    cdef Partitioner ob = <Partitioner?> arg
+    retv = ob.part
+    return retv
+
 #---------------------------------------------------------------------
