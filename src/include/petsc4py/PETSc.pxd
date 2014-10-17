@@ -62,6 +62,9 @@ cdef extern from "petsc.h":
     struct _p_DM
     ctypedef _p_DM* PetscDM "DM"
 
+    struct _p_PetscPartitioner
+    ctypedef _p_PetscPartitioner* PetscPartitioner "PetscPartitioner"
+
 # --------------------------------------------------------------------
 
 ctypedef public api class Comm [
@@ -185,6 +188,12 @@ ctypedef public api class DM(Object) [
     object PyPetscDMObject,
     ]:
     cdef PetscDM dm
+
+ctypedef public api class Partitioner(Object) [
+    type PyPetscPartitioner_Type,
+    object PyPetscPartitionerObject,
+    ]:
+    cdef PetscPartitioner part
 
 # --------------------------------------------------------------------
 

@@ -131,6 +131,7 @@ include "petscdmda.pxi"
 include "petscdmplex.pxi"
 include "petscdmcomposite.pxi"
 include "petscsf.pxi"
+include "petscpartitioner.pxi"
 
 # --------------------------------------------------------------------
 
@@ -163,6 +164,7 @@ include "DMDA.pyx"
 include "DMPlex.pyx"
 include "DMComposite.pyx"
 include "SF.pyx"
+include "Partitioner.pyx"
 
 # --------------------------------------------------------------------
 
@@ -346,24 +348,25 @@ cdef int initialize(object args, object comm) except -1:
     return 1 # and we are done, enjoy !!
 
 cdef extern from *:
-    PetscClassId PETSC_OBJECT_CLASSID    "PETSC_OBJECT_CLASSID"
-    PetscClassId PETSC_VIEWER_CLASSID    "PETSC_VIEWER_CLASSID"
-    PetscClassId PETSC_RANDOM_CLASSID    "PETSC_RANDOM_CLASSID"
-    PetscClassId PETSC_IS_CLASSID        "IS_CLASSID"
-    PetscClassId PETSC_LGMAP_CLASSID     "IS_LTOGM_CLASSID"
-    PetscClassId PETSC_SF_CLASSID        "PETSCSF_CLASSID"
-    PetscClassId PETSC_VEC_CLASSID       "VEC_CLASSID"
-    PetscClassId PETSC_SCATTER_CLASSID   "VEC_SCATTER_CLASSID"
-    PetscClassId PETSC_SECTION_CLASSID   "PETSC_SECTION_CLASSID"
-    PetscClassId PETSC_MAT_CLASSID       "MAT_CLASSID"
-    PetscClassId PETSC_NULLSPACE_CLASSID "MAT_NULLSPACE_CLASSID"
-    PetscClassId PETSC_PC_CLASSID        "PC_CLASSID"
-    PetscClassId PETSC_KSP_CLASSID       "KSP_CLASSID"
-    PetscClassId PETSC_SNES_CLASSID      "SNES_CLASSID"
-    PetscClassId PETSC_TS_CLASSID        "TS_CLASSID"
-    PetscClassId PETSC_TAO_CLASSID       "TAO_CLASSID"
-    PetscClassId PETSC_AO_CLASSID        "AO_CLASSID"
-    PetscClassId PETSC_DM_CLASSID        "DM_CLASSID"
+    PetscClassId PETSC_OBJECT_CLASSID      "PETSC_OBJECT_CLASSID"
+    PetscClassId PETSC_VIEWER_CLASSID      "PETSC_VIEWER_CLASSID"
+    PetscClassId PETSC_RANDOM_CLASSID      "PETSC_RANDOM_CLASSID"
+    PetscClassId PETSC_IS_CLASSID          "IS_CLASSID"
+    PetscClassId PETSC_LGMAP_CLASSID       "IS_LTOGM_CLASSID"
+    PetscClassId PETSC_SF_CLASSID          "PETSCSF_CLASSID"
+    PetscClassId PETSC_VEC_CLASSID         "VEC_CLASSID"
+    PetscClassId PETSC_SCATTER_CLASSID     "VEC_SCATTER_CLASSID"
+    PetscClassId PETSC_SECTION_CLASSID     "PETSC_SECTION_CLASSID"
+    PetscClassId PETSC_MAT_CLASSID         "MAT_CLASSID"
+    PetscClassId PETSC_NULLSPACE_CLASSID   "MAT_NULLSPACE_CLASSID"
+    PetscClassId PETSC_PC_CLASSID          "PC_CLASSID"
+    PetscClassId PETSC_KSP_CLASSID         "KSP_CLASSID"
+    PetscClassId PETSC_SNES_CLASSID        "SNES_CLASSID"
+    PetscClassId PETSC_TS_CLASSID          "TS_CLASSID"
+    PetscClassId PETSC_TAO_CLASSID         "TAO_CLASSID"
+    PetscClassId PETSC_AO_CLASSID          "AO_CLASSID"
+    PetscClassId PETSC_DM_CLASSID          "DM_CLASSID"
+    PetscClassId PETSC_PARTITIONER_CLASSID "PETSCPARTITIONER_CLASSID"
 
 cdef bint registercalled = 0
 
@@ -377,24 +380,25 @@ cdef int register() except -1:
     import_libpetsc4py()
     CHKERR( PetscPythonRegisterAll() )
     # register Python types
-    PyPetscType_Register(PETSC_OBJECT_CLASSID,    Object)
-    PyPetscType_Register(PETSC_VIEWER_CLASSID,    Viewer)
-    PyPetscType_Register(PETSC_RANDOM_CLASSID,    Random)
-    PyPetscType_Register(PETSC_IS_CLASSID,        IS)
-    PyPetscType_Register(PETSC_LGMAP_CLASSID,     LGMap)
-    PyPetscType_Register(PETSC_SF_CLASSID,        SF)
-    PyPetscType_Register(PETSC_VEC_CLASSID,       Vec)
-    PyPetscType_Register(PETSC_SCATTER_CLASSID,   Scatter)
-    PyPetscType_Register(PETSC_SECTION_CLASSID,   Section)
-    PyPetscType_Register(PETSC_MAT_CLASSID,       Mat)
-    PyPetscType_Register(PETSC_NULLSPACE_CLASSID, NullSpace)
-    PyPetscType_Register(PETSC_PC_CLASSID,        PC)
-    PyPetscType_Register(PETSC_KSP_CLASSID,       KSP)
-    PyPetscType_Register(PETSC_SNES_CLASSID,      SNES)
-    PyPetscType_Register(PETSC_TS_CLASSID,        TS)
-    PyPetscType_Register(PETSC_TAO_CLASSID,       TAO)
-    PyPetscType_Register(PETSC_AO_CLASSID,        AO)
-    PyPetscType_Register(PETSC_DM_CLASSID,        DM)
+    PyPetscType_Register(PETSC_OBJECT_CLASSID,      Object)
+    PyPetscType_Register(PETSC_VIEWER_CLASSID,      Viewer)
+    PyPetscType_Register(PETSC_RANDOM_CLASSID,      Random)
+    PyPetscType_Register(PETSC_IS_CLASSID,          IS)
+    PyPetscType_Register(PETSC_LGMAP_CLASSID,       LGMap)
+    PyPetscType_Register(PETSC_SF_CLASSID,          SF)
+    PyPetscType_Register(PETSC_VEC_CLASSID,         Vec)
+    PyPetscType_Register(PETSC_SCATTER_CLASSID,     Scatter)
+    PyPetscType_Register(PETSC_SECTION_CLASSID,     Section)
+    PyPetscType_Register(PETSC_MAT_CLASSID,         Mat)
+    PyPetscType_Register(PETSC_NULLSPACE_CLASSID,   NullSpace)
+    PyPetscType_Register(PETSC_PC_CLASSID,          PC)
+    PyPetscType_Register(PETSC_KSP_CLASSID,         KSP)
+    PyPetscType_Register(PETSC_SNES_CLASSID,        SNES)
+    PyPetscType_Register(PETSC_TS_CLASSID,          TS)
+    PyPetscType_Register(PETSC_TAO_CLASSID,         TAO)
+    PyPetscType_Register(PETSC_AO_CLASSID,          AO)
+    PyPetscType_Register(PETSC_DM_CLASSID,          DM)
+    PyPetscType_Register(PETSC_PARTITIONER_CLASSID, Partitioner)
     return 0 # and we are done, enjoy !!
 
 # --------------------------------------------------------------------

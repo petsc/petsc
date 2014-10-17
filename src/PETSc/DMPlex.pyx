@@ -478,6 +478,12 @@ cdef class DMPlex(DM):
         cdef PetscBool flag = useClosure
         CHKERR( DMPlexSetAdjacencyUseClosure(self.dm, flag) )
 
+    def getPartitioner(self):
+        cdef Partitioner part = Partitioner()
+        CHKERR( DMPlexGetPartitioner(self.dm, &part.part) )
+        PetscINCREF(part.obj)
+        return part
+
     def distribute(self, overlap=0):
         cdef PetscDM dmParallel = NULL
         cdef PetscInt coverlap = asInt(overlap)
