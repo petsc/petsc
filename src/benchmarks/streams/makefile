@@ -44,8 +44,8 @@ stream:  MPIVersion
 	-@echo "------------------------------------------------"
 	-@${PYTHON} process.py createfile
 
-hwloc: 
-	-@if [ -e ${PETSC_DIR}/${PETSC_ARCH}/bin/lstopo ]; then ${PETSC_DIR}/${PETSC_ARCH}/bin/lstopo --no-icaches --no-io --ignore PU ; fi
+hwloc:
+	-@if [ "${LSTOPO}foo" != "foo" ]; then ${LSTOPO} --no-icaches --no-io --ignore PU ; fi
 
 streams: stream hwloc
 	-@${PYTHON} process.py
