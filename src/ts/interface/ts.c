@@ -2272,9 +2272,7 @@ PetscErrorCode  TSSetSensitivity(TS ts,Vec *u,PetscInt numberadjs)
   ts->numberadjs = numberadjs;
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  if(u) {
-    ierr = DMShellSetGlobalVector(dm,u[0]);CHKERRQ(ierr);
-  }
+  ierr = DMShellSetGlobalVector(dm,u[0]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
