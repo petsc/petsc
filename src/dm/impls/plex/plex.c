@@ -5379,17 +5379,20 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
     else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
   }
-  /* Allocate boundary point storage */
+  /* Allocate boundary point storage for FEM boundaries */
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
+    PetscInt  field;
     PetscBool isEssential;
-    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-    if (isEssential) ++numBC;
+
+    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, NULL, &field, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    if (isFE[field] && isEssential) ++numBC;
   }
+  /* Add ghost cell boundaries for FVM */
   for (f = 0; f < numFields; ++f) if (!isFE[f] && cEndInterior >= 0) ++numBC;
   ierr = PetscMalloc2(numBC,&bcFields,numBC,&bcPoints);CHKERRQ(ierr);
   /* Constrain ghost cells for FV */
@@ -5411,6 +5414,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     PetscBool       isEssential, duplicate = PETSC_FALSE;
 
     ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    if (!isFE[field]) continue;
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     /* Only want to modify label once */
     for (bd2 = 0; bd2 < bd; ++bd2) {
