@@ -11,7 +11,9 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
-    '--with-cc=gcc -m32',
+#    '--with-cc=gcc -m32',
+    '--with-sowing=0',
+    '--with-hwloc=0',
     '--with-mpi=0',
     '--with-ios=1',
     '--with-valgrind=0',

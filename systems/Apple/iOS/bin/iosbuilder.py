@@ -41,20 +41,20 @@ class PETScMaker(script.Script):
    self.mpi           = self.framework.require('config.packages.MPI',         None)
    self.base          = self.framework.require('config.base',                 None)
    self.setCompilers  = self.framework.require('config.setCompilers',         None)   
-   self.arch          = self.framework.require('PETSc.utilities.arch',        None)
-   self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
-   self.languages     = self.framework.require('PETSc.utilities.languages',   None)
-   self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
-   self.opengles      = self.framework.require('PETSc.packages.opengles',     None)
+   self.arch          = self.framework.require('PETSc.options.arch',        None)
+   self.petscdir      = self.framework.require('PETSc.options.petscdir',    None)
+   self.languages     = self.framework.require('PETSc.options.languages',   None)
+   self.debugging     = self.framework.require('PETSc.options.debugging',   None)
+   self.opengles      = self.framework.require('config.packages.opengles',     None)
    self.make          = self.framework.require('config.programs',             None)
    self.compilers     = self.framework.require('config.compilers',            None)
    self.types         = self.framework.require('config.types',                None)
    self.headers       = self.framework.require('config.headers',              None)
    self.functions     = self.framework.require('config.functions',            None)
    self.libraries     = self.framework.require('config.libraries',            None)
-   self.scalarType    = self.framework.require('PETSc.utilities.scalarTypes', None)
-   self.memAlign      = self.framework.require('PETSc.utilities.memAlign',    None)
-   self.libraryOptions= self.framework.require('PETSc.utilities.libraryOptions', None)      
+   self.scalarType    = self.framework.require('PETSc.options.scalarTypes', None)
+   self.memAlign      = self.framework.require('PETSc.options.memAlign',    None)
+   self.libraryOptions= self.framework.require('PETSc.options.libraryOptions', None)      
    self.compilerFlags = self.framework.require('config.compilerFlags', self)
    return
 
@@ -287,7 +287,7 @@ class PETScMaker(script.Script):
        raise RuntimeError('Error opening xcode project '+str(e))
 
 
-   sdk         = ' -sdk iphonesimulator7.1 '
+   sdk         = ' -sdk iphonesimulator8.0 '
    destination = 'iphonesimulator'
    debug       = 'Debug'
    debugdir    = 'Debug-'+destination
