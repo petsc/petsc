@@ -47,11 +47,19 @@ cdef class Partitioner(Object):
     def setUp(self):
         CHKERR( PetscPartitionerSetUp(self.part) )
 
-    def setShellPartition(self, numProcs, sizes, points):
+    def setShellPartition(self, numProcs, sizes=None, points=None):
         cdef PetscInt cnumProcs = asInt(numProcs)
-        cdef PetscInt *csizes
-        cdef PetscInt *cpoints
-        sizes = iarray_i(sizes, NULL, &csizes)
-        points = iarray_i(points, NULL, &cpoints)
+        cdef PetscInt *csizes = NULL
+        cdef PetscInt *cpoints = NULL
+        cdef PetscInt nsize = 0
+        if sizes is not None:
+            sizes = iarray_i(sizes, &nsize, &csizes)
+            if nsize != cnumProcs:
+                raise ValueError("sizes array should have %d entries (has %d)" %
+                                 numProcs, toInt(nsize))
+            if points is None:
+                raise ValueError("Must provide both sizes and points arrays")
+        if points is not None:
+            points = iarray_i(points, NULL, &cpoints)
         CHKERR( PetscPartitionerShellSetPartition(self.part, cnumProcs,
                                                   csizes, cpoints) )
