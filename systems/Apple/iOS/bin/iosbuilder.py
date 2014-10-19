@@ -299,7 +299,7 @@ class PETScMaker(script.Script):
    except RuntimeError, e:
      raise RuntimeError('Error making iPhone/iPad version of PETSc libraries: '+str(e))
 
-   liblocation = os.path.join(os.environ['PETSC_DIR'],'systems','Apple','iOS','PETSc','build',debugdir,'libPETSc.a')
+   liblocation = os.path.join(os.environ['PETSC_DIR'],'systems','Apple','iOS','PETSc','build','Debug-iphonesimulator','PETSc.framework','PETSc')
    if not os.path.exists(liblocation):
      raise RuntimeError('Error library '+liblocation+' not created')
    try:

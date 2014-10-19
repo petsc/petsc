@@ -33,7 +33,7 @@ sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h mpiuni/*.h
 sed -i "" "s?#include [ ]*<mpi?#import <PETSc/mpiuni/mpi?g" *.h petsc-private/*.h
 cd ..
 
-cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc.a PETSc
+cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/PETSc PETSc
 install_name_tool -id /Library/Frameworks/PETSc-iOS/simulator/PETSc.framework/PETSc PETSc
 mkdir Resources
 cd Resources
