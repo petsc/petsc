@@ -1010,7 +1010,7 @@ class GNUPackage(Package):
       args.append('--disable-fc')
       args.append('--disable-f77')
       args.append('--disable-f90')
-    if self.framework.argDB['with-shared-libraries'] or self.framework.argDB['download-'+self.package+'-shared']:
+    if (self.framework.argDB['with-shared-libraries'] and not self.framework.clArgDB.has_key('download-'+self.package+'-shared')) or  self.framework.argDB['download-'+self.package+'-shared']:
       args.append('--enable-shared')
     else:
       args.append('--disable-shared')

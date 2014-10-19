@@ -35,6 +35,8 @@ sed -i "" "s?#include [ ]*<mpi?#import <PETSc/mpi?g" *.h petsc-private/*.h
 cd ..
 
 cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc.dylib PETSc
+install_name_tool -id /Library/Frameworks/PETSc-OSX/$1/PETSc.Framework/PETSc PETSc
+
 mkdir Resources
 cd Resources
 cat <<EOF > Info.plist
