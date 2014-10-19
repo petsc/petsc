@@ -33,6 +33,8 @@ sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h mpiuni/*.h
 sed -i "" "s?#include [ ]*<mpi?#import <PETSc/mpiuni/mpi?g" *.h petsc-private/*.h
 cd ..
 
+echo "framework module PETSc [system] { header \"petsc.h\"  export *}" > module.map
+
 cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/PETSc PETSc
 install_name_tool -id /Library/Frameworks/PETSc-iOS/simulator/PETSc.framework/PETSc PETSc
 mkdir Resources
@@ -86,4 +88,5 @@ cd  ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1/PETSc.framework
 ln -s Versions/Current/Headers Headers
 ln -s Versions/Current/PETSc PETSc
 ln -s Versions/Current/Resources Resources
+ln -s Versions/Current/module.map module.map
 

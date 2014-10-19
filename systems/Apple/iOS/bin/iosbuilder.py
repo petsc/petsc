@@ -303,7 +303,7 @@ class PETScMaker(script.Script):
    if not os.path.exists(liblocation):
      raise RuntimeError('Error library '+liblocation+' not created')
    try:
-     output,err,ret  = self.executeShellCommand('mv -f '+liblocation+' '+os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'lib'), timeout=30, log = self.log)
+     output,err,ret  = self.executeShellCommand('cp -f '+liblocation+' '+os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'lib'), timeout=30, log = self.log)
    except RuntimeError, e:
      raise RuntimeError('Error copying iPhone/iPad version of PETSc libraries: '+str(e))
 
