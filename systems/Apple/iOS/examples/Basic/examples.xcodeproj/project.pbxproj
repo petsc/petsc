@@ -212,6 +212,7 @@
 				GCC_PREFIX_HEADER = examples_Prefix.pch;
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "examples-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = examples;
 				SDKROOT = iphoneos;
@@ -235,6 +236,7 @@
 				GCC_PREFIX_HEADER = examples_Prefix.pch;
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "examples-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = examples;
 				SDKROOT = iphoneos;

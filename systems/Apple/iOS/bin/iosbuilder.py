@@ -295,7 +295,7 @@ class PETScMaker(script.Script):
      debug = 'Release'
      debugdir = 'Release-'+destination
    try:
-     output,err,ret  = self.executeShellCommand('cd '+os.path.join(os.environ['PETSC_DIR'],'systems','Apple','iOS','PETSc')+';xcodebuild -configuration '+debug+sdk, timeout=3000, log = self.log)
+     output,err,ret  = self.executeShellCommand('cd '+os.path.join(os.environ['PETSC_DIR'],'systems','Apple','iOS','PETSc')+';xcodebuild -arch x86_64 -configuration '+debug+sdk, timeout=3000, log = self.log)
    except RuntimeError, e:
      raise RuntimeError('Error making iPhone/iPad version of PETSc libraries: '+str(e))
 
