@@ -255,6 +255,9 @@ int main(int argc, char **argv)
     p4est_partition(p4est, 1, NULL);
   }
 
+  /* Write the forest to disk for visualization, one file per processor. */
+  p4est_vtk_write_file(p4est, NULL, "ex66");
+
   /* Create the ghost layer to learn about parallel neighbors. */
   ghost = p4est_ghost_new(p4est, P4EST_CONNECT_FULL);
 
@@ -265,8 +268,8 @@ int main(int argc, char **argv)
   p4est_ghost_destroy(ghost);
   ghost = NULL;
 
-  /* Write the forest to disk for visualization, one file per processor. */
-  p4est_vtk_write_file(p4est, NULL, "ex66");
+  /* We are done with the FE node numbering. */
+  p4est_lnodes_destroy (lnodes);
 
   ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(dm, &user);CHKERRQ(ierr);
