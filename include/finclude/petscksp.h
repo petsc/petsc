@@ -11,11 +11,10 @@
       PetscEnum KSP_CG_HERMITIAN
       parameter (KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1)
 
-      PetscEnum                                                                           &
-     &  KSP_FCG_TRUNCATION_TYPE_STANDARD
-      PetscEnum KSP_FCG_TRUNCATION_TYPE_NOTAY
-      parameter (KSP_FCG_TRUNCATION_TYPE_STANDARD=0)
-      parameter (KSP_FCG_TRUNCATION_TYPE_NOTAY=1)
+      PetscEnum KSP_FCG_TRUNC_TYPE_STANDARD
+      PetscEnum KSP_FCG_TRUNC_TYPE_NOTAY
+      parameter (KSP_FCG_TRUNC_TYPE_STANDARD=0)
+      parameter (KSP_FCG_TRUNC_TYPE_NOTAY=1)
 
       PetscEnum KSP_CONVERGED_RTOL
       PetscEnum KSP_CONVERGED_ATOL
