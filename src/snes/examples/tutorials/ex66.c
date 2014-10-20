@@ -7,7 +7,13 @@ domain, using a parallel block-structured mesh (DMFOREST) to discretize it.\n\n\
 #include <petscsnes.h>
 #include <petscds.h>
 
-#include <p4est_bits.h>
+#ifdef PETSC_HAVE_P4EST
+  #include <p4est_bits.h>
+  #include <p4est_ghost.h>
+  #include <p4est_lnodes.h>
+#else
+  #error Please install p4est using --download-p4est
+#endif
 
 PetscInt spatialDim = 0;
 
