@@ -404,8 +404,8 @@
 !  Sum function contributions from all processes
       call MPI_Allreduce(floc,f,1,MPIU_SCALAR,MPIU_SUM,                   &
      &                   PETSC_COMM_WORLD,ierr)
-      call PetscLogFlops((ye-ysm)*(xe-xsm)*20+(xep-xs)*(yep-ys)*16.0,     &
-     &                    ierr)
+      call PetscLogFlops(20.0d0*(ye-ysm)*(xe-xsm)+                        &
+     &                   16.0d0*(xep-xs)*(yep-ys),ierr)
       return
       end
 
@@ -487,7 +487,7 @@
       call MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,ierr)
 
 
-      call PetscLogFlops(9.0*xm*ym + 49.0*xm,ierr)
+      call PetscLogFlops(9.0d0*xm*ym + 49.0d0*xm,ierr)
 
       ierr = 0
       return

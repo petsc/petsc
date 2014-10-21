@@ -1443,7 +1443,7 @@
 !
 ! something to do with profiling
 !
-      call PetscLogFlops(11*mx,ierr)
+      call PetscLogFlops(110.d0*mx,ierr)
 
       return 
       end
