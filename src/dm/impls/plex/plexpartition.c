@@ -1286,6 +1286,95 @@ PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexPartitionLabelInvert"
+/*@
+  DMPlexPartitionLabelInvert - Create a partition label of remote roots from a local root label
+
+  Input Parameters:
++ dm        - The DM
+. rootLabel - DMLabel assinging ranks to local roots
+. processSF - A star forest mapping into the local index on each remote rank
+
+  Output Parameter:
+- leafLabel - DMLabel assinging ranks to remote roots
+
+  Note: The rootLabel defines a send pattern by mapping local points to remote target ranks. The
+  resulting leafLabel is a receiver mapping of remote roots to their parent rank.
+
+  Level: developer
+
+.seealso: DMPlexPartitionLabelCreateSF, DMPlexDistribute(), DMPlexCreateOverlap
+@*/
+PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF processSF, DMLabel leafLabel)
+{
+  MPI_Comm           comm;
+  PetscMPIInt        rank, numProcs;
+  PetscInt           p, n, numNeighbors, size, l, nleaves;
+  PetscSF            sfPoint;
+  PetscSFNode       *rootPoints, *leafPoints;
+  PetscSection       rootSection, leafSection;
+  const PetscSFNode *remote;
+  const PetscInt    *local, *neighbors;
+  IS                 valueIS;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+
+  /* Convert to (point, rank) and use actual owners */
+  ierr = PetscSectionCreate(comm, &rootSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(rootSection, 0, numProcs);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(rootLabel, &valueIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(valueIS, &numNeighbors);CHKERRQ(ierr);
+  ierr = ISGetIndices(valueIS, &neighbors);CHKERRQ(ierr);
+  for (n = 0; n < numNeighbors; ++n) {
+    PetscInt numPoints;
+
+    ierr = DMLabelGetStratumSize(rootLabel, neighbors[n], &numPoints);CHKERRQ(ierr);
+    ierr = PetscSectionAddDof(rootSection, neighbors[n], numPoints);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(rootSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(rootSection, &size);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size, &rootPoints);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfPoint, NULL, &nleaves, &local, &remote);CHKERRQ(ierr);
+  for (n = 0; n < numNeighbors; ++n) {
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        off, numPoints, p;
+
+    ierr = PetscSectionGetOffset(rootSection, neighbors[n], &off);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(rootLabel, neighbors[n], &pointIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; ++p) {
+      ierr = PetscFindInt(points[p], nleaves, local, &l);CHKERRQ(ierr);
+      if (l >= 0) {rootPoints[off+p] = remote[l];}
+      else        {rootPoints[off+p].index = points[p]; rootPoints[off+p].rank = rank;}
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(valueIS, &neighbors);CHKERRQ(ierr);
+  ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+  /* Communicate overlap */
+  ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
+  ierr = DMPlexDistributeData(dm, processSF, rootSection, MPIU_2INT, rootPoints, leafSection, (void**) &leafPoints);CHKERRQ(ierr);
+  /* Filter remote contributions (ovLeafPoints) into the overlapSF */
+  ierr = PetscSectionGetStorageSize(leafSection, &size);CHKERRQ(ierr);
+  for (p = 0; p < size; p++) {
+    ierr = DMLabelSetValue(leafLabel, leafPoints[p].index, leafPoints[p].rank);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(rootPoints);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
+  ierr = PetscFree(leafPoints);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexPartitionLabelCreateSF"
 /*@
   DMPlexPartitionLabelCreateSF - Create a star forest from a label that assigns ranks to points

@@ -535,29 +535,23 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
 - leafrank    - The rank of each process sharing a leaf point
 
   Output Parameters:
-+ ovRootSection - The number of new overlap points for each neighboring process
-. ovRootPoints  - The new overlap points for each neighboring process
-. ovLeafSection - The number of new overlap points from each neighboring process
-- ovLeafPoints  - The new overlap points from each neighboring process
++ overlapSF   - The star forest mapping remote overlap points into a contiguous leaf space
 
   Level: developer
 
-.seealso: DMPlexDistributeOwnership()
+.seealso: DMPlexDistributeOwnership(), DMPlexDistribute()
 @*/
 PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, PetscSF *overlapSF)
 {
   MPI_Comm           comm;
   DMLabel            ovAdjByRank; /* A DMLabel containing all points adjacent to shared points, separated by rank (value in label) */
   PetscSF            sfPoint, sfProc;
-  IS                 valueIS;
   DMLabel            ovLeafLabel;
   const PetscSFNode *remote;
   const PetscInt    *local;
-  const PetscInt    *nrank, *rrank, *neighbors;
-  PetscSFNode       *ovRootPoints, *ovLeafPoints;
-  PetscSection       ovRootSection, ovLeafSection;
+  const PetscInt    *nrank, *rrank;
   PetscInt          *adj = NULL;
-  PetscInt           pStart, pEnd, p, sStart, sEnd, nleaves, l, numNeighbors, n, ovSize;
+  PetscInt           pStart, pEnd, p, sStart, sEnd, nleaves, l;
   PetscMPIInt        rank, numProcs;
   PetscBool          useCone, useClosure, flg;
   PetscErrorCode     ierr;
@@ -648,60 +642,12 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank,
     ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMLabelView(ovAdjByRank, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  /* Convert to (point, rank) and use actual owners */
-  ierr = PetscSectionCreate(comm, &ovRootSection);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) ovRootSection, "Overlap Root Section");CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(ovRootSection, 0, numProcs);CHKERRQ(ierr);
-  ierr = DMLabelGetValueIS(ovAdjByRank, &valueIS);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(valueIS, &numNeighbors);CHKERRQ(ierr);
-  ierr = ISGetIndices(valueIS, &neighbors);CHKERRQ(ierr);
-  for (n = 0; n < numNeighbors; ++n) {
-    PetscInt numPoints;
-
-    ierr = DMLabelGetStratumSize(ovAdjByRank, neighbors[n], &numPoints);CHKERRQ(ierr);
-    ierr = PetscSectionAddDof(ovRootSection, neighbors[n], numPoints);CHKERRQ(ierr);
-  }
-  ierr = PetscSectionSetUp(ovRootSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(ovRootSection, &ovSize);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ovSize, &ovRootPoints);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sfPoint, NULL, &nleaves, &local, &remote);CHKERRQ(ierr);
-  for (n = 0; n < numNeighbors; ++n) {
-    IS              pointIS;
-    const PetscInt *points;
-    PetscInt        off, numPoints, p;
-
-    ierr = PetscSectionGetOffset(ovRootSection, neighbors[n], &off);CHKERRQ(ierr);
-    ierr = DMLabelGetStratumIS(ovAdjByRank, neighbors[n], &pointIS);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
-    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
-    for (p = 0; p < numPoints; ++p) {
-      ierr = PetscFindInt(points[p], nleaves, local, &l);CHKERRQ(ierr);
-      if (l >= 0) {ovRootPoints[off+p] = remote[l];}
-      else        {ovRootPoints[off+p].index = points[p]; ovRootPoints[off+p].rank = rank;}
-    }
-    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
-    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
-  }
-  ierr = ISRestoreIndices(valueIS, &neighbors);CHKERRQ(ierr);
-  ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&ovAdjByRank);CHKERRQ(ierr);
-  /* Make process SF */
+  /* Make process SF and invert sender to receiver label */
   ierr = DMPlexCreateTwoSidedProcessSF(dm, sfPoint, rootSection, rootrank, leafSection, leafrank, NULL, &sfProc);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscSFView(sfProc, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
-  /* Communicate overlap */
-  ierr = PetscSectionCreate(comm, &ovLeafSection);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) ovLeafSection, "Overlap Leaf Section");CHKERRQ(ierr);
-  ierr = DMPlexDistributeData(dm, sfProc, ovRootSection, MPIU_2INT, ovRootPoints, ovLeafSection, (void**) &ovLeafPoints);CHKERRQ(ierr);
-  /* Filter remote contributions (ovLeafPoints) into the overlapSF */
   ierr = DMLabelCreate("ovLeafs", &ovLeafLabel);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(ovLeafSection, &ovSize);CHKERRQ(ierr);
-  for (p = 0; p < ovSize; p++) {
-    /* Don't import points from yourself */
-    if (ovLeafPoints[p].rank == rank) continue;
-    ierr = DMLabelSetValue(ovLeafLabel, ovLeafPoints[p].index, ovLeafPoints[p].rank);CHKERRQ(ierr);
-  }
+  ierr = DMPlexPartitionLabelInvert(dm, ovAdjByRank, sfProc, ovLeafLabel);CHKERRQ(ierr);
+  /* Don't import points from yourself */
+  ierr = DMLabelClearStratum(ovLeafLabel, rank);CHKERRQ(ierr);
   /* Don't import points already in the pointSF */
   for (l = 0; l < nleaves; ++l) {
     ierr = DMLabelClearValue(ovLeafLabel, remote[l].index, remote[l].rank);CHKERRQ(ierr);
@@ -715,12 +661,9 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank,
     ierr = PetscSFView(*overlapSF, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   /* Clean up */
+  ierr = DMLabelDestroy(&ovAdjByRank);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&ovLeafLabel);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfProc);CHKERRQ(ierr);
-  ierr = PetscFree(ovRootPoints);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&ovRootSection);CHKERRQ(ierr);
-  ierr = PetscFree(ovLeafPoints);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&ovLeafSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
