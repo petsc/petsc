@@ -205,6 +205,10 @@ PETSC_EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 
 PETSC_EXTERN PetscErrorCode TSSetSensitivity(TS,Vec*,PetscInt);
 PETSC_EXTERN PetscErrorCode TSGetSensitivity(TS,Vec**,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSSetSensitivityP(TS,Vec*,PetscInt);
+PETSC_EXTERN PetscErrorCode TSGetSensitivityP(TS,Vec**,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSSetRHSJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
+PETSC_EXTERN PetscErrorCode TSRHSJacobianP(TS,PetscReal,Vec,Mat);
 
 PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);

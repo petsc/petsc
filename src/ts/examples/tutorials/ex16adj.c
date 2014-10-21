@@ -136,6 +136,28 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "RHSJacobianP"
+static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
+{
+  PetscErrorCode ierr;
+  User           user = (User)ctx;
+  PetscReal      mu   = user->mu;
+  PetscInt       row[] = {0,1},col[]={0};
+  PetscScalar    *x,J[2][1];
+
+  PetscFunctionBeginUser;
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+
+  J[0][0] = 0;
+  J[1][0] = (1-x[0]*x[0])*x[1];
+  ierr    = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ADJRHSFunction"
 static PetscErrorCode ADJRHSFunction(TS tsadj,PetscReal t,Vec X,Vec F,void *ctx)
 {
@@ -371,6 +393,7 @@ int main(int argc,char **argv)
   TS             ts;            /* nonlinear solver */
   Vec            x;             /* solution, residual vectors */
   Mat            A;             /* Jacobian matrix */
+  Mat            Jacp;          /* JacobianP matrix */
   PetscInt       steps;
   PetscReal      ftime   =0.5;
   PetscBool      monitor = PETSC_FALSE;
@@ -410,6 +433,11 @@ int main(int argc,char **argv)
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
 
+  ierr = MatCreate(PETSC_COMM_WORLD,&Jacp);CHKERRQ(ierr);
+  ierr = MatSetSizes(Jacp,PETSC_DECIDE,PETSC_DECIDE,2,1);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(Jacp);CHKERRQ(ierr);
+  ierr = MatSetUp(Jacp);CHKERRQ(ierr);
+ 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -435,8 +463,8 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,steps,(double)ftime);CHKERRQ(ierr);
 
-  //ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  //ierr = TSAdaptSetType(adapt,TSADAPTNONE);CHKERRQ(ierr);
+  /*ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetType(adapt,TSADAPTNONE);CHKERRQ(ierr);*/
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -456,7 +484,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  Vec            lambda[2];        /* adjoint variable */
+  Vec lambda[2],mu[2];        /* adjoint variables */
 /*  ierr = VecCreate(PETSC_COMM_WORLD,&user.X);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&lambda,NULL);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(lambda,user.nstages,&user.Y);CHKERRQ(ierr);
@@ -495,7 +523,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatGetVecs(A,&lambda[0],NULL);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&lambda[1],NULL);CHKERRQ(ierr);
-  //   Redet initial conditions for the adjoint integration
+  /*   Redet initial conditions for the adjoint integration */
   ierr = VecGetArray(lambda[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 1.0;   x_ptr[1] = 0.0;
   ierr = VecRestoreArray(lambda[0],&x_ptr);CHKERRQ(ierr);
@@ -503,6 +531,16 @@ int main(int argc,char **argv)
   x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
   ierr = VecRestoreArray(lambda[1],&x_ptr);CHKERRQ(ierr);
   ierr = TSSetSensitivity(ts,lambda,2);CHKERRQ(ierr);
+  
+  ierr = MatGetVecs(Jacp,&mu[0],NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(Jacp,&mu[1],NULL);CHKERRQ(ierr);
+  ierr = VecGetArray(mu[0],&x_ptr);CHKERRQ(ierr);
+  x_ptr[0] = 0.0;
+  ierr = VecRestoreArray(mu[0],&x_ptr);CHKERRQ(ierr);
+  ierr = VecGetArray(mu[1],&x_ptr);CHKERRQ(ierr);
+  x_ptr[0] = 0.0;
+  ierr = VecRestoreArray(mu[1],&x_ptr);CHKERRQ(ierr);
+  ierr = TSSetSensitivityP(ts,mu,2);CHKERRQ(ierr);
 
   //   Switch to reverse mode
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
@@ -513,6 +551,9 @@ int main(int argc,char **argv)
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
+  //   Set RHS JacobianP
+  ierr = TSSetRHSJacobianP(ts,Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
+
   //   Set up monitor
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorADJ2,&user,NULL);CHKERRQ(ierr);
@@ -521,12 +562,15 @@ int main(int argc,char **argv)
 
   ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(lambda[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(mu[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(mu[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&Jacp);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&lambda[1]);CHKERRQ(ierr);

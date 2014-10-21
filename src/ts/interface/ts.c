@@ -1956,6 +1956,12 @@ PetscErrorCode  TSReset(TS ts)
     for (i=0; i<ts->numberadjs; i++) {
       ierr = VecDestroy(&ts->vecs_sensi[i]);CHKERRQ(ierr);
     }
+    if (ts->vecs_sensip) {
+      for (i=0; i<ts->numberadjs; i++) {
+        ierr = VecDestroy(&ts->vecs_sensip[i]);CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
+    }
   }
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -2240,7 +2246,7 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
 #undef __FUNCT__
 #define __FUNCT__ "TSSetSensitivity"
 /*@
-   TSSetSensitivity - Sets the initial solution vector
+   TSSetSensitivity - Sets the initial value of sensitivity (w.r.t. initial conditions)
    for use by the TS routines.
 
    Logically Collective on TS and Vec
@@ -2269,10 +2275,122 @@ PetscErrorCode  TSSetSensitivity(TS ts,Vec *u,PetscInt numberadjs)
     ierr = VecDestroyVecs(ts->numberadjs,&ts->vecs_sensi);CHKERRQ(ierr);
   }
   ts->vecs_sensi = u;
+  if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of adjoint variables (3rd parameter) is inconsistent with the one set by TSSetSensitivityP()");
   ts->numberadjs = numberadjs;
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMShellSetGlobalVector(dm,u[0]);CHKERRQ(ierr);
+  ierr = DMShellSetGlobalVector(dm,u[0]);CHKERRQ(ierr); /* is this necessary?*/
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetSensitivityP"
+/*@
+   TSSetSensitivityP - Sets the initial value of sensitivity (w.r.t. parameters)
+   for use by the TS routines.
+
+   Logically Collective on TS and Vec
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+-  u - the solution vector
+
+   Level: beginner
+
+.keywords: TS, timestep, set, sensitivity, initial conditions
+@*/
+PetscErrorCode  TSSetSensitivityP(TS ts,Vec *u,PetscInt numberadjs)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(u,2);
+  for (i=0; i<numberadjs; i++) {
+    ierr = PetscObjectReference((PetscObject)u[i]);CHKERRQ(ierr);
+  }
+  if(ts->vecs_sensip) {
+    ierr = VecDestroyVecs(ts->numberadjs,&ts->vecs_sensip);CHKERRQ(ierr);
+  }
+  ts->vecs_sensip = u;
+  if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of adjoint variables (3rd parameter) is inconsistent with the one set by TSSetSensitivity()");
+  ts->numberadjs = numberadjs;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetRHSJacobianP"
+/*@C
+  TSSetRHSJacobianP - Sets the function that computes the Jacobian w.r.t. parameters.
+
+  Logically Collective on TS
+
+  Input Parameters:
++ ts   - The TS context obtained from TSCreate()
+- func - The function
+
+  Calling sequence of func:
+. func (TS ts);
+
+  Level: intermediate
+
+
+.keywords: TS, sensitivity 
+.seealso: 
+@*/
+PetscErrorCode  TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+{ 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  if (Amat) PetscValidHeaderSpecific(Amat,MAT_CLASSID,2);
+
+  ts->rhsjacobianp    = func;
+  ts->rhsjacobianpctx = ctx;
+  if(Amat) {
+    ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);
+    ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
+    
+    ts->Jacp = Amat;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSRHSJacobianP"
+/*@
+  TSRHSJacobianP - Runs the user-defined JacobianP function.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSJacobianP() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+.seealso: TSSetRHSJacobianP()
+@*/
+PetscErrorCode  TSRHSJacobianP(TS ts,PetscReal t,Vec X,Mat Amat)
+{
+  PetscErrorCode ierr;
+ 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
+  PetscValidPointer(Amat,4);
+  
+  PetscStackPush("TS user JacobianP function for sensitivity analysis");
+  ierr = (*ts->rhsjacobianp)(ts,t,X,Amat,ts->rhsjacobianpctx); CHKERRQ(ierr);
+  PetscStackPop;
+  
   PetscFunctionReturn(0);
 }
 

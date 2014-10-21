@@ -38,8 +38,9 @@ typedef struct {
   RKTableau   tableau;
   Vec          *Y;               /* States computed during the step */
   Vec          *YdotRHS;         /* Function evaluations for the non-stiff part */
-  Vec          *VecDeltaLam;     /* Increament of the adjoint sensitivity variable at stage*/ 
-  Vec          *VecSensiTemp;     /* Vector to be timed with Jacobian transpose*/ 
+  Vec          *VecDeltaLam;     /* Increment of the adjoint sensitivity w.r.t IC at stage*/ 
+  Vec          *VecDeltaMu;      /* Increment of the adjoint sensitivity w.r.t P at stage*/ 
+  Vec          *VecSensiTemp;    /* Vector to be timed with Jacobian transpose*/ 
   PetscScalar  *work;            /* Scalar work */
   PetscReal    stage_time;
   TSStepStatus status;
@@ -480,7 +481,7 @@ static PetscErrorCode TSStepAdj_RK(TS ts)
   const PetscInt   s    = tab->s;
   const PetscReal *A = tab->A,*b = tab->b,*c = tab->c;
   PetscScalar     *w    = rk->work;
-  Vec             *Y    = rk->Y,*VecDeltaLam = rk->VecDeltaLam,*VecSensiTemp = rk->VecSensiTemp;
+  Vec             *Y    = rk->Y,*VecDeltaLam = rk->VecDeltaLam,*VecDeltaMu = rk->VecDeltaMu,*VecSensiTemp = rk->VecSensiTemp;
   PetscInt         i,j,nadj;
   PetscReal        t;
   PetscErrorCode   ierr;
@@ -503,21 +504,29 @@ static PetscErrorCode TSStepAdj_RK(TS ts)
         ierr = VecAXPY(VecSensiTemp[nadj],-h*A[j*s+i],VecDeltaLam[nadj*s+j]);
       }
     }
+    /* Stage values of lambda */
     ierr = TSGetRHSJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
     ierr = TSComputeRHSJacobian(ts,rk->stage_time,Y[i],J,Jp);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numberadjs; nadj++) {
       ierr = MatMultTranspose(J,VecSensiTemp[nadj],VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
+    }
+    /* Stage values of mu */
+    ierr = TSRHSJacobianP(ts,rk->stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
+    for (nadj=0; nadj<ts->numberadjs; nadj++) {
+      ierr = MatMultTranspose(ts->Jacp,VecSensiTemp[nadj],VecDeltaMu[nadj*s+i]);CHKERRQ(ierr);
     }
   }
 
   for (j=0; j<s; j++) w[j] = 1.0;
   for (nadj=0; nadj<ts->numberadjs; nadj++) {
     ierr = VecMAXPY(ts->vecs_sensi[nadj],s,w,&VecDeltaLam[nadj*s]);CHKERRQ(ierr);
+    ierr = VecMAXPY(ts->vecs_sensip[nadj],s,w,&VecDeltaMu[nadj*s]);CHKERRQ(ierr);
   }
   ts->ptime += ts->time_step;
   ts->steps++;
   rk->status = TS_STEP_COMPLETE;
   ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vecs_sensi,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vecs_sensip,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -576,6 +585,9 @@ static PetscErrorCode TSReset_RK(TS ts)
   ierr = VecDestroyVecs(s,&rk->YdotRHS);CHKERRQ(ierr);
   if(ts->reverse_mode) {
     ierr = VecDestroyVecs(s*ts->numberadjs,&rk->VecDeltaLam);CHKERRQ(ierr);
+    if(rk->VecDeltaMu) {
+      ierr = VecDestroyVecs(s*ts->numberadjs,&rk->VecDeltaMu);CHKERRQ(ierr);
+    }
     ierr = VecDestroyVecs(ts->numberadjs,&rk->VecSensiTemp);CHKERRQ(ierr);
   }
   ierr = PetscFree(rk->work);CHKERRQ(ierr);
@@ -673,14 +685,17 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   }
   tab  = rk->tableau;
   s    = tab->s;
-  // old 
-  //if (ts->reverse_mode) {
-  //  ierr = RKSetAdjCoe(tab);CHKERRQ(ierr);
-  //}
+  /* old */ 
+  /*if (ts->reverse_mode) {
+    ierr = RKSetAdjCoe(tab);CHKERRQ(ierr);
+  }*/
   ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->YdotRHS);CHKERRQ(ierr);
   if (ts->reverse_mode) {
     ierr = VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numberadjs,&rk->VecDeltaLam);CHKERRQ(ierr);
+    if(ts->vecs_sensip) {
+      ierr = VecDuplicateVecs(ts->vecs_sensip[0],s*ts->numberadjs,&rk->VecDeltaMu);CHKERRQ(ierr);
+    }
     ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numberadjs,&rk->VecSensiTemp);CHKERRQ(ierr);
   }
   ierr = PetscMalloc1(s,&rk->work);CHKERRQ(ierr);
