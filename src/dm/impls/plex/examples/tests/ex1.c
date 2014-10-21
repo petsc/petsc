@@ -56,18 +56,21 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscReal      refinementLimit = user->refinementLimit;
   PetscBool      cellSimplex     = user->cellSimplex;
   const char    *filename        = user->filename;
-  PetscInt       triSizes[2]     = {4, 4};
-  PetscInt       triPoints[8]    = {3, 5, 6, 7, 0, 1, 2, 4};
+  PetscInt       triSizes_n2[2]  = {4, 4};
+  PetscInt       triPoints_n2[8] = {3, 5, 6, 7, 0, 1, 2, 4};
+  PetscInt       triSizes_n8[8]  = {1, 1, 1, 1, 1, 1, 1, 1};
+  PetscInt       triPoints_n8[8] = {0, 1, 2, 3, 4, 5, 6, 7};
   PetscInt       quadSizes[2]    = {2, 2};
-  PetscInt       quadPoints[8]   = {2, 3, 0, 1};
+  PetscInt       quadPoints[4]   = {2, 3, 0, 1};
   const PetscInt cells[3]        = {2, 2, 2};
   size_t         len;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank, numProcs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len)              {ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);}
   else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);}
@@ -77,13 +80,22 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM distributedMesh = NULL;
 
     if (user->testPartition) {
-      const PetscInt  *sizes  = !rank ? dim == 2 ? cellSimplex ? triSizes  : quadSizes  : NULL : NULL;
-      const PetscInt  *points = !rank ? dim == 2 ? cellSimplex ? triPoints : quadPoints : NULL : NULL;
+      const PetscInt  *sizes = NULL;
+      const PetscInt  *points = NULL;
       PetscPartitioner part;
 
+      if (!rank) {
+        if (dim == 2 && cellSimplex && numProcs == 2) {
+           sizes = triSizes_n2; points = triPoints_n2;
+        } else if (dim == 2 && cellSimplex && numProcs == 8) {
+          sizes = triSizes_n8; points = triPoints_n8;
+        } else if (dim == 2 && !cellSimplex && numProcs == 2) {
+          sizes = quadSizes; points = quadPoints;
+        }
+      }
       ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-      ierr = PetscPartitionerShellSetPartition(part, 2, sizes, points);CHKERRQ(ierr);
+      ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
