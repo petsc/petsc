@@ -170,9 +170,20 @@ PETSC_EXTERN PetscErrorCode PCSetDiagonalScale(PC,Vec);
 
 /* ------------- options specific to particular preconditioners --------- */
 
-PETSC_EXTERN PetscErrorCode PCJacobiSetUseRowMax(PC);
-PETSC_EXTERN PetscErrorCode PCJacobiSetUseRowSum(PC);
-PETSC_EXTERN PetscErrorCode PCJacobiSetUseAbs(PC);
+/*E
+    PCJacobiType - What elements are used to form the Jacobi preconditioner
+
+   Level: intermediate
+
+.seealso:
+E*/
+typedef enum { PC_JACOBI_DIAGONAL,PC_JACOBI_ROWMAX,PC_JACOBI_ROWSUM} PCJacobiType;
+PETSC_EXTERN const char *const PCJacobiTypes[];
+
+PETSC_EXTERN PetscErrorCode PCJacobiSetType(PC,PCJacobiType);
+PETSC_EXTERN PetscErrorCode PCJacobiGetType(PC,PCJacobiType*);
+PETSC_EXTERN PetscErrorCode PCJacobiSetUseAbs(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCJacobiGetUseAbs(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCSORSetSymmetric(PC,MatSORType);
 PETSC_EXTERN PetscErrorCode PCSORSetOmega(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCSORSetIterations(PC,PetscInt,PetscInt);
@@ -393,7 +404,6 @@ PETSC_EXTERN PetscErrorCode PCGalerkinSetRestriction(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCGalerkinSetInterpolation(PC,Mat);
 
 PETSC_EXTERN PetscErrorCode PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*);
-PETSC_EXTERN PetscErrorCode PCSASetVectors(PC,PetscInt,PetscReal *);
 
 PETSC_EXTERN PetscErrorCode PCPythonSetType(PC,const char[]);
 
@@ -430,12 +440,12 @@ E*/
 typedef enum {PC_PARMS_LOCAL_ILU0,PC_PARMS_LOCAL_ILUK,PC_PARMS_LOCAL_ILUT,PC_PARMS_LOCAL_ARMS} PCPARMSLocalType;
 PETSC_EXTERN const char *const PCPARMSLocalTypes[];
 
-PETSC_EXTERN PetscErrorCode PCPARMSSetGlobal(PC pc,PCPARMSGlobalType type);
-PETSC_EXTERN PetscErrorCode PCPARMSSetLocal(PC pc,PCPARMSLocalType type);
-PETSC_EXTERN PetscErrorCode PCPARMSSetSolveTolerances(PC pc,PetscReal tol,PetscInt maxits);
-PETSC_EXTERN PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart);
-PETSC_EXTERN PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym);
-PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2);
+PETSC_EXTERN PetscErrorCode PCPARMSSetGlobal(PC,PCPARMSGlobalType);
+PETSC_EXTERN PetscErrorCode PCPARMSSetLocal(PC,PCPARMSLocalType);
+PETSC_EXTERN PetscErrorCode PCPARMSSetSolveTolerances(PC,PetscReal,PetscInt);
+PETSC_EXTERN PetscErrorCode PCPARMSSetSolveRestart(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCPARMSSetNonsymPerm(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC,PetscInt,PetscInt,PetscInt);
 
 /*E
     PCGAMGType - type of generalized algebraic multigrid (PCGAMG) method
@@ -455,9 +465,9 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetThreshold(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCGAMGSetType( PC,PCGAMGType );
-PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n);
-PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n);
+PETSC_EXTERN PetscErrorCode PCGAMGSetType( PC,PCGAMGType);
+PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);

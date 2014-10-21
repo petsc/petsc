@@ -443,7 +443,7 @@ runex25:
            ${RM} -f ex25_1.tmp
 runex25_2:
 	-@${MPIEXEC} -n 1 ./ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro \
-		-pc_type jacobi -pc_jacobi_rowmax > ex25_2.tmp 2>&1; \
+		-pc_type jacobi -pc_jacobi_type rowmax > ex25_2.tmp 2>&1; \
            if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex25_2, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex25_2.tmp

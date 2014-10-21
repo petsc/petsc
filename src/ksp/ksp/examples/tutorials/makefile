@@ -458,7 +458,7 @@ runex6f:
 	   else printf "${PWD}\nPossible problem with ex6f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex6f_1.tmp
 runex7:
-	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -nokspview -ksp_gmres_cgs_refinement_type refine_always> ex7_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always> ex7_1.tmp 2>&1; \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex7_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_1.tmp
