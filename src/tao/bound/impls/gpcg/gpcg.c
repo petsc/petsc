@@ -41,7 +41,7 @@ static PetscErrorCode TaoSetFromOptions_GPCG(Tao tao)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Gradient Projection, Conjugate Gradient method for bound constrained optimization");CHKERRQ(ierr);
-  ierr=PetscOptionsInt("-tao_gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",0,gpcg->maxgpits,&gpcg->maxgpits,&flg);CHKERRQ(ierr);
+  ierr=PetscOptionsInt("-tao_gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",NULL,gpcg->maxgpits,&gpcg->maxgpits,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);

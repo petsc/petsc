@@ -559,12 +559,12 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
 PetscErrorCode SNESSetFromOptions_VI(SNES snes)
 {
   PetscErrorCode ierr;
-  PetscBool      flg;
+  PetscBool      flg = PETSC_FALSE;
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES VI options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_vi_monitor","Monitor all non-active variables","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_vi_monitor","Monitor all non-active variables","None",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESMonitorSet(snes,SNESMonitorVI,0,0);CHKERRQ(ierr);
   }

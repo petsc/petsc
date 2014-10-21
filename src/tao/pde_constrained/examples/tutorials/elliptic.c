@@ -126,26 +126,27 @@ int main(int argc, char **argv)
   Tao                tao;
   TaoConvergedReason reason;
   AppCtx             user;
-  PetscBool          flag;
   PetscInt           ntests = 1;
   PetscInt           i;
 
   PetscInitialize(&argc, &argv, (char*)0,help);
   user.mx = 8;
-  ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
   user.ns = 6;
-  ierr = PetscOptionsInt("-ns","Number of data samples (1<=ns<=8)","",user.ns,&user.ns,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ns","Number of data samples (1<=ns<=8)","",user.ns,&user.ns,NULL);CHKERRQ(ierr);
   user.ndata = 64;
-  ierr = PetscOptionsInt("-ndata","Numbers of data points per sample","",user.ndata,&user.ndata,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ndata","Numbers of data points per sample","",user.ndata,&user.ndata,NULL);CHKERRQ(ierr);
   user.alpha = 0.1;
-  ierr = PetscOptionsReal("-alpha","Regularization parameter","",user.alpha,&user.alpha,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-alpha","Regularization parameter","",user.alpha,&user.alpha,NULL);CHKERRQ(ierr);
   user.beta = 0.00001;
-  ierr = PetscOptionsReal("-beta","Weight attributed to ||u||^2 in regularization functional","",user.beta,&user.beta,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-beta","Weight attributed to ||u||^2 in regularization functional","",user.beta,&user.beta,NULL);CHKERRQ(ierr);
   user.noise = 0.01;
-  ierr = PetscOptionsReal("-noise","Amount of noise to add to data","",user.noise,&user.noise,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-noise","Amount of noise to add to data","",user.noise,&user.noise,NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBool("-use_ptap","Use ptap matrix for DSG","",PETSC_FALSE,&user.use_ptap,&flag);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_lrc","Use lrc matrix for Js","",PETSC_FALSE,&user.use_lrc,&flag);CHKERRQ(ierr);
+  user.use_ptap = PETSC_FALSE;
+  ierr = PetscOptionsBool("-use_ptap","Use ptap matrix for DSG","",user.use_ptap,&user.use_ptap,NULL);CHKERRQ(ierr);
+  user.use_lrc = PETSC_FALSE;
+  ierr = PetscOptionsBool("-use_lrc","Use lrc matrix for Js","",user.use_lrc,&user.use_lrc,NULL);CHKERRQ(ierr);
 
   user.m = user.ns*user.mx*user.mx*user.mx; /* number of constraints */
   user.nstate =  user.m;
@@ -177,7 +178,7 @@ int main(int argc, char **argv)
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
-  ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,NULL);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Trials",&user.stages[1]);CHKERRQ(ierr);
   ierr = PetscLogStagePush(user.stages[1]);CHKERRQ(ierr);
   for (i=0; i<ntests; i++){

@@ -619,7 +619,11 @@ PetscErrorCode PetscOptionsEnd_Private(void)
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 .  list - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
--  defaultv - the default (current) value
+-  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+$                 PetscOptionsEnum(..., obj->value,&object->value,...) or
+$                 value = defaultvalue
+$                 PetscOptionsEnum(..., value,&value,&flg);
+$                 if (flg) {
 
    Output Parameter:
 +  value - the  value to return
@@ -641,7 +645,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsEnum(const char opt[],const char text[],const char man[],const char *const *list,PetscEnum defaultv,PetscEnum *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsEnum(const char opt[],const char text[],const char man[],const char *const *list,PetscEnum currentvalue,PetscEnum *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscInt       ntext = 0;
@@ -654,7 +658,7 @@ PetscErrorCode  PetscOptionsEnum(const char opt[],const char text[],const char m
   }
   if (ntext < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
   ntext -= 3;
-  ierr   = PetscOptionsEList(opt,text,man,list,ntext,list[defaultv],&tval,&tflg);CHKERRQ(ierr);
+  ierr   = PetscOptionsEList(opt,text,man,list,ntext,list[currentvalue],&tval,&tflg);CHKERRQ(ierr);
   /* with PETSC_USE_64BIT_INDICES sizeof(PetscInt) != sizeof(PetscEnum) */
   if (tflg) *value = (PetscEnum)tval;
   if (set)  *set   = tflg;
@@ -673,7 +677,11 @@ PetscErrorCode  PetscOptionsEnum(const char opt[],const char text[],const char m
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
--  defaultv - the default (current) value, if the user does not provide a value this is returned in value
+-  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+$                 PetscOptionsInt(..., obj->value,&object->value,...) or
+$                 value = defaultvalue
+$                 PetscOptionsInt(..., value,&value,&flg);
+$                 if (flg) {
 
    Output Parameter:
 +  value - the integer value to return
@@ -693,7 +701,7 @@ PetscErrorCode  PetscOptionsEnum(const char opt[],const char text[],const char m
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char man[],PetscInt defaultv,PetscInt *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
@@ -703,11 +711,11 @@ PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char ma
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_INT,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
 
-    *(PetscInt*)amsopt->data = defaultv;
+    *(PetscInt*)amsopt->data = currentvalue;
   }
   ierr = PetscOptionsGetInt(PetscOptionsObject.prefix,opt,value,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%d>: %s (%s)\n",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",opt+1,defaultv,text,ManSection(man));CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%d>: %s (%s)\n",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",opt+1,currentvalue,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -723,7 +731,7 @@ PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char ma
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
-.  defaultv - the default (current) value, if the user does not provide a value this is returned in value
+.  currentvalue - the current value; caller is responsible for setting this value correctly. This is not used to set value
 -  len - length of the result string including null terminator
 
    Output Parameter:
@@ -746,7 +754,7 @@ PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char ma
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char man[],const char defaultv[],char value[],size_t len,PetscBool  *set)
+PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char man[],const char currentvalue[],char value[],size_t len,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
@@ -755,11 +763,11 @@ PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
-    ierr = PetscStrdup(defaultv ? defaultv : "",(char**)&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscStrdup(currentvalue ? currentvalue : "",(char**)&amsopt->data);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%s>: %s (%s)\n",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",opt+1,defaultv,text,ManSection(man));CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%s>: %s (%s)\n",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",opt+1,currentvalue,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -775,7 +783,11 @@ PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
--  defaultv - the default (current) value, if the user does not provide a value this is returned in value
+-  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+$                 PetscOptionsReal(..., obj->value,&object->value,...) or
+$                 value = defaultvalue
+$                 PetscOptionsReal(..., value,&value,&flg);
+$                 if (flg) {
 
    Output Parameter:
 +  value - the value to return
@@ -795,7 +807,7 @@ PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsReal(const char opt[],const char text[],const char man[],PetscReal defaultv,PetscReal *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsReal(const char opt[],const char text[],const char man[],PetscReal currentvalue,PetscReal *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
@@ -805,11 +817,11 @@ PetscErrorCode  PetscOptionsReal(const char opt[],const char text[],const char m
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_REAL,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscReal),&amsopt->data);CHKERRQ(ierr);
 
-    *(PetscReal*)amsopt->data = defaultv;
+    *(PetscReal*)amsopt->data = currentvalue;
   }
   ierr = PetscOptionsGetReal(PetscOptionsObject.prefix,opt,value,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%g>: %s (%s)\n",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",opt+1,(double)defaultv,text,ManSection(man));CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%g>: %s (%s)\n",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",opt+1,(double)currentvalue,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -825,7 +837,12 @@ PetscErrorCode  PetscOptionsReal(const char opt[],const char text[],const char m
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
--  defaultv - the default (current) value, if the user does not provide a value this is returned in value
+-  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+$                 PetscOptionsScalar(..., obj->value,&object->value,...) or
+$                 value = defaultvalue
+$                 PetscOptionsScalar(..., value,&value,&flg);
+$                 if (flg) {
+
 
    Output Parameter:
 +  value - the value to return
@@ -845,13 +862,13 @@ PetscErrorCode  PetscOptionsReal(const char opt[],const char text[],const char m
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsScalar(const char opt[],const char text[],const char man[],PetscScalar defaultv,PetscScalar *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsScalar(const char opt[],const char text[],const char man[],PetscScalar currentvalue,PetscScalar *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = PetscOptionsReal(opt,text,man,defaultv,value,set);CHKERRQ(ierr);
+  ierr = PetscOptionsReal(opt,text,man,currentvalue,value,set);CHKERRQ(ierr);
 #else
   ierr = PetscOptionsGetScalar(PetscOptionsObject.prefix,opt,value,set);CHKERRQ(ierr);
 #endif
@@ -919,7 +936,9 @@ PetscErrorCode  PetscOptionsName(const char opt[],const char text[],const char m
 .  text - short string that describes the option
 .  man - manual page with additional information on option
 .  list - the possible choices
-.  defaultv - the default (current) value, if the user does not provide a value this is returned in value
+.  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with
+$                 PetscOptionsFlist(..., obj->value,value,len,&flg);
+$                 if (flg) {
 -  len - the length of the character array value
 
    Output Parameter:
@@ -946,7 +965,7 @@ PetscErrorCode  PetscOptionsName(const char opt[],const char text[],const char m
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsEnum()
 @*/
-PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char man[],PetscFunctionList list,const char defaultv[],char value[],size_t len,PetscBool  *set)
+PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char man[],PetscFunctionList list,const char currentvalue[],char value[],size_t len,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
@@ -955,12 +974,12 @@ PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_FLIST,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
-    ierr = PetscStrdup(defaultv ? defaultv : "",(char**)&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscStrdup(currentvalue ? currentvalue : "",(char**)&amsopt->data);CHKERRQ(ierr);
     amsopt->flist = list;
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = PetscFunctionListPrintTypes(PetscOptionsObject.comm,stdout,PetscOptionsObject.prefix,opt,ltext,man,list,defaultv);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = PetscFunctionListPrintTypes(PetscOptionsObject.comm,stdout,PetscOptionsObject.prefix,opt,ltext,man,list,currentvalue);CHKERRQ(ierr);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -978,7 +997,10 @@ PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char
 .  man - manual page with additional information on option
 .  list - the possible choices (one of these must be selected, anything else is invalid)
 .  ntext - number of choices
--  defaultv - the default (current) value, if the user does not provide a value the index of defaultv is returned
+-  currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with
+$                 PetscOptionsElist(..., obj->value,&value,&flg);
+$                 if (flg) {
+
 
    Output Parameter:
 +  value - the index of the value to return
@@ -999,7 +1021,7 @@ PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEnum()
 @*/
-PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *const *list,PetscInt ntext,const char defaultv[],PetscInt *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *const *list,PetscInt ntext,const char currentvalue[],PetscInt *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -1009,13 +1031,13 @@ PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_ELIST,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
-    ierr = PetscStrdup(defaultv ? defaultv : "",(char**)&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscStrdup(currentvalue ? currentvalue : "",(char**)&amsopt->data);CHKERRQ(ierr);
     amsopt->list  = list;
     amsopt->nlist = ntext;
   }
   ierr = PetscOptionsGetEList(PetscOptionsObject.prefix,opt,list,ntext,value,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%s> (choose one of)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,defaultv);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%s> (choose one of)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,currentvalue);CHKERRQ(ierr);
     for (i=0; i<ntext; i++) {
       ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm," %s",list[i]);CHKERRQ(ierr);
     }
@@ -1189,7 +1211,7 @@ PetscErrorCode  PetscOptionsBoolGroupEnd(const char opt[],const char text[],cons
 +  opt - option name
 .  text - short string that describes the option
 .  man - manual page with additional information on option
--  deflt - the default value, if the user does not set a value then this value is returned in flg
+-  currentvalue - the current value
 
    Output Parameter:
 .  flg - PETSC_TRUE or PETSC_FALSE
@@ -1209,7 +1231,7 @@ PetscErrorCode  PetscOptionsBoolGroupEnd(const char opt[],const char text[],cons
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsBool(const char opt[],const char text[],const char man[],PetscBool deflt,PetscBool  *flg,PetscBool  *set)
+PetscErrorCode  PetscOptionsBool(const char opt[],const char text[],const char man[],PetscBool currentvalue,PetscBool  *flg,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscBool      iset;
@@ -1220,15 +1242,12 @@ PetscErrorCode  PetscOptionsBool(const char opt[],const char text[],const char m
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_BOOL,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscBool),&amsopt->data);CHKERRQ(ierr);
 
-    *(PetscBool*)amsopt->data = deflt;
+    *(PetscBool*)amsopt->data = currentvalue;
   }
   ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,&iset);CHKERRQ(ierr);
-  if (!iset) {
-    if (flg) *flg = deflt;
-  }
   if (set) *set = iset;
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    const char *v = PetscBools[deflt];
+    const char *v = PetscBools[currentvalue];
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s: <%s> %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,v,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

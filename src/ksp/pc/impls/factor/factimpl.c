@@ -220,21 +220,20 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
 {
   PC_Factor         *factor = (PC_Factor*)pc->data;
   PetscErrorCode    ierr;
-  PetscBool         flg = PETSC_FALSE,set;
+  PetscBool         flg,set;
   char              tname[256], solvertype[64];
   PetscFunctionList ordlist;
   PetscEnum         etmp;
 
   PetscFunctionBegin;
   if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll();CHKERRQ(ierr);}
-  ierr = PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",flg,&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
+  ierr = PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set && flg) {
     ierr = PCFactorSetUseInPlace(pc);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-pc_factor_fill","Expected non-zeros in factored matrix","PCFactorSetFill",((PC_Factor*)factor)->info.fill,&((PC_Factor*)factor)->info.fill,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_factor_fill","Expected non-zeros in factored matrix","PCFactorSetFill",((PC_Factor*)factor)->info.fill,&((PC_Factor*)factor)->info.fill,NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsEnum("-pc_factor_shift_type","Type of shift to add to diagonal","PCFactorSetShiftType",
-                          MatFactorShiftTypes,(PetscEnum)(int)((PC_Factor*)factor)->info.shifttype,&etmp,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-pc_factor_shift_type","Type of shift to add to diagonal","PCFactorSetShiftType",MatFactorShiftTypes,(PetscEnum)(int)((PC_Factor*)factor)->info.shifttype,&etmp,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetShiftType(pc,(MatFactorShiftType)etmp);CHKERRQ(ierr);
   }
@@ -243,21 +242,18 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)factor)->info.zeropivot,&((PC_Factor*)factor)->info.zeropivot,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_factor_column_pivot","Column pivot tolerance (used only for some factorization)","PCFactorSetColumnPivot",((PC_Factor*)factor)->info.dtcol,&((PC_Factor*)factor)->info.dtcol,&flg);CHKERRQ(ierr);
 
-  flg  = ((PC_Factor*)factor)->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
-  ierr = PetscOptionsBool("-pc_factor_pivot_in_blocks","Pivot inside matrix dense blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_factor_pivot_in_blocks","Pivot inside matrix dense blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",((PC_Factor*)factor)->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {
     ierr = PCFactorSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
   }
 
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",flg,&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCFactorSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = PCFactorSetReuseFill(pc,flg);CHKERRQ(ierr);
   }
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",flg,&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCFactorSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = PCFactorSetReuseOrdering(pc,flg);CHKERRQ(ierr);
   }
 
   ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);

@@ -629,8 +629,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   ierr = PetscOptionsEnum("-snes_qn_restart_type","Restart type","SNESQNSetRestartType",SNESQNRestartTypes,(PetscEnum)rtype,(PetscEnum*)&rtype,&flg);CHKERRQ(ierr);
   if (flg) ierr = SNESQNSetRestartType(snes,rtype);CHKERRQ(ierr);
 
-  ierr = PetscOptionsEnum("-snes_qn_type","Quasi-Newton update type","",SNESQNTypes,
-                          (PetscEnum)qtype,(PetscEnum*)&qtype,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-snes_qn_type","Quasi-Newton update type","",SNESQNTypes,(PetscEnum)qtype,(PetscEnum*)&qtype,&flg);CHKERRQ(ierr);
   if (flg) {ierr = SNESQNSetType(snes,qtype);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {

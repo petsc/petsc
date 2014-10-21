@@ -719,8 +719,7 @@ PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
   ierr = PetscOptionsHead("KSP LGMRES Options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_lgmres_constant","Use constant approx. space size","KSPGMRESSetConstant",flg,&flg,NULL);CHKERRQ(ierr);
-  if (flg) lgmres->approx_constant = 1;
+  ierr = PetscOptionsBool("-ksp_lgmres_constant","Use constant approx. space size","KSPGMRESSetConstant",lgmres->approx_constant,&lgmres->approx_constant,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_lgmres_augment","Number of error approximations to augment the Krylov space with","KSPLGMRESSetAugDim",lgmres->aug_dim,&aug,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPLGMRESSetAugDim(ksp,aug);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -735,7 +734,7 @@ static PetscErrorCode  KSPLGMRESSetConstant_LGMRES(KSP ksp)
   KSP_LGMRES *lgmres = (KSP_LGMRES*)ksp->data;
 
   PetscFunctionBegin;
-  lgmres->approx_constant = 1;
+  lgmres->approx_constant = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -849,7 +848,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
   /*LGMRES_MOD - new defaults */
   lgmres->aug_dim         = LGMRES_DEFAULT_AUGDIM;
   lgmres->aug_ct          = 0;     /* start with no aug vectors */
-  lgmres->approx_constant = 0;
+  lgmres->approx_constant = PETSC_FALSE;
   lgmres->matvecs         = 0;
   PetscFunctionReturn(0);
 }

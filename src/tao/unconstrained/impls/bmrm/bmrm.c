@@ -233,11 +233,10 @@ static PetscErrorCode TaoSetFromOptions_BMRM(Tao tao)
 {
   PetscErrorCode ierr;
   TAO_BMRM*      bmrm = (TAO_BMRM*)tao->data;
-  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("BMRM for regularized risk minimization");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bmrm_lambda", "regulariser weight","", 100,&bmrm->lambda,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bmrm_lambda", "regulariser weight","", 100,&bmrm->lambda,NULL); CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

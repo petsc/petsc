@@ -679,7 +679,7 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc)
   }
   flg  = PETSC_FALSE;
   ierr = PetscOptionsEnum("-pc_gasm_type","Type of restriction/extension","PCGASMSetType",PCGASMTypes,(PetscEnum)osm->type,(PetscEnum*)&gasmtype,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCGASMSetType(pc,gasmtype);CHKERRQ(ierr); }
+  if (flg) {ierr = PCGASMSetType(pc,gasmtype);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

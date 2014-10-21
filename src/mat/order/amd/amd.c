@@ -46,12 +46,10 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *
   */
   val  = (PetscReal)Control[AMD_DENSE];
   ierr = PetscOptionsReal("-mat_ordering_amd_dense","threshold for \"dense\" rows/columns","None",val,&val,NULL);CHKERRQ(ierr);
-
   Control[AMD_DENSE] = (double)val;
 
   tval = (PetscBool)Control[AMD_AGGRESSIVE];
   ierr = PetscOptionsBool("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,NULL);CHKERRQ(ierr);
-
   Control[AMD_AGGRESSIVE] = (double)tval;
 
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

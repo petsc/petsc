@@ -534,15 +534,14 @@ static PetscErrorCode TaoSetFromOptions_IPM(Tao tao)
 {
   TAO_IPM        *ipmP = (TAO_IPM*)tao->data;
   PetscErrorCode ierr;
-  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("IPM method for constrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_ipm_monitorkkt","monitor kkt status",NULL,ipmP->monitorkkt,&ipmP->monitorkkt,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_ipm_pushs","parameter to push initial slack variables away from bounds",NULL,ipmP->pushs,&ipmP->pushs,&flg);
-  ierr = PetscOptionsReal("-tao_ipm_pushnu","parameter to push initial (inequality) dual variables away from bounds",NULL,ipmP->pushnu,&ipmP->pushnu,&flg);
+  ierr = PetscOptionsBool("-tao_ipm_monitorkkt","monitor kkt status",NULL,ipmP->monitorkkt,&ipmP->monitorkkt,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_ipm_pushs","parameter to push initial slack variables away from bounds",NULL,ipmP->pushs,&ipmP->pushs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_ipm_pushnu","parameter to push initial (inequality) dual variables away from bounds",NULL,ipmP->pushnu,&ipmP->pushnu,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  ierr =KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

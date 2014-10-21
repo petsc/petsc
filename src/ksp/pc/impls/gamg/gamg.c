@@ -1307,62 +1307,25 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
       }
     }
     /* -pc_gamg_verbose */
-    ierr = PetscOptionsInt("-pc_gamg_verbose","Verbose (debugging) output for PCGAMG",
-                           "none", pc_gamg->verbose,
-                           &pc_gamg->verbose, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_gamg_verbose","Verbose (debugging) output for PCGAMG","none", pc_gamg->verbose,&pc_gamg->verbose, NULL);CHKERRQ(ierr);
     /* -pc_gamg_repartition */
-    ierr = PetscOptionsBool("-pc_gamg_repartition",
-                            "Repartion coarse grids (false)",
-                            "PCGAMGRepartitioning",
-                            pc_gamg->repart,
-                            &pc_gamg->repart,
-                            &flag);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_gamg_repartition","Repartion coarse grids","PCGAMGRepartitioning",pc_gamg->repart,&pc_gamg->repart,NULL);CHKERRQ(ierr);
     /* -pc_gamg_reuse_interpolation */
-    ierr = PetscOptionsBool("-pc_gamg_reuse_interpolation",
-                            "Reuse prolongation operator (true)",
-                            "PCGAMGReuseProl",
-                            pc_gamg->reuse_prol,
-                            &pc_gamg->reuse_prol,
-                            &flag);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_gamg_reuse_interpolation","Reuse prolongation operator","PCGAMGReuseProl",pc_gamg->reuse_prol,&pc_gamg->reuse_prol,NULL);CHKERRQ(ierr);
     /* -pc_gamg_use_agg_gasm */
-    ierr = PetscOptionsBool("-pc_gamg_use_agg_gasm",
-                            "Use aggregation agragates for GASM smoother (false)",
-                            "PCGAMGUseASMAggs",
-                            pc_gamg->use_aggs_in_gasm,
-                            &pc_gamg->use_aggs_in_gasm,
-                            &flag);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_gamg_use_agg_gasm","Use aggregation agragates for GASM smoother","PCGAMGUseASMAggs",pc_gamg->use_aggs_in_gasm,&pc_gamg->use_aggs_in_gasm,NULL);CHKERRQ(ierr);
     /* -pc_gamg_process_eq_limit */
-    ierr = PetscOptionsInt("-pc_gamg_process_eq_limit",
-                           "Limit (goal) on number of equations per process on coarse grids",
-                           "PCGAMGSetProcEqLim",
-                           pc_gamg->min_eq_proc,
-                           &pc_gamg->min_eq_proc,
-                           &flag);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_gamg_process_eq_limit","Limit (goal) on number of equations per process on coarse grids","PCGAMGSetProcEqLim",pc_gamg->min_eq_proc,&pc_gamg->min_eq_proc,NULL);CHKERRQ(ierr);
     /* -pc_gamg_coarse_eq_limit */
-    ierr = PetscOptionsInt("-pc_gamg_coarse_eq_limit",
-                           "Limit on number of equations for the coarse grid",
-                           "PCGAMGSetCoarseEqLim",
-                           pc_gamg->coarse_eq_limit,
-                           &pc_gamg->coarse_eq_limit,
-                           &flag);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_gamg_coarse_eq_limit","Limit on number of equations for the coarse grid","PCGAMGSetCoarseEqLim",pc_gamg->coarse_eq_limit,&pc_gamg->coarse_eq_limit,NULL);CHKERRQ(ierr);
     /* -pc_gamg_threshold */
-    ierr = PetscOptionsReal("-pc_gamg_threshold",
-                            "Relative threshold to use for dropping edges in aggregation graph",
-                            "PCGAMGSetThreshold",
-                            pc_gamg->threshold,
-                            &pc_gamg->threshold,
-                            &flag);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_gamg_threshold","Relative threshold to use for dropping edges in aggregation graph","PCGAMGSetThreshold",pc_gamg->threshold,&pc_gamg->threshold,&flag);CHKERRQ(ierr);
     if (flag && pc_gamg->verbose) {
       ierr = PetscPrintf(comm,"\t[%d]%s threshold set %e\n",0,__FUNCT__,pc_gamg->threshold);CHKERRQ(ierr);
     }
     /* -pc_gamg_eigtarget */
     ierr = PetscOptionsRealArray("-pc_gamg_eigtarget","Target eigenvalue range as fraction of estimated maximum eigenvalue","PCGAMGSetEigTarget",pc_gamg->eigtarget,&two,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-pc_mg_levels",
-                           "Set number of MG levels",
-                           "PCGAMGSetNlevels",
-                           pc_gamg->Nlevels,
-                           &pc_gamg->Nlevels,
-                           &flag);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_mg_levels","Set number of MG levels","PCGAMGSetNlevels",pc_gamg->Nlevels,&pc_gamg->Nlevels,NULL);CHKERRQ(ierr);
 
     /* set options for subtype */
     if (pc_gamg->ops->setfromoptions) {ierr = (*pc_gamg->ops->setfromoptions)(pc);CHKERRQ(ierr);}

@@ -154,41 +154,24 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc)
   PC_MG          *mg          = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg     = (PC_GAMG*)mg->innerctx;
   PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
-  PetscBool      flag;
 
   PetscFunctionBegin;
-
   ierr = PetscOptionsHead("GAMG-AGG options");CHKERRQ(ierr);
   {
     /* -pc_gamg_agg_nsmooths */
     pc_gamg_agg->nsmooths = 1;
 
-    ierr = PetscOptionsInt("-pc_gamg_agg_nsmooths",
-                           "smoothing steps for smoothed aggregation, usually 1 (0)",
-                           "PCGAMGSetNSmooths",
-                           pc_gamg_agg->nsmooths,
-                           &pc_gamg_agg->nsmooths,
-                           &flag);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_gamg_agg_nsmooths","smoothing steps for smoothed aggregation, usually 1","PCGAMGSetNSmooths",pc_gamg_agg->nsmooths,&pc_gamg_agg->nsmooths,NULL);CHKERRQ(ierr);
 
     /* -pc_gamg_sym_graph */
     pc_gamg_agg->sym_graph = PETSC_FALSE;
 
-    ierr = PetscOptionsBool("-pc_gamg_sym_graph",
-                            "Set for asymmetric matrices",
-                            "PCGAMGSetSymGraph",
-                            pc_gamg_agg->sym_graph,
-                            &pc_gamg_agg->sym_graph,
-                            &flag);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_gamg_sym_graph","Set for asymmetric matrices","PCGAMGSetSymGraph",pc_gamg_agg->sym_graph,&pc_gamg_agg->sym_graph,NULL);CHKERRQ(ierr);
 
     /* -pc_gamg_square_graph */
     pc_gamg_agg->square_graph = PETSC_TRUE;
 
-    ierr = PetscOptionsBool("-pc_gamg_square_graph",
-                            "For faster coarsening and lower coarse grid complexity",
-                            "PCGAMGSetSquareGraph",
-                            pc_gamg_agg->square_graph,
-                            &pc_gamg_agg->square_graph,
-                            &flag);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_gamg_square_graph","For faster coarsening and lower coarse grid complexity","PCGAMGSetSquareGraph",pc_gamg_agg->square_graph,&pc_gamg_agg->square_graph,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

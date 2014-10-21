@@ -88,10 +88,9 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       itmp;
-  PetscBool      flg;
+  PetscBool      flg,set;
   PC_ILU         *ilu = (PC_ILU*)pc->data;
   PetscReal      tol;
-  /* PetscReal      dt[3]; */
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("ILU Options");CHKERRQ(ierr);
@@ -100,20 +99,8 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
   ierr = PetscOptionsInt("-pc_factor_levels","levels of fill","PCFactorSetLevels",(PetscInt)((PC_Factor*)ilu)->info.levels,&itmp,&flg);CHKERRQ(ierr);
   if (flg) ((PC_Factor*)ilu)->info.levels = itmp;
 
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",flg,&flg,NULL);CHKERRQ(ierr);
-  ((PC_Factor*)ilu)->info.diagonal_fill = (PetscReal) flg;
-  /*
-  dt[0] = ((PC_Factor*)ilu)->info.dt;
-  dt[1] = ((PC_Factor*)ilu)->info.dtcol;
-  dt[2] = ((PC_Factor*)ilu)->info.dtcount;
-
-  PetscInt       dtmax = 3;
-  ierr = PetscOptionsRealArray("-pc_factor_drop_tolerance,","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCFactorSetDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
-  }
-  */
+  ierr = PetscOptionsBool("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",((PC_Factor*)ilu)->info.diagonal_fill ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  if (set) ((PC_Factor*)ilu)->info.diagonal_fill = (PetscReal) flg;
   ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
   if (flg) {
     tol  = PETSC_DECIDE;

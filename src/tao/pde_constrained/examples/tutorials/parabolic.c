@@ -125,7 +125,6 @@ int main(int argc, char **argv)
   AppCtx             user;
   IS                 is_allstate,is_alldesign;
   PetscInt           lo,hi,hi2,lo2,ksp_old;
-  PetscBool          flag;
   PetscInt           ntests = 1;
   PetscInt           i;
   int                stages[1];
@@ -133,19 +132,19 @@ int main(int argc, char **argv)
   PetscInitialize(&argc, &argv, (char*)0,help);
 
   user.mx = 8;
-  ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
   user.nt = 8;
-  ierr = PetscOptionsInt("-nt","Number of time steps","",user.nt,&user.nt,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-nt","Number of time steps","",user.nt,&user.nt,NULL);CHKERRQ(ierr);
   user.ndata = 64;
-  ierr = PetscOptionsInt("-ndata","Numbers of data points per sample","",user.ndata,&user.ndata,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ndata","Numbers of data points per sample","",user.ndata,&user.ndata,NULL);CHKERRQ(ierr);
   user.ns = 8;
-  ierr = PetscOptionsInt("-ns","Number of samples","",user.ns,&user.ns,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ns","Number of samples","",user.ns,&user.ns,NULL);CHKERRQ(ierr);
   user.alpha = 1.0;
-  ierr = PetscOptionsReal("-alpha","Regularization parameter","",user.alpha,&user.alpha,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-alpha","Regularization parameter","",user.alpha,&user.alpha,NULL);CHKERRQ(ierr);
   user.beta = 0.01;
-  ierr = PetscOptionsReal("-beta","Weight attributed to ||u||^2 in regularization functional","",user.beta,&user.beta,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-beta","Weight attributed to ||u||^2 in regularization functional","",user.beta,&user.beta,NULL);CHKERRQ(ierr);
   user.noise = 0.01;
-  ierr = PetscOptionsReal("-noise","Amount of noise to add to data","",user.noise,&user.noise,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-noise","Amount of noise to add to data","",user.noise,&user.noise,NULL);CHKERRQ(ierr);
 
   user.m = user.mx*user.mx*user.mx; /*  number of constraints per time step */
   user.n = user.m*(user.nt+1); /*  number of variables */
@@ -212,7 +211,7 @@ int main(int argc, char **argv)
   ierr = TaoSetStateDesignIS(tao,user.s_is,user.d_is);CHKERRQ(ierr);
 
  /* SOLVE THE APPLICATION */
-  ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,NULL);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Trials",&stages[0]);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
   user.ksp_its_initial = user.ksp_its;

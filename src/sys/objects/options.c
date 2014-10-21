@@ -2354,7 +2354,7 @@ PetscErrorCode  PetscOptionsCreate(void)
 @*/
 PetscErrorCode  PetscOptionsSetFromOptions(void)
 {
-  PetscBool      flgc,flgm;
+  PetscBool      flgc = PETSC_FALSE,flgm;
   PetscErrorCode ierr;
   char           monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer    monviewer;
@@ -2362,7 +2362,7 @@ PetscErrorCode  PetscOptionsSetFromOptions(void)
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options database options","PetscOptions");CHKERRQ(ierr);
   ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flgm);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",PETSC_FALSE,&flgc,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",flgc,&flgc,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flgm) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,monfilename,&monviewer);CHKERRQ(ierr);

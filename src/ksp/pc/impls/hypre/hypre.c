@@ -522,7 +522,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   /* the Relax Order */
   ierr = PetscOptionsBool("-pc_hypre_boomeramg_no_CF", "Do not use CF-relaxation", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
 
-  if (flg) {
+  if (flg && tmp_truth) {
     jac->relaxorder = 0;
     PetscStackCallStandard(HYPRE_BoomerAMGSetRelaxOrder,(jac->hsolver, jac->relaxorder));
   }
@@ -563,7 +563,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     PetscStackCallStandard(HYPRE_BoomerAMGSetDebugFlag,(jac->hsolver,level));
   }
 
-  ierr = PetscOptionsBool("-pc_hypre_boomeramg_nodal_coarsen", "HYPRE_BoomerAMGSetNodal()", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_hypre_boomeramg_nodal_coarsen", "HYPRE_BoomerAMGSetNodal()", "None", jac->nodal_coarsen ? PETSC_TRUE : PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
   if (flg && tmp_truth) {
     jac->nodal_coarsen = 1;
     PetscStackCallStandard(HYPRE_BoomerAMGSetNodal,(jac->hsolver,1));

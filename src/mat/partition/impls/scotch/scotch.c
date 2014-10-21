@@ -235,8 +235,9 @@ PetscErrorCode MatPartitioningSetFromOptions_PTScotch(MatPartitioning part)
   MPPTScotchStrategyType   strat;
 
   PetscFunctionBegin;
+  ierr = MatPartitioningPTScotchGetStrategy(part,&strat);CHKERRQ(ierr);
   ierr = PetscOptionsHead("PTScotch partitioning options");CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-mat_partitioning_ptscotch_strategy","Strategy","MatPartitioningPTScotchSetStrategy",MPPTScotchStrategyTypes,(PetscEnum)MP_PTSCOTCH_QUALITY,(PetscEnum*)&strat,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-mat_partitioning_ptscotch_strategy","Strategy","MatPartitioningPTScotchSetStrategy",MPPTScotchStrategyTypes,(PetscEnum)strat,(PetscEnum*)&strat,&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatPartitioningPTScotchSetStrategy(part,strat);CHKERRQ(ierr); }
   ierr = PetscOptionsReal("-mat_partitioning_ptscotch_imbalance","Load imbalance ratio","MatPartitioningPTScotchSetImbalance",scotch->imbalance,&r,&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatPartitioningPTScotchSetImbalance(part,r);CHKERRQ(ierr); }

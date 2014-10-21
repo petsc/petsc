@@ -24,7 +24,10 @@ int main(int argc,char **args)
   PetscScalar    v;
   PetscMPIInt    rank;
 #if defined(PETSC_USE_LOG)
-  PetscLogStage stage;
+  PetscLogStage  stage;
+#endif
+#if defined(PETSC_HAVE_MUMPS)
+  Mat            F;
 #endif
 
   PetscInitialize(&argc,&args,(char*)0,help);
