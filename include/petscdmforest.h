@@ -59,8 +59,8 @@ PETSC_EXTERN PetscErrorCode DMForestGetMinimumRefinement(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMForestSetMaximumRefinement(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMForestGetMaximumRefinement(DM, PetscInt *);
 
+PETSC_EXTERN PetscErrorCode DMForestGetCellChart(DM, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMForestGetCellSF(DM, PetscSF *);
-PETSC_EXTERN PetscErrorCode DMForestGetCellSection(DM, PetscSection *);
 
 /* reserve some adaptivity types */
 enum {DM_FOREST_KEEP = 0,
@@ -86,8 +86,8 @@ typedef const char* DMForestAdaptivityStrategy;
 /* how to combine: -flags         from multiple processes,
  *                 -coarsen flags from multiple children
  */
-PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityStrategy(DM, PetscAdaptivityStrategy);
-PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityStrategy(DM, PetscAdaptivityStrategy *);
+PETSC_EXTERN PetscErrorCode DMForestSetAdaptivityStrategy(DM, DMForestAdaptivityStrategy);
+PETSC_EXTERN PetscErrorCode DMForestGetAdaptivityStrategy(DM, DMForestAdaptivityStrategy *);
 
 /* for a quadtree/octree mesh, this is the x:1 condition: 1 indicates a uniform mesh,
  *                                                        2 indicates typical 2:1,
@@ -104,8 +104,8 @@ PETSC_EXTERN PetscErrorCode DMForestSetCellWeightFactor(DM, PetscReal);
 PETSC_EXTERN PetscErrorCode DMForestGetCellWeightFactor(DM, PetscReal *);
 
 /* this process's capacity when redistributing the cells */
-PETSC_EXTERN PetscErrorCode DMForestSetCapacity(DM, PetscReal);
-PETSC_EXTERN PetscErrorCode DMForestGetCapacity(DM, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMForestSetWeightCapacity(DM, PetscReal);
+PETSC_EXTERN PetscErrorCode DMForestGetWeightCapacity(DM, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode DMForestSetFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMForestSetUp(DM);
