@@ -1,0 +1,74 @@
+DM Object:Simplicial Mesh 8 MPI processes
+  type: plex
+\documentclass[crop,multi=false]{standalone}
+\usepackage{tikz}
+\usepackage{pgflibraryshapes}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\begin{document}
+\vbox{
+Simplicial Mesh for process {\textcolor{red}0}, {\textcolor{blue}1}, {\textcolor{green}2}, {\textcolor{red}3}, {\textcolor{blue}4}, {\textcolor{green}5}, {\textcolor{red}6}, and {\textcolor{blue}7}.
+\begin{tikzpicture}[scale = 4,font=\fontsize{8}{8}\selectfont]
+\path
+(0,0) node(1_0) [draw,shape=circle,color=red] {1} --
+(1,0) node(2_0) [draw,shape=circle,color=red] {2} --
+(0,1) node(3_0) [draw,shape=circle,color=red] {3} --
+(0,1) node(1_1) [draw,shape=circle,color=blue] {1} --
+(1,1) node(2_1) [draw,shape=circle,color=blue] {2} --
+(0,2) node(3_1) [draw,shape=circle,color=blue] {3} --
+(1,0) node(1_2) [draw,shape=circle,color=green] {1} --
+(0,1) node(2_2) [draw,shape=circle,color=green] {2} --
+(1,1) node(3_2) [draw,shape=circle,color=green] {3} --
+(2,0) node(1_3) [draw,shape=circle,color=red] {1} --
+(1,1) node(2_3) [draw,shape=circle,color=red] {2} --
+(2,1) node(3_3) [draw,shape=circle,color=red] {3} --
+(1,0) node(1_4) [draw,shape=circle,color=blue] {1} --
+(2,0) node(2_4) [draw,shape=circle,color=blue] {2} --
+(1,1) node(3_4) [draw,shape=circle,color=blue] {3} --
+(2,1) node(1_5) [draw,shape=circle,color=green] {1} --
+(1,2) node(2_5) [draw,shape=circle,color=green] {2} --
+(2,2) node(3_5) [draw,shape=circle,color=green] {3} --
+(1,1) node(1_6) [draw,shape=circle,color=red] {1} --
+(2,1) node(2_6) [draw,shape=circle,color=red] {2} --
+(1,2) node(3_6) [draw,shape=circle,color=red] {3} --
+(1,1) node(1_7) [draw,shape=circle,color=blue] {1} --
+(0,2) node(2_7) [draw,shape=circle,color=blue] {2} --
+(1,2) node(3_7) [draw,shape=circle,color=blue] {3} --
+(0,0);
+\path
+(0.5,0) node(4_0) [draw,shape=circle,color=red] {4} --
+(0.5,0.5) node(5_0) [draw,shape=circle,color=red] {5} --
+(0,0.5) node(6_0) [draw,shape=circle,color=red] {6} --
+(0.5,1.5) node(4_1) [draw,shape=circle,color=blue] {4} --
+(0,1.5) node(5_1) [draw,shape=circle,color=blue] {5} --
+(0.5,1) node(6_1) [draw,shape=circle,color=blue] {6} --
+(0.5,0.5) node(4_2) [draw,shape=circle,color=green] {4} --
+(0.5,1) node(5_2) [draw,shape=circle,color=green] {5} --
+(1,0.5) node(6_2) [draw,shape=circle,color=green] {6} --
+(1.5,0.5) node(4_3) [draw,shape=circle,color=red] {4} --
+(2,0.5) node(5_3) [draw,shape=circle,color=red] {5} --
+(1.5,1) node(6_3) [draw,shape=circle,color=red] {6} --
+(1,0.5) node(4_4) [draw,shape=circle,color=blue] {4} --
+(1.5,0.5) node(5_4) [draw,shape=circle,color=blue] {5} --
+(1.5,0) node(6_4) [draw,shape=circle,color=blue] {6} --
+(1.5,1.5) node(4_5) [draw,shape=circle,color=green] {4} --
+(2,1.5) node(5_5) [draw,shape=circle,color=green] {5} --
+(1.5,2) node(6_5) [draw,shape=circle,color=green] {6} --
+(1.5,1) node(4_6) [draw,shape=circle,color=red] {4} --
+(1.5,1.5) node(5_6) [draw,shape=circle,color=red] {5} --
+(1,1.5) node(6_6) [draw,shape=circle,color=red] {6} --
+(0.5,1.5) node(4_7) [draw,shape=circle,color=blue] {4} --
+(1,1.5) node(5_7) [draw,shape=circle,color=blue] {5} --
+(0.5,2) node(6_7) [draw,shape=circle,color=blue] {6} --
+(0,0);
+\draw[color=red] (1_0) -- (2_0) -- (3_0) -- (1_0);
+\draw[color=blue] (2_1) -- (3_1) -- (1_1) -- (2_1);
+\draw[color=green] (2_2) -- (1_2) -- (3_2) -- (2_2);
+\draw[color=red] (2_3) -- (1_3) -- (3_3) -- (2_3);
+\draw[color=blue] (2_4) -- (3_4) -- (1_4) -- (2_4);
+\draw[color=green] (2_5) -- (1_5) -- (3_5) -- (2_5);
+\draw[color=red] (2_6) -- (3_6) -- (1_6) -- (2_6);
+\draw[color=blue] (1_7) -- (3_7) -- (2_7) -- (1_7);
+\end{tikzpicture}
+}
+\end{document}

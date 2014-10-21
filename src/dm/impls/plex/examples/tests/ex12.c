@@ -8,6 +8,7 @@ typedef struct {
   PetscBool cellSimplex;                  /* Use simplices or hexes */
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   PetscInt  overlap;                      /* The cell overlap to use during partitioning */
+  PetscBool testPartition;                /* Use a fixed partitioning for testing */
 } AppCtx;
 
 #undef __FUNCT__
@@ -27,6 +28,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex12.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex12.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-overlap", "The cell overlap for partitioning", "ex12.c", options->overlap, &options->overlap, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex12.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
@@ -35,15 +37,24 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  DM             distMesh    = NULL;
-  PetscInt       dim         = user->dim;
-  PetscBool      cellSimplex = user->cellSimplex;
-  const char    *filename    = user->filename;
-  PetscInt       overlap     = user->overlap >= 0 ? user->overlap : 0;
+  DM             distMesh        = NULL;
+  PetscInt       dim             = user->dim;
+  PetscBool      cellSimplex     = user->cellSimplex;
+  const char    *filename        = user->filename;
+  PetscInt       triSizes_n3[3]  = {3, 2, 3};
+  PetscInt       triPoints_n3[8] = {3, 5, 6, 1, 7, 0, 2, 4};
+  PetscInt       triSizes_n8[8]  = {1, 1, 1, 1, 1, 1, 1, 1};
+  PetscInt       triPoints_n8[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+  PetscInt       quadSizes[2]    = {2, 2};
+  PetscInt       quadPoints[4]   = {2, 3, 0, 1};
+  PetscInt       overlap         = user->overlap >= 0 ? user->overlap : 0;
   size_t         len;
+  PetscMPIInt    rank, numProcs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len) {
     const char *extGmsh = ".msh";
@@ -68,6 +79,24 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     const PetscInt cells[3] = {2, 2, 2};
 
     ierr = DMPlexCreateHexBoxMesh(comm, dim, cells, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, dm);CHKERRQ(ierr);
+  }
+  if (user->testPartition) {
+    const PetscInt  *sizes = NULL;
+    const PetscInt  *points = NULL;
+    PetscPartitioner part;
+
+    if (!rank) {
+      if (dim == 2 && cellSimplex && numProcs == 3) {
+        sizes = triSizes_n3; points = triPoints_n3;
+      } else if (dim == 2 && cellSimplex && numProcs == 8) {
+        sizes = triSizes_n8; points = triPoints_n8;
+      } else if (dim == 2 && !cellSimplex && numProcs == 2) {
+        sizes = quadSizes; points = quadPoints;
+      }
+    }
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
+    ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
   }
   ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
   if (distMesh) {
