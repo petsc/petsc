@@ -1284,3 +1284,57 @@ PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), newSize, allPoints, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexPartitionLabelCreateSF"
+/*@
+  DMPlexPartitionLabelCreateSF - Create a star forest from a label that assigns ranks to points
+
+  Input Parameters:
++ dm    - The DM
+. label - DMLabel assinging ranks to remote roots
+
+  Output Parameter:
+- sf    - The star forest communication context encapsulating the defined mapping
+
+  Note: The incoming label is a receiver mapping of remote points to their parent rank.
+
+  Level: developer
+
+.seealso: DMPlexDistribute(), DMPlexCreateOverlap
+@*/
+PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
+{
+  PetscMPIInt    numProcs;
+  PetscInt       n, idx, numRemote, p, numPoints, pStart, pEnd;
+  PetscSFNode   *remotePoints;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+
+  for (numRemote = 0, n = 0; n < numProcs; ++n) {
+    ierr = DMLabelGetStratumSize(label, n, &numPoints);CHKERRQ(ierr);
+    numRemote += numPoints;
+  }
+  ierr = PetscMalloc1(numRemote, &remotePoints);CHKERRQ(ierr);
+  for (idx = 0, n = 0; n < numProcs; ++n) {
+    IS remoteRootIS;
+    const PetscInt *remoteRoots;
+    ierr = DMLabelGetStratumSize(label, n, &numPoints);CHKERRQ(ierr);
+    if (numPoints <= 0) continue;
+    ierr = DMLabelGetStratumIS(label, n, &remoteRootIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; p++) {
+      remotePoints[idx].index = remoteRoots[p];
+      remotePoints[idx].rank = n;
+      idx++;
+    }
+    ierr = ISRestoreIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
+    ierr = ISDestroy(&remoteRootIS);CHKERRQ(ierr);
+  }
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject) dm), sf);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sf, pEnd-pStart, numRemote, NULL, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

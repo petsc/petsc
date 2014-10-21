@@ -1,5 +1,4 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#include <petscsf.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetAdjacencyUseCone"
@@ -555,11 +554,10 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank,
   const PetscSFNode *remote;
   const PetscInt    *local;
   const PetscInt    *nrank, *rrank, *neighbors;
-  PetscSFNode       *ovRootPoints, *ovLeafPoints, *remotePoints;
+  PetscSFNode       *ovRootPoints, *ovLeafPoints;
   PetscSection       ovRootSection, ovLeafSection;
   PetscInt          *adj = NULL;
   PetscInt           pStart, pEnd, p, sStart, sEnd, nleaves, l, numNeighbors, n, ovSize;
-  PetscInt           idx, numRemote;
   PetscMPIInt        rank, numProcs;
   PetscBool          useCone, useClosure, flg;
   PetscErrorCode     ierr;
@@ -708,38 +706,16 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscSection rootSection, IS rootrank,
   for (l = 0; l < nleaves; ++l) {
     ierr = DMLabelClearValue(ovLeafLabel, remote[l].index, remote[l].rank);CHKERRQ(ierr);
   }
-  for (numRemote = 0, n = 0; n < numProcs; ++n) {
-    PetscInt numPoints;
-    ierr = DMLabelGetStratumSize(ovLeafLabel, n, &numPoints);CHKERRQ(ierr);
-    numRemote += numPoints;
-  }
-  ierr = PetscMalloc1(numRemote, &remotePoints);CHKERRQ(ierr);
-  for (idx = 0, n = 0; n < numProcs; ++n) {
-    IS remoteRootIS;
-    PetscInt numPoints;
-    const PetscInt *remoteRoots;
-    ierr = DMLabelGetStratumSize(ovLeafLabel, n, &numPoints);CHKERRQ(ierr);
-    if (numPoints <= 0) continue;
-    ierr = DMLabelGetStratumIS(ovLeafLabel, n, &remoteRootIS);CHKERRQ(ierr);
-    ierr = ISGetIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
-    for (p = 0; p < numPoints; p++) {
-      remotePoints[idx].index = remoteRoots[p];
-      remotePoints[idx].rank = n;
-      idx++;
-    }
-    ierr = ISRestoreIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
-    ierr = ISDestroy(&remoteRootIS);CHKERRQ(ierr);
-  }
-  ierr = DMLabelDestroy(&ovLeafLabel);CHKERRQ(ierr);
-  ierr = PetscSFCreate(PetscObjectComm((PetscObject) dm), overlapSF);CHKERRQ(ierr);
+  /* Convert receiver label to SF */
+  ierr = DMPlexPartitionLabelCreateSF(dm, ovLeafLabel, overlapSF);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *overlapSF, "Overlap SF");CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(*overlapSF);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(*overlapSF, pEnd-pStart, numRemote, NULL, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscPrintf(comm, "Overlap SF\n");CHKERRQ(ierr);
     ierr = PetscSFView(*overlapSF, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   /* Clean up */
+  ierr = DMLabelDestroy(&ovLeafLabel);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfProc);CHKERRQ(ierr);
   ierr = PetscFree(ovRootPoints);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&ovRootSection);CHKERRQ(ierr);
