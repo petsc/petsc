@@ -73,11 +73,10 @@
       End Interface
 
       Interface
-        Subroutine DMPlexRestoreTransitiveClosure(m,p,useCone,points,   &
-     &  ierr)
+        Subroutine DMPlexRestoreTransitiveClosure(m,p,uC,points,ierr)
           USE_DMPLEX_HIDE
           PetscInt     p
-          PetscBool    useCone
+          PetscBool    uC
           PetscInt, pointer :: points(:)
           PetscErrorCode ierr
           DM_HIDE m
@@ -163,58 +162,54 @@
       End Interface
 
       Interface
-        Subroutine DMPlexVecRestoreClosure(m,section,v,point,values,    &
-     &  ierr)
+        Subroutine DMPlexVecRestoreClosure(m,section,v,point,vs,ierr)
           USE_DMPLEX_HIDE
           PETSCSECTION_HIDE section
           VEC_HIDE     v
           PetscInt     point
-          PetscScalar, pointer :: values(:)
+          PetscScalar, pointer :: vs(:)
           PetscErrorCode ierr
           DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
-        Subroutine DMPlexVecSetClosure(m,section,v,point,values,mode,   &
-     &  ierr)
+        Subroutine DMPlexVecSetClosure(m,sec,v,point,vs,mode,ierr)
           USE_DMPLEX_HIDE
-          PETSCSECTION_HIDE section
+          PETSCSECTION_HIDE sec
           VEC_HIDE     v
           PetscInt     point
           InsertMode   mode
-          PetscScalar, pointer :: values(:)
+          PetscScalar, pointer :: vs(:)
           PetscErrorCode ierr
           DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
-        Subroutine DMPlexMatSetClosure(m,section,globalSection,A,point, &
-     &  values,mode,ierr)
+        Subroutine DMPlexMatSetClosure(m,s,gS,A,p,v,mode,ierr)
           USE_DMPLEX_HIDE
-          PETSCSECTION_HIDE section
-          PETSCSECTION_HIDE globalSection
+          PETSCSECTION_HIDE s
+          PETSCSECTION_HIDE gS
           MAT_HIDE     A
-          PetscInt     point
+          PetscInt     p
           InsertMode   mode
-          PetscScalar, pointer :: values(:)
+          PetscScalar, pointer :: v(:)
           PetscErrorCode ierr
           DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
-        Subroutine DMPlexCreateSection(m,dim,numFields,numComp,         &
-     &  numDof,numBC,bcField,bcPoints,perm,section,ierr)
+        Subroutine DMPlexCreateSection(m,d,nF,nC,nD,nB,bF,bP,pm,sc,ierr)
           USE_DMPLEX_HIDE
           PETSCSECTION_HIDE section
-          PetscInt     dim, numFields, numBC
-          PetscInt, pointer :: numComp(:)
-          PetscInt, pointer :: numDof(:)
-          PetscInt, pointer :: bcField(:)
-          IS_HIDE,  pointer :: bcPoints(:)
-          IS_HIDE perm
+          PetscInt     d, nF, nB
+          PetscInt, pointer :: nC(:)
+          PetscInt, pointer :: nD(:)
+          PetscInt, pointer :: bF(:)
+          IS_HIDE,  pointer :: bP(:)
+          IS_HIDE pm
           PetscErrorCode ierr
           DM_HIDE m
         End Subroutine
@@ -234,13 +229,12 @@
       End Interface
 
       Interface
-        Subroutine DMPlexComputeCellGeometryFVM(m,cell,vol,centroid,    &
-     &    normal,ierr)
+        Subroutine DMPlexComputeCellGeometryFVM(m,cell,vol,ct,nm,ierr)
           USE_DMPLEX_HIDE
           PetscInt   cell
           PetscReal  vol
-          PetscReal, pointer :: centroid(:)
-          PetscReal, pointer :: normal(:)
+          PetscReal, pointer :: ct(:)
+          PetscReal, pointer :: nm(:)
           PetscErrorCode ierr
           DM_HIDE m
         End Subroutine
