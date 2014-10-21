@@ -213,6 +213,8 @@ int main(int argc, char **argv)
   DM             dm;   /* problem definition */
   Vec            u;    /* solution, residual vectors */
   AppCtx         user; /* user-defined work context */
+  PetscSection   section;
+  PetscInt       v, lsize;
   PetscReal      ferrors[1];
   void         (*initialGuess[2])(const PetscReal x[], PetscScalar *u, void* ctx) = {zero_vector, zero_scalar};
   PetscErrorCode ierr;
@@ -269,6 +271,27 @@ int main(int argc, char **argv)
 
   /* Create a node numbering for continuous linear finite elements. */
   lnodes = p4est_lnodes_new(p4est, ghost, 1);
+
+  /* Create a section from the lnodes */
+  ierr = PetscSectionCreate(PETSC_COMM_WORLD, &section);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(section, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldName(section, 0, "potential");CHKERRQ(ierr);
+  /* We can count the various thing from lnodes, but it would be nice to
+     get the info directly from p4est, ask Toby.
+
+     Cells:    [0, num_local_elements)
+     Vertices: [num_local_elements, num_local_elements+num_local_nodes)
+     Faces:    [)
+   */
+  ierr = PetscSectionSetChart(section, 0, lnodes->num_local_elements + lnodes->num_local_nodes);CHKERRQ(ierr);
+  for (v = lnodes->num_local_elements; v < lnodes->num_local_elements + lnodes->num_local_nodes; ++v) {
+    ierr = PetscSectionSetDof(section, v, 1);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(section, &lsize);CHKERRQ(ierr);
+  if (lsize != lnodes->num_local_nodes) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Local section size %d != %d from lnodes", lsize, lnodes->num_local_nodes);
+
+  /* Create SF */
 
   /* Destroy the ghost structure -- no longer needed after node creation. */
   p4est_ghost_destroy(ghost);
