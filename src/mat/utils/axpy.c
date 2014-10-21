@@ -191,13 +191,11 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
 PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode ierr;
-  PetscInt       i,start,end,vstart,vend;
+  PetscInt       i,start,end;
   PetscScalar    *v;
 
   PetscFunctionBegin;
-  ierr = VecGetOwnershipRange(D,&vstart,&vend);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
-  if (vstart != start || vend != end) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector ownership range not compatible with matrix: %D %D vec %D %D mat",vstart,vend,start,end);
   ierr = VecGetArray(D,&v);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
     ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,is);CHKERRQ(ierr);
@@ -231,10 +229,14 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode ierr;
+  PetscInt       matlocal,veclocal;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
   PetscValidHeaderSpecific(D,VEC_CLASSID,2);
+  ierr = MatGetLocalSize(Y,&matlocal,NULL);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(D,&veclocal);CHKERRQ(ierr);
+  if (matlocal != veclocal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number local rows of matrix %D does not match that of vector for diagonal %D",matlocal,veclocal);
   if (Y->ops->diagonalset) {
     ierr = (*Y->ops->diagonalset)(Y,D,is);CHKERRQ(ierr);
   } else {
