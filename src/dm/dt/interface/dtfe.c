@@ -3046,8 +3046,8 @@ PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
 #define __FUNCT__ "PetscFEGetDefaultTabulation"
 PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal **D, PetscReal **H)
 {
-  PetscInt         npoints = fem->quadrature->numPoints;
-  const PetscReal *points  = fem->quadrature->points;
+  PetscInt         npoints;
+  const PetscReal *points;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -3055,6 +3055,7 @@ PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal
   if (B) PetscValidPointer(B, 2);
   if (D) PetscValidPointer(D, 3);
   if (H) PetscValidPointer(H, 4);
+  ierr = PetscQuadratureGetData(fem->quadrature, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
   if (!fem->B) {ierr = PetscFEGetTabulation(fem, npoints, points, &fem->B, &fem->D, NULL/*&fem->H*/);CHKERRQ(ierr);}
   if (B) *B = fem->B;
   if (D) *D = fem->D;
