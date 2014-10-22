@@ -1326,6 +1326,7 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
   ierr = PetscLimiterDestroy(&(*fvm)->limiter);CHKERRQ(ierr);
   ierr = PetscFree((*fvm)->fluxWork);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&(*fvm)->quadrature);CHKERRQ(ierr);
+  ierr = PetscFVRestoreTabulation((*fvm), 0, NULL, &(*fvm)->B, &(*fvm)->D, NULL /*&(*fvm)->H*/);CHKERRQ(ierr);
 
   if ((*fvm)->ops->destroy) {ierr = (*(*fvm)->ops->destroy)(*fvm);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(fvm);CHKERRQ(ierr);
@@ -1626,7 +1627,80 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(q, 2);
+  if (!fvm->quadrature) {
+    /* Create default 1-point quadrature */
+    PetscReal     *points, *weights;
+    PetscErrorCode ierr;
+
+    ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &fvm->quadrature);CHKERRQ(ierr);
+    ierr = PetscCalloc1(fvm->dim, &points);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1, &weights);CHKERRQ(ierr);
+    weights[0] = 1.0;
+    ierr = PetscQuadratureSetData(fvm->quadrature, fvm->dim, 1, points, weights);CHKERRQ(ierr);
+  }
   *q = fvm->quadrature;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVGetDefaultTabulation"
+PetscErrorCode PetscFVGetDefaultTabulation(PetscFV fvm, PetscReal **B, PetscReal **D, PetscReal **H)
+{
+  PetscInt         npoints;
+  const PetscReal *points;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  if (B) PetscValidPointer(B, 2);
+  if (D) PetscValidPointer(D, 3);
+  if (H) PetscValidPointer(H, 4);
+  ierr = PetscQuadratureGetData(fvm->quadrature, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
+  if (!fvm->B) {ierr = PetscFVGetTabulation(fvm, npoints, points, &fvm->B, &fvm->D, NULL/*&fvm->H*/);CHKERRQ(ierr);}
+  if (B) *B = fvm->B;
+  if (D) *D = fvm->D;
+  if (H) *H = fvm->H;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVGetTabulation"
+PetscErrorCode PetscFVGetTabulation(PetscFV fvm, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **H)
+{
+  PetscInt         pdim = 1; /* Dimension of approximation space P */
+  PetscInt         dim;      /* Spatial dimension */
+  PetscInt         comp;     /* Field components */
+  PetscInt         p, d, c, e;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  PetscValidPointer(points, 3);
+  if (B) PetscValidPointer(B, 4);
+  if (D) PetscValidPointer(D, 5);
+  if (H) PetscValidPointer(H, 6);
+  ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
+  ierr = PetscFVGetNumComponents(fvm, &comp);CHKERRQ(ierr);
+  if (B) {ierr = PetscMalloc1(npoints*pdim*comp, B);CHKERRQ(ierr);}
+  if (D) {ierr = PetscMalloc1(npoints*pdim*comp*dim, D);CHKERRQ(ierr);}
+  if (H) {ierr = PetscMalloc1(npoints*pdim*comp*dim*dim, H);CHKERRQ(ierr);}
+  if (B) {for (p = 0; p < npoints; ++p) for (d = 0; d < pdim; ++d) for (c = 0; c < comp; ++c) (*B)[(p*pdim + d)*comp + c] = 1.0;}
+  if (D) {for (p = 0; p < npoints; ++p) for (d = 0; d < pdim; ++d) for (c = 0; c < comp; ++c) for (e = 0; e < dim; ++e) (*D)[((p*pdim + d)*comp + c)*dim + e] = 0.0;}
+  if (H) {for (p = 0; p < npoints; ++p) for (d = 0; d < pdim; ++d) for (c = 0; c < comp; ++c) for (e = 0; e < dim*dim; ++e) (*H)[((p*pdim + d)*comp + c)*dim*dim + e] = 0.0;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVRestoreTabulation"
+PetscErrorCode PetscFVRestoreTabulation(PetscFV fvm, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **H)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  if (B && *B) {ierr = PetscFree(*B);CHKERRQ(ierr);}
+  if (D && *D) {ierr = PetscFree(*D);CHKERRQ(ierr);}
+  if (H && *H) {ierr = PetscFree(*H);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
