@@ -1286,6 +1286,50 @@ PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexPartitionLabelClosure"
+/*@
+  DMPlexPartitionLabelClosure - Add the closure of all points to the partition label
+
+  Input Parameters:
++ dm     - The DM
+- label  - DMLabel assinging ranks to remote roots
+
+  Level: developer
+
+.seealso: DMPlexPartitionLabelCreateSF, DMPlexDistribute(), DMPlexCreateOverlap
+@*/
+PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
+{
+  IS              rankIS,   pointIS;
+  const PetscInt *ranks,   *points;
+  PetscInt        numRanks, numPoints, r, p, c, closureSize;
+  PetscInt       *closure = NULL;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetValueIS(label, &rankIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(rankIS, &numRanks);CHKERRQ(ierr);
+  ierr = ISGetIndices(rankIS, &ranks);CHKERRQ(ierr);
+  for (r = 0; r < numRanks; ++r) {
+    const PetscInt rank = ranks[r];
+
+    ierr = DMLabelGetStratumIS(label, rank, &pointIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; ++p) {
+      ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (c = 0; c < closureSize*2; c += 2) {ierr = DMLabelSetValue(label, closure[c], rank);CHKERRQ(ierr);}
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  if (closure) {ierr = DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);}
+  ierr = ISRestoreIndices(rankIS, &ranks);CHKERRQ(ierr);
+  ierr = ISDestroy(&rankIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexPartitionLabelInvert"
 /*@
   DMPlexPartitionLabelInvert - Create a partition label of remote roots from a local root label
