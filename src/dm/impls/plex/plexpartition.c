@@ -605,14 +605,11 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
 
   Input Parameters:
 + part    - The PetscPartitioner
-. dm      - The mesh DM
-- enlarge - Expand each partition with neighbors
+- dm      - The mesh DM
 
   Output Parameters:
 + partSection     - The PetscSection giving the division of points by partition
-. partition       - The list of points by partition
-. origPartSection - If enlarge is true, the PetscSection giving the division of points before enlarging by partition, otherwise NULL
-- origPartition   - If enlarge is true, the list of points before enlarging by partition, otherwise NULL
+- partition       - The list of points by partition
 
   Note: Instead of cells, points at a given height can be partitioned by calling PetscPartitionerSetPointHeight()
 
@@ -620,7 +617,7 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
 
 .seealso DMPlexDistribute(), PetscPartitionerSetPointHeight(), PetscPartitionerCreate()
 @*/
-PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscBool enlarge, PetscSection partSection, IS *partition, PetscSection origPartSection, IS *origPartition)
+PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscSection partSection, IS *partition)
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;
@@ -630,10 +627,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscBool
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscValidHeaderSpecific(partSection, PETSC_SECTION_CLASSID, 4);
   PetscValidPointer(partition, 5);
-  if (enlarge) {PetscValidHeaderSpecific(origPartSection, PETSC_SECTION_CLASSID, 6);}
-  if (enlarge) {PetscValidPointer(origPartition, 7);}
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject) part), &size);CHKERRQ(ierr);
-  if (origPartition) *origPartition = NULL;
   if (size == 1) {
     PetscInt *points;
     PetscInt  cStart, cEnd, c;
@@ -655,12 +649,6 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscBool
     ierr = DMPlexCreateNeighborCSR(dm, 0, &numVertices, &start, &adjacency);CHKERRQ(ierr);
     if (!part->ops->partition) SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_WRONGSTATE, "PetscPartitioner has no type");
     ierr = (*part->ops->partition)(part, dm, size, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
-    if (enlarge) {
-      origPartSection = partSection;
-      *origPartition  = *partition;
-
-      ierr = DMPlexEnlargePartition(dm, start, adjacency, origPartSection, *origPartition, partSection, partition);CHKERRQ(ierr);
-    }
     ierr = PetscFree(start);CHKERRQ(ierr);
     ierr = PetscFree(adjacency);CHKERRQ(ierr);
   } else SETERRQ1(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_OUTOFRANGE, "Invalid height %D for points to partition", part->height);
@@ -1394,7 +1382,8 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
     ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
     ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
     for (p = 0; p < numPoints; ++p) {
-      ierr = PetscFindInt(points[p], nleaves, local, &l);CHKERRQ(ierr);
+      if (local) {ierr = PetscFindInt(points[p], nleaves, local, &l);CHKERRQ(ierr);}
+      else       {l = -1;}
       if (l >= 0) {rootPoints[off+p] = remote[l];}
       else        {rootPoints[off+p].index = points[p]; rootPoints[off+p].rank = rank;}
     }

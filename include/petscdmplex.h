@@ -38,7 +38,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerRegister(const char [], PetscErrorCo
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterDestroy(void);
 
-PETSC_EXTERN PetscErrorCode PetscPartitionerPartition(PetscPartitioner, DM, PetscBool, PetscSection, IS *, PetscSection, IS *);
+PETSC_EXTERN PetscErrorCode PetscPartitionerPartition(PetscPartitioner, DM, PetscSection, IS *);
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner, PetscInt, const PetscInt[], const PetscInt[]);
 
