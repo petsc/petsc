@@ -2247,13 +2247,19 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const 
 #define __FUNCT__ "PetscDualSpaceSimpleSetFunctional_Simple"
 PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp, PetscInt f, PetscQuadrature q)
 {
-  PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
+  PetscDualSpace_Simple *s   = (PetscDualSpace_Simple *) sp->data;
+  PetscReal              vol = 0.0;
+  PetscReal             *weights;
+  PetscInt               Nq, p;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   if ((f < 0) || (f >= s->dim)) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_OUTOFRANGE, "Basis index %d not in [0, %d)", f, s->dim);
-  ierr = PetscObjectReference((PetscObject) q);CHKERRQ(ierr);
-  sp->functional[f] = q;
+  ierr = PetscQuadratureDuplicate(q, &sp->functional[f]);CHKERRQ(ierr);
+  /* Reweight so that it has unit volume */
+  ierr = PetscQuadratureGetData(sp->functional[f], NULL, &Nq, NULL, (const PetscReal **) &weights);CHKERRQ(ierr);
+  for (p = 0; p < Nq; ++p) vol += weights[p];
+  for (p = 0; p < Nq; ++p) weights[p] /= vol;
   PetscFunctionReturn(0);
 }
 
@@ -2297,6 +2303,8 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace sp, PetscInt dim)
 - q - the basis functional
 
   Level: intermediate
+
+  Note: The quadrature will be reweighted so that it has unit volume.
 
 .keywords: PetscDualSpace, functional
 .seealso: PetscDualSpaceSimpleSetDimension()
