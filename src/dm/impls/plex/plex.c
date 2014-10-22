@@ -2669,9 +2669,21 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
   PetscInt      *numDofTot, *pMax;
   PetscInt       depth, pStart = 0, pEnd = 0;
   PetscInt       p, d, dep, f;
+  PetscBool     *isFE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscMalloc1(numFields, &isFE);CHKERRQ(ierr);
+  for (f = 0; f < numFields; ++f) {
+    PetscObject  obj;
+    PetscClassId id;
+
+    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
+    else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
+    else                            {isFE[f] = PETSC_FALSE;}
+  }
   ierr = PetscMalloc1(dim+1, &numDofTot);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     numDofTot[d] = 0;
@@ -2694,9 +2706,10 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
   for (dep = 0; dep <= depth; ++dep) {
     d    = dim == depth ? dep : (!dep ? 0 : dim);
     ierr = DMPlexGetDepthStratum(dm, dep, &pStart, &pEnd);CHKERRQ(ierr);
-    pEnd = pMax[dep] < 0 ? pEnd : pMax[dep];
+    pMax[dep] = pMax[dep] < 0 ? pEnd : pMax[dep];
     for (p = pStart; p < pEnd; ++p) {
       for (f = 0; f < numFields; ++f) {
+        if (isFE[f] && p >= pMax[dep]) continue;
         ierr = PetscSectionSetFieldDof(*section, p, f, numDof[f*(dim+1)+d]);CHKERRQ(ierr);
       }
       ierr = PetscSectionSetDof(*section, p, numDofTot[d]);CHKERRQ(ierr);
@@ -2704,6 +2717,7 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
   }
   ierr = PetscFree(pMax);CHKERRQ(ierr);
   ierr = PetscFree(numDofTot);CHKERRQ(ierr);
+  ierr = PetscFree(isFE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
