@@ -1172,7 +1172,9 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
 
   Level: developer
 
-.seealso DMPlexDistribute(), PetscPartitionerCreate()
+  Note: This gets a borrowed reference, so the user should not destroy this PetscPartitioner.
+
+.seealso DMPlexDistribute(), DMPlexSetPartitioner(), PetscPartitionerCreate()
 @*/
 PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
 {
@@ -1182,6 +1184,37 @@ PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(part, 2);
   *part = mesh->partitioner;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexSetPartitioner"
+/*@
+  DMPlexSetPartitioner - Set the mesh partitioner
+
+  logically collective on dm and part
+
+  Input Parameters:
++ dm - The DM
+- part - The partitioner
+
+  Level: developer
+
+  Note: Any existing PetscPartitioner will be destroyed.
+
+.seealso DMPlexDistribute(), DMPlexGetPartitioner(), PetscPartitionerCreate()
+@*/
+PetscErrorCode DMPlexSetPartitioner(DM dm, PetscPartitioner part)
+{
+  DM_Plex       *mesh = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 2);
+  ierr = PetscObjectReference((PetscObject)part);CHKERRQ(ierr);
+  ierr = PetscPartitionerDestroy(&mesh->partitioner);CHKERRQ(ierr);
+  mesh->partitioner = part;
   PetscFunctionReturn(0);
 }
 
