@@ -27,8 +27,6 @@ typedef struct {
   char          filename[2048];    /* The optional ExodusII file */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
-  PetscBool     refinementUniform; /* Uniformly refine the mesh */
-  PetscInt      refinementRounds;  /* The number of uniform refinements */
   /* Problem definition */
   BCType        bcType;
   CoeffType     variableCoefficient;
@@ -247,8 +245,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->filename[0]         = '\0';
   options->interpolate         = PETSC_FALSE;
   options->refinementLimit     = 0.0;
-  options->refinementUniform   = PETSC_FALSE;
-  options->refinementRounds    = 1;
   options->bcType              = DIRICHLET;
   options->variableCoefficient = COEFF_NONE;
   options->jacobianMF          = PETSC_FALSE;
@@ -273,8 +269,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 #endif
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex12.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex12.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-refinement_uniform", "Uniformly refine the mesh", "ex52.c", options->refinementUniform, &options->refinementUniform, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-refinement_rounds", "The number of uniform refinements", "ex52.c", options->refinementRounds, &options->refinementRounds, NULL);CHKERRQ(ierr);
   bc   = options->bcType;
   ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex12.c",bcTypes,3,bcTypes[options->bcType],&bc,NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
@@ -304,12 +298,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim               = user->dim;
-  const char    *filename          = user->filename;
-  PetscBool      interpolate       = user->interpolate;
-  PetscReal      refinementLimit   = user->refinementLimit;
-  PetscBool      refinementUniform = user->refinementUniform;
-  PetscInt       refinementRounds  = user->refinementRounds;
+  PetscInt       dim             = user->dim;
+  const char    *filename        = user->filename;
+  PetscBool      interpolate     = user->interpolate;
+  PetscReal      refinementLimit = user->refinementLimit;
   size_t         len;
   PetscErrorCode ierr;
 
@@ -352,22 +344,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
-    }
-    /* Use regular refinement in parallel */
-    if (refinementUniform) {
-      PetscInt r;
-
-      ierr = DMPlexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
-      for (r = 0; r < refinementRounds; ++r) {
-        ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
-        if (refinedMesh) {
-          ierr = DMDestroy(dm);CHKERRQ(ierr);
-          *dm  = refinedMesh;
-        }
-      }
+    } else {
+      ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     }
   }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   if (user->bcType == NEUMANN) {
     DMLabel label;
 
