@@ -467,6 +467,7 @@ PetscErrorCode DMPlexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined)
 PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm       comm;
+  DM_Plex       *mesh = (DM_Plex *) boundary->data;
   const PetscInt dim  = 3;
   ::tetgenio     in;
   ::tetgenio     out;
