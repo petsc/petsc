@@ -2272,7 +2272,9 @@ PetscErrorCode  TSSetSensitivity(TS ts,Vec *u,PetscInt numberadjs)
     ierr = PetscObjectReference((PetscObject)u[i]);CHKERRQ(ierr);
   }
   if(ts->vecs_sensi) {
-    ierr = VecDestroyVecs(ts->numberadjs,&ts->vecs_sensi);CHKERRQ(ierr);
+    for (i=0; i<ts->numberadjs; i++) {
+      ierr = VecDestroy(&ts->vecs_sensi[i]);CHKERRQ(ierr);
+    }
   }
   ts->vecs_sensi = u;
   if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of adjoint variables (3rd parameter) is inconsistent with the one set by TSSetSensitivityP()");
@@ -2311,7 +2313,9 @@ PetscErrorCode  TSSetSensitivityP(TS ts,Vec *u,PetscInt numberadjs)
     ierr = PetscObjectReference((PetscObject)u[i]);CHKERRQ(ierr);
   }
   if(ts->vecs_sensip) {
-    ierr = VecDestroyVecs(ts->numberadjs,&ts->vecs_sensip);CHKERRQ(ierr);
+    for (i=0; i<ts->numberadjs; i++) {
+      ierr = VecDestroy(&ts->vecs_sensip[i]);CHKERRQ(ierr);
+    }
   }
   ts->vecs_sensip = u;
   if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of adjoint variables (3rd parameter) is inconsistent with the one set by TSSetSensitivity()");
