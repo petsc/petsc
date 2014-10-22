@@ -184,15 +184,27 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscDS prob, PetscBool bd,
   for (d = 0; d < dim*Nc; ++d)      {u_x[d] = 0.0;}
   if (u_t) for (d = 0; d < Nc; ++d) {u_t[d] = 0.0;}
   for (f = 0; f < Nf; ++f) {
-    PetscFE          fe;
     const PetscReal *basis    = basisField[f];
     const PetscReal *basisDer = basisFieldDer[f];
+    PetscObject      obj;
+    PetscClassId     id;
     PetscInt         Nb, Ncf, b, c, e;
 
-    if (bd) {ierr = PetscDSGetBdDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);}
-    else    {ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);}
-    ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
-    ierr = PetscFEGetNumComponents(fe, &Ncf);CHKERRQ(ierr);
+    if (bd) {ierr = PetscDSGetBdDiscretization(prob, f, &obj);CHKERRQ(ierr);}
+    else    {ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);}
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      PetscFE fe = (PetscFE) obj;
+
+      ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Ncf);CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      PetscFV fv = (PetscFV) obj;
+
+      /* TODO Should also support reconstruction here */
+      Nb   = 1;
+      ierr = PetscFVGetNumComponents(fv, &Ncf);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
     for (d = 0; d < dim*Ncf; ++d) refSpaceDer[d] = 0.0;
     for (b = 0; b < Nb; ++b) {
       for (c = 0; c < Ncf; ++c) {
