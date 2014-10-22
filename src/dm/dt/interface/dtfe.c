@@ -476,7 +476,7 @@ PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscSpace sp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpacePolynomialView_Ascii"
-PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer viewer)
+static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer viewer)
 {
   PetscSpace_Poly  *poly = (PetscSpace_Poly *) sp->data;
   PetscViewerFormat format;
