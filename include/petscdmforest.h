@@ -55,7 +55,7 @@ enum {DM_FOREST_KEEP = 0,
 
 /* flag each cell with an adaptivity count: should match the cell section */
 PETSC_EXTERN PetscErrorCode DMForestSetCellAdaptivityMarkers(DM, PetscInt[], PetscCopyMode);
-PETSC_EXTERN PetscErrorCode DMForestGetCellAdaptivityMarkers(DM, PetscInt *[], PetscCopyMode);
+PETSC_EXTERN PetscErrorCode DMForestGetCellAdaptivityMarkers(DM, PetscInt *[]);
 
 /*J
     DMForestAdaptivityStrategy - String with the name of a PETSc DMForest adaptivity strategy
@@ -82,7 +82,7 @@ PETSC_EXTERN PetscErrorCode DMForestGetGradeFactor(DM, PetscInt *);
 
 /* weights for repartitioning */
 PETSC_EXTERN PetscErrorCode DMForestSetCellWeights(DM, PetscReal[], PetscCopyMode);
-PETSC_EXTERN PetscErrorCode DMForestGetCellWeights(DM, PetscReal *[], PetscCopyMode);
+PETSC_EXTERN PetscErrorCode DMForestGetCellWeights(DM, PetscReal *[]);
 
 /* weight multiplier for refinement level: useful for sub-cycling time steps */
 PETSC_EXTERN PetscErrorCode DMForestSetCellWeightFactor(DM, PetscReal);

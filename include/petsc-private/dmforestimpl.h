@@ -10,6 +10,8 @@
 typedef struct {
   PetscInt                   refct;
   void                       *data;
+  PetscErrorCode             (*createcellchart)(DM,PetscInt*,PetscInt*);
+  PetscErrorCode             (*createcellsf)(DM,PetscSF*);
   PetscBool                  setFromOptions;
   PetscBool                  setup;
   DMForestTopology           topology;

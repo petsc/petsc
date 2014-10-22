@@ -243,7 +243,7 @@ PetscErrorCode DMForestSetPartitionOverlap(DM dm, PetscInt overlap)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMForestGetPartitionOverlap"
-PetscErrorCode DMForestGetPartitionOverlap (DM dm, PetscInt *overlap)
+PetscErrorCode DMForestGetPartitionOverlap(DM dm, PetscInt *overlap)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
 
@@ -256,7 +256,7 @@ PetscErrorCode DMForestGetPartitionOverlap (DM dm, PetscInt *overlap)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMForestSetMinimumRefinement"
-PetscErrorCode DMForestSetMinimumRefinement (DM dm, PetscInt minRefinement)
+PetscErrorCode DMForestSetMinimumRefinement(DM dm, PetscInt minRefinement)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
 
@@ -269,7 +269,7 @@ PetscErrorCode DMForestSetMinimumRefinement (DM dm, PetscInt minRefinement)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMForestGetMinimumRefinement"
-PetscErrorCode DMForestGetMinimumRefinement (DM dm, PetscInt *minRefinement)
+PetscErrorCode DMForestGetMinimumRefinement(DM dm, PetscInt *minRefinement)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
 
@@ -281,51 +281,278 @@ PetscErrorCode DMForestGetMinimumRefinement (DM dm, PetscInt *minRefinement)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMForestSetMinimumRefinement"
-PetscErrorCode DMForestSetMinimumRefinement (DM dm, PetscInt minRefinement)
+#define __FUNCT__ "DMForestSetMaximumRefinement"
+PetscErrorCode DMForestSetMaximumRefinement(DM dm, PetscInt maxRefinement)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the minimum refinement after setup");
-  forest->minRefinement = minRefinement;
+  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the maximum refinement after setup");
+  forest->maxRefinement = maxRefinement;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMForestGetMinimumRefinement"
-PetscErrorCode DMForestGetMinimumRefinement (DM dm, PetscInt *minRefinement)
+#define __FUNCT__ "DMForestGetMaximumRefinement"
+PetscErrorCode DMForestGetMaximumRefinement (DM dm, PetscInt *maxRefinement)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidIntPointer(minRefinement,2);
-  *minRefinement = forest->minRefinement;
+  PetscValidIntPointer(maxRefinement,2);
+  *maxRefinement = forest->maxRefinement;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetAdaptivityStrategy"
+PetscErrorCode DMForestSetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy adaptStrategy)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscFree(forest->adaptStrategy);CHKERRQ(ierr);
+  ierr = PetscStrallocpy((const char *)adaptStrategy,(char **)adaptStrategy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdaptivityStrategy"
+PetscErrorCode DMForestGetAdaptivityStrategy(DM dm, DMForestAdaptivityStrategy *adaptStrategy)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(adaptStrategy,2);
+  *adaptStrategy = forest->adaptStrategy;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetGradeFactor"
+PetscErrorCode DMForestSetGradeFactor(DM dm, PetscInt grade)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the grade factor after setup");
+  forest->gradeFactor = grade;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetGradeFactor"
+PetscErrorCode DMForestGetGradeFactor(DM dm, PetscInt *grade)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(grade,2);
+  *grade = forest->gradeFactor;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetCellWeightsFactor"
+PetscErrorCode DMForestSetCellWeightsFactor(DM dm, PetscReal weightsFactor)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the weights factor after setup");
+  forest->weightsFactor = weightsFactor;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetCellWeightsFactor"
+PetscErrorCode DMForestGetCellWeightsFactor(DM dm, PetscReal *weightsFactor)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidRealPointer(weightsFactor,2);
+  *weightsFactor = forest->weightsFactor;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetCellChart"
+PetscErrorCode DMForestGetCellChart(DM dm, PetscInt *cStart, PetscInt *cEnd)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(cStart,2);
+  PetscValidIntPointer(cEnd,2);
+  if (((forest->cStart == PETSC_DETERMINE) || (forest->cEnd == PETSC_DETERMINE)) && forest->createcellchart) {
+    ierr = forest->createcellchart(dm,&forest->cStart,&forest->cEnd);CHKERRQ(ierr);
+  }
+  *cStart =  forest->cStart;
+  *cEnd   =  forest->cEnd;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetCellSF"
+PetscErrorCode DMForestGetCellSF(DM dm, PetscSF *cellSF)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(cellSF,2);
+  if ((!forest->cellSF) && forest->createcellsf) {
+    ierr = forest->createcellsf(dm,&forest->cellSF);CHKERRQ(ierr);
+  }
+  *cellSF = forest->cellSF;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetAdaptivityMarkers"
+PetscErrorCode DMForestSetAdaptivityMarkers(DM dm, PetscInt markers[], PetscCopyMode copyMode)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscInt       cStart, cEnd;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMForestGetCellChart(dm,&cStart,&cEnd);CHKERRQ(ierr);
+  if (cEnd < cStart) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"cell chart [%d,%d) is not valid",cStart,cEnd);
+  if (copyMode == PETSC_COPY_VALUES) {
+    if (forest->adaptCopyMode != PETSC_OWN_POINTER || forest->adaptMarkers == markers) {
+      ierr = PetscMalloc1(cEnd-cStart,&forest->adaptMarkers);CHKERRQ(ierr);
+    }
+    ierr = PetscMemcpy(forest->adaptMarkers,markers,(cEnd-cStart)*sizeof(*markers));CHKERRQ(ierr);
+    forest->adaptCopyMode = PETSC_OWN_POINTER;
+    PetscFunctionReturn(0);
+  }
+  if (forest->adaptCopyMode == PETSC_OWN_POINTER) {
+    ierr = PetscFree(forest->adaptMarkers);CHKERRQ(ierr);
+  }
+  forest->adaptMarkers  = markers;
+  forest->adaptCopyMode = copyMode;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetAdaptivityMarkers"
+PetscErrorCode DMForestGetAdaptivityMarkers(DM dm, PetscInt **markers)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(markers,2);
+  *markers = forest->adaptMarkers;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetCellWeights"
+PetscErrorCode DMForestSetCellWeights(DM dm, PetscReal weights[], PetscCopyMode copyMode)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+  PetscInt       cStart, cEnd;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMForestGetCellChart(dm,&cStart,&cEnd);CHKERRQ(ierr);
+  if (cEnd < cStart) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"cell chart [%d,%d) is not valid",cStart,cEnd);
+  if (copyMode == PETSC_COPY_VALUES) {
+    if (forest->cellWeightsCopyMode != PETSC_OWN_POINTER || forest->cellWeights == weights) {
+      ierr = PetscMalloc1(cEnd-cStart,&forest->cellWeights);CHKERRQ(ierr);
+    }
+    ierr = PetscMemcpy(forest->cellWeights,weights,(cEnd-cStart)*sizeof(*weights));CHKERRQ(ierr);
+    forest->cellWeightsCopyMode = PETSC_OWN_POINTER;
+    PetscFunctionReturn(0);
+  }
+  if (forest->cellWeightsCopyMode == PETSC_OWN_POINTER) {
+    ierr = PetscFree(forest->cellWeights);CHKERRQ(ierr);
+  }
+  forest->cellWeights  = weights;
+  forest->cellWeightsCopyMode = copyMode;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetCellWeights"
+PetscErrorCode DMForestGetCellWeights(DM dm, PetscReal **weights)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(weights,2);
+  *weights = forest->cellWeights;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestSetWeightCapacity"
+PetscErrorCode DMForestSetWeightCapacity(DM dm, PetscReal capacity)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the weight capacity after setup");
+  if (capacity < 0.) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have negative weight capacity; %f",capacity);
+  forest->weightCapacity = capacity;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMForestGetWeightCapacity"
+PetscErrorCode DMForestGetWeightCapacity(DM dm, PetscReal *capacity)
+{
+  DM_Forest      *forest = (DM_Forest *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidRealPointer(capacity,2);
+  *capacity = forest->weightCapacity;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Forest"
 PetscErrorCode DMSetFromFromOptions_Forest(DM dm)
 {
-  DM_Forest        *forest = (DM_Forest *) dm->data;
-  PetscBool        flg;
-  DMForestTopology oldTopo;
-  char             topology[256];
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscInt         adjDim, adjCodim, overlap, minRefinement;
-  PetscErrorCode   ierr;
+  DM_Forest                  *forest = (DM_Forest *) dm->data;
+  PetscBool                  flg;
+  DMForestTopology           oldTopo;
+  char                       stringBuffer[256];
+  PetscViewer                viewer;
+  PetscViewerFormat          format;
+  PetscInt                   adjDim, adjCodim, overlap, minRefinement, maxRefinement, grade;
+  PetscReal                  weightsFactor;
+  DMForestAdaptivityStrategy adaptStrategy;
+  PetscErrorCode             ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   forest->setFromOptions = PETSC_TRUE;
   ierr = PetscOptionsHead("DMForest Options");CHKERRQ(ierr);
   ierr = DMForestGetTopology(dm, &oldTopo);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,topology,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-dm_forest_topology","the topology of the forest's base mesh","DMForestSetTopology",oldTopo,stringBuffer,256,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = DMForestSetTopology(dm,(DMForestTopology)topology);CHKERRQ(ierr);
+    ierr = DMForestSetTopology(dm,(DMForestTopology)stringBuffer);CHKERRQ(ierr);
   }
   ierr = PetscOptionsViewer("-dm_forest_base_dm","load the base DM from a viewer specification","DMForestSetBaseDM",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -382,6 +609,26 @@ PetscErrorCode DMSetFromFromOptions_Forest(DM dm)
   if (flg) {
     ierr = DMForestSetMinimumRefinement(dm,minRefinement);CHKERRQ(ierr);
   }
+  ierr = DMForestGetMaximumRefinement(dm,&maxRefinement);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_forest_maximum_refinement","set the maximum level of refinement in the forest","DMForestSetMaximumRefinement",maxRefinement,&maxRefinement,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetMaximumRefinement(dm,maxRefinement);CHKERRQ(ierr);
+  }
+  ierr = DMForestGetAdaptivityStrategy(dm,&adaptStrategy);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-dm_forest_adaptivity_strategy","the forest's adaptivity-flag resolution strategy","DMForestSetAdaptivityStrategy",adaptStrategy,stringBuffer,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetAdaptivityStrategy(dm,(DMForestAdaptivityStrategy)stringBuffer);CHKERRQ(ierr);
+  }
+  ierr = DMForestGetGradeFactor(dm,&grade);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dm_forest_grade_factor","grade factor between neighboring cells","DMForestSetGradeFactor",grade,&grade,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetGradeFactor(dm,grade);CHKERRQ(ierr);
+  }
+  ierr = DMForestGetCellWeightFactor(dm,&weightsFactor);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dm_forest_cell_weight_factor","multiplying weight factor for cell refinement","DMForestSetCellWeightFactor",weightsFactor,&weightsFactor,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMForestSetCellWeightFactor(dm,weightsFactor);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -410,8 +657,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   forest->overlap             = PETSC_DEFAULT;
   forest->minRefinement       = PETSC_DEFAULT;
   forest->maxRefinement       = PETSC_DEFAULT;
-  forest->cStart              = 0;
-  forest->cEnd                = 0;
+  forest->cStart              = PETSC_DETERMINE;
+  forest->cEnd                = PETSC_DETERMINE;
   forest->cellSF              = 0;
   forest->adaptMarkers        = NULL;
   forest->adaptCopyMode       = PETSC_USE_POINTER;
