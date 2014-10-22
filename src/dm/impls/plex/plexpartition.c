@@ -768,14 +768,19 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
 /*@C
   PetscPartitionerShellSetPartition - Set an artifical partition for a mesh
 
-  Collective on DM
+  Collective on PART
 
   Input Parameters:
-+ part    - The PetscPartitioner
-. dm      - The mesh DM
-- enlarge - Expand each partition with neighbors
++ part     - The PetscPartitioner
+. numProcs - The number of partitions
+. sizes    - array of size numProcs (or NULL) providing the number of points in each partition
+- points   - array of size sum(sizes) (may be NULL iff sizes is NULL) providing the partition each point belongs to
 
   Level: developer
+
+  Notes:
+
+    It is safe to free the sizes and points arrays after use in this routine.
 
 .seealso DMPlexDistribute(), PetscPartitionerCreate()
 @*/
