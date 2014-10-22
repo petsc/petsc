@@ -1,7 +1,8 @@
-ALL: lib
 
-DIRS     = p4est
-LOCDIR   = src/dm/impls/forest/impls/
+ALL:
+
+LOCDIR	 = src/dm/impls/forest/examples/
+DIRS	 = tutorials
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

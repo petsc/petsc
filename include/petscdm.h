@@ -30,6 +30,8 @@ typedef const char* DMType;
 #define DMPATCH     "patch"
 #define DMMOAB      "moab"
 #define DMNETWORK   "network"
+#define DMP4EST     "p4est"
+#define DMP8EST     "p8est"
 
 PETSC_EXTERN const char *const DMBoundaryTypes[];
 PETSC_EXTERN PetscFunctionList DMList;

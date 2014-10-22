@@ -10,14 +10,14 @@
 typedef struct {
   PetscInt                   refct;
   void                       *data;
+  PetscBool                  setFromOptions;
   PetscBool                  setup;
-  DMForestType               type;
   DMForestTopology           topology;
   DM                         base;
   DM                         coarse;
   DM                         fine;
   PetscInt                   adjDim;
-  PestcInt                   overlap;
+  PetscInt                   overlap;
   PetscInt                   minRefinement;
   PetscInt                   maxRefinement;
   PetscInt                   cStart;
@@ -27,7 +27,7 @@ typedef struct {
   PetscCopyMode              adaptCopyMode;
   DMForestAdaptivityStrategy adaptStrategy;
   PetscInt                   gradeFactor;
-  PestcReal                  *cellWeights;
+  PetscReal                  *cellWeights;
   PetscCopyMode              cellWeightsCopyMode;
   PetscReal                  weightsFactor;
   PetscReal                  weightCapacity;

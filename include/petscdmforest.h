@@ -7,21 +7,6 @@
 #include <petscdm.h>
 
 /*J
-    DMForestType - String with the name of a PETSc DMForest implementation
-
-   Level: beginner
-
-.seealso: DMForestSetType(), DMForest
-J*/
-typedef const char* DMForestType;
-#define DMFORESTP4EST "p4est"
-#define DMFORESTP8EST "p8est"
-
-PETSC_EXTERN PetscErrorCode DMForestCreate(MPI_Comm, DM *);
-PETSC_EXTERN PetscErrorCode DMForestSetType(DM, DMForestType);
-PETSC_EXTERN PetscErrorCode DMForestGetType(DM, DMForestType *);
-
-/*J
     DMForestTopology - String with the name of a PETSc DMForest base mesh topology
 
    Level: beginner
