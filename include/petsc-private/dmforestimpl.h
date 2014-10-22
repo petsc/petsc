@@ -35,4 +35,6 @@ typedef struct {
   PetscReal                  weightCapacity;
 } DM_Forest;
 
+PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM);
+
 #endif /* _FORESTIMPL_H */
