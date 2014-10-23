@@ -393,9 +393,12 @@ PetscErrorCode  TSSetCheckpoint(TS ts,PetscBool checkpoint)
 @*/
 PetscErrorCode  TSSetReverseMode(TS ts,PetscBool reverse_mode)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ts->reverse_mode = reverse_mode;
+  ts->setupcalled  = PETSC_FALSE; 
+  ierr = TSSetUp(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1890,7 +1893,6 @@ PetscErrorCode  TSSetUp(TS ts)
       ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
     }
   }
-
   if (ts->ops->setup) {
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
   }
@@ -1934,7 +1936,6 @@ PetscErrorCode  TSSetUp(TS ts)
 @*/
 PetscErrorCode  TSReset(TS ts)
 {
-  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1953,13 +1954,9 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
   if (ts->reverse_mode) {
-    for (i=0; i<ts->numberadjs; i++) {
-      ierr = VecDestroy(&ts->vecs_sensi[i]);CHKERRQ(ierr);
-    }
+    ts->vecs_sensi = 0;
     if (ts->vecs_sensip) {
-      for (i=0; i<ts->numberadjs; i++) {
-        ierr = VecDestroy(&ts->vecs_sensip[i]);CHKERRQ(ierr);
-      }
+      ts->vecs_sensip = 0;
       ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
     }
   }
@@ -2261,27 +2258,13 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
 @*/
 PetscErrorCode  TSSetSensitivity(TS ts,Vec *u,PetscInt numberadjs)
 {
-  PetscErrorCode ierr;
-  DM             dm;
-  PetscInt       i;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(u,2);
-  for (i=0; i<numberadjs; i++) {
-    ierr = PetscObjectReference((PetscObject)u[i]);CHKERRQ(ierr);
-  }
-  if(ts->vecs_sensi) {
-    for (i=0; i<ts->numberadjs; i++) {
-      ierr = VecDestroy(&ts->vecs_sensi[i]);CHKERRQ(ierr);
-    }
-  }
   ts->vecs_sensi = u;
   if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of adjoint variables (3rd parameter) is inconsistent with the one set by TSSetSensitivityP()");
   ts->numberadjs = numberadjs;
 
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMShellSetGlobalVector(dm,u[0]);CHKERRQ(ierr); /* is this necessary?*/
   PetscFunctionReturn(0);
 }
 
@@ -2303,20 +2286,9 @@ PetscErrorCode  TSSetSensitivity(TS ts,Vec *u,PetscInt numberadjs)
 @*/
 PetscErrorCode  TSSetSensitivityP(TS ts,Vec *u,PetscInt numberadjs)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(u,2);
-  for (i=0; i<numberadjs; i++) {
-    ierr = PetscObjectReference((PetscObject)u[i]);CHKERRQ(ierr);
-  }
-  if(ts->vecs_sensip) {
-    for (i=0; i<ts->numberadjs; i++) {
-      ierr = VecDestroy(&ts->vecs_sensip[i]);CHKERRQ(ierr);
-    }
-  }
   ts->vecs_sensip = u;
   if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of adjoint variables (3rd parameter) is inconsistent with the one set by TSSetSensitivity()");
   ts->numberadjs = numberadjs;
