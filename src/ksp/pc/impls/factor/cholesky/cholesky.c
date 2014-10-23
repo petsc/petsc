@@ -19,10 +19,9 @@ typedef struct {
 #define __FUNCT__ "PCFactorSetReuseOrdering_Cholesky"
 static PetscErrorCode  PCFactorSetReuseOrdering_Cholesky(PC pc,PetscBool flag)
 {
-  PC_Cholesky *lu;
+  PC_Cholesky *lu = (PC_Cholesky*)pc->data;
 
   PetscFunctionBegin;
-  lu                = (PC_Cholesky*)pc->data;
   lu->reuseordering = flag;
   PetscFunctionReturn(0);
 }
@@ -31,10 +30,9 @@ static PetscErrorCode  PCFactorSetReuseOrdering_Cholesky(PC pc,PetscBool flag)
 #define __FUNCT__ "PCFactorSetReuseFill_Cholesky"
 static PetscErrorCode  PCFactorSetReuseFill_Cholesky(PC pc,PetscBool flag)
 {
-  PC_Cholesky *lu;
+  PC_Cholesky *lu = (PC_Cholesky*)pc->data;
 
   PetscFunctionBegin;
-  lu            = (PC_Cholesky*)pc->data;
   lu->reusefill = flag;
   PetscFunctionReturn(0);
 }
