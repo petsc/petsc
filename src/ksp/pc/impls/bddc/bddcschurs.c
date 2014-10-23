@@ -190,7 +190,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I
 
     /* setup Schur complements on subset */
     ierr = MatCreateSchurComplement(AE_II,AE_II,AE_IE,AE_EI,AE_EE,&sub_schurs->S_Ej[i]);CHKERRQ(ierr);
-    ierr = MatGetVecs(sub_schurs->S_Ej[i],&sub_schurs->work1[i],&sub_schurs->work2[i]);CHKERRQ(ierr);
+    ierr = MatCreateVecs(sub_schurs->S_Ej[i],&sub_schurs->work1[i],&sub_schurs->work2[i]);CHKERRQ(ierr);
     if (AE_II == A_II) { /* we can reuse the same ksp */
       KSP ksp;
       ierr = MatSchurComplementGetKSP(S,&ksp);CHKERRQ(ierr);

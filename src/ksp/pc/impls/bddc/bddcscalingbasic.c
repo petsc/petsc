@@ -738,7 +738,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
       ierr = MatDestroy(&color_mat_is);CHKERRQ(ierr);
 
       /* work vector for (parallel) extended dirichlet problem */
-      ierr = MatGetVecs(color_mat,&deluxe_ctx->par_vec[i],NULL);CHKERRQ(ierr);
+      ierr = MatCreateVecs(color_mat,&deluxe_ctx->par_vec[i],NULL);CHKERRQ(ierr);
 
       /* compute scatters */
       /* deluxe_ctx->par_scctx_p[i] extension from local subset to extended dirichlet problem
@@ -951,7 +951,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ierr = PetscFree2(dummy_idx,fill_vals);CHKERRQ(ierr);
 
   /* Create work vectors for sequential part of deluxe */
-  ierr = MatGetVecs(deluxe_ctx->seq_mat,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
+  ierr = MatCreateVecs(deluxe_ctx->seq_mat,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
 
   /* Compute deluxe sequential scatter */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size,all_local_idx_B,PETSC_OWN_POINTER,&is_from);CHKERRQ(ierr);
