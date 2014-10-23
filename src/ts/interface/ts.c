@@ -376,7 +376,7 @@ PetscErrorCode  TSSetCheckpoint(TS ts,PetscBool checkpoint)
 #undef __FUNCT__
 #define __FUNCT__ "TSSetReverseMode"
 /*@
-   TSSetRunMode - Allows one to reset the run mode, 
+   TSSetReverseMode - Allows one to reset the run mode, 
    useful for adjoint sensitivity analysis.
 
    Collective on TS
