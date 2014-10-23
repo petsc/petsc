@@ -1129,6 +1129,29 @@ PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCGetReusePreconditioner"
+/*@
+   PCGetReusePreconditioner - Determines if the PC will reuse the current preconditioner even if the operator in the preconditioner has changed.
+
+   Logically Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
+
+.seealso: PCGetOperators(), MatZeroEntries(), PCSetReusePreconditioner()
+ @*/
+PetscErrorCode  PCGetReusePreconditioner(PC pc,PetscBool *flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  *flag  = pc->reusepreconditioner;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCGetOperators"
 /*@C
    PCGetOperators - Gets the matrix associated with the linear system and
@@ -1717,6 +1740,35 @@ PetscErrorCode  PCSetInitialGuessNonzero(PC pc,PetscBool flg)
   PetscFunctionBegin;
   PetscValidLogicalCollectiveBool(pc,flg,2);
   pc->nonzero_guess = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGetInitialGuessNonzero"
+/*@
+   PCGetInitialGuessNonzero - Determines if the iterative solver assumes that the
+   initial guess is nonzero; otherwise PC assumes the initial guess
+   is to be zero (and thus zeros it out before solving).
+
+   Logically Collective on PC
+
+   Input Parameter:
+.   pc - iterative context obtained from PCCreate()
+
+   Output Parameter:
+.  flg - PETSC_TRUE indicates the guess is non-zero, PETSC_FALSE indicates the guess is zero
+
+   Level: Developer
+
+.keywords: PC, set, initial guess, nonzero
+
+.seealso: PCGetInitialGuessNonzero(), PCSetInitialGuessKnoll(), PCGetInitialGuessKnoll(), PCSetInitialGuessNonzero()
+@*/
+PetscErrorCode  PCGetInitialGuessNonzero(PC pc,PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveBool(pc,flg,2);
+  *flg = pc->nonzero_guess;
   PetscFunctionReturn(0);
 }
 

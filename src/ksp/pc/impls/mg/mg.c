@@ -880,7 +880,36 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
   PetscValidLogicalCollectiveEnum(pc,form,2);
   mg->am = form;
   if (form == PC_MG_MULTIPLICATIVE) pc->ops->applyrichardson = PCApplyRichardson_MG;
-  else pc->ops->applyrichardson = 0;
+  else pc->ops->applyrichardson = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCMGGetType - Determines the form of multigrid to use:
+   multiplicative, additive, full, or the Kaskade algorithm.
+
+   Logically Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  type - one of PC_MG_MULTIPLICATIVE, PC_MG_ADDITIVE,PC_MG_FULL, PC_MG_KASKADE
+
+
+   Level: advanced
+
+.keywords: MG, set, method, multiplicative, additive, full, Kaskade, multigrid
+
+.seealso: PCMGSetLevels()
+@*/
+PetscErrorCode  PCMGGetType(PC pc,PCMGType *type)
+{
+  PC_MG *mg = (PC_MG*)pc->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  *type = mg->am;
   PetscFunctionReturn(0);
 }
 

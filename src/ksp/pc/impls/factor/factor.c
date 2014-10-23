@@ -182,7 +182,7 @@ PetscErrorCode  PCFactorGetLevels(PC pc,PetscInt *levels)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorGetLevels_C",(PC,PetscInt*),(pc,levels));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCFactorGetLevels_C",(PC,PetscInt*),(pc,levels));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -284,7 +284,7 @@ PetscErrorCode  PCFactorGetAllowDiagonalFill(PC pc,PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorGetAllowDiagonalFill_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCFactorGetAllowDiagonalFill_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -498,7 +498,7 @@ PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorGetUseInPlace_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCFactorGetUseInPlace_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

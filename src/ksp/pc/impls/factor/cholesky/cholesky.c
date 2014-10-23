@@ -270,7 +270,6 @@ PetscErrorCode  PCFactorSetReuseOrdering(PC pc,PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
    PCCHOLESKY - Uses a direct solver, based on Cholesky factorization, as a preconditioner
 
