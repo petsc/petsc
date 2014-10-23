@@ -3,7 +3,7 @@ import os
 
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
-    PETSc.package.NewPackage.__init__(self, framework)
+    config.package.GNUPackage.__init__(self, framework)
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.16i.tar.gz']
     self.complex           = 1
     self.double            = 0
