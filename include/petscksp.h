@@ -156,13 +156,13 @@ PETSC_EXTERN PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscRe
 
   KSPFCGTruncationType - Define how stored directions are used to orthogonalize in FCG
 
-  KSP_FCG_TRUNCATION_TYPE_STANDARD uses all (up to mmax) stored directions
-  KSP_FCG_TRUNCATION_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
+  KSP_FCG_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
+  KSP_FCG_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
 
 .seealso : KSPFCG,KSPFCGSetTruncationType(),KSPFCGGetTruncationType()
 
 E*/
-typedef enum {KSP_FCG_TRUNCATION_TYPE_STANDARD,KSP_FCG_TRUNCATION_TYPE_NOTAY} KSPFCGTruncationType;
+typedef enum {KSP_FCG_TRUNC_TYPE_STANDARD,KSP_FCG_TRUNC_TYPE_NOTAY} KSPFCGTruncationType;
 PETSC_EXTERN const char *const KSPFCGTruncationTypes[];
 
 PETSC_EXTERN PetscErrorCode KSPFCGSetMmax(KSP,PetscInt);

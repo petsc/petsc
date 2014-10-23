@@ -5,12 +5,12 @@
 
 #include <../src/ksp/ksp/impls/fcg/fcgimpl.h>       /*I  "petscksp.h"  I*/
 
-const char *const KSPFCGTruncationTypes[]     = {"STANDARD","NOTAY","KSPFCGTrunctionTypes","KSP_FCG_TRUNCATION_TYPE_",0};
+const char *const KSPFCGTruncationTypes[]     = {"STANDARD","NOTAY","KSPFCGTrunctionTypes","KSP_FCG_TRUNC_TYPE_",0};
 
 #define KSPFCG_DEFAULT_MMAX 30
 #define KSPFCG_DEFAULT_NPREALLOC 10
 #define KSPFCG_DEFAULT_VECB 5
-#define KSPFCG_DEFAULT_TRUNCSTRAT KSP_FCG_TRUNCATION_TYPE_NOTAY
+#define KSPFCG_DEFAULT_TRUNCSTRAT KSP_FCG_TRUNC_TYPE_NOTAY
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPAllocateVectors_FCG"
@@ -161,10 +161,10 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
 
     /* Compute a new column of P (Currently does not support modified G-S or iterative refinement)*/
     switch(fcg->truncstrat){
-      case KSP_FCG_TRUNCATION_TYPE_NOTAY :
+      case KSP_FCG_TRUNC_TYPE_NOTAY :
         mi = PetscMax(1,i%(fcg->mmax+1));
         break;
-      case KSP_FCG_TRUNCATION_TYPE_STANDARD :
+      case KSP_FCG_TRUNC_TYPE_STANDARD :
         mi = fcg->mmax;
         break;
       default:
@@ -285,9 +285,9 @@ PetscErrorCode KSPView_FCG(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
 
-  if(fcg->truncstrat == KSP_FCG_TRUNCATION_TYPE_STANDARD){
+  if(fcg->truncstrat == KSP_FCG_TRUNC_TYPE_STANDARD){
     truncstr = "Using standard truncation strategy";
-  }else if(fcg->truncstrat == KSP_FCG_TRUNCATION_TYPE_NOTAY){
+  }else if(fcg->truncstrat == KSP_FCG_TRUNC_TYPE_NOTAY){
     truncstr = "Using Notay's truncation strategy";
   }else{
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Undefined FCG truncation strategy");
@@ -442,8 +442,8 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp,PetscInt *nprealloc)
 
   Logically Collective on KSP
 
-  KSP_FCG_TRUNCATION_TYPE_STANDARD uses all (up to mmax) stored directions
-  KSP_FCG_TRUNCATION_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
+  KSP_FCG_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
+  KSP_FCG_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
 
   Input Parameters:
 +  ksp - the Krylov space context
