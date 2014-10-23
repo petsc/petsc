@@ -505,7 +505,7 @@ int main(int argc,char ** argv)
   if (size > 1) {
     DM distnetworkdm;
     /* Network partitioning and distribution of data */
-    ierr = DMNetworkDistribute(networkdm,"chaco",0,&distnetworkdm);CHKERRQ(ierr);
+    ierr = DMNetworkDistribute(networkdm,0,&distnetworkdm);CHKERRQ(ierr);
     ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
     networkdm = distnetworkdm;
   }
