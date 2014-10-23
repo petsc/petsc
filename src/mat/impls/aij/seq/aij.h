@@ -21,8 +21,6 @@
   PetscInt          rmax;             /* max nonzeros in any row */ \
   PetscBool         keepnonzeropattern;   /* keeps matrix structure same in calls to MatZeroRows()*/ \
   PetscBool         ignorezeroentries; \
-  PetscInt          *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */ \
-  Mat               XtoY;             /* used by MatAXPY() */ \
   PetscBool         free_ij;          /* free the column indices j and row offsets i when the matrix is destroyed */ \
   PetscBool         free_a;           /* free the numerical values when matrix is destroy */ \
   Mat_CompressedRow compressedrow;    /* use compressed row format */                      \

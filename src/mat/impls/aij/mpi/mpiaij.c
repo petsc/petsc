@@ -726,10 +726,6 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 
   aij->rowvalues = 0;
 
-  /* used by MatAXPY() */
-  a->xtoy = 0; ((Mat_SeqAIJ*)aij->B->data)->xtoy = 0;   /* b->xtoy = 0 */
-  a->XtoY = 0; ((Mat_SeqAIJ*)aij->B->data)->XtoY = 0;   /* b->XtoY = 0 */
-
   ierr = VecDestroy(&aij->diag);CHKERRQ(ierr);
   if (a->inode.size) mat->ops->multdiagonalblock = MatMultDiagonalBlock_MPIAIJ;
 
@@ -2187,7 +2183,6 @@ static PetscErrorCode MatAXPYGetPreallocation_MPIAIJ(Mat Y,const PetscInt *yltog
 PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
   Mat_MPIAIJ     *xx = (Mat_MPIAIJ*)X->data,*yy = (Mat_MPIAIJ*)Y->data;
   PetscBLASInt   bnz,one=1;
   Mat_SeqAIJ     *x,*y;
@@ -2203,22 +2198,6 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     y    = (Mat_SeqAIJ*)yy->B->data;
     ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
-    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
-  } else if (str == SUBSET_NONZERO_PATTERN) {
-    ierr = MatAXPY_SeqAIJ(yy->A,a,xx->A,str);CHKERRQ(ierr);
-
-    x = (Mat_SeqAIJ*)xx->B->data;
-    y = (Mat_SeqAIJ*)yy->B->data;
-    if (y->xtoy && y->XtoY != xx->B) {
-      ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
-      ierr = MatDestroy(&y->XtoY);CHKERRQ(ierr);
-    }
-    if (!y->xtoy) { /* get xtoy */
-      ierr    = MatAXPYGetxtoy_Private(xx->B->rmap->n,x->i,x->j,xx->garray,y->i,y->j,yy->garray,&y->xtoy);CHKERRQ(ierr);
-      y->XtoY = xx->B;
-      ierr    = PetscObjectReference((PetscObject)xx->B);CHKERRQ(ierr);
-    }
-    for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += a*(x->a[i]);
     ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   } else {
     Mat      B;

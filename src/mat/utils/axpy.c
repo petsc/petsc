@@ -21,7 +21,7 @@
 
 .seealso: MatAYPX()
  @*/
-PetscErrorCode  MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
+PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
   PetscInt       m1,m2,n1,n2;
@@ -361,45 +361,6 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
   ierr = VecDestroy(&in);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* Get the map xtoy which is used by MatAXPY() in the case of SUBSET_NONZERO_PATTERN */
-#undef __FUNCT__
-#define __FUNCT__ "MatAXPYGetxtoy_Private"
-PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,PetscInt *xgarray, PetscInt *yi,PetscInt *yj,PetscInt *ygarray, PetscInt **xtoy)
-{
-  PetscErrorCode ierr;
-  PetscInt       row,i,nz,xcol,ycol,jx,jy,*x2y;
-
-  PetscFunctionBegin;
-  ierr = PetscMalloc1(xi[m],&x2y);CHKERRQ(ierr);
-  i    = 0;
-  for (row=0; row<m; row++) {
-    nz = xi[1] - xi[0];
-    jy = 0;
-    for (jx=0; jx<nz; jx++,jy++) {
-      if (xgarray && ygarray) {
-        xcol = xgarray[xj[*xi + jx]];
-        ycol = ygarray[yj[*yi + jy]];
-      } else {
-        xcol = xj[*xi + jx];
-        ycol = yj[*yi + jy];  /* col index for y */
-      }
-      while (ycol < xcol) {
-        jy++;
-        if (ygarray) {
-          ycol = ygarray[yj[*yi + jy]];
-        } else {
-          ycol = yj[*yi + jy];
-        }
-      }
-      if (xcol != ycol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"X matrix entry (%D,%D) is not in Y matrix",row,ycol);
-      x2y[i++] = *yi + jy;
-    }
-    xi++; yi++;
-  }
-  *xtoy = x2y;
   PetscFunctionReturn(0);
 }
 
