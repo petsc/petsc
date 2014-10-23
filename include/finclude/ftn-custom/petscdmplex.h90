@@ -203,7 +203,7 @@
       Interface
         Subroutine DMPlexCreateSection(m,d,nF,nC,nD,nB,bF,bP,pm,sc,ierr)
           USE_DMPLEX_HIDE
-          PETSCSECTION_HIDE section
+          PETSCSECTION_HIDE sc
           PetscInt     d, nF, nB
           PetscInt, pointer :: nC(:)
           PetscInt, pointer :: nD(:)
