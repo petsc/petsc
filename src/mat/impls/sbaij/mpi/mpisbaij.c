@@ -2964,7 +2964,6 @@ PetscErrorCode MatGetRedundantMatrix_MPISBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm
       ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
       ierr = PetscCommDuplicate(psubcomm->comm,&subcomm,NULL);CHKERRQ(ierr);
       newsubcomm = PETSC_TRUE;
-      if (psubcomm->type == PETSC_SUBCOMM_INTERLACED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported");
       ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
     } else { /* retrieve psubcomm and subcomm */
       ierr = PetscObjectGetComm((PetscObject)(*matredundant),&subcomm);CHKERRQ(ierr);
