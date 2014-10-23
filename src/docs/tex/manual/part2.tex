@@ -2566,7 +2566,7 @@ Some of the options for ILU preconditioner are
   PCFactorSetDropTolerance(PC pc,double dt,double dtcol,int dtcount);\\
   PCFactorSetReuseFill(PC pc,PetscBool  flag);\\
   PCFactorSetUseInPlace(PC pc,PetscBool flg); \\
-  PCFactorSetAllowDiagonalFill(PC pc);
+  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg);
 \end{tabbing}
 
 When repeatedly solving linear systems with the same KSP

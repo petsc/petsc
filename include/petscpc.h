@@ -224,7 +224,8 @@ PETSC_EXTERN PetscErrorCode PCFactorSetReuseOrdering(PC,PetscBool );
 PETSC_EXTERN PetscErrorCode PCFactorSetReuseFill(PC,PetscBool );
 PETSC_EXTERN PetscErrorCode PCFactorSetUseInPlace(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCFactorGetUseInPlace(PC,PetscBool*);
-PETSC_EXTERN PetscErrorCode PCFactorSetAllowDiagonalFill(PC);
+PETSC_EXTERN PetscErrorCode PCFactorSetAllowDiagonalFill(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCFactorGetAllowDiagonalFill(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCFactorSetPivotInBlocks(PC,PetscBool );
 
 PETSC_EXTERN PetscErrorCode PCFactorGetLevels(PC,PetscInt*);

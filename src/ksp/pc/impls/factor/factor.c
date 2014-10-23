@@ -226,6 +226,7 @@ PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
 
    Input Parameters:
 +  pc - the preconditioner context
+-  flg - PETSC_TRUE to turn on, PETSC_FALSE to turn off
 
    Options Database Key:
 .  -pc_factor_diagonal_fill
@@ -236,14 +237,54 @@ PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
    Level: intermediate
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
+
+.seealso: PCFactorGetAllowDiagonalFill()
+
 @*/
-PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc)
+PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetAllowDiagonalFill_C",(PC),(pc));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCFactorSetAllowDiagonalFill_C",(PC,PetscBool),(pc,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorGetAllowDiagonalFill"
+/*@
+   PCFactorGetAllowDiagonalFill - Determines if all diagonal matrix entries are
+       treated as level 0 fill even if there is no non-zero location.
+
+   Logically Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.   flg - PETSC_TRUE to turn on, PETSC_FALSE to turn off
+
+   Options Database Key:
+.  -pc_factor_diagonal_fill
+
+   Notes:
+   Does not apply with 0 fill.
+
+   Level: intermediate
+
+.keywords: PC, levels, fill, factorization, incomplete, ILU
+
+.seealso: PCFactorSetAllowDiagonalFill()
+
+@*/
+PetscErrorCode  PCFactorGetAllowDiagonalFill(PC pc,PetscBool *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCFactorGetAllowDiagonalFill_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -259,7 +300,7 @@ PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc)
 -  tol - diagonal entries smaller than this in absolute value are considered zero
 
    Options Database Key:
-.  -pc_factor_nonzeros_along_diagonal
+.  -pc_factor_nonzeros_along_diagonal <tol>
 
    Level: intermediate
 
