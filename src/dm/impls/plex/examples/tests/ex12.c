@@ -9,6 +9,7 @@ typedef struct {
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   PetscInt  overlap;                      /* The cell overlap to use during partitioning */
   PetscBool testPartition;                /* Use a fixed partitioning for testing */
+  PetscBool loadBalance;                  /* Load balance via a second distribute step */
 } AppCtx;
 
 #undef __FUNCT__
@@ -22,6 +23,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->cellSimplex = PETSC_TRUE;
   options->filename[0] = '\0';
   options->overlap     = 0;
+  options->loadBalance = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex12.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
@@ -29,6 +31,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsString("-filename", "The mesh file", "ex12.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-overlap", "The cell overlap for partitioning", "ex12.c", options->overlap, &options->overlap, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex12.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-load_balance", "Perform parallel load balancing in a second distribution step", "ex12.c", options->loadBalance, &options->loadBalance, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
@@ -43,6 +46,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   const char    *filename        = user->filename;
   PetscInt       triSizes_n3[3]  = {3, 2, 3};
   PetscInt       triPoints_n3[8] = {3, 5, 6, 1, 7, 0, 2, 4};
+  PetscInt       triSizes_n4[4]  = {2, 2, 2, 2};
+  PetscInt       triPoints_n4[8] = {0, 7, 1, 5, 2, 3, 4, 6};
   PetscInt       triSizes_n8[8]  = {1, 1, 1, 1, 1, 1, 1, 1};
   PetscInt       triPoints_n8[8] = {0, 1, 2, 3, 4, 5, 6, 7};
   PetscInt       quadSizes[2]    = {2, 2};
@@ -88,6 +93,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (!rank) {
       if (dim == 2 && cellSimplex && numProcs == 3) {
         sizes = triSizes_n3; points = triPoints_n3;
+      } else if (dim == 2 && cellSimplex && numProcs == 4) {
+        sizes = triSizes_n4; points = triPoints_n4;
       } else if (dim == 2 && cellSimplex && numProcs == 8) {
         sizes = triSizes_n8; points = triPoints_n8;
       } else if (dim == 2 && !cellSimplex && numProcs == 2) {
@@ -103,90 +110,23 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = distMesh;
   }
+  if (user->loadBalance) {
+    /* Perform load balancing via ParMetis */
+    PetscPartitioner part;
+    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERPARMETIS);CHKERRQ(ierr);
+
+    ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
+    if (distMesh) {
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = distMesh;
+    }
+  }
   ierr = PetscObjectSetName((PetscObject) *dm, cellSimplex ? "Simplicial Mesh" : "Tensor Product Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#include <petscsf.h>
-
-#undef __FUNCT__
-#define __FUNCT__ "ParallelOverlap"
-PetscErrorCode ParallelOverlap(DM dm, AppCtx *user)
-{
-  MPI_Comm           comm;
-  PetscSF            sfPoint;
-  PetscSection       rootSection, leafSection;
-  IS                 rootrank, leafrank;
-  PetscSF            overlapSF, migrationSF;
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  if (user->overlap >= 0) PetscFunctionReturn(0);
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "Calculating parallel overlap partition\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
-  /* Make SF two-sided: Get owner information for shared points */
-  ierr = PetscSectionCreate(comm, &rootSection);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) rootSection, "Root Section");CHKERRQ(ierr);
-  ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) leafSection, "Leaf Section");CHKERRQ(ierr);
-  ierr = DMPlexDistributeOwnership(dm, rootSection, &rootrank, leafSection, &leafrank);CHKERRQ(ierr);
-  {
-    const PetscInt *rootdegree;
-    PetscInt        pStart, pEnd, p;
-    PetscMPIInt     rank;
-
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = PetscSFComputeDegreeBegin(sfPoint, &rootdegree);CHKERRQ(ierr);
-    ierr = PetscSFComputeDegreeEnd(sfPoint, &rootdegree);CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf(comm, "Rank %d:", rank);CHKERRQ(ierr);
-    for (p = pStart; p < pEnd; ++p) {ierr = PetscSynchronizedPrintf(comm, " %d (%d)", p, rootdegree[p-pStart]);CHKERRQ(ierr);}
-    ierr = PetscSynchronizedPrintf(comm, "\n");CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
-    ierr = PetscSectionView(rootSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ISView(rootrank, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscSectionView(leafSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ISView(leafrank, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
-  /* Collect cl(st(overlap)), use a DMLabel to separate the points by rank */
-  ierr = DMPlexCreateOverlap(dm, rootSection, rootrank, leafSection, leafrank, &overlapSF);CHKERRQ(ierr);
-  {
-    ierr = PetscPrintf(comm, "Overlap SF\n");CHKERRQ(ierr);
-    ierr = PetscSFView(overlapSF, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
-  ierr = ISDestroy(&rootrank);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
-  ierr = ISDestroy(&leafrank);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
-  /* Build migration SF that re-maps local points and adds remote ones */
-  ierr = DMPlexCreateOverlapMigrationSF(dm, overlapSF, &migrationSF);CHKERRQ(ierr);
-  {
-    ierr = PetscPrintf(comm, "Overlap Migration SF\n");CHKERRQ(ierr);
-    ierr = PetscSFView(migrationSF, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
-#if 0
-
-  \item Get closure of star and record depths
-
-  \item Send points+cone sizes+depths to remote meshes
-
-  \item Renumber points locally (looking up points in overlap to translate)
-
-  \item Create new local mesh with room for new points at correct depths and for cones
-
-  \item Send cones to remote meshes
-
-  \item Fill in cones and symmetrize mesh
-
-  \item recreate labels
-
-  \item recreate SF
-#endif
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -199,7 +139,6 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = ParallelOverlap(dm, &user);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

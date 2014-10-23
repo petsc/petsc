@@ -231,7 +231,11 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   {'numProcs': 8, 'args': '-test_partition -dm_view ::ascii_latex'},
                                                                   # Parallel, level-1 overlap tests 3-4
                                                                   {'numProcs': 3, 'args': '-test_partition -overlap 1 -dm_view ::ascii_latex'},
-                                                                  {'numProcs': 8, 'args': '-test_partition -overlap 1 -dm_view ::ascii_latex'}],
+                                                                  {'numProcs': 8, 'args': '-test_partition -overlap 1 -dm_view ::ascii_latex'},
+                                                                  # Parallel, level-2 overlap test 5
+                                                                  {'numProcs': 8, 'args': '-test_partition -overlap 2 -dm_view'},
+                                                                  # Parallel load balancing, test 6
+                                                                  {'numProcs': 4, 'args': '-test_partition -load_balance -dm_view ::ascii_latex'}],
 
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
