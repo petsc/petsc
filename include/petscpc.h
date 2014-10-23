@@ -222,7 +222,8 @@ PETSC_EXTERN PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorSetMatOrderingType(PC,MatOrderingType);
 PETSC_EXTERN PetscErrorCode PCFactorSetReuseOrdering(PC,PetscBool );
 PETSC_EXTERN PetscErrorCode PCFactorSetReuseFill(PC,PetscBool );
-PETSC_EXTERN PetscErrorCode PCFactorSetUseInPlace(PC);
+PETSC_EXTERN PetscErrorCode PCFactorSetUseInPlace(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCFactorGetUseInPlace(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCFactorSetAllowDiagonalFill(PC);
 PETSC_EXTERN PetscErrorCode PCFactorSetPivotInBlocks(PC,PetscBool );
 

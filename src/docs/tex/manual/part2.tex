@@ -2565,7 +2565,7 @@ Some of the options for ILU preconditioner are
   PCFactorSetReuseOrdering(PC pc,PetscBool  flag);\\
   PCFactorSetDropTolerance(PC pc,double dt,double dtcol,int dtcount);\\
   PCFactorSetReuseFill(PC pc,PetscBool  flag);\\
-  PCFactorSetUseInPlace(PC pc); \\
+  PCFactorSetUseInPlace(PC pc,PetscBool flg); \\
   PCFactorSetAllowDiagonalFill(PC pc);
 \end{tabbing}
 
@@ -2678,7 +2678,7 @@ The LU preconditioner provides several options.  The first, given by
 the \sindex{direct solver}
 command  \sindex{in-place solvers}
 \begin{tabbing}
-  PCFactorSetUseInPlace(PC pc);
+  PCFactorSetUseInPlace(PC pc,PetscBool flg);
 \end{tabbing}
 causes the factorization to be performed in-place and hence
 destroys the original matrix.  The options database variant of

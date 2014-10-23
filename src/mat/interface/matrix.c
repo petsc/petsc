@@ -7079,7 +7079,7 @@ PetscErrorCode  MatColoringPatch(Mat mat,PetscInt ncolors,PetscInt n,ISColoringV
 
    Level: developer
 
-.seealso: PCFactorSetUseInPlace()
+.seealso: PCFactorSetUseInPlace(), PCFactorGetUseInPlace()
 
    Concepts: matrices^unfactored
 

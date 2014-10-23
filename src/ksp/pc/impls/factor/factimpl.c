@@ -224,12 +224,14 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   char              tname[256], solvertype[64];
   PetscFunctionList ordlist;
   PetscEnum         etmp;
+  PetscBool         inplace;
 
   PetscFunctionBegin;
   if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll();CHKERRQ(ierr);}
-  ierr = PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
-  if (set && flg) {
-    ierr = PCFactorSetUseInPlace(pc);CHKERRQ(ierr);
+  ierr = PCFactorGetUseInPlace(pc,&inplace);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",&inplace,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = PCFactorSetUseInPlace(pc,flg);CHKERRQ(ierr);
   }
   ierr = PetscOptionsReal("-pc_factor_fill","Expected non-zeros in factored matrix","PCFactorSetFill",((PC_Factor*)factor)->info.fill,&((PC_Factor*)factor)->info.fill,NULL);CHKERRQ(ierr);
 

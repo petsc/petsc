@@ -402,10 +402,11 @@ PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
    Logically Collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
+-  flg - PETSC_TRUE to enable, PETSC_FALSE to disable
 
    Options Database Key:
-.  -pc_factor_in_place - Activates in-place factorization
+.  -pc_factor_in_place <true,false>- Activate/deactivate in-place factorization
 
    Notes:
    PCFactorSetUseInplace() can only be used with the KSP method KSPPREONLY or when
@@ -419,15 +420,44 @@ PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
 
 .keywords: PC, set, factorization, direct, inplace, in-place, LU
 
-.seealso: PCILUSetUseInPlace()
+.seealso: PCFactorGetUseInPlace()
 @*/
-PetscErrorCode  PCFactorSetUseInPlace(PC pc)
+PetscErrorCode  PCFactorSetUseInPlace(PC pc,PetscBool flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetUseInPlace_C",(PC),(pc));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCFactorSetUseInPlace_C",(PC,PetscBool),(pc,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorGetUseInPlace"
+/*@
+   PCFactorGetUseInPlace - Determines if an in-place factorization is being used.
+
+   Logically Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  flg - PETSC_TRUE to enable, PETSC_FALSE to disable
+
+   Level: intermediate
+
+.keywords: PC, set, factorization, direct, inplace, in-place, LU
+
+.seealso: PCFactorSetUseInPlace()
+@*/
+PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCFactorGetUseInPlace_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
