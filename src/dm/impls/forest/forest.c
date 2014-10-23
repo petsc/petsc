@@ -1,6 +1,6 @@
-#include <petsc-private/dmforestimpl.h>
-#include <petsc-private/dmimpl.h>
-#include <petscsf.h>                     /*I "petscsf.h" */
+#include <petsc-private/dmforestimpl.h> /*I petscdmforest.h I*/
+#include <petsc-private/dmimpl.h>       /*I petscdm.h */
+#include <petscsf.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMClone_Forest"

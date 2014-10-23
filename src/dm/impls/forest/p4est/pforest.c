@@ -19,6 +19,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   PetscFunctionBegin;
   DMCreate_Forest(dm);
   ierr = DMSetDimension(dm,P4EST_DIM);CHKERRQ(ierr);
+  ierr = DMForestSetTopology(dm,"unit");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
