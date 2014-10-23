@@ -12,6 +12,7 @@ typedef struct {
   void                       *data;
   PetscErrorCode             (*createcellchart)(DM,PetscInt*,PetscInt*);
   PetscErrorCode             (*createcellsf)(DM,PetscSF*);
+  PetscErrorCode             (*destroy)(DM);
   PetscBool                  setFromOptions;
   PetscBool                  setup;
   DMForestTopology           topology;
@@ -36,5 +37,6 @@ typedef struct {
 } DM_Forest;
 
 PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM);
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(DM);
 
 #endif /* _FORESTIMPL_H */

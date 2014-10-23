@@ -20,13 +20,14 @@ PETSC_EXTERN PetscErrorCode DMClone_Forest(DM dm, DM *newdm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Forest"
-PetscErrorCode DMDestroy_Forest(DM dm)
+static PetscErrorCode DMDestroy_Forest(DM dm)
 {
   DM_Forest     *forest = (DM_Forest*) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (--forest->refct > 0) PetscFunctionReturn(0);
+  if (forest->destroy) {ierr = forest->destroy(dm);CHKERRQ(ierr);}
   ierr = PetscSFDestroy(&forest->cellSF);CHKERRQ(ierr);
   if (forest->adaptCopyMode == PETSC_OWN_POINTER) {
     ierr = PetscFree(forest->adaptMarkers);CHKERRQ(ierr);
@@ -104,18 +105,23 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
 #define __FUNCT__ "DMForestSetCoarseForest"
 PetscErrorCode DMForestSetCoarseForest(DM dm,DM coarse)
 {
-  DM_Forest        *forest = (DM_Forest *) dm->data;
+  DM_Forest        *forest       = (DM_Forest *) dm->data;
+  DM_Forest        *coarseforest = (DM_Forest *) coarse->data;
   DM               base;
+  DMForestTopology topology;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the coarse forest after setup");
+  if (!coarseforest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot set a coarse forest that is not set up");
   ierr = PetscObjectReference((PetscObject)coarse);CHKERRQ(ierr);
   ierr = DMDestroy(&forest->coarse);CHKERRQ(ierr);
   ierr = DMForestGetBaseDM(coarse,&base);CHKERRQ(ierr);
   ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
+  ierr = DMForestGetTopology(coarse,&topology);CHKERRQ(ierr);
+  ierr = DMForestSetTopology(dm,topology);CHKERRQ(ierr);
   forest->coarse = coarse;
   PetscFunctionReturn(0);
 }
@@ -138,17 +144,22 @@ PetscErrorCode DMForestGetCoarseForest(DM dm, DM *coarse)
 PetscErrorCode DMForestSetFineForest(DM dm,DM fine)
 {
   DM_Forest        *forest = (DM_Forest *) dm->data;
+  DM_Forest        *fineforest = (DM_Forest *) fine->data;
   DM               base;
+  DMForestTopology topology;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the fine forest after setup");
+  if (!fineforest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot set a fine forest that is not set up");
   ierr = PetscObjectReference((PetscObject)fine);CHKERRQ(ierr);
   ierr = DMDestroy(&forest->fine);CHKERRQ(ierr);
   ierr = DMForestGetBaseDM(fine,&base);CHKERRQ(ierr);
   ierr = DMForestSetBaseDM(dm,base);CHKERRQ(ierr);
+  ierr = DMForestGetTopology(fine,&topology);CHKERRQ(ierr);
+  ierr = DMForestSetTopology(dm,topology);CHKERRQ(ierr);
   forest->fine = fine;
   PetscFunctionReturn(0);
 }
@@ -295,7 +306,7 @@ PetscErrorCode DMForestSetMaximumRefinement(DM dm, PetscInt maxRefinement)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMForestGetMaximumRefinement"
-PetscErrorCode DMForestGetMaximumRefinement (DM dm, PetscInt *maxRefinement)
+PetscErrorCode DMForestGetMaximumRefinement(DM dm, PetscInt *maxRefinement)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
 
@@ -532,7 +543,7 @@ PetscErrorCode DMForestGetWeightCapacity(DM dm, PetscReal *capacity)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Forest"
-PetscErrorCode DMSetFromFromOptions_Forest(DM dm)
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(DM dm)
 {
   DM_Forest                  *forest = (DM_Forest *) dm->data;
   PetscBool                  flg;
@@ -634,6 +645,21 @@ PetscErrorCode DMSetFromFromOptions_Forest(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMInitialize_Forest"
+static PetscErrorCode DMInitialize_Forest(DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMemzero(dm->ops,sizeof(*(dm->ops)));CHKERRQ(ierr);
+
+  dm->ops->clone          = DMClone_Forest;
+  dm->ops->setfromoptions = DMSetFromOptions_Forest;
+  dm->ops->destroy        = DMDestroy_Forest;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMCreate_Forest"
 PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
 {
@@ -668,6 +694,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   forest->cellWeightsCopyMode = PETSC_USE_POINTER;
   forest->weightsFactor       = 1.;
   forest->weightCapacity      = 1.;
+  ierr = DMInitialize_Forest(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
