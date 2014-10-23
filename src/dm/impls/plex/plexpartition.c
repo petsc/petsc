@@ -27,6 +27,81 @@ const char ParMetisPartitionerCitation[] = "@article{KarypisKumar98,\n"
                                "  year    = {1998}\n}\n";
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreatePartitionerGraph"
+/*@C
+  DMPlexCreatePartitionerGraph - Create a CSR graph of point connections for the partitioner
+
+  Input Parameters:
++ dm      - The mesh DM dm
+- height  - Height of the strata from which to construct the graph
+
+  Output Parameter:
++ numVertices - Number of vertices in the graph
+- offsets     - Point offsets in the graph
+- adjacency   - Point connectivity in the graph
+
+  The user can control the definition of adjacency for the mesh using DMPlexGetAdjacencyUseCone() and
+  DMPlexSetAdjacencyUseClosure(). They should choose the combination appropriate for the function
+  representation on the mesh.
+
+  Level: developer
+
+.seealso: PetscPartitionerGetType(), PetscPartitionerCreate(), DMPlexSetAdjacencyUseCone(), DMPlexSetAdjacencyUseClosure()
+@*/
+PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency)
+{
+  PetscInt       p, pStart, pEnd, a, adjSize, size;
+  PetscInt      *adj = NULL, *vOffsets = NULL;
+  PetscBool      useCone, useClosure;
+  PetscSection   section;
+  PetscSegBuffer adjBuffer;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, height, &pStart, &pEnd);CHKERRQ(ierr);
+  *numVertices = pEnd - pStart;
+  /* Build adjacency graph via a section/segbuffer */
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
+  ierr = PetscSegBufferCreate(sizeof(PetscInt),1000,&adjBuffer);CHKERRQ(ierr);
+  /* Always use FVM adjacency to create partitioner graph */
+  ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
+  ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; p++) {
+    adjSize = PETSC_DETERMINE;
+    ierr = DMPlexGetAdjacency(dm, p, &adjSize, &adj);CHKERRQ(ierr);
+    for (a = 0; a < adjSize; ++a) {
+      const PetscInt point = adj[a];
+      if (point != p && pStart <= point && point < pEnd) {
+        PetscInt *PETSC_RESTRICT pBuf;
+        ierr = PetscSectionAddDof(section, p, 1);CHKERRQ(ierr);
+        ierr = PetscSegBufferGetInts(adjBuffer, 1, &pBuf);CHKERRQ(ierr);
+        *pBuf = point;
+      }
+    }
+  }
+  ierr = DMPlexSetAdjacencyUseCone(dm, useCone);CHKERRQ(ierr);
+  ierr = DMPlexSetAdjacencyUseClosure(dm, useClosure);CHKERRQ(ierr);
+  /* Derive CSR graph from section/segbuffer */
+  ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
+  ierr = PetscMalloc2(*numVertices+1, &vOffsets, size, adjacency);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; p++) {ierr = PetscSectionGetOffset(section, p, &(vOffsets[p]));CHKERRQ(ierr);}
+  vOffsets[*numVertices] = size;
+  if (offsets) *offsets = vOffsets;
+  if (adjacency) {ierr = PetscSegBufferExtractTo(adjBuffer, *adjacency);CHKERRQ(ierr);}
+  /* Clean up */
+  ierr = PetscSegBufferDestroy(&adjBuffer);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  ierr = PetscFree(adj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateNeighborCSR"
 PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency)
 {
@@ -646,7 +721,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, DM dm, PetscSect
     PetscInt *start     = NULL;
     PetscInt *adjacency = NULL;
 
-    ierr = DMPlexCreateNeighborCSR(dm, 0, &numVertices, &start, &adjacency);CHKERRQ(ierr);
+    ierr = DMPlexCreatePartitionerGraph(dm, 0, &numVertices, &start, &adjacency);CHKERRQ(ierr);
     if (!part->ops->partition) SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_WRONGSTATE, "PetscPartitioner has no type");
     ierr = (*part->ops->partition)(part, dm, size, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
     ierr = PetscFree(start);CHKERRQ(ierr);
