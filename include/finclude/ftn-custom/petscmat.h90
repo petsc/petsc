@@ -9,24 +9,22 @@
 #define MAT_FACTORINFO_SIZE MAT_FACTORINFO_SIZE_MOD
 
       Interface
-        Subroutine MatGetRowIJF90(v,shift,sym,blckcmp,n,ia,             &
-     &                            ja,done,ierr)
+        Subroutine MatGetRowIJF90(v,sh,sym,bl,n,ia,ja,d,ierr)
           USE_MAT_HIDE
           PetscInt, pointer :: ia(:), ja(:)
-          PetscInt  n,shift
-          PetscBool  sym,blckcmp,done
+          PetscInt  n,sh
+          PetscBool  sym,bl,d
           PetscErrorCode ierr
           MAT_HIDE     v
         End Subroutine
       End Interface
 
       Interface
-        Subroutine MatRestoreRowIJF90(v,shift,sym,blckcmp,n,            &
-     &                                ia,ja,done,ierr)
+        Subroutine MatRestoreRowIJF90(v,s,sy,b,n,ia,ja,d,ierr)
           USE_MAT_HIDE
           PetscInt, pointer :: ia(:), ja(:)
-          PetscInt  n,shift
-          PetscBool  sym,blckcmp,done
+          PetscInt  n,s
+          PetscBool  sy,b,done
           PetscErrorCode ierr
           MAT_HIDE     v
         End Subroutine
