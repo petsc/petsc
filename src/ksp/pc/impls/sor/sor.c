@@ -187,7 +187,7 @@ static PetscErrorCode  PCSORGetIterations_SOR(PC pc,PetscInt *its,PetscInt *lits
 #undef __FUNCT__
 #define __FUNCT__ "PCSORGetSymmetric"
 /*@
-   PCSORSetSymmetric - Gets the form the SOR preconditioner is using;   backward, or forward relaxation.  The local variants perform SOR on
+   PCSORGetSymmetric - Gets the form the SOR preconditioner is using;   backward, or forward relaxation.  The local variants perform SOR on
    each processor.  By default forward relaxation is used.
 
    Logically Collective on PC
