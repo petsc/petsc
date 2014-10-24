@@ -419,7 +419,7 @@ PetscErrorCode  PCCompositeSetType(PC pc,PCCompositeType type)
 #undef __FUNCT__
 #define __FUNCT__ "PCCompositeGetType"
 /*@
-   PCCompositeSetType - Gets the type of composite preconditioner.
+   PCCompositeGetType - Gets the type of composite preconditioner.
 
    Logically Collective on PC
 
