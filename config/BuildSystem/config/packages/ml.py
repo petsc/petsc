@@ -11,7 +11,7 @@ class Configure(config.package.GNUPackage):
     self.includes          = ['ml_include.h']
     self.liblist           = [['libml.a']]
     self.license           = 'http://trilinos.sandia.gov/'
-    self.fc                = 1
+    self.fc                = 0
     self.double            = 1
     self.complex           = 0
     self.downloadonWindows = 1
