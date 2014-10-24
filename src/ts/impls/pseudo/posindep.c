@@ -432,7 +432,7 @@ PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void
 -   inc - the scaling factor >= 1.0
 
     Options Database Key:
-$    -ts_pseudo_increment <increment>
+.    -ts_pseudo_increment <increment>
 
     Level: advanced
 
@@ -464,7 +464,7 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
 -   maxdt - the maximum time step, use a non-positive value to deactivate
 
     Options Database Key:
-$    -ts_pseudo_max_dt <increment>
+.    -ts_pseudo_max_dt <increment>
 
     Level: advanced
 
@@ -498,7 +498,7 @@ $         dt = current_dt*previous_fnorm/current_fnorm.
 .   ts - the timestep context
 
     Options Database Key:
-$    -ts_pseudo_increment_dt_from_initial_dt
+.    -ts_pseudo_increment_dt_from_initial_dt
 
     Level: advanced
 

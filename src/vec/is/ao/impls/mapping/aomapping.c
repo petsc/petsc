@@ -237,7 +237,7 @@ PetscErrorCode  AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool  *hasInde
 . aoout   - the new application mapping
 
   Options Database Key:
-$ -ao_view : call AOView() at the conclusion of AOCreateMapping()
+. -ao_view : call AOView() at the conclusion of AOCreateMapping()
 
   Level: beginner
 
@@ -357,7 +357,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
 . aoout   - the new application ordering
 
   Options Database Key:
-$ -ao_view : call AOView() at the conclusion of AOCreateMappingIS()
+. -ao_view : call AOView() at the conclusion of AOCreateMappingIS()
 
   Level: beginner
 

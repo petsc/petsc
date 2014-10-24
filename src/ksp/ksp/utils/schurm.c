@@ -601,7 +601,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 .   iscol1 - columns in which the Schur complement is formed
 .   mreuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in newmat
 .   plump  - the type of approximation used for the inverse of the (0,0) block used in forming Sp:
-$                        MAT_SCHUR_COMPLEMENT_AINV_DIAG | MAT_SCHUR_COMPLEMENT_AINV_LUMP
+                       MAT_SCHUR_COMPLEMENT_AINV_DIAG | MAT_SCHUR_COMPLEMENT_AINV_LUMP
 -   preuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in newpmat
 
     Output Parameters:
@@ -659,7 +659,7 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
     Input Parameters:
 +   S        - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
 -   ainvtype - type of approximation used to form A00inv from A00 when assembling Sp = A11 - A10 A00inv A01:
-$                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
+                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
 
     Options database:
     -mat_schur_complement_ainv_type diag | lump
@@ -706,7 +706,7 @@ PetscErrorCode  MatSchurComplementSetAinvType(Mat S,MatSchurComplementAinvType a
 
     Output Parameter:
 .   ainvtype - type of approximation used to form A00inv from A00 when assembling Sp = A11 - A10 A00inv A01:
-$                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
+                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
 
     Note:
     Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires

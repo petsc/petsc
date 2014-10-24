@@ -339,7 +339,7 @@ PetscErrorCode SNESFASSetContinuation(SNES snes,PetscBool continuation)
 -  cycles - the number of cycles -- 1 for V-cycle, 2 for W-cycle
 
    Options Database Key:
-$  -snes_fas_cycles 1 or 2
+.  -snes_fas_cycles 1 or 2
 
    Level: advanced
 

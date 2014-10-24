@@ -370,7 +370,7 @@ PETSC_EXTERN PetscErrorCode PetscCheckPointerSetIntensity(PetscInt);
 
    Options Database Keys:
 +    -error_output_stdout - cause error messages to be printed to stdout instead of the  (default) stderr
--    -error_output_none to turn off all printing of error messages (does not change the way the error is handled.)
+-    -error_output_none - to turn off all printing of error messages (does not change the way the error is handled.)
 
    Notes: Use
 $     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the

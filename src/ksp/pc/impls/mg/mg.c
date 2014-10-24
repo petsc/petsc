@@ -897,7 +897,7 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
 -  PC_MG_CYCLE_V or PC_MG_CYCLE_W
 
    Options Database Key:
-$  -pc_mg_cycle_type v or w
+.  -pc_mg_cycle_type v or w
 
    Level: advanced
 
@@ -934,7 +934,7 @@ PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
 -  n - number of cycles (default is 1)
 
    Options Database Key:
-$  -pc_mg_multiplicative_cycles n
+.  -pc_mg_multiplicative_cycles n
 
    Level: advanced
 
@@ -973,7 +973,7 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 -  use - PETSC_TRUE to use the Galerkin process to compute coarse-level operators
 
    Options Database Key:
-$  -pc_mg_galerkin
+.  -pc_mg_galerkin
 
    Level: intermediate
 
@@ -1004,10 +1004,10 @@ PetscErrorCode PCMGSetGalerkin(PC pc,PetscBool use)
 .  pc - the multigrid context
 
    Output Parameter:
-.  gelerkin - PETSC_TRUE or PETSC_FALSE
+.  galerkin - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-$  -pc_mg_galerkin
+.  -pc_mg_galerkin
 
    Level: intermediate
 
