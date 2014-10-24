@@ -104,9 +104,9 @@ ex16adj: ex16adj.o chkopts
 	-${CLINKER} -o ex16adj ex16adj.o ${PETSC_TS_LIB}
 	${RM} ex16adj.o
 
-ex16opt: ex16opt.o chkopts
-	-${CLINKER} -o ex16opt ex16opt.o ${PETSC_TS_LIB}
-	${RM} ex16opt.o
+ex16opt_p: ex16opt_p.o chkopts
+	-${CLINKER} -o ex16opt_p ex16opt_p.o ${PETSC_TS_LIB}
+	${RM} ex16opt_p.o
 
 ex17: ex17.o  chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_TS_LIB}
@@ -404,8 +404,8 @@ runex16_sa:
 runex16adj:
 	-@${MPIEXEC} -n 1 ./ex16adj -monitor 0 ; 
 
-runex16opt:
-	-@${MPIEXEC} -n 1 ./ex16opt -monitor 0 -viewer_binary_skip_info; 
+runex16opt_p:
+	-@${MPIEXEC} -n 1 ./ex16opt_p -monitor 0 -viewer_binary_skip_info -tao_view; 
 
 runex17:
 	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor_short -ksp_monitor_short -ts_monitor > ex17_1.tmp 2>&1; \
