@@ -1362,7 +1362,6 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = PetscSFDestroy(&sfProcess);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&lblPartition);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&lblMigration);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfMigration);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&cellPartSection);CHKERRQ(ierr);
   ierr = ISDestroy(&cellPart);CHKERRQ(ierr);
