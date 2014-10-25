@@ -479,19 +479,35 @@ PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, void (*func)
 #define __FUNCT__ "MonitorFunctionals"
 static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time, Vec X, void *ctx)
 {
-  AppCtx        *user   = (AppCtx *) ctx;
-  char          *ftable = NULL;
-  DM             dm;
-  Vec            cellgeom;
-  PetscReal      xnorm;
-  PetscInt       cEndInterior;
-  PetscErrorCode ierr;
+  AppCtx            *user   = (AppCtx *) ctx;
+  char              *ftable = NULL;
+  DM                 dm;
+  PetscSection       s;
+  Vec                cellgeom;
+  const PetscScalar *x;
+  PetscReal         *xnorms;
+  PetscInt           pStart, pEnd, p, Nf, f, cEndInterior;
+  PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
   ierr = VecGetDM(X, &dm);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = VecNorm(X, NORM_INFINITY, &xnorm);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscCalloc1(Nf, &xnorms);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    for (f = 0; f < Nf; ++f) {
+      PetscInt dof, off,d;
+
+      ierr = PetscSectionGetFieldDof(s, p, f, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldOffset(s, p, f, &off);CHKERRQ(ierr);
+      for (d = 0; d < dof; ++d) xnorms[f] = PetscMax(xnorms[f], PetscAbsScalar(x[off+d]));
+    }
+  }
+  ierr = VecRestoreArrayRead(X, &x);CHKERRQ(ierr);
   if (stepnum >= 0) {           /* No summary for final time */
 #if 0
     Model             mod = user->model;
@@ -567,9 +583,15 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
     }
     ierr = PetscFree4(fmin,fmax,fintegral,ftmp);CHKERRQ(ierr);
 #endif
-    ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), "% 3D  time %8.4g  |x| %8.4g  %s\n", stepnum, (double) time, (double) xnorm, ftable ? ftable : "");CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), "% 3D  time %8.4g  |x| (", stepnum, (double) time);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      if (f > 0) {ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), ", ");CHKERRQ(ierr);}
+      ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), "%8.4g", (double) xnorms[f]);CHKERRQ(ierr);
+    }
+    ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), ")  %s\n", ftable ? ftable : "");CHKERRQ(ierr);
     ierr = PetscFree(ftable);CHKERRQ(ierr);
   }
+  ierr = PetscFree(xnorms);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
