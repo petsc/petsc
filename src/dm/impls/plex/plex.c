@@ -2666,28 +2666,25 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 /* Set the number of dof on each point and separate by fields */
 PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscSection *section)
 {
-  PetscInt      *numDofTot, *pMax;
+  PetscInt      *pMax;
   PetscInt       depth, pStart = 0, pEnd = 0;
-  PetscInt       p, d, dep, f;
+  PetscInt       Nf, p, d, dep, f;
   PetscBool     *isFE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(numFields, &isFE);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
     PetscObject  obj;
     PetscClassId id;
 
+    isFE[f] = PETSC_FALSE;
+    if (f >= Nf) continue;
     ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
     else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
-    else                            {isFE[f] = PETSC_FALSE;}
-  }
-  ierr = PetscMalloc1(dim+1, &numDofTot);CHKERRQ(ierr);
-  for (d = 0; d <= dim; ++d) {
-    numDofTot[d] = 0;
-    for (f = 0; f < numFields; ++f) numDofTot[d] += numDof[f*(dim+1)+d];
   }
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), section);CHKERRQ(ierr);
   if (numFields > 0) {
@@ -2708,15 +2705,17 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
     ierr = DMPlexGetDepthStratum(dm, dep, &pStart, &pEnd);CHKERRQ(ierr);
     pMax[dep] = pMax[dep] < 0 ? pEnd : pMax[dep];
     for (p = pStart; p < pEnd; ++p) {
+      PetscInt tot = 0;
+
       for (f = 0; f < numFields; ++f) {
         if (isFE[f] && p >= pMax[dep]) continue;
         ierr = PetscSectionSetFieldDof(*section, p, f, numDof[f*(dim+1)+d]);CHKERRQ(ierr);
+        tot += numDof[f*(dim+1)+d];
       }
-      ierr = PetscSectionSetDof(*section, p, numDofTot[d]);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(*section, p, tot);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(pMax);CHKERRQ(ierr);
-  ierr = PetscFree(numDofTot);CHKERRQ(ierr);
   ierr = PetscFree(isFE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
