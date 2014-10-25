@@ -616,7 +616,7 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
   const PetscScalar *facegeom, *cellgeom, *grad;
   const PetscInt    *leaves;
   PetscScalar       *x, *fx;
-  PetscInt           dim, nleaves, loc, off, fStart, fEnd, pdim, i;
+  PetscInt           dim, nleaves, loc, fStart, fEnd, pdim, i;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -626,8 +626,6 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetFieldOffset(prob, field, &off);CHKERRQ(ierr);
-  ierr = DMGetField(dm, field, (PetscObject *) &fv);CHKERRQ(ierr);
   ierr = VecGetDM(faceGeometry, &dmFace);CHKERRQ(ierr);
   ierr = VecGetArrayRead(faceGeometry, &facegeom);CHKERRQ(ierr);
   ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
@@ -667,17 +665,17 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
         ierr = DMPlexPointLocalRead(dmCell, cells[0], cellgeom, &cg);CHKERRQ(ierr);
         ierr = DMPlexPointLocalRead(dm, cells[0], x, &cx);CHKERRQ(ierr);
         ierr = DMPlexPointLocalRead(dmGrad, cells[0], grad, &cgrad);CHKERRQ(ierr);
-        ierr = DMPlexPointLocalRef(dm, cells[1], x, &xG);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalFieldRef(dm, cells[1], field, x, &xG);CHKERRQ(ierr);
         DMPlex_WaxpyD_Internal(dim, -1, cg->centroid, fg->centroid, dx);
         for (d = 0; d < pdim; ++d) fx[d] = cx[d] + DMPlex_DotD_Internal(dim, &cgrad[d*dim], dx);
-        ierr = (*func)(time, fg->centroid, fg->normal, fx, &xG[off], ctx);CHKERRQ(ierr);
+        ierr = (*func)(time, fg->centroid, fg->normal, fx, xG, ctx);CHKERRQ(ierr);
       } else {
         const PetscScalar *xI;
         PetscScalar       *xG;
 
         ierr = DMPlexPointLocalRead(dm, cells[0], x, &xI);CHKERRQ(ierr);
-        ierr = DMPlexPointLocalRef(dm, cells[1], x, &xG);CHKERRQ(ierr);
-        ierr = (*func)(time, fg->centroid, fg->normal, xI, &xG[off], ctx);CHKERRQ(ierr);
+        ierr = DMPlexPointLocalFieldRef(dm, cells[1], field, x, &xG);CHKERRQ(ierr);
+        ierr = (*func)(time, fg->centroid, fg->normal, xI, xG, ctx);CHKERRQ(ierr);
       }
     }
     ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
