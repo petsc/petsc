@@ -21,6 +21,25 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalOffset_Private(DM dm,PetscInt p
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexGetLocalFieldOffset_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMPlexGetLocalFieldOffset_Private(DM dm,PetscInt point,PetscInt field,PetscInt *offset)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscErrorCode ierr;
+    ierr = PetscSectionGetFieldOffset(dm->defaultSection,point,field,offset);CHKERRQ(ierr);
+  }
+#else
+  {
+    PetscSection s = dm->defaultSection->field[field];
+    *offset = s->atlasOff[point - s->pStart];
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexGetGlobalOffset_Private"
 PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalOffset_Private(DM dm,PetscInt point,PetscInt *offset)
 {
@@ -156,6 +175,40 @@ PetscErrorCode DMPlexPointLocalRef(DM dm,PetscInt point,PetscScalar *array,void 
   PetscValidScalarPointer(array,3);
   PetscValidPointer(ptr,4);
   ierr                = DMPlexGetLocalOffset_Private(dm,point,&start);CHKERRQ(ierr);
+  *(PetscScalar**)ptr = array + start;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexPointLocalFieldRef"
+/*@
+   DMPlexPointLocalFieldRef - return read/write access to a field on a point in local array
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM defining topological space
+.  point - topological point
+.  field - field number
+-  array - array to index into
+
+   Output Arguments:
+.  ptr - address of reference to point data, type generic so user can place in structure
+
+   Level: intermediate
+
+.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRef()
+@*/
+PetscErrorCode DMPlexPointLocalFieldRef(DM dm,PetscInt point,PetscInt field,PetscScalar *array,void *ptr)
+{
+  PetscErrorCode ierr;
+  PetscInt       start;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidScalarPointer(array,3);
+  PetscValidPointer(ptr,4);
+  ierr                = DMPlexGetLocalFieldOffset_Private(dm,point,field,&start);CHKERRQ(ierr);
   *(PetscScalar**)ptr = array + start;
   PetscFunctionReturn(0);
 }
