@@ -725,6 +725,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, Vec locX, PetscReal time, Vec f
     if (id == PETSCFE_CLASSID) {
       ierr = DMPlexInsertBoundaryValues_FEM_Internal(dm, field, label, numids, ids, (void (*)(const PetscReal[], PetscScalar *, void *)) func, ctx, locX);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
+      if (!faceGeomFVM) continue;
       ierr = DMPlexInsertBoundaryValues_FVM_Internal(dm, time, faceGeomFVM, cellGeomFVM, gradFVM,
                                                      field, label, numids, ids, (PetscErrorCode (*)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*)) func, ctx, locX);CHKERRQ(ierr);
     } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", field);
