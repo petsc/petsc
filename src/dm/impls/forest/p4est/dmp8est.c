@@ -1,3 +1,4 @@
+#include <petscconf.h>
 #if defined(PETSC_HAVE_P4EST)
 #include <p4est_to_p8est.h>
 #endif

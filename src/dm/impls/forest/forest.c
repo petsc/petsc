@@ -47,7 +47,7 @@ PetscErrorCode DMForestSetTopology(DM dm, DMForestTopology topology)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the topology after setup");
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the topology after setup");
   ierr = PetscFree(forest->topology);CHKERRQ(ierr);
   ierr = PetscStrallocpy((const char *)topology,(char **) &forest->topology);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -77,7 +77,7 @@ PetscErrorCode DMForestSetBaseDM(DM dm, DM base)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the base after setup");
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the base after setup");
   ierr = PetscObjectReference((PetscObject)base);CHKERRQ(ierr);
   ierr = DMDestroy(&forest->base);CHKERRQ(ierr);
   forest->base = base;
@@ -106,7 +106,6 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
 PetscErrorCode DMForestSetCoarseForest(DM dm,DM coarse)
 {
   DM_Forest        *forest       = (DM_Forest *) dm->data;
-  DM_Forest        *coarseforest = (DM_Forest *) coarse->data;
   DM               base;
   DMForestTopology topology;
   PetscErrorCode   ierr;
@@ -114,8 +113,8 @@ PetscErrorCode DMForestSetCoarseForest(DM dm,DM coarse)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the coarse forest after setup");
-  if (!coarseforest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot set a coarse forest that is not set up");
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the coarse forest after setup");
+  if (!coarse->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot set a coarse forest that is not set up");
   ierr = PetscObjectReference((PetscObject)coarse);CHKERRQ(ierr);
   ierr = DMDestroy(&forest->coarse);CHKERRQ(ierr);
   ierr = DMForestGetBaseDM(coarse,&base);CHKERRQ(ierr);
@@ -144,7 +143,6 @@ PetscErrorCode DMForestGetCoarseForest(DM dm, DM *coarse)
 PetscErrorCode DMForestSetFineForest(DM dm,DM fine)
 {
   DM_Forest        *forest = (DM_Forest *) dm->data;
-  DM_Forest        *fineforest = (DM_Forest *) fine->data;
   DM               base;
   DMForestTopology topology;
   PetscErrorCode   ierr;
@@ -152,8 +150,8 @@ PetscErrorCode DMForestSetFineForest(DM dm,DM fine)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
-  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the fine forest after setup");
-  if (!fineforest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot set a fine forest that is not set up");
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the fine forest after setup");
+  if (!fine->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot set a fine forest that is not set up");
   ierr = PetscObjectReference((PetscObject)fine);CHKERRQ(ierr);
   ierr = DMDestroy(&forest->fine);CHKERRQ(ierr);
   ierr = DMForestGetBaseDM(fine,&base);CHKERRQ(ierr);
@@ -165,7 +163,7 @@ PetscErrorCode DMForestSetFineForest(DM dm,DM fine)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMForestGetFineForest_Forest"
+#define __FUNCT__ "DMForestGetFineForest"
 PetscErrorCode DMForestGetFineForest(DM dm, DM *fine)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
@@ -187,7 +185,7 @@ PetscErrorCode DMForestSetAdjacencyDimension(DM dm, PetscInt adjDim)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adjacency dimension after setup");
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the adjacency dimension after setup");
   if (adjDim < 0) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"adjacency dim cannot be < 0: %d", adjDim);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   if (adjDim > dim) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"adjacency dim cannot be > %d: %d", dim, adjDim);
@@ -239,14 +237,14 @@ PetscErrorCode DMForestGetAdjacencyCodimension(DM dm, PetscInt *adjCodim)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMForestSetParititionOverlap"
+#define __FUNCT__ "DMForestSetPartitionOverlap"
 PetscErrorCode DMForestSetPartitionOverlap(DM dm, PetscInt overlap)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the overlap after setup");
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the overlap after setup");
   if (overlap < 0) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"overlap cannot be < 0: %d", overlap);
   forest->overlap = overlap;
   PetscFunctionReturn(0);
@@ -273,7 +271,7 @@ PetscErrorCode DMForestSetMinimumRefinement(DM dm, PetscInt minRefinement)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the minimum refinement after setup");
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the minimum refinement after setup");
   forest->minRefinement = minRefinement;
   PetscFunctionReturn(0);
 }
@@ -299,7 +297,7 @@ PetscErrorCode DMForestSetMaximumRefinement(DM dm, PetscInt maxRefinement)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the maximum refinement after setup");
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the maximum refinement after setup");
   forest->maxRefinement = maxRefinement;
   PetscFunctionReturn(0);
 }
@@ -352,7 +350,7 @@ PetscErrorCode DMForestSetGradeFactor(DM dm, PetscInt grade)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the grade factor after setup");
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the grade factor after setup");
   forest->gradeFactor = grade;
   PetscFunctionReturn(0);
 }
@@ -371,21 +369,21 @@ PetscErrorCode DMForestGetGradeFactor(DM dm, PetscInt *grade)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMForestSetCellWeightsFactor"
-PetscErrorCode DMForestSetCellWeightsFactor(DM dm, PetscReal weightsFactor)
+#define __FUNCT__ "DMForestSetCellWeightFactor"
+PetscErrorCode DMForestSetCellWeightFactor(DM dm, PetscReal weightsFactor)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the weights factor after setup");
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the weights factor after setup");
   forest->weightsFactor = weightsFactor;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMForestGetCellWeightsFactor"
-PetscErrorCode DMForestGetCellWeightsFactor(DM dm, PetscReal *weightsFactor)
+#define __FUNCT__ "DMForestGetCellWeightFactor"
+PetscErrorCode DMForestGetCellWeightFactor(DM dm, PetscReal *weightsFactor)
 {
   DM_Forest      *forest = (DM_Forest *) dm->data;
 
@@ -522,7 +520,7 @@ PetscErrorCode DMForestSetWeightCapacity(DM dm, PetscReal capacity)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (forest->setup) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the weight capacity after setup");
+  if (dm->setupcalled) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Cannot change the weight capacity after setup");
   if (capacity < 0.) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have negative weight capacity; %f",capacity);
   forest->weightCapacity = capacity;
   PetscFunctionReturn(0);
@@ -673,7 +671,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM dm)
   dm->data                    = forest;
   forest->refct               = 1;
   forest->data                = NULL;
-  forest->setup               = 0;
   forest->setFromOptions      = PETSC_FALSE;
   forest->topology            = NULL;
   forest->base                = NULL;

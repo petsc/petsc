@@ -12,6 +12,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM);
 #endif
 PETSC_EXTERN PetscErrorCode DMCreate_Network(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM);
 #if defined(PETSC_HAVE_P4EST)
 PETSC_EXTERN PetscErrorCode DMCreate_p4est(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_p8est(DM);
@@ -50,6 +51,7 @@ PetscErrorCode  DMRegisterAll()
   ierr = DMRegister(DMMOAB,       DMCreate_Moab);CHKERRQ(ierr);
 #endif
   ierr = DMRegister(DMNETWORK,    DMCreate_Network);CHKERRQ(ierr);
+  ierr = DMRegister(DMFOREST,     DMCreate_Forest);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_P4EST)
   ierr = DMRegister(DMP4EST,      DMCreate_p4est);CHKERRQ(ierr);
   ierr = DMRegister(DMP8EST,      DMCreate_p8est);CHKERRQ(ierr);

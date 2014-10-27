@@ -3,7 +3,10 @@
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
 #if defined(PETSC_HAVE_P4EST)
-#define _pforest_string(a) #a
+
+/* we need two levels of macros to stringify the results of macro expansion */
+#define _pforest_string(a) _pforest_string_internal(a)
+#define _pforest_string_internal(a) #a
 
 #if !defined(P4_TO_P8)
 #include <p4est.h>
@@ -78,7 +81,7 @@ static PetscErrorCode DMFTopologyCreateBrick_pforest(DM dm,PetscInt N[], PetscIn
 #if !defined(P4_TO_P8)
   (*topo)->conn  = p4est_connectivity_new_brick((int) N[0], (int) N[1], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1);
 #else
-  (*topo)->conn  = p8est_connectivity_new_brick((int) N[0], (int) N[1], (int) N[1], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1, (P[2] == DM_BOUNDARY_NONE) ? 0 : 1);
+  (*topo)->conn  = p8est_connectivity_new_brick((int) N[0], (int) N[1], (int) N[2], (P[0] == DM_BOUNDARY_NONE) ? 0 : 1, (P[1] == DM_BOUNDARY_NONE) ? 0 : 1, (P[2] == DM_BOUNDARY_NONE) ? 0 : 1);
 #endif
   (*topo)->geom  = p4est_geometry_new_connectivity((*topo)->conn);
   PetscFunctionReturn(0);
@@ -102,19 +105,21 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
   ierr = PetscStrcmp(name,"shell",&isShell);CHKERRQ(ierr);
   ierr = PetscStrcmp(name,"sphere",&isSphere);CHKERRQ(ierr);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
-  if (isBrick && forest->setFromOptions) {
+  if (isBrick) {
     PetscBool  flgN, flgP, flgM, useMorton = PETSC_TRUE;
     PetscInt   N[P4EST_DIM] = {2}, P[P4EST_DIM] = {0}, nretN = P4EST_DIM, nretP = P4EST_DIM, i;
 
-    ierr = PetscOptionsGetIntArray(prefix,"-dm_p4est_brick_size",N,&nretN,&flgN);CHKERRQ(ierr);
-    ierr = PetscOptionsGetIntArray(prefix,"-dm_p4est_brick_periodicity",P,&nretP,&flgP);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(prefix,"-dm_p4est_brick_use_morton_curve",&useMorton,&flgM);CHKERRQ(ierr);
-    if (flgN && nretN != P4EST_DIM) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d sizes in -brick_size, gave %d",P4EST_DIM,nretN);
-    if (flgP && nretP != P4EST_DIM) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d periodicities in -brick_size, gave %d",P4EST_DIM,nretP);
+    if (forest->setFromOptions) {
+      ierr = PetscOptionsGetIntArray(prefix,"-dm_p4est_brick_size",N,&nretN,&flgN);CHKERRQ(ierr);
+      ierr = PetscOptionsGetIntArray(prefix,"-dm_p4est_brick_periodicity",P,&nretP,&flgP);CHKERRQ(ierr);
+      ierr = PetscOptionsGetBool(prefix,"-dm_p4est_brick_use_morton_curve",&useMorton,&flgM);CHKERRQ(ierr);
+      if (flgN && nretN != P4EST_DIM) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d sizes in -dm_p4est_brick_size, gave %d",P4EST_DIM,nretN);
+      if (flgP && nretP != P4EST_DIM) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Need to give %d periodicities in -dm_p4est_brick_size, gave %d",P4EST_DIM,nretP);
+    }
     for (i = 0; i < P4EST_DIM; i++) {
       P[i] = (P[i] ? DM_BOUNDARY_PERIODIC : DM_BOUNDARY_NONE);
     }
-    ierr = DMFTopologyCreateBrick_pforest(dm,N,P,topo,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMFTopologyCreateBrick_pforest(dm,N,P,topo,useMorton);CHKERRQ(ierr);
   }
   else {
     ierr = PetscNewLog(dm,topo);CHKERRQ(ierr);
@@ -124,19 +129,24 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
 #if !defined(P4_TO_P8)
     (*topo)->geom  = p4est_geometry_new_connectivity((*topo)->conn);
 #else
-    if (isShell || isSphere) {
+    if (isShell) {
       PetscReal R2 = 1., R1 = .55;
 
       if (forest->setFromOptions) {
-        ierr = PetscOptionsGetReal(prefix,"-dm_p4est_outer_radius",&R2,NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsGetReal(prefix,"-dm_p4est_inner_radius",&R1,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(prefix,"-dm_p4est_shell_outer_radius",&R2,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(prefix,"-dm_p4est_shell_inner_radius",&R1,NULL);CHKERRQ(ierr);
       }
-      if (isShell) {
-        (*topo)->geom = p8est_geometry_new_shell((*topo)->conn,R2,R1);
+      (*topo)->geom = p8est_geometry_new_shell((*topo)->conn,R2,R1);
+    }
+    else if (isSphere) {
+      PetscReal R2 = 1., R1 = 0.191728, R0 = 0.039856;
+
+      if (forest->setFromOptions) {
+        ierr = PetscOptionsGetReal(prefix,"-dm_p4est_sphere_outer_radius",&R2,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(prefix,"-dm_p4est_sphere_inner_radius",&R1,NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(prefix,"-dm_p4est_sphere_core_radius",&R0,NULL);CHKERRQ(ierr);
       }
-      else {
-        (*topo)->geom = p8est_geometry_new_sphere((*topo)->conn,R2,R1);
-      }
+      (*topo)->geom = p8est_geometry_new_sphere((*topo)->conn,R2,R1,R0);
     }
     else {
       (*topo)->geom  = p4est_geometry_new_connectivity((*topo)->conn);
@@ -147,7 +157,7 @@ static PetscErrorCode DMFTopologyCreate_pforest(DM dm, DMForestTopology topology
 }
 
 #undef __FUNCT__
-#define __FUNCT__ _pforest_string(DMDestroy_pforest)
+#define __FUNCT__ _pforest_string(DMForestDestroy_pforest)
 static PetscErrorCode DMForestDestroy_pforest(DM dm)
 {
   DM_Forest         *forest  = (DM_Forest *) dm->data;
@@ -175,7 +185,6 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   DM_Forest_pforest *pforest = (DM_Forest_pforest *) forest->data;
   DM                base, coarse, fine, adaptFrom;
   DMForestTopology  topoName;
-
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -273,6 +282,10 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
   PetscBool         isvtk;
   PetscReal         vtkScale = 1. - PETSC_MACHINE_EPSILON;
   PetscViewer_VTK   *vtk = (PetscViewer_VTK*)viewer->data;
+  const char        *name;
+  char              *filenameStrip = NULL;
+  PetscBool         hasExt;
+  size_t            len;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -282,7 +295,15 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
   if (!isvtk) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
   switch (viewer->format) {
   case PETSC_VIEWER_VTK_VTU:
-    if (!forest->setup || !pforest->forest) SETERRQ (PetscObjectComm(odm),PETSC_ERR_ARG_WRONG,"DM has not been setup with a valid forest");
+    if (!dm->setupcalled || !pforest->forest) SETERRQ (PetscObjectComm(odm),PETSC_ERR_ARG_WRONG,"DM has not been setup with a valid forest");
+    name = vtk->filename;
+    ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(name+len-4,".vtu",&hasExt);CHKERRQ(ierr);
+    if (hasExt) {
+      ierr = PetscStrallocpy(name,&filenameStrip);CHKERRQ(ierr);
+      filenameStrip[len-4]='\0';
+      name = filenameStrip;
+    }
     p4est_vtk_write_all(pforest->forest,pforest->topo->geom,(double)vtkScale,
                         1, /* write tree */
                         1, /* write level */
@@ -290,7 +311,8 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
                         0, /* do not wrap rank */
                         0, /* no scalar fields */
                         0, /* no vector fields */
-                        vtk->filename);
+                        name);
+    ierr = PetscFree(filenameStrip);CHKERRQ(ierr);
     break;
   default: SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
   }
@@ -339,7 +361,19 @@ PETSC_EXTERN PetscErrorCode DMCreate_pforest(DM dm)
   ierr = DMCreate_Forest(dm);CHKERRQ(ierr);
   ierr = DMInitialize_pforest(dm);CHKERRQ(ierr);
   ierr = DMSetDimension(dm,P4EST_DIM);CHKERRQ(ierr);
+
+  /* TODO: interface libsc signals and logging with petsc.  For now, just silencing all libsc/p4est  */
+  sc_set_log_defaults(NULL,NULL,SC_LP_SILENT);
+
+  /* set forest defaults */
   ierr = DMForestSetTopology(dm,"unit");CHKERRQ(ierr);
+  ierr = DMForestSetMinimumRefinement(dm,0);CHKERRQ(ierr);
+  ierr = DMForestSetMaximumRefinement(dm,P4EST_QMAXLEVEL);CHKERRQ(ierr);
+  ierr = DMForestSetGradeFactor(dm,2);CHKERRQ(ierr);
+  ierr = DMForestSetAdjacencyDimension(dm,0);CHKERRQ(ierr);
+  ierr = DMForestSetPartitionOverlap(dm,0);CHKERRQ(ierr);
+
+  /* create p4est data */
   ierr = PetscNewLog(dm,&pforest);CHKERRQ(ierr);
 
   forest          = (DM_Forest *) dm->data;
