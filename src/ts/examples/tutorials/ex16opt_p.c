@@ -78,7 +78,6 @@ struct _n_User {
   PetscBool imex;
   PetscReal next_output;
   PetscInt  nstages; 
-  TS        ts; 
     
   PetscInt  steps;
   PetscReal ftime,x_ob[2];
@@ -399,10 +398,7 @@ int main(int argc,char **argv)
   ierr = VecView(user.lambda[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(user.lambdap[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(user.lambdap[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecGetArray(user.lambda[0],&x_ptr);CHKERRQ(ierr);
-  ierr = VecGetArray(user.lambda[0],&x_ptr);CHKERRQ(ierr);
 
-  user.ts          = ts;
   Tao                tao;
   TaoConvergedReason reason;
   /* Create TAO solver and set desired solution method */
@@ -472,6 +468,7 @@ int main(int argc,char **argv)
 
   ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
   ierr = VecDestroy(&upperb);CHKERRQ(ierr);
+  ierr = VecDestroy(&p);CHKERRQ(ierr);
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

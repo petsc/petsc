@@ -510,23 +510,30 @@ static PetscErrorCode TSStepAdj_RK(TS ts)
     for (nadj=0; nadj<ts->numberadjs; nadj++) {
       ierr = MatMultTranspose(J,VecSensiTemp[nadj],VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
     }
+ 
     /* Stage values of mu */
-    ierr = TSRHSJacobianP(ts,rk->stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
-    for (nadj=0; nadj<ts->numberadjs; nadj++) {
-      ierr = MatMultTranspose(ts->Jacp,VecSensiTemp[nadj],VecDeltaMu[nadj*s+i]);CHKERRQ(ierr);
+    if(ts->vecs_sensip) {
+      ierr = TSRHSJacobianP(ts,rk->stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
+      for (nadj=0; nadj<ts->numberadjs; nadj++) {
+        ierr = MatMultTranspose(ts->Jacp,VecSensiTemp[nadj],VecDeltaMu[nadj*s+i]);CHKERRQ(ierr);
+      }
     }
   }
 
   for (j=0; j<s; j++) w[j] = 1.0;
   for (nadj=0; nadj<ts->numberadjs; nadj++) {
     ierr = VecMAXPY(ts->vecs_sensi[nadj],s,w,&VecDeltaLam[nadj*s]);CHKERRQ(ierr);
-    ierr = VecMAXPY(ts->vecs_sensip[nadj],s,w,&VecDeltaMu[nadj*s]);CHKERRQ(ierr);
+    if(ts->vecs_sensip) {
+      ierr = VecMAXPY(ts->vecs_sensip[nadj],s,w,&VecDeltaMu[nadj*s]);CHKERRQ(ierr);
+    }
   }
   ts->ptime += ts->time_step;
   ts->steps++;
   rk->status = TS_STEP_COMPLETE;
   ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vecs_sensi,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vecs_sensip,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
+  if(ts->vecs_sensip) {
+    ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vecs_sensip,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
