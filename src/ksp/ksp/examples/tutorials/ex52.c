@@ -26,9 +26,6 @@ int main(int argc,char **args)
 #if defined(PETSC_USE_LOG)
   PetscLogStage  stage;
 #endif
-#if defined(PETSC_HAVE_MUMPS)
-  Mat            F;
-#endif
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
