@@ -180,6 +180,40 @@ PetscErrorCode DMPlexPointLocalRef(DM dm,PetscInt point,PetscScalar *array,void 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexPointLocalFieldRead"
+/*@
+   DMPlexPointLocalFieldRead - return read access to a field on a point in local array
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM defining topological space
+.  point - topological point
+.  field - field number
+-  array - array to index into
+
+   Output Arguments:
+.  ptr - address of read reference to point data, type generic so user can place in structure
+
+   Level: intermediate
+
+.seealso: DMGetDefaultSection(), PetscSectionGetOffset(), PetscSectionGetDof(), DMPlexGetPointLocal(), DMPlexPointGlobalRef()
+@*/
+PetscErrorCode DMPlexPointLocalFieldRead(DM dm,PetscInt point,PetscInt field,const PetscScalar *array,const void *ptr)
+{
+  PetscErrorCode ierr;
+  PetscInt       start;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidScalarPointer(array,3);
+  PetscValidPointer(ptr,4);
+  ierr                      = DMPlexGetLocalFieldOffset_Private(dm,point,field,&start);CHKERRQ(ierr);
+  *(const PetscScalar**)ptr = array + start;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexPointLocalFieldRef"
 /*@
    DMPlexPointLocalFieldRef - return read/write access to a field on a point in local array
