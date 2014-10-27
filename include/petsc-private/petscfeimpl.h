@@ -240,6 +240,32 @@ PETSC_STATIC_INLINE PetscErrorCode EvaluateFieldJets(PetscDS prob, PetscBool bd,
   return 0;
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "EvaluateFaceFields"
+PETSC_STATIC_INLINE PetscErrorCode EvaluateFaceFields(PetscDS prob, PetscInt field, PetscInt faceLoc, const PetscScalar coefficients[], PetscScalar u[])
+{
+  PetscFE        fe;
+  PetscReal     *faceBasis;
+  PetscInt       Nb, Nc, b, c;
+  PetscErrorCode ierr;
+
+  if (!prob) return 0;
+  ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
+  ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+  ierr = PetscFEGetFaceTabulation(fe, &faceBasis);CHKERRQ(ierr);
+  for (c = 0; c < Nc; ++c) {u[c] = 0.0;}
+  for (b = 0; b < Nb; ++b) {
+    for (c = 0; c < Nc; ++c) {
+      const PetscInt cidx = b*Nc+c;
+
+      u[c] += coefficients[cidx]*faceBasis[faceLoc*Nb*Nc+cidx];
+    }
+  }
+  return 0;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "TransformF"
 PETSC_STATIC_INLINE void TransformF(PetscInt dim, PetscInt Nc, PetscInt q, const PetscReal invJ[], PetscReal detJ, const PetscReal quadWeights[], PetscScalar refSpaceDer[], PetscScalar f0[], PetscScalar f1[])
