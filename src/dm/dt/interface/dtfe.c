@@ -1821,9 +1821,9 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         } else if ((p >= pStart[1]) && (p < pEnd[1])) {
           /* Edges */
           PetscScalar *coords;
-          PetscInt     num = order-1, k;
+          PetscInt     num = ((dim == 1) && !order) ? 1 : order-1, k;
 
-          if (order < 2 || disc) continue;
+          if (num < 1 || disc) continue;
           coords = NULL;
           ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
           if (n != dim*2) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d has %d coordinate values instead of %d", p, n, dim*2);
@@ -1864,7 +1864,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
           ierr = PetscCalloc5(dim,&ind,dim,&tup,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
           ierr = DMPlexComputeCellGeometryFEM(dm, p, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
-          if (simplex || !lag->continuous) {
+          if (simplex || disc) {
             for (o = 0; o <= orderEff; ++o) {
               ierr = PetscMemzero(ind, dim*sizeof(PetscInt));CHKERRQ(ierr);
               while (ind[0] >= 0) {
