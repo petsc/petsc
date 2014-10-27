@@ -936,6 +936,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PC_IS          *pcis = (PC_IS*)(pc->data);
   IS             dirIS;
   Vec            used_vec;
+  PetscBool      remove_rhs = PETSC_FALSE;
 
   PetscFunctionBegin;
   /* if we are working with cg, one dirichlet solve can be avoided during Krylov iterations */
@@ -961,11 +962,11 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     used_vec = pcbddc->temp_solution;
     ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
   }
-  /* hack into ksp data structure PCPreSolve comes earlier in src/ksp/ksp/interface/itfunc.c */
+
+  /* hack into ksp data structure since PCPreSolve comes earlier than setting to zero the guess in src/ksp/ksp/interface/itfunc.c */
   if (ksp) {
-    PetscBool guess_nonzero;
-    ierr = KSPGetInitialGuessNonzero(ksp,&guess_nonzero);CHKERRQ(ierr);
-    if (!guess_nonzero) {
+    ierr = KSPGetInitialGuessNonzero(ksp,&pcbddc->ksp_guess_nonzero);CHKERRQ(ierr);
+    if (!pcbddc->ksp_guess_nonzero) {
       ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
     }
   }
@@ -997,24 +998,28 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = VecRestoreArray(pcis->vec1_N,&array_x);CHKERRQ(ierr);
     ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    remove_rhs = PETSC_TRUE;
+  }
 
-    /* remove the computed solution from the rhs */
+  /* remove the computed solution or the initial guess from the rhs */
+  if (remove_rhs || (ksp && pcbddc->ksp_guess_nonzero) ) {
     ierr = VecScale(used_vec,-1.0);CHKERRQ(ierr);
     ierr = MatMultAdd(pc->pmat,used_vec,rhs,rhs);CHKERRQ(ierr);
     ierr = VecScale(used_vec,-1.0);CHKERRQ(ierr);
+    ierr = VecCopy(used_vec,pcbddc->temp_solution);CHKERRQ(ierr);
   }
+  ierr = VecDestroy(&used_vec);CHKERRQ(ierr);
 
   /* store partially computed solution and set initial guess */
   if (x) {
-    ierr = VecCopy(used_vec,pcbddc->temp_solution);CHKERRQ(ierr);
-    ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
+    ierr = VecSet(x,0.0);CHKERRQ(ierr);
     if (pcbddc->use_exact_dirichlet_trick) {
       ierr = VecScatterBegin(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
-      ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      if (ksp) {
+      ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcis->global_to_D,pcis->vec2_D,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      if (ksp && !pcbddc->ksp_guess_nonzero) {
         ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
@@ -1042,11 +1047,10 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   }
 
   /* remove nullspace if present */
-  if (ksp && pcbddc->NullSpace) {
-    ierr = MatNullSpaceRemove(pcbddc->NullSpace,used_vec);CHKERRQ(ierr);
+  if (ksp && x && pcbddc->NullSpace) {
+    ierr = MatNullSpaceRemove(pcbddc->NullSpace,x);CHKERRQ(ierr);
     ierr = MatNullSpaceRemove(pcbddc->NullSpace,rhs);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(&used_vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1100,6 +1104,11 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   /* restore rhs to its original state */
   if (rhs) {
     ierr = VecCopy(pcbddc->original_rhs,rhs);CHKERRQ(ierr);
+  }
+
+  /* restore ksp guess state */
+  if (ksp) {
+    ierr = KSPSetInitialGuessNonzero(ksp,pcbddc->ksp_guess_nonzero);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
