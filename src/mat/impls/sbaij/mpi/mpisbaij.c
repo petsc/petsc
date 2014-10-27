@@ -1583,9 +1583,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        0,
                                /*139*/ 0,
                                        0,
-                                       0
+                                       0,
+                                       0,
+                                       0,
+                                /*144*/MatCreateMPIMatConcatenateSeqMat_MPISBAIJ
 };
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonalBlock_MPISBAIJ"
@@ -2889,28 +2891,8 @@ PetscErrorCode MatCreateMPISBAIJConcatenateSeqSBAIJNumeric(MPI_Comm comm,Mat inm
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatCreateMPISBAIJConcatenateSeqSBAIJ"
-/*@
-      MatCreateMPISBAIJConcatenateSeqSBAIJ - Creates a single large PETSc matrix by concatenating sequential
-                 matrices from each processor
-
-    Collective on MPI_Comm
-
-   Input Parameters:
-+    comm - the communicators the parallel matrix will live on
-.    inmat - the input sequential matrices
-.    n - number of local columns (or PETSC_DECIDE)
--    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
-
-   Output Parameter:
-.    outmat - the parallel matrix generated
-
-    Level: advanced
-
-   Notes: The number of columns of the matrix in EACH processor MUST be the same.
-
-@*/
-PetscErrorCode MatCreateMPISBAIJConcatenateSeqSBAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+#define __FUNCT__ "MatCreateMPIMatConcatenateSeqMat_MPISBAIJ"
+PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -2987,8 +2969,7 @@ PetscErrorCode MatGetRedundantMatrix_MPISBAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm
     matseq = redund->matseq;
   }
   ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
-  ierr = MatCreateMPISBAIJConcatenateSeqSBAIJ(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
-  //ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
+  ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
 
   if (reuse == MAT_INITIAL_MATRIX) {
     /* create a supporting struct and attach it to C for reuse */
