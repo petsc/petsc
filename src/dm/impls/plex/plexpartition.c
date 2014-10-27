@@ -50,18 +50,22 @@ const char ParMetisPartitionerCitation[] = "@article{KarypisKumar98,\n"
 @*/
 PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency)
 {
-  PetscInt       p, pStart, pEnd, a, adjSize, size;
+  PetscInt       p, pStart, pEnd, a, adjSize, size, nroots;
   PetscInt      *adj = NULL, *vOffsets = NULL;
+  IS             cellNumbering;
+  const PetscInt *cellNum;
   PetscBool      useCone, useClosure;
   PetscSection   section;
   PetscSegBuffer adjBuffer;
+  PetscSF        sfPoint;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, height, &pStart, &pEnd);CHKERRQ(ierr);
-  *numVertices = pEnd - pStart;
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   /* Build adjacency graph via a section/segbuffer */
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
@@ -71,7 +75,13 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
   ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMPlexSetAdjacencyUseClosure(dm, PETSC_FALSE);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; p++) {
+  if (nroots > 0) {
+    ierr = DMPlexGetCellNumbering(dm, &cellNumbering);CHKERRQ(ierr);
+    ierr = ISGetIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
+  }
+  for (*numVertices = 0, p = pStart; p < pEnd; p++) {
+    /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
+    if (nroots > 0) {if (cellNum[p] < 0) continue;}
     adjSize = PETSC_DETERMINE;
     ierr = DMPlexGetAdjacency(dm, p, &adjSize, &adj);CHKERRQ(ierr);
     for (a = 0; a < adjSize; ++a) {
@@ -83,6 +93,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
         *pBuf = point;
       }
     }
+    (*numVertices)++;
   }
   ierr = DMPlexSetAdjacencyUseCone(dm, useCone);CHKERRQ(ierr);
   ierr = DMPlexSetAdjacencyUseClosure(dm, useClosure);CHKERRQ(ierr);
@@ -90,10 +101,26 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
   ierr = PetscMalloc2(*numVertices+1, &vOffsets, size, adjacency);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; p++) {ierr = PetscSectionGetOffset(section, p, &(vOffsets[p]));CHKERRQ(ierr);}
+  for (p = 0; p < *numVertices; p++) {ierr = PetscSectionGetOffset(section, p, &(vOffsets[p]));CHKERRQ(ierr);}
   vOffsets[*numVertices] = size;
   if (offsets) *offsets = vOffsets;
-  if (adjacency) {ierr = PetscSegBufferExtractTo(adjBuffer, *adjacency);CHKERRQ(ierr);}
+  if (adjacency) {
+    ierr = PetscSegBufferExtractTo(adjBuffer, *adjacency);CHKERRQ(ierr);
+    if (nroots > 0) {
+      ISLocalToGlobalMapping ltogCells;
+      PetscInt n, size, *cells_arr;
+      /* In parallel, apply a global cell numbering to the graph */
+      ierr = ISRestoreIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingCreateIS(cellNumbering, &ltogCells);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetSize(ltogCells, &size);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetIndices(ltogCells, (const PetscInt**)&cells_arr);CHKERRQ(ierr);
+      /* Convert to positive global cell numbers */
+      for (n=0; n<size; n++) {if (cells_arr[n] < 0) cells_arr[n] = -(cells_arr[n]+1);}
+      ierr = ISLocalToGlobalMappingRestoreIndices(ltogCells, (const PetscInt**)&cells_arr);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingApplyBlock(ltogCells, vOffsets[*numVertices], *adjacency, *adjacency);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingDestroy(&ltogCells);CHKERRQ(ierr);
+    }
+  }
   /* Clean up */
   ierr = PetscSegBufferDestroy(&adjBuffer);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
