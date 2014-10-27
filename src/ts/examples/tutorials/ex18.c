@@ -267,7 +267,7 @@ static PetscErrorCode advect_inflow(PetscReal time, const PetscReal *c, const Pe
 static PetscErrorCode advect_outflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   PetscFunctionBeginUser;
-  xG[0] = xI[0];
+  xG[0] = xI[spatialDim];
   PetscFunctionReturn(0);
 }
 
