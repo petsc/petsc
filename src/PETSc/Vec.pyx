@@ -382,6 +382,16 @@ cdef class Vec(Object):
         self.set_attr('__placed_array__', None)
         return array
 
+    def getCUDAHandle(self):
+        cdef PetscScalar *hdl = NULL
+        CHKERR( VecCUSPGetCUDAArray(self.vec, &hdl) )
+        return <Py_uintptr_t>hdl
+
+    def restoreCUDAHandle(self, handle):
+        cdef PetscScalar *hdl = NULL
+        hdl = <PetscScalar*>(<Py_uintptr_t>handle)
+        CHKERR( VecCUSPRestoreCUDAArray(self.vec, &hdl) )
+
     def duplicate(self, array=None):
         cdef Vec vec = type(self)()
         CHKERR( VecDuplicate(self.vec, &vec.vec) )
