@@ -102,8 +102,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
-    } else {
-      ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     }
     /* Refine mesh using a volume constraint */
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
@@ -124,6 +122,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       }
     }
   }
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
