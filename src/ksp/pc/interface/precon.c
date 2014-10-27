@@ -1767,7 +1767,6 @@ PetscErrorCode  PCSetInitialGuessNonzero(PC pc,PetscBool flg)
 PetscErrorCode  PCGetInitialGuessNonzero(PC pc,PetscBool *flg)
 {
   PetscFunctionBegin;
-  PetscValidLogicalCollectiveBool(pc,flg,2);
   *flg = pc->nonzero_guess;
   PetscFunctionReturn(0);
 }
