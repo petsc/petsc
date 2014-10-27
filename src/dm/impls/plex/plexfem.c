@@ -610,7 +610,6 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
                                                               PetscInt field, DMLabel label, PetscInt numids, const PetscInt ids[], PetscErrorCode (*func)(PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*), void *ctx, Vec locX)
 {
   PetscDS            prob;
-  PetscFV            fv;
   PetscSF            sf;
   DM                 dmFace, dmCell, dmGrad;
   const PetscScalar *facegeom, *cellgeom, *grad;
@@ -631,6 +630,9 @@ static PetscErrorCode DMPlexInsertBoundaryValues_FVM_Internal(DM dm, PetscReal t
   ierr = VecGetDM(cellGeometry, &dmCell);CHKERRQ(ierr);
   ierr = VecGetArrayRead(cellGeometry, &cellgeom);CHKERRQ(ierr);
   if (Grad) {
+    PetscFV fv;
+
+    ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fv);CHKERRQ(ierr);
     ierr = VecGetDM(Grad, &dmGrad);CHKERRQ(ierr);
     ierr = VecGetArrayRead(Grad, &grad);CHKERRQ(ierr);
     ierr = PetscFVGetNumComponents(fv, &pdim);CHKERRQ(ierr);
