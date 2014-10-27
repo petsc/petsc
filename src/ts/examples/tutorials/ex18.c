@@ -66,50 +66,6 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
-{
-  DM              distributedMesh = NULL;
-  PetscBool       periodic        = user->xbd == DM_BOUNDARY_PERIODIC || user->xbd == DM_BOUNDARY_TWIST || user->ybd == DM_BOUNDARY_PERIODIC || user->ybd == DM_BOUNDARY_TWIST ? PETSC_TRUE : PETSC_FALSE;
-  const char     *filename        = user->filename;
-  const PetscInt  cells[3]        = {3, 3, 3};
-  const PetscReal L[3]            = {1.0, 1.0, 1.0};
-  PetscReal       maxCell[3];
-  DMLabel         label;
-  PetscInt        d;
-  size_t          len;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBeginUser;
-  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-  if (!len) {
-    ierr = DMPlexCreateHexBoxMesh(comm, user->dim, cells, user->xbd, user->ybd, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);
-  }
-  if (periodic) {for (d = 0; d < 3; ++d) maxCell[d] = 1.1*(L[d]/cells[d]); ierr = DMSetPeriodicity(*dm, maxCell, L);CHKERRQ(ierr);}
-  ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
-  if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
-  ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
-  if (distributedMesh) {
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = distributedMesh;
-  }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMPlexLocalizeCoordinates(*dm);CHKERRQ(ierr);
-  if (user->useFV) {
-    DM gdm;
-
-    ierr = DMPlexConstructGhostCells(*dm, NULL, NULL, &gdm);CHKERRQ(ierr);
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = gdm;
-  }
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 static void f0_lap_u(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[])
 {
   const PetscInt Nc = spatialDim;
@@ -316,32 +272,50 @@ static PetscErrorCode advect_outflow(PetscReal time, const PetscReal *c, const P
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SetupProblem"
-static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
+#define __FUNCT__ "CreateMesh"
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscDS        prob;
+  DM              distributedMesh = NULL;
+  PetscBool       periodic        = user->xbd == DM_BOUNDARY_PERIODIC || user->xbd == DM_BOUNDARY_TWIST || user->ybd == DM_BOUNDARY_PERIODIC || user->ybd == DM_BOUNDARY_TWIST ? PETSC_TRUE : PETSC_FALSE;
+  const char     *filename        = user->filename;
+  const PetscInt  cells[3]        = {3, 3, 3};
+  const PetscReal L[3]            = {1.0, 1.0, 1.0};
+  PetscReal       maxCell[3];
+  PetscInt        d;
+  size_t          len;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
+  if (!len) {
+    ierr = DMPlexCreateHexBoxMesh(comm, user->dim, cells, user->xbd, user->ybd, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
+  } else {
+    ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);
+  }
+  if (periodic) {for (d = 0; d < 3; ++d) maxCell[d] = 1.1*(L[d]/cells[d]); ierr = DMSetPeriodicity(*dm, maxCell, L);CHKERRQ(ierr);}
+  /* Distribute mesh */
+  ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
+  if (distributedMesh) {
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = distributedMesh;
+  }
+  /* Localize coordinates */
+  ierr = DMPlexLocalizeCoordinates(*dm);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SetupBC"
+static PetscErrorCode SetupBC(DM dm, AppCtx *user)
+{
+  DMLabel        label;
   PetscBool      check;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  switch (user->xbd) {
-  case DM_BOUNDARY_PERIODIC:
-    switch (user->ybd) {
-    case DM_BOUNDARY_PERIODIC:
-      ierr = PetscDSSetResidual(prob, 0, f0_lap_doubly_periodic_u, f1_lap_u);CHKERRQ(ierr);
-      break;
-    default:
-      ierr = PetscDSSetResidual(prob, 0, f0_lap_periodic_u, f1_lap_u);CHKERRQ(ierr);
-      break;
-    }
-    break;
-  default:
-    ierr = PetscDSSetResidual(prob, 0, f0_lap_u, f1_lap_u);CHKERRQ(ierr);
-    break;
-  }
-  ierr = PetscDSSetResidual(prob, 1, f0_advection, f1_advection);CHKERRQ(ierr);
-  ierr = PetscDSSetRiemannSolver(prob, 1, riemann_advection);CHKERRQ(ierr);
+  /* Set initial guesses and exact solutions */
   switch (user->dim) {
   case 2:
     user->initialGuess[0] = initialVelocity;
@@ -378,6 +352,49 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     user->initialGuess[0] = user->exactFuncs[0];
     user->initialGuess[1] = user->exactFuncs[1];
   }
+  /* Set BC */
+  ierr = DMPlexGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+  if (label) {
+    const PetscInt id = 1;
+
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+  }
+  ierr = DMPlexGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
+  if (label) {
+    const PetscInt inflowids[] = {100,200,300}, outflowids[] = {101};
+
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "inflow",  "Face Sets", 1, (void (*)()) advect_inflow,  ALEN(inflowids),  inflowids,  user);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "outflow", "Face Sets", 1, (void (*)()) advect_outflow, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SetupProblem"
+static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
+{
+  PetscDS        prob;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  switch (user->xbd) {
+  case DM_BOUNDARY_PERIODIC:
+    switch (user->ybd) {
+    case DM_BOUNDARY_PERIODIC:
+      ierr = PetscDSSetResidual(prob, 0, f0_lap_doubly_periodic_u, f1_lap_u);CHKERRQ(ierr);
+      break;
+    default:
+      ierr = PetscDSSetResidual(prob, 0, f0_lap_periodic_u, f1_lap_u);CHKERRQ(ierr);
+      break;
+    }
+    break;
+  default:
+    ierr = PetscDSSetResidual(prob, 0, f0_lap_u, f1_lap_u);CHKERRQ(ierr);
+    break;
+  }
+  ierr = PetscDSSetResidual(prob, 1, f0_advection, f1_advection);CHKERRQ(ierr);
+  ierr = PetscDSSetRiemannSolver(prob, 1, riemann_advection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -385,9 +402,8 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
 #define __FUNCT__ "SetupDiscretization"
 PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 {
-  DM              cdm   = dm;
-  const PetscInt  dim   = user->dim;
-  const PetscInt  id    = 1;
+  DM              cdm = dm;
+  const PetscInt  dim = user->dim;
   PetscQuadrature q;
   PetscFE         fe[2];
   PetscFV         fv;
@@ -413,23 +429,12 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
 
   /* Set discretization and boundary conditions for each mesh */
   while (cdm) {
-    DMLabel label;
-
     ierr = DMGetDS(cdm, &prob);CHKERRQ(ierr);
     ierr = PetscDSSetDiscretization(prob, 0, (PetscObject) fe[0]);CHKERRQ(ierr);
     if (user->useFV) {ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fv);CHKERRQ(ierr);}
     else             {ierr = PetscDSSetDiscretization(prob, 1, (PetscObject) fe[1]);CHKERRQ(ierr);}
 
     ierr = SetupProblem(cdm, user);CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(cdm, "marker", &label);CHKERRQ(ierr);
-    if (label) {ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "wall", "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);}
-    ierr = DMPlexGetLabel(cdm, "Face Sets", &label);CHKERRQ(ierr);
-    if (label) {
-      const PetscInt inflowids[] = {100,200,300}, outflowids[] = {101};
-
-      ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "inflow",  "Face Sets", 1, (void (*)()) advect_inflow,  ALEN(inflowids),  inflowids,  user);CHKERRQ(ierr);
-      ierr = DMPlexAddBoundary(cdm, PETSC_TRUE, "outflow", "Face Sets", 1, (void (*)()) advect_outflow, ALEN(outflowids), outflowids, user);CHKERRQ(ierr);
-    }
     ierr = DMPlexGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
 
     /* Coordinates were never localized for coarse meshes */
@@ -438,6 +443,32 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
   ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateDM"
+static PetscErrorCode CreateDM(MPI_Comm comm, AppCtx *user, DM *dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = CreateMesh(comm, user, dm);CHKERRQ(ierr);
+  /* Setup BC */
+  ierr = SetupBC(*dm, user);CHKERRQ(ierr);
+  /* Handle refinement, BC ids, etc. */
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  /* Construct ghost cells */
+  if (user->useFV) {
+    DM gdm;
+
+    ierr = DMPlexConstructGhostCells(*dm, NULL, NULL, &gdm);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = gdm;
+  }
+  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  /* Setup problem */
+  ierr = SetupDiscretization(*dm, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -479,7 +510,9 @@ PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, void (*func)
 #define __FUNCT__ "MonitorFunctionals"
 static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time, Vec X, void *ctx)
 {
+#if 0
   AppCtx            *user   = (AppCtx *) ctx;
+#endif
   char              *ftable = NULL;
   DM                 dm;
   PetscSection       s;
@@ -613,9 +646,8 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts, TSBEULER);CHKERRQ(ierr);
-  ierr = CreateMesh(comm, &user, &dm);CHKERRQ(ierr);
+  ierr = CreateDM(comm, &user, &dm);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
-  ierr = SetupDiscretization(dm, &user);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "solution");CHKERRQ(ierr);
