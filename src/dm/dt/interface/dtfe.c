@@ -2661,6 +2661,7 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   ierr = PetscFree((*fem)->numDof);CHKERRQ(ierr);
   ierr = PetscFree((*fem)->invV);CHKERRQ(ierr);
   ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->B, &(*fem)->D, NULL /*&(*fem)->H*/);CHKERRQ(ierr);
+  ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->F, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&(*fem)->basisSpace);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&(*fem)->dualSpace);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&(*fem)->quadrature);CHKERRQ(ierr);
@@ -3068,6 +3069,36 @@ PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal
   if (B) *B = fem->B;
   if (D) *D = fem->D;
   if (H) *H = fem->H;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEGetFaceTabulation"
+PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **F)
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  PetscValidPointer(F, 2);
+  if (!fem->F) {
+    PetscDualSpace  sp;
+    DM              dm;
+    const PetscInt *cone;
+    PetscReal      *centroids;
+    PetscInt        dim, numFaces, f;
+
+    ierr = PetscFEGetDualSpace(fem, &sp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, 0, &numFaces);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, 0, &cone);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numFaces*dim, &centroids);CHKERRQ(ierr);
+    for (f = 0; f < numFaces; ++f) {ierr = DMPlexComputeCellGeometryFVM(dm, cone[f], NULL, &centroids[f*dim], NULL);CHKERRQ(ierr);}
+    ierr = PetscFEGetTabulation(fem, numFaces, centroids, &fem->F, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscFree(centroids);CHKERRQ(ierr);
+  }
+  *F = fem->F;
   PetscFunctionReturn(0);
 }
 

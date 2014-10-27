@@ -94,6 +94,7 @@ struct _p_PetscFE {
   PetscInt       *numDof;        /* The number of dof on mesh points of each depth */
   PetscReal      *invV;          /* Change of basis matrix, from prime to nodal basis set */
   PetscReal      *B, *D, *H;     /* Tabulation of basis and derivatives at quadrature points */
+  PetscReal      *F;             /* Tabulation of basis at face centroids */
   PetscInt        blockSize, numBlocks;  /* Blocks are processed concurrently */
   PetscInt        batchSize, numBatches; /* A batch is made up of blocks, Batches are processed in serial */
 };
