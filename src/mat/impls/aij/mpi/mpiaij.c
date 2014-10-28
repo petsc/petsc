@@ -2401,74 +2401,6 @@ PetscErrorCode MatSolve_MPIAIJ(Mat A, Vec b, Vec x)
 #endif
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetRedundantMatrix_MPIAIJ"
-PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
-{
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscMPIInt    size;
-  PetscInt       mloc_sub,rstart,rend,M=mat->rmap->N,N=mat->cmap->N,bs=mat->rmap->bs;
-  Mat_Redundant  *redund=NULL;
-  PetscSubcomm   psubcomm=NULL;
-  MPI_Comm       subcomm_in=subcomm;
-  Mat            *matseq;
-  IS             isrow,iscol;
-  PetscBool      newsubcomm=PETSC_FALSE;
-
-  PetscFunctionBegin;
-  if (subcomm_in == MPI_COMM_NULL && reuse == MAT_INITIAL_MATRIX) { /* get subcomm if user does not provide subcomm */
-    /* create psubcomm, then get subcomm */
-    ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-    if (nsubcomm < 1 || nsubcomm > size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"nsubcomm must between 1 and %D",size);
-
-    ierr = PetscSubcommCreate(comm,&psubcomm);CHKERRQ(ierr);
-    ierr = PetscSubcommSetNumber(psubcomm,nsubcomm);CHKERRQ(ierr);
-    ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
-    ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
-    ierr = PetscCommDuplicate(psubcomm->comm,&subcomm,NULL);CHKERRQ(ierr);
-    newsubcomm = PETSC_TRUE;
-    ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
-  } 
-
-  /* get isrow, iscol and a local sequential matrix matseq[0] */
-  if (reuse == MAT_INITIAL_MATRIX) {
-    mloc_sub = PETSC_DECIDE;
-    ierr = PetscSplitOwnershipBlock(subcomm,bs,&mloc_sub,&M);CHKERRQ(ierr);
-    ierr = MPI_Scan(&mloc_sub,&rend,1,MPIU_INT,MPI_SUM,subcomm);CHKERRQ(ierr);
-    rstart = rend - mloc_sub;
-    ierr = ISCreateStride(PETSC_COMM_SELF,mloc_sub,rstart,1,&isrow);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
-  } else { /* reuse == MAT_REUSE_MATRIX */
-    /* retrieve subcomm */
-    ierr = PetscObjectGetComm((PetscObject)(*matredundant),&subcomm);CHKERRQ(ierr);
-    redund = (*matredundant)->redundant;
-    isrow  = redund->isrow;
-    iscol  = redund->iscol;
-    matseq = redund->matseq;
-  }
-  ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
-
-  /* get matredundant over subcomm */
-  ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
-
-  if (reuse == MAT_INITIAL_MATRIX) {
-    /* create a supporting struct and attach it to C for reuse */
-    ierr = PetscNewLog(*matredundant,&redund);CHKERRQ(ierr);
-    (*matredundant)->redundant = redund;
-    redund->isrow              = isrow;
-    redund->iscol              = iscol;
-    redund->matseq             = matseq;
-    if (newsubcomm) {
-      redund->subcomm          = subcomm;
-    } else {
-      redund->subcomm          = MPI_COMM_NULL;
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatGetRowMaxAbs_MPIAIJ"
 PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 {
@@ -2794,7 +2726,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                        0,
                                 /*109*/0,
-                                       MatGetRedundantMatrix_MPIAIJ,
+                                       0,
                                        MatGetRowMin_MPIAIJ,
                                        0,
                                        0,

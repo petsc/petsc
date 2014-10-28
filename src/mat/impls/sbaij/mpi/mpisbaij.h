@@ -21,6 +21,4 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode MatLoad_MPISBAIJ(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat,Vec,Vec);
-
-PETSC_INTERN PetscErrorCode MatGetRedundantMatrix_MPISBAIJ(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
 #endif

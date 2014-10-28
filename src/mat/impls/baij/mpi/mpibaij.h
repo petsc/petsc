@@ -80,5 +80,4 @@ PETSC_INTERN PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat,ISColoring,MatFDColor
 PETSC_INTERN PetscErrorCode MatFDColoringApply_BAIJ(Mat,MatFDColoring,Vec,void*);
 
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_MPIBAIJ(Mat,const PetscInt *,Mat,const PetscInt*,PetscInt*);
-PETSC_INTERN PetscErrorCode MatGetRedundantMatrix_MPIBAIJ(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
 #endif
