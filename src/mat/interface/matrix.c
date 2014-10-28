@@ -17,7 +17,7 @@ PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT
 PetscLogEvent MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 PetscLogEvent MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 PetscLogEvent MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
-PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetOrdering, MAT_GetRedundantMatrix, MAT_GetSeqNonzeroStructure;
+PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetOrdering, MAT_RedundantMat, MAT_GetSeqNonzeroStructure;
 PetscLogEvent MAT_IncreaseOverlap, MAT_Partitioning, MAT_Coarsen, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
 PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
 PetscLogEvent MAT_TransposeColoringCreate;
@@ -9089,9 +9089,9 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetRedundantMatrix"
+#define __FUNCT__ "MatCreateRedundantMatrix"
 /*@C
-   MatGetRedundantMatrix - Create redundant matrices and put them into processors of subcommunicators.
+   MatCreateRedundantMatrix - Create redundant matrices and put them into processors of subcommunicators.
 
    Collective on Mat
 
@@ -9106,7 +9106,7 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
 
    Notes:
    MAT_REUSE_MATRIX can only be used when the nonzero structure of the
-   original matrix has not changed from that last call to MatGetRedundantMatrix().
+   original matrix has not changed from that last call to MatCreateRedundantMatrix().
 
    This routine creates the duplicated matrices in subcommunicators; you should NOT create them before
    calling it.
@@ -9118,7 +9118,7 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
 
 .seealso: MatDestroy()
 @*/
-PetscErrorCode MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
+PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;
@@ -9151,7 +9151,7 @@ PetscErrorCode MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
-  ierr = PetscLogEventBegin(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_RedundantMat,mat,0,0,0);CHKERRQ(ierr);
   if (subcomm_in == MPI_COMM_NULL && reuse == MAT_INITIAL_MATRIX) { /* get subcomm if user does not provide subcomm */
     /* create psubcomm, then get subcomm */
     ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
@@ -9205,7 +9205,7 @@ PetscErrorCode MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,
       redund->subcomm          = MPI_COMM_NULL;
     }
   }
-  ierr = PetscLogEventEnd(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_RedundantMat,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
  
-static char help[] = "Tests MPI parallel matrix creation. Test MatGetRedundantMatrix() \n\n";
+static char help[] = "Tests MPI parallel matrix creation. Test MatCreateRedundantMatrix() \n\n";
 
 #include <petscmat.h>
 
@@ -85,11 +85,11 @@ int main(int argc,char **args)
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
-  /* Test MatGetRedundantMatrix() */
+  /* Test MatCreateRedundantMatrix() */
   nsubcomms = size;
   ierr = PetscOptionsGetInt(NULL,"-nsubcomms",&nsubcomms,NULL);CHKERRQ(ierr);
-  ierr = MatGetRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);
-  ierr = MatGetRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_REUSE_MATRIX,&Credundant);CHKERRQ(ierr);
+  ierr = MatCreateRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);
+  ierr = MatCreateRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_REUSE_MATRIX,&Credundant);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)Credundant,&subcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ int main(int argc,char **args)
   }
   ierr = MatDestroy(&Credundant);CHKERRQ(ierr);
    
-  /* Test MatGetRedundantMatrix() with user-provided subcomm */
+  /* Test MatCreateRedundantMatrix() with user-provided subcomm */
   {
     PetscSubcomm psubcomm;
 
@@ -110,8 +110,8 @@ int main(int argc,char **args)
     /* enable runtime switch of psubcomm type, e.g., '-psubcomm_type interlaced */
     ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
 
-    ierr = MatGetRedundantMatrix(C,nsubcomms,psubcomm->comm,MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);
-    ierr = MatGetRedundantMatrix(C,nsubcomms,psubcomm->comm,MAT_REUSE_MATRIX,&Credundant);CHKERRQ(ierr);
+    ierr = MatCreateRedundantMatrix(C,nsubcomms,psubcomm->comm,MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);
+    ierr = MatCreateRedundantMatrix(C,nsubcomms,psubcomm->comm,MAT_REUSE_MATRIX,&Credundant);CHKERRQ(ierr);
 
     ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
     ierr = MatDestroy(&Credundant);CHKERRQ(ierr);
