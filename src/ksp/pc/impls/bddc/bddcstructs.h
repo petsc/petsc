@@ -108,6 +108,7 @@ typedef struct _FETIDPMat_ctx *FETIDPMat_ctx;
 
 /* feti-dp dirichlet preconditioner */
 struct _FETIDPPC_ctx {
+  Mat        S_j;
   Vec        lambda_local;
   Mat        B_Ddelta;
   VecScatter l2g_lambda;

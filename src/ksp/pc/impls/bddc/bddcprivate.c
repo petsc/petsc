@@ -2598,41 +2598,6 @@ PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraint
   PetscFunctionReturn(0);
 }
 
-/* the next two functions has been adapted from pcis.c */
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCApplySchur"
-PetscErrorCode  PCBDDCApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
-{
-  PetscErrorCode ierr;
-  PC_IS          *pcis = (PC_IS*)(pc->data);
-
-  PetscFunctionBegin;
-  if (!vec2_B) { vec2_B = v; }
-  ierr = MatMult(pcis->A_BB,v,vec1_B);CHKERRQ(ierr);
-  ierr = MatMult(pcis->A_IB,v,vec1_D);CHKERRQ(ierr);
-  ierr = KSPSolve(pcis->ksp_D,vec1_D,vec2_D);CHKERRQ(ierr);
-  ierr = MatMult(pcis->A_BI,vec2_D,vec2_B);CHKERRQ(ierr);
-  ierr = VecAXPY(vec1_B,-1.0,vec2_B);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCApplySchurTranspose"
-PetscErrorCode  PCBDDCApplySchurTranspose(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
-{
-  PetscErrorCode ierr;
-  PC_IS          *pcis = (PC_IS*)(pc->data);
-
-  PetscFunctionBegin;
-  if (!vec2_B) { vec2_B = v; }
-  ierr = MatMultTranspose(pcis->A_BB,v,vec1_B);CHKERRQ(ierr);
-  ierr = MatMultTranspose(pcis->A_BI,v,vec1_D);CHKERRQ(ierr);
-  ierr = KSPSolveTranspose(pcis->ksp_D,vec1_D,vec2_D);CHKERRQ(ierr);
-  ierr = MatMultTranspose(pcis->A_IB,vec2_D,vec2_B);CHKERRQ(ierr);
-  ierr = VecAXPY(vec1_B,-1.0,vec2_B);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubsetNumbering"
 PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap, PetscInt n_local_dofs, PetscInt local_dofs[], PetscInt local_dofs_mult[], PetscInt* n_global_subset, PetscInt* global_numbering_subset[])
