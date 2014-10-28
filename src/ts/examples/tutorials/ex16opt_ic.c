@@ -75,14 +75,13 @@ Input parameters include:\n\
 typedef struct _n_User *User;
 struct _n_User {
   PetscReal mu;
-  PetscBool imex;
   PetscReal next_output;
   PetscInt  nstages; 
     
   PetscInt  steps;
   PetscReal ftime,x_ob[2];
   Mat       A;             /* Jacobian matrix */
-  Vec       x,lambda[2];        /* adjoint variables */
+  Vec       x,lambda[2];   /* adjoint variables */
 };
 
 PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
@@ -101,8 +100,6 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  //f[0] = (user->imex ? x[1] : 0);
-  //f[1] = 0.0;
   f[0] = x[1];
   f[1] = user->mu*(1.-x[0]*x[0])*x[1]-x[0];
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -266,13 +263,11 @@ int main(int argc,char **argv)
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.mu          = 1.0;
-  user.imex        = PETSC_FALSE;
   user.next_output = 0.0;
   user.steps       = 0;
   user.ftime       = 0.5;
 
   ierr = PetscOptionsGetReal(NULL,"-mu",&user.mu,NULL);CHKERRQ(ierr);
-  //ierr = PetscOptionsGetBool(NULL,"-imex",&user.imex,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -336,16 +331,16 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
   ierr = TSSetSensitivity(ts,user.lambda,1);CHKERRQ(ierr);
   
-  //   Switch to reverse mode
+  /*   Switch to reverse mode  */
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
-  //   Reset start time for the adjoint integration
+  /*   Reset start time for the adjoint integration */
   ierr = TSSetTime(ts,user.ftime);CHKERRQ(ierr);
 
-  //   Set RHS Jacobian and number of steps for the adjoint integration
+  /*   Set RHS Jacobian and number of steps for the adjoint integration */
   ierr = TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,user.steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
-  //   Set up monitor
+  /*   Set up monitor */
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorADJ2,&user,NULL);CHKERRQ(ierr);
 
@@ -362,10 +357,10 @@ int main(int argc,char **argv)
   /* Set initial solution guess */
   ierr = MatGetVecs(user.A,&ic,NULL);CHKERRQ(ierr);
   ierr = VecGetArray(ic,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0]  = 4.0;
-  x_ptr[1]  = 4.0;
+  x_ptr[0]  = 2.1;
+  x_ptr[1]  = 0.7;
   ierr = VecRestoreArray(ic,&x_ptr);CHKERRQ(ierr);
-
+  
   ierr = TaoSetInitialVector(tao,ic);CHKERRQ(ierr);
 
   /* Set routine for function and gradient evaluation */
@@ -377,13 +372,14 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(ic,&lowerb);CHKERRQ(ierr);
   ierr = VecDuplicate(ic,&upperb);CHKERRQ(ierr);
   ierr = VecGetArray(lowerb,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 0.0;
+  x_ptr[0] = 1.0; x_ptr[1] = 0.1;
   ierr = VecRestoreArray(lowerb,&x_ptr);CHKERRQ(ierr);
   ierr = VecGetArray(upperb,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 100.0;
+  x_ptr[0] = 3.0; x_ptr[1] = 0.9;
   ierr = VecRestoreArray(upperb,&x_ptr);CHKERRQ(ierr);
   ierr = TaoSetVariableBounds(tao,lowerb,upperb);
   */
+
   /* Check for any TAO command line options */
   KSP ksp;
   PC  pc;
@@ -394,7 +390,7 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
   
-  ierr = TaoSetTolerances(tao,1e-9,1e-9,1e-9,PETSC_DEFAULT,PETSC_DEFAULT);
+  ierr = TaoSetTolerances(tao,1e-10,1e-10,1e-10,PETSC_DEFAULT,PETSC_DEFAULT);
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolve(tao); CHKERRQ(ierr);
@@ -404,9 +400,10 @@ int main(int argc,char **argv)
   if (reason <= 0){
       ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
   }
-
+  
   ierr = VecView(ic,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  /* Free TAO data structures */
+  
+/* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -463,8 +460,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   /*ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);*/
   ierr = TSSetDuration(ts,2000,0.5);CHKERRQ(ierr);
 
-  //   Switch to forward mode
-  //ierr = TSSetReverseMode(ts,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = TSSetTolerances(ts,0.000001,NULL,0.000001,NULL);CHKERRQ(ierr);
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorBIN,user,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -477,9 +473,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = TSGetSolveTime(ts,&user->ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&user->steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %.6f, steps %D, ftime %g\n",(double)user->mu,user->steps,(double)user->ftime);CHKERRQ(ierr);
-   
+  PetscScalar *ic_ptr; 
+  ierr = VecGetArray(IC,&ic_ptr);CHKERRQ(ierr);
   ierr = VecGetArray(user->x,&x_ptr);CHKERRQ(ierr);
-  *f   = (x_ptr[0]-user->x_ob[0])*(x_ptr[0]-user->x_ob[0])+(x_ptr[1]-user->x_ob[1])*(x_ptr[1]-user->x_ob[1]);
+  *f   = (x_ptr[0]-user->x_ob[0])*(x_ptr[0]-user->x_ob[0])+(x_ptr[1]-user->x_ob[1])*(x_ptr[1]-user->x_ob[1])+ (ic_ptr[0]-1.999)*(ic_ptr[0]-1.999)*0.5+(ic_ptr[1]-0.666)*(ic_ptr[1]-0.666)*0.5;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Observed value y_ob=[%f; %f], ODE solution y=[%f;%f], Cost function f=%f\n",(double)user->x_ob[0],(double)user->x_ob[1],(double)x_ptr[0],(double)x_ptr[1],(double)(*f));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -489,26 +486,36 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = VecGetArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
   y_ptr[0] = 2.*(x_ptr[0]-user->x_ob[0]);   
   y_ptr[1] = 2.*(x_ptr[1]-user->x_ob[1]);
+  /* 
+  y_ptr[0] = 1.0;
+  y_ptr[1] = 0.0;
+  */
   ierr = VecRestoreArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
   ierr = TSSetSensitivity(ts,user->lambda,1);CHKERRQ(ierr);
 
-  //   Switch to reverse mode
+  /*   Switch to reverse mode */
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
-  //   Reset start time for the adjoint integration
+  /*   Reset start time for the adjoint integration */
   ierr = TSSetTime(ts,user->ftime);CHKERRQ(ierr);
 
-  //   Set RHS Jacobian and number of steps for the adjoint integration
+  /*   Set RHS Jacobian and number of steps for the adjoint integration */
   ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,user->steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
-  //   Set up monitor
+  /*   Set up monitor */
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorADJ2,user,NULL);CHKERRQ(ierr);
 
   ierr = TSSolve(ts,user->x);CHKERRQ(ierr);
-  
+ 
+  /* add regularization */ 
+  ierr = VecGetArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
+  y_ptr[0] += ic_ptr[0]-1.999;   
+  y_ptr[1] += ic_ptr[1]-0.666;
+  ierr = VecRestoreArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
   ierr = VecCopy(user->lambda[0],G);
   ierr = VecView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(IC,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);

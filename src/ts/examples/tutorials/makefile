@@ -112,6 +112,10 @@ ex16opt_ic: ex16opt_ic.o chkopts
 	-${CLINKER} -o ex16opt_ic ex16opt_ic.o ${PETSC_TS_LIB}
 	${RM} ex16opt_ic.o
 
+ex16opt_ic1: ex16opt_ic1.o chkopts
+	-${CLINKER} -o ex16opt_ic1 ex16opt_ic1.o ${PETSC_TS_LIB}
+	${RM} ex16opt_ic1.o
+
 ex17: ex17.o  chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_TS_LIB}
 	${RM} ex17.o
@@ -403,10 +407,10 @@ runex16:
 	   ${RM} -f ex16_1.tmp
 
 runex16_sa:
-	-@${MPIEXEC} -n 1 ./ex16_sa -monitor 0 ; 
+	-@${MPIEXEC} -n 1 ./ex16_sa -monitor 0 -viewer_binary_skip_info; 
 
 runex16adj:
-	-@${MPIEXEC} -n 1 ./ex16adj -monitor 0 ; 
+	-@${MPIEXEC} -n 1 ./ex16adj -monitor 0 -viewer_binary_skip_info; 
 
 runex16opt_p:
 	-@${MPIEXEC} -n 1 ./ex16opt_p -monitor 0 -viewer_binary_skip_info -tao_view; 
