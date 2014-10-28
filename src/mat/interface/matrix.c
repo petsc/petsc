@@ -9111,8 +9111,6 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
    This routine creates the duplicated matrices in subcommunicators; you should NOT create them before
    calling it.
 
-   Only MPIAIJ matrix is supported.
-
    Level: advanced
 
    Concepts: subcommunicator
@@ -9134,6 +9132,16 @@ PetscErrorCode MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,
   PetscBool      newsubcomm=PETSC_FALSE;
   
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
+  if (size == 1) {
+    if (reuse == MAT_INITIAL_MATRIX) {
+      ierr = MatDuplicate(mat,MAT_COPY_VALUES,matredundant);CHKERRQ(ierr);
+    } else {
+      ierr = MatCopy(mat,*matredundant,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
+
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (nsubcomm && reuse == MAT_REUSE_MATRIX) {
     PetscValidPointer(*matredundant,5);
