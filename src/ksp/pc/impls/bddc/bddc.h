@@ -55,6 +55,7 @@ typedef struct {
   Mat           local_mat;
   PetscBool     use_exact_dirichlet_trick;
   PetscBool     ksp_guess_nonzero;
+  PetscBool     rhs_change;
   /* Some defaults on selecting vertices and constraints*/
   PetscBool     use_local_adj;
   PetscBool     use_vertices;

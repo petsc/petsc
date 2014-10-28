@@ -936,7 +936,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PC_IS          *pcis = (PC_IS*)(pc->data);
   IS             dirIS;
   Vec            used_vec;
-  PetscBool      remove_rhs = PETSC_FALSE;
+  PetscBool      copy_rhs = PETSC_TRUE;
 
   PetscFunctionBegin;
   /* if we are working with cg, one dirichlet solve can be avoided during Krylov iterations */
@@ -954,10 +954,11 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   if (!pcbddc->temp_solution) {
     ierr = VecDuplicate(pcis->vec1_global,&pcbddc->temp_solution);CHKERRQ(ierr);
   }
+
   if (x) {
     ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
     used_vec = x;
-  } else {
+  } else { /* it can only happen when calling PCBDDCMatFETIDPGetRHS */
     ierr = PetscObjectReference((PetscObject)pcbddc->temp_solution);CHKERRQ(ierr);
     used_vec = pcbddc->temp_solution;
     ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
@@ -971,8 +972,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     }
   }
 
-  /* store the original rhs */
-  ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
+  pcbddc->rhs_change = PETSC_FALSE;
 
   /* Take into account zeroed rows -> change rhs and store solution removed */
   /* note that Dirichlet boundaries in global ordering (if any) has already been translated into local ordering in PCBDDCAnalyzeInterface */
@@ -998,11 +998,17 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = VecRestoreArray(pcis->vec1_N,&array_x);CHKERRQ(ierr);
     ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    remove_rhs = PETSC_TRUE;
+    pcbddc->rhs_change = PETSC_TRUE;
   }
 
   /* remove the computed solution or the initial guess from the rhs */
-  if (remove_rhs || (ksp && pcbddc->ksp_guess_nonzero) ) {
+  if (pcbddc->rhs_change || (ksp && pcbddc->ksp_guess_nonzero) ) {
+    /* store the original rhs */
+    if (copy_rhs) {
+      ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
+      copy_rhs = PETSC_FALSE;
+    }
+    pcbddc->rhs_change = PETSC_TRUE;
     ierr = VecScale(used_vec,-1.0);CHKERRQ(ierr);
     ierr = MatMultAdd(pc->pmat,used_vec,rhs,rhs);CHKERRQ(ierr);
     ierr = VecScale(used_vec,-1.0);CHKERRQ(ierr);
@@ -1041,14 +1047,27 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = PetscObjectReference((PetscObject)pcbddc->new_global_mat);CHKERRQ(ierr);
     pc->mat = pcbddc->new_global_mat;
 
+    /* store the original rhs */
+    if (copy_rhs) {
+      ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
+      copy_rhs = PETSC_FALSE;
+    }
+
     /* change rhs */
     ierr = MatMultTranspose(change_ctx->global_change,rhs,pcis->vec1_global);CHKERRQ(ierr);
     ierr = VecCopy(pcis->vec1_global,rhs);CHKERRQ(ierr);
+    pcbddc->rhs_change = PETSC_TRUE;
   }
 
   /* remove nullspace if present */
   if (ksp && x && pcbddc->NullSpace) {
     ierr = MatNullSpaceRemove(pcbddc->NullSpace,x);CHKERRQ(ierr);
+    /* store the original rhs */
+    if (copy_rhs) {
+      ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
+      copy_rhs = PETSC_FALSE;
+    }
+    pcbddc->rhs_change = PETSC_TRUE;
     ierr = MatNullSpaceRemove(pcbddc->NullSpace,rhs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1097,14 +1116,15 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   }
 
   /* add solution removed in presolve */
-  if (x) {
+  if (x && pcbddc->rhs_change) {
     ierr = VecAXPY(x,1.0,pcbddc->temp_solution);CHKERRQ(ierr);
   }
 
   /* restore rhs to its original state */
-  if (rhs) {
+  if (rhs && pcbddc->rhs_change) {
     ierr = VecCopy(pcbddc->original_rhs,rhs);CHKERRQ(ierr);
   }
+  pcbddc->rhs_change = PETSC_FALSE;
 
   /* restore ksp guess state */
   if (ksp) {

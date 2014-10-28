@@ -423,7 +423,9 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       /* assemble subdomain vector on local nodes */
       ierr = VecSet(pcis->vec1_N,zero);CHKERRQ(ierr);
       ierr = VecGetArrayRead(pcbddc->vec1_R,&array);CHKERRQ(ierr);
-      ierr = VecSetValues(pcis->vec1_N,n_R,idx_R_local,array,INSERT_VALUES);CHKERRQ(ierr);
+      if (n_R) {
+        ierr = VecSetValues(pcis->vec1_N,n_R,idx_R_local,array,INSERT_VALUES);CHKERRQ(ierr);
+      }
       ierr = VecRestoreArrayRead(pcbddc->vec1_R,&array);CHKERRQ(ierr);
       ierr = VecSetValue(pcis->vec1_N,pcbddc->primal_indices_local_idxs[i],one,INSERT_VALUES);CHKERRQ(ierr);
       ierr = VecAssemblyBegin(pcis->vec1_N);CHKERRQ(ierr);
@@ -497,7 +499,9 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
       /* assemble subdomain vector on nodes */
       ierr = VecSet(pcis->vec1_N,zero);CHKERRQ(ierr);
       ierr = VecGetArrayRead(pcbddc->vec1_R,&array);CHKERRQ(ierr);
-      ierr = VecSetValues(pcis->vec1_N,n_R,idx_R_local,array,INSERT_VALUES);CHKERRQ(ierr);
+      if (n_R) {
+        ierr = VecSetValues(pcis->vec1_N,n_R,idx_R_local,array,INSERT_VALUES);CHKERRQ(ierr);
+      }
       ierr = VecRestoreArrayRead(pcbddc->vec1_R,&array);CHKERRQ(ierr);
       ierr = VecAssemblyBegin(pcis->vec1_N);CHKERRQ(ierr);
       ierr = VecAssemblyEnd(pcis->vec1_N);CHKERRQ(ierr);
@@ -598,7 +602,9 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         /* assemble subdomain vector on nodes */
         ierr = VecSet(pcis->vec1_N,zero);CHKERRQ(ierr);
         ierr = VecGetArrayRead(pcbddc->vec1_R,&array);CHKERRQ(ierr);
-        ierr = VecSetValues(pcis->vec1_N,n_R,idx_R_local,array,INSERT_VALUES);CHKERRQ(ierr);
+        if (n_R) {
+          ierr = VecSetValues(pcis->vec1_N,n_R,idx_R_local,array,INSERT_VALUES);CHKERRQ(ierr);
+        }
         ierr = VecRestoreArrayRead(pcbddc->vec1_R,&array);CHKERRQ(ierr);
         if (i<n_vertices) {
           ierr = VecSetValue(pcis->vec1_N,pcbddc->primal_indices_local_idxs[i],one,INSERT_VALUES);CHKERRQ(ierr);
@@ -1273,7 +1279,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
   ierr = PCBDDCScatterCoarseDataBegin(pc,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = PCBDDCScatterCoarseDataEnd(pc,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  /* Coarse solution -> rhs and sol updated in PCBDDCScattarCoarseDataBegin/End */
+  /* Coarse solution -> rhs and sol updated inside PCBDDCScattarCoarseDataBegin/End */
   /* TODO remove null space when doing multilevel */
   if (pcbddc->coarse_ksp) {
     if (applytranspose) {
@@ -1282,27 +1288,28 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
       ierr = KSPSolve(pcbddc->coarse_ksp,NULL,NULL);CHKERRQ(ierr);
     }
   }
-  /* start communications from coarse solver solution to local primal nodes */
-  ierr = PCBDDCScatterCoarseDataBegin(pc,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
   /* Local solution on R nodes */
-  ierr = VecSet(pcbddc->vec1_R,zero);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcbddc->R_to_B,pcis->vec1_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(pcbddc->R_to_B,pcis->vec1_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  if (pcbddc->switch_static) {
-    ierr = VecScatterBegin(pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
-  ierr = PCBDDCSolveSubstructureCorrection(pc,pcbddc->vec1_R,pcbddc->vec2_R,pcbddc->vec1_C,applytranspose);CHKERRQ(ierr);
-  ierr = VecSet(pcis->vec1_B,zero);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  if (pcbddc->switch_static) {
-    ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec2_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec2_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  if (pcis->n) {
+    ierr = VecSet(pcbddc->vec1_R,zero);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->R_to_B,pcis->vec1_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->R_to_B,pcis->vec1_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    if (pcbddc->switch_static) {
+      ierr = VecScatterBegin(pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    }
+    ierr = PCBDDCSolveSubstructureCorrection(pc,pcbddc->vec1_R,pcbddc->vec2_R,pcbddc->vec1_C,applytranspose);CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec1_B,zero);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    if (pcbddc->switch_static) {
+      ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec2_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec2_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    }
   }
 
-  /* complete communications from coarse sol to local primal nodes */
+  /* communications from coarse sol to local primal nodes */
+  ierr = PCBDDCScatterCoarseDataBegin(pc,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = PCBDDCScatterCoarseDataEnd(pc,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
   /* Sum contributions from two levels */
@@ -2870,7 +2877,6 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
     }
     n_subdomains = PetscMin((PetscInt)size,n_subdomains);
     coarsening_ratio = size/n_subdomains;
-    /* Parmetis does not always give back nparts with small graphs! this should be taken into account */
     ierr = MatPartitioningSetNParts(partitioner,n_subdomains);CHKERRQ(ierr);
     ierr = MatPartitioningSetFromOptions(partitioner);CHKERRQ(ierr);
     ierr = MatPartitioningApply(partitioner,&new_ranks);CHKERRQ(ierr);
@@ -3029,6 +3035,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
 
   /* Get data from local matrices */
   if (!isdense) {
+    SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Subassembling of AIJ local matrices not yet implemented");
     /* TODO: See below some guidelines on how to prepare the local buffers */
     /*
        send_buffer_vals should contain the raw values of the local matrix
@@ -3844,6 +3851,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = PetscViewerASCIIPrintf(dbg_viewer,"Coarse problem residual infty_error: %1.6e\n",abs_infty_error);CHKERRQ(ierr);
         if (compute_eigs) {
           PetscReal lambda_max_s,lambda_min_s;
+          ierr = KSPGetType(check_ksp,&check_ksp_type);CHKERRQ(ierr);
           ierr = KSPGetIterationNumber(check_ksp,&its);CHKERRQ(ierr);
           ierr = KSPComputeExtremeSingularValues(check_ksp,&lambda_max_s,&lambda_min_s);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPrintf(dbg_viewer,"Coarse problem eigenvalues (estimated with %d iterations of %s): %1.6e %1.6e (%1.6e %1.6e)\n",its,check_ksp_type,lambda_min,lambda_max,lambda_min_s,lambda_max_s);CHKERRQ(ierr);
