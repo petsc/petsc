@@ -536,18 +536,17 @@ PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *ro
 - leafrank    - The rank of each process sharing a leaf point
 
   Output Parameters:
-+ overlapSF   - The star forest mapping remote overlap points into a contiguous leaf space
++ ovLabel     - DMLabel containing remote overlap contributions as point/rank pairings
 
   Level: developer
 
 .seealso: DMPlexDistributeOwnership(), DMPlexDistribute()
 @*/
-PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, PetscSF *overlapSF)
+PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, DMLabel *ovLabel)
 {
   MPI_Comm           comm;
   DMLabel            ovAdjByRank; /* A DMLabel containing all points adjacent to shared points, separated by rank (value in label) */
   PetscSF            sfPoint, sfProc;
-  DMLabel            ovLeafLabel;
   const PetscSFNode *remote;
   const PetscInt    *local;
   const PetscInt    *nrank, *rrank;
@@ -623,25 +622,16 @@ PetscErrorCode DMPlexCreateOverlap(DM dm, PetscInt levels, PetscSection rootSect
   }
   /* Make process SF and invert sender to receiver label */
   ierr = DMPlexCreateTwoSidedProcessSF(dm, sfPoint, rootSection, rootrank, leafSection, leafrank, NULL, &sfProc);CHKERRQ(ierr);
-  ierr = DMLabelCreate("ovLeafs", &ovLeafLabel);CHKERRQ(ierr);
-  ierr = DMPlexPartitionLabelInvert(dm, ovAdjByRank, sfProc, ovLeafLabel);CHKERRQ(ierr);
-  /* Don't import points from yourself */
-  ierr = DMLabelClearStratum(ovLeafLabel, rank);CHKERRQ(ierr);
-  /* Don't import points already in the pointSF */
+  ierr = DMLabelCreate("Overlap label", ovLabel);CHKERRQ(ierr);
+  ierr = DMPlexPartitionLabelInvert(dm, ovAdjByRank, sfProc, *ovLabel);CHKERRQ(ierr);
+  /* Add owned points, except for shared local points */
+  for (p = pStart; p < pEnd; ++p) {ierr = DMLabelSetValue(*ovLabel, p, rank);CHKERRQ(ierr);}
   for (l = 0; l < nleaves; ++l) {
-    ierr = DMLabelClearValue(ovLeafLabel, remote[l].index, remote[l].rank);CHKERRQ(ierr);
-  }
-  /* Convert receiver label to SF */
-  ierr = DMPlexPartitionLabelCreateSF(dm, ovLeafLabel, overlapSF);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *overlapSF, "Overlap SF");CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(*overlapSF);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscPrintf(comm, "Overlap SF\n");CHKERRQ(ierr);
-    ierr = PetscSFView(*overlapSF, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = DMLabelClearValue(*ovLabel, local[l], rank);CHKERRQ(ierr);
+    ierr = DMLabelSetValue(*ovLabel, remote[l].index, remote[l].rank);CHKERRQ(ierr);
   }
   /* Clean up */
   ierr = DMLabelDestroy(&ovAdjByRank);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&ovLeafLabel);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfProc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -739,6 +729,73 @@ PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF 
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*migrationSF, pEnd-pStart, newLeaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER);CHKERRQ(ierr);
 
+  ierr = PetscFree3(depthRecv, depthShift, depthIdx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexStratifyMigrationSF"
+/*@
+  DMPlexStratifyMigrationSF - Add partition overlap to a distributed non-overlapping DM.
+
+  Input Parameter:
++ dm          - The DM
+- sf          - A star forest with non-ordered leaves, usually defining a DM point migration
+
+  Output Parameter:
+. migrationSF - A star forest with added leaf indirection that ensures the resulting DM is stratified
+
+  Level: developer
+
+.seealso: DMPlexPartitionLabelCreateSF(), DMPlexDistribute(), DMPlexDistributeOverlap()
+@*/
+PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF)
+{
+  MPI_Comm           comm;
+  PetscMPIInt        rank, numProcs;
+  PetscInt           d, dim, depth, p, pStart, pEnd, nroots, nleaves;
+  PetscInt          *pointDepths, *remoteDepths, *ilocal;
+  PetscInt          *depthRecv, *depthShift, *depthIdx;
+  const PetscSFNode *iremote;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+
+  /* Before building the migration SF we need to know the new stratum offsets */
+  ierr = PetscSFGetGraph(sf, &nroots, &nleaves, NULL, &iremote);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nroots, &pointDepths, nleaves, &remoteDepths);CHKERRQ(ierr);
+  for (d=0; d<dim+1; d++) {
+    ierr = DMPlexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p=pStart; p<pEnd; p++) pointDepths[p] = d;
+  }
+  for (p=0; p<nleaves; p++) remoteDepths[p] = -1;
+  ierr = PetscSFBcastBegin(sf, MPIU_INT, pointDepths, remoteDepths);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf, MPIU_INT, pointDepths, remoteDepths);CHKERRQ(ierr);
+  /* Count recevied points in each stratum and compute the internal strata shift */
+  ierr = PetscMalloc3(dim+1, &depthRecv, dim+1, &depthShift, dim+1, &depthIdx);CHKERRQ(ierr);
+  for (d=0; d<dim+1; d++) depthRecv[d]=0;
+  for (p=0; p<nleaves; p++) depthRecv[remoteDepths[p]]++;
+  depthShift[dim] = 0;
+  for (d=0; d<dim; d++) depthShift[d] = depthRecv[dim];
+  for (d=1; d<dim; d++) depthShift[d] += depthRecv[0];
+  for (d=dim-2; d>0; d--) depthShift[d] += depthRecv[d+1];
+  for (d=0; d<dim+1; d++) {depthIdx[d] = 0;}
+  /* Derive a new local permutation based on stratified indices */
+  ierr = PetscMalloc1(nleaves, &ilocal);CHKERRQ(ierr);
+  for (p=0; p<nleaves; p++) {
+    depth = remoteDepths[p];
+    ilocal[p] = depthShift[depth] + depthIdx[depth];
+    depthIdx[depth]++;
+  }
+  ierr = PetscSFCreate(comm, migrationSF);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *migrationSF, "Migration SF");CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*migrationSF, nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_COPY_VALUES);CHKERRQ(ierr);
+  ierr = PetscFree2(pointDepths,remoteDepths);CHKERRQ(ierr);
   ierr = PetscFree3(depthRecv, depthShift, depthIdx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1473,12 +1530,13 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   PetscMPIInt            rank;
   PetscSection           rootSection, leafSection;
   IS                     rootrank, leafrank;
-  PetscSF                overlapSF, migrationSF, pointSF, newPointSF;
+  DMLabel                lblOverlap;
+  PetscSF                sfOverlap, sfStratified, newPointSF;
   PetscSFNode           *ghostRemote;
   const PetscSFNode     *overlapRemote;
   const PetscInt        *overlapLocal;
   PetscInt               p, pStart, pEnd, idx;
-  PetscInt               numGhostPoints, numOverlapPoints, numSharedPoints, overlapLeaves;
+  PetscInt               numGhostPoints, numLocalPoints, overlapLeaves;
   PetscInt              *ghostLocal, *pointIDs, *recvPointIDs;
   PetscErrorCode         ierr;
 
@@ -1495,36 +1553,40 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   ierr = PetscSectionCreate(comm, &rootSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &leafSection);CHKERRQ(ierr);
   ierr = DMPlexDistributeOwnership(dm, rootSection, &rootrank, leafSection, &leafrank);CHKERRQ(ierr);
-  ierr = DMPlexCreateOverlap(dm, overlap, rootSection, rootrank, leafSection, leafrank, &overlapSF);CHKERRQ(ierr);
+  ierr = DMPlexCreateOverlap(dm, overlap, rootSection, rootrank, leafSection, leafrank, &lblOverlap);CHKERRQ(ierr);
+  /* Convert overlap label to stratified migration SF */
+  ierr = DMPlexPartitionLabelCreateSF(dm, lblOverlap, &sfOverlap);CHKERRQ(ierr);
+  ierr = DMPlexStratifyMigrationSF(dm, sfOverlap, &sfStratified);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sfOverlap);CHKERRQ(ierr);
+  sfOverlap = sfStratified;
+  ierr = PetscObjectSetName((PetscObject) sfOverlap, "Overlap SF");CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(sfOverlap);CHKERRQ(ierr);
+
   ierr = PetscSectionDestroy(&rootSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&leafSection);CHKERRQ(ierr);
   ierr = ISDestroy(&rootrank);CHKERRQ(ierr);
   ierr = ISDestroy(&leafrank);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
 
-  /* Build dense migration SF that maps the non-overlapping partition to the overlapping one */
-  ierr = DMPlexCreateOverlapMigrationSF(dm, overlapSF, &migrationSF);CHKERRQ(ierr);
-
   /* Build the overlapping DM */
   ierr = DMPlexCreate(comm, dmOverlap);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dmOverlap, "Parallel Mesh");CHKERRQ(ierr);
-  ierr = DMPlexMigrate(dm, migrationSF, *dmOverlap);CHKERRQ(ierr);
+  ierr = DMPlexMigrate(dm, sfOverlap, *dmOverlap);CHKERRQ(ierr);
 
   /* Build the new point SF by propagating the depthShift generate remote root indices */
-  ierr = DMGetPointSF(dm, &pointSF);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(pointSF, NULL, &numSharedPoints, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(overlapSF, NULL, &numOverlapPoints, NULL, NULL);CHKERRQ(ierr);
-  numGhostPoints = numSharedPoints + numOverlapPoints;
+  ierr = PetscSFGetGraph(sfOverlap, NULL, &overlapLeaves, &overlapLocal, &overlapRemote);CHKERRQ(ierr);
+  ierr = DMLabelGetStratumSize(lblOverlap, rank, &numLocalPoints);CHKERRQ(ierr);
+  numGhostPoints = overlapLeaves - numLocalPoints;
   ierr = PetscMalloc1(numGhostPoints, &ghostLocal);CHKERRQ(ierr);
   ierr = PetscMalloc1(numGhostPoints, &ghostRemote);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(migrationSF, NULL, &overlapLeaves, &overlapLocal, &overlapRemote);CHKERRQ(ierr);
+
   ierr = PetscMalloc2(pEnd-pStart, &pointIDs, overlapLeaves, &recvPointIDs);CHKERRQ(ierr);
   for (p=0; p<overlapLeaves; p++) {
     if (overlapRemote[p].rank == rank) pointIDs[overlapRemote[p].index] = overlapLocal[p];
   }
-  ierr = PetscSFBcastBegin(migrationSF, MPIU_INT, pointIDs, recvPointIDs);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(migrationSF, MPIU_INT, pointIDs, recvPointIDs);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfOverlap, MPIU_INT, pointIDs, recvPointIDs);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfOverlap, MPIU_INT, pointIDs, recvPointIDs);CHKERRQ(ierr);
   for (idx=0, p=0; p<overlapLeaves; p++) {
     if (overlapRemote[p].rank != rank) {
       ghostLocal[idx] = overlapLocal[p];
@@ -1539,9 +1601,9 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   ierr = DMSetPointSF(*dmOverlap, newPointSF);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&newPointSF);CHKERRQ(ierr);
   /* Cleanup overlap partition */
-  ierr = PetscSFDestroy(&overlapSF);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&lblOverlap);CHKERRQ(ierr);
   ierr = PetscFree2(pointIDs, recvPointIDs);CHKERRQ(ierr);
-  if (sf) *sf = migrationSF;
-  else    {ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);}
+  if (sf) *sf = sfOverlap;
+  else    {ierr = PetscSFDestroy(&sfOverlap);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

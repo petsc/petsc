@@ -203,7 +203,7 @@ PETSC_EXTERN PetscErrorCode DMPlexPermute(DM, IS, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateProcessSF(DM, PetscSF, IS *, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM, PetscSF, PetscSection, IS, PetscSection, IS, IS *, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeOwnership(DM, PetscSection, IS *, PetscSection, IS *);
-PETSC_EXTERN PetscErrorCode DMPlexCreateOverlap(DM, PetscInt, PetscSection, IS, PetscSection, IS, PetscSF *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateOverlap(DM, PetscInt, PetscSection, IS, PetscSection, IS, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateOverlapMigrationSF(DM, PetscSF, PetscSF *);
 
 /* Submesh Support */
