@@ -209,17 +209,12 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIAIJWithSplitArrays(MPI_Comm,PetscInt,Pet
 
 PETSC_EXTERN PetscErrorCode MatCreateSeqBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-
-PETSC_EXTERN PetscErrorCode MatCreateMPIBAIJConcatenateSeqBAIJSymbolic(MPI_Comm,Mat,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPIBAIJConcatenateSeqBAIJNumeric(MPI_Comm,Mat,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode MatCreateMPIBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat*);
 
 PETSC_EXTERN PetscErrorCode MatCreateMPIAdj(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqSBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 
 PETSC_EXTERN PetscErrorCode MatCreateSBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPISBAIJConcatenateSeqSBAIJSymbolic(MPI_Comm,Mat,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPISBAIJConcatenateSeqSBAIJNumeric(MPI_Comm,Mat,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode MatCreateMPISBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat *);
 PETSC_EXTERN PetscErrorCode MatSeqSBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatMPISBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
@@ -502,8 +497,6 @@ PETSC_EXTERN PetscErrorCode MatRestoreLocalSubMatrix(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSeqNonzeroStructure(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatDestroySeqNonzeroStructure(Mat*);
 
-PETSC_EXTERN PetscErrorCode MatCreateMPIAIJConcatenateSeqAIJSymbolic(MPI_Comm,Mat,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPIAIJConcatenateSeqAIJNumeric(MPI_Comm,Mat,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm,Mat,PetscInt,PetscInt,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm,Mat,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat,Mat);

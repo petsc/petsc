@@ -3877,89 +3877,55 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,PetscInt nl,void *advalues)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatCreateMPIAIJConcatenateSeqAIJSymbolic"
-PetscErrorCode MatCreateMPIAIJConcatenateSeqAIJSymbolic(MPI_Comm comm,Mat inmat,PetscInt n,Mat *outmat)
-{
-  PetscErrorCode ierr;
-  PetscInt       m,N,i,rstart,nnz,*dnz,*onz,sum,bs,cbs;
-  PetscInt       *indx;
-
-  PetscFunctionBegin;
-  /* This routine will ONLY return MPIAIJ type matrix */
-  ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
-  ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
-  if (n == PETSC_DECIDE) {
-    ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
-  }
-  /* Check sum(n) = N */
-  ierr = MPI_Allreduce(&n,&sum,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  if (sum != N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local columns != global columns %d",N);
-
-  ierr    = MPI_Scan(&m, &rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  rstart -= m;
-
-  ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {
-    ierr = MatGetRow_SeqAIJ(inmat,i,&nnz,&indx,NULL);CHKERRQ(ierr);
-    ierr = MatPreallocateSet(i+rstart,nnz,indx,dnz,onz);CHKERRQ(ierr);
-    ierr = MatRestoreRow_SeqAIJ(inmat,i,&nnz,&indx,NULL);CHKERRQ(ierr);
-  }
-
-  ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*outmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(*outmat,bs,cbs);CHKERRQ(ierr);
-  ierr = MatSetType(*outmat,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(*outmat,0,dnz,0,onz);CHKERRQ(ierr);
-  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateMPIAIJConcatenateSeqAIJNumeric"
-PetscErrorCode  MatCreateMPIAIJConcatenateSeqAIJNumeric(MPI_Comm comm,Mat inmat,PetscInt n,Mat outmat)
+#define __FUNCT__ "MatCreateMPIMatConcatenateSeqMat_MPIAIJ"
+PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
   PetscErrorCode ierr;
   PetscInt       m,N,i,rstart,nnz,Ii;
   PetscInt       *indx;
   PetscScalar    *values;
-
+  
   PetscFunctionBegin;
   ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(outmat,&rstart,NULL);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX) { /* symbolic phase */
+    PetscInt       *dnz,*onz,sum,bs,cbs;
+   
+    if (n == PETSC_DECIDE) {
+      ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
+    }
+    /* Check sum(n) = N */
+    ierr = MPI_Allreduce(&n,&sum,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    if (sum != N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local columns != global columns %d",N);
+
+    ierr    = MPI_Scan(&m, &rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    rstart -= m;
+
+    ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      ierr = MatGetRow_SeqAIJ(inmat,i,&nnz,&indx,NULL);CHKERRQ(ierr);
+      ierr = MatPreallocateSet(i+rstart,nnz,indx,dnz,onz);CHKERRQ(ierr);
+      ierr = MatRestoreRow_SeqAIJ(inmat,i,&nnz,&indx,NULL);CHKERRQ(ierr);
+    }
+
+    ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
+    ierr = MatSetSizes(*outmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(*outmat,bs,cbs);CHKERRQ(ierr);
+    ierr = MatSetType(*outmat,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*outmat,0,dnz,0,onz);CHKERRQ(ierr);
+    ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  } 
+ 
+  /* numeric phase */
+  ierr = MatGetOwnershipRange(*outmat,&rstart,NULL);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ierr = MatGetRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
     Ii   = i + rstart;
-    ierr = MatSetValues(outmat,1,&Ii,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(*outmat,1,&Ii,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateMPIMatConcatenateSeqMat_MPIAIJ"
-PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(MAT_Merge,inmat,0,0,0);CHKERRQ(ierr);
-  if (size == 1) {
-    if (scall == MAT_INITIAL_MATRIX) {
-      ierr = MatDuplicate(inmat,MAT_COPY_VALUES,outmat);CHKERRQ(ierr);
-    } else {
-      ierr = MatCopy(inmat,*outmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    }
-  } else {
-    if (scall == MAT_INITIAL_MATRIX) {
-      ierr = MatCreateMPIAIJConcatenateSeqAIJSymbolic(comm,inmat,n,outmat);CHKERRQ(ierr);
-    } 
-    ierr = MatCreateMPIAIJConcatenateSeqAIJNumeric(comm,inmat,n,*outmat);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventEnd(MAT_Merge,inmat,0,0,0);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

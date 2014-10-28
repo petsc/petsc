@@ -9660,8 +9660,19 @@ PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscInt n,MatReuse reuse,Mat *mpimat)
 {
   PetscErrorCode ierr;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    if (reuse == MAT_INITIAL_MATRIX) {
+      ierr = MatDuplicate(seqmat,MAT_COPY_VALUES,mpimat);CHKERRQ(ierr);
+    } else {
+      ierr = MatCopy(seqmat,*mpimat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
+
   if (!seqmat->ops->creatempimatconcatenateseqmat) SETERRQ1(PetscObjectComm((PetscObject)seqmat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)seqmat)->type_name);
   ierr = PetscLogEventBegin(MAT_Merge,seqmat,0,0,0);CHKERRQ(ierr);
   ierr = (*seqmat->ops->creatempimatconcatenateseqmat)(comm,seqmat,n,reuse,mpimat);CHKERRQ(ierr);
