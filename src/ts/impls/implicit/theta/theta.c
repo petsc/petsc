@@ -461,6 +461,17 @@ static PetscErrorCode TSComputeLinearStability_Theta(TS ts,PetscReal xr,PetscRea
 }
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "TSGetStages_Theta"
+static PetscErrorCode  TSGetStages_Theta(TS ts,PetscInt *ns,Vec **Y)
+{
+  TS_Theta     *th = (TS_Theta*)ts->data;
+
+  PetscFunctionBegin;
+  *ns = (th->endpoint) ? 1 : 0 ;
+  if(Y) *Y  = &(th->X);
+  PetscFunctionReturn(0);
+}
 
 /* ------------------------------------------------------------ */
 /*MC
@@ -534,6 +545,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
 #if defined(PETSC_HAVE_COMPLEX)
   ts->ops->linearstability = TSComputeLinearStability_Theta;
 #endif
+  ts->ops->getstages      = TSGetStages_Theta;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
