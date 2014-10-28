@@ -74,6 +74,7 @@ PetscErrorCode PCBDDCDestroyFETIDPPC(PC pc)
   ierr = VecDestroy(&pc_ctx->lambda_local);CHKERRQ(ierr);
   ierr = MatDestroy(&pc_ctx->B_Ddelta);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pc_ctx->l2g_lambda);CHKERRQ(ierr);
+  ierr = MatDestroy(&pc_ctx->S_j);CHKERRQ(ierr);
   ierr = PCDestroy(&pc_ctx->pc);CHKERRQ(ierr); /* decrease PCBDDC reference count */
   ierr = PetscFree(pc_ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
