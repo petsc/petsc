@@ -2870,7 +2870,6 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
     }
     n_subdomains = PetscMin((PetscInt)size,n_subdomains);
     coarsening_ratio = size/n_subdomains;
-    /* Parmetis does not always give back nparts with small graphs! this should be taken into account */
     ierr = MatPartitioningSetNParts(partitioner,n_subdomains);CHKERRQ(ierr);
     ierr = MatPartitioningSetFromOptions(partitioner);CHKERRQ(ierr);
     ierr = MatPartitioningApply(partitioner,&new_ranks);CHKERRQ(ierr);
@@ -3029,6 +3028,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
 
   /* Get data from local matrices */
   if (!isdense) {
+    SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Subassembling of AIJ local matrices not yet implemented");
     /* TODO: See below some guidelines on how to prepare the local buffers */
     /*
        send_buffer_vals should contain the raw values of the local matrix
