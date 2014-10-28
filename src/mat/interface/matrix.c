@@ -9123,7 +9123,6 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
 PetscErrorCode MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
 {
   PetscErrorCode ierr;
-#if defined(NEW)
   MPI_Comm       comm;
   PetscMPIInt    size;
   PetscInt       mloc_sub,rstart,rend,M=mat->rmap->N,N=mat->cmap->N,bs=mat->rmap->bs;
@@ -9133,21 +9132,18 @@ PetscErrorCode MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,
   Mat            *matseq;
   IS             isrow,iscol;
   PetscBool      newsubcomm=PETSC_FALSE;
-#endif
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (nsubcomm && reuse == MAT_REUSE_MATRIX) {
     PetscValidPointer(*matredundant,5);
     PetscValidHeaderSpecific(*matredundant,MAT_CLASSID,5);
   }
-  //if (!mat->ops->getredundantmatrix) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getredundantmatrix)(mat,nsubcomm,subcomm,reuse,matredundant);CHKERRQ(ierr);
-#if defined(NEW)
   if (subcomm_in == MPI_COMM_NULL && reuse == MAT_INITIAL_MATRIX) { /* get subcomm if user does not provide subcomm */
     /* create psubcomm, then get subcomm */
     ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
@@ -9166,7 +9162,11 @@ PetscErrorCode MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,
   /* get isrow, iscol and a local sequential matrix matseq[0] */
   if (reuse == MAT_INITIAL_MATRIX) {
     mloc_sub = PETSC_DECIDE;
-    ierr = PetscSplitOwnershipBlock(subcomm,bs,&mloc_sub,&M);CHKERRQ(ierr);
+    if (bs < 1) {
+      ierr = PetscSplitOwnership(subcomm,&mloc_sub,&M);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSplitOwnershipBlock(subcomm,bs,&mloc_sub,&M);CHKERRQ(ierr);
+    }
     ierr = MPI_Scan(&mloc_sub,&rend,1,MPIU_INT,MPI_SUM,subcomm);CHKERRQ(ierr);
     rstart = rend - mloc_sub;
     ierr = ISCreateStride(PETSC_COMM_SELF,mloc_sub,rstart,1,&isrow);CHKERRQ(ierr);
@@ -9197,7 +9197,6 @@ PetscErrorCode MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,
       redund->subcomm          = MPI_COMM_NULL;
     }
   }
-#endif
   ierr = PetscLogEventEnd(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
