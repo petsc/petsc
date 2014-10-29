@@ -13,6 +13,7 @@ typedef struct {
   PetscBool     cellSimplex;                  /* Use simplices or hexes */
   char          filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   PetscBool     testPartition;                /* Use a fixed partitioning for testing */
+  PetscInt      overlap;                      /* The cell overlap to use during partitioning */
 } AppCtx;
 
 #undef __FUNCT__
@@ -29,6 +30,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->cellSimplex       = PETSC_TRUE;
   options->filename[0]       = '\0';
   options->testPartition     = PETSC_FALSE;
+  options->overlap           = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
@@ -38,6 +40,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex1.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-filename", "The mesh file", "ex1.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex1.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-overlap", "The cell overlap for partitioning", "ex12.c", options->overlap, &options->overlap, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
@@ -53,18 +56,21 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscReal      refinementLimit = user->refinementLimit;
   PetscBool      cellSimplex     = user->cellSimplex;
   const char    *filename        = user->filename;
-  PetscInt       triSizes[2]     = {4, 4};
-  PetscInt       triPoints[8]    = {3, 5, 6, 7, 0, 1, 2, 4};
+  PetscInt       triSizes_n2[2]  = {4, 4};
+  PetscInt       triPoints_n2[8] = {3, 5, 6, 7, 0, 1, 2, 4};
+  PetscInt       triSizes_n8[8]  = {1, 1, 1, 1, 1, 1, 1, 1};
+  PetscInt       triPoints_n8[8] = {0, 1, 2, 3, 4, 5, 6, 7};
   PetscInt       quadSizes[2]    = {2, 2};
-  PetscInt       quadPoints[8]   = {2, 3, 0, 1};
+  PetscInt       quadPoints[4]   = {2, 3, 0, 1};
   const PetscInt cells[3]        = {2, 2, 2};
   size_t         len;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank, numProcs;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (len)              {ierr = DMPlexCreateFromFile(comm, filename, interpolate, dm);CHKERRQ(ierr);}
   else if (cellSimplex) {ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);}
@@ -73,22 +79,23 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
 
-    /* Refine mesh using a volume constraint */
-    ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
-    ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
-    if (refinedMesh) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = refinedMesh;
-    }
     if (user->testPartition) {
-      const PetscInt  *sizes  = !rank ? dim == 2 ? cellSimplex ? triSizes  : quadSizes  : NULL : NULL;
-      const PetscInt  *points = !rank ? dim == 2 ? cellSimplex ? triPoints : quadPoints : NULL : NULL;
+      const PetscInt  *sizes = NULL;
+      const PetscInt  *points = NULL;
       PetscPartitioner part;
 
+      if (!rank) {
+        if (dim == 2 && cellSimplex && numProcs == 2) {
+           sizes = triSizes_n2; points = triPoints_n2;
+        } else if (dim == 2 && cellSimplex && numProcs == 8) {
+          sizes = triSizes_n8; points = triPoints_n8;
+        } else if (dim == 2 && !cellSimplex && numProcs == 2) {
+          sizes = quadSizes; points = quadPoints;
+        }
+      }
       ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
       ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-      ierr = PetscPartitionerShellSetPartition(part, 2, sizes, points);CHKERRQ(ierr);
+      ierr = PetscPartitionerShellSetPartition(part, numProcs, sizes, points);CHKERRQ(ierr);
     }
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
@@ -97,6 +104,38 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = distributedMesh;
     } else {
       ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+    }
+    /* Refine mesh using a volume constraint */
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
+    ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
+    if (refinedMesh) {
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm  = refinedMesh;
+    }
+    if (user->overlap) {
+      /* Derive global point numbering for refined mesh */
+      DM overlapMesh = NULL;
+      PetscInt numComp = 1, pStart, pEnd;
+      PetscInt numDofs[4] = {1, 1, 1, 1};
+      PetscSection secLocal, secGlobal;
+      PetscSF sfDefault;
+      ISLocalToGlobalMapping numbering;
+      ierr = DMPlexCreateSection(*dm, dim, 1, &numComp, numDofs, 0, NULL, NULL, NULL, &secLocal);CHKERRQ(ierr);
+      ierr = DMSetDefaultSection(*dm, secLocal);CHKERRQ(ierr);
+      ierr = DMGetDefaultGlobalSection(*dm, &secGlobal);CHKERRQ(ierr);
+      ierr = DMGetDefaultSF(*dm, &sfDefault);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffsetRange(secGlobal, &pStart, &pEnd);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingCreateSF(sfDefault, pStart, &numbering);CHKERRQ(ierr);
+      /* Add the level-1 overlap to refined mesh */
+      ierr = DMPlexDistributeOverlap(*dm, 1, numbering, NULL, &overlapMesh);CHKERRQ(ierr);
+      if (overlapMesh) {
+        ierr = DMView(overlapMesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+        ierr = DMDestroy(dm);CHKERRQ(ierr);
+        *dm = overlapMesh;
+      }
+      ierr = PetscSectionDestroy(&secLocal);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingDestroy(&numbering);CHKERRQ(ierr);
     }
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);
