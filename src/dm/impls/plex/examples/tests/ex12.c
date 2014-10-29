@@ -44,6 +44,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim             = user->dim;
   PetscBool      cellSimplex     = user->cellSimplex;
   const char    *filename        = user->filename;
+  PetscInt       triSizes_n2[2]  = {4, 4};
+  PetscInt       triPoints_n2[8] = {0, 1, 4, 6, 2, 3, 5, 7};
   PetscInt       triSizes_n3[3]  = {3, 2, 3};
   PetscInt       triPoints_n3[8] = {3, 5, 6, 1, 7, 0, 2, 4};
   PetscInt       triSizes_n4[4]  = {2, 2, 2, 2};
@@ -91,7 +93,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscPartitioner part;
 
     if (!rank) {
-      if (dim == 2 && cellSimplex && numProcs == 3) {
+      if (dim == 2 && cellSimplex && numProcs == 2) {
+        sizes = triSizes_n2; points = triPoints_n2;
+      } else if (dim == 2 && cellSimplex && numProcs == 3) {
         sizes = triSizes_n3; points = triPoints_n3;
       } else if (dim == 2 && cellSimplex && numProcs == 4) {
         sizes = triSizes_n4; points = triPoints_n4;
