@@ -1,3 +1,162 @@
+PetscSF Object: 3 MPI processes
+  type not yet set
+  [0] Number of roots=33, leaves=29, remote ranks=1
+  [0] 0 <- (0,3)
+  [0] 1 <- (0,5)
+  [0] 2 <- (0,6)
+  [0] 3 <- (0,1)
+  [0] 4 <- (0,7)
+  [0] 5 <- (0,2)
+  [0] 6 <- (0,4)
+  [0] 7 <- (0,13)
+  [0] 8 <- (0,16)
+  [0] 9 <- (0,14)
+  [0] 10 <- (0,15)
+  [0] 11 <- (0,9)
+  [0] 12 <- (0,10)
+  [0] 13 <- (0,11)
+  [0] 14 <- (0,12)
+  [0] 15 <- (0,25)
+  [0] 16 <- (0,26)
+  [0] 17 <- (0,28)
+  [0] 18 <- (0,29)
+  [0] 19 <- (0,30)
+  [0] 20 <- (0,20)
+  [0] 21 <- (0,21)
+  [0] 22 <- (0,31)
+  [0] 23 <- (0,32)
+  [0] 24 <- (0,18)
+  [0] 25 <- (0,22)
+  [0] 26 <- (0,23)
+  [0] 27 <- (0,24)
+  [0] 28 <- (0,27)
+  [1] Number of roots=0, leaves=33, remote ranks=1
+  [1] 0 <- (0,1)
+  [1] 1 <- (0,7)
+  [1] 2 <- (0,3)
+  [1] 3 <- (0,5)
+  [1] 4 <- (0,6)
+  [1] 5 <- (0,0)
+  [1] 6 <- (0,2)
+  [1] 7 <- (0,4)
+  [1] 8 <- (0,14)
+  [1] 9 <- (0,15)
+  [1] 10 <- (0,13)
+  [1] 11 <- (0,16)
+  [1] 12 <- (0,8)
+  [1] 13 <- (0,9)
+  [1] 14 <- (0,10)
+  [1] 15 <- (0,11)
+  [1] 16 <- (0,12)
+  [1] 17 <- (0,20)
+  [1] 18 <- (0,21)
+  [1] 19 <- (0,31)
+  [1] 20 <- (0,32)
+  [1] 21 <- (0,25)
+  [1] 22 <- (0,26)
+  [1] 23 <- (0,28)
+  [1] 24 <- (0,29)
+  [1] 25 <- (0,30)
+  [1] 26 <- (0,17)
+  [1] 27 <- (0,18)
+  [1] 28 <- (0,19)
+  [1] 29 <- (0,22)
+  [1] 30 <- (0,23)
+  [1] 31 <- (0,24)
+  [1] 32 <- (0,27)
+  [2] Number of roots=0, leaves=29, remote ranks=1
+  [2] 0 <- (0,0)
+  [2] 1 <- (0,2)
+  [2] 2 <- (0,4)
+  [2] 3 <- (0,3)
+  [2] 4 <- (0,6)
+  [2] 5 <- (0,1)
+  [2] 6 <- (0,7)
+  [2] 7 <- (0,8)
+  [2] 8 <- (0,9)
+  [2] 9 <- (0,10)
+  [2] 10 <- (0,11)
+  [2] 11 <- (0,12)
+  [2] 12 <- (0,13)
+  [2] 13 <- (0,14)
+  [2] 14 <- (0,15)
+  [2] 15 <- (0,17)
+  [2] 16 <- (0,18)
+  [2] 17 <- (0,19)
+  [2] 18 <- (0,22)
+  [2] 19 <- (0,23)
+  [2] 20 <- (0,24)
+  [2] 21 <- (0,27)
+  [2] 22 <- (0,25)
+  [2] 23 <- (0,26)
+  [2] 24 <- (0,28)
+  [2] 25 <- (0,20)
+  [2] 26 <- (0,21)
+  [2] 27 <- (0,31)
+  [2] 28 <- (0,32)
+PetscSF Object:Point SF 3 MPI processes
+  type not yet set
+  [0] Number of roots=29, leaves=19, remote ranks=2
+  [0] 3 <- (1,0)
+  [0] 4 <- (1,1)
+  [0] 5 <- (2,1)
+  [0] 6 <- (2,2)
+  [0] 9 <- (1,8)
+  [0] 10 <- (1,9)
+  [0] 11 <- (2,8)
+  [0] 12 <- (2,9)
+  [0] 13 <- (2,10)
+  [0] 14 <- (2,11)
+  [0] 20 <- (1,17)
+  [0] 21 <- (1,18)
+  [0] 22 <- (1,19)
+  [0] 23 <- (1,20)
+  [0] 24 <- (2,16)
+  [0] 25 <- (2,18)
+  [0] 26 <- (2,19)
+  [0] 27 <- (2,20)
+  [0] 28 <- (2,21)
+  [1] Number of roots=33, leaves=25, remote ranks=2
+  [1] 2 <- (0,0)
+  [1] 3 <- (0,1)
+  [1] 4 <- (0,2)
+  [1] 5 <- (2,0)
+  [1] 6 <- (2,1)
+  [1] 7 <- (2,2)
+  [1] 10 <- (0,7)
+  [1] 11 <- (0,8)
+  [1] 12 <- (2,7)
+  [1] 13 <- (2,8)
+  [1] 14 <- (2,9)
+  [1] 15 <- (2,10)
+  [1] 16 <- (2,11)
+  [1] 21 <- (0,15)
+  [1] 22 <- (0,16)
+  [1] 23 <- (0,17)
+  [1] 24 <- (0,18)
+  [1] 25 <- (0,19)
+  [1] 26 <- (2,15)
+  [1] 27 <- (2,16)
+  [1] 28 <- (2,17)
+  [1] 29 <- (2,18)
+  [1] 30 <- (2,19)
+  [1] 31 <- (2,20)
+  [1] 32 <- (2,21)
+  [2] Number of roots=29, leaves=14, remote ranks=2
+  [2] 3 <- (0,0)
+  [2] 4 <- (0,2)
+  [2] 5 <- (1,0)
+  [2] 6 <- (1,1)
+  [2] 12 <- (0,7)
+  [2] 13 <- (1,8)
+  [2] 14 <- (1,9)
+  [2] 22 <- (0,15)
+  [2] 23 <- (0,16)
+  [2] 24 <- (0,17)
+  [2] 25 <- (1,17)
+  [2] 26 <- (1,18)
+  [2] 27 <- (1,19)
+  [2] 28 <- (1,20)
 DM Object:Simplicial Mesh 3 MPI processes
   type: plex
 \documentclass[crop,multi=false]{standalone}
@@ -18,23 +177,23 @@ Simplicial Mesh for process {\textcolor{red}0}, {\textcolor{blue}1}, and {\textc
 (2,0) node(12_0) [draw,shape=circle,color=red] {12} --
 (0,1) node(13_0) [draw,shape=circle,color=red] {13} --
 (1,1) node(14_0) [draw,shape=circle,color=red] {14} --
-(2,1) node(8_1) [draw,shape=circle,color=blue] {8} --
-(2,2) node(9_1) [draw,shape=circle,color=blue] {9} --
-(0,2) node(10_1) [draw,shape=circle,color=blue] {10} --
-(1,2) node(11_1) [draw,shape=circle,color=blue] {11} --
+(0,2) node(8_1) [draw,shape=circle,color=blue] {8} --
+(1,2) node(9_1) [draw,shape=circle,color=blue] {9} --
+(2,1) node(10_1) [draw,shape=circle,color=blue] {10} --
+(2,2) node(11_1) [draw,shape=circle,color=blue] {11} --
 (0,0) node(12_1) [draw,shape=circle,color=blue] {12} --
 (1,0) node(13_1) [draw,shape=circle,color=blue] {13} --
 (2,0) node(14_1) [draw,shape=circle,color=blue] {14} --
 (0,1) node(15_1) [draw,shape=circle,color=blue] {15} --
 (1,1) node(16_1) [draw,shape=circle,color=blue] {16} --
-(2,1) node(7_2) [draw,shape=circle,color=green] {7} --
-(0,2) node(8_2) [draw,shape=circle,color=green] {8} --
-(1,2) node(9_2) [draw,shape=circle,color=green] {9} --
-(0,0) node(10_2) [draw,shape=circle,color=green] {10} --
-(1,0) node(11_2) [draw,shape=circle,color=green] {11} --
-(2,0) node(12_2) [draw,shape=circle,color=green] {12} --
-(0,1) node(13_2) [draw,shape=circle,color=green] {13} --
-(1,1) node(14_2) [draw,shape=circle,color=green] {14} --
+(0,0) node(7_2) [draw,shape=circle,color=green] {7} --
+(1,0) node(8_2) [draw,shape=circle,color=green] {8} --
+(2,0) node(9_2) [draw,shape=circle,color=green] {9} --
+(0,1) node(10_2) [draw,shape=circle,color=green] {10} --
+(1,1) node(11_2) [draw,shape=circle,color=green] {11} --
+(2,1) node(12_2) [draw,shape=circle,color=green] {12} --
+(0,2) node(13_2) [draw,shape=circle,color=green] {13} --
+(1,2) node(14_2) [draw,shape=circle,color=green] {14} --
 (0,0);
 \path
 (2,0.5) node(15_0) [draw,shape=circle,color=red] {15} --
@@ -51,15 +210,15 @@ Simplicial Mesh for process {\textcolor{red}0}, {\textcolor{blue}1}, and {\textc
 (1,0.5) node(26_0) [draw,shape=circle,color=red] {26} --
 (1.5,0.5) node(27_0) [draw,shape=circle,color=red] {27} --
 (1.5,0) node(28_0) [draw,shape=circle,color=red] {28} --
-(2,0.5) node(17_1) [draw,shape=circle,color=blue] {17} --
-(1.5,1) node(18_1) [draw,shape=circle,color=blue] {18} --
-(1.5,1.5) node(19_1) [draw,shape=circle,color=blue] {19} --
-(2,1.5) node(20_1) [draw,shape=circle,color=blue] {20} --
-(1.5,2) node(21_1) [draw,shape=circle,color=blue] {21} --
-(0.5,1.5) node(22_1) [draw,shape=circle,color=blue] {22} --
-(0,1.5) node(23_1) [draw,shape=circle,color=blue] {23} --
-(1,1.5) node(24_1) [draw,shape=circle,color=blue] {24} --
-(0.5,2) node(25_1) [draw,shape=circle,color=blue] {25} --
+(0.5,1.5) node(17_1) [draw,shape=circle,color=blue] {17} --
+(0,1.5) node(18_1) [draw,shape=circle,color=blue] {18} --
+(1,1.5) node(19_1) [draw,shape=circle,color=blue] {19} --
+(0.5,2) node(20_1) [draw,shape=circle,color=blue] {20} --
+(2,0.5) node(21_1) [draw,shape=circle,color=blue] {21} --
+(1.5,1) node(22_1) [draw,shape=circle,color=blue] {22} --
+(1.5,1.5) node(23_1) [draw,shape=circle,color=blue] {23} --
+(2,1.5) node(24_1) [draw,shape=circle,color=blue] {24} --
+(1.5,2) node(25_1) [draw,shape=circle,color=blue] {25} --
 (0.5,0) node(26_1) [draw,shape=circle,color=blue] {26} --
 (0.5,0.5) node(27_1) [draw,shape=circle,color=blue] {27} --
 (0,0.5) node(28_1) [draw,shape=circle,color=blue] {28} --
@@ -67,20 +226,20 @@ Simplicial Mesh for process {\textcolor{red}0}, {\textcolor{blue}1}, and {\textc
 (1,0.5) node(30_1) [draw,shape=circle,color=blue] {30} --
 (1.5,0.5) node(31_1) [draw,shape=circle,color=blue] {31} --
 (1.5,0) node(32_1) [draw,shape=circle,color=blue] {32} --
-(2,0.5) node(15_2) [draw,shape=circle,color=green] {15} --
-(1.5,1) node(16_2) [draw,shape=circle,color=green] {16} --
-(1.5,1.5) node(17_2) [draw,shape=circle,color=green] {17} --
-(0.5,1.5) node(18_2) [draw,shape=circle,color=green] {18} --
-(0,1.5) node(19_2) [draw,shape=circle,color=green] {19} --
-(1,1.5) node(20_2) [draw,shape=circle,color=green] {20} --
-(0.5,2) node(21_2) [draw,shape=circle,color=green] {21} --
-(0.5,0) node(22_2) [draw,shape=circle,color=green] {22} --
-(0.5,0.5) node(23_2) [draw,shape=circle,color=green] {23} --
-(0,0.5) node(24_2) [draw,shape=circle,color=green] {24} --
-(0.5,1) node(25_2) [draw,shape=circle,color=green] {25} --
-(1,0.5) node(26_2) [draw,shape=circle,color=green] {26} --
-(1.5,0.5) node(27_2) [draw,shape=circle,color=green] {27} --
-(1.5,0) node(28_2) [draw,shape=circle,color=green] {28} --
+(0.5,0) node(15_2) [draw,shape=circle,color=green] {15} --
+(0.5,0.5) node(16_2) [draw,shape=circle,color=green] {16} --
+(0,0.5) node(17_2) [draw,shape=circle,color=green] {17} --
+(0.5,1) node(18_2) [draw,shape=circle,color=green] {18} --
+(1,0.5) node(19_2) [draw,shape=circle,color=green] {19} --
+(1.5,0.5) node(20_2) [draw,shape=circle,color=green] {20} --
+(1.5,0) node(21_2) [draw,shape=circle,color=green] {21} --
+(2,0.5) node(22_2) [draw,shape=circle,color=green] {22} --
+(1.5,1) node(23_2) [draw,shape=circle,color=green] {23} --
+(1.5,1.5) node(24_2) [draw,shape=circle,color=green] {24} --
+(0.5,1.5) node(25_2) [draw,shape=circle,color=green] {25} --
+(0,1.5) node(26_2) [draw,shape=circle,color=green] {26} --
+(1,1.5) node(27_2) [draw,shape=circle,color=green] {27} --
+(0.5,2) node(28_2) [draw,shape=circle,color=green] {28} --
 (0,0);
 \draw[color=red] (14_0) -- (12_0) -- (7_0) -- (14_0);
 \draw[color=red] (10_0) -- (7_0) -- (8_0) -- (10_0);
@@ -89,21 +248,21 @@ Simplicial Mesh for process {\textcolor{red}0}, {\textcolor{blue}1}, and {\textc
 \draw[color=red] (14_0) -- (10_0) -- (9_0) -- (14_0);
 \draw[color=red] (13_0) -- (11_0) -- (14_0) -- (13_0);
 \draw[color=red] (12_0) -- (14_0) -- (11_0) -- (12_0);
-\draw[color=blue] (16_1) -- (14_1) -- (8_1) -- (16_1);
-\draw[color=blue] (11_1) -- (8_1) -- (9_1) -- (11_1);
-\draw[color=blue] (8_1) -- (11_1) -- (16_1) -- (8_1);
-\draw[color=blue] (16_1) -- (10_1) -- (15_1) -- (16_1);
-\draw[color=blue] (16_1) -- (11_1) -- (10_1) -- (16_1);
+\draw[color=blue] (16_1) -- (8_1) -- (15_1) -- (16_1);
+\draw[color=blue] (16_1) -- (9_1) -- (8_1) -- (16_1);
+\draw[color=blue] (16_1) -- (14_1) -- (10_1) -- (16_1);
+\draw[color=blue] (9_1) -- (10_1) -- (11_1) -- (9_1);
+\draw[color=blue] (10_1) -- (9_1) -- (16_1) -- (10_1);
 \draw[color=blue] (12_1) -- (13_1) -- (15_1) -- (12_1);
 \draw[color=blue] (15_1) -- (13_1) -- (16_1) -- (15_1);
 \draw[color=blue] (14_1) -- (16_1) -- (13_1) -- (14_1);
-\draw[color=green] (14_2) -- (12_2) -- (7_2) -- (14_2);
-\draw[color=green] (7_2) -- (9_2) -- (14_2) -- (7_2);
-\draw[color=green] (14_2) -- (8_2) -- (13_2) -- (14_2);
-\draw[color=green] (14_2) -- (9_2) -- (8_2) -- (14_2);
-\draw[color=green] (10_2) -- (11_2) -- (13_2) -- (10_2);
-\draw[color=green] (13_2) -- (11_2) -- (14_2) -- (13_2);
+\draw[color=green] (7_2) -- (8_2) -- (10_2) -- (7_2);
+\draw[color=green] (10_2) -- (8_2) -- (11_2) -- (10_2);
+\draw[color=green] (9_2) -- (11_2) -- (8_2) -- (9_2);
+\draw[color=green] (11_2) -- (9_2) -- (12_2) -- (11_2);
 \draw[color=green] (12_2) -- (14_2) -- (11_2) -- (12_2);
+\draw[color=green] (11_2) -- (13_2) -- (10_2) -- (11_2);
+\draw[color=green] (11_2) -- (14_2) -- (13_2) -- (11_2);
 \end{tikzpicture}
 }
 \end{document}

@@ -50,7 +50,7 @@ const char ParMetisPartitionerCitation[] = "@article{KarypisKumar98,\n"
 @*/
 PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency)
 {
-  PetscInt       p, pStart, pEnd, a, adjSize, size, nroots;
+  PetscInt       p, pStart, pEnd, a, adjSize, idx, size, nroots;
   PetscInt      *adj = NULL, *vOffsets = NULL;
   IS             cellNumbering;
   const PetscInt *cellNum;
@@ -101,7 +101,10 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
   ierr = PetscMalloc2(*numVertices+1, &vOffsets, size, adjacency);CHKERRQ(ierr);
-  for (p = 0; p < *numVertices; p++) {ierr = PetscSectionGetOffset(section, p, &(vOffsets[p]));CHKERRQ(ierr);}
+  for (idx = 0, p = pStart; p < pEnd; p++) {
+    if (nroots > 0) {if (cellNum[p] < 0) continue;}
+    ierr = PetscSectionGetOffset(section, p, &(vOffsets[idx++]));CHKERRQ(ierr);
+  }
   vOffsets[*numVertices] = size;
   if (offsets) *offsets = vOffsets;
   if (adjacency) {
@@ -1574,12 +1577,15 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
 @*/
 PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
 {
-  PetscMPIInt    numProcs;
-  PetscInt       n, idx, numRemote, p, numPoints, pStart, pEnd;
-  PetscSFNode   *remotePoints;
+  PetscMPIInt     rank, numProcs;
+  PetscInt        n, numRemote, p, numPoints, pStart, pEnd, idx = 0;
+  PetscSFNode    *remotePoints;
+  IS              remoteRootIS;
+  const PetscInt *remoteRoots;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
 
   for (numRemote = 0, n = 0; n < numProcs; ++n) {
@@ -1587,11 +1593,23 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
     numRemote += numPoints;
   }
   ierr = PetscMalloc1(numRemote, &remotePoints);CHKERRQ(ierr);
-  for (idx = 0, n = 0; n < numProcs; ++n) {
-    IS remoteRootIS;
-    const PetscInt *remoteRoots;
+  /* Put owned points first */
+  ierr = DMLabelGetStratumSize(label, rank, &numPoints);CHKERRQ(ierr);
+  if (numPoints > 0) {
+    ierr = DMLabelGetStratumIS(label, rank, &remoteRootIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; p++) {
+      remotePoints[idx].index = remoteRoots[p];
+      remotePoints[idx].rank = rank;
+      idx++;
+    }
+    ierr = ISRestoreIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
+    ierr = ISDestroy(&remoteRootIS);CHKERRQ(ierr);
+  }
+  /* Now add remote points */
+  for (n = 0; n < numProcs; ++n) {
     ierr = DMLabelGetStratumSize(label, n, &numPoints);CHKERRQ(ierr);
-    if (numPoints <= 0) continue;
+    if (numPoints <= 0 || n == rank) continue;
     ierr = DMLabelGetStratumIS(label, n, &remoteRootIS);CHKERRQ(ierr);
     ierr = ISGetIndices(remoteRootIS, &remoteRoots);CHKERRQ(ierr);
     for (p = 0; p < numPoints; p++) {

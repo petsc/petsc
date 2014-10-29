@@ -1308,7 +1308,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     for (p = 0; p < nleaves; ++p) {
       /* Either put in a bid or we know we own it */
       leafNodes[p].rank  = rank;
-      leafNodes[p].index = leaves ? leaves[p] : p;
+      leafNodes[p].index = p;
     }
     for (p = 0; p < nroots; p++) {
       /* Root must not participate in the rediction, flag so that MAXLOC does not use */
@@ -1461,7 +1461,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   IS                     cellPart;
   PetscSection           cellPartSection;
   DMLabel                lblPartition, lblMigration;
-  PetscSF                sfProcess, sfMigration, sfPoint;
+  PetscSF                sfProcess, sfMigration, sfStratified, sfPoint;
   PetscBool              flg;
   PetscMPIInt            rank, numProcs, p;
   PetscErrorCode         ierr;
@@ -1516,6 +1516,10 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = DMLabelCreate("Point migration", &lblMigration);CHKERRQ(ierr);
   ierr = DMPlexPartitionLabelInvert(dm, lblPartition, sfProcess, lblMigration);CHKERRQ(ierr);
   ierr = DMPlexPartitionLabelCreateSF(dm, lblMigration, &sfMigration);
+  /* Stratify the SF in case we are migrating an already parallel plex */
+  ierr = DMPlexStratifyMigrationSF(dm, sfMigration, &sfStratified);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sfMigration);CHKERRQ(ierr);
+  sfMigration = sfStratified;
   ierr = PetscLogEventEnd(PETSCPARTITIONER_Partition,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-partition_view", &flg);CHKERRQ(ierr);
   if (flg) {
