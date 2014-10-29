@@ -1012,6 +1012,40 @@ PetscErrorCode  MatLoad(Mat newmat,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDestroy_Redundant"
+PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
+{
+  PetscErrorCode ierr;
+  Mat_Redundant  *redund = *redundant;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (redund){
+    if (redund->matseq) { /* via MatGetSubMatrices()  */
+      ierr = ISDestroy(&redund->isrow);CHKERRQ(ierr);
+      ierr = ISDestroy(&redund->iscol);CHKERRQ(ierr);
+      ierr = MatDestroy(&redund->matseq[0]);CHKERRQ(ierr);
+      ierr = PetscFree(redund->matseq);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFree2(redund->send_rank,redund->recv_rank);CHKERRQ(ierr);
+      ierr = PetscFree(redund->sbuf_j);CHKERRQ(ierr);
+      ierr = PetscFree(redund->sbuf_a);CHKERRQ(ierr);
+      for (i=0; i<redund->nrecvs; i++) {
+        ierr = PetscFree(redund->rbuf_j[i]);CHKERRQ(ierr);
+        ierr = PetscFree(redund->rbuf_a[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree4(redund->sbuf_nz,redund->rbuf_nz,redund->rbuf_j,redund->rbuf_a);CHKERRQ(ierr);
+    }
+
+    if (redund->subcomm) {
+      ierr = PetscCommDestroy(&redund->subcomm);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(redund);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy"
 /*@
    MatDestroy - Frees space taken by a matrix.
@@ -1038,6 +1072,7 @@ PetscErrorCode  MatDestroy(Mat *A)
   if ((*A)->ops->destroy) {
     ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);
   }
+  ierr = MatDestroy_Redundant(&(*A)->redundant);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->nullsp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->nearnullsp);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->rmap);CHKERRQ(ierr);

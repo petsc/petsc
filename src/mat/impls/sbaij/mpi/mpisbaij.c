@@ -750,7 +750,6 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)mat,"Rows=%D,Cols=%D",mat->rmap->N,mat->cmap->N);
 #endif
-  ierr = MatDestroy_Redundant(&mat->redundant);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&mat->bstash);CHKERRQ(ierr);
   ierr = MatDestroy(&baij->A);CHKERRQ(ierr);

@@ -1117,41 +1117,6 @@ PetscErrorCode MatScale_MPIAIJ(Mat A,PetscScalar aa)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Redundant"
-PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
-{
-  PetscErrorCode ierr;
-  Mat_Redundant  *redund = *redundant;
-  PetscInt       i;
-
-  PetscFunctionBegin;
-  *redundant = NULL;
-  if (redund){
-    if (redund->matseq) { /* via MatGetSubMatrices()  */
-      ierr = ISDestroy(&redund->isrow);CHKERRQ(ierr);
-      ierr = ISDestroy(&redund->iscol);CHKERRQ(ierr);
-      ierr = MatDestroy(&redund->matseq[0]);CHKERRQ(ierr);
-      ierr = PetscFree(redund->matseq);CHKERRQ(ierr);
-    } else {
-      ierr = PetscFree2(redund->send_rank,redund->recv_rank);CHKERRQ(ierr);
-      ierr = PetscFree(redund->sbuf_j);CHKERRQ(ierr);
-      ierr = PetscFree(redund->sbuf_a);CHKERRQ(ierr);
-      for (i=0; i<redund->nrecvs; i++) {
-        ierr = PetscFree(redund->rbuf_j[i]);CHKERRQ(ierr);
-        ierr = PetscFree(redund->rbuf_a[i]);CHKERRQ(ierr);
-      }
-      ierr = PetscFree4(redund->sbuf_nz,redund->rbuf_nz,redund->rbuf_j,redund->rbuf_a);CHKERRQ(ierr);
-    }
-
-    if (redund->subcomm) {
-      ierr = PetscCommDestroy(&redund->subcomm);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(redund);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPIAIJ"
 PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
 {
@@ -1162,7 +1127,6 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D",mat->rmap->N,mat->cmap->N);
 #endif
-  ierr = MatDestroy_Redundant(&mat->redundant);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   ierr = VecDestroy(&aij->diag);CHKERRQ(ierr);
   ierr = MatDestroy(&aij->A);CHKERRQ(ierr);
