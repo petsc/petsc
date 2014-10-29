@@ -1589,8 +1589,9 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   ierr = PetscSFBcastEnd(sfOverlap, MPIU_INT, pointIDs, recvPointIDs);CHKERRQ(ierr);
   for (idx=0, p=0; p<overlapLeaves; p++) {
     if (overlapRemote[p].rank != rank) {
-      ghostLocal[idx] = overlapLocal[p];
-      ghostRemote[idx].index = recvPointIDs[p];
+      const PetscInt local = overlapLocal[p];
+      ghostLocal[idx] = local;
+      ghostRemote[idx].index = recvPointIDs[local];
       ghostRemote[idx].rank = overlapRemote[p].rank;
       idx++;
     }
