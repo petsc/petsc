@@ -357,7 +357,7 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
   if (label) {
     const PetscInt id = 1;
 
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "wall", "marker", 0, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
   }
   ierr = DMPlexGetLabel(dm, "Face Sets", &label);CHKERRQ(ierr);
   if (label) {
