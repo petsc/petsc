@@ -197,7 +197,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     if (pc->ops->setfromoptions) {
       (*pc->ops->setfromoptions)(pc);
     }
-    ierr = PCJacobiSetUseAbs(pc);CHKERRQ(ierr);
+    ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
     break;
 
   case NLS_PC_BFGS:

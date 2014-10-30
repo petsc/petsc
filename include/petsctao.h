@@ -96,7 +96,6 @@ PETSC_EXTERN PetscErrorCode TaoInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TaoFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TaoCreate(MPI_Comm,Tao*);
 PETSC_EXTERN PetscErrorCode TaoSetFromOptions(Tao);
-PETSC_EXTERN PetscErrorCode TaoSetFiniteDifferencesOptions(Tao);
 PETSC_EXTERN PetscErrorCode TaoSetUp(Tao);
 PETSC_EXTERN PetscErrorCode TaoSetType(Tao, const TaoType);
 PETSC_EXTERN PetscErrorCode TaoGetType(Tao, const TaoType *);
