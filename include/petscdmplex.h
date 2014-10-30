@@ -84,7 +84,9 @@ PETSC_EXTERN PetscErrorCode DMPlexPointLocalRead(DM,PetscInt,const PetscScalar*,
 PETSC_EXTERN PetscErrorCode DMPlexPointLocalFieldRead(DM,PetscInt,PetscInt,const PetscScalar*,const void*);
 PETSC_EXTERN PetscErrorCode DMPlexGetPointGlobal(DM,PetscInt,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMPlexPointGlobalRef(DM,PetscInt,PetscScalar*,void*);
+PETSC_EXTERN PetscErrorCode DMPlexPointGlobalFieldRef(DM,PetscInt,PetscInt,PetscScalar*,void*);
 PETSC_EXTERN PetscErrorCode DMPlexPointGlobalRead(DM,PetscInt,const PetscScalar*,const void*);
+PETSC_EXTERN PetscErrorCode DMPlexPointGlobalFieldRead(DM,PetscInt,PetscInt,const PetscScalar*,const void*);
 
 /*S
   DMLabel - Object which encapsulates a subset of the mesh from this DM
