@@ -12,3 +12,7 @@ Linear L_2 Residual: 5.62494e-08
       6 KSP Residual norm 2.337025919294e-22 
     1 SNES Function norm 1.562187718594e-15 
 1 TS dt 0.01 time 0.01
+L_2 Error: [< 1.0e-11, < 1.0e-11]
+L_2 Residual: 1.84901e-15
+Linear L_2 Residual: 4.96792e-08
+CONVERGED_ITS at time 0.01 after 1 steps
