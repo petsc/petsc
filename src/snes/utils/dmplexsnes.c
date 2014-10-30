@@ -1674,26 +1674,51 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
       }
     }
     if (useFVM) {
-      PetscScalar *fa;
+      PetscScalar *x_t, *fa;
       PetscInt     iface;
 
-      /* Accumulate fluxes to cells */
       ierr = VecGetArray(locF, &fa);CHKERRQ(ierr);
-      for (face = fS, iface = 0; face < fE; ++face) {
-        const PetscInt *cells;
-        PetscScalar    *fL, *fR;
-        PetscInt        ghost, d;
+      for (f = 0; f < Nf; ++f) {
+        PetscFV      fv;
+        PetscObject  obj;
+        PetscClassId id;
+        PetscInt     foff, pdim, d;
 
-        ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
-        if (ghost >= 0) continue;
-        ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
-        ierr = DMPlexPointGlobalRef(dm, cells[0], fa, &fL);CHKERRQ(ierr);
-        ierr = DMPlexPointGlobalRef(dm, cells[1], fa, &fR);CHKERRQ(ierr);
-        for (d = 0; d < totDim; ++d) {
-          if (fL) fL[d] -= fluxL[iface*totDim+d];
-          if (fR) fR[d] += fluxR[iface*totDim+d];
+        ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+        ierr = PetscDSGetFieldOffset(prob, f, &foff);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+        if (id != PETSCFV_CLASSID) continue;
+        fv   = (PetscFV) obj;
+        ierr = PetscFVGetNumComponents(fv, &pdim);CHKERRQ(ierr);
+        /* Accumulate fluxes to cells */
+        for (face = fS, iface = 0; face < fE; ++face) {
+          const PetscInt *cells;
+          PetscScalar    *fL, *fR;
+          PetscInt        ghost, d;
+
+          ierr = DMLabelGetValue(ghostLabel, face, &ghost);CHKERRQ(ierr);
+          if (ghost >= 0) continue;
+          ierr = DMPlexGetSupport(dm, face, &cells);CHKERRQ(ierr);
+          ierr = DMPlexPointGlobalFieldRef(dm, cells[0], f, fa, &fL);CHKERRQ(ierr);
+          ierr = DMPlexPointGlobalFieldRef(dm, cells[1], f, fa, &fR);CHKERRQ(ierr);
+          for (d = 0; d < pdim; ++d) {
+            if (fL) fL[d] -= fluxL[iface*totDim+foff+d];
+            if (fR) fR[d] += fluxR[iface*totDim+foff+d];
+          }
+          ++iface;
         }
-        ++iface;
+        /* Handle time derivative */
+        if (locX_t) {
+          ierr = VecGetArray(locX_t, &x_t);CHKERRQ(ierr);
+          for (cell = cS; cell < cE; ++cell) {
+            PetscScalar *u_t, *r;
+
+            ierr = DMPlexPointLocalFieldRead(dm, cell, f, x_t, &u_t);CHKERRQ(ierr);
+            ierr = DMPlexPointLocalFieldRef(dm, cell, f, fa, &r);CHKERRQ(ierr);
+            for (d = 0; d < pdim; ++d) r[d] -= u_t[d];
+          }
+          ierr = VecRestoreArray(locX_t, &x_t);CHKERRQ(ierr);
+        }
       }
       ierr = VecRestoreArray(locF, &fa);CHKERRQ(ierr);
     }
