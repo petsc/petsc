@@ -9168,7 +9168,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
   
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
-  if (size == 1) {
+  if (size == 1 || nsubcomm == 1) {
     if (reuse == MAT_INITIAL_MATRIX) {
       ierr = MatDuplicate(mat,MAT_COPY_VALUES,matredundant);CHKERRQ(ierr);
     } else {
@@ -9223,11 +9223,11 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
     matseq = redund->matseq;
   }
   ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
-
+  
   /* get matredundant over subcomm */
-  ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
-
   if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],mloc_sub,reuse,matredundant);CHKERRQ(ierr);
+
     /* create a supporting struct and attach it to C for reuse */
     ierr = PetscNewLog(*matredundant,&redund);CHKERRQ(ierr);
     (*matredundant)->redundant = redund;
@@ -9239,6 +9239,8 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
     } else {
       redund->subcomm          = MPI_COMM_NULL;
     }
+  } else {
+    ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_RedundantMat,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
