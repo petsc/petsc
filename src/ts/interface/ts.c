@@ -6473,7 +6473,7 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
 #undef  __FUNCT__
 #define __FUNCT__ "TSDuplicate"
 /*@C
-  TSDuplicate - This function duplicates a timestepper. 
+  TSDuplicate - This function duplicates a time step object. 
 
   Collective on MPI_Comm
 
@@ -6489,7 +6489,7 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts,PetscReal t,Vec U,Vec Udot,P
   Level: beginner
 
 .keywords: TS, duplicate
-.seealso: TSCreate(), TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType()
+.seealso: TSCreate(), TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType(), TSDuplicateDestroy()
 @*/
 PetscErrorCode  TSDuplicate(MPI_Comm comm, TS tsin, TS *tsout)
 {
@@ -6499,7 +6499,6 @@ PetscErrorCode  TSDuplicate(MPI_Comm comm, TS tsin, TS *tsout)
   PetscFunctionBegin;
   PetscValidPointer(tsin,1);
   *tsout = NULL;
-  /* ierr = TSInitializePackage();CHKERRQ(ierr); */
 
   ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, "TS", "Time stepping", "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
 
@@ -6511,12 +6510,12 @@ PetscErrorCode  TSDuplicate(MPI_Comm comm, TS tsin, TS *tsout)
   t->nwork             = 0;
   t->rhsjacobian.time  = -1e20;
   t->rhsjacobian.scale = 1.;
-  t->ijacobian.shift   = 1.;
+   t->ijacobian.shift   = 1.;
 
-  SNES snes;
+  SNES snes_start;
   DM   dm;
-  ierr = TSGetSNES(tsin,&snes); CHKERRQ(ierr);
-  ierr = TSSetSNES(t,snes);     CHKERRQ(ierr);
+  ierr = TSGetSNES(tsin,&snes_start); CHKERRQ(ierr);
+  ierr = TSSetSNES(t,snes_start);     CHKERRQ(ierr);
   ierr = TSGetDM(tsin,&dm);     CHKERRQ(ierr);
   ierr = TSSetDM(t,dm);         CHKERRQ(ierr);
 
@@ -6542,9 +6541,6 @@ PetscErrorCode  TSDuplicate(MPI_Comm comm, TS tsin, TS *tsout)
   ierr = TSSetType(t,type);     CHKERRQ(ierr);
 
   t->vec_sol           = NULL;
-  t->data              = NULL;
-  t->user              = NULL;
-  t->work              = NULL;
 
   t->cfltime          = tsin->cfltime;
   t->cfltime_local    = tsin->cfltime_local;
@@ -6553,5 +6549,37 @@ PetscErrorCode  TSDuplicate(MPI_Comm comm, TS tsin, TS *tsout)
   ierr = PetscMemcpy(t->ops,tsin->ops,sizeof(struct _TSOps));CHKERRQ(ierr);
 
   *tsout = t;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "TSDuplicateDestroy"
+/*@C
+  TSDuplicateDestroy - This function destroys a duplicated time step object. 
+
+  Input Parameter:
+. ts    - The input TS
+
+  Input Parameter:
+. tsdup   - The duplicate TS
+
+  Level: beginner
+
+.keywords: TS, duplicate,destroy
+.seealso: TSCreate(), TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType(), TSDuplicate()
+@*/
+PetscErrorCode  TSDuplicateDestroy(TS ts, TS tsdup)
+{
+  PetscErrorCode ierr;
+  SNES           snes_dup=NULL;
+
+  PetscFunctionBegin;
+
+  ierr = TSGetSNES(ts,&snes_dup);CHKERRQ(ierr);
+  tsdup->snes=NULL;
+  ierr = TSSetSNES(ts,snes_dup);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes_dup);CHKERRQ(ierr);
+  ierr = TSDestroy(&tsdup);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }

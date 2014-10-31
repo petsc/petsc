@@ -168,7 +168,7 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Do Time stepping
+     Do time stepping
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,Y);CHKERRQ(ierr);
   

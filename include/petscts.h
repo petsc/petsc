@@ -188,6 +188,7 @@ PETSC_EXTERN PetscErrorCode TSInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSCreate(MPI_Comm,TS*);
 PETSC_EXTERN PetscErrorCode TSDuplicate(MPI_Comm,TS,TS*);
 PETSC_EXTERN PetscErrorCode TSDestroy(TS*);
+PETSC_EXTERN PetscErrorCode TSDuplicateDestroy(TS,TS);
 
 PETSC_EXTERN PetscErrorCode TSSetProblemType(TS,TSProblemType);
 PETSC_EXTERN PetscErrorCode TSGetProblemType(TS,TSProblemType*);

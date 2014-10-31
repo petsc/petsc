@@ -714,22 +714,9 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     ierr = PetscObjectComposedDataGetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,valid_time,isvalid);CHKERRQ(ierr);
     if (!isvalid || valid_time != ts->ptime) {
       TS        ts_start;
-      SNES      snes_start;
-      DM        dm;
-      PetscReal atol;
-      Vec       vatol;
-      PetscReal rtol;
-      Vec       vrtol;
 
-      ierr = TSCreate(PetscObjectComm((PetscObject)ts),&ts_start);CHKERRQ(ierr);
-      ierr = TSGetSNES(ts,&snes_start);CHKERRQ(ierr);
-      ierr = TSSetSNES(ts_start,snes_start);CHKERRQ(ierr);
-      ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-      ierr = TSSetDM(ts_start,dm);CHKERRQ(ierr);
-
-      ts_start->adapt=ts->adapt;
-      PetscObjectReference((PetscObject)ts_start->adapt);
-
+      ierr = TSDuplicate(PetscObjectComm((PetscObject)ts),ts,&ts_start);CHKERRQ(ierr);
+      
       ierr = TSSetSolution(ts_start,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSSetTime(ts_start,ts->ptime);CHKERRQ(ierr);
       ierr = TSSetDuration(ts_start,1,ts->ptime+ts->time_step);CHKERRQ(ierr);
@@ -737,19 +724,16 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ierr = TSSetType(ts_start,TSARKIMEX);CHKERRQ(ierr);
       ierr = TSARKIMEXSetFullyImplicit(ts_start,PETSC_TRUE);CHKERRQ(ierr);
       ierr = TSARKIMEXSetType(ts_start,TSARKIMEX1BEE);CHKERRQ(ierr);
-      ierr = TSSetEquationType(ts_start,ts->equation_type);CHKERRQ(ierr);
-      ierr = TSGetTolerances(ts,&atol,&vatol,&rtol,&vrtol);CHKERRQ(ierr);
-      ierr = TSSetTolerances(ts_start,atol,vatol,rtol,vrtol);CHKERRQ(ierr);
+
       ierr = TSSolve(ts_start,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSGetTime(ts_start,&ts->ptime);CHKERRQ(ierr);
 
       ts->time_step = ts_start->time_step;
       ts->steps++;
       ierr = VecCopy(((TS_ARKIMEX*)ts_start->data)->Ydot0,Ydot0);CHKERRQ(ierr);
-      ts_start->snes=NULL;
-      ierr = TSSetSNES(ts,snes_start);CHKERRQ(ierr);
-      ierr = SNESDestroy(&snes_start);CHKERRQ(ierr);
-      ierr = TSDestroy(&ts_start);CHKERRQ(ierr);
+
+      ierr = TSDuplicateDestroy(ts,ts_start);CHKERRQ(ierr);
+
     }
   }
 
