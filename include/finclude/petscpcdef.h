@@ -12,6 +12,7 @@
 #define PC PetscFortranAddr
 #endif
 #define PCSide PetscEnum
+#define PCJacobiType PetscEnum
 #define PCASMType PetscEnum
 #define PCCompositeType PetscEnum
 #define PCRichardsonConvergedReason PetscEnum
