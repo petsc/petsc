@@ -972,6 +972,12 @@ runex10_zeropivot_3:
 	   else printf "${PWD}\nPossible problem with ex10_zeropivot_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10.tmp
 
+runex10_asm_viennacl:
+	-@${MPIEXEC} -n 2 ./ex10 -pc_type asm -pc_asm_sub_mat_type aijviennacl -f0 ${PETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int${PETSC_INDEX_SIZE}-float${PETSC_SCALAR_SIZE} > ex10_asm_viennacl.tmp 2>&1; \
+	   if (${DIFF} output/ex10_asm_viennacl.out ex10_asm_viennacl.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_asm_viennacl, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_asm_viennacl.tmp
+
 runex11:
 	-@${MPIEXEC} -n 1 ./ex11 -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
