@@ -238,30 +238,31 @@ reject_step:
 static PetscErrorCode TSStepAdj_Theta(TS ts)
 {
   TS_Theta            *th = (TS_Theta*)ts->data;
-  Vec                 *VecDeltaLam = th->VecDeltaLam,*VecDeltaMu = th->VecDeltaMu,*VecSensiTemp = th->VecSensiTemp;
+  Vec                 VecStage,*VecDeltaLam = th->VecDeltaLam,*VecDeltaMu = th->VecDeltaMu,*VecSensiTemp = th->VecSensiTemp;
   PetscInt            nadj;
   PetscErrorCode      ierr;
   Mat                 J,Jp;
   KSP                 ksp;
   PetscReal           shift;
-
+  
   PetscFunctionBegin;
 
   th->status = TS_STEP_INCOMPLETE;
   ierr = SNESGetKSP(ts->snes,&ksp);
   ierr = TSGetIJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
-  th->stage_time = ts->ptime + (th->endpoint ? 0. : (1-th->Theta)*ts->time_step); /* time_step is negative*/
+  th->stage_time = ts->ptime + (th->endpoint ? ts->time_step : (1-th->Theta)*ts->time_step); /* time_step is negative*/
 
   ierr = TSPreStep(ts);CHKERRQ(ierr);
+
   /* Build RHS */
-  shift = -1./((th->Theta-1)*ts->time_step);
-  ierr  = TSComputeIJacobian(ts,ts->ptime,ts->vec_sol,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
-    
-  if (th->endpoint) { /* This formulation assumes linear time-independent mass matrix */
+  if (th->endpoint && th->Theta != 1.0) { /* This formulation assumes linear time-independent mass matrix */
+    shift = -1./((th->Theta-1.0)*ts->time_step);
+    ierr  = TSComputeIJacobian(ts,ts->ptime,ts->vec_sol,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numberadjs; nadj++) {
       ierr  = MatMultTranspose(J,ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);     
+      ierr = VecScale(VecSensiTemp[nadj],(th->Theta-1.)/th->Theta);CHKERRQ(ierr);     
     }
-  }else {
+  }else { /* Assume mass matrix to be identity for now */
     for (nadj=0; nadj<ts->numberadjs; nadj++) {
       ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);
       ierr = VecScale(VecSensiTemp[nadj],-1./(th->Theta*ts->time_step));CHKERRQ(ierr);     
@@ -269,7 +270,8 @@ static PetscErrorCode TSStepAdj_Theta(TS ts)
   }
   /* Build LHS */
   shift = -1./(th->Theta*ts->time_step);
-  ierr = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
+  VecStage = (th->endpoint) ? th->X0 : th->X;
+  ierr = TSComputeIJacobian(ts,th->stage_time,VecStage,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,J,Jp);CHKERRQ(ierr);
 
   /* Solve LHS X = RHS */
@@ -283,7 +285,7 @@ static PetscErrorCode TSStepAdj_Theta(TS ts)
   }else {
     shift = -1./(th->Theta*ts->time_step);
     for (nadj=0; nadj<ts->numberadjs; nadj++) {
-      ierr = VecAXPBYPCZ(VecSensiTemp[nadj],-shift,shift,0,VecDeltaLam[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);
+      ierr = VecAXPBYPCZ(VecSensiTemp[nadj],shift,-shift,0,VecDeltaLam[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);
       ierr = VecAXPY(ts->vecs_sensi[nadj],-ts->time_step,VecSensiTemp[nadj]);CHKERRQ(ierr);
     }
   }
