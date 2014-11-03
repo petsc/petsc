@@ -497,9 +497,6 @@ PETSC_EXTERN PetscErrorCode MatRestoreLocalSubMatrix(Mat,IS,IS,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSeqNonzeroStructure(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatDestroySeqNonzeroStructure(Mat*);
 
-PETSC_EXTERN PetscErrorCode MatCreateMPIAIJConcatenateSeqAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPIAIJConcatenateSeqAIJSymbolic(MPI_Comm,Mat,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatCreateMPIAIJConcatenateSeqAIJNumeric(MPI_Comm,Mat,PetscInt,Mat);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJ(MPI_Comm,Mat,PetscInt,PetscInt,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm,Mat,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat,Mat);
@@ -556,10 +553,11 @@ PETSC_EXTERN PetscErrorCode MatInterpolateAdd(Mat,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatRestrict(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatCreateVecs(Mat,Vec*,Vec*);
 PETSC_DEPRECATED("Use MatCreateVecs()") PETSC_STATIC_INLINE PetscErrorCode MatGetVecs(Mat mat,Vec *x,Vec *y) {return MatCreateVecs(mat,x,y);}
-PETSC_EXTERN PetscErrorCode MatGetRedundantMatrix(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateRedundantMatrix(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetMultiProcBlock(Mat,MPI_Comm,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatFindZeroDiagonals(Mat,IS*);
 PETSC_EXTERN PetscErrorCode MatFindOffBlockDiagonalEntries(Mat,IS*);
+PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
 /*MC
    MatSetValue - Set a single entry into a matrix.
@@ -1488,7 +1486,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SET_BLOCK_SIZES=139,
                MATOP_AYPX=140,
                MATOP_RESIDUAL=141,
-               MATOP_FDCOLORING_SETUP= 142
+               MATOP_FDCOLORING_SETUP=142,
+               MATOP_MPICONCATENATESEQ=144
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));

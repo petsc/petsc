@@ -17,7 +17,7 @@ PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT
 PetscLogEvent MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 PetscLogEvent MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 PetscLogEvent MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
-PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetOrdering, MAT_GetRedundantMatrix, MAT_GetSeqNonzeroStructure;
+PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetOrdering, MAT_RedundantMat, MAT_GetSeqNonzeroStructure;
 PetscLogEvent MAT_IncreaseOverlap, MAT_Partitioning, MAT_Coarsen, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
 PetscLogEvent MAT_FDColoringSetUp, MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
 PetscLogEvent MAT_TransposeColoringCreate;
@@ -1012,6 +1012,40 @@ PetscErrorCode  MatLoad(Mat newmat,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatDestroy_Redundant"
+PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
+{
+  PetscErrorCode ierr;
+  Mat_Redundant  *redund = *redundant;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (redund){
+    if (redund->matseq) { /* via MatGetSubMatrices()  */
+      ierr = ISDestroy(&redund->isrow);CHKERRQ(ierr);
+      ierr = ISDestroy(&redund->iscol);CHKERRQ(ierr);
+      ierr = MatDestroy(&redund->matseq[0]);CHKERRQ(ierr);
+      ierr = PetscFree(redund->matseq);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFree2(redund->send_rank,redund->recv_rank);CHKERRQ(ierr);
+      ierr = PetscFree(redund->sbuf_j);CHKERRQ(ierr);
+      ierr = PetscFree(redund->sbuf_a);CHKERRQ(ierr);
+      for (i=0; i<redund->nrecvs; i++) {
+        ierr = PetscFree(redund->rbuf_j[i]);CHKERRQ(ierr);
+        ierr = PetscFree(redund->rbuf_a[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree4(redund->sbuf_nz,redund->rbuf_nz,redund->rbuf_j,redund->rbuf_a);CHKERRQ(ierr);
+    }
+
+    if (redund->subcomm) {
+      ierr = PetscCommDestroy(&redund->subcomm);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(redund);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy"
 /*@
    MatDestroy - Frees space taken by a matrix.
@@ -1038,6 +1072,7 @@ PetscErrorCode  MatDestroy(Mat *A)
   if ((*A)->ops->destroy) {
     ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);
   }
+  ierr = MatDestroy_Redundant(&(*A)->redundant);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->nullsp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&(*A)->nearnullsp);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->rmap);CHKERRQ(ierr);
@@ -9089,9 +9124,9 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetRedundantMatrix"
+#define __FUNCT__ "MatCreateRedundantMatrix"
 /*@C
-   MatGetRedundantMatrix - Create redundant matrices and put them into processors of subcommunicators.
+   MatCreateRedundantMatrix - Create redundant matrices and put them into processors of subcommunicators.
 
    Collective on Mat
 
@@ -9106,12 +9141,10 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
 
    Notes:
    MAT_REUSE_MATRIX can only be used when the nonzero structure of the
-   original matrix has not changed from that last call to MatGetRedundantMatrix().
+   original matrix has not changed from that last call to MatCreateRedundantMatrix().
 
    This routine creates the duplicated matrices in subcommunicators; you should NOT create them before
    calling it.
-
-   Only MPIAIJ matrix is supported.
 
    Level: advanced
 
@@ -9120,24 +9153,96 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
 
 .seealso: MatDestroy()
 @*/
-PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
+PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
 {
   PetscErrorCode ierr;
-
+  MPI_Comm       comm;
+  PetscMPIInt    size;
+  PetscInt       mloc_sub,rstart,rend,M=mat->rmap->N,N=mat->cmap->N,bs=mat->rmap->bs;
+  Mat_Redundant  *redund=NULL;
+  PetscSubcomm   psubcomm=NULL;
+  MPI_Comm       subcomm_in=subcomm;
+  Mat            *matseq;
+  IS             isrow,iscol;
+  PetscBool      newsubcomm=PETSC_FALSE;
+  
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
+  if (size == 1 || nsubcomm == 1) {
+    if (reuse == MAT_INITIAL_MATRIX) {
+      ierr = MatDuplicate(mat,MAT_COPY_VALUES,matredundant);CHKERRQ(ierr);
+    } else {
+      ierr = MatCopy(mat,*matredundant,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
+
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (nsubcomm && reuse == MAT_REUSE_MATRIX) {
     PetscValidPointer(*matredundant,5);
     PetscValidHeaderSpecific(*matredundant,MAT_CLASSID,5);
   }
-  if (!mat->ops->getredundantmatrix) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(mat,1);
 
-  ierr = PetscLogEventBegin(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getredundantmatrix)(mat,nsubcomm,subcomm,reuse,matredundant);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_RedundantMat,mat,0,0,0);CHKERRQ(ierr);
+  if (subcomm_in == MPI_COMM_NULL && reuse == MAT_INITIAL_MATRIX) { /* get subcomm if user does not provide subcomm */
+    /* create psubcomm, then get subcomm */
+    ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    if (nsubcomm < 1 || nsubcomm > size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"nsubcomm must between 1 and %D",size);
+
+    ierr = PetscSubcommCreate(comm,&psubcomm);CHKERRQ(ierr);
+    ierr = PetscSubcommSetNumber(psubcomm,nsubcomm);CHKERRQ(ierr);
+    ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
+    ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
+    ierr = PetscCommDuplicate(psubcomm->comm,&subcomm,NULL);CHKERRQ(ierr);
+    newsubcomm = PETSC_TRUE;
+    ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
+  } 
+
+  /* get isrow, iscol and a local sequential matrix matseq[0] */
+  if (reuse == MAT_INITIAL_MATRIX) {
+    mloc_sub = PETSC_DECIDE;
+    if (bs < 1) {
+      ierr = PetscSplitOwnership(subcomm,&mloc_sub,&M);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSplitOwnershipBlock(subcomm,bs,&mloc_sub,&M);CHKERRQ(ierr);
+    }
+    ierr = MPI_Scan(&mloc_sub,&rend,1,MPIU_INT,MPI_SUM,subcomm);CHKERRQ(ierr);
+    rstart = rend - mloc_sub;
+    ierr = ISCreateStride(PETSC_COMM_SELF,mloc_sub,rstart,1,&isrow);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
+  } else { /* reuse == MAT_REUSE_MATRIX */
+    /* retrieve subcomm */
+    ierr = PetscObjectGetComm((PetscObject)(*matredundant),&subcomm);CHKERRQ(ierr);
+    redund = (*matredundant)->redundant;
+    isrow  = redund->isrow;
+    iscol  = redund->iscol;
+    matseq = redund->matseq;
+  }
+  ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
+  
+  /* get matredundant over subcomm */
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],mloc_sub,reuse,matredundant);CHKERRQ(ierr);
+
+    /* create a supporting struct and attach it to C for reuse */
+    ierr = PetscNewLog(*matredundant,&redund);CHKERRQ(ierr);
+    (*matredundant)->redundant = redund;
+    redund->isrow              = isrow;
+    redund->iscol              = iscol;
+    redund->matseq             = matseq;
+    if (newsubcomm) {
+      redund->subcomm          = subcomm;
+    } else {
+      redund->subcomm          = MPI_COMM_NULL;
+    }
+  } else {
+    ierr = MatCreateMPIMatConcatenateSeqMat(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(MAT_RedundantMat,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -9564,5 +9669,50 @@ PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
 {
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   *state = mat->nonzerostate;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateMPIMatConcatenateSeqMat"
+/*@
+      MatCreateMPIMatConcatenateSeqMat - Creates a single large PETSc matrix by concatenating sequential
+                 matrices from each processor
+
+    Collective on MPI_Comm
+
+   Input Parameters:
++    comm - the communicators the parallel matrix will live on
+.    seqmat - the input sequential matrices
+.    n - number of local columns (or PETSC_DECIDE)
+-    reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
+.    mpimat - the parallel matrix generated
+
+    Level: advanced
+
+   Notes: The number of columns of the matrix in EACH processor MUST be the same.
+
+@*/
+PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm comm,Mat seqmat,PetscInt n,MatReuse reuse,Mat *mpimat)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    if (reuse == MAT_INITIAL_MATRIX) {
+      ierr = MatDuplicate(seqmat,MAT_COPY_VALUES,mpimat);CHKERRQ(ierr);
+    } else {
+      ierr = MatCopy(seqmat,*mpimat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
+
+  if (!seqmat->ops->creatempimatconcatenateseqmat) SETERRQ1(PetscObjectComm((PetscObject)seqmat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)seqmat)->type_name);
+  ierr = PetscLogEventBegin(MAT_Merge,seqmat,0,0,0);CHKERRQ(ierr);
+  ierr = (*seqmat->ops->creatempimatconcatenateseqmat)(comm,seqmat,n,reuse,mpimat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Merge,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

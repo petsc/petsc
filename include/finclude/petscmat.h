@@ -365,6 +365,7 @@
       PetscEnum MATOP_AYPX
       PetscEnum MATOP_RESIDUAL
       PetscEnum MATOP_FDCOLORING_SETUP
+      PetscEnum MATOP_MPICONCATENATESEQ
 
       parameter(MATOP_SET_VALUES=0)
       parameter(MATOP_GET_ROW=1)
@@ -509,6 +510,7 @@
       parameter(MATOP_AYPX=140)
       parameter(MATOP_RESIDUAL=141)
       parameter(MATOP_FDCOLORING_SETUP=142)
+      parameter(MATOP_MPICONCATENATESEQ=144)
 !
 !
 !

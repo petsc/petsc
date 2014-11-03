@@ -213,8 +213,7 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscBool flg)
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_SYMMETRY_ETERNAL:
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix must be symmetric");
-    ierr = PetscInfo1(A,"Option %s not relevent\n",MatOptions[op]);CHKERRQ(ierr);
+    /* These options are handled directly by MatSetOption() */
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
     a->ignore_ltriangular = flg;
@@ -837,6 +836,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   a->reallocs         = 0;
   A->info.nz_unneeded = (PetscReal)fshift*bs2;
   a->idiagvalid       = PETSC_FALSE;
+  a->rmax             = rmax;
 
   if (A->cmap->n < 65536 && A->cmap->bs == 1) {
     if (a->jshort && a->free_jshort) {
@@ -1476,7 +1476,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        0,
                                /*139*/ 0,
                                        0,
-                                       0
+                                       0,
+                                       0,
+                                       0,
+                                /*144*/MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ
 };
 
 #undef __FUNCT__
@@ -1523,7 +1526,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
 {
   Mat_SeqSBAIJ   *b = (Mat_SeqSBAIJ*)B->data;
   PetscErrorCode ierr;
-  PetscInt       i,mbs,bs2;
+  PetscInt       i,mbs,nbs,bs2;
   PetscBool      skipallocation = PETSC_FALSE,flg = PETSC_FALSE,realalloc = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -1536,9 +1539,10 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
   ierr = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);
 
   mbs = B->rmap->N/bs;
+  nbs = B->cmap->n/bs;
   bs2 = bs*bs;
 
-  if (mbs*bs != B->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows, cols must be divisible by blocksize");
+  if (mbs*bs != B->rmap->N || nbs*bs!=B->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows, cols must be divisible by blocksize");
 
   if (nz == MAT_SKIP_ALLOCATION) {
     skipallocation = PETSC_TRUE;
@@ -1550,7 +1554,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
   if (nnz) {
     for (i=0; i<mbs; i++) {
       if (nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: local row %D value %D",i,nnz[i]);
-      if (nnz[i] > mbs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be greater than block row length: local row %D value %D rowlength %D",i,nnz[i],mbs);
+      if (nnz[i] > nbs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be greater than block row length: local row %D value %D block rowlength %D",i,nnz[i],nbs);
     }
   }
 
@@ -1608,7 +1612,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
   }
 
   b->mbs = mbs;
-  b->nbs = mbs;
+  b->nbs = nbs;
   if (!skipallocation) {
     if (!b->imax) {
       ierr = PetscMalloc2(mbs,&b->imax,mbs,&b->ilen);CHKERRQ(ierr);
@@ -2448,6 +2452,16 @@ PetscErrorCode  MatCreateSeqSBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ"
+PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(comm,inmat,n,scall,outmat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 

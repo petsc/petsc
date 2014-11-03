@@ -103,7 +103,11 @@
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
       <h4>Mat:</h4>
-         MatGetVecs() replaced with MatCreateVecs() because it actually does create the Vecs that need to be destroyed
+      <ul>
+         <li>MatGetVecs() replaced with MatCreateVecs() because it actually does create the Vecs that need to be destroyed</li>
+         <li>MatCreateMPIAIJConcatenateSeqAIJ and MatCreateMPIBAIJConcatenateSeqBAIJ replaced with MatCreateMPIMatConcatenateSeqMat</li>
+         <li>MatGetRedundantMatrix() replaced with MatCreateRedundantMatrix()</li>
+      </ul>
       <h4>PC:</h4>
          Added PCBDDCSetChangeOfBasisMat for user defined change of basis
          PCJacobiSetUseAbs() now takes a PetscBool argument allowing toggling the option
