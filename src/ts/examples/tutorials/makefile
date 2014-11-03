@@ -112,10 +112,6 @@ ex16opt_ic: ex16opt_ic.o chkopts
 	-${CLINKER} -o ex16opt_ic ex16opt_ic.o ${PETSC_TS_LIB}
 	${RM} ex16opt_ic.o
 
-ex16opt_ic1: ex16opt_ic1.o chkopts
-	-${CLINKER} -o ex16opt_ic1 ex16opt_ic1.o ${PETSC_TS_LIB}
-	${RM} ex16opt_ic1.o
-
 ex17: ex17.o  chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_TS_LIB}
 	${RM} ex17.o
@@ -131,6 +127,10 @@ ex19a: ex19a.o  chkopts
 ex20: ex20.o  chkopts
 	-${CLINKER} -o ex20 ex20.o  ${PETSC_TS_LIB}
 	${RM} ex20.o
+
+ex20opt_ic: ex20opt_ic.o chkopts
+	-${CLINKER} -o ex20opt_ic ex20opt_ic.o ${PETSC_TS_LIB}
+	${RM} ex20opt_ic.o
 
 ex21: ex21.o  chkopts
 	-${CLINKER} -o ex21 ex21.o  ${PETSC_TS_LIB}
