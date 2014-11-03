@@ -34,6 +34,8 @@ sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h petsc-private/*.h
 sed -i "" "s?#include [ ]*<mpi?#import <PETSc/mpi?g" *.h petsc-private/*.h
 cd ..
 
+echo "framework module PETSc [system] { header \"petsc.h\"  export *}" > module.map
+
 cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc.dylib PETSc
 install_name_tool -id /Library/Frameworks/PETSc-OSX/$1/PETSc.Framework/PETSc PETSc
 
@@ -88,4 +90,4 @@ cd  ${PETSC_DIR}/${PETSC_ARCH}/PETSc-OSX/$1/PETSc.framework
 ln -s Versions/Current/Headers Headers
 ln -s Versions/Current/PETSc PETSc
 ln -s Versions/Current/Resources Resources
-
+ln -s Versions/Current/module.map module.map

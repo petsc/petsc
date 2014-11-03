@@ -136,6 +136,9 @@ typedef struct {
   PetscBool            useClosure;        /* Use the transitive closure when defining adjacency */
   PetscBool            useAnchors;        /* Replace constrained points with their anchors in adjacency lists */
 
+  /* Projection */
+  PetscInt             maxProjectionHeight; /* maximum height of cells used in DMPlexProject functions */
+
   /* Output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
   PetscReal            scale[NUM_PETSC_UNITS];   /* The scale for each SI unit */

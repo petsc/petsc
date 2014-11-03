@@ -220,12 +220,23 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetUseInPlace_LU"
-PetscErrorCode  PCFactorSetUseInPlace_LU(PC pc)
+PetscErrorCode  PCFactorSetUseInPlace_LU(PC pc,PetscBool flg)
 {
   PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  dir->inplace = PETSC_TRUE;
+  dir->inplace = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorGetUseInPlace_LU"
+PetscErrorCode  PCFactorGetUseInPlace_LU(PC pc,PetscBool *flg)
+{
+  PC_LU *dir = (PC_LU*)pc->data;
+
+  PetscFunctionBegin;
+  *flg = dir->inplace;
   PetscFunctionReturn(0);
 }
 
@@ -323,6 +334,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftAmount_C",PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetFill_C",PCFactorSetFill_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUseInPlace_C",PCFactorSetUseInPlace_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetUseInPlace_C",PCFactorGetUseInPlace_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseOrdering_C",PCFactorSetReuseOrdering_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseFill_C",PCFactorSetReuseFill_LU);CHKERRQ(ierr);

@@ -131,7 +131,7 @@ Process [2]
 20
 Local to global mapping of redundant1 vector
 ISLocalToGlobalMapping Object: 3 MPI processes
-  type not yet set
+  type: basic
 [0] 0 0
 [0] 1 1
 [0] 2 2
@@ -149,7 +149,7 @@ ISLocalToGlobalMapping Object: 3 MPI processes
 [2] 4 4
 Local to global mapping of local1 vector
 ISLocalToGlobalMapping Object: 3 MPI processes
-  type not yet set
+  type: basic
 [0] 0 5
 [0] 1 6
 [0] 2 7
@@ -164,7 +164,7 @@ ISLocalToGlobalMapping Object: 3 MPI processes
 [2] 2 18
 Local to global mapping of redundant2 vector
 ISLocalToGlobalMapping Object: 3 MPI processes
-  type not yet set
+  type: basic
 [0] 0 13
 [0] 1 14
 [1] 0 13
@@ -173,7 +173,7 @@ ISLocalToGlobalMapping Object: 3 MPI processes
 [2] 1 14
 Local to global mapping of local2 vector
 ISLocalToGlobalMapping Object: 3 MPI processes
-  type not yet set
+  type: basic
 [0] 0 8
 [0] 1 9
 [0] 2 15

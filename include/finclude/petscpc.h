@@ -10,7 +10,15 @@
       PetscEnum PC_RIGHT
       PetscEnum PC_SYMMETRIC
       parameter (PC_LEFT=0,PC_RIGHT=1,PC_SYMMETRIC=2)
-
+!
+!     PCJacobiType
+!
+      PetscEnum PC_JACOBI_DIAGONAL
+      PetscEnum PC_JACOBI_ROWMAX
+      PetscEnum PC_JACOBI_ROWSUM
+      parameter (PC_JACOBI_DIAGONAL=0)
+      parameter (PC_JACOBI_ROWMAX=1)
+      parameter (PC_JACOBI_ROWSUM=2)
 !
 ! PCASMType
 !

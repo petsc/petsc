@@ -1221,22 +1221,22 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal n)
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetType"
 /*@
-   PCGAMGSetType - Set solution method - calls sub create method
+   PCGAMGSetType - Set solution method
 
    Collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
-
++  pc - the preconditioner context
+-  type - PCGAMGAGG, PCGAMGGEO, or PCGAMGCLASSICAL
 
    Options Database Key:
-.  -pc_gamg_type
+.  -pc_gamg_type <agg,geo,classical>
 
    Level: intermediate
 
    Concepts: Unstructured multrigrid preconditioner
 
-.seealso: ()
+.seealso: PCGAMGGetType(), PCGAMG
 @*/
 PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
 {
@@ -1249,6 +1249,47 @@ PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCGAMGGetType"
+/*@
+   PCGAMGGetType - Get solution method
+
+   Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  type - the type of algorithm used
+
+   Level: intermediate
+
+   Concepts: Unstructured multrigrid preconditioner
+
+.seealso: PCGAMGSetType()
+@*/
+PetscErrorCode PCGAMGGetType(PC pc, PCGAMGType *type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCGAMGGetType_C",(PC,PCGAMGType*),(pc,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGAMGGetType_GAMG"
+static PetscErrorCode PCGAMGGetType_GAMG(PC pc, PCGAMGType *type)
+{
+  PC_MG          *mg      = (PC_MG*)pc->data;
+  PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
+
+  PetscFunctionBegin;
+  *type = pc_gamg->type;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetType_GAMG"
 static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
 {
@@ -1257,6 +1298,7 @@ static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
 
   PetscFunctionBegin;
+  pc_gamg->type = type;
   ierr = PetscFunctionListFind(GAMGList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown GAMG type %s given",type);
   if (pc_gamg->ops->destroy) {
@@ -1271,8 +1313,7 @@ static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
     if (pc_gamg->data_sz) {
       ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
       pc_gamg->data_sz = 0;
-    }
-    else if (pc_gamg->data) {
+    } else if (pc_gamg->data) {
       ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr); /* can this happen ? */
     }
   }
@@ -1301,7 +1342,6 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
     {
       char tname[256];
       ierr = PetscOptionsFList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, pc_gamg->gamg_type_name, tname, sizeof(tname), &flag);CHKERRQ(ierr);
-      /* call PCCreateGAMG_XYZ */
       if (flag) {
         ierr = PCGAMGSetType(pc,tname);CHKERRQ(ierr);
       }
@@ -1402,6 +1442,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetUseASMAggs_C",PCGAMGSetUseASMAggs_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetThreshold_C",PCGAMGSetThreshold_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetType_C",PCGAMGSetType_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGGetType_C",PCGAMGGetType_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetNlevels_C",PCGAMGSetNlevels_GAMG);CHKERRQ(ierr);
   pc_gamg->repart           = PETSC_FALSE;
   pc_gamg->reuse_prol       = PETSC_FALSE;
