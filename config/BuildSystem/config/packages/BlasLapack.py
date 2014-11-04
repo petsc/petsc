@@ -474,9 +474,9 @@ class Configure(config.package.Package):
     self.framework.log.write('Checking if sdot() returns a float or a double\n')
     includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
     body     = '''extern float '''+self.compilers.mangleFortranFunction('sdot')+'''(int*,float*,int *,float*,int*);\n
-                  float x[1] = {3.0};\n
-                  int one = 1;\n
-                  float sdotresult = '''+self.compilers.mangleFortranFunction('sdot')+'''(&one,x,&one,x,&one);\n
+                  float x1[1] = {3.0};\n
+                  int one1 = 1;\n
+                  float sdotresult = '''+self.compilers.mangleFortranFunction('sdot')+'''(&one1,x1,&one1,x1,&one1);\n
                   fprintf(output, "  '--known-sdot-returns-double=%d',\\n",(sdotresult != 9.0));\n'''
     result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib)
     if result:
@@ -485,9 +485,9 @@ class Configure(config.package.Package):
     self.framework.log.write('Checking if snrm() returns a float or a double\n')
     includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
     body     = '''extern float '''+self.compilers.mangleFortranFunction('snrm2')+'''(int*,float*,int*);\n
-                  float x[1] = {3.0};\n
-                  int one = 1;\n
-                  float normresult = '''+self.compilers.mangleFortranFunction('snrm2')+'''(&one,x,&one);\n
+                  float x2[1] = {3.0};\n
+                  int one2 = 1;\n
+                  float normresult = '''+self.compilers.mangleFortranFunction('snrm2')+'''(&one2,x2,&one2);\n
                   fprintf(output, "  '--known-snrm2-returns-double=%d',\\n",(normresult != 3.0));\n'''
     result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib)
     if result:
