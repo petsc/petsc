@@ -433,6 +433,9 @@ runex20:
 	   ${DIFF} output/ex20_1.out ex20_1.tmp || printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n";  \
 	   ${RM} -f ex20_1.tmp
 
+runex20opt_ic:
+	-@${MPIEXEC} -n 1 ./ex20opt_ic -monitor 0 -ts_type theta -viewer_binary_skip_info -ts_dt 0.005 -tao_view
+
 runex22:
 	-@${MPIEXEC} -n 1 ./ex22 -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 -ts_adapt_type none > ex22_1.tmp 2>&1; \
 	   ${DIFF} output/ex22_1.out ex22_1.tmp || printf "${PWD}\nPossible problem with ex22_1, diffs above\n=========================================\n";  \
