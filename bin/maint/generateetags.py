@@ -143,7 +143,7 @@ def main(ctags):
     ctagfile = None
   flist = []
   (status,output) = commands.getstatusoutput('git ls-files| egrep -v \(^\(systems/\|share/petsc/datafiles/\)\|/output/\|\.\(png\|pdf\|ps\|ppt\|jpg\)$\)')
-  if status:
+  if not status:
     flist = output.split('\n')
   else:
     os.path.walk(os.getcwd(),processDir,flist)
