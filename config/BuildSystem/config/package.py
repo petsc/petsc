@@ -150,7 +150,7 @@ class Package(config.base.Configure):
     return ''
 
   def getPointerSizeFlag(self,cflags):
-    for flag in ['-m32', '-m64', '-xarch=v9','-q64']:
+    for flag in ['-m32', '-m64', '-xarch=v9','-q64','-mmic']:
       if cflags.find(flag) >=0: return flag
     return ''
 
