@@ -2259,7 +2259,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     for (i=0;i<pcis->n_B;i++) {
       nnz_array[idxs_B[i]] = nnz[i];
     }
-    ierr = VecSetValuesLocal(nnz_vec,pcis->n,idxs_all,nnz_array,INSERT_VALUES);CHKERRQ(ierr);
+    if (pcis->n) {
+      ierr = VecSetValuesLocal(nnz_vec,pcis->n,idxs_all,nnz_array,INSERT_VALUES);CHKERRQ(ierr);
+    }
     ierr = VecAssemblyBegin(nnz_vec);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(nnz_vec);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
