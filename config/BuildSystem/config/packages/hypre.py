@@ -37,7 +37,7 @@ class Configure(config.package.GNUPackage):
     if not hasattr(self.compilers, 'CXX'):
       raise RuntimeError('Error: Hypre requires C++ compiler. None specified')
     if not hasattr(self.compilers, 'FC'):
-      raise RuntimeError('Error: Hypre requires Fortran compiler. None specified (was your MPI built with Fortran support?')
+      args.append('--disable-fortran')
     if self.mpi.include:
       # just use the first dir - and assume the subsequent one isn't necessary [relavant only on AIX?]
       args.append('--with-MPI-include="'+self.mpi.include[0]+'"')
