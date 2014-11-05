@@ -326,8 +326,8 @@ int main(int argc,char **argv)
   ierr = MatGetVecs(user.A,&user.lambda[0],NULL);CHKERRQ(ierr);
   /*   Redet initial conditions for the adjoint integration */
   ierr = VecGetArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
-  y_ptr[0] = 2.*(x_ptr[0]-user.x_ob[0]);   y_ptr[1] = 0.0;
-  /*y_ptr[0] = 1.0;   y_ptr[1] = 0.0;*/
+  /* y_ptr[0] = 2.*(x_ptr[0]-user.x_ob[0]);   y_ptr[1] = 0.0; */
+  y_ptr[0] = 1.0;   y_ptr[1] = 0.0;
   ierr = VecRestoreArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
   ierr = TSSetSensitivity(ts,user.lambda,1);CHKERRQ(ierr);
   
