@@ -2772,7 +2772,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
   PetscMPIInt     size,rank,color;
   PetscInt        *xadj,*adjncy,*oldranks;
   PetscInt        *adjncy_wgt,*v_wgt,*is_indices,*ranks_send_to_idx;
-  PetscInt        i,j,local_size,threshold=0;
+  PetscInt        i,local_size,threshold=0;
   PetscErrorCode  ierr;
   PetscBool       use_vwgt=PETSC_FALSE,use_square=PETSC_FALSE;
   PetscSubcomm    subcomm;
@@ -2797,13 +2797,10 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
   if (threshold) {
     PetscInt xadj_count = 0;
     for (i=1;i<n_neighs;i++) {
-      for (j=0;j<n_shared[i];j++) {
-        if (n_shared[i] > threshold) {
-          adjncy[xadj_count] = neighs[i];
-          adjncy_wgt[xadj_count] = n_shared[i];
-          xadj_count++;
-          break;
-        }
+      if (n_shared[i] > threshold) {
+        adjncy[xadj_count] = neighs[i];
+        adjncy_wgt[xadj_count] = n_shared[i];
+        xadj_count++;
       }
     }
     xadj[1] = xadj_count;
@@ -2821,7 +2818,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
   }
   ierr = PetscSortIntWithArray(xadj[1],adjncy,adjncy_wgt);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscInt),&ranks_send_to_idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(1,&ranks_send_to_idx);CHKERRQ(ierr);
 
   /*
     Restrict work on active processes only.
@@ -2857,7 +2854,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
     ierr = MatPartitioningCreate(subcomm->comm,&partitioner);CHKERRQ(ierr);
     ierr = MatPartitioningSetAdjacency(partitioner,subdomain_adj);CHKERRQ(ierr);
     if (use_vwgt) {
-      ierr = PetscMalloc(sizeof(*v_wgt),&v_wgt);CHKERRQ(ierr);
+      ierr = PetscMalloc1(1,&v_wgt);CHKERRQ(ierr);
       v_wgt[0] = local_size;
       ierr = MatPartitioningSetVertexWeights(partitioner,v_wgt);CHKERRQ(ierr);
     }
