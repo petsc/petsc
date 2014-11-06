@@ -800,7 +800,9 @@ static PetscErrorCode PCBDDCSetDofsSplittingLocal_BDDC(PC pc,PetscInt n_is, IS I
   ierr = PetscFree(pcbddc->ISForDofs);CHKERRQ(ierr);
   pcbddc->n_ISForDofs = 0;
   /* allocate space then set */
-  ierr = PetscMalloc(n_is*sizeof(IS),&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+  if (n_is) {
+    ierr = PetscMalloc1(n_is,&pcbddc->ISForDofsLocal);CHKERRQ(ierr);
+  }
   for (i=0;i<n_is;i++) {
     ierr = PetscObjectReference((PetscObject)ISForDofs[i]);CHKERRQ(ierr);
     pcbddc->ISForDofsLocal[i]=ISForDofs[i];
@@ -867,7 +869,9 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
   ierr = PetscFree(pcbddc->ISForDofsLocal);CHKERRQ(ierr);
   pcbddc->n_ISForDofsLocal = 0;
   /* allocate space then set */
-  ierr = PetscMalloc1(n_is,&pcbddc->ISForDofs);CHKERRQ(ierr);
+  if (n_is) {
+    ierr = PetscMalloc1(n_is,&pcbddc->ISForDofs);CHKERRQ(ierr);
+  }
   for (i=0;i<n_is;i++) {
     ierr = PetscObjectReference((PetscObject)ISForDofs[i]);CHKERRQ(ierr);
     pcbddc->ISForDofs[i]=ISForDofs[i];
