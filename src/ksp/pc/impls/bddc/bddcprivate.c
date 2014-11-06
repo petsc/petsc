@@ -1962,7 +1962,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     Mat          localChangeOfBasisMatrix;
     /* auxiliary work for global change of basis */
     Vec          nnz_vec;
-    PetscInt     *idxs_I,*idxs_B,*idxs_all;
+    PetscInt     *idxs_I,*idxs_B,*idxs_all,*d_nnz,*o_nnz;
     PetscInt     nvtxs,*xadj,*adjncy,*idxs_mapped;
     PetscScalar  *vals;
     PetscBool    done;
@@ -2266,15 +2266,16 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = VecAssemblyEnd(nnz_vec);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
     ierr = PetscFree2(nnz_array,idxs_all);CHKERRQ(ierr);
-    ierr = PetscMalloc1(local_size,&nnz);CHKERRQ(ierr);
+    ierr = PetscMalloc2(local_size,&d_nnz,local_size,&o_nnz);CHKERRQ(ierr);
     ierr = VecGetArray(nnz_vec,&nnz_array);CHKERRQ(ierr);
     for (i=0;i<local_size;i++) {
-      nnz[i] = (PetscInt)(PetscRealPart(nnz_array[i]));
+      d_nnz[i] = PetscMin((PetscInt)(PetscRealPart(nnz_array[i])),local_size);
+      o_nnz[i] = PetscMin((PetscInt)(PetscRealPart(nnz_array[i])),global_size-local_size);
     }
     ierr = VecRestoreArray(nnz_vec,&nnz_array);CHKERRQ(ierr);
     ierr = VecDestroy(&nnz_vec);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(pcbddc->ChangeOfBasisMatrix,0,nnz,0,nnz);CHKERRQ(ierr);
-    ierr = PetscFree(nnz);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(pcbddc->ChangeOfBasisMatrix,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
+    ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
 
     /* Set identity on dirichlet dofs */
     ierr = ISGetIndices(pcis->is_I_local,(const PetscInt**)&idxs_I);CHKERRQ(ierr);
@@ -3395,6 +3396,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   PetscMPIInt            all_procs;
   PetscBool              csin_ml,csin_ds,csin,csin_type_simple;
   PetscBool              compute_vecs = PETSC_FALSE;
+  PetscScalar            *array;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -3429,7 +3431,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&all_procs);CHKERRQ(ierr);
   void_procs = all_procs-active_procs;
   csin_type_simple = PETSC_TRUE;
-  if (pcbddc->current_level) {
+  if (pcbddc->current_level && void_procs) {
     csin_ml = PETSC_TRUE;
     ncoarse_ml = void_procs;
     csin_ds = PETSC_TRUE;
@@ -3478,7 +3480,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ierr = ISLocalToGlobalMappingCreateIS(coarse_is,&coarse_islg);CHKERRQ(ierr);
 
   /* creates temporary MATIS object for coarse matrix */
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,pcbddc->local_primal_size,pcbddc->local_primal_size,coarse_submat_vals,&coarse_submat_dense);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,pcbddc->local_primal_size,pcbddc->local_primal_size,NULL,&coarse_submat_dense);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(coarse_submat_dense,&array);CHKERRQ(ierr);
+  ierr = PetscMemcpy(array,coarse_submat_vals,sizeof(*coarse_submat_vals)*pcbddc->local_primal_size*pcbddc->local_primal_size);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(coarse_submat_dense,&array);CHKERRQ(ierr);
 #if 0
   {
     PetscViewer viewer;
@@ -3738,16 +3743,21 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       coarse_mat_reuse = MAT_INITIAL_MATRIX;
     }
     if (isbddc || isnn) {
-      if (!pcbddc->coarse_subassembling) { /* subassembling info is not present */
-        ierr = MatISGetSubassemblingPattern(coarse_mat_is,active_procs/pcbddc->coarsening_ratio,PETSC_TRUE,&pcbddc->coarse_subassembling);CHKERRQ(ierr);
-        if (pcbddc->dbg_flag) {
-          ierr = PetscViewerASCIIPrintf(dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
-          ierr = PetscViewerASCIIPrintf(dbg_viewer,"Subassembling pattern\n");CHKERRQ(ierr);
-          ierr = ISView(pcbddc->coarse_subassembling,dbg_viewer);CHKERRQ(ierr);
-          ierr = PetscViewerFlush(dbg_viewer);CHKERRQ(ierr);
+      if (pcbddc->coarsening_ratio > 1) {
+        if (!pcbddc->coarse_subassembling) { /* subassembling info is not present */
+          ierr = MatISGetSubassemblingPattern(coarse_mat_is,active_procs/pcbddc->coarsening_ratio,PETSC_TRUE,&pcbddc->coarse_subassembling);CHKERRQ(ierr);
+          if (pcbddc->dbg_flag) {
+            ierr = PetscViewerASCIIPrintf(dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(dbg_viewer,"Subassembling pattern\n");CHKERRQ(ierr);
+            ierr = ISView(pcbddc->coarse_subassembling,dbg_viewer);CHKERRQ(ierr);
+            ierr = PetscViewerFlush(dbg_viewer);CHKERRQ(ierr);
+          }
         }
+        ierr = MatISSubassemble(coarse_mat_is,pcbddc->coarse_subassembling,0,PETSC_FALSE,coarse_mat_reuse,&coarse_mat,0,NULL);CHKERRQ(ierr);
+      } else {
+        ierr = PetscObjectReference((PetscObject)coarse_mat_is);CHKERRQ(ierr);
+        coarse_mat = coarse_mat_is;
       }
-      ierr = MatISSubassemble(coarse_mat_is,pcbddc->coarse_subassembling,0,PETSC_FALSE,coarse_mat_reuse,&coarse_mat,0,NULL);CHKERRQ(ierr);
     } else {
       ierr = MatISGetMPIXAIJ(coarse_mat_is,coarse_mat_reuse,&coarse_mat);CHKERRQ(ierr);
     }
