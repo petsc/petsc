@@ -2795,34 +2795,18 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
   ierr = PetscMalloc1(xadj[1],&adjncy_wgt);CHKERRQ(ierr);
 
   if (threshold) {
-    PetscInt* count,min_threshold;
-    ierr = PetscMalloc1(local_size,&count);CHKERRQ(ierr);
-    ierr = PetscMemzero(count,local_size*sizeof(PetscInt));CHKERRQ(ierr);
-    for (i=1;i<n_neighs;i++) {/* i=1 so I don't count myself -> faces nodes counts to 1 */
-      for (j=0;j<n_shared[i];j++) {
-        count[shared[i][j]] += 1;
-      }
-    }
-    /* adapt threshold since we dont want to lose significant connections */
-    min_threshold = n_neighs;
+    PetscInt xadj_count = 0;
     for (i=1;i<n_neighs;i++) {
       for (j=0;j<n_shared[i];j++) {
-        min_threshold = PetscMin(count[shared[i][j]],min_threshold);
-      }
-    }
-    threshold = PetscMax(min_threshold+1,threshold);
-    xadj[1] = 0;
-    for (i=1;i<n_neighs;i++) {
-      for (j=0;j<n_shared[i];j++) {
-        if (count[shared[i][j]] < threshold) {
-          adjncy[xadj[1]] = neighs[i];
-          adjncy_wgt[xadj[1]] = n_shared[i];
-          xadj[1]++;
+        if (n_shared[i] > threshold) {
+          adjncy[xadj_count] = neighs[i];
+          adjncy_wgt[xadj_count] = n_shared[i];
+          xadj_count++;
           break;
         }
       }
     }
-    ierr = PetscFree(count);CHKERRQ(ierr);
+    xadj[1] = xadj_count;
   } else {
     if (xadj[1]) {
       ierr = PetscMemcpy(adjncy,&neighs[1],xadj[1]*sizeof(*adjncy));CHKERRQ(ierr);
