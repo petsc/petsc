@@ -1,5 +1,7 @@
-#define c1 2.0
-#define c2 4.0
+#define c11 1.0
+#define c12 0
+#define c21 2.0
+#define c22 1.0
 static char help[] = "Solves the van der Pol equation.\n\
 Input parameters include:\n";
 
@@ -106,8 +108,8 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = c1*(xdot[0] - x[1]);
-  f[1] = c2*(xdot[1] - user->mu*((1.0-x[0]*x[0])*x[1] - x[0]));
+  f[0] = xdot[0] - x[1];
+  f[1] = c21*(xdot[0]-x[1]) + xdot[1] - user->mu*((1.0-x[0]*x[0])*x[1] - x[0]) ;
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -125,13 +127,10 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 
   PetscFunctionBeginUser;
   ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
-  if(user->reversemode) {
-    J[0][0] = a;     J[0][1] =  -1.0;
-    J[1][0] = user->mu*(1.0 + 2.0*x[0]*x[1]);   J[1][1] = (a - user->mu*(1.0-x[0]*x[0]));
-  }else {
-    J[0][0] = c1*a;     J[0][1] =  -c1*1.0;
-    J[1][0] = c2*user->mu*(1.0 + 2.0*x[0]*x[1]);   J[1][1] = c2*(a - user->mu*(1.0-x[0]*x[0]));
-  }
+
+  J[0][0] = a;     J[0][1] =  -1.0;
+  J[1][0] = c21*a + user->mu*(1.0 + 2.0*x[0]*x[1]);   J[1][1] = -c21 + a - user->mu*(1.0-x[0]*x[0]);
+ 
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
@@ -322,7 +321,7 @@ int main(int argc,char **argv)
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 2.0;   x_ptr[1] = 0.66666654321;
+  x_ptr[0] = 2.0;   x_ptr[1] = -0.66666654321;
   ierr = VecRestoreArray(user.x,&x_ptr);CHKERRQ(ierr);
   /* ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr); */
 
@@ -341,6 +340,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
   user.x_ob[0] = x_ptr[0];
   user.x_ob[1] = x_ptr[1];
+  ierr = VecView(user.x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
@@ -349,10 +349,13 @@ int main(int argc,char **argv)
   ierr = MatGetVecs(user.A,&user.lambda[0],NULL);CHKERRQ(ierr);
   /*   Set initial conditions for the adjoint integration */
   ierr = VecGetArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
-  y_ptr[0] = 2.*(x_ptr[0]-user.x_ob[0]);   y_ptr[1] = 2.*(x_ptr[1]-user.x_ob[1]);; 
   y_ptr[0] = 1.0; y_ptr[1] = 0.0;
   ierr = VecRestoreArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,user.lambda,1);CHKERRQ(ierr);
+  ierr = MatGetVecs(user.A,&user.lambda[1],NULL);CHKERRQ(ierr);
+  ierr = VecGetArray(user.lambda[1],&y_ptr);CHKERRQ(ierr); 
+  y_ptr[0] = 0.0; y_ptr[1] = 1.0;
+  ierr = VecRestoreArray(user.lambda[1],&y_ptr);CHKERRQ(ierr);
+  ierr = TSSetSensitivity(ts,user.lambda,2);CHKERRQ(ierr);
 
   /*   Switch to reverse mode  */
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
@@ -369,7 +372,12 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
 
   ierr = VecView(user.lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(user.lambda[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 
+  /*
+     Optimization starts
+  */
   /* Set initial solution guess */
   ierr = MatGetVecs(user.A,&ic,NULL);CHKERRQ(ierr);
   ierr = VecGetArray(ic,&x_ptr);CHKERRQ(ierr);
@@ -427,6 +435,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&user.A);CHKERRQ(ierr);
   ierr = VecDestroy(&user.x);CHKERRQ(ierr);
   ierr = VecDestroy(&user.lambda[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.lambda[1]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   /*ierr = VecDestroy(&lowerb);CHKERRQ(ierr);

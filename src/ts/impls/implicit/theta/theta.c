@@ -4,6 +4,7 @@
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscsnes.h>
 #include <petscdm.h>
+#include <petscmat.h>
 
 typedef struct {
   Vec          X,Xdot;                   /* Storage for one stage */
@@ -238,15 +239,15 @@ reject_step:
 static PetscErrorCode TSStepAdj_Theta(TS ts)
 {
   TS_Theta            *th = (TS_Theta*)ts->data;
-  Vec                 VecStage,*VecDeltaLam = th->VecDeltaLam,*VecDeltaMu = th->VecDeltaMu,*VecSensiTemp = th->VecSensiTemp;
+  Vec                 *VecDeltaLam = th->VecDeltaLam,*VecDeltaMu = th->VecDeltaMu,*VecSensiTemp = th->VecSensiTemp;
   PetscInt            nadj;
   PetscErrorCode      ierr;
   Mat                 J,Jp;
   KSP                 ksp;
   PetscReal           shift;
-  
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
+ 
   th->status = TS_STEP_INCOMPLETE;
   ierr = SNESGetKSP(ts->snes,&ksp);
   ierr = TSGetIJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
@@ -255,45 +256,49 @@ static PetscErrorCode TSStepAdj_Theta(TS ts)
   ierr = TSPreStep(ts);CHKERRQ(ierr);
 
   /* Build RHS */
-  if (th->endpoint && th->Theta != 1.0) { /* This formulation assumes linear time-independent mass matrix */
-    shift = -1./((th->Theta-1.0)*ts->time_step);
-    ierr  = TSComputeIJacobian(ts,ts->ptime,ts->vec_sol,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
-    for (nadj=0; nadj<ts->numberadjs; nadj++) {
-      ierr  = MatMultTranspose(J,ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);     
-      ierr = VecScale(VecSensiTemp[nadj],(th->Theta-1.)/th->Theta);CHKERRQ(ierr);     
-    }
-  }else { /* Assume mass matrix to be identity for now */
-    for (nadj=0; nadj<ts->numberadjs; nadj++) {
-      ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);
-      ierr = VecScale(VecSensiTemp[nadj],-1./(th->Theta*ts->time_step));CHKERRQ(ierr);     
-    }
+  for (nadj=0; nadj<ts->numberadjs; nadj++) {
+    ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);
+    ierr = VecScale(VecSensiTemp[nadj],-1./(th->Theta*ts->time_step));CHKERRQ(ierr);     
   }
+
   /* Build LHS */
   shift = -1./(th->Theta*ts->time_step);
-  VecStage = (th->endpoint) ? th->X0 : th->X;
-  ierr = TSComputeIJacobian(ts,th->stage_time,VecStage,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
+  if (th->endpoint) {
+    ierr = TSComputeIJacobian(ts,ts->ptime,ts->vec_sol,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
+  }else {
+    ierr = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
+  }
   ierr = KSPSetOperators(ksp,J,Jp);CHKERRQ(ierr);
 
   /* Solve LHS X = RHS */
   for (nadj=0; nadj<ts->numberadjs; nadj++) {
     ierr = KSPSolveTranspose(ksp,VecSensiTemp[nadj],VecDeltaLam[nadj]);CHKERRQ(ierr);
   }
-  if(th->endpoint) {
+
+  /* Update sensitivities */
+  if(th->endpoint && th->Theta!=1.0) {
+    shift = -1./((th->Theta-1.0)*ts->time_step);
+    ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numberadjs; nadj++) {
-      ierr = VecCopy(VecDeltaLam[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr); 
+      ierr = MatMultTranspose(J,VecDeltaLam[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);     
+      ierr = VecScale(ts->vecs_sensi[nadj],1./shift);CHKERRQ(ierr);     
     }
   }else {
-    shift = -1./(th->Theta*ts->time_step);
+    shift = 0.0;
+    if(th->endpoint) {
+      ierr  = TSComputeIJacobian(ts,ts->ptime,ts->vec_sol,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
+    }else {
+      ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
+    }
     for (nadj=0; nadj<ts->numberadjs; nadj++) {
-      ierr = VecAXPBYPCZ(VecSensiTemp[nadj],shift,-shift,0,VecDeltaLam[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);
-      ierr = VecAXPY(ts->vecs_sensi[nadj],-ts->time_step,VecSensiTemp[nadj]);CHKERRQ(ierr);
+      ierr = MatMultTranspose(J,VecDeltaLam[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);     
+      ierr = VecAXPY(ts->vecs_sensi[nadj],ts->time_step,VecSensiTemp[nadj]);CHKERRQ(ierr);
     }
   }
     
   ts->ptime += ts->time_step;
   ts->steps++;
   th->status = TS_STEP_COMPLETE;
-
   PetscFunctionReturn(0);
 }
 
@@ -551,11 +556,7 @@ static PetscErrorCode  TSGetStages_Theta(TS ts,PetscInt *ns,Vec **Y)
   PetscFunctionBegin;
   *ns = 1;
   if(Y) {
-    if(th->endpoint) { /* return the first (explicit) stage X0 for checkpointing */
-      *Y  = &(th->X0);
-    }else { /* return the stage value*/ 
-      *Y  = &(th->X);
-    }
+    *Y  = &(th->X);
   }  
   PetscFunctionReturn(0);
 }
