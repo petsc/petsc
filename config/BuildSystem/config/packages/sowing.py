@@ -81,7 +81,7 @@ class Configure(config.package.GNUPackage):
           self.framework.logPrint('Found bfort, not installing sowing')
         else:
           self.framework.logPrint('Bfort not found. Installing sowing for FortranStubs')
-          self.framework.argDB['download-sowing'] = 1
+          if (not self.framework.argDB['download-sowing']):  self.framework.argDB['download-sowing'] = 1
           config.package.GNUPackage.configure(self)
 
           installDir = os.path.join(self.installDir,'bin')
