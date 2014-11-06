@@ -2899,9 +2899,9 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   Mat                    local_mat;
   Mat_IS                 *matis;
   IS                     is_sends_internal;
-  PetscInt               rows,cols;
+  PetscInt               rows,cols,new_local_rows;
   PetscInt               i,bs,buf_size_idxs,buf_size_idxs_is,buf_size_vals;
-  PetscBool              ismatis,isdense,destroy_mat;
+  PetscBool              ismatis,isdense,newisdense,destroy_mat;
   ISLocalToGlobalMapping l2gmap;
   PetscInt*              l2gmap_indices;
   const PetscInt*        is_indices;
@@ -2909,6 +2909,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   /* buffers */
   PetscInt               *ptr_idxs,*send_buffer_idxs,*recv_buffer_idxs;
   PetscInt               *ptr_idxs_is,*send_buffer_idxs_is,*recv_buffer_idxs_is;
+  PetscInt               *recv_buffer_idxs_local;
   PetscScalar            *ptr_vals,*send_buffer_vals,*recv_buffer_vals;
   /* MPI */
   MPI_Comm               comm,comm_n;
@@ -3125,21 +3126,21 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   /* assemble new l2g map */
   ierr = MPI_Waitall(n_recvs,recv_req_idxs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
   ptr_idxs = recv_buffer_idxs;
-  buf_size_idxs = 0;
+  new_local_rows = 0;
   for (i=0;i<n_recvs;i++) {
-    buf_size_idxs += *(ptr_idxs+1); /* second element is the local size of the l2gmap */
+    new_local_rows += *(ptr_idxs+1); /* second element is the local size of the l2gmap */
     ptr_idxs += olengths_idxs[i];
   }
-  ierr = PetscMalloc1(buf_size_idxs,&l2gmap_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(new_local_rows,&l2gmap_indices);CHKERRQ(ierr);
   ptr_idxs = recv_buffer_idxs;
-  buf_size_idxs = 0;
+  new_local_rows = 0;
   for (i=0;i<n_recvs;i++) {
-    ierr = PetscMemcpy(&l2gmap_indices[buf_size_idxs],ptr_idxs+2,(*(ptr_idxs+1))*sizeof(PetscInt));CHKERRQ(ierr);
-    buf_size_idxs += *(ptr_idxs+1); /* second element is the local size of the l2gmap */
+    ierr = PetscMemcpy(&l2gmap_indices[new_local_rows],ptr_idxs+2,(*(ptr_idxs+1))*sizeof(PetscInt));CHKERRQ(ierr);
+    new_local_rows += *(ptr_idxs+1); /* second element is the local size of the l2gmap */
     ptr_idxs += olengths_idxs[i];
   }
-  ierr = PetscSortRemoveDupsInt(&buf_size_idxs,l2gmap_indices);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreate(comm_n,1,buf_size_idxs,l2gmap_indices,PETSC_COPY_VALUES,&l2gmap);CHKERRQ(ierr);
+  ierr = PetscSortRemoveDupsInt(&new_local_rows,l2gmap_indices);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm_n,1,new_local_rows,l2gmap_indices,PETSC_COPY_VALUES,&l2gmap);CHKERRQ(ierr);
   ierr = PetscFree(l2gmap_indices);CHKERRQ(ierr);
 
   /* infer new local matrix type from received local matrices type */
@@ -3176,7 +3177,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
         new_local_type = MATSEQSBAIJ;
         break;
       default:
-        SETERRQ2(comm,PETSC_ERR_PLIB,"Unkwown private type %d in %s",new_local_type_private,__FUNCT__);
+        SETERRQ2(comm,PETSC_ERR_SUP,"Unsupported private type %d in %s",new_local_type_private,__FUNCT__);
         break;
     }
   } else { /* by default, new_local_type is seqdense */
@@ -3192,19 +3193,68 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
     /* it also destroys the local matrices */
     ierr = MatSetLocalToGlobalMapping(*mat_n,l2gmap,l2gmap);CHKERRQ(ierr);
   }
-  ierr = ISLocalToGlobalMappingDestroy(&l2gmap);CHKERRQ(ierr);
   ierr = MatISGetLocalMat(*mat_n,&local_mat);CHKERRQ(ierr);
   ierr = MatSetType(local_mat,new_local_type);CHKERRQ(ierr);
-  ierr = MatSetUp(local_mat);CHKERRQ(ierr); /* WARNING -> no preallocation yet */
+
+  ierr = MPI_Waitall(n_recvs,recv_req_vals,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+
+  /* Global to local map of received indices */
+  ierr = PetscMalloc1(buf_size_idxs,&recv_buffer_idxs_local);CHKERRQ(ierr); /* needed for values insertion */
+  ierr = ISGlobalToLocalMappingApply(l2gmap,IS_GTOLM_MASK,buf_size_idxs,recv_buffer_idxs,&i,recv_buffer_idxs_local);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&l2gmap);CHKERRQ(ierr);
+
+  /* restore attributes -> type of incoming data and its size */
+  buf_size_idxs = 0;
+  for (i=0;i<n_recvs;i++) {
+    recv_buffer_idxs_local[buf_size_idxs] = recv_buffer_idxs[buf_size_idxs];
+    recv_buffer_idxs_local[buf_size_idxs+1] = recv_buffer_idxs[buf_size_idxs+1];
+    buf_size_idxs += (PetscInt)olengths_idxs[i];
+  }
+  ierr = PetscFree(recv_buffer_idxs);CHKERRQ(ierr);
+
+  /* set preallocation */
+  ierr = PetscObjectTypeCompare((PetscObject)local_mat,MATSEQDENSE,&newisdense);CHKERRQ(ierr);
+  if (!newisdense) {
+    PetscInt *new_local_nnz=0;
+
+    ptr_vals = recv_buffer_vals;
+    ptr_idxs = recv_buffer_idxs_local;
+    if (n_recvs) {
+      ierr = PetscCalloc1(new_local_rows,&new_local_nnz);CHKERRQ(ierr);
+    }
+    for (i=0;i<n_recvs;i++) {
+      PetscInt j;
+      if (*ptr_idxs == (PetscInt)MATDENSE_PRIVATE) { /* preallocation provided for dense case only */
+        for (j=0;j<*(ptr_idxs+1);j++) {
+          new_local_nnz[*(ptr_idxs+2+j)] += *(ptr_idxs+1);
+        }
+      } else {
+        /* TODO */
+      }
+      ptr_idxs += olengths_idxs[i];
+    }
+    if (new_local_nnz) {
+      for (i=0;i<new_local_rows;i++) new_local_nnz[i] = PetscMin(new_local_nnz[i],new_local_rows);
+      ierr = MatSeqAIJSetPreallocation(local_mat,0,new_local_nnz);CHKERRQ(ierr);
+      for (i=0;i<new_local_rows;i++) new_local_nnz[i] /= bs;
+      ierr = MatSeqBAIJSetPreallocation(local_mat,bs,0,new_local_nnz);CHKERRQ(ierr);
+      for (i=0;i<new_local_rows;i++) new_local_nnz[i] = PetscMax(new_local_nnz[i]-i,0);
+      ierr = MatSeqSBAIJSetPreallocation(local_mat,bs,0,new_local_nnz);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetUp(local_mat);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(new_local_nnz);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetUp(local_mat);CHKERRQ(ierr);
+  }
 
   /* set values */
-  ierr = MPI_Waitall(n_recvs,recv_req_vals,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
   ptr_vals = recv_buffer_vals;
-  ptr_idxs = recv_buffer_idxs;
+  ptr_idxs = recv_buffer_idxs_local;
   for (i=0;i<n_recvs;i++) {
     if (*ptr_idxs == (PetscInt)MATDENSE_PRIVATE) { /* values insertion provided for dense case only */
       ierr = MatSetOption(local_mat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-      ierr = MatSetValues(*mat_n,*(ptr_idxs+1),ptr_idxs+2,*(ptr_idxs+1),ptr_idxs+2,ptr_vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(local_mat,*(ptr_idxs+1),ptr_idxs+2,*(ptr_idxs+1),ptr_idxs+2,ptr_vals,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatAssemblyBegin(local_mat,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(local_mat,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatSetOption(local_mat,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
@@ -3218,6 +3268,8 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   ierr = MatAssemblyEnd(local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat_n,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat_n,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscFree(recv_buffer_vals);CHKERRQ(ierr);
+  ierr = PetscFree(recv_buffer_idxs_local);CHKERRQ(ierr);
 
 #if 0
   if (!restrict_comm) { /* check */
@@ -3278,8 +3330,6 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
     ierr = PetscFree(temp_idxs);CHKERRQ(ierr);
   }
   /* free workspace */
-  ierr = PetscFree(recv_buffer_idxs);CHKERRQ(ierr);
-  ierr = PetscFree(recv_buffer_vals);CHKERRQ(ierr);
   ierr = PetscFree(recv_buffer_idxs_is);CHKERRQ(ierr);
   ierr = MPI_Waitall(n_sends,send_req_idxs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
   ierr = PetscFree(send_buffer_idxs);CHKERRQ(ierr);
