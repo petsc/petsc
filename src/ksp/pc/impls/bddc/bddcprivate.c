@@ -3436,7 +3436,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ncoarse_ml = void_procs;
     csin_ds = PETSC_TRUE;
     ncoarse_ds = void_procs;
-    if (!void_procs) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen");
   } else {
     csin_ml = PETSC_FALSE;
     ncoarse_ml = all_procs;
