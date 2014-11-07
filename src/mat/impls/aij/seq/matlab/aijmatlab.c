@@ -225,6 +225,18 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_Matlab"
+PetscErrorCode MatSolverPackageRegister_Matlab(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERMATLAB,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_matlab);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* --------------------------------------------------------------------------------*/
 
 #undef __FUNCT__
