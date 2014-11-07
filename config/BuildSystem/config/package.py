@@ -206,8 +206,8 @@ class Package(config.base.Configure):
   externalPackagesDir = property(getExternalPackagesDir, setExternalPackagesDir, doc = 'The directory for downloaded packages')
 
   def getSearchDirectories(self):
-    '''By default, do not search any particular directories'''
-    return []
+    '''By default, do not search any particular directories, but try compiler default paths'''
+    return ['']
 
   def getInstallDir(self):
     self.installDir = self.defaultInstallDir
