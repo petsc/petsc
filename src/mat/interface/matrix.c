@@ -3982,7 +3982,7 @@ PetscErrorCode  MatSolverPackageRegister(const MatSolverPackage package,const Ma
   PetscErrorCode                 ierr;
   MatSolverPackageHolder         next = MatSolverPackageHolders,prev;
   PetscBool                      flg;
-  MatSolverPackageForSpecifcType inext,iprev;
+  MatSolverPackageForSpecifcType inext,iprev = NULL;
 
   PetscFunctionBegin;
   if (!MatSolverPackageHolders) {

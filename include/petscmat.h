@@ -134,7 +134,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor(Mat,const MatSolverPackage,MatFactorTyp
 PETSC_EXTERN PetscErrorCode MatGetFactorAvailable(Mat,const MatSolverPackage,MatFactorType,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatFactorGetSolverPackage(Mat,const MatSolverPackage*);
 PETSC_EXTERN PetscErrorCode MatGetFactorType(Mat,MatFactorType*);
-PETSC_EXTERN PetscErrorCode MatSolverPackageRegister(const MatSolverPackage,MatType,MatFactorType,PetscErrorCode(*)(Mat,MatFactorType,Mat*));
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister(const MatSolverPackage,const MatType,MatFactorType,PetscErrorCode(*)(Mat,MatFactorType,Mat*));
 PETSC_EXTERN PetscErrorCode MatSolverPackageGet(const MatSolverPackage,const MatType,MatFactorType,PetscBool*,PetscBool*,PetscErrorCode (**)(Mat,MatFactorType,Mat*));
 
 /* Logging support */

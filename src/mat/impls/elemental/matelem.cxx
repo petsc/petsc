@@ -741,6 +741,8 @@ static PetscErrorCode MatGetFactor_elemental_elemental(Mat A,MatFactorType ftype
 #define __FUNCT__ "MatSolverPackageRegister_Elemental"
 PetscErrorCode MatSolverPackageRegister_Elemental(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr = MatSolverPackageRegister(MATSOLVERELEMENTAL,MATELEMENTAL,        MAT_FACTOR_LU,MatGetFactor_elemental_elemental);CHKERRQ(ierr);
   ierr = MatSolverPackageRegister(MATSOLVERELEMENTAL,MATELEMENTAL,        MAT_FACTOR_CHOLESKY,MatGetFactor_elemental_elemental);CHKERRQ(ierr);
