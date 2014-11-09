@@ -1962,7 +1962,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     Mat          localChangeOfBasisMatrix;
     /* auxiliary work for global change of basis */
     Vec          nnz_vec;
-    PetscInt     *idxs_I,*idxs_B,*idxs_all;
+    PetscInt     *idxs_I,*idxs_B,*idxs_all,*d_nnz,*o_nnz;
     PetscInt     nvtxs,*xadj,*adjncy,*idxs_mapped;
     PetscScalar  *vals;
     PetscBool    done;
@@ -2266,15 +2266,16 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = VecAssemblyEnd(nnz_vec);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
     ierr = PetscFree2(nnz_array,idxs_all);CHKERRQ(ierr);
-    ierr = PetscMalloc1(local_size,&nnz);CHKERRQ(ierr);
+    ierr = PetscMalloc2(local_size,&d_nnz,local_size,&o_nnz);CHKERRQ(ierr);
     ierr = VecGetArray(nnz_vec,&nnz_array);CHKERRQ(ierr);
     for (i=0;i<local_size;i++) {
-      nnz[i] = (PetscInt)(PetscRealPart(nnz_array[i]));
+      d_nnz[i] = PetscMin((PetscInt)(PetscRealPart(nnz_array[i])),local_size);
+      o_nnz[i] = PetscMin((PetscInt)(PetscRealPart(nnz_array[i])),global_size-local_size);
     }
     ierr = VecRestoreArray(nnz_vec,&nnz_array);CHKERRQ(ierr);
     ierr = VecDestroy(&nnz_vec);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(pcbddc->ChangeOfBasisMatrix,0,nnz,0,nnz);CHKERRQ(ierr);
-    ierr = PetscFree(nnz);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(pcbddc->ChangeOfBasisMatrix,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
+    ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
 
     /* Set identity on dirichlet dofs */
     ierr = ISGetIndices(pcis->is_I_local,(const PetscInt**)&idxs_I);CHKERRQ(ierr);
@@ -2772,7 +2773,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
   PetscMPIInt     size,rank,color;
   PetscInt        *xadj,*adjncy,*oldranks;
   PetscInt        *adjncy_wgt,*v_wgt,*is_indices,*ranks_send_to_idx;
-  PetscInt        i,j,local_size,threshold=0;
+  PetscInt        i,local_size,threshold=0;
   PetscErrorCode  ierr;
   PetscBool       use_vwgt=PETSC_FALSE,use_square=PETSC_FALSE;
   PetscSubcomm    subcomm;
@@ -2795,34 +2796,15 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
   ierr = PetscMalloc1(xadj[1],&adjncy_wgt);CHKERRQ(ierr);
 
   if (threshold) {
-    PetscInt* count,min_threshold;
-    ierr = PetscMalloc1(local_size,&count);CHKERRQ(ierr);
-    ierr = PetscMemzero(count,local_size*sizeof(PetscInt));CHKERRQ(ierr);
-    for (i=1;i<n_neighs;i++) {/* i=1 so I don't count myself -> faces nodes counts to 1 */
-      for (j=0;j<n_shared[i];j++) {
-        count[shared[i][j]] += 1;
-      }
-    }
-    /* adapt threshold since we dont want to lose significant connections */
-    min_threshold = n_neighs;
+    PetscInt xadj_count = 0;
     for (i=1;i<n_neighs;i++) {
-      for (j=0;j<n_shared[i];j++) {
-        min_threshold = PetscMin(count[shared[i][j]],min_threshold);
+      if (n_shared[i] > threshold) {
+        adjncy[xadj_count] = neighs[i];
+        adjncy_wgt[xadj_count] = n_shared[i];
+        xadj_count++;
       }
     }
-    threshold = PetscMax(min_threshold+1,threshold);
-    xadj[1] = 0;
-    for (i=1;i<n_neighs;i++) {
-      for (j=0;j<n_shared[i];j++) {
-        if (count[shared[i][j]] < threshold) {
-          adjncy[xadj[1]] = neighs[i];
-          adjncy_wgt[xadj[1]] = n_shared[i];
-          xadj[1]++;
-          break;
-        }
-      }
-    }
-    ierr = PetscFree(count);CHKERRQ(ierr);
+    xadj[1] = xadj_count;
   } else {
     if (xadj[1]) {
       ierr = PetscMemcpy(adjncy,&neighs[1],xadj[1]*sizeof(*adjncy));CHKERRQ(ierr);
@@ -2837,7 +2819,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
   }
   ierr = PetscSortIntWithArray(xadj[1],adjncy,adjncy_wgt);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscInt),&ranks_send_to_idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(1,&ranks_send_to_idx);CHKERRQ(ierr);
 
   /*
     Restrict work on active processes only.
@@ -2873,7 +2855,7 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
     ierr = MatPartitioningCreate(subcomm->comm,&partitioner);CHKERRQ(ierr);
     ierr = MatPartitioningSetAdjacency(partitioner,subdomain_adj);CHKERRQ(ierr);
     if (use_vwgt) {
-      ierr = PetscMalloc(sizeof(*v_wgt),&v_wgt);CHKERRQ(ierr);
+      ierr = PetscMalloc1(1,&v_wgt);CHKERRQ(ierr);
       v_wgt[0] = local_size;
       ierr = MatPartitioningSetVertexWeights(partitioner,v_wgt);CHKERRQ(ierr);
     }
@@ -2918,9 +2900,9 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   Mat                    local_mat;
   Mat_IS                 *matis;
   IS                     is_sends_internal;
-  PetscInt               rows,cols;
+  PetscInt               rows,cols,new_local_rows;
   PetscInt               i,bs,buf_size_idxs,buf_size_idxs_is,buf_size_vals;
-  PetscBool              ismatis,isdense,destroy_mat;
+  PetscBool              ismatis,isdense,newisdense,destroy_mat;
   ISLocalToGlobalMapping l2gmap;
   PetscInt*              l2gmap_indices;
   const PetscInt*        is_indices;
@@ -2928,6 +2910,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   /* buffers */
   PetscInt               *ptr_idxs,*send_buffer_idxs,*recv_buffer_idxs;
   PetscInt               *ptr_idxs_is,*send_buffer_idxs_is,*recv_buffer_idxs_is;
+  PetscInt               *recv_buffer_idxs_local;
   PetscScalar            *ptr_vals,*send_buffer_vals,*recv_buffer_vals;
   /* MPI */
   MPI_Comm               comm,comm_n;
@@ -3144,21 +3127,21 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   /* assemble new l2g map */
   ierr = MPI_Waitall(n_recvs,recv_req_idxs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
   ptr_idxs = recv_buffer_idxs;
-  buf_size_idxs = 0;
+  new_local_rows = 0;
   for (i=0;i<n_recvs;i++) {
-    buf_size_idxs += *(ptr_idxs+1); /* second element is the local size of the l2gmap */
+    new_local_rows += *(ptr_idxs+1); /* second element is the local size of the l2gmap */
     ptr_idxs += olengths_idxs[i];
   }
-  ierr = PetscMalloc1(buf_size_idxs,&l2gmap_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(new_local_rows,&l2gmap_indices);CHKERRQ(ierr);
   ptr_idxs = recv_buffer_idxs;
-  buf_size_idxs = 0;
+  new_local_rows = 0;
   for (i=0;i<n_recvs;i++) {
-    ierr = PetscMemcpy(&l2gmap_indices[buf_size_idxs],ptr_idxs+2,(*(ptr_idxs+1))*sizeof(PetscInt));CHKERRQ(ierr);
-    buf_size_idxs += *(ptr_idxs+1); /* second element is the local size of the l2gmap */
+    ierr = PetscMemcpy(&l2gmap_indices[new_local_rows],ptr_idxs+2,(*(ptr_idxs+1))*sizeof(PetscInt));CHKERRQ(ierr);
+    new_local_rows += *(ptr_idxs+1); /* second element is the local size of the l2gmap */
     ptr_idxs += olengths_idxs[i];
   }
-  ierr = PetscSortRemoveDupsInt(&buf_size_idxs,l2gmap_indices);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreate(comm_n,1,buf_size_idxs,l2gmap_indices,PETSC_COPY_VALUES,&l2gmap);CHKERRQ(ierr);
+  ierr = PetscSortRemoveDupsInt(&new_local_rows,l2gmap_indices);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm_n,1,new_local_rows,l2gmap_indices,PETSC_COPY_VALUES,&l2gmap);CHKERRQ(ierr);
   ierr = PetscFree(l2gmap_indices);CHKERRQ(ierr);
 
   /* infer new local matrix type from received local matrices type */
@@ -3195,7 +3178,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
         new_local_type = MATSEQSBAIJ;
         break;
       default:
-        SETERRQ2(comm,PETSC_ERR_PLIB,"Unkwown private type %d in %s",new_local_type_private,__FUNCT__);
+        SETERRQ2(comm,PETSC_ERR_SUP,"Unsupported private type %d in %s",new_local_type_private,__FUNCT__);
         break;
     }
   } else { /* by default, new_local_type is seqdense */
@@ -3211,19 +3194,68 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
     /* it also destroys the local matrices */
     ierr = MatSetLocalToGlobalMapping(*mat_n,l2gmap,l2gmap);CHKERRQ(ierr);
   }
-  ierr = ISLocalToGlobalMappingDestroy(&l2gmap);CHKERRQ(ierr);
   ierr = MatISGetLocalMat(*mat_n,&local_mat);CHKERRQ(ierr);
   ierr = MatSetType(local_mat,new_local_type);CHKERRQ(ierr);
-  ierr = MatSetUp(local_mat);CHKERRQ(ierr); /* WARNING -> no preallocation yet */
+
+  ierr = MPI_Waitall(n_recvs,recv_req_vals,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+
+  /* Global to local map of received indices */
+  ierr = PetscMalloc1(buf_size_idxs,&recv_buffer_idxs_local);CHKERRQ(ierr); /* needed for values insertion */
+  ierr = ISGlobalToLocalMappingApply(l2gmap,IS_GTOLM_MASK,buf_size_idxs,recv_buffer_idxs,&i,recv_buffer_idxs_local);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&l2gmap);CHKERRQ(ierr);
+
+  /* restore attributes -> type of incoming data and its size */
+  buf_size_idxs = 0;
+  for (i=0;i<n_recvs;i++) {
+    recv_buffer_idxs_local[buf_size_idxs] = recv_buffer_idxs[buf_size_idxs];
+    recv_buffer_idxs_local[buf_size_idxs+1] = recv_buffer_idxs[buf_size_idxs+1];
+    buf_size_idxs += (PetscInt)olengths_idxs[i];
+  }
+  ierr = PetscFree(recv_buffer_idxs);CHKERRQ(ierr);
+
+  /* set preallocation */
+  ierr = PetscObjectTypeCompare((PetscObject)local_mat,MATSEQDENSE,&newisdense);CHKERRQ(ierr);
+  if (!newisdense) {
+    PetscInt *new_local_nnz=0;
+
+    ptr_vals = recv_buffer_vals;
+    ptr_idxs = recv_buffer_idxs_local;
+    if (n_recvs) {
+      ierr = PetscCalloc1(new_local_rows,&new_local_nnz);CHKERRQ(ierr);
+    }
+    for (i=0;i<n_recvs;i++) {
+      PetscInt j;
+      if (*ptr_idxs == (PetscInt)MATDENSE_PRIVATE) { /* preallocation provided for dense case only */
+        for (j=0;j<*(ptr_idxs+1);j++) {
+          new_local_nnz[*(ptr_idxs+2+j)] += *(ptr_idxs+1);
+        }
+      } else {
+        /* TODO */
+      }
+      ptr_idxs += olengths_idxs[i];
+    }
+    if (new_local_nnz) {
+      for (i=0;i<new_local_rows;i++) new_local_nnz[i] = PetscMin(new_local_nnz[i],new_local_rows);
+      ierr = MatSeqAIJSetPreallocation(local_mat,0,new_local_nnz);CHKERRQ(ierr);
+      for (i=0;i<new_local_rows;i++) new_local_nnz[i] /= bs;
+      ierr = MatSeqBAIJSetPreallocation(local_mat,bs,0,new_local_nnz);CHKERRQ(ierr);
+      for (i=0;i<new_local_rows;i++) new_local_nnz[i] = PetscMax(new_local_nnz[i]-i,0);
+      ierr = MatSeqSBAIJSetPreallocation(local_mat,bs,0,new_local_nnz);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetUp(local_mat);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(new_local_nnz);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetUp(local_mat);CHKERRQ(ierr);
+  }
 
   /* set values */
-  ierr = MPI_Waitall(n_recvs,recv_req_vals,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
   ptr_vals = recv_buffer_vals;
-  ptr_idxs = recv_buffer_idxs;
+  ptr_idxs = recv_buffer_idxs_local;
   for (i=0;i<n_recvs;i++) {
     if (*ptr_idxs == (PetscInt)MATDENSE_PRIVATE) { /* values insertion provided for dense case only */
       ierr = MatSetOption(local_mat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-      ierr = MatSetValues(*mat_n,*(ptr_idxs+1),ptr_idxs+2,*(ptr_idxs+1),ptr_idxs+2,ptr_vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(local_mat,*(ptr_idxs+1),ptr_idxs+2,*(ptr_idxs+1),ptr_idxs+2,ptr_vals,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatAssemblyBegin(local_mat,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(local_mat,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatSetOption(local_mat,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
@@ -3237,6 +3269,8 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   ierr = MatAssemblyEnd(local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat_n,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat_n,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscFree(recv_buffer_vals);CHKERRQ(ierr);
+  ierr = PetscFree(recv_buffer_idxs_local);CHKERRQ(ierr);
 
 #if 0
   if (!restrict_comm) { /* check */
@@ -3297,8 +3331,6 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
     ierr = PetscFree(temp_idxs);CHKERRQ(ierr);
   }
   /* free workspace */
-  ierr = PetscFree(recv_buffer_idxs);CHKERRQ(ierr);
-  ierr = PetscFree(recv_buffer_vals);CHKERRQ(ierr);
   ierr = PetscFree(recv_buffer_idxs_is);CHKERRQ(ierr);
   ierr = MPI_Waitall(n_sends,send_req_idxs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
   ierr = PetscFree(send_buffer_idxs);CHKERRQ(ierr);
@@ -3362,8 +3394,9 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   Mat                    t_coarse_mat_is;
   PetscInt               void_procs,ncoarse_ml,ncoarse_ds,ncoarse;
   PetscMPIInt            all_procs;
-  PetscBool              csin_ml,csin_ds,csin,csin_type_simple;
+  PetscBool              csin_ml,csin_ds,csin,csin_type_simple,redist;
   PetscBool              compute_vecs = PETSC_FALSE;
+  PetscScalar            *array;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -3398,12 +3431,12 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&all_procs);CHKERRQ(ierr);
   void_procs = all_procs-active_procs;
   csin_type_simple = PETSC_TRUE;
-  if (pcbddc->current_level) {
+  redist = PETSC_FALSE;
+  if (pcbddc->current_level && void_procs) {
     csin_ml = PETSC_TRUE;
     ncoarse_ml = void_procs;
     csin_ds = PETSC_TRUE;
     ncoarse_ds = void_procs;
-    if (!void_procs) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen");
   } else {
     csin_ml = PETSC_FALSE;
     ncoarse_ml = all_procs;
@@ -3412,8 +3445,14 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ncoarse_ds = void_procs;
       csin_type_simple = PETSC_FALSE;
     } else {
-      csin_ds = PETSC_FALSE;
-      ncoarse_ds = all_procs;
+      if (pcbddc->redistribute_coarse && pcbddc->redistribute_coarse < all_procs) {
+        csin_ds = PETSC_TRUE;
+        ncoarse_ds = pcbddc->redistribute_coarse;
+        redist = PETSC_TRUE;
+      } else {
+        csin_ds = PETSC_FALSE;
+        ncoarse_ds = all_procs;
+      }
     }
   }
 
@@ -3447,7 +3486,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ierr = ISLocalToGlobalMappingCreateIS(coarse_is,&coarse_islg);CHKERRQ(ierr);
 
   /* creates temporary MATIS object for coarse matrix */
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,pcbddc->local_primal_size,pcbddc->local_primal_size,coarse_submat_vals,&coarse_submat_dense);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,pcbddc->local_primal_size,pcbddc->local_primal_size,NULL,&coarse_submat_dense);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(coarse_submat_dense,&array);CHKERRQ(ierr);
+  ierr = PetscMemcpy(array,coarse_submat_vals,sizeof(*coarse_submat_vals)*pcbddc->local_primal_size*pcbddc->local_primal_size);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(coarse_submat_dense,&array);CHKERRQ(ierr);
 #if 0
   {
     PetscViewer viewer;
@@ -3520,54 +3562,70 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   coarse_mat_is = NULL;
   if (csin) {
     if (!pcbddc->coarse_subassembling_init ) { /* creates subassembling init pattern if not present */
-      PetscInt j,tissize,*nisindices;
-      PetscInt *coarse_candidates;
-      const PetscInt* tisindices;
-      /* get coarse candidates' ranks in pc communicator */
-      ierr = PetscMalloc(all_procs*sizeof(PetscInt),&coarse_candidates);CHKERRQ(ierr);
-      ierr = MPI_Allgather(&im_active,1,MPIU_INT,coarse_candidates,1,MPIU_INT,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-      for (i=0,j=0;i<all_procs;i++) {
-        if (!coarse_candidates[i]) {
-          coarse_candidates[j]=i;
-          j++;
-        }
-      }
-      if (j < ncoarse) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen! %d < %d",j,ncoarse);
-      /* get a suitable subassembling pattern */
-      if (csin_type_simple) {
+      if (redist) {
         PetscMPIInt rank;
-        PetscInt    issize,isidx;
+        PetscInt spc,n_spc_p1,dest[1];
+
         ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
-        if (im_active) {
-          issize = 1;
-          isidx = (PetscInt)rank;
+        spc = all_procs/pcbddc->redistribute_coarse;
+        n_spc_p1 = all_procs%pcbddc->redistribute_coarse;
+        if (rank > n_spc_p1*(spc+1)-1) {
+          dest[0] = n_spc_p1+(rank-(n_spc_p1*(spc+1)))/spc;
         } else {
-          issize = 0;
-          isidx = -1;
+          dest[0] = rank/(spc+1);
         }
-        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),issize,&isidx,PETSC_COPY_VALUES,&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),1,dest,PETSC_COPY_VALUES,&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
+        ierr = ISView(pcbddc->coarse_subassembling_init,NULL);CHKERRQ(ierr);
       } else {
-        ierr = MatISGetSubassemblingPattern(t_coarse_mat_is,ncoarse,PETSC_TRUE,&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
-      }
-      if (pcbddc->dbg_flag) {
-        ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Subassembling pattern init (before shift)\n");CHKERRQ(ierr);
-        ierr = ISView(pcbddc->coarse_subassembling_init,pcbddc->dbg_viewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse candidates\n");CHKERRQ(ierr);
-        for (i=0;i<j;i++) {
-          ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"%d ",coarse_candidates[i]);CHKERRQ(ierr);
+        PetscInt j,tissize,*nisindices;
+        PetscInt *coarse_candidates;
+        const PetscInt* tisindices;
+        /* get coarse candidates' ranks in pc communicator */
+        ierr = PetscMalloc(all_procs*sizeof(PetscInt),&coarse_candidates);CHKERRQ(ierr);
+        ierr = MPI_Allgather(&im_active,1,MPIU_INT,coarse_candidates,1,MPIU_INT,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+        for (i=0,j=0;i<all_procs;i++) {
+          if (!coarse_candidates[i]) {
+            coarse_candidates[j]=i;
+            j++;
+          }
         }
-        ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"\n");CHKERRQ(ierr);
-        ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+        if (j < ncoarse) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen! %d < %d",j,ncoarse);
+        /* get a suitable subassembling pattern */
+        if (csin_type_simple) {
+          PetscMPIInt rank;
+          PetscInt    issize,isidx;
+          ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+          if (im_active) {
+            issize = 1;
+            isidx = (PetscInt)rank;
+          } else {
+            issize = 0;
+            isidx = -1;
+          }
+          ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),issize,&isidx,PETSC_COPY_VALUES,&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
+        } else {
+          ierr = MatISGetSubassemblingPattern(t_coarse_mat_is,ncoarse,PETSC_TRUE,&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
+        }
+        if (pcbddc->dbg_flag) {
+          ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Subassembling pattern init (before shift)\n");CHKERRQ(ierr);
+          ierr = ISView(pcbddc->coarse_subassembling_init,pcbddc->dbg_viewer);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse candidates\n");CHKERRQ(ierr);
+          for (i=0;i<j;i++) {
+            ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"%d ",coarse_candidates[i]);CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"\n");CHKERRQ(ierr);
+          ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+        }
+        /* shift the pattern on coarse candidates */
+        ierr = ISGetLocalSize(pcbddc->coarse_subassembling_init,&tissize);CHKERRQ(ierr);
+        ierr = ISGetIndices(pcbddc->coarse_subassembling_init,&tisindices);CHKERRQ(ierr);
+        ierr = PetscMalloc(tissize*sizeof(PetscInt),&nisindices);CHKERRQ(ierr);
+        for (i=0;i<tissize;i++) nisindices[i] = coarse_candidates[tisindices[i]];
+        ierr = ISRestoreIndices(pcbddc->coarse_subassembling_init,&tisindices);CHKERRQ(ierr);
+        ierr = ISGeneralSetIndices(pcbddc->coarse_subassembling_init,tissize,nisindices,PETSC_OWN_POINTER);CHKERRQ(ierr);
+        ierr = PetscFree(coarse_candidates);CHKERRQ(ierr);
       }
-      /* shift the pattern on coarse candidates */
-      ierr = ISGetLocalSize(pcbddc->coarse_subassembling_init,&tissize);CHKERRQ(ierr);
-      ierr = ISGetIndices(pcbddc->coarse_subassembling_init,&tisindices);CHKERRQ(ierr);
-      ierr = PetscMalloc(tissize*sizeof(PetscInt),&nisindices);CHKERRQ(ierr);
-      for (i=0;i<tissize;i++) nisindices[i] = coarse_candidates[tisindices[i]];
-      ierr = ISRestoreIndices(pcbddc->coarse_subassembling_init,&tisindices);CHKERRQ(ierr);
-      ierr = ISGeneralSetIndices(pcbddc->coarse_subassembling_init,tissize,nisindices,PETSC_OWN_POINTER);CHKERRQ(ierr);
-      ierr = PetscFree(coarse_candidates);CHKERRQ(ierr);
     }
     if (pcbddc->dbg_flag) {
       ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
@@ -3707,16 +3765,21 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       coarse_mat_reuse = MAT_INITIAL_MATRIX;
     }
     if (isbddc || isnn) {
-      if (!pcbddc->coarse_subassembling) { /* subassembling info is not present */
-        ierr = MatISGetSubassemblingPattern(coarse_mat_is,active_procs/pcbddc->coarsening_ratio,PETSC_TRUE,&pcbddc->coarse_subassembling);CHKERRQ(ierr);
-        if (pcbddc->dbg_flag) {
-          ierr = PetscViewerASCIIPrintf(dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
-          ierr = PetscViewerASCIIPrintf(dbg_viewer,"Subassembling pattern\n");CHKERRQ(ierr);
-          ierr = ISView(pcbddc->coarse_subassembling,dbg_viewer);CHKERRQ(ierr);
-          ierr = PetscViewerFlush(dbg_viewer);CHKERRQ(ierr);
+      if (pcbddc->coarsening_ratio > 1) {
+        if (!pcbddc->coarse_subassembling) { /* subassembling info is not present */
+          ierr = MatISGetSubassemblingPattern(coarse_mat_is,active_procs/pcbddc->coarsening_ratio,PETSC_TRUE,&pcbddc->coarse_subassembling);CHKERRQ(ierr);
+          if (pcbddc->dbg_flag) {
+            ierr = PetscViewerASCIIPrintf(dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(dbg_viewer,"Subassembling pattern\n");CHKERRQ(ierr);
+            ierr = ISView(pcbddc->coarse_subassembling,dbg_viewer);CHKERRQ(ierr);
+            ierr = PetscViewerFlush(dbg_viewer);CHKERRQ(ierr);
+          }
         }
+        ierr = MatISSubassemble(coarse_mat_is,pcbddc->coarse_subassembling,0,PETSC_FALSE,coarse_mat_reuse,&coarse_mat,0,NULL);CHKERRQ(ierr);
+      } else {
+        ierr = PetscObjectReference((PetscObject)coarse_mat_is);CHKERRQ(ierr);
+        coarse_mat = coarse_mat_is;
       }
-      ierr = MatISSubassemble(coarse_mat_is,pcbddc->coarse_subassembling,0,PETSC_FALSE,coarse_mat_reuse,&coarse_mat,0,NULL);CHKERRQ(ierr);
     } else {
       ierr = MatISGetMPIXAIJ(coarse_mat_is,coarse_mat_reuse,&coarse_mat);CHKERRQ(ierr);
     }

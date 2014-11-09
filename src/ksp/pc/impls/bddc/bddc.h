@@ -82,6 +82,7 @@ typedef struct {
   PetscInt                   coarsening_ratio;
   PetscInt                   current_level;
   PetscInt                   max_levels;
+  PetscInt                   redistribute_coarse;
   IS                         coarse_subassembling;
   IS                         coarse_subassembling_init;
   PetscBool                  use_coarse_estimates;
