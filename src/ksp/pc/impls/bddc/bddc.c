@@ -68,6 +68,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   }
   /* Switch between M_2 (default) and M_3 preconditioners (as defined by C. Dohrmann in the ref. article) */
   ierr = PetscOptionsBool("-pc_bddc_switch_static","Switch on static condensation ops around the interface preconditioner","none",pcbddc->switch_static,&pcbddc->switch_static,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_bddc_coarse_redistribute","Number of procs where to redistribute coarse problem","none",pcbddc->redistribute_coarse,&pcbddc->redistribute_coarse,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_coarsening_ratio","Set coarsening ratio used in multilevel coarsening","none",pcbddc->coarsening_ratio,&pcbddc->coarsening_ratio,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_levels","Set maximum number of levels for multilevel","none",pcbddc->max_levels,&pcbddc->max_levels,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_coarse_estimates","Use estimated eigenvalues for coarse problem","none",pcbddc->use_coarse_estimates,&pcbddc->use_coarse_estimates,NULL);CHKERRQ(ierr);
@@ -1879,6 +1880,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->current_level              = 0;
   pcbddc->max_levels                 = 0;
   pcbddc->use_coarse_estimates       = PETSC_FALSE;
+  pcbddc->redistribute_coarse        = 0;
   pcbddc->coarse_subassembling       = 0;
   pcbddc->coarse_subassembling_init  = 0;
 
