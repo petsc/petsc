@@ -750,6 +750,9 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     for (i=0; i<s; i++) {
       ark->stage_time = t + h*ct[i];
       if (At[i*s+i] == 0) {           /* This stage is explicit */
+	if(i!=0 && ts->equation_type>=TS_EQ_IMPLICIT){
+	  /* Throw error: "Explicit stages other than the first one are not supported for implicit problems" */
+	}
         ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = h*At[i*s+j];
         ierr = VecMAXPY(Y[i],i,w,YdotI);CHKERRQ(ierr);
@@ -760,15 +763,17 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr            = TSPreStage(ts,ark->stage_time);CHKERRQ(ierr);
         /* Affine part */
         ierr = VecZeroEntries(W);CHKERRQ(ierr);
-        for (j=0; j<i; j++) w[j] = h*A[i*s+j];
+        /*for (j=0; j<i; j++) w[j] = h*A[i*s+j];
         ierr = VecMAXPY(W,i,w,YdotRHS);CHKERRQ(ierr);
-        ierr = VecScale(W, ark->scoeff/h);CHKERRQ(ierr);
+        ierr = VecScale(W, ark->scoeff/h);CHKERRQ(ierr);*/
 
         /* Ydot = shift*(Y-Z) */
         ierr = VecCopy(ts->vec_sol,Z);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = h*At[i*s+j];
         ierr = VecMAXPY(Z,i,w,YdotI);CHKERRQ(ierr);
-
+	for (j=0; j<i; j++) w[j] = h*A[i*s+j];
+        ierr = VecMAXPY(Z,i,w,YdotRHS);CHKERRQ(ierr);
+	
         if (init_guess_extrp && ark->prev_step_valid) {
           /* Initial guess extrapolated from previous time step stage values */
           ierr        = TSExtrapolate_ARKIMEX(ts,c[i],Y[i]);CHKERRQ(ierr);
