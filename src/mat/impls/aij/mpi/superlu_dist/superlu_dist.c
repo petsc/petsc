@@ -617,7 +617,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolverPackageRegister_SuperLU_DIST"
-PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

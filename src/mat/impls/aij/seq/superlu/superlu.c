@@ -698,7 +698,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftyp
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolverPackageRegister_SuperLU"
-PetscErrorCode MatSolverPackageRegister_SuperLU(void)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU(void)
 {
   PetscErrorCode ierr;
 

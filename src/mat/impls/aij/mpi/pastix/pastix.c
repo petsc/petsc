@@ -762,7 +762,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType fty
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolverPackageRegister_Pastix"
-PetscErrorCode MatSolverPackageRegister_Pastix(void)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Pastix(void)
 {
   PetscErrorCode ierr;
 

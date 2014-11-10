@@ -467,7 +467,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat,MatFactorType,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolverPackageRegister_SuiteSparse"
-PetscErrorCode MatSolverPackageRegister_SuiteSparse(void)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuiteSparse(void)
 {
   PetscErrorCode ierr;
 

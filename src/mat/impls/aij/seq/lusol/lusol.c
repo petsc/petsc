@@ -460,7 +460,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolverPackageRegister_Lusol"
-PetscErrorCode MatSolverPackageRegister_Lusol(void)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Lusol(void)
 {
   PetscErrorCode ierr;
 

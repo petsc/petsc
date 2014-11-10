@@ -1844,7 +1844,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat,MatFactorType,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolverPackageRegister_MUMPS"
-PetscErrorCode MatSolverPackageRegister_MUMPS(void)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MUMPS(void)
 {
   PetscErrorCode ierr;
 

@@ -739,7 +739,7 @@ static PetscErrorCode MatGetFactor_elemental_elemental(Mat A,MatFactorType ftype
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolverPackageRegister_Elemental"
-PetscErrorCode MatSolverPackageRegister_Elemental(void)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Elemental(void)
 {
   PetscErrorCode ierr;
 

@@ -695,7 +695,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolverPackageRegister_MKL_Pardiso"
-PetscErrorCode MatSolverPackageRegister_MKL_Pardiso(void)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MKL_Pardiso(void)
 {
   PetscErrorCode ierr;
 

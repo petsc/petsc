@@ -1897,8 +1897,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse(Mat,MatFactorTy
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolverPackageRegister_CUSPARSE"
-extern "C" {
-PetscErrorCode MatSolverPackageRegister_CUSPARSE(void)
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_CUSPARSE(void)
 {
   PetscErrorCode ierr;
 
@@ -1909,4 +1908,4 @@ PetscErrorCode MatSolverPackageRegister_CUSPARSE(void)
   ierr = MatSolverPackageRegister(MATSOLVERCUSPARSE,MATSEQAIJCUSPARSE,MAT_FACTOR_ICC,MatGetFactor_seqaijcusparse_cusparse);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-}
+

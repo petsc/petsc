@@ -3954,8 +3954,8 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat,MatType,MatReuse,Mat
 #endif
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-extern PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject,void*);
-extern PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
+PETSC_EXTERN PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject,void*);
+PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
 #endif
 
 
