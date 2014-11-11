@@ -2,9 +2,61 @@
 #include <petsc-private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateGmshFromFile"
+/*@C
+  DMPlexCreateGmshFromFile - Create a DMPlex mesh from a Gmsh file
+
++ comm        - The MPI communicator
+. filename    - Name of the Gmsh file
+- interpolate - Create faces and edges in the mesh
+
+  Output Parameter:
+. dm  - The DM object representing the mesh
+
+  Level: beginner
+
+.seealso: DMPlexCreateFromFile(), DMPlexCreateGmsh(), DMPlexCreate()
+@*/
+PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+{
+  PetscViewer     viewer, vheader;
+  PetscViewerType vtype;
+  char            line[PETSC_MAX_PATH_LEN];
+  int             snum;
+  PetscBool       match;
+  PetscInt        fileType;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* Determine Gmsh file type (ASCII or binary) from file header */
+  ierr = PetscViewerCreate(comm, &vheader);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(vheader, PETSCVIEWERASCII);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(vheader, FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(vheader, filename);CHKERRQ(ierr);
+  /* Read only the first two lines of the Gmsh file */
+  ierr = PetscViewerRead(vheader, line, 1, PETSC_STRING);CHKERRQ(ierr);
+  ierr = PetscStrncmp(line, "$MeshFormat", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
+  if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+  ierr = PetscViewerRead(vheader, line, 2, PETSC_STRING);CHKERRQ(ierr);
+  snum = sscanf(line, "2.2 %d", &fileType);CHKERRQ(snum != 1);
+  /* Create appropriate viewer and build plex */
+  if (fileType == 0) vtype = PETSCVIEWERASCII;
+  else vtype = PETSCVIEWERBINARY;
+  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, vtype);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+  ierr = DMPlexCreateGmsh(comm, viewer, interpolate, dm);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&vheader);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateGmsh"
 /*@
-  DMPlexCreateGmsh - Create a DMPlex mesh from a Gmsh file.
+  DMPlexCreateGmsh - Create a DMPlex mesh from a Gmsh file viewer
 
   Collective on comm
 
