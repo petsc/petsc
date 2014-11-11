@@ -441,6 +441,59 @@ class Configure(config.package.Package):
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
     return
 
+  def runTimeTest(self,name,includes,body,lib = None):
+    '''Either runs a test or adds it to the batch of runtime tests'''
+    if name in self.framework.argDB: return self.framework.argDB[name]
+    if self.framework.argDB['with-batch']:
+      self.framework.addBatchInclude(includes)
+      self.framework.addBatchBody(body)
+      if lib: self.framework.addBatchLib(lib)
+      return None
+    else:
+      result = None
+      self.pushLanguage('C')
+      filename = 'runtimetestoutput'
+      body = '''FILE *output = fopen("'''+filename+'''","w");\n'''+body
+      if lib:
+        if not isinstance(lib, list): lib = [lib]
+        oldLibs  = self.compilers.LIBS
+        self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+      if self.checkRun(includes, body) and os.path.exists(filename):
+        f    = file(filename)
+        out  = f.read()
+        f.close()
+        os.remove(filename)
+        result = out.split("=")[1].split("'")[0]
+      self.popLanguage()
+      if lib:
+        self.compilers.LIBS = oldLibs
+      return result
+
+  def checksdotreturnsdouble(self):
+    '''Determines if BLAS sdot routine returns a float or a double'''
+    self.framework.log.write('Checking if sdot() returns a float or a double\n')
+    includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
+    body     = '''extern float '''+self.compilers.mangleFortranFunction('sdot')+'''(int*,float*,int *,float*,int*);\n
+                  float x1[1] = {3.0};\n
+                  int one1 = 1;\n
+                  float sdotresult = '''+self.compilers.mangleFortranFunction('sdot')+'''(&one1,x1,&one1,x1,&one1);\n
+                  fprintf(output, "  '--known-sdot-returns-double=%d',\\n",(sdotresult != 9.0));\n'''
+    result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib)
+    if result:
+      result = int(result)
+      if result: self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
+    self.framework.log.write('Checking if snrm() returns a float or a double\n')
+    includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
+    body     = '''extern float '''+self.compilers.mangleFortranFunction('snrm2')+'''(int*,float*,int*);\n
+                  float x2[1] = {3.0};\n
+                  int one2 = 1;\n
+                  float normresult = '''+self.compilers.mangleFortranFunction('snrm2')+'''(&one2,x2,&one2);\n
+                  fprintf(output, "  '--known-snrm2-returns-double=%d',\\n",(normresult != 3.0));\n'''
+    result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib)
+    if result:
+      result = int(result)
+      if result: self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
+
   def configure(self):
     self.executeTest(self.configureLibrary)
     self.executeTest(self.check64BitBLASIndices)
@@ -457,5 +510,6 @@ class Configure(config.package.Package):
         symbol = self.compilers.mangleFortranFunction(symbol)
       if not self.setCompilers.checkIntoShared(symbol,self.lapackLibrary+self.getOtherLibs()):
         raise RuntimeError('The BLAS/LAPACK libraries '+self.libraries.toStringNoDupes(self.lapackLibrary+self.getOtherLibs())+'\ncannot used with a shared library\nEither run ./configure with --with-shared-libraries=0 or use a different BLAS/LAPACK library');
+    self.executeTest(self.checksdotreturnsdouble)
     return
 
