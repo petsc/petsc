@@ -107,7 +107,7 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatlabEngineGet_SeqAIJ"
-PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
+PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   Mat            mat = (Mat)obj;
@@ -222,6 +222,18 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
   ierr = PetscObjectComposeFunction((PetscObject)(*F),"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_matlab);CHKERRQ(ierr);
 
   (*F)->factortype = ftype;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_Matlab"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Matlab(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERMATLAB,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_matlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

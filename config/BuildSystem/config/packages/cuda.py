@@ -44,12 +44,6 @@ class Configure(config.package.Package):
       nvccDir = os.path.dirname(self.systemNvcc)
       cudaDir = os.path.split(nvccDir)[0]
       yield cudaDir
-    yield ''
-    yield os.path.join('/Developer','NVIDIA','CUDA-5.5')
-    yield os.path.join('/usr','local','cuda')
-    self.libdir           = os.path.join('lib','Win32')
-    self.altlibdir        = os.path.join('lib','x64')
-    yield(os.path.join('/cygdrive','c','Program Files','NVIDIA GPU Computing Toolkit','CUDA','v4.0'))
     return
 
   def checkSizeofVoidP(self):

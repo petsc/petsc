@@ -616,24 +616,13 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_seqaij_superlu_dist"
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
+#define __FUNCT__ "MatSolverPackageRegister_SuperLU_DIST"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU_DIST(void)
 {
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatGetFactor_aij_superlu_dist(A,ftype,F);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_mpiaij_superlu_dist"
-PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatGetFactor_aij_superlu_dist(A,ftype,F);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERSUPERLU_DIST,MATMPIAIJ,  MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERSUPERLU_DIST,MATSEQAIJ,  MAT_FACTOR_LU,MatGetFactor_aij_superlu_dist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
