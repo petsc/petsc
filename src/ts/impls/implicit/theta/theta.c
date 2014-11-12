@@ -251,7 +251,7 @@ static PetscErrorCode TSStepAdj_Theta(TS ts)
   th->status = TS_STEP_INCOMPLETE;
   ierr = SNESGetKSP(ts->snes,&ksp);
   ierr = TSGetIJacobian(ts,&J,&Jp,NULL,NULL);CHKERRQ(ierr);
-  th->stage_time = ts->ptime + (th->endpoint ? ts->time_step : (1-th->Theta)*ts->time_step); /* time_step is negative*/
+  th->stage_time = ts->ptime + (th->endpoint ? ts->time_step : (1.-th->Theta)*ts->time_step); /* time_step is negative*/
 
   ierr = TSPreStep(ts);CHKERRQ(ierr);
 
@@ -276,23 +276,45 @@ static PetscErrorCode TSStepAdj_Theta(TS ts)
   }
 
   /* Update sensitivities */
-  if(th->endpoint && th->Theta!=1.0) {
-    shift = -1./((th->Theta-1.0)*ts->time_step);
+  if(th->endpoint && th->Theta!=1.) { /* two-stage case */
+    shift = -1./((th->Theta-1.)*ts->time_step);
     ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
     for (nadj=0; nadj<ts->numberadjs; nadj++) {
       ierr = MatMultTranspose(J,VecDeltaLam[nadj],ts->vecs_sensi[nadj]);CHKERRQ(ierr);     
       ierr = VecScale(ts->vecs_sensi[nadj],1./shift);CHKERRQ(ierr);     
     }
-  }else {
+    
+    if (ts->vecs_sensip) { /* sensitivities wrt parameters */
+      ierr = TSRHSJacobianP(ts,ts->ptime,ts->vec_sol,ts->Jacp);CHKERRQ(ierr);
+      for (nadj=0; nadj<ts->numberadjs; nadj++) {
+        ierr = MatMultTranspose(ts->Jacp,VecDeltaLam[nadj],VecDeltaMu[nadj]);CHKERRQ(ierr);
+        ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step*th->Theta,VecDeltaMu[nadj]);CHKERRQ(ierr);
+      }
+      ierr = TSRHSJacobianP(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
+      for (nadj=0; nadj<ts->numberadjs; nadj++) {
+        ierr = MatMultTranspose(ts->Jacp,VecDeltaLam[nadj],VecDeltaMu[nadj]);CHKERRQ(ierr);
+        ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step*(1.-th->Theta),VecDeltaMu[nadj]);CHKERRQ(ierr);
+      }
+    } 
+  }else { /* one-stage case */
     shift = 0.0;
+    ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
+     /* When th->endpoint is true and th->Theta==1 (beuler method), the Jacobian is supposed to be evaluated at ts->ptime like this: 
     if(th->endpoint) {
       ierr  = TSComputeIJacobian(ts,ts->ptime,ts->vec_sol,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
-    }else {
-      ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
     }
+    but ts->ptime and ts->vec_sol have the same values as th->stage_time and th->X in this case. So the code is simplified here.  
+    */
     for (nadj=0; nadj<ts->numberadjs; nadj++) {
       ierr = MatMultTranspose(J,VecDeltaLam[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);     
       ierr = VecAXPY(ts->vecs_sensi[nadj],ts->time_step,VecSensiTemp[nadj]);CHKERRQ(ierr);
+    }
+    if (ts->vecs_sensip) {
+      ierr = TSRHSJacobianP(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
+      for (nadj=0; nadj<ts->numberadjs; nadj++) {
+        ierr = MatMultTranspose(ts->Jacp,VecDeltaLam[nadj],VecDeltaMu[nadj]);CHKERRQ(ierr);
+        ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step,VecDeltaMu[nadj]);CHKERRQ(ierr);
+      } 
     }
   }
     
