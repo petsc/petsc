@@ -20,6 +20,7 @@
 PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
   PetscViewer     viewer, vheader;
+  PetscMPIInt     rank;
   PetscViewerType vtype;
   char            line[PETSC_MAX_PATH_LEN];
   int             snum;
@@ -28,17 +29,21 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   /* Determine Gmsh file type (ASCII or binary) from file header */
   ierr = PetscViewerCreate(comm, &vheader);CHKERRQ(ierr);
   ierr = PetscViewerSetType(vheader, PETSCVIEWERASCII);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(vheader, FILE_MODE_READ);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(vheader, filename);CHKERRQ(ierr);
-  /* Read only the first two lines of the Gmsh file */
-  ierr = PetscViewerRead(vheader, line, 1, PETSC_STRING);CHKERRQ(ierr);
-  ierr = PetscStrncmp(line, "$MeshFormat", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
-  if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
-  ierr = PetscViewerRead(vheader, line, 2, PETSC_STRING);CHKERRQ(ierr);
-  snum = sscanf(line, "2.2 %d", &fileType);CHKERRQ(snum != 1);
+  if (!rank) {
+    /* Read only the first two lines of the Gmsh file */
+    ierr = PetscViewerRead(vheader, line, 1, PETSC_STRING);CHKERRQ(ierr);
+    ierr = PetscStrncmp(line, "$MeshFormat", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
+    if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
+    ierr = PetscViewerRead(vheader, line, 2, PETSC_STRING);CHKERRQ(ierr);
+    snum = sscanf(line, "2.2 %d", &fileType);CHKERRQ(snum != 1);
+  }
+  ierr = MPI_Bcast(&fileType, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   /* Create appropriate viewer and build plex */
   if (fileType == 0) vtype = PETSCVIEWERASCII;
   else vtype = PETSCVIEWERBINARY;
@@ -96,7 +101,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = PetscViewerGetType(viewer, &vtype);CHKERRQ(ierr);
   ierr = PetscStrcmp(vtype, PETSCVIEWERBINARY, &binary);CHKERRQ(ierr);
-  if (!rank) {
+  if (!rank || binary) {
     PetscBool match;
     int       fileType, dataSize;
 
@@ -147,7 +152,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     snum = sscanf(line, "%d", &numCells);CHKERRQ(snum != 1);
   }
 
-  if (!rank) {
+  if (!rank || binary) {
     /* Gmsh elements can be of any dimension/co-dimension, so we need to traverse the
        file contents multiple times to figure out the true number of cells and facets
        in the given mesh. To make this more efficient we read the file contents only
@@ -162,6 +167,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = PetscStrncmp(line, "$EndElements", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
   }
+  /* For binary we read on all ranks, but only build the plex on rank 0 */
+  if (binary && rank) {trueNumCells = 0; numVertices = 0;};
   /* Allocate the cell-vertex mesh */
   ierr = DMPlexSetChart(*dm, 0, trueNumCells+numVertices);CHKERRQ(ierr);
   if (!rank) {
@@ -246,7 +253,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   /* Clean up intermediate storage */
-  if (!rank) {
+  if (!rank || binary) {
     for (c = 0; c < numCells; ++c) {
       ierr = PetscFree(gmsh_elem[c].nodes);
       ierr = PetscFree(gmsh_elem[c].tags);
