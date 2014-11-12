@@ -128,9 +128,17 @@ ex20: ex20.o  chkopts
 	-${CLINKER} -o ex20 ex20.o  ${PETSC_TS_LIB}
 	${RM} ex20.o
 
+ex20adj: ex20adj.o  chkopts
+	-${CLINKER} -o ex20adj ex20adj.o  ${PETSC_TS_LIB}
+	${RM} ex20adj.o
+
 ex20opt_ic: ex20opt_ic.o chkopts
 	-${CLINKER} -o ex20opt_ic ex20opt_ic.o ${PETSC_TS_LIB}
 	${RM} ex20opt_ic.o
+
+ex20opt_p: ex20opt_p.o chkopts
+	-${CLINKER} -o ex20opt_p ex20opt_p.o ${PETSC_TS_LIB}
+	${RM} ex20opt_p.o
 
 ex21: ex21.o  chkopts
 	-${CLINKER} -o ex21 ex21.o  ${PETSC_TS_LIB}
@@ -433,8 +441,23 @@ runex20:
 	   ${DIFF} output/ex20_1.out ex20_1.tmp || printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n";  \
 	   ${RM} -f ex20_1.tmp
 
+validateex20adj: runex20adj clean_files
+
+runex20adj:
+	-@${MPIEXEC} -n 1 ./ex20adj -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.0001 -mu 1000000 
+	-@${MPIEXEC} -n 1 ./ex20adj -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 1.0 -viewer_binary_skip_info -ts_dt 0.0001 -mu 1000000 
+	-@${MPIEXEC} -n 1 ./ex20adj -monitor 0 -ts_type theta -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.0001 -mu 1000000 
+	-@${MPIEXEC} -n 1 ./ex20adj -monitor 0 -ts_type theta -ts_theta_theta 1.0 -viewer_binary_skip_info -ts_dt 0.0001 -mu 1000000 
+	-@${MPIEXEC} -n 1 ./ex20adj -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.0001 -mu 1
+	-@${MPIEXEC} -n 1 ./ex20adj -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 1.0 -viewer_binary_skip_info -ts_dt 0.0001 -mu 1
+	-@${MPIEXEC} -n 1 ./ex20adj -monitor 0 -ts_type theta -ts_theta_theta 0.5 -viewer_binary_skip_info -ts_dt 0.0001 -mu 1
+	-@${MPIEXEC} -n 1 ./ex20adj -monitor 0 -ts_type theta -ts_theta_theta 1.0 -viewer_binary_skip_info -ts_dt 0.0001 -mu 1
+
 runex20opt_ic:
-	-@${MPIEXEC} -n 1 ./ex20opt_ic -monitor 0 -ts_type theta -viewer_binary_skip_info -ts_dt 0.005 -tao_view
+	-@${MPIEXEC} -n 1 ./ex20opt_ic -monitor 0 -ts_type theta -viewer_binary_skip_info -ts_dt 0.0001 -tao_view -mu 1000000 
+
+runex20opt_p:
+	-@${MPIEXEC} -n 1 ./ex20opt_p -monitor 0 -ts_type theta -viewer_binary_skip_info -ts_dt 0.0001 -tao_view -mu 1000000 
 
 runex22:
 	-@${MPIEXEC} -n 1 ./ex22 -nox -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 -ts_adapt_type none > ex22_1.tmp 2>&1; \
