@@ -125,7 +125,7 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
   J[0][0] = 0;
-  J[1][0] = -2.*mu*x[1]*x[0]+1;
+  J[1][0] = -2.*mu*x[1]*x[0]-1.;
   J[0][1] = 1.0;
   J[1][1] = mu*(1.0-x[0]*x[0]);
   ierr    = MatSetValues(A,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
@@ -151,7 +151,7 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
   J[0][0] = 0;
-  J[1][0] = (1-x[0]*x[0])*x[1];
+  J[1][0] = (1.-x[0]*x[0])*x[1];
   ierr    = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

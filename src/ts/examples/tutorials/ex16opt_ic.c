@@ -121,7 +121,7 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
   J[0][0] = 0;
-  J[1][0] = -2.*mu*x[1]*x[0]+1;
+  J[1][0] = -2.*mu*x[1]*x[0]-1;
   J[0][1] = 1.0;
   J[1][1] = mu*(1.0-x[0]*x[0]);
   ierr    = MatSetValues(A,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
@@ -457,10 +457,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
      Set time
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
-  /*ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);*/
+  ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,2000,0.5);CHKERRQ(ierr);
 
-  ierr = TSSetTolerances(ts,0.000001,NULL,0.000001,NULL);CHKERRQ(ierr);
+  ierr = TSSetTolerances(ts,1e-7,NULL,1e-7,NULL);CHKERRQ(ierr);
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorBIN,user,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -476,7 +476,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   PetscScalar *ic_ptr; 
   ierr = VecGetArray(IC,&ic_ptr);CHKERRQ(ierr);
   ierr = VecGetArray(user->x,&x_ptr);CHKERRQ(ierr);
-  *f   = (x_ptr[0]-user->x_ob[0])*(x_ptr[0]-user->x_ob[0])+(x_ptr[1]-user->x_ob[1])*(x_ptr[1]-user->x_ob[1])+ (ic_ptr[0]-1.999)*(ic_ptr[0]-1.999)*0.5+(ic_ptr[1]-0.666)*(ic_ptr[1]-0.666)*0.5;
+  *f   = (x_ptr[0]-user->x_ob[0])*(x_ptr[0]-user->x_ob[0])+(x_ptr[1]-user->x_ob[1])*(x_ptr[1]-user->x_ob[1]);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Observed value y_ob=[%f; %f], ODE solution y=[%f;%f], Cost function f=%f\n",(double)user->x_ob[0],(double)user->x_ob[1],(double)x_ptr[0],(double)x_ptr[1],(double)(*f));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -508,11 +508,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
 
   ierr = TSSolve(ts,user->x);CHKERRQ(ierr);
  
-  /* add regularization */ 
-  ierr = VecGetArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
-  y_ptr[0] += ic_ptr[0]-1.999;   
-  y_ptr[1] += ic_ptr[1]-0.666;
-  ierr = VecRestoreArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
   ierr = VecCopy(user->lambda[0],G);
   ierr = VecView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(IC,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
