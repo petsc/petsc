@@ -84,6 +84,8 @@ cdef extern from * nogil:
     int DMPlexVecRestoreClosure(PetscDM,PetscSection,PetscVec,PetscInt,PetscInt*,PetscScalar*[])
 
     int DMPlexGenerate(PetscDM,const_char[],PetscBool ,PetscDM*)
+    int DMPlexTriangleSetOptions(PetscDM,const_char*)
+    int DMPlexTetgenSetOptions(PetscDM,const_char*)
     #int DMPlexCopyCoordinates(PetscDM,PetscDM)
     #int DMPlexCopyLabels(PetscDM,PetscDM)
     #int DMPlexCreateDoublet(MPI_Comm,PetscInt,PetscBool,PetscBool,PetscBool,PetscReal,PetscDM*)
