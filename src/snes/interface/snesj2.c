@@ -17,8 +17,7 @@
 
     Output Parameters:
 +   J - Jacobian matrix (not altered in this routine)
-.   B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
--   flag - flag indicating whether the matrix sparsity structure has changed
+-   B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
 
     Level: intermediate
 
