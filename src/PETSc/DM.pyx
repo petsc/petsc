@@ -128,7 +128,7 @@ cdef class DM(Object):
     #
 
     def getCoordinateDM(self):
-        cdef DM cdm = DM()
+        cdef DM cdm = type(self)()
         CHKERR( DMGetCoordinateDM(self.dm, &cdm.dm) )
         PetscINCREF(cdm.obj)
         return cdm
