@@ -6,6 +6,7 @@ Input parameters include:\n\
 /*
    Concepts: TS^time-dependent nonlinear problems
    Concepts: TS^van der Pol equation
+   Concepts: Optimization using adjoint sensitivity analysis
    Processors: 1
 */
 /* ------------------------------------------------------------------------
@@ -29,45 +30,7 @@ Input parameters include:\n\
    [ u_1' ] = [             u_2           ]  (2)
    [ u_2' ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
 
-   which is now in the desired form of u_t = f(u,t). One way that we
-   can split f(u,t) in (2) is to split by component,
-
-   [ u_1' ] = [ u_2 ] + [            0              ]
-   [ u_2' ]   [  0  ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
-
-   where
-
-   [ F(u,t) ] = [ u_2 ]
-                [  0  ]
-
-   and
-
-   [ G(u',u,t) ] = [ u_1' ] - [            0              ]
-                   [ u_2' ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
-
-   Using the definition of the Jacobian of G (from the PETSc user manual),
-   in the equation G(u',u,t) = F(u,t),
-
-              dG   dG
-   J(G) = a * -- - --
-              du'  du
-
-   where d is the partial derivative. In this example,
-
-   dG   [ 1 ; 0 ]
-   -- = [       ]
-   du'  [ 0 ; 1 ]
-
-   dG   [       0       ;         0        ]
-   -- = [                                  ]
-   du   [ -2 \mu u_1 - 1;  \mu (1 - u_1^2) ]
-
-   Hence,
-
-          [      a       ;          0          ]
-   J(G) = [                                    ]
-          [ 2 \mu u_1 + 1; a - \mu (1 - u_1^2) ]
-
+   which is now in the desired form of u_t = f(u,t). 
   ------------------------------------------------------------------------- */
 #include <petsctao.h>
 #include <petscts.h>
