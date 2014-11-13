@@ -35,7 +35,7 @@ def currentversion(petscdir):
     return
   try:
     import urllib2
-    fd = urllib2.urlopen("https://bitbucket.org/petsc/petsc/raw/191d3dc4adcb8bf338975a6393f1a3bb9bfb7f53/include/petscversion.h",timeout = 2)
+    fd = urllib2.urlopen("https://bitbucket.org/petsc/petsc/raw/maint/include/petscversion.h",timeout = 2)
     #fd = urllib2.urlopen("http://www.mcs.anl.gov/petsc/petsc-current/include/petscversion.h",timeout = 2)
     pv = fd.read()
     fd.close()
