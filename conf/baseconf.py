@@ -184,8 +184,10 @@ class PetscConfig:
             'LDFLAGS', 'LDSHARED', 'SO')
         cflags = cflags.replace('-Wstrict-prototypes', '')
         ld = cc
-        ldshared = ldshared.replace(ld, '').strip()
-        ldshared = ldshared.replace(ldflags, '').strip()
+        ldshared = ldshared.replace(ld, '', 1).strip()
+        ldshared = [flg for flg in split_quoted(ldshared)
+                    if flg not in split_quoted(ldflags)]
+        ldshared = str.join(' ', ldshared)
         #
         getenv = os.environ.get
         def get_flags(cmd):
