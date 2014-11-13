@@ -439,6 +439,16 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
+    def setTriangleOptions(self, opts):
+        cdef const_char *copts = NULL
+        opts = str2bytes(opts, &copts)
+        CHKERR( DMPlexTriangleSetOptions(self.dm, copts) )
+
+    def setTetGenOptions(self, opts):
+        cdef const_char *copts = NULL
+        opts = str2bytes(opts, &copts)
+        CHKERR( DMPlexTetgenSetOptions(self.dm, copts) )
+
     def createSquareBoundary(self, lower, upper, edges):
         cdef DMPlex    dm = <DMPlex>type(self)()
         cdef PetscInt nlow = 0, nup = 0, nedg = 0
