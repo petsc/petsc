@@ -8,6 +8,7 @@ Input parameters include:\n";
 /*
    Concepts: TS^time-dependent nonlinear problems
    Concepts: TS^van der Pol equation DAE equivalent
+   Concepts: Optimization using adjoint sensitivity analysis
    Processors: 1
 */
 /* ------------------------------------------------------------------------
@@ -34,44 +35,7 @@ Input parameters include:\n";
    [ u_1' ] = [      u_2              ]  (2)
    [ u_2' ]   [ mu[(1-u_1^2)u_2-u_1]  ]
 
-   which is now in the desired form of u_t = f(u,t). One way that we
-   can split f(u,t) in (2) is to split by component,
-
-   [ u_1' ] = [  u_2 ] + [       0              ]
-   [ u_2' ]   [  0   ]   [ mu[(1-u_1^2)u_2-u_1] ]
-
-   where
-
-   [ F(u,t) ] = [  u_2 ]
-                [  0   ]
-
-   and
-
-   [ G(u',u,t) ] = [ u_1' ] - [            0         ]
-                   [ u_2' ]   [ mu[(1-u_1^2)u_2-u_1] ]
-
-   Using the definition of the Jacobian of G (from the PETSc user manual),
-   in the equation G(u',u,t) = F(u,t),
-
-              dG   dG
-   J(G) = a * -- - --
-              du'  du
-
-   where d is the partial derivative. In this example,
-
-   dG   [ 1 ; 0 ]
-   -- = [       ]
-   du'  [ 0 ; 1 ]
-
-   dG   [ 0                       ;         0         ]
-   -- = [                                             ]
-   du   [ -mu*(1.0 + 2.0*u_1*u_2) ; mu*(1-u_1*u_1)    ]
-
-   Hence,
-
-          [      a                 ;         0          ]
-   J(G) = [                                             ]
-          [ mu*(1.0 + 2.0*u_1*u_2) ; a - mu*(1-u_1*u_1) ]
+   which is now in the desired form of u_t = f(u,t). 
 
   ------------------------------------------------------------------------- */
 #include <petsctao.h>
@@ -80,7 +44,6 @@ Input parameters include:\n";
 typedef struct _n_User *User;
 struct _n_User {
   PetscReal mu;
-  PetscBool imex;
   PetscReal next_output;
  
   /* Sensitivity analysis support */ 
@@ -203,9 +166,9 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = PetscSNPrintf(filename,sizeof filename,"ex20-SA-%06d.bin",stepnum);CHKERRQ(ierr);
   ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);
-  //ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr);
+  /* ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr); */
   ierr = PetscViewerBinaryWrite(viewer,&tprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
-  //ierr = PetscViewerBinaryWrite(viewer,&h ,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+  /* ierr = PetscViewerBinaryWrite(viewer,&h ,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr); */
   ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
 
   for (i=0;i<ns && stepnum>0;i++) {
@@ -213,7 +176,6 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   }
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  //ierr = TestMonitor(filename,X,time,ns,Y,stepnum);
   PetscFunctionReturn(0);
 }
 
@@ -237,7 +199,7 @@ static PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ct
   ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
 
   Nr   = 1;
-  //ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr);
+  /* ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr); */
   ierr = PetscViewerBinaryRead(viewer,&timepre,1,PETSC_REAL);CHKERRQ(ierr);
 
   ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
@@ -260,7 +222,7 @@ int main(int argc,char **argv)
   TS             ts;            /* nonlinear solver */
   Vec            ic;           
   PetscBool      monitor = PETSC_FALSE;
-  PetscScalar    *x_ptr,*y_ptr;
+  PetscScalar    *x_ptr;
   PetscMPIInt    size;
   struct _n_User user;
   PetscErrorCode ierr;
@@ -284,13 +246,11 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  user.imex        = PETSC_TRUE;
   user.next_output = 0.0;
   user.mu          = 1.0e6;
   user.steps       = 0;
   user.ftime       = 0.5;
   user.reversemode = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(NULL,"-imex",&user.imex,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mu","Stiffness parameter","<1.0e6>",user.mu,&user.mu,NULL);
 
@@ -342,39 +302,9 @@ int main(int argc,char **argv)
   user.x_ob[1] = x_ptr[1];
   ierr = VecView(user.x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Adjoint model starts here
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  user.reversemode = PETSC_TRUE;
+  /* Create sensitivity variable */
   ierr = MatGetVecs(user.A,&user.lambda[0],NULL);CHKERRQ(ierr);
-  /*   Set initial conditions for the adjoint integration */
-  ierr = VecGetArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
-  y_ptr[0] = 1.0; y_ptr[1] = 0.0;
-  ierr = VecRestoreArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
   ierr = MatGetVecs(user.A,&user.lambda[1],NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(user.lambda[1],&y_ptr);CHKERRQ(ierr); 
-  y_ptr[0] = 0.0; y_ptr[1] = 1.0;
-  ierr = VecRestoreArray(user.lambda[1],&y_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,user.lambda,2);CHKERRQ(ierr);
-
-  /*   Switch to reverse mode  */
-  ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
-  /*   Reset start time for the adjoint integration */
-  ierr = TSSetTime(ts,user.ftime);CHKERRQ(ierr);
-
-  /*   Set RHS Jacobian and number of steps for the adjoint integration */
-  ierr = TSSetDuration(ts,user.steps,PETSC_DEFAULT);CHKERRQ(ierr);
-
-  /*   Set up monitor */
-  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorADJ2,&user,NULL);CHKERRQ(ierr);
-
-  ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
-
-  ierr = VecView(user.lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(user.lambda[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-
   /*
      Optimization starts
   */
