@@ -573,6 +573,12 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   ierr = DMPlexShiftSF_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = DMPlexShiftLabels_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = PetscFree(depthShift);CHKERRQ(ierr);
+  /* Step 7: Periodicity */
+  if (dm->maxCell) {
+    const PetscReal *maxCell, *L;
+    ierr = DMGetPeriodicity(dm,  &maxCell, &L);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(gdm,  maxCell,  L);CHKERRQ(ierr);
+  }
   if (numGhostCells) *numGhostCells = Ng;
   PetscFunctionReturn(0);
 }
