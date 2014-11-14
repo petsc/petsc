@@ -74,7 +74,6 @@ Input parameters include:\n";
           [ mu*(1.0 + 2.0*u_1*u_2) ; a - mu*(1-u_1*u_1) ]
 
   ------------------------------------------------------------------------- */
-#include <petsctao.h>
 #include <petscts.h>
 
 typedef struct _n_User *User;
@@ -84,7 +83,7 @@ struct _n_User {
  
   /* Sensitivity analysis support */ 
   PetscInt  steps,nstages;
-  PetscReal ftime,x_ob[2];
+  PetscReal ftime;
   Mat       A;                       /* Jacobian matrix */
   Mat       Jacp;                    /* JacobianP matrix */
   Vec       x,lambda[2],lambdap[2];  /* adjoint variables */
@@ -222,9 +221,9 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = PetscSNPrintf(filename,sizeof filename,"ex20-SA-%06d.bin",stepnum);CHKERRQ(ierr);
   ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);
-  //ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr);
+  /* ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr); */
   ierr = PetscViewerBinaryWrite(viewer,&tprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
-  //ierr = PetscViewerBinaryWrite(viewer,&h ,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+  /* ierr = PetscViewerBinaryWrite(viewer,&h ,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr); */
   ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
 
   for (i=0;i<ns && stepnum>0;i++) {
@@ -232,7 +231,6 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   }
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  //ierr = TestMonitor(filename,X,time,ns,Y,stepnum);
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +254,7 @@ static PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ct
   ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
 
   Nr   = 1;
-  //ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr);
+  /* ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr); */
   ierr = PetscViewerBinaryRead(viewer,&timepre,1,PETSC_REAL);CHKERRQ(ierr);
 
   ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
@@ -347,9 +345,6 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&user.ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&user.steps);CHKERRQ(ierr);
-  ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
-  user.x_ob[0] = x_ptr[0];
-  user.x_ob[1] = x_ptr[1];
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)user.ftime);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n ode solution \n");CHKERRQ(ierr);
   ierr = VecView(user.x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
