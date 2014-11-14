@@ -975,8 +975,8 @@ PetscErrorCode DMPlexGetCellFields(DM dm, PetscInt cStart, PetscInt cEnd, Vec lo
     ierr = PetscDSGetTotalDimension(probAux, &totDimAux);CHKERRQ(ierr);
   }
   ierr = DMGetWorkArray(dm, numCells*totDim, PETSC_SCALAR, u);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, locX_t ? numCells*totDim : 0, PETSC_SCALAR, u_t);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, locA ? numCells*totDimAux : 0, PETSC_SCALAR, a);CHKERRQ(ierr);
+  if (locX_t) {ierr = DMGetWorkArray(dm, numCells*totDim, PETSC_SCALAR, u_t);CHKERRQ(ierr);} else {*u_t = NULL;}
+  if (locA)   {ierr = DMGetWorkArray(dm, numCells*totDimAux, PETSC_SCALAR, a);CHKERRQ(ierr);} else {*a = NULL;}
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL, *x_t = NULL, *ul = *u, *ul_t = *u_t, *al = *a;
     PetscInt     i;
@@ -1026,8 +1026,8 @@ PetscErrorCode DMPlexRestoreCellFields(DM dm, PetscInt cStart, PetscInt cEnd, Ve
 
   PetscFunctionBegin;
   ierr = DMRestoreWorkArray(dm, 0, PETSC_SCALAR, u);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm, 0, PETSC_SCALAR, u_t);CHKERRQ(ierr);
-  ierr = DMRestoreWorkArray(dm, 0, PETSC_SCALAR, a);CHKERRQ(ierr);
+  if (*u_t) {ierr = DMRestoreWorkArray(dm, 0, PETSC_SCALAR, u_t);CHKERRQ(ierr);}
+  if (*a)   {ierr = DMRestoreWorkArray(dm, 0, PETSC_SCALAR, a);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
