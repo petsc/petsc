@@ -25,7 +25,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   char            line[PETSC_MAX_PATH_LEN];
   int             snum;
   PetscBool       match;
-  PetscInt        fileType;
+  int             fileType;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -113,10 +113,10 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     snum = sscanf(line, "2.2 %d %d", &fileType, &dataSize);CHKERRQ(snum != 2);
     if (dataSize != sizeof(double)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Data size %d is not valid for a Gmsh file", dataSize);
     if (binary) {
-      PetscInt checkInt;
-      ierr = PetscViewerRead(viewer, &checkInt, 1, PETSC_INT);CHKERRQ(ierr);
+      int checkInt;
+      ierr = PetscViewerRead(viewer, &checkInt, 1, PETSC_ENUM);CHKERRQ(ierr);
       if (checkInt != 1) {
-        ierr = PetscByteSwap(&checkInt, PETSC_INT, 1);CHKERRQ(ierr);
+        ierr = PetscByteSwap(&checkInt, PETSC_ENUM, 1);CHKERRQ(ierr);
         if (checkInt == 1) bswap = PETSC_TRUE;
         else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File type %d is not a valid Gmsh binary file", fileType);
       }
@@ -134,12 +134,12 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     snum = sscanf(line, "%d", &numVertices);CHKERRQ(snum != 1);
     ierr = PetscMalloc(numVertices*3 * sizeof(PetscScalar), &coordsIn);CHKERRQ(ierr);
     for (v = 0; v < numVertices; ++v) {
-      int    i;
-      ierr = PetscViewerRead(viewer, &i, 1, PETSC_INT);CHKERRQ(ierr);
-      if (bswap) ierr = PetscByteSwap(&i, PETSC_INT, 1);CHKERRQ(ierr);
+      int i;
+      ierr = PetscViewerRead(viewer, &i, 1, PETSC_ENUM);CHKERRQ(ierr);
+      if (bswap) ierr = PetscByteSwap(&i, PETSC_ENUM, 1);CHKERRQ(ierr);
       ierr = PetscViewerRead(viewer, &(coordsIn[v*3]), 3, PETSC_DOUBLE);CHKERRQ(ierr);
       if (bswap) ierr = PetscByteSwap(&(coordsIn[v*3]), PETSC_DOUBLE, 3);CHKERRQ(ierr);
-      if (i != v+1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid node number %d should be %d", i, v+1);
+      if (i != (int)v+1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid node number %d should be %d", i, v+1);
     }
     ierr = PetscViewerRead(viewer, line, 1, PETSC_STRING);CHKERRQ(ierr);;
     ierr = PetscStrncmp(line, "$EndNodes", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
@@ -272,22 +272,22 @@ PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscBool binary
 
   PetscFunctionBegin;
   if (binary) {
-    ierr = PetscViewerRead(viewer, &cellType, 1, PETSC_INT);CHKERRQ(ierr);
-    if (byteSwap) ierr = PetscByteSwap(&cellType, PETSC_INT, 1);CHKERRQ(ierr);
-    ierr = PetscViewerRead(viewer, &numElem, 1, PETSC_INT);CHKERRQ(ierr);
-    if (byteSwap) ierr = PetscByteSwap(&numElem, PETSC_INT, 1);CHKERRQ(ierr);
-    ierr = PetscViewerRead(viewer, &(ele->numTags), 1, PETSC_INT);CHKERRQ(ierr);
-    if (byteSwap) ierr = PetscByteSwap(&(ele->numTags), PETSC_INT, 1);CHKERRQ(ierr);
-    ierr = PetscViewerRead(viewer,  &(ele->id), 1, PETSC_INT);CHKERRQ(ierr);
-    if (byteSwap) ierr = PetscByteSwap( &(ele->id), PETSC_INT, 1);CHKERRQ(ierr);
+    ierr = PetscViewerRead(viewer, &cellType, 1, PETSC_ENUM);CHKERRQ(ierr);
+    if (byteSwap) ierr = PetscByteSwap(&cellType, PETSC_ENUM, 1);CHKERRQ(ierr);
+    ierr = PetscViewerRead(viewer, &numElem, 1, PETSC_ENUM);CHKERRQ(ierr);
+    if (byteSwap) ierr = PetscByteSwap(&numElem, PETSC_ENUM, 1);CHKERRQ(ierr);
+    ierr = PetscViewerRead(viewer, &(ele->numTags), 1, PETSC_ENUM);CHKERRQ(ierr);
+    if (byteSwap) ierr = PetscByteSwap(&(ele->numTags), PETSC_ENUM, 1);CHKERRQ(ierr);
+    ierr = PetscViewerRead(viewer,  &(ele->id), 1, PETSC_ENUM);CHKERRQ(ierr);
+    if (byteSwap) ierr = PetscByteSwap( &(ele->id), PETSC_ENUM, 1);CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerRead(viewer, &(ele->id), 1, PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscViewerRead(viewer, &cellType, 1, PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscViewerRead(viewer, &(ele->numTags), 1, PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerRead(viewer, &(ele->id), 1, PETSC_ENUM);CHKERRQ(ierr);
+    ierr = PetscViewerRead(viewer, &cellType, 1, PETSC_ENUM);CHKERRQ(ierr);
+    ierr = PetscViewerRead(viewer, &(ele->numTags), 1, PETSC_ENUM);CHKERRQ(ierr);
   }
   ierr = PetscMalloc1(ele->numTags, &(ele->tags));CHKERRQ(ierr);
-  ierr = PetscViewerRead(viewer, ele->tags, ele->numTags, PETSC_INT);CHKERRQ(ierr);
-  if (byteSwap) ierr = PetscByteSwap(ele->tags, PETSC_INT, ele->numTags);CHKERRQ(ierr);
+  ierr = PetscViewerRead(viewer, ele->tags, ele->numTags, PETSC_ENUM);CHKERRQ(ierr);
+  if (byteSwap) ierr = PetscByteSwap(ele->tags, PETSC_ENUM, ele->numTags);CHKERRQ(ierr);
   switch (cellType) {
   case 1: /* 2-node line */
     ele->dim = 1;
@@ -317,7 +317,7 @@ PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscBool binary
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported Gmsh element type %d", cellType);
   }
   ierr = PetscMalloc1(ele->numNodes, &(ele->nodes));CHKERRQ(ierr);
-  ierr = PetscViewerRead(viewer, ele->nodes, ele->numNodes, PETSC_INT);CHKERRQ(ierr);
-  if (byteSwap) ierr = PetscByteSwap(ele->nodes, PETSC_INT, ele->numNodes);CHKERRQ(ierr);
+  ierr = PetscViewerRead(viewer, ele->nodes, ele->numNodes, PETSC_ENUM);CHKERRQ(ierr);
+  if (byteSwap) ierr = PetscByteSwap(ele->nodes, PETSC_ENUM, ele->numNodes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

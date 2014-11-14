@@ -1028,7 +1028,12 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt count
   for (i=0; i<count; i++) {
     if (dtype == PETSC_CHAR)         fscanf(fd, "%c",  &(((char*)data)[i]));
     else if (dtype == PETSC_STRING)  fscanf(fd, "%s",  &(((char*)data)[i]));
+#if PETSC_USE_64BIT_INDICES
+    else if (dtype == PETSC_INT)     fscanf(fd, "%ld",  &(((PetscInt*)data)[i]));
+#else
     else if (dtype == PETSC_INT)     fscanf(fd, "%d",  &(((PetscInt*)data)[i]));
+#endif
+    else if (dtype == PETSC_ENUM)    fscanf(fd, "%d",  &(((int*)data)[i]));
     else if (dtype == PETSC_FLOAT)   fscanf(fd, "%f",  &(((float*)data)[i]));
     else if (dtype == PETSC_DOUBLE)  fscanf(fd, "%lg", &(((double*)data)[i]));
     else {SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Data type not supported in PetscViewerASCIIRead()", dtype);}
