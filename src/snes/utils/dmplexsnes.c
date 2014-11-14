@@ -1118,7 +1118,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
     for (f = 0; f < Nf; ++f) {
       PetscInt off;
 
-      ierr = PetscDSGetFieldOffset(prob, f, &off);CHKERRQ(ierr);
+      ierr = PetscDSGetComponentOffset(prob, f, &off);CHKERRQ(ierr);
       ierr = DMPlexPointLocalFieldRead(dm, cells[0], f, x, &xL);CHKERRQ(ierr);
       ierr = DMPlexPointLocalFieldRead(dm, cells[1], f, x, &xR);CHKERRQ(ierr);
       if (isFE[f]) {
