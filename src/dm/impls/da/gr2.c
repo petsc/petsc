@@ -793,12 +793,12 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   hid_t          plist_id;  /* property list identifier */
   hid_t          dset_id;   /* dataset identifier */
   hid_t          memspace;  /* memory dataspace identifier */
-  hid_t          file_id;
+  hid_t          file_id,group;
   herr_t         status;
   DM_DA          *dd;
 
   PetscFunctionBegin;
-  ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
   ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   dd   = (DM_DA*)da->data;
 
@@ -811,9 +811,9 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-  dset_id = H5Dopen2(file_id, vecname, H5P_DEFAULT);
+  dset_id = H5Dopen2(group, vecname, H5P_DEFAULT);
 #else
-  dset_id = H5Dopen(file_id, vecname);
+  dset_id = H5Dopen(group, vecname);
 #endif
   if (dset_id == -1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dopen2() with Vec named %s",vecname);
   filespace = H5Dget_space(dset_id);
@@ -853,6 +853,9 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   ierr   = VecRestoreArray(xin, &x);CHKERRQ(ierr);
 
   /* Close/release resources */
+  if (group != file_id) {
+    status = H5Gclose(group);CHKERRQ(status);
+  }
   status = H5Pclose(plist_id);CHKERRQ(status);
   status = H5Sclose(filespace);CHKERRQ(status);
   status = H5Sclose(memspace);CHKERRQ(status);
