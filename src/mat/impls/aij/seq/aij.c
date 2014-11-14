@@ -2840,7 +2840,6 @@ PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat Y,Mat X,PetscInt *nnz)
 PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
   Mat_SeqAIJ     *x = (Mat_SeqAIJ*)X->data,*y = (Mat_SeqAIJ*)Y->data;
   PetscBLASInt   one=1,bnz;
 
@@ -2852,18 +2851,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
-    if (y->xtoy && y->XtoY != X) {
-      ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
-      ierr = MatDestroy(&y->XtoY);CHKERRQ(ierr);
-    }
-    if (!y->xtoy) { /* get xtoy */
-      ierr    = MatAXPYGetxtoy_Private(X->rmap->n,x->i,x->j,NULL, y->i,y->j,NULL, &y->xtoy);CHKERRQ(ierr);
-      y->XtoY = X;
-      ierr    = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
-    }
-    for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += a*(x->a[i]);
-    ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
-    ierr = PetscInfo3(Y,"ratio of nnz(X)/nnz(Y): %D/%D = %g\n",x->nz,y->nz,(double)((PetscReal)(x->nz)/(y->nz+1)));CHKERRQ(ierr);
+    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   } else {
     Mat      B;
     PetscInt *nnz;

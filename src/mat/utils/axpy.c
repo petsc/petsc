@@ -35,7 +35,7 @@ PetscErrorCode  MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %D %D %D %D",m1,m2,n1,n2);
 
   ierr = PetscLogEventBegin(MAT_AXPY,Y,0,0,0);CHKERRQ(ierr);
-  if (Y->ops->axpy && str != SUBSET_NONZERO_PATTERN) {
+  if (Y->ops->axpy) {
     ierr = (*Y->ops->axpy)(Y,a,X,str);CHKERRQ(ierr);
   } else {
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
