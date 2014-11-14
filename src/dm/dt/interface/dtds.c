@@ -856,8 +856,8 @@ PetscErrorCode PetscDSGetResidual(PetscDS prob, PetscInt f,
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSSetResidual"
 PetscErrorCode PetscDSSetResidual(PetscDS prob, PetscInt f,
-                                       void (*f0)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[]),
-                                       void (*f1)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f1[]))
+                                  void (*f0)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[]),
+                                  void (*f1)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f1[]))
 {
   PetscErrorCode ierr;
 
@@ -1174,6 +1174,44 @@ PetscErrorCode PetscDSGetBdFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
     ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
     *off += Nb*Nc;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSGetComponentOffset"
+/*@
+  PetscDSGetComponentOffset - Returns the offset of the given field on an evaluation point
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- f - The field number
+
+  Output Parameter:
+. off - The offset
+
+  Level: beginner
+
+.seealso: PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off)
+{
+  PetscInt       g;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(off, 3);
+  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  *off = 0;
+  for (g = 0; g < f; ++g) {
+    PetscFE  fe = (PetscFE) prob->disc[g];
+    PetscInt Nc;
+
+    ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+    *off += Nc;
   }
   PetscFunctionReturn(0);
 }
