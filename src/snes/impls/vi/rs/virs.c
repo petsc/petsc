@@ -689,7 +689,7 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char *func,mxArray
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr      = PetscMalloc(sizeof(SNESMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr      = PetscNew(&sctx);CHKERRQ(ierr);
   ierr      = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
   sctx->ctx = mxDuplicateArray(ctx);
   ierr      = SNESVISetRedundancyCheck(snes,SNESVIRedundancyCheck_Matlab,sctx);CHKERRQ(ierr);

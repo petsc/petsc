@@ -242,7 +242,7 @@ static PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc,
   /* create data - syntactic sugar that should be refactored at some point */
   if (pc_gamg->data==0 || (pc_gamg->data_sz != arrsz)) {
     ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
-    ierr = PetscMalloc1((arrsz+1), &pc_gamg->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1(arrsz+1, &pc_gamg->data);CHKERRQ(ierr);
   }
   /* copy data in - column oriented */
   for (kk=0; kk<nloc; kk++) {
@@ -773,8 +773,8 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
       if (asz<minsz) minsz = asz;
 
       /* get block */
-      ierr = PetscMalloc1((Mdata*N), &qqc);CHKERRQ(ierr);
-      ierr = PetscMalloc1((M*N), &qqr);CHKERRQ(ierr);
+      ierr = PetscMalloc1(Mdata*N, &qqc);CHKERRQ(ierr);
+      ierr = PetscMalloc1(M*N, &qqr);CHKERRQ(ierr);
       ierr = PetscMalloc1(N, &TAU);CHKERRQ(ierr);
       ierr = PetscMalloc1(LWORK, &WORK);CHKERRQ(ierr);
       ierr = PetscMalloc1(M, &fids);CHKERRQ(ierr);

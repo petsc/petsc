@@ -83,7 +83,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   redm     = party->redm ? "lam" : ""; /* matching method */
   redo     = party->redo ? "w3" : "";  /* matching optimization method */
 
-  ierr = PetscMalloc1((mat->rmap->N),&part_party);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mat->rmap->N,&part_party);CHKERRQ(ierr);
 
   /* redirect output to buffer */
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -119,7 +119,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
 #endif
   if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Party failed");
 
-  ierr = PetscMalloc1((mat->rmap->N),&parttab);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mat->rmap->N,&parttab);CHKERRQ(ierr);
   for (i=0; i<mat->rmap->N; i++) parttab[i] = part_party[i];
 
   /* creation of the index set */

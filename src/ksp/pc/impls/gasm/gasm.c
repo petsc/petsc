@@ -1285,8 +1285,8 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt overlap, PetscInt n,
           }
           nnz += len;
         }
-        ierr   = PetscMalloc1((na+1),&iia);CHKERRQ(ierr);
-        ierr   = PetscMalloc1((nnz),&jja);CHKERRQ(ierr);
+        ierr   = PetscMalloc1(na+1,&iia);CHKERRQ(ierr);
+        ierr   = PetscMalloc1(nnz,&jja);CHKERRQ(ierr);
         nnz    = 0;
         iia[0] = 0;
         for (i=0; i<na; i++) { /* fill adjacency */
@@ -1548,8 +1548,8 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
 
   /* Now we can allocate the necessary number of ISs. */
   *nsub  = s;
-  ierr   = PetscMalloc1((*nsub),is);CHKERRQ(ierr);
-  ierr   = PetscMalloc1((*nsub),is_local);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(*nsub,is);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(*nsub,is_local);CHKERRQ(ierr);
   s      = 0;
   ystart = 0;
   for (j=0; j<Ndomains; ++j) {

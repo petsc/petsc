@@ -164,7 +164,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)),"%s = 0;",_A);CHKERRQ(ierr);
 
     ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
-    ierr = PetscMalloc1((len+2),&name);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len+2,&name);CHKERRQ(ierr);
     sprintf(name,"_%s",_A);
     ierr = PetscObjectSetName((PetscObject)F,name);CHKERRQ(ierr);
     ierr = PetscFree(name);CHKERRQ(ierr);
@@ -174,7 +174,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)),"[l_%s,u_%s,p_%s] = lu(%s',%g);",_A,_A,_A,_A,dtcol);CHKERRQ(ierr);
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)),"%s = 0;",_A);CHKERRQ(ierr);
     ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
-    ierr = PetscMalloc1((len+2),&name);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len+2,&name);CHKERRQ(ierr);
     sprintf(name,"_%s",_A);
     ierr = PetscObjectSetName((PetscObject)F,name);CHKERRQ(ierr);
     ierr = PetscFree(name);CHKERRQ(ierr);

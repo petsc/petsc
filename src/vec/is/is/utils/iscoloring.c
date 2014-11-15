@@ -587,7 +587,7 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
   N    = offsets[size-1] + sizes[size-1];
   ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((N+1),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N+1,&indices);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(lindices,(PetscMPIInt)n,MPIU_COLORING_VALUE,indices,sizes,offsets,MPIU_COLORING_VALUE,comm);CHKERRQ(ierr);
 
   *outindices = indices;
@@ -654,7 +654,7 @@ PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
   for (i=0; i<n-1; i++) {
     if (indices[i+1] != indices[i]) unique++;
   }
-  ierr = PetscMalloc1((nmax-nmin-unique),&nindices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nmax-nmin-unique,&nindices);CHKERRQ(ierr);
   cnt  = 0;
   for (i=nmin,j=0; i<nmax; i++) {
     if (j<n && i==indices[j]) do { j++; } while (j<n && i==indices[j]);

@@ -582,8 +582,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
     }
     petsc_printfqueuelength++;
     next->size = QUEUESTRINGSIZE;
-    ierr       = PetscMalloc(next->size*sizeof(char), &next->string);CHKERRQ(ierr);
-    ierr       = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+    ierr       = PetscCalloc1(next->size, &next->string);CHKERRQ(ierr);
     string     = next->string;
     tab        = intab;
     tab       *= 2;

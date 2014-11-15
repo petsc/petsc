@@ -1133,7 +1133,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       double  *maxVolumes;
       PetscInt c;
 
-      ierr = PetscMalloc1((cEnd - cStart), &maxVolumes);CHKERRQ(ierr);
+      ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
       for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       ierr = DMPlexRefine_Triangle(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
       ierr = PetscFree(maxVolumes);CHKERRQ(ierr);
@@ -1148,7 +1148,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       PetscReal *maxVolumes;
       PetscInt   c;
 
-      ierr = PetscMalloc1((cEnd - cStart), &maxVolumes);CHKERRQ(ierr);
+      ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
       for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       ierr = DMPlexRefine_CTetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else
@@ -1159,7 +1159,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
       double  *maxVolumes;
       PetscInt c;
 
-      ierr = PetscMalloc1((cEnd - cStart), &maxVolumes);CHKERRQ(ierr);
+      ierr = PetscMalloc1(cEnd - cStart, &maxVolumes);CHKERRQ(ierr);
       for (c = 0; c < cEnd-cStart; ++c) maxVolumes[c] = refinementLimit;
       ierr = DMPlexRefine_Tetgen(dm, maxVolumes, dmRefined);CHKERRQ(ierr);
 #else

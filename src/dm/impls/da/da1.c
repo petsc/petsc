@@ -213,7 +213,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   /* global to local must retrieve ghost points */
   ierr = ISCreateStride(comm,dof*(IXe-IXs),dof*(IXs-Xs),1,&to);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((x+2*(sDist)),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(x+2*sDist,&idx);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)da,(x+2*(sDist))*sizeof(PetscInt));CHKERRQ(ierr);
 
   for (i=0; i<IXs-Xs; i++) idx[i] = -1; /* prepend with -1s if needed for ghosted case*/

@@ -230,7 +230,7 @@ PetscErrorCode  PCISSetUp(PC pc)
   ierr = VecDuplicate(pcis->vec1_B,&pcis->vec2_B);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_B,&pcis->vec3_B);CHKERRQ(ierr);
   ierr = MatCreateVecs(pc->pmat,&pcis->vec1_global,0);CHKERRQ(ierr);
-  ierr = PetscMalloc1((pcis->n),&pcis->work_N);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcis->n,&pcis->work_N);CHKERRQ(ierr);
 
   /* Creating the scatter contexts */
   ierr = VecScatterCreate(pcis->vec1_global,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);

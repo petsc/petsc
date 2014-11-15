@@ -781,9 +781,6 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = VecDuplicate(XX,&user->utrue);CHKERRQ(ierr);
 
   /* map for striding q */
-  /*
-  ierr = PetscMalloc1((size+1),&ranges);CHKERRQ(ierr);
-  ierr = PetscMalloc1((size+1),&subranges);CHKERRQ(ierr); */
   ierr = VecGetOwnershipRanges(user->q,&ranges);CHKERRQ(ierr);
   ierr = VecGetOwnershipRanges(user->u,&subranges);CHKERRQ(ierr);
 

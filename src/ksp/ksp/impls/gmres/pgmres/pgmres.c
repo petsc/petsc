@@ -139,7 +139,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 
     if (it > 0) {
       PetscScalar *work;
-      if (!pgmres->orthogwork) {ierr = PetscMalloc1((pgmres->max_k + 2),&pgmres->orthogwork);CHKERRQ(ierr);}
+      if (!pgmres->orthogwork) {ierr = PetscMalloc1(pgmres->max_k + 2,&pgmres->orthogwork);CHKERRQ(ierr);}
       work = pgmres->orthogwork;
       /* Apply correction computed by the VecMDot in the last iteration to Znext. The original form is
        *

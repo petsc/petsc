@@ -287,7 +287,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   /* If mypetsc is 0 then use "natural" numbering */
   if (!mypetsc) {
     start = disp[rank];
-    ierr  = PetscMalloc1((napp+1), &petsc);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(napp+1, &petsc);CHKERRQ(ierr);
     for (i = 0; i < napp; i++) petsc[i] = start + i;
   } else {
     petsc = (PetscInt*)mypetsc;

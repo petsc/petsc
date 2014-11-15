@@ -1681,7 +1681,7 @@ PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
 #endif
   if (e) {
     PetscValidPointer(e,3);
-    ierr = PetscMalloc1((*n), e);CHKERRQ(ierr);
+    ierr = PetscMalloc1(*n, e);CHKERRQ(ierr);
     for (i = 0; i < *n; ++i) {
       (*e)[i] = vals[i];
     }

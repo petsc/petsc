@@ -754,7 +754,7 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMSetUp(dm);CHKERRQ(ierr);
-  ierr = PetscMalloc1((com->nDM),ltogs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(com->nDM,ltogs);CHKERRQ(ierr);
   next = com->next;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
 
@@ -885,7 +885,7 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscMalloc1((com->nDM),is);CHKERRQ(ierr);
+  ierr = PetscMalloc1(com->nDM,is);CHKERRQ(ierr);
   next = com->next;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
 

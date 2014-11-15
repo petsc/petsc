@@ -275,7 +275,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
     adj  = (Mat_MPIAdj*)mat->data;
   }
 
-  ierr = PetscMalloc1((mat->rmap->n+1),&locals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mat->rmap->n+1,&locals);CHKERRQ(ierr);
   ierr = PetscMalloc1(nparts,&vwgttab);CHKERRQ(ierr);
   ierr = PetscMalloc1(nparts,&velotab);CHKERRQ(ierr);
   for (j=0; j<nparts; j++) {

@@ -115,9 +115,9 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
   else nnz = aa->nz;
 
   if (!valOnly) {
-    ierr = PetscMalloc(((*n)+1) *sizeof(PetscInt)   ,colptr);CHKERRQ(ierr);
-    ierr = PetscMalloc(nnz      *sizeof(PetscInt)   ,row);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nnz      ,values);CHKERRQ(ierr);
+    ierr = PetscMalloc1((*n)+1,colptr);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nnz,row);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nnz,values);CHKERRQ(ierr);
 
     if (isSBAIJ || isSeqSBAIJ || isMpiSBAIJ) {
       ierr = PetscMemcpy (*colptr, rowptr, ((*n)+1)*sizeof(PetscInt));CHKERRQ(ierr);
@@ -126,7 +126,7 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool valOnly,PetscInt *n,PetscInt **co
       for (i = 0; i < nnz; i++) (*row)[i] += base;
       ierr = PetscMemcpy (*values, rvalues, (nnz)*sizeof(PetscScalar));CHKERRQ(ierr);
     } else {
-      ierr = PetscMalloc1((*n),&colcount);CHKERRQ(ierr);
+      ierr = PetscMalloc1(*n,&colcount);CHKERRQ(ierr);
 
       for (i = 0; i < m; i++) colcount[i] = 0;
       /* Fill-in colptr */
@@ -426,8 +426,8 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
   ierr = MatDestroyMatrices(1,&tseq);CHKERRQ(ierr);
 
   if (!lu->perm) {
-    ierr = PetscMalloc1((lu->n),&(lu->perm));CHKERRQ(ierr);
-    ierr = PetscMalloc1((lu->n),&(lu->invp));CHKERRQ(ierr);
+    ierr = PetscMalloc1(lu->n,&(lu->perm));CHKERRQ(ierr);
+    ierr = PetscMalloc1(lu->n,&(lu->invp));CHKERRQ(ierr);
   }
 
   if (isSym) {

@@ -637,7 +637,7 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
   } else {
     PetscInt len = floor(log10(mb->numBlocks))+1;
 
-    ierr = PetscMalloc1((len+1), &newblock->name);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len+1, &newblock->name);CHKERRQ(ierr);
     ierr = PetscSNPrintf(newblock->name, len, "%s", mb->numBlocks);CHKERRQ(ierr);
   }
   newblock->nfields = n;
@@ -688,7 +688,7 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
   } else {
     PetscInt len = floor(log10(mb->numBlocks))+1;
 
-    ierr = PetscMalloc1((len+1), &newblock->name);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len+1, &newblock->name);CHKERRQ(ierr);
     ierr = PetscSNPrintf(newblock->name, len, "%s", mb->numBlocks);CHKERRQ(ierr);
   }
   newblock->is = is;

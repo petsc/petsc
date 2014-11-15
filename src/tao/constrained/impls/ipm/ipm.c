@@ -883,7 +883,7 @@ PetscErrorCode IPMUpdateK(Tao tao)
   klocalsize = kend-kstart;
   if (!ipmP->K) {
     if (size == 1) {
-      ierr = PetscMalloc1((kend-kstart),&nonzeros);CHKERRQ(ierr);
+      ierr = PetscMalloc1(kend-kstart,&nonzeros);CHKERRQ(ierr);
       for (i=0;i<bigsize;i++) {
         if (i<r1) {
           ierr = MatGetRow(tao->hessian,i,&ncols,NULL,NULL);CHKERRQ(ierr);
@@ -905,8 +905,8 @@ PetscErrorCode IPMUpdateK(Tao tao)
       ierr = MatSetFromOptions(ipmP->K);CHKERRQ(ierr);
       ierr = PetscFree(nonzeros);CHKERRQ(ierr);
     } else {
-      ierr = PetscMalloc1((kend-kstart),&d_nonzeros);CHKERRQ(ierr);
-      ierr = PetscMalloc1((kend-kstart),&o_nonzeros);CHKERRQ(ierr);
+      ierr = PetscMalloc1(kend-kstart,&d_nonzeros);CHKERRQ(ierr);
+      ierr = PetscMalloc1(kend-kstart,&o_nonzeros);CHKERRQ(ierr);
       for (i=kstart;i<kend;i++) {
         if (i<r1) {
           /* TODO fix preallocation for mpi mats */

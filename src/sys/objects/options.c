@@ -545,7 +545,7 @@ destroy:
       ierr = PetscMPIIntCast(bytes,&cnt);CHKERRQ(ierr);
       ierr = PetscSegBufferGet(vseg,1,&vstring);CHKERRQ(ierr);
       vstring[0] = 0;
-      ierr = PetscMalloc1((2+acnt+cnt),&packed);CHKERRQ(ierr);
+      ierr = PetscMalloc1(2+acnt+cnt,&packed);CHKERRQ(ierr);
       ierr = PetscSegBufferExtractTo(aseg,packed);CHKERRQ(ierr);
       ierr = PetscSegBufferExtractTo(vseg,packed+acnt+1);CHKERRQ(ierr);
       ierr = PetscSegBufferDestroy(&aseg);CHKERRQ(ierr);
@@ -559,7 +559,7 @@ destroy:
   acnt = counts[0];
   cnt = counts[1];
   if (rank) {
-    ierr = PetscMalloc1((2+acnt+cnt),&packed);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2+acnt+cnt,&packed);CHKERRQ(ierr);
   }
   if (acnt || cnt) {
     ierr = MPI_Bcast(packed,2+acnt+cnt,MPI_CHAR,0,comm);CHKERRQ(ierr);
@@ -728,7 +728,7 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
     } else {
       ierr = MPI_Bcast(&len,1,MPIU_SIZE_T,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
       if (len) {
-        ierr = PetscMalloc1((len+1),&eoptions);CHKERRQ(ierr);
+        ierr = PetscMalloc1(len+1,&eoptions);CHKERRQ(ierr);
       }
     }
     if (len) {

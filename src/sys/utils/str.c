@@ -185,7 +185,7 @@ PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
   PetscFunctionBegin;
   if (s) {
     ierr = PetscStrlen(s,&len);CHKERRQ(ierr);
-    ierr = PetscMalloc1((1+len),&tmp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1+len,&tmp);CHKERRQ(ierr);
     ierr = PetscStrcpy(tmp,s);CHKERRQ(ierr);
   }
   *t = tmp;
@@ -222,7 +222,7 @@ PetscErrorCode  PetscStrArrayallocpy(const char *const *list,char ***t)
 
   PetscFunctionBegin;
   while (list[n++]) ;
-  ierr = PetscMalloc1((n+1),t);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,t);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscStrallocpy(list[i],(*t)+i);CHKERRQ(ierr);
   }

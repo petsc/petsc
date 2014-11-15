@@ -49,7 +49,7 @@ PetscErrorCode InitialConditions(Vec U,DM da,AppCtx *app)
   ierr = DMDAVecGetArray(da,xcoord,&x);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(U,&lsize);CHKERRQ(ierr);
-  ierr = PetscMalloc(lsize*sizeof(PetscInt),&app->sw);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,&app->sw);CHKERRQ(ierr);
 
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
@@ -253,8 +253,8 @@ int main(int argc,char **argv)
   PetscInt *direction;
   PetscBool *terminate;
   PetscInt  i;
-  ierr = PetscMalloc(lsize*sizeof(PetscInt),&direction);CHKERRQ(ierr);
-  ierr = PetscMalloc(lsize*sizeof(PetscBool),&terminate);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,&direction);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lsize,&terminate);CHKERRQ(ierr);
   for (i=0; i < lsize; i++) {
     direction[i] = -1;
     terminate[i] = PETSC_FALSE;

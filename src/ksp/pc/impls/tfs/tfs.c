@@ -113,7 +113,7 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
 
   /* generate the local to global mapping */
   ncol = a->A->cmap->n + a->B->cmap->n;
-  ierr = PetscMalloc1((ncol),&localtoglobal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ncol,&localtoglobal);CHKERRQ(ierr);
   for (i=0; i<a->A->cmap->n; i++) localtoglobal[i] = A->cmap->rstart + i + 1;
   for (i=0; i<a->B->cmap->n; i++) localtoglobal[i+a->A->cmap->n] = a->garray[i] + 1;
 

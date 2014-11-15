@@ -269,8 +269,8 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,Petsc
   proc_J = rank/cpu_x;
   proc_I = rank-cpu_x*proc_J;
 
-  ierr = PetscMalloc(sizeof(PetscInt)*cpu_x,&LX);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*cpu_y,&LY);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cpu_x,&LX);CHKERRQ(ierr);
+  ierr = PetscMalloc1(cpu_y,&LY);CHKERRQ(ierr);
 
   ierr = DMDAGetLocalElementSize(da,&local_mx,&local_my,NULL);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&vlx);CHKERRQ(ierr);
@@ -1594,8 +1594,8 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
 
   /* --- */
 
-  ierr = PetscMalloc(sizeof(PetscInt)*ny*n_dofs,&bc_global_ids);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscScalar)*ny*n_dofs,&bc_vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ny*n_dofs,&bc_global_ids);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ny*n_dofs,&bc_vals);CHKERRQ(ierr);
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < ny*n_dofs; i++) bc_global_ids[i] = -1;
@@ -1661,8 +1661,8 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
 
   /* --- */
 
-  ierr = PetscMalloc(sizeof(PetscInt)*ny*n_dofs,&bc_global_ids);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscScalar)*ny*n_dofs,&bc_vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ny*n_dofs,&bc_global_ids);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ny*n_dofs,&bc_vals);CHKERRQ(ierr);
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < ny*n_dofs; i++) bc_global_ids[i] = -1;
@@ -1728,8 +1728,8 @@ static PetscErrorCode BCApply_NORTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
 
   /* --- */
 
-  ierr = PetscMalloc(sizeof(PetscInt)*nx,&bc_global_ids);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscScalar)*nx,&bc_vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nx,&bc_global_ids);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nx,&bc_vals);CHKERRQ(ierr);
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < nx; i++) bc_global_ids[i] = -1;
@@ -1795,8 +1795,8 @@ static PetscErrorCode BCApply_SOUTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
 
   /* --- */
 
-  ierr = PetscMalloc(sizeof(PetscInt)*nx,&bc_global_ids);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscScalar)*nx,&bc_vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nx,&bc_global_ids);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nx,&bc_vals);CHKERRQ(ierr);
 
   /* init the entries to -1 so VecSetValues will ignore them */
   for (i = 0; i < nx; i++) bc_global_ids[i] = -1;

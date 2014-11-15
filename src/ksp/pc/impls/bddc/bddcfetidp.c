@@ -9,7 +9,7 @@ PetscErrorCode PCBDDCCreateFETIDPMatContext(PC pc, FETIDPMat_ctx *fetidpmat_ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(*newctx),&newctx);CHKERRQ(ierr);
+  ierr = PetscNew(&newctx);CHKERRQ(ierr);
   newctx->lambda_local    = 0;
   newctx->temp_solution_B = 0;
   newctx->temp_solution_D = 0;
@@ -31,7 +31,7 @@ PetscErrorCode PCBDDCCreateFETIDPPCContext(PC pc, FETIDPPC_ctx *fetidppc_ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(*newctx),&newctx);CHKERRQ(ierr);
+  ierr = PetscNew(&newctx);CHKERRQ(ierr);
   newctx->lambda_local    = 0;
   newctx->B_Ddelta        = 0;
   newctx->l2g_lambda      = 0;
@@ -185,8 +185,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   partial_sum = 0;
   j = 0;
   ierr = PetscMalloc1(pcis->n_neigh,&ptrs_buffer);CHKERRQ(ierr);
-  ierr = PetscMalloc1((pcis->n_neigh-1),&send_reqs);CHKERRQ(ierr);
-  ierr = PetscMalloc1((pcis->n_neigh-1),&recv_reqs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcis->n_neigh-1,&send_reqs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcis->n_neigh-1,&recv_reqs);CHKERRQ(ierr);
   ierr = PetscMalloc1(pcis->n,&all_factors);CHKERRQ(ierr);
   ptrs_buffer[0]=0;
   for (i=1;i<pcis->n_neigh;i++) {

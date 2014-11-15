@@ -196,7 +196,7 @@ PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae)
   Vec                 tsrhs;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(TSDAESimple_Reduced),&red);CHKERRQ(ierr);
+  ierr = PetscNew(&red);CHKERRQ(ierr);
   tsdae->data = red;
 
   tsdae->setfromoptions = TSDAESimpleSetFromOptions_Reduced;
@@ -343,7 +343,7 @@ PetscErrorCode TSDAESimpleSetUp_Full(TSDAESimple tsdae)
   IS               is;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(TSDAESimple_Full),&full);CHKERRQ(ierr);
+  ierr = PetscNew(&full);CHKERRQ(ierr);
   tsdae->data = full;
 
   tsdae->setfromoptions = TSDAESimpleSetFromOptions_Full;

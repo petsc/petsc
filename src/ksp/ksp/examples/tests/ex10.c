@@ -150,7 +150,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
   ict    = 0;
-  ierr   = PetscMalloc1((N-nstart),&rowkeep);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(N-nstart,&rowkeep);CHKERRQ(ierr);
   for (i=nstart; i<N; i++) {
     ierr = MatGetRow(mat,i,&nz,0,0);CHKERRQ(ierr);
     if (nz) rowkeep[ict++] = i;

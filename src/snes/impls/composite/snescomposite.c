@@ -320,8 +320,8 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
   ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);
   if (jac->type == SNES_COMPOSITE_ADDITIVEOPTIMAL) {
     ierr = VecDuplicateVecs(F,jac->nsnes,&jac->Xes);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(Vec)*n,&jac->Fes);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscReal)*n,&jac->fnorms);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&jac->Fes);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&jac->fnorms);CHKERRQ(ierr);
     next = jac->head;
     i = 0;
     while (next) {
@@ -343,9 +343,9 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
     ierr = PetscMalloc1(jac->n,&jac->g);CHKERRQ(ierr);
     jac->lwork = 12*jac->n;
 #if PETSC_USE_COMPLEX
-    ierr = PetscMalloc(sizeof(PetscReal)*jac->lwork,&jac->rwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->lwork,&jac->rwork);CHKERRQ(ierr);
 #endif
-    ierr = PetscMalloc(sizeof(PetscScalar)*jac->lwork,&jac->work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->lwork,&jac->work);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

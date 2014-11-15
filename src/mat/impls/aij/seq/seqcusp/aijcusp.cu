@@ -146,8 +146,8 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
       } else {
         /* Forcing compressed row on the GPU */
         int k=0;
-        ierr = PetscMalloc1((cuspstruct->nonzerorow+1), &ii);CHKERRQ(ierr);
-        ierr = PetscMalloc1((cuspstruct->nonzerorow), &ridx);CHKERRQ(ierr);
+        ierr = PetscMalloc1(cuspstruct->nonzerorow+1, &ii);CHKERRQ(ierr);
+        ierr = PetscMalloc1(cuspstruct->nonzerorow, &ridx);CHKERRQ(ierr);
         ii[0]=0;
         for (int j = 0; j<m; j++) {
           if ((a->i[j+1]-a->i[j])>0) {

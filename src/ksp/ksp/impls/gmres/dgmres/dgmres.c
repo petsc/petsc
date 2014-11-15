@@ -113,7 +113,7 @@ PetscErrorCode  KSPSetUp_DGMRES(KSP ksp)
   if (!dgmres->neig) PetscFunctionReturn(0);
 
   /* Allocate workspace for the Schur vectors*/
-  ierr          = PetscMalloc1((neig) *max_k, &SR);CHKERRQ(ierr);
+  ierr          = PetscMalloc1(neig*max_k, &SR);CHKERRQ(ierr);
   dgmres->wr    = NULL;
   dgmres->wi    = NULL;
   dgmres->perm  = NULL;

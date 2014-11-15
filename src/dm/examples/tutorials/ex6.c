@@ -267,7 +267,7 @@ PetscErrorCode FACreate(FA *infa)
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Get tonatural number for each node */
-  ierr      = PetscMalloc1((tonglobal+1),&tonatural);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(tonglobal+1,&tonatural);CHKERRQ(ierr);
   tonglobal = 0;
   if (fa->comm[1]) {
     ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -334,7 +334,7 @@ PetscErrorCode FACreate(FA *infa)
   ierr          = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Get fromnatural number for each node */
-  ierr        = PetscMalloc1((fromnglobal+1),&fromnatural);CHKERRQ(ierr);
+  ierr        = PetscMalloc1(fromnglobal+1,&fromnatural);CHKERRQ(ierr);
   fromnglobal = 0;
   if (fa->comm[1]) {
     ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);

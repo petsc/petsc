@@ -305,7 +305,7 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
      There are 'ndata_rows*ndata_cols' data items per node, (one can think of the vectors of having
      a block size of ...).  Note, ISs are expanded into equation space by 'cr_bs'.
      */
-    ierr = PetscMalloc1((ncrs*node_data_sz), &tidx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ncrs*node_data_sz, &tidx);CHKERRQ(ierr);
     ierr = ISGetIndices(is_eq_num_prim, &idx);CHKERRQ(ierr);
     for (ii=0,jj=0; ii<ncrs; ii++) {
       PetscInt id = idx[ii*cr_bs]/cr_bs; /* get node back */

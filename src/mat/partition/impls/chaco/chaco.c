@@ -116,8 +116,8 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   eigtol        = chaco->eigtol;          /* tolerance on eigenvectors */
   seed          = 123636512;              /* for random graph mutations */
 
-  ierr = PetscMalloc1((mat->rmap->N),&assignment);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(int)*start[nvtxs],&adjacency);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mat->rmap->N,&assignment);CHKERRQ(ierr);
+  ierr = PetscMalloc1(start[nvtxs],&adjacency);CHKERRQ(ierr);
   for (i=0; i<start[nvtxs]; i++) adjacency[i] = (adj->j)[i] + 1; /* 1-based indexing */
 
   /* redirect output to buffer */
@@ -152,7 +152,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 #endif
   if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Chaco failed");
 
-  ierr = PetscMalloc1((mat->rmap->N),&parttab);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mat->rmap->N,&parttab);CHKERRQ(ierr);
   for (i=0; i<nvtxs; i++) parttab[i] = assignment[i];
 
   /* creation of the index set */

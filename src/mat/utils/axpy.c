@@ -74,7 +74,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMalloc1((n+1),&val);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n+1,&val);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       for (j=0; j<ncols; j++) {
@@ -114,7 +114,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMalloc1((n+1),&val);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n+1,&val);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
       ierr = MatGetRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
       ierr = MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);

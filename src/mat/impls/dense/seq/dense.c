@@ -433,7 +433,7 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,const MatFactorInfo *min
   ierr = PetscBLASIntCast(A->cmap->n,&n);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   if (!mat->pivots) {
-    ierr = PetscMalloc1((A->rmap->n+1),&mat->pivots);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A->rmap->n+1,&mat->pivots);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)A,A->rmap->n*sizeof(PetscBLASInt));CHKERRQ(ierr);
   }
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
@@ -687,11 +687,11 @@ PetscErrorCode MatGetRow_SeqDense(Mat A,PetscInt row,PetscInt *ncols,PetscInt **
   PetscFunctionBegin;
   *ncols = A->cmap->n;
   if (cols) {
-    ierr = PetscMalloc1((A->cmap->n+1),cols);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A->cmap->n+1,cols);CHKERRQ(ierr);
     for (i=0; i<A->cmap->n; i++) (*cols)[i] = i;
   }
   if (vals) {
-    ierr = PetscMalloc1((A->cmap->n+1),vals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A->cmap->n+1,vals);CHKERRQ(ierr);
     v    = mat->v + row;
     for (i=0; i<A->cmap->n; i++) {(*vals)[i] = *v; v += mat->lda;}
   }
@@ -842,7 +842,7 @@ PetscErrorCode MatLoad_SeqDense(Mat newmat,PetscViewer viewer)
     v = a->v;
     /* Allocate some temp space to read in the values and then flip them
        from row major to column major */
-    ierr = PetscMalloc1((M*N > 0 ? M*N : 1),&w);CHKERRQ(ierr);
+    ierr = PetscMalloc1(M*N > 0 ? M*N : 1,&w);CHKERRQ(ierr);
     /* read in nonzero values */
     ierr = PetscBinaryRead(fd,w,M*N,PETSC_SCALAR);CHKERRQ(ierr);
     /* now flip the values and store them in the matrix*/
@@ -854,17 +854,17 @@ PetscErrorCode MatLoad_SeqDense(Mat newmat,PetscViewer viewer)
     ierr = PetscFree(w);CHKERRQ(ierr);
   } else {
     /* read row lengths */
-    ierr = PetscMalloc1((M+1),&rowlengths);CHKERRQ(ierr);
+    ierr = PetscMalloc1(M+1,&rowlengths);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
 
     a = (Mat_SeqDense*)newmat->data;
     v = a->v;
 
     /* read column indices and nonzeros */
-    ierr = PetscMalloc1((nz+1),&scols);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nz+1,&scols);CHKERRQ(ierr);
     cols = scols;
     ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscMalloc1((nz+1),&svals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nz+1,&svals);CHKERRQ(ierr);
     vals = svals;
     ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
 
@@ -991,7 +991,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
     ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
     /* write out matrix, by rows */
-    ierr = PetscMalloc1((m*n+1),&vals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m*n+1,&vals);CHKERRQ(ierr);
     v    = a->v;
     for (j=0; j<n; j++) {
       for (i=0; i<m; i++) {
@@ -1001,7 +1001,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
     ierr = PetscBinaryWrite(fd,vals,n*m,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscFree(vals);CHKERRQ(ierr);
   } else {
-    ierr = PetscMalloc1((4+nz),&col_lens);CHKERRQ(ierr);
+    ierr = PetscMalloc1(4+nz,&col_lens);CHKERRQ(ierr);
 
     col_lens[0] = MAT_FILE_CLASSID;
     col_lens[1] = m;
@@ -1022,7 +1022,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
     ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
     /* store nonzero values */
-    ierr = PetscMalloc1((nz+1),&anonz);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nz+1,&anonz);CHKERRQ(ierr);
     ict  = 0;
     for (i=0; i<m; i++) {
       v = a->v + i;
@@ -1585,7 +1585,7 @@ PetscErrorCode MatGetSubMatrices_SeqDense(Mat A,PetscInt n,const IS irow[],const
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc1((n+1),B);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n+1,B);CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {

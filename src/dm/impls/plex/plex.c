@@ -2358,7 +2358,7 @@ PetscErrorCode DMPlexOrient(DM dm)
   ierr = PetscBTMemzero(cEnd - cStart, flippedCells);CHKERRQ(ierr);
   ierr = PetscBTCreate(fEnd - fStart, &seenFaces);CHKERRQ(ierr);
   ierr = PetscBTMemzero(fEnd - fStart, seenFaces);CHKERRQ(ierr);
-  ierr = PetscMalloc1((fEnd - fStart), &faceFIFO);CHKERRQ(ierr);
+  ierr = PetscMalloc1(fEnd - fStart, &faceFIFO);CHKERRQ(ierr);
   fTop = fBottom = 0;
   /* Initialize FIFO with first cell */
   if (cEnd > cStart) {
@@ -2917,7 +2917,7 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1((dim+1), &numDofTot);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim+1, &numDofTot);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     numDofTot[d] = 0;
     for (f = 0; f < numFields; ++f) numDofTot[d] += numDof[f*(dim+1)+d];
@@ -3028,7 +3028,7 @@ PetscErrorCode DMPlexCreateSectionBCIndicesAll(DM dm, PetscSection section)
   PetscFunctionBegin;
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc1((numFields+1), &maxConstraints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numFields+1, &maxConstraints);CHKERRQ(ierr);
   for (f = 0; f <= numFields; ++f) maxConstraints[f] = 0;
   for (p = pStart; p < pEnd; ++p) {
     PetscInt cdof;
@@ -5153,7 +5153,7 @@ static PetscErrorCode DMPlexCreateNumbering_Private(DM dm, PetscInt pStart, Pets
   }
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   ierr = PetscSectionCreateGlobalSection(section, sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
-  ierr = PetscMalloc1((pEnd - pStart), &numbers);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pEnd - pStart, &numbers);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     ierr = PetscSectionGetOffset(globalSection, p, &numbers[p-pStart]);CHKERRQ(ierr);
     if (numbers[p-pStart] < 0) numbers[p-pStart] -= shift;

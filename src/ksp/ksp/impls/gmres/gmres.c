@@ -65,9 +65,9 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
   gmres->vecs_allocated = VEC_OFFSET + 2 + max_k + gmres->nextra_vecs;
 
-  ierr = PetscMalloc1((gmres->vecs_allocated),&gmres->vecs);CHKERRQ(ierr);
-  ierr = PetscMalloc1((VEC_OFFSET+2+max_k),&gmres->user_work);CHKERRQ(ierr);
-  ierr = PetscMalloc1((VEC_OFFSET+2+max_k),&gmres->mwork_alloc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(gmres->vecs_allocated,&gmres->vecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(VEC_OFFSET+2+max_k,&gmres->user_work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(VEC_OFFSET+2+max_k,&gmres->mwork_alloc);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp,(VEC_OFFSET+2+max_k)*(sizeof(Vec*)+sizeof(PetscInt)) + gmres->vecs_allocated*sizeof(Vec));CHKERRQ(ierr);
 
   if (gmres->q_preallocate) {

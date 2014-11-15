@@ -435,7 +435,7 @@ PetscErrorCode PetscInitializeMKL_PARDISO(Mat A, Mat_MKL_PARDISO *mat_mkl_pardis
 
   mat_mkl_pardiso->iparm[34] = 1;
 
-  ierr = PetscMalloc(A->rmap->N*sizeof(INT_TYPE), &mat_mkl_pardiso->perm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(A->rmap->N, &mat_mkl_pardiso->perm);CHKERRQ(ierr);
   for(i = 0; i < A->rmap->N; i++)
     mat_mkl_pardiso->perm[i] = 0;
   PetscFunctionReturn(0);

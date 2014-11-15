@@ -1281,7 +1281,7 @@ PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm comm,PetscInt N,PetscI
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
 
-  ierr            = PetscMalloc1((tcomm->nworkThreads+1),&trstarts_out);CHKERRQ(ierr);
+  ierr            = PetscMalloc1(tcomm->nworkThreads+1,&trstarts_out);CHKERRQ(ierr);
   trstarts_out[0] = 0;
   Q               = N/tcomm->nworkThreads;
   R               = N - Q*tcomm->nworkThreads;

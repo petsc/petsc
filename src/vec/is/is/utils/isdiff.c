@@ -281,7 +281,7 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
     }
   } else imin = imax = 0;
 
-  ierr = PetscMalloc1((n1+n2),&iout);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n1+n2,&iout);CHKERRQ(ierr);
   nout = 0;
   ierr = PetscBTCreate(imax-imin,&mask);CHKERRQ(ierr);
   /* Put the values from is1 */

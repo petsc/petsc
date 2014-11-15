@@ -72,7 +72,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBTView(PetscInt m,const PetscBT bt,Petsc
 
 PETSC_STATIC_INLINE PetscErrorCode PetscBTCreate(PetscInt m,PetscBT *array)
 {
-  return (PetscMalloc(((m)/PETSC_BITS_PER_BYTE+1)*sizeof(char),array) || PetscBTMemzero(m,*array));
+  return (PetscMalloc1(m/PETSC_BITS_PER_BYTE+1,array) || PetscBTMemzero(m,*array));
 }
 
 PETSC_STATIC_INLINE char PetscBTLookupSet(PetscBT array,PetscInt index)

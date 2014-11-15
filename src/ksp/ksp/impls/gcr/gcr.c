@@ -159,7 +159,7 @@ PetscErrorCode KSPSetUp_GCR(KSP ksp)
   ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->VV);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->SS);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscScalar)*ctx->restart, &ctx->val);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->restart, &ctx->val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -992,7 +992,7 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,PetscDataType dtype,void *mem
 {
   PetscErrorCode ierr;
   DMWorkLink     link;
-  size_t         size;
+  size_t         dsize;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -1003,11 +1003,11 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,PetscDataType dtype,void *mem
   } else {
     ierr = PetscNewLog(dm,&link);CHKERRQ(ierr);
   }
-  ierr = PetscDataTypeGetSize(dtype,&size);CHKERRQ(ierr);
-  if (size*count > link->bytes) {
+  ierr = PetscDataTypeGetSize(dtype,&dsize);CHKERRQ(ierr);
+  if (dsize*count > link->bytes) {
     ierr        = PetscFree(link->mem);CHKERRQ(ierr);
-    ierr        = PetscMalloc(size*count,&link->mem);CHKERRQ(ierr);
-    link->bytes = size*count;
+    ierr        = PetscMalloc(dsize*count,&link->mem);CHKERRQ(ierr);
+    link->bytes = dsize*count;
   }
   link->next   = dm->workout;
   dm->workout  = link;

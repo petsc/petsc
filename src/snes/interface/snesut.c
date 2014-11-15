@@ -211,7 +211,7 @@ PetscErrorCode  KSPMonitorSNESLGResidualNormCreate(const char host[],const char 
   ierr = PetscDrawLGSetLegend(drawlg,names);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)drawlg,(PetscObject)draw);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(2,objs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2,objs);CHKERRQ(ierr);
   (*objs)[1] = (PetscObject)drawlg;
   PetscFunctionReturn(0);
 }
