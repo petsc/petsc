@@ -154,15 +154,15 @@ PetscErrorCode MatSOR_SeqBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   if (!a->mult_work) {
     ierr = PetscMalloc1(k+1,&a->mult_work);CHKERRQ(ierr);
   }
-  if (!a->sor_work) {
+  if (!a->sor_workt) {
     ierr = PetscMalloc1(k,&a->sor_workt);CHKERRQ(ierr);
   }
-  work = a->mult_work;
-  t    = a->sor_workt;
   if (!a->sor_work) {
     ierr = PetscMalloc1(bs,&a->sor_work);CHKERRQ(ierr);
   }
-  w = a->sor_work;
+  work = a->mult_work;
+  t    = a->sor_workt;
+  w    = a->sor_work;
 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
