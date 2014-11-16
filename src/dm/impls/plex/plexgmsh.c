@@ -41,7 +41,8 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
     ierr = PetscStrncmp(line, "$MeshFormat", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
     ierr = PetscViewerRead(vheader, line, 2, PETSC_STRING);CHKERRQ(ierr);
-    snum = sscanf(line, "2.2 %d", &fileType);CHKERRQ(snum != 1);
+    snum = sscanf(line, "2.2 %d", &fileType);
+    if (snum != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Gmsh file header: %s", line);
   }
   ierr = MPI_Bcast(&fileType, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   /* Create appropriate viewer and build plex */
@@ -110,7 +111,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = PetscStrncmp(line, "$MeshFormat", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
     ierr = PetscViewerRead(viewer, line, 3, PETSC_STRING);CHKERRQ(ierr);
-    snum = sscanf(line, "2.2 %d %d", &fileType, &dataSize);CHKERRQ(snum != 2);
+    snum = sscanf(line, "2.2 %d %d", &fileType, &dataSize);
+    if (snum != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Gmsh file header: %s", line);
     if (dataSize != sizeof(double)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Data size %d is not valid for a Gmsh file", dataSize);
     if (binary) {
       int checkInt;
@@ -120,9 +122,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         if (checkInt == 1) bswap = PETSC_TRUE;
         else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File type %d is not a valid Gmsh binary file", fileType);
       }
-    } else {
-      if (fileType) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File type %d is not a valid Gmsh ASCII file", fileType);
-    }
+    } else if (fileType) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File type %d is not a valid Gmsh ASCII file", fileType);
     ierr = PetscViewerRead(viewer, line, 1, PETSC_STRING);CHKERRQ(ierr);
     ierr = PetscStrncmp(line, "$EndMeshFormat", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
@@ -131,7 +131,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = PetscStrncmp(line, "$Nodes", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
     ierr = PetscViewerRead(viewer, line, 1, PETSC_STRING);CHKERRQ(ierr);
-    snum = sscanf(line, "%d", &numVertices);CHKERRQ(snum != 1);
+    snum = sscanf(line, "%d", &numVertices);
+    if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
     ierr = PetscMalloc(numVertices*3 * sizeof(PetscScalar), &coordsIn);CHKERRQ(ierr);
     for (v = 0; v < numVertices; ++v) {
       int i;
@@ -149,7 +150,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     ierr = PetscStrncmp(line, "$Elements", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
     ierr = PetscViewerRead(viewer, line, 1, PETSC_STRING);CHKERRQ(ierr);;
-    snum = sscanf(line, "%d", &numCells);CHKERRQ(snum != 1);
+    snum = sscanf(line, "%d", &numCells);
+    if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
   }
 
   if (!rank || binary) {
@@ -318,6 +320,6 @@ PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer viewer, PetscBool binary
   }
   ierr = PetscMalloc1(ele->numNodes, &(ele->nodes));CHKERRQ(ierr);
   ierr = PetscViewerRead(viewer, ele->nodes, ele->numNodes, PETSC_ENUM);CHKERRQ(ierr);
-  if (byteSwap) ierr = PetscByteSwap(ele->nodes, PETSC_ENUM, ele->numNodes);CHKERRQ(ierr);
+  if (byteSwap) {ierr = PetscByteSwap(ele->nodes, PETSC_ENUM, ele->numNodes);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
