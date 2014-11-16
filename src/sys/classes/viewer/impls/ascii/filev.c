@@ -1029,7 +1029,7 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt count
     if (dtype == PETSC_CHAR)         fscanf(fd, "%c",  &(((char*)data)[i]));
     else if (dtype == PETSC_STRING)  fscanf(fd, "%s",  &(((char*)data)[i]));
 #if PETSC_USE_64BIT_INDICES
-    else if (dtype == PETSC_INT)     fscanf(fd, "%ld",  &(((PetscInt*)data)[i]));
+    else if (dtype == PETSC_INT)     fscanf(fd, "%lld",  &(((PetscInt*)data)[i]));
 #else
     else if (dtype == PETSC_INT)     fscanf(fd, "%d",  &(((PetscInt*)data)[i]));
 #endif
