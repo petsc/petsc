@@ -1024,12 +1024,15 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt count
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-
   for (i=0; i<count; i++) {
     if (dtype == PETSC_CHAR)         fscanf(fd, "%c",  &(((char*)data)[i]));
     else if (dtype == PETSC_STRING)  fscanf(fd, "%s",  &(((char*)data)[i]));
 #if PETSC_USE_64BIT_INDICES
+#if (PETSC_SIZEOF_LONG_LONG == 8)
+    else if (dtype == PETSC_INT)     fscanf(fd, "%ld",  &(((PetscInt*)data)[i]));
+#else
     else if (dtype == PETSC_INT)     fscanf(fd, "%lld",  &(((PetscInt*)data)[i]));
+#endif
 #else
     else if (dtype == PETSC_INT)     fscanf(fd, "%d",  &(((PetscInt*)data)[i]));
 #endif
