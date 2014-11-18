@@ -16,19 +16,21 @@ int main(int argc,char **args)
   Vec            x,b,u;    /* approx solution, RHS, exact solution */
   Mat            A,F;        
   KSP            ksp;      /* linear solver context */
+  PC             pc;
   PetscRandom    rctx;     /* random number generator context */
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
   PetscBool      flg,flg_ilu,flg_ch,flg_mumps,flg_mumps_ch,flg_superlu;
   PetscScalar    v;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank,size;
 #if defined(PETSC_USE_LOG)
   PetscLogStage  stage;
 #endif
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -155,7 +157,6 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,"-use_mumps_ch",&flg_mumps_ch,NULL);CHKERRQ(ierr);
   if (flg_mumps || flg_mumps_ch) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-    PC        pc;
     PetscInt  ival,icntl;
     PetscReal val;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -196,17 +197,22 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,"-use_superlu_ilu",&flg_ilu,NULL);CHKERRQ(ierr);
   if (flg_superlu || flg_ilu) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-    PC  pc;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     if (flg_superlu) {
       ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
     } else if (flg_ilu) {
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
     }
-    ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
+    if (size == 1) {
+      ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
+    } else {
+      ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU_DIST);CHKERRQ(ierr);
+    }
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
-    ierr = MatSuperluSetILUDropTol(F,1.e-8);CHKERRQ(ierr);
+    if (size == 1) {
+      ierr = MatSuperluSetILUDropTol(F,1.e-8);CHKERRQ(ierr);
+    }
   }
 #endif
 
@@ -222,7 +228,6 @@ int main(int argc,char **args)
   ierr    = PetscOptionsGetBool(NULL,"-use_petsc_ch",&flg_ch,NULL);CHKERRQ(ierr);
   if (flg || flg_ilu || flg_ch) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-    PC  pc;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
@@ -234,7 +239,7 @@ int main(int argc,char **args)
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERPETSC);CHKERRQ(ierr);
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
-
+ 
     /* Test MatGetDiagonal() */
     Vec diag;
     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
