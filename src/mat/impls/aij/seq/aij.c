@@ -4227,7 +4227,7 @@ PetscErrorCode MatLoad_SeqAIJ(Mat newMat, PetscViewer viewer)
   int            fd;
   PetscMPIInt    size;
   MPI_Comm       comm;
-  PetscInt       bs = 1;
+  PetscInt       bs = newMat->rmap->bs;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -4237,7 +4237,8 @@ PetscErrorCode MatLoad_SeqAIJ(Mat newMat, PetscViewer viewer)
   ierr = PetscOptionsBegin(comm,NULL,"Options for loading SEQAIJ matrix","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (bs > 1) {ierr = MatSetBlockSize(newMat,bs);CHKERRQ(ierr);}
+  if (bs < 0) bs = 1;
+  ierr = MatSetBlockSize(newMat,bs);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);

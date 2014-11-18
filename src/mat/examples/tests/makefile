@@ -21,7 +21,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
-                ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c
+                ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex180.c
 EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F
 
 include ${PETSC_DIR}/conf/variables
@@ -684,6 +684,10 @@ ex171f: ex171f.o chkopts
 ex172: ex172.o chkopts
 	-${CLINKER} -o ex172 ex172.o ${PETSC_MAT_LIB}
 	${RM} ex172.o
+
+ex180: ex180.o chkopts
+	-${CLINKER} -o ex180 ex180.o ${PETSC_MAT_LIB}
+	${RM} ex180.o
 
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
@@ -2079,6 +2083,17 @@ runex171:
 	   ${RM} -f ex171.tmp
 
 
+runex180:
+	-@${MPIEXEC} -n 1 ./ex180 -mat_type aij  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump > ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 2 ./ex180 -mat_type aij  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 1 ./ex180 -mat_type baij  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 2 ./ex180 -mat_type baij  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 1 ./ex180 -mat_type sbaij  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 2 ./ex180 -mat_type sbaij  -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	  ${MPIEXEC} -n 1 ./ex180 -mat_type sbaij -matload_block_size 4 -f ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 -malloc_dump >> ex180.tmp 2>&1; \
+	   ${DIFF} output/ex180_1.out ex180.tmp || printf "${PWD}\nPossible problem with ex180, diffs above\n=========================================\n"; \
+	   ${RM} -f ex180.tmp
+
 runex171f:
 	-@${MPIEXEC} -n 1 ./ex171f
 
@@ -2175,7 +2190,7 @@ TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 e
                                  ex138.PETSc runex138_1 runex138_2 ex138.rm \
                                  ex140.PETSc runex140 runex140_2 runex140_3 runex140_4 ex140.rm \
                                  ex100.PETSc runex100 ex100.rm ex125.PETSc runex125 ex125.rm \
-                                 ex163.PETSc runex163 runex163_2 ex163.rm ex169.PETSc runex169 ex169.rm ex171.PETSc runex171 ex171.rm
+                                 ex163.PETSc runex163 runex163_2 ex163.rm ex169.PETSc runex169 ex169.rm ex171.PETSc runex171 ex171.rm ex180.PETSc runex180 ex180.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex79f ex79f.rm
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm

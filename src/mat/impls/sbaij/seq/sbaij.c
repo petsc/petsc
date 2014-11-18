@@ -2194,7 +2194,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
   PetscErrorCode ierr;
   int            fd;
   PetscMPIInt    size;
-  PetscInt       i,nz,header[4],*rowlengths=0,M,N,bs=1;
+  PetscInt       i,nz,header[4],*rowlengths=0,M,N,bs = newmat->rmap->bs;
   PetscInt       *mask,mbs,*jj,j,rowcount,nzcount,k,*s_browlengths,maskcount;
   PetscInt       kmax,jcount,block,idx,point,nzcountb,extra_rows,rows,cols;
   PetscInt       *masked,nmask,tmp,bs2,ishift;
@@ -2204,6 +2204,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(((PetscObject)newmat)->prefix,"-matload_block_size",&bs,NULL);CHKERRQ(ierr);
+  if (bs < 0) bs = 1;
   bs2  = bs*bs;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

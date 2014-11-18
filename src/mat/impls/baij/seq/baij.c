@@ -3157,7 +3157,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
 {
   Mat_SeqBAIJ    *a;
   PetscErrorCode ierr;
-  PetscInt       i,nz,header[4],*rowlengths=0,M,N,bs=1;
+  PetscInt       i,nz,header[4],*rowlengths=0,M,N,bs = newmat->rmap->bs;
   PetscInt       *mask,mbs,*jj,j,rowcount,nzcount,k,*browlengths,maskcount;
   PetscInt       kmax,jcount,block,idx,point,nzcountb,extra_rows,rows,cols;
   PetscInt       *masked,nmask,tmp,bs2,ishift;
@@ -3171,6 +3171,7 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
   ierr = PetscOptionsBegin(comm,NULL,"Options for loading SEQBAIJ matrix","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (bs < 0) bs = 1;
   bs2  = bs*bs;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
