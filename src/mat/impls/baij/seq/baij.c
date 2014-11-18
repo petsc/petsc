@@ -152,14 +152,17 @@ PetscErrorCode MatSOR_SeqBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   idiag = a->idiag;
   k    = PetscMax(A->rmap->n,A->cmap->n);
   if (!a->mult_work) {
-    ierr = PetscMalloc1((2*k+1),&a->mult_work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(k+1,&a->mult_work);CHKERRQ(ierr);
   }
-  work = a->mult_work;
-  t = work + k+1;
+  if (!a->sor_workt) {
+    ierr = PetscMalloc1(k,&a->sor_workt);CHKERRQ(ierr);
+  }
   if (!a->sor_work) {
     ierr = PetscMalloc1(bs,&a->sor_work);CHKERRQ(ierr);
   }
-  w = a->sor_work;
+  work = a->mult_work;
+  t    = a->sor_workt;
+  w    = a->sor_work;
 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
@@ -1204,6 +1207,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   if (a->free_imax_ilen) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
   ierr = PetscFree(a->mult_work);CHKERRQ(ierr);
+  ierr = PetscFree(a->sor_workt);CHKERRQ(ierr);
   ierr = PetscFree(a->sor_work);CHKERRQ(ierr);
   ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
@@ -3010,8 +3014,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat B)
   b->roworiented        = PETSC_TRUE;
   b->nonew              = 0;
   b->diag               = 0;
-  b->solve_work         = 0;
-  b->mult_work          = 0;
   B->spptr              = 0;
   B->info.nz_unneeded   = (PetscReal)b->maxnz*b->bs2;
   b->keepnonzeropattern = PETSC_FALSE;
@@ -3127,8 +3129,10 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpval
 
   c->nz         = a->nz;
   c->maxnz      = a->nz;         /* Since we allocate exactly the right amount */
-  c->solve_work = 0;
-  c->mult_work  = 0;
+  c->solve_work = NULL;
+  c->mult_work  = NULL;
+  c->sor_workt  = NULL;
+  c->sor_work   = NULL;
 
   c->compressedrow.use   = a->compressedrow.use;
   c->compressedrow.nrows = a->compressedrow.nrows;
