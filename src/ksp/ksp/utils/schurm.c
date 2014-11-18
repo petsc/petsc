@@ -262,7 +262,6 @@ PetscErrorCode  MatSchurComplementSetSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A01,
   if (A11) {
     PetscValidHeaderSpecific(A11,MAT_CLASSID,5);
     PetscCheckSameComm(A00,1,A11,5);
-    if (A11->rmap->n != A11->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A11 %D do not equal local columns %D",A11->rmap->n,A11->cmap->n);
     if (A10->rmap->n != A11->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A10 %D do not equal local rows A11 %D",A10->rmap->n,A11->rmap->n);
   }
 
@@ -401,7 +400,6 @@ PetscErrorCode  MatSchurComplementUpdateSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A
   if (A11) {
     PetscValidHeaderSpecific(A11,MAT_CLASSID,5);
     PetscCheckSameComm(A00,1,A11,5);
-    if (A11->rmap->n != A11->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A11 %D do not equal local columns %D",A11->rmap->n,A11->cmap->n);
     if (A10->rmap->n != A11->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A10 %D do not equal local rows A11 %D",A10->rmap->n,A11->rmap->n);
   }
 
