@@ -27,8 +27,8 @@ chk_makej:
         if [ "$${parallel}" = "true" ]; then \
           printf ${PETSC_TEXT_HILIGHT}"********************* ERROR **********************\n" ; \
           if [ "${PETSC_BUILD_USING_CMAKE}" != "" -o "${MAKE_IS_GNUMAKE}" != "" ]; then \
-             echo "PETSc compiles are automatically parallel, do not ";\
-             echo "provide the -j option to make                     ";\
+             echo "PETSc toplevel makefile does not support -j option.";\
+             echo "Instead - use: \"make MAKE_NP=<np>\". Current value of MAKE_NP is ${MAKE_NP}.";\
           else \
              echo "Parallel build with 'make -j' is not supported    ";\
              echo "for PETSc legacy builds. Run without -j <np>      ";\
