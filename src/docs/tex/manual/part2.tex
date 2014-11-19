@@ -4965,7 +4965,7 @@ TSSetSensitivityP(TS ts,Vec *mu,PetscInt np);
 where $lambda$ and $mu$ are arrays of adjoint variables corresponding to sensitivity wrt initial conditions and parameters respectively, and $np$ is the dimension of the array which indicates the number of cost functions. Note that there are two scenarios for the sensitivity analysis here; $lambda$ is required for both and $mu$ is only needed for the case that parameters are the targets. 
 
 $lambda$ and $mu$ should be initialized as $dg/du|_{t=T}$ and $dg/dp|_{t=T}$ respectively at time T. 
-Usually the given cost function $g$ does not explicitly depend on the parameters $p$ so that $mu$ can be set to $0$'s initially.    
+Usually the given cost function $g$ does not explicitly depend on the parameters $p$ so that $mu$ can be set to $0$\'s initially.    
 
 Besides the functions needed by the implicit solver, no additional user-provided functions are required if the sensitivity with respect to initial conditions is desired. 
 Otherwise one needs to provide Jacobian $F_p$ with 
@@ -4988,6 +4988,12 @@ TSSetDuration(TS ts,PetscInt nsteps,PetscReal maxtime);
 
 But one does not need to set the final time of the backward run because each timestep will be determined automatically according to the information checkpointed in the forward run. 
 Actually, any other options related to time step control will not take effect for this reason. 
+
+Lastly one can start the backward run by calling again
+\begin{tabbing}
+TSSolve(TS ts,Vec U);
+\end{tabbing}
+$U$ can be the same vector used in the forward run. It only serves as storage for state variables, which are loaded from checkpointed data.   
 
 Currently TSTHETA (Theta) methods support the sensivity analysis. 
 
@@ -5293,7 +5299,7 @@ This code is not currently supported due to lack of interest and usage. If you r
 
 PETSc must be configured with \trl{--with-shared-libraries} \trl{--with-matlab-engine} \trl{--with-matlab} \trl{[--download-f2cblaslapack]}. The option \trl{--download-f2cblaslapack} must be used if using 64bit MATLAB on LINUX or 64bit MATLAB and the \trl{--download-ml} external package on Apple Mac OS X.
 You can build with or without MPI, but cannot run on more than one process
-There is currently no MPI in the API, the MPI_Comm is not in any of the argument lists but otherwise the argument lists try to mimic the C binding.
+There is currently no MPI in the API, the MPI\_Comm is not in any of the argument lists but otherwise the argument lists try to mimic the C binding.
 Add \trl{${PETSC_DIR}/share/petsc/matlab/classes} to your MATLAB path.
 
 In MATLAB use help PETSc to get started using PETSc from MATLAB once you have setup PETSc to support MATLAB.
@@ -8222,7 +8228,7 @@ element method,
 Now a PETSc local vector can be created manually using this layout,
 \begin{tabbing}
   PetscSectionGetStorageSize(s, \&n);\\
-  VecSetSizes(localVec, n, PETSC_DETERMINE);\\
+  VecSetSizes(localVec, n, PETSC\_DETERMINE);\\
   VecSetFromOptions(localVec);
 \end{tabbing}
 however it is usually easier to use the DM directly, which also provides global vectors,
