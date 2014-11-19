@@ -562,7 +562,6 @@ class Configure(config.base.Configure):
     else:
       yield self.CC+' -E'
       yield self.CC+' --use cpp32'
-      yield 'gcc -E'
     return
 
   def checkCPreprocessor(self):
@@ -794,7 +793,6 @@ class Configure(config.base.Configure):
     else:
       yield self.CXX+' -E'
       yield self.CXX+' --use cpp32'
-      yield 'g++ -E'
     return
 
   def checkCxxPreprocessor(self):
