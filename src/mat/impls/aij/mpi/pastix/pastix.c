@@ -633,7 +633,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJPASTIX;
   B->ops->view             = MatView_PaStiX;
   B->ops->getinfo          = MatGetInfo_PaStiX;
-  B->ops->getdiagonal      = MatGetDiagonal_PaStiX;
+  B->ops->getdiagonal      = MatGetDiagonal_Pastix;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
 
@@ -672,7 +672,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJPASTIX;
   B->ops->view             = MatView_PaStiX;
-  B->ops->getdiagonal      = MatGetDiagonal_PaStiX;
+  B->ops->getdiagonal      = MatGetDiagonal_Pastix;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
 
@@ -711,7 +711,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType fty
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJPASTIX;
   B->ops->view                   = MatView_PaStiX;
-  B->ops->getdiagonal            = MatGetDiagonal_PaStiX;
+  B->ops->getdiagonal            = MatGetDiagonal_Pastix;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
 
@@ -751,7 +751,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType fty
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJPASTIX;
   B->ops->view                   = MatView_PaStiX;
-  B->ops->getdiagonal            = MatGetDiagonal_PaStiX
+  B->ops->getdiagonal            = MatGetDiagonal_Pastix;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_pastix);CHKERRQ(ierr);
 
