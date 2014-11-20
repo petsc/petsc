@@ -1633,6 +1633,9 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
 +  snes - the SNES context
 -  normschedule - the frequency of norm computation
 
+   Options Database Key:
+.  -snes_norm_schedule <none, always, initialonly, finalonly, initalfinalonly>
+
    Notes:
    Only certain SNES methods support certain SNESNormSchedules.  Most require evaluation
    of the nonlinear function and the taking of its norm at every iteration to
