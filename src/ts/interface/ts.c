@@ -2371,6 +2371,104 @@ PetscErrorCode  TSRHSJacobianP(TS ts,PetscReal t,Vec X,Mat Amat)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetQuadFunction"
+/*@C
+    TSSetQuadFunction - Sets the routine for evaluating the quadrature (or integral) term in a cost function,
+    where Q_t = r(t,u).
+
+    Logically Collective on TS
+
+    Input Parameters:
++   ts - the TS context obtained from TSCreate()
+.   r -  vector to put the computed right hand side (or NULL to have it created)
+.   fq - routine for evaluating the right-hand-side function
+-   ctx - [optional] user-defined context for private data for the
+          function evaluation routine (may be NULL)
+
+    Calling sequence of func:
+$     func (TS ts,PetscReal t,Vec u,PetscReal *r,void *ctx);
+
++   t - current timestep
+.   u - input vector
+.   r - function vector
+-   ctx - [optional] user-defined function context
+
+    Level: beginner
+
+.keywords: TS, sensitivity analysis, timestep, set, quadrature, function
+
+.seealso: TSSetRHSJacobianP(),TSSetSensitivity(),TSSetSensitivityP()
+@*/
+PetscErrorCode  TSSetQuadFunction(TS ts,PetscInt numberadjs,Vec r,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscReal      *ralloc = NULL;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+
+  if(!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSSetSensitivity() or TSSetSensitivityP() first so that the number of cost functions can be determined.");
+  if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETS     C_ERR_USER,"The number of cost functions (2rd parameter) is inconsistent with the one set by TSSetSensitivity() or TSSetSensitivityP()");
+
+  if(!r && ts->vec_quad) {
+     ierr = VecDuplicate(ts->vec_quad,&ralloc);CHKERRQ(ierr);
+     r    = ralloc;
+  }
+  ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
+
+  ts->qfunction = fq;
+ 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeQuadFunction"
+/*@
+   TSComputeQuadFunction - Evaluates the quadrature function in the cost functions.
+
+   Input Parameters:
++  ts - the TS context
+.  t - current time
+-  U - state vector
+
+   Output Parameter:
+.  q - vector of size numberadjs to hold the outputs
+
+   Note:
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the sensitivity analysis context.
+
+   Level: developer
+
+.keywords: TS, compute
+
+.seealso: TSSetQuadFunction()
+@*/
+PetscErrorCode TSComputeQuadFunction(TS ts,PetscReal t,Vec U,Vec q)
+{
+  PetscErrorCode ierr;
+  void           *ctx;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(q,VEC_CLASSID,4);
+
+  ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,q,0);CHKERRQ(ierr);
+  if (ts->qfunction) {
+    PetscStackPush("TS user right-hand-side function");
+    ierr = (*qfunction)(ts,t,U,q,ctx);CHKERRQ(ierr);
+    PetscStackPop;
+  } else {
+    ierr = VecZeroEntries(q);CHKERRQ(ierr);
+  }
+
+  ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,q,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSSetPreStep"
 /*@C
   TSSetPreStep - Sets the general-purpose function

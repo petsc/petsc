@@ -71,8 +71,10 @@ struct _p_TS {
   PetscBool reverse_mode;
   Mat       Jacp;
   void      *rhsjacobianpctx;
-
+  Vec       vec_quad;
+  
   PetscErrorCode (*rhsjacobianp)(TS,PetscReal,Vec,Mat,void*);
+  PetscErrorCode (*qfunction)(TS,PetscReal,Vec,PetscReal*,void*);
 
   /* ---------------------- IMEX support ---------------------------------*/
   /* These extra slots are only used when the user provides both Implicit and RHS */
