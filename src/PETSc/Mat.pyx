@@ -124,6 +124,17 @@ class MatFactorShiftType(object):
     NZ = MAT_SHIFT_NONZERO
     PD = MAT_SHIFT_POSITIVE_DEFINITE
 
+class MatSORType(object):
+    FORWARD_SWEEP        = SOR_FORWARD_SWEEP
+    BACKWARD_SWEEP       = SOR_BACKWARD_SWEEP
+    SYMMETRY_SWEEP       = SOR_SYMMETRIC_SWEEP
+    LOCAL_FORWARD_SWEEP  = SOR_LOCAL_FORWARD_SWEEP
+    LOCAL_BACKWARD_SWEEP = SOR_LOCAL_BACKWARD_SWEEP
+    ZERO_INITIAL_GUESS   = SOR_ZERO_INITIAL_GUESS
+    EISENSTAT            = SOR_EISENSTAT
+    APPLY_UPPER          = SOR_APPLY_UPPER
+    APPLY_LOWER          = SOR_APPLY_LOWER
+
 # --------------------------------------------------------------------
 
 cdef class Mat(Object):
