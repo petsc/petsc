@@ -1,6 +1,12 @@
 # --------------------------------------------------------------------
 
 cdef extern from *:
+    ctypedef ssize_t Py_intptr_t
+    ctypedef size_t  Py_uintptr_t
+
+# --------------------------------------------------------------------
+
+cdef extern from *:
     ctypedef char const_char "const char"
 
 cdef inline object bytes2str(const_char p[]):

@@ -163,7 +163,34 @@ PetscLogEventFindName(PetscLogEvent eventid,
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__
+#if !defined(PETSC_HAVE_CUSP)
+#undef  __FUNCT__
+#define __FUNCT__ "VecCUSPGetCUDAArray"
+PETSC_STATIC_INLINE PetscErrorCode
+VecCUSPGetCUDAArray(Vec v,PetscScalar **a)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidType(v,1);
+  PetscValidPointer(a,2);
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() requires CUSP");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
+#undef  __FUNCT__
+#define __FUNCT__ "VecCUSPRestoreCUDAArray"
+PETSC_STATIC_INLINE PetscErrorCode
+VecCUSPRestoreCUDAArray(Vec v,PetscScalar **a)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidType(v,1);
+  PetscValidPointer(a,2);
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() requires CUSP");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
+#endif
+
+#undef  __FUNCT__
 #define __FUNCT__ "VecStrideSum"
 PETSC_STATIC_INLINE PetscErrorCode
 VecStrideSum(Vec v, PetscInt start, PetscScalar *a)

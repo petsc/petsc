@@ -149,6 +149,9 @@ cdef extern from * nogil:
 
     int VecISAXPY(PetscVec,PetscIS,PetscScalar,PetscVec)
 
+    int VecCUSPGetCUDAArray(PetscVec,PetscScalar*[])
+    int VecCUSPRestoreCUDAArray(PetscVec,PetscScalar*[])
+
 # --------------------------------------------------------------------
 
 cdef inline Vec ref_Vec(PetscVec vec):
