@@ -1959,6 +1959,9 @@ PetscErrorCode  TSReset(TS ts)
       ts->vecs_sensip = 0;
       ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
     }
+    if (ts->vec_quad) {
+      ierr = VecDestroy(&ts->vec_quad);CHKERRQ(ierr);
+    }
   }
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -2402,13 +2405,13 @@ $     func (TS ts,PetscReal t,Vec u,PetscReal *r,void *ctx);
 PetscErrorCode  TSSetQuadFunction(TS ts,PetscInt numberadjs,Vec r,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  PetscReal      *ralloc = NULL;
+  Vec      ralloc = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
 
   if(!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSSetSensitivity() or TSSetSensitivityP() first so that the number of cost functions can be determined.");
-  if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETS     C_ERR_USER,"The number of cost functions (2rd parameter) is inconsistent with the one set by TSSetSensitivity() or TSSetSensitivityP()");
+  if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter) is inconsistent with the one set by TSSetSensitivity() or TSSetSensitivityP()");
 
   if(!r && ts->vec_quad) {
      ierr = VecDuplicate(ts->vec_quad,&ralloc);CHKERRQ(ierr);
@@ -2429,7 +2432,9 @@ PetscErrorCode  TSSetQuadFunction(TS ts,PetscInt numberadjs,Vec r,PetscErrorCode
    Input Parameters:
 +  ts - the TS context
 .  t - current time
--  U - state vector
+.  U - state vector
+-  ctx - [optional] user-defined context for private data for the
+          function evaluation routine (may be NULL)
 
    Output Parameter:
 .  q - vector of size numberadjs to hold the outputs
@@ -2444,11 +2449,9 @@ PetscErrorCode  TSSetQuadFunction(TS ts,PetscInt numberadjs,Vec r,PetscErrorCode
 
 .seealso: TSSetQuadFunction()
 @*/
-PetscErrorCode TSComputeQuadFunction(TS ts,PetscReal t,Vec U,Vec q)
+PetscErrorCode TSComputeQuadFunction(TS ts,PetscReal t,Vec U,Vec q,void *ctx)
 {
   PetscErrorCode ierr;
-  void           *ctx;
-  DM             dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2458,7 +2461,7 @@ PetscErrorCode TSComputeQuadFunction(TS ts,PetscReal t,Vec U,Vec q)
   ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,q,0);CHKERRQ(ierr);
   if (ts->qfunction) {
     PetscStackPush("TS user right-hand-side function");
-    ierr = (*qfunction)(ts,t,U,q,ctx);CHKERRQ(ierr);
+    ierr = (*ts->qfunction)(ts,t,U,q,ctx);CHKERRQ(ierr);
     PetscStackPop;
   } else {
     ierr = VecZeroEntries(q);CHKERRQ(ierr);

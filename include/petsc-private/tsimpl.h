@@ -74,7 +74,7 @@ struct _p_TS {
   Vec       vec_quad;
   
   PetscErrorCode (*rhsjacobianp)(TS,PetscReal,Vec,Mat,void*);
-  PetscErrorCode (*qfunction)(TS,PetscReal,Vec,PetscReal*,void*);
+  PetscErrorCode (*qfunction)(TS,PetscReal,Vec,Vec,void*);
 
   /* ---------------------- IMEX support ---------------------------------*/
   /* These extra slots are only used when the user provides both Implicit and RHS */
