@@ -165,23 +165,23 @@ libfastcompile:
 
 # Build f90 .mod from .F source, and add .o to the corresponding library
 buildmod:
-	-@${OMAKE} clean
+	-@${OMAKE} clean-legacy
 	@${OMAKE}  libf
 	@${OMAKE}  modcopy
-	@${OMAKE}  clean
+	@${OMAKE}  clean-legacy
 
 buildmodfast:
-	-@${OMAKE} clean
+	-@${OMAKE} clean-legacy
 	@${OMAKE}  libfastcompile
 	@${OMAKE}  modcopy
-	@${OMAKE}  clean
+	@${OMAKE}  clean-legacy
 
 # copy modules to the include dir
 modcopy:
 	@${CP} -f *.mod ${PETSC_DIR}/${PETSC_ARCH}/include
 
 # Removes garbage files
-clean::
+clean-legacy:
 	@-${RM} ${CLEANFILES} ${TESTS} *.o *.lo *~ \
                ex[0-9] ex[0-9][0-9] ex[0-9][0-9][0-9] \
                ex[0-9]f ex[0-9][0-9]f ex[0-9][0-9][0-9]f \
@@ -197,7 +197,7 @@ clean::
 	       *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
 	@-${RM} -rf ${CLEANDIRS} *.dSYM AD_cache SunWS_cache
 
-
+clean:: clean-legacy
 #
 #  Checks if directory requires particular package or language
 # The makefile may contain

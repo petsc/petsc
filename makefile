@@ -228,7 +228,7 @@ deletemods: chk_makej
 
 # Cleans up build
 allclean-legacy: deletelibs deletemods
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=clean tree
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=clean-legacy tree
 allclean-cmake:
 	-@cd ${PETSC_ARCH} && ${OMAKE} clean
 allclean-gnumake:
@@ -242,6 +242,17 @@ allclean:
 	else \
 	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} allclean-legacy; \
 	fi
+
+clean:: allclean
+
+distclean: chk_petscdir
+	@if [ -f ${PETSC_DIR}/${PETSC_ARCH}/conf/reconfigure-${PETSC_ARCH}.py ]; then \
+	  echo "*** Preserving ${PETSC_DIR}/${PETSC_ARCH}/conf/reconfigure-${PETSC_ARCH}.py in ${PETSC_DIR} ***"; \
+          mv -f ${PETSC_DIR}/${PETSC_ARCH}/conf/reconfigure-${PETSC_ARCH}.py ${PETSC_DIR}/; fi
+	@echo "*** Deleting all build files in ${PETSC_DIR}/${PETSC_ARCH} ***"
+	-${RM} -rf ${PETSC_DIR}/${PETSC_ARCH}/
+
+
 #
 reconfigure:
 	@${PYTHON} ${PETSC_ARCH}/conf/reconfigure-${PETSC_ARCH}.py

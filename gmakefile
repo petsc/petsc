@@ -198,7 +198,7 @@ $(OBJDIR)/src/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/src/snes/f90-mod/petscsnes
 .PHONY: clean all print
 
 clean:
-	rm -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
+	${RM} -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)
 
 # make print VAR=the-variable
 print:
