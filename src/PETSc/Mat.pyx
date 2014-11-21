@@ -145,6 +145,7 @@ cdef class Mat(Object):
     Structure       = MatStructure
     OrderingType    = MatOrderingType
     FactorShiftType = MatFactorShiftType
+    SORType         = MatSORType
     #
 
     def __cinit__(self):
@@ -1065,6 +1066,16 @@ cdef class Mat(Object):
 
     def multHermitianAdd(self, Vec x not None, Vec v not None, Vec y not None):
         CHKERR( MatMultHermitianAdd(self.mat, x.vec, v.vec, y.vec) )
+
+    # SOR
+
+    def sor(self, Vec b, omega, flag, shift, its, lits, Vec x):
+        cdef PetscReal comega = asReal(omega)
+        cdef PetscMatSORType cflag = <PetscMatSORType> asInt(flag)
+        cdef PetscInt cshift = asInt(shift)
+        cdef PetscInt cits = asInt(its)
+        cdef PetscInt clits = asInt(lits)
+        CHKERR( MatSOR(self.mat, b.vec, comega, cflag, cshift, cits, clits, x.vec) )
 
     #
 

@@ -295,6 +295,8 @@ cdef extern from * nogil:
     int MatMultConstrained(PetscMat,PetscVec,PetscVec)
     int MatMultTransposeConstrained(PetscMat,PetscVec,PetscVec)
 
+    int MatSOR(PetscMat,PetscVec,PetscReal,PetscMatSORType,PetscReal,PetscInt,PetscInt,PetscVec)
+
     int MatGetOrdering(PetscMat,PetscMatOrderingType,PetscIS*,PetscIS*)
     int MatReorderForNonzeroDiagonal(PetscMat,PetscReal,PetscIS,PetscIS)
 
