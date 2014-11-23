@@ -2374,9 +2374,9 @@ PetscErrorCode  TSRHSJacobianP(TS ts,PetscReal t,Vec X,Mat Amat)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetQuadFunction"
+#define __FUNCT__ "TSSetCostIntegrand"
 /*@C
-    TSSetQuadFunction - Sets the routine for evaluating the quadrature (or integral) term in a cost function,
+    TSSetCostIntegrand - Sets the routine for evaluating the quadrature (or integral) term in a cost function,
     where Q_t = r(t,u).
 
     Logically Collective on TS
@@ -2402,7 +2402,7 @@ $     func (TS ts,PetscReal t,Vec u,PetscReal *r,void *ctx);
 
 .seealso: TSSetRHSJacobianP(),TSSetSensitivity(),TSSetSensitivityP()
 @*/
-PetscErrorCode  TSSetQuadFunction(TS ts,PetscInt numberadjs,Vec r,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),void *ctx)
+PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec r,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   Vec      ralloc = NULL;
@@ -2419,15 +2419,15 @@ PetscErrorCode  TSSetQuadFunction(TS ts,PetscInt numberadjs,Vec r,PetscErrorCode
   }
   ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
 
-  ts->qfunction = fq;
+  ts->costintegrand = fq;
  
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSComputeQuadFunction"
+#define __FUNCT__ "TSComputeCostIntegrand"
 /*@
-   TSComputeQuadFunction - Evaluates the quadrature function in the cost functions.
+   TSComputeCostIntegrand - Evaluates the quadrature function in the cost functions.
 
    Input Parameters:
 +  ts - the TS context
@@ -2447,9 +2447,9 @@ PetscErrorCode  TSSetQuadFunction(TS ts,PetscInt numberadjs,Vec r,PetscErrorCode
 
 .keywords: TS, compute
 
-.seealso: TSSetQuadFunction()
+.seealso: TSSetCostIntegrand()
 @*/
-PetscErrorCode TSComputeQuadFunction(TS ts,PetscReal t,Vec U,Vec q,void *ctx)
+PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q,void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -2459,9 +2459,9 @@ PetscErrorCode TSComputeQuadFunction(TS ts,PetscReal t,Vec U,Vec q,void *ctx)
   PetscValidHeaderSpecific(q,VEC_CLASSID,4);
 
   ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,q,0);CHKERRQ(ierr);
-  if (ts->qfunction) {
-    PetscStackPush("TS user right-hand-side function");
-    ierr = (*ts->qfunction)(ts,t,U,q,ctx);CHKERRQ(ierr);
+  if (ts->costintegrand) {
+    PetscStackPush("TS user integrand in the cost function");
+    ierr = (*ts->costintegrand)(ts,t,U,q,ctx);CHKERRQ(ierr);
     PetscStackPop;
   } else {
     ierr = VecZeroEntries(q);CHKERRQ(ierr);
