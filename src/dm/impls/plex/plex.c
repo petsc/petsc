@@ -1,10 +1,6 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
-#include <petsc-private/dmimpl.h>
-#include <../src/sys/utils/hash.h>
 #include <petsc-private/isimpl.h>
 #include <petscsf.h>
-#include <petscksp.h>
-#include <petscpc.h>
 #include <petscds.h>
 
 /* Logging support */
