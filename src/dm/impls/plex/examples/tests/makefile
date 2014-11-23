@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/impls/plex/examples/tests/
-EXAMPLESC       = ex1.c
+EXAMPLESC       = ex1.c ex3.c
 EXAMPLESF       = ex1f90.F ex2f90.F
 MANSEC          = DM
 
