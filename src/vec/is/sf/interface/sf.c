@@ -205,7 +205,8 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 .  sf - star forest
 
    Options Database Keys:
-.  -sf_synchronization - synchronization type used by PetscSF
++  -sf_type - implementation type, see PetscSFSetType()
+-  -sf_rank_order - sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise
 
    Level: intermediate
 
