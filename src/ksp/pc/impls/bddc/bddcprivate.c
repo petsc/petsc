@@ -3575,7 +3575,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
           dest[0] = rank/(spc+1);
         }
         ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),1,dest,PETSC_COPY_VALUES,&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
-        ierr = ISView(pcbddc->coarse_subassembling_init,NULL);CHKERRQ(ierr);
       } else {
         PetscInt j,tissize,*nisindices;
         PetscInt *coarse_candidates;
