@@ -256,11 +256,18 @@ static PetscErrorCode TSStepAdj_Theta(TS ts)
   ierr = TSPreStep(ts);CHKERRQ(ierr);
 
   /* Build RHS */
+  if (ts->vec_costquad) { /* Cost function has an integral (quadrature) term */
+    if (th->endpoint) {
+      ierr = TSComputeDRDYFunction(ts,ts->ptime,ts->vec_sol,ts->vecs_drdy);CHKERRQ(ierr);
+    }else {
+      ierr = TSComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
+    }
+  }
   for (nadj=0; nadj<ts->numberadjs; nadj++) {
     ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);
-    ierr = VecScale(VecSensiTemp[nadj],-1./(th->Theta*ts->time_step));CHKERRQ(ierr);     
+    ierr = VecScale(VecSensiTemp[nadj],-1./(th->Theta*ts->time_step));CHKERRQ(ierr); 
   }
-
+ 
   /* Build LHS */
   shift = -1./(th->Theta*ts->time_step);
   if (th->endpoint) {

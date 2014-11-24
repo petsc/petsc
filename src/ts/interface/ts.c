@@ -1959,8 +1959,8 @@ PetscErrorCode  TSReset(TS ts)
       ts->vecs_sensip = 0;
       ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
     }
-    if (ts->vec_quad) {
-      ierr = VecDestroy(&ts->vec_quad);CHKERRQ(ierr);
+    if (ts->vec_costquad) {
+      ierr = VecDestroy(&ts->vec_costquad);CHKERRQ(ierr);
     }
   }
   ts->setupcalled = PETSC_FALSE;
@@ -2311,10 +2311,13 @@ PetscErrorCode  TSSetSensitivityP(TS ts,Vec *u,PetscInt numberadjs)
 - func - The function
 
   Calling sequence of func:
-. func (TS ts);
+$ func (TS ts,PetscReal t,Vec u,Mat A,void *ctx);
++   t - current timestep
+.   u - input vector
+.   A - output matrix
+-   ctx - [optional] user-defined function context
 
   Level: intermediate
-
 
 .keywords: TS, sensitivity 
 .seealso: 
@@ -2413,13 +2416,14 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec r,PetscErrorCod
   if(!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSSetSensitivity() or TSSetSensitivityP() first so that the number of cost functions can be determined.");
   if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter) is inconsistent with the one set by TSSetSensitivity() or TSSetSensitivityP()");
 
-  if(!r && ts->vec_quad) {
-     ierr = VecDuplicate(ts->vec_quad,&ralloc);CHKERRQ(ierr);
+  if(!r && ts->vec_costquad) {
+     ierr = VecDuplicate(ts->vec_costquad,&ralloc);CHKERRQ(ierr);
      r    = ralloc;
   }
   ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
 
   ts->costintegrand = fq;
+  ts->costintegrandctx = ctx;
  
   PetscFunctionReturn(0);
 }
@@ -2432,9 +2436,7 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec r,PetscErrorCod
    Input Parameters:
 +  ts - the TS context
 .  t - current time
-.  U - state vector
--  ctx - [optional] user-defined context for private data for the
-          function evaluation routine (may be NULL)
+-  U - state vector
 
    Output Parameter:
 .  q - vector of size numberadjs to hold the outputs
@@ -2449,7 +2451,7 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec r,PetscErrorCod
 
 .seealso: TSSetCostIntegrand()
 @*/
-PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q,void *ctx)
+PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q)
 {
   PetscErrorCode ierr;
 
@@ -2461,13 +2463,147 @@ PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q,void *ctx)
   ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,q,0);CHKERRQ(ierr);
   if (ts->costintegrand) {
     PetscStackPush("TS user integrand in the cost function");
-    ierr = (*ts->costintegrand)(ts,t,U,q,ctx);CHKERRQ(ierr);
+    ierr = (*ts->costintegrand)(ts,t,U,q,ts->costintegrandctx);CHKERRQ(ierr);
     PetscStackPop;
   } else {
     ierr = VecZeroEntries(q);CHKERRQ(ierr);
   }
 
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,q,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetDRDYFunction"
+/*@C
+  TSSetDRDYFunction - Sets the function that computes the gradient of the CostIntegrand function r w.r.t. states y.
+
+  Logically Collective on TS
+
+  Input Parameters:
++ ts   - The TS context obtained from TSCreate()
+- func - The function
+
+  Calling sequence of func:
+. func (TS ts);
+
+  Level: intermediate
+
+.keywords: TS, sensitivity 
+.seealso: 
+@*/
+PetscErrorCode  TSSetDRDYFunction(TS ts,Vec *drdy,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+{ 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+
+  ts->drdyfunction    = func;
+  ts->drdyfunctionctx = ctx;
+  ts->vecs_drdy       = drdy;
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeDRDYFunction"
+/*@
+  TSComputeDRDYFunction - Runs the user-defined DRDY function.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSComputeDRDYFunction() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+.seealso: TSComputeDRDYFunction()
+@*/
+PetscErrorCode  TSComputeDRDYFunction(TS ts,PetscReal t,Vec X,Vec *drdy)
+{
+  PetscErrorCode ierr;
+ 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
+  
+  PetscStackPush("TS user DRDY function for sensitivity analysis");
+  ierr = (*ts->drdyfunction)(ts,t,X,drdy,ts->drdyfunctionctx); CHKERRQ(ierr);
+  PetscStackPop;
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetDRDPFunction"
+/*@C
+  TSSetDRDPFunction - Sets the function that computes the gradient of the CostIntegrand function w.r.t. parameters.
+
+  Logically Collective on TS
+
+  Input Parameters:
++ ts   - The TS context obtained from TSCreate()
+- func - The function
+
+  Calling sequence of func:
+. func (TS ts);
+
+  Level: intermediate
+
+.keywords: TS, sensitivity 
+.seealso: 
+@*/
+PetscErrorCode  TSSetDRDPFunction(TS ts,Vec *drdp,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+{ 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+
+  ts->drdpfunction    = func;
+  ts->drdpfunctionctx = ctx;
+  ts->vecs_drdp       = drdp;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeDRDPFunction"
+/*@
+  TSComputeDRDPFunction - Runs the user-defined DRDP function.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSDRDPFunction() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+.seealso: TSSetDRDPFunction()
+@*/
+PetscErrorCode  TSComputeDRDPFunction(TS ts,PetscReal t,Vec X,Vec *drdp)
+{
+  PetscErrorCode ierr;
+ 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
+  
+  PetscStackPush("TS user DRDP function for sensitivity analysis");
+  ierr = (*ts->drdpfunction)(ts,t,X,drdp,ts->drdpfunctionctx); CHKERRQ(ierr);
+  PetscStackPop;
+  
   PetscFunctionReturn(0);
 }
 

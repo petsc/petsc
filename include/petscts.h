@@ -210,7 +210,11 @@ PETSC_EXTERN PetscErrorCode TSGetSensitivityP(TS,Vec**,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetRHSJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode TSRHSJacobianP(TS,PetscReal,Vec,Mat);
 PETSC_EXTERN PetscErrorCode TSSetCostIntegrand(TS,PetscInt,Vec,PetscErrorCode(*)(TS,PetscReal,Vec,Vec,void*),void*);
-PETSC_EXTERN PetscErrorCode TSComputeCostIntegrand(TS,PetscReal,Vec,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSComputeCostIntegrand(TS,PetscReal,Vec,Vec);
+PETSC_EXTERN PetscErrorCode TSSetDRDYFunction(TS,Vec*,PetscErrorCode(*)(TS,PetscReal,Vec,Vec*,void*),void*);
+PETSC_EXTERN PetscErrorCode TSComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode TSSetDRDPFunction(TS,Vec*,PetscErrorCode(*)(TS,PetscReal,Vec,Vec*,void*),void*);
+PETSC_EXTERN PetscErrorCode TSComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
 
 PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
