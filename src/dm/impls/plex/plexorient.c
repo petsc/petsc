@@ -187,7 +187,10 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscMPIInt rank;
 
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &v);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(comm, &v);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(v, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(v, "[%d]BT for serial seen faces:\n", rank);CHKERRQ(ierr);
+    ierr = PetscBTView(fEnd-fStart, seenFaces,    v);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(v, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(v, "[%d]BT for serial flipped cells:\n", rank);CHKERRQ(ierr);
     ierr = PetscBTView(cEnd-cStart, flippedCells, v);CHKERRQ(ierr);
@@ -367,7 +370,7 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscMPIInt rank;
 
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &v);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(comm, &v);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(v, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(v, "[%d]BT for parallel flipped cells:\n", rank);CHKERRQ(ierr);
     ierr = PetscBTView(cEnd-cStart, flippedCells, v);CHKERRQ(ierr);
