@@ -1883,15 +1883,20 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = PetscBTCreate(pcbddc->local_primal_size,&qr_needed_idx);CHKERRQ(ierr);
   for (i=pcbddc->n_vertices;i<pcbddc->local_primal_size;i++) {
     if (PetscBTLookup(change_basis,i)) {
-      size_of_constraint = temp_indices[i+1]-temp_indices[i];
-      j = 0;
-      for (k=0;k<size_of_constraint;k++) {
-        if (PetscBTLookup(touched,temp_indices_to_constraint_B[temp_indices[i]+k])) {
-          j++;
+      if (!pcbddc->use_qr_single) {
+        size_of_constraint = temp_indices[i+1]-temp_indices[i];
+        j = 0;
+        for (k=0;k<size_of_constraint;k++) {
+          if (PetscBTLookup(touched,temp_indices_to_constraint_B[temp_indices[i]+k])) {
+            j++;
+          }
         }
-      }
-      /* found more than one primal dof on the cc */
-      if (j > 1) {
+        /* found more than one primal dof on the cc */
+        if (j > 1) {
+          PetscBTSet(qr_needed_idx,i);
+          qr_needed = PETSC_TRUE;
+        }
+      } else {
         PetscBTSet(qr_needed_idx,i);
         qr_needed = PETSC_TRUE;
       }
@@ -2081,7 +2086,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Constraints %d to %d (incl) need a change of basis (size %d)\n",total_counts,total_counts+primal_dofs-1,size_of_constraint);CHKERRQ(ierr);
         }
 
-        if (primal_dofs > 1) { /* QR */
+        if (PetscBTLookup(qr_needed_idx,total_counts)) { /* QR */
 
           /* copy quadrature constraints for change of basis check */
           if (pcbddc->dbg_flag) {

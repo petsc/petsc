@@ -61,6 +61,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   ierr = PetscOptionsBool("-pc_bddc_use_edges","Use or not edge constraints in coarse space","none",pcbddc->use_edges,&pcbddc->use_edges,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_faces","Use or not face constraints in coarse space","none",pcbddc->use_faces,&pcbddc->use_faces,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_true_nnsp","Use near null space attached to the matrix without modifications","none",pcbddc->use_nnsp_true,&pcbddc->use_nnsp_true,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_use_qr_single","Use QR factorization for single constraints on cc (QR is always used for multiple constraints on the same cc)","none",pcbddc->use_qr_single,&pcbddc->use_qr_single,NULL);CHKERRQ(ierr);
   /* Change of basis */
   ierr = PetscOptionsBool("-pc_bddc_use_change_of_basis","Use or not internal change of basis on local edge nodes","none",pcbddc->use_change_of_basis,&pcbddc->use_change_of_basis,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_change_on_faces","Use or not internal change of basis on local face nodes","none",pcbddc->use_change_on_faces,&pcbddc->use_change_on_faces,NULL);CHKERRQ(ierr);
@@ -1824,7 +1825,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->use_change_of_basis = PETSC_FALSE;
   pcbddc->use_change_on_faces = PETSC_FALSE;
   pcbddc->switch_static       = PETSC_FALSE;
-  pcbddc->use_nnsp_true       = PETSC_FALSE; /* not yet exposed */
+  pcbddc->use_nnsp_true       = PETSC_FALSE;
+  pcbddc->use_qr_single       = PETSC_FALSE;
   pcbddc->dbg_flag            = 0;
   /* private */
   pcbddc->issym                      = PETSC_FALSE;

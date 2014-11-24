@@ -69,6 +69,7 @@ typedef struct {
   MatNullSpace               NullSpace;
   IS                         user_primal_vertices;
   PetscBool                  use_nnsp_true;
+  PetscBool                  use_qr_single;
   PetscBool                  user_provided_isfordofs;
   PetscInt                   n_ISForDofs;
   PetscInt                   n_ISForDofsLocal;
