@@ -65,6 +65,76 @@ PetscErrorCode DMPlexReverseCell(DM dm, PetscInt cell)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCheckFace_Internal"
+/*
+  - Checks face match
+    - Flips non-matching
+  - Inserts faces of support cells in FIFO
+*/
+static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt face, PetscInt *faceFIFO, PetscInt *fTop, PetscInt *fBottom, PetscInt cStart, PetscInt fStart, PetscInt fEnd, PetscBT seenCells, PetscBT flippedCells, PetscBT seenFaces)
+{
+  const PetscInt *support, *coneA, *coneB, *coneOA, *coneOB;
+  PetscInt        supportSize, coneSizeA, coneSizeB, posA = -1, posB = -1;
+  PetscInt        dim, seenA, flippedA, seenB, flippedB, mismatch, c;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  face = faceFIFO[(*fTop)++];
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
+  ierr = DMPlexGetSupport(dm, face, &support);CHKERRQ(ierr);
+  if (supportSize < 2) PetscFunctionReturn(0);
+  if (supportSize != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Faces should separate only two cells, not %d", supportSize);
+  seenA    = PetscBTLookup(seenCells,    support[0]-cStart);
+  flippedA = PetscBTLookup(flippedCells, support[0]-cStart) ? 1 : 0;
+  seenB    = PetscBTLookup(seenCells,    support[1]-cStart);
+  flippedB = PetscBTLookup(flippedCells, support[1]-cStart) ? 1 : 0;
+
+  ierr = DMPlexGetConeSize(dm, support[0], &coneSizeA);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSize(dm, support[1], &coneSizeB);CHKERRQ(ierr);
+  ierr = DMPlexGetCone(dm, support[0], &coneA);CHKERRQ(ierr);
+  ierr = DMPlexGetCone(dm, support[1], &coneB);CHKERRQ(ierr);
+  ierr = DMPlexGetConeOrientation(dm, support[0], &coneOA);CHKERRQ(ierr);
+  ierr = DMPlexGetConeOrientation(dm, support[1], &coneOB);CHKERRQ(ierr);
+  for (c = 0; c < coneSizeA; ++c) {
+    if (!PetscBTLookup(seenFaces, coneA[c]-fStart)) {
+      faceFIFO[(*fBottom)++] = coneA[c];
+      ierr = PetscBTSet(seenFaces, coneA[c]-fStart);CHKERRQ(ierr);
+    }
+    if (coneA[c] == face) posA = c;
+    if (*fBottom > fEnd-fStart) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face %d was pushed exceeding capacity %d > %d", coneA[c], *fBottom, fEnd-fStart);
+  }
+  if (posA < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", face, support[0]);
+  for (c = 0; c < coneSizeB; ++c) {
+    if (!PetscBTLookup(seenFaces, coneB[c]-fStart)) {
+      faceFIFO[(*fBottom)++] = coneB[c];
+      ierr = PetscBTSet(seenFaces, coneB[c]-fStart);CHKERRQ(ierr);
+    }
+    if (coneB[c] == face) posB = c;
+    if (*fBottom > fEnd-fStart) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face %d was pushed exceeding capacity %d > %d", coneA[c], *fBottom, fEnd-fStart);
+  }
+  if (posB < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", face, support[1]);
+
+  if (dim == 1) {
+    mismatch = posA == posB;
+  } else {
+    mismatch = coneOA[posA] == coneOB[posB];
+  }
+
+  if (mismatch ^ (flippedA ^ flippedB)) {
+    if (seenA && seenB) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen cells %d and %d do not match: Fault mesh is non-orientable", support[0], support[1]);
+    if (!seenA && !flippedA) {
+      ierr = PetscBTSet(flippedCells, support[0]-cStart);CHKERRQ(ierr);
+    } else if (!seenB && !flippedB) {
+      ierr = PetscBTSet(flippedCells, support[1]-cStart);CHKERRQ(ierr);
+    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
+  } else if (mismatch && flippedA && flippedB) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
+  ierr = PetscBTSet(seenCells, support[0]-cStart);CHKERRQ(ierr);
+  ierr = PetscBTSet(seenCells, support[1]-cStart);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexOrient"
 /*@
   DMPlexOrient - Give a consistent orientation to the input mesh
@@ -126,61 +196,7 @@ PetscErrorCode DMPlexOrient(DM dm)
   }
   /* Consider each face in FIFO */
   while (fTop < fBottom) {
-    const PetscInt *support, *coneA, *coneB, *coneOA, *coneOB;
-    PetscInt        supportSize, coneSizeA, coneSizeB, posA = -1, posB = -1;
-    PetscInt        seenA, flippedA, seenB, flippedB, mismatch;
-
-    face = faceFIFO[fTop++];
-    ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dm, face, &support);CHKERRQ(ierr);
-    if (supportSize < 2) continue;
-    if (supportSize != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Faces should separate only two cells, not %d", supportSize);
-    seenA    = PetscBTLookup(seenCells,    support[0]-cStart);
-    flippedA = PetscBTLookup(flippedCells, support[0]-cStart) ? 1 : 0;
-    seenB    = PetscBTLookup(seenCells,    support[1]-cStart);
-    flippedB = PetscBTLookup(flippedCells, support[1]-cStart) ? 1 : 0;
-
-    ierr = DMPlexGetConeSize(dm, support[0], &coneSizeA);CHKERRQ(ierr);
-    ierr = DMPlexGetConeSize(dm, support[1], &coneSizeB);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, support[0], &coneA);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, support[1], &coneB);CHKERRQ(ierr);
-    ierr = DMPlexGetConeOrientation(dm, support[0], &coneOA);CHKERRQ(ierr);
-    ierr = DMPlexGetConeOrientation(dm, support[1], &coneOB);CHKERRQ(ierr);
-    for (c = 0; c < coneSizeA; ++c) {
-      if (!PetscBTLookup(seenFaces, coneA[c]-fStart)) {
-        faceFIFO[fBottom++] = coneA[c];
-        ierr = PetscBTSet(seenFaces, coneA[c]-fStart);CHKERRQ(ierr);
-      }
-      if (coneA[c] == face) posA = c;
-      if (fBottom > fEnd-fStart) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face %d was pushed exceeding capacity %d > %d", coneA[c], fBottom, fEnd-fStart);
-    }
-    if (posA < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", face, support[0]);
-    for (c = 0; c < coneSizeB; ++c) {
-      if (!PetscBTLookup(seenFaces, coneB[c]-fStart)) {
-        faceFIFO[fBottom++] = coneB[c];
-        ierr = PetscBTSet(seenFaces, coneB[c]-fStart);CHKERRQ(ierr);
-      }
-      if (coneB[c] == face) posB = c;
-      if (fBottom > fEnd-fStart) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face %d was pushed exceeding capacity %d > %d", coneA[c], fBottom, fEnd-fStart);
-    }
-    if (posB < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", face, support[1]);
-
-    if (dim == 1) {
-      mismatch = posA == posB;
-    } else {
-      mismatch = coneOA[posA] == coneOB[posB];
-    }
-
-    if (mismatch ^ (flippedA ^ flippedB)) {
-      if (seenA && seenB) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen cells %d and %d do not match: Fault mesh is non-orientable", support[0], support[1]);
-      if (!seenA && !flippedA) {
-        ierr = PetscBTSet(flippedCells, support[0]-cStart);CHKERRQ(ierr);
-      } else if (!seenB && !flippedB) {
-        ierr = PetscBTSet(flippedCells, support[1]-cStart);CHKERRQ(ierr);
-      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
-    } else if (mismatch && flippedA && flippedB) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
-    ierr = PetscBTSet(seenCells, support[0]-cStart);CHKERRQ(ierr);
-    ierr = PetscBTSet(seenCells, support[1]-cStart);CHKERRQ(ierr);
+    ierr = DMPlexCheckFace_Internal(dm, face, faceFIFO, &fTop, &fBottom, cStart, fStart, fEnd, seenCells, flippedCells, seenFaces);CHKERRQ(ierr);
   }
   if (flg) {
     PetscViewer v;
