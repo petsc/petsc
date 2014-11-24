@@ -2011,18 +2011,21 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
        Change of basis matrix is evaluated similarly to the FIRST APPROACH in
        Klawonn and Widlund, Dual-primal FETI-DP methods for linear elasticity, (see Sect 6.2.1)
 
-       Basic blocks of change of basis matrix T computed
+       Basic blocks of change of basis matrix T computed by
 
-          - Using the following block transformation if there is only a primal dof on the cc
-            (in the example, primal dof is the last one of the edge in LOCAL ordering
-             in this code, primal dof is the first one of the edge in GLOBAL ordering)
-            | 1        0   ...        0     1 |
-            | 0        1   ...        0     1 |
-            |              ...                |
-            | 0        ...            1     1 |
-            | -s_1/s_n ...    -s_{n-1}/-s_n 1 |
+          - Using the following block transformation if there is only a primal dof on the cc (and -pc_bddc_use_qr_single is not specified)
 
-          - via QR decomposition of constraints otherwise
+            | 1        0   ...        0         s_1/S |
+            | 0        1   ...        0         s_2/S |
+            |              ...                        |
+            | 0        ...            1     s_{n-1}/S |
+            | -s_1/s_n ...    -s_{n-1}/s_n      s_n/S |
+
+            with S = \sum_{i=1}^n s_i^2
+            NOTE: in the above example, the primal dof is the last one of the edge in LOCAL ordering
+                  in the current implementation, the primal dof is the first one of the edge in GLOBAL ordering
+
+          - QR decomposition of constraints otherwise
     */
     if (qr_needed) {
       /* space to store Q */
@@ -2194,21 +2197,24 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
             }
           }
         } else { /* simple transformation block */
-          PetscInt row,col;
-          PetscScalar val;
+          PetscInt    row,col;
+          PetscScalar val,norm;
+
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_N);CHKERRQ(ierr);
+          PetscStackCallBLAS("BLASdot",norm = BLASdot_(&Blas_N,temp_quadrature_constraint+temp_indices[total_counts],&Blas_one,temp_quadrature_constraint+temp_indices[total_counts],&Blas_one));
           for (j=0;j<size_of_constraint;j++) {
             row = temp_indices_to_constraint_B[temp_indices[total_counts]+j];
             if (!PetscBTLookup(is_primal,row)) {
               col = temp_indices_to_constraint_B[temp_indices[total_counts]+aux_primal_minloc[primal_counter]];
               ierr = MatSetValue(localChangeOfBasisMatrix,row,row,1.0,INSERT_VALUES);CHKERRQ(ierr);
-              ierr = MatSetValue(localChangeOfBasisMatrix,row,col,1.0,INSERT_VALUES);CHKERRQ(ierr);
+              ierr = MatSetValue(localChangeOfBasisMatrix,row,col,temp_quadrature_constraint[temp_indices[total_counts]+j]/norm,INSERT_VALUES);CHKERRQ(ierr);
             } else {
               for (k=0;k<size_of_constraint;k++) {
                 col = temp_indices_to_constraint_B[temp_indices[total_counts]+k];
                 if (row != col) {
                   val = -temp_quadrature_constraint[temp_indices[total_counts]+k]/temp_quadrature_constraint[temp_indices[total_counts]+aux_primal_minloc[primal_counter]];
                 } else {
-                  val = 1.0;
+                  val = temp_quadrature_constraint[temp_indices[total_counts]+aux_primal_minloc[primal_counter]]/norm;
                 }
                 ierr = MatSetValue(localChangeOfBasisMatrix,row,col,val,INSERT_VALUES);CHKERRQ(ierr);
               }
@@ -2342,11 +2348,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = VecDestroy(&x_change);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&localChangeOfBasisMatrix);CHKERRQ(ierr);
-
-    /*
-    ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = MatView(local_ChangeOfBasisMatrix,(PetscViewer)0);CHKERRQ(ierr);
-    */
   } else if (pcbddc->user_ChangeOfBasisMatrix) {
     ierr = PetscObjectReference((PetscObject)pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
     pcbddc->ChangeOfBasisMatrix = pcbddc->user_ChangeOfBasisMatrix;
