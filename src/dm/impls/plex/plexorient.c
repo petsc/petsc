@@ -193,6 +193,7 @@ PetscErrorCode DMPlexOrient(DM dm)
       faceFIFO[fBottom++] = cone[c];
       ierr = PetscBTSet(seenFaces, cone[c]-fStart);CHKERRQ(ierr);
     }
+    ierr = PetscBTSet(seenCells, cStart);CHKERRQ(ierr);
   }
   /* Consider each face in FIFO */
   while (fTop < fBottom) {
