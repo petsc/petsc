@@ -1446,6 +1446,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscBT           touched,change_basis,qr_needed_idx;
   /* auxiliary stuff */
   PetscInt          *nnz,*is_indices,*aux_primal_numbering_B;
+  PetscInt          ncc,*gidxs,*permutation,*temp_indices_to_constraint_work;
+  PetscScalar       *temp_quadrature_constraint_work;
   /* some quantities */
   PetscInt          n_vertices,total_primal_vertices,valid_constraints;
   PetscInt          size_of_constraint,max_size_of_constraint,max_constraints,temp_constraints;
@@ -1529,9 +1531,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /*
        Evaluate maximum storage size needed by the procedure
        - temp_indices will contain start index of each constraint stored as follows
-       - temp_indices_to_constraint  [temp_indices[i],...,temp[indices[i+1]-1] will contain the indices (in local numbering) on which the constraint acts
-       - temp_indices_to_constraint_B[temp_indices[i],...,temp[indices[i+1]-1] will contain the indices (in boundary numbering) on which the constraint acts
-       - temp_quadrature_constraint  [temp_indices[i],...,temp[indices[i+1]-1] will contain the scalars representing the constraint itself
+       - temp_indices_to_constraint  [temp_indices[i],...,temp_indices[i+1]-1] will contain the indices (in local numbering) on which the constraint acts
+       - temp_indices_to_constraint_B[temp_indices[i],...,temp_indices[i+1]-1] will contain the indices (in boundary numbering) on which the constraint acts
+       - temp_quadrature_constraint  [temp_indices[i],...,temp_indices[i+1]-1] will contain the scalars representing the constraint itself
                                                                                                                                                          */
   total_counts = n_ISForFaces+n_ISForEdges;
   total_counts *= max_constraints;
@@ -1572,6 +1574,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* First we issue queries to allocate optimal workspace for LAPACKgesvd (or LAPACKsyev if SVD is missing) */
   if (!skip_lapack) {
     PetscScalar temp_work;
+
+    /* allocate some auxiliary stuff */
+    ierr = PetscMalloc4(max_size_of_constraint,&gidxs,max_size_of_constraint,&permutation,max_size_of_constraint,&temp_indices_to_constraint_work,max_size_of_constraint,&temp_quadrature_constraint_work);CHKERRQ(ierr);
+
 #if defined(PETSC_MISSING_LAPACK_GESVD)
     /* Proper Orthogonal Decomposition (POD) using the snapshot method */
     ierr = PetscMalloc1(max_constraints*max_constraints,&correlation_mat);CHKERRQ(ierr);
@@ -1660,12 +1666,12 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
 
   /* edges and faces */
-  for (i=0;i<n_ISForEdges+n_ISForFaces;i++) {
-    if (i<n_ISForEdges) {
-      used_IS = &ISForEdges[i];
+  for (ncc=0;ncc<n_ISForEdges+n_ISForFaces;ncc++) {
+    if (ncc<n_ISForEdges) {
+      used_IS = &ISForEdges[ncc];
       boolforchange = pcbddc->use_change_of_basis; /* change or not the basis on the edge */
     } else {
-      used_IS = &ISForFaces[i-n_ISForEdges];
+      used_IS = &ISForFaces[ncc-n_ISForEdges];
       boolforchange = (PetscBool)(pcbddc->use_change_of_basis && pcbddc->use_change_on_faces); /* change or not the basis on the face */
     }
     temp_constraints = 0;          /* zero the number of constraints I have on this conn comp */
@@ -1686,6 +1692,20 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       for (j=0;j<size_of_constraint;j++) {
         temp_quadrature_constraint[temp_indices[total_counts]+j]=quad_value;
       }
+      /* sort by global ordering if using lapack subroutines */
+      if (!skip_lapack) {
+        ierr = ISLocalToGlobalMappingApply(matis->mapping,size_of_constraint,temp_indices_to_constraint+temp_indices[total_counts],gidxs);CHKERRQ(ierr);
+        for (j=0;j<size_of_constraint;j++) {
+          permutation[j]=j;
+        }
+        ierr = PetscSortIntWithPermutation(size_of_constraint,gidxs,permutation);CHKERRQ(ierr);
+        for (j=0;j<size_of_constraint;j++) {
+          temp_indices_to_constraint_work[j] = temp_indices_to_constraint[temp_indices[total_counts]+permutation[j]];
+          temp_quadrature_constraint_work[j] = temp_quadrature_constraint[temp_indices[total_counts]+permutation[j]];
+        }
+        ierr = PetscMemcpy(temp_indices_to_constraint+temp_indices[total_counts],temp_indices_to_constraint_work,size_of_constraint*sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscMemcpy(temp_quadrature_constraint+temp_indices[total_counts],temp_quadrature_constraint_work,size_of_constraint*sizeof(PetscScalar));CHKERRQ(ierr);
+      }
       temp_indices[total_counts+1]=temp_indices[total_counts]+size_of_constraint;  /* store new starting point */
       total_counts++;
     }
@@ -1701,6 +1721,20 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = PetscBLASIntCast(size_of_constraint,&Blas_N);CHKERRQ(ierr);
       PetscStackCallBLAS("BLASasum",real_value = BLASasum_(&Blas_N,&temp_quadrature_constraint[temp_indices[total_counts]],&Blas_one));
       if (real_value > 0.0) { /* keep indices and values */
+        /* sort by global ordering if using lapack subroutines */
+        if (!skip_lapack) {
+          ierr = ISLocalToGlobalMappingApply(matis->mapping,size_of_constraint,temp_indices_to_constraint+temp_indices[total_counts],gidxs);CHKERRQ(ierr);
+          for (j=0;j<size_of_constraint;j++) {
+            permutation[j]=j;
+          }
+          ierr = PetscSortIntWithPermutation(size_of_constraint,gidxs,permutation);CHKERRQ(ierr);
+          for (j=0;j<size_of_constraint;j++) {
+            temp_indices_to_constraint_work[j] = temp_indices_to_constraint[temp_indices[total_counts]+permutation[j]];
+            temp_quadrature_constraint_work[j] = temp_quadrature_constraint[temp_indices[total_counts]+permutation[j]];
+          }
+          ierr = PetscMemcpy(temp_indices_to_constraint+temp_indices[total_counts],temp_indices_to_constraint_work,size_of_constraint*sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscMemcpy(temp_quadrature_constraint+temp_indices[total_counts],temp_quadrature_constraint_work,size_of_constraint*sizeof(PetscScalar));CHKERRQ(ierr);
+        }
         temp_constraints++;
         temp_indices[total_counts+1]=temp_indices[total_counts]+size_of_constraint;  /* store new starting point */
         total_counts++;
@@ -1746,9 +1780,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
         if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine %d",(int)lierr);
         /* retain eigenvalues greater than tol: note that LAPACKsyev gives eigs in ascending order */
-        j=0;
+        j = 0;
         while (j < temp_constraints && singular_vals[j] < tol) j++;
-        total_counts=total_counts-j;
+        total_counts = total_counts-j;
         valid_constraints = temp_constraints-j;
         /* scale and copy POD basis into used quadrature memory */
         ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
@@ -1786,9 +1820,13 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         if (k > size_of_constraint) k = size_of_constraint;
         j = 0;
         while (j < k && singular_vals[k-j-1] < tol) j++;
-        total_counts = total_counts-temp_constraints+k-j;
         valid_constraints = k-j;
+        total_counts = total_counts-temp_constraints+valid_constraints;
 #endif /* on missing GESVD */
+        /* restore local ordering */
+        for (j=0;j<valid_constraints;j++) {
+          ierr = PetscSortIntWithScalarArray(size_of_constraint,temp_indices_to_constraint+temp_indices[temp_start_ptr+j],temp_quadrature_constraint+temp_indices[temp_start_ptr+j]);CHKERRQ(ierr);
+        }
       }
     }
     /* setting change_of_basis flag is safe now */
@@ -1820,6 +1858,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
   /* free workspace */
   if (!skip_lapack) {
+    ierr = PetscFree4(gidxs,permutation,temp_indices_to_constraint_work,temp_quadrature_constraint_work);CHKERRQ(ierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
     ierr = PetscFree(rwork);CHKERRQ(ierr);
