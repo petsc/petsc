@@ -1571,12 +1571,14 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   skip_lapack = PETSC_TRUE;
   if (n_ISForFaces+n_ISForEdges && max_constraints > 1 && !pcbddc->use_nnsp_true) skip_lapack = PETSC_FALSE;
 
+  /* allocate some auxiliary stuff */
+  if (!skip_lapack || pcbddc->use_qr_single) {
+    ierr = PetscMalloc4(max_size_of_constraint,&gidxs,max_size_of_constraint,&permutation,max_size_of_constraint,&temp_indices_to_constraint_work,max_size_of_constraint,&temp_quadrature_constraint_work);CHKERRQ(ierr);
+  }
+
   /* First we issue queries to allocate optimal workspace for LAPACKgesvd (or LAPACKsyev if SVD is missing) */
   if (!skip_lapack) {
     PetscScalar temp_work;
-
-    /* allocate some auxiliary stuff */
-    ierr = PetscMalloc4(max_size_of_constraint,&gidxs,max_size_of_constraint,&permutation,max_size_of_constraint,&temp_indices_to_constraint_work,max_size_of_constraint,&temp_quadrature_constraint_work);CHKERRQ(ierr);
 
 #if defined(PETSC_MISSING_LAPACK_GESVD)
     /* Proper Orthogonal Decomposition (POD) using the snapshot method */
@@ -1693,7 +1695,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         temp_quadrature_constraint[temp_indices[total_counts]+j]=quad_value;
       }
       /* sort by global ordering if using lapack subroutines */
-      if (!skip_lapack) {
+      if (!skip_lapack || pcbddc->use_qr_single) {
         ierr = ISLocalToGlobalMappingApply(matis->mapping,size_of_constraint,temp_indices_to_constraint+temp_indices[total_counts],gidxs);CHKERRQ(ierr);
         for (j=0;j<size_of_constraint;j++) {
           permutation[j]=j;
@@ -1722,7 +1724,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       PetscStackCallBLAS("BLASasum",real_value = BLASasum_(&Blas_N,&temp_quadrature_constraint[temp_indices[total_counts]],&Blas_one));
       if (real_value > 0.0) { /* keep indices and values */
         /* sort by global ordering if using lapack subroutines */
-        if (!skip_lapack) {
+        if (!skip_lapack || pcbddc->use_qr_single) {
           ierr = ISLocalToGlobalMappingApply(matis->mapping,size_of_constraint,temp_indices_to_constraint+temp_indices[total_counts],gidxs);CHKERRQ(ierr);
           for (j=0;j<size_of_constraint;j++) {
             permutation[j]=j;
@@ -1823,10 +1825,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         valid_constraints = k-j;
         total_counts = total_counts-temp_constraints+valid_constraints;
 #endif /* on missing GESVD */
-        /* restore local ordering */
-        for (j=0;j<valid_constraints;j++) {
-          ierr = PetscSortIntWithScalarArray(size_of_constraint,temp_indices_to_constraint+temp_indices[temp_start_ptr+j],temp_quadrature_constraint+temp_indices[temp_start_ptr+j]);CHKERRQ(ierr);
-        }
       }
     }
     /* setting change_of_basis flag is safe now */
@@ -1857,8 +1855,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
 
   /* free workspace */
-  if (!skip_lapack) {
+  if (!skip_lapack || pcbddc->use_qr_single) {
     ierr = PetscFree4(gidxs,permutation,temp_indices_to_constraint_work,temp_quadrature_constraint_work);CHKERRQ(ierr);
+  }
+  if (!skip_lapack) {
     ierr = PetscFree(work);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
     ierr = PetscFree(rwork);CHKERRQ(ierr);
