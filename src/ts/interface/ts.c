@@ -1961,6 +1961,7 @@ PetscErrorCode  TSReset(TS ts)
     }
     if (ts->vec_costquad) {
       ierr = VecDestroy(&ts->vec_costquad);CHKERRQ(ierr);
+      ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
     }
   }
   ts->setupcalled = PETSC_FALSE;
@@ -2386,17 +2387,17 @@ PetscErrorCode  TSRHSJacobianP(TS ts,PetscReal t,Vec X,Mat Amat)
 
     Input Parameters:
 +   ts - the TS context obtained from TSCreate()
-.   r -  vector to put the computed right hand side (or NULL to have it created)
+.   q -  vector to put the computed quadrature term in the cost function (or NULL to have it created)
 .   fq - routine for evaluating the right-hand-side function
 -   ctx - [optional] user-defined context for private data for the
           function evaluation routine (may be NULL)
 
     Calling sequence of func:
-$     func (TS ts,PetscReal t,Vec u,PetscReal *r,void *ctx);
+$     func (TS ts,PetscReal t,Vec u,PetscReal *f,void *ctx);
 
 +   t - current timestep
 .   u - input vector
-.   r - function vector
+.   f - function vector
 -   ctx - [optional] user-defined function context
 
     Level: beginner
@@ -2405,26 +2406,63 @@ $     func (TS ts,PetscReal t,Vec u,PetscReal *r,void *ctx);
 
 .seealso: TSSetRHSJacobianP(),TSSetSensitivity(),TSSetSensitivityP()
 @*/
-PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec r,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),void *ctx)
+PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   Vec      ralloc = NULL;
+  PetscInt size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-
-  if(!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSSetSensitivity() or TSSetSensitivityP() first so that the number of cost functions can be determined.");
-  if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter) is inconsistent with the one set by TSSetSensitivity() or TSSetSensitivityP()");
-
-  if(!r && ts->vec_costquad) {
-     ierr = VecDuplicate(ts->vec_costquad,&ralloc);CHKERRQ(ierr);
-     r    = ralloc;
+  if (q) {
+    PetscValidHeaderSpecific(q,VEC_CLASSID,2);
+  } else {
+    SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"TSSetCostIntegrand() requires a vector of size numberajds to hold the value of integrals as 3rd input parameter"); 
   }
-  ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
+  if (!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSSetSensitivity() or TSSetSensitivityP() first so that the number of cost functions can be determined.");
+  if (ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetSensitivity() or TSSetSensitivityP()");
+  ierr = VecGetSize(q,&size);CHKERRQ(ierr);
+  if (size!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions is inconsistent with the number of integrals (size of the 3rd input vector of TSSetCostIntegrand()).");
+  
+  ierr = PetscObjectReference((PetscObject)q);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->vec_costquad);CHKERRQ(ierr);
+  ts->vec_costquad = q;
 
-  ts->costintegrand = fq;
-  ts->costintegrandctx = ctx;
+  ierr                  = VecDuplicate(ts->vec_costquad,&ralloc);CHKERRQ(ierr);
+  ts->vec_costintegrand = ralloc;
+  ierr                  = VecDestroy(&ralloc);CHKERRQ(ierr);
+  ts->costintegrand     = fq;
+  ts->costintegrandctx  = ctx;
  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetCostQuad"
+/*@
+   TSGetCostQuad - Returns the values of the quadrature (or integral) terms in a cost function.
+   It is valid to call the routine after a backward run.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameter:
+.  v - the vector containing the solution
+
+   Level: intermediate
+
+.seealso: TSSetCostIntegrand()
+
+.keywords: TS, sensitivity analysis
+@*/
+PetscErrorCode  TSGetCostQuad(TS ts,Vec *v)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(v,2);
+  *v = ts->vec_costquad;
   PetscFunctionReturn(0);
 }
 
@@ -2494,8 +2532,6 @@ PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q)
 @*/
 PetscErrorCode  TSSetDRDYFunction(TS ts,Vec *drdy,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 { 
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
 
@@ -2561,8 +2597,6 @@ PetscErrorCode  TSComputeDRDYFunction(TS ts,PetscReal t,Vec X,Vec *drdy)
 @*/
 PetscErrorCode  TSSetDRDPFunction(TS ts,Vec *drdp,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 { 
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
 

@@ -69,9 +69,11 @@ struct _p_TS {
   PetscInt  numberadjs;
   PetscBool checkpoint;
   PetscBool reverse_mode;
+  Vec       vec_costquad;
+  /* workspace for SA */
+  Vec       vec_costintegrand;
   Mat       Jacp;
   void      *rhsjacobianpctx;
-  Vec       vec_costquad;
   void      *costintegrandctx;
   Vec       *vecs_drdy;
   void      *drdyfunctionctx;
