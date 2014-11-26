@@ -379,7 +379,9 @@ PetscErrorCode  PCISDestroy(PC pc)
   ierr = VecScatterDestroy(&pcis->N_to_B);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcis->global_to_B);CHKERRQ(ierr);
   ierr = PetscFree(pcis->work_N);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreInfo(pcis->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
+  if (pcis->n_neigh > -1) {
+    ierr = ISLocalToGlobalMappingRestoreInfo(pcis->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
+  }
   ierr = ISLocalToGlobalMappingDestroy(&pcis->mapping);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetUseStiffnessScaling_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetSubdomainScalingFactor_C",NULL);CHKERRQ(ierr);
@@ -425,7 +427,7 @@ PetscErrorCode  PCISCreate(PC pc)
   pcis->global_to_B = 0;
   pcis->computesolvers = PETSC_TRUE;
   pcis->mapping     = 0;
-  pcis->n_neigh     = 0;
+  pcis->n_neigh     = -1;
 
   pcis->scaling_factor = 1.0;
   /* composing functions */
