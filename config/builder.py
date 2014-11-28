@@ -39,8 +39,8 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  # Gmsh test 12
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/doublet-tet.msh -interpolate 1 -dm_view'},
                                                                  # Parallel refinement tests with overlap 13-14
-                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_latex'},
-                                                                 {'numProcs': 8, 'args': '-dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_latex'}],
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 8, 'args': '-dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail'}],
                         'src/dm/impls/plex/examples/tests/ex3': [# 0-2 2D P_1 on a triangle
                                                                  {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -convergence'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -porder 1'},
