@@ -1279,6 +1279,7 @@ PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, DM dmParallel)
   Input Parameter:
 + dm          - The source DMPlex object
 . migrationSF - The star forest that describes the parallel point remapping
+. ownership   - Flag causing a vote to determine point ownership
 
   Output Parameter:
 - pointSF     - The star forest describing the point overlap in the remapped DM
@@ -1290,7 +1291,7 @@ PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, DM dmParallel)
 PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownership, PetscSF *pointSF)
 {
   PetscMPIInt        rank;
-  PetscInt           p, pStart, pEnd, nroots, nleaves, idx, npointLeaves;
+  PetscInt           p, nroots, nleaves, idx, npointLeaves;
   PetscInt          *pointLocal;
   const PetscInt    *leaves;
   const PetscSFNode *roots;
@@ -1301,17 +1302,17 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
 
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(migrationSF, &nroots, &nleaves, &leaves, &roots);CHKERRQ(ierr);
   ierr = PetscMalloc2(nroots, &rootNodes, nleaves, &leafNodes);CHKERRQ(ierr);
   if (ownership) {
+    /* Point ownership vote: Process with highest rank ownes shared points */
     for (p = 0; p < nleaves; ++p) {
       /* Either put in a bid or we know we own it */
       leafNodes[p].rank  = rank;
       leafNodes[p].index = p;
     }
     for (p = 0; p < nroots; p++) {
-      /* Root must not participate in the rediction, flag so that MAXLOC does not use */
+      /* Root must not participate in the reduction, flag so that MAXLOC does not use */
       rootNodes[p].rank  = -3;
       rootNodes[p].index = -3;
     }
@@ -1333,7 +1334,8 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
   ierr = PetscSFBcastEnd(migrationSF, MPIU_2INT, rootNodes, leafNodes);CHKERRQ(ierr);
 
   for (npointLeaves = 0, p = 0; p < nleaves; p++) {if (leafNodes[p].rank != rank) npointLeaves++;}
-  ierr = PetscMalloc2(npointLeaves, &pointLocal, npointLeaves, &pointRemote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npointLeaves, &pointLocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npointLeaves, &pointRemote);CHKERRQ(ierr);
   for (idx = 0, p = 0; p < nleaves; p++) {
     if (leafNodes[p].rank != rank) {
       pointLocal[idx] = p;
@@ -1342,7 +1344,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     }
   }
   ierr = PetscSFCreate(PetscObjectComm((PetscObject) dm), pointSF);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *pointSF, "Point SF");CHKERRQ(ierr);
+  ierr = PetscSFSetFromOptions(*pointSF);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*pointSF, nleaves, npointLeaves, pointLocal, PETSC_OWN_POINTER, pointRemote, PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscFree2(rootNodes, leafNodes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1355,7 +1357,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
 
   Input Parameter:
 + dm       - The source DMPlex object
-. sf       - The start forest communication context describing the migration pattern
+. sf       - The star forest communication context describing the migration pattern
 
   Output Parameter:
 - targetDM - The target DMPlex object
@@ -1534,7 +1536,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   ierr = DMPlexMigrate(dm, sfMigration, *dmParallel);CHKERRQ(ierr);
 
   /* Build the point SF without overlap */
-  ierr = DMPlexCreatePointSF(dm, sfMigration, PETSC_TRUE, &sfPoint);CHKERRQ(ierr);
+  ierr = DMPlexCreatePointSF(*dmParallel, sfMigration, PETSC_TRUE, &sfPoint);CHKERRQ(ierr);
   ierr = DMSetPointSF(*dmParallel, sfPoint);CHKERRQ(ierr);
   if (flg) {ierr = PetscSFView(sfPoint, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
@@ -1650,7 +1652,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   ierr = PetscObjectSetName((PetscObject) *dmOverlap, "Parallel Mesh");CHKERRQ(ierr);
   ierr = DMPlexMigrate(dm, sfOverlap, *dmOverlap);CHKERRQ(ierr);
   /* Build the new point SF */
-  ierr = DMPlexCreatePointSF(dm, sfOverlap, PETSC_FALSE, &sfPoint);CHKERRQ(ierr);
+  ierr = DMPlexCreatePointSF(*dmOverlap, sfOverlap, PETSC_FALSE, &sfPoint);CHKERRQ(ierr);
   ierr = DMSetPointSF(*dmOverlap, sfPoint);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sfPoint);CHKERRQ(ierr);
   /* Cleanup overlap partition */
