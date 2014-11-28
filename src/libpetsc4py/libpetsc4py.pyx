@@ -1029,7 +1029,7 @@ cdef PetscErrorCode MatSOR_Python(
     )\
     except IERR with gil:
     FunctionBegin(b"MatSOR_Python")
-    cdef SOR = PyMat(mat).sor
+    cdef SOR = PyMat(mat).SOR
     if SOR is None: return UNSUPPORTED(b"SOR")
     SOR(Mat_(mat), Vec_(b), asReal(omega), asInt(sortype), asReal(shift), asInt(its), asInt(lits), Vec_(x))
     return FunctionEnd()
