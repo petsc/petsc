@@ -230,16 +230,16 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                         'src/dm/impls/plex/examples/tests/ex11': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex12': [{'numProcs': 1, 'args': '-dm_view ascii:mesh.tex:ascii_latex'},
                                                                   # Parallel, no overlap tests 1-2
-                                                                  {'numProcs': 3, 'args': '-test_partition -dm_view ::ascii_latex'},
-                                                                  {'numProcs': 8, 'args': '-test_partition -dm_view ::ascii_latex'},
+                                                                  {'numProcs': 3, 'args': '-test_partition -dm_view ::ascii_info_detail'},
+                                                                  {'numProcs': 8, 'args': '-test_partition -dm_view ::ascii_info_detail'},
                                                                   # Parallel, level-1 overlap tests 3-4
-                                                                  {'numProcs': 3, 'args': '-test_partition -overlap 1 -dm_view ::ascii_latex'},
-                                                                  {'numProcs': 8, 'args': '-test_partition -overlap 1 -dm_view ::ascii_latex'},
+                                                                  {'numProcs': 3, 'args': '-test_partition -overlap 1 -dm_view ::ascii_info_detail'},
+                                                                  {'numProcs': 8, 'args': '-test_partition -overlap 1 -dm_view ::ascii_info_detail'},
                                                                   # Parallel, level-2 overlap test 5
-                                                                  {'numProcs': 8, 'args': '-test_partition -overlap 2 -dm_view'},
-                                                                  # Parallel load balancing, test 6
-                                                                  {'numProcs': 2, 'args': '-test_partition -overlap -dm_view -partition_view'},
-                                                                  {'numProcs': 2, 'args': '-test_partition -overlap 1 -load_balance -dm_view ::ascii_latex'}],
+                                                                  {'numProcs': 8, 'args': '-test_partition -overlap 2 -dm_view ::ascii_info_detail'},
+                                                                  # Parallel load balancing, test 6-7
+                                                                  {'numProcs': 2, 'args': '-test_partition -overlap 1 -dm_view ::ascii_info_detail'},
+                                                                  {'numProcs': 2, 'args': '-test_partition -overlap 1 -load_balance -dm_view ::ascii_info_detail'}],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tutorials/ex1': [{'numProcs': 1, 'args': ''},
