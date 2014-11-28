@@ -440,16 +440,16 @@ cdef extern from * nogil:
         MAT_REUSE_MATRIX
 
     ctypedef enum MatSORType:
-        SOR_FORWARD_SWEEP=1
-        SOR_BACKWARD_SWEEP=2
-        SOR_SYMMETRIC_SWEEP=3
-        SOR_LOCAL_FORWARD_SWEEP=4
-        SOR_LOCAL_BACKWARD_SWEEP=8
-        SOR_LOCAL_SYMMETRIC_SWEEP=12
-        SOR_ZERO_INITIAL_GUESS=16
-        SOR_EISENSTAT=32
-        SOR_APPLY_UPPER=64
-        SOR_APPLY_LOWER=128
+        SOR_FORWARD_SWEEP
+        SOR_BACKWARD_SWEEP
+        SOR_SYMMETRIC_SWEEP
+        SOR_LOCAL_FORWARD_SWEEP
+        SOR_LOCAL_BACKWARD_SWEEP
+        SOR_LOCAL_SYMMETRIC_SWEEP
+        SOR_ZERO_INITIAL_GUESS
+        SOR_EISENSTAT
+        SOR_APPLY_UPPER
+        SOR_APPLY_LOWER
 
 cdef extern from * nogil:
     struct _MatOps:
@@ -554,7 +554,7 @@ cdef PetscErrorCode MatCreate_Python(
     ops.shift             = MatShift_Python
     ops.getvecs           = MatGetVecs_Python
     ops.mult              = MatMult_Python
-    ops.sor               = MatSor_Python
+    ops.sor               = MatSOR_Python
     ops.multtranspose     = MatMultTranspose_Python
     ops.multhermitian     = MatMultHermitian_Python
     ops.multadd           = MatMultAdd_Python
@@ -1017,21 +1017,21 @@ cdef PetscErrorCode MatSolveTransposeAdd_Python(
     solveTransposeAdd(Mat_(mat), Vec_(b), Vec_(y), Vec_(x))
     return FunctionEnd()
 
-cdef PetscErrorCode MatSor_Python(
+cdef PetscErrorCode MatSOR_Python(
     PetscMat mat,
     PetscVec b,
     PetscReal omega,
-    MatSORType flag,
+    MatSORType sortype,
     PetscReal shift,
     PetscInt its,
     PetscInt lits,
     PetscVec x
     )\
     except IERR with gil:
-    FunctionBegin(b"MatSor_Python")
+    FunctionBegin(b"MatSOR_Python")
     cdef SOR = PyMat(mat).sor
-    if SOR is None: return UNSUPPORTED(b"sor")
-    SOR(Mat_(mat), Vec_(b), asReal(omega), asInt(flag), asReal(shift), asInt(its), asInt(lits), Vec_(x))
+    if SOR is None: return UNSUPPORTED(b"SOR")
+    SOR(Mat_(mat), Vec_(b), asReal(omega), asInt(sortype), asReal(shift), asInt(its), asInt(lits), Vec_(x))
     return FunctionEnd()
 
 cdef PetscErrorCode MatGetDiagonal_Python(

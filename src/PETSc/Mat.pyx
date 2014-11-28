@@ -1069,7 +1069,7 @@ cdef class Mat(Object):
 
     # SOR
 
-    def sor(self, Vec b not None, Vec x not None, omega=1.0, sortype=None, shift=0.0, its=1, lits=1):
+    def SOR(self, Vec b not None, Vec x not None, omega=1.0, sortype=None, shift=0.0, its=1, lits=1):
         cdef PetscReal comega = asReal(omega)
         cdef PetscMatSORType csortype = SOR_LOCAL_SYMMETRIC_SWEEP
         if sortype is not None:
