@@ -1069,13 +1069,15 @@ cdef class Mat(Object):
 
     # SOR
 
-    def sor(self, Vec b, omega, flag, shift, its, lits, Vec x):
+    def sor(self, Vec b not None, Vec x not None, omega=1.0, sortype=None, shift=0.0, its=1, lits=1):
         cdef PetscReal comega = asReal(omega)
-        cdef PetscMatSORType cflag = <PetscMatSORType> asInt(flag)
+        cdef PetscMatSORType csortype = SOR_LOCAL_SYMMETRIC_SWEEP
+        if sortype is not None:
+            csortype = <PetscMatSORType> asInt(sortype)
         cdef PetscInt cshift = asInt(shift)
         cdef PetscInt cits = asInt(its)
         cdef PetscInt clits = asInt(lits)
-        CHKERR( MatSOR(self.mat, b.vec, comega, cflag, cshift, cits, clits, x.vec) )
+        CHKERR( MatSOR(self.mat, b.vec, comega, csortype, cshift, cits, clits, x.vec) )
 
     #
 
