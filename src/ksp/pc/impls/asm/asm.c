@@ -709,6 +709,17 @@ static PetscErrorCode  PCASMSetType_ASM(PC pc,PCASMType type)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCASMGetType_ASM"
+static PetscErrorCode  PCASMGetType_ASM(PC pc,PCASMType *type)
+{
+  PC_ASM *osm = (PC_ASM*)pc->data;
+
+  PetscFunctionBegin;
+  *type = osm->type;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCASMSetSortIndices_ASM"
 static PetscErrorCode  PCASMSetSortIndices_ASM(PC pc,PetscBool  doSort)
 {
@@ -925,6 +936,47 @@ PetscErrorCode  PCASMSetType(PC pc,PCASMType type)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCASMGetType"
+/*@
+    PCASMGetType - Gets the type of restriction and interpolation used
+    for local problems in the additive Schwarz method.
+
+    Logically Collective on PC
+
+    Input Parameter:
+.   pc  - the preconditioner context
+
+    Output Parameter:
+.   type - variant of ASM, one of
+
+.vb
+      PC_ASM_BASIC       - full interpolation and restriction
+      PC_ASM_RESTRICT    - full restriction, local processor interpolation
+      PC_ASM_INTERPOLATE - full interpolation, local processor restriction
+      PC_ASM_NONE        - local processor restriction and interpolation
+.ve
+
+    Options Database Key:
+.   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
+
+    Level: intermediate
+
+.keywords: PC, ASM, set, type
+
+.seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubKSP(),
+          PCASMCreateSubdomains2D()
+@*/
+PetscErrorCode  PCASMGetType(PC pc,PCASMType *type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCASMGetType_C",(PC,PCASMType*),(pc,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCASMSetSortIndices"
 /*@
     PCASMSetSortIndices - Determines whether subdomain indices are sorted.
@@ -1085,6 +1137,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C",PCASMSetTotalSubdomains_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetOverlap_C",PCASMSetOverlap_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetType_C",PCASMSetType_ASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMGetType_C",PCASMGetType_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSortIndices_C",PCASMSetSortIndices_ASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubKSP_C",PCASMGetSubKSP_ASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);

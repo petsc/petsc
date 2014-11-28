@@ -245,6 +245,15 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetDiagonal_SuperLU"
+PetscErrorCode MatGetDiagonal_SuperLU(Mat A,Vec v)
+{
+  PetscFunctionBegin;
+  SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Mat type: SuperLU factor");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SuperLU"
 PetscErrorCode MatDestroy_SuperLU(Mat A)
 {
@@ -590,11 +599,12 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftyp
     B->ops->ilufactorsymbolic = MatLUFactorSymbolic_SuperLU;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
 
-  B->ops->destroy = MatDestroy_SuperLU;
-  B->ops->view    = MatView_SuperLU;
-  B->factortype   = ftype;
-  B->assembled    = PETSC_TRUE;           /* required by -ksp_view */
-  B->preallocated = PETSC_TRUE;
+  B->ops->destroy     = MatDestroy_SuperLU;
+  B->ops->view        = MatView_SuperLU;
+  B->ops->getdiagonal = MatGetDiagonal_SuperLU;
+  B->factortype       = ftype;
+  B->assembled        = PETSC_TRUE;           /* required by -ksp_view */
+  B->preallocated     = PETSC_TRUE;
 
   ierr = PetscNewLog(B,&lu);CHKERRQ(ierr);
 
@@ -692,7 +702,19 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftyp
   ierr     = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_superlu);CHKERRQ(ierr);
   ierr     = PetscObjectComposeFunction((PetscObject)B,"MatSuperluSetILUDropTol_C",MatSuperluSetILUDropTol_SuperLU);CHKERRQ(ierr);
   B->spptr = lu;
+
   *F       = B;
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_SuperLU"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuperLU(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERSUPERLU,MATSEQAIJ,       MAT_FACTOR_LU,MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERSUPERLU,MATSEQAIJ,       MAT_FACTOR_ILU,MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

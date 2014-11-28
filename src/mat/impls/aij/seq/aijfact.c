@@ -92,15 +92,6 @@ PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat mat,MatOrderingType type,IS *irow,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetFactorAvailable_seqaij_petsc"
-PetscErrorCode MatGetFactorAvailable_seqaij_petsc(Mat A,MatFactorType ftype,PetscBool  *flg)
-{
-  PetscFunctionBegin;
-  *flg = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_petsc"
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
 {

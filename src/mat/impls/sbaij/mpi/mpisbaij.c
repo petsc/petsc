@@ -1395,6 +1395,10 @@ PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = PetscBLASIntCast(xb->nz,&bnz);CHKERRQ(ierr);
     PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one));
     ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
+  } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
+    ierr = MatSetOption(X,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+    ierr = MatSetOption(X,MAT_GETROW_UPPERTRIANGULAR,PETSC_FALSE);CHKERRQ(ierr);
   } else {
     Mat      B;
     PetscInt *nnz_d,*nnz_o,bs=Y->rmap->bs;
@@ -1430,14 +1434,15 @@ PetscErrorCode MatGetSubMatrices_MPISBAIJ(Mat A,PetscInt n,const IS irow[],const
   PetscBool      flg;
 
   PetscFunctionBegin;
+  ierr = MatGetSubMatrices_MPIBAIJ(A,n,irow,icol,scall,B);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = ISEqual(irow[i],icol[i],&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only get symmetric submatrix for MPISBAIJ matrices");
+    if (!flg) { /* *B[i] is non-symmetric, set flag */
+      ierr = MatSetOption(*B[i],MAT_SYMMETRIC,PETSC_FALSE);CHKERRQ(ierr);
+    }
   }
-  ierr = MatGetSubMatrices_MPIBAIJ(A,n,irow,icol,scall,B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
@@ -1581,9 +1586,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        0,
                                /*139*/ 0,
                                        0,
-                                       0
+                                       0,
+                                       0,
+                                       0,
+                                /*144*/MatCreateMPIMatConcatenateSeqMat_MPISBAIJ
 };
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonalBlock_MPISBAIJ"
@@ -1616,9 +1623,9 @@ PetscErrorCode  MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt 
   B->rmap->bs = bs;
   b->bs2      = bs*bs;
   b->mbs      = mbs;
-  b->nbs      = mbs;
   b->Mbs      = Mbs;
-  b->Nbs      = Mbs;
+  b->nbs      = B->cmap->n/bs;
+  b->Nbs      = B->cmap->N/bs;
 
   for (i=0; i<=b->size; i++) {
     b->rangebs[i] = B->rmap->range[i]/bs;
@@ -1712,13 +1719,6 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MUMPS)
-PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat,MatFactorType,Mat*);
-#endif
-#if defined(PETSC_HAVE_PASTIX)
-PETSC_EXTERN PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat,MatFactorType,Mat*);
-#endif
-
 /*MC
    MATMPISBAIJ - MATMPISBAIJ = "mpisbaij" - A matrix type to be used for distributed symmetric sparse block matrices,
    based on block compressed sparse row format.  Only the upper triangular portion of the "diagonal" portion of
@@ -1803,13 +1803,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   b->v_loc  = 0;
   b->n_loc  = 0;
 
-
-#if defined(PETSC_HAVE_PASTIX)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_pastix_C",MatGetFactor_mpisbaij_pastix);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C",MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
-#endif
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_MPISBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_MPISBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPISBAIJ);CHKERRQ(ierr);
@@ -2200,7 +2193,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
   PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,*sndcounts = 0,*browners,maxnz,*rowners,mmbs;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*cols,*locrowlens;
   PetscInt       *procsnz = 0,jj,*mycols,*ibuf;
-  PetscInt       bs       =1,Mbs,mbs,extra_rows;
+  PetscInt       bs = newmat->rmap->bs,Mbs,mbs,extra_rows;
   PetscInt       *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
   PetscInt       dcount,kmax,k,nzcount,tmp,sizesset=1,grows,gcols;
   int            fd;
@@ -2210,6 +2203,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
   ierr = PetscOptionsBegin(comm,NULL,"Options for loading MPISBAIJ matrix 2","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (bs < 0) bs = 1;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -2814,4 +2808,68 @@ PetscErrorCode  MatMPISBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateMPIMatConcatenateSeqMat_MPISBAIJ"
+PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
+{
+  PetscErrorCode ierr;
+  PetscInt       m,N,i,rstart,nnz,Ii,bs,cbs;
+  PetscInt       *indx;
+  PetscScalar    *values;
 
+  PetscFunctionBegin;
+  ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX) { /* symbolic phase */
+    Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)inmat->data;
+    PetscInt       *dnz,*onz,sum,bs,cbs,mbs,Nbs;
+    PetscInt       *bindx,rmax=a->rmax,j;
+   
+    ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
+    mbs = m/bs; Nbs = N/cbs;
+    if (n == PETSC_DECIDE) {
+      ierr = PetscSplitOwnership(comm,&n,&Nbs);CHKERRQ(ierr);
+    }
+    /* Check sum(n) = Nbs */
+    ierr = MPI_Allreduce(&n,&sum,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    if (sum != Nbs) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of local columns != global columns %d",Nbs);
+
+    ierr    = MPI_Scan(&mbs, &rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    rstart -= mbs;
+
+    ierr = PetscMalloc1(rmax,&bindx);CHKERRQ(ierr);
+    ierr = MatPreallocateInitialize(comm,mbs,n,dnz,onz);CHKERRQ(ierr);
+    ierr = MatSetOption(inmat,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+    for (i=0; i<mbs; i++) {
+      ierr = MatGetRow_SeqSBAIJ(inmat,i*bs,&nnz,&indx,NULL);CHKERRQ(ierr); /* non-blocked nnz and indx */
+      nnz = nnz/bs;
+      for (j=0; j<nnz; j++) bindx[j] = indx[j*bs]/bs;
+      ierr = MatPreallocateSet(i+rstart,nnz,bindx,dnz,onz);CHKERRQ(ierr);
+      ierr = MatRestoreRow_SeqSBAIJ(inmat,i*bs,&nnz,&indx,NULL);CHKERRQ(ierr);
+    }
+    ierr = MatSetOption(inmat,MAT_GETROW_UPPERTRIANGULAR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscFree(bindx);CHKERRQ(ierr);
+
+    ierr = MatCreate(comm,outmat);CHKERRQ(ierr);
+    ierr = MatSetSizes(*outmat,m,n*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(*outmat,bs,cbs);CHKERRQ(ierr);
+    ierr = MatSetType(*outmat,MATMPISBAIJ);CHKERRQ(ierr);
+    ierr = MatMPISBAIJSetPreallocation(*outmat,bs,0,dnz,0,onz);CHKERRQ(ierr);
+    ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  } 
+ 
+  /* numeric phase */
+  ierr = MatGetBlockSizes(inmat,&bs,&cbs);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(*outmat,&rstart,NULL);CHKERRQ(ierr);
+
+  ierr = MatSetOption(inmat,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    ierr = MatGetRow_SeqSBAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+    Ii   = i + rstart;
+    ierr = MatSetValues(*outmat,1,&Ii,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqSBAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
+  }
+  ierr = MatSetOption(inmat,MAT_GETROW_UPPERTRIANGULAR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

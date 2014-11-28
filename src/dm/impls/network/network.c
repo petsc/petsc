@@ -734,6 +734,7 @@ PetscErrorCode DMDestroy_Network(DM dm)
   DM_Network     *network = (DM_Network*) dm->data;
 
   PetscFunctionBegin;
+  if (--network->refct > 0) PetscFunctionReturn(0);
   ierr = DMDestroy(&network->plex);CHKERRQ(ierr);
   network->edges = NULL;
   ierr = PetscSectionDestroy(&network->DataSection);CHKERRQ(ierr);

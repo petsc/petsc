@@ -103,7 +103,7 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.Arg(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
-    if self.download:
+    if self.download or self.giturls:
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
     return
 
@@ -150,7 +150,7 @@ class Package(config.base.Configure):
     return ''
 
   def getPointerSizeFlag(self,cflags):
-    for flag in ['-m32', '-m64', '-xarch=v9','-q64']:
+    for flag in ['-m32', '-m64', '-xarch=v9','-q64','-mmic']:
       if cflags.find(flag) >=0: return flag
     return ''
 
@@ -220,8 +220,8 @@ class Package(config.base.Configure):
   externalPackagesDir = property(getExternalPackagesDir, setExternalPackagesDir, doc = 'The directory for downloaded packages')
 
   def getSearchDirectories(self):
-    '''By default, do not search any particular directories'''
-    return []
+    '''By default, do not search any particular directories, but try compiler default paths'''
+    return ['']
 
   def getInstallDir(self):
     self.confDir    = self.installDirProvider.confDir  # private install location; $PETSC_DIR/$PETSC_ARCH for PETSc
@@ -617,7 +617,7 @@ class Package(config.base.Configure):
 #        raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
 #      if self.libraryOptions.integerSize == 64 and self.requires32bitint:
 #        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
-    if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
+    if not (self.download or self.giturls) and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return
 

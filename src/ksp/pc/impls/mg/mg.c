@@ -880,7 +880,36 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
   PetscValidLogicalCollectiveEnum(pc,form,2);
   mg->am = form;
   if (form == PC_MG_MULTIPLICATIVE) pc->ops->applyrichardson = PCApplyRichardson_MG;
-  else pc->ops->applyrichardson = 0;
+  else pc->ops->applyrichardson = NULL;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   PCMGGetType - Determines the form of multigrid to use:
+   multiplicative, additive, full, or the Kaskade algorithm.
+
+   Logically Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  type - one of PC_MG_MULTIPLICATIVE, PC_MG_ADDITIVE,PC_MG_FULL, PC_MG_KASKADE
+
+
+   Level: advanced
+
+.keywords: MG, set, method, multiplicative, additive, full, Kaskade, multigrid
+
+.seealso: PCMGSetLevels()
+@*/
+PetscErrorCode  PCMGGetType(PC pc,PCMGType *type)
+{
+  PC_MG *mg = (PC_MG*)pc->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  *type = mg->am;
   PetscFunctionReturn(0);
 }
 
@@ -897,7 +926,7 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
 -  PC_MG_CYCLE_V or PC_MG_CYCLE_W
 
    Options Database Key:
-$  -pc_mg_cycle_type <v,w>
+.  -pc_mg_cycle_type <v,w>
 
    Level: advanced
 
@@ -934,7 +963,7 @@ PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
 -  n - number of cycles (default is 1)
 
    Options Database Key:
-$  -pc_mg_multiplicative_cycles n
+.  -pc_mg_multiplicative_cycles n
 
    Level: advanced
 
@@ -973,7 +1002,7 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 -  use - PETSC_TRUE to use the Galerkin process to compute coarse-level operators
 
    Options Database Key:
-$  -pc_mg_galerkin
+.  -pc_mg_galerkin
 
    Level: intermediate
 
@@ -1004,10 +1033,10 @@ PetscErrorCode PCMGSetGalerkin(PC pc,PetscBool use)
 .  pc - the multigrid context
 
    Output Parameter:
-.  gelerkin - PETSC_TRUE or PETSC_FALSE
+.  galerkin - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-$  -pc_mg_galerkin
+.  -pc_mg_galerkin
 
    Level: intermediate
 

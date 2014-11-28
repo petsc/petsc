@@ -326,3 +326,14 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Ma
   *F = B;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_Clique"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Clique(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERCLIQUE,MATMPIAIJ,        MAT_FACTOR_LU,MatGetFactor_aij_clique);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

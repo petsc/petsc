@@ -2709,10 +2709,10 @@ PetscErrorCode MatZeroEntries_SeqBAIJ_Kernel(PetscInt thread_id,Mat A)
   PetscInt       n,start,end;
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
 
-  start = trstarts[thread_id];
-  end   = trstarts[thread_id+1];
+  start = trstarts[thread_id]/A->rmap->bs;
+  end   = trstarts[thread_id+1]/A->rmap->bs;
   n     = a->i[end] - a->i[start];
-  ierr  = PetscMemzero(a->a+a->bs2*a->i[start],a->bs2*n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr  = PetscMemzero(a->a+a->bs2*a->i[start],a->bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
   return 0;
 }
 

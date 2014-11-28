@@ -1,6 +1,6 @@
 Block ISLocalToGlobalMapping:
 ISLocalToGlobalMapping Object: 2 MPI processes
-  type not yet set
+  type: basic
 [0] 0 5
 [0] 1 0
 [0] 2 1

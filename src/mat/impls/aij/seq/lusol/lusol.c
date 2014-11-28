@@ -458,6 +458,17 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_Lusol"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Lusol(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERLUSOL,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_lusol);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
   MATSOLVERLUSOL - "lusol" - Provides direct solvers (LU) for sequential matrices
                          via the external package LUSOL.

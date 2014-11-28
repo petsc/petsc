@@ -7,7 +7,7 @@ static char help[] = "Tests the vatious routines in MatSeqBAIJ format.\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,B;
+  Mat            A,B,Fact;
   Vec            xx,s1,s2,yy;
   PetscErrorCode ierr;
   PetscInt       m=45,rows[2],cols[2],bs=1,i,row,col,*idx,M;
@@ -168,6 +168,22 @@ int main(int argc,char **args)
   info.dtcol         = 0.0;
   info.zeropivot     = 1.e-14;
   info.pivotinblocks = 1.0;
+
+  if (bs < 4) {
+    ierr = MatGetFactor(A,"petsc",MAT_FACTOR_LU,&Fact);CHKERRQ(ierr);
+    ierr = MatLUFactorSymbolic(Fact,A,is1,is2,&info);CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric(Fact,A,&info);CHKERRQ(ierr);
+    ierr = VecSetRandom(yy,rdm);CHKERRQ(ierr);
+    ierr = MatForwardSolve(Fact,yy,xx);CHKERRQ(ierr);
+    ierr = MatBackwardSolve(Fact,xx,s1);CHKERRQ(ierr);
+    ierr = MatDestroy(&Fact);CHKERRQ(ierr);
+    ierr = VecScale(s1,-1.0);CHKERRQ(ierr);
+    ierr = MatMultAdd(A,s1,yy,yy);CHKERRQ(ierr);
+    ierr = VecNorm(yy,NORM_2,&rnorm);CHKERRQ(ierr);
+    if (rnorm<-tol || rnorm>tol) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatForwardSolve/MatBackwardSolve - Norm1=%16.14e bs = %D\n",rnorm,bs);CHKERRQ(ierr);
+    }
+  }
 
   ierr = MatLUFactor(B,is1,is2,&info);CHKERRQ(ierr);
   ierr = MatLUFactor(A,is1,is2,&info);CHKERRQ(ierr);

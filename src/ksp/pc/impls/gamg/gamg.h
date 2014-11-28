@@ -17,6 +17,7 @@ struct _PCGAMGOps {
 
 /* Private context for the GAMG preconditioner */
 typedef struct gamg_TAG {
+  PCGAMGType type;
   PetscInt  Nlevels;
   PetscInt  setup_count;
   PetscBool repart;

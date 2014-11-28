@@ -1819,6 +1819,10 @@ PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE*,const char[],va_list);
 PETSC_EXTERN PetscErrorCode PetscVFPrintf_Matlab(FILE*,const char[],va_list);
 #endif
 
+#if defined(PETSC_HAVE_CLOSURES)
+PETSC_EXTERN PetscErrorCode PetscVFPrintfSetClosure(int (^)(const char*));
+#endif
+
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfDefault(const char [],...);
 PETSC_EXTERN PetscErrorCode PetscErrorPrintfNone(const char [],...);
 PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm,const char [],...);

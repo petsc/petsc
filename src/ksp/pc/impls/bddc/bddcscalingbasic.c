@@ -738,7 +738,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
       ierr = MatDestroy(&color_mat_is);CHKERRQ(ierr);
 
       /* work vector for (parallel) extended dirichlet problem */
-      ierr = MatGetVecs(color_mat,&deluxe_ctx->par_vec[i],NULL);CHKERRQ(ierr);
+      ierr = MatCreateVecs(color_mat,&deluxe_ctx->par_vec[i],NULL);CHKERRQ(ierr);
 
       /* compute scatters */
       /* deluxe_ctx->par_scctx_p[i] extension from local subset to extended dirichlet problem
@@ -951,7 +951,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ierr = PetscFree2(dummy_idx,fill_vals);CHKERRQ(ierr);
 
   /* Create work vectors for sequential part of deluxe */
-  ierr = MatGetVecs(deluxe_ctx->seq_mat,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
+  ierr = MatCreateVecs(deluxe_ctx->seq_mat,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
 
   /* Compute deluxe sequential scatter */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size,all_local_idx_B,PETSC_OWN_POINTER,&is_from);CHKERRQ(ierr);
@@ -985,8 +985,12 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
   ierr = PCFactorGetMatSolverPackage(pc_temp,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
   if (solver) {
-    ierr = KSPGetPC(deluxe_ctx->seq_ksp,&pc_temp);CHKERRQ(ierr);
-    ierr = PCFactorSetMatSolverPackage(pc_temp,solver);CHKERRQ(ierr);
+    PC     new_pc;
+    PCType type;
+    ierr = PCGetType(pc_temp,&type);CHKERRQ(ierr);
+    ierr = KSPGetPC(deluxe_ctx->seq_ksp,&new_pc);CHKERRQ(ierr);
+    ierr = PCSetType(new_pc,type);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverPackage(new_pc,solver);CHKERRQ(ierr);
   }
   ierr = PetscStrlen(((PetscObject)(pcbddc->ksp_D))->prefix,&len);CHKERRQ(ierr);
   len -= 10; /* remove "dirichlet_" */

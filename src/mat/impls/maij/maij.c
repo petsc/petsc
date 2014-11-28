@@ -22,7 +22,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMAIJGetAIJ"
-/*@C
+/*@
    MatMAIJGetAIJ - Get the AIJ matrix describing the blockwise action of the MAIJ matrix
 
    Not Collective, but if the MAIJ matrix is parallel, the AIJ matrix is also parallel

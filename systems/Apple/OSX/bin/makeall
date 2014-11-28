@@ -20,9 +20,9 @@ make all test
 ./systems/Apple/osx/bin/makeframework release
 
 export LOC=$PETSC_DIR
-#make alldoc
-#make allman
-#./systems/Apple/osx/bin/makedocs
+make alldoc
+make allman
+./systems/Apple/osx/bin/makedocs
 
 ./systems/Apple/osx/bin/makedmg
 

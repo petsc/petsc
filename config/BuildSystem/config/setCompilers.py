@@ -562,7 +562,6 @@ class Configure(config.base.Configure):
     else:
       yield self.CC+' -E'
       yield self.CC+' --use cpp32'
-      yield 'gcc -E'
     return
 
   def checkCPreprocessor(self):
@@ -581,6 +580,7 @@ class Configure(config.base.Configure):
     return
 
   def generateCUDACompilerGuesses(self):
+    import os
     '''Determine the CUDA compiler using CUDAC, then --with-cudac, then vendors
        - Any given category can be excluded'''
     if hasattr(self, 'CUDAC'):
@@ -601,6 +601,8 @@ class Configure(config.base.Configure):
         if vendor == 'nvidia' or not vendor:
           yield 'nvcc'
       yield 'nvcc'
+      yield os.path.join('/Developer','NVIDIA','CUDA-6.5','bin','nvcc')
+      yield os.path.join('/usr','local','cuda','bin','nvcc')
     return
 
   def checkCUDACompiler(self):
@@ -791,7 +793,6 @@ class Configure(config.base.Configure):
     else:
       yield self.CXX+' -E'
       yield self.CXX+' --use cpp32'
-      yield 'g++ -E'
     return
 
   def checkCxxPreprocessor(self):

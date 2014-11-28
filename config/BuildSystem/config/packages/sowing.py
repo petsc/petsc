@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.16g.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.16i.tar.gz']
     self.complex           = 1
     self.double            = 0
     self.requires32bitint  = 0
@@ -81,7 +81,7 @@ class Configure(config.package.GNUPackage):
           self.framework.logPrint('Found bfort, not installing sowing')
         else:
           self.framework.logPrint('Bfort not found. Installing sowing for FortranStubs')
-          self.framework.argDB['download-sowing'] = 1
+          if (not self.framework.argDB['download-sowing']):  self.framework.argDB['download-sowing'] = 1
           config.package.GNUPackage.configure(self)
 
           installDir = os.path.join(self.installDir,'bin')

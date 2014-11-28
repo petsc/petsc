@@ -443,7 +443,7 @@ runex25:
            ${RM} -f ex25_1.tmp
 runex25_2:
 	-@${MPIEXEC} -n 1 ./ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro \
-		-pc_type jacobi -pc_jacobi_rowmax > ex25_2.tmp 2>&1; \
+		-pc_type jacobi -pc_jacobi_type rowmax > ex25_2.tmp 2>&1; \
            if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
            else printf "${PWD}\nPossible problem with ex25_2, diffs above\n=========================================\n"; fi; \
            ${RM} -f ex25_2.tmp
@@ -774,27 +774,6 @@ runex33_mumps_2:
 	   else printf "${PWD}\nPossible problem with ex33_mumps_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex33.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
-runex35_1:
-	-@${MPIEXEC} -n 1 ./ex35 -dof 1 -mat_view -check_final_residual> ex35.tmp 2>&1;\
-	if (${DIFF} output/ex35_1.out ex35.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex35_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex35.tmp
-
-runex35_2:
-	-@${MPIEXEC} -n 1 ./ex35 -dof 1 -mat_view -test_sbaij -pc_type icc -check_final_residual> ex35.tmp 2>&1;\
-	if (${DIFF} output/ex35_2.out ex35.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex35.tmp
-
-runex35_inode:
-	-@${MPIEXEC} -n 1 ./ex35 -dof 2 -check_final_residual> ex35.tmp 2>&1;\
-	${MPIEXEC} -n 1 ./ex35 -dof 3 -check_final_residual>> ex35.tmp 2>&1;\
-	${MPIEXEC} -n 1 ./ex35 -dof 4 -check_final_residual>> ex35.tmp 2>&1;\
-	${MPIEXEC} -n 1 ./ex35 -dof 5 -check_final_residual>> ex35.tmp 2>&1;\
-	if (${DIFF} output/ex35_3.out ex35.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex35_inode, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex35.tmp
-# See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex37:
 	-@${MPIEXEC} -n 1 ./ex37 -f ${DATAFILESPATH}/matrices/small -nsubcomm 1 > ex37.tmp 2>&1;\
 	if (${DIFF} output/ex37.out ex37.tmp) then true; \
@@ -948,7 +927,6 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  runex32_aij_sbaij_icc runex32_aij_sbaij_icc_lev1 runex32_aij_sbaij_icc_lev10 runex32_aij_sbaij_cholesky \
                                  runex32_inode2 runex32_inode2_nd runex32_inode3 runex32_inode3_nd runex32_inode4 runex32_inode4_nd \
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
-				 ex35.PETSc runex35_1 runex35_2 runex35_inode ex35.rm \
                                  ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm \
                                  ex42.PETSc runex42 runex42_2 ex42.rm \
                                  ex44.PETSc runex44 ex44.rm
@@ -969,5 +947,5 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm
 TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm
-TESTEXAMPLES_CUDA              = ex43.PETSc runex43 runex43_2 runex43_3 runex43_4 ex43.rm
+TESTEXAMPLES_CUDA              = ex43.PETSc runex43 runex43_2 runex43_3 runex43_4 runex43_5 runex43_6 runex43_7 runex43_8 ex43.rm
 include ${PETSC_DIR}/conf/test

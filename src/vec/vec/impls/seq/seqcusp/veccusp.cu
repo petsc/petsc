@@ -2052,3 +2052,47 @@ PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayWrite(Vec v, CUSPARRAY **a)
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPGetCUDAArray"
+/*MC
+   VecCUSPGetCUDAArray - Provides write access to the CUDA buffer inside a vector.
+
+   Input Parameter:
+-  v - the vector
+
+   Output Parameter:
+.  a - the CUDA pointer
+
+   Level: intermediate
+
+.seealso: VecCUSPGetArrayRead(), VecCUSPGetArrayWrite()
+M*/
+PETSC_EXTERN PetscErrorCode VecCUSPGetCUDAArray(Vec v, PetscScalar **a)
+{
+  PetscErrorCode ierr;
+  CUSPARRAY      *cusparray;
+
+  PetscFunctionBegin;
+  PetscValidPointer(a,1);
+  ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
+  ierr = VecCUSPGetArrayWrite(v, &cusparray);CHKERRQ(ierr);
+  *a   = thrust::raw_pointer_cast(cusparray->data());
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPRestoreCUDAArray"
+PETSC_EXTERN PetscErrorCode VecCUSPRestoreCUDAArray(Vec v, PetscScalar **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Note: cannot call VecCUSPRestoreArrayWrite() here because the CUSP vector is not available. */
+  v->valid_GPU_array = PETSC_CUSP_GPU;
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

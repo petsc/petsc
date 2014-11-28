@@ -44,7 +44,7 @@ class Configure(config.package.GNUPackage):
     except:
       self.found = 0
     if not self.found:
-      self.framework.argDB['download-hwloc'] = 1
+      if (not self.framework.argDB['download-hwloc']): self.framework.argDB['download-hwloc'] = 1
       try:
         config.package.GNUPackage.configure(self)
       except:

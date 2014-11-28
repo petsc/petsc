@@ -25,10 +25,6 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph);
 PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph,PetscInt,PetscViewer);
 PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
 
-/* application of local Schur complements */
-PetscErrorCode PCBDDCApplySchur(PC,Vec,Vec,Vec,Vec,Vec);
-PetscErrorCode PCBDDCApplySchurTranspose(PC,Vec,Vec,Vec,Vec,Vec);
-
 /* interface for scaling operator */
 PetscErrorCode PCBDDCScalingSetUp(PC);
 PetscErrorCode PCBDDCScalingDestroy(PC);

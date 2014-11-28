@@ -428,27 +428,27 @@ runex5_5:
 	   else printf "${PWD}\nPossible problem with ex5_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_5.tmp
 runex5_redundant_0:
-	-@${MPIEXEC} -n 1 ./ex5 -m 1000 -pc_type redundant -pc_redundant_number 1 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_monitor_short -ksp_rtol 1.e-4 > ex5.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex5 -m 1000 -pc_type redundant -pc_redundant_number 1 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_rtol 1.e-10 > ex5.tmp 2>&1;   \
 	   if (${DIFF} output/ex5_redundant_0.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_redundant, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
 runex5_redundant_1:
-	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 1 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_monitor_short -ksp_rtol 1.e-4 > ex5.tmp 2>&1;   \
+	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 1 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_rtol 1.e-10 > ex5.tmp 2>&1;   \
 	   if (${DIFF} output/ex5_redundant.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_redundant_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
 runex5_redundant_2:
-	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_monitor_short -ksp_rtol 1.e-4 > ex5.tmp 2>&1;   \
+	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_rtol 1.e-10 > ex5.tmp 2>&1;   \
 	   if (${DIFF} output/ex5_redundant.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_redundant_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
 runex5_redundant_3:
-	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 5 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_monitor_short -ksp_rtol 1.e-4 > ex5.tmp 2>&1;   \
+	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 5 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_rtol 1.e-10 > ex5.tmp 2>&1;   \
 	   if (${DIFF} output/ex5_redundant.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_redundant_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
 runex5_redundant_4:
-	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_monitor_short -ksp_rtol 1.e-4 -psubcomm_type interlaced > ex5.tmp 2>&1;   \
+	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_rtol 1.e-10 -psubcomm_type interlaced > ex5.tmp 2>&1;   \
 	   if (${DIFF} output/ex5_redundant.out ex5.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex5_redundant_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5.tmp
@@ -458,7 +458,7 @@ runex6f:
 	   else printf "${PWD}\nPossible problem with ex6f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex6f_1.tmp
 runex7:
-	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -nokspview -ksp_gmres_cgs_refinement_type refine_always> ex7_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex7 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always> ex7_1.tmp 2>&1; \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex7_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex7_1.tmp
@@ -1036,6 +1036,15 @@ runex45f:
 	   ${DIFF} output/ex45f_1.out ex45f_1.tmp || printf "${PWD}\nPossible problem with ex45f_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex45f_1.tmp
 
+runex46_aijcusp:
+	-@${MPIEXEC} -n 1 ./ex46 -mat_type aijcusp -dm_vec_type cusp -random_exact_sol > ex46_aijcusp.tmp 2>& 1; \
+		${DIFF} output/ex46_aijcusp.out ex46_aijcusp.tmp || printf "${PWD}\nPossible problem with ex46_aijcusp, diffs above\n=========================================\n"; \
+		${RM} ex46_aijcusp.tmp
+runex46_aijcusparse:
+	-@${MPIEXEC} -n 1 ./ex46 -mat_type aijcusparse -dm_vec_type cusp -random_exact_sol > ex46_aijcusparse.tmp 2>& 1; \
+		${DIFF} output/ex46_aijcusparse.out ex46_aijcusparse.tmp || printf "${PWD}\nPossible problem with ex46_aijcusparse, diffs above\n=========================================\n"; \
+		${RM} ex46_aijcusparse.tmp
+
 runex49:
 	-@${MPIEXEC} -n 1 ./ex49 -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 > ex49_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex49_1.out ex49_1.tmp || printf "${PWD}\nPossible problem with ex49_1, diffs above\n=========================================\n"; \
@@ -1087,9 +1096,17 @@ runex52_mumps_3:
 	-@${MPIEXEC} -n 3 ./ex52 -use_mumps_ch -mat_type sbaij > ex52.tmp 2>&1;	  \
 	   ${DIFF} output/ex52_1.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_mumps_3, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
-runex52_superlu:
+runex52_superlu_ilu:
 	-@${MPIEXEC} -n 1 ./ex52 -use_superlu_ilu > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_2.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_superlu_ilu, diffs above\n=========================================\n"; \
+	   ${RM} -f ex52.tmp
+runex52_superlu:
+	-@${MPIEXEC} -n 1 ./ex52 -use_superlu_lu > ex52.tmp 2>&1;	  \
 	   ${DIFF} output/ex52_2.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_superlu, diffs above\n=========================================\n"; \
+	   ${RM} -f ex52.tmp
+runex52_superlu_dist:
+	-@${MPIEXEC} -n 2 ./ex52 -use_superlu_lu > ex52.tmp 2>&1;	  \
+	   ${DIFF} output/ex52_2.out ex52.tmp || printf "${PWD}\nPossible problem with ex52_superlu_dist, diffs above\n=========================================\n"; \
 	   ${RM} -f ex52.tmp
 
 runex52f_mumps:
@@ -1248,17 +1265,19 @@ TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
                                  runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \
                                  runex10_mumps_cholesky_spd_1 runex10_mumps_cholesky_spd_2 ex10.rm ex53.PETSc runex53 runex53_2 ex53.rm \
-                                 ex52.PETSc runex52 runex52_mumps runex52_mumps_2 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
+                                 ex52.PETSc runex52 runex52_mumps runex52_mumps_2 runex52_mumps_3 ex52.rm ex52f.PETSc runex52f_mumps ex52f.rm
 TESTEXAMPLES_PASTIX            = ex10.PETSc runex10_pastix_lu_1 runex10_pastix_lu_2  \
 				 runex10_pastix_cholesky_1 runex10_pastix_cholesky_2  runex10_pastix_redundant \
                                  ex10.rm 
-TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu ex52.rm
+TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu_ilu runex52_superlu ex52.rm
 TESTEXAMPLES_FFTW              =
-TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
+TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm \
+                                 ex52.PETSc runex52_superlu_dist ex52.rm
 TESTEXAMPLES_MKL_PARDISO       = ex2.PETSc runex2_mkl_pardiso ex2.rm
 TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm \
                                  ex7.PETSc runex7_mpiaijcusp_simple runex7_mpiaijcusp runex7_mpiaijcusp_2 \
-                                 runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm
+                                 runex7_mpiaijcusparse runex7_mpiaijcusparse_2 ex7.rm \
+                                 ex46.PETSc runex46_aijcusp runex46_aijcusparse ex46.rm
 TESTEXAMPLES_PCBDDC            = ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm
 TESTEXAMPLES_MOAB              = ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5         = ex35.PETSc runex35_2 ex35.rm

@@ -1,5 +1,5 @@
 static char help[] = "Tests CG, MINRES and SYMMLQ on the symmetric indefinite matrices: afiro and golan\n\
-Runtime options: ex25 -fload ~petsc/matrices/indefinite/afiro -pc_type jacobi -pc_jacobi_rowmax\n\
+Runtime options: ex25 -fload ~petsc/matrices/indefinite/afiro -pc_type jacobi -pc_jacobi_type rowmax\n\
 See ~petsc/matrices/indefinite/readme \n\n";
 
 #include <petscksp.h>
@@ -75,7 +75,7 @@ int main(int argc,char **args)
     /*
     Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
-                         -pc_type jacobi -pc_jacobi_rowmax
+                         -pc_type jacobi -pc_jacobi_type rowmax
     These options will override those specified above as long as
     KSPSetFromOptions() is called _after_ any other customization routines.
     */

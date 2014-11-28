@@ -474,7 +474,7 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
 +  -snes_linesearch_alpha<1e-4> - slope descent parameter
 .  -snes_linesearch_damping<1.0> - initial step length
 .  -snes_linesearch_maxstep <length> - if the length the initial step is larger than this then the
-$                                       step is scaled back to be of this length at the beginning of the line search
+                                       step is scaled back to be of this length at the beginning of the line search
 .  -snes_linesearch_max_it<40> - maximum number of shrinking step
 .  -snes_linesearch_minlambda<1e-12> - minimum step length allowed
 -  -snes_linesearch_order<cubic,quadratic> - order of the approximation

@@ -11,8 +11,7 @@
 
    Input Parameter:
 +  da - the distributed array
--  vec - the vector, either a vector the same size as one obtained with
-         DMCreateGlobalVector() or DMCreateLocalVector()
+-  vec - the vector, either a vector the same size as one obtained with DMCreateGlobalVector() or DMCreateLocalVector()
 
    Output Parameter:
 .  array - the array
@@ -22,10 +21,10 @@
 
     In C, the indexing is "backwards" from what expects: array[k][j][i] NOT array[i][j][k]!
 
-    If vec is a local vector (obtained with DMCreateLocalVector() etc) then they ghost point locations are accessable. If it is
-    a global vector then the ghost points are not accessable. Of course with the local vector you will have had to do the
+    If vec is a local vector (obtained with DMCreateLocalVector() etc) then the ghost point locations are accessible. If it is
+    a global vector then the ghost points are not accessible. Of course with the local vector you will have had to do the
 
-    appropriate DMLocalToGlobalBegin() and DMLocalToGlobalEnd() to have correct values in the ghost locations.
+    appropriate DMGlobalToLocalBegin() and DMGlobalToLocalEnd() to have correct values in the ghost locations.
 
   Fortran Notes: From Fortran use DMDAVecGetArrayF90() and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
        dimension. For a DMDA created with a dof of 1 use the dimension of the DMDA, for a DMDA created with a dof greater than 1 use one more than the

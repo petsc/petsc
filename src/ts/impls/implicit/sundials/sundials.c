@@ -290,6 +290,8 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   PetscBool      pcnone;
 
   PetscFunctionBegin;
+  if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for exact final time option 'MATCHSTEP' when using Sundials");
+
   /* get the vector size */
   ierr = VecGetSize(ts->vec_sol,&glosize);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
@@ -968,8 +970,6 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
   /* set PCNONE as default pctype */
   ierr = TSSundialsGetPC_Sundials(ts,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-
-  if (ts->exact_final_time != TS_EXACTFINALTIME_STEPOVER) ts->exact_final_time = TS_EXACTFINALTIME_STEPOVER;
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetType_C",TSSundialsSetType_Sundials);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxl_C",TSSundialsSetMaxl_Sundials);CHKERRQ(ierr);
