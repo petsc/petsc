@@ -51,7 +51,7 @@ const char ParMetisPartitionerCitation[] = "@article{KarypisKumar98,\n"
 PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency)
 {
   PetscInt       p, pStart, pEnd, a, adjSize, idx, size, nroots;
-  PetscInt      *adj = NULL, *vOffsets = NULL;
+  PetscInt      *adj = NULL, *vOffsets = NULL, *graph = NULL;
   IS             cellNumbering;
   const PetscInt *cellNum;
   PetscBool      useCone, useClosure;
@@ -100,30 +100,29 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   /* Derive CSR graph from section/segbuffer */
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
-  ierr = PetscMalloc2(*numVertices+1, &vOffsets, size, adjacency);CHKERRQ(ierr);
+  ierr = PetscMalloc1(*numVertices+1, &vOffsets);CHKERRQ(ierr);
   for (idx = 0, p = pStart; p < pEnd; p++) {
     if (nroots > 0) {if (cellNum[p] < 0) continue;}
     ierr = PetscSectionGetOffset(section, p, &(vOffsets[idx++]));CHKERRQ(ierr);
   }
   vOffsets[*numVertices] = size;
   if (offsets) *offsets = vOffsets;
-  if (adjacency) {
-    ierr = PetscSegBufferExtractTo(adjBuffer, *adjacency);CHKERRQ(ierr);
-    if (nroots > 0) {
-      ISLocalToGlobalMapping ltogCells;
-      PetscInt n, size, *cells_arr;
-      /* In parallel, apply a global cell numbering to the graph */
-      ierr = ISRestoreIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingCreateIS(cellNumbering, &ltogCells);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingGetSize(ltogCells, &size);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingGetIndices(ltogCells, (const PetscInt**)&cells_arr);CHKERRQ(ierr);
-      /* Convert to positive global cell numbers */
-      for (n=0; n<size; n++) {if (cells_arr[n] < 0) cells_arr[n] = -(cells_arr[n]+1);}
-      ierr = ISLocalToGlobalMappingRestoreIndices(ltogCells, (const PetscInt**)&cells_arr);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingApplyBlock(ltogCells, vOffsets[*numVertices], *adjacency, *adjacency);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(&ltogCells);CHKERRQ(ierr);
-    }
+  ierr = PetscSegBufferExtractAlloc(adjBuffer, &graph);CHKERRQ(ierr);
+  if (nroots > 0) {
+    ISLocalToGlobalMapping ltogCells;
+    PetscInt n, size, *cells_arr;
+    /* In parallel, apply a global cell numbering to the graph */
+    ierr = ISRestoreIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreateIS(cellNumbering, &ltogCells);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltogCells, &size);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltogCells, (const PetscInt**)&cells_arr);CHKERRQ(ierr);
+    /* Convert to positive global cell numbers */
+    for (n=0; n<size; n++) {if (cells_arr[n] < 0) cells_arr[n] = -(cells_arr[n]+1);}
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltogCells, (const PetscInt**)&cells_arr);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApplyBlock(ltogCells, vOffsets[*numVertices], graph, graph);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&ltogCells);CHKERRQ(ierr);
   }
+  if (adjacency) *adjacency = graph;
   /* Clean up */
   ierr = PetscSegBufferDestroy(&adjBuffer);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
