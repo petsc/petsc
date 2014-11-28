@@ -172,24 +172,20 @@ cdef class SNES(Object):
 
     def setFASLevels(self, levels, comms=None):
         cdef PetscInt clevels = asInt(levels)
-        cdef PetscInt ncomm = len(comms)
-        cdef int i
-        cdef Comm comm
         cdef MPI_Comm *ccomms = NULL
-
-        if ncomm > 0:
-            if ncomm != clevels:
+        cdef Py_ssize_t i = 0
+        if comms is not None:
+            if clevels != <PetscInt>len(comms):
                 raise ValueError("Must provide as many communicators as levels")
-            CHKERR( PetscMalloc(sizeof(MPI_Comm)*ncomm, &ccomms) )
+            CHKERR( PetscMalloc(sizeof(MPI_Comm)*<size_t>clevels, &ccomms) )
             try:
-                for i, c in enumerate(comms):
-                    comm = <Comm?>c
-                    ccomms[i] = comm.comm
+                for i, comm in enumerate(comms):
+                    ccomms[i] = def_Comm(comm, MPI_COMM_NULL)
                 CHKERR( SNESFASSetLevels(self.snes, clevels, ccomms) )
             finally:
                 CHKERR( PetscFree(ccomms) )
         else:
-            CHKERR( SNESFASSetLevels(self.snes, clevels, NULL) )
+            CHKERR( SNESFASSetLevels(self.snes, clevels, ccomms) )
 
     def getFASLevels(self):
         cdef PetscInt levels = 0
