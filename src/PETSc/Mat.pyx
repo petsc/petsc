@@ -124,6 +124,17 @@ class MatFactorShiftType(object):
     NZ = MAT_SHIFT_NONZERO
     PD = MAT_SHIFT_POSITIVE_DEFINITE
 
+class MatSORType(object):
+    FORWARD_SWEEP        = SOR_FORWARD_SWEEP
+    BACKWARD_SWEEP       = SOR_BACKWARD_SWEEP
+    SYMMETRY_SWEEP       = SOR_SYMMETRIC_SWEEP
+    LOCAL_FORWARD_SWEEP  = SOR_LOCAL_FORWARD_SWEEP
+    LOCAL_BACKWARD_SWEEP = SOR_LOCAL_BACKWARD_SWEEP
+    ZERO_INITIAL_GUESS   = SOR_ZERO_INITIAL_GUESS
+    EISENSTAT            = SOR_EISENSTAT
+    APPLY_UPPER          = SOR_APPLY_UPPER
+    APPLY_LOWER          = SOR_APPLY_LOWER
+
 # --------------------------------------------------------------------
 
 cdef class Mat(Object):
@@ -134,6 +145,7 @@ cdef class Mat(Object):
     Structure       = MatStructure
     OrderingType    = MatOrderingType
     FactorShiftType = MatFactorShiftType
+    SORType         = MatSORType
     #
 
     def __cinit__(self):
@@ -1054,6 +1066,18 @@ cdef class Mat(Object):
 
     def multHermitianAdd(self, Vec x not None, Vec v not None, Vec y not None):
         CHKERR( MatMultHermitianAdd(self.mat, x.vec, v.vec, y.vec) )
+
+    # SOR
+
+    def SOR(self, Vec b not None, Vec x not None, omega=1.0, sortype=None, shift=0.0, its=1, lits=1):
+        cdef PetscReal comega = asReal(omega)
+        cdef PetscMatSORType csortype = SOR_LOCAL_SYMMETRIC_SWEEP
+        if sortype is not None:
+            csortype = <PetscMatSORType> asInt(sortype)
+        cdef PetscInt cshift = asInt(shift)
+        cdef PetscInt cits = asInt(its)
+        cdef PetscInt clits = asInt(lits)
+        CHKERR( MatSOR(self.mat, b.vec, comega, csortype, cshift, cits, clits, x.vec) )
 
     #
 

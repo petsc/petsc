@@ -82,6 +82,18 @@ cdef extern from * nogil:
         MAT_COPY_VALUES
         MAT_SHARE_NONZERO_PATTERN
 
+    ctypedef enum PetscMatSORType "MatSORType":
+        SOR_FORWARD_SWEEP
+        SOR_BACKWARD_SWEEP
+        SOR_SYMMETRIC_SWEEP
+        SOR_LOCAL_FORWARD_SWEEP
+        SOR_LOCAL_BACKWARD_SWEEP
+        SOR_LOCAL_SYMMETRIC_SWEEP
+        SOR_ZERO_INITIAL_GUESS
+        SOR_EISENSTAT
+        SOR_APPLY_UPPER
+        SOR_APPLY_LOWER
+
     ctypedef enum PetscMatAssemblyType "MatAssemblyType":
         MAT_FLUSH_ASSEMBLY
         MAT_FINAL_ASSEMBLY
@@ -282,6 +294,8 @@ cdef extern from * nogil:
     int MatMultHermitianAdd"MatMultHermitianTransposeAdd"(PetscMat,PetscVec,PetscVec,PetscVec)
     int MatMultConstrained(PetscMat,PetscVec,PetscVec)
     int MatMultTransposeConstrained(PetscMat,PetscVec,PetscVec)
+
+    int MatSOR(PetscMat,PetscVec,PetscReal,PetscMatSORType,PetscReal,PetscInt,PetscInt,PetscVec)
 
     int MatGetOrdering(PetscMat,PetscMatOrderingType,PetscIS*,PetscIS*)
     int MatReorderForNonzeroDiagonal(PetscMat,PetscReal,PetscIS,PetscIS)
