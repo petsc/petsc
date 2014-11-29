@@ -103,6 +103,22 @@ cdef extern from * nogil:
     int SNESGetDM(PetscSNES,PetscDM*)
     int SNESSetDM(PetscSNES,PetscDM)
 
+    # --- FAS ---
+    int SNESFASSetInterpolation(PetscSNES,PetscInt,PetscMat)
+    int SNESFASGetInterpolation(PetscSNES,PetscInt,PetscMat*)
+    int SNESFASSetRestriction(PetscSNES,PetscInt,PetscMat)
+    int SNESFASGetRestriction(PetscSNES,PetscInt,PetscMat*)
+    int SNESFASSetInjection(PetscSNES,PetscInt,PetscMat)
+    int SNESFASGetInjection(PetscSNES,PetscInt,PetscMat*)
+    int SNESFASSetRScale(PetscSNES,PetscInt,PetscVec)
+    int SNESFASSetLevels(PetscSNES,PetscInt,MPI_Comm[])
+    int SNESFASGetLevels(PetscSNES,PetscInt*)
+    int SNESFASGetCycleSNES(PetscSNES,PetscInt,PetscSNES*)
+    int SNESFASGetCoarseSolve(PetscSNES,PetscSNES*)
+    int SNESFASGetSmoother(PetscSNES,PetscInt,PetscSNES*)
+    int SNESFASGetSmootherDown(PetscSNES,PetscInt,PetscSNES*)
+    int SNESFASGetSmootherUp(PetscSNES,PetscInt,PetscSNES*)
+
     int SNESGetNPC(PetscSNES,PetscSNES*)
     int SNESSetNPC(PetscSNES,PetscSNES)
 
