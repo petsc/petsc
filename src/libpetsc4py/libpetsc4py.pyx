@@ -438,6 +438,19 @@ cdef extern from * nogil:
         MAT_IGNORE_MATRIX
         MAT_INITIAL_MATRIX
         MAT_REUSE_MATRIX
+
+    ctypedef enum MatSORType:
+        SOR_FORWARD_SWEEP
+        SOR_BACKWARD_SWEEP
+        SOR_SYMMETRIC_SWEEP
+        SOR_LOCAL_FORWARD_SWEEP
+        SOR_LOCAL_BACKWARD_SWEEP
+        SOR_LOCAL_SYMMETRIC_SWEEP
+        SOR_ZERO_INITIAL_GUESS
+        SOR_EISENSTAT
+        SOR_APPLY_UPPER
+        SOR_APPLY_LOWER
+
 cdef extern from * nogil:
     struct _MatOps:
         PetscErrorCode (*destroy)(PetscMat) except IERR
@@ -453,6 +466,7 @@ cdef extern from * nogil:
         PetscErrorCode (*zeroentries)(PetscMat) except IERR
         PetscErrorCode (*scale)(PetscMat,PetscScalar) except IERR
         PetscErrorCode (*shift)(PetscMat,PetscScalar) except IERR
+        PetscErrorCode (*sor)(PetscMat,PetscVec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,PetscVec) except IERR
         PetscErrorCode (*getvecs)(PetscMat,PetscVec*,PetscVec*) except IERR
         PetscErrorCode (*mult)(PetscMat,PetscVec,PetscVec) except IERR
         PetscErrorCode (*multtranspose)(PetscMat,PetscVec,PetscVec) except IERR
@@ -540,6 +554,7 @@ cdef PetscErrorCode MatCreate_Python(
     ops.shift             = MatShift_Python
     ops.getvecs           = MatGetVecs_Python
     ops.mult              = MatMult_Python
+    ops.sor               = MatSOR_Python
     ops.multtranspose     = MatMultTranspose_Python
     ops.multhermitian     = MatMultHermitian_Python
     ops.multadd           = MatMultAdd_Python
@@ -1000,6 +1015,23 @@ cdef PetscErrorCode MatSolveTransposeAdd_Python(
         return FunctionEnd()
     if solveTransposeAdd is None: return UNSUPPORTED(b"solveTransposeAdd")
     solveTransposeAdd(Mat_(mat), Vec_(b), Vec_(y), Vec_(x))
+    return FunctionEnd()
+
+cdef PetscErrorCode MatSOR_Python(
+    PetscMat mat,
+    PetscVec b,
+    PetscReal omega,
+    MatSORType sortype,
+    PetscReal shift,
+    PetscInt its,
+    PetscInt lits,
+    PetscVec x
+    )\
+    except IERR with gil:
+    FunctionBegin(b"MatSOR_Python")
+    cdef SOR = PyMat(mat).SOR
+    if SOR is None: return UNSUPPORTED(b"SOR")
+    SOR(Mat_(mat), Vec_(b), asReal(omega), asInt(sortype), asReal(shift), asInt(its), asInt(lits), Vec_(x))
     return FunctionEnd()
 
 cdef PetscErrorCode MatGetDiagonal_Python(
