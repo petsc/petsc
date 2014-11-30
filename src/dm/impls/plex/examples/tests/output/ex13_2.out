@@ -189,26 +189,6 @@ PetscSF Object: 2 MPI processes
   [0]    13 <- 9
   [0]    22 <- 11
   [1] Roots referenced by my leaves, by rank
-[0]BT for serial seen faces:
-0 1
-1 2
-2 4
-3 8
-4 16
-5 32
-6 64
-7 -128
-8 1
-9 2
-10 4
-11 8
-[1]BT for serial seen faces:
-0 1
-1 2
-2 4
-3 0
-4 0
-5 0
 [0]BT for serial flipped cells:
 0 0
 1 2
@@ -228,7 +208,7 @@ PetscSF Object: 2 MPI processes
 5 32
 [1]BT for parallel flipped cells:
 0 0
-1 0
+1 2
 DM Object:Simplicial Mesh 2 MPI processes
   type: plex
 Mesh 'Simplicial Mesh':
@@ -342,9 +322,9 @@ base <-- cap:
 [1]: 0 <---- 8 (0)
 [1]: 0 <---- 9 (0)
 [1]: 0 <---- 10 (0)
-[1]: 1 <---- 13 (-2)
-[1]: 1 <---- 12 (-2)
-[1]: 1 <---- 11 (-2)
+[1]: 1 <---- 11 (0)
+[1]: 1 <---- 12 (0)
+[1]: 1 <---- 13 (0)
 [1]: 8 <---- 2 (0)
 [1]: 8 <---- 3 (0)
 [1]: 9 <---- 3 (0)

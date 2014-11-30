@@ -185,26 +185,6 @@ PetscSF Object: 2 MPI processes
   [0]    10 <- 13
   [0]    11 <- 17
   [1] Roots referenced by my leaves, by rank
-[0]BT for serial seen faces:
-0 1
-1 2
-2 4
-3 8
-4 16
-5 32
-6 64
-7 -128
-8 1
-[1]BT for serial seen faces:
-0 1
-1 2
-2 4
-3 8
-4 16
-5 32
-6 64
-7 -128
-8 1
 [0]BT for serial flipped cells:
 0 0
 1 2
