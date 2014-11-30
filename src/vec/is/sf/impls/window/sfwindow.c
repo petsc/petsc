@@ -127,7 +127,7 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf,MPI_Datatype unit,con
 -  sync - synchronization type
 
    Options Database Key:
-.  -sf_synchronization <sync> - sets the synchronization type
+.  -sf_window_sync <sync> - sets the synchronization type FENCE, LOCK, or ACTIVE (see PetscSFWindowSyncType)
 
    Level: advanced
 
