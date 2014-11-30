@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(appctx.Amat);CHKERRQ(ierr);
   ierr = MatSetUp(appctx.Amat);CHKERRQ(ierr);
   /* set space grid points - interio points only! */
-  ierr = PetscMalloc1((nz+1),&z);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nz+1,&z);CHKERRQ(ierr);
   for (i=0; i<nz; i++) z[i]=(i)*((zFinal-zInitial)/(nz-1));
   appctx.z = z;
   femA(&appctx,nz,z);

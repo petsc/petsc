@@ -45,7 +45,7 @@ PetscErrorCode  CholmodStart(Mat F)
 
   PetscFunctionBegin;
   if (chol->common) PetscFunctionReturn(0);
-  ierr = PetscMalloc(sizeof(*chol->common),&chol->common);CHKERRQ(ierr);
+  ierr = PetscMalloc1(1,&chol->common);CHKERRQ(ierr);
   ierr = !cholmod_X_start(chol->common);CHKERRQ(ierr);
 
   c                = chol->common;

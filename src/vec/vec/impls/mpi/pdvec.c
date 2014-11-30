@@ -487,7 +487,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 #else
     {
       PetscReal *xr;
-      ierr = PetscMalloc1((xin->map->n+1),&xr);CHKERRQ(ierr);
+      ierr = PetscMalloc1(xin->map->n+1,&xr);CHKERRQ(ierr);
       for (i=0; i<xin->map->n; i++) xr[i] = PetscRealPart(xarray[i]);
 
       ierr = MPI_Gatherv(xr,xin->map->n,MPIU_REAL,yy,lens,xin->map->range,MPIU_REAL,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
@@ -503,7 +503,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 #else
     {
       PetscReal *xr;
-      ierr = PetscMalloc1((xin->map->n+1),&xr);CHKERRQ(ierr);
+      ierr = PetscMalloc1(xin->map->n+1,&xr);CHKERRQ(ierr);
       for (i=0; i<xin->map->n; i++) xr[i] = PetscRealPart(xarray[i]);
 
       ierr = MPI_Gatherv(xr,xin->map->n,MPIU_REAL,0,0,0,MPIU_REAL,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
@@ -1018,7 +1018,7 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   ierr = VecGetBlockSize(xin,&bs);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
   if (!xin->bstash.bowners && xin->map->bs != -1) {
-    ierr = PetscMalloc1((size+1),&bowners);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size+1,&bowners);CHKERRQ(ierr);
     for (i=0; i<size+1; i++) bowners[i] = owners[i]/bs;
     xin->bstash.bowners = bowners;
   } else bowners = xin->bstash.bowners;

@@ -432,8 +432,8 @@ PetscErrorCode DMLabelSetValue(DMLabel label, PetscInt point, PetscInt value)
     PetscInt   *tmpV;
     PetscHashI *tmpH;
 
-    ierr = PetscMalloc1((label->numStrata+1), &tmpV);CHKERRQ(ierr);
-    ierr = PetscMalloc1((label->numStrata+1), &tmpH);CHKERRQ(ierr);
+    ierr = PetscMalloc1(label->numStrata+1, &tmpV);CHKERRQ(ierr);
+    ierr = PetscMalloc1(label->numStrata+1, &tmpH);CHKERRQ(ierr);
     for (v = 0; v < label->numStrata; ++v) {
       tmpV[v] = label->stratumValues[v];
       tmpH[v] = label->ht[v];
@@ -702,7 +702,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   if (!rank) {ierr = PetscStrlen(label->name, &len);CHKERRQ(ierr);}
   nameSize = len;
   ierr = MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  ierr = PetscMalloc(nameSize+1, &name);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nameSize+1, &name);CHKERRQ(ierr);
   if (!rank) {ierr = PetscMemcpy(name, label->name, nameSize+1);CHKERRQ(ierr);}
   ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
   ierr = DMLabelCreate(name, labelNew);CHKERRQ(ierr);

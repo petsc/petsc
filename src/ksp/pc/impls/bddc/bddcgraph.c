@@ -253,7 +253,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     for (i=0;i<graph->nvtxs;i++) {
       j += aux_new_xadj[i];
     }
-    ierr = PetscMalloc1((graph->nvtxs+1),&new_xadj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(graph->nvtxs+1,&new_xadj);CHKERRQ(ierr);
     ierr = PetscMalloc1(j,&new_adjncy);CHKERRQ(ierr);
     new_xadj[0]=0;
     for (i=0;i<graph->nvtxs;i++) {
@@ -276,7 +276,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     graph->adjncy = new_adjncy;
     /* allocate some space */
     ierr = MPI_Comm_rank(interface_comm,&rank);CHKERRQ(ierr);
-    ierr = PetscMalloc1((graph->n_subsets+1),&cum_recv_counts);CHKERRQ(ierr);
+    ierr = PetscMalloc1(graph->n_subsets+1,&cum_recv_counts);CHKERRQ(ierr);
     ierr = PetscMemzero(cum_recv_counts,(graph->n_subsets+1)*sizeof(*cum_recv_counts));CHKERRQ(ierr);
     ierr = PetscMalloc1(graph->n_subsets,&subset_to_nodes_indices);CHKERRQ(ierr);
     /* first count how many neighbours per connected component I will receive from */
@@ -880,8 +880,8 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
         for (j=graph->xadj[i];j<graph->xadj[i+1];j++)
           k += graph->mirrors[graph->adjncy[j]];
 
-      ierr = PetscMalloc1((graph->nvtxs+1),&new_xadj);CHKERRQ(ierr);
-      ierr = PetscMalloc1((k+graph->xadj[graph->nvtxs]),&new_adjncy);CHKERRQ(ierr);
+      ierr = PetscMalloc1(graph->nvtxs+1,&new_xadj);CHKERRQ(ierr);
+      ierr = PetscMalloc1(k+graph->xadj[graph->nvtxs],&new_adjncy);CHKERRQ(ierr);
       new_xadj[0]=0;
       for (i=0;i<graph->nvtxs;i++) {
         k = graph->xadj[i+1]-graph->xadj[i];
@@ -1125,7 +1125,7 @@ PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph *graph)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(*new_graph),&new_graph);CHKERRQ(ierr);
+  ierr = PetscNew(&new_graph);CHKERRQ(ierr);
   /* local to global mapping of dofs */
   new_graph->l2gmap = 0;
   /* vertex size */

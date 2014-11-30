@@ -61,7 +61,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   MPI_Comm_rank(PetscObjectComm((PetscObject)pmat),&rank);
 
   ierr  = MatGetSize(pmat,&n,NULL);CHKERRQ(ierr);
-  ierr  = PetscMalloc1((npro+1),&mapptr);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(npro+1,&mapptr);CHKERRQ(ierr);
   ierr  = PetscMalloc1(n,&maptmp);CHKERRQ(ierr);
   ierr  = MatGetOwnershipRanges(pmat,&mapptr0);CHKERRQ(ierr);
   low   = mapptr0[rank];
@@ -90,7 +90,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_MatCreate(&parms->A,parms->map);
 
   /* setup and copy csr data structure for pARMS */
-  ierr   = PetscMalloc1((lsize+1),&ia);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(lsize+1,&ia);CHKERRQ(ierr);
   ia[0]  = 1;
   ierr   = MatGetInfo(pmat,MAT_LOCAL,&matinfo);CHKERRQ(ierr);
   length = matinfo.nz_used;

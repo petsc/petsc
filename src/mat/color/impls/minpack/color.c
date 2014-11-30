@@ -116,7 +116,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscol
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    ierr = PetscMalloc1((N_loc+1),&colors_loc);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N_loc+1,&colors_loc);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
@@ -214,7 +214,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscol
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    ierr = PetscMalloc1((N_loc+1),&colors_loc);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N_loc+1,&colors_loc);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) colors_loc[i-rstart] = iscoloring_seq->colors[i];
 
     /* create a parallel iscoloring */
@@ -312,7 +312,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscol
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    ierr = PetscMalloc1((N_loc+1),&colors_loc);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N_loc+1,&colors_loc);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }

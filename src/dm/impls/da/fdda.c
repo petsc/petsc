@@ -31,7 +31,7 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill,PetscInt w
       if (dfill[w*i+j]) nz++;
     }
   }
-  ierr = PetscMalloc1((nz + w + 1),&fill);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nz + w + 1,&fill);CHKERRQ(ierr);
   /* construct modified CSR storage of nonzero structure */
   /*  fill[0 -- w] marks starts of each row of column indices (and end of last row)
    so fill[1] - fill[0] gives number of nonzeros in first row etc */
@@ -552,7 +552,7 @@ PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
 
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscMalloc1((rend-rstart),&petsc);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rend-rstart,&petsc);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) petsc[i-rstart] = i;
   ierr = AOApplicationToPetsc(ao,rend-rstart,petsc);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,rend-rstart,petsc,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
@@ -594,7 +594,7 @@ PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
   /* Map natural ordering to application ordering and create IS */
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Anatural,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscMalloc1((rend-rstart),&app);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rend-rstart,&app);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) app[i-rstart] = i;
   ierr = AOPetscToApplication(ao,rend-rstart,app);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,rend-rstart,app,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);

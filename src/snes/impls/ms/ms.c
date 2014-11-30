@@ -220,8 +220,7 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
   PetscValidPointer(delta,5);
   PetscValidPointer(betasub,6);
 
-  ierr          = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
-  ierr          = PetscMemzero(link,sizeof(*link));CHKERRQ(ierr);
+  ierr          = PetscNew(&link);CHKERRQ(ierr);
   t             = &link->tab;
   ierr          = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->nstages    = nstages;

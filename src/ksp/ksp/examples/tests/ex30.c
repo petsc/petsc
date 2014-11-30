@@ -160,8 +160,7 @@ int main(int argc,char **args)
     PetscScalar       *zeros;
     row  = 0;
     ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscScalar)*(ncols+1),&zeros);
-    ierr = PetscMemzero(zeros,(ncols+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(ncols+1,&zeros);
     flg1 = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL, "-set_row_zero", &flg1,NULL);CHKERRQ(ierr);
     if (flg1) {   /* set entire row as zero */

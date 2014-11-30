@@ -475,7 +475,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *inf
 
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr = PetscMalloc1((n+1),&rtmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&rtmp);CHKERRQ(ierr);
   ics  = ic;
 
   do {
@@ -614,7 +614,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C,Mat A,const MatFactorI
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr = PetscMalloc1((n+1),&rtmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&rtmp);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
@@ -1012,7 +1012,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
 
   /* special case that simply copies fill pattern */
   if (!levels && perm_identity) {
-    ierr = PetscMalloc1((am+1),&ui);CHKERRQ(ierr);
+    ierr = PetscMalloc1(am+1,&ui);CHKERRQ(ierr);
     for (i=0; i<am; i++) ui[i] = ai[i+1] - a->diag[i]; /* ui: rowlengths - changes when !perm_identity */
     B    = fact;
     ierr = MatSeqSBAIJSetPreallocation(B,1,0,ui);CHKERRQ(ierr);
@@ -1038,9 +1038,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
   }
 
   /* initialization */
-  ierr  = PetscMalloc1((am+1),&ui);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(am+1,&ui);CHKERRQ(ierr);
   ui[0] = 0;
-  ierr  = PetscMalloc1((2*am+1),&cols_lvl);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(2*am+1,&cols_lvl);CHKERRQ(ierr);
 
   /* jl: linked list for storing indices of the pivot rows
      il: il[i] points to the 1st nonzero entry of U(i,k:am-1) */
@@ -1140,7 +1140,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
   ierr = PetscFree(cols_lvl);CHKERRQ(ierr);
 
   /* copy free_space into uj and free free_space; set uj in new datastructure; */
-  ierr = PetscMalloc1((ui[am]+1),&uj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ui[am]+1,&uj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,uj);CHKERRQ(ierr);
   ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
   ierr = PetscFreeSpaceDestroy(free_space_lvl);CHKERRQ(ierr);
@@ -1154,7 +1154,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
   b->free_a        = PETSC_TRUE;
   b->free_ij       = PETSC_TRUE;
 
-  ierr = PetscMalloc1((ui[am]+1),&b->a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ui[am]+1,&b->a);CHKERRQ(ierr);
 
   b->j             = uj;
   b->i             = ui;
@@ -1169,7 +1169,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
   b->icol = perm;
 
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  ierr    = PetscMalloc1((am+1),&b->solve_work);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(am+1,&b->solve_work);CHKERRQ(ierr);
   ierr    = PetscLogObjectMemory((PetscObject)B,(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
 
   b->maxnz = b->nz = ui[am];
@@ -1239,7 +1239,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
   /* initialization */
-  ierr  = PetscMalloc1((mbs+1),&ui);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(mbs+1,&ui);CHKERRQ(ierr);
   ui[0] = 0;
 
   /* jl: linked list for storing indices of the pivot rows
@@ -1325,7 +1325,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   ierr = PetscFree4(ui_ptr,il,jl,cols);CHKERRQ(ierr);
 
   /* copy free_space into uj and free free_space; set uj in new datastructure; */
-  ierr = PetscMalloc1((ui[mbs]+1),&uj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ui[mbs]+1,&uj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,uj);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
@@ -1338,7 +1338,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   b->free_a       = PETSC_TRUE;
   b->free_ij      = PETSC_TRUE;
 
-  ierr = PetscMalloc1((ui[mbs]+1),&b->a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ui[mbs]+1,&b->a);CHKERRQ(ierr);
 
   b->j             = uj;
   b->i             = ui;
@@ -1351,7 +1351,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   ierr     = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   b->icol  = perm;
   ierr     = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  ierr     = PetscMalloc1((mbs+1),&b->solve_work);CHKERRQ(ierr);
+  ierr     = PetscMalloc1(mbs+1,&b->solve_work);CHKERRQ(ierr);
   ierr     = PetscLogObjectMemory((PetscObject)B,(ui[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ui[mbs];
 
@@ -1549,10 +1549,10 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
 
   /* bdiag is location of diagonal in factor */
-  ierr = PetscMalloc1((mbs+1),&bdiag);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mbs+1,&bdiag);CHKERRQ(ierr);
 
   /* allocate row pointers bi */
-  ierr = PetscMalloc1((2*mbs+2),&bi);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*mbs+2,&bi);CHKERRQ(ierr);
 
   /* allocate bj and ba; max num of nonzero entries is (ai[n]+2*n*dtcount+2) */
   dtcount = (PetscInt)info->dtcount;
@@ -1585,7 +1585,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   ierr = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
 
   b->icol  = isicol;
-  ierr     = PetscMalloc1((bs*(mbs+1)),&b->solve_work);CHKERRQ(ierr);
+  ierr     = PetscMalloc1(bs*(mbs+1),&b->solve_work);CHKERRQ(ierr);
   ierr     = PetscLogObjectMemory((PetscObject)B,nnz_max*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = nnz_max/bs2;
 
@@ -1604,7 +1604,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   ierr = PetscMalloc2(mbs,&im,mbs,&jtmp);CHKERRQ(ierr);
   /* rtmp, vtmp: working arrays for sparse and contiguous row entries of active row */
   ierr = PetscMalloc2(mbs*bs2,&rtmp,mbs*bs2,&vtmp);CHKERRQ(ierr);
-  ierr = PetscMalloc1((mbs+1),&vtmp_abs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mbs+1,&vtmp_abs);CHKERRQ(ierr);
   ierr = PetscMalloc3(bs,&v_work,bs2,&multiplier,bs,&v_pivots);CHKERRQ(ierr);
 
   bi[0]       = 0;

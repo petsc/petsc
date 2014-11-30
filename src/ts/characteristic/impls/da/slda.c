@@ -67,8 +67,8 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   ierr = PetscMalloc1(c->numNeighbors, &c->localOffsets);CHKERRQ(ierr);
   ierr = PetscMalloc1(c->numNeighbors, &c->fillCount);CHKERRQ(ierr);
   ierr = PetscMalloc1(c->numNeighbors, &c->remoteOffsets);CHKERRQ(ierr);
-  ierr = PetscMalloc1((c->numNeighbors-1), &c->request);CHKERRQ(ierr);
-  ierr = PetscMalloc1((c->numNeighbors-1),  &c->status);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numNeighbors-1, &c->request);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numNeighbors-1,  &c->status);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

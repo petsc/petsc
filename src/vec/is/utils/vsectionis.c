@@ -812,7 +812,7 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
     const PetscInt last = (s->bc->pEnd-s->bc->pStart) - 1;
 
     ierr = PetscSectionSetUp(s->bc);CHKERRQ(ierr);
-    ierr = PetscMalloc1((s->bc->atlasOff[last] + s->bc->atlasDof[last]), &s->bcIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(s->bc->atlasOff[last] + s->bc->atlasDof[last], &s->bcIndices);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2032,7 +2032,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
     ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart]);CHKERRQ(ierr);
   }
   if (remoteOffsets) {
-    ierr = PetscMalloc1((lpEnd - lpStart), remoteOffsets);CHKERRQ(ierr);
+    ierr = PetscMalloc1(lpEnd - lpStart, remoteOffsets);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
   }
@@ -2062,7 +2062,7 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   ierr = PetscSFCreateEmbeddedSF(sf, rpEnd - rpStart, indices, &embedSF);CHKERRQ(ierr);
   ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
   ierr = ISDestroy(&selected);CHKERRQ(ierr);
-  ierr = PetscCalloc1((lpEnd - lpStart), remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscCalloc1(lpEnd - lpStart, remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);

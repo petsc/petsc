@@ -171,8 +171,8 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
 
   /* Allocate some temporary work arrays that will be used in
    * calculating the permuation vector and groupings. */
-  ierr = PetscMalloc1((m+1), &rows_in_bucket);CHKERRQ(ierr);
-  ierr = PetscMalloc1((m+1), &ipnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1, &rows_in_bucket);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1, &ipnz);CHKERRQ(ierr);
   ierr = PetscMalloc1(m, &nz_in_row);CHKERRQ(ierr);
 
   /* Now actually figure out the permutation and grouping. */
@@ -202,8 +202,8 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
    * We allocate space for the maximum number of groups;
    * that is potentially a little wasteful, but not too much so.
    * Perhaps I should fix it later. */
-  ierr = PetscMalloc1((maxnz+2), &aijperm->xgroup);CHKERRQ(ierr);
-  ierr = PetscMalloc1((maxnz+1), &aijperm->nzgroup);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxnz+2, &aijperm->xgroup);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxnz+1, &aijperm->nzgroup);CHKERRQ(ierr);
 
   /* Second pass.  Look at what is in the buckets and create the groupings.
    * Note that it is OK to have a group of rows with no non-zero values. */

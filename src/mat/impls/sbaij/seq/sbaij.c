@@ -1029,7 +1029,7 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,const MatFactorInfo *info)
   ierr = PetscLogObjectParent((PetscObject)inA,(PetscObject)a->icol);CHKERRQ(ierr);
 
   if (!a->solve_work) {
-    ierr = PetscMalloc1((inA->rmap->N+inA->rmap->bs),&a->solve_work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(inA->rmap->N+inA->rmap->bs,&a->solve_work);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)inA,(inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
@@ -1499,7 +1499,7 @@ PetscErrorCode  MatStoreValues_SeqSBAIJ(Mat mat)
 
   /* allocate space for values if not already there */
   if (!aij->saved_values) {
-    ierr = PetscMalloc1((nz+1),&aij->saved_values);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nz+1,&aij->saved_values);CHKERRQ(ierr);
   }
 
   /* copy values over */
@@ -1690,7 +1690,7 @@ PetscErrorCode MatSeqSBAIJSetPreallocationCSR_SeqSBAIJ(Mat B,PetscInt bs,const P
   m      = B->rmap->n/bs;
 
   if (ii[0]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ii[0] must be 0 but it is %D",ii[0]);
-  ierr = PetscMalloc1((m+1),&nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1,&nnz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     nz = ii[i+1] - ii[i];
     if (nz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row %D has a negative number of columns %D",i,nz);
@@ -2239,12 +2239,12 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
   }
 
   /* read in row lengths */
-  ierr = PetscMalloc1((M+extra_rows),&rowlengths);CHKERRQ(ierr);
+  ierr = PetscMalloc1(M+extra_rows,&rowlengths);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
   for (i=0; i<extra_rows; i++) rowlengths[M+i] = 1;
 
   /* read in column indices */
-  ierr = PetscMalloc1((nz+extra_rows),&jj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nz+extra_rows,&jj);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,jj,nz,PETSC_INT);CHKERRQ(ierr);
   for (i=0; i<extra_rows; i++) jj[nz+i] = M+i;
 
@@ -2283,7 +2283,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat newmat,PetscViewer viewer)
   a->nz = a->i[mbs];
 
   /* read in nonzero values */
-  ierr = PetscMalloc1((nz+extra_rows),&aa);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nz+extra_rows,&aa);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,aa,nz,PETSC_SCALAR);CHKERRQ(ierr);
   for (i=0; i<extra_rows; i++) aa[nz+i] = 1.0;
 

@@ -954,11 +954,11 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 
   /* copy fill information if given */
   if (dd->dfill) {
-    ierr = PetscMalloc1((dd->dfill[dd->w]+dd->w+1),&dd2->dfill);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dd->dfill[dd->w]+dd->w+1,&dd2->dfill);CHKERRQ(ierr);
     ierr = PetscMemcpy(dd2->dfill,dd->dfill,(dd->dfill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (dd->ofill) {
-    ierr = PetscMalloc1((dd->ofill[dd->w]+dd->w+1),&dd2->ofill);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dd->ofill[dd->w]+dd->w+1,&dd2->ofill);CHKERRQ(ierr);
     ierr = PetscMemcpy(dd2->ofill,dd->ofill,(dd->ofill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   /* copy the refine information */
@@ -1084,11 +1084,11 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
 
   /* copy fill information if given */
   if (dd->dfill) {
-    ierr = PetscMalloc1((dd->dfill[dd->w]+dd->w+1),&dd2->dfill);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dd->dfill[dd->w]+dd->w+1,&dd2->dfill);CHKERRQ(ierr);
     ierr = PetscMemcpy(dd2->dfill,dd->dfill,(dd->dfill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (dd->ofill) {
-    ierr = PetscMalloc1((dd->ofill[dd->w]+dd->w+1),&dd2->ofill);CHKERRQ(ierr);
+    ierr = PetscMalloc1(dd->ofill[dd->w]+dd->w+1,&dd2->ofill);CHKERRQ(ierr);
     ierr = PetscMemcpy(dd2->ofill,dd->ofill,(dd->ofill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   /* copy the refine information */

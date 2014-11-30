@@ -151,7 +151,7 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   map->n = map->n*PetscAbs(map->bs);
   map->N = map->N*PetscAbs(map->bs);
   if (!map->range) {
-    ierr = PetscMalloc1((size+1), &map->range);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size+1, &map->range);CHKERRQ(ierr);
   }
   ierr = MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, map->comm);CHKERRQ(ierr);
 
@@ -199,7 +199,7 @@ PetscErrorCode  PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
   ierr = PetscLayoutCreate(comm,out);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout));CHKERRQ(ierr);
-  ierr = PetscMalloc1((size+1),&(*out)->range);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size+1,&(*out)->range);CHKERRQ(ierr);
   ierr = PetscMemcpy((*out)->range,in->range,(size+1)*sizeof(PetscInt));CHKERRQ(ierr);
 
   (*out)->refcnt = 0;

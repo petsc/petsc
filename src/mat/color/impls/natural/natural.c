@@ -38,7 +38,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *
 
   start = start/bs;
   end   = end/bs;
-  ierr  = PetscMalloc1((end-start+1),&colors);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(end-start+1,&colors);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
     colors[i-start] = (ISColoringValue)i;
   }
@@ -54,7 +54,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    ierr = PetscMalloc1((N_loc+1),&colors_loc);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N_loc+1,&colors_loc);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }

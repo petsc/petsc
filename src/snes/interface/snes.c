@@ -4963,7 +4963,7 @@ PetscErrorCode  SNESSetFunctionMatlab(SNES snes,Vec r,const char *f,mxArray *ctx
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(SNESMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscNew(&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(f,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't
@@ -5060,7 +5060,7 @@ PetscErrorCode  SNESSetJacobianMatlab(SNES snes,Mat A,Mat B,const char *J,mxArra
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(SNESMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscNew(&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(J,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't
@@ -5132,7 +5132,7 @@ PetscErrorCode  SNESMonitorSetMatlab(SNES snes,const char *f,mxArray *ctx)
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(SNESMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscNew(&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(f,&sctx->funcname);CHKERRQ(ierr);
   /*
      This should work, but it doesn't

@@ -110,9 +110,9 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   if (nearnulldim) {
     MatNullSpace nullsp;
-    Vec *nullvecs;
-    PetscInt i;
-    ierr = PetscMalloc(nearnulldim*sizeof(nullvecs[0]),&nullvecs);CHKERRQ(ierr);
+    Vec          *nullvecs;
+    PetscInt     i;
+    ierr = PetscMalloc1(nearnulldim,&nullvecs);CHKERRQ(ierr);
     for (i=0; i<nearnulldim; i++) {
       ierr = VecCreate(PETSC_COMM_WORLD,&nullvecs[i]);CHKERRQ(ierr);
       ierr = VecLoad(nullvecs[i],fd);CHKERRQ(ierr);
@@ -160,8 +160,7 @@ int main(int argc,char **args)
     PetscScalar       *zeros;
     row  = 0;
     ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscScalar)*(ncols+1),&zeros);
-    ierr = PetscMemzero(zeros,(ncols+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(ncols+1,&zeros);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(NULL, "-set_row_zero", &flg1,NULL);CHKERRQ(ierr);
     if (flg1) {   /* set entire row as zero */
       ierr = MatSetValues(A,1,&row,ncols,cols,zeros,INSERT_VALUES);CHKERRQ(ierr);

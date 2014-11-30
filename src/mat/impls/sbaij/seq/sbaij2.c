@@ -22,8 +22,8 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
   aj   = a->j;
   bs   = A->rmap->bs;
   ierr = PetscBTCreate(mbs,&table_out);CHKERRQ(ierr);
-  ierr = PetscMalloc1((mbs+1),&nidx);CHKERRQ(ierr);
-  ierr = PetscMalloc1((A->rmap->N+1),&nidx2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mbs+1,&nidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(A->rmap->N+1,&nidx2);CHKERRQ(ierr);
   ierr = PetscBTCreate(mbs,&table_in);CHKERRQ(ierr);
 
   for (i=0; i<is_max; i++) { /* for each is */
@@ -117,7 +117,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse
   ierr  = PetscMalloc1(oldcols,&smap);CHKERRQ(ierr);
   ierr  = PetscMemzero(smap,oldcols*sizeof(PetscInt));CHKERRQ(ierr);
   ssmap = smap;
-  ierr  = PetscMalloc1((1+nrows),&lens);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(1+nrows,&lens);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) smap[irow[i]] = i+1; /* nrows = ncols */
   /* determine lens of each row */
   for (i=0; i<nrows; i++) {
@@ -218,7 +218,7 @@ PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat A,PetscInt n,const IS irow[],const
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc1((n+1),B);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n+1,B);CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {
@@ -605,7 +605,7 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
   ii = a->i;
 
   if (!a->mult_work) {
-    ierr = PetscMalloc1((A->rmap->N+1),&a->mult_work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A->rmap->N+1,&a->mult_work);CHKERRQ(ierr);
   }
   work = a->mult_work;
 
@@ -1066,7 +1066,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   ii = a->i;
 
   if (!a->mult_work) {
-    ierr = PetscMalloc1((A->rmap->n+1),&a->mult_work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A->rmap->n+1,&a->mult_work);CHKERRQ(ierr);
   }
   work = a->mult_work;
 

@@ -166,8 +166,8 @@ PetscInt main(PetscInt argc,char **args)
   } else {   /* test sygvx()  */
     il    = 1;
     ierr  = PetscBLASIntCast(.6*m,&iu);CHKERRQ(ierr);
-    ierr  = PetscMalloc1((m*n+1),&evecs_array);CHKERRQ(ierr);
-    ierr  = PetscMalloc1((6*n+1),&iwork);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(m*n+1,&evecs_array);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(6*n+1,&iwork);CHKERRQ(ierr);
     ifail = iwork + 5*n;
     if (PetscPreLoadIt) {ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);}
     /* in the case "I", vl and vu are not referenced */
@@ -190,7 +190,7 @@ PetscInt main(PetscInt argc,char **args)
   if (PetscPreLoadIt) {
     mats[0] = A; mats[1] = B;
     one     = (PetscInt)one;
-    ierr    = PetscMalloc1((nevs+1),&evecs);CHKERRQ(ierr);
+    ierr    = PetscMalloc1(nevs+1,&evecs);CHKERRQ(ierr);
     for (i=0; i<nevs; i++) {
       ierr = VecCreate(PETSC_COMM_SELF,&evecs[i]);CHKERRQ(ierr);
       ierr = VecSetSizes(evecs[i],PETSC_DECIDE,n);CHKERRQ(ierr);

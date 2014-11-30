@@ -117,7 +117,7 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
       ierr = ISGetLocalSize(osm->is[i],&nidx);CHKERRQ(ierr);
       ierr = ISGetIndices(osm->is[i],&idx);CHKERRQ(ierr);
       /* Print to a string viewer; no more than 15 characters per index plus 512 char for the header.*/
-      ierr = PetscMalloc(sizeof(char)*(16*(nidx+1)+512), &s);CHKERRQ(ierr);
+      ierr = PetscMalloc1(16*(nidx+1)+512, &s);CHKERRQ(ierr);
       ierr = PetscViewerStringOpen(PETSC_COMM_SELF, s, 16*(nidx+1)+512, &sviewer);CHKERRQ(ierr);
       ierr = PetscViewerStringSPrintf(sviewer, "[%D:%D] Subdomain %D with overlap:\n", rank, size, i);CHKERRQ(ierr);
       for (j=0; j<nidx; j++) {
@@ -133,7 +133,7 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
       ierr = PetscFree(s);CHKERRQ(ierr);
       if (osm->is_local) {
         /* Print to a string viewer; no more than 15 characters per index plus 512 char for the header.*/
-        ierr = PetscMalloc(sizeof(char)*(16*(nidx+1)+512), &s);CHKERRQ(ierr);
+        ierr = PetscMalloc1(16*(nidx+1)+512, &s);CHKERRQ(ierr);
         ierr = PetscViewerStringOpen(PETSC_COMM_SELF, s, 16*(nidx+1)+512, &sviewer);CHKERRQ(ierr);
         ierr = PetscViewerStringSPrintf(sviewer, "[%D:%D] Subdomain %D without overlap:\n", rank, size, i);CHKERRQ(ierr);
         ierr = ISGetLocalSize(osm->is_local[i],&nidx);CHKERRQ(ierr);
@@ -1236,8 +1236,8 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
           }
           nnz += len;
         }
-        ierr   = PetscMalloc1((na+1),&iia);CHKERRQ(ierr);
-        ierr   = PetscMalloc1((nnz),&jja);CHKERRQ(ierr);
+        ierr   = PetscMalloc1(na+1,&iia);CHKERRQ(ierr);
+        ierr   = PetscMalloc1(nnz,&jja);CHKERRQ(ierr);
         nnz    = 0;
         iia[0] = 0;
         for (i=0; i<na; i++) { /* fill adjacency */
@@ -1409,8 +1409,8 @@ PetscErrorCode  PCASMCreateSubdomains2D(PetscInt m,PetscInt n,PetscInt M,PetscIn
   if (dof != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," ");
 
   *Nsub     = N*M;
-  ierr      = PetscMalloc1((*Nsub),is);CHKERRQ(ierr);
-  ierr      = PetscMalloc1((*Nsub),is_local);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(*Nsub,is);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(*Nsub,is_local);CHKERRQ(ierr);
   ystart    = 0;
   loc_outer = 0;
   for (i=0; i<N; i++) {

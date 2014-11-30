@@ -1759,7 +1759,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)B),&b->size);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
-  ierr = PetscMalloc1((b->size+2),&b->rangebs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(b->size+2,&b->rangebs);CHKERRQ(ierr);
 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(PetscObjectComm((PetscObject)B),1,&B->stash);CHKERRQ(ierr);
@@ -2130,7 +2130,7 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
 #if defined(PETSC_USE_CTABLE)
     ierr = PetscTableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr);
 #else
-    ierr = PetscMalloc1((a->Nbs),&a->colmap);CHKERRQ(ierr);
+    ierr = PetscMalloc1(a->Nbs,&a->colmap);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory((PetscObject)mat,(a->Nbs)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(a->colmap,oldmat->colmap,(a->Nbs)*sizeof(PetscInt));CHKERRQ(ierr);
 #endif
@@ -2265,7 +2265,7 @@ PetscErrorCode MatLoad_MPISBAIJ(Mat newmat,PetscViewer viewer)
   /* distribute row lengths to all processors */
   ierr = PetscMalloc1((rend-rstart)*bs,&locrowlens);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscMalloc1((M+extra_rows),&rowlengths);CHKERRQ(ierr);
+    ierr = PetscMalloc1(M+extra_rows,&rowlengths);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
     for (i=0; i<extra_rows; i++) rowlengths[M+i] = 1;
     ierr = PetscMalloc1(size,&sndcounts);CHKERRQ(ierr);

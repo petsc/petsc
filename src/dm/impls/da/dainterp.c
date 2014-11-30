@@ -129,7 +129,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 
     /* compute local coordinate arrays */
     nxi  = ratio + 1;
-    ierr = PetscMalloc(sizeof(PetscScalar)*nxi,&xi);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nxi,&xi);CHKERRQ(ierr);
     for (li=0; li<nxi; li++) {
       xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     }
@@ -410,8 +410,8 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
     /* compute local coordinate arrays */
     nxi  = ratioi + 1;
     neta = ratioj + 1;
-    ierr = PetscMalloc(sizeof(PetscScalar)*nxi,&xi);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscScalar)*neta,&eta);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nxi,&xi);CHKERRQ(ierr);
+    ierr = PetscMalloc1(neta,&eta);CHKERRQ(ierr);
     for (li=0; li<nxi; li++) {
       xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     }
@@ -921,9 +921,9 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     nxi   = ratioi + 1;
     neta  = ratioj + 1;
     nzeta = ratiok + 1;
-    ierr  = PetscMalloc(sizeof(PetscScalar)*nxi,&xi);CHKERRQ(ierr);
-    ierr  = PetscMalloc(sizeof(PetscScalar)*neta,&eta);CHKERRQ(ierr);
-    ierr  = PetscMalloc(sizeof(PetscScalar)*nzeta,&zeta);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(nxi,&xi);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(neta,&eta);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(nzeta,&zeta);CHKERRQ(ierr);
     for (li=0; li<nxi; li++) xi[li] = -1.0 + (PetscScalar)li*(2.0/(PetscScalar)(nxi-1));
     for (lj=0; lj<neta; lj++) eta[lj] = -1.0 + (PetscScalar)lj*(2.0/(PetscScalar)(neta-1));
     for (lk=0; lk<nzeta; lk++) zeta[lk] = -1.0 + (PetscScalar)lk*(2.0/(PetscScalar)(nzeta-1));

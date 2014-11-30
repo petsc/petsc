@@ -32,12 +32,12 @@ int main(int argc,char **args)
 
   n      = 100;
   nevs   = iu - il;
-  ierr   = PetscMalloc1((3*n+1),&D);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(3*n+1,&D);CHKERRQ(ierr);
   E      = D + n;
   evals  = E + n;
-  ierr   = PetscMalloc1((5*n+1),&work);CHKERRQ(ierr);
-  ierr   = PetscMalloc1((3*n+1),&iwork);CHKERRQ(ierr);
-  ierr   = PetscMalloc1((3*n+1),&iblock);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(5*n+1,&work);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(3*n+1,&iwork);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(3*n+1,&iblock);CHKERRQ(ierr);
   isplit = iblock + n;
 
   /* Set symmetric tridiagonal matrix */
@@ -79,7 +79,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((nevs+1),&evecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nevs+1,&evecs);CHKERRQ(ierr);
   for (i=0; i<nevs; i++) {
     ierr = VecCreate(PETSC_COMM_SELF,&evecs[i]);CHKERRQ(ierr);
     ierr = VecSetSizes(evecs[i],PETSC_DECIDE,n);CHKERRQ(ierr);

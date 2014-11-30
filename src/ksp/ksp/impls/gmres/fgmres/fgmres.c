@@ -42,8 +42,8 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 
   ierr = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((VEC_OFFSET+2+max_k),&fgmres->prevecs);CHKERRQ(ierr);
-  ierr = PetscMalloc1((VEC_OFFSET+2+max_k),&fgmres->prevecs_user_work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(VEC_OFFSET+2+max_k,&fgmres->prevecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(VEC_OFFSET+2+max_k,&fgmres->prevecs_user_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));CHKERRQ(ierr);
 
   ierr = KSPCreateVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0],0,NULL);CHKERRQ(ierr);

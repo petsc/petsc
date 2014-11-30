@@ -650,6 +650,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftyp
   if (set && flg) lu->options.PrintStat = YES;
   ierr = PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,NULL);CHKERRQ(ierr);
   if (lu->lwork > 0) {
+    /* lwork is in bytes, hence PetscMalloc() is used here, not PetscMalloc1()*/
     ierr = PetscMalloc(lu->lwork,&lu->work);CHKERRQ(ierr);
   } else if (lu->lwork != 0 && lu->lwork != -1) {
     ierr      = PetscPrintf(PETSC_COMM_SELF,"   Warning: lwork %D is not supported by SUPERLU. The default lwork=0 is used.\n",lu->lwork);

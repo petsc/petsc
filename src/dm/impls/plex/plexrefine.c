@@ -1220,7 +1220,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     }
     /* Split faces have 2 vertices and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc1((2 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2 + maxSupportSize*2, &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt newv = vStartNew + (vEnd - vStart) + (f - fStart);
 
@@ -1434,7 +1434,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     }
     /* Split faces have 2 vertices and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc1((2 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2 + maxSupportSize*2, &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt newv = vStartNew + (vEnd - vStart) + (f - fStart);
 
@@ -1698,7 +1698,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     }
     /* Interior split faces have 2 vertices and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc1((2 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2 + maxSupportSize*2, &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fMax; ++f) {
       const PetscInt newv = vStartNew + (vEnd - vStart) + (f - fStart);
 
@@ -2038,7 +2038,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     }
     /* Interior split faces have 2 vertices and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc1((2 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2 + maxSupportSize*2, &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fMax; ++f) {
       const PetscInt newv = vStartNew + (vEnd - vStart) + (f - fStart);
 
@@ -2391,7 +2391,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     }
     /* Split faces have 3 edges and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc1((2 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2 + maxSupportSize*2, &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt  newp = fStartNew + (f - fStart)*4;
       const PetscInt *cone, *ornt, *support;
@@ -3099,7 +3099,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     }
     /* Split faces have 3 edges and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc1((2 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1(2 + maxSupportSize*2, &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fMax; ++f) {
       const PetscInt  newp = fStartNew + (f - fStart)*4;
       const PetscInt *cone, *ornt, *support;
@@ -3970,7 +3970,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     }
     /* Split faces have 4 edges and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc1((4 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1(4 + maxSupportSize*2, &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fEnd; ++f) {
       for (r = 0; r < 4; ++r) {
         /* TODO: This can come from GetFaces_Internal() */
@@ -4700,7 +4700,7 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
     }
     /* Interior split faces have 4 edges and the same cells as the parent */
     ierr = DMPlexGetMaxSizes(dm, NULL, &maxSupportSize);CHKERRQ(ierr);
-    ierr = PetscMalloc1((4 + maxSupportSize*2), &supportRef);CHKERRQ(ierr);
+    ierr = PetscMalloc1(4 + maxSupportSize*2, &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fMax; ++f) {
       for (r = 0; r < 4; ++r) {
         /* TODO: This can come from GetFaces_Internal() */
@@ -6554,7 +6554,7 @@ PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *
   ierr = DMSetDimension(rdm, dim);CHKERRQ(ierr);
   /* Calculate number of new points of each depth */
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = PetscMalloc1((depth+1), &depthSize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(depth+1, &depthSize);CHKERRQ(ierr);
   ierr = PetscMemzero(depthSize, (depth+1) * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = CellRefinerGetSizes(cellRefiner, dm, depthSize);CHKERRQ(ierr);
   /* Step 1: Set chart */
@@ -6608,7 +6608,7 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
-  ierr = PetscMalloc1((depth+1), &depthSize);CHKERRQ(ierr);
+  ierr = PetscMalloc1(depth+1, &depthSize);CHKERRQ(ierr);
   ierr = CellRefinerGetSizes(cellRefiner, dm, depthSize);CHKERRQ(ierr);
   if (cellRefiner) {ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);}
   ierr = PetscMalloc1(pEnd-pStart,&fpoints);CHKERRQ(ierr);

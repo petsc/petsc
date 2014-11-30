@@ -220,11 +220,11 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
   if (am != an) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"A must have a square diagonal portion, am: %d != an: %d",am,an);
 
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr  = PetscMalloc1((1+am),&ci);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(1+am,&ci);CHKERRQ(ierr);
     ci[0] = 0;
     for (i=0; i<am; i++) ci[i+1] = ci[i] + (ai[i+1] - ai[i]) + (bi[i+1] - bi[i]);
-    ierr = PetscMalloc1((1+ci[am]),&cj);CHKERRQ(ierr);
-    ierr = PetscMalloc1((1+ci[am]),&ca);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1+ci[am],&cj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1+ci[am],&ca);CHKERRQ(ierr);
 
     k = 0;
     for (i=0; i<am; i++) {
@@ -307,7 +307,7 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
       aij->a = ml_vals;
     } else {
       /* sort ml_cols and ml_vals */
-      ierr = PetscMalloc1((m+1),&nnz);
+      ierr = PetscMalloc1(m+1,&nnz);
       for (i=0; i<m; i++) nnz[i] = ml_rowptr[i+1] - ml_rowptr[i];
       aj = ml_cols; aa = ml_vals;
       for (i=0; i<m; i++) {
@@ -487,7 +487,7 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
   /* create data - syntactic sugar that should be refactored at some point */
   if (pc_ml->coords==0 || (oldarrsz != arrsz)) {
     ierr = PetscFree(pc_ml->coords);CHKERRQ(ierr);
-    ierr = PetscMalloc1((arrsz), &pc_ml->coords);CHKERRQ(ierr);
+    ierr = PetscMalloc1(arrsz, &pc_ml->coords);CHKERRQ(ierr);
   }
   for (kk=0; kk<arrsz; kk++) pc_ml->coords[kk] = -999.;
   /* copy data in - column oriented */
@@ -686,7 +686,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   /* create and initialize struct 'PetscMLdata' */
   ierr               = PetscNewLog(pc,&PetscMLdata);CHKERRQ(ierr);
   pc_ml->PetscMLdata = PetscMLdata;
-  ierr               = PetscMalloc1((Aloc->cmap->n+1),&PetscMLdata->pwork);CHKERRQ(ierr);
+  ierr               = PetscMalloc1(Aloc->cmap->n+1,&PetscMLdata->pwork);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_SELF,&PetscMLdata->x);CHKERRQ(ierr);
   ierr = VecSetSizes(PetscMLdata->x,Aloc->cmap->n,Aloc->cmap->n);CHKERRQ(ierr);

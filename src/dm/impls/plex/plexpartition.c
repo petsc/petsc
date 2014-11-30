@@ -79,7 +79,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
       PetscInt *tmp;
 
       ierr = PetscMalloc1(off[numCells], &adj);CHKERRQ(ierr);
-      ierr = PetscMalloc1((numCells+1), &tmp);CHKERRQ(ierr);
+      ierr = PetscMalloc1(numCells+1, &tmp);CHKERRQ(ierr);
       ierr = PetscMemcpy(tmp, off, (numCells+1) * sizeof(PetscInt));CHKERRQ(ierr);
       /* Get neighboring cells */
       for (f = fStart; f < fEnd; ++f) {
@@ -224,7 +224,7 @@ PetscErrorCode DMPlexEnlargePartition(DM dm, const PetscInt start[], const Petsc
   ierr = PetscSectionGetChart(origPartSection, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(partSection, pStart, pEnd);CHKERRQ(ierr);
   ierr = ISGetIndices(origPartition, &points);CHKERRQ(ierr);
-  ierr = PetscMalloc1((pEnd - pStart), &tmpPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pEnd - pStart, &tmpPoints);CHKERRQ(ierr);
   ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
   ierr = DMPlexSetAdjacencyUseCone(dm, PETSC_TRUE);CHKERRQ(ierr);
   for (part = pStart; part < pEnd; ++part) {

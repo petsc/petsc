@@ -78,7 +78,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
   /* modify matrix and rhs for Dirichlet boundary conditions */
-  ierr = PetscMalloc1((4*m+1),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(4*m+1,&rows);CHKERRQ(ierr);
   for (i=0; i<m+1; i++) {
     rows[i]          = i; /* bottom */
     rows[3*m - 1 +i] = m*(m+1) + i; /* top */

@@ -17,7 +17,7 @@ PetscErrorCode PetscCDCreate(PetscInt a_size, PetscCoarsenData **a_out)
 
   PetscFunctionBegin;
   /* alocate pool, partially */
-  ierr                 = PetscMalloc(sizeof(PetscCoarsenData), &ail);CHKERRQ(ierr);
+  ierr                 = PetscNew(&ail);CHKERRQ(ierr);
   *a_out               = ail;
   ail->pool_list.next  = NULL;
   ail->pool_list.array = NULL;
@@ -800,7 +800,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
             PetscInt    *sbuff,*pt;
             MPI_Request *request;
             n   /= 2;
-            ierr = PetscMalloc1((2 + 2*n + n*CHUNCK_SIZE)*sizeof(PetscInt) + 2, &sbuff);CHKERRQ(ierr);
+            ierr = PetscMalloc1(2 + 2*n + n*CHUNCK_SIZE + 2, &sbuff);CHKERRQ(ierr);
             /* PetscMalloc4(2+2*n,sbuffs1[nSend1],n*CHUNCK_SIZE,rbuffs1[nSend1],1,rreqs2[nSend1],1,sreqs2[nSend1]); */
             /* save requests */
             sbuffs1[nSend1] = sbuff;

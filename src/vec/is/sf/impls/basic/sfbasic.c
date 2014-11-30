@@ -777,7 +777,7 @@ static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const voi
   ierr = PetscNew(&link);CHKERRQ(ierr);
   ierr = PetscSFBasicPackTypeSetup(link,unit);CHKERRQ(ierr);
   ierr = PetscMalloc2(rootoffset[nrootranks]*link->unitbytes,&link->root,leafoffset[nleafranks]*link->unitbytes,&link->leaf);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nrootranks+nleafranks),&link->requests);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrootranks+nleafranks,&link->requests);CHKERRQ(ierr);
 
 found:
   link->key  = key;

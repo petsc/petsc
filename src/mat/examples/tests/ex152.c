@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -prefix");CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((size+1),&vtxdist);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size+1,&vtxdist);CHKERRQ(ierr);
 
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s.%d.graph",prefix,rank);CHKERRQ(ierr);
 
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
   ni = vtxdist[rank+1]-vtxdist[rank];
 
-  ierr = PetscMalloc1((ni+1),&xadj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ni+1,&xadj);CHKERRQ(ierr);
 
   fread(xadj, sizeof(idx_t), ni+1, fp);
 

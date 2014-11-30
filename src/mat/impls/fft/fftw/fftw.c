@@ -748,8 +748,8 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 #else
       fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1],&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1],&indx2);CHKERRQ(ierr);
 
       if (dim[1]%2==0) {
         NM = dim[1]+2;
@@ -797,8 +797,8 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
       SETERRQ(comm,PETSC_ERR_SUP,"FFTW does not support parallel 3D real transform");
       fftw_mpi_local_size_3d_transposed(dim[0],dim[1],dim[2]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1]*dim[2],&indx1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1]*dim[2],&indx2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1]*dim[2],&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1]*dim[2],&indx2);CHKERRQ(ierr);
 
       if (dim[2]%2==0) NM = dim[2]+2;
       else             NM = dim[2]+1;
@@ -853,8 +853,8 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 
       partial_dim = fftw->partial_dim;
 
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*partial_dim,&indx1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*partial_dim,&indx2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*partial_dim,&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*partial_dim,&indx2);CHKERRQ(ierr);
 
       if (dim[ndim-1]%2==0) NM = 2;
       else                  NM = 1;
@@ -983,8 +983,8 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 #else
       fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1],&indx2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1],&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1],&indx2);CHKERRQ(ierr);
 
       if (dim[1]%2==0) NM = dim[1]+2;
       else             NM = dim[1]+1;
@@ -1027,8 +1027,8 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 #else
       fftw_mpi_local_size_3d_transposed(dim[0],dim[1],dim[2]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1]*dim[2],&indx1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*dim[1]*dim[2],&indx2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1]*dim[2],&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*dim[1]*dim[2],&indx2);CHKERRQ(ierr);
 
       if (dim[2]%2==0) NM = dim[2]+2;
       else             NM = dim[2]+1;
@@ -1081,8 +1081,8 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 
       partial_dim = fftw->partial_dim;
 
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*partial_dim,&indx1);CHKERRQ(ierr);
-      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*partial_dim,&indx2);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*partial_dim,&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc1(((PetscInt)local_n0)*partial_dim,&indx2);CHKERRQ(ierr);
 
       if (dim[ndim-1]%2==0) NM = 2;
       else                  NM = 1;

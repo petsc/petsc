@@ -72,9 +72,9 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
     ierr          = PetscMemzero(ngmres->beta,msize*sizeof(PetscScalar));CHKERRQ(ierr);
     ngmres->lwork = 12*msize;
 #if PETSC_USE_COMPLEX
-    ierr = PetscMalloc(sizeof(PetscReal)*ngmres->lwork,&ngmres->rwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ngmres->lwork,&ngmres->rwork);CHKERRQ(ierr);
 #endif
-    ierr = PetscMalloc(sizeof(PetscScalar)*ngmres->lwork,&ngmres->work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ngmres->lwork,&ngmres->work);CHKERRQ(ierr);
   }
 
   /* linesearch setup */

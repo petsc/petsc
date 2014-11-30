@@ -59,7 +59,7 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   /* create data - syntactic sugar that should be refactored at some point */
   if (pc_gamg->data==0 || (pc_gamg->data_sz != arrsz)) {
     ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
-    ierr = PetscMalloc1((arrsz+1), &pc_gamg->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1(arrsz+1, &pc_gamg->data);CHKERRQ(ierr);
   }
   for (kk=0; kk<arrsz; kk++) pc_gamg->data[kk] = -999.;
   pc_gamg->data[arrsz] = -99.;
@@ -509,10 +509,10 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,const Pets
     for (kk=0,num_crs_ghost=0; kk<num_fine_ghosts; kk++) {
       if ((PetscInt)PetscRealPart(cpcol_state[kk]) != -1) num_crs_ghost++;
     }
-    ierr = PetscMalloc1((nselected_1+num_crs_ghost), &crsGID);CHKERRQ(ierr); /* output */
+    ierr = PetscMalloc1(nselected_1+num_crs_ghost, &crsGID);CHKERRQ(ierr); /* output */
     {
       PetscInt *selected_set;
-      ierr = PetscMalloc1((nselected_1+num_crs_ghost), &selected_set);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nselected_1+num_crs_ghost, &selected_set);CHKERRQ(ierr);
       /* do ghost of 'crsGID' */
       for (kk=0,idx=nselected_1; kk<num_fine_ghosts; kk++) {
         if ((PetscInt)PetscRealPart(cpcol_state[kk]) != -1) {

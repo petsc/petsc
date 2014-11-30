@@ -926,7 +926,7 @@ PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection orig
   ierr = PetscSFDistributeSection(pointSF, originalSection, &remoteOffsets, newSection);CHKERRQ(ierr);
 
   ierr = PetscSectionGetStorageSize(newSection, &fieldSize);CHKERRQ(ierr);
-  ierr = PetscMalloc(fieldSize * sizeof(PetscInt), &newValues);CHKERRQ(ierr);
+  ierr = PetscMalloc1(fieldSize, &newValues);CHKERRQ(ierr);
 
   ierr = ISGetIndices(originalIS, &originalValues);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);

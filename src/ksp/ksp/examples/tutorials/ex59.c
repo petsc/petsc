@@ -119,7 +119,7 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
       }
     }
   }
-  ierr = PetscMalloc1((dd.xm_l*dd.ym_l*dd.zm_l+1),&xadj_temp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dd.xm_l*dd.ym_l*dd.zm_l+1,&xadj_temp);CHKERRQ(ierr);
   ierr = PetscMalloc1(count_adj,&adjncy_temp);CHKERRQ(ierr);
 
   /* now fill CSR data structure */
@@ -473,7 +473,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
 
   PetscFunctionBeginUser;
   /* Gauss-Lobatto-Legendre nodes zGL on [-1,1] */
-  ierr = PetscMalloc1((p+1),&glldata->zGL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(p+1,&glldata->zGL);CHKERRQ(ierr);
   ierr = PetscMemzero(glldata->zGL,(p+1)*sizeof(*glldata->zGL));CHKERRQ(ierr);
 
   glldata->zGL[0]=-1.0;
@@ -481,7 +481,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   if (p > 1) {
     if (p == 2) glldata->zGL[1]=0.0;
     else {
-      ierr = PetscMalloc1((p-1),&M);CHKERRQ(ierr);
+      ierr = PetscMalloc1(p-1,&M);CHKERRQ(ierr);
       for (i=0; i<p-1; i++) {
         si  = (PetscReal)(i+1.0);
         M[i]=0.5*PetscSqrtReal(si*(si+2.0)/((si+0.5)*(si+1.5)));
@@ -496,7 +496,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   }
 
   /* Weights for 1D quadrature */
-  ierr = PetscMalloc1((p+1),&glldata->rhoGL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(p+1,&glldata->rhoGL);CHKERRQ(ierr);
 
   glldata->rhoGL[0]=2.0/(PetscScalar)(p*(p+1.0));
   glldata->rhoGL[p]=glldata->rhoGL[0];
@@ -514,7 +514,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   }
 
   /* Auxiliary mat for laplacian */
-  ierr = PetscMalloc1((p+1),&glldata->A);CHKERRQ(ierr);
+  ierr = PetscMalloc1(p+1,&glldata->A);CHKERRQ(ierr);
   ierr = PetscMalloc1((p+1)*(p+1),&glldata->A[0]);CHKERRQ(ierr);
   for (i=1; i<p+1; i++) glldata->A[i]=glldata->A[i-1]+p+1;
 

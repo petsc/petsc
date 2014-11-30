@@ -167,7 +167,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr        = PetscMalloc(sizeof(AppCtx),&user);CHKERRQ(ierr);
+  ierr        = PetscNew(&user);CHKERRQ(ierr);
   user->param = &param;
   user->grid  = &grid;
   ierr        = DMSetApplicationContext(da,user);CHKERRQ(ierr);

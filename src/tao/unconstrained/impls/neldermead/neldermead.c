@@ -17,8 +17,8 @@ static PetscErrorCode TaoSetUp_NM(Tao tao)
   nm->N = n;
   nm->oneOverN = 1.0/n;
   ierr = VecDuplicateVecs(tao->solution,nm->N+1,&nm->simplex);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nm->N+1),&nm->f_values);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nm->N+1),&nm->indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nm->N+1,&nm->f_values);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nm->N+1,&nm->indices);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&nm->Xbar);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&nm->Xmur);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&nm->Xmue);CHKERRQ(ierr);

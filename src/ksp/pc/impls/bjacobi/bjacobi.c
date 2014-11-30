@@ -97,7 +97,7 @@ end_1:
   } else if (jac->n < 0 && jac->n_local < 0) { /* no blocks given */
     jac->n         = size;
     jac->n_local   = 1;
-    ierr           = PetscMalloc(sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr);
+    ierr           = PetscMalloc1(1,&jac->l_lens);CHKERRQ(ierr);
     jac->l_lens[0] = M;
   } else { /* jac->n > 0 && jac->n_local > 0 */
     if (!jac->l_lens) {
@@ -796,7 +796,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
       pc->ops->applytranspose      = PCApplyTranspose_BJacobi_Singleblock;
       pc->ops->setuponblocks       = PCSetUpOnBlocks_BJacobi_Singleblock;
 
-      ierr        = PetscMalloc(sizeof(KSP),&jac->ksp);CHKERRQ(ierr);
+      ierr        = PetscMalloc1(1,&jac->ksp);CHKERRQ(ierr);
       jac->ksp[0] = ksp;
 
       ierr      = PetscNewLog(pc,&bjac);CHKERRQ(ierr);
@@ -1222,7 +1222,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     ierr = (*pc->pmat->ops->getmultiprocblock)(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
 
     /* create a new PC that processors in each subcomm have copy of */
-    ierr = PetscMalloc(sizeof(KSP),&jac->ksp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1,&jac->ksp);CHKERRQ(ierr);
     ierr = KSPCreate(subcomm,&jac->ksp[0]);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)jac->ksp[0],(PetscObject)pc,1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->ksp[0]);CHKERRQ(ierr);

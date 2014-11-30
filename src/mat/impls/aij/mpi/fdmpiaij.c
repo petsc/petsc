@@ -488,13 +488,13 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       }
 
       /* Get cols, the complete list of columns for this color on each process */
-      ierr = PetscMalloc1((nctot+1),&cols);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nctot+1,&cols);CHKERRQ(ierr);
       ierr = MPI_Allgatherv((void*)is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
       ierr = PetscFree2(ncolsonproc,disp);CHKERRQ(ierr);
     } else if (ctype == IS_COLORING_GHOSTED) {
       /* Determine local number of columns of this color on this process, including ghost points */
       nctot = n;
-      ierr  = PetscMalloc1((nctot+1),&cols);CHKERRQ(ierr);
+      ierr  = PetscMalloc1(nctot+1,&cols);CHKERRQ(ierr);
       ierr  = PetscMemcpy(cols,is,n*sizeof(PetscInt));CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this MatFDColoring type");
 
