@@ -216,14 +216,17 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
   PetscScalar       *val;
   PetscErrorCode    ierr;
   PetscInt          *row,*col;
-  Mat_SeqSBAIJ      *aa=(Mat_SeqSBAIJ*)A->data;
+  Mat_SeqAIJ        *aa=(Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
   ai   =aa->i; aj=aa->j;av=aa->a;
   adiag=aa->diag;
   if (reuse == MAT_INITIAL_MATRIX) {
-    nz   = M + (aa->nz-M)/2;
+    /* count nz in the uppper triangular part of A */
+    nz = 0;
+    for (i=0; i<M; i++) nz += ai[i+1] - adiag[i];
     *nnz = nz;
+
     ierr = PetscMalloc((2*nz*sizeof(PetscInt)+nz*sizeof(PetscScalar)), &row);CHKERRQ(ierr);
     col  = row + nz;
     val  = (PetscScalar*)(col + nz);
