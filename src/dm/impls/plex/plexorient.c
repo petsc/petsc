@@ -161,7 +161,8 @@ PetscErrorCode DMPlexOrient(DM dm)
   PetscBool         *match, *flipped;
   PetscBT            seenCells, flippedCells, seenFaces;
   PetscInt          *faceFIFO, fTop, fBottom, *cellComp, *faceComp;
-  PetscInt           numLeaves, numRoots, dim, h, cStart, cEnd, c, cell, fStart, fEnd, face, numComponents, off, totNeighbors = 0, comp = 0;
+  PetscInt           numLeaves, numRoots, dim, h, cStart, cEnd, c, cell, fStart, fEnd, face, off, totNeighbors = 0;
+  PetscMPIInt        numComponents, comp = 0;
   PetscBool          flg;
   PetscErrorCode     ierr;
 
@@ -334,10 +335,10 @@ PetscErrorCode DMPlexOrient(DM dm)
     Mat          G;
     PetscBT      seenProcs, flippedProcs;
     PetscInt    *procFIFO, pTop, pBottom;
-    PetscInt    *N   = NULL, *Noff, *Nc;
+    PetscInt    *N   = NULL, *Noff;
     PetscSFNode *adj = NULL;
     PetscBool   *val = NULL;
-    PetscMPIInt *recvcounts = NULL, *displs = NULL, p, o;
+    PetscMPIInt *recvcounts = NULL, *displs = NULL, *Nc, p, o;
     PetscMPIInt  numProcs = 0, rank;
     PetscInt     debug = 0;
 
@@ -350,7 +351,7 @@ PetscErrorCode DMPlexOrient(DM dm)
       displs[p+1] = displs[p] + Nc[p];
     }
     if (!rank) {ierr = PetscMalloc1(displs[numProcs],&N);CHKERRQ(ierr);}
-    ierr = MPI_Gatherv(numNeighbors, numComponents, MPI_INT, N, Nc, displs, MPI_INT, 0, comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(numNeighbors, numComponents, MPIU_INT, N, Nc, displs, MPIU_INT, 0, comm);CHKERRQ(ierr);
     for (p = 0, o = 0; p < numProcs; ++p) {
       recvcounts[p] = 0;
       for (c = 0; c < Nc[p]; ++c, ++o) recvcounts[p] += N[o];
