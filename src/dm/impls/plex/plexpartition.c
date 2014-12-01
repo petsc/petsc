@@ -1453,7 +1453,7 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
-  if (closure) {ierr = DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);}
+  if (closure) {ierr = DMPlexRestoreTransitiveClosure(dm, 0, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);}
   ierr = ISRestoreIndices(rankIS, &ranks);CHKERRQ(ierr);
   ierr = ISDestroy(&rankIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
