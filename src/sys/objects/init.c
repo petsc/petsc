@@ -8,6 +8,7 @@
 
 #define PETSC_DESIRE_COMPLEX
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <petscvalgrind.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
