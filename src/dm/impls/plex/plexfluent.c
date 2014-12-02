@@ -75,7 +75,12 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
     ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
     snum = sscanf(buffer, "(%x %x %x %d %d)", &(s->zoneID), &(s->first), &(s->last), &(s->type), &(s->nd));
     if (snum != 5) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
-    ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+    if (s->zoneID > 0) {
+      PetscInt numCoords = s->last - s->first + 1;
+      ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '(');CHKERRQ(ierr);
+      ierr = PetscMalloc1(s->nd*numCoords, (PetscScalar**)&s->data);CHKERRQ(ierr);
+      ierr = PetscViewerRead(viewer, (PetscScalar*)s->data, numCoords*s->nd, PETSC_REAL);CHKERRQ(ierr);
+    }
 
   } else if (s->index == 12) {   /* Cells */
     ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
@@ -164,6 +169,10 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   PetscInt       c, f, v, dim = PETSC_DETERMINE, numCells = 0, numVertices = 0, numCellVertices = PETSC_DETERMINE;
   PetscInt       numFaces = PETSC_DETERMINE, numFaceEntries = PETSC_DETERMINE, numFaceVertices = PETSC_DETERMINE;
   PetscInt      *faces = NULL, *cellVertices;
+  PetscInt       d, coordSize;
+  PetscScalar   *coords, *coordsIn = NULL;
+  PetscSection   coordSection;
+  Vec            coordinates;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -178,6 +187,10 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
 
       } else if (s.index == 10) {         /* Vertices */
         if (s.zoneID == 0) numVertices = s.last;
+        else {
+          if (coordsIn) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Currently no support for multiple coordinate sets in Fluent files");
+          coordsIn = s.data;
+        }
 
       } else if (s.index == 12) {         /* Cells */
         if (s.zoneID == 0) numCells = s.last;
@@ -275,9 +288,36 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
     *dm  = idm;
   }
 
+  /* Read coordinates */
+  ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
+  for (v = numCells; v < numCells+numVertices; ++v) {
+    ierr = PetscSectionSetDof(coordSection, v, dim);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSection, v, 0, dim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
+  ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetType(coordinates, VECSTANDARD);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  if (!rank) {
+    for (v = 0; v < numVertices; ++v) {
+      for (d = 0; d < dim; ++d) {
+        coords[v*dim+d] = coordsIn[v*dim+d];
+      }
+    }
+  }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscFree(cellVertices);CHKERRQ(ierr);
     ierr = PetscFree(faces);CHKERRQ(ierr);
+    ierr = PetscFree(coordsIn);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
