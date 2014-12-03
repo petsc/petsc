@@ -1381,9 +1381,10 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(targetDM, dim);CHKERRQ(ierr);
 
+  /* Check for a one-to-all distribution pattern */
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
-  if (nroots > 0) {
+  if (nroots >= 0) {
     IS                     isOriginal;
     ISLocalToGlobalMapping ltogOriginal;
     PetscInt               n, size, nleaves, conesSize;
@@ -1411,7 +1412,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
     ierr = ISDestroy(&isOriginal);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&ltogOriginal);
   } else {
-    /* Assume zero-to-all-ranks pattern and derive LToG from SF */
+    /* One-to-all distribution pattern: We can derive LToG from SF */
     ierr = ISLocalToGlobalMappingCreateSF(sf, 0, &ltogMigration);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-partition_view", &flg);CHKERRQ(ierr);
