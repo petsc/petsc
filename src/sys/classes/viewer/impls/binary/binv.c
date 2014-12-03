@@ -1256,6 +1256,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   vbinary->skipheader      = PETSC_FALSE;
   v->ops->getsingleton     = PetscViewerGetSingleton_Binary;
   v->ops->restoresingleton = PetscViewerRestoreSingleton_Binary;
+  v->ops->read             = PetscViewerBinaryRead;
   vbinary->btype           = (PetscFileMode) -1;
   vbinary->storecompressed = PETSC_FALSE;
   vbinary->filename        = 0;
