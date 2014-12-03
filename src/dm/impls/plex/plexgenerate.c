@@ -595,7 +595,7 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
 
           ierr = DMPlexGetJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
           if (numFaces != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
-          if (glabel) {ierr = DMLabelSetValue(glabel, , faces[0], out.trifacemarkerlist[f]);CHKERRQ(ierr);}
+          if (glabel) {ierr = DMLabelSetValue(glabel, faces[0], out.trifacemarkerlist[f]);CHKERRQ(ierr);}
           ierr = DMPlexRestoreJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
         }
       }
