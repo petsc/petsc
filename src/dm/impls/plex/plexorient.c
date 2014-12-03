@@ -292,7 +292,7 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscInt  l, n;
 
     numNeighbors[comp] = 0;
-    ierr = PetscMalloc1(numLeaves, &neighbors[comp]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(PetscMax(numLeaves, 0), &neighbors[comp]);CHKERRQ(ierr);
     /* I know this is p^2 time in general, but for bounded degree its alright */
     for (l = 0; l < numLeaves; ++l) {
       const PetscInt face = lpoints[l];
