@@ -575,13 +575,15 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
 
   /* reset any previous search of connected components */
   ierr = PetscBTMemzero(graph->nvtxs,graph->touched);CHKERRQ(ierr);
+  graph->n_subsets = 0;
   if (size == 1) {
-    graph->n_subsets = 1;
-    for (i=0;i<graph->nvtxs;i++) {
-      graph->subset[i] = 1;
+    if (graph->nvtxs) {
+      graph->n_subsets = 1;
+      for (i=0;i<graph->nvtxs;i++) {
+        graph->subset[i] = 1;
+      }
     }
   } else {
-    graph->n_subsets = 0;
     for (i=0;i<graph->nvtxs;i++) {
       if (graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK || !graph->count[i]) {
         ierr = PetscBTSet(graph->touched,i);CHKERRQ(ierr);
