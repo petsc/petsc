@@ -91,4 +91,3 @@ end
 if ischar(inarg) || isinteger(inarg)
     close(fd)
 end
-
