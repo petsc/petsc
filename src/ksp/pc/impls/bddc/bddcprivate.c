@@ -2500,23 +2500,108 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   }
 
   /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
-  if (pcbddc->use_local_adj && (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy)) {
-    Mat mat_adj;
-    const PetscInt *xadj,*adjncy;
+  if (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy) {
+    Mat       mat_adj;
+    PetscInt  *xadj,*adjncy;
+    PetscInt  nvtxs;
     PetscBool flg_row=PETSC_TRUE;
 
     ierr = MatConvert(matis->A,MATMPIADJ,MAT_INITIAL_MATRIX,&mat_adj);CHKERRQ(ierr);
-    ierr = MatGetRowIJ(mat_adj,0,PETSC_TRUE,PETSC_FALSE,&i,&xadj,&adjncy,&flg_row);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(mat_adj,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
     if (!flg_row) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatGetRowIJ called in %s\n",__FUNCT__);
     }
-    ierr = PCBDDCSetLocalAdjacencyGraph(pc,i,xadj,adjncy,PETSC_COPY_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRowIJ(mat_adj,0,PETSC_TRUE,PETSC_FALSE,&i,&xadj,&adjncy,&flg_row);CHKERRQ(ierr);
+    if (pcbddc->use_local_adj) {
+      ierr = PCBDDCSetLocalAdjacencyGraph(pc,nvtxs,xadj,adjncy,PETSC_COPY_VALUES);CHKERRQ(ierr);
+      pcbddc->deluxe_compute_rowadj = PETSC_FALSE;
+    } else { /* just compute subdomain's connected components */
+      IS                     is_dummy;
+      ISLocalToGlobalMapping l2gmap_dummy;
+      PetscInt               j,sum;
+      PetscInt               *cxadj,*cadjncy;
+      const PetscInt         *idxs;
+      PCBDDCGraph            graph;
+      PetscBT                is_on_boundary;
+
+      ierr = ISCreateStride(PETSC_COMM_SELF,pcis->n,0,1,&is_dummy);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingCreateIS(is_dummy,&l2gmap_dummy);CHKERRQ(ierr);
+      ierr = ISDestroy(&is_dummy);CHKERRQ(ierr);
+      ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
+      ierr = PCBDDCGraphInit(graph,l2gmap_dummy);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingDestroy(&l2gmap_dummy);CHKERRQ(ierr);
+      graph->xadj = xadj;
+      graph->adjncy = adjncy;
+      ierr = PCBDDCGraphSetUp(graph,1,NULL,NULL,0,NULL,NULL);CHKERRQ(ierr);
+      ierr = PCBDDCGraphComputeConnectedComponents(graph);CHKERRQ(ierr);
+
+      if (pcbddc->dbg_flag) {
+        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"[%d] Found %d subdomains\n",PetscGlobalRank,graph->ncc);CHKERRQ(ierr);
+        for (i=0;i<graph->ncc;i++) {
+          ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"[%d] %d cc size %d\n",PetscGlobalRank,i,graph->cptr[i+1]-graph->cptr[i]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+      }
+
+      ierr = PetscBTCreate(nvtxs,&is_on_boundary);CHKERRQ(ierr);
+      ierr = ISGetIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
+      for (i=0;i<pcis->n_B;i++) {
+        ierr = PetscBTSet(is_on_boundary,idxs[i]);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
+
+      ierr = PetscCalloc1(nvtxs+1,&cxadj);CHKERRQ(ierr);
+      sum = 0;
+      for (i=0;i<graph->ncc;i++) {
+        PetscInt sizecc = 0;
+        for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
+          if (PetscBTLookup(is_on_boundary,graph->queue[j])) {
+            sizecc++;
+          }
+        }
+        for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
+          if (PetscBTLookup(is_on_boundary,graph->queue[j])) {
+            cxadj[graph->queue[j]] = sizecc;
+          }
+        }
+        sum += sizecc*sizecc;
+      }
+      ierr = PetscMalloc1(sum,&cadjncy);CHKERRQ(ierr);
+      sum = 0;
+      for (i=0;i<nvtxs;i++) {
+        PetscInt temp = cxadj[i];
+        cxadj[i] = sum;
+        sum += temp;
+      }
+      cxadj[nvtxs] = sum;
+      for (i=0;i<graph->ncc;i++) {
+        for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
+          if (PetscBTLookup(is_on_boundary,graph->queue[j])) {
+            PetscInt k,sizecc = 0;
+            for (k=graph->cptr[i];k<graph->cptr[i+1];k++) {
+              if (PetscBTLookup(is_on_boundary,graph->queue[k])) {
+                cadjncy[cxadj[graph->queue[j]]+sizecc]=graph->queue[k];
+                sizecc++;
+              }
+            }
+          }
+        }
+      }
+      if (nvtxs) {
+        ierr = PCBDDCSetLocalAdjacencyGraph(pc,nvtxs,cxadj,cadjncy,PETSC_OWN_POINTER);CHKERRQ(ierr);
+      } else {
+        ierr = PetscFree(cxadj);CHKERRQ(ierr);
+        ierr = PetscFree(cadjncy);CHKERRQ(ierr);
+      }
+      graph->xadj = 0;
+      graph->adjncy = 0;
+      ierr = PCBDDCGraphDestroy(&graph);CHKERRQ(ierr);
+      ierr = PetscBTDestroy(&is_on_boundary);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRowIJ(mat_adj,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
     if (!flg_row) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatRestoreRowIJ called in %s\n",__FUNCT__);
     }
     ierr = MatDestroy(&mat_adj);CHKERRQ(ierr);
-    pcbddc->deluxe_compute_rowadj = PETSC_FALSE;
   }
 
   /* Set default dofs' splitting if no information has been provided by the user with PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal */
