@@ -683,7 +683,7 @@ PetscErrorCode DMMoabGetMaterialBlock(DM dm,const moab::EntityHandle ehandle, Pe
 
 .seealso: DMMoabGetVertexConnectivity()
 @*/
-PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::EntityHandle *conn,PetscScalar *vpos)
+PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::EntityHandle *conn,PetscReal *vpos)
 {
   DM_Moab         *dmmoab;
   PetscErrorCode  ierr;
