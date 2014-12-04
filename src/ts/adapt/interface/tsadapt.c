@@ -124,12 +124,15 @@ PetscErrorCode  TSAdaptInitializePackage(void)
 #define __FUNCT__ "TSAdaptSetType"
 PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 {
+  PetscBool      match;
   PetscErrorCode ierr,(*r)(TSAdapt);
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)adapt,type,&match);CHKERRQ(ierr);
+  if (match) PetscFunctionReturn(0);
   ierr = PetscFunctionListFind(TSAdaptList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSAdapt type \"%s\" given",type);
-  if (((PetscObject)adapt)->type_name) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
+  if (adapt->ops->destroy) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
   /* Reinitialize function pointers in TSAdaptOps structure */
   ierr = PetscMemzero(adapt->ops,sizeof(struct _TSAdaptOps));CHKERRQ(ierr);
   ierr = (*r)(adapt);CHKERRQ(ierr);

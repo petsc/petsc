@@ -331,6 +331,7 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;
   SNES           snes;
+  TSAdapt        adapt;
   DM             dm;
 
   PetscFunctionBegin;
@@ -346,10 +347,8 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   if (th->Theta == 0.5 && th->endpoint) th->order = 2;
   else th->order = 1;
 
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   if (!th->adapt) {
-    TSAdapt adapt;
-    ierr = TSAdaptDestroy(&ts->adapt);CHKERRQ(ierr);
-    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptSetType(adapt,TSADAPTNONE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
