@@ -649,11 +649,12 @@ PetscErrorCode SNESFASCoarseCorrection(SNES snes, Vec X, Vec F, Vec X_new)
 
     if (fasc->eventinterprestrict) {ierr = PetscLogEventBegin(fasc->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = SNESFASRestrict(snes,X,Xo_c);CHKERRQ(ierr);
-    /* restrict the defect */
+    /* restrict the defect: R(F(x) - b) */
     ierr = MatRestrict(restrct, F, B_c);CHKERRQ(ierr);
     if (fasc->eventinterprestrict) {ierr = PetscLogEventEnd(fasc->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
 
     if (fasc->eventresidual) {ierr = PetscLogEventBegin(fasc->eventresidual,0,0,0,0);CHKERRQ(ierr);}
+    /* F_c = F^c(Rx) - R(F(x) - b) since the second term was sitting in next->vec_rhs */
     ierr = SNESComputeFunction(next, Xo_c, F_c);CHKERRQ(ierr);
     if (fasc->eventresidual) {ierr = PetscLogEventEnd(fasc->eventresidual,0,0,0,0);CHKERRQ(ierr);}
 
