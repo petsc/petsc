@@ -389,7 +389,7 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Theta=%g\n",(double)th->Theta);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Extrapolation=%s\n",th->extrapolate ? "yes" : "no");CHKERRQ(ierr);
   }
-  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
+  if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
