@@ -2338,7 +2338,7 @@ PetscErrorCode  TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->prestage) {
+  if (ts->poststage) {
     PetscStackCallStandard((*ts->poststage),(ts,stagetime,stageindex,Y));
   }
   PetscFunctionReturn(0);
