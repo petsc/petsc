@@ -170,7 +170,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
   SNESConvergedReason snesreason;
   PetscErrorCode      ierr;
   TSAdapt             adapt;
-  PetscBool           accept;
+  PetscBool           stageok,accept = PETSC_TRUE;
 
   PetscFunctionBegin;
   next_time_step = ts->time_step;
@@ -200,8 +200,8 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ierr = TSPostStage(ts,th->stage_time,0,&(th->X));CHKERRQ(ierr);
     ts->snes_its += its; ts->ksp_its += lits;
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
-    if (!accept) continue;
+    ierr = TSAdaptCheckStage(adapt,ts,&stageok);CHKERRQ(ierr);
+    if (!stageok) continue;
     ierr = TSEvaluateStep(ts,th->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
