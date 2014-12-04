@@ -2393,7 +2393,7 @@ PetscErrorCode  TSRHSJacobianP(TS ts,PetscReal t,Vec X,Mat Amat)
           function evaluation routine (may be NULL)
 
     Calling sequence of func:
-$     func (TS ts,PetscReal t,Vec u,PetscReal *f,void *ctx);
+$     TSCostIntegrand(TS ts,PetscReal t,Vec u,PetscReal *f,void *ctx);
 
 +   t - current timestep
 .   u - input vector
@@ -2406,10 +2406,9 @@ $     func (TS ts,PetscReal t,Vec u,PetscReal *f,void *ctx);
 
 .seealso: TSSetRHSJacobianP(),TSSetSensitivity(),TSSetSensitivityP()
 @*/
-PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),void *ctx)
+PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,TSCostIntegrand fq,void *ctx)
 {
   PetscErrorCode ierr;
-  Vec      ralloc = NULL;
   PetscInt size;
 
   PetscFunctionBegin;
@@ -2422,15 +2421,14 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscErrorCod
   if (!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSSetSensitivity() or TSSetSensitivityP() first so that the number of cost functions can be determined.");
   if (ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetSensitivity() or TSSetSensitivityP()");
   ierr = VecGetSize(q,&size);CHKERRQ(ierr);
+  ierr = VecZeroEntries(q);CHKERRQ(ierr);
   if (size!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions is inconsistent with the number of integrals (size of the 3rd input vector of TSSetCostIntegrand()).");
   
   ierr = PetscObjectReference((PetscObject)q);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costquad);CHKERRQ(ierr);
   ts->vec_costquad = q;
 
-  ierr                  = VecDuplicate(ts->vec_costquad,&ralloc);CHKERRQ(ierr);
-  ts->vec_costintegrand = ralloc;
-  ierr                  = VecDestroy(&ralloc);CHKERRQ(ierr);
+  ierr                  = VecDuplicate(ts->vec_costquad,&ts->vec_costintegrand);CHKERRQ(ierr);
   ts->costintegrand     = fq;
   ts->costintegrandctx  = ctx;
  
@@ -2523,14 +2521,14 @@ PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q)
 - func - The function
 
   Calling sequence of func:
-. func (TS ts);
+. TSDRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,void *ctx);
 
   Level: intermediate
 
 .keywords: TS, sensitivity 
 .seealso: 
 @*/
-PetscErrorCode  TSSetDRDYFunction(TS ts,Vec *drdy,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+PetscErrorCode  TSSetDRDYFunction(TS ts,Vec *drdy,TSDRDYFunction func,void *ctx)
 { 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -2588,14 +2586,14 @@ PetscErrorCode  TSComputeDRDYFunction(TS ts,PetscReal t,Vec X,Vec *drdy)
 - func - The function
 
   Calling sequence of func:
-. func (TS ts);
+.  
 
   Level: intermediate
 
 .keywords: TS, sensitivity 
 .seealso: 
 @*/
-PetscErrorCode  TSSetDRDPFunction(TS ts,Vec *drdp,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+PetscErrorCode  TSSetDRDPFunction(TS ts,Vec *drdp,TSDRDPFunction func,void *ctx)
 { 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);

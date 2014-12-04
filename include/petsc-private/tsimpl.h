@@ -81,9 +81,14 @@ struct _p_TS {
   void      *drdpfunctionctx;
 
   PetscErrorCode (*rhsjacobianp)(TS,PetscReal,Vec,Mat,void*);
+/*
   PetscErrorCode (*costintegrand)(TS,PetscReal,Vec,Vec,void*);
   PetscErrorCode (*drdyfunction)(TS,PetscReal,Vec,Vec*,void*);
   PetscErrorCode (*drdpfunction)(TS,PetscReal,Vec,Vec*,void*);
+*/
+  TSCostIntegrand costintegrand;
+  TSDRDYFunction  drdyfunction;
+  TSDRDPFunction  drdpfunction;
 
   /* ---------------------- IMEX support ---------------------------------*/
   /* These extra slots are only used when the user provides both Implicit and RHS */

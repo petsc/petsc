@@ -329,7 +329,7 @@ static PetscErrorCode TSStepAdj_Theta(TS ts)
     } 
   }else { /* one-stage case */
     shift = 0.0;
-    ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
+    ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr); /* get -f_y */
     if (ts->vec_costquad) {
       ierr = TSComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
       /* Evolve ts->vec_costquad to compute integrals */
