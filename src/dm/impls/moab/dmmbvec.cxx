@@ -438,7 +438,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
   const moab::Range      *range;
   PetscInt               count,lnative_vec,gnative_vec;
   std::string ttname;
-  PetscScalar *data_ptr;
+  PetscScalar *data_ptr,*defaultvals;
 
   Vec_MOAB *vmoab;
   DM_Moab *dmmoab = (DM_Moab*)dm->data;
@@ -472,12 +472,14 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
       is_newtag = PETSC_TRUE;
 
       /* Create the default value for the tag (all zeros) */
-      std::vector<PetscScalar> default_value(dmmoab->numFields, 0.0);
+      ierr = PetscMalloc(dmmoab->numFields*sizeof(PetscScalar),&defaultvals);CHKERRQ(ierr);
+      ierr = PetscMemzero(defaultvals,dmmoab->numFields*sizeof(PetscScalar));CHKERRQ(ierr);
 
       /* Create the tag */
-      merr = mbiface->tag_get_handle(tag_name,dmmoab->numFields,moab::MB_TYPE_DOUBLE,tag,
-                                    moab::MB_TAG_DENSE|moab::MB_TAG_CREAT,default_value.data());MBERRNM(merr);
+      merr = mbiface->tag_get_handle(tag_name,dmmoab->numFields*sizeof(PetscScalar),moab::MB_TYPE_OPAQUE,tag,
+                                    moab::MB_TAG_DENSE|moab::MB_TAG_CREAT,defaultvals);MBERRNM(merr);
       ierr = PetscFree(tag_name);CHKERRQ(ierr);
+      ierr = PetscFree(defaultvals);CHKERRQ(ierr);
     }
     else {
       /* Make sure the tag data is of type "double" */

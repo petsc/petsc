@@ -695,7 +695,7 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::Entit
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!vpos) {
-    ierr = PetscMalloc(sizeof(PetscScalar)*nconn*3, &vpos);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscReal)*nconn*3, &vpos);CHKERRQ(ierr);
   }
 
   /* Get connectivity information in MOAB canonical ordering */
