@@ -179,6 +179,10 @@ static PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt d
   switch (refiner) {
   case REFINER_NOOP:
     break;
+  case REFINER_SIMPLEX_1D:
+    depthSize[0] = vEnd - vStart + cEnd - cStart;         /* Add a vertex on every cell. */
+    depthSize[1] = 2*(cEnd - cStart);                     /* Split every cell in 2. */
+    break;
   case REFINER_SIMPLEX_2D:
     depthSize[0] = vEnd - vStart + fEnd - fStart;         /* Add a vertex on every face */
     depthSize[1] = 2*(fEnd - fStart) + 3*(cEnd - cStart); /* Every face is split into 2 faces and 3 faces are added for each cell */
@@ -314,6 +318,30 @@ static PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscI
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
   ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
   switch (refiner) {
+  case REFINER_SIMPLEX_1D:
+    /* All cells have 2 vertices */
+    for (c = cStart; c < cEnd; ++c) {
+      for (r = 0; r < 2; ++r) {
+        const PetscInt newp = cStartNew + (c - cStart)*2 + r;
+
+        ierr = DMPlexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
+      }
+    }
+    /* Old vertices have identical supports */
+    for (v = vStart; v < vEnd; ++v) {
+      const PetscInt newp = vStartNew + (v - vStart);
+      PetscInt       size;
+
+      ierr = DMPlexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
+      ierr = DMPlexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
+    }
+    /* Cell vertices have support 2 */
+    for (c = cStart; c < cEnd; ++c) {
+      const PetscInt newp = vStartNew + (vEnd - vStart) + (c - cStart);
+
+      ierr = DMPlexSetSupportSize(rdm, newp, 2);CHKERRQ(ierr);
+    }
+    break;
   case REFINER_SIMPLEX_2D:
     /* All cells have 3 faces */
     for (c = cStart; c < cEnd; ++c) {
@@ -1116,6 +1144,70 @@ static PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt d
   ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
   ierr = GetDepthEnd_Private(depth, depthSize, &cEndNew, &fEndNew, &eEndNew, &vEndNew);CHKERRQ(ierr);
   switch (refiner) {
+  case REFINER_SIMPLEX_1D:
+    /* Max support size of refined mesh is 2 */
+    ierr = PetscMalloc1(2, &supportRef);CHKERRQ(ierr);
+    /* All cells have 2 vertices */
+    for (c = cStart; c < cEnd; ++c) {
+      const PetscInt  newv = vStartNew + (vEnd - vStart) + (c - cStart);
+
+      for (r = 0; r < 2; ++r) {
+        const PetscInt newp = cStartNew + (c - cStart)*2 + r;
+        const PetscInt *cone;
+        PetscInt        coneNew[2];
+
+        ierr             = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
+        coneNew[0]       = vStartNew + (cone[0] - vStart);
+        coneNew[1]       = vStartNew + (cone[1] - vStart);
+        coneNew[(r+1)%2] = newv;
+        ierr             = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+#if 1
+        if ((newp < cStartNew) || (newp >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", newp, cStartNew, cEndNew);
+        for (p = 0; p < 2; ++p) {
+          if ((coneNew[p] < vStartNew) || (coneNew[p] >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", coneNew[p], vStartNew, vEndNew);
+        }
+#endif
+      }
+    }
+    /* Old vertices have identical supports */
+    for (v = vStart; v < vEnd; ++v) {
+      const PetscInt  newp = vStartNew + (v - vStart);
+      const PetscInt *support, *cone;
+      PetscInt        size, s;
+
+      ierr = DMPlexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
+      ierr = DMPlexGetSupport(dm, v, &support);CHKERRQ(ierr);
+      for (s = 0; s < size; ++s) {
+        PetscInt r = 0;
+
+        ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+        if (cone[1] == v) r = 1;
+        supportRef[s] = cStartNew + (support[s] - cStart)*2 + r;
+      }
+      ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
+#if 1
+      if ((newp < vStartNew) || (newp >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", newp, vStartNew, vEndNew);
+      for (p = 0; p < size; ++p) {
+        if ((supportRef[p] < cStartNew) || (supportRef[p] >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", supportRef[p], cStartNew, cEndNew);
+      }
+#endif
+    }
+    /* Cell vertices have support of 2 cells */
+    for (c = cStart; c < cEnd; ++c) {
+      const PetscInt  newp = vStartNew + (vEnd - vStart) + (c - cStart);
+
+      supportRef[0] = cStartNew + (c - cStart)*2 + 0;
+      supportRef[1] = cStartNew + (c - cStart)*2 + 1;
+      ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
+#if 1
+      if ((newp < vStartNew) || (newp >= vEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a vertex [%d, %d)", newp, vStartNew, vEndNew);
+      for (p = 0; p < 2; ++p) {
+        if ((supportRef[p] < cStartNew) || (supportRef[p] >= cEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a cell [%d, %d)", supportRef[p], cStartNew, cEndNew);
+      }
+#endif
+    }
+    ierr = PetscFree(supportRef);CHKERRQ(ierr);
+    break;
   case REFINER_SIMPLEX_2D:
     /*
      2
@@ -5481,6 +5573,36 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
+  case REFINER_SIMPLEX_1D:
+    /* Cell vertices have the average of the two end coordinates */
+    for (c = cStart; c < cMax; ++c ) {
+      const PetscInt newv = vStartNew + (vEnd - vStart) + (c - cStart);
+      const PetscInt *cone;
+      PetscInt        coneSize, offA, offB, offnew, d;
+
+      ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+      if (coneSize != 2) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Cell %d cone should have two vertices, not %d", c, coneSize);
+      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(coordSection, cone[0], &offA);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(coordSection, cone[1], &offB);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
+      ierr = DMPlexLocalizeCoordinate_Internal(dm, spaceDim, &coords[offA], &coords[offB], &coordsNew[offnew]);CHKERRQ(ierr);
+      for (d = 0; d < spaceDim; ++d) {
+        coordsNew[offnew+d] = 0.5*(coords[offA+d] + coordsNew[offnew+d]);
+      }
+    }
+    /* Old vertices have the same coordinates */
+    for (v = vStart; v < vEnd; ++v) {
+      const PetscInt newv = vStartNew + (v - vStart);
+      PetscInt       off, offnew, d;
+
+      ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
+      for (d = 0; d < spaceDim; ++d) {
+        coordsNew[offnew+d] = coords[off+d];
+      }
+    }
+    break;
   case REFINER_SIMPLEX_2D:
   case REFINER_HYBRID_SIMPLEX_2D:
   case REFINER_SIMPLEX_3D:
@@ -5631,6 +5753,15 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
     const PetscInt p = localPoints[l];
 
     switch (refiner) {
+    case REFINER_SIMPLEX_1D:
+      if ((p >= vStart) && (p < vEnd)) {
+        /* Interior vertices stay the same */
+        ++numLeavesNew;
+      } else if ((p >= cStart && p < cMax)) {
+        /* Interior cells add new cells and interior vertices */
+        numLeavesNew += 2 + 1;
+      }
+      break;
     case REFINER_SIMPLEX_2D:
     case REFINER_HYBRID_SIMPLEX_2D:
       if ((p >= vStart) && (p < vEnd)) {
@@ -5770,6 +5901,26 @@ static PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt d
     ierr = PetscFindInt(rrank, numNeighbors, neighbors, &n);CHKERRQ(ierr);
     if (n < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not locate remote rank %d", rrank);
     switch (refiner) {
+    case REFINER_SIMPLEX_1D:
+      if ((p >= vStart) && (p < vEnd)) {
+        /* Old vertices stay the same */
+        localPointsNew[m]        = vStartNew     + (p  - vStart);
+        remotePointsNew[m].index = rvStartNew[n] + (rp - rvStart[n]);
+        remotePointsNew[m].rank  = rrank;
+        ++m;
+      } else if ((p >= cStart) && (p < cMax)) {
+        /* Old interior cells add new cells and vertex */
+        for (r = 0; r < 2; ++r, ++m) {
+          localPointsNew[m]        = cStartNew     + (p  - cStart)*2     + r;
+          remotePointsNew[m].index = rcStartNew[n] + (rp - rcStart[n])*2 + r;
+          remotePointsNew[m].rank  = rrank;
+        }
+        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - cStart);
+        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - rcStart[n]);
+        remotePointsNew[m].rank  = rrank;
+        ++m;
+      }
+      break;
     case REFINER_SIMPLEX_2D:
     case REFINER_HYBRID_SIMPLEX_2D:
       if ((p >= vStart) && (p < vEnd)) {
@@ -6102,6 +6253,7 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
   switch (refiner) {
   case REFINER_NOOP:
+  case REFINER_SIMPLEX_1D:
   case REFINER_SIMPLEX_2D:
   case REFINER_HEX_2D:
   case REFINER_SIMPLEX_3D:
@@ -6151,6 +6303,21 @@ static PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscI
       for (n = 0; n < numPoints; ++n) {
         const PetscInt p = points[n];
         switch (refiner) {
+        case REFINER_SIMPLEX_1D:
+          if ((p >= vStart) && (p < vEnd)) {
+            /* Old vertices stay the same */
+            newp = vStartNew + (p - vStart);
+            ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
+          } else if ((p >= cStart) && (p < cEnd)) {
+            /* Old cells add new cells and vertex */
+            newp = vStartNew + (vEnd - vStart) + (p - cStart);
+            ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
+            for (r = 0; r < 2; ++r) {
+              newp = cStartNew + (p - cStart)*2 + r;
+              ierr = DMLabelSetValue(labelNew, newp, values[val]);CHKERRQ(ierr);
+            }
+          }
+          break;
         case REFINER_SIMPLEX_2D:
           if ((p >= vStart) && (p < vEnd)) {
             /* Old vertices stay the same */
@@ -6713,6 +6880,15 @@ PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
   ierr = DMPlexGetConeSize(dm, cStart, &coneSize);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   switch (dim) {
+  case 1:
+    switch (coneSize) {
+    case 2:
+      *cellRefiner = REFINER_SIMPLEX_1D;
+      break;
+    default:
+      SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown coneSize %d in dimension %d for cell refiner", coneSize, dim);
+    }
+    break;
   case 2:
     switch (coneSize) {
     case 3:
