@@ -216,9 +216,6 @@ PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel, DMLabel, PetscBool, DM);
 PETSC_EXTERN PetscErrorCode DMPlexLabelAddCells(DM, DMLabel);
 
-/* Mesh Refinement */
-typedef PetscInt CellRefiner;
-
 PETSC_EXTERN PetscErrorCode DMPlexGetRefinementLimit(DM, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexSetRefinementLimit(DM, PetscReal);
 PETSC_EXTERN PetscErrorCode DMPlexGetRefinementUniform(DM, PetscBool *);
