@@ -33,6 +33,15 @@ ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_TS_LIB}
 	${RM} ex3.o
 
+ex3adj: ex3adj.o  chkopts
+	-${CLINKER} -o ex3adj ex3adj.o  ${PETSC_TS_LIB}
+
+ex3opt: ex3opt.o  chkopts
+	-${CLINKER} -o ex3opt ex3opt.o  ${PETSC_TS_LIB}
+
+ex3opt_fd: ex3opt_fd.o  chkopts
+	-${CLINKER} -o ex3opt_fd ex3opt_fd.o  ${PETSC_TS_LIB}
+
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_TS_LIB}
 	${RM} ex4.o
@@ -173,6 +182,16 @@ runex3:
 	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 > ex3_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3_1.out ex3_1.tmp || printf "${PWD}\nPossible problem with ex3_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3_1.tmp
+
+runex3adj:
+	-@${MPIEXEC} -n 1 ./ex3adj -viewer_binary_skip_info -ts_theta_theta 0.5 -ts_theta_endpoint
+
+runex3opt:
+	-@${MPIEXEC} -n 1 ./ex3opt -viewer_binary_skip_info -ts_theta_theta 0.5 -ts_theta_endpoint -tao_monitor -tao_view
+
+runex3opt_fd:
+	-@${MPIEXEC} -n 1 ./ex3opt_fd -viewer_binary_skip_info  -ts_theta_theta 0.5 -ts_theta_endpoint -tao_monitor -tao_view
+
 runex3_2:
 	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 -time_dependent_rhs 1 > ex3_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex3_1.out ex3_2.tmp || printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; \
@@ -365,6 +384,10 @@ runex26:
 runex26aspin:
 	-@${MPIEXEC} -n 4 ./ex26aspin -da_refine 3 -ts_max_steps 1 -ts_rtol 1e-3 -ts_atol 1e-3 -ts_type beuler -ts_monitor -snes_monitor -snes_mf -ksp_monitor -overlap 2
 
+
+clean_files:
+	-@${RM} *.bin; \
+	  ${RM} *.info
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
