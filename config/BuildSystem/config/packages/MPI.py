@@ -384,9 +384,10 @@ class Configure(config.package.Package):
     self.pushLanguage('C')
     flags = self.getCompilerFlags()
     if config.setCompilers.Configure.isDarwin():
-      # OpenMPI configure crashes on Apple if -g or -g3 flag is passed in here
+      # OpenMPI configure crashes on Apple if -g or -g3 or -Wall flag is passed in here
       flags = flags.replace('-g3','')
       flags = flags.replace('-g','')
+      flags = flags.replace('-Wall','')
     args.append('CC="'+self.getCompiler()+'"')
     args.append('CFLAGS="'+flags+'"')
     if self.framework.argDB['with-shared-libraries']:
@@ -401,6 +402,7 @@ class Configure(config.package.Package):
       if config.setCompilers.Configure.isDarwin():
         flags = flags.replace('-g3','')
         flags = flags.replace('-g','')
+        flags = flags.replace('-Wall','')
       args.append('CXX="'+self.getCompiler()+'"')
       args.append('CXXFLAGS="'+flags+'"')
       self.popLanguage()
