@@ -371,12 +371,12 @@ PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
   if (flg || !((PetscObject)adapt)->type_name) {
     ierr = TSAdaptSetType(adapt,type);CHKERRQ(ierr);
   }
-  if (adapt->ops->setfromoptions) {ierr = (*adapt->ops->setfromoptions)(adapt);CHKERRQ(ierr);}
   ierr = PetscOptionsReal("-ts_adapt_dt_min","Minimum time step considered","TSAdaptSetStepLimits",adapt->dt_min,&adapt->dt_min,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_dt_max","Maximum time step considered","TSAdaptSetStepLimits",adapt->dt_max,&adapt->dt_max,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_scale_solve_failed","Scale step by this factor if solve fails","",adapt->scale_solve_failed,&adapt->scale_solve_failed,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = TSAdaptSetMonitor(adapt,flg);CHKERRQ(ierr);}
+  if (adapt->ops->setfromoptions) {ierr = (*adapt->ops->setfromoptions)(adapt);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
