@@ -649,8 +649,11 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   TSAdapt        adapt;
 
   PetscFunctionBegin;
-  *inadapt = 0;
-  ierr     = PetscHeaderCreate(adapt,_p_TSAdapt,struct _TSAdaptOps,TSADAPT_CLASSID,"TSAdapt","General Linear adaptivity","TS",comm,TSAdaptDestroy,TSAdaptView);CHKERRQ(ierr);
+  PetscValidPointer(inadapt,1);
+  *inadapt = NULL;
+  ierr = TSAdaptInitializePackage();CHKERRQ(ierr);
+
+  ierr = PetscHeaderCreate(adapt,_p_TSAdapt,struct _TSAdaptOps,TSADAPT_CLASSID,"TSAdapt","General Linear adaptivity","TS",comm,TSAdaptDestroy,TSAdaptView);CHKERRQ(ierr);
 
   adapt->dt_min             = 1e-20;
   adapt->dt_max             = 1e50;
