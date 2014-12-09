@@ -129,6 +129,7 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
   PetscErrorCode ierr,(*r)(TSAdapt);
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)adapt,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
   ierr = PetscFunctionListFind(TSAdaptList,type,&r);CHKERRQ(ierr);
@@ -150,6 +151,7 @@ PetscErrorCode  TSAdaptSetOptionsPrefix(TSAdapt adapt,const char prefix[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)adapt,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -183,22 +185,22 @@ PetscErrorCode  TSAdaptSetOptionsPrefix(TSAdapt adapt,const char prefix[])
 
 .seealso: PetscViewerBinaryOpen(), TSAdaptView(), MatLoad(), VecLoad()
 @*/
-PetscErrorCode  TSAdaptLoad(TSAdapt tsadapt, PetscViewer viewer)
+PetscErrorCode  TSAdaptLoad(TSAdapt adapt,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isbinary;
   char           type[256];
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(tsadapt,TSADAPT_CLASSID,1);
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
-  ierr = TSAdaptSetType(tsadapt, type);CHKERRQ(ierr);
-  if (tsadapt->ops->load) {
-    ierr = (*tsadapt->ops->load)(tsadapt,viewer);CHKERRQ(ierr);
+  ierr = TSAdaptSetType(adapt, type);CHKERRQ(ierr);
+  if (adapt->ops->load) {
+    ierr = (*adapt->ops->load)(adapt,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -211,6 +213,10 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
   PetscBool      iascii,isbinary;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)adapt),&viewer);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  PetscCheckSameComm(adapt,1,viewer,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
@@ -242,7 +248,7 @@ PetscErrorCode  TSAdaptDestroy(TSAdapt *adapt)
   PetscFunctionBegin;
   if (!*adapt) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*adapt,TSADAPT_CLASSID,1);
-  if (--((PetscObject)(*adapt))->refct > 0) {*adapt = 0; PetscFunctionReturn(0);}
+  if (--((PetscObject)(*adapt))->refct > 0) {*adapt = NULL; PetscFunctionReturn(0);}
   if ((*adapt)->ops->destroy) {ierr = (*(*adapt)->ops->destroy)(*adapt);CHKERRQ(ierr);}
   ierr = PetscViewerDestroy(&(*adapt)->monitor);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(adapt);CHKERRQ(ierr);
@@ -269,6 +275,8 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt,PetscBool flg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(adapt,flg,2);
   if (flg) {
     if (!adapt->monitor) {ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)adapt),"stdout",&adapt->monitor);CHKERRQ(ierr);}
   } else {
@@ -332,6 +340,7 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 {
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   if (hmin != PETSC_DECIDE) adapt->dt_min = hmin;
   if (hmax != PETSC_DECIDE) adapt->dt_max = hmax;
   PetscFunctionReturn(0);
@@ -366,6 +375,7 @@ PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
   PetscBool      set,flg;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   /* This should use PetscOptionsBegin() if/when this becomes an object used outside of TS, but currently this
   * function can only be called from inside TSSetFromOptions_GL()  */
   ierr = PetscOptionsHead("TS Adaptivity options");CHKERRQ(ierr);
@@ -403,6 +413,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   ierr = PetscMemzero(&adapt->candidates,sizeof(adapt->candidates));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -577,6 +588,9 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscBool *accept)
   SNESConvergedReason snesreason;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,2);
+  PetscValidIntPointer(accept,3);
   *accept = PETSC_TRUE;
   ierr    = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr    = SNESGetConvergedReason(snes,&snesreason);CHKERRQ(ierr);
