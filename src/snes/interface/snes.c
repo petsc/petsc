@@ -4666,7 +4666,7 @@ PetscErrorCode  SNESGetDM(SNES snes,DM *dm)
   Level: developer
 
 .keywords: SNES, set, precondition
-.seealso: SNESGetNPC()
+.seealso: SNESGetNPC(), SNESHasNPC()
 @*/
 PetscErrorCode SNESSetNPC(SNES snes, SNES pc)
 {
@@ -4701,7 +4701,7 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES pc)
   Level: developer
 
 .keywords: SNES, get, preconditioner
-.seealso: SNESSetNPC()
+.seealso: SNESSetNPC(), SNESHasNPC()
 @*/
 PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
 {
@@ -4721,6 +4721,32 @@ PetscErrorCode SNESGetNPC(SNES snes, SNES *pc)
     ierr = SNESSetCountersReset(snes->pc,PETSC_FALSE);CHKERRQ(ierr);
   }
   *pc = snes->pc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESHasNPC"
+/*@
+  SNESHasNPC - Returns whether a nonlinear preconditioner exists
+
+  Not Collective
+
+  Input Parameter:
+. snes - iterative context obtained from SNESCreate()
+
+  Output Parameter:
+. has_npc - whether the SNES has an NPC or not
+
+  Level: developer
+
+.keywords: SNES, has, preconditioner
+.seealso: SNESSetNPC(), SNESGetNPC()
+@*/
+PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  *has_npc = (PetscBool) (snes->pc != NULL);
   PetscFunctionReturn(0);
 }
 
