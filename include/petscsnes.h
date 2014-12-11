@@ -738,6 +738,7 @@ PETSC_EXTERN const char *const SNESCompositeTypes[];
 PETSC_EXTERN PetscErrorCode SNESCompositeSetType(SNES,SNESCompositeType);
 PETSC_EXTERN PetscErrorCode SNESCompositeAddSNES(SNES,SNESType);
 PETSC_EXTERN PetscErrorCode SNESCompositeGetSNES(SNES,PetscInt,SNES *);
+PETSC_EXTERN PetscErrorCode SNESCompositeGetNumber(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESCompositeSetDamping(SNES,PetscInt,PetscReal);
 
 /*E

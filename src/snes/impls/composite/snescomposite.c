@@ -634,6 +634,40 @@ PetscErrorCode  SNESCompositeGetSNES(SNES snes,PetscInt n,SNES *subsnes)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESCompositeGetNumber"
+/*@
+   SNESCompositeGetNumber - Get the number of subsolvers in the composite SNES.
+
+   Logically Collective on SNES
+
+   Input Parameter:
+   snes - the preconditioner context
+
+   Output Parameter:
+   n - the number of subsolvers
+
+   Level: Developer
+
+.keywords: SNES, composite preconditioner
+@*/
+PetscErrorCode  SNESCompositeGetNumber(SNES snes,PetscInt *n)
+{
+  SNES_Composite     *jac;
+  SNES_CompositeLink next;
+
+  PetscFunctionBegin;
+  jac  = (SNES_Composite*)snes->data;
+  next = jac->head;
+
+  *n = 0;
+  while (next) {
+    *n = *n + 1;
+    next = next->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESCompositeSetDamping_Composite"
 static PetscErrorCode  SNESCompositeSetDamping_Composite(SNES snes,PetscInt n,PetscReal dmp)
 {
