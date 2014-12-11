@@ -78,6 +78,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
     ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+    ierr = MatSetUp(B);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       ierr = MatSetValues(B,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -137,8 +138,8 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatDestroy(&A_sp);CHKERRQ(ierr);
 
     ratio = (PetscReal)nzeros[0]/sbaij->nz;
-    ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g, ratio %g of %d nonzeros\n",nzeros[0],(double)ntols[0],(double)ratio,sbaij->nz);CHKERRQ(ierr);
-    ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g\n",nzeros[1],(double)ntols[1]);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g, ratio %g of %d nonzeros\n",nzeros[0],(double)tols[0],(double)ratio,sbaij->nz);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g\n",nzeros[1],(double)tols[1]);CHKERRQ(ierr);
   }
 
   /* Convert aij matrix to MATSEQDENSE for LAPACK */
@@ -175,15 +176,15 @@ PetscInt main(PetscInt argc,char **args)
     if (PetscPreLoadIt) ierr = PetscLogStagePop();
     ierr = PetscFree(iwork);CHKERRQ(ierr);
   }
-  ierr = MatDenseRestoreArray(A,&arrayA);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(B,&arrayB);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(A_dense,&arrayA);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(B_dense,&arrayB);CHKERRQ(ierr);
 
   if (nevs <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
   /* View evals */
   ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
     printf(" %d evals: \n",nevs);
-    for (i=0; i<nevs; i++) printf("%D  %g\n",i+il,(double)nevals[i]);
+    for (i=0; i<nevs; i++) printf("%D  %g\n",i+il,(double)evals[i]);
   }
 
   /* Check residuals and orthogonality */
@@ -277,7 +278,7 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
 #endif
       } /* for (j=i; j<nev_loc; j++) */
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j*B*x_i) - delta_ji|: %g\n",(double)ndot_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j*B*x_i) - delta_ji|: %g\n",(double)dot_max);
 
   case 1:
     norm_max = 0.0;
@@ -297,7 +298,7 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
 #endif
     }
 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)nnorm_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);
 
     break;
   default:
