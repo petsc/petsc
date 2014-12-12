@@ -6,6 +6,7 @@ class Configure(config.package.Package):
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.4.2.q1.tar.gz']
     self.double           = 0
     self.downloadonWindows= 1
+    self.skippackagewithoptions = 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)

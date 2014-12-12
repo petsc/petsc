@@ -7,6 +7,7 @@ class Configure(config.package.Package):
     self.functions         = []
     self.includes          = []
     self.liblist           = []
+    self.skippackagewithoptions = 1
     return
 
   def setupDependencies(self, framework):

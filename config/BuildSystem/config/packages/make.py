@@ -21,9 +21,9 @@ class Configure(config.package.GNUPackage):
   def setupHelp(self, help):
     import nargs
     config.package.GNUPackage.setupHelp(self, help)
-    help.addArgument('Make', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
-    help.addArgument('Make', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
-    help.addArgument('Make', '-download-make-configure-options=<options>',   nargs.Arg(None, None, 'additional options for GNU make configure'))
+    help.addArgument('MAKE', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
+    help.addArgument('MAKE', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
+    help.addArgument('MAKE', '-download-make-configure-options=<options>',   nargs.Arg(None, None, 'additional options for GNU make configure'))
     return
 
   def formGNUConfigureArgs(self):

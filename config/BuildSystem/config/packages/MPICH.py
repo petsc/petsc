@@ -7,6 +7,7 @@ class Configure(config.package.GNUPackage):
     self.download         = ['http://www.mpich.org/static/downloads/3.1.3/mpich-3.1.3.tar.gz']
     self.download_cygwin  = ['http://www.mpich.org/static/downloads/3.1/mpich-3.1.tar.gz']
     self.downloadfilename = 'mpich'
+    self.skippackagewithoptions = 1
     return
 
   def setupHelp(self, help):

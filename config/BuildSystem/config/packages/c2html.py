@@ -16,9 +16,9 @@ class Configure(config.package.GNUPackage):
   def setupHelp(self, help):
     import nargs
     config.package.GNUPackage.setupHelp(self, help)
-    help.addArgument('C2html', '-download-c2html-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for c2html'))
-    help.addArgument('C2html', '-download-c2html-configure-options=<options>',   nargs.Arg(None, None, 'additional options for c2html'))
-    help.addArgument('C2html', '-with-c2html-exec=<executable>',                 nargs.Arg(None, None, 'C2html executable to look for'))
+    help.addArgument('C2HTML', '-download-c2html-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for c2html'))
+    help.addArgument('C2HTML', '-download-c2html-configure-options=<options>',   nargs.Arg(None, None, 'additional options for c2html'))
+    help.addArgument('C2HTML', '-with-c2html-exec=<executable>',                 nargs.Arg(None, None, 'C2html executable to look for'))
     return
 
   def formGNUConfigureArgs(self):
