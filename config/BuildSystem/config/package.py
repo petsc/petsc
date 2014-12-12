@@ -629,13 +629,15 @@ class Package(config.base.Configure):
   def configure(self):
     if self.download and self.framework.argDB['download-'+self.downloadname.lower()]:
       self.framework.argDB['with-'+self.package] = 1
+    if not 'with-'+self.package in self.framework.argDB:
+      self.framework.argDB['with-'+self.package] = 0
     if 'with-'+self.package+'-dir' in self.framework.argDB or 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
     if 'with-'+self.package+'-pkg-config' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
 
     self.consistencyChecks()
-    if not self.skippackagewithoptions and self.framework.argDB['with-'+self.package]:
+    if self.framework.argDB['with-'+self.package]:
       # If clanguage is c++, test external packages with the c++ compiler
       self.libraries.pushLanguage(self.defaultLanguage)
       self.executeTest(self.configureLibrary)
