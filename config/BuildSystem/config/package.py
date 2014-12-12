@@ -62,6 +62,7 @@ class Package(config.base.Configure):
     self.complex          = 1   # 0 means cannot use complex
     self.requires32bitint = 0;  # 1 means that the package will not work with 64 bit integers
     self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
+    self.alternativedownload = [] # Used by, for example mpi.py which does not support --download-mpi but one can use --download-mpich
 
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
@@ -377,6 +378,7 @@ class Package(config.base.Configure):
     if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.framework.argDB['with-'+self.package]):
       mesg = 'Unable to find '+self.package+' in default locations!\nPerhaps you can specify with --with-'+self.package+'-dir=<directory>\nIf you do not want '+self.name+', then give --with-'+self.package+'=0'
       if self.download: mesg +='\nYou might also consider using --download-'+self.package+' instead'
+      if self.alternativedownload: mesg +='\nYou might also consider using --download-'+self.alternativedownload+' instead'
       raise RuntimeError(mesg)
 
   def checkDownload(self, requireDownload = 1):
@@ -600,6 +602,7 @@ class Package(config.base.Configure):
     pass
 
   def consistencyChecks(self):
+    if self.skippackagewithoptions: return
     if 'with-'+self.package+'-dir' in self.framework.argDB and ('with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB):
       raise RuntimeError('Specify either "--with-'+self.package+'-dir" or "--with-'+self.package+'-lib --with-'+self.package+'-include". But not both!')
     if self.framework.argDB['with-'+self.package]:
@@ -632,7 +635,7 @@ class Package(config.base.Configure):
       self.framework.argDB['with-'+self.package] = 1
 
     self.consistencyChecks()
-    if self.framework.argDB['with-'+self.package]:
+    if not self.skippackagewithoptions and self.framework.argDB['with-'+self.package]:
       # If clanguage is c++, test external packages with the c++ compiler
       self.libraries.pushLanguage(self.defaultLanguage)
       self.executeTest(self.configureLibrary)

@@ -16,6 +16,7 @@ class Configure(config.package.Package):
     self.missingRoutines   = []
     self.separateBlas      = 1
     self.defaultPrecision  = 'double'
+    self.alternativedownload = 'f2cblaslapack'
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -316,6 +317,10 @@ class Configure(config.package.Package):
     return
 
   def configureLibrary(self):
+
+    if hasattr(self.compilers, 'FC'):
+      self.alternativedownload = 'fblaslapack'
+
     self.functionalBlasLapack = []
     self.foundBlas   = 0
     self.foundLapack = 0
