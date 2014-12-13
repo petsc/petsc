@@ -1,4 +1,5 @@
 #include <petsc-private/petscimpl.h>
+#include <petscvalgrind.h>
 
 static PetscInt petsc_checkpointer_intensity = 1;
 

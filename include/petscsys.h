@@ -1759,14 +1759,6 @@ $     PetscBool  flag = PetscNot(a)
 */
 #define PetscNot(a) ((a) ? PETSC_FALSE : PETSC_TRUE)
 
-#if defined(PETSC_HAVE_VALGRIND)
-#  include <valgrind/valgrind.h>
-#  define PETSC_RUNNING_ON_VALGRIND RUNNING_ON_VALGRIND
-#else
-#  define PETSC_RUNNING_ON_VALGRIND PETSC_FALSE
-#endif
-
-
 /*MC
     PetscHelpPrintf - Prints help messages.
 
