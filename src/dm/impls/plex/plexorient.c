@@ -71,11 +71,11 @@ PetscErrorCode DMPlexReverseCell(DM dm, PetscInt cell)
     - Flips non-matching
   - Inserts faces of support cells in FIFO
 */
-static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt face, PetscInt *faceFIFO, PetscInt *fTop, PetscInt *fBottom, PetscInt cStart, PetscInt fStart, PetscInt fEnd, PetscBT seenCells, PetscBT flippedCells, PetscBT seenFaces)
+static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscInt *fTop, PetscInt *fBottom, PetscInt cStart, PetscInt fStart, PetscInt fEnd, PetscBT seenCells, PetscBT flippedCells, PetscBT seenFaces)
 {
   const PetscInt *support, *coneA, *coneB, *coneOA, *coneOB;
   PetscInt        supportSize, coneSizeA, coneSizeB, posA = -1, posB = -1;
-  PetscInt        dim, seenA, flippedA, seenB, flippedB, mismatch, c;
+  PetscInt        face, dim, seenA, flippedA, seenB, flippedB, mismatch, c;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -232,7 +232,7 @@ PetscErrorCode DMPlexOrient(DM dm)
     }
     /* Consider each face in FIFO */
     while (fTop < fBottom) {
-      ierr = DMPlexCheckFace_Internal(dm, face, faceFIFO, &fTop, &fBottom, cStart, fStart, fEnd, seenCells, flippedCells, seenFaces);CHKERRQ(ierr);
+      ierr = DMPlexCheckFace_Internal(dm, faceFIFO, &fTop, &fBottom, cStart, fStart, fEnd, seenCells, flippedCells, seenFaces);CHKERRQ(ierr);
     }
     /* Set component for cells and faces */
     for (cell = 0; cell < cEnd-cStart; ++cell) {
