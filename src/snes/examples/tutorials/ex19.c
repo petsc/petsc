@@ -200,9 +200,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   PetscReal      grashof,dx;
   Field          **x;
 
-  Vec xx;
   PetscFunctionBeginUser;
-
   grashof = user->grashof;
 
   ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
