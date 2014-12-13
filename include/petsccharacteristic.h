@@ -40,7 +40,6 @@ PETSC_EXTERN PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteris
 PETSC_EXTERN PetscErrorCode CharacteristicSolve(Characteristic, PetscReal, Vec);
 PETSC_EXTERN PetscErrorCode CharacteristicDestroy(Characteristic*);
 
-PETSC_EXTERN PetscBool         CharacteristicRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList CharacteristicList;
 PETSC_EXTERN PetscErrorCode CharacteristicRegisterAll(void);
 

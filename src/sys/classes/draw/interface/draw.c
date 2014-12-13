@@ -26,6 +26,7 @@ PetscErrorCode  PetscDrawFinalizePackage(void)
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&PetscDrawList);CHKERRQ(ierr);
   PetscDrawPackageInitialized = PETSC_FALSE;
+  PetscDrawRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

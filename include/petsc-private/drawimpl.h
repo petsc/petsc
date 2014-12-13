@@ -8,6 +8,8 @@
 #include <petscdraw.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool PetscDrawRegisterAllCalled;
+
 struct _PetscDrawOps {
   PetscErrorCode (*setdoublebuffer)(PetscDraw);
   PetscErrorCode (*flush)(PetscDraw);

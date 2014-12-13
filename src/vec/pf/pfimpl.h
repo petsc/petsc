@@ -6,6 +6,8 @@
 #include <petsc-private/petscimpl.h>
 #include <petscviewer.h>
 
+PETSC_EXTERN PetscBool PFRegisterAllCalled;
+
 typedef struct _PFOps *PFOps;
 struct _PFOps {
   PetscErrorCode (*apply)(void*,PetscInt,const PetscScalar*,PetscScalar*);

@@ -5,6 +5,8 @@
 #include <petsc-private/petscimpl.h>
 #include <petscviewer.h>
 
+PETSC_EXTERN PetscBool PetscViewerRegisterAllCalled;
+
 struct _PetscViewerOps {
    PetscErrorCode (*destroy)(PetscViewer);
    PetscErrorCode (*view)(PetscViewer,PetscViewer);

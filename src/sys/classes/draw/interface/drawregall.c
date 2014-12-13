@@ -19,6 +19,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Win32(PetscDraw);
 #endif
 
+PetscBool PetscDrawRegisterAllCalled;
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawRegisterAll"
 /*@C
@@ -35,6 +37,9 @@ PetscErrorCode  PetscDrawRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscDrawRegisterAllCalled) PetscFunctionReturn(0);
+  PetscDrawRegisterAllCalled = PETSC_TRUE;
+
   ierr = PetscDrawRegister(PETSC_DRAW_TIKZ,     PetscDrawCreate_TikZ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_OPENGLES)
   ierr = PetscDrawRegister(PETSC_DRAW_OPENGLES, PetscDrawCreate_OpenGLES);CHKERRQ(ierr);

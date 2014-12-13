@@ -25,7 +25,6 @@ typedef const char *PetscPartitionerType;
 #define PETSCPARTITIONERSHELL    "shell"
 
 PETSC_EXTERN PetscFunctionList PetscPartitionerList;
-PETSC_EXTERN PetscBool         PetscPartitionerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate(MPI_Comm, PetscPartitioner *);
 PETSC_EXTERN PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *);
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetType(PetscPartitioner, PetscPartitionerType);

@@ -29,6 +29,7 @@ PetscErrorCode PetscThreadCommRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscThreadCommRegisterAllCalled) PetscFunctionReturn(0);
   PetscThreadCommRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscThreadCommRegister(NOTHREAD,PetscThreadCommCreate_NoThread);CHKERRQ(ierr);

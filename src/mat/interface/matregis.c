@@ -82,6 +82,7 @@ PetscErrorCode  MatRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (MatRegisterAllCalled) PetscFunctionReturn(0);
   MatRegisterAllCalled = PETSC_TRUE;
 
   ierr = MatRegister(MATMFFD,           MatCreate_MFFD);CHKERRQ(ierr);

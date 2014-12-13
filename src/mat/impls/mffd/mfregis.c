@@ -23,6 +23,7 @@ PetscErrorCode  MatMFFDRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (MatMFFDRegisterAllCalled) PetscFunctionReturn(0);
   MatMFFDRegisterAllCalled = PETSC_TRUE;
 
   ierr = MatMFFDRegister(MATMFFD_DS,MatCreateMFFD_DS);CHKERRQ(ierr);

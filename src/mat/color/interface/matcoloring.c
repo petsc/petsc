@@ -205,7 +205,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
   ierr = MatColoringGetDistance(mc,&dist);CHKERRQ(ierr);
   ierr = MatColoringGetMaxColors(mc,&maxcolors);CHKERRQ(ierr);
-  if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll();CHKERRQ(ierr);}
+  ierr = MatColoringRegisterAll();CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)mc);CHKERRQ(ierr);
   if (((PetscObject)mc)->type_name) deft = ((PetscObject)mc)->type_name;
   ierr = PetscOptionsFList("-mat_coloring_type","The coloring method used","MatColoringSetType",MatColoringList,deft,type,256,&flg);CHKERRQ(ierr);

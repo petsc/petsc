@@ -4,6 +4,8 @@
 #include <petscsnes.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool SNESLineSearchRegisterAllCalled;
+
 typedef struct _LineSearchOps *LineSearchOps;
 
 struct _LineSearchOps {

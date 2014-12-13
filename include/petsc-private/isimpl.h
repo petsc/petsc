@@ -10,6 +10,8 @@ and matrices.
 #include <petscis.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool ISRegisterAllCalled;
+
 struct _ISOps {
   PetscErrorCode (*getsize)(IS,PetscInt*);
   PetscErrorCode (*getlocalsize)(IS,PetscInt*);

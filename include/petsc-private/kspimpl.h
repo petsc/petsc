@@ -5,6 +5,8 @@
 #include <petscksp.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool KSPRegisterAllCalled;
+
 typedef struct _KSPOps *KSPOps;
 
 struct _KSPOps {

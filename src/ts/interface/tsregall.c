@@ -34,6 +34,7 @@ PetscErrorCode  TSRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (TSRegisterAllCalled) PetscFunctionReturn(0);
   TSRegisterAllCalled = PETSC_TRUE;
 
   ierr = TSRegister(TSEULER,    TSCreate_Euler);CHKERRQ(ierr);

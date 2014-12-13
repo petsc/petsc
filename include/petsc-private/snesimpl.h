@@ -5,6 +5,8 @@
 #include <petscsnes.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool SNESRegisterAllCalled;
+
 typedef struct _SNESOps *SNESOps;
 
 struct _SNESOps {

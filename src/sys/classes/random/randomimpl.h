@@ -4,6 +4,8 @@
 
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool PetscRandomRegisterAllCalled;
+
 typedef struct _PetscRandomOps *PetscRandomOps;
 struct _PetscRandomOps {
   /* 0 */

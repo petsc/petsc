@@ -47,7 +47,6 @@ PETSC_EXTERN PetscErrorCode PFApplyVec(PF,Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode PFRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PFInitializePackage(void);
-PETSC_EXTERN PetscBool PFRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode PFRegister(const char[],PetscErrorCode (*)(PF,void*));
 

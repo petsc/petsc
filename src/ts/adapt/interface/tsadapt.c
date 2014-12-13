@@ -67,6 +67,8 @@ PetscErrorCode  TSAdaptRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (TSAdaptRegisterAllCalled) PetscFunctionReturn(0);
+  TSAdaptRegisterAllCalled = PETSC_TRUE;
   ierr = TSAdaptRegister(TSADAPTBASIC,TSAdaptCreate_Basic);CHKERRQ(ierr);
   ierr = TSAdaptRegister(TSADAPTNONE, TSAdaptCreate_None);CHKERRQ(ierr);
   ierr = TSAdaptRegister(TSADAPTCFL,  TSAdaptCreate_CFL);CHKERRQ(ierr);

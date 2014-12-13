@@ -155,6 +155,7 @@ PetscErrorCode  PetscRandomRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscRandomRegisterAllCalled) PetscFunctionReturn(0);
   PetscRandomRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_RAND)
   ierr = PetscRandomRegister(PETSCRAND,  PetscRandomCreate_Rand);CHKERRQ(ierr);

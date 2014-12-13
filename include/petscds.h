@@ -22,7 +22,6 @@ typedef const char *PetscDSType;
 #define PETSCDSBASIC "basic"
 
 PETSC_EXTERN PetscFunctionList PetscDSList;
-PETSC_EXTERN PetscBool         PetscDSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscDSCreate(MPI_Comm, PetscDS *);
 PETSC_EXTERN PetscErrorCode PetscDSDestroy(PetscDS *);
 PETSC_EXTERN PetscErrorCode PetscDSSetType(PetscDS, PetscDSType);

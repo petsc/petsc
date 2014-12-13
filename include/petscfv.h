@@ -40,7 +40,6 @@ typedef const char *PetscLimiterType;
 #define PETSCLIMITERMC        "mc"
 
 PETSC_EXTERN PetscFunctionList PetscLimiterList;
-PETSC_EXTERN PetscBool         PetscLimiterRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate(MPI_Comm, PetscLimiter *);
 PETSC_EXTERN PetscErrorCode PetscLimiterDestroy(PetscLimiter *);
 PETSC_EXTERN PetscErrorCode PetscLimiterSetType(PetscLimiter, PetscLimiterType);
@@ -72,7 +71,6 @@ typedef const char *PetscFVType;
 #define PETSCFVLEASTSQUARES "leastsquares"
 
 PETSC_EXTERN PetscFunctionList PetscFVList;
-PETSC_EXTERN PetscBool         PetscFVRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscFVCreate(MPI_Comm, PetscFV *);
 PETSC_EXTERN PetscErrorCode PetscFVDestroy(PetscFV *);
 PETSC_EXTERN PetscErrorCode PetscFVSetType(PetscFV, PetscFVType);

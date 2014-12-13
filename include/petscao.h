@@ -54,7 +54,6 @@ PETSC_EXTERN PetscErrorCode AODestroy(AO*);
 
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFunctionList AOList;
-PETSC_EXTERN PetscBool         AORegisterAllCalled;
 PETSC_EXTERN PetscErrorCode AOSetType(AO, AOType);
 PETSC_EXTERN PetscErrorCode AOGetType(AO, AOType *);
 

@@ -6,6 +6,8 @@
 #include <petscpc.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool PCRegisterAllCalled;
+
 typedef struct _PCOps *PCOps;
 struct _PCOps {
   PetscErrorCode (*setup)(PC);

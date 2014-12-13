@@ -2644,7 +2644,7 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
   ierr = PetscObjectTypeCompare((PetscObject) dm, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!DMRegisterAllCalled) {ierr = DMRegisterAll();CHKERRQ(ierr);}
+  ierr = DMRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(DMList,method,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
@@ -2682,9 +2682,7 @@ PetscErrorCode  DMGetType(DM dm, DMType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID,1);
   PetscValidPointer(type,2);
-  if (!DMRegisterAllCalled) {
-    ierr = DMRegisterAll();CHKERRQ(ierr);
-  }
+  ierr = DMRegisterAll();CHKERRQ(ierr);
   *type = ((PetscObject)dm)->type_name;
   PetscFunctionReturn(0);
 }

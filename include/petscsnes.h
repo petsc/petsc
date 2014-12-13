@@ -495,10 +495,8 @@ typedef const char* SNESLineSearchType;
 #define SNESLINESEARCHCP                 "cp"
 #define SNESLINESEARCHSHELL              "shell"
 
-PETSC_EXTERN PetscBool         SNESRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList SNESList;
 PETSC_EXTERN PetscClassId      SNESLINESEARCH_CLASSID;
-PETSC_EXTERN PetscBool         SNESLineSearchRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList SNESLineSearchList;
 PETSC_EXTERN PetscLogEvent     SNESLineSearch_Apply;
 

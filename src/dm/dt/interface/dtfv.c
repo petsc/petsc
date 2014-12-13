@@ -89,7 +89,7 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
   ierr = PetscObjectTypeCompare((PetscObject) lim, name, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!PetscLimiterRegisterAllCalled) {ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscLimiterList, name, &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject) lim), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscLimiter type: %s", name);
 
@@ -127,7 +127,7 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidPointer(name, 2);
-  if (!PetscLimiterRegisterAllCalled) {ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);
   *name = ((PetscObject) lim)->type_name;
   PetscFunctionReturn(0);
 }
@@ -219,7 +219,7 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   if (!((PetscObject) lim)->type_name) defaultType = PETSCLIMITERSIN;
   else                                 defaultType = ((PetscObject) lim)->type_name;
-  if (!PetscLimiterRegisterAllCalled) {ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject) lim);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-petsclimiter_type", "Finite volume slope limiter", "PetscLimiterSetType", PetscLimiterList, defaultType, name, 256, &flg);CHKERRQ(ierr);
@@ -1125,7 +1125,7 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
   ierr = PetscObjectTypeCompare((PetscObject) fvm, name, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!PetscFVRegisterAllCalled) {ierr = PetscFVRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscFVRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscFVList, name, &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject) fvm), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFV type: %s", name);
 
@@ -1163,7 +1163,7 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(name, 2);
-  if (!PetscFVRegisterAllCalled) {ierr = PetscFVRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscFVRegisterAll();CHKERRQ(ierr);
   *name = ((PetscObject) fvm)->type_name;
   PetscFunctionReturn(0);
 }
@@ -1255,7 +1255,7 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   if (!((PetscObject) fvm)->type_name) defaultType = PETSCFVUPWIND;
   else                                 defaultType = ((PetscObject) fvm)->type_name;
-  if (!PetscFVRegisterAllCalled) {ierr = PetscFVRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscFVRegisterAll();CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject) fvm);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-petscfv_type", "Finite volume discretization", "PetscFVSetType", PetscFVList, defaultType, name, 256, &flg);CHKERRQ(ierr);

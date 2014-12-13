@@ -79,7 +79,7 @@ PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
   ierr = PetscObjectTypeCompare((PetscObject) prob, name, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!PetscDSRegisterAllCalled) {ierr = PetscDSRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscDSRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscDSList, name, &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDS type: %s", name);
 
@@ -117,7 +117,7 @@ PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(name, 2);
-  if (!PetscDSRegisterAllCalled) {ierr = PetscDSRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscDSRegisterAll();CHKERRQ(ierr);
   *name = ((PetscObject) prob)->type_name;
   PetscFunctionReturn(0);
 }
@@ -214,7 +214,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   } else {
     defaultType = ((PetscObject) prob)->type_name;
   }
-  if (!PetscDSRegisterAllCalled) {ierr = PetscDSRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscDSRegisterAll();CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject) prob);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-petscds_type", "Discrete System", "PetscDSSetType", PetscDSList, defaultType, name, 256, &flg);CHKERRQ(ierr);

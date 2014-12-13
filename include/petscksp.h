@@ -82,7 +82,6 @@ PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
 PETSC_EXTERN PetscErrorCode KSPSetReusePreconditioner(KSP,PetscBool);
 
 PETSC_EXTERN PetscFunctionList KSPList;
-PETSC_EXTERN PetscBool         KSPRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
 PETSC_EXTERN PetscErrorCode KSPRegister(const char[],PetscErrorCode (*)(KSP));
 PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);

@@ -22,6 +22,7 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&PetscViewerList);CHKERRQ(ierr);
   PetscViewerPackageInitialized = PETSC_FALSE;
+  PetscViewerRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

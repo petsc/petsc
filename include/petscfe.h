@@ -35,7 +35,6 @@ typedef const char *PetscSpaceType;
 #define PETSCSPACEDG         "dg"
 
 PETSC_EXTERN PetscFunctionList PetscSpaceList;
-PETSC_EXTERN PetscBool         PetscSpaceRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate(MPI_Comm, PetscSpace *);
 PETSC_EXTERN PetscErrorCode PetscSpaceDestroy(PetscSpace *);
 PETSC_EXTERN PetscErrorCode PetscSpaceSetType(PetscSpace, PetscSpaceType);
@@ -75,7 +74,6 @@ typedef const char *PetscDualSpaceType;
 #define PETSCDUALSPACESIMPLE   "simple"
 
 PETSC_EXTERN PetscFunctionList PetscDualSpaceList;
-PETSC_EXTERN PetscBool         PetscDualSpaceRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate(MPI_Comm, PetscDualSpace *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace, PetscDualSpace *);
@@ -124,7 +122,6 @@ typedef const char *PetscFEType;
 #define PETSCFECOMPOSITE "composite"
 
 PETSC_EXTERN PetscFunctionList PetscFEList;
-PETSC_EXTERN PetscBool         PetscFERegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscFECreate(MPI_Comm, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFEDestroy(PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFESetType(PetscFE, PetscFEType);
