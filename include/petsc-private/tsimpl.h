@@ -19,6 +19,7 @@
 #define MAXTSMONITORS 5
 
 PETSC_EXTERN PetscBool TSRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
 
 typedef struct _TSOps *TSOps;
 

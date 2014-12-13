@@ -7,6 +7,7 @@
 #include <petsc-private/petscimpl.h>
 
 PETSC_EXTERN PetscBool PCRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PCRegisterAll(void);
 
 typedef struct _PCOps *PCOps;
 struct _PCOps {

@@ -44,7 +44,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceSetFromOptions(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceViewFromOptions(PetscSpace,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscSpaceView(PetscSpace,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSpaceRegister(const char [], PetscErrorCode (*)(PetscSpace));
-PETSC_EXTERN PetscErrorCode PetscSpaceRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscSpaceRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscSpaceGetDimension(PetscSpace, PetscInt *);
@@ -84,7 +83,6 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceView(PetscDualSpace,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRegister(const char [], PetscErrorCode (*)(PetscDualSpace));
-PETSC_EXTERN PetscErrorCode PetscDualSpaceRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace, PetscInt *);
@@ -131,7 +129,6 @@ PETSC_EXTERN PetscErrorCode PetscFESetFromOptions(PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFEViewFromOptions(PetscFE,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscFEView(PetscFE,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFERegister(const char [], PetscErrorCode (*)(PetscFE));
-PETSC_EXTERN PetscErrorCode PetscFERegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscFERegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscFECreateDefault(DM, PetscInt, PetscInt, PetscBool, const char [], PetscInt, PetscFE *);
 

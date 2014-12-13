@@ -7,6 +7,7 @@
 #include <petsc-private/petscimpl.h>
 
 PETSC_EXTERN PetscBool DMRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode DMRegisterAll(void);
 typedef PetscErrorCode (*NullSpaceFunc)(DM dm, PetscInt field, MatNullSpace *nullSpace);
 
 typedef struct _DMOps *DMOps;

@@ -13,6 +13,7 @@
 #include <petscviewer.h>
 
 PETSC_EXTERN PetscBool VecRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode VecRegisterAll(void);
 
 /* ----------------------------------------------------------------------------*/
 

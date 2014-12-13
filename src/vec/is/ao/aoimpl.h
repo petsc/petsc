@@ -10,6 +10,7 @@
 #include <petscviewer.h>
 
 PETSC_EXTERN PetscBool AORegisterAllCalled;
+PETSC_EXTERN PetscErrorCode AORegisterAll(void);
 
 /*
     Defines the abstract AO operations

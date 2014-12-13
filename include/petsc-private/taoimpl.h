@@ -5,6 +5,8 @@
 #include <petsc-private/petscimpl.h>
 #include <petscksp.h>
 
+PETSC_EXTERN PetscErrorCode TaoRegisterAll(void);
+
 typedef struct _TaoOps *TaoOps;
 
 struct _TaoOps {

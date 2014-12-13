@@ -38,7 +38,6 @@ PETSC_EXTERN PetscErrorCode DMClone(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSetType(DM, DMType);
 PETSC_EXTERN PetscErrorCode DMGetType(DM, DMType *);
 PETSC_EXTERN PetscErrorCode DMRegister(const char[],PetscErrorCode (*)(DM));
-PETSC_EXTERN PetscErrorCode DMRegisterAll(void);
 PETSC_EXTERN PetscErrorCode DMRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode DMView(DM,PetscViewer);

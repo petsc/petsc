@@ -6,6 +6,8 @@
 
 PETSC_EXTERN PetscBool PetscLimiterRegisterAllCalled;
 PETSC_EXTERN PetscBool PetscFVRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscLimiterRegisterAll(void);
+PETSC_EXTERN PetscErrorCode PetscFVRegisterAll(void);
 
 typedef struct _PetscLimiterOps *PetscLimiterOps;
 struct _PetscLimiterOps {
