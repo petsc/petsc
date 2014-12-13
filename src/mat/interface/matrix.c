@@ -4136,9 +4136,9 @@ PetscErrorCode  MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType 
   MatCheckPreallocated(mat,1);
 
   ierr = MatSolverPackageGet(type,((PetscObject)mat)->type_name,ftype,&foundpackage,&foundmtype,&conv);CHKERRQ(ierr);
-  if (!foundpackage) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Could not locate solver package %s. Perhaps you must ./configure with --download-%s",type,type);
-  if (!foundmtype) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MatSolverPackage %s does not support matrix type %s",type,((PetscObject)mat)->type_name);
-  if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MatSolverPackage %s does not support factorization type %s for  matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
+  if (!foundpackage) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"Could not locate solver package %s. Perhaps you must ./configure with --download-%s",type,type);
+  if (!foundmtype) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support matrix type %s",type,((PetscObject)mat)->type_name);
+  if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support factorization type %s for  matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
 
   ierr = (*conv)(mat,ftype,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
