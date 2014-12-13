@@ -802,6 +802,31 @@ PetscErrorCode  PetscOptionsView(PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscOptionsViewError"
+/*
+   Called by error handlers to print options used in run
+*/
+PetscErrorCode  PetscOptionsViewError(void)
+{
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (options->N) {
+    (*PetscErrorPrintf)("PETSc Option Table entries:\n");
+  } else {
+    (*PetscErrorPrintf)("No PETSc Option Table entries\n");
+  }
+  for (i=0; i<options->N; i++) {
+    if (options->values[i]) {
+      (*PetscErrorPrintf)("-%s %s\n",options->names[i],options->values[i]);
+    } else {
+      (*PetscErrorPrintf)("-%s\n",options->names[i]);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetAll"
 /*@C
    PetscOptionsGetAll - Lists all the options the program was run with in a single string.
