@@ -1,3 +1,7 @@
+#if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
+#define MKL_ILP64
+#endif
+
 #include <../src/mat/impls/aij/seq/aij.h>    /*I "petscmat.h" I*/
 #include <../src/mat/impls/dense/seq/dense.h>
 
@@ -23,14 +27,22 @@
 #define JOB_RELEASE_OF_ALL_MEMORY -1
 
 #define IPARM_SIZE 64
+
 #if defined(PETSC_USE_64BIT_INDICES)
-#define INT_TYPE long long int
-#define MKL_PARDISO pardiso_64
-#define MKL_PARDISO_INIT pardiso_64init
+ #if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
+  /*sizeof(MKL_INT) == sizeof(long long int) if ilp64*/
+  #define INT_TYPE long long int
+  #define MKL_PARDISO pardiso
+  #define MKL_PARDISO_INIT pardisoinit
+ #else
+  #define INT_TYPE long long int
+  #define MKL_PARDISO pardiso_64
+  #define MKL_PARDISO_INIT pardiso_64init
+ #endif
 #else
-#define INT_TYPE int
-#define MKL_PARDISO pardiso
-#define MKL_PARDISO_INIT pardisoinit
+ #define INT_TYPE int
+ #define MKL_PARDISO pardiso
+ #define MKL_PARDISO_INIT pardisoinit
 #endif
 
 

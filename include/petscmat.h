@@ -107,6 +107,7 @@ J*/
 #define MATSOLVERLUSOL        "lusol"
 #define MATSOLVERMUMPS        "mumps"
 #define MATSOLVERMKL_PARDISO  "mkl_pardiso"
+#define MATSOLVERMKL_CPARDISO "mkl_cpardiso"
 #define MATSOLVERPASTIX       "pastix"
 #define MATSOLVERMATLAB       "matlab"
 #define MATSOLVERPETSC        "petsc"
@@ -1622,6 +1623,13 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat,PetscInt,PetscReal*);
 */
 #ifdef PETSC_HAVE_MKL_PARDISO
 PETSC_EXTERN PetscErrorCode MatMkl_PardisoSetCntl(Mat,PetscInt,PetscInt);
+#endif
+
+/*
+   PETSc interface to Mkl_CPardiso
+*/
+#ifdef PETSC_HAVE_MKL_CPARDISO
+PETSC_EXTERN PetscErrorCode MatMkl_CPardisoSetCntl(Mat,PetscInt,PetscInt);
 #endif
 
 /*
