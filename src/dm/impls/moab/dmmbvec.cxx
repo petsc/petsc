@@ -432,13 +432,13 @@ PetscErrorCode  DMMoabVecRestoreArrayRead(DM dm,Vec vec,void* array)
 #define __FUNCT__ "DMCreateVector_Moab_Private"
 PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range* userrange,PetscBool is_global_vec,PetscBool destroy_tag,Vec *vec)
 {
-  PetscErrorCode         ierr;
-  moab::ErrorCode        merr;
-  PetscBool              is_newtag;
-  const moab::Range      *range;
-  PetscInt               count,lnative_vec,gnative_vec;
-  std::string ttname;
-  PetscScalar *data_ptr,*defaultvals;
+  PetscErrorCode    ierr;
+  moab::ErrorCode   merr;
+  PetscBool         is_newtag;
+  const moab::Range *range;
+  PetscInt          count,lnative_vec,gnative_vec;
+  std::string       ttname;
+  PetscScalar       *data_ptr,*defaultvals;
 
   Vec_MOAB *vmoab;
   DM_Moab *dmmoab = (DM_Moab*)dm->data;
@@ -446,6 +446,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
   moab::Interface *mbiface = dmmoab->mbiface;
 
   PetscFunctionBegin;
+  if(sizeof(PetscReal) != sizeof(PetscScalar)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "MOAB tags only support Real types (Complex-type unsupported)");
   if(!userrange) range = dmmoab->vowned;
   else range = userrange;
   if(!range) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Input range cannot be empty or call DMSetUp first.");
@@ -472,11 +473,11 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
       is_newtag = PETSC_TRUE;
 
       /* Create the default value for the tag (all zeros) */
-      ierr = PetscMalloc(dmmoab->numFields*sizeof(PetscScalar),&defaultvals);CHKERRQ(ierr);
-      ierr = PetscMemzero(defaultvals,dmmoab->numFields*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscMalloc(dmmoab->numFields*sizeof(PetscReal),&defaultvals);CHKERRQ(ierr);
+      ierr = PetscMemzero(defaultvals,dmmoab->numFields*sizeof(PetscReal));CHKERRQ(ierr);
 
       /* Create the tag */
-      merr = mbiface->tag_get_handle(tag_name,dmmoab->numFields*sizeof(PetscScalar),moab::MB_TYPE_OPAQUE,tag,
+      merr = mbiface->tag_get_handle(tag_name,dmmoab->numFields,moab::MB_TYPE_DOUBLE,tag,
                                     moab::MB_TAG_DENSE|moab::MB_TAG_CREAT,defaultvals);MBERRNM(merr);
       ierr = PetscFree(tag_name);CHKERRQ(ierr);
       ierr = PetscFree(defaultvals);CHKERRQ(ierr);
