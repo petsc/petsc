@@ -531,7 +531,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
 #endif
   attribute = H5Aopen_name(dataset, name);
   if (attribute < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not open attribute %s of %s", name, parent);
-  status = H5Aread(attribute, dtype, value);CHKERRQ(status);
+  PetscStackCallHDF5(H5Aread,(attribute, dtype, value));
   status = H5Aclose(attribute);CHKERRQ(status);
   status = H5Dclose(dataset);CHKERRQ(status);
   status = H5Sclose(dataspace);CHKERRQ(status);

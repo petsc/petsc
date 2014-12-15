@@ -29,6 +29,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHDF5IntCast(PetscInt a,hsize_t *b)
 PETSC_EXTERN PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType,hid_t*);
 PETSC_EXTERN PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t,PetscDataType*);
 
+#define PetscStackCallHDF5(func,args) do {                        \
+    hid_t status;                                                 \
+    PetscStackPush(#func);status = func args;PetscStackPop; if (status) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s() Status %d",#func,(int)status); \
+  } while (0)
+
 #endif  /* defined(PETSC_HAVE_HDF5) */
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer,const char[],const char[],PetscDataType,void*);
