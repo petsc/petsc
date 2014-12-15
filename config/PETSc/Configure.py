@@ -103,6 +103,7 @@ class Configure(config.base.Configure):
           packageObj.archProvider       = self.arch
           packageObj.languageProvider   = self.languages
           packageObj.precisionProvider  = self.scalartypes
+          packageObj.indexProvider      = self.libraryOptions
           packageObj.installDirProvider = self.installdir
           packageObj.externalPackagesDirProvider = self.externalpackagesdir
           setattr(self, packageName.lower(), packageObj)
