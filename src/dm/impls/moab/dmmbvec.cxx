@@ -186,7 +186,7 @@ PetscErrorCode  DMMoabVecGetArray(DM dm,Vec vec,void* array)
     /* exchange the data into ghost cells first */
     merr = dmmoab->pcomm->exchange_tags(vtag,*dmmoab->vlocal);MBERRNM(merr);
 
-    ierr = PetscMalloc(sizeof(PetscScalar)*(dmmoab->nloc+dmmoab->nghost)*dmmoab->numFields,varray);CHKERRQ(ierr);
+    ierr = PetscMalloc1((dmmoab->nloc+dmmoab->nghost)*dmmoab->numFields,varray);CHKERRQ(ierr);
 
     /* Get the array data for local entities */
     merr = dmmoab->mbiface->tag_iterate(vtag,dmmoab->vlocal->begin(),dmmoab->vlocal->end(),count,reinterpret_cast<void*&>(marray),false);MBERRNM(merr);
@@ -354,7 +354,7 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm,Vec vec,void* array)
     /* exchange the data into ghost cells first */
     merr = dmmoab->pcomm->exchange_tags(vtag,*dmmoab->vlocal);MBERRNM(merr);
 
-    ierr = PetscMalloc(sizeof(PetscScalar)*(dmmoab->nloc+dmmoab->nghost)*dmmoab->numFields,varray);CHKERRQ(ierr);
+    ierr = PetscMalloc1((dmmoab->nloc+dmmoab->nghost)*dmmoab->numFields,varray);CHKERRQ(ierr);
 
     /* Get the array data for local entities */
     merr = dmmoab->mbiface->tag_iterate(vtag,dmmoab->vlocal->begin(),dmmoab->vlocal->end(),count,reinterpret_cast<void*&>(marray),false);MBERRNM(merr);
@@ -473,8 +473,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm,moab::Tag tag,const moab::Range
       is_newtag = PETSC_TRUE;
 
       /* Create the default value for the tag (all zeros) */
-      ierr = PetscMalloc(dmmoab->numFields*sizeof(PetscReal),&defaultvals);CHKERRQ(ierr);
-      ierr = PetscMemzero(defaultvals,dmmoab->numFields*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscCalloc1(dmmoab->numFields,&defaultvals);CHKERRQ(ierr);
 
       /* Create the tag */
       merr = mbiface->tag_get_handle(tag_name,dmmoab->numFields,moab::MB_TYPE_DOUBLE,tag,
