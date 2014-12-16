@@ -115,10 +115,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     *dm  = distMesh;
   }
   if (user->loadBalance) {
-    /* Perform load balancing via ParMetis */
     PetscPartitioner part;
+    PetscInt         reSizes_n2[2]  = {2, 2};
+    PetscInt         rePoints_n2[4] = {2, 3, 0, 1};
+    if (rank) {rePoints_n2[0] = 1; rePoints_n2[1] = 2, rePoints_n2[2] = 0, rePoints_n2[3] = 3;}
+
     ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERPARMETIS);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
+    ierr = PetscPartitionerShellSetPartition(part, numProcs, reSizes_n2, rePoints_n2);CHKERRQ(ierr);
 
     ierr = DMPlexDistribute(*dm, overlap, NULL, &distMesh);CHKERRQ(ierr);
     if (distMesh) {
