@@ -50,6 +50,7 @@ class Configure(config.base.Configure):
     self.installdir    = framework.require('PETSc.options.installDir',self)
     self.languages     = framework.require('PETSc.options.languages', self.setCompilers)
     self.debugging     = framework.require('PETSc.options.debugging', self.setCompilers)
+    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
     self.compilers     = framework.require('config.compilers',          self)
     self.types         = framework.require('config.types',              self)
     self.headers       = framework.require('config.headers',            self)
