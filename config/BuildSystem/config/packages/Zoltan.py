@@ -12,7 +12,7 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
+    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
     self.x              = framework.require('config.packages.X',self)
     self.parmetis       = framework.require('config.packages.parmetis',self)
     self.ptscotch       = framework.require('config.packages.PTScotch',self)
@@ -21,7 +21,7 @@ class Configure(config.package.GNUPackage):
 
   def formGNUConfigureArgs(self):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    if self.libraryOptions.integerSize == 64:
+    if self.indexTypes.integerSize == 64:
       args.append('--with-id-type=ullong')
     args.append('--enable-mpi')
     if not hasattr(self.compilers, 'CXX'):

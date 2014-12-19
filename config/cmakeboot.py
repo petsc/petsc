@@ -61,7 +61,6 @@ class PETScMaker(script.Script):
    self.libraries     = self.framework.require('config.libraries',            None)
    self.scalarType    = self.framework.require('PETSc.options.scalarTypes', None)
    self.memAlign      = self.framework.require('PETSc.options.memAlign',    None)
-   self.libraryOptions= self.framework.require('PETSc.options.libraryOptions', None)
    self.compilerFlags = self.framework.require('config.compilerFlags', self)
    return
 

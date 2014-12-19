@@ -21,13 +21,13 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.arch           = framework.require('PETSc.options.arch', self)
     self.scalartypes    = framework.require('PETSc.options.scalarTypes', self)
+    self.indextypes     = framework.require('PETSc.options.indexTypes', self)
     self.datafilespath  = framework.require('PETSc.options.dataFilesPath', self)
     self.compilers      = framework.require('config.compilers', self)
     self.mpi            = framework.require('config.packages.MPI', self)
     self.elemental      = framework.require('config.packages.elemental', self)
     self.x              = framework.require('config.packages.X', self)
     self.fortrancpp     = framework.require('PETSc.options.fortranCPP', self)
-    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
     return
 
   def configureRegression(self):
@@ -65,7 +65,7 @@ class Configure(config.base.Configure):
         rjobs.append('C_Complex')
       else:
         rjobs.append('C_NoComplex')
-        if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.libraryOptions.integerSize == 32:
+        if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.indexTypes.integerSize == 32:
           rjobs.append('DATAFILESPATH')
           if hasattr(self.compilers, 'CXX'):
             rjobs.append('Cxx_DATAFILESPATH')
