@@ -507,7 +507,10 @@ M*/
    Notes: By default PETSC_COMM_WORLD and MPI_COMM_WORLD are identical unless you wish to
           run PETSc on ONLY a subset of MPI_COMM_WORLD. In that case create your new (smaller)
           communicator, call it, say comm, and set PETSC_COMM_WORLD = comm BEFORE calling
-          PetscInitialize()
+          PetscInitialize(), but after MPI_Init() has been called. 
+
+          The value of PETSC_COMM_WORLD should never be USED/accessed before PetscInitialize()
+          is called because it may not have a valid value yet.
 
 .seealso: PETSC_COMM_SELF
 
@@ -518,6 +521,8 @@ PETSC_EXTERN MPI_Comm PETSC_COMM_WORLD;
     PETSC_COMM_SELF - This is always MPI_COMM_SELF
 
    Level: beginner
+
+   Notes: Do not USE/access or set this variable before PetscInitialize() has been called.
 
 .seealso: PETSC_COMM_WORLD
 
