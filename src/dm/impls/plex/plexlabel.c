@@ -57,6 +57,20 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLabelMakeAllValid_Private"
+static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
+{
+  PetscInt       v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (v = 0; v < label->numStrata; v++){
+    ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLabelMakeInvalid_Private"
 static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
 {
@@ -161,10 +175,7 @@ PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  if (label) {
-    PetscInt v;
-    for (v = 0; v < label->numStrata; v++){ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);}
-  }
+  if (label) {ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);}
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = DMLabelView_Ascii(label, viewer);CHKERRQ(ierr);
@@ -205,7 +216,7 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for (v = 0; v < label->numStrata; ++v) {ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);}
+  ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);
   ierr = PetscNew(labelnew);CHKERRQ(ierr);
   ierr = PetscStrallocpy(label->name, &(*labelnew)->name);CHKERRQ(ierr);
 
@@ -244,7 +255,7 @@ PetscErrorCode DMLabelCreateIndex(DMLabel label, PetscInt pStart, PetscInt pEnd)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for (v = 0; v < label->numStrata; ++v) {ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);}
+  ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);
   if (label->bt) {ierr = PetscBTDestroy(&label->bt);CHKERRQ(ierr);}
   label->pStart = pStart;
   label->pEnd   = pEnd;
@@ -325,12 +336,11 @@ PetscErrorCode DMLabelHasValue(DMLabel label, PetscInt value, PetscBool *contain
 @*/
 PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contains)
 {
-  PetscInt v;
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
   PetscValidPointer(contains, 3);
-  for (v = 0; v < label->numStrata; ++v) {ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);}
+  ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
   if (!label->bt) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call DMLabelCreateIndex() before DMLabelHasPoint()");
   if ((point < label->pStart) || (point >= label->pEnd)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %d is not in [%d, %d)", point, label->pStart, label->pEnd);
@@ -636,7 +646,7 @@ PetscErrorCode DMLabelFilter(DMLabel label, PetscInt start, PetscInt end)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for (v = 0; v < label->numStrata; ++v) {ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);}
+  ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);
   label->pStart = start;
   label->pEnd   = end;
   if (label->bt) {ierr = PetscBTDestroy(&label->bt);CHKERRQ(ierr);}
@@ -665,7 +675,7 @@ PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  for (v = 0; v < label->numStrata; ++v) {ierr = DMLabelMakeValid_Private(label, v);CHKERRQ(ierr);}
+  ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);
   ierr = DMLabelDuplicate(label, labelNew);CHKERRQ(ierr);
   ierr = DMLabelGetNumValues(*labelNew, &numValues);CHKERRQ(ierr);
   ierr = ISGetLocalSize(permutation, &numPoints);CHKERRQ(ierr);
@@ -705,9 +715,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (label) {
-    for (s = 0; s < label->numStrata; ++s) {ierr = DMLabelMakeValid_Private(label, s);CHKERRQ(ierr);}
-  }
+  if (label) {ierr = DMLabelMakeAllValid_Private(label);CHKERRQ(ierr);}
   ierr = PetscObjectGetComm((PetscObject)sf, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
