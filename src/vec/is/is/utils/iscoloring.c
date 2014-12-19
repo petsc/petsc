@@ -80,12 +80,9 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj,const char prefix[],cons
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
-  static PetscBool  incall = PETSC_FALSE;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  if (incall) PetscFunctionReturn(0);
-  incall = PETSC_TRUE;
   ierr   = PetscOptionsGetViewer(obj->comm,prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
@@ -93,7 +90,6 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj,const char prefix[],cons
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
-  incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
