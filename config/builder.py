@@ -889,7 +889,7 @@ class DirectoryTreeWalker(logger.Logger):
     self.defines = {}
     self.defines.update(self.configInfo.base.defines)
     self.defines.update(self.configInfo.compilers.defines)
-    self.defines.update(self.configInfo.indexTypes.defines)
+    self.defines.update(self.configInfo.indexType.defines)
     self.defines.update(self.configInfo.libraryOptions.defines)
     for p in self.configInfo.framework.packages:
       self.defines.update(p.defines)

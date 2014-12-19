@@ -65,7 +65,7 @@ class Configure(config.base.Configure):
         rjobs.append('C_Complex')
       else:
         rjobs.append('C_NoComplex')
-        if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.indexTypes.integerSize == 32:
+        if self.datafilespath.datafilespath and self.scalartypes.precision == 'double' and self.indextypes.integerSize == 32:
           rjobs.append('DATAFILESPATH')
           if hasattr(self.compilers, 'CXX'):
             rjobs.append('Cxx_DATAFILESPATH')
