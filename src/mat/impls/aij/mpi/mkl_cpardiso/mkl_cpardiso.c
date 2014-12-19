@@ -16,47 +16,47 @@
  *  For more information check mkl_cpardiso manual.
  */
 #define JOB_ANALYSIS 11
-//#define JOB_ANALYSIS_NUMERICAL_FACTORIZATION 12
-//#define JOB_ANALYSIS_NUMERICAL_FACTORIZATION_SOLVE_ITERATIVE_REFINEMENT 13
+#define JOB_ANALYSIS_NUMERICAL_FACTORIZATION 12
+#define JOB_ANALYSIS_NUMERICAL_FACTORIZATION_SOLVE_ITERATIVE_REFINEMENT 13
 #define JOB_NUMERICAL_FACTORIZATION 22
-//#define JOB_NUMERICAL_FACTORIZATION_SOLVE_ITERATIVE_REFINEMENT 23
+#define JOB_NUMERICAL_FACTORIZATION_SOLVE_ITERATIVE_REFINEMENT 23
 #define JOB_SOLVE_ITERATIVE_REFINEMENT 33
-//#define JOB_SOLVE_FORWARD_SUBSTITUTION 331
-//#define JOB_SOLVE_DIAGONAL_SUBSTITUTION 332
-//#define JOB_SOLVE_BACKWARD_SUBSTITUTION 333
-//#define JOB_RELEASE_OF_LU_MEMORY 0
+#define JOB_SOLVE_FORWARD_SUBSTITUTION 331
+#define JOB_SOLVE_DIAGONAL_SUBSTITUTION 332
+#define JOB_SOLVE_BACKWARD_SUBSTITUTION 333
+#define JOB_RELEASE_OF_LU_MEMORY 0
 #define JOB_RELEASE_OF_ALL_MEMORY -1
 
 #define IPARM_SIZE 64
 #define INT_TYPE MKL_INT
 
 static const char *Err_MSG_CPardiso(int errNo){
-	switch (errNo) {
-		case -1:
-			return "input inconsistent"; break;
-		case -2:
-			return "not enough memory"; break;
-		case -3:
-			return "reordering problem"; break;
-		case -4:
-			return "zero pivot, numerical factorization or iterative refinement problem"; break;
-		case -5:
-			return "unclassified (internal) error"; break;
-		case -6:
-			return "preordering failed (matrix types 11, 13 only)"; break;
-		case -7:
-			return "diagonal matrix problem"; break;
-		case -8:
-			return "32-bit integer overflow problem"; break;
-		case -9:
-			return "not enough memory for OOC"; break;
-		case -10:
-			return "problems with opening OOC temporary files"; break;
-		case -11:
-			return "read/write problems with the OOC data file"; break;
-		default : 
-			return "unknown error";
-	}
+  switch (errNo) {
+    case -1:
+      return "input inconsistent"; break;
+    case -2:
+      return "not enough memory"; break;
+    case -3:
+      return "reordering problem"; break;
+    case -4:
+      return "zero pivot, numerical factorization or iterative refinement problem"; break;
+    case -5:
+      return "unclassified (internal) error"; break;
+    case -6:
+      return "preordering failed (matrix types 11, 13 only)"; break;
+    case -7:
+      return "diagonal matrix problem"; break;
+    case -8:
+      return "32-bit integer overflow problem"; break;
+    case -9:
+      return "not enough memory for OOC"; break;
+    case -10:
+      return "problems with opening OOC temporary files"; break;
+    case -11:
+      return "read/write problems with the OOC data file"; break;
+    default : 
+      return "unknown error";
+  }
 }
 
 /*
@@ -158,7 +158,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO(Mat A, MatReuse re
     col  = row + m + 1;
     val  = (PetscScalar*)(col + nz);
     *r = row; *c = col; *v = val;
-	row[0] = 0;
+    row[0] = 0;
   } else {
     row = *r; col = *c; val = *v;
   }
@@ -347,7 +347,7 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X){
       (void*)xarray,
       &mat_mkl_cpardiso->comm_mkl_cpardiso,
       &mat_mkl_cpardiso->err);
-	if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
+    if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
   }
   mat_mkl_cpardiso->CleanUp = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -394,8 +394,8 @@ PetscErrorCode MatFactorNumeric_MKL_CPARDISO(Mat F,Mat A,const MatFactorInfo *in
     &mat_mkl_cpardiso->err);
   if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
-  mat_mkl_cpardiso->matstruc     = SAME_NONZERO_PATTERN;
-  mat_mkl_cpardiso->CleanUp = PETSC_TRUE;
+  mat_mkl_cpardiso->matstruc = SAME_NONZERO_PATTERN;
+  mat_mkl_cpardiso->CleanUp  = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -450,7 +450,7 @@ PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A){
     &icntl,
     &flg);CHKERRQ(ierr);
   if(flg){
-   mat_mkl_cpardiso->mtype = icntl;
+    mat_mkl_cpardiso->mtype = icntl;
 #if defined(PETSC_USE_REAL_SINGLE)
     mat_mkl_cpardiso->iparm[27] = 1;
 #else
@@ -662,9 +662,9 @@ PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_mkl_cpa
 
   mat_mkl_cpardiso->iparm[39] = 0;
   if (SizeComm > 1) {
-	  mat_mkl_cpardiso->iparm[39] = 2;
-      mat_mkl_cpardiso->iparm[40] = A->rmap->rstart;
-      mat_mkl_cpardiso->iparm[41] = A->rmap->rend-1;
+    mat_mkl_cpardiso->iparm[39] = 2;
+    mat_mkl_cpardiso->iparm[40] = A->rmap->rstart;
+    mat_mkl_cpardiso->iparm[41] = A->rmap->rend-1;
   }
 
   mat_mkl_cpardiso->perm = 0;
@@ -866,9 +866,9 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType
 
   if (isSeqAIJ) {
     ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
-	mat_mkl_cpardiso->ConvertToTriples = MatCopy_seqaij_seqaij_MKL_CPARDISO;
+  mat_mkl_cpardiso->ConvertToTriples = MatCopy_seqaij_seqaij_MKL_CPARDISO;
   } else {
-	mat_mkl_cpardiso->ConvertToTriples = MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO;
+    mat_mkl_cpardiso->ConvertToTriples = MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO;
     ierr = MatMPIAIJSetPreallocation(B,0,NULL,0,NULL);CHKERRQ(ierr);
   }
 

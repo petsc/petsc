@@ -72,12 +72,12 @@ def chkwinf90():
 
 def chkdosfiles():
   # cygwin - but not a hg clone - so check one of files in bin dir
-  #if "\r\n" in open(os.path.join('bin','petscmpiexec'),"rb").read():
-  #  print '==============================================================================='
-  #  print ' *** Scripts are in DOS mode. Was winzip used to extract petsc sources?    ****'
-  #  print ' *** Please restart with a fresh tarball and use "tar -xzf petsc.tar.gz"   ****'
-  #  print '==============================================================================='
-  #  sys.exit(3)
+  if "\r\n" in open(os.path.join('bin','petscmpiexec'),"rb").read():
+    print '==============================================================================='
+    print ' *** Scripts are in DOS mode. Was winzip used to extract petsc sources?    ****'
+    print ' *** Please restart with a fresh tarball and use "tar -xzf petsc.tar.gz"   ****'
+    print '==============================================================================='
+    sys.exit(3)
   return
 
 def chkcygwinlink():
