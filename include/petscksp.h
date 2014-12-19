@@ -296,6 +296,8 @@ PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP,PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPLoad(KSP,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode KSPViewFromOptions(KSP A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_EXTERN PetscErrorCode KSPReasonView(KSP,PetscViewer);
+PETSC_EXTERN PetscErrorCode KSPReasonViewFromOptions(KSP);
 
 #define KSP_FILE_CLASSID 1211223
 

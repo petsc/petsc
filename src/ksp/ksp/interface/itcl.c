@@ -439,11 +439,6 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsName("-ksp_test_null_space","Is provided null space correct","None",&flg);CHKERRQ(ierr);
   }
 
-  /*
-    Prints reason for convergence or divergence of each linear solve
-  */
-  ierr = PetscOptionsBool("-ksp_converged_reason","Print reason for converged or diverged","KSPSolve",ksp->printreason,&ksp->printreason,NULL);CHKERRQ(ierr);
-
   ierr = PetscOptionsBool("-ksp_monitor_cancel","Remove any hardwired monitor routines","KSPMonitorCancel",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   /* -----------------------------------------------------------------------*/
   /*

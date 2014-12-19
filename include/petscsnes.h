@@ -87,6 +87,8 @@ PETSC_EXTERN PetscErrorCode SNESGetRhs(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESView(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESLoad(SNES,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode SNESViewFromOptions(SNES A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_EXTERN PetscErrorCode SNESReasonView(SNES,PetscViewer);
+PETSC_EXTERN PetscErrorCode SNESReasonViewFromOptions(SNES);
 
 #define SNES_FILE_CLASSID 1211224
 

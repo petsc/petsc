@@ -2543,11 +2543,8 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,const char prefix[],co
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
-  if (prefix) {
-    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  } else {
-    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),((PetscObject)obj)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  }
+  if (!prefix) prefix = ((PetscObject)obj)->prefix;
+  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = PetscObjectView(obj,viewer);CHKERRQ(ierr);
