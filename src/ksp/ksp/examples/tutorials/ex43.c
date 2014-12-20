@@ -1448,6 +1448,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
     if (is_pcfs) {
       ierr = PCFieldSplitGetSubKSP(pc_S,&nsplits,&sub_ksp);CHKERRQ(ierr);
       ksp_U = sub_ksp[0];
+      ierr = PetscFree(sub_ksp);CHKERRQ(ierr);
 
       if (nsplits == 2) {
         ierr = DMDAGetReducedDMDA(da_Stokes,2,&da_U);CHKERRQ(ierr);
