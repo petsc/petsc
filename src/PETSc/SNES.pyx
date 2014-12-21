@@ -676,6 +676,11 @@ cdef class SNES(Object):
         PetscINCREF(snes.obj)
         return snes
 
+    def getCompositeNumber(self):
+        cdef PetscInt cn = 0
+        CHKERR( SNESCompositeGetNumber(self.snes, &cn) )
+        return toInt(cn)
+
     # --- application context ---
 
     property appctx:
