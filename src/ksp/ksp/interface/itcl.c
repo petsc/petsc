@@ -532,7 +532,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   */
   ierr = PetscOptionsBool("-ksp_monitor_lg_residualnorm","Monitor graphically preconditioned residual norm","KSPMonitorSet",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && flg) {
-    PetscDrawLG ctx;
+    PetscObject *ctx;
 
     ierr = KSPMonitorLGResidualNormCreate(0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorLGResidualNorm,ctx,(PetscErrorCode (*)(void**))KSPMonitorLGResidualNormDestroy);CHKERRQ(ierr);
@@ -542,7 +542,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   */
   ierr = PetscOptionsBool("-ksp_monitor_lg_true_residualnorm","Monitor graphically true residual norm","KSPMonitorSet",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set && flg) {
-    PetscDrawLG ctx;
+    PetscObject *ctx;
 
     ierr = KSPMonitorLGTrueResidualNormCreate(PetscObjectComm((PetscObject)ksp),0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorLGTrueResidualNorm,ctx,(PetscErrorCode (*)(void**))KSPMonitorLGTrueResidualNormDestroy);CHKERRQ(ierr);

@@ -3138,7 +3138,7 @@ PetscErrorCode  SNESMonitorLGResidualNorm(SNES snes,PetscInt it,PetscReal norm,v
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESMonitorLGCreate"
-PetscErrorCode  SNESMonitorLGCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode  SNESMonitorLGCreate(const char host[],const char label[],int x,int y,int m,int n,PetscObject **draw)
 {
   PetscErrorCode ierr;
 
@@ -3149,7 +3149,7 @@ PetscErrorCode  SNESMonitorLGCreate(const char host[],const char label[],int x,i
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESMonitorLGDestroy"
-PetscErrorCode  SNESMonitorLGDestroy(PetscDrawLG *draw)
+PetscErrorCode  SNESMonitorLGDestroy(PetscObject *draw)
 {
   PetscErrorCode ierr;
 
