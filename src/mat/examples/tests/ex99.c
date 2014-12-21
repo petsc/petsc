@@ -185,8 +185,10 @@ PetscInt main(PetscInt argc,char **args)
   /* View evals */
   ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
-    printf(" %d evals: \n",nevs);
-    for (i=0; i<nevs; i++) printf("%D  %g\n",i+il,(double)evals[i]);
+    ierr = PetscPrintf(PETSC_COMM_SELF," %D evals: \n",nevs);CHKERRQ(ierr);
+    for (i=0; i<nevs; i++) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"%D  %g\n",i+il,(double)evals[i]);CHKERRQ(ierr);
+    }
   }
 
   /* Check residuals and orthogonality */
@@ -275,12 +277,12 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
 #if defined(DEBUG_CkEigenSolutions)
         if (dot > tols[1]) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%D,%D)|: %g, norm: %g\n",i,j,(double)ndot,(double)nnorm);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%D,%D)|: %g, norm: %g\n",i,j,(double)ndot,(double)nnorm);CHKERRQ(ierr);
         }
 #endif
       } /* for (j=i; j<nev_loc; j++) */
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j*B*x_i) - delta_ji|: %g\n",(double)dot_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j*B*x_i) - delta_ji|: %g\n",(double)dot_max);CHKERRQ(ierr);
 
   case 1:
     norm_max = 0.0;
@@ -295,16 +297,16 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
 #if defined(DEBUG_CkEigenSolutions)
       /* sniff, and bark if necessary */
       if (norm > tols[0]) {
-        printf("  residual violation: %D, resi: %g\n",i, (double)nnorm);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  residual violation: %D, resi: %g\n",i, (double)nnorm);CHKERRQ(ierr);
       }
 #endif
     }
 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);CHKERRQ(ierr);
 
     break;
   default:
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%D is not supported \n",cklvl);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%D is not supported \n",cklvl);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&vt2);
   ierr = VecDestroy(&vt1);
