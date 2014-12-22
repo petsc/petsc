@@ -17,8 +17,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetBool(NULL,"-different",&different,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-skip",&skip,NULL);CHKERRQ(ierr);
-  /* 
-     Create matrices 
+  /*
+     Create matrices
      A = tridiag(1,-2,1) and B = diag(7);
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ int main(int argc,char **args)
   ierr = MatAXPY(C,1.0,B,(different)?DIFFERENT_NONZERO_PATTERN:SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
   /* Add A */
   if (!skip) { ierr = MatAXPY(C,1.0,A,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr); }
-  
+
   /*
      Free memory
   */
