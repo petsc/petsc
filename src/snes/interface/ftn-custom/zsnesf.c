@@ -308,7 +308,7 @@ PETSC_EXTERN void PETSC_STDCALL snessetoptionsprefix_(SNES *snes,CHAR prefix PET
 /*----------------------------------------------------------------------*/
 /* functions, hence no STDCALL */
 
-PETSC_EXTERN void snesmonitorlgresidualnorm_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+PETSC_EXTERN void snesmonitorlgresidualnorm_(SNES *snes,PetscInt *its,PetscReal *fgnorm,PetscObject *dummy,PetscErrorCode *ierr)
 {
   *ierr = SNESMonitorLGResidualNorm(*snes,*its,*fgnorm,dummy);
 }

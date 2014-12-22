@@ -85,12 +85,12 @@ PETSC_EXTERN void  kspmonitorsingularvalue_(KSP *ksp,PetscInt *it,PetscReal *nor
   *ierr = KSPMonitorSingularValue(*ksp,*it,*norm,ctx);
 }
 
-PETSC_EXTERN void  kspmonitorlgresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void  kspmonitorlgresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,PetscObject *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPMonitorLGResidualNorm(*ksp,*it,*norm,ctx);
 }
 
-PETSC_EXTERN void  kspmonitorlgtrueresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void  kspmonitorlgtrueresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,PetscObject *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPMonitorLGTrueResidualNorm(*ksp,*it,*norm,ctx);
 }
