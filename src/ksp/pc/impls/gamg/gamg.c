@@ -527,7 +527,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
 
       /* PCSetUp_MG seems to insists on setting this to GMRES */
-      ierr = KSPSetType(mglevels[0]->smoothd, KSPPREONLY);CHKERRQ(ierr);
+      /* ierr = KSPSetType(mglevels[0]->smoothd, KSPPREONLY);CHKERRQ(ierr); */
       PetscFunctionReturn(0);
     }
   }
