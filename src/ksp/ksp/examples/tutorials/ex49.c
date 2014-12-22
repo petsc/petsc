@@ -1296,7 +1296,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
 
     val1 = PetscRealPart(_x[i]);
     val2 = PetscRealPart(_x[i+1]);
-    if (fabs(val1) < 0.1 && fabs(val2) < 0.1) {
+    if (PetscAbs(val1) < 0.1 && PetscAbs(val2) < 0.1) {
       unconstrained[cnt] = start + i;
       cnt++;
       unconstrained[cnt] = start + i + 1;
