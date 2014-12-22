@@ -63,11 +63,13 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 
   /* if user has provided fast Richardson code use that */
   ierr = PCApplyRichardsonExists(ksp->pc,&exists);CHKERRQ(ierr);
-  if (exists && !ksp->numbermonitors && !ksp->transpose_solve & !ksp->nullsp) {
+  if (exists && richardsonP->scale == 1.0 && !ksp->numbermonitors && !ksp->transpose_solve & !ksp->nullsp) {
     PCRichardsonConvergedReason reason;
     ierr        = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit,ksp->guess_zero,&ksp->its,&reason);CHKERRQ(ierr);
     ksp->reason = (KSPConvergedReason)reason;
     PetscFunctionReturn(0);
+  } else if (exists && !ksp->numbermonitors && !ksp->transpose_solve & !ksp->nullsp) {
+    ierr  = PetscInfo(ksp,"KSPSolve_Richardson: Warning, skipping optimized PCApplyRichardson() because scale factor is not 1.0\n");CHKERRQ(ierr);
   }
 
   scale = richardsonP->scale;

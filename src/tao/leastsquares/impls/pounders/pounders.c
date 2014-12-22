@@ -106,7 +106,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subx);CHKERRQ(ierr);
     ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
     if (maxval > 1e-5) {
-      ierr = PetscInfo(tao,"subproblem solution < lower bound");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"subproblem solution < lower bound\n");CHKERRQ(ierr);
       tao->reason = TAO_DIVERGED_TR_REDUCTION;
     }
 
@@ -114,7 +114,7 @@ PetscErrorCode gqtwrap(Tao tao,PetscReal *gnorm, PetscReal *qmin)
     ierr = VecAXPY(mfqP->subpdel,-1.0,mfqP->subxu);CHKERRQ(ierr);
     ierr = VecMax(mfqP->subpdel,NULL,&maxval);CHKERRQ(ierr);
     if (maxval > 1e-5) {
-      ierr = PetscInfo(tao,"subproblem solution > upper bound");
+      ierr = PetscInfo(tao,"subproblem solution > upper bound\n");
       tao->reason = TAO_DIVERGED_TR_REDUCTION;
     }
   } else {
@@ -780,7 +780,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
       mfqP->nmodelpoints = 0;
       ierr = affpoints(mfqP,mfqP->xmin,mfqP->c1);CHKERRQ(ierr);
       if (mfqP->nmodelpoints < mfqP->n) {
-        ierr = PetscInfo(tao,"Model not valid -- model-improving");
+        ierr = PetscInfo(tao,"Model not valid -- model-improving\n");CHKERRQ(ierr);
         ierr = modelimprove(tao,mfqP,1);CHKERRQ(ierr);
       }
     }
@@ -808,7 +808,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
       valid = PETSC_FALSE;
       ierr = affpoints(mfqP,mfqP->xmin,mfqP->c2);CHKERRQ(ierr);
       if (mfqP->n > mfqP->nmodelpoints) {
-        ierr = PetscInfo(tao,"Model not valid -- adding geometry points");
+        ierr = PetscInfo(tao,"Model not valid -- adding geometry points\n");CHKERRQ(ierr);
         ierr = modelimprove(tao,mfqP,mfqP->n - mfqP->nmodelpoints);CHKERRQ(ierr);
       }
     }
@@ -892,7 +892,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     }
     mfqP->last_nmodelpoints = mfqP->nmodelpoints;
     if (same && mfqP->delta == deltaold) {
-      PetscInfo(tao,"Identical model used in successive iterations");
+      ierr = PetscInfo(tao,"Identical model used in successive iterations\n");CHKERRQ(ierr);
       reason = TAO_CONVERGED_STEPTOL;
       tao->reason = TAO_CONVERGED_STEPTOL;
     }

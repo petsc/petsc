@@ -710,14 +710,14 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 
   if (fatol != PETSC_DEFAULT) {
     if (fatol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative fatol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative fatol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->fatol = PetscMax(0,fatol);
     }
   }
   if (frtol != PETSC_DEFAULT) {
     if (frtol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative frtol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative frtol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->frtol = PetscMax(0,frtol);
     }
@@ -725,7 +725,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 
   if (gatol != PETSC_DEFAULT) {
     if (gatol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative gatol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative gatol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->gatol = PetscMax(0,gatol);
     }
@@ -733,7 +733,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 
   if (grtol != PETSC_DEFAULT) {
     if (grtol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative grtol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative grtol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->grtol = PetscMax(0,grtol);
     }
@@ -741,7 +741,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal fatol, PetscReal frtol, Petsc
 
   if (gttol != PETSC_DEFAULT) {
     if (gttol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative gttol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative gttol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->gttol = PetscMax(0,gttol);
     }
@@ -779,7 +779,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
 
   if (catol != PETSC_DEFAULT) {
     if (catol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative catol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative catol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->catol = PetscMax(0,catol);
     }
@@ -787,7 +787,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
 
   if (crtol != PETSC_DEFAULT) {
     if (crtol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative crtol -- ignored.");CHKERRQ(ierr);
+      ierr = PetscInfo(tao,"Tried to set negative crtol -- ignored.\n");CHKERRQ(ierr);
     } else {
       tao->crtol = PetscMax(0,crtol);
     }

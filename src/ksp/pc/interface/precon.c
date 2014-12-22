@@ -875,7 +875,7 @@ PetscErrorCode  PCSetUp(PC pc)
   ierr = PetscObjectStateGet((PetscObject)pc->pmat,&matstate);CHKERRQ(ierr);
   ierr = MatGetNonzeroState(pc->pmat,&matnonzerostate);CHKERRQ(ierr);
   if (!pc->setupcalled) {
-    ierr            = PetscInfo(pc,"Setting up PC for first time");CHKERRQ(ierr);
+    ierr            = PetscInfo(pc,"Setting up PC for first time\n");CHKERRQ(ierr);
     pc->flag        = DIFFERENT_NONZERO_PATTERN;
   } else if (matstate == pc->matstate) {
     ierr = PetscInfo(pc,"Leaving PC with identical preconditioner since operator is unchanged\n");CHKERRQ(ierr);

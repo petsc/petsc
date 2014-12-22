@@ -145,7 +145,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     /* If no free variables */
     if (tron->n_free == 0) {
       actred=0;
-      PetscInfo(tao,"No free variables in tron iteration.");
+      ierr = PetscInfo(tao,"No free variables in tron iteration.\n");CHKERRQ(ierr);
       break;
 
     }
