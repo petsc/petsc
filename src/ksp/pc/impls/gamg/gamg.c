@@ -566,7 +566,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     if (pc_gamg->verbose==1) {
       ierr =  MatGetInfo(Pmat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = MatGetLocalSize(Pmat, &NN, &qq);CHKERRQ(ierr);
-      if (NN==0) NN=1;
+      if (!NN) NN=1;
     } else {
       ierr = MatGetInfo(Pmat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
     }
@@ -652,7 +652,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       if (pc_gamg->verbose==1) {
         ierr = MatGetInfo(Aarr[level1],MAT_LOCAL,&info);CHKERRQ(ierr);
         ierr = MatGetLocalSize(Aarr[level1], &NN, &qq);CHKERRQ(ierr);
-        if (NN==0) NN=1;
+        if (!NN) NN=1;
       } else {
         ierr = MatGetInfo(Aarr[level1], MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
       }

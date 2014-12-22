@@ -308,7 +308,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
 
   if (verbose) {
     if (verbose == 1) {
-      double t1 = (nnz0==0) ? 1. : 100.*(double)nnz1/(double)nnz0, t2 = (nloc==0) ? 1. : (double)nnz0/(double)nloc;
+      double t1 = (!nnz0) ? 1. : 100.*(double)nnz1/(double)nnz0, t2 = (!nloc) ? 1. : (double)nnz0/(double)nloc;
       ierr = PetscPrintf(comm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",rank,__FUNCT__,
                          t1,vfilter,t2,MM);CHKERRQ(ierr);
     } else {
