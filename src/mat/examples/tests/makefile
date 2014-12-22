@@ -1352,7 +1352,7 @@ runex63f:
 	   else printf "${PWD}\nPossible problem with ex63f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex63_1.tmp dense.mat
 runex67f:
-	-@${MPIEXEC} -n 1  ./ex67f  > ex67f_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1  ./ex67f -binary_read_double -options_left false  > ex67f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex67f_1.out ex67f_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex67f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex67f_1.tmp
@@ -1426,7 +1426,7 @@ runex78:
 	   else printf "${PWD}\nPossible problem with ex78_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex78_1.tmp
 runex79f:
-	-@${MPIEXEC} -n 1 ./ex79f  > ex79f_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex79f -binary_read_double -options_left false  > ex79f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex79f_1.out ex79f_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex79f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex79f_1.tmp
