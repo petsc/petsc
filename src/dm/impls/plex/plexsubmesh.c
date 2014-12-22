@@ -1410,7 +1410,10 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   }
   /* Mark cell on the fault, and its faces which touch the fault: cell orientation for face gives the side of the fault */
   ierr = DMLabelGetStratumIS(label, dim-1, &dimIS);CHKERRQ(ierr);
-  if (!dimIS) PetscFunctionReturn(0);
+  if (!dimIS) {
+    ierr = PetscFree(pMax);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(dimIS, &points);CHKERRQ(ierr);
   for (p = 0; p < numPoints; ++p) { /* Loop over fault faces */
@@ -1528,7 +1531,10 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
     ierr = ISDestroy(&crossEdgeIS);CHKERRQ(ierr);
     ierr = ISDestroy(&vertIS);CHKERRQ(ierr);
   }
-  if (!dimIS) PetscFunctionReturn(0);
+  if (!dimIS) {
+    ierr = PetscFree(pMax);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(dimIS, &points);CHKERRQ(ierr);
   for (p = 0; p < numPoints; ++p) { /* Loop over fault vertices */
