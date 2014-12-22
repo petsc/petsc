@@ -22,6 +22,7 @@ static Mat static_F;
 #define __FUNCT__ "CholmodErrorHandler"
 static void CholmodErrorHandler(int status,const char *file,int line,const char *message)
 {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (status > CHOLMOD_OK) {
