@@ -350,7 +350,6 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       for (e = eStart; e < eEnd; ++e) {
         const PetscInt *cone;
         PetscInt        coneSize, offA, offB, dof, d;
-        PetscBool       useLabel = PETSC_FALSE;
 
         ierr = DMPlexGetConeSize(dm, e, &coneSize);CHKERRQ(ierr);
         if (coneSize != 2) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Edge %d cone should have two vertices, not %d", e, coneSize);
@@ -373,7 +372,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         for (l = 0; l < numLabels; ++l) {
           PetscInt val;
           ierr = DMPlexGetLabelValue(dm, names[l], v, &val);CHKERRQ(ierr);
-          if (val >= 0) {color = lcolors[l%numLColors]; useLabel = PETSC_TRUE; break;}
+          if (val >= 0) {color = lcolors[l%numLColors]; break;}
         }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer, ") node(%D_%D) [draw,shape=circle,color=%s] {%D} --\n", e, rank, color, e);CHKERRQ(ierr);
       }
