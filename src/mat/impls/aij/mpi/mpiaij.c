@@ -3772,7 +3772,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
       colors[i] = allcolors[a->garray[i]];
     }
     ierr = PetscFree(allcolors);CHKERRQ(ierr);
-    ierr = ISColoringCreate(MPI_COMM_SELF,coloring->n,a->B->cmap->n,colors,&ocoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(MPI_COMM_SELF,coloring->n,a->B->cmap->n,colors,PETSC_OWN_POINTER,&ocoloring);CHKERRQ(ierr);
     ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&ocoloring);CHKERRQ(ierr);
   } else if (coloring->ctype == IS_COLORING_GHOSTED) {
@@ -3791,7 +3791,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
       colors[i] = coloring->colors[larray[i]];
     }
     ierr = PetscFree(larray);CHKERRQ(ierr);
-    ierr = ISColoringCreate(PETSC_COMM_SELF,coloring->n,a->A->cmap->n,colors,&ocoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(PETSC_COMM_SELF,coloring->n,a->A->cmap->n,colors,PETSC_OWN_POINTER,&ocoloring);CHKERRQ(ierr);
     ierr = MatSetColoring_SeqAIJ(a->A,ocoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&ocoloring);CHKERRQ(ierr);
 
@@ -3803,7 +3803,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
       colors[i] = coloring->colors[larray[i]];
     }
     ierr = PetscFree(larray);CHKERRQ(ierr);
-    ierr = ISColoringCreate(MPI_COMM_SELF,coloring->n,a->B->cmap->n,colors,&ocoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(MPI_COMM_SELF,coloring->n,a->B->cmap->n,colors,PETSC_OWN_POINTER,&ocoloring);CHKERRQ(ierr);
     ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&ocoloring);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support ISColoringType %d",(int)coloring->ctype);
