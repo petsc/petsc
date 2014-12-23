@@ -882,7 +882,7 @@ PetscErrorCode DMPlexSNESGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSNESGetGradientDM"
-/*@C
+/*@
   DMPlexSNESGetGradientDM - Return gradient data layout
 
   Input Parameters:
