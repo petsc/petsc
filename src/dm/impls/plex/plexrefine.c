@@ -5553,6 +5553,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
     }
   case REFINER_HEX_2D:
   case REFINER_HYBRID_HEX_2D:
+  case REFINER_SIMPLEX_1D:
     /* Cell vertices have the average of corner coordinates */
     for (c = cStart; c < cMax; ++c) {
       const PetscInt newv = vStartNew + (vEnd - vStart) + (eMax - eStart) + (c - cStart) + (spaceDim > 2 ? (fMax - fStart) : 0);
@@ -5573,36 +5574,6 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
       for (d = 0; d < spaceDim; ++d) coordsNew[offnew+d] /= coneSize;
       ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &cone);CHKERRQ(ierr);
     }
-  case REFINER_SIMPLEX_1D:
-    /* Cell vertices have the average of the two end coordinates */
-    for (c = cStart; c < cMax; ++c ) {
-      const PetscInt newv = vStartNew + (vEnd - vStart) + (c - cStart);
-      const PetscInt *cone;
-      PetscInt        coneSize, offA, offB, offnew, d;
-
-      ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
-      if (coneSize != 2) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Cell %d cone should have two vertices, not %d", c, coneSize);
-      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(coordSection, cone[0], &offA);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(coordSection, cone[1], &offB);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      ierr = DMPlexLocalizeCoordinate_Internal(dm, spaceDim, &coords[offA], &coords[offB], &coordsNew[offnew]);CHKERRQ(ierr);
-      for (d = 0; d < spaceDim; ++d) {
-        coordsNew[offnew+d] = 0.5*(coords[offA+d] + coordsNew[offnew+d]);
-      }
-    }
-    /* Old vertices have the same coordinates */
-    for (v = vStart; v < vEnd; ++v) {
-      const PetscInt newv = vStartNew + (v - vStart);
-      PetscInt       off, offnew, d;
-
-      ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(coordSectionNew, newv, &offnew);CHKERRQ(ierr);
-      for (d = 0; d < spaceDim; ++d) {
-        coordsNew[offnew+d] = coords[off+d];
-      }
-    }
-    break;
   case REFINER_SIMPLEX_2D:
   case REFINER_HYBRID_SIMPLEX_2D:
   case REFINER_SIMPLEX_3D:
