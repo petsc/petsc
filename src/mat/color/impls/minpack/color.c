@@ -4,6 +4,7 @@
 */
 
 #include <petsc-private/matimpl.h>
+#include <petsc-private/isimpl.h>
 #include <../src/mat/color/impls/minpack/color.h>
 
 /*
