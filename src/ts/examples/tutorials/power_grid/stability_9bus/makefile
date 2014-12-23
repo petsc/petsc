@@ -17,3 +17,10 @@ ex9bus: ex9bus.o  chkopts
 	-${CLINKER} -o ex9bus ex9bus.o  ${PETSC_TS_LIB}
 	${RM} ex9bus.o
 
+ex9busadj: ex9busadj.o  chkopts
+	-${CLINKER} -o ex9busadj ex9busadj.o  ${PETSC_TS_LIB}
+	${RM} ex9busadj.o
+
+clean_files:
+	-@${RM} ex*.bin; \
+	  ${RM} ex*.info
