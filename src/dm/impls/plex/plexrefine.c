@@ -147,14 +147,14 @@ PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner refiner, const PetscRe
   *inside = PETSC_TRUE;
   switch (refiner) {
   case REFINER_NOOP: break;
-  case 1:
+  case REFINER_SIMPLEX_2D:
     for (d = 0; d < 2; ++d) {
       if (point[d] < -1.0) {*inside = PETSC_FALSE; break;}
       sum += point[d];
     }
     if (sum > 0.0) {*inside = PETSC_FALSE; break;}
     break;
-  case 2:
+  case REFINER_HEX_2D:
     for (d = 0; d < 2; ++d) if ((point[d] < -1.0) || (point[d] > 1.0)) {*inside = PETSC_FALSE; break;}
     break;
   default:
@@ -6749,14 +6749,15 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
   ierr = PetscMalloc1(pEnd-pStart,&fpoints);CHKERRQ(ierr);
   for (p = 0; p < pEnd-pStart; ++p) fpoints[p] = -1;
   switch (cellRefiner) {
-  case 1: /* Simplicial 2D */
-  case 3: /* Hybrid simplicial 2D */
-  case 2: /* Hex 2D */
-  case 4: /* Hybrid Hex 2D */
-  case 5: /* Simplicial 3D */
-  case 7: /* Hybrid Simplicial 3D */
-  case 6: /* Hex 3D */
-  case 8: /* Hybrid Hex 3D */
+  case REFINER_SIMPLEX_1D:
+  case REFINER_SIMPLEX_2D:
+  case REFINER_HYBRID_SIMPLEX_2D:
+  case REFINER_HEX_2D:
+  case REFINER_HYBRID_HEX_2D:
+  case REFINER_SIMPLEX_3D:
+  case REFINER_HYBRID_SIMPLEX_3D:
+  case REFINER_HEX_3D:
+  case REFINER_HYBRID_HEX_3D:
     for (v = vStart; v < vEnd; ++v) fpoints[v-pStart] = vStartNew + (v - vStart);
     break;
   default:
