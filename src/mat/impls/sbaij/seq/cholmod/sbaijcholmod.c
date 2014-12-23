@@ -26,11 +26,11 @@ static void CholmodErrorHandler(int status,const char *file,int line,const char 
 
   PetscFunctionBegin;
   if (status > CHOLMOD_OK) {
-    ierr = PetscInfo4(static_F,"CHOLMOD warning %d at %s:%d: %s\n",status,file,line,message);CHKERRQ(ierr);
+    ierr = PetscInfo4(static_F,"CHOLMOD warning %d at %s:%d: %s\n",status,file,line,message);CHKERRV(ierr);
   } else if (status == CHOLMOD_OK) { /* Documentation says this can happen, but why? */
-    ierr = PetscInfo3(static_F,"CHOLMOD OK at %s:%d: %s\n",file,line,message);CHKERRQ(ierr);
+    ierr = PetscInfo3(static_F,"CHOLMOD OK at %s:%d: %s\n",file,line,message);CHKERRV(ierr);
   } else {
-    ierr = PetscErrorPrintf("CHOLMOD error %d at %s:%d: %s\n",status,file,line,message);CHKERRQ(ierr);
+    ierr = PetscErrorPrintf("CHOLMOD error %d at %s:%d: %s\n",status,file,line,message);CHKERRV(ierr);
   }
   PetscFunctionReturnVoid();
 }
