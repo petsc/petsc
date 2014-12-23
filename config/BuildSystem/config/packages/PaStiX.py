@@ -16,7 +16,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
-    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
+    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
     self.scotch         = framework.require('config.packages.PTScotch',self)
     self.mpi            = framework.require('config.packages.MPI',self)
     self.deps           = [self.mpi,self.blasLapack, self.scotch]
@@ -80,7 +80,7 @@ class Configure(config.package.Package):
     #                          INTEGER TYPE                           #
     ###################################################################
     g.write('\n')
-    if self.libraryOptions.integerSize == 64:
+    if self.indexTypes.integerSize == 64:
       g.write('#---------------------------\n')
       g.write('VERSIONINT  = _int64\n')
       g.write('CCTYPES     = -DFORCE_INT64\n')

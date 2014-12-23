@@ -889,6 +889,7 @@ class DirectoryTreeWalker(logger.Logger):
     self.defines = {}
     self.defines.update(self.configInfo.base.defines)
     self.defines.update(self.configInfo.compilers.defines)
+    self.defines.update(self.configInfo.indexType.defines)
     self.defines.update(self.configInfo.libraryOptions.defines)
     for p in self.configInfo.framework.packages:
       self.defines.update(p.defines)
@@ -1110,6 +1111,7 @@ class PETScConfigureInfo(object):
     self.functions       = self.framework.require('config.functions',            None)
     self.libraries       = self.framework.require('config.libraries',            None)
     self.scalarType      = self.framework.require('PETSc.options.scalarTypes', None)
+    self.indexType       = self.framework.require('PETSc.options.indexTypes', None)
     self.memAlign        = self.framework.require('PETSc.options.memAlign',    None)
     self.libraryOptions  = self.framework.require('PETSc.options.libraryOptions', None)
     self.fortrancpp      = self.framework.require('PETSc.options.fortranCPP', None)

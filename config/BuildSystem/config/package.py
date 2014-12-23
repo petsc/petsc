@@ -142,6 +142,30 @@ class Package(config.base.Configure):
     return
   defaultPrecision = property(getDefaultPrecision, setDefaultPrecision, doc = 'The precision of the library')
 
+  def getDefaultScalarType(self):
+    '''The scalar type for the library'''
+    if hasattr(self, 'precisionProvider'):
+      if hasattr(self.precisionProvider, 'scalartype'):
+        return self.precisionProvider.scalartype
+    return self._defaultScalarType
+  def setDefaultScalarType(self, defaultScalarType):
+    '''The scalar type for the library'''
+    self._defaultScalarType = defaultScalarType
+    return
+  defaultScalarType = property(getDefaultScalarType, setDefaultScalarType, doc = 'The scalar type for of the library')
+
+  def getDefaultIndexSize(self):
+    '''The index size for the library'''
+    if hasattr(self, 'indexProvider'):
+      if hasattr(self.indexProvider, 'integerSize'):
+        return self.indexProvider.integerSize
+    return self._defaultIndexSize
+  def setDefaultIndexSize(self, defaultIndexSize):
+    '''The index size for the library'''
+    self._defaultIndexSize = defaultIndexSize
+    return
+  defaultIndexSize = property(getDefaultIndexSize, setDefaultIndexSize, doc = 'The index size for of the library')
+
   def checkNoOptFlag(self):
     flag = '-O0'
     if self.setCompilers.checkCompilerFlag(flag): return flag
@@ -616,12 +640,12 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without enabling C++11, see --with-cxx-dialect=C++11')
       if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
-#      if self.double and not self.scalartypes.precision.lower() == 'double':
-#        raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')
-#      if not self.complex and self.scalartypes.scalartype.lower() == 'complex':
-#        raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
-#      if self.libraryOptions.integerSize == 64 and self.requires32bitint:
-#        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
+      if self.double and not self.defaultPrecision.lower() == 'double':
+        raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')
+      if not self.complex and self.defaultScalarType.lower() == 'complex':
+        raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
+      if self.defaultIndexSize == 64 and self.requires32bitint:
+        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
     if not (self.download or self.giturls) and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return

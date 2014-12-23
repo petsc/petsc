@@ -20,7 +20,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-info=<bool>',             nargs.ArgBool(None, 1, 'Activate PetscInfo() (i.e. -info)  code in PETSc'))
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Activate CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
-    help.addArgument('PETSc', '-with-64-bit-indices=<bool>',   nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
     help.addArgument('PETSc', '-with-is-color-value-type=<char,short>',nargs.ArgString(None, 'short', 'char, short can store 256, 65536 colors'))
     return
 
@@ -30,7 +29,6 @@ class Configure(config.base.Configure):
     self.compilers   = framework.require('config.compilers', self)
     self.libraries   = framework.require('config.libraries', self)
     self.types       = framework.require('config.types', self)
-    self.scalarTypes = framework.require('PETSc.options.scalarTypes', self)
     return
 
 
@@ -74,14 +72,6 @@ class Configure(config.base.Configure):
       self.addDefine('Alignx(a,b)','__alignx(a,b)')
     else:
       self.addDefine('Alignx(a,b)','  ')
-
-    if self.framework.argDB['with-64-bit-indices']:
-      self.integerSize = 64
-      self.addDefine('USE_64BIT_INDICES', 1)
-      if self.libraries.check('-lgcc_s.1', '__floatdidf'):
-        self.compilers.LIBS += ' '+self.libraries.getLibArgument('-lgcc_s.1')
-    else:
-      self.integerSize = 32
     return
 
   def configureISColorValueType(self):
