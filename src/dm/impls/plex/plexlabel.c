@@ -74,13 +74,12 @@ static PetscErrorCode DMLabelMakeAllValid_Private(DMLabel label)
 #define __FUNCT__ "DMLabelMakeInvalid_Private"
 static PetscErrorCode DMLabelMakeInvalid_Private(DMLabel label, PetscInt v)
 {
-  PetscErrorCode ierr;
-
-  if (!label->arrayValid[v]) return 0;
-  PetscFunctionBegin;
   PETSC_UNUSED PetscHashIIter ret, iter;
   PetscInt                    p;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
+  if (!label->arrayValid[v]) PetscFunctionReturn(0);
   for (p = 0; p < label->stratumSizes[v]; ++p) PetscHashIPut(label->ht[v], label->points[v][p], ret, iter);
   ierr = PetscFree(label->points[v]);CHKERRQ(ierr);
   label->arrayValid[v] = PETSC_FALSE;
