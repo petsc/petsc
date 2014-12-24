@@ -1,4 +1,4 @@
-#if !defined(_PETSCSITYPES_H)
+#if !defined(_PETSCISTYPES_H)
 #define _PETSCISTYPES_H
 
 /*S
