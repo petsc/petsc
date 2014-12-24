@@ -1225,8 +1225,8 @@ If one wishes to repeatedly assemble matrices that retain the same
 nonzero pattern (such as within a nonlinear or time-dependent
 problem), the option
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
-\end{tabbing}
+  MatSetOption(Mat A,MAT\_NEW\_NONZERO\_LOCATIONS,PETSC\_FALSE);
+\end{tabbing} \findex{MAT_NEW_NONZERO_LOCATIONS}
 should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
 information will be reused (instead of regenerated) during successive
