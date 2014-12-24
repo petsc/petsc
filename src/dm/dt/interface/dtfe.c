@@ -5319,7 +5319,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
   ierr      = PetscNewLog(fem, &cmp);CHKERRQ(ierr);
   fem->data = cmp;
 
-  cmp->cellRefiner    = 0;
+  cmp->cellRefiner    = REFINER_NOOP;
   cmp->numSubelements = -1;
   cmp->v0             = NULL;
   cmp->jac            = NULL;
