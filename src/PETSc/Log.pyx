@@ -47,6 +47,22 @@ cdef class Log:
         return event
 
     @classmethod
+    def begin(cls, all=False):
+        if all: CHKERR( PetscLogAllBegin() )
+        else:   CHKERR( PetscLogBegin() )
+
+    @classmethod
+    def view(self, Viewer viewer=None):
+        cdef PetscViewer vwr = NULL
+        if viewer is not None: vwr = viewer.vwr
+        if vwr == NULL: vwr = PETSC_VIEWER_STDOUT_WORLD
+        CHKERR( PetscLogView(vwr) )
+
+    @classmethod
+    def destroy(cls):
+        CHKERR( PetscLogDestroy() )
+
+    @classmethod
     def logFlops(cls, flops):
         cdef PetscLogDouble cflops=flops
         CHKERR( PetscLogFlops(cflops) )
