@@ -4,6 +4,7 @@
 #include <petscmat.h>       /*I      "petscmat.h"          I*/
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
 #include <petscbt.h>
+#include <petscsf.h>
 #include <petsc-private/dmimpl.h>
 #include <../src/sys/utils/hash.h>
 
@@ -62,10 +63,9 @@ struct _n_DMLabel {
   PetscInt    numStrata;      /* Number of integer values */
   PetscInt   *stratumValues;  /* Value of each stratum */
   /* Basic sorted array storage */
-  PetscBool   arrayValid;     /* The array storage is valid (no additions need to be merged in) */
-  PetscInt   *stratumOffsets; /* Offset of each stratum */
+  PetscBool  *arrayValid;     /* The array storage is valid (no additions need to be merged in) */
   PetscInt   *stratumSizes;   /* Size of each stratum */
-  PetscInt   *points;         /* Points for each stratum, always sorted */
+  PetscInt  **points;         /* Points for each stratum, always sorted */
   /* Hashtable for fast insertion */
   PetscHashI *ht;             /* Hash table for fast insertion */
   /* Index for fast search */

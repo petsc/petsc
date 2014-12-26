@@ -4974,6 +4974,8 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  /* For unstratified meshes use dim instead of depth */
+  if (depth < 0) {ierr = DMGetDimension(dm, &depth);CHKERRQ(ierr);}
   depths[0] = depth; depths[1] = 0;
   for (d = 2; d <= depth; ++d) depths[d] = depth-d+1;
   for (d = 0; d <= depth; ++d) {
