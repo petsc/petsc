@@ -125,6 +125,8 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
+  dd->p = 1;
+  dd->n = 1;
   dd->m = size;
   m     = dd->m;
 
