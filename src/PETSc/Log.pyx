@@ -336,6 +336,14 @@ cdef class LogEvent:
         def __set__(self, value):
             self.setActiveAll(value)
 
+    #
+
+    def getPerfInfo(self, stage=None):
+        cdef PetscEventPerfInfo info
+        cdef PetscInt cstage = PETSC_DETERMINE
+        if stage is not None: cstage = asInt(stage)
+        CHKERR( PetscLogEventGetPerfInfo(cstage, self.id, &info) )
+        return info
 
 cdef dict event_registry = { }
 

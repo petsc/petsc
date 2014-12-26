@@ -1,6 +1,12 @@
 cdef extern from * nogil:
 
     ctypedef double PetscLogDouble
+    ctypedef struct PetscEventPerfInfo:
+        int count
+        PetscLogDouble flops, time
+        PetscLogDouble numMessages
+        PetscLogDouble messageLength
+        PetscLogDouble numReductions
 
     int PetscLogBegin()
     int PetscLogAllBegin()
@@ -42,6 +48,7 @@ cdef extern from * nogil:
     int PetscLogEventActivate(PetscLogEvent)
     int PetscLogEventDeactivate(PetscLogEvent)
     int PetscLogEventSetActiveAll(PetscLogEvent,PetscBool)
+    int PetscLogEventGetPerfInfo(PetscLogStage,PetscLogEvent,PetscEventPerfInfo*)
 
 cdef extern from "custom.h" nogil:
     int PetscLogStageFindId(char[],PetscLogStage*)
