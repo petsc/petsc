@@ -11,6 +11,17 @@ PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLE
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner);
 
+typedef enum {REFINER_NOOP = 0,
+              REFINER_SIMPLEX_1D,
+              REFINER_SIMPLEX_2D,
+              REFINER_HYBRID_SIMPLEX_2D,
+              REFINER_HEX_2D,
+              REFINER_HYBRID_HEX_2D,
+              REFINER_SIMPLEX_3D,
+              REFINER_HYBRID_SIMPLEX_3D,
+              REFINER_HEX_3D,
+              REFINER_HYBRID_HEX_3D} CellRefiner;
+
 typedef struct _PetscPartitionerOps *PetscPartitionerOps;
 struct _PetscPartitionerOps {
   PetscErrorCode (*setfromoptions)(PetscPartitioner);
