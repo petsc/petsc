@@ -1760,12 +1760,9 @@ PetscErrorCode VecStashViewFromOptions(Vec obj,const char prefix[],const char op
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
-  static PetscBool  incall = PETSC_FALSE;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  if (incall) PetscFunctionReturn(0);
-  incall = PETSC_TRUE;
   ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
@@ -1773,7 +1770,6 @@ PetscErrorCode VecStashViewFromOptions(Vec obj,const char prefix[],const char op
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
-  incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

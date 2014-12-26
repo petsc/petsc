@@ -76,7 +76,9 @@ int main(int argc,char **args)
     } else {
       for (i=0;i<4;i++) {
         for (j=0;j<4;j++) {
-          ierr = fscanf(file, "%le", &DD1[i][j]);
+          double dtmp;
+          ierr = fscanf(file, "%le", &dtmp);
+          DD1[i][j] = dtmp;
         }
       }
     }

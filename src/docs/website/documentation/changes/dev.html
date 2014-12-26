@@ -129,6 +129,11 @@
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <h4>DM/DA:</h4>
+      <ul>
+        <li>The MatType argument is removed from DMCreateMatrix(), you can use DMSetMatType() to indicate the type you want used with a DM, defaults to MATAIJ</li>
+        <li>You can now use DMDASetAOType() to indicate the type of AO you want used with a DMDA (defaults to AOBASIC)</li>
+      </ul>
+      </ul>
       <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>

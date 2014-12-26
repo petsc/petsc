@@ -39,14 +39,13 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  # Gmsh test 12
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/doublet-tet.msh -interpolate 1 -dm_view'},
                                                                  # Parallel refinement tests with overlap 13-14
-                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_latex'},
-                                                                 {'numProcs': 8, 'args': '-dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_latex'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 8, 'args': '-dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail'},
                                                                  # Mesh reader tests 15-18
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/square.msh -interpolate 1 -dm_view'},
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/square_bin.msh -interpolate 1 -dm_view'},
                                                                  {'numProcs': 3, 'args': '-filename %(meshes)s/square.msh -interpolate 1 -dm_view'},
                                                                  {'numProcs': 3, 'args': '-filename %(meshes)s/square_bin.msh -interpolate 1 -dm_view'}],
-
                         'src/dm/impls/plex/examples/tests/ex3': [# 0-2 2D P_1 on a triangle
                                                                  {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -convergence'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -porder 1'},
@@ -235,9 +234,17 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   ],
                         'src/dm/impls/plex/examples/tests/ex11': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex12': [{'numProcs': 1, 'args': '-dm_view ascii:mesh.tex:ascii_latex'},
-                                                                  {'numProcs': 8, 'args': '-dm_view'},
-                                                                  {'numProcs': 8, 'args': '-overlap 1 -dm_view'},
-                                                                  {'numProcs': 3, 'args': '-overlap 1 -dm_view'}],
+                                                                  # Parallel, no overlap tests 1-2
+                                                                  {'numProcs': 3, 'args': '-test_partition -dm_view ::ascii_info_detail'},
+                                                                  {'numProcs': 8, 'args': '-test_partition -dm_view ::ascii_info_detail'},
+                                                                  # Parallel, level-1 overlap tests 3-4
+                                                                  {'numProcs': 3, 'args': '-test_partition -overlap 1 -dm_view ::ascii_info_detail'},
+                                                                  {'numProcs': 8, 'args': '-test_partition -overlap 1 -dm_view ::ascii_info_detail'},
+                                                                  # Parallel, level-2 overlap test 5
+                                                                  {'numProcs': 8, 'args': '-test_partition -overlap 2 -dm_view ::ascii_info_detail'},
+                                                                  # Parallel load balancing, test 6-7
+                                                                  {'numProcs': 2, 'args': '-test_partition -overlap 1 -dm_view ::ascii_info_detail'},
+                                                                  {'numProcs': 2, 'args': '-test_partition -overlap 1 -load_balance -dm_view ::ascii_info_detail'}],
                         'src/dm/impls/plex/examples/tests/ex13': [{'numProcs': 1, 'args': '-test_partition 0 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view'},
                                                                   {'numProcs': 2, 'args': '-dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view'},
                                                                   {'numProcs': 2, 'args': '-test_num 1 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view'},
@@ -889,6 +896,7 @@ class DirectoryTreeWalker(logger.Logger):
     self.defines = {}
     self.defines.update(self.configInfo.base.defines)
     self.defines.update(self.configInfo.compilers.defines)
+    self.defines.update(self.configInfo.indexType.defines)
     self.defines.update(self.configInfo.libraryOptions.defines)
     for p in self.configInfo.framework.packages:
       self.defines.update(p.defines)
@@ -1110,6 +1118,7 @@ class PETScConfigureInfo(object):
     self.functions       = self.framework.require('config.functions',            None)
     self.libraries       = self.framework.require('config.libraries',            None)
     self.scalarType      = self.framework.require('PETSc.options.scalarTypes', None)
+    self.indexType       = self.framework.require('PETSc.options.indexTypes', None)
     self.memAlign        = self.framework.require('PETSc.options.memAlign',    None)
     self.libraryOptions  = self.framework.require('PETSc.options.libraryOptions', None)
     self.fortrancpp      = self.framework.require('PETSc.options.fortranCPP', None)

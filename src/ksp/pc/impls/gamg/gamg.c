@@ -526,8 +526,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
       ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
 
-      /* PCSetUp_MG seems to insists on setting this to GMRES */
-      ierr = KSPSetType(mglevels[0]->smoothd, KSPPREONLY);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   }
@@ -566,6 +564,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     if (pc_gamg->verbose==1) {
       ierr =  MatGetInfo(Pmat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = MatGetLocalSize(Pmat, &NN, &qq);CHKERRQ(ierr);
+      if (!NN) NN=1;
     } else {
       ierr = MatGetInfo(Pmat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
     }
@@ -651,6 +650,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       if (pc_gamg->verbose==1) {
         ierr = MatGetInfo(Aarr[level1],MAT_LOCAL,&info);CHKERRQ(ierr);
         ierr = MatGetLocalSize(Aarr[level1], &NN, &qq);CHKERRQ(ierr);
+        if (!NN) NN=1;
       } else {
         ierr = MatGetInfo(Aarr[level1], MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
       }

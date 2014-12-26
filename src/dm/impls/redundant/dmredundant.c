@@ -238,7 +238,7 @@ static PetscErrorCode DMCreateColoring_Redundant(DM dm,ISColoringType ctype,ISCo
   }
   ierr = PetscMalloc1(nloc,&colors);CHKERRQ(ierr);
   for (i=0; i<nloc; i++) colors[i] = i;
-  ierr = ISColoringCreate(PetscObjectComm((PetscObject)dm),red->N,nloc,colors,coloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(PetscObjectComm((PetscObject)dm),red->N,nloc,colors,PETSC_OWN_POINTER,coloring);CHKERRQ(ierr);
   ierr = ISColoringSetType(*coloring,ctype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

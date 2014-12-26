@@ -45,11 +45,13 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.programs      = framework.require('config.programs',           self)
     self.setCompilers  = framework.require('config.setCompilers',       self)
-    self.arch          = framework.require('PETSc.options.arch',      self.setCompilers)
-    self.petscdir      = framework.require('PETSc.options.petscdir',  self.arch)
-    self.installdir    = framework.require('PETSc.options.installDir',self)
-    self.languages     = framework.require('PETSc.options.languages', self.setCompilers)
-    self.debugging     = framework.require('PETSc.options.debugging', self.setCompilers)
+    self.compilers     = framework.require('config.compilers',          self)
+    self.arch          = framework.require('PETSc.options.arch',        self.setCompilers)
+    self.petscdir      = framework.require('PETSc.options.petscdir',    self.arch)
+    self.installdir    = framework.require('PETSc.options.installDir',  self)
+    self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
+    self.debugging     = framework.require('PETSc.options.debugging',   self.setCompilers)
+    self.indexTypes    = framework.require('PETSc.options.indexTypes',  self.compilers)
     self.compilers     = framework.require('config.compilers',          self)
     self.types         = framework.require('config.types',              self)
     self.headers       = framework.require('config.headers',            self)
@@ -103,6 +105,7 @@ class Configure(config.base.Configure):
           packageObj.archProvider       = self.arch
           packageObj.languageProvider   = self.languages
           packageObj.precisionProvider  = self.scalartypes
+          packageObj.indexProvider      = self.indexTypes
           packageObj.installDirProvider = self.installdir
           packageObj.externalPackagesDirProvider = self.externalpackagesdir
           setattr(self, packageName.lower(), packageObj)

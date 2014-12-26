@@ -2517,6 +2517,8 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
   PetscFunctionReturn(0);
 }
 
+#define CHKERRQI(incall,ierr) if (ierr) {incall = PETSC_FALSE; CHKERRQ(ierr);}
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectViewFromOptions"
 /*@C
@@ -2544,12 +2546,12 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,const char prefix[],co
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
   if (!prefix) prefix = ((PetscObject)obj)->prefix;
-  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQI(ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = PetscObjectView(obj,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQI(incall,ierr);
+    ierr = PetscObjectView(obj,viewer);CHKERRQI(incall,ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQI(incall,ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQI(incall,ierr);
   }
   incall = PETSC_FALSE;
   PetscFunctionReturn(0);

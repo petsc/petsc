@@ -1018,6 +1018,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   /* Generate a matrix with the correct non-zero pattern of type AIJ. This will work in parallel and serial */
   ierr = DMSetMatType(elas_da,MATAIJ);CHKERRQ(ierr);
   ierr = DMCreateMatrix(elas_da,&A);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(A,2);CHKERRQ(ierr);
   ierr = DMGetCoordinates(elas_da,&vel_coords);CHKERRQ(ierr);
   ierr = MatNullSpaceCreateRigidBody(vel_coords,&matnull);CHKERRQ(ierr);
   ierr = MatSetNearNullSpace(A,matnull);CHKERRQ(ierr);
@@ -1290,12 +1291,15 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
   ierr = VecGetOwnershipRange(x,&start,&end);CHKERRQ(ierr);
   ierr = VecGetArray(x,&_x);CHKERRQ(ierr);
   cnt  = 0;
-  for (i = 0; i < m; i++) {
-    PetscReal val;
+  for (i = 0; i < m; i+=2) {
+    PetscReal val1,val2;
 
-    val = PetscRealPart(_x[i]);
-    if (fabs(val) < 0.1) {
+    val1 = PetscRealPart(_x[i]);
+    val2 = PetscRealPart(_x[i+1]);
+    if (PetscAbs(val1) < 0.1 && PetscAbs(val2) < 0.1) {
       unconstrained[cnt] = start + i;
+      cnt++;
+      unconstrained[cnt] = start + i + 1;
       cnt++;
     }
   }
@@ -1303,6 +1307,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
 
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,unconstrained,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = PetscFree(unconstrained);CHKERRQ(ierr);
+  ierr = ISSetBlockSize(is,2);CHKERRQ(ierr);
 
   /* define correction for dirichlet in the rhs */
   ierr = MatMult(A,x,f);CHKERRQ(ierr);

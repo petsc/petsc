@@ -20,7 +20,7 @@ def get_conf():
         petscdir = os.environ['PETSC_DIR']
     except KeyError:
         warnings.warn('Nonexistent or invalid PETSc installation, using defaults')
-        return
+        return None, None, None
 
     try:
         petscdir = os.path.join(petscdir, os.environ['PETSC_ARCH'])

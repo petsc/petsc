@@ -197,7 +197,7 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,Mat *J)
   if (!shell->A) {
     if (shell->Xglobal) {
       PetscInt m,M;
-      ierr = PetscInfo(dm,"Naively creating matrix using global vector distribution without preallocation");CHKERRQ(ierr);
+      ierr = PetscInfo(dm,"Naively creating matrix using global vector distribution without preallocation\n");CHKERRQ(ierr);
       ierr = VecGetSize(shell->Xglobal,&M);CHKERRQ(ierr);
       ierr = VecGetLocalSize(shell->Xglobal,&m);CHKERRQ(ierr);
       ierr = MatCreate(PetscObjectComm((PetscObject)dm),&shell->A);CHKERRQ(ierr);

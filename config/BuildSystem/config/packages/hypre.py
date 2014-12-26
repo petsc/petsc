@@ -18,7 +18,7 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.openmp         = framework.require('config.packages.openmp',self)
-    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
+    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
     self.languages      = framework.require('PETSc.options.languages',   self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
     self.mpi            = framework.require('config.packages.MPI',self)
@@ -78,7 +78,7 @@ class Configure(config.package.GNUPackage):
     args.append('--without-mli')
     args.append('--without-fei')
     args.append('--without-superlu')
-    if self.libraryOptions.integerSize == 64:
+    if self.indexTypes.integerSize == 64:
       args.append('--enable-bigint')
     # hypre configure assumes the AR flags are passed in with AR
     args = [arg for arg in args if not arg.startswith('AR')]
