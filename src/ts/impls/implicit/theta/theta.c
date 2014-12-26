@@ -163,19 +163,17 @@ static PetscErrorCode TSRollBack_Theta(TS ts)
 #define __FUNCT__ "TSStep_Theta"
 static PetscErrorCode TSStep_Theta(TS ts)
 {
-  TS_Theta            *th = (TS_Theta*)ts->data;
-  PetscInt            its,lits,reject,next_scheme;
-  PetscReal           next_time_step;
-  SNESConvergedReason snesreason;
-  PetscErrorCode      ierr;
-  TSAdapt             adapt;
-  PetscBool           accept;
+  TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscInt       its,lits,reject,next_scheme;
+  PetscReal      next_time_step;
+  TSAdapt        adapt;
+  PetscBool      stageok,accept = PETSC_TRUE;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  next_time_step = ts->time_step;
   th->status = TS_STEP_INCOMPLETE;
   ierr = VecCopy(ts->vec_sol,th->X0);CHKERRQ(ierr);
-  for (reject=0; reject<ts->max_reject && !ts->reason && th->status != TS_STEP_COMPLETE; reject++,ts->reject++) {
+  for (reject=0; !ts->reason && th->status != TS_STEP_COMPLETE; ts->reject++) {
     PetscReal shift = 1./(th->Theta*ts->time_step);
     th->stage_time = ts->ptime + (th->endpoint ? 1. : th->Theta)*ts->time_step;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
@@ -195,30 +193,39 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ierr = SNESSolve(ts->snes,th->affine,th->X);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
-    ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
-    ierr = TSPostStage(ts,th->stage_time,0,&(th->X));CHKERRQ(ierr);
     ts->snes_its += its; ts->ksp_its += lits;
+    ierr = TSPostStage(ts,th->stage_time,0,&(th->X));CHKERRQ(ierr);
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
-    if (!accept) continue;
+    ierr = TSAdaptCheckStage(adapt,ts,&stageok);CHKERRQ(ierr);
+    if (!stageok) {accept = PETSC_FALSE; goto reject_step;}
+
     ierr = TSEvaluateStep(ts,th->order,ts->vec_sol,NULL);CHKERRQ(ierr);
+    th->status = TS_STEP_PENDING;
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
     ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidateAdd(adapt,NULL,th->order,1,th->ccfl,1.0,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
-
-    if (accept) {
-      /* ignore next_scheme for now */
-      ts->ptime    += ts->time_step;
-      ts->time_step = next_time_step;
-      ts->steps++;
-      th->status = TS_STEP_COMPLETE;
-    } else {                    /* Roll back the current step */
+    if (!accept) {           /* Roll back the current step */
       ts->ptime += next_time_step; /* This will be undone in rollback */
       th->status = TS_STEP_INCOMPLETE;
       ierr = TSRollBack(ts);CHKERRQ(ierr);
+      goto reject_step;
     }
+
+    /* ignore next_scheme for now */
+    ts->ptime    += ts->time_step;
+    ts->time_step = next_time_step;
+    ts->steps++;
+    th->status = TS_STEP_COMPLETE;
+    break;
+
+reject_step:
+    if (!ts->reason && ++reject > ts->max_reject && ts->max_reject >= 0) {
+      ts->reason = TS_DIVERGED_STEP_REJECTED;
+      ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,reject);CHKERRQ(ierr);
+    }
+    continue;
   }
   PetscFunctionReturn(0);
 }
@@ -330,6 +337,7 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;
   SNES           snes;
+  TSAdapt        adapt;
   DM             dm;
 
   PetscFunctionBegin;
@@ -345,10 +353,8 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   if (th->Theta == 0.5 && th->endpoint) th->order = 2;
   else th->order = 1;
 
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   if (!th->adapt) {
-    TSAdapt adapt;
-    ierr = TSAdaptDestroy(&ts->adapt);CHKERRQ(ierr);
-    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptSetType(adapt,TSADAPTNONE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -389,7 +395,7 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Theta=%g\n",(double)th->Theta);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Extrapolation=%s\n",th->extrapolate ? "yes" : "no");CHKERRQ(ierr);
   }
-  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
+  if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

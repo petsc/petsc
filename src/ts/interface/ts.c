@@ -2338,7 +2338,7 @@ PetscErrorCode  TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->prestage) {
+  if (ts->poststage) {
     PetscStackCallStandard((*ts->poststage),(ts,stagetime,stageindex,Y));
   }
   PetscFunctionReturn(0);
@@ -2624,6 +2624,7 @@ PetscErrorCode  TSStep(TS ts)
   ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
   ierr = VecViewFromOptions(ts->vec_sol, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
 
+  if (!ts->ops->step) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSStep not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
@@ -2635,6 +2636,8 @@ PetscErrorCode  TSStep(TS ts)
     if (ts->errorifstepfailed) {
       if (ts->reason == TS_DIVERGED_NONLINEAR_SOLVE) {
         SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
+      } else if (ts->reason == TS_DIVERGED_STEP_REJECTED) {
+        SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_reject or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
       } else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
   } else if (!ts->reason) {
