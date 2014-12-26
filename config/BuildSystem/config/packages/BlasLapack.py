@@ -191,12 +191,26 @@ class Configure(config.package.Package):
         for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64',
                        os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
           if not os.path.exists(os.path.join(dir,libdir)):
-            self.framework.logPrint('MLK Path not found.. skipping: '+os.path.join(dir,libdir))
+            self.framework.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
           else:
             yield ('User specified MKL-Pardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
             yield ('User specified MKL-Pardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
             yield ('User specified MKL-Pardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
             yield ('User specified MKL-Pardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
+        return
+
+      # Look for Multi-Threaded MKL for MKL_CPardiso
+      if self.framework.argDB['with-mkl_cpardiso'] or 'with-mkl_cpardiso-dir' in self.framework.argDB or 'with-mkl_cpardiso-lib' in self.framework.argDB:
+        self.logPrintBox('BLASLAPACK: Looking for Multithreaded MKL for CPardiso')
+        for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64',
+                       os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
+          if not os.path.exists(os.path.join(dir,libdir)):
+            self.framework.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
+          else:
+            yield ('User specified MKL-CPardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
+            yield ('User specified MKL-CPardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
+            yield ('User specified MKL-CPardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
+            yield ('User specified MKL-CPardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
         return
 
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'), 1)
@@ -210,12 +224,12 @@ class Configure(config.package.Package):
       # Some new MKL 11/12 variations
       for libdir in [os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
         if not os.path.exists(os.path.join(dir,libdir)):
-          self.framework.logPrint('MLK Path not found.. skipping: '+os.path.join(dir,libdir))
+          self.framework.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
           yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_sequential','mkl_core','pthread','-lm'],1)
       for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64','']:
         if not os.path.exists(os.path.join(dir,libdir)):
-          self.framework.logPrint('MLK Path not found.. skipping: '+os.path.join(dir,libdir))
+          self.framework.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
           yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_sequential','mkl_core','pthread','-lm'],1)
       # Older Linux MKL checks
@@ -305,7 +319,7 @@ class Configure(config.package.Package):
     for MKL_Version in [os.path.join('MKL','9.0'),os.path.join('MKL','8.1.1'),os.path.join('MKL','8.1'),os.path.join('MKL','8.0.1'),os.path.join('MKL','8.0'),'MKL72','MKL70','MKL61','MKL']:
       mklpath = os.path.join('/cygdrive', 'c', 'Program Files', 'Intel', MKL_Version)
       if not os.path.exists(mklpath):
-        self.framework.logPrint('MLK Path not found.. skipping: '+mklpath)
+        self.framework.logPrint('MKL Path not found.. skipping: '+mklpath)
       else:
         mkldir = os.path.join(mklpath, 'ia32', 'lib')
         yield ('Microsoft Windows, Intel MKL library', None, os.path.join(mkldir,'mkl_c_dll.lib'), 1)
