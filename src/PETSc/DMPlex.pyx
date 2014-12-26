@@ -502,12 +502,11 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = dmParallel
         return sf
 
-    def distributeOverlap(self, LGMap renumbering not None, overlap=0):
-        cdef PetscDM dmOverlap = NULL
-        cdef SF sf = SF()
+    def distributeOverlap(self, overlap=0):
         cdef PetscInt coverlap = asInt(overlap)
+        cdef SF sf = SF()
+        cdef PetscDM dmOverlap = NULL
         CHKERR( DMPlexDistributeOverlap(self.dm, coverlap,
-                                        renumbering.lgm,
                                         &sf.sf, &dmOverlap) )
         PetscCLEAR(self.obj); self.dm = dmOverlap
         return sf
