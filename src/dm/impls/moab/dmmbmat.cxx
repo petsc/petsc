@@ -28,10 +28,7 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
   nlsiz = (tmp ? dmmoab->nloc:dmmoab->nloc*dmmoab->numFields);
 
   /* allocate the nnz, onz arrays based on block size and local nodes */
-  ierr = PetscMalloc((nlsiz)*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
-  ierr = PetscMemzero(nnz,sizeof(PetscInt)*(nlsiz));CHKERRQ(ierr);
-  ierr = PetscMalloc(nlsiz*sizeof(PetscInt),&onz);CHKERRQ(ierr);
-  ierr = PetscMemzero(onz,sizeof(PetscInt)*nlsiz);CHKERRQ(ierr);
+  ierr = PetscCalloc2(nlsiz,&nnz,nlsiz,&onz);CHKERRQ(ierr);
 
   /* compute the nonzero pattern based on MOAB connectivity data for local elements */
   ierr = DMMoab_Compute_NNZ_From_Connectivity(dm,&innz,nnz,&ionz,onz,(tmp?PETSC_TRUE:PETSC_FALSE));CHKERRQ(ierr);
@@ -54,8 +51,7 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
   ierr = MatMPIBAIJSetPreallocation(A, dmmoab->bs, innz, nnz, ionz, onz);CHKERRQ(ierr);
 
   /* clean up temporary memory */
-  ierr = PetscFree(nnz);CHKERRQ(ierr);
-  ierr = PetscFree(onz);CHKERRQ(ierr);
+  ierr = PetscFree2(nnz,onz);CHKERRQ(ierr);
 
   /* set up internal matrix data-structures */
   ierr = MatSetUp(A);CHKERRQ(ierr);
