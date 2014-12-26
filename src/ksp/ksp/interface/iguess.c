@@ -120,7 +120,7 @@ PetscErrorCode  KSPFischerGuessUpdate_Method1(KSPFischerGuess_Method1 *itg,Vec x
       ierr = VecScale(itg->xtilde[curl],1.0/norm);CHKERRQ(ierr);
       itg->curl++;
     } else {
-      ierr = PetscInfo(itg->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous");CHKERRQ(ierr);
+      ierr = PetscInfo(itg->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -242,7 +242,7 @@ PetscErrorCode  KSPFischerGuessUpdate_Method2(KSPFischerGuess_Method2 *itg,Vec x
       ierr = VecScale(itg->xtilde[curl],1.0/PetscSqrtScalar(norm));CHKERRQ(ierr);
       itg->curl++;
     } else {
-      ierr = PetscInfo(itg->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous");CHKERRQ(ierr);
+      ierr = PetscInfo(itg->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

@@ -1838,7 +1838,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
     ierr = PetscInfo1(A,"PCFactorSetFill([sub]pc,%g);\n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo(A,"for best performance.\n");CHKERRQ(ierr);
     if (diagonal_fill) {
-      ierr = PetscInfo1(A,"Detected and replaced %D missing diagonals",dcount);CHKERRQ(ierr);
+      ierr = PetscInfo1(A,"Detected and replaced %D missing diagonals\n",dcount);CHKERRQ(ierr);
     }
   }
 #endif
@@ -2035,7 +2035,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
     ierr = PetscInfo1(A,"PCFactorSetFill([sub]pc,%g);\n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo(A,"for best performance.\n");CHKERRQ(ierr);
     if (diagonal_fill) {
-      ierr = PetscInfo1(A,"Detected and replaced %D missing diagonals",dcount);CHKERRQ(ierr);
+      ierr = PetscInfo1(A,"Detected and replaced %D missing diagonals\n",dcount);CHKERRQ(ierr);
     }
   }
 #endif

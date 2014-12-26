@@ -30,7 +30,7 @@ PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A,PetscBool  *missing,PetscInt *d
   if (A->rmap->n > 0 && !ii) {
     *missing = PETSC_TRUE;
     if (dd) *dd = 0;
-    PetscInfo(A,"Matrix has no entries therefore is missing diagonal");
+    ierr = PetscInfo(A,"Matrix has no entries therefore is missing diagonal\n");CHKERRQ(ierr);
   } else {
     diag = a->diag;
     for (i=0; i<a->mbs; i++) {

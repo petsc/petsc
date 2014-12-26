@@ -3252,7 +3252,7 @@ PetscErrorCode  MatMatSolve(Mat A,Mat B,Mat X)
 
   ierr = PetscLogEventBegin(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
   if (!A->ops->matsolve) {
-    ierr = PetscInfo1(A,"Mat type %s using basic MatMatSolve",((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Mat type %s using basic MatMatSolve\n",((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatMatSolve_Basic(A,B,X);CHKERRQ(ierr);
   } else {
     ierr = (*A->ops->matsolve)(A,B,X);CHKERRQ(ierr);

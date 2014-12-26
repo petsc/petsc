@@ -621,7 +621,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
     PetscBool ackbug = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,"-acknowledge_ompi_onesided_bug",&ackbug,NULL);CHKERRQ(ierr);
     if (ackbug) {
-      ierr = PetscInfo(sf,"Acknowledged Open MPI bug, proceeding anyway. Expect memory corruption.");CHKERRQ(ierr);
+      ierr = PetscInfo(sf,"Acknowledged Open MPI bug, proceeding anyway. Expect memory corruption.\n");CHKERRQ(ierr);
     } else SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_LIB,"Open MPI is known to be buggy (https://svn.open-mpi.org/trac/ompi/ticket/1905 and 2656), use -acknowledge_ompi_onesided_bug to proceed");
   }
 #endif
