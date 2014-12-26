@@ -52,6 +52,53 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDASetAOType"
+/*@
+   DMDASetAOType - Sets the type of application ordering for a distributed array.
+
+   Collective on DMDA
+
+   Input Parameter:
+.  da - the distributed array
+.  aotype - type of AO
+
+   Output Parameters:
+
+   Level: intermediate
+
+   Notes:
+   It will generate and error if an AO has already been obtained with a call to DMDAGetAO and the user sets a different AOType
+
+.keywords: distributed array, get, global, indices, local-to-global
+
+.seealso: DMDACreate2d(), DMDAGetAO(), DMDAGetGhostCorners(), DMDAGetCorners(), DMDALocalToGlocal()
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToLocalBegin(), DMLocalToLocalEnd(), DMDAGetGlobalIndices(), DMDAGetOwnershipRanges(),
+          AO, AOPetscToApplication(), AOApplicationToPetsc()
+@*/
+PetscErrorCode  DMDASetAOType(DM da,AOType aotype)
+{
+  DM_DA          *dd;
+  PetscBool      isdmda;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda);CHKERRQ(ierr);
+  if (!isdmda) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");
+  /* now we can safely dereference */
+  dd = (DM_DA*)da->data;
+  if (dd->ao) { /* check if the already computed AO has the same type as requested */
+    PetscBool match;
+    ierr = PetscObjectTypeCompare((PetscObject)dd->ao,aotype,&match);CHKERRQ(ierr);
+    if (!match) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot change AO type");
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscFree(dd->aotype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(aotype,(char**)&dd->aotype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetAO"
 /*@
    DMDAGetAO - Gets the application ordering context for a distributed array.
@@ -75,17 +122,23 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 
 .keywords: distributed array, get, global, indices, local-to-global
 
-.seealso: DMDACreate2d(), DMDAGetGhostCorners(), DMDAGetCorners(), DMDALocalToGlocal()
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToLocalBegin(), DMLocalToLocalEnd(), DMDAGetOwnershipRanges(),
+.seealso: DMDACreate2d(), DMDASetAOType(), DMDAGetGhostCorners(), DMDAGetCorners(), DMDALocalToGlocal()
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToLocalBegin(), DMLocalToLocalEnd(),  DMDAGetOwnershipRanges(),
           AO, AOPetscToApplication(), AOApplicationToPetsc()
 @*/
 PetscErrorCode  DMDAGetAO(DM da,AO *ao)
 {
-  DM_DA *dd = (DM_DA*)da->data;
+  DM_DA          *dd;
+  PetscBool      isdmda;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(ao,2);
+  ierr = PetscObjectTypeCompare((PetscObject)da,DMDA,&isdmda);CHKERRQ(ierr);
+  if (!isdmda) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Requires a DMDA as input");
+  /* now we can safely dereference */
+  dd = (DM_DA*)da->data;
 
   /*
      Build the natural ordering to PETSc ordering mappings.
@@ -97,7 +150,9 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
 
     ierr = DMDAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
     ierr = ISCreateStride(PetscObjectComm((PetscObject)da),Nlocal,dd->base,1,&ispetsc);CHKERRQ(ierr);
-    ierr = AOCreateBasicIS(isnatural,ispetsc,&dd->ao);CHKERRQ(ierr);
+    ierr = AOCreate(PetscObjectComm((PetscObject)da),&dd->ao);CHKERRQ(ierr);
+    ierr = AOSetIS(dd->ao,isnatural,ispetsc);CHKERRQ(ierr);
+    ierr = AOSetType(dd->ao,dd->aotype);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)dd->ao);CHKERRQ(ierr);
     ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
     ierr = ISDestroy(&isnatural);CHKERRQ(ierr);
