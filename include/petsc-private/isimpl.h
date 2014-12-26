@@ -55,6 +55,17 @@ struct _p_ISLocalToGlobalMapping{
   PetscInt *globals;           /* local index for each global index between start and end */
 };
 
+struct _n_ISColoring {
+  PetscInt        refct;
+  PetscInt        n;                /* number of colors */
+  IS              *is;              /* for each color indicates columns */
+  MPI_Comm        comm;
+  ISColoringValue *colors;          /* for each column indicates color */
+  PetscInt        N;                /* number of columns */
+  ISColoringType  ctype;
+  PetscBool       allocated;
+};
+
 /* ----------------------------------------------------------------------------*/
 struct _p_PetscSection {
   PETSCHEADER(int);

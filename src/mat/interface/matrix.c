@@ -5,6 +5,7 @@
 
 #include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
 #include <petsc-private/vecimpl.h>
+#include <petsc-private/isimpl.h>
 
 /* Logging support */
 PetscClassId MAT_CLASSID;
@@ -7209,7 +7210,7 @@ PetscErrorCode  MatColoringPatch(Mat mat,PetscInt ncolors,PetscInt n,ISColoringV
   MatCheckPreallocated(mat,1);
 
   if (!mat->ops->coloringpatch) {
-    ierr = ISColoringCreate(PetscObjectComm((PetscObject)mat),ncolors,n,colorarray,iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(PetscObjectComm((PetscObject)mat),ncolors,n,colorarray,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
   } else {
     ierr = (*mat->ops->coloringpatch)(mat,ncolors,n,colorarray,iscoloring);CHKERRQ(ierr);
   }

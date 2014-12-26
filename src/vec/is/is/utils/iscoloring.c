@@ -52,7 +52,7 @@ PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
     }
     ierr = PetscFree((*iscoloring)->is);CHKERRQ(ierr);
   }
-  ierr = PetscFree((*iscoloring)->colors);CHKERRQ(ierr);
+  if ((*iscoloring)->allocated) {ierr = PetscFree((*iscoloring)->colors);CHKERRQ(ierr);}
   ierr = PetscCommDestroy(&(*iscoloring)->comm);CHKERRQ(ierr);
   ierr = PetscFree((*iscoloring));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -246,7 +246,7 @@ PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 
 #undef __FUNCT__
 #define __FUNCT__ "ISColoringCreate"
-/*@C
+/*@
     ISColoringCreate - Generates an ISColoring context from lists (provided
     by each processor) of colors for each node.
 
@@ -256,9 +256,8 @@ PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 +   comm - communicator for the processors creating the coloring
 .   ncolors - max color value
 .   n - number of nodes on this processor
--   colors - array containing the colors for this processor, color
-             numbers begin at 0. In C/C++ this array must have been obtained with PetscMalloc()
-             and should NOT be freed (The ISColoringDestroy() will free it).
+.   colors - array containing the colors for this processor, color numbers begin at 0.
+-   mode - see PetscCopyMode for meaning of this flag.
 
     Output Parameter:
 .   iscoloring - the resulting coloring data structure
@@ -273,7 +272,7 @@ PetscErrorCode  ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 .seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy(), ISColoringSetType()
 
 @*/
-PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const ISColoringValue colors[],ISColoring *iscoloring)
+PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const ISColoringValue colors[],PetscCopyMode mode,ISColoring *iscoloring)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag;
@@ -316,10 +315,21 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   if (nc > ncolors) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of colors passed in %D is less then the actual number of colors in array %D",ncolors,nc);
   (*iscoloring)->n      = nc;
   (*iscoloring)->is     = 0;
-  (*iscoloring)->colors = (ISColoringValue*)colors;
   (*iscoloring)->N      = n;
   (*iscoloring)->refct  = 1;
   (*iscoloring)->ctype  = IS_COLORING_GLOBAL;
+  if (mode == PETSC_COPY_VALUES) {
+    ierr = PetscMalloc1(n,&(*iscoloring)->colors);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)(*iscoloring),n*sizeof(ISColoringValue));CHKERRQ(ierr);
+    ierr = PetscMemcpy((*iscoloring)->colors,colors,n*sizeof(ISColoringValue));CHKERRQ(ierr);
+    (*iscoloring)->allocated = PETSC_TRUE;
+  } else if (mode == PETSC_OWN_POINTER) {
+    (*iscoloring)->colors    = (ISColoringValue*)colors;
+    (*iscoloring)->allocated = PETSC_TRUE;
+  } else {
+    (*iscoloring)->colors    = (ISColoringValue*)colors;
+    (*iscoloring)->allocated = PETSC_FALSE;
+  }
   ierr = ISColoringViewFromOptions(*iscoloring,NULL,"-is_coloring_view");CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Number of colors %D\n",nc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
