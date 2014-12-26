@@ -1,6 +1,12 @@
 cdef extern from * nogil:
 
     ctypedef double PetscLogDouble
+
+    int PetscLogBegin()
+    int PetscLogAllBegin()
+    int PetscLogView(PetscViewer)
+    int PetscLogDestroy()
+
     int PetscLogFlops(PetscLogDouble)
     int PetscGetFlops(PetscLogDouble*)
     int PetscGetCPUTime(PetscLogDouble*)
