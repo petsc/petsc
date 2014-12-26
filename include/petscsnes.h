@@ -606,6 +606,7 @@ PETSC_EXTERN PetscErrorCode SNESSetDM(SNES,DM);
 PETSC_EXTERN PetscErrorCode SNESGetDM(SNES,DM*);
 PETSC_EXTERN PetscErrorCode SNESSetNPC(SNES,SNES);
 PETSC_EXTERN PetscErrorCode SNESGetNPC(SNES,SNES*);
+PETSC_EXTERN PetscErrorCode SNESHasNPC(SNES,PetscBool*);
 PETSC_EXTERN PetscErrorCode SNESApplyNPC(SNES,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode SNESGetNPCFunction(SNES,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode SNESComputeFunctionDefaultNPC(SNES,Vec,Vec);
