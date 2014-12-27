@@ -120,6 +120,7 @@ cdef extern from * nogil:
     int SNESFASGetSmootherUp(PetscSNES,PetscInt,PetscSNES*)
 
     int SNESGetNPC(PetscSNES,PetscSNES*)
+    int SNESHasNPC(PetscSNES,PetscBool*)
     int SNESSetNPC(PetscSNES,PetscSNES)
 
     int SNESGetRhs(PetscSNES,PetscVec*)

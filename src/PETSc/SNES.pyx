@@ -233,6 +233,11 @@ cdef class SNES(Object):
         PetscINCREF(snes.obj)
         return snes
 
+    def hasNPC(self):
+        cdef PetscBool has_npc = PETSC_FALSE
+        CHKERR( SNESHasNPC(self.snes, &has_npc) )
+        return <bint> has_npc
+
     def setNPC(self, SNES snes not None):
         CHKERR( SNESSetNPC(self.snes, snes.snes) )
 
