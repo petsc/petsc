@@ -1,0 +1,21 @@
+FUN3D 
+      MSEQ     IHANE     IVISC    ILEAST     IFLIM   JUPDATE      IFCN
+         1         2         0        04         0         3         0
+      BETA     ALPHA        RE
+    15.000     3.000  0000050.
+       CFL        DT     IREST     ITRAN    NBTRAN
+   200.000      -5.0         0         0         0
+      NCYC     NMESH    NSTAGE     NCYCT    CFLMIN     IRAMP     NITFO
+       050         1        10        10   0010.00        50       000
+     MGCYC    MITER1    MITER2    MITER3    MITER4    MITER5    MITER6
+         1         1         1         1         1         1         1
+  NSEARCH1  NSEARCH2  NSEARCH3  NSEARCH4  NSEARCH5  NSEARCH6
+        00         0         0         0         0         0
+   ICYCLE1   ICYCLE2   ICYCLE3   ICYCLE4   ICYCLE5   ICYCLE6
+         2         7         7         4         4         4
+     GTOL1     GTOL2     GTOL3     GTOL4     GTOL5     GTOL6
+     .0001     .0001     .0001     .1000     .1000     .1000
+       ILU       ILU       ILU       ILU       ILU       ILU
+         0         0         0         0         0         0
+FILES:
+'uns3d.msh'
