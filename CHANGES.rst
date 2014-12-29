@@ -6,6 +6,21 @@ CHANGES: PETSc for Python
 :Contact: dalcinl@gmail.com
 
 
+Release 3.5.1
+=============
+
+- Add ``Log.{begin|view|destroy}()``.
+- Add ``Mat.SOR()`` and ``Mat.SORType``.
+- Add ``DMPlex.createCoarsePointIS()``.
+- Add ``LGMap.createSF()``.
+- Add ``SNES.getVIInactiveSet()``.
+- Add ``Vec.isaxpy()``.
+- Add ``PC.setReusePreconditioner()``.
+- Return correct type in ``DM.getCoordinateDM()``.
+- Fix SWIG wrappers to handle 64bit ``PetscInt``.
+- Fix linker flags for Python from Fink.
+
+
 Release 3.5
 ===========
 

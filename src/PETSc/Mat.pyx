@@ -1438,5 +1438,6 @@ del MatAssemblyType
 del MatStructure
 del MatOrderingType
 del MatFactorShiftType
+del MatSORType
 
 # --------------------------------------------------------------------
