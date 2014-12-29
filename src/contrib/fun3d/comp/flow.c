@@ -739,7 +739,7 @@ int GetLocalOrdering(GRID *grid)
   PetscInt         fdes = 0;
   off_t       currentPos  = 0, newPos = 0;
   PetscInt         grid_param  = 13;
-  PetscInt         cross_edges = 0;
+  /* PetscInt         cross_edges = 0;*/
   PetscInt         *edge_bit, *pordering;
   PetscInt         *l2p, *l2a, *p2l, *a2l, *v2p, *eperm;
   PetscInt         *tmp, *tmp1, *tmp2;
@@ -747,7 +747,7 @@ int GetLocalOrdering(GRID *grid)
   PetscScalar *ftmp;
   char        mesh_file[PETSC_MAX_PATH_LEN];
   PetscBool   flg;
-  FILE        *fptr, *fptr1;
+  FILE        *fptr = NULL, *fptr1 = NULL;
   MPI_Comm    comm = PETSC_COMM_WORLD;
   /*AO        ao;*/
 
@@ -950,7 +950,7 @@ int GetLocalOrdering(GRID *grid)
   k = 0;
   for (i = 0; i < nedgeLoc; i++) {
 #if defined(INTERLACING)
-    int cross_node=nnodesLoc/2;
+    /*int cross_node=nnodesLoc/2;*/
     grid->eptr[k++] = tmp[eperm[i]] + 1;
     grid->eptr[k++] = tmp[nedgeLoc+eperm[i]] + 1;
 #else
@@ -959,10 +959,10 @@ int GetLocalOrdering(GRID *grid)
 #endif
     /* if (node1 > node2)
      printf("On processor %d, for edge %d node1 = %d, node2 = %d\n",
-            rank,i,node1,node2);CHKERRQ(ierr);*/
-    if ((node1 <= cross_node) && (node2 > cross_node)) cross_edges++;
+            rank,i,node1,node2);CHKERRQ(ierr);
+    if ((node1 <= cross_node) && (node2 > cross_node)) cross_edges++;*/
   }
-  ierr = PetscPrintf(comm,"Number of cross edges %d\n", cross_edges);CHKERRQ(ierr);
+  /*ierr = PetscPrintf(comm,"Number of cross edges %d\n", cross_edges);CHKERRQ(ierr);*/
   ierr = PetscFree(tmp);CHKERRQ(ierr);
 
   /* Now make the local 'ia' and 'ja' arrays */
@@ -1713,17 +1713,17 @@ int GetLocalOrdering(GRID *grid)
       jend   = grid->ia[grid->loc2glo[i]+1] - 1;
       fprintf(fptr1, "Neighbors of Node %d in Local Ordering are :", i);
       for (j = jstart; j < jend; j++) fprintf(fptr1, "%d ", p2l[grid->ja[j]]);
+
+      fprintf(fptr1, "\n");
+
+      fprintf(fptr1, "Neighbors of Node %d in PETSc ordering are :", grid->loc2pet[i]);
+      for (j = jstart; j < jend; j++) fprintf(fptr1, "%d ", grid->ja[j]);
+      fprintf(fptr1, "\n");
+
+      fprintf(fptr1, "Neighbors of Node %d in Global Ordering are :", grid->loc2glo[i]);
+      for (j = jstart; j < jend; j++) fprintf(fptr1, "%d ", grid->loc2glo[p2l[grid->ja[j]]]);
+      fprintf(fptr1, "\n");
     }
-    fprintf(fptr1, "\n");
-
-    fprintf(fptr1, "Neighbors of Node %d in PETSc ordering are :", grid->loc2pet[i]);
-    for (j = jstart; j < jend; j++) fprintf(fptr1, "%d ", grid->ja[j]);
-    fprintf(fptr1, "\n");
-
-    fprintf(fptr1, "Neighbors of Node %d in Global Ordering are :", grid->loc2glo[i]);
-    for (j = jstart; j < jend; j++) fprintf(fptr1, "%d ", grid->loc2glo[p2l[grid->ja[j]]]);
-    fprintf(fptr1, "\n");
-
     fprintf(fptr1, "\n");
     ierr = PetscFree(p2l);CHKERRQ(ierr);
     fclose(fptr1);
@@ -2480,6 +2480,9 @@ int ReadRestartFile(GRID *grid)
 /* Used in establishing the links between FORTRAN common blocks and C        */
 /*                                                                           */
 /*===========================================================================*/
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "f77CLINK"
 void f77CLINK(CINFO  *p1,CRUNGE *p2,CGMCOM *p3,CREFGEOM *p4)
 {
   c_info    = p1;
@@ -2487,6 +2490,7 @@ void f77CLINK(CINFO  *p1,CRUNGE *p2,CGMCOM *p3,CREFGEOM *p4)
   c_gmcom   = p3;
   c_refgeom = p4;
 }
+EXTERN_C_END
 
 /*========================== SET_UP_GRID====================================*/
 /*                                                                          */
