@@ -121,6 +121,8 @@ class Installer(script.Script):
   def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = []):
     """Recursively copy a directory tree using copyFunc, which defaults to shutil.copy2().
 
+       The copyFunc() you provide is only used on the top level, lower levels always use shutil.copy2
+
     The destination directory must not already exist.
     If exception(s) occur, an shutil.Error is raised with a list of reasons.
 
@@ -144,7 +146,7 @@ class Installer(script.Script):
           linkto = os.readlink(srcname)
           os.symlink(linkto, dstname)
         elif os.path.isdir(srcname):
-          copies.extend(self.copytree(srcname, dstname, symlinks))
+          copies.extend(self.copytree(srcname, dstname, symlinks,exclude = exclude))
         elif not os.path.basename(srcname) in exclude:
           copyFunc(srcname, dstname)
           copies.append((srcname, dstname))
