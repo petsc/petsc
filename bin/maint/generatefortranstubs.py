@@ -201,6 +201,8 @@ def processf90interfaces(petscdir,verbose):
         fd.write(txt)
         fdr.close()
       fd.close()
+      import shutil
+      shutil.rmtree(os.path.join(petscdir,'include','finclude','ftn-auto',mansec+'-tmpdir'))
   FixDir(petscdir,os.path.join(petscdir,'include','finclude','ftn-auto'),verbose)
   return
 
