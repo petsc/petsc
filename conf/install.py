@@ -118,7 +118,7 @@ class Installer(script.Script):
         sys.exit(1)
     return
 
-  def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2):
+  def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = []):
     """Recursively copy a directory tree using copyFunc, which defaults to shutil.copy2().
 
     The destination directory must not already exist.
@@ -145,7 +145,7 @@ class Installer(script.Script):
           os.symlink(linkto, dstname)
         elif os.path.isdir(srcname):
           copies.extend(self.copytree(srcname, dstname, symlinks))
-        else:
+        elif not os.path.basename(srcname) in exclude:
           copyFunc(srcname, dstname)
           copies.append((srcname, dstname))
         # XXX What about devices, sockets etc.?
@@ -215,7 +215,7 @@ for src, dst in copies:
     return
 
   def installIncludes(self):
-    self.copies.extend(self.copytree(self.rootIncludeDir, self.destIncludeDir))
+    self.copies.extend(self.copytree(self.rootIncludeDir, self.destIncludeDir,exclude = ['makefile']))
     self.copies.extend(self.copytree(self.archIncludeDir, self.destIncludeDir))
     return
 
