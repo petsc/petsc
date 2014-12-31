@@ -190,18 +190,20 @@ class Configure(config.base.Configure):
 
   def DumpModule(self):
     ''' Create a module file '''
-    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules')):
-      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules'))
+    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'conf','modules')):
+      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'conf','modules'))
+    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'conf','modules','petsc')):
+      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'conf','modules','petsc'))
     if self.framework.argDB['prefix']:
       installdir  = self.framework.argDB['prefix']
       installarch = ''
       installpath = os.path.join(installdir,'bin')
-      fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules',self.petscdir.version),'w')
+      fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'conf','modules','petsc',self.petscdir.version),'w')
     else:
       installdir  = self.petscdir.dir
       installarch = self.arch.arch
       installpath = os.path.join(installdir,installarch,'bin')+':'+os.path.join(installdir,'bin')
-      fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules',self.petscdir.version+'-'+self.arch.arch),'w')
+      fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'conf','modules','petsc',self.petscdir.version+'-'+self.arch.arch),'w')
     fd.write('''\
 #%%Module
 
