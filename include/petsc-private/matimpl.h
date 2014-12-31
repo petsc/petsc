@@ -12,7 +12,7 @@
 
 /*
     If you add entries here also add them to the MATOP enum
-    in include/petscmat.h and include/finclude/petscmat.h
+    in include/petscmat.h and include/petsc-finclude/petscmat.h
 */
 typedef struct _MatOps *MatOps;
 struct _MatOps {
@@ -195,7 +195,7 @@ struct _MatOps {
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
-    in include/petscmat.h and include/finclude/petscmat.h
+    in include/petscmat.h and include/petsc-finclude/petscmat.h
 */
 
 #include <petscsys.h>
