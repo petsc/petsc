@@ -13,7 +13,7 @@ chk_petscdir:
         fi
 
 chk_upgrade:
-	-@PETSC_DIR=${PETSC_DIR} ${PYTHON} ${PETSC_DIR}/bin/petscpythonscripts/petscnagupgrade.py
+	-@PETSC_DIR=${PETSC_DIR} ${PYTHON} ${PETSC_DIR}/bin/petsc-pythonscripts/petscnagupgrade.py
 
 chk_makej:
 	@parallel=false;\

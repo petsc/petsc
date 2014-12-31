@@ -96,7 +96,11 @@
       </div>
 
       <h4>General:</h4>
-        PetscOptionsBool() no longer sets the value of the boolean based on the value passed in
+      <ul>
+        <li>  PetscOptionsBool() no longer sets the value of the boolean based on the value passed in</li>
+        <li>  Python scripts such as PetscBinaryIO.py are now in bin/petsc-pythonscripts. This is to
+              support proper namespacing for --prefix installs of PETSc</li>
+      </ul>
       <h4>Configure/Build:</h4>
       <ul>
         <li>Add toplevel makefile targets <em>clean</em> and <em>distclean</em>. Target <em>clean</em>
