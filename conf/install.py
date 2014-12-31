@@ -118,6 +118,32 @@ class Installer(script.Script):
         sys.exit(1)
     return
 
+  def copyfile(self, src, dst, symlinks = False, copyFunc = shutil.copy2):
+    """Copies a single file    """
+    copies = []
+    errors = []
+    if not os.path.exists(dst):
+      os.makedirs(dst)
+    elif not os.path.isdir(dst):
+      raise shutil.Error, 'Destination is not a directory'
+    srcname = src
+    dstname = os.path.join(dst, os.path.basename(src))
+    try:
+      if symlinks and os.path.islink(srcname):
+        linkto = os.readlink(srcname)
+        os.symlink(linkto, dstname)
+      else:
+        copyFunc(srcname, dstname)
+        copies.append((srcname, dstname))
+    except (IOError, os.error), why:
+      errors.append((srcname, dstname, str(why)))
+    except shutil.Error, err:
+      errors.extend((srcname,dstname,str(err.args[0])))
+    if errors:
+      raise shutil.Error, errors
+    return copies
+
+
   def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = []):
     """Recursively copy a directory tree using copyFunc, which defaults to shutil.copy2().
 
@@ -217,6 +243,8 @@ for src, dst in copies:
     return
 
   def installIncludes(self):
+    # TODO: should exclude petsc-mpi.uni except for uni builds
+    # TODO: should exclude petsc-finclude except for fortran builds
     self.copies.extend(self.copytree(self.rootIncludeDir, self.destIncludeDir,exclude = ['makefile']))
     self.copies.extend(self.copytree(self.archIncludeDir, self.destIncludeDir))
     return
@@ -228,6 +256,8 @@ for src, dst in copies:
 
   def installBin(self):
     self.copies.extend(self.copytree(os.path.join(self.rootBinDir,'petsc-pythonscripts'), os.path.join(self.destBinDir,'petsc-pythonscripts')))
+    # TODO: should copy over petsc-mpiexec.uni only for uni builds
+    self.copies.extend(self.copyfile(os.path.join(self.rootBinDir,'petsc-mpiexec.uni'), self.destBinDir))
     self.copies.extend(self.copytree(self.archBinDir, self.destBinDir))
     return
 
