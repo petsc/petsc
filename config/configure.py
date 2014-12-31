@@ -190,7 +190,7 @@ def print_final_timestamp(framework):
 def petsc_configure(configure_options):
   try:
     petscdir = os.environ['PETSC_DIR']
-    sys.path.append(os.path.join(petscdir,'bin'))
+    sys.path.append(os.path.join(petscdir,'bin','petscpythonscripts'))
     import petscnagupgrade
     file     = os.path.join(petscdir,'.nagged')
     if not petscnagupgrade.naggedtoday(file):

@@ -227,7 +227,7 @@ for src, dst in copies:
     return
 
   def installBin(self):
-    self.copies.extend(self.copytree(self.rootBinDir, self.destBinDir))
+    self.copies.extend(self.copytree(os.path.join(self.rootBinDir,'petscpythonscripts'), os.path.join(self.destBinDir,'petscpythonscripts')))
     self.copies.extend(self.copytree(self.archBinDir, self.destBinDir))
     return
 
