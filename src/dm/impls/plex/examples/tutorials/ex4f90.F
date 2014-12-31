@@ -2,7 +2,7 @@
 ! Contributed by Pratheek Shanthraj <p.shanthraj@mpie.de>
       program main
       implicit none
-#include <finclude/petsc.h90>
+#include <petsc-finclude/petsc.h90>
       DM :: dm
       PetscDS :: prob
       PetscInt :: dim = 3

@@ -2,7 +2,7 @@
 !
 !    Fortran kernel for the copy vector routine
 !
-#include <finclude/petscsysdef.h>
+#include <petsc-finclude/petscsysdef.h>
 !
       subroutine FortranCopy(n,x,y)
       implicit none

@@ -291,10 +291,10 @@ allgtags:
 	-@find -E ${PETSC_DIR}/{include,src,bin} -regex '(.*makefile|.*\.(cc|hh|cpp|C|hpp|c|h|cu|m)$$)' | grep -v ftn-auto  | gtags -f -
 
 allfortranstubs:
-	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
+	-@${RM} -rf include/petsc-finclude/ftn-auto/*-tmpdir
 	-@${PYTHON} bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
 	-@${PYTHON} bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
-	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
+	-@${RM} -rf include/petsc-finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
 cmakegen:

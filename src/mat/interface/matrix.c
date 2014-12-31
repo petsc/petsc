@@ -2661,7 +2661,7 @@ $       -info -mat_view ::ascii_info
    Example for Fortran Users:
    Fortran users should declare info as a double precision
    array of dimension MAT_INFO_SIZE, and then extract the parameters
-   of interest.  See the file ${PETSC_DIR}/include/finclude/petscmat.h
+   of interest.  See the file ${PETSC_DIR}/include/petsc-finclude/petscmat.h
    a complete list of parameter names.
 .vb
       double  precision info(MAT_INFO_SIZE)

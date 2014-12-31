@@ -2,7 +2,7 @@
 ALL:
 
 CFLAGS	        =
-FFLAGS	        = -I${PETSC_DIR}/include/finclude
+FFLAGS	        = -I${PETSC_DIR}/include/petsc-finclude
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tutorials/

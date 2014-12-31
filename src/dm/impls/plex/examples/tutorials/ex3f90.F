@@ -3,7 +3,7 @@
 ! Contributed by Adrian Croucher <a.croucher@auckland.ac.nz>
       program main
       implicit none
-#include <finclude/petsc.h90>
+#include <petsc-finclude/petsc.h90>
       DM :: dm, dmi
       PetscFV :: fvm
       PetscInt, parameter :: dim = 3

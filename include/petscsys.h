@@ -2281,23 +2281,23 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
     UsingFortran - Fortran can be used with PETSc in four distinct approaches
 
 $    1) classic Fortran 77 style
-$#include "finclude/petscXXX.h" to work with material from the XXX component of PETSc
+$#include "petsc-finclude/petscXXX.h" to work with material from the XXX component of PETSc
 $       XXX variablename
 $      You cannot use this approach if you wish to use the Fortran 90 specific PETSc routines
 $      which end in F90; such as VecGetArrayF90()
 $
 $    2) classic Fortran 90 style
-$#include "finclude/petscXXX.h"
-$#include "finclude/petscXXX.h90" to work with material from the XXX component of PETSc
+$#include "petsc-finclude/petscXXX.h"
+$#include "petsc-finclude/petscXXX.h90" to work with material from the XXX component of PETSc
 $       XXX variablename
 $
 $    3) Using Fortran modules
-$#include "finclude/petscXXXdef.h"
+$#include "petsc-finclude/petscXXXdef.h"
 $         use petscXXXX
 $       XXX variablename
 $
 $    4) Use Fortran modules and Fortran data types for PETSc types
-$#include "finclude/petscXXXdef.h"
+$#include "petsc-finclude/petscXXXdef.h"
 $         use petscXXXX
 $       type(XXX) variablename
 $      To use this approach you must ./configure PETSc with the additional
@@ -2331,24 +2331,24 @@ $      call MatSetValues(mat,1,row,1,col,val,INSERT_VALUES,ierr)
 
     See the example src/vec/vec/examples/tutorials/ex20f90.F90 for an example that can use all four approaches
 
-    Developer Notes: The finclude/petscXXXdef.h contain all the #defines (would be typedefs in C code) these
-     automatically include their predecessors; for example finclude/petscvecdef.h includes finclude/petscisdef.h
+    Developer Notes: The petsc-finclude/petscXXXdef.h contain all the #defines (would be typedefs in C code) these
+     automatically include their predecessors; for example petsc-finclude/petscvecdef.h includes petsc-finclude/petscisdef.h
 
-     The finclude/petscXXXX.h contain all the parameter statements for that package. These automatically include
-     their finclude/petscXXXdef.h file but DO NOT automatically include their predecessors;  for example
-     finclude/petscvec.h does NOT automatically include finclude/petscis.h
+     The petsc-finclude/petscXXXX.h contain all the parameter statements for that package. These automatically include
+     their petsc-finclude/petscXXXdef.h file but DO NOT automatically include their predecessors;  for example
+     petsc-finclude/petscvec.h does NOT automatically include petsc-finclude/petscis.h
 
-     The finclude/ftn-custom/petscXXXdef.h90 are not intended to be used directly in code, they define the
+     The petsc-finclude/ftn-custom/petscXXXdef.h90 are not intended to be used directly in code, they define the
      Fortran data type type(XXX) (for example type(Vec)) when PETSc is ./configure with the --with-fortran-datatypes option.
 
-     The finclude/ftn-custom/petscXXX.h90 (not included directly by code) contain interface definitions for
+     The petsc-finclude/ftn-custom/petscXXX.h90 (not included directly by code) contain interface definitions for
      the PETSc Fortran stubs that have different bindings then their C version (for example VecGetArrayF90).
 
-     The finclude/ftn-auto/petscXXX.h90 (not included directly by code) contain interface definitions generated
+     The petsc-finclude/ftn-auto/petscXXX.h90 (not included directly by code) contain interface definitions generated
      automatically by "make allfortranstubs".
 
-     The finclude/petscXXX.h90 includes the custom finclude/ftn-custom/petscXXX.h90 and if ./configure
-     was run with --with-fortran-interfaces it also includes the finclude/ftn-auto/petscXXX.h90 These DO NOT automatically
+     The petsc-finclude/petscXXX.h90 includes the custom petsc-finclude/ftn-custom/petscXXX.h90 and if ./configure
+     was run with --with-fortran-interfaces it also includes the petsc-finclude/ftn-auto/petscXXX.h90 These DO NOT automatically
      include their predecessors
 
     Level: beginner
@@ -2517,7 +2517,7 @@ typedef enum {
   PETSC_BUILDTWOSIDED_NOTSET = -1,
   PETSC_BUILDTWOSIDED_ALLREDUCE = 0,
   PETSC_BUILDTWOSIDED_IBARRIER = 1
-  /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
+  /* Updates here must be accompanied by updates in petsc-finclude/petscsys.h and the string array in mpits.c */
 } PetscBuildTwoSidedType;
 PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm,PetscBuildTwoSidedType);

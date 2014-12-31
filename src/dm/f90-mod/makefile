@@ -1,6 +1,6 @@
 #requiresdefine   'PETSC_USING_F90'
 #
-#   Makes Fortran module functions from *.h90 files in include/finclude
+#   Makes Fortran module functions from *.h90 files in include/petsc-finclude
 #
 ALL: buildmod
 speciallib: buildmod
