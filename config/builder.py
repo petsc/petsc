@@ -1143,7 +1143,7 @@ class PETScMaker(script.Script):
    argDB = RDict.RDict(None, None, 0, 0, readonly = True)
    self.petscDir = os.environ['PETSC_DIR']
    arch  = self.findArch()
-   argDB.saveFilename = os.path.join(self.petscDir, arch, 'conf', 'RDict.db')
+   argDB.saveFilename = os.path.join(self.petscDir, arch, 'lib','petsc-conf', 'RDict.db')
    argDB.load()
    script.Script.__init__(self, argDB = argDB)
    self.logName = logname
@@ -1185,7 +1185,7 @@ class PETScMaker(script.Script):
    # Setup directories
    self.petscDir     = self.configInfo.petscdir.dir
    self.petscArch    = self.configInfo.arch.arch
-   self.petscConfDir = os.path.join(self.petscDir, self.petscArch, 'conf')
+   self.petscConfDir = os.path.join(self.petscDir, self.petscArch, 'lib','petsc-conf')
    self.petscLibDir  = os.path.join(self.petscDir, self.petscArch, 'lib')
    # Setup source database
    self.sourceDBFilename = os.path.join(self.petscConfDir, 'source.db')

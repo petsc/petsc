@@ -27,7 +27,7 @@ def get_conf():
     except KeyError:
         pass
 
-    petscvariables = os.path.join(petscdir, 'conf', 'petscvariables')
+    petscvariables = os.path.join(petscdir, 'lib','petsc-conf', 'petscvariables')
     petscconfinclude = os.path.join(petscdir, 'include', 'petscconf.h')
 
     try:

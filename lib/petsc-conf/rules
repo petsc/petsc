@@ -849,25 +849,6 @@ checkTestCoverage:
 
 #
 
-citool:
-	-@cd ${PETSC_DIR}; hg ct
-	-@cd ${PETSC_DIR}/config/BuildSystem; hg ct
-
-pull:
-	-@cd ${PETSC_DIR}; hg pull; hg update
-	-@cd ${PETSC_DIR}/config/BuildSystem; hg pull; hg update
-
-push:
-	-@cd ${PETSC_DIR}; hg push
-	-@cd ${PETSC_DIR}/config/BuildSystem; hg push
-hgver:
-	-@cd ${PETSC_DIR};\
-	   hg parent --template 'PETSc parent       : {node|short}\n'; \
-	   hg tip    --template 'PETSc tip          : {node|short}\n'
-	-@cd ${PETSC_DIR}/config/BuildSystem;\
-	   hg parent --template 'BuildSystem parent : {node|short}\n' ;\
-	   hg tip    --template 'BuildSystem tip    : {node|short}\n'	
-#
 sourcelist:
 	-@for i in ${SOURCEALL}; do \
 	    /bin/echo -n ${LOCDIR}$${i} " " >> ${BASE_DIR}/files; \
@@ -991,5 +972,5 @@ uncrustify:
 	  uncrustify -c ${PETSC_DIR}/bin/uncrustify.cfg $$i; \
 	done
 
-include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscrules
+include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc-conf/petscrules
 

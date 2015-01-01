@@ -100,9 +100,9 @@ def FixDir(petscdir,dir,verbose):
     outbuf +=  'DIRS     =\n'
     outbuf +=  libbase + '\n'
     outbuf +=  locdir + '\n'
-    outbuf +=  'include ${PETSC_DIR}/conf/variables\n'
-    outbuf +=  'include ${PETSC_DIR}/conf/rules\n'
-    outbuf +=  'include ${PETSC_DIR}/conf/test\n'
+    outbuf +=  'include ${PETSC_DIR}/lib/petsc-conf/variables\n'
+    outbuf +=  'include ${PETSC_DIR}/lib/petsc-conf/rules\n'
+    outbuf +=  'include ${PETSC_DIR}/lib/petsc-conf/test\n'
 
     ff = open(os.path.join(dir, 'makefile'), 'w')
     ff.write(outbuf)
@@ -176,7 +176,7 @@ def processDir(arg,dirname,names):
     if name in ['.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint','ftn-custom','config','f90-custom','ftn-kernels']:
       rmnames.append(name)
     # skip for ./configure generated $PETSC_ARCH directories
-    if os.path.isdir(os.path.join(dirname,name,'conf')):
+    if os.path.isdir(os.path.join(dirname,name,'petsc-conf')):
       rmnames.append(name)
     # skip include/petsc-finclude directory
     if name == 'petsc-finclude':

@@ -5,6 +5,6 @@ DIRS      = viewer draw matlabengine random bag
 LOCDIR    = src/sys/classes/
 MANSEC    = Sys
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test
