@@ -235,8 +235,23 @@ class Installer(script.Script):
     f.write('copies = '+repr(self.copies).replace(self.destDir,self.installDir))
     f.write('''
 for src, dst in copies:
-  if os.path.exists(dst):
+  try:
     os.remove(dst)
+  except:
+    pass
+''')
+    #TODO: need to delete libXXX.YYY.dylib.dSYM directory on Mac
+    dirs = [os.path.join('include','petsc-finclude'),os.path.join('include','petsc-mpiuni'),os.path.join('include','petsc-private'),os.path.join('bin','petsc-pythonscripts'),os.path.join('lib','petsc-conf')]
+    newdirs = []
+    for dir in dirs: newdirs.append(os.path.join(self.installDir,dir))
+    f.write('dirs = '+str(newdirs))
+    f.write('''
+for dir in dirs:
+  import shutil
+  try:
+    shutil.rmtree(dir)
+  except:
+    pass
 ''')
     f.close()
     os.chmod(uninstallscript,0744)
