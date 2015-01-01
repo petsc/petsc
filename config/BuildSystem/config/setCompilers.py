@@ -1546,7 +1546,9 @@ if (dlclose(handle)) {
         if self.framework.clArgDB.has_key(envVal) or self.framework.clArgDB.has_key('with-'+envVal.lower()):
           self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
           del os.environ[envVal]
-        elif not self.framework.clArgDB.has_key('with-environment-variables'):
+        elif self.framework.argDB['with-environment-variables']:
+          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables ******')
+        else:
           self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
           del os.environ[envVal]
 
@@ -1556,7 +1558,9 @@ if (dlclose(handle)) {
         if self.framework.clArgDB.has_key(envVal):
           self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
           del os.environ[envVal]
-        elif not self.framework.clArgDB.has_key('with-environment-variables'):
+        elif self.framework.argDB['with-environment-variables']:
+          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables******')
+        else:
           self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
           del os.environ[envVal]
     return
