@@ -258,7 +258,7 @@ for src, dst in copies:
     self.copies.extend(self.copytree(os.path.join(self.rootBinDir,'petsc-pythonscripts'), os.path.join(self.destBinDir,'petsc-pythonscripts')))
     # TODO: should copy over petsc-mpiexec.uni only for uni builds
     self.copies.extend(self.copyfile(os.path.join(self.rootBinDir,'petsc-mpiexec.uni'), self.destBinDir))
-    self.copies.extend(self.copytree(self.archBinDir, self.destBinDir))
+    self.copies.extend(self.copytree(self.archBinDir, self.destBinDir, exclude = ['bfort','bib2html','doc2lt','doctext','mapnames pstogif','pstoxbm','tohtml']))
     return
 
   def installShare(self):
