@@ -250,8 +250,8 @@ for src, dst in copies:
     return
 
   def installConf(self):
-    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir))
-    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir))
+    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir, exclude = ['gmakegen.py','install.py']))
+    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing']))
     return
 
   def installBin(self):
@@ -289,7 +289,7 @@ for src, dst in copies:
     return
 
   def installLib(self):
-    self.copies.extend(self.copytree(self.archLibDir, self.destLibDir, copyFunc = self.copyLib))
+    self.copies.extend(self.copytree(self.archLibDir, self.destLibDir, copyFunc = self.copyLib, exclude = ['sowing']))
     return
 
 
