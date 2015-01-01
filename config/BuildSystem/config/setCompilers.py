@@ -1546,7 +1546,7 @@ if (dlclose(handle)) {
         if self.framework.clArgDB.has_key(envVal) or self.framework.clArgDB.has_key('with-'+envVal.lower()):
           self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
           del os.environ[envVal]
-       elif not self.framework.clArgDB.has_key('with-environment-variables'):
+        elif not self.framework.clArgDB.has_key('with-environment-variables'):
           self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
           del os.environ[envVal]
 
@@ -1563,10 +1563,8 @@ if (dlclose(handle)) {
 
 
   def checkEnvCompilers(self):
-    if 'with-environment-variables' in self.argDB:
-      envVarChecklist = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS',
-                   'F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS',
-                   'LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
+    if self.framework.clArgDB.has_key('with-environment-variables'):
+      envVarChecklist = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS','F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
       for ev in envVarChecklist:
         if ev in os.environ:
           self.argDB[ev] = os.environ[ev]
