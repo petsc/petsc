@@ -19,6 +19,18 @@ or
   >>> io = PetscBinaryIO.PetscBinaryIO()
   >>> io.writeBinaryFile('file.dat', [vec,])
 
+to read in objects one at a time use such as
+
+  >>> import PetscBinaryIO
+  >>> io = PetscBinaryIO.PetscBinaryIO()
+  >>> fh = open('file.dat')
+  >>> objecttype = io.readObjectType(fh)
+  >>> if objecttype == 'Vec':
+  >>>   v = io.readVec(fh)
+
+   Note that one must read in the object type first and then call readVec(), readMat() etc.
+
+
 See also PetscBinaryIO.__doc__ and methods therein.
 """
 
@@ -217,7 +229,7 @@ class PetscBinaryIO(object):
 
     @decorate_with_conf
     def readVec(self, fh):
-        """Reads a PETSc Vec from a binary file handle, returning just the data."""
+        """Reads a PETSc Vec from a binary file handle, must be called after readObjectType()."""
 
         nz = np.fromfile(fh, dtype=self._inttype, count=1)[0]
         try:
@@ -239,7 +251,7 @@ class PetscBinaryIO(object):
 
     @decorate_with_conf
     def readMatSparse(self, fh):
-        """Reads a PETSc Mat, returning a sparse representation of the data.
+        """Reads a PETSc Mat, returning a sparse representation of the data. Must be called after readObjectType()
 
         (M,N), (I,J,V) = readMatSparse(fid)
 
@@ -288,7 +300,7 @@ class PetscBinaryIO(object):
 
     @decorate_with_conf
     def readMatDense(self, fh):
-        """Reads a PETSc Mat, returning a dense represention of the data."""
+        """Reads a PETSc Mat, returning a dense represention of the data, must be called after readObjectType()"""
 
         try:
             M,N,nz = np.fromfile(fh, dtype=self._inttype, count=3)
@@ -332,7 +344,7 @@ class PetscBinaryIO(object):
 
     @decorate_with_conf
     def readMat(self, fh, mattype='sparse'):
-        """Reads a PETSc Mat from binary file handle.
+        """Reads a PETSc Mat from binary file handle, must be called after readObjectType()
 
         optional mattype: 'sparse" or 'dense'
 
@@ -350,7 +362,7 @@ class PetscBinaryIO(object):
 
     @decorate_with_conf
     def readIS(self, fh):
-        """Reads a PETSc Index Set from binary file handle."""
+        """Reads a PETSc Index Set from binary file handle, must be called after readObjectType()"""
 
         try:
             nz = np.fromfile(fh, dtype=self._inttype, count=1)[0]
@@ -368,6 +380,19 @@ class PetscBinaryIO(object):
         metadata.tofile(fh)
         anis.astype(self._inttype).tofile(fh)
         return
+
+    @decorate_with_conf
+    def readObjectType(self, fid):
+        """Returns the next object type as a string in the file"""
+        try:
+              header = np.fromfile(fid, dtype=self._inttype, count=1)[0]
+        except (MemoryError, IndexError):
+              raise DoneWithFile
+        try:
+              objecttype = self._classid[header]
+        except KeyError:
+              raise IOError('Invalid PetscObject CLASSID or object not implemented for python')
+        return objecttype
 
     @decorate_with_conf
     def readBinaryFile(self, fid, mattype='sparse'):
@@ -397,15 +422,7 @@ class PetscBinaryIO(object):
         objects = []
         try:
             while True:
-                # read header
-                try:
-                    header = np.fromfile(fid, dtype=self._inttype, count=1)[0]
-                except (MemoryError, IndexError):
-                    raise DoneWithFile
-                try:
-                    objecttype = self._classid[header]
-                except KeyError:
-                    raise IOError('Invalid PetscObject CLASSID or object not implemented for python')
+                objecttype = self.readObjectType(fid)
 
                 if objecttype == 'Vec':
                     objects.append(self.readVec(fid))
