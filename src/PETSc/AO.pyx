@@ -39,7 +39,7 @@ cdef class AO(Object):
         else:
             app = iarray_i(app, &napp, &idxapp)
             if petsc is not None:
-                petsc = iarray_i(app, &npetsc, &idxpetsc)
+                petsc = iarray_i(petsc, &npetsc, &idxpetsc)
                 assert napp == npetsc, "incompatible array sizes"
             CHKERR( AOCreateBasic(ccomm, napp, idxapp, idxpetsc, &newao) )
         PetscCLEAR(self.obj); self.ao = newao
@@ -59,7 +59,7 @@ cdef class AO(Object):
         else:
             app = iarray_i(app, &napp, &idxapp)
             if petsc is not None:
-                petsc = iarray_i(app, &npetsc, &idxpetsc)
+                petsc = iarray_i(petsc, &npetsc, &idxpetsc)
                 assert napp == npetsc, "incompatible array sizes"
             CHKERR( AOCreateMemoryScalable(ccomm, napp, idxapp, idxpetsc, &newao) )
         PetscCLEAR(self.obj); self.ao = newao
@@ -79,7 +79,7 @@ cdef class AO(Object):
         else:
             app = iarray_i(app, &napp, &idxapp)
             if petsc is not None:
-                petsc = iarray_i(app, &npetsc, &idxpetsc)
+                petsc = iarray_i(petsc, &npetsc, &idxpetsc)
                 assert napp == npetsc, "incompatible array sizes"
             CHKERR( AOCreateMapping(ccomm, napp, idxapp, idxpetsc, &newao) )
         PetscCLEAR(self.obj); self.ao = newao
