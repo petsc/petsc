@@ -114,19 +114,19 @@ def chksynonyms():
     name = sys.argv[l]
 
 
-    if name.find('with-debug') >= 0:
+    if name.find('with-debug=') >= 0 or name.endswith('with-debug'):
       if name.find('=') == -1:
         sys.argv[l] = name.replace('with-debug','with-debugging')+'=1'
       else:
         head, tail = name.split('=', 1)
         sys.argv[l] = head.replace('with-debug','with-debugging')+'='+tail
 
-    if name.find('--with-shared') >= 0:
+    if name.find('with-shared=') >= 0 or name.endswith('with-shared'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('with-shared','with-shared-library')+'=1'
+        sys.argv[l] = name.replace('with-shared','with-shared-libraries')+'=1'
       else:
         head, tail = name.split('=', 1)
-        sys.argv[l] = head.replace('with-shared','with-shared-library')+'='+tail
+        sys.argv[l] = head.replace('with-shared','with-shared-libraries')+'='+tail
 
 
 
