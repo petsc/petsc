@@ -13,6 +13,11 @@ class Configure(config.package.Package):
     self.needsMath = 1
     return
 
+  def setupHelp(self, help):
+    import nargs
+    config.package.Package.setupHelp(self, help)
+    help.addArgument('SuiteSparse', '-download-suitesparse-gpu=<bool>',    nargs.ArgBool(None, 0, 'Install SuiteSparse to use GPUs'))
+    
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
@@ -52,6 +57,33 @@ class Configure(config.package.Package):
       flg = '-DBLAS_NO_UNDERSCORE'
     g.write('UMFPACK_CONFIG    = '+flg+'\n')
     g.write('CHOLMOD_CONFIG    = '+flg+' -DNPARTITION\n')
+    if self.framework.argDB['download-suitesparse-gpu']:
+      print self.framework.argDB['with-cuda']
+      if not self.framework.clArgDB.has_key('with-cuda') or not self.framework.argDB['with-cuda']:
+        raise RuntimeError('Run with --with-cuda to use allow SuiteSparse to compile using CUDA')
+      # code taken from cuda.py
+      self.pushLanguage('CUDA')
+      petscNvcc = self.getCompiler()
+      self.popLanguage()
+      self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
+      if hasattr(self,'systemNvcc'):
+        nvccDir = os.path.dirname(self.systemNvcc)
+        cudaDir = os.path.split(nvccDir)[0]
+      else:
+        raise RuntimeError('Unable to locate CUDA NVCC compiler')
+      g.write('CUDA_ROOT     = '+cudaDir+'\n')
+      g.write('GPU_BLAS_PATH = $(CUDA_ROOT)\n')
+      g.write('GPU_CONFIG    = -I$(CUDA_ROOT)/include -DGPU_BLAS\n')
+# GPU_CONFIG    = -I$(CUDA_ROOT)/include -DGPU_BLAS -DCHOLMOD_OMP_NUM_THREADS=10
+      g.write('CUDA_PATH     = $(CUDA_ROOT)\n')
+      g.write('CUDART_LIB    = $(CUDA_ROOT)/lib64/libcudart.so\n')
+      g.write('CUBLAS_LIB    = $(CUDA_ROOT)/lib64/libcublas.so\n')
+      g.write('CUDA_INC_PATH = $(CUDA_ROOT)/include/\n')
+      g.write('NV20          = -arch=sm_20 -Xcompiler -fPIC\n')
+      g.write('NV30          = -arch=sm_30 -Xcompiler -fPIC\n')
+      g.write('NV35          = -arch=sm_35 -Xcompiler -fPIC\n')
+      g.write('NVCC          = $(CUDA_ROOT)/bin/nvcc\n')
+      g.write('NVCCFLAGS     = -O3 -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_35,code=sm_35 -Xcompiler -fPIC\n')
     g.close()
 
     if self.installNeeded(mkfile):
