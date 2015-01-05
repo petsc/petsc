@@ -628,6 +628,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock;
   PetscErrorCode ierr;
   MatType        mtype;
+  ISLocalToGlobalMapping ltog;
 
   PetscFunctionBegin;
   ierr = MatInitializePackage();CHKERRQ(ierr);
@@ -686,6 +687,10 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
     ierr = PetscCalloc4(localSize/bs, &dnz, localSize/bs, &onz, localSize/bs, &dnzu, localSize/bs, &onzu);CHKERRQ(ierr);
     ierr = DMPlexPreallocateOperator(dm, bs, section, sectionGlobal, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
     ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);
+
+    /* Set localtoglobalmapping on the matrix for MatSetValuesLocal() to work */
+    ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(*J,ltog,ltog);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
