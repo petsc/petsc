@@ -21,7 +21,11 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.blasLapack]
+    if self.framework.argDB['download-suitesparse-gpu']:
+      self.cuda       = framework.require('config.packages.cuda',self)
+      self.deps       = [self.blasLapack,self.cuda]
+    else:
+      self.deps       = [self.blasLapack]
     return
 
   def Install(self):
@@ -56,7 +60,6 @@ class Configure(config.package.Package):
     else:
       flg = '-DBLAS_NO_UNDERSCORE'
     g.write('UMFPACK_CONFIG    = '+flg+'\n')
-    g.write('CHOLMOD_CONFIG    = '+flg+' -DNPARTITION\n')
     if self.framework.argDB['download-suitesparse-gpu']:
       if self.defaultIndexSize == 32:
         raise RuntimeError('SuiteSparse only uses GPUs with --with-64-bit-indices')
@@ -85,6 +88,10 @@ class Configure(config.package.Package):
       g.write('NV35          = -arch=sm_35 -Xcompiler -fPIC\n')
       g.write('NVCC          = $(CUDA_ROOT)/bin/nvcc\n')
       g.write('NVCCFLAGS     = -O3 -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_35,code=sm_35 -Xcompiler -fPIC\n')
+      g.write('CHOLMOD_CONFIG    = '+flg+' -DNPARTITION $(GPU_CONFIG)\n')
+      self.addDefine('USE_SUITESPARSE_GPU',1)
+    else:
+      g.write('CHOLMOD_CONFIG    = '+flg+' -DNPARTITION\n')
     g.close()
 
     if self.installNeeded(mkfile):
