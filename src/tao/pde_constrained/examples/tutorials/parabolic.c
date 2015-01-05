@@ -1,5 +1,4 @@
 #include <petsc-private/taoimpl.h>
-#include "../src/tao/pde_constrained/impls/lcl/lcl.h"
 
 /*T
    Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
@@ -78,7 +77,6 @@ typedef struct {
   KSP solver;
   PC prec;
 
-  TAO_LCL *lcl;
   PetscInt ksp_its;
   PetscInt ksp_its_initial;
 } AppCtx;
@@ -190,7 +188,7 @@ int main(int argc, char **argv)
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOLCL);CHKERRQ(ierr);
-  user.lcl = (TAO_LCL*)(tao->data);
+
   /* Set up initial vectors and matrices */
   ierr = ParabolicInitialize(&user);CHKERRQ(ierr);
 
@@ -573,17 +571,16 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
   AppCtx         *user;
-  PetscReal      tau;
   PetscInt       its,i;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
 
   if (Y == user->ytrue) {
+    /* First solve is done with true solution to set up problem */
     ierr = KSPSetTolerances(user->solver,1e-8,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  } else if (user->lcl) {
-    tau = user->lcl->tau[user->lcl->solve_type];
-    ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSetTolerances(user->solver,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
 
   ierr = Scatter_i(X,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
@@ -606,16 +603,12 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
 PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
-  PetscReal      tau;
   AppCtx         *user;
   PetscInt       its,i;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
-  if (user->lcl) {
-    tau = user->lcl->tau[user->lcl->solve_type];
-    ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  }
+
   ierr = Scatter_i(X,user->yi,user->yi_scatter,user->nt);CHKERRQ(ierr);
 
   i = user->nt - 1;
@@ -1185,7 +1178,6 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   ierr = MatShift(user->DSG,1.0);CHKERRQ(ierr);
 
   /* Now solve for y */
-  user->lcl->solve_type = LCL_FORWARD1;
   ierr = StateMatInvMult(user->Js,user->q,user->y);CHKERRQ(ierr);
 
   /* Construct projection matrix Q, a block diagonal matrix consisting of nt copies of Qblock along the diagonal */
