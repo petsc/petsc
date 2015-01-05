@@ -1337,7 +1337,7 @@ class Configure(config.base.Configure):
       if not Configure.isDarwin():
         testFlags = ['-Wl,-rpath,', '-R','-rpath ' , '-Wl,-R,']
       else:
-        testFlags = []
+        testFlags = ['-Wl,-rpath,']
       # test '-R' before '-Wl,-rpath' for SUN compilers [as cc on linux accepts -Wl,-rpath, but  f90 & CC do not.
       if self.isSun(self.framework.getCompiler()):
         testFlags.insert(0,'-R')

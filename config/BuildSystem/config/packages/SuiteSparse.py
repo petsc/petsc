@@ -58,6 +58,8 @@ class Configure(config.package.Package):
     g.write('UMFPACK_CONFIG    = '+flg+'\n')
     g.write('CHOLMOD_CONFIG    = '+flg+' -DNPARTITION\n')
     if self.framework.argDB['download-suitesparse-gpu']:
+      if self.defaultIndexSize == 32:
+        raise RuntimeError('SuiteSparse only uses GPUs with --with-64-bit-indices')
       if not self.framework.clArgDB.has_key('with-cuda') or not self.framework.argDB['with-cuda']:
         raise RuntimeError('Run with --with-cuda to use allow SuiteSparse to compile using CUDA')
       # code taken from cuda.py
