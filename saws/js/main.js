@@ -1,5 +1,5 @@
 //this data structure is used to hold all of the solver options and matrix properties (perhaps should use two separate ones?)
-var matInfo = [];
+var matInfo = {};
 
 //some global boolean variables to keep track of what the user wants to display
 var displayCmdOptions = true;
@@ -16,9 +16,7 @@ var colors = ["black","red","blue","green"];
 //  This function is run when the page is first visited
 $(document).ready(function(){
 
-    matInfo[0] = { //all false by default
-        endtag: "0",
-        matLoc: "0",
+    matInfo["0"] = { //all false by default
         logstruc: false,
         symm: false,
         posdef: false,
@@ -32,8 +30,8 @@ $(document).ready(function(){
     $("#solver0").append("<br><b>KSP &nbsp;</b><select id=\"ksp_type0\"></select>");
     $("#solver0").append("<br><b>PC &nbsp;&nbsp;&nbsp;</b><select id=\"pc_type0\"></select>");
 
-    populatePcList("0");
-    populateKspList("0");
+    populateList("pc","0");
+    populateList("ksp","0");
 
     $("#pc_type0").trigger("change");//display options for sub-solvers (if any)
     $("#ksp_type0").trigger("change");//just to record ksp (see listLogic.js)

@@ -1,49 +1,48 @@
 //this recursive function should always be called on the root solver (endtag = "0").
-//target_endtag is the endtag of the solver option that is currently being asked. the reason we have this as a parameter is because there is simply not enough space to display a diagram of the ENTIRE solver. so, we only display a path to the current solver option
+//targetEndtag is the endtag of the solver option that is currently being asked. the reason we have this as a parameter is because there is simply not enough space to display a diagram of the ENTIRE solver. so, we only display a path to the current solver option
 //x,y are the x and y coordinates of the upper lefthand corner of the svg (should initially be called with 0,0)
 //this function returns a string that needs to be put into an svg in the html page
-function drawDiagrams(data,endtag,target_endtag,x,y) {
+function drawDiagrams(data,endtag,targetEndtag,x,y) {
 
-    if(data[getIndex(data,"0")].x_extreme == undefined)
-        data[getIndex(data,"0")].x_extreme = 0;
-    if(data[getIndex(data,"0")].y_extreme == undefined)
-        data[getIndex(data,"0")].y_extreme = 0;
+    if(data["0"].x_extreme == undefined)
+        data["0"].x_extreme = 0;
+    if(data["0"].y_extreme == undefined)
+        data["0"].y_extreme = 0;
 
     var numChildren = getNumChildren(data,endtag);
 
     if(numChildren == 0) //base case. no children.
         return "";
-    if(target_endtag.indexOf(endtag) != 0) //base case. endtag is not on the path to target_endtag.
+    if(targetEndtag.indexOf(endtag) != 0) //base case. endtag is not on the path to targetEndtag.
         return "";
 
-    var index = getIndex(data,endtag);
     var ret   = "";
 
-    if(data[index].pc_type == "fieldsplit") {
-        if(x+400 > data[getIndex(data,"0")].x_extreme)
-            data[getIndex(data,"0")].x_extreme = x+400;
-        if(y+400 > data[getIndex(data,"0")].y_extreme)
-            data[getIndex(data,"0")].y_extreme = y+400;
+    if(data[endtag].pc_type == "fieldsplit") {
+        if(x+400 > data["0"].x_extreme)
+            data["0"].x_extreme = x+400;
+        if(y+400 > data["0"].y_extreme)
+            data["0"].y_extreme = y+400;
     }
-    else if(data[index].pc_type == "mg") {
-        var mg_levels = data[index].mg_levels;
+    else if(data[endtag].pc_type == "mg") {
+        var mg_levels = data[endtag].mg_levels;
         var global_downshift = 141*mg_levels + 68*mg_levels;
-        if(x+465 > data[getIndex(data,"0")].x_extreme)
-            data[getIndex(data,"0")].x_extreme = x+465;
-        if(y+global_downshift > data[getIndex(data,"0")].y_extreme)
-            data[getIndex(data,"0")].y_extreme = y+global_downshift;
+        if(x+465 > data["0"].x_extreme)
+            data["0"].x_extreme = x+465;
+        if(y+global_downshift > data["0"].y_extreme)
+            data["0"].y_extreme = y+global_downshift;
     }
 
-    if(data[index].pc_type == "fieldsplit") { //draw fieldsplit diagram
+    if(data[endtag].pc_type == "fieldsplit") { //draw fieldsplit diagram
         var colors = ["green","blue","red"];
         var layer = 0;
         ret += "<polygon points=\""+x+","+y+" "+(x+400)+","+y+" "+(x+400)+","+(y+400)+" "+x+","+(y+400)+"\" style=\"fill:khaki;stroke:black;stroke-width:1\"></polygon>";
         layer = 1;
 
-        function drawFieldsplit(data,endtag,level,target_endtag,x,y,size) {//input is the id of the fieldsplit. for example "0". (x,y) is the upper lefthand corner. size is the size of one side of the parent square (in pixels)
+        function drawFieldsplit(data,endtag,level,targetEndtag,x,y,size) { //(x,y) is the upper lefthand corner. size is the size of one side of the parent square (in pixels)
             //work = draw the children of the fieldsplit then call draw on each child
-            if(target_endtag.indexOf(endtag) != 0)
-                return ""; //endtag is not on the path to the target_endtag
+            if(targetEndtag.indexOf(endtag) != 0)
+                return ""; //endtag is not on the path to the targetEndtag
 
             var ret = "";
 
@@ -59,15 +58,15 @@ function drawDiagrams(data,endtag,target_endtag,x,y) {
 
                 ret += "<polygon points=\""+curr_x+","+curr_y+" "+(curr_x+side)+","+curr_y+" "+(curr_x+side)+","+(curr_y+side)+" "+curr_x+","+(curr_y+side)+"\" style=\"fill:"+colors[colorNum]+";stroke:black;stroke-width:1\"></polygon>";
 
-                var childID = endtag + "_" + i;
+                var childEndtag = endtag + "_" + i;
                 //only draw if child is indeed a fieldsplit
-                var child_index = getIndex(data,childID);
-                if(child_index != -1 && data[child_index].pc_type == "fieldsplit")
-                    ret += drawFieldsplit(data,childID, level+1, target_endtag, curr_x, curr_y, size/numChildren);
+
+                if(data[childEndtag] != undefined && data[childEndtag].pc_type == "fieldsplit")
+                    ret += drawFieldsplit(data,childEndtag, level+1, targetEndtag, curr_x, curr_y, size/numChildren);
 
                 //if child is mg, then it is time to switch drawing methods
-                else if(child_index != -1 && data[child_index].pc_type == "mg") {
-                    var possible = drawDiagrams(data,childID,target_endtag,x+size+20+146,y+i*side);
+                else if(data[childEndtag] != undefined && data[childEndtag].pc_type == "mg") {
+                    var possible = drawDiagrams(data,childEndtag,targetEndtag,x+size+20+146,y+i*side);
                     if(possible != "") {//don't draw the arrow if there is no diagram following
                         ret += "<image x=\""+(x+size+20)+"\" y=\""+(y+i*side+side/2-13)+"\" width=\"146\" height=\"26\" xlink:href=\"images/arrow.png\"></image>";
                         ret += possible;
@@ -87,10 +86,10 @@ function drawDiagrams(data,endtag,target_endtag,x,y) {
 
             return ret;
         }
-        ret += drawFieldsplit(data,endtag,0,target_endtag,x,y,400);
+        ret += drawFieldsplit(data,endtag,0,targetEndtag,x,y,400);
     }
 
-    else if(data[index].pc_type == "mg") { //draw multigrid diagram. multigrid diagram doesn't use an inner recursive function because it's not that complex to draw.
+    else if(data[endtag].pc_type == "mg") { //draw multigrid diagram. multigrid diagram doesn't use an inner recursive function because it's not that complex to draw.
 
         var selectedChild = "";
 
@@ -120,9 +119,9 @@ function drawDiagrams(data,endtag,target_endtag,x,y) {
                 ret += "<image x=\""+x+"\" y=\""+(y+141+global_downshift)+"\" width=\"349\" height=\"68\" xlink:href=\"/images/transition.bmp\"/>"; //images in svg are handled differently. can't simply use <img>
 
             //if the current child is the one that is on the path to the target, then record it
-            var child_endtag = endtag + "_" + i;
+            var childEndtag = endtag + "_" + i;
 
-            if(target_endtag.indexOf(child_endtag) == 0) { //this can only happen with 1 child (the one that is on the path to the target)
+            if(targetEndtag.indexOf(childEndtag) == 0) { //this can only happen with 1 child (the one that is on the path to the target)
                 selectedChild = i;
             }
         }
@@ -130,9 +129,9 @@ function drawDiagrams(data,endtag,target_endtag,x,y) {
         var new_x = x + 465;
         var new_y = y + (selectedChild) * (141+68);//manipulate based on selectedChild
 
-        //recursively draw the rest of the path to target_endtag
+        //recursively draw the rest of the path to targetEndtag
 
-        var possible  = drawDiagrams(data,endtag+"_"+selectedChild,target_endtag,new_x+146,new_y);
+        var possible  = drawDiagrams(data,endtag+"_"+selectedChild,targetEndtag,new_x+146,new_y);
         if(possible != "") {//only add the arrow if something was actually drawn
             ret += "<image x=\""+(new_x-45)+"\" y=\""+(new_y+70)+"\" width=\"146\" height=\"26\" xlink:href=\"images/arrow.png\"></image>";
             ret += possible;

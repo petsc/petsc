@@ -1,3 +1,5 @@
+// Note: this is the old (NO LONGER WORKING) implementation of the tree diagram drawn using d3.
+
 //This function builds the tree using d3 (http://d3js.org/)
 //A good video explaining the tree:
 //http://www.youtube.com/watch?v=x8dwXoWODZ4 (part 1)

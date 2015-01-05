@@ -2,31 +2,31 @@
 //instead of using subscript of subscript of subscript, etc. simply put the id of the matrix in the first subscript level. for example, A_{010}
 
 //this function is recursive and should always be called with parameter "0"
-//this function gets the information from matInfo[]
-function getMatrixTex(currentMatrix) {//weird because the longer the string is, the more deep the recursion is. "0" is the top level. digits are only added. never removed
+//weird because the longer the string is, the more deep the recursion is. "0" is the top level. digits are only added. never removed
+function getMatrixTex(data, endtag) {
 
-    var index = getIndex(matInfo,currentMatrix);
-    if(index == -1)
+    if(data[endtag] == undefined)
         return;
+
     //case 1: not logstruc. base case.
-    if(!matInfo[index].logstruc) {
+    if(!data[endtag].logstruc) {
         //return the appropriate tex
 
-        var depth = getNumUnderscores(currentMatrix);
+        var depth = getNumUnderscores(endtag);
         var color = colors[depth%colors.length];
 
-        var subscript = currentMatrix.replace(/_/g, ",");
+        var subscript = endtag.replace(/_/g, ",");
         return "{\\color{"+color+"}" + "\\left[A_{" + subscript + "}" + "\\right]}";
     }
 
     //case 2: has more children. recursive case.
     else {
-        var depth = getNumUnderscores(currentMatrix);
+        var depth = getNumUnderscores(endtag);
         var color = colors[depth%colors.length];
 
         var ret = "";
 
-        var blocks = matInfo[getIndex(matInfo,currentMatrix)].pc_fieldsplit_blocks;
+        var blocks = data[endtag].pc_fieldsplit_blocks;
         var childrenTex = "";
 
         var justify = "";
@@ -42,13 +42,13 @@ function getMatrixTex(currentMatrix) {//weird because the longer the string is, 
                 ret += "* & ";
             }
 
-            var childID = currentMatrix + "_" + i;
+            var childEndtag = endtag + "_" + i;
             //lay out chilren
-            var childTex = getMatrixTex(childID);
+            var childTex = getMatrixTex(data, childEndtag);
             if(childTex != "")
-                ret += getMatrixTex(childID);
+                ret += getMatrixTex(data, childEndtag);
             else {
-                var subscript = childID.replace(/_/g, ",");
+                var subscript = childEndtag.replace(/_/g, ",");
                 ret += "A_{" + subscript + "}";
             }
 
@@ -68,7 +68,7 @@ var bjacobiSplits = [];//global variable that keeps track of how the bjacobi blo
 
 //this function displays a visual of the nested pc=bjacobi block structure and/or nested pc=ksp block structure
 //this function is recursive and should almost always be called with parameter "0" like so: getSpecificMatrixTex("0")
-function getSpecificMatrixTex(endtag) {
+function getSpecificMatrixTex(data, endtag) {
 
     if(endtag == "0") {//reset bjacobi splits data
         delete bjacobiSplits;
@@ -77,12 +77,11 @@ function getSpecificMatrixTex(endtag) {
 
     var ret = "";//returned value
 
-    if(getIndex(matInfo,endtag) == -1)//invalid matrix
+    if(data[endtag] == undefined) //invalid matrix
         return ret;
 
-    var index = getIndex(matInfo,endtag);
-    var pc    = matInfo[index].pc_type;
-    var ksp   = matInfo[index].ksp_type;
+    var pc    = data[endtag].pc_type;
+    var ksp   = data[endtag].ksp_type;
 
     //case 1: non-recursive base case
     if(pc != "ksp" && pc != "bjacobi") {
@@ -108,7 +107,7 @@ function getSpecificMatrixTex(endtag) {
 
         endtag += "_0";
 
-        var blocks = matInfo[index].pc_bjacobi_blocks;
+        var blocks = data[endtag].pc_bjacobi_blocks;
 
         //record that we split
         var idx = bjacobiSplits.length;

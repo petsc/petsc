@@ -38,16 +38,16 @@ function parsePrefix(data,SAWs_prefix) {
             }
 
             var theword          = SAWs_prefix.substring(11,closest-1);//omit the first and last underscore
-            var index            = getIndexByName(data, theword, endtag);//get the id (for example "001") associated with this fieldsplit word. need to pass in the existing endtag because we need to specify the parent of this fieldsplit
+            var existingEndtag   = getEndtagByName(data, theword, endtag);//get the id (for example "001") associated with this fieldsplit word. need to pass in the existing endtag because we need to specify the parent of this fieldsplit
 
-            if(index == -1) { //new fieldsplit. this word has not been encountered yet.
+            if(existingEndtag == "-1") { //new fieldsplit. this word has not been encountered yet.
                 var fieldsplitNumber = getNumChildren(data, endtag);//endtag = parent of this fieldsplit @TODO
                 endtag               = endtag + "_" + fieldsplitNumber.toString();
                 newWord              = theword;
             }
 
             else { //we have encountered this word before
-                endtag = data[index].endtag;
+                endtag = existingEndtag;
             }
         }
 

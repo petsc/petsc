@@ -16,10 +16,7 @@ function removeBox(){
 function submitOptions(){
 
     var endtag = boxEndtag;
-    var index = getIndex(matInfo,endtag);
-
     var parentEndtag = getParent(endtag);
-    var parentIndex  = getIndex(matInfo,parentEndtag);
 
     var selectedPc = $("#temp_pc_type").val();
 
@@ -28,9 +25,9 @@ function submitOptions(){
     var logstruc;
 
     if($("#temp_symm").length == 0) { //if the checkbox options were not displayed
-        symm = matInfo[index].symm;
-        posdef = matInfo[index].posdef;
-        logstruc = matInfo[index].logstruc;
+        symm = matInfo[endtag].symm;
+        posdef = matInfo[endtag].posdef;
+        logstruc = matInfo[endtag].logstruc;
     }
 
     else {
@@ -46,9 +43,9 @@ function submitOptions(){
     }
 
     if(endtag != "0") { //check for discrepancies with parent
-        var parentSymm = matInfo[parentIndex].symm;
-        var parentPosdef = matInfo[parentIndex].posdef;
-        var parentLogstruc = matInfo[parentIndex].logstruc;
+        var parentSymm = matInfo[parentEndtag].symm;
+        var parentPosdef = matInfo[parentEndtag].posdef;
+        var parentLogstruc = matInfo[parentEndtag].logstruc;
         if(parentSymm && !symm) {
             alert("Error: Cannot have symmetric parent yet be non-symmetric");
             return 0;
@@ -114,19 +111,19 @@ function submitOptions(){
 
 
     //only preserve some options if the pc_type didn't change
-    var oldPc = matInfo[index].pc_type;
+    var oldPc = matInfo[endtag].pc_type;
     var newPc = $("#temp_pc_type").val();
     var changedPc = (oldPc != newPc);
     if(changedPc)
         deleteAllChildren(endtag);
 
     //write options to matInfo
-    matInfo[index].symm = symm;
-    matInfo[index].posdef = posdef;
-    matInfo[index].logstruc = logstruc;
+    matInfo[endtag].symm = symm;
+    matInfo[endtag].posdef = posdef;
+    matInfo[endtag].logstruc = logstruc;
 
-    matInfo[index].pc_type = $("#temp_pc_type").val();
-    matInfo[index].ksp_type = $("#temp_ksp_type").val();
+    matInfo[endtag].pc_type = $("#temp_pc_type").val();
+    matInfo[endtag].ksp_type = $("#temp_ksp_type").val();
 
     //update dropdown list interface
     $("#symm" + endtag).prop("checked",symm);
@@ -138,10 +135,10 @@ function submitOptions(){
     if(symm)
         $("#posdef" + endtag).attr("disabled", false);
 
-    $("#pc_type" + endtag).val(matInfo[index].pc_type);
-    $("#ksp_type" + endtag).val(matInfo[index].ksp_type);
+    $("#pc_type" + endtag).val(matInfo[endtag].pc_type);
+    $("#ksp_type" + endtag).val(matInfo[endtag].ksp_type);
 
-    var pc_type = matInfo[index].pc_type;
+    var pc_type = matInfo[endtag].pc_type;
 
     if(pc_type == "fieldsplit") { //extra options for fieldsplit
         var blocks = $("#temp_pc_fieldsplit_blocks").val();
@@ -217,28 +214,28 @@ function submitOptions(){
     return 1;
 }
 
-
-//this function
+// this function enforces the logical properties of the matrix
 function enforceProperties(endtag) {
 
-    var index = getIndex(matInfo,endtag);
-    var symm  = matInfo[index].symm;
-    var posdef = matInfo[index].posdef;
+    var symm  = matInfo[endtag].symm;
+    var posdef = matInfo[endtag].posdef;
 
     if(symm) { //if symm, then all children must be symm
-        for(var i=0; i<matInfo.length; i++) {
-
-            if(matInfo[i].endtag.indexOf(endtag) == 0) { //if it is indeed a child
-                matInfo[i].symm = true;
+        for (var key in matInfo) {
+            if (matInfo.hasOwnProperty(key)) {
+                if(key.indexOf(endtag) == 0) { //if it is indeed a child
+                    matInfo[key].symm = true;
+                }
             }
         }
     }
 
     if(posdef) { //if posdef, then all children must be posdef
-        for(var i=0; i<matInfo.length; i++) {
-
-            if(matInfo[i].endtag.indexOf(endtag) == 0) { //if it is indeed a child
-                matInfo[i].posdef = true;
+        for (var key in matInfo) {
+            if (matInfo.hasOwnProperty(key)) {
+                if(key.indexOf(endtag) == 0) { //if it is indeed a child
+                    matInfo[key].posdef = true;
+                }
             }
         }
     }
@@ -248,103 +245,87 @@ function enforceProperties(endtag) {
 //this function ensures that all children are properly generated and initialized
 function generateChildren(endtag) {
 
-    var index = getIndex(matInfo,endtag);
-    var pc_type = matInfo[index].pc_type;
+    var pc_type = matInfo[endtag].pc_type;
 
     if(pc_type == "bjacobi") { //needs 1 child
-        //check if that 1 child already exists. if so, then stop. otherwise, generate  that child, select the defaults, and recursively ensure that the new child also has the appropriate children
+        //check if that 1 child already exists. if so, then stop. otherwise, generate that child, select the defaults, and recursively ensure that the new child also has the appropriate children
         var childEndtag = endtag + "_0";
-        var childIndex = getIndex(matInfo,childEndtag);
-        if(childIndex == -1) { //generate child
-            var defaults = getDefaults("bjacobi",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        if(matInfo[childEndtag] == undefined) { //generate child
+            var defaults = getDefaults("bjacobi",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
 
-            var writeLoc = matInfo.length;
-            matInfo[writeLoc] = {
-                endtag:   childEndtag,
+            matInfo[childEndtag] = {
                 pc_type:  defaults.sub_pc_type,
                 ksp_type: defaults.sub_ksp_type,
-                symm:     matInfo[index].symm, //inherit !!
-                posdef:   matInfo[index].posdef,
-                logstruc: matInfo[index].logstruc
-            }
+                symm:     matInfo[endtag].symm, //inherit !!
+                posdef:   matInfo[endtag].posdef,
+                logstruc: matInfo[endtag].logstruc
+            };
             generateChildren(childEndtag);
         }
     }
     else if(pc_type == "fieldsplit") {
-        for(var i=0; i<matInfo[index].pc_fieldsplit_blocks; i++) {
+        for(var i=0; i<matInfo[endtag].pc_fieldsplit_blocks; i++) {
             var childEndtag = endtag + "_" + i;
-            var childIndex = getIndex(matInfo,childEndtag);
-            if(childIndex == -1) { //generate child
-                var defaults = getDefaults("fieldsplit",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+            if(matInfo[childEndtag] == undefined) { //generate child
+                var defaults = getDefaults("fieldsplit",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
 
-                var writeLoc = matInfo.length;
-                matInfo[writeLoc] = {
-                    endtag:   childEndtag,
+                matInfo[childEndtag] = {
                     pc_type:  defaults.sub_pc_type,
                     ksp_type: defaults.sub_ksp_type,
-                    symm:     matInfo[index].symm, //inherit !!
-                    posdef:   matInfo[index].posdef,
+                    symm:     matInfo[endtag].symm, //inherit !!
+                    posdef:   matInfo[endtag].posdef,
                     logstruc: false //to prevent infinite recursion
-                }
+                };
                 generateChildren(childEndtag);
             }
         }
     }
     else if(pc_type == "mg") {
-        for(var i=0; i<matInfo[index].pc_mg_levels; i++) {
+        for(var i=0; i<matInfo[endtag].pc_mg_levels; i++) {
             var childEndtag = endtag + "_" + i;
-            var childIndex = getIndex(matInfo,childEndtag);
-            if(childIndex == -1) { //generate child
-                var defaults = getDefaults("mg",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+            if(matInfo[childEndtag] == undefined) { //generate child
+                var defaults = getDefaults("mg",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
 
-                var writeLoc = matInfo.length;
-                matInfo[writeLoc] = {
-                    endtag:   childEndtag,
+                matInfo[childEndtag] = {
                     pc_type:  defaults.sub_pc_type,
                     ksp_type: defaults.sub_ksp_type,
-                    symm:     matInfo[index].symm, //inherit !!
-                    posdef:   matInfo[index].posdef,
-                    logstruc: matInfo[index].logstruc
-                }
+                    symm:     matInfo[endtag].symm, //inherit !!
+                    posdef:   matInfo[endtag].posdef,
+                    logstruc: matInfo[endtag].logstruc
+                };
                 generateChildren(childEndtag);
             }
         }
     }
     else if(pc_type == "gamg") {
-        for(var i=0; i<matInfo[index].pc_gamg_levels; i++) {
+        for(var i=0; i<matInfo[endtag].pc_gamg_levels; i++) {
             var childEndtag = endtag + "_" + i;
-            var childIndex = getIndex(matInfo,childEndtag);
-            if(childIndex == -1) { //generate child
-                var defaults = getDefaults("gamg",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+            if(matInfo[childEndtag] == undefined) { //generate child
+                var defaults = getDefaults("gamg",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
 
-                var writeLoc = matInfo.length;
-                matInfo[writeLoc] = {
-                    endtag:   childEndtag,
+                matInfo[childEndtag] = {
                     pc_type:  defaults.sub_pc_type,
                     ksp_type: defaults.sub_ksp_type,
-                    symm:     matInfo[index].symm, //inherit !!
-                    posdef:   matInfo[index].posdef,
-                    logstruc: matInfo[index].logstruc
-                }
+                    symm:     matInfo[endtag].symm, //inherit !!
+                    posdef:   matInfo[endtag].posdef,
+                    logstruc: matInfo[endtag].logstruc
+                };
                 generateChildren(childEndtag);
             }
         }
     }
     else if(pc_type == "ksp") {
         var childEndtag = endtag + "_0";
-        var childIndex = getIndex(matInfo,childEndtag);
-        if(childIndex == -1) { //generate child
-            var defaults = getDefaults("ksp",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        if(matInfo[childEndtag] == undefined) { //generate child
+            var defaults = getDefaults("ksp",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
 
-            var writeLoc = matInfo.length;
-            matInfo[writeLoc] = {
-                endtag:   childEndtag,
+            matInfo[childEndtag] = {
                 pc_type:  defaults.sub_pc_type,
                 ksp_type: defaults.sub_ksp_type,
-                symm:     matInfo[index].symm, //inherit !!
-                posdef:   matInfo[index].posdef,
-                logstruc: matInfo[index].logstruc
-            }
+                symm:     matInfo[endtag].symm, //inherit !!
+                posdef:   matInfo[endtag].posdef,
+                logstruc: matInfo[endtag].logstruc
+            };
             generateChildren(childEndtag);
         }
     }
@@ -386,11 +367,11 @@ function setDefaults2() {
         defaults = getDefaults("",symm,posdef,logstruc);
     }
     else { //otherwise, we should generate a more appropriate default
-        var parentIndex     = getParentIndex(matInfo,endtag);
-        var parent_pc_type  = matInfo[parentIndex].pc_type;
-        var parent_symm     = matInfo[parentIndex].symm;
-        var parent_posdef   = matInfo[parentIndex].posdef;
-        var parent_logstruc = matInfo[parentIndex].logstruc;
+        var parentEndtag    = getParent(endtag);
+        var parent_pc_type  = matInfo[parentEndtag].pc_type;
+        var parent_symm     = matInfo[parentEndtag].symm;
+        var parent_posdef   = matInfo[parentEndtag].posdef;
+        var parent_logstruc = matInfo[parentEndtag].logstruc;
         defaults            = getDefaults(parent_pc_type,parent_symm,parent_posdef,parent_logstruc,symm,posdef,logstruc); //if this current solver is a sub-solver, then we should set defaults according to its parent. this suggestion will be better.
         defaults = {
             pc_type: defaults.sub_pc_type,
@@ -408,7 +389,6 @@ function setDefaults2() {
 $(document).on("change","select[id='temp_pc_type']", function(){
 
     var endtag = boxEndtag;
-    var index  = getIndex(matInfo,endtag);
     var pc_type = $(this).val();
 
     //first, remove all the existing suboptions
@@ -416,35 +396,35 @@ $(document).on("change","select[id='temp_pc_type']", function(){
 
     if(pc_type == "fieldsplit") { //add the extra options that fieldsplit requires
         appendExtraOptions("fieldsplit");
-        var defaults = getDefaults("fieldsplit",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        var defaults = getDefaults("fieldsplit",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
         $("#temp_pc_fieldsplit_type").val(defaults.pc_fieldsplit_type);
         $("#temp_pc_fieldsplit_blocks").val(defaults.pc_fieldsplit_blocks);
     }
     else if(pc_type == "mg") {
         appendExtraOptions("mg");
-        var defaults = getDefaults("mg",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        var defaults = getDefaults("mg",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
         $("#temp_pc_mg_type").val(defaults.pc_mg_type);
         $("#temp_pc_mg_levels").val(defaults.pc_mg_levels);
     }
     else if(pc_type == "bjacobi") {
         appendExtraOptions("bjacobi");
-        var defaults = getDefaults("bjacobi",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        var defaults = getDefaults("bjacobi",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
         $("#temp_pc_bjacobi_blocks").val(defaults.pc_bjacobi_blocks);
     }
     else if(pc_type == "gamg") {
         appendExtraOptions("gamg");
-        var defaults = getDefaults("gamg",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        var defaults = getDefaults("gamg",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
         $("#temp_pc_gamg_type").val(defaults.pc_gamg_type);
         $("#temp_pc_gamg_levels").val(defaults.pc_gamg_levels);
     }
     else if(pc_type == "redundant") {
         appendExtraOptions("redundant");
-        var defaults = getDefaults("redundant",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        var defaults = getDefaults("redundant",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
         $("#temp_pc_redundant_number").val(defaults.pc_redundant_number);
     }
     else if(pc_type == "asm") {
         appendExtraOptions("asm");
-        var defaults = getDefaults("asm",matInfo[index].symm,matInfo[index].posdef,matInfo[index].logstruc);
+        var defaults = getDefaults("asm",matInfo[endtag].symm,matInfo[endtag].posdef,matInfo[endtag].logstruc);
         $("#temp_pc_asm_blocks").val(defaults.pc_asm_blocks);
         $("#temp_pc_asm_overlap").val(defaults.pc_asm_overlap);
     }
@@ -473,9 +453,7 @@ $(document).on("click","circle[id^='node']",function() {
 
     var id     = $(this).attr("id");//really should not be used in this method. there are better ways of getting information
     var endtag = id.substring(id.indexOf("0"),id.length);
-    var index  = getIndex(matInfo,endtag);
     var parentEndtag = getParent(endtag);
-    var parentIndex  = getIndex(matInfo,parentEndtag);
     //scrollTo("solver"+endtag);
     var x = $(this).attr("cx");
     var y = $(this).attr("cy");
@@ -511,17 +489,17 @@ $(document).on("click","circle[id^='node']",function() {
     var solverText = "";
     if(endtag == "0")
         solverText = "<b>Root Solver Options (Matrix is <input type=\"checkbox\" id=\"temp_symm" + "\">symmetric,  <input type=\"checkbox\" id=\"temp_posdef" + "\">positive definite, <input type=\"checkbox\" id=\"temp_logstruc" + "\">block structured)</b>";
-    else if(matInfo[parentIndex].pc_type == "bjacobi")
+    else if(matInfo[parentEndtag].pc_type == "bjacobi")
         solverText = "<b>" + "Bjacobi Solver Options" + "</b>";
-    else if(matInfo[parentIndex].pc_type == "fieldsplit")
+    else if(matInfo[parentEndtag].pc_type == "fieldsplit")
         solverText = "<b>Fieldsplit " + childNum + " Options (Matrix is <input type=\"checkbox\" id=\"temp_symm" + "\">symmetric,  <input type=\"checkbox\" id=\"temp_posdef" + "\">positive definite, <input type=\"checkbox\" id=\"temp_logstruc" + "\">block structured)</b>";
-    else if(matInfo[parentIndex].pc_type == "redundant")
+    else if(matInfo[parentEndtag].pc_type == "redundant")
         solverText = "<b>" + "Redundant Solver Options" + "</b>";
-    else if(matInfo[parentIndex].pc_type == "asm")
+    else if(matInfo[parentEndtag].pc_type == "asm")
         solverText = "<b>" + "ASM Solver Options" + "</b>";
-    else if(matInfo[parentIndex].pc_type == "ksp")
+    else if(matInfo[parentEndtag].pc_type == "ksp")
         solverText = "<b>" + "KSP Solver Options" + "</b>";
-    else if(matInfo[parentIndex].pc_type == "mg" || matInfo[parentIndex].pc_type == "gamg") {
+    else if(matInfo[parentEndtag].pc_type == "mg" || matInfo[parentEndtag].pc_type == "gamg") {
         if(childNum == 0) //coarse grid solver (level 0)
             solverText = "<b> Coarse Grid Solver (Level 0)  </b>";
         else
@@ -532,46 +510,46 @@ $(document).on("click","circle[id^='node']",function() {
     $("#tempInput").append("<br><b>KSP &nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"temp_ksp_type" + "\"></select>");
     $("#tempInput").append("<br><b>PC  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><select id=\"temp_pc_type" + "\"></select>");
 
-    populatePcList(endtag,"#temp_pc_type"); //this is kind of stupid right now. I'll fix this later
-    populateKspList(endtag,"#temp_ksp_type");
-    $("#temp_pc_type").val(matInfo[index].pc_type);
-    $("#temp_ksp_type").val(matInfo[index].ksp_type);
+    populateList("pc",endtag,"#temp_pc_type"); //this is kind of stupid right now. I'll fix this later
+    populateList("ksp",endtag,"#temp_ksp_type");
+    $("#temp_pc_type").val(matInfo[endtag].pc_type);
+    $("#temp_ksp_type").val(matInfo[endtag].ksp_type);
 
     //fill in the currently selected properties
-    if(matInfo[index].symm)
+    if(matInfo[endtag].symm)
         $("#temp_symm").attr("checked", true);
-    if(matInfo[index].posdef)
+    if(matInfo[endtag].posdef)
         $("#temp_posdef").attr("checked", true);
-    if(matInfo[index].logstruc)
+    if(matInfo[endtag].logstruc)
         $("#temp_logstruc").attr("checked", true);
 
-    if(matInfo[index].pc_type == "fieldsplit") { //append extra options for fieldsplit
+    if(matInfo[endtag].pc_type == "fieldsplit") { //append extra options for fieldsplit
         appendExtraOptions("fieldsplit");
-        $("#temp_pc_fieldsplit_type").val(matInfo[index].pc_fieldsplit_type);
-        $("#temp_pc_fieldsplit_blocks").val(matInfo[index].pc_fieldsplit_blocks);
+        $("#temp_pc_fieldsplit_type").val(matInfo[endtag].pc_fieldsplit_type);
+        $("#temp_pc_fieldsplit_blocks").val(matInfo[endtag].pc_fieldsplit_blocks);
     }
-    else if(matInfo[index].pc_type == "bjacobi") { //append extra options for bjacobi
+    else if(matInfo[endtag].pc_type == "bjacobi") { //append extra options for bjacobi
         appendExtraOptions("bjacobi");
-        $("#temp_pc_bjacobi_blocks").val(matInfo[index].pc_bjacobi_blocks);
+        $("#temp_pc_bjacobi_blocks").val(matInfo[endtag].pc_bjacobi_blocks);
     }
-    else if(matInfo[index].pc_type == "redundant") {
+    else if(matInfo[endtag].pc_type == "redundant") {
         appendExtraOptions("redundant");
-        $("#temp_pc_redundant_number").val(matInfo[index].pc_redundant_number);
+        $("#temp_pc_redundant_number").val(matInfo[endtag].pc_redundant_number);
     }
-    else if(matInfo[index].pc_type == "asm") {
+    else if(matInfo[endtag].pc_type == "asm") {
         appendExtraOptions("asm");
-        $("#temp_pc_asm_blocks").val(matInfo[index].pc_asm_blocks);
-        $("#temp_pc_asm_overlap").val(matInfo[index].pc_asm_overlap);
+        $("#temp_pc_asm_blocks").val(matInfo[endtag].pc_asm_blocks);
+        $("#temp_pc_asm_overlap").val(matInfo[endtag].pc_asm_overlap);
     }
-    else if(matInfo[index].pc_type == "mg") {
+    else if(matInfo[endtag].pc_type == "mg") {
         appendExtraOptions("mg");
-        $("#temp_pc_mg_type").val(matInfo[index].pc_mg_type);
-        $("#temp_pc_mg_levels").val(matInfo[index].pc_mg_levels);
+        $("#temp_pc_mg_type").val(matInfo[endtag].pc_mg_type);
+        $("#temp_pc_mg_levels").val(matInfo[endtag].pc_mg_levels);
     }
-    else if(matInfo[index].pc_type == "gamg") {
+    else if(matInfo[endtag].pc_type == "gamg") {
         appendExtraOptions("gamg");
-        $("#temp_pc_gamg_type").val(matInfo[index].pc_gamg_type);
-        $("#temp_pc_gamg_levels").val(matInfo[index].pc_gamg_levels);
+        $("#temp_pc_gamg_type").val(matInfo[endtag].pc_gamg_type);
+        $("#temp_pc_gamg_levels").val(matInfo[endtag].pc_gamg_levels);
     }
 
     //append the submit button
@@ -590,7 +568,7 @@ function appendExtraOptions(pc_type) {
     if(pc_type == "fieldsplit") { //append extra options for fieldsplit
         $("#tempInput").append("<br><b>Fieldsplit Type &nbsp;&nbsp;</b><select id=\"temp_pc_fieldsplit_type" + "\"></select>");
         $("#tempInput").append("<br><b>Fieldsplit Blocks </b><input type='text' id=\"temp_pc_fieldsplit_blocks" + "\" maxlength='4'>");
-        populateFieldsplitList("", "#temp_pc_fieldsplit_type");
+        populateList("fieldsplit","", "#temp_pc_fieldsplit_type");
     }
     else if(pc_type == "bjacobi") { //append extra options for bjacobi
         $("#tempInput").append("<br><b>Bjacobi Blocks </b><input type='text' id=\'temp_pc_bjacobi_blocks" + "\' maxlength='4'>");
@@ -605,41 +583,39 @@ function appendExtraOptions(pc_type) {
     else if(pc_type == "mg") {
         $("#tempInput").append("<br><b>MG Type &nbsp;&nbsp;</b><select id=\"temp_pc_mg_type" + "\"></select>");
         $("#tempInput").append("<br><b>MG Levels </b><input type='text' id=\'temp_pc_mg_levels" + "\' maxlength='4'>");
-        populateMgList("","#temp_pc_mg_type");
+        populateList("mg","","#temp_pc_mg_type");
     }
     else if(pc_type == "gamg") {
         $("#tempInput").append("<br><b>GAMG Type &nbsp;&nbsp;</b><select id=\"temp_pc_gamg_type" + "\"></select>");
         $("#tempInput").append("<br><b>GAMG Levels </b><input type='text' id=\'temp_pc_gamg_levels" + "\' maxlength='4'>");
-        populateGamgList("","#temp_pc_gamg_type");
+        populateList("gamg","","#temp_pc_gamg_type");
     }
 }
 
 //deletes all children from matInfo
 function deleteAllChildren(endtag) {
 
-    var index       = getIndex(matInfo, endtag);
     var numChildren = getNumChildren(matInfo, endtag);
 
     for(var i=0; i<numChildren; i++) {
         var childEndtag = endtag + "_" + i;
-        var childIndex  = getIndex(matInfo,childEndtag);
 
         if(getNumChildren(matInfo, childEndtag) > 0)//this child has more children
         {
             removeAllChildren(childEndtag);//recursive call to remove all children of that child
         }
-        matInfo[childIndex].endtag = "-1";//make sure this location is never accessed again.
+        delete matInfo[childEndtag];
         $("#solver" + childEndtag).remove();
     }
 
     //adjust variables in matInfo (shouldn't really be needed)
-    if(matInfo[index].pc_type == "mg") {
-        matInfo[index].pc_mg_levels = 0;
+    if(matInfo[endtag].pc_type == "mg") {
+        matInfo[endtag].pc_mg_levels = 0;
     }
-    else if(matInfo[index].pc_type == "gamg") {
-        matInfo[index].pc_gamg_levels = 0;
+    else if(matInfo[endtag].pc_type == "gamg") {
+        matInfo[endtag].pc_gamg_levels = 0;
     }
-    else if(matInfo[index].pc_type == "fieldsplit") {
-        matInfo[index].pc_fieldsplit_blocks = 0;
+    else if(matInfo[endtag].pc_type == "fieldsplit") {
+        matInfo[endtag].pc_fieldsplit_blocks = 0;
     }
 }

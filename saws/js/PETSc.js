@@ -3,7 +3,7 @@
 PETSc = {};
 
 //this variable is used to organize all the data from SAWs
-var sawsInfo = [];
+var sawsInfo = {};
 
 //record if initialized the page (added appropriate divs for the diagrams and such)
 var init = false;
@@ -39,7 +39,6 @@ PETSc.getAndDisplayDirectory = function(names,divEntry){
 PETSc.displayDirectory = function(sub,divEntry)
 {
     globaldirectory[divEntry] = sub;
-    recordSawsData(sawsInfo,sub);//records data into sawsInfo[]
 
     iteration ++;
     if(iteration == 2) { //remove text
@@ -51,26 +50,32 @@ PETSc.displayDirectory = function(sub,divEntry)
     if($("#leftDiv").children(0).is("center")) //remove the title of the options if needed
         $("#leftDiv").children().get(0).remove();
 
-    if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options" || sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Krylov Method (KSP) options") {
-        //var SAWs_pcVal  = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["-pc_type"].data[0];
-        var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];
+    console.log(sub);
 
-        if(SAWs_prefix == "(null)")
-            SAWs_prefix = "";
+    if(sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories != undefined) {
 
-        $("#diagram").html("");
-        var data = drawDiagrams(sawsInfo,"0",parsePrefix(sawsInfo,SAWs_prefix).endtag,5,5);
+        recordSawsData(sawsInfo,sub); //records data into sawsInfo
 
-        if(data != "") {
-            //$("#diagram").html("<svg id=\"svgCanvas\" width='700' height='700' viewBox='0 0 2000 2000'>"+data+"</svg>");
-            $("#diagram").html("<svg id=\"svgCanvas\" width=\"" + sawsInfo[0].x_extreme/4 + "\" height=\"" + sawsInfo[0].y_extreme/4 + "\" viewBox=\"0 0 " + sawsInfo[0].x_extreme + " " +sawsInfo[0].y_extreme + "\">"+data+"</svg>");
-            //IMPORTANT: Viewbox determines the coordinate system for drawing. width and height will rescale the SVG to the given width and height. Things should NEVER be appended to an svg element because then we would need to use a hacky refresh which works in Chrome, but no other browsers that I know of.
+        if (sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Preconditioner (PC) options" || sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables._title.data == "Krylov Method (KSP) options") {
+
+            var SAWs_prefix = sub.directories.SAWs_ROOT_DIRECTORY.directories.PETSc.directories.Options.variables["prefix"].data[0];
+
+            if(SAWs_prefix == "(null)")
+                SAWs_prefix = "";
+
+            $("#diagram").html("");
+            var data = drawDiagrams(sawsInfo,"0",parsePrefix(sawsInfo,SAWs_prefix).endtag,5,5);
+
+            if(data != "") {
+                //$("#diagram").html("<svg id=\"svgCanvas\" width='700' height='700' viewBox='0 0 2000 2000'>"+data+"</svg>");
+                $("#diagram").html("<svg id=\"svgCanvas\" width=\"" + sawsInfo["0"].x_extreme/4 + "\" height=\"" + sawsInfo["0"].y_extreme/4 + "\" viewBox=\"0 0 " + sawsInfo["0"].x_extreme + " " +sawsInfo["0"].y_extreme + "\">"+data+"</svg>");
+                //IMPORTANT: Viewbox determines the coordinate system for drawing. width and height will rescale the SVG to the given width and height. Things should NEVER be appended to an svg element because then we would need to use a hacky refresh which works in Chrome, but no other browsers that I know of.
+            }
+            calculateSizes(sawsInfo,"0");
+            var svgString = getBoxTree(sawsInfo,"0",0,0);
+            $("#tree").html("<svg id=\"treeCanvas\" width=\"" + sawsInfo["0"].total_size.width + "\" height=\"" + sawsInfo["0"].total_size.height + "\" viewBox=\"0 0 " + sawsInfo["0"].total_size.width + " " + sawsInfo["0"].total_size.height + "\">" + svgString + "</svg>");
         }
-        calculateSizes(sawsInfo,"0");
-        var svgString = getBoxTree(sawsInfo,"0",0,0);
-        $("#tree").html("<svg id=\"treeCanvas\" width=\"" + sawsInfo[0].total_size.width + "\" height=\"" + sawsInfo[0].total_size.height + "\" viewBox=\"0 0 " + sawsInfo[0].total_size.width + " " + sawsInfo[0].total_size.height + "\">" + svgString + "</svg>");
     }
-
     PETSc.displayDirectoryRecursive(sub.directories,divEntry,0,"");//this method is recursive on itself and actually fills the div with text and dropdown lists
 
     if (sub.directories.SAWs_ROOT_DIRECTORY.variables.hasOwnProperty("__Block") && (sub.directories.SAWs_ROOT_DIRECTORY.variables.__Block.data[0] == "true")) {

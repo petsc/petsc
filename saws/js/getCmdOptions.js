@@ -15,36 +15,36 @@ function getCmdOptions(data,endtag,prefix,option)
         endl = " ";// use space by default
 
     var ret   = "";
-    var index = getIndex(data,endtag);
-    if(index == -1)
+
+    if(data[endtag] == undefined)
         return "";
 
-    ret += "-" + prefix + "pc_type " + data[index].pc_type + endl;
-    ret += "-" + prefix + "ksp_type " + data[index].ksp_type + endl;
+    ret += "-" + prefix + "pc_type " + data[endtag].pc_type + endl;
+    ret += "-" + prefix + "ksp_type " + data[endtag].ksp_type + endl;
 
-    var pc_type = data[index].pc_type;
+    var pc_type = data[endtag].pc_type;
 
     if(pc_type == "mg") { //add extra info related to mg
-        ret += "-" + prefix + "pc_mg_type " + data[index].pc_mg_type + endl;
-        ret += "-" + prefix + "pc_mg_levels " + data[index].pc_mg_levels + endl;
+        ret += "-" + prefix + "pc_mg_type " + data[endtag].pc_mg_type + endl;
+        ret += "-" + prefix + "pc_mg_levels " + data[endtag].pc_mg_levels + endl;
     }
     else if(pc_type == "gamg") {
-        ret += "-" + prefix + "pc_gamg_type " + data[index].pc_gamg_type + endl;
-        ret += "-" + prefix + "pc_gamg_levels " + data[index].pc_gamg_levels + endl;
+        ret += "-" + prefix + "pc_gamg_type " + data[endtag].pc_gamg_type + endl;
+        ret += "-" + prefix + "pc_gamg_levels " + data[endtag].pc_gamg_levels + endl;
     }
     else if(pc_type == "fieldsplit") {
-        ret += "-" + prefix + "pc_fieldsplit_type " + data[index].pc_fieldsplit_type + endl;
-        ret += "-" + prefix + "pc_fieldsplit_blocks " + data[index].pc_fieldsplit_blocks + endl;
+        ret += "-" + prefix + "pc_fieldsplit_type " + data[endtag].pc_fieldsplit_type + endl;
+        ret += "-" + prefix + "pc_fieldsplit_blocks " + data[endtag].pc_fieldsplit_blocks + endl;
     }
     else if(pc_type == "bjacobi") {
-        ret += "-" + prefix + "pc_bjacobi_blocks " + data[index].pc_bjacobi_blocks + endl;
+        ret += "-" + prefix + "pc_bjacobi_blocks " + data[endtag].pc_bjacobi_blocks + endl;
     }
     else if(pc_type == "asm") {
-        ret += "-" + prefix + "pc_asm_blocks " + data[index].pc_asm_blocks + endl;
-        ret += "-" + prefix + "pc_asm_overlap " + data[index].pc_asm_overlap + endl;
+        ret += "-" + prefix + "pc_asm_blocks " + data[endtag].pc_asm_blocks + endl;
+        ret += "-" + prefix + "pc_asm_overlap " + data[endtag].pc_asm_overlap + endl;
     }
     else if(pc_type == "redundant") {
-        ret += "-" + prefix + "pc_redundant_number " + data[index].pc_redundant_number + endl;
+        ret += "-" + prefix + "pc_redundant_number " + data[endtag].pc_redundant_number + endl;
     }
 
 
@@ -84,32 +84,31 @@ function getSimpleDescription(data,endtag)
     var ret  = "";
     var endl = "<br>";
 
-    var index = getIndex(data,endtag);
-    if(index == -1)
+    if(data[endtag] == undefined)
         return "";
 
-    ret += /*"ksp_type " +*/ data[index].ksp_type + endl;
-    ret += /*"pc_type " +*/ data[index].pc_type + endl;
+    ret += /*"ksp_type " +*/ data[endtag].ksp_type + endl;
+    ret += /*"pc_type " +*/ data[endtag].pc_type + endl;
 
-    /*var pc_type = data[index].pc_type;
+    /*var pc_type = data[endtag].pc_type;
 
     if(pc_type == "mg") { //add extra info related to mg
-        ret += "pc_mg_type " + data[index].pc_mg_type + endl;
-        ret += "pc_mg_levels " + data[index].pc_mg_levels + endl;
+        ret += "pc_mg_type " + data[endtag].pc_mg_type + endl;
+        ret += "pc_mg_levels " + data[endtag].pc_mg_levels + endl;
     }
     else if(pc_type == "fieldsplit") {
-        ret += "pc_fieldsplit_type " + data[index].pc_fieldsplit_type + endl;
-        ret += "pc_fieldsplit_blocks " + data[index].pc_fieldsplit_blocks + endl;
+        ret += "pc_fieldsplit_type " + data[endtag].pc_fieldsplit_type + endl;
+        ret += "pc_fieldsplit_blocks " + data[endtag].pc_fieldsplit_blocks + endl;
     }
     else if(pc_type == "bjacobi") {
-        ret += "pc_bjacobi_blocks " + data[index].pc_bjacobi_blocks + endl;
+        ret += "pc_bjacobi_blocks " + data[endtag].pc_bjacobi_blocks + endl;
     }
     else if(pc_type == "asm") {
-        ret += "pc_asm_blocks " + data[index].pc_asm_blocks + endl;
-        ret += "pc_asm_overlap " + data[index].pc_asm_overlap + endl;
+        ret += "pc_asm_blocks " + data[endtag].pc_asm_blocks + endl;
+        ret += "pc_asm_overlap " + data[endtag].pc_asm_overlap + endl;
     }
     else if(pc_type == "redundant") {
-        ret += "pc_redundant_number " + data[index].pc_redundant_number + endl;
+        ret += "pc_redundant_number " + data[endtag].pc_redundant_number + endl;
     }*/
 
     return ret;

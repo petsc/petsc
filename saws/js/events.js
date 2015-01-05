@@ -3,25 +3,23 @@
 $(document).on("change","input[id^='logstruc']",function(){
     var id      = this.id;
     var endtag  = id.substring(id.indexOf("0"),id.length);
-    var index   = getIndex(matInfo,endtag);
     var checked = $(this).prop("checked");
 
-    matInfo[index].logstruc = checked;
+    matInfo[endtag].logstruc = checked;
     setDefaults(endtag);
 });
 
 $(document).on("change","input[id^='symm']",function(){//blur (disable) posdef to false if symm isn't selected!!
     var id      = this.id;
     var endtag  = id.substring(id.indexOf("0"),id.length);
-    var index   = getIndex(matInfo,endtag);
     var checked = $(this).prop("checked");
 
-    matInfo[index].symm = checked;
+    matInfo[endtag].symm = checked;
 
     if(!checked) { //if not symm, then cannot be posdef
         $("#posdef" + endtag).attr("checked",false);
         $("#posdef" + endtag).attr("disabled", true);
-        matInfo[index].posdef = false;
+        matInfo[endtag].posdef = false;
     }
     if(checked) { //if symm, then allow user to adjust posdef
         $("#posdef" + endtag).attr("disabled", false);
@@ -35,10 +33,9 @@ $(document).on("change","input[id^='symm']",function(){//blur (disable) posdef t
 $(document).on("change","input[id^='posdef']",function(){
     var id      = this.id;
     var endtag  = id.substring(id.indexOf("0"),id.length);
-    var index   = getIndex(matInfo,endtag);
     var checked = $(this).prop("checked");
 
-    matInfo[index].posdef = checked;
+    matInfo[endtag].posdef = checked;
     setDefaults(endtag);
 
     //if posdef is checked, disable all child posdefs ?? (hold off on this)
@@ -56,11 +53,11 @@ function setDefaults(endtag) {
         defaults = getDefaults("",symm,posdef,logstruc);
     }
     else { //otherwise, we should generate a more appropriate default
-        var parentIndex     = getParentIndex(matInfo,endtag);
-        var parent_pc_type  = matInfo[parentIndex].pc_type;
-        var parent_symm     = matInfo[parentIndex].symm;
-        var parent_posdef   = matInfo[parentIndex].posdef;
-        var parent_logstruc = matInfo[parentIndex].logstruc;
+        var parentEndtag    = getParent(endtag);
+        var parent_pc_type  = matInfo[parentEndtag].pc_type;
+        var parent_symm     = matInfo[parentEndtag].symm;
+        var parent_posdef   = matInfo[parentEndtag].posdef;
+        var parent_logstruc = matInfo[parentEndtag].logstruc;
         defaults            = getDefaults(parent_pc_type,parent_symm,parent_posdef,parent_logstruc,symm,posdef,logstruc); //if this current solver is a sub-solver, then we should set defaults according to its parent. this suggestion will be better.
         var sub_pc_type   = defaults.sub_pc_type;
         var sub_ksp_type  = defaults.sub_ksp_type;
@@ -103,20 +100,20 @@ function refresh() {
 
         calculateSizes(matInfo,"0");
         var svgString = getBoxTree(matInfo,"0",0,0);
-        $("#tree").html("<svg id=\"treeCanvas\" width=\"" + matInfo[0].total_size.width + "\" height=\"" + matInfo[0].total_size.height + "\" viewBox=\"0 0 " + matInfo[0].total_size.width + " " + matInfo[0].total_size.height + "\">" + svgString + "</svg>");
+        $("#tree").html("<svg id=\"treeCanvas\" width=\"" + matInfo["0"].total_size.width + "\" height=\"" + matInfo["0"].total_size.height + "\" viewBox=\"0 0 " + matInfo["0"].total_size.width + " " + matInfo["0"].total_size.height + "\">" + svgString + "</svg>");
     }
     else
         $("#tree").html("");
 
     if(displayMatrix) {
-        $("#matrixPic").html("<center>" + "\\(\\require{color}\\)" + "\\(" + getMatrixTex("0") + "\\)" + "</center>");
+        $("#matrixPic").html("<center>" + "\\(\\require{color}\\)" + "\\(" + getMatrixTex(matInfo, "0") + "\\)" + "</center>");
         MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
     }
     else
         $("#matrixPic").html("");
 
     /*if(displayDiagram) {
-        $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex("0") + "\\)" + "</center>");
+        $("#matrixPic2").html("<center>" + "\\(" + getSpecificMatrixTex(matInfo, "0") + "\\)" + "</center>");
         $("#matrixPic1").html("<center>" + "\\(" + getSpecificMatrixTex2(0) + "\\)" + "</center>");
         MathJax.Hub.Config({ TeX: { extensions: ["AMSMath.js"] }});
         MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
