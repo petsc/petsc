@@ -157,10 +157,10 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     ierr = VecAXPY(U1,-alpha,U);CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
     if (beta == 0.0) {
-      ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      break;
+      ierr = VecSet(U1,beta);CHKERRQ(ierr);
+    } else {
+      ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr); /* beta*U1 = Amat*V - alpha*U */
     }
-    ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr);
 
     ierr = KSP_MatMultTranspose(ksp,Amat,U1,V1);CHKERRQ(ierr);
     ierr = VecAXPY(V1,-beta,V);CHKERRQ(ierr);
@@ -176,7 +176,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
       alpha = PetscSqrtReal(alpha);
       ierr  = VecScale(Z,1.0/alpha);CHKERRQ(ierr);
     }
-    ierr   = VecScale(V1,1.0/alpha);CHKERRQ(ierr);
+    ierr   = VecScale(V1,1.0/alpha);CHKERRQ(ierr); /* alpha*V1 = Amat^T*U1 - beta*V */
     rho    = PetscSqrtScalar(rhobar*rhobar + beta*beta);
     c      = rhobar / rho;
     s      = beta / rho;
