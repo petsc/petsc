@@ -109,10 +109,11 @@ class Configure(config.base.Configure):
           packageObj.installDirProvider = self.installdir
           packageObj.externalPackagesDirProvider = self.externalpackagesdir
           setattr(self, packageName.lower(), packageObj)
-    # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
+    # Force blaslapack and opencl to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.options.scalarTypes', self.f2cblaslapack)
     framework.require('PETSc.options.scalarTypes', self.fblaslapack)
     framework.require('PETSc.options.scalarTypes', self.blaslapack)
+    framework.require('PETSc.options.scalarTypes', self.opencl)
     framework.require('PETSc.Regression', self)
 
     self.programs.headerPrefix   = self.headerPrefix
