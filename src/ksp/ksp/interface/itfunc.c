@@ -909,6 +909,8 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
     symmetric preconditioning can be emulated by using either right or left
     preconditioning and a pre or post processing step.
 
+    Setting the PC side often affects the default norm type.  See KSPSetNormType() for details.
+
     Level: intermediate
 
 .keywords: KSP, set, right, left, symmetric, side, preconditioner, flag
