@@ -231,12 +231,9 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 $   KSP_NORM_NONE - skips computing the norm, this should only be used if you are using
 $                 the Krylov method as a smoother with a fixed small number of iterations.
 $                 Implicitly sets KSPConvergedSkip as KSP convergence test.
-$                 Supported only by CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 $   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
-$                 of the preconditioned residual
-$   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual, supported only by
-$                 CG, CHEBYSHEV, and RICHARDSON, automatically true for right (see KSPSetPCSide())
-$                 preconditioning..
+$                 of the preconditioned residual P^{-1}(b - A x)
+$   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual.
 $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
 
@@ -244,7 +241,12 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 .   -ksp_norm_type <none,preconditioned,unpreconditioned,natural>
 
    Notes:
-   Currently only works with the CG, Richardson, Bi-CG-stab, CR, and CGS methods.
+   Not all combinations of preconditioner side (see KSPSetPCSide()) and norm type are supported by all Krylov methods.
+   If only one is set, PETSc tries to automatically change the other to find a compatible pair.  If no such combination
+   is supported, PETSc will generate an error.
+
+   Developer Notes:
+   Supported combinations of norm and preconditioner side are set using KSPSetSupportedNorm().
 
    Level: advanced
 
