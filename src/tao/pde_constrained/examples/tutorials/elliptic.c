@@ -1,5 +1,4 @@
 #include <petsc-private/taoimpl.h>
-#include "../src/tao/pde_constrained/impls/lcl/lcl.h"
 
 /*T
    Concepts: TAO^Solving a system of nonlinear equations, nonlinear least squares
@@ -89,7 +88,6 @@ typedef struct {
   int       stages[10];
   PetscBool use_ptap;
   PetscBool use_lrc;
-  TAO_LCL*  lcl;
 } AppCtx;
 
 PetscErrorCode FormFunction(Tao, Vec, PetscReal*, void*);
@@ -156,7 +154,6 @@ int main(int argc, char **argv)
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOLCL);CHKERRQ(ierr);
-  user.lcl = (TAO_LCL*)(tao->data);
 
   /* Set up initial vectors and matrices */
   ierr = EllipticInitialize(&user);CHKERRQ(ierr);
@@ -371,17 +368,16 @@ PetscErrorCode StateInvMatMult(Mat J_shell, Vec X, Vec Y)
 {
   PetscErrorCode ierr;
   PetscInt       its,i;
-  PetscReal      tau;
   AppCtx         *user;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,(void**)&user);CHKERRQ(ierr);
   ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG);CHKERRQ(ierr);
   if (Y == user->ytrue) {
+    /* First solve is done using true solution to set up problem */
     ierr = KSPSetTolerances(user->solver,1e-8,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  } else if (user->lcl) {
-    tau = user->lcl->tau[user->lcl->solve_type];
-    ierr = KSPSetTolerances(user->solver,tau,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSetTolerances(user->solver,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   }
   if (user->ns == 1) {
     ierr = KSPSolve(user->solver,X,Y);CHKERRQ(ierr);
@@ -1131,7 +1127,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = KSPSetFromOptions(user->solver);CHKERRQ(ierr);
 
   ierr = KSPSetOperators(user->solver,user->JsBlock,user->DSG);CHKERRQ(ierr);
-  user->lcl->solve_type = LCL_FORWARD1;
+
   ierr = MatMult(user->JsInv,user->q,user->ytrue);CHKERRQ(ierr);
   /* First compute Av_u = Av*exp(-u) */
   ierr = VecSet(user->uwork,0);
@@ -1152,7 +1148,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   }
 
   /* Now solve for y */
-  user->lcl->solve_type = LCL_FORWARD1;
+
   ierr = MatMult(user->JsInv,user->q,user->y);CHKERRQ(ierr);
 
   user->ksp_its_initial = user->ksp_its;
