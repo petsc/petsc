@@ -90,7 +90,9 @@ def config(dry_run=False):
         '--with-shared-libraries=1',
         '--with-debugging=0',
         '--with-c2html=0', # not needed
-        #'--with-sowing=0',
+        '--with-sowing=0',
+        '--with-fc=0',
+        '--with-cxx=0',
         #'--with-cmake=0',
         ]
     # MPI
