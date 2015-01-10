@@ -14,10 +14,12 @@ all message-passing communication.
 
   You can also install `petsc-master`_ with::
 
-    $ pip install petsc==master
+    $ pip install https://bitbucket.org/petsc/petsc/get/master.tar.gz#egg=petsc-master
 
-  .. _petsc-master: https://bitbucket.org/petsc/
-                 petsc/get/master.tar.gz#egg=petsc-master
+  Then install petsc4py with
+
+    $ pip install https://bitbucket.org/petsc/petsc4py/get/master.tar.gz#egg=petsc4py-master
+
 """
 
 import sys, os
