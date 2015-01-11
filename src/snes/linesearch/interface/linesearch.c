@@ -512,7 +512,7 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
 -  fnorm - The new function norm
 
    Options Database Keys:
-+ -snes_linesearch_type - basic, bt, l2, cp, shell
++ -snes_linesearch_type - basic, bt, l2, cp, nleqerr, shell
 . -snes_linesearch_monitor - Print progress of line searches
 . -snes_linesearch_damping - The linesearch damping parameter
 . -snes_linesearch_norms   - Turn on/off the linesearch norms
@@ -671,7 +671,7 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 .  linesearch - linesearch context
 
    Options Database Keys:
-+ -snes_linesearch_type <type> - basic, bt, l2, cp, shell
++ -snes_linesearch_type <type> - basic, bt, l2, cp, nleqerr, shell
 . -snes_linesearch_order <order> - 1, 2, 3.  Most types only support certain orders (bt supports 2 or 3)
 . -snes_linesearch_norms   - Turn on/off the linesearch norms for the basic linesearch type
 . -snes_linesearch_minlambda - The minimum step length
@@ -820,6 +820,7 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 .  bt - Backtracking line search over the L2 norm of the function
 .  l2 - Secant line search over the L2 norm of the function
 .  cp - Critical point secant line search assuming F(x) = grad G(x) for some unknown G(x)
+.  nleqerr - Affine-covariant error-oriented linesearch
 -  shell - User provided SNESLineSearch implementation
 
    Level: intermediate
