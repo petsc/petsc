@@ -51,8 +51,6 @@ typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
 
 /* Structure for deluxe scaling */
 struct _PCBDDCDeluxeScaling {
-  /* schur complements on interface's subsets */
-  PCBDDCSubSchurs sub_schurs;
   /* simple scaling on selected dofs (i.e. primal vertices and nodes on interface dirichlet boundaries) */
   PetscInt        n_simple;
   PetscInt*       idx_simple_B;

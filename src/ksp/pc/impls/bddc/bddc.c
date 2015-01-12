@@ -1214,9 +1214,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (computetopography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
     /* Schurs on subsets should be reset */
-    if (pcbddc->deluxe_ctx) {
-      ierr = PCBDDCSubSchursReset(pcbddc->deluxe_ctx->sub_schurs);CHKERRQ(ierr);
-    }
+    ierr = PCBDDCSubSchursReset(pcbddc->sub_schurs);CHKERRQ(ierr);
   }
 
   /* infer if NullSpace object attached to Mat via MatSetNearNullSpace has changed */
@@ -1261,10 +1259,6 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCConstraintsSetUp(pc);CHKERRQ(ierr);
     /* Allocate needed local vectors (which depends on quantities defined during ConstraintsSetUp) */
     ierr = PCBDDCSetUpLocalWorkVectors(pc);CHKERRQ(ierr);
-    /* Schurs on subsets should be reset */
-    if (pcbddc->deluxe_ctx) {
-      ierr = PCBDDCSubSchursReset(pcbddc->deluxe_ctx->sub_schurs);CHKERRQ(ierr);
-    }
   }
 
   if (computesolvers || pcbddc->new_primal_space) {
@@ -1441,6 +1435,8 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PCBDDCResetTopography(pc);CHKERRQ(ierr);
   /* free allocated graph structure */
   ierr = PetscFree(pcbddc->mat_graph);CHKERRQ(ierr);
+  /* free allocated sub schurs structure */
+  ierr = PetscFree(pcbddc->sub_schurs);CHKERRQ(ierr);
   /* destroy objects for scaling operator */
   ierr = PCBDDCScalingDestroy(pc);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->deluxe_ctx);CHKERRQ(ierr);
@@ -1894,6 +1890,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
   /* create local graph structure */
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
+
+  /* create sub schurs structure */
+  ierr = PCBDDCSubSchursCreate(&pcbddc->sub_schurs);CHKERRQ(ierr);
 
   /* scaling */
   pcbddc->work_scaling          = 0;

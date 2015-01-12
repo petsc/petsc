@@ -33,7 +33,7 @@ static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y)
   PC_IS*              pcis=(PC_IS*)pc->data;
   PC_BDDC*            pcbddc=(PC_BDDC*)pc->data;
   PCBDDCDeluxeScaling deluxe_ctx = pcbddc->deluxe_ctx;
-  PCBDDCSubSchurs     sub_schurs = deluxe_ctx->sub_schurs;
+  PCBDDCSubSchurs     sub_schurs = pcbddc->sub_schurs;
   PetscInt            i;
   PetscErrorCode      ierr;
 
@@ -135,7 +135,7 @@ static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y)
   PC_IS*              pcis=(PC_IS*)pc->data;
   PC_BDDC*            pcbddc=(PC_BDDC*)pc->data;
   PCBDDCDeluxeScaling deluxe_ctx = pcbddc->deluxe_ctx;
-  PCBDDCSubSchurs     sub_schurs = deluxe_ctx->sub_schurs;
+  PCBDDCSubSchurs     sub_schurs = pcbddc->sub_schurs;
   PetscInt            i;
   PetscErrorCode      ierr;
 
@@ -316,7 +316,6 @@ static PetscErrorCode PCBDDCScalingCreate_Deluxe(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNew(&deluxe_ctx);CHKERRQ(ierr);
-  ierr = PCBDDCSubSchursCreate(&deluxe_ctx->sub_schurs);CHKERRQ(ierr);
   pcbddc->deluxe_ctx = deluxe_ctx;
   PetscFunctionReturn(0);
 }
@@ -330,7 +329,6 @@ static PetscErrorCode PCBDDCScalingDestroy_Deluxe(PC pc)
 
   PetscFunctionBegin;
   ierr = PCBDDCScalingReset_Deluxe_Solvers(pcbddc->deluxe_ctx);CHKERRQ(ierr);
-  ierr = PCBDDCSubSchursDestroy(&(pcbddc->deluxe_ctx->sub_schurs));CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->deluxe_ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -376,7 +374,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   PC_IS               *pcis=(PC_IS*)pc->data;
   PC_BDDC             *pcbddc=(PC_BDDC*)pc->data;
   PCBDDCDeluxeScaling deluxe_ctx=pcbddc->deluxe_ctx;
-  PCBDDCSubSchurs     sub_schurs=deluxe_ctx->sub_schurs;
+  PCBDDCSubSchurs     sub_schurs=pcbddc->sub_schurs;
   PCBDDCGraph         graph;
   IS                  *faces,*edges,*all_cc;
   PetscBT             bitmask;
@@ -709,7 +707,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
       Mat                    color_mat,color_mat_is,temp_mat;
       ISLocalToGlobalMapping WtoNmap,l2gmap_subset;
       IS                     is_local_numbering,isB_local,isW_local,isW;
-      PCBDDCSubSchurs        sub_schurs = deluxe_ctx->sub_schurs;
+      PCBDDCSubSchurs        sub_schurs = pcbddc->sub_schurs;
       PetscInt               subidx,n_local_dofs,n_global_dofs;
       PetscInt               *global_numbering,*local_numbering;
       char                   ksp_prefix[256];
@@ -791,7 +789,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
   if (pcbddc->dbg_flag) {
     Vec test_vec;
     PetscReal error;
-    PCBDDCSubSchurs sub_schurs = deluxe_ctx->sub_schurs;
+    PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
     /* test partition of unity of coloured schur complements  */
     for (i=0;i<deluxe_ctx->par_colors;i++) {
       PetscInt  subidx = deluxe_ctx->par_col2sub[i];
@@ -846,7 +844,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
 {
   PC_BDDC             *pcbddc=(PC_BDDC*)pc->data;
   PCBDDCDeluxeScaling deluxe_ctx=pcbddc->deluxe_ctx;
-  PCBDDCSubSchurs     sub_schurs = deluxe_ctx->sub_schurs;
+  PCBDDCSubSchurs     sub_schurs = pcbddc->sub_schurs;
   Mat                 global_schur_subsets,*submat_global_schur_subsets,work_mat;
   IS                  is_to,is_from;
   PetscScalar         *array,*fill_vals;

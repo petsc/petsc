@@ -12,6 +12,7 @@ PetscErrorCode PCBDDCSubSchursCreate(PCBDDCSubSchurs *sub_schurs)
 
   PetscFunctionBegin;
   ierr = PetscNew(&schurs_ctx);CHKERRQ(ierr);
+  schurs_ctx->n_subs = 0;
   *sub_schurs = schurs_ctx;
   PetscFunctionReturn(0);
 }
@@ -43,7 +44,9 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
     ierr = VecDestroy(&sub_schurs->work1[i]);CHKERRQ(ierr);
     ierr = VecDestroy(&sub_schurs->work2[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree5(sub_schurs->is_AEj_I,sub_schurs->is_AEj_B,sub_schurs->S_Ej,sub_schurs->work1,sub_schurs->work2);CHKERRQ(ierr);
+  if (sub_schurs->n_subs) {
+    ierr = PetscFree5(sub_schurs->is_AEj_I,sub_schurs->is_AEj_B,sub_schurs->S_Ej,sub_schurs->work1,sub_schurs->work2);CHKERRQ(ierr);
+  }
   sub_schurs->n_subs = 0;
   PetscFunctionReturn(0);
 }
