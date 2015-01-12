@@ -334,8 +334,6 @@ PetscErrorCode InitialGuess(Vec X,Userctx *user, const PetscScalar PGv[])
     xgen[idx+1] = RF;
     xgen[idx+2] = VR;
 
-    Vref[i] = Vm + (VR/KA[i]);
-
     idx = idx + 3;
   }
 
@@ -361,10 +359,10 @@ PetscErrorCode DICDPFiniteDifference(Vec X,Vec *DICDP, Userctx *user)
   ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
 
   for (i=0;i<ngen;i++) {
-    ierr = InitialGuess(X,user,PG);CHKERRQ(ierr);
     for (j=0;j<3;j++) PGv[j] = PG[j];
     PGv[i] = PG[i]+eps;
-    ierr = InitialGuess(Y,user,PGv);CHKERRQ(ierr);
+    ierr = InitialGuess(Y,user,PGv);CHKERRQ(ierr); 
+    ierr = InitialGuess(X,user,PG);CHKERRQ(ierr); 
 
     ierr = VecAXPY(Y,-1.0,X);CHKERRQ(ierr);
     ierr = VecScale(Y,1./eps);CHKERRQ(ierr);
@@ -375,7 +373,7 @@ PetscErrorCode DICDPFiniteDifference(Vec X,Vec *DICDP, Userctx *user)
 }
 
 
-/* Computes F = [f(x,y);g(x,y)] */
+/* Computes F = [-f(x,y);g(x,y)] */
 #undef __FUNCT__
 #define __FUNCT__ "ResidualFunction"
 PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
@@ -917,7 +915,7 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A, void *ctx0)
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
 
   for (col=0;col<3;col++) {
-    a    = -1.0/M[col];    
+    a    = 1.0/M[col];    
     row  = 9*col+3;
     ierr = MatSetValues(A,1,&row,1,&col,&a,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -952,7 +950,7 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,Userctx *user)
     r[0] += PetscPowScalarInt(PetscMax(0.,PetscMax(xgen[idx+3]/(2.*PETSC_PI)-user->freq_u,user->freq_l-xgen[idx+3]/(2.*PETSC_PI))),user->pow);
     idx  += 9;
   }
-
+ 
   ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -979,9 +977,9 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,Userctx *us
   
   idx = 0;  
   for (i=0;i<ngen;i++) {
-    dgen[idx+3] = PetscPowScalarInt(PetscMax(0.,PetscMax(xgen[idx+3]/(2.*PETSC_PI)-user->freq_u,user->freq_l-xgen[idx+3]/(2.*PETSC_PI))),user->pow-1);
-    if (xgen[idx+3]/(2.*PETSC_PI) > user->freq_u) dgen[idx+3] = dgen[idx+3]/(2.*PETSC_PI);
-    if (xgen[idx+3]/(2.*PETSC_PI) < user->freq_l) dgen[idx+3] = -dgen[idx+3]/(2.*PETSC_PI); 
+    dgen[idx+3] = 0.;
+    if (xgen[idx+3]/(2.*PETSC_PI) > user->freq_u) dgen[idx+3] = user->pow*PetscPowScalarInt(xgen[idx+3]/(2.*PETSC_PI)-user->freq_u,user->pow-1)/(2.*PETSC_PI);
+    if (xgen[idx+3]/(2.*PETSC_PI) < user->freq_l) dgen[idx+3] = user->pow*PetscPowScalarInt(user->freq_l-xgen[idx+3]/(2.*PETSC_PI),user->pow-1)/(-2.*PETSC_PI); 
     idx += 9;
   }       
 
@@ -996,14 +994,9 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,Userctx *us
 static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,Userctx *user)
 {
   PetscErrorCode ierr;
-  PetscScalar    *u,*rp;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(drdp[0],&rp);CHKERRQ(ierr);
-
-  rp[0] = 0.;
-  ierr  = VecRestoreArray(drdp[0],&rp);CHKERRQ(ierr);
+  ierr = VecZeroEntries(drdp[0]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1057,7 +1050,7 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
 
 #undef __FUNCT__
 #define __FUNCT__ "MonitorADJ2"
-static PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
+static PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx0)
 {
   PetscReal      ptime;
   Vec            Sol,*Y;
@@ -1065,9 +1058,11 @@ static PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ct
   PetscViewer    viewer;
   PetscReal      timepre;
   char           filename[PETSC_MAX_PATH_LEN];
+  Userctx        *ctx=(Userctx*)ctx0;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  step += ctx->shift; /* Shifting the step no. to accomadate for multiple backward runs in a row */
   ierr = PetscSNPrintf(filename,sizeof filename,"ex9bus-SA-%06d.bin",step);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 
@@ -1271,10 +1266,12 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   PetscScalar    *x_ptr;
   Vec            lambda[1],q,drdy[1];
   Vec            lambdap[1],drdp[1]; 
-  PetscInt       steps;
+  PetscInt       steps1,steps2,steps3;
   PetscViewer    Xview,Ybusview;
   Vec            DICDP[3];
+  Vec            F_alg;
 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Parameters:: \n");CHKERRQ(ierr);
   ierr = VecView(P,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr  = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
   PG[0] = x_ptr[0];
@@ -1284,6 +1281,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   /* reset the checkpoit starting number */
   ctx->shift = 0;
+
+  ctx->stepnum = 0;
 
   /* Read initial voltage vector and Ybus */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"X.bin",FILE_MODE_READ,&Xview);CHKERRQ(ierr);
@@ -1322,8 +1321,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = DICDPFiniteDifference(X,DICDP,ctx);CHKERRQ(ierr);
 
   /* Create matrix to save solutions at each time step */
-  ctx->stepnum = 0;
-
   /* ierr = MatCreateSeqDense(PETSC_COMM_SELF,ctx->neqs_pgrid+1,1002,NULL,&ctx->Sol);CHKERRQ(ierr); */
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -1340,6 +1337,18 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SetInitialGuess(X,ctx);CHKERRQ(ierr);
+
+  ierr = VecDuplicate(X,&F_alg);CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes_alg);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes_alg,F_alg,AlgFunction,ctx);CHKERRQ(ierr);
+  ierr = MatZeroEntries(J);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes_alg,J,J,AlgJacobian,ctx);CHKERRQ(ierr);
+  ierr = SNESSetOptionsPrefix(snes_alg,"alg_");CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes_alg);CHKERRQ(ierr);
+  ctx->alg_flg = PETSC_TRUE;
+  /* Solve the algebraic equations */
+  ierr = SNESSolve(snes_alg,NULL,X);CHKERRQ(ierr);
+
   /* Just to set up the Jacobian structure */
   Vec          Xdot;
   ierr = VecDuplicate(X,&Xdot);CHKERRQ(ierr);
@@ -1369,8 +1378,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ctx->alg_flg = PETSC_FALSE;
   /* Prefault period */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ctx->shift += steps;
+  ierr = TSGetTimeStepNumber(ts,&steps1);CHKERRQ(ierr);
+  ctx->shift += steps1;
 
   /* Create the nonlinear solver for solving the algebraic system */
   /* Note that although the algebraic system needs to be solved only for
@@ -1378,14 +1387,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
      variables are held constant by setting their residuals to 0 and
      putting a 1 on the Jacobian diagonal for xgen rows
   */
-  Vec F_alg;
-  ierr = VecDuplicate(X,&F_alg);CHKERRQ(ierr);
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes_alg);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes_alg,F_alg,AlgFunction,ctx);CHKERRQ(ierr);
   ierr = MatZeroEntries(J);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes_alg,J,J,AlgJacobian,ctx);CHKERRQ(ierr);
-  ierr = SNESSetOptionsPrefix(snes_alg,"alg_");CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes_alg);CHKERRQ(ierr);
 
   /* Apply disturbance - resistive fault at ctx->faultbus */
   /* This is done by adding shunt conductance to the diagonal location
@@ -1425,8 +1427,9 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ctx->alg_flg = PETSC_FALSE;
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ctx->shift += steps;
+  ierr = TSGetTimeStepNumber(ts,&steps2);CHKERRQ(ierr);
+  ctx->shift += steps2;
+  
   /* Remove the fault */
   row_loc = 2*ctx->faultbus; col_loc = 2*ctx->faultbus+1;
   val     = -1/ctx->Rfault;
@@ -1464,8 +1467,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ctx->alg_flg = PETSC_TRUE;
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ctx->shift += steps;
+  ierr = TSGetTimeStepNumber(ts,&steps3);CHKERRQ(ierr);
+  ctx->shift += steps3;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
@@ -1482,14 +1485,12 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   
   ierr = VecDuplicate(lambda[0],&drdy[0]);CHKERRQ(ierr);
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
+  ierr = VecZeroEntries(drdy[0]);CHKERRQ(ierr);
+  ierr = VecZeroEntries(drdp[0]);CHKERRQ(ierr);
+
   ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&q);CHKERRQ(ierr);
   /*   Switch to reverse mode  */
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
-  /*   Reset start time for the adjoint integration */
-  ierr = TSSetTime(ts,ctx->tmax);CHKERRQ(ierr);
-
-  /*   Set RHS Jacobian and number of steps for the adjoint integration */
-  ierr = TSSetDuration(ts,ctx->shift,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
   ierr = TSSetRHSJacobianP(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr); 
@@ -1502,7 +1503,53 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetDRDYFunction(ts,drdy,(TSDRDYFunction)DRDYFunction,ctx);CHKERRQ(ierr);
   ierr = TSSetDRDPFunction(ts,drdp,(TSDRDPFunction)DRDPFunction,ctx);CHKERRQ(ierr); 
   
+  /*   Reset start time for the adjoint integration */
+  ierr = TSSetTime(ts,ctx->tmax);CHKERRQ(ierr);
+  /*   Set RHS Jacobian and number of steps for the adjoint integration */
+  ierr = TSSetDuration(ts,steps3,PETSC_DEFAULT);CHKERRQ(ierr);
+  ctx->shift = steps1+steps2;
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
+
+  ierr = MatZeroEntries(J);CHKERRQ(ierr);
+  /* Applying disturbance - resistive fault at ctx->faultbus */
+  /* This is done by deducting shunt conductance to the diagonal location
+     in the Ybus matrix */
+  row_loc = 2*ctx->faultbus; col_loc = 2*ctx->faultbus+1; /* Location for G */
+  val     = 1./ctx->Rfault;
+  ierr    = MatSetValues(ctx->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
+  row_loc = 2*ctx->faultbus+1; col_loc = 2*ctx->faultbus; /* Location for G */
+  val     = 1./ctx->Rfault;
+  ierr    = MatSetValues(ctx->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(ctx->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(ctx->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /*   Reset start time for the adjoint integration */
+  ierr = TSSetTime(ts,ctx->tfaultoff);CHKERRQ(ierr);
+  /*   Set RHS Jacobian and number of steps for the adjoint integration */
+  ierr = TSSetDuration(ts,steps2,PETSC_DEFAULT);CHKERRQ(ierr);
+  ctx->shift = steps1;
+  ierr = TSSolve(ts,X);CHKERRQ(ierr);
+
+  ierr = MatZeroEntries(J);CHKERRQ(ierr);
+  /* remove the fault */
+  row_loc = 2*ctx->faultbus; col_loc = 2*ctx->faultbus+1; /* Location for G */
+  val     = -1./ctx->Rfault;
+  ierr    = MatSetValues(ctx->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
+  row_loc = 2*ctx->faultbus+1; col_loc = 2*ctx->faultbus; /* Location for G */
+  val     = -1./ctx->Rfault;
+  ierr    = MatSetValues(ctx->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(ctx->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(ctx->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /*   Reset start time for the adjoint integration */
+  ierr = TSSetTime(ts,ctx->tfaulton);CHKERRQ(ierr);
+  /*   Set RHS Jacobian and number of steps for the adjoint integration */
+  ierr = TSSetDuration(ts,steps1,PETSC_DEFAULT);CHKERRQ(ierr);
+  ctx->shift = 0;
+  ierr = TSSolve(ts,X);CHKERRQ(ierr);
+
   /* 
   ierr = MatAssemblyBegin(ctx->Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(ctx->Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1514,9 +1561,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = VecView(lambdap[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(q,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   */
+  ierr = VecView(lambdap[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ComputeSensiP(lambda[0],lambdap[0],DICDP,ctx);CHKERRQ(ierr);
   ierr = VecCopy(lambdap[0],G);CHKERRQ(ierr);
-  ierr = VecView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = VecView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
   *f   = x_ptr[0];
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n cost function=%.15f\n",x_ptr[0]);CHKERRQ(ierr);
@@ -1545,8 +1593,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = MatDestroy(&ctx->Ybus);CHKERRQ(ierr);
   /* ierr = MatDestroy(&ctx->Sol);CHKERRQ(ierr); */
   ierr = VecDestroy(&ctx->V0);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes_alg);CHKERRQ(ierr);
-  ierr = VecDestroy(&F_alg);CHKERRQ(ierr);
+  //ierr = SNESDestroy(&snes_alg);CHKERRQ(ierr);
+  //ierr = VecDestroy(&F_alg);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = MatDestroy(&Jacp);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
