@@ -14,16 +14,16 @@ PetscErrorCode PCBDDCResetSolvers(PC);
 PetscErrorCode PCBDDCResetCustomization(PC);
 
 /* graph */
-PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph*);
-PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph*);
-PetscErrorCode PCBDDCGraphInit(PCBDDCGraph,ISLocalToGlobalMapping);
-PetscErrorCode PCBDDCGraphReset(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph,PetscInt,IS,IS,PetscInt,IS[],IS);
-PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph);
-PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph,PetscInt,PetscViewer);
-PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphDestroy(PCBDDCGraph*);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphInit(PCBDDCGraph,ISLocalToGlobalMapping);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphReset(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph,PetscInt,IS,IS,PetscInt,IS[],IS);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph,PetscInt,PetscViewer);
+PETSC_EXTERN PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
 
 /* interface for scaling operator */
 PetscErrorCode PCBDDCScalingSetUp(PC);
@@ -41,7 +41,7 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC,Mat);
 PetscErrorCode PCBDDCSetUpLocalWorkVectors(PC);
 PetscErrorCode PCBDDCSetUpSolvers(PC);
 PetscErrorCode PCBDDCSetUpLocalScatters(PC);
-PetscErrorCode PCBDDCSetUpLocalSolvers(PC);
+PetscErrorCode PCBDDCSetUpLocalSolvers(PC,PetscBool,PetscBool);
 PetscErrorCode PCBDDCSetUpCorrection(PC,PetscScalar**);
 PetscErrorCode PCBDDCSetUpCoarseSolver(PC,PetscScalar*);
 PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm,ISLocalToGlobalMapping,PetscInt,PetscInt[],PetscInt[],PetscInt*,PetscInt*[]);

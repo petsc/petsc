@@ -18,9 +18,9 @@ PetscErrorCode PCBDDCSetUpSolvers(PC pc)
   /* PCBDDCSetUpLocalWorkVectors should be called first! */
   ierr = PCBDDCSetUpLocalScatters(pc);CHKERRQ(ierr);
 
-  /* Setup local solvers ksp_D and ksp_R */
+  /* Setup local neumann solver ksp_R */
   /* PCBDDCSetUpLocalScatters should be called first! */
-  ierr = PCBDDCSetUpLocalSolvers(pc);CHKERRQ(ierr);
+  ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_FALSE,PETSC_TRUE);CHKERRQ(ierr);
 
   /* Change global null space passed in by the user if change of basis has been requested */
   if (pcbddc->NullSpace && pcbddc->ChangeOfBasisMatrix) {
@@ -993,7 +993,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetUpLocalSolvers"
-PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
+PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neumann)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PC_IS          *pcis = (PC_IS*)pc->data;
@@ -1035,144 +1035,151 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   }
 
   /* DIRICHLET PROBLEM */
-  /* Matrix for Dirichlet problem is pcis->A_II */
-  ierr = ISGetSize(pcis->is_I_local,&n_D);CHKERRQ(ierr);
-  if (!pcbddc->ksp_D) { /* create object if not yet build */
-    ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_D);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_D,(PetscObject)pc,1);CHKERRQ(ierr);
-    /* default */
-    ierr = KSPSetType(pcbddc->ksp_D,KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(pcbddc->ksp_D,dir_prefix);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)pcis->A_II,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
-    ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
-    if (issbaij) {
-      ierr = PCSetType(pc_temp,PCCHOLESKY);CHKERRQ(ierr);
-    } else {
-      ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
+  if (dirichlet) {
+    /* Matrix for Dirichlet problem is pcis->A_II */
+    ierr = ISGetSize(pcis->is_I_local,&n_D);CHKERRQ(ierr);
+    if (!pcbddc->ksp_D) { /* create object if not yet build */
+      ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_D);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_D,(PetscObject)pc,1);CHKERRQ(ierr);
+      /* default */
+      ierr = KSPSetType(pcbddc->ksp_D,KSPPREONLY);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(pcbddc->ksp_D,dir_prefix);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)pcis->A_II,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
+      ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
+      if (issbaij) {
+        ierr = PCSetType(pc_temp,PCCHOLESKY);CHKERRQ(ierr);
+      } else {
+        ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
+      }
+      /* Allow user's customization */
+      ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
+      ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
     }
-    /* Allow user's customization */
-    ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
-    ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
+    /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
+    if (!n_D) {
+      ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
+      ierr = PCSetType(pc_temp,PCNONE);CHKERRQ(ierr);
+    }
+    /* Set Up KSP for Dirichlet problem of BDDC */
+    ierr = KSPSetUp(pcbddc->ksp_D);CHKERRQ(ierr);
+    /* set ksp_D into pcis data */
+    ierr = KSPDestroy(&pcis->ksp_D);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)pcbddc->ksp_D);CHKERRQ(ierr);
+    pcis->ksp_D = pcbddc->ksp_D;
   }
-  ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II);CHKERRQ(ierr);
-  /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
-  if (!n_D) {
-    ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
-    ierr = PCSetType(pc_temp,PCNONE);CHKERRQ(ierr);
-  }
-  /* Set Up KSP for Dirichlet problem of BDDC */
-  ierr = KSPSetUp(pcbddc->ksp_D);CHKERRQ(ierr);
-  /* set ksp_D into pcis data */
-  ierr = KSPDestroy(&pcis->ksp_D);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)pcbddc->ksp_D);CHKERRQ(ierr);
-  pcis->ksp_D = pcbddc->ksp_D;
 
   /* NEUMANN PROBLEM */
-  /* Matrix for Neumann problem is A_RR -> we need to create/reuse it at this point */
-  ierr = ISGetSize(pcbddc->is_R_local,&n_R);CHKERRQ(ierr);
-  if (pcbddc->ksp_R) { /* already created ksp */
-    PetscInt nn_R;
-    ierr = KSPGetOperators(pcbddc->ksp_R,NULL,&A_RR);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject)A_RR);CHKERRQ(ierr);
-    ierr = MatGetSize(A_RR,&nn_R,NULL);CHKERRQ(ierr);
-    if (nn_R != n_R) { /* old ksp is not reusable, so reset it */
-      ierr = KSPReset(pcbddc->ksp_R);CHKERRQ(ierr);
-      ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
-      reuse = MAT_INITIAL_MATRIX;
-    } else { /* same sizes, but nonzero pattern depend on primal vertices so it can be changed */
-      if (pcbddc->new_primal_space_local) { /* we are not sure the matrix will have the same nonzero pattern */
+  A_RR = 0;
+  if (neumann) {
+    /* Matrix for Neumann problem is A_RR -> we need to create/reuse it at this point */
+    ierr = ISGetSize(pcbddc->is_R_local,&n_R);CHKERRQ(ierr);
+    if (pcbddc->ksp_R) { /* already created ksp */
+      PetscInt nn_R;
+      ierr = KSPGetOperators(pcbddc->ksp_R,NULL,&A_RR);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)A_RR);CHKERRQ(ierr);
+      ierr = MatGetSize(A_RR,&nn_R,NULL);CHKERRQ(ierr);
+      if (nn_R != n_R) { /* old ksp is not reusable, so reset it */
+        ierr = KSPReset(pcbddc->ksp_R);CHKERRQ(ierr);
         ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
         reuse = MAT_INITIAL_MATRIX;
-      } else { /* safe to reuse the matrix */
-        reuse = MAT_REUSE_MATRIX;
+      } else { /* same sizes, but nonzero pattern depend on primal vertices so it can be changed */
+        if (pcbddc->new_primal_space_local) { /* we are not sure the matrix will have the same nonzero pattern */
+          ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
+          reuse = MAT_INITIAL_MATRIX;
+        } else { /* safe to reuse the matrix */
+          reuse = MAT_REUSE_MATRIX;
+        }
       }
-    }
-    /* last check */
-    if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
-      ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
+      /* last check */
+      if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+        ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
+        reuse = MAT_INITIAL_MATRIX;
+      }
+    } else { /* first time, so we need to create the matrix */
       reuse = MAT_INITIAL_MATRIX;
     }
-  } else { /* first time, so we need to create the matrix */
-    reuse = MAT_INITIAL_MATRIX;
-  }
-  /* extract A_RR */
-  ierr = MatGetBlockSize(pcbddc->local_mat,&mbs);CHKERRQ(ierr);
-  ierr = ISGetBlockSize(pcbddc->is_R_local,&ibs);CHKERRQ(ierr);
-  if (ibs != mbs) {
-    Mat newmat;
-    ierr = MatConvert(pcbddc->local_mat,MATSEQAIJ,MAT_INITIAL_MATRIX,&newmat);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(newmat,pcbddc->is_R_local,pcbddc->is_R_local,reuse,&A_RR);CHKERRQ(ierr);
-    ierr = MatDestroy(&newmat);CHKERRQ(ierr);
-  } else {
-    ierr = MatGetSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,pcbddc->is_R_local,reuse,&A_RR);CHKERRQ(ierr);
-  }
-  if (!pcbddc->ksp_R) { /* create object if not present */
-    ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_R);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_R,(PetscObject)pc,1);CHKERRQ(ierr);
-    /* default */
-    ierr = KSPSetType(pcbddc->ksp_R,KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(pcbddc->ksp_R,neu_prefix);CHKERRQ(ierr);
-    ierr = KSPGetPC(pcbddc->ksp_R,&pc_temp);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)A_RR,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
-    if (issbaij) {
-      ierr = PCSetType(pc_temp,PCCHOLESKY);CHKERRQ(ierr);
+    /* extract A_RR */
+    ierr = MatGetBlockSize(pcbddc->local_mat,&mbs);CHKERRQ(ierr);
+    ierr = ISGetBlockSize(pcbddc->is_R_local,&ibs);CHKERRQ(ierr);
+    if (ibs != mbs) {
+      Mat newmat;
+      ierr = MatConvert(pcbddc->local_mat,MATSEQAIJ,MAT_INITIAL_MATRIX,&newmat);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(newmat,pcbddc->is_R_local,pcbddc->is_R_local,reuse,&A_RR);CHKERRQ(ierr);
+      ierr = MatDestroy(&newmat);CHKERRQ(ierr);
     } else {
-      ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,pcbddc->is_R_local,reuse,&A_RR);CHKERRQ(ierr);
     }
-    /* Allow user's customization */
-    ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
-    ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
+    if (!pcbddc->ksp_R) { /* create object if not present */
+      ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_R);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_R,(PetscObject)pc,1);CHKERRQ(ierr);
+      /* default */
+      ierr = KSPSetType(pcbddc->ksp_R,KSPPREONLY);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(pcbddc->ksp_R,neu_prefix);CHKERRQ(ierr);
+      ierr = KSPGetPC(pcbddc->ksp_R,&pc_temp);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)A_RR,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
+      if (issbaij) {
+        ierr = PCSetType(pc_temp,PCCHOLESKY);CHKERRQ(ierr);
+      } else {
+        ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
+      }
+      /* Allow user's customization */
+      ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
+      ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR);CHKERRQ(ierr);
+    /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
+    if (!n_R) {
+      ierr = KSPGetPC(pcbddc->ksp_R,&pc_temp);CHKERRQ(ierr);
+      ierr = PCSetType(pc_temp,PCNONE);CHKERRQ(ierr);
+    }
+    /* Set Up KSP for Neumann problem of BDDC */
+    ierr = KSPSetUp(pcbddc->ksp_R);CHKERRQ(ierr);
   }
-  ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR);CHKERRQ(ierr);
-  /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
-  if (!n_R) {
-    ierr = KSPGetPC(pcbddc->ksp_R,&pc_temp);CHKERRQ(ierr);
-    ierr = PCSetType(pc_temp,PCNONE);CHKERRQ(ierr);
-  }
-  /* Set Up KSP for Neumann problem of BDDC */
-  ierr = KSPSetUp(pcbddc->ksp_R);CHKERRQ(ierr);
 
   /* check Dirichlet and Neumann solvers and adapt them if a nullspace correction is needed */
   if (pcbddc->NullSpace || pcbddc->dbg_flag) {
-    /* Dirichlet */
-    ierr = VecSetRandom(pcis->vec1_D,NULL);CHKERRQ(ierr);
-    ierr = MatMult(pcis->A_II,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
-    ierr = KSPSolve(pcbddc->ksp_D,pcis->vec2_D,pcis->vec2_D);CHKERRQ(ierr);
-    ierr = VecAXPY(pcis->vec1_D,m_one,pcis->vec2_D);CHKERRQ(ierr);
-    ierr = VecNorm(pcis->vec1_D,NORM_INFINITY,&value);CHKERRQ(ierr);
-    /* need to be adapted? */
-    use_exact = (PetscAbsReal(value) > 1.e-4 ? PETSC_FALSE : PETSC_TRUE);
-    ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    ierr = PCBDDCSetUseExactDirichlet(pc,use_exact_reduced);CHKERRQ(ierr);
-    /* print info */
     if (pcbddc->dbg_flag) {
       ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Checking solution of Dirichlet and Neumann problems\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet solve (%s) = % 1.14e \n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_D))->prefix,value);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     }
-    if (pcbddc->NullSpace && !use_exact_reduced && !pcbddc->switch_static) {
-      ierr = PCBDDCNullSpaceAssembleCorrection(pc,pcis->is_I_local);CHKERRQ(ierr);
+    if (dirichlet) { /* Dirichlet */
+      ierr = VecSetRandom(pcis->vec1_D,NULL);CHKERRQ(ierr);
+      ierr = MatMult(pcis->A_II,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+      ierr = KSPSolve(pcbddc->ksp_D,pcis->vec2_D,pcis->vec2_D);CHKERRQ(ierr);
+      ierr = VecAXPY(pcis->vec1_D,m_one,pcis->vec2_D);CHKERRQ(ierr);
+      ierr = VecNorm(pcis->vec1_D,NORM_INFINITY,&value);CHKERRQ(ierr);
+      /* need to be adapted? */
+      use_exact = (PetscAbsReal(value) > 1.e-4 ? PETSC_FALSE : PETSC_TRUE);
+      ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      ierr = PCBDDCSetUseExactDirichlet(pc,use_exact_reduced);CHKERRQ(ierr);
+      /* print info */
+      if (pcbddc->dbg_flag) {
+        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet solve (%s) = % 1.14e \n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_D))->prefix,value);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+      }
+      if (pcbddc->NullSpace && !use_exact_reduced && !pcbddc->switch_static) {
+        ierr = PCBDDCNullSpaceAssembleCorrection(pc,pcis->is_I_local);CHKERRQ(ierr);
+      }
     }
-
-    /* Neumann */
-    ierr = VecSetRandom(pcbddc->vec1_R,NULL);CHKERRQ(ierr);
-    ierr = MatMult(A_RR,pcbddc->vec1_R,pcbddc->vec2_R);CHKERRQ(ierr);
-    ierr = KSPSolve(pcbddc->ksp_R,pcbddc->vec2_R,pcbddc->vec2_R);CHKERRQ(ierr);
-    ierr = VecAXPY(pcbddc->vec1_R,m_one,pcbddc->vec2_R);CHKERRQ(ierr);
-    ierr = VecNorm(pcbddc->vec1_R,NORM_INFINITY,&value);CHKERRQ(ierr);
-    /* need to be adapted? */
-    use_exact = (PetscAbsReal(value) > 1.e-4 ? PETSC_FALSE : PETSC_TRUE);
-    ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    /* print info */
-    if (pcbddc->dbg_flag) {
-      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann solve (%s) = % 1.14e \n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_R))->prefix,value);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
-    }
-    if (pcbddc->NullSpace && !use_exact_reduced) { /* is it the right logic? */
-      ierr = PCBDDCNullSpaceAssembleCorrection(pc,pcbddc->is_R_local);CHKERRQ(ierr);
+    if (neumann) { /* Neumann */
+      ierr = VecSetRandom(pcbddc->vec1_R,NULL);CHKERRQ(ierr);
+      ierr = MatMult(A_RR,pcbddc->vec1_R,pcbddc->vec2_R);CHKERRQ(ierr);
+      ierr = KSPSolve(pcbddc->ksp_R,pcbddc->vec2_R,pcbddc->vec2_R);CHKERRQ(ierr);
+      ierr = VecAXPY(pcbddc->vec1_R,m_one,pcbddc->vec2_R);CHKERRQ(ierr);
+      ierr = VecNorm(pcbddc->vec1_R,NORM_INFINITY,&value);CHKERRQ(ierr);
+      /* need to be adapted? */
+      use_exact = (PetscAbsReal(value) > 1.e-4 ? PETSC_FALSE : PETSC_TRUE);
+      ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      /* print info */
+      if (pcbddc->dbg_flag) {
+        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann solve (%s) = % 1.14e \n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_R))->prefix,value);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+      }
+      if (pcbddc->NullSpace && !use_exact_reduced) { /* is it the right logic? */
+        ierr = PCBDDCNullSpaceAssembleCorrection(pc,pcbddc->is_R_local);CHKERRQ(ierr);
+      }
     }
   }
   /* free Neumann problem's matrix */

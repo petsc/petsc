@@ -1219,6 +1219,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     pcbddc->local_mat = matis->A;
     matis->A = temp_mat;
   }
+
   if (!pcbddc->user_ChangeOfBasisMatrix) {
     ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
   }
@@ -1228,6 +1229,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
     /* Schurs on subsets should be reset */
     ierr = PCBDDCSubSchursReset(pcbddc->sub_schurs);CHKERRQ(ierr);
+  }
+
+  /* Setup local dirichlet solver ksp_D */
+  if (computesolvers) {
+    ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
   }
 
   /* infer if NullSpace object attached to Mat via MatSetNearNullSpace has changed */
@@ -1293,7 +1299,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (computesolvers || pcbddc->new_primal_space) {
     /* Create coarse and local stuffs */
     ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
-    /* Create scaling operators */
+    /* Create Scaling operator */
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
   }
 
