@@ -491,7 +491,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
       deluxe_ctx->idx_simple_B[deluxe_ctx->n_simple++] = i;
     }
   }
-  ierr = ISGlobalToLocalMappingApply(pcbddc->BtoNmap,IS_GTOLM_DROP,deluxe_ctx->n_simple,deluxe_ctx->idx_simple_B,&i,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,deluxe_ctx->n_simple,deluxe_ctx->idx_simple_B,&i,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
   if (i != deluxe_ctx->n_simple) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simple scaling dofs! %d != %d",i,deluxe_ctx->n_simple);
   }
@@ -703,7 +703,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
     }
 
     if (deluxe_ctx->par_col2sub[i] >= 0) {
-      PC                     pc;
+      PC                     pctemp;
+      PC_IS                  *pcis=(PC_IS*)pc->data;
       Mat                    color_mat,color_mat_is,temp_mat;
       ISLocalToGlobalMapping WtoNmap,l2gmap_subset;
       IS                     is_local_numbering,isB_local,isW_local,isW;
@@ -743,7 +744,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
       /* compute scatters */
       /* deluxe_ctx->par_scctx_p[i] extension from local subset to extended dirichlet problem
          deluxe_ctx->par_scctx_s[i] restriction from local boundary to subset -> simple copy of selected values */
-      ierr = ISGlobalToLocalMappingApplyIS(pcbddc->BtoNmap,IS_GTOLM_DROP,sub_schurs->is_AEj_B[subidx],&isB_local);CHKERRQ(ierr);
+      ierr = ISGlobalToLocalMappingApplyIS(pcis->BtoNmap,IS_GTOLM_DROP,sub_schurs->is_AEj_B[subidx],&isB_local);CHKERRQ(ierr);
       ierr = VecScatterCreate(pcbddc->work_scaling,isB_local,sub_schurs->work1[subidx],NULL,&deluxe_ctx->par_scctx_s[i]);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApplyIS(WtoNmap,IS_GTOLM_DROP,sub_schurs->is_AEj_B[subidx],&isW_local);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingApplyIS(l2gmap_subset,isW_local,&isW);CHKERRQ(ierr);
@@ -763,8 +764,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
       ierr = KSPSetOperators(deluxe_ctx->par_ksp[i],color_mat,color_mat);CHKERRQ(ierr);
       ierr = KSPSetTolerances(deluxe_ctx->par_ksp[i],1.e-12,1.e-12,1.e10,10000);CHKERRQ(ierr);
       ierr = KSPSetType(deluxe_ctx->par_ksp[i],KSPPREONLY);CHKERRQ(ierr);
-      ierr = KSPGetPC(deluxe_ctx->par_ksp[i],&pc);CHKERRQ(ierr);
-      ierr = PCSetType(pc,PCREDUNDANT);CHKERRQ(ierr);
+      ierr = KSPGetPC(deluxe_ctx->par_ksp[i],&pctemp);CHKERRQ(ierr);
+      ierr = PCSetType(pctemp,PCREDUNDANT);CHKERRQ(ierr);
       ierr = PetscStrlen(((PetscObject)(pcbddc->ksp_D))->prefix,&len);CHKERRQ(ierr);
       len -= 10; /* remove "dirichlet_" */
       ierr = PetscStrncpy(ksp_prefix,((PetscObject)(pcbddc->ksp_D))->prefix,len+1);CHKERRQ(ierr); /* PetscStrncpy puts a terminating char at the end */
@@ -879,6 +880,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   /* Get local indices in local whole numbering and local boundary numbering */
   local_size = 0;
   for (i=0;i<n_local_sequential_problems;i++) {
+    PC_IS    *pcis=(PC_IS*)pc->data;
     PetscInt *idxs;
     /* get info on local problem */
     local_problem_index = local_sequential[i];
@@ -887,7 +889,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
     /* subset indices in local numbering */
     ierr = PetscMemcpy(all_local_idx_N+local_size,idxs,subset_size*sizeof(PetscInt));CHKERRQ(ierr);
     /* subset indices in local boundary numbering */
-    ierr = ISGlobalToLocalMappingApply(pcbddc->BtoNmap,IS_GTOLM_DROP,subset_size,idxs,&j,&all_local_idx_B[local_size]);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,subset_size,idxs,&j,&all_local_idx_B[local_size]);CHKERRQ(ierr);
     ierr = ISRestoreIndices(sub_schurs->is_AEj_B[local_problem_index],(const PetscInt**)&idxs);CHKERRQ(ierr);
     if (j != subset_size) {
       SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in BDDC deluxe serial %d (BtoNmap)! %d != %d\n",local_problem_index,subset_size,j);

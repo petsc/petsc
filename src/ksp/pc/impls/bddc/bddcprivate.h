@@ -37,10 +37,10 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC);
 PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC,Mat,MatNullSpace*);
 
 /* utils */
+PetscErrorCode PCBDDCComputeLocalMatrix(PC,Mat);
 PetscErrorCode PCBDDCSetUpLocalWorkVectors(PC);
 PetscErrorCode PCBDDCSetUpSolvers(PC);
 PetscErrorCode PCBDDCSetUpLocalScatters(PC);
-PetscErrorCode PCBDDCSetUpLocalMatrices(PC);
 PetscErrorCode PCBDDCSetUpLocalSolvers(PC);
 PetscErrorCode PCBDDCSetUpCorrection(PC,PetscScalar**);
 PetscErrorCode PCBDDCSetUpCoarseSolver(PC,PetscScalar*);

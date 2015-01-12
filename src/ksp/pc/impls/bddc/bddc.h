@@ -37,7 +37,6 @@ typedef struct {
   PetscBool     issym;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
-  ISLocalToGlobalMapping BtoNmap;
   PetscInt      n_constraints;
   PetscInt      n_vertices;
   PetscInt      n_actual_vertices;
