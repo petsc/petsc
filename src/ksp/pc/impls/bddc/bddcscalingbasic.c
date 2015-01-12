@@ -423,6 +423,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   for (i=0;i<n_edges;i++) {
     all_cc[n_faces+i] = edges[i];
   }
+  ierr = PetscFree(faces);CHKERRQ(ierr);
+  ierr = PetscFree(edges);CHKERRQ(ierr);
 
   /* map interface's subsets */
   max_subset_size = 0;
