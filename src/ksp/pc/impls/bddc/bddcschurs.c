@@ -50,7 +50,7 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCAdjGetNextLayer_Private"
-static PetscErrorCode PCBDDCAdjGetNextLayer_Private(PetscInt* queue_tip,PetscInt n_prev,PetscBT touched,PetscInt* xadj,PetscInt* adjncy,PetscInt* n_added)
+PETSC_STATIC_INLINE PetscErrorCode PCBDDCAdjGetNextLayer_Private(PetscInt* queue_tip,PetscInt n_prev,PetscBT touched,PetscInt* xadj,PetscInt* adjncy,PetscInt* n_added)
 {
   PetscInt       i,j,n;
   PetscErrorCode ierr;
@@ -77,9 +77,10 @@ static PetscErrorCode PCBDDCAdjGetNextLayer_Private(PetscInt* queue_tip,PetscInt
 PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I, IS is_A_B, PetscInt ncc, IS is_cc[], PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers)
 {
   Mat                    A_II,A_IB,A_BI,A_BB;
-  ISLocalToGlobalMapping BtoNmap,ItoNmap;
-  PetscBT                touched;
-  PetscInt               i,n_I,n_B,n_local,*local_numbering;
+  Mat                    AE_II,*AE_IE,*AE_EI,*AE_EE;
+  IS                     is_I,*is_subset_B;
+  ISLocalToGlobalMapping BtoNmap;
+  PetscInt               i;
   PetscBool              is_sorted;
   PetscErrorCode         ierr;
 
@@ -93,103 +94,110 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I
     SETERRQ(PetscObjectComm((PetscObject)is_A_B),PETSC_ERR_PLIB,"IS for B dofs should be shorted");
   }
 
-  /* get sizes */
-  ierr = ISGetLocalSize(is_A_I,&n_I);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(is_A_B,&n_B);CHKERRQ(ierr);
-  n_local = n_I+n_B;
-
-  /* maps */
-  ierr = ISLocalToGlobalMappingCreateIS(is_A_B,&BtoNmap);CHKERRQ(ierr);
-  if (nlayers >= 0 && xadj != NULL && adjncy != NULL) { /* I problems have a different size of the original ones */
-    ierr = ISLocalToGlobalMappingCreateIS(is_A_I,&ItoNmap);CHKERRQ(ierr);
-    /* allocate some auxiliary space */
-    ierr = PetscMalloc1(n_local,&local_numbering);CHKERRQ(ierr);
-    ierr = PetscBTCreate(n_local,&touched);CHKERRQ(ierr);
-  } else {
-    ItoNmap = 0;
-    local_numbering = 0;
-    touched = 0;
-  }
-
   /* get Schur complement matrices */
   ierr = MatSchurComplementGetSubMatrices(S,&A_II,NULL,&A_IB,&A_BI,&A_BB);CHKERRQ(ierr);
 
   /* allocate space for schur complements */
   ierr = PetscMalloc5(ncc,&sub_schurs->is_AEj_I,ncc,&sub_schurs->is_AEj_B,ncc,&sub_schurs->S_Ej,ncc,&sub_schurs->work1,ncc,&sub_schurs->work2);CHKERRQ(ierr);
+  ierr = PetscMalloc4(ncc,&is_subset_B,ncc,&AE_IE,ncc,&AE_EI,ncc,&AE_EE);CHKERRQ(ierr);
   sub_schurs->n_subs = ncc;
 
-  /* cycle on subsets and extract schur complements */
-  for (i=0;i<sub_schurs->n_subs;i++) {
-    Mat      AE_II,AE_IE,AE_EI,AE_EE;
-    IS       is_I,is_subset_B;
+  /* maps */
+  if (sub_schurs->n_subs && nlayers >= 0 && xadj != NULL && adjncy != NULL) { /* Interior problems can be different from the original one */
+    ISLocalToGlobalMapping ItoNmap;
+    PetscBT                touched;
+    const PetscInt*        idx_B;
+    PetscInt               n_I,n_B,n_local_dofs,n_prev_added,j,layer,*local_numbering;
 
-    /* get IS for subsets in B numbering */
+    /* get sizes */
+    ierr = ISGetLocalSize(is_A_I,&n_I);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(is_A_B,&n_B);CHKERRQ(ierr);
+
+    ierr = ISLocalToGlobalMappingCreateIS(is_A_I,&ItoNmap);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n_I+n_B,&local_numbering);CHKERRQ(ierr);
+    ierr = PetscBTCreate(n_I+n_B,&touched);CHKERRQ(ierr);
+    ierr = PetscBTMemzero(n_I+n_B,touched);CHKERRQ(ierr);
+
+    /* all boundary dofs must be skipped when adding layers */
+    ierr = ISGetIndices(is_A_B,&idx_B);CHKERRQ(ierr);
+    for (j=0;j<n_B;j++) {
+      ierr = PetscBTSet(touched,idx_B[j]);CHKERRQ(ierr);
+    }
+    ierr = PetscMemcpy(local_numbering,idx_B,n_B*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is_A_B,&idx_B);CHKERRQ(ierr);
+
+    /* add next layers of dofs */
+    n_local_dofs = n_B;
+    n_prev_added = n_B;
+    for (layer=0;layer<nlayers;layer++) {
+      PetscInt n_added;
+      if (n_local_dofs == n_I+n_B) break;
+      if (n_local_dofs > n_I+n_B) {
+        SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error querying layer %d. Out of bound access (%d > %d)",layer,n_local_dofs,n_I+n_B);
+      }
+      ierr = PCBDDCAdjGetNextLayer_Private(local_numbering+n_local_dofs,n_prev_added,touched,xadj,adjncy,&n_added);CHKERRQ(ierr);
+      n_prev_added = n_added;
+      n_local_dofs += n_added;
+      if (!n_added) break;
+    }
+    ierr = PetscBTDestroy(&touched);CHKERRQ(ierr);
+
+    /* IS for I dofs in original numbering and in I numbering */
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ItoNmap),n_local_dofs-n_B,local_numbering+n_B,PETSC_COPY_VALUES,&sub_schurs->is_AEj_I[0]);CHKERRQ(ierr);
+    ierr = PetscFree(local_numbering);CHKERRQ(ierr);
+    ierr = ISSort(sub_schurs->is_AEj_I[0]);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApplyIS(ItoNmap,IS_GTOLM_DROP,sub_schurs->is_AEj_I[0],&is_I);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&ItoNmap);CHKERRQ(ierr);
+
+    /* II block */
+    ierr = MatGetSubMatrix(A_II,is_I,is_I,MAT_INITIAL_MATRIX,&AE_II);CHKERRQ(ierr);
+  } else {
+    PetscInt n_I;
+
+    /* IS for I dofs in original numbering */
+    ierr = PetscObjectReference((PetscObject)is_A_I);CHKERRQ(ierr);
+    sub_schurs->is_AEj_I[0] = is_A_I;
+
+    /* IS for I dofs in I numbering (strided 1) */
+    ierr = ISGetSize(is_A_I,&n_I);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)is_A_I),n_I,0,1,&is_I);CHKERRQ(ierr);
+
+    /* II block is the same */
+    ierr = PetscObjectReference((PetscObject)A_II);CHKERRQ(ierr);
+    AE_II = A_II;
+  }
+
+  /* TODO: just for compatibility with the previous version, needs to be fixed */
+  for (i=1;i<sub_schurs->n_subs;i++) {
+    ierr = PetscObjectReference((PetscObject)sub_schurs->is_AEj_I[0]);CHKERRQ(ierr);
+    sub_schurs->is_AEj_I[i] = sub_schurs->is_AEj_I[0];
+  }
+
+  /* subsets in original and boundary numbering */
+  ierr = ISLocalToGlobalMappingCreateIS(is_A_B,&BtoNmap);CHKERRQ(ierr);
+  for (i=0;i<sub_schurs->n_subs;i++) {
     ierr = ISDuplicate(is_cc[i],&sub_schurs->is_AEj_B[i]);CHKERRQ(ierr);
     ierr = ISSort(sub_schurs->is_AEj_B[i]);CHKERRQ(ierr);
-    ierr = ISGlobalToLocalMappingApplyIS(BtoNmap,IS_GTOLM_DROP,sub_schurs->is_AEj_B[i],&is_subset_B);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApplyIS(BtoNmap,IS_GTOLM_DROP,sub_schurs->is_AEj_B[i],&is_subset_B[i]);CHKERRQ(ierr);
+  }
+  ierr = ISLocalToGlobalMappingDestroy(&BtoNmap);CHKERRQ(ierr);
 
-    /* BB block on subset */
-    ierr = MatGetSubMatrix(A_BB,is_subset_B,is_subset_B,MAT_INITIAL_MATRIX,&AE_EE);CHKERRQ(ierr);
+  /* EE block */
+  for (i=0;i<sub_schurs->n_subs;i++) {
+    ierr = MatGetSubMatrix(A_BB,is_subset_B[i],is_subset_B[i],MAT_INITIAL_MATRIX,&AE_EE[i]);CHKERRQ(ierr);
+  }
+  /* IE block */
+  for (i=0;i<sub_schurs->n_subs;i++) {
+    ierr = MatGetSubMatrix(A_IB,is_I,is_subset_B[i],MAT_INITIAL_MATRIX,&AE_IE[i]);CHKERRQ(ierr);
+  }
+  /* EI block */
+  for (i=0;i<sub_schurs->n_subs;i++) {
+    ierr = MatGetSubMatrix(A_BI,is_subset_B[i],is_I,MAT_INITIAL_MATRIX,&AE_EI[i]);CHKERRQ(ierr);
+  }
 
-    if (ItoNmap) { /* is ItoNmap has been computed, extracts only a part of I dofs */
-      const PetscInt* idx_B;
-      PetscInt        n_local_dofs,n_prev_added,j,layer,subset_size;
-
-      /* all boundary dofs must be skipped when adding layers */
-      ierr = PetscBTMemzero(n_local,touched);CHKERRQ(ierr);
-      ierr = ISGetIndices(is_A_B,&idx_B);CHKERRQ(ierr);
-      for (j=0;j<n_B;j++) {
-        ierr = PetscBTSet(touched,idx_B[j]);CHKERRQ(ierr);
-      }
-      ierr = ISRestoreIndices(is_A_B,&idx_B);CHKERRQ(ierr);
-
-      /* add next layers of dofs */
-      ierr = ISGetLocalSize(is_cc[i],&subset_size);CHKERRQ(ierr);
-      ierr = ISGetIndices(is_cc[i],&idx_B);CHKERRQ(ierr);
-      ierr = PetscMemcpy(local_numbering,idx_B,subset_size*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = ISRestoreIndices(is_cc[i],&idx_B);CHKERRQ(ierr);
-      n_local_dofs = subset_size;
-      n_prev_added = subset_size;
-      for (layer=0;layer<nlayers;layer++) {
-        PetscInt n_added;
-        if (n_local_dofs == n_I+subset_size) break;
-        if (n_local_dofs > n_I+subset_size) {
-          SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error querying layer %d. Out of bound access (%d > %d)",layer,n_local_dofs,n_I+subset_size);
-        }
-        ierr = PCBDDCAdjGetNextLayer_Private(local_numbering+n_local_dofs,n_prev_added,touched,xadj,adjncy,&n_added);CHKERRQ(ierr);
-        n_prev_added = n_added;
-        n_local_dofs += n_added;
-        if (!n_added) break;
-      }
-
-      /* IS for I dofs in original numbering and in I numbering */
-      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ItoNmap),n_local_dofs-subset_size,local_numbering+subset_size,PETSC_COPY_VALUES,&sub_schurs->is_AEj_I[i]);CHKERRQ(ierr);
-      ierr = ISSort(sub_schurs->is_AEj_I[i]);CHKERRQ(ierr);
-      ierr = ISGlobalToLocalMappingApplyIS(ItoNmap,IS_GTOLM_DROP,sub_schurs->is_AEj_I[i],&is_I);CHKERRQ(ierr);
-
-      /* II block */
-      ierr = MatGetSubMatrix(A_II,is_I,is_I,MAT_INITIAL_MATRIX,&AE_II);CHKERRQ(ierr);
-    } else { /* in this case we can take references of already existing IS and matrices for I dofs */
-      /* IS for I dofs in original numbering */
-      ierr = PetscObjectReference((PetscObject)is_A_I);CHKERRQ(ierr);
-      sub_schurs->is_AEj_I[i] = is_A_I;
-
-      /* IS for I dofs in I numbering TODO: "first" argument of ISCreateStride is not general */
-      ierr = ISCreateStride(PetscObjectComm((PetscObject)is_A_I),n_I,0,1,&is_I);CHKERRQ(ierr);
-
-      /* II block is the same */
-      ierr = PetscObjectReference((PetscObject)A_II);CHKERRQ(ierr);
-      AE_II = A_II;
-    }
-
-    /* IE block */
-    ierr = MatGetSubMatrix(A_IB,is_I,is_subset_B,MAT_INITIAL_MATRIX,&AE_IE);CHKERRQ(ierr);
-
-    /* EI block */
-    ierr = MatGetSubMatrix(A_BI,is_subset_B,is_I,MAT_INITIAL_MATRIX,&AE_EI);CHKERRQ(ierr);
-
-    /* setup Schur complements on subset */
-    ierr = MatCreateSchurComplement(AE_II,AE_II,AE_IE,AE_EI,AE_EE,&sub_schurs->S_Ej[i]);CHKERRQ(ierr);
+  /* setup Schur complements on subset */
+  for (i=0;i<sub_schurs->n_subs;i++) {
+    ierr = MatCreateSchurComplement(AE_II,AE_II,AE_IE[i],AE_EI[i],AE_EE[i],&sub_schurs->S_Ej[i]);CHKERRQ(ierr);
     ierr = MatCreateVecs(sub_schurs->S_Ej[i],&sub_schurs->work1[i],&sub_schurs->work2[i]);CHKERRQ(ierr);
     if (AE_II == A_II) { /* we can reuse the same ksp */
       KSP ksp;
@@ -220,18 +228,16 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I
       }
       ierr = KSPSetUp(schurksp);CHKERRQ(ierr);
     }
-    /* free */
-    ierr = MatDestroy(&AE_II);CHKERRQ(ierr);
-    ierr = MatDestroy(&AE_EE);CHKERRQ(ierr);
-    ierr = MatDestroy(&AE_IE);CHKERRQ(ierr);
-    ierr = MatDestroy(&AE_EI);CHKERRQ(ierr);
-    ierr = ISDestroy(&is_I);CHKERRQ(ierr);
-    ierr = ISDestroy(&is_subset_B);CHKERRQ(ierr);
   }
   /* free */
-  ierr = ISLocalToGlobalMappingDestroy(&ItoNmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&BtoNmap);CHKERRQ(ierr);
-  ierr = PetscFree(local_numbering);CHKERRQ(ierr);
-  ierr = PetscBTDestroy(&touched);CHKERRQ(ierr);
+  ierr = ISDestroy(&is_I);CHKERRQ(ierr);
+  ierr = MatDestroy(&AE_II);CHKERRQ(ierr);
+  for (i=0;i<sub_schurs->n_subs;i++) {
+    ierr = MatDestroy(&AE_EE[i]);CHKERRQ(ierr);
+    ierr = MatDestroy(&AE_IE[i]);CHKERRQ(ierr);
+    ierr = MatDestroy(&AE_EI[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is_subset_B[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree4(is_subset_B,AE_IE,AE_EI,AE_EE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
