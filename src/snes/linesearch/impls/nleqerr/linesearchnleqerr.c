@@ -98,11 +98,9 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
       ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Lipschitz estimate: %14.12e; lambda: %14.12e\n", (double) nleqerr->mu_curr, (double) lambda);CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
-  }
-  else {
+  } else {
     lambda = linesearch->damping;
   }
-
 
   /* The main while loop of the algorithm. 
      At the end of this while loop, G should have the accepted new X in it. */
@@ -117,8 +115,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
 
     /* Check that we haven't performed too many iterations */
     count += 1;
-    if (count >= max_its)
-    {
+    if (count >= max_its) {
       if (monitor) {
         ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(monitor,"    Line search: maximum iterations reached\n");CHKERRQ(ierr);
@@ -181,16 +178,14 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
       lambda = PetscMin(mudash, 0.5 * lambda);
       lambda = PetscMax(lambda, minlambda);
       /* continue through the loop, i.e. go back to regularity test */
-    }
-    else {
+    } else {
       /* linesearch terminated */
       lambdadash = PetscMin(1.0, mudash);
 
       if (lambdadash == 1.0 && lambda == 1.0 && wnorm <= stol) {
         /* store the updated state, X - Y - W, in G:
            I need to keep W for the next linesearch */
-        ierr = VecZeroEntries(G);CHKERRQ(ierr);
-        ierr = VecAXPY(G, +1.0, X);CHKERRQ(ierr);
+        ierr = VecCopy(X, G);CHKERRQ(ierr);
         ierr = VecAXPY(G, -1.0, Y);CHKERRQ(ierr);
         ierr = VecAXPY(G, -1.0, W);CHKERRQ(ierr);
         break;
