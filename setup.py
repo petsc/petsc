@@ -10,15 +10,21 @@ solution of scientific applications modeled by partial differential
 equations. It employs the Message Passing Interface (MPI) standard for
 all message-passing communication.
 
+.. note::
+
+   To install ``PETSc`` and ``petsc4py`` (``mpi4py`` is optional
+   but highly recommended) use::
+
+     $ pip install numpy mpi4py
+     $ pip install petsc petsc4py
+
 .. tip::
 
-  You can also install `petsc-master`_ with::
+  You can also install the in-development versions with::
 
-    $ pip install https://bitbucket.org/petsc/petsc/get/master.tar.gz#egg=petsc-master
-
-  Then install petsc4py with
-
-    $ pip install https://bitbucket.org/petsc/petsc4py/get/master.tar.gz#egg=petsc4py-master
+    $ pip install Cython numpy mpi4py
+    $ pip install --no-deps https://bitbucket.org/petsc/petsc/get/master.tar.gz
+    $ pip install --no-deps https://bitbucket.org/petsc/petsc4py/get/master.tar.gz
 
 """
 
@@ -92,10 +98,6 @@ def config(dry_run=False):
         '--with-shared-libraries=1',
         '--with-debugging=0',
         '--with-c2html=0', # not needed
-        '--with-sowing=0',
-        '--with-fc=0',
-        '--with-cxx=0',
-        #'--with-cmake=0',
         ]
     # MPI
     try:
@@ -112,8 +114,13 @@ def config(dry_run=False):
         options.append('--with-cc='+mpicc)
         if mpicxx:
             options.append('--with-cxx='+mpicxx)
+        else:
+            options.append('--with-cxx=0')
         if mpif90:
             options.append('--with-fc='+mpif90)
+        else:
+            options.append('--with-fc=0')
+            options.append('--with-sowing=0')
     else:
         options.append('--with-mpi=0')
     # Extra configure options
