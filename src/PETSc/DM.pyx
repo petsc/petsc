@@ -17,6 +17,7 @@ class DMBoundaryType(object):
     GHOSTED  = DM_BOUNDARY_GHOSTED
     MIRROR   = DM_BOUNDARY_MIRROR
     PERIODIC = DM_BOUNDARY_PERIODIC
+    TWIST    = DM_BOUNDARY_TWIST
 
 # --------------------------------------------------------------------
 

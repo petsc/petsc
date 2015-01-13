@@ -20,6 +20,7 @@ cdef extern from * nogil:
         DM_BOUNDARY_GHOSTED
         DM_BOUNDARY_MIRROR
         DM_BOUNDARY_PERIODIC
+        DM_BOUNDARY_TWIST
 
     int DMCreate(MPI_Comm,PetscDM*)
     int DMClone(PetscDM,PetscDM*)
@@ -75,4 +76,57 @@ cdef extern from * nogil:
 
     int DMShellSetGlobalVector(PetscDM,PetscVec)
     int DMShellSetLocalVector(PetscDM,PetscVec)
+
+# --------------------------------------------------------------------
+
+cdef inline PetscDMBoundaryType asBoundaryType(object boundary) \
+    except <PetscDMBoundaryType>(-1):
+    if boundary is None:
+        return DM_BOUNDARY_NONE
+    if isinstance(boundary, str):
+        if boundary == 'none':
+            return DM_BOUNDARY_NONE
+        elif boundary == 'ghosted':
+            return DM_BOUNDARY_GHOSTED
+        elif boundary == 'mirror':
+            return DM_BOUNDARY_MIRROR
+        elif boundary == 'periodic':
+            return DM_BOUNDARY_PERIODIC
+        elif boundary == 'twist':
+            return DM_BOUNDARY_TWIST
+        else:
+            raise ValueError("unknown boundary type: %s" % boundary)
+    return boundary
+
+cdef inline PetscInt asBoundary(object boundary,
+                                PetscDMBoundaryType *_x,
+                                PetscDMBoundaryType *_y,
+                                PetscDMBoundaryType *_z) except? -1:
+    cdef PetscInt dim = PETSC_DECIDE
+    cdef object x, y, z
+    if (boundary is None or
+        isinstance(boundary, str) or
+        isinstance(boundary, int)):
+        _x[0] = _y[0] = _z[0] = asBoundaryType(boundary)
+    else:
+        boundary = tuple(boundary)
+        dim = <PetscInt>len(boundary)
+        if   dim == 0: pass
+        elif dim == 1: (x,) = boundary
+        elif dim == 2: (x, y) = boundary
+        elif dim == 3: (x, y, z) = boundary
+        if dim >= 1: _x[0] = asBoundaryType(x)
+        if dim >= 2: _y[0] = asBoundaryType(y)
+        if dim >= 3: _z[0] = asBoundaryType(z)
+    return dim
+
+cdef inline object toBoundary(PetscInt dim,
+                              PetscDMBoundaryType x,
+                              PetscDMBoundaryType y,
+                              PetscDMBoundaryType z):
+    if   dim == 0: return ()
+    elif dim == 1: return (x,)
+    elif dim == 2: return (x, y)
+    elif dim == 3: return (x, y, z)
+
 # --------------------------------------------------------------------
