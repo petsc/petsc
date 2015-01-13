@@ -92,19 +92,29 @@ class BaseTestDA(object):
         vl = self.da.createLocalVec()
         mat = self.da.createMat()
         self.assertTrue(mat.getType() in ('aij', 'seqaij', 'mpiaij'))
-        vlg = self.da.createLocalVec()
         vn.set(1.0)
         self.da.naturalToGlobal(vn,vg)
         self.assertEqual(vg.max()[1], 1.0)
         self.assertEqual(vg.min()[1], 1.0)
         self.da.globalToLocal(vg,vl)
         self.assertEqual(vl.max()[1], 1.0)
-        self.assertTrue(vlg.min()[1] in (1.0, 0.0))
-        self.da.localToLocal(vl,vlg)
-        self.assertEqual(vlg.max()[1], 1.0)
-        self.assertTrue(vlg.min()[1] in (1.0, 0.0))
-        self.da.localToGlobal(vl,vg)
+        self.assertTrue (vl.min()[1] in (1.0, 0.0))
+        vn.set(0.0)
         self.da.globalToNatural(vg,vn)
+        self.assertEqual(vn.max()[1], 1.0)
+        self.assertEqual(vn.min()[1], 1.0)
+        vl2 = self.da.createLocalVec()
+        self.da.localToLocal(vl,vl2)
+        self.assertEqual(vl2.max()[1], 1.0)
+        self.assertTrue (vl2.min()[1] in (1.0, 0.0))
+        NONE = PETSc.DM.BoundaryType.NONE
+        s = self.da.stencil_width
+        btype = self.da.boundary_type
+        psize = self.da.proc_sizes
+        for b, p in zip(btype, psize):
+            if b != NONE and p == 1: return
+        vg2 = self.da.createGlobalVec()
+        self.da.localToGlobal(vl2,vg2)
 
     def testGetOther(self):
         ao = self.da.getAO()
@@ -264,7 +274,7 @@ STENCIL_WIDTH = (None,0,1,2,3)
 
 DIM           = (1,2,3)
 DOF           = (None,2,5)
-BOUNDARY_TYPE = (None,"periodic", "ghosted")
+BOUNDARY_TYPE = (None,"none","periodic","ghosted","twist")
 STENCIL_TYPE  = (None,"box")
 STENCIL_WIDTH = (None,1,2)
 
@@ -336,10 +346,14 @@ for dim in DIM:
                             boundary = da.boundary_type
                         elif boundary == "none":
                             boundary = (0,) * dim
+                        elif boundary == "mirror":
+                            boundary = (MIRROR,) * dim
                         elif boundary == "ghosted":
                             boundary = (GHOSTED,) * dim
                         elif boundary == "periodic":
                             boundary = (PERIODIC,) * dim
+                        elif boundary == "twist":
+                            boundary = (TWIST,) * dim
                         elif isinstance(boundary, int):
                             boundary = (boundary,) * dim
                         if stencil is None:
