@@ -71,7 +71,7 @@ PetscErrorCode  CholmodStart(Mat F)
     c->name = (size_t)tmp;                                               \
 } while (0)
 
-#define CHOLMOD_OPTION_TRUTH(name,help) do {                             \
+#define CHOLMOD_OPTION_BOOL(name,help) do {                             \
     PetscBool tmp = (PetscBool) !!c->name;                              \
     ierr    = PetscOptionsBool("-mat_cholmod_" #name,help,"None",tmp,&tmp,NULL);CHKERRQ(ierr); \
     c->name = (int)tmp;                                                  \
@@ -80,6 +80,11 @@ PetscErrorCode  CholmodStart(Mat F)
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)F),((PetscObject)F)->prefix,"CHOLMOD Options","Mat");CHKERRQ(ierr);
   /* CHOLMOD handles first-time packing and refactor-packing separately, but we usually want them to be the same. */
   chol->pack = (PetscBool)c->final_pack;
+
+#if defined(PETSC_USE_SUITESPARSE_GPU)
+  c->useGPU = 1;
+  CHOLMOD_OPTION_INT(useGPU,"Use GPU for BLAS 1, otherwise 0");
+#endif
 
   ierr = PetscOptionsBool("-mat_cholmod_pack","Pack factors after factorization [disable for frequent repeat factorization]","None",chol->pack,&chol->pack,NULL);CHKERRQ(ierr);
   c->final_pack = (int)chol->pack;
@@ -94,13 +99,13 @@ PetscErrorCode  CholmodStart(Mat F)
     ierr = PetscOptionsEnum("-mat_cholmod_factor","Factorization method","None",list,(PetscEnum)c->supernodal,(PetscEnum*)&c->supernodal,NULL);CHKERRQ(ierr);
   }
   if (c->supernodal) CHOLMOD_OPTION_DOUBLE(supernodal_switch,"flop/nnz_L threshold for switching to supernodal factorization");
-  CHOLMOD_OPTION_TRUTH(final_asis,"Leave factors \"as is\"");
-  CHOLMOD_OPTION_TRUTH(final_pack,"Pack the columns when finished (use FALSE if the factors will be updated later)");
+  CHOLMOD_OPTION_BOOL(final_asis,"Leave factors \"as is\"");
+  CHOLMOD_OPTION_BOOL(final_pack,"Pack the columns when finished (use FALSE if the factors will be updated later)");
   if (!c->final_asis) {
-    CHOLMOD_OPTION_TRUTH(final_super,"Leave supernodal factors instead of converting to simplicial");
-    CHOLMOD_OPTION_TRUTH(final_ll,"Turn LDL' factorization into LL'");
-    CHOLMOD_OPTION_TRUTH(final_monotonic,"Ensure columns are monotonic when done");
-    CHOLMOD_OPTION_TRUTH(final_resymbol,"Remove numerically zero values resulting from relaxed supernodal amalgamation");
+    CHOLMOD_OPTION_BOOL(final_super,"Leave supernodal factors instead of converting to simplicial");
+    CHOLMOD_OPTION_BOOL(final_ll,"Turn LDL' factorization into LL'");
+    CHOLMOD_OPTION_BOOL(final_monotonic,"Ensure columns are monotonic when done");
+    CHOLMOD_OPTION_BOOL(final_resymbol,"Remove numerically zero values resulting from relaxed supernodal amalgamation");
   }
   {
     PetscReal tmp[] = {(PetscReal)c->zrelax[0],(PetscReal)c->zrelax[1],(PetscReal)c->zrelax[2]};
@@ -115,8 +120,8 @@ PetscErrorCode  CholmodStart(Mat F)
     if (flg && n != 3) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_OUTOFRANGE,"must provide exactly 3 parameters to -mat_cholmod_nrelax");
     if (flg) while (n--) c->nrelax[n] = (size_t)tmp[n];
   }
-  CHOLMOD_OPTION_TRUTH(prefer_upper,"Work with upper triangular form [faster when using fill-reducing ordering, slower in natural ordering]");
-  CHOLMOD_OPTION_TRUTH(default_nesdis,"Use NESDIS instead of METIS for nested dissection");
+  CHOLMOD_OPTION_BOOL(prefer_upper,"Work with upper triangular form [faster when using fill-reducing ordering, slower in natural ordering]");
+  CHOLMOD_OPTION_BOOL(default_nesdis,"Use NESDIS instead of METIS for nested dissection");
   CHOLMOD_OPTION_INT(print,"Verbosity level");
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -246,6 +251,9 @@ static PetscErrorCode MatFactorInfo_CHOLMOD(Mat F,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"Common.ndbounds_hit      %g (number of times diagonal was modified by dbound)\n",c->ndbounds_hit);CHKERRQ(ierr);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.rowfacfl          %g (number of flops in last call to cholmod_rowfac)\n",c->rowfacfl);CHKERRQ(ierr);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Common.aatfl             %g (number of flops to compute A(:,f)*A(:,f)')\n",c->aatfl);CHKERRQ(ierr);CHKERRQ(ierr);
+#if defined(PETSC_USE_SUITESPARSE_GPU)
+  ierr = PetscViewerASCIIPrintf(viewer,"Common.useGPU            %d\n",c->useGPU);CHKERRQ(ierr);CHKERRQ(ierr);
+#endif
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -382,6 +390,8 @@ PetscErrorCode MatFactorGetSolverPackage_seqsbaij_cholmod(Mat A,const MatSolverP
 - -mat_cholmod_print <3>           - Verbosity level (None)
 
    Level: beginner
+
+   Note: CHOLMOD is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
 .seealso: PCCHOLESKY, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/

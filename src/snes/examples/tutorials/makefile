@@ -734,6 +734,11 @@ runex19_superlu:
 	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_superlu, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19.tmp
+runex19_umfpack:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 2 -pc_type lu -pc_factor_mat_solver_package umfpack -snes_view -snes_monitor_short -ksp_monitor_short > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_umfpack.out ex19.tmp) then true; \
+	   else  printf "${PWD}\nPossible problem with ex19_umfpack, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex19.tmp
 runex19_klu:
 	-@${MPIEXEC} -n 1 ./ex19 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package klu > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
@@ -1147,7 +1152,7 @@ TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex19.PETSc runex19_11 runex19_12 ex19.rm
 TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm
 TESTEXAMPLES_THREADCOMM        = ex19.PETSc runex19_pthread runex19_openmp ex19.rm
-TESTEXAMPLES_SUITESPARSE       = ex19.PETSc runex19_klu runex19_klu_2 runex19_klu_3 ex19.rm
+TESTEXAMPLES_SUITESPARSE       = ex19.PETSc runex19_umfpack runex19_klu runex19_klu_2 runex19_klu_3 ex19.rm
 
 
 include ${PETSC_DIR}/lib/petsc-conf/test

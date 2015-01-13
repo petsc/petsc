@@ -312,6 +312,8 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_klu(Mat A,const MatSolverPackage
 . -mat_klu_ordering <AMD>                     - KLU reordering scheme to reduce fill-in (choose one of) AMD COLAMD PETSC
 - -mat_klu_row_scale <NONE>                   - Matrix row scaling (choose one of) NONE SUM MAX 
 
+   Note: KLU is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
+
    Level: beginner
 
 .seealso: PCLU, MATSOLVERUMFPACK, MATSOLVERCHOLMOD, PCFactorSetMatSolverPackage(), MatSolverPackage
