@@ -120,19 +120,19 @@ class PetscConfig:
         if not (PETSC_ARCH and os.path.isdir(
                 os.path.join(PETSC_DIR, PETSC_ARCH))):
             petscvars = os.path.join(
-                PETSC_DIR, 'conf', 'petscvariables')
+                PETSC_DIR, 'lib','petsc-conf', 'petscvariables')
             petscvars = open(petscvars, 'rt')
             PETSC_ARCH = makefile(petscvars).get('PETSC_ARCH')
         if not (PETSC_ARCH and os.path.isdir(
                 os.path.join(PETSC_DIR, PETSC_ARCH))):
             PETSC_ARCH = ''
         #
-        variables = os.path.join(PETSC_DIR, 'conf', 'variables')
+        variables = os.path.join(PETSC_DIR, 'lib','petsc-conf', 'variables')
         if not os.path.exists(variables):
             variables = os.path.join(
-                PETSC_DIR, PETSC_ARCH, 'conf', 'variables')
+                PETSC_DIR, PETSC_ARCH, 'lib','petsc-conf', 'variables')
         petscvariables = os.path.join(
-            PETSC_DIR, PETSC_ARCH, 'conf', 'petscvariables')
+            PETSC_DIR, PETSC_ARCH, 'lib','petsc-conf', 'petscvariables')
         #
         variables = open(variables)
         try: contents = variables.read()
@@ -341,9 +341,9 @@ class config(_config):
         if not petsc_dir: return None
         petsc_arch = os.path.expandvars(petsc_arch)
         if (not petsc_arch or '$PETSC_ARCH' in petsc_arch):
-            have_dir_conf = os.path.isdir(os.path.join(petsc_dir, 'conf'))
+            have_dir_conf = os.path.isdir(os.path.join(petsc_dir, 'lib','petsc-conf'))
             if have_dir_conf:
-                petscvariables = os.path.join(petsc_dir, 'conf', 'petscvariables')
+                petscvariables = os.path.join(petsc_dir, 'lib','petsc-conf', 'petscvariables')
                 if os.path.exists(petscvariables):
                     conf = makefile(open(petscvariables, 'rt'))
                     petsc_arch = conf.get('PETSC_ARCH', '')
