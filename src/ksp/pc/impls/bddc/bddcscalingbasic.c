@@ -367,7 +367,7 @@ static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling delu
   PetscFunctionReturn(0);
 }
 
-#define OLD_CODE 1
+#define OLD_CODE 0
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScalingSetUp_Deluxe"
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
@@ -948,26 +948,28 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
 #define __FUNCT__ "PCBDDCScalingSetUp_Deluxe_Seq"
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_sequential_problems,PetscInt n_sequential_problems,PetscInt _gglobal_sequential[],PetscInt local_sequential[])
 {
-  PC_BDDC             *pcbddc=(PC_BDDC*)pc->data;
-  PCBDDCDeluxeScaling deluxe_ctx=pcbddc->deluxe_ctx;
-  PCBDDCSubSchurs     sub_schurs = pcbddc->sub_schurs[1];
-  Mat                 global_schur_subsets,*submat_global_schur_subsets,work_mat;
-  IS                  is_to,is_from;
-  PetscScalar         *array,*fill_vals;
-  PetscInt            *all_local_idx_G,*all_local_idx_B,*all_local_idx_N,*all_permutation_G,*dummy_idx;
-  PetscInt            i,j,k,local_problem_index;
-  PetscInt            subset_size,max_subset_size,max_subset_size_red;
-  PetscInt            local_size,global_size;
-  PC                  pc_temp;
-  MatSolverPackage    solver=NULL;
-  char                ksp_prefix[256];
-  size_t              len;
-  PetscErrorCode      ierr;
+  PC_BDDC                *pcbddc=(PC_BDDC*)pc->data;
+  PCBDDCDeluxeScaling    deluxe_ctx=pcbddc->deluxe_ctx;
+  PCBDDCSubSchurs        sub_schurs = pcbddc->sub_schurs[1];
+  ISLocalToGlobalMapping l2gmap_subsets;
+  Mat                    global_schur_subsets,*submat_global_schur_subsets,work_mat;
+  IS                     is_to,is_from;
+  PetscScalar            *array,*fill_vals;
+  PetscInt               *nnz,*all_local_idx_G,*all_local_idx_B,*all_local_idx_N,*all_permutation_G,*dummy_idx;
+  PetscInt               i,j,k,local_problem_index;
+  PetscInt               subset_size,max_subset_size;
+  PetscInt               local_size,global_size;
+  PC                     pc_temp;
+  MatSolverPackage       solver=NULL;
+  char                   ksp_prefix[256];
+  size_t                 len;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   if (!n_sequential_problems) {
     PetscFunctionReturn(0);
   }
+
   /* Get info on subset sizes and sum of all subsets sizes */
   max_subset_size = 0;
   local_size = 0;
@@ -981,6 +983,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   /* Work arrays for local indices */
   ierr = PetscMalloc1(local_size,&all_local_idx_B);CHKERRQ(ierr);
   ierr = PetscMalloc1(local_size,&all_local_idx_N);CHKERRQ(ierr);
+  ierr = PetscMalloc1(local_size,&nnz);CHKERRQ(ierr);
 
   /* Get local indices in local whole numbering and local boundary numbering */
   local_size = 0;
@@ -999,6 +1002,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
     if (j != subset_size) {
       SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in BDDC deluxe serial %d (BtoNmap)! %d != %d\n",local_problem_index,subset_size,j);
     }
+    for (j=0;j<subset_size;j++) nnz[local_size+j] = subset_size;
     local_size += subset_size;
   }
 
@@ -1014,14 +1018,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ierr = MatCreate(PETSC_COMM_SELF,&deluxe_ctx->seq_mat);CHKERRQ(ierr);
   ierr = MatSetSizes(deluxe_ctx->seq_mat,PETSC_DECIDE,PETSC_DECIDE,local_size,local_size);CHKERRQ(ierr);
   ierr = MatSetType(deluxe_ctx->seq_mat,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(deluxe_ctx->seq_mat,max_subset_size,PETSC_NULL);CHKERRQ(ierr);
-
-  /* Global matrix of all assembled Schur on subsets */
-  ierr = MatCreate(PetscObjectComm((PetscObject)pc),&global_schur_subsets);CHKERRQ(ierr);
-  ierr = MatSetSizes(global_schur_subsets,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size);CHKERRQ(ierr);
-  ierr = MatSetType(global_schur_subsets,MATAIJ);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&max_subset_size,&max_subset_size_red,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(global_schur_subsets,max_subset_size_red,PETSC_NULL,max_subset_size_red,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(deluxe_ctx->seq_mat,0,nnz);CHKERRQ(ierr);
+  ierr = PetscFree(nnz);CHKERRQ(ierr);
 
   /* Work arrays */
   ierr = PetscMalloc2(max_subset_size,&dummy_idx,max_subset_size*max_subset_size,&fill_vals);CHKERRQ(ierr);
@@ -1048,14 +1046,18 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
       dummy_idx[j]=local_size+j;
     }
     ierr = MatSetValues(deluxe_ctx->seq_mat,subset_size,dummy_idx,subset_size,dummy_idx,fill_vals,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValues(global_schur_subsets,subset_size,&all_local_idx_G[local_size],subset_size,&all_local_idx_G[local_size],fill_vals,ADD_VALUES);CHKERRQ(ierr);
     local_size += subset_size;
   }
+  ierr = PetscFree2(dummy_idx,fill_vals);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(deluxe_ctx->seq_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(deluxe_ctx->seq_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(global_schur_subsets,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(global_schur_subsets,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree2(dummy_idx,fill_vals);CHKERRQ(ierr);
+
+  /* Global matrix of all assembled Schur on subsets */
+  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)pc),1,local_size,all_local_idx_G,PETSC_COPY_VALUES,&l2gmap_subsets);CHKERRQ(ierr);
+  ierr = MatCreateIS(PetscObjectComm((PetscObject)pc),1,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size,l2gmap_subsets,&work_mat);CHKERRQ(ierr);
+  ierr = MatISSetLocalMat(work_mat,deluxe_ctx->seq_mat);CHKERRQ(ierr);
+  ierr = MatISGetMPIXAIJ(work_mat,MAT_INITIAL_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
+  ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
 
   /* Create work vectors for sequential part of deluxe */
   ierr = MatCreateVecs(deluxe_ctx->seq_mat,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
