@@ -83,54 +83,6 @@ cdef extern from * nogil:
 
 # --------------------------------------------------------------------
 
-cdef inline PetscDMBoundaryType asBoundaryType(object boundary) \
-    except <PetscDMBoundaryType>(-1):
-    if boundary is None:
-        return DM_BOUNDARY_NONE
-    if isinstance(boundary, str):
-        if boundary == 'none':
-            return DM_BOUNDARY_NONE
-        elif boundary == 'ghosted':
-            return DM_BOUNDARY_GHOSTED
-        elif boundary == 'mirror':
-            return DM_BOUNDARY_MIRROR
-        elif boundary == 'periodic':
-            return DM_BOUNDARY_PERIODIC
-        else:
-            raise ValueError("unknown boundary type: %s" % boundary)
-    return boundary
-
-cdef inline PetscInt asBoundary(object boundary,
-                                PetscDMBoundaryType *_x,
-                                PetscDMBoundaryType *_y,
-                                PetscDMBoundaryType *_z) except? -1:
-    cdef PetscInt dim = PETSC_DECIDE
-    cdef object x, y, z
-    if (boundary is None or
-        isinstance(boundary, str) or
-        isinstance(boundary, int)):
-        _x[0] = _y[0] = _z[0] = asBoundaryType(boundary)
-    else:
-        boundary = tuple(boundary)
-        dim = <PetscInt>len(boundary)
-        if   dim == 0: pass
-        elif dim == 1: (x,) = boundary
-        elif dim == 2: (x, y) = boundary
-        elif dim == 3: (x, y, z) = boundary
-        if dim >= 1: _x[0] = asBoundaryType(x)
-        if dim >= 2: _y[0] = asBoundaryType(y)
-        if dim >= 3: _z[0] = asBoundaryType(z)
-    return dim
-
-cdef inline object toBoundary(PetscInt dim,
-                              PetscDMBoundaryType x,
-                              PetscDMBoundaryType y,
-                              PetscDMBoundaryType z):
-    if   dim == 0: return ()
-    elif dim == 1: return (x,)
-    elif dim == 2: return (x, y)
-    elif dim == 3: return (x, y, z)
-
 cdef inline PetscDMDAStencilType asStencil(object stencil) \
     except <PetscDMDAStencilType>(-1):
     if isinstance(stencil, str):

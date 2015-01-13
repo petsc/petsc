@@ -175,6 +175,7 @@ class BaseTestDA(object):
 MIRROR   = PETSc.DMDA.BoundaryType.MIRROR
 GHOSTED  = PETSc.DMDA.BoundaryType.GHOSTED
 PERIODIC = PETSc.DMDA.BoundaryType.PERIODIC
+TWIST    = PETSc.DMDA.BoundaryType.TWIST
 
 SCALE = 4
 
@@ -216,6 +217,10 @@ class TestDA_2D_GXY(TestDA_2D):
     DOF = 2
     SWIDTH = 5
     BOUNDARY = (GHOSTED,)*2
+class TestDA_2D_TXY(TestDA_2D):
+    DOF = 2
+    SWIDTH = 5
+    BOUNDARY = (TWIST,)*2
 
 class TestDA_3D(BaseTestDA_3D, unittest.TestCase):
     pass
@@ -237,6 +242,10 @@ class TestDA_3D_GXYZ(TestDA_3D):
     DOF = 2
     SWIDTH = 3
     BOUNDARY = (GHOSTED,)*3
+class TestDA_3D_TXYZ(TestDA_3D):
+    DOF = 2
+    SWIDTH = 3
+    BOUNDARY = (TWIST,)*3
 
 # --------------------------------------------------------------------
 
@@ -247,6 +256,7 @@ BOUNDARY_TYPE = (
     "none",     (0,)*3,        0,
     "ghosted",  (GHOSTED,)*3,  GHOSTED,
     "periodic", (PERIODIC,)*3, PERIODIC,
+    "twist",    (TWIST,)*3,    TWIST,
     )
 STENCIL_TYPE  = (None,"star","box")
 STENCIL_WIDTH = (None,0,1,2,3)
