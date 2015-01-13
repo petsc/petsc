@@ -64,6 +64,73 @@ def check_petsc_arch(opts):
         opts.append(useName)
   return 0
 
+def chkenable():
+  #Replace all 'enable-'/'disable-' with 'with-'=0/1/tail
+  #enable-fortran is a special case, the resulting --with-fortran is ambiguous.
+  #Would it mean --with-fc= or --with-fortran-interfaces=?
+  for l in range(0,len(sys.argv)):
+    name = sys.argv[l]
+    if name.find('enable-fortran') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('enable-fortran','with-fortran-interfaces')+'=1'
+      else:
+        head, tail = name.split('=', 1)
+        sys.argv[l] = head.replace('enable-fortran','with-fortran-interfaces')+'='+tail
+      continue
+    if name.find('disable-fortran') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('disable-fortran','with-fortran-interfaces')+'=0'
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '1': tail = '0'
+        sys.argv[l] = head.replace('disable-fortran','with-fortran-interfaces')+'='+tail
+      continue
+
+
+    if name.find('enable-') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('enable-','with-')+'=1'
+      else:
+        head, tail = name.split('=', 1)
+        sys.argv[l] = head.replace('enable-','with-')+'='+tail
+    if name.find('disable-') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('disable-','with-')+'=0'
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '1': tail = '0'
+        sys.argv[l] = head.replace('disable-','with-')+'='+tail
+    if name.find('without-') >= 0:
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('without-','with-')+'=0'
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '1': tail = '0'
+        sys.argv[l] = head.replace('without-','with-')+'='+tail
+
+def chksynonyms():
+  #replace common configure options with ones that PETSc BuildSystem recognizes
+  for l in range(0,len(sys.argv)):
+    name = sys.argv[l]
+
+
+    if name.find('with-debug=') >= 0 or name.endswith('with-debug'):
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('with-debug','with-debugging')+'=1'
+      else:
+        head, tail = name.split('=', 1)
+        sys.argv[l] = head.replace('with-debug','with-debugging')+'='+tail
+
+    if name.find('with-shared=') >= 0 or name.endswith('with-shared'):
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('with-shared','with-shared-libraries')+'=1'
+      else:
+        head, tail = name.split('=', 1)
+        sys.argv[l] = head.replace('with-shared','with-shared-libraries')+'='+tail
+
+
+
+
 def chkwinf90():
   for arg in sys.argv:
     if (arg.find('win32fe') >= 0 and (arg.find('f90') >=0 or arg.find('ifort') >=0)):
@@ -220,30 +287,10 @@ def petsc_configure(configure_options):
   check_petsc_arch(sys.argv)
   check_broken_configure_log_links()
 
+  #rename '--enable-' to '--with-'
+  chkenable()
   # support a few standard configure option types
-  for l in range(0,len(sys.argv)):
-    name = sys.argv[l]
-    if name.find('enable-') >= 0:
-      if name.find('=') == -1:
-        sys.argv[l] = name.replace('enable-','with-')+'=1'
-      else:
-        head, tail = name.split('=', 1)
-        sys.argv[l] = head.replace('enable-','with-')+'='+tail
-    if name.find('disable-') >= 0:
-      if name.find('=') == -1:
-        sys.argv[l] = name.replace('disable-','with-')+'=0'
-      else:
-        head, tail = name.split('=', 1)
-        if tail == '1': tail = '0'
-        sys.argv[l] = head.replace('disable-','with-')+'='+tail
-    if name.find('without-') >= 0:
-      if name.find('=') == -1:
-        sys.argv[l] = name.replace('without-','with-')+'=0'
-      else:
-        head, tail = name.split('=', 1)
-        if tail == '1': tail = '0'
-        sys.argv[l] = head.replace('without-','with-')+'='+tail
-
+  chksynonyms()
   # Check for broken cygwin
   chkbrokencygwin()
   # Disable threads on RHL9
