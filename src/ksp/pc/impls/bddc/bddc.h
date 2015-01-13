@@ -87,7 +87,7 @@ typedef struct {
   IS                         coarse_subassembling_init;
   PetscBool                  use_coarse_estimates;
   /* schur complements on interface's subsets */
-  PCBDDCSubSchurs            sub_schurs;
+  PCBDDCSubSchurs            sub_schurs[2];
   /* scaling */
   Vec                        work_scaling;
   PetscBool                  use_deluxe_scaling;

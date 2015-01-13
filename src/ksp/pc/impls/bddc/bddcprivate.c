@@ -5,6 +5,20 @@
 static PetscErrorCode PCBDDCMatMultTranspose_Private(Mat A, Vec x, Vec y);
 static PetscErrorCode PCBDDCMatMult_Private(Mat A, Vec x, Vec y);
 
+#if 0
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCAdaptiveSelection"
+PetscErrorCode PCBDDCAdaptiveSelection(PC pc, MatNullSpace* adapt_nnsp)
+{
+  PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBDDCSubSchursInit(pcbddc->sub_schurs[0],pcbddc->mat_graph,...);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetUpSolvers"
 PetscErrorCode PCBDDCSetUpSolvers(PC pc)
@@ -75,7 +89,8 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   ierr = MatDestroy(&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
   ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
-  ierr = PCBDDCSubSchursReset(pcbddc->sub_schurs);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursReset(pcbddc->sub_schurs[0]);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursReset(pcbddc->sub_schurs[1]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

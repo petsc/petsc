@@ -36,7 +36,11 @@ struct _PCBDDCGraph {
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 
 struct _PCBDDCSubSchurs {
-  /* local Schur complements */
+  /* local Schur complements (or Neumann matrix) */
+  Mat S;
+  IS  is_I;
+  IS  is_B;
+  /* local Schur complements on subsets (principal minors) */
   Mat *S_Ej;
   /* work vectors */
   Vec *work1;
@@ -44,8 +48,23 @@ struct _PCBDDCSubSchurs {
   /* IS */
   IS *is_AEj_I;
   IS *is_AEj_B;
-  /* number of subproblems (i.e. the size of the arrays) */
+  /* number of local subproblems */
   PetscInt n_subs;
+  /* number of local sequential subproblems */
+  PetscInt n_subs_seq;
+  /* number of local parallel subproblems */
+  PetscInt n_subs_par;
+  /* number of global sequential subproblems */
+  PetscInt n_subs_seq_g;
+  /* number of global parallel subproblems */
+  PetscInt n_subs_par_g;
+  /* connected components */
+  IS*      is_subs;
+  /* some workspace */
+  PetscInt *index_sequential;
+  PetscInt *index_parallel;
+  PetscInt *auxglobal_sequential;
+  PetscInt *auxglobal_parallel;
 };
 typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
 

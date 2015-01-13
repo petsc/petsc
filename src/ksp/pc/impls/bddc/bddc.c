@@ -1227,13 +1227,19 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* Analyze interface */
   if (computetopography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
-    /* Schurs on subsets should be reset */
-    ierr = PCBDDCSubSchursReset(pcbddc->sub_schurs);CHKERRQ(ierr);
   }
 
   /* Setup local dirichlet solver ksp_D */
   if (computesolvers) {
     ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
+#if 0
+    if (pcbddc->adaptive_threshold > 0.0 || (pcbddc->use_deluxe_scaling && !pcbddc->use_change_of_basis)) {
+      /* ierr = PCBDDCSubSchursSetUp(pc);CHKERRQ(ierr); */
+      if (pcbddc->adaptive_threshold > 0.0) {
+        /* ierr = PCBDDCAdaptivity(pc);CHKERRQ(ierr); */
+      }
+    }
+#endif
   }
 
   /* infer if NullSpace object attached to Mat via MatSetNearNullSpace has changed */
@@ -1300,6 +1306,12 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     /* Create coarse and local stuffs */
     ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
     /* Create Scaling operator */
+#if 0
+//TODO due casi, uno con cambio di base (sub_schurs diversi) ed uno senza (stessi sub_schurs)
+    if (pcbddc->use_deluxe_scaling && pcbddc->use_change_of_basis) {
+      ierr = PCBDDCSubSchursSetUp(pcbddc->sub_schurs);CHKERRQ(ierr);
+    }
+#endif
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
   }
 
@@ -1470,8 +1482,9 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PCBDDCResetTopography(pc);CHKERRQ(ierr);
   /* free allocated graph structure */
   ierr = PetscFree(pcbddc->mat_graph);CHKERRQ(ierr);
-  /* free allocated sub schurs structure */
-  ierr = PetscFree(pcbddc->sub_schurs);CHKERRQ(ierr);
+  /* free allocated sub schurs structures */
+  ierr = PetscFree(pcbddc->sub_schurs[0]);CHKERRQ(ierr);
+  ierr = PetscFree(pcbddc->sub_schurs[1]);CHKERRQ(ierr);
   /* destroy objects for scaling operator */
   ierr = PCBDDCScalingDestroy(pc);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->deluxe_ctx);CHKERRQ(ierr);
@@ -1924,7 +1937,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
 
   /* create sub schurs structure */
-  ierr = PCBDDCSubSchursCreate(&pcbddc->sub_schurs);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursCreate(&pcbddc->sub_schurs[0]);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursCreate(&pcbddc->sub_schurs[1]);CHKERRQ(ierr);
 
   /* scaling */
   pcbddc->work_scaling          = 0;
