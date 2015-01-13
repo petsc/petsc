@@ -367,7 +367,7 @@ static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling delu
   PetscFunctionReturn(0);
 }
 
-#define OLD_CODE 0
+#define OLD_CODE 1
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScalingSetUp_Deluxe"
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
@@ -626,8 +626,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&S_j);CHKERRQ(ierr);
   ierr = MatSchurComplementSetKSP(S_j,pcbddc->ksp_D);CHKERRQ(ierr);
 
-  /* sub_schurs init */ /* TODO reuse adaptive one if valid */
-  ierr = PCBDDCSubSchursInit(sub_schurs,S_j,pcis->is_I_local,pcis->is_B_local,graph,pcbddc->deluxe_threshold);CHKERRQ(ierr);
+  /* sub_schurs init */ /* TODO reuse adaptive one if valid (i.e. pcbddc->local_mat == matis->A and same graph info (HOW?) ) */
+  ierr = PCBDDCSubSchursInit(sub_schurs,pcbddc->local_mat,S_j,pcis->is_I_local,pcis->is_B_local,graph,pcbddc->deluxe_threshold);CHKERRQ(ierr);
   ierr = MatDestroy(&S_j);CHKERRQ(ierr);
   ierr = PCBDDCSubSchursSetUpNew(sub_schurs,used_xadj,used_adjncy,pcbddc->deluxe_layers);CHKERRQ(ierr);
 
@@ -1091,7 +1091,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
   ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
   ierr = PCFactorGetMatSolverPackage(pc_temp,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
-  if (solver) {
+  if (solver && local_size) { /* if local_size is null, some external packages will report errors */
     PC     new_pc;
     PCType type;
     ierr = PCGetType(pc_temp,&type);CHKERRQ(ierr);
@@ -1104,7 +1104,9 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ierr = PetscStrncpy(ksp_prefix,((PetscObject)(pcbddc->ksp_D))->prefix,len+1);CHKERRQ(ierr);
   ierr = PetscStrcat(ksp_prefix,"deluxe_seq_");CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(deluxe_ctx->seq_ksp,ksp_prefix);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(deluxe_ctx->seq_ksp);CHKERRQ(ierr);
+  if (local_size) {
+    ierr = KSPSetFromOptions(deluxe_ctx->seq_ksp);CHKERRQ(ierr);
+  }
   ierr = KSPSetUp(deluxe_ctx->seq_ksp);CHKERRQ(ierr);
   ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -36,8 +36,11 @@ struct _PCBDDCGraph {
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 
 struct _PCBDDCSubSchurs {
-  /* local Schur complements (or Neumann matrix) */
+  /* local Neumann matrix */
+  Mat A;
+  /* local Schur complement */
   Mat S;
+  /* index sets */
   IS  is_I;
   IS  is_B;
   /* local Schur complements on subsets (principal minors) */

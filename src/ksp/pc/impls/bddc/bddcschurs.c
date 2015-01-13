@@ -183,7 +183,7 @@ PetscErrorCode PCBDDCSubSchursSetUpNew(PCBDDCSubSchurs sub_schurs, PetscInt xadj
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursInit"
-PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat S, IS is_I, IS is_B, PCBDDCGraph graph, PetscInt seqthreshold)
+PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat A, Mat S, IS is_I, IS is_B, PCBDDCGraph graph, PetscInt seqthreshold)
 {
   IS                  *faces,*edges,*all_cc;
   PetscInt            *index_sequential,*index_parallel;
@@ -274,6 +274,10 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat S, IS is_I, I
   ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)graph->l2gmap),graph->l2gmap,n_local_sequential_problems,auxlocal_sequential,PETSC_NULL,&n_sequential_problems,&auxglobal_sequential);CHKERRQ(ierr);
 
   /* update info in sub_schurs */
+  if (A) {
+    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    sub_schurs->A = A;
+  }
   ierr = PetscObjectReference((PetscObject)S);CHKERRQ(ierr);
   sub_schurs->S = S;
   ierr = PetscObjectReference((PetscObject)is_I);CHKERRQ(ierr);
@@ -332,6 +336,7 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MatDestroy(&sub_schurs->A);CHKERRQ(ierr);
   ierr = MatDestroy(&sub_schurs->S);CHKERRQ(ierr);
   ierr = ISDestroy(&sub_schurs->is_I);CHKERRQ(ierr);
   ierr = ISDestroy(&sub_schurs->is_B);CHKERRQ(ierr);
