@@ -1050,7 +1050,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_NonRefinement_Plex"
-PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(DM dm)
+PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptionsObjectType *PetscOptionsObject,DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   DMBoundary     b;
@@ -1095,7 +1095,7 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Plex"
-PetscErrorCode  DMSetFromOptions_Plex(DM dm)
+PetscErrorCode  DMSetFromOptions_Plex(PetscOptionsObjectType *PetscOptionsObject,DM dm)
 {
   PetscInt       refine = 0, r;
   PetscBool      isHierarchy;
@@ -1103,7 +1103,7 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscOptionsHead("DMPlex Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Options");CHKERRQ(ierr);
   /* Handle DMPlex refinement */
   ierr = PetscOptionsInt("-dm_refine", "The number of uniform refinements", "DMCreate", refine, &refine, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_refine_hierarchy", "The number of uniform refinements", "DMCreate", refine, &refine, &isHierarchy);CHKERRQ(ierr);
@@ -1123,7 +1123,7 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
     }
     /* Free DMs */
     for (r = 0; r < refine; ++r) {
-      ierr = DMSetFromOptions_NonRefinement_Plex(dm);CHKERRQ(ierr);
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
       ierr = DMDestroy(&dms[r]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dms);CHKERRQ(ierr);
@@ -1131,14 +1131,14 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
     for (r = 0; r < refine; ++r) {
       DM refinedMesh;
 
-      ierr = DMSetFromOptions_NonRefinement_Plex(dm);CHKERRQ(ierr);
+      ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
       ierr = DMRefine(dm, PetscObjectComm((PetscObject) dm), &refinedMesh);CHKERRQ(ierr);
       /* Total hack since we do not pass in a pointer */
       ierr = DMPlexReplace_Static(dm, refinedMesh);CHKERRQ(ierr);
       ierr = DMDestroy(&refinedMesh);CHKERRQ(ierr);
     }
   }
-  ierr = DMSetFromOptions_NonRefinement_Plex(dm);CHKERRQ(ierr);
+  ierr = DMSetFromOptions_NonRefinement_Plex(PetscOptionsObject,dm);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

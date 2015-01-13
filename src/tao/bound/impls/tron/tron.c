@@ -32,14 +32,14 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_TRON"
-static PetscErrorCode TaoSetFromOptions_TRON(Tao tao)
+static PetscErrorCode TaoSetFromOptions_TRON(PetscOptionsObjectType *PetscOptionsObject,Tao tao)
 {
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
   PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Newton Trust Region Method for bound constrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Newton Trust Region Method for bound constrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tao_tron_maxgpits","maximum number of gradient projections per TRON iterate","TaoSetMaxGPIts",tron->maxgpits,&tron->maxgpits,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);

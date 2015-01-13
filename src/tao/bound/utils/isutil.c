@@ -129,7 +129,9 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
      Msub[i,j] = M[i,j] if i,j in Free_Local or i==j
      Msub[i,j] = 0      if i!=j and i or j not in Free_Local
      */
+    ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)M),NULL,NULL,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-different_submatrix","use separate hessian matrix when computing submatrices","TaoSubsetType",flg,&flg,NULL);
+    ierr = PetscOptionsEnd();
     if (flg) {
       ierr = MatDuplicate(M, MAT_COPY_VALUES, Msub);CHKERRQ(ierr);
     } else {

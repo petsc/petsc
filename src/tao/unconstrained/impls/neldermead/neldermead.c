@@ -55,13 +55,13 @@ PetscErrorCode TaoDestroy_NM(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NM"
-PetscErrorCode TaoSetFromOptions_NM(Tao tao)
+PetscErrorCode TaoSetFromOptions_NM(PetscOptionsObjectType *PetscOptionsObject,Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Nelder-Mead options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Nelder-Mead options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nm_lamda","initial step length","",nm->lamda,&nm->lamda,NULL); CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nm_mu","mu","",nm->mu_oc,&nm->mu_oc,NULL);CHKERRQ(ierr);
   nm->mu_ic = -nm->mu_oc;

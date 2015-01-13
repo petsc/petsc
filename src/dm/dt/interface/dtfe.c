@@ -1948,14 +1948,14 @@ PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpac
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceSetFromOptions_Lagrange"
-PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscDualSpace sp)
+PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscOptionsObjectType *PetscOptionsObject,PetscDualSpace sp)
 {
   PetscBool      continuous, flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceLagrangeGetContinuity(sp, &continuous);CHKERRQ(ierr);
-  ierr = PetscOptionsHead("PetscDualSpace Lagrange Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"PetscDualSpace Lagrange Options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscdualspace_lagrange_continuity", "Flag for continuous element", "PetscDualSpaceLagrangeSetContinuity", continuous, &continuous, &flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscDualSpaceLagrangeSetContinuity(sp, continuous);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);

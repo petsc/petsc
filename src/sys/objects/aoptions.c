@@ -1,4 +1,5 @@
 
+
 /*
    Implements the higher-level options database querying methods. These are self-documenting and can attach at runtime to
    GUI code to display the options and get values from the users.
@@ -293,11 +294,11 @@ PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionsObjectType *PetscOptions
 #if defined(PETSC_SIZEOF_LONG_LONG)
         long long lid;
         sscanf(str,"%lld",&lid);
-        if (lid > PETSC_MAX_INT || lid < PETSC_MIN_INT) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Argument: -%s%s %lld",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",next->option+1,lid);
+        if (lid > PETSC_MAX_INT || lid < PETSC_MIN_INT) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Argument: -%s%s %lld",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",next->option+1,lid);
 #else
         long  lid;
         sscanf(str,"%ld",&lid);
-        if (lid > PETSC_MAX_INT || lid < PETSC_MIN_INT) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Argument: -%s%s %ld",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",next->option+1,lid);
+        if (lid > PETSC_MAX_INT || lid < PETSC_MIN_INT) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Argument: -%s%s %ld",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",next->option+1,lid);
 #endif
 
         next->set = PETSC_TRUE;
@@ -640,7 +641,7 @@ $                 if (flg) {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsEnum_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],const char *const *list,PetscEnum defaultv,PetscEnum *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsEnum_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],const char *const *list,PetscEnum currentvalue,PetscEnum *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscInt       ntext = 0;
@@ -696,7 +697,7 @@ $                 if (flg) {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsInt_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscInt defaultv,PetscInt *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsInt_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
@@ -710,7 +711,7 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionsObjectType *PetscOptionsObje
   }
   ierr = PetscOptionsGetInt(PetscOptionsObject->prefix,opt,value,set);CHKERRQ(ierr);
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%d>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,defaultv,text,ManSection(man));CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%d>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,currentvalue,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -749,20 +750,20 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionsObjectType *PetscOptionsObje
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsString_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],const char defaultv[],char value[],size_t len,PetscBool  *set)
+PetscErrorCode  PetscOptionsString_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],const char currentvalue[],char value[],size_t len,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
 
   PetscFunctionBegin;
-  if (!PetscOptionsPublishCount) {
-    ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
+  if (!PetscOptionsObject->count) {
+    ierr = PetscOptionsCreate_Private(PetscOptionsObject,opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
     ierr = PetscStrdup(currentvalue ? currentvalue : "",(char**)&amsopt->data);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetString(PetscOptionsObject->prefix,opt,value,len,set);CHKERRQ(ierr);
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%s>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,defaultv,text,ManSection(man));CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%s>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,currentvalue,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -802,7 +803,7 @@ $                 if (flg) {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsReal_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscReal defaultv,PetscReal *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsReal_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscReal currentvalue,PetscReal *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
@@ -814,9 +815,9 @@ PetscErrorCode  PetscOptionsReal_Private(PetscOptionsObjectType *PetscOptionsObj
 
     *(PetscReal*)amsopt->data = currentvalue;
   }
-  ierr = PetscOptionsGetReal(PetscOptionsObject.prefix,opt,value,set);CHKERRQ(ierr);
-  if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%g>: %s (%s)\n",PetscOptionsObject.prefix ? PetscOptionsObject.prefix : "",opt+1,(double)currentvalue,text,ManSection(man));CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PetscOptionsObject->prefix,opt,value,set);CHKERRQ(ierr);
+  if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%g>: %s (%s)\n",PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "",opt+1,(double)currentvalue,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -857,7 +858,7 @@ $                 if (flg) {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsScalar_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscScalar defaultv,PetscScalar *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsScalar_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscScalar currentvalue,PetscScalar *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
 
@@ -960,21 +961,21 @@ $                 if (flg) {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsEnum()
 @*/
-PetscErrorCode  PetscOptionsFList_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char ltext[],const char man[],PetscFunctionList list,const char defaultv[],char value[],size_t len,PetscBool  *set)
+PetscErrorCode  PetscOptionsFList_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char ltext[],const char man[],PetscFunctionList list,const char currentvalue[],char value[],size_t len,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
 
   PetscFunctionBegin;
-  if (!PetscOptionsPublishCount) {
-    ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_FLIST,&amsopt);CHKERRQ(ierr);
+  if (!PetscOptionsObject->count) {
+    ierr = PetscOptionsCreate_Private(PetscOptionsObject,opt,ltext,man,OPTION_FLIST,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
     ierr = PetscStrdup(currentvalue ? currentvalue : "",(char**)&amsopt->data);CHKERRQ(ierr);
     amsopt->flist = list;
   }
-  ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
-  if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = PetscFunctionListPrintTypes(PetscOptionsObject.comm,stdout,PetscOptionsObject.prefix,opt,ltext,man,list,currentvalue);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PetscOptionsObject->prefix,opt,value,len,set);CHKERRQ(ierr);
+  if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
+    ierr = PetscFunctionListPrintTypes(PetscOptionsObject->comm,stdout,PetscOptionsObject->prefix,opt,ltext,man,list,currentvalue);CHKERRQ(ierr);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1016,23 +1017,23 @@ $                 if (flg) {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEnum()
 @*/
-PetscErrorCode  PetscOptionsEList_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char ltext[],const char man[],const char *const *list,PetscInt ntext,const char defaultv[],PetscInt *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsEList_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char ltext[],const char man[],const char *const *list,PetscInt ntext,const char currentvalue[],PetscInt *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscInt       i;
   PetscOptions   amsopt;
 
   PetscFunctionBegin;
-  if (!PetscOptionsPublishCount) {
-    ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_ELIST,&amsopt);CHKERRQ(ierr);
+  if (!PetscOptionsObject->count) {
+    ierr = PetscOptionsCreate_Private(PetscOptionsObject,opt,ltext,man,OPTION_ELIST,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
     ierr = PetscStrdup(currentvalue ? currentvalue : "",(char**)&amsopt->data);CHKERRQ(ierr);
     amsopt->list  = list;
     amsopt->nlist = ntext;
   }
-  ierr = PetscOptionsGetEList(PetscOptionsObject.prefix,opt,list,ntext,value,set);CHKERRQ(ierr);
-  if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%s> (choose one of)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,currentvalue);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEList(PetscOptionsObject->prefix,opt,list,ntext,value,set);CHKERRQ(ierr);
+  if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%s> (choose one of)",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,currentvalue);CHKERRQ(ierr);
     for (i=0; i<ntext; i++) {
       ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm," %s",list[i]);CHKERRQ(ierr);
     }
@@ -1226,7 +1227,7 @@ PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptionsObjectType *PetscOp
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsBool_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool deflt,PetscBool  *flg,PetscBool  *set)
+PetscErrorCode  PetscOptionsBool_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool currentvalue,PetscBool  *flg,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscBool      iset;
@@ -1239,11 +1240,11 @@ PetscErrorCode  PetscOptionsBool_Private(PetscOptionsObjectType *PetscOptionsObj
 
     *(PetscBool*)amsopt->data = currentvalue;
   }
-  ierr = PetscOptionsGetBool(PetscOptionsObject.prefix,opt,flg,&iset);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PetscOptionsObject->prefix,opt,flg,&iset);CHKERRQ(ierr);
   if (set) *set = iset;
-  if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
+  if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
     const char *v = PetscBools[currentvalue];
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s: <%s> %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,v,text,ManSection(man));CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s: <%s> %s (%s)\n",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,v,text,ManSection(man));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1486,7 +1487,7 @@ PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptionsObjectType *PetscOptio
     PetscBool *vals;
 
     ierr = PetscOptionsCreate_Private(PetscOptionsObject,opt,text,man,OPTION_BOOL_ARRAY,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc1(*,(PetscBool*)&amsopt->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1(*n,(PetscBool**)&amsopt->data);CHKERRQ(ierr);
     vals = (PetscBool*)amsopt->data;
     for (i=0; i<*n; i++) vals[i] = value[i];
     amsopt->arraylength = *n;
@@ -1540,8 +1541,8 @@ PetscErrorCode  PetscOptionsViewer_Private(PetscOptionsObjectType *PetscOptionsO
   PetscOptions   amsopt;
 
   PetscFunctionBegin;
-  if (!PetscOptionsPublishCount) {
-    ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
+  if (!PetscOptionsObject->count) {
+    ierr = PetscOptionsCreate_Private(PetscOptionsObject,opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
     ierr = PetscStrdup("",(char**)&amsopt->data);CHKERRQ(ierr);
   }

@@ -492,7 +492,7 @@ struct  _p_MatFDColoring{
 typedef struct _MatColoringOps *MatColoringOps;
 struct _MatColoringOps {
   PetscErrorCode (*destroy)(MatColoring);
-  PetscErrorCode (*setfromoptions)(MatColoring);
+  PetscErrorCode (*setfromoptions)(PetscOptionsObjectType*,MatColoring);
   PetscErrorCode (*view)(MatColoring,PetscViewer);
   PetscErrorCode (*apply)(MatColoring,ISColoring*);
   PetscErrorCode (*weights)(MatColoring,PetscReal**,PetscInt**);
