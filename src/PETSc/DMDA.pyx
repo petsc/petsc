@@ -40,8 +40,8 @@ cdef class DMDA(DM):
         cdef PetscDMBoundaryType btx = DM_BOUNDARY_NONE
         cdef PetscDMBoundaryType bty = DM_BOUNDARY_NONE
         cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
-        cdef PetscDMDAStencilType  stype = DMDA_STENCIL_BOX
-        cdef PetscInt            swidth = 0
+        cdef PetscDMDAStencilType stype  = DMDA_STENCIL_BOX
+        cdef PetscInt             swidth = PETSC_DECIDE
         # grid and proc sizes
         cdef object gsizes = sizes
         cdef object psizes = proc_sizes
@@ -70,6 +70,7 @@ cdef class DMDA(DM):
             stype = asStencil(stencil_type)
         if stencil_width is not None:
             swidth = asInt(stencil_width)
+        if setup and swidth == PETSC_DECIDE: swidth = 0
         # create the DMDA object
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM newda = NULL
@@ -89,8 +90,8 @@ cdef class DMDA(DM):
         cdef PetscDMBoundaryType btx = DM_BOUNDARY_NONE
         cdef PetscDMBoundaryType bty = DM_BOUNDARY_NONE
         cdef PetscDMBoundaryType btz = DM_BOUNDARY_NONE
-        cdef PetscDMDAStencilType  stype = DMDA_STENCIL_STAR
-        cdef PetscInt            swidth = 0
+        cdef PetscDMDAStencilType  stype  = DMDA_STENCIL_BOX
+        cdef PetscInt              swidth = PETSC_DECIDE
         CHKERR( DMDAGetInfo(self.dm,
                           &ndim,
                           &M, &N, &P,
