@@ -196,7 +196,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   PetscMPIInt    rank;
   PetscInt       c, f, v, dim = PETSC_DETERMINE, numCells = 0, numVertices = 0, numCellVertices = PETSC_DETERMINE;
   PetscInt       numFaces = PETSC_DETERMINE, numFaceEntries = PETSC_DETERMINE, numFaceVertices = PETSC_DETERMINE;
-  PetscInt      *faces = NULL, *cellVertices;
+  PetscInt      *faces = NULL, *cellVertices, *faceZoneIDs = NULL;
   PetscInt       d, coordSize;
   PetscScalar   *coords, *coordsIn = NULL;
   PetscSection   coordSection;
@@ -248,7 +248,10 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
           if (numFaceVertices == PETSC_DETERMINE) numFaceVertices = s.nd;
           numFaceEntries = numFaceVertices + 2;
           if (!faces) {ierr = PetscMalloc1(numFaces*numFaceEntries, &faces);CHKERRQ(ierr);}
+          if (!faceZoneIDs) {ierr = PetscMalloc1(numFaces, &faceZoneIDs);CHKERRQ(ierr);}
           ierr = PetscMemcpy(&(faces[(s.first-1)*numFaceEntries]), s.data, (s.last-s.first+1)*numFaceEntries*sizeof(PetscInt));CHKERRQ(ierr);
+          /* Record the zoneID for each face set */
+          for (f = s.first -1; f < s.last; f++) faceZoneIDs[f] = s.zoneID;
           ierr = PetscFree(s.data);CHKERRQ(ierr);
         }
       }
@@ -317,6 +320,22 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
     *dm  = idm;
   }
 
+  if (!rank) {
+    PetscInt fi, *fverts;
+    ierr = PetscMalloc1(numFaceVertices, &fverts);CHKERRQ(ierr);
+    /* Mark facets by finding the full join of all adjacent vertices */
+    for (f = 0; f < numFaces; f++) {
+      PetscInt joinSize;
+      const PetscInt *join;
+      for (fi = 0; fi < numFaceVertices; fi++) fverts[fi] = faces[f*numFaceEntries + fi] + numCells - 1;
+      ierr = DMPlexGetFullJoin(*dm, numFaceVertices, fverts, &joinSize, &join);CHKERRQ(ierr);
+      if (joinSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %d", f);
+      ierr = DMPlexSetLabelValue(*dm, "Face Sets", join[0], faceZoneIDs[f]);CHKERRQ(ierr);
+      ierr = DMPlexRestoreJoin(*dm, numFaceVertices, fverts, &joinSize, &join);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(fverts);CHKERRQ(ierr);
+  }
+
   /* Read coordinates */
   ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
@@ -346,6 +365,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   if (!rank) {
     ierr = PetscFree(cellVertices);CHKERRQ(ierr);
     ierr = PetscFree(faces);CHKERRQ(ierr);
+    ierr = PetscFree(faceZoneIDs);CHKERRQ(ierr);
     ierr = PetscFree(coordsIn);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
