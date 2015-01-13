@@ -12,9 +12,9 @@ LIBBASE	  = libpetscsys
 DIRS	  = examples
 LOCDIR	  = src/sys/error/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test
 
 
 

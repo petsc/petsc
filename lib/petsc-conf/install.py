@@ -4,7 +4,7 @@ import os, sys, shutil
 if os.environ.has_key('PETSC_DIR'):
   PETSC_DIR = os.environ['PETSC_DIR']
 else:
-  fd = file(os.path.join('conf','petscvariables'))
+  fd = file(os.path.join('lib','petsc-conf','petscvariables'))
   a = fd.readline()
   a = fd.readline()
   PETSC_DIR = a.split('=')[1][0:-1]
@@ -13,7 +13,7 @@ else:
 if os.environ.has_key('PETSC_ARCH'):
   PETSC_ARCH = os.environ['PETSC_ARCH']
 else:
-  fd = file(os.path.join('conf','petscvariables'))
+  fd = file(os.path.join('lib','petsc-conf','petscvariables'))
   a = fd.readline()
   PETSC_ARCH = a.split('=')[1][0:-1]
   fd.close()
@@ -33,7 +33,7 @@ class Installer(script.Script):
   def __init__(self, clArgs = None):
     import RDict
     argDB = RDict.RDict(None, None, 0, 0, readonly = True)
-    argDB.saveFilename = os.path.join(PETSC_DIR, PETSC_ARCH, 'conf', 'RDict.db')
+    argDB.saveFilename = os.path.join(PETSC_DIR, PETSC_ARCH, 'lib','petsc-conf', 'RDict.db')
     argDB.load()
     script.Script.__init__(self, argDB = argDB)
     if not clArgs is None: self.clArgs = clArgs
@@ -67,13 +67,13 @@ class Installer(script.Script):
     self.arch       = self.arch.arch
     self.rootIncludeDir    = os.path.join(self.rootDir, 'include')
     self.archIncludeDir    = os.path.join(self.rootDir, self.arch, 'include')
-    self.rootConfDir       = os.path.join(self.rootDir, 'conf')
-    self.archConfDir       = os.path.join(self.rootDir, self.arch, 'conf')
+    self.rootConfDir       = os.path.join(self.rootDir, 'lib','petsc-conf')
+    self.archConfDir       = os.path.join(self.rootDir, self.arch, 'lib','petsc-conf')
     self.rootBinDir        = os.path.join(self.rootDir, 'bin')
     self.archBinDir        = os.path.join(self.rootDir, self.arch, 'bin')
     self.archLibDir        = os.path.join(self.rootDir, self.arch, 'lib')
     self.destIncludeDir    = os.path.join(self.destDir, 'include')
-    self.destConfDir       = os.path.join(self.destDir, 'conf')
+    self.destConfDir       = os.path.join(self.destDir, 'lib','petsc-conf')
     self.destLibDir        = os.path.join(self.destDir, 'lib')
     self.destBinDir        = os.path.join(self.destDir, 'bin')
     self.installIncludeDir = os.path.join(self.installDir, 'include')

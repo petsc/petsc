@@ -13,8 +13,8 @@ EXAMPLESFH      = ex2f.h
 MANSEC          = TS
 DIRS            = phasefield advection-diffusion-reaction eimex
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_TS_LIB}
@@ -493,4 +493,4 @@ TESTEXAMPLES_EXODUSII     = ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_MOAB         = ex30.PETSc runex30 ex30.rm ex35.PETSc runex35 ex35.rm
 TESTEXAMPLES_MOAB_HDF5    = ex30.PETSc runex30_2 ex30.rm ex35.PETSc runex35_2 ex35.rm
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test

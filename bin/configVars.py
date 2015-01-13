@@ -12,7 +12,7 @@ class ConfigReader(script.Script):
     import os
 
     argDB = RDict.RDict(None, None, 0, 0)
-    argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'conf', 'RDict.db')
+    argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'lib','petsc-conf', 'RDict.db')
     argDB.load()
     script.Script.__init__(self, argDB = argDB)
     return

@@ -8,8 +8,8 @@ EXAMPLESC       = ex1.c ex2.c
 EXAMPLESF       =
 MANSEC          = Sys
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
@@ -39,4 +39,4 @@ TESTEXAMPLES_C_X_MPIUNI      =
 TESTEXAMPLES_13		       =
 TESTEXAMPLES_C_NOCOMPLEX       = ex2.PETSc runex2 ex2.rm
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test

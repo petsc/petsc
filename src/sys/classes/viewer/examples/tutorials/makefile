@@ -26,11 +26,11 @@ runex1f90:
 	   else printf "${PWD}\nPossible problem with ex1f90_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1f90_1.tmp
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 TESTEXAMPLES_C          = ex2.PETSc ex2.rm
 TESTEXAMPLES_C_X_MPIUNI =
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test
 
