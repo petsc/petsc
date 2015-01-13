@@ -946,7 +946,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScalingSetUp_Deluxe_Seq"
-static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_sequential_problems,PetscInt n_sequential_problems,PetscInt _gglobal_sequential[],PetscInt local_sequential[])
+static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_sequential_problems,PetscInt n_sequential_problems,PetscInt global_sequential[],PetscInt local_sequential[])
 {
   PC_BDDC                *pcbddc=(PC_BDDC*)pc->data;
   PCBDDCDeluxeScaling    deluxe_ctx=pcbddc->deluxe_ctx;
@@ -954,9 +954,9 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ISLocalToGlobalMapping l2gmap_subsets;
   Mat                    global_schur_subsets,*submat_global_schur_subsets,work_mat;
   IS                     is_to,is_from;
-  PetscScalar            *array,*fill_vals;
+  PetscScalar            *fill_vals;
   PetscInt               *nnz,*all_local_idx_G,*all_local_idx_B,*all_local_idx_N,*all_permutation_G,*dummy_idx;
-  PetscInt               i,j,k,local_problem_index;
+  PetscInt               i,j,local_problem_index;
   PetscInt               subset_size,max_subset_size;
   PetscInt               local_size,global_size;
   PC                     pc_temp;
@@ -1018,6 +1018,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ierr = MatCreate(PETSC_COMM_SELF,&deluxe_ctx->seq_mat);CHKERRQ(ierr);
   ierr = MatSetSizes(deluxe_ctx->seq_mat,PETSC_DECIDE,PETSC_DECIDE,local_size,local_size);CHKERRQ(ierr);
   ierr = MatSetType(deluxe_ctx->seq_mat,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetOption(deluxe_ctx->seq_mat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(deluxe_ctx->seq_mat,0,nnz);CHKERRQ(ierr);
   ierr = PetscFree(nnz);CHKERRQ(ierr);
 
@@ -1034,13 +1035,9 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
     for (j=0;j<subset_size;j++) {
       ierr = VecSet(sub_schurs->work1[local_problem_index],0.0);CHKERRQ(ierr);
       ierr = VecSetValue(sub_schurs->work1[local_problem_index],j,1.0,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecPlaceArray(sub_schurs->work2[local_problem_index],&fill_vals[j*subset_size]);CHKERRQ(ierr);
       ierr = MatMult(sub_schurs->S_Ej[local_problem_index],sub_schurs->work1[local_problem_index],sub_schurs->work2[local_problem_index]);CHKERRQ(ierr);
-      /* store vals */
-      ierr = VecGetArray(sub_schurs->work2[local_problem_index],&array);CHKERRQ(ierr);
-      for (k=0;k<subset_size;k++) {
-        fill_vals[k*subset_size+j] = array[k];
-      }
-      ierr = VecRestoreArray(sub_schurs->work2[local_problem_index],&array);CHKERRQ(ierr);
+      ierr = VecResetArray(sub_schurs->work2[local_problem_index]);CHKERRQ(ierr);
     }
     for (j=0;j<subset_size;j++) {
       dummy_idx[j]=local_size+j;
