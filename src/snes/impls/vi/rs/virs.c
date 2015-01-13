@@ -108,7 +108,8 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   DM_SNESVI      *dmsnesvi1;
   Vec            finemarked,coarsemarked;
   IS             inactive;
-  VecScatter     inject;
+  Mat            inject;
+  VecScatter     vscat;
   const PetscInt *index;
   PetscInt       n,k,cnt = 0,rstart,*coarseindex;
   PetscScalar    *marked;
@@ -146,9 +147,10 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = VecAssemblyEnd(finemarked);CHKERRQ(ierr);
 
   ierr = DMCreateInjection(*dm2,dm1,&inject);CHKERRQ(ierr);
-  ierr = VecScatterBegin(inject,finemarked,coarsemarked,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(inject,finemarked,coarsemarked,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+  ierr = MatScatterGetVecScatter(inject,&vscat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(vscat,finemarked,coarsemarked,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(vscat,finemarked,coarsemarked,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = MatDestroy(&inject);CHKERRQ(ierr);
 
   /*
      create index set list of coarse inactive points from coarsemarked

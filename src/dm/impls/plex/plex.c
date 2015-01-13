@@ -5344,12 +5344,15 @@ PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpola
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateInjection_Plex"
-PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, VecScatter *ctx)
+PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat)
 {
   PetscErrorCode ierr;
+  VecScatter     ctx;
 
   PetscFunctionBegin;
-  ierr = DMPlexComputeInjectorFEM(dmCoarse, dmFine, ctx, NULL);CHKERRQ(ierr);
+  ierr = DMPlexComputeInjectorFEM(dmCoarse, dmFine, &ctx, NULL);CHKERRQ(ierr);
+  ierr = MatCreateScatter(PetscObjectComm((PetscObject)ctx), ctx, mat);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

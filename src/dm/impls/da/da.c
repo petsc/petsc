@@ -1112,7 +1112,8 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   if (da->coordinates) {
     DM         cdaf,cdac;
     Vec        coordsc,coordsf;
-    VecScatter inject;
+    Mat        inject;
+    VecScatter vscat;
 
     ierr = DMGetCoordinateDM(da,&cdaf);CHKERRQ(ierr);
     ierr = DMGetCoordinates(da,&coordsf);CHKERRQ(ierr);
@@ -1122,9 +1123,10 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     ierr = DMGetCoordinates(da2,&coordsc);CHKERRQ(ierr);
 
     ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
-    ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+    ierr = MatScatterGetVecScatter(inject,&vscat);CHKERRQ(ierr);
+    ierr = VecScatterBegin(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = MatDestroy(&inject);CHKERRQ(ierr);
   }
 
   for (i=0; i<da->bs; i++) {
