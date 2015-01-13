@@ -106,7 +106,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
      At the end of this while loop, G should have the accepted new X in it. */
 
   count = 0;
-  while (true) {
+  while (PETSC_TRUE) {
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(monitor,"    Line search: entering iteration with lambda: %14.12e\n", lambda);CHKERRQ(ierr);
