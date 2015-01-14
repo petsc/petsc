@@ -3529,7 +3529,6 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
   PetscErrorCode ierr;
   Vec coords,ccoords;
   Mat inject;
-  VecScatter scat;
   PetscFunctionBegin;
   ierr = DMGetCoordinateDM(dm,&dm_coord);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dmc,&dmc_coord);CHKERRQ(ierr);
@@ -3538,11 +3537,9 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
   if (coords && !ccoords) {
     ierr = DMCreateGlobalVector(dmc_coord,&ccoords);CHKERRQ(ierr);
     ierr = DMCreateInjection(dmc_coord,dm_coord,&inject);CHKERRQ(ierr);
-    ierr = MatScatterGetVecScatter(inject,&scat);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scat,coords,ccoords,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scat,coords,ccoords,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = DMSetCoordinates(dmc,ccoords);CHKERRQ(ierr);
+    ierr = MatRestrict(inject,coords,ccoords);CHKERRQ(ierr);
     ierr = MatDestroy(&inject);CHKERRQ(ierr);
+    ierr = DMSetCoordinates(dmc,ccoords);CHKERRQ(ierr);
     ierr = VecDestroy(&ccoords);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
