@@ -4,9 +4,9 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = '622d9a06ef18638e7521f2a870d62f5c28f182e1'
+    self.gitcommit         = '0616e704bcc37b1df8705f614c63bf8e9e51ee80'
     self.giturls           = ['https://bitbucket.org/petsc/ctetgen.git']
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.2.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.3.tar.gz']
     self.functions         = []
     self.includes          = []
     return
