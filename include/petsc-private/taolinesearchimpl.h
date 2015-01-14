@@ -13,7 +13,7 @@ struct _TaoLineSearchOps {
     PetscErrorCode (*setup)(TaoLineSearch);
     PetscErrorCode (*apply)(TaoLineSearch,Vec,PetscReal*,Vec,Vec);
     PetscErrorCode (*view)(TaoLineSearch,PetscViewer);
-    PetscErrorCode (*setfromoptions)(TaoLineSearch);
+    PetscErrorCode (*setfromoptions)(PetscOptionsObjectType*,TaoLineSearch);
     PetscErrorCode (*reset)(TaoLineSearch);
     PetscErrorCode (*destroy)(TaoLineSearch);
 };
