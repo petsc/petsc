@@ -2210,7 +2210,7 @@ PetscErrorCode PetscDualSpaceDuplicate_Simple(PetscDualSpace sp, PetscDualSpace 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceSetFromOptions_Simple"
-PetscErrorCode PetscDualSpaceSetFromOptions_Simple(PetscDualSpace sp)
+PetscErrorCode PetscDualSpaceSetFromOptions_Simple(PetscOptionsObjectType *PetscOptionsObject,PetscDualSpace sp)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

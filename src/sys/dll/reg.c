@@ -39,6 +39,11 @@ static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *foun
 
 #endif
 
+#define PETSC_HAVE_THREADSAFETY 1
+#if defined(PETSC_HAVE_THREADSAFETY)
+static MPI_Comm PETSC_COMM_WORLD_INNER,PETSC_COMM_SELF_INNER;
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscInitialize_DynamicLibraries"
 /*
@@ -104,6 +109,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
+#if defined(PETSC_HAVE_THREADSAFETY)
   ierr = PetscThreadCommInitializePackage();CHKERRQ(ierr);
   ierr = PetscThreadCommWorldInitialize();CHKERRQ(ierr);
   ierr = AOInitializePackage();CHKERRQ(ierr);
@@ -117,11 +123,9 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   ierr = KSPInitializePackage();CHKERRQ(ierr);
   ierr = SNESInitializePackage();CHKERRQ(ierr);
   ierr = TSInitializePackage();CHKERRQ(ierr);
-  {
-    MPI_Comm comm;
-    ierr = PetscCommDuplicate(PETSC_COMM_SELF,&comm,NULL);CHKERRQ(ierr);
-    ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&comm,NULL);CHKERRQ(ierr);
-  }
+  ierr = PetscCommDuplicate(PETSC_COMM_SELF,&PETSC_COMM_SELF_INNER,NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&PETSC_COMM_WORLD_INNER,NULL);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -139,6 +143,11 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
   ierr = PetscOptionsGetBool(NULL,"-dll_view",&flg,NULL);CHKERRQ(ierr);
   if (flg) { ierr = PetscDLLibraryPrintPath(PetscDLLibrariesLoaded);CHKERRQ(ierr); }
   ierr = PetscDLLibraryClose(PetscDLLibrariesLoaded);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+  ierr = PetscCommDestroy(&PETSC_COMM_SELF_INNER);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&PETSC_COMM_WORLD_INNER);CHKERRQ(ierr);
+#endif
 
   PetscDLLibrariesLoaded = 0;
   PetscFunctionReturn(0);
