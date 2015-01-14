@@ -8,8 +8,8 @@ typedef struct {
   PetscReal lambda_prev; /* previous step length: for some reason SNESLineSearchGetLambda returns 1 instead of the previous step length */
 } SNESLineSearch_NLEQERR;
 
-PetscBool NLEQERR_cited = PETSC_FALSE;
-const char NLEQERR_citation[] = "@book{deuflhard2011,\n"
+static PetscBool NLEQERR_cited = PETSC_FALSE;
+static const char NLEQERR_citation[] = "@book{deuflhard2011,\n"
                                "  title = {Newton Methods for Nonlinear Problems},\n"
                                "  author = {Peter Deuflhard},\n"
                                "  volume = 35,\n"
