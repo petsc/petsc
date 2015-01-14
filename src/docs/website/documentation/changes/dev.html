@@ -130,6 +130,7 @@
       <h4>TS:</h4>
       <h4>DM/DA:</h4>
       <ul>
+        <li>DMCreateInjection() now returns a Mat, rather than a VecScatter</li>
         <li>The MatType argument is removed from DMCreateMatrix(), you can use DMSetMatType() to indicate the type you want used with a DM, defaults to MATAIJ</li>
         <li>You can now use DMDASetAOType() to indicate the type of AO you want used with a DMDA (defaults to AOBASIC)</li>
       </ul>
