@@ -963,8 +963,6 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,Userctx *user)
  
   ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
-  ierr = VecDestroy(&Xgen);CHKERRQ(ierr);
-  ierr = VecDestroy(&Xnet);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -998,11 +996,8 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,Userctx *us
   ierr = VecRestoreArray(Dgen,&dgen);CHKERRQ(ierr);
   ierr = DMCompositeGather(user->dmpgrid,drdy[0],INSERT_VALUES,Dgen,Dnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Dgen,&Dnet);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
 
-  ierr = VecDestroy(&Xgen);CHKERRQ(ierr);
-  ierr = VecDestroy(&Xnet);CHKERRQ(ierr);
-  ierr = VecDestroy(&Dgen);CHKERRQ(ierr);
-  ierr = VecDestroy(&Dnet);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1010,8 +1005,6 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,Userctx *us
 #define __FUNCT__ "DRDPFunction"
 static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,Userctx *user)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -1286,6 +1279,9 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&user.Ybus);CHKERRQ(ierr);
   /* ierr = MatDestroy(&user.Sol);CHKERRQ(ierr); */
   ierr = VecDestroy(&user.V0);CHKERRQ(ierr);
+  ierr = VecDestroy(&p);CHKERRQ(ierr);
+  ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
+  ierr = VecDestroy(&upperb);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return(0);
 }

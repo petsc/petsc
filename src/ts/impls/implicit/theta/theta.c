@@ -488,9 +488,15 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   DM             dm;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&th->X);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&th->Xdot);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&th->X0);CHKERRQ(ierr);
+  if (!th->X) {
+    ierr = VecDuplicate(ts->vec_sol,&th->X);CHKERRQ(ierr);
+  }
+  if (!th->Xdot) {
+    ierr = VecDuplicate(ts->vec_sol,&th->Xdot);CHKERRQ(ierr);
+  }
+  if (!th->X0) {
+    ierr = VecDuplicate(ts->vec_sol,&th->X0);CHKERRQ(ierr);
+  }
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {

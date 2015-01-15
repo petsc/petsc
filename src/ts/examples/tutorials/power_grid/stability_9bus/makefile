@@ -1,5 +1,5 @@
 
-CFLAGS	        =
+CFLAGS	        = -g
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
