@@ -1498,7 +1498,8 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
         if ((val < 0) || (val > dim)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d has label value %d, should be part of the fault", point, val);
         ierr = DMLabelClearValue(label, point, val);CHKERRQ(ierr);
         ierr = DMLabelSetValue(label, point, shift2+val);CHKERRQ(ierr);
-        /* Check for cross-edge */
+        /* Check for cross-edge
+             A cross-edge has endpoints which are both on the boundary of the surface, but the edge itself is not. */
         if (val != 0) continue;
         ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
         ierr = DMPlexGetSupportSize(dm, point, &supportSize);CHKERRQ(ierr);
