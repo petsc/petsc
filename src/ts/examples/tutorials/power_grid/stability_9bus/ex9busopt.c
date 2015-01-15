@@ -1317,10 +1317,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   Vec            DICDP[3];
   Vec            F_alg;
 
-  PetscLogDouble time;
-  ierr = PetscTime(&time);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"time=%f \n",time);CHKERRQ(ierr);
-   
   ierr  = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
   PG[0] = x_ptr[0];
   PG[1] = x_ptr[1];
@@ -1490,8 +1486,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSGetTimeStepNumber(ts,&steps3);CHKERRQ(ierr);
   ctx->shift += steps3;
 
-  ierr = PetscTime(&time);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"time=%f \n",time);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -1532,9 +1526,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ctx->shift = steps1+steps2;
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
 
-  ierr = PetscTime(&time);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"time=%f \n",time);CHKERRQ(ierr);
-
   ierr = MatZeroEntries(ctx->J);CHKERRQ(ierr);
   /* Applying disturbance - resistive fault at ctx->faultbus */
   /* This is done by deducting shunt conductance to the diagonal location
@@ -1555,8 +1546,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetDuration(ts,steps2,PETSC_DEFAULT);CHKERRQ(ierr);
   ctx->shift = steps1;
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = PetscTime(&time);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"time=%f \n",time);CHKERRQ(ierr);
 
   ierr = MatZeroEntries(ctx->J);CHKERRQ(ierr);
   /* remove the fault */
@@ -1576,8 +1565,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetDuration(ts,steps1,PETSC_DEFAULT);CHKERRQ(ierr);
   ctx->shift = 0;
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = PetscTime(&time);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"time=%f \n",time);CHKERRQ(ierr);
 
   /* 
   ierr = MatAssemblyBegin(ctx->Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1622,7 +1609,5 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   for (i=0;i<3;i++) {
     ierr = VecDestroy(&DICDP[i]);CHKERRQ(ierr);
   }
-  ierr = PetscTime(&time);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"time= %f\n",time);CHKERRQ(ierr);
   return 0;
 }
