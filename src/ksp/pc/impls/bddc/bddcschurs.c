@@ -179,14 +179,22 @@ PetscErrorCode PCBDDCSubSchursSetUpNew(PCBDDCSubSchurs sub_schurs, PetscInt xadj
     ierr = PetscFree4(is_subset_B,AE_IE,AE_EI,AE_EE);CHKERRQ(ierr);
   }
 
-#if 0
-?????
+  /* TODO: just for compatibility with the previous version, needs to be fixed */
+  for (i=0;i<sub_schurs->n_subs_par;i++) {
+    PetscInt j = sub_schurs->index_parallel[i];
+    ierr = MatCreateVecs(sub_schurs->S_Ej[j],&sub_schurs->work1[j],&sub_schurs->work2[j]);CHKERRQ(ierr);
+  }
+  for (i=0;i<sub_schurs->n_subs_seq;i++) {
+     sub_schurs->work1[sub_schurs->index_sequential[i]] = 0;
+     sub_schurs->work2[sub_schurs->index_sequential[i]] = 0;
+  }
+
   if (!sub_schurs->n_subs_seq_g) {
+    sub_schurs->S_Ej_all = 0;
+    sub_schurs->sum_S_Ej_all = 0;
+    sub_schurs->is_Ej_all = 0;
     PetscFunctionReturn(0);
   }
-?????
-#endif
-
 
   /* Get info on subset sizes and sum of all subsets sizes */
   max_subset_size = 0;
@@ -256,7 +264,7 @@ PetscErrorCode PCBDDCSubSchursSetUpNew(PCBDDCSubSchurs sub_schurs, PetscInt xadj
       Vec work1,work2;
       PetscInt j,local_problem_index = sub_schurs->index_sequential[i];
 
-      ierr = MatCreateVecs(sub_schurs->S_Ej[i],&work1,&work2);CHKERRQ(ierr);
+      ierr = MatCreateVecs(sub_schurs->S_Ej[local_problem_index],&work1,&work2);CHKERRQ(ierr);
       ierr = ISGetLocalSize(sub_schurs->is_AEj_B[local_problem_index],&subset_size);CHKERRQ(ierr);
       /* local Schur */
       for (j=0;j<subset_size;j++) {
@@ -480,8 +488,8 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
     ierr = ISDestroy(&sub_schurs->is_AEj_I[i]);CHKERRQ(ierr);
     ierr = ISDestroy(&sub_schurs->is_AEj_B[i]);CHKERRQ(ierr);
     ierr = MatDestroy(&sub_schurs->S_Ej[i]);CHKERRQ(ierr);
-    //ierr = VecDestroy(&sub_schurs->work1[i]);CHKERRQ(ierr);
-    //ierr = VecDestroy(&sub_schurs->work2[i]);CHKERRQ(ierr);
+    ierr = VecDestroy(&sub_schurs->work1[i]);CHKERRQ(ierr);
+    ierr = VecDestroy(&sub_schurs->work2[i]);CHKERRQ(ierr);
   }
   if (sub_schurs->n_subs) {
     ierr = PetscFree(sub_schurs->is_subs);CHKERRQ(ierr);

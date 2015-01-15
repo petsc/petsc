@@ -957,6 +957,10 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq_New(PC pc)
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
+  if (!sub_schurs->n_subs_seq_g) {
+    PetscFunctionReturn(0);
+  }
+
   /* Create work vectors for sequential part of deluxe */
   ierr = MatCreateVecs(sub_schurs->S_Ej_all,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
 
