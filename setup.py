@@ -10,14 +10,22 @@ solution of scientific applications modeled by partial differential
 equations. It employs the Message Passing Interface (MPI) standard for
 all message-passing communication.
 
+.. note::
+
+   To install ``PETSc`` and ``petsc4py`` (``mpi4py`` is optional
+   but highly recommended) use::
+
+     $ pip install numpy mpi4py
+     $ pip install petsc petsc4py
+
 .. tip::
 
-  You can also install `petsc-master`_ with::
+  You can also install the in-development versions with::
 
-    $ pip install petsc==master
+    $ pip install Cython numpy mpi4py
+    $ pip install --no-deps https://bitbucket.org/petsc/petsc/get/master.tar.gz
+    $ pip install --no-deps https://bitbucket.org/petsc/petsc4py/get/master.tar.gz
 
-  .. _petsc-master: https://bitbucket.org/petsc/
-                 petsc/get/master.tar.gz#egg=petsc-master
 """
 
 import sys, os
@@ -58,7 +66,7 @@ def bootstrap():
     os.environ['PETSC_DIR']  = PETSC_DIR
     os.environ['PETSC_ARCH'] = PETSC_ARCH
     sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
-    sys.path.insert(0, os.path.join(PETSC_DIR, 'conf'))
+    sys.path.insert(0, os.path.join(PETSC_DIR, 'lib','petsc-conf'))
     # Generate package __init__.py file
     from distutils.dir_util import mkpath
     pkgdir = os.path.join('config', 'pypi')
@@ -90,8 +98,6 @@ def config(dry_run=False):
         '--with-shared-libraries=1',
         '--with-debugging=0',
         '--with-c2html=0', # not needed
-        #'--with-sowing=0',
-        #'--with-cmake=0',
         ]
     # MPI
     try:
@@ -108,8 +114,13 @@ def config(dry_run=False):
         options.append('--with-cc='+mpicc)
         if mpicxx:
             options.append('--with-cxx='+mpicxx)
+        else:
+            options.append('--with-cxx=0')
         if mpif90:
             options.append('--with-fc='+mpif90)
+        else:
+            options.append('--with-fc=0')
+            options.append('--with-sowing=0')
     else:
         options.append('--with-mpi=0')
     # Extra configure options

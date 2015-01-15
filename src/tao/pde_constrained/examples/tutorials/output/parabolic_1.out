@@ -1,23 +1,10 @@
-iter = 0, Function value: 0.00319835,  Residual: 0.00111618   Constraint: 0.236527 
-iter = 0, Function value: 0.00319469,  Residual: 0.00101744   Constraint: 0.155697 
-iter = 1, Function value: 0.00319467,  Residual: 0.000744946   Constraint: 0.155697 
-iter = 1, Function value: 0.00319294,  Residual: 0.000679132   Constraint: 0.102354 
-iter = 2, Function value: 0.00319284,  Residual: 0.000503149   Constraint: 0.102353 
-iter = 2, Function value: 0.00319202,  Residual: 0.00046757   Constraint: 0.0669018 
-iter = 3, Function value: 0.00319199,  Residual: 0.000340515   Constraint: 0.0669046 
-iter = 3, Function value: 0.00319157,  Residual: 0.000311503   Constraint: 0.0433204 
-iter = 4, Function value: 0.00319156,  Residual: 0.000223695   Constraint: 0.0433209 
-iter = 4, Function value: 0.00319132,  Residual: 0.000207272   Constraint: 0.027649 
-iter = 5, Function value: 0.00319132,  Residual: 0.000160217   Constraint: 0.0276492 
-iter = 5, Function value: 0.00319118,  Residual: 0.000152095   Constraint: 0.0172355 
-iter = 6, Function value: 0.00319117,  Residual: 0.000142666   Constraint: 0.0172356 
-iter = 6, Function value: 0.00319109,  Residual: 0.000140485   Constraint: 0.0103215 
-iter = 7, Function value: 0.00319108,  Residual: 0.000118151   Constraint: 0.0103214 
-iter = 7, Function value: 0.00319103,  Residual: 0.000116527   Constraint: 0.00571431 
-iter = 8, Function value: 0.00319102,  Residual: 8.21014e-05   Constraint: 0.00571477 
-iter = 8, Function value: 0.00319096,  Residual: 8.76462e-05   Constraint: 5.6449e-07 
-KSP Iterations = 2928
-KSP iterations within initialization: 325
-Total KSP iterations over 1 trial(s): 3253
-KSP iterations per trial: 2928
+iter = 0, Function value: 0.00319113,  Residual: 0.000161856   Constraint: 1.04711e-05 
+iter = 0, Function value: 0.00319113,  Residual: 0.000161846   Constraint: 1.77136e-12 
+iter = 1, Function value: 0.00319111,  Residual: 0.00013072   Constraint: 9.60623e-07 
+iter = 1, Function value: 0.00319111,  Residual: 0.000130722   Constraint: 1.8703e-12 
+iter = 2, Function value: 0.00319104,  Residual: 9.51049e-05   Constraint: 1.17578e-05 
+KSP Iterations = 1345
+KSP iterations within initialization: 380
+Total KSP iterations over 1 trial(s): 1725
+KSP iterations per trial: 1345
 Optimization terminated with status 1.

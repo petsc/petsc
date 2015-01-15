@@ -96,7 +96,12 @@
       </div>
 
       <h4>General:</h4>
-        PetscOptionsBool() no longer sets the value of the boolean based on the value passed in
+      <ul>
+        <li>  PetscOptionsBool() no longer sets the value of the boolean based on the value passed in</li>
+        <li>  Python scripts such as PetscBinaryIO.py are now in bin/petsc-pythonscripts. This is to
+          support proper namespacing for --prefix installs of PETSc</li>
+        <li>  Script for running MPIUni jobs is now bin/petsc-mpiexec.uni </li>
+      </ul>
       <h4>Configure/Build:</h4>
       <ul>
         <li>Add toplevel makefile targets <em>clean</em> and <em>distclean</em>. Target <em>clean</em>
@@ -116,6 +121,7 @@
          <li>MatGetRedundantMatrix() replaced with MatCreateRedundantMatrix()</li>
       </ul>
       <h4>PC:</h4>
+         Upgraded to SuiteSparse 4.4.1; Cholmod supports using GPUs --with-cuda --download-suitesparse-gpu --with-64-bit-indices -mat_cholmod_useGPU 1 or 0; 1 by default when configured for it
          Added PCBDDCSetChangeOfBasisMat for user defined change of basis
          PCJacobiSetUseAbs() now takes a PetscBool argument allowing toggling the option
          PCJacobiSetUseRowMax() and PCJacobiSetUseRowSum() have been merged into PCJacobiSetType()
@@ -140,6 +146,9 @@
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
+     <ul>
+        <li>Fortran include files are now in include/petsc-finclude instead of include/finclude. Thus replace uses of #include "finclude/xxx.h" with #include "petsc-finclude/xxx.h". Reason for change: to namespace the finclude directory with PETSc for --prefix installs of PETSc and for packaging systems</li>
+      </ul>
     </div>
 
     <!--end-->

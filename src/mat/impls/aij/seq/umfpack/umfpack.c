@@ -364,13 +364,15 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
 . -mat_umfpack_fixq <0>                - Control[UMFPACK_FIXQ]
 . -mat_umfpack_aggressive <1>          - Control[UMFPACK_AGGRESSIVE]
 . -mat_umfpack_pivot_tolerance <delta> - UMFPACK partial pivot tolerance: Control[UMFPACK_PIVOT_TOLERANCE]
-.  -mat_umfpack_sym_pivot_tolerance <0.001> - Control[UMFPACK_SYM_PIVOT_TOLERANCE]
-.  -mat_umfpack_scale <NONE>           - (choose one of) NONE SUM MAX
+. -mat_umfpack_sym_pivot_tolerance <0.001> - Control[UMFPACK_SYM_PIVOT_TOLERANCE]
+. -mat_umfpack_scale <NONE>           - (choose one of) NONE SUM MAX
 . -mat_umfpack_alloc_init <delta>      - UMFPACK factorized matrix allocation modifier: Control[UMFPACK_ALLOC_INIT]
-.  -mat_umfpack_droptol <0>            - Control[UMFPACK_DROPTOL]
+. -mat_umfpack_droptol <0>            - Control[UMFPACK_DROPTOL]
 - -mat_umfpack_irstep <maxit>          - UMFPACK maximum number of iterative refinement steps: Control[UMFPACK_IRSTEP]
 
    Level: beginner
+
+   Note: UMFPACK is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
 .seealso: PCLU, MATSOLVERSUPERLU, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/

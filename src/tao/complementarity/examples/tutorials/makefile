@@ -15,8 +15,8 @@ DOCS		 =
 DIRS		 =
 CLEANFILES       = minsurf1 blackscholes
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 minsurf1: minsurf1.o chkopts
 	-${CLINKER} -o minsurf1 minsurf1.o ${PETSC_TAO_LIB}
@@ -83,5 +83,5 @@ TESTEXAMPLES_C_X_MPIUNI  = blackscholes.PETSc runblackscholes runblackscholes_2\
                            minsurf1.PETSc runminsurf1 runminsurf1_2 minsurf1.rm
 
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test
 
