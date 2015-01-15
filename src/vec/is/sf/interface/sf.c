@@ -142,7 +142,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFDestroy"
-/*@C
+/*@
    PetscSFDestroy - destroy star forest
 
    Collective
