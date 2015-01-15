@@ -4,7 +4,7 @@ import os
 from distutils.sysconfig import parse_makefile
 import sys
 import logging
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config'))
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from cmakegen import Mistakes, stripsplit, AUTODIRS, SKIPDIRS
 from cmakegen import defaultdict # collections.defaultdict, with fallback for python-2.4
 
