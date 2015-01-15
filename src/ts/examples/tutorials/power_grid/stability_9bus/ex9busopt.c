@@ -963,6 +963,8 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,Userctx *user)
  
   ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
+  ierr = VecDestroy(&Xgen);CHKERRQ(ierr);
+  ierr = VecDestroy(&Xnet);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -996,6 +998,11 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,Userctx *us
   ierr = VecRestoreArray(Dgen,&dgen);CHKERRQ(ierr);
   ierr = DMCompositeGather(user->dmpgrid,drdy[0],INSERT_VALUES,Dgen,Dnet);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Dgen,&Dnet);CHKERRQ(ierr);
+
+  ierr = VecDestroy(&Xgen);CHKERRQ(ierr);
+  ierr = VecDestroy(&Xnet);CHKERRQ(ierr);
+  ierr = VecDestroy(&Dgen);CHKERRQ(ierr);
+  ierr = VecDestroy(&Dnet);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1006,7 +1013,6 @@ static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,Userctx *us
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecZeroEntries(drdp[0]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1613,8 +1619,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   */
 
-  //ierr = SNESDestroy(&snes_alg);CHKERRQ(ierr);
-  //ierr = VecDestroy(&F_alg);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes_alg);CHKERRQ(ierr);
+  ierr = VecDestroy(&F_alg);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   for (i=0;i<3;i++) {
