@@ -22,8 +22,7 @@ PetscErrorCode PCBDDCSubSchursSetUpNew(PCBDDCSubSchurs sub_schurs, PetscInt xadj
   //ierr = PetscObjectTypeCompare((PetscObject)sub_schurs->S,MATSCHURCOMPLEMENT,&implicit_schurs);CHKERRQ(ierr);
   implicit_schurs = PETSC_TRUE;
   /* allocate space for schur complements */
-  ierr = PetscMalloc5(sub_schurs->n_subs,&sub_schurs->is_AEj_I,
-                      sub_schurs->n_subs,&sub_schurs->is_AEj_B,
+  ierr = PetscMalloc4(sub_schurs->n_subs,&sub_schurs->is_AEj_B,
                       sub_schurs->n_subs,&sub_schurs->S_Ej,
                       sub_schurs->n_subs,&sub_schurs->work1,
                       sub_schurs->n_subs,&sub_schurs->work2);CHKERRQ(ierr);
@@ -76,14 +75,14 @@ PetscErrorCode PCBDDCSubSchursSetUpNew(PCBDDCSubSchurs sub_schurs, PetscInt xadj
     ierr = PetscBTDestroy(&touched);CHKERRQ(ierr);
 
     /* IS for I dofs in original numbering */
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)sub_schurs->is_I),n_local_dofs-n_B,local_numbering+n_B,PETSC_COPY_VALUES,&sub_schurs->is_AEj_I[0]);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)sub_schurs->is_I),n_local_dofs-n_B,local_numbering+n_B,PETSC_COPY_VALUES,&sub_schurs->is_I_layer);CHKERRQ(ierr);
     ierr = PetscFree(local_numbering);CHKERRQ(ierr);
-    ierr = ISSort(sub_schurs->is_AEj_I[0]);CHKERRQ(ierr);
+    ierr = ISSort(sub_schurs->is_I_layer);CHKERRQ(ierr);
     /* IS for I dofs in boundary numbering */
     if (implicit_schurs) {
       ISLocalToGlobalMapping ItoNmap;
       ierr = ISLocalToGlobalMappingCreateIS(sub_schurs->is_I,&ItoNmap);CHKERRQ(ierr);
-      ierr = ISGlobalToLocalMappingApplyIS(ItoNmap,IS_GTOLM_DROP,sub_schurs->is_AEj_I[0],&is_I);CHKERRQ(ierr);
+      ierr = ISGlobalToLocalMappingApplyIS(ItoNmap,IS_GTOLM_DROP,sub_schurs->is_I_layer,&is_I);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&ItoNmap);CHKERRQ(ierr);
 
       /* II block */
@@ -94,7 +93,7 @@ PetscErrorCode PCBDDCSubSchursSetUpNew(PCBDDCSubSchurs sub_schurs, PetscInt xadj
 
     /* IS for I dofs in original numbering */
     ierr = PetscObjectReference((PetscObject)sub_schurs->is_I);CHKERRQ(ierr);
-    sub_schurs->is_AEj_I[0] = sub_schurs->is_I;
+    sub_schurs->is_I_layer = sub_schurs->is_I;
 
     /* IS for I dofs in I numbering (strided 1) */
     if (implicit_schurs) {
@@ -105,12 +104,6 @@ PetscErrorCode PCBDDCSubSchursSetUpNew(PCBDDCSubSchurs sub_schurs, PetscInt xadj
       ierr = PetscObjectReference((PetscObject)A_II);CHKERRQ(ierr);
       AE_II = A_II;
     }
-  }
-
-  /* TODO: just for compatibility with the previous version, needs to be fixed */
-  for (i=1;i<sub_schurs->n_subs;i++) {
-    ierr = PetscObjectReference((PetscObject)sub_schurs->is_AEj_I[0]);CHKERRQ(ierr);
-    sub_schurs->is_AEj_I[i] = sub_schurs->is_AEj_I[0];
   }
 
   if (implicit_schurs) {
@@ -485,15 +478,15 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   ierr = ISDestroy(&sub_schurs->is_Ej_all);CHKERRQ(ierr);
   for (i=0;i<sub_schurs->n_subs;i++) {
     ierr = ISDestroy(&sub_schurs->is_subs[i]);CHKERRQ(ierr);
-    ierr = ISDestroy(&sub_schurs->is_AEj_I[i]);CHKERRQ(ierr);
     ierr = ISDestroy(&sub_schurs->is_AEj_B[i]);CHKERRQ(ierr);
     ierr = MatDestroy(&sub_schurs->S_Ej[i]);CHKERRQ(ierr);
     ierr = VecDestroy(&sub_schurs->work1[i]);CHKERRQ(ierr);
     ierr = VecDestroy(&sub_schurs->work2[i]);CHKERRQ(ierr);
   }
+  ierr = ISDestroy(&sub_schurs->is_I_layer);CHKERRQ(ierr);
   if (sub_schurs->n_subs) {
     ierr = PetscFree(sub_schurs->is_subs);CHKERRQ(ierr);
-    ierr = PetscFree5(sub_schurs->is_AEj_I,sub_schurs->is_AEj_B,sub_schurs->S_Ej,sub_schurs->work1,sub_schurs->work2);CHKERRQ(ierr);
+    ierr = PetscFree4(sub_schurs->is_AEj_B,sub_schurs->S_Ej,sub_schurs->work1,sub_schurs->work2);CHKERRQ(ierr);
     ierr = PetscFree2(sub_schurs->index_sequential,sub_schurs->index_parallel);CHKERRQ(ierr);
     ierr = PetscFree(sub_schurs->auxglobal_sequential);CHKERRQ(ierr);
     ierr = PetscFree(sub_schurs->auxglobal_parallel);CHKERRQ(ierr);
@@ -552,13 +545,12 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I
   ierr = MatSchurComplementGetSubMatrices(S,&A_II,NULL,&A_IB,&A_BI,&A_BB);CHKERRQ(ierr);
 
   /* allocate space for schur complements */
-  ierr = PetscMalloc5(sub_schurs->n_subs,&sub_schurs->is_AEj_I,
-                      sub_schurs->n_subs,&sub_schurs->is_AEj_B,
+  sub_schurs->n_subs = ncc;
+  ierr = PetscMalloc4(sub_schurs->n_subs,&sub_schurs->is_AEj_B,
                       sub_schurs->n_subs,&sub_schurs->S_Ej,
                       sub_schurs->n_subs,&sub_schurs->work1,
                       sub_schurs->n_subs,&sub_schurs->work2);CHKERRQ(ierr);
   ierr = PetscMalloc4(ncc,&is_subset_B,ncc,&AE_IE,ncc,&AE_EI,ncc,&AE_EE);CHKERRQ(ierr);
-  sub_schurs->n_subs = ncc;
 
   /* maps */
   if (sub_schurs->n_subs && nlayers >= 0 && xadj != NULL && adjncy != NULL) { /* Interior problems can be different from the original one */
@@ -601,10 +593,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I
     ierr = PetscBTDestroy(&touched);CHKERRQ(ierr);
 
     /* IS for I dofs in original numbering and in I numbering */
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ItoNmap),n_local_dofs-n_B,local_numbering+n_B,PETSC_COPY_VALUES,&sub_schurs->is_AEj_I[0]);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ItoNmap),n_local_dofs-n_B,local_numbering+n_B,PETSC_COPY_VALUES,&sub_schurs->is_I_layer);CHKERRQ(ierr);
     ierr = PetscFree(local_numbering);CHKERRQ(ierr);
-    ierr = ISSort(sub_schurs->is_AEj_I[0]);CHKERRQ(ierr);
-    ierr = ISGlobalToLocalMappingApplyIS(ItoNmap,IS_GTOLM_DROP,sub_schurs->is_AEj_I[0],&is_I);CHKERRQ(ierr);
+    ierr = ISSort(sub_schurs->is_I_layer);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApplyIS(ItoNmap,IS_GTOLM_DROP,sub_schurs->is_I_layer,&is_I);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&ItoNmap);CHKERRQ(ierr);
 
     /* II block */
@@ -614,7 +606,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I
 
     /* IS for I dofs in original numbering */
     ierr = PetscObjectReference((PetscObject)is_A_I);CHKERRQ(ierr);
-    sub_schurs->is_AEj_I[0] = is_A_I;
+    sub_schurs->is_I_layer = is_A_I;
 
     /* IS for I dofs in I numbering (strided 1) */
     ierr = ISGetSize(is_A_I,&n_I);CHKERRQ(ierr);
@@ -623,12 +615,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I
     /* II block is the same */
     ierr = PetscObjectReference((PetscObject)A_II);CHKERRQ(ierr);
     AE_II = A_II;
-  }
-
-  /* TODO: just for compatibility with the previous version, needs to be fixed */
-  for (i=1;i<sub_schurs->n_subs;i++) {
-    ierr = PetscObjectReference((PetscObject)sub_schurs->is_AEj_I[0]);CHKERRQ(ierr);
-    sub_schurs->is_AEj_I[i] = sub_schurs->is_AEj_I[0];
   }
 
   /* subsets in original and boundary numbering */

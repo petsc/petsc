@@ -822,7 +822,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
       subidx = deluxe_ctx->par_col2sub[i];
 
       /* Parallel numbering for dofs in colored subset */
-      ierr = ISSum(sub_schurs->is_AEj_I[subidx],sub_schurs->is_AEj_B[subidx],&is_local_numbering);CHKERRQ(ierr);
+      ierr = ISSum(sub_schurs->is_I_layer,sub_schurs->is_AEj_B[subidx],&is_local_numbering);CHKERRQ(ierr);
       ierr = ISGetLocalSize(is_local_numbering,&n_local_dofs);CHKERRQ(ierr);
       ierr = ISGetIndices(is_local_numbering,(const PetscInt **)&local_numbering);CHKERRQ(ierr);
       ierr = PCBDDCSubsetNumbering(par_subcomm->comm,pcbddc->mat_graph->l2gmap,n_local_dofs,local_numbering,PETSC_NULL,&n_global_dofs,&global_numbering);CHKERRQ(ierr);

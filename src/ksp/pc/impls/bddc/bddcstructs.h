@@ -53,7 +53,7 @@ struct _PCBDDCSubSchurs {
   Vec *work1;
   Vec *work2;
   /* IS */
-  IS *is_AEj_I;
+  IS is_I_layer;
   IS *is_AEj_B;
   /* l2g maps */
   ISLocalToGlobalMapping l2gmap;
