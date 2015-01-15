@@ -45,14 +45,19 @@ struct _PCBDDCSubSchurs {
   IS  is_B;
   /* local Schur complements on subsets (principal minors) */
   Mat *S_Ej;
+  /* matrices cointained explicit schur complements cat together */
   Mat S_Ej_all;
   Mat sum_S_Ej_all;
+  IS  is_Ej_all;
   /* work vectors */
   Vec *work1;
   Vec *work2;
   /* IS */
   IS *is_AEj_I;
   IS *is_AEj_B;
+  /* l2g maps */
+  ISLocalToGlobalMapping l2gmap;
+  ISLocalToGlobalMapping BtoNmap;
   /* number of local subproblems */
   PetscInt n_subs;
   /* number of local sequential subproblems */

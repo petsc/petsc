@@ -7,6 +7,7 @@ static PetscErrorCode PCBDDCScalingDestroy_Deluxe(PC);
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC);
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC,PetscInt,PetscInt,PetscInt[],PetscInt[]);
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC,PetscInt,PetscInt,PetscInt[],PetscInt[]);
+static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq_New(PC);
 static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling);
 
 #undef __FUNCT__
@@ -626,7 +627,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   ierr = MatSchurComplementSetKSP(S_j,pcbddc->ksp_D);CHKERRQ(ierr);
 
   /* sub_schurs init */ /* TODO reuse adaptive one if valid (i.e. pcbddc->local_mat == matis->A and same graph info (HOW?) ) */
-  ierr = PCBDDCSubSchursInit(sub_schurs,pcbddc->local_mat,S_j,pcis->is_I_local,pcis->is_B_local,graph,pcbddc->deluxe_threshold);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursInit(sub_schurs,pcbddc->local_mat,S_j,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap,pcbddc->deluxe_threshold);CHKERRQ(ierr);
   ierr = MatDestroy(&S_j);CHKERRQ(ierr);
   ierr = PCBDDCSubSchursSetUpNew(sub_schurs,used_xadj,used_adjncy,pcbddc->deluxe_layers);CHKERRQ(ierr);
 
@@ -635,9 +636,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
                                        sub_schurs->auxglobal_parallel,
                                        sub_schurs->index_parallel);CHKERRQ(ierr);
   /* Compute data structures to solve sequential problems */
-  ierr = PCBDDCScalingSetUp_Deluxe_Seq(pc,sub_schurs->n_subs_seq,sub_schurs->n_subs_seq_g,
-                                       sub_schurs->auxglobal_sequential,
-                                       sub_schurs->index_sequential);CHKERRQ(ierr);
+  ierr = PCBDDCScalingSetUp_Deluxe_Seq_New(pc);CHKERRQ(ierr);
+
   /* free adjacency */
   if (free_used_adj) {
     ierr = PetscFree2(used_xadj,used_adjncy);CHKERRQ(ierr);
@@ -942,6 +942,55 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCScalingSetUp_Deluxe_Seq_New"
+static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq_New(PC pc)
+{
+  PC_BDDC                *pcbddc=(PC_BDDC*)pc->data;
+  PCBDDCDeluxeScaling    deluxe_ctx=pcbddc->deluxe_ctx;
+  PCBDDCSubSchurs        sub_schurs = pcbddc->sub_schurs[1];
+  PC                     pc_temp;
+  MatSolverPackage       solver=NULL;
+  char                   ksp_prefix[256];
+  size_t                 len;
+  PetscInt               local_size;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  /* Create work vectors for sequential part of deluxe */
+  ierr = MatCreateVecs(sub_schurs->S_Ej_all,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
+
+  /* Compute deluxe sequential scatter */
+  ierr = VecScatterCreate(pcbddc->work_scaling,sub_schurs->is_Ej_all,deluxe_ctx->seq_work1,NULL,&deluxe_ctx->seq_scctx);CHKERRQ(ierr);
+
+  /* Create KSP object for sequential part of deluxe scaling */
+  ierr = KSPCreate(PETSC_COMM_SELF,&deluxe_ctx->seq_ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(deluxe_ctx->seq_ksp,sub_schurs->sum_S_Ej_all,sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
+  ierr = KSPSetType(deluxe_ctx->seq_ksp,KSPPREONLY);CHKERRQ(ierr);
+  ierr = KSPGetPC(deluxe_ctx->seq_ksp,&pc_temp);CHKERRQ(ierr);
+  ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
+  ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
+  ierr = PCFactorGetMatSolverPackage(pc_temp,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
+  ierr = MatGetSize(sub_schurs->sum_S_Ej_all,&local_size,NULL);CHKERRQ(ierr);
+  if (solver && local_size) { /* if local_size is null, some external packages will report errors */
+    PC     new_pc;
+    PCType type;
+    ierr = PCGetType(pc_temp,&type);CHKERRQ(ierr);
+    ierr = KSPGetPC(deluxe_ctx->seq_ksp,&new_pc);CHKERRQ(ierr);
+    ierr = PCSetType(new_pc,type);CHKERRQ(ierr);
+    ierr = PCFactorSetMatSolverPackage(new_pc,solver);CHKERRQ(ierr);
+  }
+  ierr = PetscStrlen(((PetscObject)(pcbddc->ksp_D))->prefix,&len);CHKERRQ(ierr);
+  len -= 10; /* remove "dirichlet_" */
+  ierr = PetscStrncpy(ksp_prefix,((PetscObject)(pcbddc->ksp_D))->prefix,len+1);CHKERRQ(ierr);
+  ierr = PetscStrcat(ksp_prefix,"deluxe_seq_");CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(deluxe_ctx->seq_ksp,ksp_prefix);CHKERRQ(ierr);
+  if (local_size) {
+    ierr = KSPSetFromOptions(deluxe_ctx->seq_ksp);CHKERRQ(ierr);
+  }
+  ierr = KSPSetUp(deluxe_ctx->seq_ksp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScalingSetUp_Deluxe_Seq"
