@@ -24,6 +24,9 @@ ex9busadj: ex9busadj.o  chkopts
 ex9busopt: ex9busopt.o  chkopts
 	-${CLINKER} -o ex9busopt ex9busopt.o  ${PETSC_TS_LIB}
 
+ex9busopt_fd: ex9busopt_fd.o  chkopts
+	-${CLINKER} -o ex9busopt_fd ex9busopt_fd.o  ${PETSC_TS_LIB}
+
 clean_files:
 	${RM} ex9busopt.o
 	-@${RM} ex9bus-SA-*
