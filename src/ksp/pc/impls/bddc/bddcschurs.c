@@ -340,6 +340,8 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   ierr = MatDestroy(&sub_schurs->S);CHKERRQ(ierr);
   ierr = ISDestroy(&sub_schurs->is_I);CHKERRQ(ierr);
   ierr = ISDestroy(&sub_schurs->is_B);CHKERRQ(ierr);
+  ierr = MatDestroy(&sub_schurs->S_Ej_all);CHKERRQ(ierr);
+  ierr = MatDestroy(&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
   for (i=0;i<sub_schurs->n_subs;i++) {
     ierr = ISDestroy(&sub_schurs->is_subs[i]);CHKERRQ(ierr);
     ierr = ISDestroy(&sub_schurs->is_AEj_I[i]);CHKERRQ(ierr);
@@ -409,7 +411,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat S, IS is_A_I
   ierr = MatSchurComplementGetSubMatrices(S,&A_II,NULL,&A_IB,&A_BI,&A_BB);CHKERRQ(ierr);
 
   /* allocate space for schur complements */
-  ierr = PetscMalloc5(ncc,&sub_schurs->is_AEj_I,ncc,&sub_schurs->is_AEj_B,ncc,&sub_schurs->S_Ej,ncc,&sub_schurs->work1,ncc,&sub_schurs->work2);CHKERRQ(ierr);
+  ierr = PetscMalloc5(sub_schurs->n_subs,&sub_schurs->is_AEj_I,
+                      sub_schurs->n_subs,&sub_schurs->is_AEj_B,
+                      sub_schurs->n_subs,&sub_schurs->S_Ej,
+                      sub_schurs->n_subs,&sub_schurs->work1,
+                      sub_schurs->n_subs,&sub_schurs->work2);CHKERRQ(ierr);
   ierr = PetscMalloc4(ncc,&is_subset_B,ncc,&AE_IE,ncc,&AE_EI,ncc,&AE_EE);CHKERRQ(ierr);
   sub_schurs->n_subs = ncc;
 

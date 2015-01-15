@@ -45,6 +45,8 @@ struct _PCBDDCSubSchurs {
   IS  is_B;
   /* local Schur complements on subsets (principal minors) */
   Mat *S_Ej;
+  Mat S_Ej_all;
+  Mat sum_S_Ej_all;
   /* work vectors */
   Vec *work1;
   Vec *work2;

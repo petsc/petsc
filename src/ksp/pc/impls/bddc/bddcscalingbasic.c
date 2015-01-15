@@ -54,10 +54,10 @@ static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y)
     ierr = VecRestoreArray(x,&array_x);CHKERRQ(ierr);
   }
   /* sequential part : all problems and Schur applications collapsed into a single matrix vector multiplication and ksp solution */
-  if (deluxe_ctx->seq_mat) {
+  if (deluxe_ctx->seq_ksp) {
     ierr = VecScatterBegin(deluxe_ctx->seq_scctx,x,deluxe_ctx->seq_work1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(deluxe_ctx->seq_scctx,x,deluxe_ctx->seq_work1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = MatMult(deluxe_ctx->seq_mat,deluxe_ctx->seq_work1,deluxe_ctx->seq_work2);CHKERRQ(ierr);
+    ierr = MatMult(sub_schurs->S_Ej_all,deluxe_ctx->seq_work1,deluxe_ctx->seq_work2);CHKERRQ(ierr);
     ierr = KSPSolve(deluxe_ctx->seq_ksp,deluxe_ctx->seq_work2,deluxe_ctx->seq_work1);CHKERRQ(ierr);
     /* fake work due to final ADD VALUES and vertices scaling needed? TODO: check it */
     ierr = VecScatterBegin(deluxe_ctx->seq_scctx,deluxe_ctx->seq_work1,pcbddc->work_scaling,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -155,11 +155,11 @@ static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y)
     ierr = VecRestoreArray(y,&array_y);CHKERRQ(ierr);
   }
   /* sequential part : all problems and Schur applications collapsed into a single matrix vector multiplication and ksp solution */
-  if (deluxe_ctx->seq_mat) {
+  if (deluxe_ctx->seq_ksp) {
     ierr = VecScatterBegin(deluxe_ctx->seq_scctx,y,deluxe_ctx->seq_work1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(deluxe_ctx->seq_scctx,y,deluxe_ctx->seq_work1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = KSPSolveTranspose(deluxe_ctx->seq_ksp,deluxe_ctx->seq_work1,deluxe_ctx->seq_work2);CHKERRQ(ierr);
-    ierr = MatMultTranspose(deluxe_ctx->seq_mat,deluxe_ctx->seq_work2,deluxe_ctx->seq_work1);CHKERRQ(ierr);
+    ierr = MatMultTranspose(sub_schurs->S_Ej_all,deluxe_ctx->seq_work2,deluxe_ctx->seq_work1);CHKERRQ(ierr);
     ierr = VecScatterBegin(deluxe_ctx->seq_scctx,deluxe_ctx->seq_work1,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(deluxe_ctx->seq_scctx,deluxe_ctx->seq_work1,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
@@ -342,11 +342,10 @@ static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling delu
   PetscFunctionBegin;
   ierr = PetscFree(deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
   deluxe_ctx->n_simple = 0;
-  if (deluxe_ctx->seq_mat) {
+  if (deluxe_ctx->seq_ksp) {
     ierr = VecScatterDestroy(&deluxe_ctx->seq_scctx);CHKERRQ(ierr);
     ierr = VecDestroy(&deluxe_ctx->seq_work1);CHKERRQ(ierr);
     ierr = VecDestroy(&deluxe_ctx->seq_work2);CHKERRQ(ierr);
-    ierr = MatDestroy(&deluxe_ctx->seq_mat);CHKERRQ(ierr);
     ierr = KSPDestroy(&deluxe_ctx->seq_ksp);CHKERRQ(ierr);
   }
   if (deluxe_ctx->par_colors) {
@@ -1015,11 +1014,11 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ierr = PetscSortIntWithPermutation(local_size,all_local_idx_G,all_permutation_G);CHKERRQ(ierr);
 
   /* Local matrix of all local Schur on subsets */
-  ierr = MatCreate(PETSC_COMM_SELF,&deluxe_ctx->seq_mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(deluxe_ctx->seq_mat,PETSC_DECIDE,PETSC_DECIDE,local_size,local_size);CHKERRQ(ierr);
-  ierr = MatSetType(deluxe_ctx->seq_mat,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetOption(deluxe_ctx->seq_mat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(deluxe_ctx->seq_mat,0,nnz);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&sub_schurs->S_Ej_all);CHKERRQ(ierr);
+  ierr = MatSetSizes(sub_schurs->S_Ej_all,PETSC_DECIDE,PETSC_DECIDE,local_size,local_size);CHKERRQ(ierr);
+  ierr = MatSetType(sub_schurs->S_Ej_all,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetOption(sub_schurs->S_Ej_all,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(sub_schurs->S_Ej_all,0,nnz);CHKERRQ(ierr);
   ierr = PetscFree(nnz);CHKERRQ(ierr);
 
   /* Work arrays */
@@ -1042,22 +1041,22 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
     for (j=0;j<subset_size;j++) {
       dummy_idx[j]=local_size+j;
     }
-    ierr = MatSetValues(deluxe_ctx->seq_mat,subset_size,dummy_idx,subset_size,dummy_idx,fill_vals,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(sub_schurs->S_Ej_all,subset_size,dummy_idx,subset_size,dummy_idx,fill_vals,INSERT_VALUES);CHKERRQ(ierr);
     local_size += subset_size;
   }
   ierr = PetscFree2(dummy_idx,fill_vals);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(deluxe_ctx->seq_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(deluxe_ctx->seq_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Global matrix of all assembled Schur on subsets */
   ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)pc),1,local_size,all_local_idx_G,PETSC_COPY_VALUES,&l2gmap_subsets);CHKERRQ(ierr);
   ierr = MatCreateIS(PetscObjectComm((PetscObject)pc),1,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size,l2gmap_subsets,&work_mat);CHKERRQ(ierr);
-  ierr = MatISSetLocalMat(work_mat,deluxe_ctx->seq_mat);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&l2gmap_subsets);CHKERRQ(ierr);
+  ierr = MatISSetLocalMat(work_mat,sub_schurs->S_Ej_all);CHKERRQ(ierr);
   ierr = MatISGetMPIXAIJ(work_mat,MAT_INITIAL_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
   ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
-
   /* Create work vectors for sequential part of deluxe */
-  ierr = MatCreateVecs(deluxe_ctx->seq_mat,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
+  ierr = MatCreateVecs(sub_schurs->S_Ej_all,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
 
   /* Compute deluxe sequential scatter */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size,all_local_idx_B,PETSC_OWN_POINTER,&is_from);CHKERRQ(ierr);
@@ -1077,14 +1076,14 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size,all_local_idx_G,PETSC_OWN_POINTER,&is_from);CHKERRQ(ierr);
   ierr = ISSetPermutation(is_from);CHKERRQ(ierr);
-  ierr = MatPermute(submat_global_schur_subsets[0],is_from,is_from,&work_mat);CHKERRQ(ierr);
+  ierr = MatPermute(submat_global_schur_subsets[0],is_from,is_from,&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&submat_global_schur_subsets);CHKERRQ(ierr);
   ierr = ISDestroy(&is_from);CHKERRQ(ierr);
   ierr = PetscFree(all_permutation_G);CHKERRQ(ierr);
 
   /* Create KSP object for sequential part of deluxe scaling */
   ierr = KSPCreate(PETSC_COMM_SELF,&deluxe_ctx->seq_ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(deluxe_ctx->seq_ksp,work_mat,work_mat);CHKERRQ(ierr);
+  ierr = KSPSetOperators(deluxe_ctx->seq_ksp,sub_schurs->sum_S_Ej_all,sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
   ierr = KSPSetType(deluxe_ctx->seq_ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPGetPC(deluxe_ctx->seq_ksp,&pc_temp);CHKERRQ(ierr);
   ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
@@ -1107,6 +1106,5 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
     ierr = KSPSetFromOptions(deluxe_ctx->seq_ksp);CHKERRQ(ierr);
   }
   ierr = KSPSetUp(deluxe_ctx->seq_ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
