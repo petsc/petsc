@@ -979,6 +979,7 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
 
       }
     }
+    pc_gamg_agg->square_graph = PETSC_FALSE; /* we don't want to square coarse grids */
   } else Gmat2 = Gmat1;
 
   /* get MIS aggs */
