@@ -58,8 +58,8 @@ static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y)
   if (deluxe_ctx->seq_ksp) {
     ierr = VecScatterBegin(deluxe_ctx->seq_scctx,x,deluxe_ctx->seq_work1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(deluxe_ctx->seq_scctx,x,deluxe_ctx->seq_work1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = MatMult(sub_schurs->S_Ej_all,deluxe_ctx->seq_work1,deluxe_ctx->seq_work2);CHKERRQ(ierr);
-    ierr = KSPSolve(deluxe_ctx->seq_ksp,deluxe_ctx->seq_work2,deluxe_ctx->seq_work1);CHKERRQ(ierr);
+    ierr = MatMultTranspose(sub_schurs->S_Ej_all,deluxe_ctx->seq_work1,deluxe_ctx->seq_work2);CHKERRQ(ierr);
+    ierr = KSPSolveTranspose(deluxe_ctx->seq_ksp,deluxe_ctx->seq_work2,deluxe_ctx->seq_work1);CHKERRQ(ierr);
     /* fake work due to final ADD VALUES and vertices scaling needed? TODO: check it */
     ierr = VecScatterBegin(deluxe_ctx->seq_scctx,deluxe_ctx->seq_work1,pcbddc->work_scaling,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(deluxe_ctx->seq_scctx,deluxe_ctx->seq_work1,pcbddc->work_scaling,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -159,8 +159,8 @@ static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y)
   if (deluxe_ctx->seq_ksp) {
     ierr = VecScatterBegin(deluxe_ctx->seq_scctx,y,deluxe_ctx->seq_work1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(deluxe_ctx->seq_scctx,y,deluxe_ctx->seq_work1,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = KSPSolveTranspose(deluxe_ctx->seq_ksp,deluxe_ctx->seq_work1,deluxe_ctx->seq_work2);CHKERRQ(ierr);
-    ierr = MatMultTranspose(sub_schurs->S_Ej_all,deluxe_ctx->seq_work2,deluxe_ctx->seq_work1);CHKERRQ(ierr);
+    ierr = KSPSolve(deluxe_ctx->seq_ksp,deluxe_ctx->seq_work1,deluxe_ctx->seq_work2);CHKERRQ(ierr);
+    ierr = MatMult(sub_schurs->S_Ej_all,deluxe_ctx->seq_work2,deluxe_ctx->seq_work1);CHKERRQ(ierr);
     ierr = VecScatterBegin(deluxe_ctx->seq_scctx,deluxe_ctx->seq_work1,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(deluxe_ctx->seq_scctx,deluxe_ctx->seq_work1,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
@@ -1070,7 +1070,6 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc,PetscInt n_local_seque
   ierr = MatCreate(PETSC_COMM_SELF,&sub_schurs->S_Ej_all);CHKERRQ(ierr);
   ierr = MatSetSizes(sub_schurs->S_Ej_all,PETSC_DECIDE,PETSC_DECIDE,local_size,local_size);CHKERRQ(ierr);
   ierr = MatSetType(sub_schurs->S_Ej_all,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetOption(sub_schurs->S_Ej_all,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(sub_schurs->S_Ej_all,0,nnz);CHKERRQ(ierr);
   ierr = PetscFree(nnz);CHKERRQ(ierr);
 

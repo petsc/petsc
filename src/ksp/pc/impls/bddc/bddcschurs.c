@@ -246,8 +246,6 @@ PetscErrorCode PCBDDCSubSchursSetUpNew(PCBDDCSubSchurs sub_schurs, PetscInt xadj
     PetscScalar *fill_vals;
     PetscInt    *dummy_idx;
 
-    ierr = MatSetOption(sub_schurs->S_Ej_all,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-
     /* Work arrays */
     ierr = PetscMalloc2(max_subset_size,&dummy_idx,max_subset_size*max_subset_size,&fill_vals);CHKERRQ(ierr);
 
