@@ -1325,6 +1325,7 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
 
   ierr = PetscLimiterDestroy(&(*fvm)->limiter);CHKERRQ(ierr);
   ierr = PetscFree((*fvm)->fluxWork);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&(*fvm)->quadrature);CHKERRQ(ierr);
 
   if ((*fvm)->ops->destroy) {ierr = (*(*fvm)->ops->destroy)(*fvm);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(fvm);CHKERRQ(ierr);

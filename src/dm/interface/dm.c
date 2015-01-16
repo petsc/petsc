@@ -2974,7 +2974,10 @@ PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *section)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(section, 2);
-  if (!dm->defaultSection && dm->ops->createdefaultsection) {ierr = (*dm->ops->createdefaultsection)(dm);CHKERRQ(ierr);}
+  if (!dm->defaultSection && dm->ops->createdefaultsection) {
+    ierr = (*dm->ops->createdefaultsection)(dm);CHKERRQ(ierr);
+    ierr = PetscObjectViewFromOptions((PetscObject) dm->defaultSection, "dm_", "-petscsection_view");CHKERRQ(ierr);
+  }
   *section = dm->defaultSection;
   PetscFunctionReturn(0);
 }
