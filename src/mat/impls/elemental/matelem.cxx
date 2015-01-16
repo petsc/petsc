@@ -957,6 +957,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalComputeEigenvalues_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1005,6 +1006,47 @@ PetscErrorCode MatAssemblyEnd_Elemental(Mat A, MatAssemblyType type)
 {
   PetscFunctionBegin;
   /* Currently does nothing */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatElementalComputeEigenvalues_Elemental"
+PetscErrorCode MatElementalComputeEigenvalues_Elemental(Mat A)
+{
+  PetscFunctionBegin;
+  printf("MatElementalComputeEigenvalues_Elemental ...\n");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatElementalComputeEigenvalues"
+/*@
+  MatElementalComputeEigenvalues - 
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+.  icntl - index of MUMPS parameter array ICNTL()
+-  ival - value of MUMPS ICNTL(icntl)
+
+  Options Database:
+.   -mat_mumps_icntl_<icntl> <ival>
+
+   Level: beginner
+
+   References: MUMPS Users' Guide
+
+.seealso: MatGetFactor()
+@*/
+PetscErrorCode MatElementalComputeEigenvalues(Mat A)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  //PetscValidLogicalCollectiveInt(F,icntl,2);
+  //PetscValidLogicalCollectiveInt(F,ival,3);
+  ierr = PetscTryMethod(A,"MatElementalComputeEigenvalues_C",(Mat),(A));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1222,6 +1264,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalComputeEigenvalues_C",MatElementalComputeEigenvalues_Elemental);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

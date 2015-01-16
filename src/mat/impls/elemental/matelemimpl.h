@@ -63,4 +63,6 @@ PETSC_STATIC_INLINE void RO2E(Mat A,PetscInt rc,PetscInt rank,PetscInt offset,Pe
   *e = offset * a->commsize + rank;
 }
 
+PETSC_EXTERN PetscErrorCode MatElementalComputeEigenvalues(Mat);
+
 #endif
