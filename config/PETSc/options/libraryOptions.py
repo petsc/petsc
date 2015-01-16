@@ -17,6 +17,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
+    help.addArgument('PETSc', '-with-threadsafety=<bool>',     nargs.ArgBool(None, 0, 'Allow individual threads in PETSc to call PETSc routines'))
     help.addArgument('PETSc', '-with-info=<bool>',             nargs.ArgBool(None, 1, 'Activate PetscInfo() (i.e. -info)  code in PETSc'))
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Activate CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
@@ -36,10 +37,21 @@ class Configure(config.base.Configure):
   def configureLibraryOptions(self):
     '''Sets PETSC_USE_DEBUG, PETSC_USE_INFO, PETSC_USE_LOG, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
     '''Also sets PETSC_AssertAlignx() in Fortran and PETSC_Alignx() in C for IBM BG/P compiler '''
+    if self.framework.argDB['with-threadsafety']:
+      self.addDefine('HAVE_THREADSAFETY')
+      self.useThreadSafety = 1
+    else:
+      self.useThreadSafety = 0
+
+    if self.useThreadSafety and self.framework.argDB['with-log']:
+      raise RuntimeError('Must use --with-log=0 with --with-threadsafety')
+
     self.useLog   = self.framework.argDB['with-log']
     self.addDefine('USE_LOG',   self.useLog)
 
     if self.debugging.debugging:
+      if self.useThreadSafety:
+        raise RuntimeError('Must use --with-debugging=0 with --with-threadsafety')
       self.addDefine('USE_DEBUG', '1')
     elif not config.setCompilers.Configure.isIBM(self.framework.getCompiler()):
       # IBM XLC version 12.1 (BG/Q and POWER) miscompiles PetscMalloc3()

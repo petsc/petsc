@@ -887,7 +887,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
   }
   ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
-  ierr = PCSetFromOptions_MG(PetscOptionsObjectType *PetscOptionsObject,pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
+  ierr = PCSetFromOptions_MG(PetscOptionsObject,pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscMalloc1(Nlevels,&gridctx);CHKERRQ(ierr);

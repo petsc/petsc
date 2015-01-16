@@ -39,9 +39,21 @@ static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *foun
 
 #endif
 
-#define PETSC_HAVE_THREADSAFETY 1
 #if defined(PETSC_HAVE_THREADSAFETY)
-static MPI_Comm PETSC_COMM_WORLD_INNER,PETSC_COMM_SELF_INNER;
+#include <petscthreadcomm.h>
+extern PetscErrorCode PetscThreadCommWorldInitialize(void);
+extern PetscErrorCode AOInitializePackage(void);
+extern PetscErrorCode PetscSFInitializePackage(void);
+extern PetscErrorCode CharacteristicInitializePackage(void);
+extern PetscErrorCode ISInitializePackage(void);
+extern PetscErrorCode VecInitializePackage(void);
+extern PetscErrorCode MatInitializePackage(void);
+extern PetscErrorCode DMInitializePackage(void);
+extern PetscErrorCode PCInitializePackage(void);
+extern PetscErrorCode KSPInitializePackage(void);
+extern PetscErrorCode SNESInitializePackage(void);
+extern PetscErrorCode TSInitializePackage(void);
+static MPI_Comm PETSC_COMM_WORLD_INNER = 0,PETSC_COMM_SELF_INNER = 0;
 #endif
 
 #undef __FUNCT__
@@ -110,6 +122,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   }
 
 #if defined(PETSC_HAVE_THREADSAFETY)
+  /* These must be done here because it is not safe for individual threads to call these initialize routines */
   ierr = PetscThreadCommInitializePackage();CHKERRQ(ierr);
   ierr = PetscThreadCommWorldInitialize();CHKERRQ(ierr);
   ierr = AOInitializePackage();CHKERRQ(ierr);

@@ -128,6 +128,7 @@ int main(int argc, char **argv)
   PetscInitialize(&argc, &argv, (char*)0,help);
 
   user.mx = 32;
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
   user.nt = 16;
   ierr = PetscOptionsInt("-nt","Number of time steps","",user.nt,&user.nt,NULL);CHKERRQ(ierr);
@@ -206,6 +207,7 @@ int main(int argc, char **argv)
 
   /* SOLVE THE APPLICATION */
   ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Trials",&stages[0]);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
   user.ksp_its_initial = user.ksp_its;
