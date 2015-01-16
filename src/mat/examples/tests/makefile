@@ -685,6 +685,10 @@ ex172: ex172.o chkopts
 	-${CLINKER} -o ex172 ex172.o ${PETSC_MAT_LIB}
 	${RM} ex172.o
 
+ex173: ex173.o chkopts
+	-${CLINKER} -o ex173 ex173.o ${PETSC_MAT_LIB}
+	${RM} ex173.o
+
 ex180: ex180.o chkopts
 	-${CLINKER} -o ex180 ex180.o ${PETSC_MAT_LIB}
 	${RM} ex180.o
@@ -2130,6 +2134,27 @@ runex172_mpisbaij:
 	   ${DIFF} output/ex172.out ex172.tmp || printf "${PWD}\nPossible problem with ex172_mpisbaij, diffs above\n=========================================\n"; \
 	   ${RM} -f ex172.tmp
 
+runex173:
+	-@${MPIEXEC} -n 1 ./ex173 -f ${DATAFILESPATH}/matrices/small > ex173.tmp 2>&1; \
+	   if (${DIFF} output/ex173.out ex173.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex173_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex173.tmp
+runex173_dense:
+	-@${MPIEXEC} -n 1 ./ex173 -f ${DATAFILESPATH}/matrices/small -mat_type dense > ex173.tmp 2>&1; \
+	   if (${DIFF} output/ex173.out ex173.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex173_dense, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex173.tmp
+runex173_2:
+	-@${MPIEXEC} -n 3 ./ex173 -f ${DATAFILESPATH}/matrices/medium > ex173.tmp 2>&1; \
+	   if (${DIFF} output/ex173.out ex173.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex173_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex173.tmp
+runex173_2_dense:
+	-@${MPIEXEC} -n 3 ./ex173 -f ${DATAFILESPATH}/matrices/medium -mat_type dense > ex173.tmp 2>&1; \
+	   if (${DIFF} output/ex173.out ex173.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex173_2_dense, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex173.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
                                  ex9.PETSc runex9 runex9_2 runex9_3 runex9_3_baij runex9_3_sbaij runex9_4_baij runex9_4_sbaij ex9.rm \
@@ -2190,7 +2215,8 @@ TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 e
                                  ex138.PETSc runex138_1 runex138_2 ex138.rm \
                                  ex140.PETSc runex140 runex140_2 runex140_3 runex140_4 ex140.rm \
                                  ex100.PETSc runex100 ex100.rm ex125.PETSc runex125 ex125.rm \
-                                 ex163.PETSc runex163 runex163_2 ex163.rm ex169.PETSc runex169 ex169.rm ex171.PETSc runex171 ex171.rm ex180.PETSc runex180 ex180.rm
+                                 ex163.PETSc runex163 runex163_2 ex163.rm ex169.PETSc runex169 ex169.rm ex171.PETSc runex171 ex171.rm \
+                                 ex180.PETSc runex180 ex180.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex79f ex79f.rm
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
@@ -2204,6 +2230,7 @@ TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm 
                                  ex39.PETSc runex39 runex39_2 ex39.rm \
                                  ex103.PETSc runex103 runex103_1 runex103_2 ex103.rm \
                                  ex104.PETSc runex104_elemental runex104_elemental_2 ex104.rm \
-                                 ex145.PETSc runex145 runex145_2 ex145.rm
+                                 ex145.PETSc runex145 runex145_2 ex145.rm \
+                                 ex173.PETSc runex173 runex173_dense runex173_2 runex173_2_dense ex173.rm
 
 include ${PETSC_DIR}/lib/petsc-conf/test
