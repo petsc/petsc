@@ -1297,7 +1297,6 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype
   ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree3(v_rowwise,rows,cols);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(A,&array);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
