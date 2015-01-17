@@ -1,0 +1,30 @@
+# Convert Fortran value (passed as pointer) to MPI object in C
+toptr MPI_Comm MPI_Comm_f2c(*(%s))
+toptr MPI_Request MPI_Request_f2c(*(%s))
+toptr MPI_Group MPI_Group_f2c(*(%s))
+toptr MPI_Op MPI_Op_f2c(*(%s))
+toptr MPI_Datatype MPI_Type_f2c(*(%s))
+toptr MPI_Win MPI_Win_f2c(*(%s))
+toptr MPI_File MPI_File_f2c(*(%s))
+toptr MPI_Info MPI_Info_f2c(*(%s))
+toptr MPI_Message MPI_Message_f2c(*(%s))
+# 
+nativeptr MPI_Comm
+nativeptr MPI_Request
+nativeptr MPI_Group
+nativeptr MPI_Op
+nativeptr MPI_File
+nativeptr MPI_Win
+nativeptr MPI_Datatype
+nativeptr MPI_Errhandler
+nativeptr MPI_Info
+nativeptr MPI_Message
+native MPI_Aint integer (kind=MPI_ADDRESS_KIND)
+native MPI_Offset integer (kind=MPI_OFFSET_KIND)
+native MPI_Count integer (kind=MPI_COUNT_KIND)
+native MPI_Fint integer
+# Status is an array, but not an implied pointer
+native MPI_Status
+#
+parm errparm ierr
+parm errparmlocal __ierr

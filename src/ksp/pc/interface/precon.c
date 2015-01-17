@@ -1118,6 +1118,8 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat)
 +  pc - the preconditioner context
 -  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
 
+   Level: intermediate
+
 .seealso: PCGetOperators(), MatZeroEntries()
  @*/
 PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
@@ -1140,6 +1142,8 @@ PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
 
    Output Parameter:
 .  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
+
+   Level: intermediate
 
 .seealso: PCGetOperators(), MatZeroEntries(), PCSetReusePreconditioner()
  @*/

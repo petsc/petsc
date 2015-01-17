@@ -161,7 +161,7 @@ def processDir(arg,dirname,names):
                '-mpi', '-mpi2', '-ferr', '-ptrprefix Petsc', '-ptr64 PETSC_USE_POINTER_CONVERSION',
                '-fcaps PETSC_HAVE_FORTRAN_CAPS', '-fuscore PETSC_HAVE_FORTRAN_UNDERSCORE',
                '-f90mod_skip_header','-f90modfile','f90module.f90']
-    cmd = 'cd '+dirname+';'+bfort+' '+' '.join(options+newls)
+    cmd = 'cd '+dirname+'; BFORT_CONFIG_PATH='+os.path.join(petscdir,'lib','petsc-conf')+' '+bfort+' '+' '.join(options+newls)
     (status,output) = commands.getstatusoutput(cmd)
     if status:
       raise RuntimeError('Error running bfort\n'+cmd+'\n'+output)
