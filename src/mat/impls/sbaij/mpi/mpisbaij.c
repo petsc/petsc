@@ -658,6 +658,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
     Mat_SeqBAIJ  *Bloc;
     PetscInt     M = mat->rmap->N,N = mat->cmap->N,*ai,*aj,col,i,j,k,*rvals,mbs = baij->mbs;
     MatScalar    *a;
+    const char   *matname;
 
     /* Should this be the same type as mat? */
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),&A);CHKERRQ(ierr);
@@ -712,9 +713,8 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
        synchronized across all processors that share the PetscDraw object
     */
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)mat,&matname);CHKERRQ(ierr);
     if (!rank) {
-      const char *matname;
-      ierr = PetscObjectGetName((PetscObject)mat,&matname);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject)((Mat_MPISBAIJ*)(A->data))->A,matname);CHKERRQ(ierr);
       ierr = MatView_SeqSBAIJ_ASCII(((Mat_MPISBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
