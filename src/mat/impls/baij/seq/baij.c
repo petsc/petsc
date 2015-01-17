@@ -1497,8 +1497,11 @@ static PetscErrorCode MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     ierr = PetscViewerASCIIPrintf(viewer,"  block size is %D\n",bs);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
-    Mat aij;
+    const char *matname;
+    Mat        aij;
     ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&aij);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)A,&matname);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)aij,matname);CHKERRQ(ierr);
     ierr = MatView(aij,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&aij);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {

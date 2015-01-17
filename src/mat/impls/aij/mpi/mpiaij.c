@@ -1430,6 +1430,9 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     */
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
+      const char *matname;
+      ierr = PetscObjectGetName((PetscObject)mat,&matname);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)((Mat_MPIAIJ*)(A->data))->A,matname);CHKERRQ(ierr);
       ierr = MatView_SeqAIJ(((Mat_MPIAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
