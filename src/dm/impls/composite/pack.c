@@ -1389,7 +1389,7 @@ PetscErrorCode  DMGlobalToLocalEnd_Composite(DM dm,Vec gvec,InsertMode mode,Vec 
 
   Level: intermediate
 
-.seealso: DMType, DMCOMPOSITE, DMDACreate(), DMCreate(), DMSetType(), DMCompositeCreate()
+.seealso: DMType, DM, DMDACreate(), DMCreate(), DMSetType(), DMCompositeCreate()
 M*/
 
 
@@ -1442,7 +1442,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
 
     Level: advanced
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCompositeScatter(),
+.seealso DMDestroy(), DMCompositeAddDM(), DMCompositeScatter(), DMCOMPOSITE,DMCreate()
          DMCompositeGather(), DMCreateGlobalVector(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess()
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
 
