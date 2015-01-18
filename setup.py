@@ -54,6 +54,8 @@ metadata = {
     'zip_safe' : False,
 }
 
+CONFIGURE_OPTIONS = []
+
 def bootstrap():
     # Set PETSC_DIR and PETSC_ARCH
     PETSC_DIR  = os.path.abspath(os.getcwd())
@@ -70,19 +72,24 @@ def bootstrap():
     fh = open(pkgfile, 'w')
     fh.write(init_py)
     fh.close()
-    # Simple-minded lookup for MPI and mpi4py
-    mpi4py = mpicc = None
-    try:
-        import mpi4py
-        conf = mpi4py.get_config()
-        mpicc = conf.get('mpicc')
-    except ImportError: # mpi4py is not installed
-        mpi4py = None
-        mpicc = os.environ.get('MPICC') or find_executable('mpicc')
-    except AttributeError: # mpi4py is too old
-        pass
-    if not mpi4py and mpicc:
-        metadata['install_requires'] = ['mpi4py>=1.2.2']
+    # Configure options
+    options = os.environ.get('PETSC_CONFIGURE_OPTIONS', '')
+    CONFIGURE_OPTIONS.extend(split_quoted(options))
+    if '--with-mpi=0' not in CONFIGURE_OPTIONS:
+        # Simple-minded lookup for MPI and mpi4py
+        mpi4py = mpicc = None
+        try:
+            import mpi4py
+            conf = mpi4py.get_config()
+            mpicc = conf.get('mpicc')
+        except ImportError: # mpi4py is not installed
+            mpi4py = None
+            mpicc = (os.environ.get('MPICC') or
+                     find_executable('mpicc'))
+        except AttributeError: # mpi4py is too old
+            pass
+        if not mpi4py and mpicc:
+            metadata['install_requires'] = ['mpi4py>=1.2.2']
 
 def config(prefix, dry_run=False):
     log.info('PETSc: configure')
@@ -93,34 +100,36 @@ def config(prefix, dry_run=False):
         '--with-debugging=0',
         '--with-c2html=0', # not needed
         ]
-    # MPI
-    try:
-        import mpi4py
-        conf = mpi4py.get_config()
-        mpicc  = conf.get('mpicc')
-        mpicxx = conf.get('mpicxx')
-        mpif90 = conf.get('mpif90')
-    except (ImportError, AttributeError):
-        mpicc  = os.environ.get('MPICC')  or find_executable('mpicc')
-        mpicxx = os.environ.get('MPICXX') or find_executable('mpicxx')
-        mpif90 = os.environ.get('MPIF90') or find_executable('mpif90')
-    if mpicc:
-        options.append('--with-cc='+mpicc)
-        if mpicxx:
-            options.append('--with-cxx='+mpicxx)
+    if '--with-fc=0' in CONFIGURE_OPTIONS:
+        options.append('--with-sowing=0')
+    if '--with-mpi=0' not in CONFIGURE_OPTIONS:
+        try:
+            import mpi4py
+            conf = mpi4py.get_config()
+            mpicc  = conf.get('mpicc')
+            mpicxx = conf.get('mpicxx')
+            mpif90 = conf.get('mpif90')
+        except (ImportError, AttributeError):
+            mpicc  = os.environ.get('MPICC')  or find_executable('mpicc')
+            mpicxx = os.environ.get('MPICXX') or find_executable('mpicxx')
+            mpif90 = os.environ.get('MPIF90') or find_executable('mpif90')
+        if mpicc:
+            options.append('--with-cc='+mpicc)
+            if '--with-cxx=0' not in CONFIGURE_OPTIONS:
+                if mpicxx:
+                    options.append('--with-cxx='+mpicxx)
+                else:
+                    options.append('--with-cxx=0')
+            if '--with-fc=0' not in CONFIGURE_OPTIONS:
+                if mpif90:
+                    options.append('--with-fc='+mpif90)
+                else:
+                    options.append('--with-fc=0')
+                    options.append('--with-sowing=0')
         else:
-            options.append('--with-cxx=0')
-        if mpif90:
-            options.append('--with-fc='+mpif90)
-        else:
-            options.append('--with-fc=0')
-            options.append('--with-sowing=0')
-    else:
-        options.append('--with-mpi=0')
-    # Extra configure options
-    config_opts = os.environ.get('PETSC_CONFIGURE_OPTIONS', '')
-    config_opts = split_quoted(config_opts)
-    options.extend(config_opts)
+            options.append('--with-mpi=0')
+    options.extend(CONFIGURE_OPTIONS)
+    #
     log.info('configure options:')
     for opt in options:
         log.info(' '*4 + opt)
