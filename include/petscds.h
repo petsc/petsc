@@ -42,6 +42,7 @@ PETSC_EXTERN PetscErrorCode PetscDSGetTotalBdDimension(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetTotalComponents(PetscDS, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetFieldOffset(PetscDS, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDSGetBdFieldOffset(PetscDS, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDSGetComponentOffset(PetscDS, PetscInt, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode PetscDSGetDiscretization(PetscDS, PetscInt, PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscDSSetDiscretization(PetscDS, PetscInt, PetscObject);

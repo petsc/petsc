@@ -1197,9 +1197,9 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   for (f = fStart; f < fEnd; ++f) {
     PetscFVFaceGeom *fg;
     PetscReal        area;
-    PetscInt         ghost, d;
+    PetscInt         ghost = -1, d;
 
-    ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);
+    if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
     if (ghost >= 0) continue;
     ierr = DMPlexPointLocalRef(dmFace, f, fgeom, &fg);CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFVM(dm, f, &area, fg->centroid, fg->normal);CHKERRQ(ierr);
