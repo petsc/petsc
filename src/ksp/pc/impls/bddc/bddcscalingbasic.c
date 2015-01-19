@@ -445,7 +445,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   /* sub_schurs init */ /* TODO reuse adaptive one if valid (i.e. pcbddc->local_mat == matis->A and same graph info (HOW?) ) */
   ierr = PCBDDCSubSchursInit(sub_schurs,pcbddc->local_mat,S_j,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap,pcbddc->deluxe_threshold);CHKERRQ(ierr);
   ierr = MatDestroy(&S_j);CHKERRQ(ierr);
-  ierr = PCBDDCSubSchursSetUpNew(sub_schurs,used_xadj,used_adjncy,pcbddc->deluxe_layers);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,pcbddc->deluxe_layers);CHKERRQ(ierr);
 
   /* Compute data structures to solve parallel problems */
   ierr = PCBDDCScalingSetUp_Deluxe_Par(pc,sub_schurs->n_subs_par,sub_schurs->n_subs_par_g,
