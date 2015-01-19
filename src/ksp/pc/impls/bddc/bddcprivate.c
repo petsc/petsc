@@ -552,13 +552,6 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   }
 
   /* compute other basis functions for non-symmetric problems */
-  /*ierr = MatIsSymmetric(pc->pmat,0.,&pcbddc->issym);CHKERRQ(ierr);*/
-  { /* this is a temporary workaround since seqbaij matrices does not have support for symmetry checking */
-    PetscBool setsym;
-    ierr = MatIsSymmetricKnown(pc->pmat,&setsym,&pcbddc->issym);CHKERRQ(ierr);
-    if (!setsym) pcbddc->issym = PETSC_FALSE;
-  }
-
   if (!pcbddc->issym) {
     if (!pcbddc->coarse_psi_B) {
       ierr = MatCreate(PETSC_COMM_SELF,&pcbddc->coarse_psi_B);CHKERRQ(ierr);
@@ -778,15 +771,130 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetSubMatrixUnsorted"
+PetscErrorCode MatGetSubMatrixUnsorted(Mat A, IS isrow, IS iscol, Mat* B)
+{
+  Mat            *work_mat;
+  IS             isrow_s,iscol_s;
+  PetscBool      rsorted,csorted;
+  PetscInt       rsize,*idxs_perm_r,csize,*idxs_perm_c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = ISSorted(isrow,&rsorted);CHKERRQ(ierr);
+  ierr = ISSorted(iscol,&csorted);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isrow,&rsize);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscol,&csize);CHKERRQ(ierr);
+
+  if (!rsorted) {
+    const PetscInt *idxs;
+    PetscInt *idxs_sorted,i;
+
+    ierr = PetscMalloc1(rsize,&idxs_perm_r);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rsize,&idxs_sorted);CHKERRQ(ierr);
+    for (i=0;i<rsize;i++) {
+      idxs_perm_r[i] = i;
+    }
+    ierr = ISGetIndices(isrow,&idxs);CHKERRQ(ierr);
+    ierr = PetscSortIntWithPermutation(rsize,idxs,idxs_perm_r);CHKERRQ(ierr);
+    for (i=0;i<rsize;i++) {
+      idxs_sorted[i] = idxs[idxs_perm_r[i]];
+    }
+    ierr = ISRestoreIndices(isrow,&idxs);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,rsize,idxs_sorted,PETSC_OWN_POINTER,&isrow_s);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+    isrow_s = isrow;
+  }
+
+  if (!csorted) {
+    if (isrow == iscol) {
+      ierr = PetscObjectReference((PetscObject)isrow_s);CHKERRQ(ierr);
+      iscol_s = isrow_s;
+    } else {
+      const PetscInt *idxs;
+      PetscInt *idxs_sorted,i;
+
+      ierr = PetscMalloc1(csize,&idxs_perm_c);CHKERRQ(ierr);
+      ierr = PetscMalloc1(csize,&idxs_sorted);CHKERRQ(ierr);
+      for (i=0;i<csize;i++) {
+        idxs_perm_c[i] = i;
+      }
+      ierr = ISGetIndices(iscol,&idxs);CHKERRQ(ierr);
+      ierr = PetscSortIntWithPermutation(csize,idxs,idxs_perm_c);CHKERRQ(ierr);
+      for (i=0;i<csize;i++) {
+        idxs_sorted[i] = idxs[idxs_perm_c[i]];
+      }
+      ierr = ISRestoreIndices(iscol,&idxs);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,csize,idxs_sorted,PETSC_OWN_POINTER,&iscol_s);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
+    iscol_s = iscol;
+  }
+
+  ierr = MatGetSubMatrices(A,1,&isrow_s,&iscol_s,MAT_INITIAL_MATRIX,&work_mat);CHKERRQ(ierr);
+
+  if (!rsorted || !csorted) {
+    Mat      new_mat;
+    IS       is_perm_r,is_perm_c;
+
+    if (!rsorted) {
+      PetscInt *idxs_r,i;
+      ierr = PetscMalloc1(rsize,&idxs_r);CHKERRQ(ierr);
+      for (i=0;i<rsize;i++) {
+        idxs_r[idxs_perm_r[i]] = i;
+      }
+      ierr = PetscFree(idxs_perm_r);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,rsize,idxs_r,PETSC_OWN_POINTER,&is_perm_r);CHKERRQ(ierr);
+    } else {
+      ierr = ISCreateStride(PETSC_COMM_SELF,rsize,0,1,&is_perm_r);CHKERRQ(ierr);
+    }
+    ierr = ISSetPermutation(is_perm_r);CHKERRQ(ierr);
+
+    if (!csorted) {
+      if (isrow_s == iscol_s) {
+        ierr = PetscObjectReference((PetscObject)is_perm_r);CHKERRQ(ierr);
+        is_perm_c = is_perm_r;
+      } else {
+        PetscInt *idxs_c,i;
+        ierr = PetscMalloc1(csize,&idxs_c);CHKERRQ(ierr);
+        for (i=0;i<csize;i++) {
+          idxs_c[idxs_perm_c[i]] = i;
+        }
+        ierr = PetscFree(idxs_perm_c);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,csize,idxs_c,PETSC_OWN_POINTER,&is_perm_c);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = ISCreateStride(PETSC_COMM_SELF,csize,0,1,&is_perm_c);CHKERRQ(ierr);
+    }
+    ierr = ISSetPermutation(is_perm_c);CHKERRQ(ierr);
+
+    ierr = MatPermute(work_mat[0],is_perm_r,is_perm_c,&new_mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&work_mat[0]);CHKERRQ(ierr);
+    work_mat[0] = new_mat;
+    ierr = ISDestroy(&is_perm_r);CHKERRQ(ierr);
+    ierr = ISDestroy(&is_perm_c);CHKERRQ(ierr);
+  }
+
+  ierr = PetscObjectReference((PetscObject)work_mat[0]);CHKERRQ(ierr);
+  *B = work_mat[0];
+  ierr = MatDestroyMatrices(1,&work_mat);CHKERRQ(ierr);
+  ierr = ISDestroy(&isrow_s);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscol_s);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCComputeLocalMatrix"
 PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
 {
   Mat_IS*        matis = (Mat_IS*)pc->pmat->data;
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
-  Mat            *change_mat_all;
+  Mat            new_mat;
   IS             is_local,is_global;
-  PetscBool      sorted,isseqaij;
-  PetscInt       local_size,*idxs_perm;
+  PetscInt       local_size;
+  PetscBool      isseqaij;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -795,46 +903,8 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
   ierr = ISCreateStride(PetscObjectComm((PetscObject)matis->A),local_size,0,1,&is_local);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApplyIS(matis->mapping,is_local,&is_global);CHKERRQ(ierr);
   ierr = ISDestroy(&is_local);CHKERRQ(ierr);
-  ierr = ISSorted(is_global,&sorted);CHKERRQ(ierr);
-  if (!sorted) {
-    const PetscInt *idxs;
-    PetscInt *idxs_sorted,i;
-
-    ierr = PetscMalloc1(local_size,&idxs_perm);CHKERRQ(ierr);
-    ierr = PetscMalloc1(local_size,&idxs_sorted);CHKERRQ(ierr);
-    for (i=0;i<local_size;i++) {
-      idxs_perm[i] = i;
-    }
-    ierr = ISGetIndices(is_global,&idxs);CHKERRQ(ierr);
-    ierr = PetscSortIntWithPermutation(local_size,idxs,idxs_perm);CHKERRQ(ierr);
-    for (i=0;i<local_size;i++) {
-      idxs_sorted[i] = idxs[idxs_perm[i]];
-    }
-    ierr = ISRestoreIndices(is_global,&idxs);CHKERRQ(ierr);
-    ierr = ISDestroy(&is_global);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size,idxs_sorted,PETSC_OWN_POINTER,&is_global);CHKERRQ(ierr);
-  }
-
-  /* get change of basis on the whole set of local dofs */
-  ierr = MatGetSubMatrices(ChangeOfBasisMatrix,1,&is_global,&is_global,MAT_INITIAL_MATRIX,&change_mat_all);CHKERRQ(ierr);
-
-  if (!sorted) {
-    Mat      new_mat;
-    IS       is_perm;
-    PetscInt *idxs,i;
-
-    ierr = PetscMalloc1(local_size,&idxs);CHKERRQ(ierr);
-    for (i=0;i<local_size;i++) {
-      idxs[idxs_perm[i]] = i;
-    }
-    ierr = PetscFree(idxs_perm);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size,idxs,PETSC_OWN_POINTER,&is_perm);CHKERRQ(ierr);
-    ierr = ISSetPermutation(is_perm);CHKERRQ(ierr);
-    ierr = MatPermute(change_mat_all[0],is_perm,is_perm,&new_mat);CHKERRQ(ierr);
-    ierr = MatDestroy(&change_mat_all[0]);CHKERRQ(ierr);
-    change_mat_all[0] = new_mat;
-    ierr = ISDestroy(&is_perm);CHKERRQ(ierr);
-  }
+  ierr = MatGetSubMatrixUnsorted(ChangeOfBasisMatrix,is_global,is_global,&new_mat);CHKERRQ(ierr);
+  ierr = ISDestroy(&is_global);CHKERRQ(ierr);
 
   /* check */
   if (pcbddc->dbg_flag) {
@@ -846,7 +916,7 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
     ierr = MatMult(ChangeOfBasisMatrix,x,x_change);CHKERRQ(ierr);
     ierr = VecScatterBegin(matis->ctx,x,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->ctx,x,matis->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = MatMult(change_mat_all[0],matis->x,matis->y);CHKERRQ(ierr);
+    ierr = MatMult(new_mat,matis->x,matis->y);CHKERRQ(ierr);
     ierr = VecScatterBegin(matis->ctx,matis->y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->ctx,matis->y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecAXPY(x,-1.0,x_change);CHKERRQ(ierr);
@@ -860,19 +930,19 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
   /* TODO: HOW TO WORK WITH BAIJ and SBAIJ and SEQDENSE? */
   ierr = PetscObjectTypeCompare((PetscObject)matis->A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
   if (isseqaij) {
-    ierr = MatPtAP(matis->A,change_mat_all[0],MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
+    ierr = MatPtAP(matis->A,new_mat,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
   } else {
     Mat work_mat;
     ierr = MatConvert(matis->A,MATSEQAIJ,MAT_INITIAL_MATRIX,&work_mat);CHKERRQ(ierr);
-    ierr = MatPtAP(work_mat,change_mat_all[0],MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
+    ierr = MatPtAP(work_mat,new_mat,MAT_INITIAL_MATRIX,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
     ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
   }
+  ierr = MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,pcbddc->issym);CHKERRQ(ierr);
   /*
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-  ierr = MatView(change_mat_all,(PetscViewer)0);CHKERRQ(ierr);
+  ierr = MatView(new_mat,(PetscViewer)0);CHKERRQ(ierr);
   */
-  ierr = MatDestroyMatrices(1,&change_mat_all);CHKERRQ(ierr);
-  ierr = ISDestroy(&is_global);CHKERRQ(ierr);
+  ierr = MatDestroy(&new_mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

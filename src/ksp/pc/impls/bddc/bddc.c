@@ -1200,6 +1200,13 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2*pcbddc->current_level);CHKERRQ(ierr);
   }
 
+  /*ierr = MatIsSymmetric(pc->pmat,0.,&pcbddc->issym);CHKERRQ(ierr);*/
+  { /* this is a temporary workaround since seqbaij matrices does not have support for symmetry checking */
+    PetscBool setsym;
+    ierr = MatIsSymmetricKnown(pc->pmat,&setsym,&pcbddc->issym);CHKERRQ(ierr);
+    if (!setsym) pcbddc->issym = PETSC_FALSE;
+  }
+
   if (pcbddc->user_ChangeOfBasisMatrix) {
     /* use_change_of_basis flag is used to automatically compute a change of basis from constraints */
     pcbddc->use_change_of_basis = PETSC_FALSE;
