@@ -8,37 +8,71 @@ static char help[] = "Tests MatConvert() from MATAIJ and MATDENSE to MATELEMENTA
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,Aelem,Belem;
+  Mat            A,Aelem,B,Belem;
   PetscErrorCode ierr;
   PetscViewer    view;
-  char           file[PETSC_MAX_PATH_LEN];
-  PetscBool      flg;
-  //HermitianGenDefiniteEigType eigType;
+  char           file[2][PETSC_MAX_PATH_LEN];
+  PetscBool      flg,flgB;
+  PetscScalar    one = 1.0;
+  PetscMPIInt    rank;
+  PetscReal      vl,vu;
 
   PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Now reload PETSc matrix and view it */
-  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&view);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-fA",file[0],PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&view);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,view);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
 
-  /* Convert A into a Elemental matrix */
+  PetscOptionsGetString(NULL,"-fB",file[1],PETSC_MAX_PATH_LEN,&flgB);
+  if (flgB) {
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&view);CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
+    ierr = MatLoad(B,view);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+  } else {
+    /* Create matrix B = I */
+    PetscInt M,N,rstart,rend,i;
+    ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+
+    ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATDENSE);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+    ierr = MatSetUp(B);CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++) {
+      ierr = MatSetValues(B,1,&i,1,&i,&one,ADD_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+
+  /* Convert AIJ matrices into Elemental matrices */
+  if (!rank) printf(" Convert AIJ matrix A into Elemental matrix... \n");
   ierr = MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &Aelem);CHKERRQ(ierr);
+  if (!rank) printf(" Convert AIJ matrix B into Elemental matrix... \n");
+  ierr = MatConvert(B, MATELEMENTAL, MAT_INITIAL_MATRIX, &Belem);CHKERRQ(ierr);
 
   /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
-  ierr = MatConvert(A, MATELEMENTAL, MAT_REUSE_MATRIX, &A);CHKERRQ(ierr);
+  //ierr = MatConvert(A, MATELEMENTAL, MAT_REUSE_MATRIX, &A);CHKERRQ(ierr);
 
   /* Test accuracy */
-  ierr = MatMultEqual(A,Aelem,10,&flg);CHKERRQ(ierr);
+  ierr = MatMultEqual(A,Aelem,5,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != A_elemental.");
+   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatMultEqual(B,Belem,5,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"B != B_elemental.");
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   /* Create matrix Belem */
-  PetscInt M,N;
-  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+#if defined(CreateBelem) 
   ierr = MatCreate(PETSC_COMM_WORLD,&Belem);CHKERRQ(ierr);
   ierr = MatSetSizes(Belem,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   ierr = MatSetType(Belem,MATELEMENTAL);CHKERRQ(ierr);
@@ -72,8 +106,7 @@ int main(int argc,char **args)
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
       if (rows[i] == cols[j]) {
-        PetscScalar v = 1.0;
-        ierr = MatSetValues(Belem,1,&rows[i],1,&cols[j],&v,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(Belem,1,&rows[i],1,&cols[j],&one,ADD_VALUES);CHKERRQ(ierr);
       }
     }
   }
@@ -83,9 +116,14 @@ int main(int argc,char **args)
 
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
+#endif
 
   /* Test MatElementalComputeEigenvalues() */
-  ierr = MatElementalComputeEigenvalues(Aelem);CHKERRQ(ierr);
+  if (!rank) printf(" Compute Ax = lambda Bx... \n");
+  vl=-0.8, vu=1.2;
+  ierr = PetscOptionsGetReal(NULL,"-vl",&vl,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-vu",&vu,NULL);CHKERRQ(ierr);
+  ierr = MatElementalHermitianGenDefiniteEig(Aelem,Belem,vl,vu);CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&Aelem);CHKERRQ(ierr);

@@ -957,7 +957,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalComputeEigenvalues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalHermitianGenDefiniteEig_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1010,18 +1010,25 @@ PetscErrorCode MatAssemblyEnd_Elemental(Mat A, MatAssemblyType type)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatElementalComputeEigenvalues_Elemental"
-PetscErrorCode MatElementalComputeEigenvalues_Elemental(Mat A)
+#define __FUNCT__ "MatElementalHermitianGenDefiniteEig_Elemental"
+PetscErrorCode MatElementalHermitianGenDefiniteEig_Elemental(Mat A,Mat B,PetscReal vl,PetscReal vu)
 {
+  Mat_Elemental  *a=(Mat_Elemental*)A->data,*b=(Mat_Elemental*)B->data;     
+  PetscElemScalar          vle=(PetscElemScalar)vl,vue=(PetscElemScalar)vu;
+  const elem::UpperOrLower uplo = elem::CharToUpperOrLower('U');
+  const elem::SortType     sort = static_cast<elem::SortType>(0);
+  
   PetscFunctionBegin;
-  printf("MatElementalComputeEigenvalues_Elemental ...\n");
+  elem::DistMatrix<PetscElemScalar,elem::VR,elem::STAR> w( *a->grid );
+  elem::HermitianGenDefiniteEig(elem::AXBX, uplo, *a->emat, *b->emat, w,vle,vue, sort );
+  elem::Print(w, "Eigenvalues");
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatElementalComputeEigenvalues"
+#define __FUNCT__ "MatElementalHermitianGenDefiniteEig"
 /*@
-  MatElementalComputeEigenvalues - 
+  MatElementalHermitianGenDefiniteEig - 
 
    Logically Collective on Mat
 
@@ -1039,14 +1046,12 @@ PetscErrorCode MatElementalComputeEigenvalues_Elemental(Mat A)
 
 .seealso: MatGetFactor()
 @*/
-PetscErrorCode MatElementalComputeEigenvalues(Mat A)
+PetscErrorCode MatElementalHermitianGenDefiniteEig(Mat A,Mat B,PetscReal vl,PetscReal vu)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  //PetscValidLogicalCollectiveInt(F,icntl,2);
-  //PetscValidLogicalCollectiveInt(F,ival,3);
-  ierr = PetscTryMethod(A,"MatElementalComputeEigenvalues_C",(Mat),(A));CHKERRQ(ierr);
+  ierr = PetscTryMethod(A,"MatElementalHermitianGenDefiniteEig_C",(Mat,Mat,PetscReal,PetscReal),(A,B,vl,vu));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1264,7 +1269,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalComputeEigenvalues_C",MatElementalComputeEigenvalues_Elemental);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalHermitianGenDefiniteEig_C",MatElementalHermitianGenDefiniteEig_Elemental);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
