@@ -265,8 +265,8 @@ for dir in dirs:
     return
 
   def installConf(self):
-    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir, exclude = ['gmakegen.py','install.py']))
-    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing']))
+    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir))
+    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing', 'configure.log.bkp']))
     return
 
   def installBin(self):
@@ -304,7 +304,7 @@ for dir in dirs:
     return
 
   def installLib(self):
-    self.copies.extend(self.copytree(self.archLibDir, self.destLibDir, copyFunc = self.copyLib, exclude = ['sowing']))
+    self.copies.extend(self.copytree(self.archLibDir, self.destLibDir, copyFunc = self.copyLib, exclude = ['.DIR', 'sowing']))
     return
 
 
