@@ -1412,7 +1412,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "VecGetLocalVectorRead"
-PetscErrorCode VecGetLocalVectorRead(Vec v,Vec *w)
+PetscErrorCode VecGetLocalVectorRead(Vec v,Vec w)
 {
   PetscErrorCode ierr;
   PetscScalar    *a;
@@ -1420,16 +1420,15 @@ PetscErrorCode VecGetLocalVectorRead(Vec v,Vec *w)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidPointer(w,2);
-  PetscValidHeaderSpecific(*w,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   ierr = VecGetLocalSize(v,&m1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(*w,&m2);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(w,&m2);CHKERRQ(ierr);
   if (m1 != m2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vectors of different local sizes.");
   if (v->ops->getlocalvectorread) {
     ierr = (*v->ops->getlocalvectorread)(v,w);CHKERRQ(ierr);
   } else {
     ierr = VecGetArrayRead(v,(const PetscScalar**)&a);CHKERRQ(ierr);
-    ierr = VecPlaceArray(*w,a);CHKERRQ(ierr);
+    ierr = VecPlaceArray(w,a);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1441,21 +1440,20 @@ PetscErrorCode VecGetLocalVectorRead(Vec v,Vec *w)
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "VecRestoreLocalVectorRead"
-PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec *w)
+PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec w)
 {
   PetscErrorCode ierr;
   PetscScalar    *a;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidPointer(w,2);
-  PetscValidHeaderSpecific(*w,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   if (v->ops->restorelocalvectorread) {
     ierr = (*v->ops->restorelocalvectorread)(v,w);CHKERRQ(ierr);
   } else {
-    ierr = VecGetArrayRead(*w,(const PetscScalar**)&a);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(w,(const PetscScalar**)&a);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(v,(const PetscScalar**)&a);CHKERRQ(ierr);
-    ierr = VecResetArray(*w);CHKERRQ(ierr);
+    ierr = VecResetArray(w);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1468,7 +1466,7 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec *w)
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "VecGetLocalVector"
-PetscErrorCode VecGetLocalVector(Vec v,Vec *w)
+PetscErrorCode VecGetLocalVector(Vec v,Vec w)
 {
   PetscErrorCode ierr;
   PetscScalar    *a;
@@ -1476,16 +1474,15 @@ PetscErrorCode VecGetLocalVector(Vec v,Vec *w)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidPointer(w,2);
-  PetscValidHeaderSpecific(*w,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   ierr = VecGetLocalSize(v,&m1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(*w,&m2);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(w,&m2);CHKERRQ(ierr);
   if (m1 != m2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vectors of different local sizes.");
   if (v->ops->getlocalvector) {
     ierr = (*v->ops->getlocalvector)(v,w);CHKERRQ(ierr);
   } else {
     ierr = VecGetArray(v,&a);CHKERRQ(ierr);
-    ierr = VecPlaceArray(*w,a);CHKERRQ(ierr);
+    ierr = VecPlaceArray(w,a);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1497,21 +1494,20 @@ PetscErrorCode VecGetLocalVector(Vec v,Vec *w)
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "VecRestoreLocalVector"
-PetscErrorCode VecRestoreLocalVector(Vec v,Vec *w)
+PetscErrorCode VecRestoreLocalVector(Vec v,Vec w)
 {
   PetscErrorCode ierr;
   PetscScalar    *a;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidPointer(w,2);
-  PetscValidHeaderSpecific(*w,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   if (v->ops->restorelocalvector) {
     ierr = (*v->ops->restorelocalvector)(v,w);CHKERRQ(ierr);
   } else {
-    ierr = VecGetArray(*w,&a);CHKERRQ(ierr);
+    ierr = VecGetArray(w,&a);CHKERRQ(ierr);
     ierr = VecRestoreArray(v,&a);CHKERRQ(ierr);
-    ierr = VecResetArray(*w);CHKERRQ(ierr);
+    ierr = VecResetArray(w);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

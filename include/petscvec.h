@@ -412,10 +412,10 @@ PETSC_EXTERN PetscErrorCode VecGetArray(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecGetArrayRead(Vec,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecRestoreArray(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayRead(Vec,const PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecGetLocalVector(Vec,Vec*);
-PETSC_EXTERN PetscErrorCode VecRestoreLocalVector(Vec,Vec*);
-PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec,Vec*);
-PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec*);
+PETSC_EXTERN PetscErrorCode VecGetLocalVector(Vec,Vec);
+PETSC_EXTERN PetscErrorCode VecRestoreLocalVector(Vec,Vec);
+PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec,Vec);
+PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec,PetscInt,PetscBool);
 
