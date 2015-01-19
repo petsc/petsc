@@ -43,6 +43,8 @@ struct _PCBDDCSubSchurs {
   /* index sets */
   IS  is_I;
   IS  is_B;
+  /* whether Schur complements are computed with MUMPS or not */
+  PetscBool use_mumps;
   /* local Schur complements on subsets (principal minors) */
   Mat *S_Ej;
   /* matrices cointained explicit schur complements cat together */
