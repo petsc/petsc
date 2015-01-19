@@ -203,8 +203,13 @@ class cmd_install(_install):
         _install.initialize_options(self)
         self.optimize = 1
 
+    def finalize_options(self):
+        _install.finalize_options(self)
+        self.install_lib = self.install_platlib
+        self.install_libbase = self.install_lib
+
     def run(self):
-        root_dir = os.path.abspath(self.install_platlib)
+        root_dir = os.path.abspath(self.install_lib)
         dest_dir = prefix = os.path.join(root_dir, 'petsc')
         #
         ctx = context().enter()
