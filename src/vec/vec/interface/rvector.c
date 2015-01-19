@@ -1406,9 +1406,34 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
 
 /*@C
    VecGetLocalVectorRead - Maps the local portion of a vector into a
-   sequential vector.  This function is similar to VecGetArrayRead() which
-   maps the local portion into a raw pointer.
+   vector.  You must call VecRestoreLocalVectorRead() when the local
+   vector is no longer needed.
 
+   Not collective.
+
+   Input parameter:
+.  v - The vector for which the local vector is desired.
+
+   Output parameter:
+.  w - Upon exit this contains the local vector.
+
+   Level: beginner
+   
+   Notes:
+   This function is similar to VecGetArrayRead() which maps the local
+   portion into a raw pointer.  VecGetLocalVectorRead() is usually
+   almost as efficient as VecGetArrayRead() but in certain circumstances
+   VecGetLocalVectorRead() can be much more efficient than
+   VecGetArrayRead().  This is because the construction of a contiguous
+   array representing the vector data required by VecGetArrayRead() can
+   be an expensive operation for certain vector types.  For example, for
+   GPU vectors VecGetArrayRead() requires that the data between device
+   and host is synchronized.  
+
+   Unlike VecGetLocalVector(), this routine is not collective and
+   preserves cached information.
+
+.seealso: VecRestoreLocalVectorRead(), VecGetLocalVector(), VecGetArrayRead(), VecGetArray()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "VecGetLocalVectorRead"
@@ -1435,8 +1460,17 @@ PetscErrorCode VecGetLocalVectorRead(Vec v,Vec w)
 
 /*@C
    VecRestoreLocalVectorRead - Unmaps the local portion of a vector
-   previously mapped into a sequential vector using
-   VecGetLocalVectorRead().
+   previously mapped into a vector using VecGetLocalVectorRead().
+
+   Not collective.
+
+   Input parameter:
+.  v - The local portion of this vector was previously mapped into w using VecGetLocalVectorRead().
+.  w - The vector into which the local portion of v was mapped.
+
+   Level: beginner
+
+.seealso: VecGetLocalVectorRead(), VecGetLocalVector(), VecGetArrayRead(), VecGetArray()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "VecRestoreLocalVectorRead"
@@ -1460,9 +1494,30 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec w)
 
 /*@C
    VecGetLocalVector - Maps the local portion of a vector into a
-   sequential vector.  This function is similar to VecGetArray() which
-   maps the local portion into a raw pointer.
+   vector.
 
+   Collective on v, not collective on w.
+
+   Input parameter:
+.  v - The vector for which the local vector is desired.
+
+   Output parameter:
+.  w - Upon exit this contains the local vector.
+
+   Level: beginner
+   
+   Notes:
+   This function is similar to VecGetArray() which maps the local
+   portion into a raw pointer.  VecGetLocalVector() is usually about as
+   efficient as VecGetArray() but in certain circumstances
+   VecGetLocalVector() can be much more efficient than VecGetArray().
+   This is because the construction of a contiguous array representing
+   the vector data required by VecGetArray() can be an expensive
+   operation for certain vector types.  For example, for GPU vectors
+   VecGetArray() requires that the data between device and host is
+   synchronized.
+
+.seealso: VecRestoreLocalVector(), VecGetLocalVectorRead(), VecGetArrayRead(), VecGetArray()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "VecGetLocalVector"
@@ -1489,8 +1544,17 @@ PetscErrorCode VecGetLocalVector(Vec v,Vec w)
 
 /*@C
    VecRestoreLocalVector - Unmaps the local portion of a vector
-   previously mapped into a sequential vector using
-   VecGetLocalVectorRead.
+   previously mapped into a vector using VecGetLocalVector().
+
+   Logically collective.
+
+   Input parameter:
+.  v - The local portion of this vector was previously mapped into w using VecGetLocalVector().
+.  w - The vector into which the local portion of v was mapped.
+
+   Level: beginner
+
+.seealso: VecGetLocalVector(), VecGetLocalVectorRead(), VecRestoreLocalVectorRead(), LocalVectorRead(), VecGetArrayRead(), VecGetArray()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "VecRestoreLocalVector"
