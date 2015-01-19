@@ -2372,8 +2372,6 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
   PetscBool      stride,sorted;
 
   PetscFunctionBegin;
-  ierr = ISSorted(isrow,&sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"ISrow is not sorted");
   ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr);
   if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
 
