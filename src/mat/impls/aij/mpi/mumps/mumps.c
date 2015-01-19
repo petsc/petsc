@@ -549,6 +549,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
     ierr = VecDestroy(&mumps->x_seq);CHKERRQ(ierr);
     ierr = PetscFree(mumps->id.perm_in);CHKERRQ(ierr);
     ierr = PetscFree(mumps->irn);CHKERRQ(ierr);
+    ierr = PetscFree2(mumps->id.listvar_schur,mumps->id.schur);CHKERRQ(ierr);
 
     mumps->id.job = JOB_END;
     PetscMUMPS_c(&mumps->id);
@@ -1391,28 +1392,45 @@ PetscErrorCode MatMumpsGetSchurComplement_MUMPS(Mat F,Mat* S)
   ierr = MatCreate(PetscObjectComm((PetscObject)F),&St);CHKERRQ(ierr);
   ierr = MatSetSizes(St,PETSC_DECIDE,PETSC_DECIDE,mumps->id.size_schur,mumps->id.size_schur);CHKERRQ(ierr);
   ierr = MatSetType(St,MATDENSE);CHKERRQ(ierr);
+  ierr = MatSetUp(St);CHKERRQ(ierr);
   ierr = MatDenseGetArray(St,&array);CHKERRQ(ierr);
-  if (mumps->sym == 0) { /* MUMPS returned a full matrix */
-    if (mumps->id.ICNTL(19) == 1) {
-      PetscInt i,j,ncols=F->cmap->n,nrows=F->rmap->n;
-      for (i=0;i<ncols;i++) {
-        for (j=0;j<nrows;j++) {
-          array[i*nrows+j] = mumps->id.schur[j*ncols+i];
+  if (mumps->sym == 0) { /* MUMPS always return a full matrix */
+    if (mumps->id.ICNTL(19) == 1) { /* stored by rows */
+      PetscInt i,j,N=mumps->id.size_schur;
+      for (i=0;i<N;i++) {
+        for (j=0;j<N;j++) {
+          PetscScalar val = mumps->id.schur[i*N+j];
+          array[j*N+i] = val;
         }
       }
-    } else {
+    } else { /* stored by columns */
       ierr = PetscMemcpy(array,mumps->id.schur,mumps->id.size_schur*mumps->id.size_schur*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-  } else {
-    if (mumps->id.ICNTL(19) == 3) {
+  } else { /* either full or lower-triangular (not packed) */
+    if (mumps->id.ICNTL(19) == 2) { /* lower triangular stored by columns */
+      PetscInt i,j,N=mumps->id.size_schur;
+      for (i=0;i<N;i++) {
+        for (j=i;j<N;j++) {
+          PetscScalar val = mumps->id.schur[i*N+j];
+          array[i*N+j] = val;
+        }
+        for (j=i;j<N;j++) {
+          PetscScalar val = mumps->id.schur[i*N+j];
+          array[j*N+i] = val;
+        }
+      }
+    } else if (mumps->id.ICNTL(19) == 3) { /* full matrix */
       ierr = PetscMemcpy(array,mumps->id.schur,mumps->id.size_schur*mumps->id.size_schur*sizeof(PetscScalar));CHKERRQ(ierr);
-    } else {
-      PetscInt i,j,ncols=F->cmap->n,nrows=F->rmap->n;
-      for (i=0;i<ncols;i++) {
-        array[i*nrows+i] = mumps->id.schur[i*nrows+i];
-        for (j=i+1;j<nrows;j++) {
-          array[i*nrows+j] = mumps->id.schur[i*nrows+j];
-          array[j*nrows+i] = mumps->id.schur[i*nrows+j];
+    } else { /* ICNTL(19) == 1 lower triangular stored by rows */
+      PetscInt i,j,N=mumps->id.size_schur;
+      for (i=0;i<N;i++) {
+        for (j=0;j<i+1;j++) {
+          PetscScalar val = mumps->id.schur[i*N+j];
+          array[i*N+j] = val;
+        }
+        for (j=0;j<i+1;j++) {
+          PetscScalar val = mumps->id.schur[i*N+j];
+          array[j*N+i] = val;
         }
       }
     }
