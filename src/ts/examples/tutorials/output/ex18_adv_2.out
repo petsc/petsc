@@ -23,23 +23,6 @@ Labels:
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_ATOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_ATOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_ATOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
@@ -48,6 +31,23 @@ Labels:
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 37
   1  time   0.9934  |x| (       0,     1.33)  
     Linear solve converged due to CONVERGED_RTOL iterations 1
@@ -56,24 +56,6 @@ Labels:
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_ATOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_ATOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
@@ -86,7 +68,25 @@ Labels:
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_ATOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 37
   2  time    1.987  |x| (       0,    1.832)  
     Linear solve converged due to CONVERGED_RTOL iterations 1
@@ -109,17 +109,17 @@ Labels:
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_ATOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_ATOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
   Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 30
   3  time     2.98  |x| (       0,    1.958)  
 TS Object: 1 MPI processes
@@ -129,7 +129,7 @@ TS Object: 1 MPI processes
   total number of nonlinear solver iterations=104
   total number of nonlinear solve failures=0
   total number of linear solver iterations=105
-  total number of rejected steps=3
+  total number of rejected steps=0
   SNES Object:   1 MPI processes
     type: newtonls
     maximum iterations=50, maximum function evaluations=10000
