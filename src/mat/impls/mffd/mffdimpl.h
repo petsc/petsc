@@ -23,7 +23,7 @@ struct _MFOps {
   PetscErrorCode (*compute)(MatMFFD,Vec,Vec,PetscScalar*,PetscBool * zeroa);
   PetscErrorCode (*view)(MatMFFD,PetscViewer);
   PetscErrorCode (*destroy)(MatMFFD);
-  PetscErrorCode (*setfromoptions)(PetscOptionsObjectType*,MatMFFD);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,MatMFFD);
 };
 
 struct _p_MatMFFD {    /* context for default matrix-free SNES */

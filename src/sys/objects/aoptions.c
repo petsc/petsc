@@ -24,7 +24,7 @@
 /*
     Handles setting up the data structure in a call to PetscOptionsBegin()
 */
-PetscErrorCode PetscOptionsBegin_Private(PetscOptionsObjectType *PetscOptionsObject,MPI_Comm comm,const char prefix[],const char title[],const char mansec[])
+PetscErrorCode PetscOptionsBegin_Private(PetscOptions *PetscOptionsObject,MPI_Comm comm,const char prefix[],const char title[],const char mansec[])
 {
   PetscErrorCode ierr;
 
@@ -50,7 +50,7 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionsObjectType *PetscOptionsObj
 /*
     Handles setting up the data structure in a call to PetscObjectOptionsBegin()
 */
-PetscErrorCode PetscObjectOptionsBegin_Private(PetscOptionsObjectType *PetscOptionsObject,PetscObject obj)
+PetscErrorCode PetscObjectOptionsBegin_Private(PetscOptions *PetscOptionsObject,PetscObject obj)
 {
   PetscErrorCode ierr;
   char           title[256];
@@ -76,10 +76,10 @@ PetscErrorCode PetscObjectOptionsBegin_Private(PetscOptionsObjectType *PetscOpti
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsCreate_Private"
-static int PetscOptionsCreate_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscOptionType t,PetscOptions *amsopt)
+static int PetscOptionsCreate_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscOptionType t,PetscOption *amsopt)
 {
   int          ierr;
-  PetscOptions next;
+  PetscOption next;
   PetscBool    valid;
 
   PetscFunctionBegin;
@@ -186,10 +186,10 @@ static PetscErrorCode  PetscStrdup(const char s[],char *t[])
      address space and communicating with the PETSc program
 
 */
-PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionsObjectType *PetscOptionsObject)
+PetscErrorCode PetscOptionsGetFromTextInput(PetscOptions *PetscOptionsObject)
 {
   PetscErrorCode ierr;
-  PetscOptions   next = PetscOptionsObject->next;
+  PetscOption   next = PetscOptionsObject->next;
   char           str[512];
   PetscBool      bid;
   PetscReal      ir,*valr;
@@ -383,10 +383,10 @@ PetscErrorCode PetscOptionsSAWsDestroy(void)
 
 
 */
-PetscErrorCode PetscOptionsAMSInput(PetscOptionsObjectType *PetscOptionsObject)
+PetscErrorCode PetscOptionsAMSInput(PetscOptions *PetscOptionsObject)
 {
   PetscErrorCode ierr;
-  PetscOptions   next     = PetscOptionsObject->next;
+  PetscOption   next     = PetscOptionsObject->next;
   static int     mancount = 0;
   char           options[16];
   PetscBool      changedmethod = PETSC_FALSE;
@@ -493,10 +493,10 @@ PetscErrorCode PetscOptionsAMSInput(PetscOptionsObjectType *PetscOptionsObject)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsEnd_Private"
-PetscErrorCode PetscOptionsEnd_Private(PetscOptionsObjectType *PetscOptionsObject)
+PetscErrorCode PetscOptionsEnd_Private(PetscOptions *PetscOptionsObject)
 {
   PetscErrorCode ierr;
-  PetscOptions   last;
+  PetscOption   last;
   char           option[256],value[1024],tmp[32];
   size_t         j;
 
@@ -641,7 +641,7 @@ $                 if (flg) {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsEnum_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],const char *const *list,PetscEnum currentvalue,PetscEnum *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsEnum_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],const char *const *list,PetscEnum currentvalue,PetscEnum *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscInt       ntext = 0;
@@ -697,10 +697,10 @@ $                 if (flg) {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsInt_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsInt_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -750,10 +750,10 @@ PetscErrorCode  PetscOptionsInt_Private(PetscOptionsObjectType *PetscOptionsObje
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsString_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],const char currentvalue[],char value[],size_t len,PetscBool  *set)
+PetscErrorCode  PetscOptionsString_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],const char currentvalue[],char value[],size_t len,PetscBool  *set)
 {
   PetscErrorCode ierr;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -803,10 +803,10 @@ $                 if (flg) {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsReal_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscReal currentvalue,PetscReal *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsReal_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscReal currentvalue,PetscReal *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -858,7 +858,7 @@ $                 if (flg) {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsScalar_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscScalar currentvalue,PetscScalar *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsScalar_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscScalar currentvalue,PetscScalar *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
 
@@ -901,10 +901,10 @@ PetscErrorCode  PetscOptionsScalar_Private(PetscOptionsObjectType *PetscOptionsO
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsName_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool  *flg)
+PetscErrorCode  PetscOptionsName_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool  *flg)
 {
   PetscErrorCode ierr;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -961,10 +961,10 @@ $                 if (flg) {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsEnum()
 @*/
-PetscErrorCode  PetscOptionsFList_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char ltext[],const char man[],PetscFunctionList list,const char currentvalue[],char value[],size_t len,PetscBool  *set)
+PetscErrorCode  PetscOptionsFList_Private(PetscOptions *PetscOptionsObject,const char opt[],const char ltext[],const char man[],PetscFunctionList list,const char currentvalue[],char value[],size_t len,PetscBool  *set)
 {
   PetscErrorCode ierr;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1017,11 +1017,11 @@ $                 if (flg) {
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEnum()
 @*/
-PetscErrorCode  PetscOptionsEList_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char ltext[],const char man[],const char *const *list,PetscInt ntext,const char currentvalue[],PetscInt *value,PetscBool  *set)
+PetscErrorCode  PetscOptionsEList_Private(PetscOptions *PetscOptionsObject,const char opt[],const char ltext[],const char man[],const char *const *list,PetscInt ntext,const char currentvalue[],PetscInt *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1073,10 +1073,10 @@ PetscErrorCode  PetscOptionsEList_Private(PetscOptionsObjectType *PetscOptionsOb
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsBoolGroupBegin_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool  *flg)
+PetscErrorCode  PetscOptionsBoolGroupBegin_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool  *flg)
 {
   PetscErrorCode ierr;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1125,10 +1125,10 @@ PetscErrorCode  PetscOptionsBoolGroupBegin_Private(PetscOptionsObjectType *Petsc
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsBoolGroup_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool  *flg)
+PetscErrorCode  PetscOptionsBoolGroup_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool  *flg)
 {
   PetscErrorCode ierr;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1176,10 +1176,10 @@ PetscErrorCode  PetscOptionsBoolGroup_Private(PetscOptionsObjectType *PetscOptio
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool  *flg)
+PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool  *flg)
 {
   PetscErrorCode ierr;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1227,11 +1227,11 @@ PetscErrorCode  PetscOptionsBoolGroupEnd_Private(PetscOptionsObjectType *PetscOp
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsBool_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool currentvalue,PetscBool  *flg,PetscBool  *set)
+PetscErrorCode  PetscOptionsBool_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool currentvalue,PetscBool  *flg,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscBool      iset;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1285,11 +1285,11 @@ PetscErrorCode  PetscOptionsBool_Private(PetscOptionsObjectType *PetscOptionsObj
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsRealArray_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscReal value[],PetscInt *n,PetscBool  *set)
+PetscErrorCode  PetscOptionsRealArray_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscReal value[],PetscInt *n,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1354,11 +1354,11 @@ PetscErrorCode  PetscOptionsRealArray_Private(PetscOptionsObjectType *PetscOptio
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList(), PetscOptionsRealArray()
 @*/
-PetscErrorCode  PetscOptionsIntArray_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscInt value[],PetscInt *n,PetscBool  *set)
+PetscErrorCode  PetscOptionsIntArray_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscInt value[],PetscInt *n,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1421,10 +1421,10 @@ PetscErrorCode  PetscOptionsIntArray_Private(PetscOptionsObjectType *PetscOption
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsStringArray_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],char *value[],PetscInt *nmax,PetscBool  *set)
+PetscErrorCode  PetscOptionsStringArray_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],char *value[],PetscInt *nmax,PetscBool  *set)
 {
   PetscErrorCode ierr;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1476,11 +1476,11 @@ PetscErrorCode  PetscOptionsStringArray_Private(PetscOptionsObjectType *PetscOpt
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool value[],PetscInt *n,PetscBool *set)
+PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscBool value[],PetscInt *n,PetscBool *set)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscOptions   amsopt;
+  PetscOption   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1535,10 +1535,10 @@ PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptionsObjectType *PetscOptio
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsViewer_Private(PetscOptionsObjectType *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
+PetscErrorCode  PetscOptionsViewer_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
 {
   PetscErrorCode ierr;
-  PetscOptions   amsopt;
+  PetscOption    amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
@@ -1581,7 +1581,7 @@ PetscErrorCode  PetscOptionsViewer_Private(PetscOptionsObjectType *PetscOptionsO
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsFList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsHead(PetscOptionsObjectType *PetscOptionsObject,const char head[])
+PetscErrorCode  PetscOptionsHead(PetscOptions *PetscOptionsObject,const char head[])
 {
   PetscErrorCode ierr;
 

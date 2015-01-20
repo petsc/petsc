@@ -55,7 +55,7 @@ PetscErrorCode TaoDestroy_NM(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NM"
-PetscErrorCode TaoSetFromOptions_NM(PetscOptionsObjectType *PetscOptionsObject,Tao tao)
+PetscErrorCode TaoSetFromOptions_NM(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
   PetscErrorCode ierr;

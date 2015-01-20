@@ -385,7 +385,7 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NEWTONLS"
-static PetscErrorCode SNESSetFromOptions_NEWTONLS(PetscOptionsObjectType *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_NEWTONLS(PetscOptions *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
   SNESLineSearch linesearch;

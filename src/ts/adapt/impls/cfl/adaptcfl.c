@@ -57,7 +57,7 @@ static PetscErrorCode TSAdaptDestroy_CFL(TSAdapt adapt)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptSetFromOptions_CFL"
-static PetscErrorCode TSAdaptSetFromOptions_CFL(PetscOptionsObjectType *PetscOptionsObject,TSAdapt adapt)
+static PetscErrorCode TSAdaptSetFromOptions_CFL(PetscOptions *PetscOptionsObject,TSAdapt adapt)
 {
   TSAdapt_CFL    *cfl = (TSAdapt_CFL*)adapt->data;
   PetscErrorCode ierr;

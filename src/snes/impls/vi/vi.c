@@ -555,7 +555,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_VI"
-PetscErrorCode SNESSetFromOptions_VI(PetscOptionsObjectType *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_VI(PetscOptions *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;

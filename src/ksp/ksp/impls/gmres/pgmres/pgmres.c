@@ -437,7 +437,7 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp,Vec ptr,Vec *result)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_PGMRES"
-PetscErrorCode KSPSetFromOptions_PGMRES(PetscOptionsObjectType *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_PGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
 

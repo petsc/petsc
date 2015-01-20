@@ -230,7 +230,7 @@
 
  #undef __FUNCT__
  #define __FUNCT__ "TaoSetFromOptions_CG"
-static PetscErrorCode TaoSetFromOptions_CG(PetscOptionsObjectType *PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_CG(PetscOptions *PetscOptionsObject,Tao tao)
  {
     TAO_CG         *cgP = (TAO_CG*)tao->data;
     PetscErrorCode ierr;

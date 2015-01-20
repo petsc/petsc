@@ -179,7 +179,7 @@ static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BLMVM"
-static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptionsObjectType* PetscOptionsObject,Tao tao)
+static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptions* PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
 

@@ -70,7 +70,7 @@ static PetscErrorCode TSAdaptDestroy_Basic(TSAdapt adapt)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptSetFromOptions_Basic"
-static PetscErrorCode TSAdaptSetFromOptions_Basic(PetscOptionsObjectType *PetscOptionsObject,TSAdapt adapt)
+static PetscErrorCode TSAdaptSetFromOptions_Basic(PetscOptions *PetscOptionsObject,TSAdapt adapt)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
   PetscErrorCode ierr;

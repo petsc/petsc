@@ -277,7 +277,7 @@ static PetscErrorCode SNESDestroy_NEWTONTR(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NEWTONTR"
-static PetscErrorCode SNESSetFromOptions_NEWTONTR(PetscOptionsObjectType *PetscOptionsObject,SNES snes)
+static PetscErrorCode SNESSetFromOptions_NEWTONTR(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_NEWTONTR  *ctx = (SNES_NEWTONTR*)snes->data;
   PetscErrorCode ierr;

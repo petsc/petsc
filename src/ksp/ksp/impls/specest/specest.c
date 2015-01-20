@@ -111,7 +111,7 @@ static PetscErrorCode KSPView_SpecEst(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_SpecEst"
-static PetscErrorCode KSPSetFromOptions_SpecEst(PetscOptionsObjectType *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_SpecEst(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_SpecEst    *spec = (KSP_SpecEst*)ksp->data;

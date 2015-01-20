@@ -1112,7 +1112,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_FieldSplit"
-static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptionsObjectType *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode  ierr;
   PetscInt        bs;

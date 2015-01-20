@@ -46,7 +46,7 @@
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BDDC"
-PetscErrorCode PCSetFromOptions_BDDC(PetscOptionsObjectType *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_BDDC(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PetscErrorCode ierr;

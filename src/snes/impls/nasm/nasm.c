@@ -173,7 +173,7 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NASM"
-PetscErrorCode SNESSetFromOptions_NASM(PetscOptionsObjectType *PetscOptionsObject,SNES snes)
+PetscErrorCode SNESSetFromOptions_NASM(PetscOptions *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode    ierr;
   PCASMType         asmtype;

@@ -15,7 +15,7 @@
 
 typedef viennacl::vector<PetscScalar>    ViennaCLVector;
 
-PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions_ViennaCL(PetscOptionsObjectType *PetscOptionsObject,PetscObject obj);
+PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions_ViennaCL(PetscOptions *PetscOptionsObject,PetscObject obj);
 
 PETSC_INTERN PetscErrorCode VecDotNorm2_SeqViennaCL(Vec,Vec,PetscScalar*, PetscScalar*);
 PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec,Vec,Vec);

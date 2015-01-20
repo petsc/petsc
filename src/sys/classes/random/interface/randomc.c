@@ -127,7 +127,7 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
 .keywords: PetscRandom, set, options, database, type
 .seealso: PetscRandomSetFromOptions(), PetscRandomSetType()
 */
-static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptionsObjectType *PetscOptionsObject,PetscRandom rnd)
+static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,PetscRandom rnd)
 {
   PetscBool      opt;
   const char     *defaultType;

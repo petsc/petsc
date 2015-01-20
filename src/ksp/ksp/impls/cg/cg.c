@@ -357,7 +357,7 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_CG"
-PetscErrorCode KSPSetFromOptions_CG(PetscOptionsObjectType *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_CG(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_CG         *cg = (KSP_CG*)ksp->data;

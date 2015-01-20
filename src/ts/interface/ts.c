@@ -26,7 +26,7 @@ const char *const TSExactFinalTimeOptions[] = {"STEPOVER","INTERPOLATE","MATCHST
 .keywords: TS, set, options, database, type
 .seealso: TSSetFromOptions(), TSSetType()
 */
-static PetscErrorCode TSSetTypeFromOptions_Private(PetscOptionsObjectType *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,TS ts)
 {
   PetscBool      opt;
   const char     *defaultType;

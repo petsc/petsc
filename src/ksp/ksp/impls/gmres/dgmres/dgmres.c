@@ -614,11 +614,11 @@ static PetscErrorCode  KSPDGMRESForce_DGMRES(KSP ksp,PetscBool force)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode KSPSetFromOptions_GMRES(PetscOptionsObjectType *PetscOptionsObject,KSP);
+extern PetscErrorCode KSPSetFromOptions_GMRES(PetscOptions *PetscOptionsObject,KSP);
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_DGMRES"
-PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptionsObjectType *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_DGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       neig;

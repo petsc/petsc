@@ -567,7 +567,7 @@ PetscErrorCode PCReset_ML(PC pc)
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-extern PetscErrorCode PCSetFromOptions_MG(PetscOptionsObjectType *PetscOptionsObject,PC);
+extern PetscErrorCode PCSetFromOptions_MG(PetscOptions *PetscOptionsObject,PC);
 extern PetscErrorCode PCReset_MG(PC);
 
 #undef __FUNCT__
@@ -1035,7 +1035,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ML"
-PetscErrorCode PCSetFromOptions_ML(PetscOptionsObjectType *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_ML(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       indx,PrintLevel,partindx;

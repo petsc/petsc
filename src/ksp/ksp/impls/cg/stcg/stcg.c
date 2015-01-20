@@ -685,7 +685,7 @@ static PetscErrorCode  KSPSTCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_STCG"
-PetscErrorCode KSPSetFromOptions_STCG(PetscOptionsObjectType *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_STCG(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_STCG       *cg = (KSP_STCG*)ksp->data;

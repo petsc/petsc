@@ -368,7 +368,7 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 
 .seealso: TSGetType()
 */
-PetscErrorCode  TSAdaptSetFromOptions(PetscOptionsObjectType *PetscOptionsObject,TSAdapt adapt)
+PetscErrorCode  TSAdaptSetFromOptions(PetscOptions *PetscOptionsObject,TSAdapt adapt)
 {
   PetscErrorCode ierr;
   char           type[256] = TSADAPTBASIC;

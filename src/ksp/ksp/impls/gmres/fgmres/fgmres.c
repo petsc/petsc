@@ -563,7 +563,7 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_FGMRES"
-PetscErrorCode KSPSetFromOptions_FGMRES(PetscOptionsObjectType *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_FGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscBool      flg;

@@ -1325,7 +1325,7 @@ static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GAMG"
-PetscErrorCode PCSetFromOptions_GAMG(PetscOptionsObjectType *PetscOptionsObject,PC pc)
+PetscErrorCode PCSetFromOptions_GAMG(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg      = (PC_MG*)pc->data;

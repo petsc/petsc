@@ -201,7 +201,7 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Alpha"
-static PetscErrorCode TSSetFromOptions_Alpha(PetscOptionsObjectType *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_Alpha(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscErrorCode ierr;

@@ -606,7 +606,7 @@ static PetscErrorCode TSSetUp_RK(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_RK"
-static PetscErrorCode TSSetFromOptions_RK(PetscOptionsObjectType *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_RK(PetscOptions *PetscOptionsObject,TS ts)
 {
   PetscErrorCode ierr;
   char           rktype[256];

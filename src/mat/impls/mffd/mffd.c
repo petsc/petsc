@@ -608,7 +608,7 @@ PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MFFD"
-PetscErrorCode  MatSetFromOptions_MFFD(PetscOptionsObjectType *PetscOptionsObject,Mat mat)
+PetscErrorCode  MatSetFromOptions_MFFD(PetscOptions *PetscOptionsObject,Mat mat)
 {
   MatMFFD        mfctx = (MatMFFD)mat->data;
   PetscErrorCode ierr;

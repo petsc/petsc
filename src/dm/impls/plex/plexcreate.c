@@ -1050,7 +1050,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_NonRefinement_Plex"
-PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptionsObjectType *PetscOptionsObject,DM dm)
+PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptions *PetscOptionsObject,DM dm)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
   DMBoundary     b;
@@ -1095,7 +1095,7 @@ PetscErrorCode  DMSetFromOptions_NonRefinement_Plex(PetscOptionsObjectType *Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Plex"
-PetscErrorCode  DMSetFromOptions_Plex(PetscOptionsObjectType *PetscOptionsObject,DM dm)
+PetscErrorCode  DMSetFromOptions_Plex(PetscOptions *PetscOptionsObject,DM dm)
 {
   PetscInt       refine = 0, r;
   PetscBool      isHierarchy;

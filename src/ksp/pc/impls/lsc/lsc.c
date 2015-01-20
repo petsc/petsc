@@ -124,7 +124,7 @@ static PetscErrorCode PCDestroy_LSC(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_LSC"
-static PetscErrorCode PCSetFromOptions_LSC(PetscOptionsObjectType *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_LSC(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
   PetscErrorCode ierr;

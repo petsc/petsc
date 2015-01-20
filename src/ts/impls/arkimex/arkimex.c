@@ -1170,7 +1170,7 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_ARKIMEX"
-static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptionsObjectType *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
   PetscErrorCode ierr;

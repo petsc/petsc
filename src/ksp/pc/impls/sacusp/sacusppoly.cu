@@ -208,7 +208,7 @@ static PetscErrorCode PCDestroy_SACUSPPoly(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SACUSPPoly"
-static PetscErrorCode PCSetFromOptions_SACUSPPoly(PetscOptionsObjectType *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_SACUSPPoly(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
 

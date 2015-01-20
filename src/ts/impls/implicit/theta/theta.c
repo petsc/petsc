@@ -363,7 +363,7 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Theta"
-static PetscErrorCode TSSetFromOptions_Theta(PetscOptionsObjectType *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_Theta(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;

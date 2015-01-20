@@ -436,7 +436,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSetFromOptions_Draw"
-PetscErrorCode PetscViewerSetFromOptions_Draw(PetscOptionsObjectType *PetscOptionsObject,PetscViewer v)
+PetscErrorCode PetscViewerSetFromOptions_Draw(PetscOptions *PetscOptionsObject,PetscViewer v)
 {
   PetscErrorCode ierr;
   PetscReal      bounds[16];
