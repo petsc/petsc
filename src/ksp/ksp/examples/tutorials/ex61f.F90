@@ -108,7 +108,7 @@
       nthreads = 1
 !$omp parallel
 !$omp master
-      nthreads = omp_get_num_threads()
+!$      nthreads = omp_get_num_threads()
 !$omp end master
 !$omp end parallel
       print*,'nthreads = ', nthreads,' NCASES = ', NCASES
