@@ -62,7 +62,6 @@ PetscErrorCode PCReset_GAMG(PC pc)
           'pc_gamg->data_sz' are changed via repartitioning/reduction.
    . Amat_fine - matrix on this fine (k) level
    . cr_bs - coarse block size
-   . isLast -
    In/Output Parameter:
    . a_P_inout - prolongation operator to the next level (k-->k-1)
    . a_nactive_proc - number of active procs
@@ -72,7 +71,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "createLevel"
-static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt cr_bs,const PetscBool isLast,
+static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt cr_bs,
                                   Mat *a_P_inout,Mat *a_Amat_crs,PetscMPIInt *a_nactive_proc)
 {
   PetscErrorCode  ierr;
@@ -111,7 +110,6 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
     new_size = (PetscMPIInt)((float)ncrs_eq_glob/(float)min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
     if (new_size == 0 || ncrs_eq_glob < coarse_max) new_size = 1;
     else if (new_size >= nactive) new_size = nactive; /* no change, rare */
-    if (isLast) new_size = 1;
   }
 
   if (!repart && new_size==nactive) *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
@@ -637,7 +635,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
 #endif
 
-    ierr = createLevel(pc, Aarr[level], bs, (PetscBool)(level==pc_gamg->Nlevels-2),
+    ierr = createLevel(pc, Aarr[level], bs,
                        &Parr[level1], &Aarr[level1], &nactivepe);CHKERRQ(ierr);
 
 #if defined PETSC_GAMG_USE_LOG
@@ -661,8 +659,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
                             (int)(info.nz_used/(PetscReal)NN), nactivepe);CHKERRQ(ierr);
     }
 
-    /* stop if one node -- could pull back for singular problems */
-    if ( (pc_gamg->data_cell_cols && M/pc_gamg->data_cell_cols < 2) || (!pc_gamg->data_cell_cols && M < 2)) {
+    /* stop if one node or one proc -- could pull back for singular problems */
+    if ( (pc_gamg->data_cell_cols && M/pc_gamg->data_cell_cols < 2) || (!pc_gamg->data_cell_cols && M < 2)
+         || nactivepe==1 ) {
       level++;
       break;
     }
@@ -875,12 +874,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     }
 
     ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
-
-    if (PETSC_TRUE) {
-      KSP smoother;  /* PCSetUp_MG seems to insists on setting this to GMRES on coarse grid */
-      ierr = PCMGGetSmoother(pc, 0, &smoother);CHKERRQ(ierr);
-      ierr = KSPSetType(smoother, KSPPREONLY);CHKERRQ(ierr);
-    }
   } else {
     KSP smoother;
     if (pc_gamg->verbose) PetscPrintf(comm,"\t[%d]%s one level solver used (system is seen as DD). Using default solver.\n",rank,__FUNCT__);
@@ -1448,7 +1441,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->reuse_prol       = PETSC_FALSE;
   pc_gamg->use_aggs_in_gasm = PETSC_FALSE;
   pc_gamg->min_eq_proc      = 50;
-  pc_gamg->coarse_eq_limit  = 800;
+  pc_gamg->coarse_eq_limit  = 50;
   pc_gamg->threshold        = 0.;
   pc_gamg->Nlevels          = GAMG_MAXLEVELS;
   pc_gamg->verbose          = 0;

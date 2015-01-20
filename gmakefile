@@ -74,7 +74,7 @@ else				# Show the full command line
 endif
 
 $(PETSC_ARCH)/lib/petsc-conf/files : $(PETSC_ARCH)/include/petscconf.h
-	$(PYTHON) lib/petsc-conf/gmakegen.py --petsc-arch=$(PETSC_ARCH)
+	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 -include $(generated)
 
