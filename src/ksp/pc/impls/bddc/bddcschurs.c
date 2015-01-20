@@ -338,10 +338,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = MatDestroy(&F);CHKERRQ(ierr);
 
-    /* unused */
-    for (i=0;i<sub_schurs->n_subs;i++) {
-       sub_schurs->S_Ej[i] = 0;
-    }
 #endif
   }
 
@@ -404,34 +400,76 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented for sparse matrices");
       }
       local_size += subset_size;
+      ierr = MatDestroy(&sub_schurs->S_Ej[lpi]);CHKERRQ(ierr);
+      sub_schurs->S_Ej[lpi] = S_Ej_expl;
     }
     ierr = PetscFree(dummy_idx);CHKERRQ(ierr);
   } else {
-    PetscInt    *dummy_idx,n_all;
-    PetscScalar *vals,*fill_vals;
+    PetscInt  *dummy_idx,n_all;
+    PetscBool is_symmetric,compute_Stilda=PETSC_TRUE;
 
     /* Work arrays */
     ierr = PetscMalloc1(max_subset_size,&dummy_idx);CHKERRQ(ierr);
-    ierr = MatGetSize(S_all,&n_all,NULL);CHKERRQ(ierr);
-    ierr = MatDenseGetArray(S_all,&vals);CHKERRQ(ierr);
-    local_size = 0;
-    subset_size = 0;
-    fill_vals = vals;
-    for (i=0;i<sub_schurs->n_subs_seq;i++) {
-      PetscInt j,lpi = sub_schurs->index_sequential[i];
 
-      fill_vals += subset_size;
-      ierr = ISGetLocalSize(sub_schurs->is_AEj_B[lpi],&subset_size);CHKERRQ(ierr);
+    /* Work arrays */
+    ierr = MatGetSize(S_all,&n_all,NULL);CHKERRQ(ierr);
+    local_size = 0;
+    ierr = MatIsSymmetric(sub_schurs->A,0.0,&is_symmetric);CHKERRQ(ierr);
+    for (i=0;i<sub_schurs->n_subs;i++) {
+      Mat S_EE;
+      IS  is_E;
+      PetscScalar *vals;
+      PetscInt j;
+
+      ierr = ISGetLocalSize(sub_schurs->is_AEj_B[i],&subset_size);CHKERRQ(ierr);
+      ierr = ISCreateStride(PetscObjectComm((PetscObject)sub_schurs->is_I),subset_size,local_size,1,&is_E);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(S_all,is_E,is_E,MAT_INITIAL_MATRIX,&S_EE);CHKERRQ(ierr);
+      sub_schurs->S_Ej[i] = S_EE;
+      if (compute_Stilda) {
+        Mat Stilda;
+        if (sub_schurs->n_subs == 1) {
+          ierr = PetscObjectReference((PetscObject)sub_schurs->S_Ej[i]);CHKERRQ(ierr);
+          Stilda = sub_schurs->S_Ej[i];
+        } else {
+          KSP ksp;
+          PC  pc;
+          Mat S_EF,S_FE,S_FF,Stilda_impl;
+          IS  is_F;
+
+          ierr = ISComplement(is_E,0,n_all,&is_F);CHKERRQ(ierr);
+          ierr = MatGetSubMatrix(S_all,is_E,is_F,MAT_INITIAL_MATRIX,&S_EF);CHKERRQ(ierr);
+          ierr = MatGetSubMatrix(S_all,is_F,is_F,MAT_INITIAL_MATRIX,&S_FF);CHKERRQ(ierr);
+          ierr = MatGetSubMatrix(S_all,is_F,is_E,MAT_INITIAL_MATRIX,&S_FE);CHKERRQ(ierr);
+          ierr = MatCreateSchurComplement(S_FF,S_FF,S_FE,S_EF,S_EE,&Stilda_impl);CHKERRQ(ierr);
+          ierr = MatSchurComplementGetKSP(Stilda_impl,&ksp);CHKERRQ(ierr);
+          ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+          ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+          if (is_symmetric) {
+            ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
+          } else {
+            ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+          }
+          ierr = PCFactorSetUseInPlace(pc,PETSC_TRUE);CHKERRQ(ierr);
+          ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+          ierr = PCBDDCComputeExplicitSchur(Stilda_impl,&Stilda);CHKERRQ(ierr);
+          ierr = MatDestroy(&S_FF);CHKERRQ(ierr);
+          ierr = MatDestroy(&S_FE);CHKERRQ(ierr);
+          ierr = MatDestroy(&S_EF);CHKERRQ(ierr);
+          ierr = MatDestroy(&Stilda_impl);CHKERRQ(ierr);
+          ierr = ISDestroy(&is_F);CHKERRQ(ierr);
+        }
+        ierr = MatDestroy(&Stilda);CHKERRQ(ierr);
+      }
+
       for (j=0;j<subset_size;j++) {
         dummy_idx[j]=local_size+j;
       }
-      for (j=0;j<subset_size;j++) {
-        ierr = MatSetValues(sub_schurs->S_Ej_all,1,dummy_idx+j,subset_size,dummy_idx,fill_vals,INSERT_VALUES);CHKERRQ(ierr);
-        fill_vals += n_all;
-      }
+      ierr = MatDenseGetArray(S_EE,&vals);CHKERRQ(ierr);
+      ierr = MatSetValues(sub_schurs->S_Ej_all,subset_size,dummy_idx,subset_size,dummy_idx,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatDenseRestoreArray(S_EE,&vals);CHKERRQ(ierr);
+      ierr = ISDestroy(&is_E);CHKERRQ(ierr);
       local_size += subset_size;
     }
-    ierr = MatDenseRestoreArray(S_all,&vals);CHKERRQ(ierr);
     ierr = PetscFree(dummy_idx);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

@@ -777,7 +777,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Seq(PC pc)
   }
 
   /* Create work vectors for sequential part of deluxe */
-  ierr = MatCreateVecs(sub_schurs->S_Ej_all,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
+  ierr = MatCreateVecs(sub_schurs->sum_S_Ej_all,&deluxe_ctx->seq_work1,&deluxe_ctx->seq_work2);CHKERRQ(ierr);
 
   /* Compute deluxe sequential scatter */
   ierr = VecScatterCreate(pcbddc->work_scaling,sub_schurs->is_Ej_all,deluxe_ctx->seq_work1,NULL,&deluxe_ctx->seq_scctx);CHKERRQ(ierr);
