@@ -1,5 +1,9 @@
 
-static char help[] = "Tests MatConvert() from MATAIJ and MATDENSE to MATELEMENTAL.\n\n";
+static char help[] = "Tests MatConvert(), MatElementalHermitianGenDefiniteEig() for MATELEMENTAL interface.\n\n";
+/*
+ Example:
+   mpiexec -n <np> ./ex173 -fA $Deig/graphene_xxs_A_aij -fB $Deig/graphene_xxs_B_aij -vl -0.8 -vu -0.75
+*/
 
 #include <petscmat.h>
 #include <petscviewer.h>
@@ -16,11 +20,16 @@ int main(int argc,char **args)
   PetscScalar    one = 1.0;
   PetscMPIInt    rank;
   PetscReal      vl,vu;
+  Vec            evals;
+  PetscInt       M,N;
 
   PetscInitialize(&argc,&args,(char*)0,help);
+#if !defined(PETSC_HAVE_ELEMENTAL)
+  SETERRQ(PETSC_COMM_WORLD,1,"This example requires ELEMENTAL");
+#endif
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  /* Now reload PETSc matrix and view it */
+  /* Load PETSc matrices */
   ierr = PetscOptionsGetString(NULL,"-fA",file[0],PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&view);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -38,7 +47,7 @@ int main(int argc,char **args)
     ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
   } else {
     /* Create matrix B = I */
-    PetscInt M,N,rstart,rend,i;
+    PetscInt rstart,rend,i;
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
 
@@ -83,7 +92,7 @@ int main(int argc,char **args)
   IS             isrows,iscols;
   PetscInt       nrows,ncols,i,j;
   ierr = MatGetOwnershipIS(Belem,&isrows,&iscols);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-Cexp_view_ownership",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-Exp_view_ownership",&flg);CHKERRQ(ierr);
   if (flg) { /* View ownership of explicit C */
     IS tmp;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Ownership of explicit C:\n");CHKERRQ(ierr);
@@ -123,8 +132,10 @@ int main(int argc,char **args)
   vl=-0.8, vu=1.2;
   ierr = PetscOptionsGetReal(NULL,"-vl",&vl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-vu",&vu,NULL);CHKERRQ(ierr);
-  ierr = MatElementalHermitianGenDefiniteEig(Aelem,Belem,vl,vu);CHKERRQ(ierr);
+  ierr = MatElementalHermitianGenDefiniteEig(Aelem,Belem,&evals,vl,vu);CHKERRQ(ierr);
+  ierr = VecView(evals,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
+  ierr = VecDestroy(&evals);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&Aelem);CHKERRQ(ierr);
   ierr = MatDestroy(&Belem);CHKERRQ(ierr);
