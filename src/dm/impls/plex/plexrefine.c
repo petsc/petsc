@@ -6662,7 +6662,7 @@ PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *
   ierr = DMSetDimension(rdm, dim);CHKERRQ(ierr);
   /* Calculate number of new points of each depth */
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  if (dim != depth) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated for regular refinement");
+  if (depth >= 0 && dim != depth) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated for regular refinement");
   ierr = PetscMalloc1(depth+1, &depthSize);CHKERRQ(ierr);
   ierr = PetscMemzero(depthSize, (depth+1) * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = CellRefinerGetSizes(cellRefiner, dm, depthSize);CHKERRQ(ierr);
