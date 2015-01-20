@@ -38,7 +38,7 @@ class Configure(config.base.Configure):
     '''Sets PETSC_USE_DEBUG, PETSC_USE_INFO, PETSC_USE_LOG, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
     '''Also sets PETSC_AssertAlignx() in Fortran and PETSC_Alignx() in C for IBM BG/P compiler '''
     if self.framework.argDB['with-threadsafety']:
-      self.addDefine('HAVE_THREADSAFETY')
+      self.addDefine('HAVE_THREADSAFETY',1)
       self.useThreadSafety = 1
     else:
       self.useThreadSafety = 0
@@ -52,7 +52,7 @@ class Configure(config.base.Configure):
     if self.debugging.debugging:
       if self.useThreadSafety:
         raise RuntimeError('Must use --with-debugging=0 with --with-threadsafety')
-      self.addDefine('USE_DEBUG', '1')
+      self.addDefine('USE_DEBUG',1)
     elif not config.setCompilers.Configure.isIBM(self.framework.getCompiler()):
       # IBM XLC version 12.1 (BG/Q and POWER) miscompiles PetscMalloc3()
       # by reordering "*(void**)&ptr = x" as though ptr was not modified
