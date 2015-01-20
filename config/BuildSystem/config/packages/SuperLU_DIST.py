@@ -3,12 +3,12 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit  = '749f33d8104157767d443ff1a1d151642751486d' # v3.3 @ 2013-04-10
+    self.gitcommit  = 'bdddaa1c55e208b48f96d6281b8713b55f836c6e' # v4.0-p1 feb-27-2015
     self.giturls    = ['https://bitbucket.org/petsc/pkg-superlu_dist.git']
-    self.download   = ['http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_dist_3.3.tar.gz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_4.0-p1.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
-    self.liblist    = [['libsuperlu_dist_3.3.a']]
+    self.liblist    = [['libsuperlu_dist_4.0.a']]
     # SuperLU_Dist does not work with --download-fblaslapack with Compaqf90 compiler on windows.
     # However it should work with intel ifort.
     self.downloadonWindows= 1
@@ -18,6 +18,7 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
+    self.metis          = framework.require('config.packages.metis',self)
     self.parmetis       = framework.require('config.packages.parmetis',self)
     self.mpi            = framework.require('config.packages.MPI',self)
     self.deps           = [self.mpi,self.blasLapack,self.parmetis]
@@ -25,13 +26,15 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
+    if (self.compilers.c99flag == None):
+      raise RuntimeError('SUPERLU_DIST: install requires c99 compiler. Configure cold not determine compatilbe compiler flag. Perhaps you can specify via CFLAG')
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+self.packageDir+'\n')
-    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_3.3.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_4.0.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
-    g.write('IMPI         = '+self.headers.toString(self.mpi.include)+'\n')
+    g.write('INCS         = '+self.headers.toString(self.mpi.include)+' '+self.headers.toString(self.parmetis.include)+' '+self.headers.toString(self.metis.include)+'\n')
     g.write('MPILIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
     g.write('PMETISLIB    = '+self.libraries.toString(self.parmetis.lib)+'\n')
     g.write('LIBS         = $(DSUPERLULIB) $(BLASLIB) $(PMETISLIB) $(MPILIB)\n')
@@ -39,9 +42,9 @@ class Configure(config.package.Package):
     g.write('ARCHFLAGS    = '+self.setCompilers.AR_FLAGS+'\n')
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
     self.setCompilers.pushLanguage('C')
-    g.write('CC           = '+self.setCompilers.getCompiler()+' $(IMPI)\n') #build fails without $(IMPI)
-    g.write('CFLAGS       = '+self.setCompilers.getCompilerFlags()+'\n')
-    g.write('LOADER       = '+self.setCompilers.getLinker()+'\n')
+    g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
+    g.write('CFLAGS       = $(INCS) '+self.setCompilers.getCompilerFlags()+''+self.compilers.c99flag+'\n')
+    g.write('LOADER       = '+self.setCompilers.getLinker()+' '+'\n')
     g.write('LOADOPTS     = \n')
     self.setCompilers.popLanguage()
     # set blas/lapack name mangling
