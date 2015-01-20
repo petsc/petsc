@@ -1,7 +1,88 @@
 #include <../src/ksp/pc/impls/bddc/bddc.h>
 #include <../src/ksp/pc/impls/bddc/bddcprivate.h>
 
-static PetscErrorCode PCBDDCAdjGetNextLayer_Private(PetscInt*,PetscInt,PetscBT,PetscInt*,PetscInt*,PetscInt*);
+PETSC_STATIC_INLINE PetscErrorCode PCBDDCAdjGetNextLayer_Private(PetscInt*,PetscInt,PetscBT,PetscInt*,PetscInt*,PetscInt*);
+static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, Mat *S);
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCComputeExplicitSchur"
+static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, Mat *S)
+{
+  Mat            B, C, D, Bd, Cd, AinvBd;
+  KSP            ksp;
+  PC             pc;
+  PetscBool      isLU, isILU, isCHOL, Bdense, Cdense;
+  PetscReal      fill = 2.0;
+  PetscMPIInt    size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)M),&size);CHKERRQ(ierr);
+  if (size != 1) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for parallel matrices");
+  }
+  ierr = MatSchurComplementGetSubMatrices(M, NULL, NULL, &B, &C, &D);CHKERRQ(ierr);
+  ierr = MatSchurComplementGetKSP(M, &ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) pc, PCLU, &isLU);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) pc, PCILU, &isILU);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) pc, PCCHOLESKY, &isCHOL);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) B, MATSEQDENSE, &Bdense);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject) C, MATSEQDENSE, &Cdense);CHKERRQ(ierr);
+  if (!Bdense) {
+    ierr = MatConvert(B, MATSEQDENSE, MAT_INITIAL_MATRIX, &Bd);CHKERRQ(ierr);
+  } else {
+    Bd = B;
+  }
+
+  if (isLU || isILU || isCHOL) {
+    Mat fact;
+
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+    ierr = PCFactorGetMatrix(pc, &fact);CHKERRQ(ierr);
+    ierr = MatDuplicate(Bd, MAT_DO_NOT_COPY_VALUES, &AinvBd);CHKERRQ(ierr);
+    ierr = MatMatSolve(fact, Bd, AinvBd);CHKERRQ(ierr);
+  } else {
+    Mat Ainvd;
+
+    ierr = PCComputeExplicitOperator(pc, &Ainvd);CHKERRQ(ierr);
+    ierr = MatMatMult(Ainvd, Bd, MAT_INITIAL_MATRIX, fill, &AinvBd);CHKERRQ(ierr);
+    ierr = MatDestroy(&Ainvd);CHKERRQ(ierr);
+  }
+  if (!Bdense) {
+    ierr = MatDestroy(&Bd);CHKERRQ(ierr);
+  }
+  if (!Cdense) {
+    ierr = MatConvert(C, MATSEQDENSE, MAT_INITIAL_MATRIX, &Cd);CHKERRQ(ierr);
+  } else {
+    Cd = C;
+  }
+
+  ierr = MatMatMult(Cd, AinvBd, MAT_INITIAL_MATRIX, fill, S);CHKERRQ(ierr);
+  ierr = MatDestroy(&AinvBd);CHKERRQ(ierr);
+  if (!Cdense) {
+    ierr = MatDestroy(&Cd);CHKERRQ(ierr);
+  }
+
+  if (D) {
+    Mat       Dd;
+    PetscBool Ddense;
+
+    ierr = PetscObjectTypeCompare((PetscObject)D,MATSEQDENSE,&Ddense);CHKERRQ(ierr);
+    if (!Ddense) {
+      ierr = MatConvert(D, MATSEQDENSE, MAT_INITIAL_MATRIX, &Dd);CHKERRQ(ierr);
+    } else {
+      Dd = D;
+    }
+    ierr = MatAYPX(*S,-1.0,Dd,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    if (!Ddense) {
+      ierr = MatDestroy(&Dd);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MatScale(*S,-1.0);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursSetUp"
@@ -288,7 +369,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size,all_local_idx_B,PETSC_OWN_POINTER,&sub_schurs->is_Ej_all);CHKERRQ(ierr);
 
-  /* Local matrix of all local Schur on subsets */
+  /* Local matrix of all local Schur on subsets transposed */
   ierr = MatCreate(PETSC_COMM_SELF,&sub_schurs->S_Ej_all);CHKERRQ(ierr);
   ierr = MatSetSizes(sub_schurs->S_Ej_all,PETSC_DECIDE,PETSC_DECIDE,local_size,local_size);CHKERRQ(ierr);
   ierr = MatSetType(sub_schurs->S_Ej_all,MATAIJ);CHKERRQ(ierr);
@@ -300,33 +381,31 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     PetscInt    *dummy_idx;
 
     /* Work arrays */
-    ierr = PetscMalloc2(max_subset_size,&dummy_idx,max_subset_size*max_subset_size,&fill_vals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(max_subset_size,&dummy_idx);CHKERRQ(ierr);
 
-    /* Loop on local problems to compute Schur complements explicitly (TODO; optimize)*/
+    /* Loop on local problems end compute Schur complements explicitly */
     local_size = 0;
     for (i=0;i<sub_schurs->n_subs_seq;i++) {
-      Vec work1,work2;
-      PetscInt j,local_problem_index = sub_schurs->index_sequential[i];
+      Mat       S_Ej_expl;
+      PetscInt  j,lpi = sub_schurs->index_sequential[i];
+      PetscBool Sdense;
 
-      ierr = MatCreateVecs(sub_schurs->S_Ej[local_problem_index],&work1,&work2);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(sub_schurs->is_AEj_B[local_problem_index],&subset_size);CHKERRQ(ierr);
-      /* local Schur */
-      for (j=0;j<subset_size;j++) {
-        ierr = VecSet(work1,0.0);CHKERRQ(ierr);
-        ierr = VecSetValue(work1,j,1.0,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = VecPlaceArray(work2,&fill_vals[j*subset_size]);CHKERRQ(ierr);
-        ierr = MatMult(sub_schurs->S_Ej[local_problem_index],work1,work2);CHKERRQ(ierr);
-        ierr = VecResetArray(work2);CHKERRQ(ierr);
+      ierr = PCBDDCComputeExplicitSchur(sub_schurs->S_Ej[lpi],&S_Ej_expl);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(sub_schurs->is_AEj_B[lpi],&subset_size);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)S_Ej_expl,MATSEQDENSE,&Sdense);CHKERRQ(ierr);
+      if (Sdense) {
+        for (j=0;j<subset_size;j++) {
+          dummy_idx[j]=local_size+j;
+        }
+        ierr = MatDenseGetArray(S_Ej_expl,&fill_vals);CHKERRQ(ierr);
+        ierr = MatSetValues(sub_schurs->S_Ej_all,subset_size,dummy_idx,subset_size,dummy_idx,fill_vals,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatDenseRestoreArray(S_Ej_expl,&fill_vals);CHKERRQ(ierr);
+      } else {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented for sparse matrices");
       }
-      for (j=0;j<subset_size;j++) {
-        dummy_idx[j]=local_size+j;
-      }
-      ierr = MatSetValues(sub_schurs->S_Ej_all,subset_size,dummy_idx,subset_size,dummy_idx,fill_vals,INSERT_VALUES);CHKERRQ(ierr);
       local_size += subset_size;
-      ierr = VecDestroy(&work1);CHKERRQ(ierr);
-      ierr = VecDestroy(&work2);CHKERRQ(ierr);
     }
-    ierr = PetscFree2(dummy_idx,fill_vals);CHKERRQ(ierr);
+    ierr = PetscFree(dummy_idx);CHKERRQ(ierr);
   } else {
     PetscInt    *dummy_idx,n_all;
     PetscScalar *vals,*fill_vals;
@@ -357,7 +436,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   }
   ierr = MatAssemblyBegin(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatDestroy(&S_all);CHKERRQ(ierr);
 
   /* Global matrix of all assembled Schur on subsets */
   ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)sub_schurs->l2gmap),sub_schurs->l2gmap,local_size,all_local_idx_N+extra,PETSC_NULL,&global_size,&all_local_idx_G);CHKERRQ(ierr);
@@ -366,13 +444,26 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   ierr = ISLocalToGlobalMappingDestroy(&l2gmap_subsets);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(work_mat,sub_schurs->S_Ej_all);CHKERRQ(ierr);
   ierr = MatISGetMPIXAIJ(work_mat,MAT_INITIAL_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
-  ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
 
   /* Get local part of (\sum_j S_Ej) */
   ierr = PetscFree(all_local_idx_N);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)sub_schurs->l2gmap),local_size,all_local_idx_G,PETSC_OWN_POINTER,&temp_is);CHKERRQ(ierr);
   ierr = MatGetSubMatrixUnsorted(global_schur_subsets,temp_is,temp_is,&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
   ierr = MatDestroy(&global_schur_subsets);CHKERRQ(ierr);
+
+  /* Computation of Stildas */
+  if (S_all) {
+    PetscInt    n_all;
+    PetscScalar *vals;
+
+    /* Work arrays */
+    ierr = MatGetSize(S_all,&n_all,NULL);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(S_all,&vals);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(S_all,&vals);CHKERRQ(ierr);
+  }
+
+  ierr = MatDestroy(&S_all);CHKERRQ(ierr);
+  ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
   ierr = ISDestroy(&temp_is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
