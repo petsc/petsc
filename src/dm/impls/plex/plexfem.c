@@ -265,6 +265,7 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
   else               {cellsp = sp;}
   for (h = 0; h <= maxHeight; h++) {
     ierr = DMPlexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
+    if (!h) {pStart = cStart; pEnd = cEnd;}
     if (pEnd <= pStart) continue;
     totDim = 0;
     for (f = 0; f < numFields; ++f) {
@@ -388,6 +389,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
   }
   for (h = 0; h <= maxHeight; h++) {
     ierr = DMPlexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
+    if (!h) {pStart = cStart; pEnd = cEnd;}
     if (pEnd <= pStart) continue;
     totDim = 0;
     for (f = 0; f < numFields; ++f) {
