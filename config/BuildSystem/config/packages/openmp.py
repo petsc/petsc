@@ -17,6 +17,7 @@ class Configure(config.package.Package):
     ''' Checks for -fopenmp compiler flag'''
     ''' Needs to check if OpenMP actually exists and works '''
     self.checkDependencies()
+    self.found = 0    
     self.setCompilers.pushLanguage('C')
     #
     for flag in ["-fopenmp", # Gnu
@@ -25,11 +26,12 @@ class Configure(config.package.Package):
                  "-mp",      # Portland Group
                  "-Qopenmp", # Intel windows
                  "-openmp",  # Intel
-                 " ",        # Empty, if compiler automatically accepts openmp
                  "-xopenmp", # Sun
                  "+Oopenmp", # HP
                  "/openmp"   # Microsoft Visual Studio
+                 #" ",        # Empty, if compiler automatically accepts openmp
                  ]:
+      # here it should actually check if the OpenMP pragmas work here.
       if self.setCompilers.checkCompilerFlag(flag):
         ompflag = flag
         self.found = 1
