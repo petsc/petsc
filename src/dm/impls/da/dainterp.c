@@ -1286,7 +1286,7 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
   PetscInt        dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DMBoundaryType  bxc,byc,bzc,bxf,byf,bzf;
   DMDAStencilType stc,stf;
-  VecScatter      inject;
+  VecScatter      inject = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dac,DM_CLASSID,1);
