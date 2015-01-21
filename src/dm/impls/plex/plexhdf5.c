@@ -625,8 +625,8 @@ static herr_t ReadLabelStratumHDF5_Static(hid_t g_id, const char *name, const H5
 
 static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *name, const H5L_info_t *info, void *op_data)
 {
-  DM             dm = ((LabelCtx *) op_data)->dm;
-  hsize_t        idx;
+  DM             dm  = ((LabelCtx *) op_data)->dm;
+  hsize_t        idx = 0;
   PetscErrorCode ierr;
   herr_t         err;
 
