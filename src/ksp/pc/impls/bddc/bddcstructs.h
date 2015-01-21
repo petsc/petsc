@@ -52,6 +52,7 @@ struct _PCBDDCSubSchurs {
   /* note that AIJ format is used but the values are inserted as in column major ordering */
   Mat S_Ej_all;
   Mat sum_S_Ej_all;
+  Mat sum_S_Ej_tilda_all;
   IS  is_Ej_all;
   /* work vectors */
   Vec *work1;
