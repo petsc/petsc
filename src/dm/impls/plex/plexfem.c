@@ -365,7 +365,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
   PetscInt       *numComp;
   PetscSection    section;
   PetscScalar    *values;
-  PetscInt        numFields, dim, dimEmbed, spDim, totDim = 0, numValues, pStart, pEnd, p, cStart, cEnd, cEndInterior, c, f, d, v, comp, h, maxHeight;
+  PetscInt        numFields, dim, dimEmbed, spDim, totDim = 0, numValues, pStart, pEnd, p, cStart, cEnd, cEndInterior, f, d, v, comp, h, maxHeight;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
