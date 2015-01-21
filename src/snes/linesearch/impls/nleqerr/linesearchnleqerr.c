@@ -20,6 +20,19 @@ static const char NLEQERR_citation[] = "@book{deuflhard2011,\n"
                                "  address = {Berlin, Heidelberg}\n}\n";
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchReset_NLEQERR"
+static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch)
+{
+  SNESLineSearch_NLEQERR *nleqerr;
+
+  nleqerr   = (SNESLineSearch_NLEQERR*)linesearch->data;
+  nleqerr->mu_curr    = 0.0;
+  nleqerr->norm_delta_x_prev = -1.0;
+  nleqerr->norm_bar_delta_x_prev = -1.0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchApply_NLEQERR"
 static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
 {
@@ -30,7 +43,7 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   PetscReal         fnorm, xnorm, ynorm, gnorm, wnorm;
   PetscReal         lambda, minlambda, stol;
   PetscViewer       monitor;
-  PetscInt          max_its,count;
+  PetscInt          max_its, count, snes_iteration;
   PetscReal         theta, mudash, lambdadash;
   SNESLineSearch_NLEQERR *nleqerr;
   KSPConvergedReason kspreason;
@@ -46,6 +59,12 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetTolerances(linesearch,&minlambda,NULL,NULL,NULL,NULL,&max_its);CHKERRQ(ierr);
   ierr = SNESGetTolerances(snes,NULL,NULL,&stol,NULL,NULL);CHKERRQ(ierr);
   nleqerr   = (SNESLineSearch_NLEQERR*)linesearch->data;
+
+  /* reset the state of the Lipschitz estimates */
+  ierr = SNESGetIterationNumber(snes, &snes_iteration);CHKERRQ(ierr);
+  if (snes_iteration == 0) {
+    ierr = SNESLineSearchReset_NLEQERR(linesearch);CHKERRQ(ierr);
+  }
 
   /* precheck */
   ierr = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
@@ -135,6 +154,9 @@ static PetscErrorCode  SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
       }
       lambda = 1.0;
       ierr = VecWAXPY(G, -lambda, Y, X);CHKERRQ(ierr);
+
+      /* and clean up the state for next time */
+      ierr = SNESLineSearchReset_NLEQERR(linesearch);CHKERRQ(ierr);
       break;
     }
 
@@ -267,19 +289,6 @@ static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchReset_NLEQERR"
-static PetscErrorCode SNESLineSearchReset_NLEQERR(SNESLineSearch linesearch)
-{
-  SNESLineSearch_NLEQERR *nleqerr;
-
-  nleqerr   = (SNESLineSearch_NLEQERR*)linesearch->data;
-  nleqerr->mu_curr    = 0.0;
-  nleqerr->norm_delta_x_prev = -1.0;
-  nleqerr->norm_bar_delta_x_prev = -1.0;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_NLEQERR"
 /*MC
    SNESLINESEARCHNLEQERR - Error-oriented affine-covariant globalised Newton algorithm of Deuflhard (2011).
@@ -332,8 +341,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesear
 
   linesearch->data    = (void*)nleqerr;
   linesearch->max_its = 40;
-  nleqerr->mu_curr    = 0.0;
-  nleqerr->norm_delta_x_prev = -1.0;
-  nleqerr->norm_bar_delta_x_prev = -1.0;
+  SNESLineSearchReset_NLEQERR(linesearch);
   PetscFunctionReturn(0);
 }
