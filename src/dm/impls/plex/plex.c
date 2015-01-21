@@ -188,6 +188,63 @@ PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexView_Ascii_Geometry"
+PetscErrorCode DMPlexView_Ascii_Geometry(DM dm, PetscViewer viewer)
+{
+  PetscSection       coordSection;
+  Vec                coordinates;
+  DMLabel            depthLabel;
+  const char        *name[4];
+  const PetscScalar *a;
+  PetscInt           dim, pStart, pEnd, cStart, cEnd, c;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(coordSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates, &a);CHKERRQ(ierr);
+  name[0]     = "vertex";
+  name[1]     = "edge";
+  name[dim-1] = "face";
+  name[dim]   = "cell";
+  for (c = cStart; c < cEnd; ++c) {
+    PetscInt *closure = NULL;
+    PetscInt  closureSize, cl;
+
+    ierr = PetscViewerASCIIPrintf(viewer, "Geometry for cell %d:\n", c);CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      PetscInt point = closure[cl], depth, dof, off, d, p;
+
+      if ((point < pStart) || (point >= pEnd)) continue;
+      ierr = PetscSectionGetDof(coordSection, point, &dof);CHKERRQ(ierr);
+      if (!dof) continue;
+      ierr = DMLabelGetValue(depthLabel, point, &depth);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(coordSection, point, &off);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%s %d coords:", name[depth], point);CHKERRQ(ierr);
+      for (p = 0; p < dof/dim; ++p) {
+        ierr = PetscViewerASCIIPrintf(viewer, " (");CHKERRQ(ierr);
+        for (d = 0; d < dim; ++d) {
+          if (d > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+          ierr = PetscViewerASCIIPrintf(viewer, "%g", a[off+p*dim+d]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, ")");CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArrayRead(coordinates, &a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexView_Ascii"
 PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 {
