@@ -49,8 +49,8 @@ echo "Build on $MACH $ARCH $nPETSC_DIR `date` " > build.log
 # Note use 'git clean' intead of manually deleting seleted old files.
 echo "Cleaning throughly at $nPETSC_DIR" >>& build.log
 (git reset --hard; git clean -q -f -d -x -e build.log) >>& build.log
-# if externalpackage tarball also packs a git repo - one has to explicitly remove it
-rm -rf ./externalpackages
+# externalpackages can be a git repo - so one has to explicitly remove them
+rm -rf ./${ARCH}
 echo "Currently building git branch:" `git describe --contains --all HEAD` >>& build.log
 git log -1 >>& build.log
 
