@@ -449,6 +449,9 @@ static PetscErrorCode MatScale_Elemental(Mat X,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
+/*
+  MatAXPY - Computes Y = a*X + Y.
+*/
 #undef __FUNCT__
 #define __FUNCT__ "MatAXPY_Elemental"
 static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure str)
@@ -1025,22 +1028,40 @@ PetscErrorCode MatElementalHermitianGenDefiniteEig_Elemental(Mat A,Mat B,Vec *ev
   
   PetscFunctionBegin;
   elem::DistMatrix<PetscElemScalar,elem::VR,elem::STAR> w( *a->grid ); /* holding eigenvalues */
-  elem::HermitianGenDefiniteEig(elem::AXBX, uplo, *a->emat, *b->emat, w,vle,vue, sort );
+  elem::DistMatrix<PetscElemScalar> X( *a->grid ); /* holding eigenvectors */
+  elem::HermitianGenDefiniteEig(elem::AXBX,uplo,*a->emat,*b->emat,w,X,vle,vue,sort);
   /* elem::Print(w, "Eigenvalues"); */
 
+  /* Test correctness norm = || - A*X + B*X*w || */
+  PetscElemScalar alpha,beta;
+  elem::DistMatrix<PetscElemScalar> Y(*a->grid); //tmp matrix
+  alpha = 1.0; beta=0.0;
+  elem::Gemm(elem::NORMAL,elem::NORMAL,alpha,*b->emat,X,beta,Y); //Y = B*X
+  elem::DiagonalScale(elem::RIGHT,elem::NORMAL, w, Y); //Y = Y*w
+  alpha = -1.0; beta=1.0;
+  elem::Gemm(elem::NORMAL,elem::NORMAL,alpha,*a->emat,X,beta,Y); //Y = - A*X + B*X*w
+
+  PetscElemScalar norm = elem::FrobeniusNorm(Y);
+  printf("norm (- A*X + B*X*w) = %g\n",norm);
+
   buffer = w.LockedBuffer();
-  /* printf("w: [%d, %d %d] %d %d %g\n",w.DistRank(),w.ColRank(),w.RowRank(),w.LocalHeight(),w.LocalWidth(),buffer[0]); */
+  //PetscMPIInt rank;
+  //ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  //printf("w: [%d] [%d, %d %d] %d; X: %d %d\n",rank,w.DistRank(),w.ColRank(),w.RowRank(),w.LocalHeight(),X.LocalHeight(),X.LocalWidth());   
+  
+  /* Create evals and evecs to hold eigenvalues and eigenvectors */
   ierr = VecCreate(PetscObjectComm((PetscObject)A),&eval);CHKERRQ(ierr);
   ierr = VecSetSizes(eval,w.LocalHeight(),PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(eval);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(eval);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(eval);CHKERRQ(ierr);
-
   ierr = VecGetArray(eval,&array);CHKERRQ(ierr);
   for (i=0; i<w.LocalHeight(); i++){
     array[i] = buffer[i];
   }
   ierr = VecRestoreArray(eval,&array);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(eval);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(eval);CHKERRQ(ierr);
 
   *evals = eval;
   PetscFunctionReturn(0);
