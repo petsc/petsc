@@ -212,6 +212,9 @@ int main(int argc,char **args)
     if (size == 1) {
       ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
     } else {
+#if !defined(PETSC_HAVE_SUPERLU_DIST)
+      SETERRQ(PETSC_COMM_WORLD,1,"This test requires SUPERLU_DIST");
+#endif
       ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU_DIST);CHKERRQ(ierr);
     }
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
