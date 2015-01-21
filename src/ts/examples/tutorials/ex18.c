@@ -21,6 +21,31 @@ typedef enum {VEL_ZERO, VEL_HARMONIC} VelocityDistribution;
 
 typedef enum {ZERO, CONSTANT, GAUSSIAN, TILTED} PorosityDistribution;
 
+/*
+  FunctionalFunc - Calculates the value of a functional of the solution at a point
+
+  Input Parameters:
++ dm   - The DM
+. time - The TS time
+. x    - The coordinates of the evaluation point
+. u    - The field values at point x
+- ctx  - A user context, or NULL
+
+  Output Parameter:
+. f    - The value of the functional at point x
+
+*/
+typedef PetscErrorCode (*FunctionalFunc)(DM, PetscReal, const PetscReal *, const PetscScalar *, PetscReal *, void *);
+
+typedef struct _n_Functional *Functional;
+struct _n_Functional {
+  char          *name;
+  FunctionalFunc func;
+  void          *ctx;
+  PetscInt       offset;
+  Functional     next;
+};
+
 typedef struct {
   /* Domain and mesh definition */
   PetscInt       dim;               /* The topological mesh dimension */
@@ -32,6 +57,9 @@ typedef struct {
   void         (*initialGuess[2])(const PetscReal x[], PetscScalar *u, void *ctx);
   VelocityDistribution velocityDist;
   PorosityDistribution porosityDist;
+  /* Monitoring */
+  Functional     functionalRegistry;
+  PetscInt       errorFunctional;
 } AppCtx;
 
 #undef __FUNCT__
@@ -71,6 +99,46 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->porosityDist = (PorosityDistribution) pd;
   ierr = PetscOptionsEnd();
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FunctionalRegister"
+static PetscErrorCode FunctionalRegister(Functional *functionalRegistry, const char name[], PetscInt *offset, FunctionalFunc func, void *ctx)
+{
+  Functional    *ptr, f;
+  PetscInt       lastoffset = -1;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  for (ptr = functionalRegistry; *ptr; ptr = &(*ptr)->next) lastoffset = (*ptr)->offset;
+  ierr = PetscNew(&f);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name, &f->name);CHKERRQ(ierr);
+  f->offset = lastoffset + 1;
+  f->func   = func;
+  f->ctx    = ctx;
+  f->next   = NULL;
+  *ptr      = f;
+  *offset   = f->offset;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FunctionalDestroy"
+static PetscErrorCode FunctionalDestroy(Functional *link)
+{
+  Functional     next, l;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  if (!link) PetscFunctionReturn(0);
+  l     = *link;
+  *link = NULL;
+  for (; l; l=next) {
+    next = l->next;
+    ierr = PetscFree(l->name);CHKERRQ(ierr);
+    ierr = PetscFree(l);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -263,7 +331,7 @@ void tilted_phi_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 
   DMPlex_WaxpyD_Internal(2, -t, wind, x, x0);
   if (x0[1] > 0) u[0] =  1.0*x[0] + 3.0*x[1];
-  else           u[0] = -2.0;
+  else           u[0] = -2.0; /* Inflow state */
 }
 
 #undef __FUNCT__
@@ -281,6 +349,39 @@ static PetscErrorCode advect_outflow(PetscReal time, const PetscReal *c, const P
 {
   PetscFunctionBeginUser;
   xG[0] = xI[spatialDim];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ExactSolution"
+static PetscErrorCode ExactSolution(DM dm, PetscReal time, const PetscReal *x, PetscScalar *u, void *ctx)
+{
+  AppCtx *user = (AppCtx *) ctx;
+
+  PetscFunctionBeginUser;
+  switch (user->porosityDist) {
+  case TILTED:
+    tilted_phi_2d(x, u, (void *) &time);
+    break;
+  case GAUSSIAN:
+    gaussian_phi_2d(x, u, (void *) &time);
+    break;
+  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unknown solution type");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Functional_Error"
+static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscScalar *x, const PetscScalar *y, PetscReal *f, void *ctx)
+{
+  AppCtx        *user = (AppCtx *) ctx;
+  PetscScalar    yexact[1];
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = ExactSolution(dm, time, x, yexact, ctx);CHKERRQ(ierr);
+  f[user->errorFunctional] = PetscAbsScalar(y[0] - yexact[0]);
   PetscFunctionReturn(0);
 }
 
@@ -412,6 +513,8 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   }
   ierr = PetscDSSetResidual(prob, 1, f0_advection, f1_advection);CHKERRQ(ierr);
   ierr = PetscDSSetRiemannSolver(prob, 1, riemann_advection);CHKERRQ(ierr);
+
+  ierr = FunctionalRegister(&user->functionalRegistry, "Error", &user->errorFunctional, Functional_Error, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -661,6 +764,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
+  user.functionalRegistry = NULL;
   ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts, TSBEULER);CHKERRQ(ierr);
@@ -711,6 +815,7 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = FunctionalDestroy(&user.functionalRegistry);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return(0);
 }
