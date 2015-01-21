@@ -152,7 +152,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMTSCheckFromOptions"
-PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, void (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx), void *ctx)
+PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, void (**exactFuncs)(const PetscReal x[], PetscScalar *u, void *ctx), void **ctxs)
 {
   DM             dm;
   SNES           snes;
@@ -189,7 +189,7 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, void (**exactFuncs)(const Pets
   if (numFields > 1) {
     PetscInt f;
 
-    ierr = DMPlexComputeL2FieldDiff(dm, exactFuncs, ctx, u, error);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2FieldDiff(dm, exactFuncs, ctxs, u, error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: [");CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       if (f) {ierr = PetscPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}
@@ -198,7 +198,7 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u, void (**exactFuncs)(const Pets
     }
     ierr = PetscPrintf(PETSC_COMM_WORLD, "]\n");CHKERRQ(ierr);
   } else {
-    ierr = DMPlexComputeL2Diff(dm, exactFuncs, ctx, u, &error[0]);CHKERRQ(ierr);
+    ierr = DMPlexComputeL2Diff(dm, exactFuncs, ctxs, u, &error[0]);CHKERRQ(ierr);
     if (error[0] >= 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error[0]);CHKERRQ(ierr);}
     else                     {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
   }
