@@ -47,6 +47,7 @@ struct _PCBDDCSubSchurs {
   PetscBool use_mumps;
   /* local Schur complements on subsets (principal minors) */
   Mat *S_Ej;
+  Mat *S_Ej_tilda;
   /* matrices cointained explicit schur complements cat together */
   /* note that AIJ format is used but the values are inserted as in column major ordering */
   Mat S_Ej_all;
