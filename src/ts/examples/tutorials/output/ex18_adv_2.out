@@ -21,12 +21,6 @@ Labels:
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_ATOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
@@ -37,31 +31,7 @@ Labels:
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_ATOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 37
-  1  time   0.9934  |x| (       0,     1.33)  
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
@@ -75,26 +45,18 @@ Labels:
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 34
+  1  time   0.9934  |x| (       0,    2.024)  
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 37
-  2  time    1.987  |x| (       0,    1.832)  
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
-    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
@@ -120,22 +82,58 @@ Labels:
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_RTOL iterations 1
     Linear solve converged due to CONVERGED_ATOL iterations 1
-  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 30
-  3  time     2.98  |x| (       0,    1.958)  
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 35
+  2  time    1.987  |x| (       0,    1.554)  
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_ATOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
+  Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 32
+  3  time     2.98  |x| (       0,    1.401)  
 TS Object: 1 MPI processes
   type: beuler
   maximum steps=1000
   maximum time=2
-  total number of nonlinear solver iterations=104
+  total number of nonlinear solver iterations=101
   total number of nonlinear solve failures=0
-  total number of linear solver iterations=105
+  total number of linear solver iterations=103
   total number of rejected steps=0
   SNES Object:   1 MPI processes
     type: newtonls
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-    total number of linear solver iterations=31
-    total number of function evaluations=59
+    total number of linear solver iterations=33
+    total number of function evaluations=64
     SNESLineSearch Object:     1 MPI processes
       type: bt
         interpolation: cubic
