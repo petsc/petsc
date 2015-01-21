@@ -500,12 +500,11 @@ static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, void 
   Vec                cellgeom;
   const PetscScalar *cgeom;
   PetscScalar       *x;
-  PetscInt           cStart, cEnd, cEndInterior, c, off;
+  PetscInt           cStart, cEnd, cEndInterior, c;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = PetscDSGetFieldOffset(prob, field, &off);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
@@ -517,8 +516,8 @@ static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, void 
     PetscScalar           *xc;
 
     ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
-    ierr = DMPlexPointGlobalRef(dm, c, x, &xc);CHKERRQ(ierr);
-    if (xc) (*func)(cg->centroid, &xc[off], ctx);
+    ierr = DMPlexPointGlobalFieldRef(dm, c, field, x, &xc);CHKERRQ(ierr);
+    if (xc) (*func)(cg->centroid, xc, ctx);
   }
   ierr = VecRestoreArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(X, &x);CHKERRQ(ierr);
@@ -529,14 +528,12 @@ static PetscErrorCode SetInitialConditionFVM(DM dm, Vec X, PetscInt field, void 
 #define __FUNCT__ "MonitorFunctionals"
 static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time, Vec X, void *ctx)
 {
-#if 0
   AppCtx            *user   = (AppCtx *) ctx;
-#endif
   char              *ftable = NULL;
   DM                 dm;
   PetscSection       s;
   Vec                cellgeom;
-  const PetscScalar *x;
+  const PetscScalar *x, *a;
   PetscReal         *xnorms;
   PetscInt           pStart, pEnd, p, Nf, f, cEndInterior;
   PetscErrorCode     ierr;
@@ -552,11 +549,13 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     for (f = 0; f < Nf; ++f) {
-      PetscInt dof, off,d;
+      PetscInt dof, cdof, d;
 
       ierr = PetscSectionGetFieldDof(s, p, f, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetFieldOffset(s, p, f, &off);CHKERRQ(ierr);
-      for (d = 0; d < dof; ++d) xnorms[f] = PetscMax(xnorms[f], PetscAbsScalar(x[off+d]));
+      ierr = PetscSectionGetFieldConstraintDof(s, p, f, &cdof);CHKERRQ(ierr);
+      ierr = DMPlexPointGlobalFieldRead(dm, p, f, x, &a);CHKERRQ(ierr);
+      /* TODO Use constrained indices here */
+      for (d = 0; d < dof-cdof; ++d) xnorms[f] = PetscMax(xnorms[f], PetscAbsScalar(a[d]));
     }
   }
   ierr = VecRestoreArrayRead(X, &x);CHKERRQ(ierr);
