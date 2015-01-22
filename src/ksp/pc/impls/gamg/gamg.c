@@ -54,7 +54,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*
-   createLevel: create coarse op with RAP.  repartition and/or reduce number
+   PCGAMGCreateLevel_GAMG: create coarse op with RAP.  repartition and/or reduce number
      of active processors.
 
    Input Parameter:
@@ -70,8 +70,8 @@ PetscErrorCode PCReset_GAMG(PC pc)
 */
 
 #undef __FUNCT__
-#define __FUNCT__ "createLevel"
-static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt cr_bs,
+#define __FUNCT__ "PCGAMGCreateLevel_GAMG"
+static PetscErrorCode PCGAMGCreateLevel_GAMG(const PC pc,const Mat Amat_fine,const PetscInt cr_bs,
                                   Mat *a_P_inout,Mat *a_Amat_crs,PetscMPIInt *a_nactive_proc)
 {
   PetscErrorCode  ierr;
@@ -635,7 +635,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
 #endif
 
-    ierr = createLevel(pc, Aarr[level], bs,
+    ierr = pc_gamg->ops->createlevel(pc, Aarr[level], bs,
                        &Parr[level1], &Aarr[level1], &nactivepe);CHKERRQ(ierr);
 
 #if defined PETSC_GAMG_USE_LOG
@@ -1448,6 +1448,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->emax_id          = -1;
   pc_gamg->eigtarget[0]     = 0.05;
   pc_gamg->eigtarget[1]     = 1.05;
+  pc_gamg->ops->createlevel = PCGAMGCreateLevel_GAMG;
 
   /* private events */
 #if defined PETSC_GAMG_USE_LOG
