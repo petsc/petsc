@@ -75,10 +75,10 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   ierr = PetscOptionsInt("-pc_bddc_levels","Set maximum number of levels for multilevel","none",pcbddc->max_levels,&pcbddc->max_levels,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_coarse_estimates","Use estimated eigenvalues for coarse problem","none",pcbddc->use_coarse_estimates,&pcbddc->use_coarse_estimates,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_deluxe_scaling","Use deluxe scaling for BDDC","none",pcbddc->use_deluxe_scaling,&pcbddc->use_deluxe_scaling,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_bddc_deluxe_threshold","Deluxe subproblems (Schur principal minors) smaller than this value are explicilty computed (-1 computes all)","none",pcbddc->deluxe_threshold,&pcbddc->deluxe_threshold,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_bddc_deluxe_rebuild","Whether or not the interface graph for deluxe has to be rebuilt (i.e. use a standard definition of the interface)","none",pcbddc->deluxe_rebuild,&pcbddc->deluxe_rebuild,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_bddc_deluxe_layers","Number of dofs' layers for the application of deluxe cheap version (i.e. -1 uses all dofs)","none",pcbddc->deluxe_layers,&pcbddc->deluxe_layers,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_bddc_deluxe_use_useradj","Whether or not the CSR graph specified by the user should be used for computing layers (default is to use adj of local mat)","none",pcbddc->deluxe_use_useradj,&pcbddc->deluxe_use_useradj,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_bddc_schur_threshold","Schur principal minors smaller than this value are explicilty computed (-1 computes all)","none",pcbddc->sub_schurs_threshold,&pcbddc->sub_schurs_threshold,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_schur_rebuild","Whether or not the interface graph for Schur principal minors has to be rebuilt (i.e. define the interface without any adjacency)","none",pcbddc->sub_schurs_rebuild,&pcbddc->sub_schurs_rebuild,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_bddc_schur_layers","Number of dofs' layers for the computation of principal minors (i.e. -1 uses all dofs)","none",pcbddc->sub_schurs_layers,&pcbddc->sub_schurs_layers,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_schur_use_useradj","Whether or not the CSR graph specified by the user should be used for computing successive layers (default is to use adj of local mat)","none",pcbddc->sub_schurs_use_useradj,&pcbddc->sub_schurs_use_useradj,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1158,12 +1158,12 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
 */
 PetscErrorCode PCSetUp_BDDC(PC pc)
 {
-  PetscErrorCode   ierr;
-  PC_BDDC*         pcbddc = (PC_BDDC*)pc->data;
-  Mat_IS*          matis;
-  MatNullSpace     nearnullspace;
-  PetscBool        computetopography,computesolvers;
-  PetscBool        new_nearnullspace_provided,ismatis;
+  PetscErrorCode ierr;
+  PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
+  Mat_IS*        matis;
+  MatNullSpace   nearnullspace;
+  PetscBool      computetopography,computesolvers,computesubschurs;
+  PetscBool      new_nearnullspace_provided,ismatis;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&ismatis);CHKERRQ(ierr);
@@ -1190,6 +1190,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (pcbddc->recompute_topography) {
     computetopography = PETSC_TRUE;
   }
+  computesubschurs = pcbddc->use_deluxe_scaling;
 
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
@@ -1212,6 +1213,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     pcbddc->use_change_of_basis = PETSC_FALSE;
     ierr = PCBDDCComputeLocalMatrix(pc,pcbddc->user_ChangeOfBasisMatrix);CHKERRQ(ierr);
   } else {
+    ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
     pcbddc->local_mat = matis->A;
   }
@@ -1227,26 +1229,20 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     matis->A = temp_mat;
   }
 
-  if (!pcbddc->user_ChangeOfBasisMatrix) {
-    ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
-  }
-
-  /* Analyze interface */
+  /* Analyze interface and setup sub_schurs data */
   if (computetopography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
   }
 
-  /* Setup local dirichlet solver ksp_D */
+  /* Setup local dirichlet solver ksp_D and sub_schurs solvers */
   if (computesolvers) {
     ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
-#if 0
-    if (pcbddc->adaptive_threshold > 0.0 || (pcbddc->use_deluxe_scaling && !pcbddc->use_change_of_basis)) {
-      /* ierr = PCBDDCSubSchursSetUp(pc);CHKERRQ(ierr); */
-      if (pcbddc->adaptive_threshold > 0.0) {
-        /* ierr = PCBDDCAdaptivity(pc);CHKERRQ(ierr); */
+    if (computesubschurs) {
+      if (computetopography) {
+        ierr = PCBDDCInitSubSchurs(pc,pcbddc->sub_schurs_rebuild,pcbddc->sub_schurs_threshold);CHKERRQ(ierr);
       }
+      ierr = PCBDDCSetUpSubSchurs(pc,pcbddc->sub_schurs_layers,pcbddc->sub_schurs_use_useradj);CHKERRQ(ierr);
     }
-#endif
   }
 
   /* infer if NullSpace object attached to Mat via MatSetNearNullSpace has changed */
@@ -1304,21 +1300,16 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_I_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_IB);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_BI);CHKERRQ(ierr);
     } else if (!pcbddc->user_ChangeOfBasisMatrix) {
+      ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
       pcbddc->local_mat = matis->A;
     }
   }
 
   if (computesolvers || pcbddc->new_primal_space) {
-    /* Create coarse and local stuffs */
+    /* SetUp coarse and local Neumann solvers */
     ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
-    /* Create Scaling operator */
-#if 0
-//TODO due casi, uno con cambio di base (sub_schurs diversi) ed uno senza (stessi sub_schurs)
-    if (pcbddc->use_deluxe_scaling && pcbddc->use_change_of_basis) {
-      ierr = PCBDDCSubSchursSetUp(pcbddc->sub_schurs);CHKERRQ(ierr);
-    }
-#endif
+    /* SetUp Scaling operator */
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
   }
 
@@ -1489,9 +1480,8 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PCBDDCResetTopography(pc);CHKERRQ(ierr);
   /* free allocated graph structure */
   ierr = PetscFree(pcbddc->mat_graph);CHKERRQ(ierr);
-  /* free allocated sub schurs structures */
-  ierr = PetscFree(pcbddc->sub_schurs[0]);CHKERRQ(ierr);
-  ierr = PetscFree(pcbddc->sub_schurs[1]);CHKERRQ(ierr);
+  /* free allocated sub schurs structure */
+  ierr = PetscFree(pcbddc->sub_schurs);CHKERRQ(ierr);
   /* destroy objects for scaling operator */
   ierr = PCBDDCScalingDestroy(pc);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->deluxe_ctx);CHKERRQ(ierr);
@@ -1943,18 +1933,18 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   /* create local graph structure */
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
 
-  /* create sub schurs structure */
-  ierr = PCBDDCSubSchursCreate(&pcbddc->sub_schurs[0]);CHKERRQ(ierr);
-  ierr = PCBDDCSubSchursCreate(&pcbddc->sub_schurs[1]);CHKERRQ(ierr);
-
   /* scaling */
   pcbddc->work_scaling          = 0;
   pcbddc->use_deluxe_scaling    = PETSC_FALSE;
-  pcbddc->deluxe_threshold      = 1;
-  pcbddc->deluxe_rebuild        = PETSC_FALSE;
-  pcbddc->deluxe_layers         = -1;
-  pcbddc->deluxe_use_useradj    = PETSC_FALSE;
-  pcbddc->deluxe_compute_rowadj = PETSC_TRUE;
+
+  /* create sub schurs structure */
+  ierr = PCBDDCSubSchursCreate(&pcbddc->sub_schurs);CHKERRQ(ierr);
+  pcbddc->sub_schurs_threshold   = -1;
+  pcbddc->sub_schurs_rebuild     = PETSC_FALSE;
+  pcbddc->sub_schurs_layers      = -1;
+  pcbddc->sub_schurs_use_useradj = PETSC_FALSE;
+
+  pcbddc->computed_rowadj = PETSC_FALSE;
 
   /* function pointers */
   pc->ops->apply               = PCApply_BDDC;

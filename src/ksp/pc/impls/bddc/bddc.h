@@ -86,17 +86,17 @@ typedef struct {
   IS                         coarse_subassembling;
   IS                         coarse_subassembling_init;
   PetscBool                  use_coarse_estimates;
-  /* schur complements on interface's subsets */
-  PCBDDCSubSchurs            sub_schurs[2];
   /* scaling */
   Vec                        work_scaling;
   PetscBool                  use_deluxe_scaling;
   PCBDDCDeluxeScaling        deluxe_ctx;
-  PetscInt                   deluxe_threshold;
-  PetscBool                  deluxe_rebuild;
-  PetscInt                   deluxe_layers;
-  PetscBool                  deluxe_compute_rowadj;
-  PetscBool                  deluxe_use_useradj;
+  /* schur complements on interface's subsets */
+  PCBDDCSubSchurs            sub_schurs;
+  PetscInt                   sub_schurs_threshold;
+  PetscBool                  sub_schurs_rebuild;
+  PetscInt                   sub_schurs_layers;
+  PetscBool                  sub_schurs_use_useradj;
+  PetscBool                  computed_rowadj;
   /* For verbose output of some bddc data structures */
   PetscInt                   dbg_flag;
   PetscViewer                dbg_viewer;

@@ -54,12 +54,8 @@ struct _PCBDDCSubSchurs {
   Mat sum_S_Ej_all;
   Mat sum_S_Ej_tilda_all;
   IS  is_Ej_all;
-  /* work vectors */
-  Vec *work1;
-  Vec *work2;
   /* IS */
   IS is_I_layer;
-  IS *is_AEj_B;
   /* l2g maps */
   ISLocalToGlobalMapping l2gmap;
   ISLocalToGlobalMapping BtoNmap;
@@ -99,6 +95,8 @@ struct _PCBDDCDeluxeScaling {
   VecScatter*     par_scctx_s;
   VecScatter*     par_scctx_p;
   Vec*            par_vec;
+  Vec*            par_work1;
+  Vec*            par_work2;
   KSP*            par_ksp;
   PetscInt*       par_col2sub;
 };
