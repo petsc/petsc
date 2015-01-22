@@ -1242,21 +1242,23 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 #define __FUNCT__ "MatMultTransposeAdd_SeqAIJ"
 PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar    *x,*y;
-  PetscErrorCode ierr;
-  PetscInt       m = A->rmap->n;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar       *y;
+  const PetscScalar *x;
+  PetscErrorCode    ierr;
+  PetscInt          m = A->rmap->n;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
-  MatScalar         *v;
+  const MatScalar   *v;
   PetscScalar       alpha;
-  PetscInt          n,i,j,*idx,*ii,*ridx=NULL;
+  PetscInt          n,i,j;
+  const PetscInt    *idx,*ii,*ridx=NULL;  
   Mat_CompressedRow cprow    = a->compressedrow;
   PetscBool         usecprow = cprow.use;
 #endif
 
   PetscFunctionBegin;
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
@@ -1282,7 +1284,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   }
 #endif
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1521,12 +1523,7 @@ PetscErrorCode MatMultAddMax_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
-  } else {
-    z = y;
-  }
+  ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
 
   aj = a->j;
   aa = a->a;
@@ -1558,10 +1555,7 @@ PetscErrorCode MatMultAddMax_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   }
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1575,19 +1569,14 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   const PetscScalar *x;
   const MatScalar   *aa;
   PetscErrorCode    ierr;
-  PetscInt          m = A->rmap->n,*aj,*ii;
-  PetscInt          n,i,*ridx=NULL;
+  const PetscInt    *aj,*ii,*ridx=NULL;
+  PetscInt          m = A->rmap->n,n,i;
   PetscScalar       sum;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
-  } else {
-    z = y;
-  }
+  ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
 
   aj = a->j;
   aa = a->a;
@@ -1623,10 +1612,7 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   }
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   /*
   ierr = VecView(xx,0);CHKERRQ(ierr);
@@ -3018,11 +3004,12 @@ PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 #define __FUNCT__ "MatGetRowMin_SeqAIJ"
 PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       i,j,m = A->rmap->n,*ai,*aj,ncols,n;
-  PetscScalar    *x;
-  MatScalar      *aa;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode  ierr;
+  PetscInt        i,j,m = A->rmap->n,ncols,n;
+  const PetscInt  *ai,*aj; 
+  PetscScalar     *x;
+  const MatScalar *aa;
 
   PetscFunctionBegin;
   if (A->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");

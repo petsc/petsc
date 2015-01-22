@@ -416,6 +416,44 @@ PETSC_EXTERN PetscErrorCode VecGetLocalVector(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVector(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec,Vec);
+/*
+   Accesses a pair of pointers for two vectors that may be common. When not common the first is read only
+*/
+PETSC_STATIC_INLINE PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(y,yv);CHKERRQ(ierr);
+  if (x != y) {
+    ierr = VecGetArrayRead(x,(const PetscScalar **)xv);CHKERRQ(ierr);
+  } else {
+    *xv = *yv;
+  }
+  PetscFunctionReturn(0);
+}
+PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreArray(y,yv);CHKERRQ(ierr);
+  if (x != y) {
+    ierr = VecRestoreArrayRead(x,(const PetscScalar **)xv);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#if defined(PETSC_USE_DEBUG)
+PETSC_EXTERN PetscErrorCode VecLockGet(Vec,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecLockPush(Vec);
+PETSC_EXTERN PetscErrorCode VecLockPop(Vec);
+#define VecLocked(x,arg) do {PetscInt _st; PetscErrorCode __ierr = VecLockGet(x,&_st); CHKERRQ(__ierr); if (_st > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is locked read only, argument # %d",arg);} while (0)
+#else
+#define VecLockPush(x) do {} while (0)
+#define VecLockPop(x)  do {} while (0)
+#define VecLocked(x,arg)   do {} while (0)
+#endif
 
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec,PetscInt,PetscBool);
 

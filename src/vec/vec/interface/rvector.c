@@ -570,6 +570,7 @@ PetscErrorCode  VecSet(Vec x,PetscScalar alpha)
   PetscValidType(x,1);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
   PetscValidLogicalCollectiveScalar(x,alpha,2);
+  VecLocked(x,1);
 
   ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->set)(x,alpha);CHKERRQ(ierr);
@@ -632,10 +633,13 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
   PetscCheckSameSizeVec(x,y);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
+  VecLocked(y,1);
 
+  ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->axpy)(y,alpha,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
+  ierr = VecLockPop(x);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1321,20 +1325,36 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
     ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
     if (gcontiguous) {          /* We can do a no-copy implementation */
       PetscInt    n,N,bs;
-      PetscScalar *x;
       PetscMPIInt size;
+      PetscInt    state;
+
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-      ierr = VecGetArray(X,&x);CHKERRQ(ierr);
       ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
       if (n%bs) bs = 1;
       ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
-      if (size == 1) {
-        ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),bs,n,x+start,&Z);CHKERRQ(ierr);
+      ierr = VecLockGet(X,&state);CHKERRQ(ierr);
+      if (state) {
+        const PetscScalar *x;
+        ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+        if (size == 1) {
+          ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),bs,n,(PetscScalar*)x+start,&Z);CHKERRQ(ierr);
+        } else {
+          ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+          ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,(PetscScalar*)x+start,&Z);CHKERRQ(ierr);
+        }
+        ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+        ierr = VecLockPush(Z);CHKERRQ(ierr);
       } else {
-        ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-        ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,x+start,&Z);CHKERRQ(ierr);
+        PetscScalar *x;
+        ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+        if (size == 1) {
+          ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),bs,n,x+start,&Z);CHKERRQ(ierr);
+        } else {
+          ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+          ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),bs,n,N,x+start,&Z);CHKERRQ(ierr);
+        }
+        ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
       }
-      ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
     } else {                    /* Have to create a scatter and do a copy */
       VecScatter scatter;
       PetscInt   n,N;
@@ -1623,6 +1643,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  VecLocked(x,1);
   if (x->petscnative) {
 #if defined(PETSC_HAVE_CUSP)
     if (x->valid_GPU_array == PETSC_CUSP_GPU) {
@@ -2495,3 +2516,86 @@ PetscErrorCode  VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_DEBUG)
+
+#undef __FUNCT__
+#define __FUNCT__ "VecLockGet"
+/*@C
+   VecLockGet  - Gets the current lock status of a vector
+
+   Logically Collective on Vec
+
+   Input Parameter:
+.  x - the vector
+
+   Output Parameter:
+.  state - greater than zero indicates the vector is still locked
+
+   Level: beginner
+
+   Concepts: vector^accessing local values
+
+.seealso: VecRestoreArray(), VecGetArrayRead(), VecLockPush(), VecLockGet()
+@*/
+PetscErrorCode VecLockGet(Vec x,PetscInt *state)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  *state = x->lock;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecLockPush"
+/*@C
+   VecLockPush  - Lock a vector from writing
+
+   Logically Collective on Vec
+
+   Input Parameter:
+.  x - the vector
+
+   Notes: If this is set then calls to VecGetArray() or VecSetValues() or any other routines that change the vectors values will fail.
+
+    Call VecLockPop() to remove the latest lock
+
+   Level: beginner
+
+   Concepts: vector^accessing local values
+
+.seealso: VecRestoreArray(), VecGetArrayRead(), VecLockPop(), VecLockGet()
+@*/
+PetscErrorCode VecLockPush(Vec x)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  x->lock++;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecLockPop"
+/*@C
+   VecLockPop  - Unlock a vector from writing
+
+   Logically Collective on Vec
+
+   Input Parameter:
+.  x - the vector
+
+   Level: beginner
+
+   Concepts: vector^accessing local values
+
+.seealso: VecRestoreArray(), VecGetArrayRead(), VecLockPush(), VecLockGet()
+@*/
+PetscErrorCode VecLockPop(Vec x)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  x->lock--;
+  if (x->lock < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Vector has been unlocked too many times");
+  PetscFunctionReturn(0);
+}
+
+#endif

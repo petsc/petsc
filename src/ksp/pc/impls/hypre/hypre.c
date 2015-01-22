@@ -177,17 +177,18 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
   PC_HYPRE           *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode     ierr;
   HYPRE_ParCSRMatrix hmat;
-  PetscScalar        *bv,*xv;
+  PetscScalar        *xv;
+  const PetscScalar  *bv,*sbv;
   HYPRE_ParVector    jbv,jxv;
-  PetscScalar        *sbv,*sxv;
+  PetscScalar        *sxv;
   PetscInt           hierr;
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
   if (!jac->applyrichardson) {ierr = VecSet(x,0.0);CHKERRQ(ierr);}
-  ierr = VecGetArray(b,&bv);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(b,&bv);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
-  HYPREReplacePointer(jac->b,bv,sbv);
+  HYPREReplacePointer(jac->b,(PetscScalar*)bv,sbv);
   HYPREReplacePointer(jac->x,xv,sxv);
 
   PetscStackCallStandard(HYPRE_IJMatrixGetObject,(jac->ij,(void**)&hmat));
@@ -197,10 +198,10 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
                                if (hierr && hierr != HYPRE_ERROR_CONV) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
                                if (hierr) hypre__global_error = 0;);
 
-  HYPREReplacePointer(jac->b,sbv,bv);
+  HYPREReplacePointer(jac->b,(PetscScalar*)sbv,bv);
   HYPREReplacePointer(jac->x,sxv,xv);
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
-  ierr = VecRestoreArray(b,&bv);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(b,&bv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -301,7 +302,8 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
   PC_HYPRE           *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode     ierr;
   HYPRE_ParCSRMatrix hmat;
-  PetscScalar        *bv,*xv;
+  PetscScalar        *xv;
+  const PetscScalar  *bv;
   HYPRE_ParVector    jbv,jxv;
   PetscScalar        *sbv,*sxv;
   PetscInt           hierr;
@@ -309,9 +311,9 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(b,&bv);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(b,&bv);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
-  HYPREReplacePointer(jac->b,bv,sbv);
+  HYPREReplacePointer(jac->b,(PetscScalar*)bv,sbv);
   HYPREReplacePointer(jac->x,xv,sxv);
 
   PetscStackCallStandard(HYPRE_IJMatrixGetObject,(jac->ij,(void**)&hmat));
@@ -326,7 +328,7 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
   HYPREReplacePointer(jac->b,sbv,bv);
   HYPREReplacePointer(jac->x,sxv,xv);
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
-  ierr = VecRestoreArray(b,&bv);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(b,&bv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1528,11 +1530,12 @@ PetscErrorCode PCSetFromOptions_PFMG(PetscOptions *PetscOptionsObject,PC pc)
 #define __FUNCT__ "PCApply_PFMG"
 PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode  ierr;
-  PC_PFMG         *ex = (PC_PFMG*) pc->data;
-  PetscScalar     *xx,*yy;
-  PetscInt        ilower[3],iupper[3];
-  Mat_HYPREStruct *mx = (Mat_HYPREStruct*)(pc->pmat->data);
+  PetscErrorCode    ierr;
+  PC_PFMG           *ex = (PC_PFMG*) pc->data;
+  PetscScalar       *yy;
+  const PetscScalar *xx;
+  PetscInt          ilower[3],iupper[3];
+  Mat_HYPREStruct   *mx = (Mat_HYPREStruct*)(pc->pmat->data);
 
   PetscFunctionBegin;
   ierr       = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
@@ -1543,9 +1546,9 @@ PetscErrorCode PCApply_PFMG(PC pc,Vec x,Vec y)
 
   /* copy x values over to hypre */
   PetscStackCallStandard(HYPRE_StructVectorSetConstantValues,(mx->hb,0.0));
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  PetscStackCallStandard(HYPRE_StructVectorSetBoxValues,(mx->hb,(HYPRE_Int *)ilower,(HYPRE_Int *)iupper,xx));
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+  PetscStackCallStandard(HYPRE_StructVectorSetBoxValues,(mx->hb,(HYPRE_Int *)ilower,(HYPRE_Int *)iupper,(PetscScalar*)xx));
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   PetscStackCallStandard(HYPRE_StructVectorAssemble,(mx->hb));
   PetscStackCallStandard(HYPRE_StructPFMGSolve,(ex->hsolver,mx->hmat,mx->hb,mx->hx));
 
@@ -1739,16 +1742,17 @@ PetscErrorCode PCSetFromOptions_SysPFMG(PetscOptions *PetscOptionsObject,PC pc)
 #define __FUNCT__ "PCApply_SysPFMG"
 PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode   ierr;
-  PC_SysPFMG       *ex = (PC_SysPFMG*) pc->data;
-  PetscScalar      *xx,*yy;
-  PetscInt         ilower[3],iupper[3];
-  Mat_HYPRESStruct *mx     = (Mat_HYPRESStruct*)(pc->pmat->data);
-  PetscInt         ordering= mx->dofs_order;
-  PetscInt         nvars   = mx->nvars;
-  PetscInt         part    = 0;
-  PetscInt         size;
-  PetscInt         i;
+  PetscErrorCode    ierr;
+  PC_SysPFMG        *ex = (PC_SysPFMG*) pc->data;
+  PetscScalar       *yy;
+  const PetscScalar *xx;
+  PetscInt          ilower[3],iupper[3];
+  Mat_HYPRESStruct  *mx     = (Mat_HYPRESStruct*)(pc->pmat->data);
+  PetscInt          ordering= mx->dofs_order;
+  PetscInt          nvars   = mx->nvars;
+  PetscInt          part    = 0;
+  PetscInt          size;
+  PetscInt          i;
 
   PetscFunctionBegin;
   ierr       = PetscCitationsRegister(hypreCitation,&cite);CHKERRQ(ierr);
@@ -1763,9 +1767,9 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
   /* copy x values over to hypre for variable ordering */
   if (ordering) {
     PetscStackCallStandard(HYPRE_SStructVectorSetConstantValues,(mx->ss_b,0.0));
-    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-    for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,(mx->ss_b,part,(HYPRE_Int *)ilower,(HYPRE_Int *)iupper,i,xx+(size*i)));
-    ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,(mx->ss_b,part,(HYPRE_Int *)ilower,(HYPRE_Int *)iupper,i,(PetscScalar*)xx+(size*i)));
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_SStructVectorAssemble,(mx->ss_b));
     PetscStackCallStandard(HYPRE_SStructMatrixMatvec,(1.0,mx->ss_mat,mx->ss_b,0.0,mx->ss_x));
     PetscStackCallStandard(HYPRE_SStructSysPFMGSolve,(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x));
@@ -1780,7 +1784,7 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
 
     ierr = PetscMalloc1(nvars*size,&z);CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_SStructVectorSetConstantValues,(mx->ss_b,0.0));
-    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
 
     /* transform nodal to hypre's variable ordering for sys_pfmg */
     for (i= 0; i< size; i++) {
@@ -1788,7 +1792,7 @@ PetscErrorCode PCApply_SysPFMG(PC pc,Vec x,Vec y)
       for (j= 0; j< nvars; j++) z[j*size+i]= xx[k+j];
     }
     for (i= 0; i< nvars; i++) PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,(mx->ss_b,part,(HYPRE_Int *)ilower,(HYPRE_Int *)iupper,i,z+(size*i)));
-    ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
     PetscStackCallStandard(HYPRE_SStructVectorAssemble,(mx->ss_b));
     PetscStackCallStandard(HYPRE_SStructSysPFMGSolve,(ex->ss_solver,mx->ss_mat,mx->ss_b,mx->ss_x));
 

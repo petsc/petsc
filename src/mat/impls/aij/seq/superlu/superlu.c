@@ -314,12 +314,13 @@ PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatSolve_SuperLU_Private"
 PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 {
-  Mat_SuperLU      *lu = (Mat_SuperLU*)A->spptr;
-  PetscScalar      *barray,*xarray;
-  PetscErrorCode   ierr;
-  PetscInt         info,i,n;
-  PetscReal        ferr,berr;
-  static PetscBool cite = PETSC_FALSE;
+  Mat_SuperLU       *lu = (Mat_SuperLU*)A->spptr;
+  const PetscScalar *barray;
+  PetscScalar       *xarray;  
+  PetscErrorCode    ierr;
+  PetscInt          info,i,n;
+  PetscReal         ferr,berr;
+  static PetscBool  cite = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (lu->lwork == -1) PetscFunctionReturn(0);
@@ -333,12 +334,12 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   }
   if (lu->options.Equil) {
     /* Copy b into rsh_dup */
-    ierr   = VecGetArray(b,&barray);CHKERRQ(ierr);
+    ierr   = VecGetArrayRead(b,&barray);CHKERRQ(ierr);
     ierr   = PetscMemcpy(lu->rhs_dup,barray,n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr   = VecRestoreArray(b,&barray);CHKERRQ(ierr);
+    ierr   = VecRestoreArrayRead(b,&barray);CHKERRQ(ierr);
     barray = lu->rhs_dup;
   } else {
-    ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(b,&barray);CHKERRQ(ierr);
   }
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
 
@@ -351,7 +352,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
   ((DNformat*)lu->X.Store)->nzval = (doublecomplex*)xarray;
 #endif
 #else
-  ((DNformat*)lu->B.Store)->nzval = barray;
+  ((DNformat*)lu->B.Store)->nzval = (void*)barray;
   ((DNformat*)lu->X.Store)->nzval = xarray;
 #endif
 
@@ -402,7 +403,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
   if (!lu->options.Equil) {
-    ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(b,&barray);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
 

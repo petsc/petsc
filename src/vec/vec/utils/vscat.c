@@ -52,8 +52,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode a
   PetscFunctionBegin;
   ierr = VecGetLocalSize(y,&yy_n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&xx_n);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
-  if (x != y) {ierr = VecGetArray(x,&xv);CHKERRQ(ierr);}
+  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE) {
     PetscScalar          *xvt,*xvt2;
@@ -126,8 +125,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode a
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
     }
   }
-  ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
-  if (x != y) {ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -154,16 +152,17 @@ PetscErrorCode VecScatterView_MPI_ToAll(VecScatter in,PetscViewer viewer)
 #define __FUNCT__ "VecScatterBegin_MPI_ToOne"
 PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    rank;
-  PetscInt       yy_n,xx_n;
-  PetscScalar    *xv,*yv;
-  MPI_Comm       comm;
+  PetscErrorCode    ierr;
+  PetscMPIInt       rank;
+  PetscInt          yy_n,xx_n;
+  PetscScalar       *yv;
+  const PetscScalar *xv;
+  MPI_Comm          comm;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(y,&yy_n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&xx_n);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xv);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
@@ -177,14 +176,14 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode a
     PetscMPIInt          *disply = scat->displx;
 
     if (addv == INSERT_VALUES) {
-      ierr = MPI_Scatterv(xv,scat->count,disply,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
+      ierr = MPI_Scatterv((PetscScalar*)xv,scat->count,disply,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
     } else {
       if (scat->work2) yvt = scat->work2;
       else {
         ierr        = PetscMalloc1(xx_n,&yvt);CHKERRQ(ierr);
         scat->work2 = yvt;
       }
-      ierr = MPI_Scatterv(xv,scat->count,disply,MPIU_SCALAR,yvt,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
+      ierr = MPI_Scatterv((PetscScalar*)xv,scat->count,disply,MPIU_SCALAR,yvt,yy_n,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
       if (addv == ADD_VALUES) {
         for (i=0; i<yy_n; i++) yv[i] += yvt[i];
 #if !defined(PETSC_USE_COMPLEX)
@@ -201,7 +200,7 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode a
     PetscMPIInt          *displx = scat->displx;
 
     if (addv == INSERT_VALUES) {
-      ierr = MPI_Gatherv(xv,xx_n,MPIU_SCALAR,yv,scat->count,displx,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
+      ierr = MPI_Gatherv((PetscScalar*)xv,xx_n,MPIU_SCALAR,yv,scat->count,displx,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
     } else {
       if (!rank) {
         if (scat->work1) yvt = scat->work1;
@@ -210,7 +209,7 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode a
           scat->work1 = yvt;
         }
       }
-      ierr = MPI_Gatherv(xv,xx_n,MPIU_SCALAR,yvt,scat->count,displx,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
+      ierr = MPI_Gatherv((PetscScalar*)xv,xx_n,MPIU_SCALAR,yvt,scat->count,displx,MPIU_SCALAR,0,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
       if (!rank) {
         if (addv == ADD_VALUES) {
           for (i=0; i<yy_n; i++) yv[i] += yvt[i];
@@ -222,7 +221,7 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode a
       }
     }
   }
-  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xv);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -354,11 +353,7 @@ PetscErrorCode VecScatterBegin_SGToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
   }
 #endif
 
-  ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
-  if (x != y) {
-    ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
-  } else yv = xv;
-
+  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE) {
     gen_to   = (VecScatter_Seq_General*)ctx->fromdata;
     gen_from = (VecScatter_Seq_General*)ctx->todata;
@@ -375,8 +370,7 @@ PetscErrorCode VecScatterBegin_SGToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
     for (i=0; i<n; i++) yv[tslots[i]] = PetscMax(yv[tslots[i]],xv[fslots[i]]);
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
-  if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -409,10 +403,7 @@ PetscErrorCode VecScatterBegin_SGToSS_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
   }
 #endif
 
-  ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
-  if (x != y) {
-    ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
-  } else yv = xv;
+  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE) {
     xv += first;
     if (addv == INSERT_VALUES) {
@@ -436,8 +427,7 @@ PetscErrorCode VecScatterBegin_SGToSS_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
 #endif
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
   }
-  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
-  if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -470,11 +460,7 @@ PetscErrorCode VecScatterBegin_SGToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
   }
 #endif
 
-  ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
-  if (x != y) {
-    ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
-  } else yv = xv;
-
+  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE) {
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) yv[fslots[i]] = xv[first + i*step];
@@ -496,8 +482,7 @@ PetscErrorCode VecScatterBegin_SGToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
 #endif
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
   }
-  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
-  if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -530,11 +515,7 @@ PetscErrorCode VecScatterBegin_SSToSG_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
   }
 #endif
 
-  ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
-  if (x != y) {
-    ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
-  } else yv = xv;
-
+  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE) {
     yv += first;
     if (addv == INSERT_VALUES) {
@@ -558,8 +539,7 @@ PetscErrorCode VecScatterBegin_SSToSG_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
 #endif
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
   }
-  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
-  if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -592,11 +572,7 @@ PetscErrorCode VecScatterBegin_SSToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
   }
 #endif
 
-  ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
-  if (x != y) {
-    ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
-  } else yv = xv;
-
+  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE) {
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) yv[first + i*step] = xv[tslots[i]];
@@ -618,8 +594,7 @@ PetscErrorCode VecScatterBegin_SSToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
 #endif
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
   }
-  ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
-  if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -671,11 +646,7 @@ PetscErrorCode VecScatterBegin_SSToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
   }
 #endif
 
-  ierr = VecGetArrayRead(x,(const PetscScalar **)&xv);CHKERRQ(ierr);
-  if (x != y) {
-    ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
-  } else yv = xv;
-
+  ierr = VecGetArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   if (mode & SCATTER_REVERSE) {
     from_first = gen_to->first;
     to_first   = gen_from->first;
@@ -706,8 +677,7 @@ PetscErrorCode VecScatterBegin_SSToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
     }
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");
-  ierr = VecRestoreArrayRead(x,(const PetscScalar**)&xv);CHKERRQ(ierr);
-  if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayPair(x,y,&xv,&yv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

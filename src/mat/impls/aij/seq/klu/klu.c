@@ -133,9 +133,7 @@ static PetscErrorCode MatSolveTranspose_KLU(Mat A,Vec b,Vec x)
   ierr = VecCopy(b,x); /* klu_solve stores the solution in rhs */
   ierr = VecGetArray(x,&xa);
   status = klu_K_solve(lu->Symbolic,lu->Numeric,A->rmap->n,1,(PetscReal*)xa,&lu->Common);
-  if (status != 1) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
-  }
+  if (status != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
   ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -160,9 +158,7 @@ static PetscErrorCode MatSolve_KLU(Mat A,Vec b,Vec x)
 #else
   status = klu_K_tsolve(lu->Symbolic,lu->Numeric,A->rmap->n,1,xa,&lu->Common);
 #endif  
-  if (status != 1) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
-  }
+  if (status != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
   ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
