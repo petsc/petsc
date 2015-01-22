@@ -21,7 +21,13 @@ int main(int argc,char **args)
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
-  PetscBool      flg,flg_ilu,flg_ch,flg_mumps,flg_mumps_ch,flg_superlu;
+  PetscBool      flg,flg_ilu,flg_ch;
+#if defined(PETSC_HAVE_MUMPS)
+  PetscBool      flg_mumps,flg_mumps_ch;
+#endif
+#if defined(PETSC_HAVE_SUPERLU)
+  PetscBool      flg_superlu;
+#endif
   PetscScalar    v;
   PetscMPIInt    rank,size;
 #if defined(PETSC_USE_LOG)
@@ -206,6 +212,9 @@ int main(int argc,char **args)
     if (size == 1) {
       ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
     } else {
+#if !defined(PETSC_HAVE_SUPERLU_DIST)
+      SETERRQ(PETSC_COMM_WORLD,1,"This test requires SUPERLU_DIST");
+#endif
       ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU_DIST);CHKERRQ(ierr);
     }
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
