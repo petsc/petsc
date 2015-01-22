@@ -101,18 +101,24 @@ PetscErrorCode DMPlexTSGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
 - user - The user context
 
   Output Parameter:
-. locF  - Local output vector
+. F  - Global output vector
 
   Level: developer
 
 .seealso: DMPlexComputeJacobianActionFEM()
 @*/
-PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec locF, void *user)
+PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user)
 {
+  Vec            locF;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetLocalVector(dm, &locF);CHKERRQ(ierr);
+  ierr = VecZeroEntries(locF);CHKERRQ(ierr);
   ierr = DMPlexComputeResidual_Internal(dm, time, locX, NULL, locF, user);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dm, locF, INSERT_VALUES, F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, locF, INSERT_VALUES, F);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &locF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

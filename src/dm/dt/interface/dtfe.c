@@ -476,7 +476,7 @@ PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscSpace sp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpacePolynomialView_Ascii"
-PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer viewer)
+static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer viewer)
 {
   PetscSpace_Poly  *poly = (PetscSpace_Poly *) sp->data;
   PetscViewerFormat format;
@@ -1821,9 +1821,9 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         } else if ((p >= pStart[1]) && (p < pEnd[1])) {
           /* Edges */
           PetscScalar *coords;
-          PetscInt     num = order-1, k;
+          PetscInt     num = ((dim == 1) && !order) ? 1 : order-1, k;
 
-          if (order < 2 || disc) continue;
+          if (num < 1 || disc) continue;
           coords = NULL;
           ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
           if (n != dim*2) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d has %d coordinate values instead of %d", p, n, dim*2);
@@ -1864,7 +1864,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
           ierr = PetscCalloc5(dim,&ind,dim,&tup,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
           ierr = DMPlexComputeCellGeometryFEM(dm, p, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
-          if (simplex || !lag->continuous) {
+          if (simplex || disc) {
             for (o = 0; o <= orderEff; ++o) {
               ierr = PetscMemzero(ind, dim*sizeof(PetscInt));CHKERRQ(ierr);
               while (ind[0] >= 0) {
@@ -2247,13 +2247,19 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const 
 #define __FUNCT__ "PetscDualSpaceSimpleSetFunctional_Simple"
 PetscErrorCode PetscDualSpaceSimpleSetFunctional_Simple(PetscDualSpace sp, PetscInt f, PetscQuadrature q)
 {
-  PetscDualSpace_Simple *s = (PetscDualSpace_Simple *) sp->data;
+  PetscDualSpace_Simple *s   = (PetscDualSpace_Simple *) sp->data;
+  PetscReal              vol = 0.0;
+  PetscReal             *weights;
+  PetscInt               Nq, p;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   if ((f < 0) || (f >= s->dim)) SETERRQ2(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_OUTOFRANGE, "Basis index %d not in [0, %d)", f, s->dim);
-  ierr = PetscObjectReference((PetscObject) q);CHKERRQ(ierr);
-  sp->functional[f] = q;
+  ierr = PetscQuadratureDuplicate(q, &sp->functional[f]);CHKERRQ(ierr);
+  /* Reweight so that it has unit volume */
+  ierr = PetscQuadratureGetData(sp->functional[f], NULL, &Nq, NULL, (const PetscReal **) &weights);CHKERRQ(ierr);
+  for (p = 0; p < Nq; ++p) vol += weights[p];
+  for (p = 0; p < Nq; ++p) weights[p] /= vol;
   PetscFunctionReturn(0);
 }
 
@@ -2297,6 +2303,8 @@ PetscErrorCode PetscDualSpaceSimpleSetDimension(PetscDualSpace sp, PetscInt dim)
 - q - the basis functional
 
   Level: intermediate
+
+  Note: The quadrature will be reweighted so that it has unit volume.
 
 .keywords: PetscDualSpace, functional
 .seealso: PetscDualSpaceSimpleSetDimension()
@@ -2653,6 +2661,7 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   ierr = PetscFree((*fem)->numDof);CHKERRQ(ierr);
   ierr = PetscFree((*fem)->invV);CHKERRQ(ierr);
   ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->B, &(*fem)->D, NULL /*&(*fem)->H*/);CHKERRQ(ierr);
+  ierr = PetscFERestoreTabulation((*fem), 0, NULL, &(*fem)->F, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscSpaceDestroy(&(*fem)->basisSpace);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&(*fem)->dualSpace);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&(*fem)->quadrature);CHKERRQ(ierr);
@@ -3046,8 +3055,8 @@ PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
 #define __FUNCT__ "PetscFEGetDefaultTabulation"
 PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal **D, PetscReal **H)
 {
-  PetscInt         npoints = fem->quadrature->numPoints;
-  const PetscReal *points  = fem->quadrature->points;
+  PetscInt         npoints;
+  const PetscReal *points;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -3055,10 +3064,41 @@ PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal
   if (B) PetscValidPointer(B, 2);
   if (D) PetscValidPointer(D, 3);
   if (H) PetscValidPointer(H, 4);
+  ierr = PetscQuadratureGetData(fem->quadrature, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
   if (!fem->B) {ierr = PetscFEGetTabulation(fem, npoints, points, &fem->B, &fem->D, NULL/*&fem->H*/);CHKERRQ(ierr);}
   if (B) *B = fem->B;
   if (D) *D = fem->D;
   if (H) *H = fem->H;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEGetFaceTabulation"
+PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscReal **F)
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  PetscValidPointer(F, 2);
+  if (!fem->F) {
+    PetscDualSpace  sp;
+    DM              dm;
+    const PetscInt *cone;
+    PetscReal      *centroids;
+    PetscInt        dim, numFaces, f;
+
+    ierr = PetscFEGetDualSpace(fem, &sp);CHKERRQ(ierr);
+    ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, 0, &numFaces);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, 0, &cone);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numFaces*dim, &centroids);CHKERRQ(ierr);
+    for (f = 0; f < numFaces; ++f) {ierr = DMPlexComputeCellGeometryFVM(dm, cone[f], NULL, &centroids[f*dim], NULL);CHKERRQ(ierr);}
+    ierr = PetscFEGetTabulation(fem, numFaces, centroids, &fem->F, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscFree(centroids);CHKERRQ(ierr);
+  }
+  *F = fem->F;
   PetscFunctionReturn(0);
 }
 

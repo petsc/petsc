@@ -440,12 +440,12 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
 #define __FUNCT__ "DMPlexCreateCubeMesh_Internal"
 static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], DMBoundaryType bdX, DMBoundaryType bdY, DMBoundaryType bdZ)
 {
-  PetscInt       markerTop      = 1;
-  PetscInt       markerBottom   = 1;
-  PetscInt       markerFront    = 1;
-  PetscInt       markerBack     = 1;
-  PetscInt       markerRight    = 1;
-  PetscInt       markerLeft     = 1;
+  PetscInt       markerTop      = 1, faceMarkerTop      = 1;
+  PetscInt       markerBottom   = 1, faceMarkerBottom   = 1;
+  PetscInt       markerFront    = 1, faceMarkerFront    = 1;
+  PetscInt       markerBack     = 1, faceMarkerBack     = 1;
+  PetscInt       markerRight    = 1, faceMarkerRight    = 1;
+  PetscInt       markerLeft     = 1, faceMarkerLeft     = 1;
   PetscInt       dim;
   PetscBool      markerSeparate = PETSC_FALSE;
   PetscMPIInt    rank;
@@ -454,27 +454,33 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
   PetscFunctionBegin;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
+  switch (dim) {
+  case 2:
+    faceMarkerTop    = 3;
+    faceMarkerBottom = 1;
+    faceMarkerRight  = 2;
+    faceMarkerLeft   = 4;
+    break;
+  case 3:
+    faceMarkerBottom = 1;
+    faceMarkerTop    = 2;
+    faceMarkerFront  = 3;
+    faceMarkerBack   = 4;
+    faceMarkerRight  = 5;
+    faceMarkerLeft   = 6;
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %d not supported",dim);
+    break;
+  }
   ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
   if (markerSeparate) {
-    switch (dim) {
-    case 2:
-      markerTop    = 3;
-      markerBottom = 1;
-      markerRight  = 2;
-      markerLeft   = 4;
-      break;
-    case 3:
-      markerBottom = 1;
-      markerTop    = 2;
-      markerFront  = 3;
-      markerBack   = 4;
-      markerRight  = 5;
-      markerLeft   = 6;
-      break;
-    default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %d not supported",dim);
-      break;
-    }
+    markerBottom = faceMarkerBottom;
+    markerTop    = faceMarkerTop;
+    markerFront  = faceMarkerFront;
+    markerBack   = faceMarkerBack;
+    markerRight  = faceMarkerRight;
+    markerLeft   = faceMarkerLeft;
   }
   {
     const PetscInt numXEdges    = !rank ? edges[0]   : 0;
@@ -559,9 +565,11 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
             /* markers */
             if (bdX != DM_BOUNDARY_PERIODIC) {
               if (fx == numXVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerRight);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", face, markerRight);CHKERRQ(ierr);
               }
               else if (fx == 0) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerLeft);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", face, markerLeft);CHKERRQ(ierr);
               }
             }
@@ -588,9 +596,11 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
             /* markers */
             if (bdY != DM_BOUNDARY_PERIODIC) {
               if (fy == numYVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerBack);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", face, markerBack);CHKERRQ(ierr);
               }
               else if (fy == 0) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerFront);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", face, markerFront);CHKERRQ(ierr);
               }
             }
@@ -621,9 +631,11 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
             /* markers */
             if (bdZ != DM_BOUNDARY_PERIODIC) {
               if (fz == numZVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerTop);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", face, markerTop);CHKERRQ(ierr);
               }
               else if (fz == 0) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", face, faceMarkerBottom);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", face, markerBottom);CHKERRQ(ierr);
               }
             }
@@ -681,6 +693,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           if (dim == 2) {
             if ((bdX != DM_BOUNDARY_PERIODIC) && (bdX != DM_BOUNDARY_TWIST)) {
               if (vx == numXVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", edge, faceMarkerRight);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
                 if (ey == numYEdges-1) {
@@ -688,6 +701,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
                 }
               }
               else if (vx == 0) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", edge, faceMarkerLeft);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
                 if (ey == numYEdges-1) {
@@ -732,6 +746,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           if (dim == 2) {
             if ((bdY != DM_BOUNDARY_PERIODIC) && (bdY != DM_BOUNDARY_TWIST)) {
               if (vy == numYVertices-1) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", edge, faceMarkerTop);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
                 if (ex == numXEdges-1) {
@@ -739,6 +754,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
                 }
               }
               else if (vy == 0) {
+                ierr = DMPlexSetLabelValue(dm, "Face Sets", edge, faceMarkerBottom);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
                 ierr = DMPlexSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
                 if (ex == numXEdges-1) {

@@ -286,6 +286,7 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &newCoordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) newCoordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(newCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(newCoordinates, dim);CHKERRQ(ierr);
   ierr = VecSetType(newCoordinates,VECSTANDARD);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmNew, newCoordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -572,6 +573,12 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   ierr = DMPlexShiftSF_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = DMPlexShiftLabels_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = PetscFree(depthShift);CHKERRQ(ierr);
+  /* Step 7: Periodicity */
+  if (dm->maxCell) {
+    const PetscReal *maxCell, *L;
+    ierr = DMGetPeriodicity(dm,  &maxCell, &L);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(gdm,  maxCell,  L);CHKERRQ(ierr);
+  }
   if (numGhostCells) *numGhostCells = Ng;
   PetscFunctionReturn(0);
 }
