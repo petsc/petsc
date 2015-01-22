@@ -12,7 +12,7 @@ static char help[] = "Tests MatConvert(), MatElementalHermitianGenDefiniteEig() 
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,Aelem,B,Belem;
+  Mat            A,Aelem,B,Belem,X,Xe;
   PetscErrorCode ierr;
   PetscViewer    view;
   char           file[2][PETSC_MAX_PATH_LEN];
@@ -75,68 +75,45 @@ int main(int argc,char **args)
   /* Test accuracy */
   ierr = MatMultEqual(A,Aelem,5,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != A_elemental.");
-   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  //ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatMultEqual(B,Belem,5,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"B != B_elemental.");
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-
-  /* Create matrix Belem */
-#if defined(CreateBelem) 
-  ierr = MatCreate(PETSC_COMM_WORLD,&Belem);CHKERRQ(ierr);
-  ierr = MatSetSizes(Belem,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(Belem,MATELEMENTAL);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(Belem);CHKERRQ(ierr);
-  ierr = MatSetUp(Belem);CHKERRQ(ierr);
-
-  const PetscInt *rows,*cols;
-  IS             isrows,iscols;
-  PetscInt       nrows,ncols,i,j;
-  ierr = MatGetOwnershipIS(Belem,&isrows,&iscols);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-Exp_view_ownership",&flg);CHKERRQ(ierr);
-  if (flg) { /* View ownership of explicit C */
-    IS tmp;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Ownership of explicit C:\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row index set:\n");CHKERRQ(ierr);
-    ierr = ISOnComm(isrows,PETSC_COMM_WORLD,PETSC_USE_POINTER,&tmp);CHKERRQ(ierr);
-    ierr = ISView(tmp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ISDestroy(&tmp);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Column index set:\n");CHKERRQ(ierr);
-    ierr = ISOnComm(iscols,PETSC_COMM_WORLD,PETSC_USE_POINTER,&tmp);CHKERRQ(ierr);
-    ierr = ISView(tmp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ISDestroy(&tmp);CHKERRQ(ierr);
-  }
-
-  /* Set local matrix entries */
-  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
-  ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
-
-  for (i=0; i<nrows; i++) {
-    for (j=0; j<ncols; j++) {
-      if (rows[i] == cols[j]) {
-        ierr = MatSetValues(Belem,1,&rows[i],1,&cols[j],&one,ADD_VALUES);CHKERRQ(ierr);
-      }
-    }
-  }
-  ierr = MatAssemblyBegin(Belem,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Belem,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //ierr = MatView(Belem,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
-#endif
+  //ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   /* Test MatElementalComputeEigenvalues() */
   if (!rank) printf(" Compute Ax = lambda Bx... \n");
   vl=-0.8, vu=1.2;
   ierr = PetscOptionsGetReal(NULL,"-vl",&vl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-vu",&vu,NULL);CHKERRQ(ierr);
-  ierr = MatElementalHermitianGenDefiniteEig(Aelem,Belem,&evals,vl,vu);CHKERRQ(ierr);
+  PetscInt eigtype = 1; /* elem::AXBX */
+  PetscInt uplo = 1; /* = elem::UPPER */
+  ierr = MatElementalHermitianGenDefiniteEig(eigtype,uplo,Aelem,Belem,&evals,&Xe,vl,vu);CHKERRQ(ierr);
   ierr = VecView(evals,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
+  //ierr = MatView(Xe,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  if (!rank) printf(" Convert Elemental matrix Xe into MATDENSE matrix X... \n");
+  ierr = MatConvert(Xe,MATDENSE,MAT_INITIAL_MATRIX,&X);CHKERRQ(ierr);
+  //ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* Check || A*X - B*X*evals || */
+  Mat       C1,C2;
+  PetscReal norm;
+  ierr = MatMatMult(A,X,MAT_INITIAL_MATRIX,1.0,&C1);CHKERRQ(ierr); /* C1 = A*X */
+  ierr = MatMatMult(B,X,MAT_INITIAL_MATRIX,1.0,&C2);CHKERRQ(ierr); /* C2 = B*X */
+  ierr = MatDiagonalScale(C2,NULL,evals);CHKERRQ(ierr); /* C2 = B*X*evals */
+  ierr = MatAXPY(C1,-1.0,C2,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* C1 = - C2 + C1 */
+  ierr = MatNorm(C1,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+  if (!rank) printf(" || A*X - B*X*evals || = %g\n",norm);
+
+  ierr = MatDestroy(&C1);CHKERRQ(ierr);
+  ierr = MatDestroy(&C2);CHKERRQ(ierr);
+  
+
   ierr = VecDestroy(&evals);CHKERRQ(ierr);
+  ierr = MatDestroy(&X);CHKERRQ(ierr);
+  ierr = MatDestroy(&Xe);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&Aelem);CHKERRQ(ierr);
   ierr = MatDestroy(&Belem);CHKERRQ(ierr);
   ierr = PetscFinalize();

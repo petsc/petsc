@@ -1014,11 +1014,12 @@ PetscErrorCode MatAssemblyEnd_Elemental(Mat A, MatAssemblyType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatElementalHermitianGenDefiniteEig_Elemental"
-PetscErrorCode MatElementalHermitianGenDefiniteEig_Elemental(Mat A,Mat B,Vec *evals,PetscReal vl,PetscReal vu)
+PetscErrorCode MatElementalHermitianGenDefiniteEig_Elemental(const PetscInt type,const PetscInt uplo1,Mat A,Mat B,Vec *evals,Mat *evec,PetscReal vl,PetscReal vu)
 {
   PetscErrorCode           ierr;
   Mat_Elemental            *a=(Mat_Elemental*)A->data,*b=(Mat_Elemental*)B->data;     
   PetscElemScalar          vle=(PetscElemScalar)vl,vue=(PetscElemScalar)vu;
+  elem::HermitianGenDefiniteEigType eigtype = elem::AXBX;
   const elem::UpperOrLower uplo = elem::UPPER;
   const elem::SortType     sort = elem::UNSORTED; /* UNSORTED, DESCENDING, ASCENDING */
   const PetscElemScalar    *buffer;
@@ -1029,24 +1030,41 @@ PetscErrorCode MatElementalHermitianGenDefiniteEig_Elemental(Mat A,Mat B,Vec *ev
   PetscFunctionBegin;
   elem::DistMatrix<PetscElemScalar,elem::VR,elem::STAR> w( *a->grid ); /* holding eigenvalues */
   elem::DistMatrix<PetscElemScalar> X( *a->grid ); /* holding eigenvectors */
-  elem::HermitianGenDefiniteEig(elem::AXBX,uplo,*a->emat,*b->emat,w,X,vle,vue,sort);
+  elem::HermitianGenDefiniteEig(eigtype,uplo,*a->emat,*b->emat,w,X,vle,vue,sort);
+
   /* elem::Print(w, "Eigenvalues"); */
 
-  /* Test correctness norm = || - A*X + B*X*w || */
-  PetscElemScalar alpha,beta;
-  elem::DistMatrix<PetscElemScalar> Y(*a->grid); //tmp matrix
-  alpha = 1.0; beta=0.0;
-  elem::Gemm(elem::NORMAL,elem::NORMAL,alpha,*b->emat,X,beta,Y); //Y = B*X
-  elem::DiagonalScale(elem::RIGHT,elem::NORMAL, w, Y); //Y = Y*w
-  alpha = -1.0; beta=1.0;
-  elem::Gemm(elem::NORMAL,elem::NORMAL,alpha,*a->emat,X,beta,Y); //Y = - A*X + B*X*w
+  /* Wrap Elemental X into Petsc/Elemental evec */
+  MPI_Comm comm;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MatCreate(comm,evec);CHKERRQ(ierr);
+  ierr = MatSetSizes(*evec,PETSC_DECIDE,PETSC_DECIDE,X.Height(),X.Width());CHKERRQ(ierr);
+  ierr = MatSetType(*evec,MATELEMENTAL);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(*evec);CHKERRQ(ierr);
+  ierr = MatSetUp(*evec);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*evec,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*evec,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  PetscElemScalar norm = elem::FrobeniusNorm(Y);
-  printf("norm (- A*X + B*X*w) = %g\n",norm);
+  Mat_Elemental  *x = (Mat_Elemental*)(*evec)->data;
+  //delete x->emat; //-- memory leak???
+  *x->emat = X;
+
+  /* Test correctness norm = || - A*X + B*X*w || */
+  {
+    PetscElemScalar alpha,beta;
+    elem::DistMatrix<PetscElemScalar> Y(*a->grid); //tmp matrix
+    alpha = 1.0; beta=0.0;
+    elem::Gemm(elem::NORMAL,elem::NORMAL,alpha,*b->emat,X,beta,Y); //Y = B*X
+    elem::DiagonalScale(elem::RIGHT,elem::NORMAL, w, Y); //Y = Y*w
+    alpha = -1.0; beta=1.0;
+    elem::Gemm(elem::NORMAL,elem::NORMAL,alpha,*a->emat,X,beta,Y); //Y = - A*X + B*X*w
+
+    PetscElemScalar norm = elem::FrobeniusNorm(Y);
+    if ((*a->grid).Rank()==0) printf("  norm (- A*X + B*X*w) = %g\n",norm);
+  }
 
   buffer = w.LockedBuffer();
-  //PetscMPIInt rank;
-  //ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  //if ((*a->grid).Rank()==0) printf("eigtype= %d, uplo = %d\n",elem::AXBX,elem::UPPER);
   //printf("w: [%d] [%d, %d %d] %d; X: %d %d\n",rank,w.DistRank(),w.ColRank(),w.RowRank(),w.LocalHeight(),X.LocalHeight(),X.LocalWidth());   
   
   /* Create evals and evecs to hold eigenvalues and eigenvectors */
@@ -1088,12 +1106,12 @@ PetscErrorCode MatElementalHermitianGenDefiniteEig_Elemental(Mat A,Mat B,Vec *ev
 
 .seealso: MatGetFactor()
 @*/
-PetscErrorCode MatElementalHermitianGenDefiniteEig(Mat A,Mat B,Vec *evals,PetscReal vl,PetscReal vu)
+PetscErrorCode MatElementalHermitianGenDefiniteEig(const PetscInt type,const PetscInt uplo1,Mat A,Mat B,Vec *evals,Mat *evec,PetscReal vl,PetscReal vu)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"MatElementalHermitianGenDefiniteEig_C",(Mat,Mat,Vec*,PetscReal,PetscReal),(A,B,evals,vl,vu));CHKERRQ(ierr);
+  ierr = PetscTryMethod(A,"MatElementalHermitianGenDefiniteEig_C",(const PetscInt,const PetscInt,Mat,Mat,Vec*,Mat*,PetscReal,PetscReal),(type,uplo1,A,B,evals,evec,vl,vu));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
