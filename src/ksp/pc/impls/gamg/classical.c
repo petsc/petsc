@@ -1,4 +1,4 @@
-#include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
+#include <petsc-private/pcgamgimpl.h>        /*I "petscpc.h" I*/
 #include <petsc-private/kspimpl.h>
 #include <petscsf.h>
 
