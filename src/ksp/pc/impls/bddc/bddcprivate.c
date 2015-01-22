@@ -2442,7 +2442,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     if (pcbddc->use_deluxe_scaling) {
       PCBDDCSubSchurs sub_schurs=pcbddc->sub_schurs;
       if (sub_schurs->n_subs_par_g) {
-        SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Change of basis with deluxe scaling and parallel problems still needs to be implemented");CHKERRQ(ierr);
+        SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Change of basis with deluxe scaling and parallel problems still needs to be implemented");
       }
       if (sub_schurs->S_Ej_all) {
         Mat S_1,S_2,tmat;
@@ -4300,7 +4300,7 @@ static PetscErrorCode PCBDDCMatMultTranspose_Private(Mat A, Vec x, Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetUpSubSchurs"
-PetscErrorCode PCBDDCSetUpSubSchurs(PC pc, PetscInt layers, PetscBool use_useradj)
+PetscErrorCode PCBDDCSetUpSubSchurs(PC pc, PetscInt layers, PetscBool use_useradj, PetscBool compute_Stilda)
 {
   PC_BDDC             *pcbddc=(PC_BDDC*)pc->data;
   PCBDDCSubSchurs     sub_schurs=pcbddc->sub_schurs;
@@ -4340,7 +4340,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc, PetscInt layers, PetscBool use_userad
       free_used_adj = PETSC_TRUE;
     }
   }
-  ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,layers);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,layers,compute_Stilda);CHKERRQ(ierr);
 
   /* free adjacency */
   if (free_used_adj) {
@@ -4391,6 +4391,5 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc, PetscBool rebuild, PetscInt threshold)
   if (rebuild) {
     ierr = PCBDDCGraphDestroy(&graph);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }

@@ -18,11 +18,8 @@
    - make runexe59
 
    Extra
-   - ** GetRid of PCBDDCApplySchur, use MatSchur instead
    - *** Is it possible to work with PCBDDCGraph on boundary indices only (less memory consumed)?
-   - add support for computing h,H and related using coordinates?
    - Change of basis approach does not work with my nonlinear mechanics example. why? (seems not an issue with l2gmap)
-   - Better management in PCIS code
    - BDDC with MG framework?
 
    FETIDP
@@ -79,6 +76,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   ierr = PetscOptionsBool("-pc_bddc_schur_rebuild","Whether or not the interface graph for Schur principal minors has to be rebuilt (i.e. define the interface without any adjacency)","none",pcbddc->sub_schurs_rebuild,&pcbddc->sub_schurs_rebuild,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_schur_layers","Number of dofs' layers for the computation of principal minors (i.e. -1 uses all dofs)","none",pcbddc->sub_schurs_layers,&pcbddc->sub_schurs_layers,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_schur_use_useradj","Whether or not the CSR graph specified by the user should be used for computing successive layers (default is to use adj of local mat)","none",pcbddc->sub_schurs_use_useradj,&pcbddc->sub_schurs_use_useradj,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsScalar("-pc_bddc_adaptive_threshold","Threshold to be used for adaptive selection of constraints","none",pcbddc->adaptive_threshold,&pcbddc->adaptive_threshold,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1161,8 +1159,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscErrorCode ierr;
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   Mat_IS*        matis;
-  MatNullSpace   nearnullspace;
-  PetscBool      computetopography,computesolvers,computesubschurs;
+  MatNullSpace   nearnullspace,ad_nearnullspace;
+  PetscBool      computetopography,computesolvers,computesubschurs,adaptive;
   PetscBool      new_nearnullspace_provided,ismatis;
 
   PetscFunctionBegin;
@@ -1190,7 +1188,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (pcbddc->recompute_topography) {
     computetopography = PETSC_TRUE;
   }
-  computesubschurs = pcbddc->use_deluxe_scaling;
+  adaptive = (PetscBool)(pcbddc->adaptive_threshold > 0.0);
+  computesubschurs = pcbddc->use_deluxe_scaling || adaptive;
 
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
@@ -1235,13 +1234,19 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   /* Setup local dirichlet solver ksp_D and sub_schurs solvers */
+  ad_nearnullspace = NULL;
   if (computesolvers) {
     ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
     if (computesubschurs) {
       if (computetopography) {
         ierr = PCBDDCInitSubSchurs(pc,pcbddc->sub_schurs_rebuild,pcbddc->sub_schurs_threshold);CHKERRQ(ierr);
       }
-      ierr = PCBDDCSetUpSubSchurs(pc,pcbddc->sub_schurs_layers,pcbddc->sub_schurs_use_useradj);CHKERRQ(ierr);
+      ierr = PCBDDCSetUpSubSchurs(pc,pcbddc->sub_schurs_layers,pcbddc->sub_schurs_use_useradj,adaptive);CHKERRQ(ierr);
+#if 0
+      if (adaptive) {
+        ierr = PCBDDCAdaptiveSelection(pc,&ad_nearnullspace);CHKERRQ(ierr);
+      }
+#endif
     }
   }
 
@@ -1277,6 +1282,12 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       new_nearnullspace_provided = PETSC_TRUE;
     }
   }
+#if 0
+  if (adaptive) {
+    /* join nullspaces */
+  }
+  /* set null space in BDDC */
+#endif
 
   /* Setup constraints and related work vectors */
   /* reset primal space flags */
@@ -1945,6 +1956,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->sub_schurs_use_useradj = PETSC_FALSE;
 
   pcbddc->computed_rowadj = PETSC_FALSE;
+
+  /* adaptivity */
+  pcbddc->adaptive_threshold = -1.0;
 
   /* function pointers */
   pc->ops->apply               = PCApply_BDDC;

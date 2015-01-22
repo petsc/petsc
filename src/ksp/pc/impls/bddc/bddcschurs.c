@@ -86,7 +86,7 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, Mat *S)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubSchursSetUp"
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers)
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[], PetscInt adjncy[], PetscInt nlayers, PetscBool compute_Stilda)
 {
   Mat                    A_II,A_IB,A_BI,A_BB;
   Mat                    AE_II,*AE_IE,*AE_EI,*AE_EE;
@@ -97,12 +97,14 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   PetscInt               *nnz,*all_local_idx_G,*all_local_idx_B,*all_local_idx_N;
   PetscInt               i,subset_size,max_subset_size;
   PetscInt               extra,local_size,global_size;
-  PetscBool              compute_Stilda=PETSC_FALSE;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   /* get Schur complement matrices */
   if (!sub_schurs->use_mumps) {
+    if (compute_Stilda) {
+      SETERRQ(PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS");
+    }
     ierr = MatSchurComplementGetSubMatrices(sub_schurs->S,&A_II,NULL,&A_IB,&A_BI,&A_BB);CHKERRQ(ierr);
     ierr = PetscMalloc4(sub_schurs->n_subs,&is_subset_B,
                         sub_schurs->n_subs,&AE_IE,
@@ -397,7 +399,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     PetscInt  *dummy_idx,n_all;
     PetscBool is_symmetric;
 
-    compute_Stilda=PETSC_TRUE;
     if (compute_Stilda) {
       ierr = MatCreate(PETSC_COMM_SELF,&S_Ej_tilda_all);CHKERRQ(ierr);
       ierr = MatSetSizes(S_Ej_tilda_all,PETSC_DECIDE,PETSC_DECIDE,local_size,local_size);CHKERRQ(ierr);
