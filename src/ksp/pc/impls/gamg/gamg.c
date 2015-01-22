@@ -1551,3 +1551,27 @@ PetscErrorCode PCGAMGFinalizePackage(void)
   ierr = PetscFunctionListDestroy(&GAMGList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGAMGRegister"
+/*@C
+ PCGAMGRegister - Register a PCGAMG implementation.
+
+ Input Parameters:
+ + type - string that will be used as the name of the GAMG type.
+ - create - function for creating the gamg context.
+
+  Level: advanced
+
+ .seealso: PCGAMGGetContext(), PCGAMGSetContext()
+@*/
+PetscErrorCode PCGAMGRegister(PCGAMGType type, PetscErrorCode (*create)(PC))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCGAMGInitializePackage();CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&GAMGList,type,create);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
