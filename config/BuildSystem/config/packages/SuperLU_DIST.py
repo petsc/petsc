@@ -28,6 +28,8 @@ class Configure(config.package.Package):
     import os
     if (self.compilers.c99flag == None):
       raise RuntimeError('SUPERLU_DIST: install requires c99 compiler. Configure cold not determine compatilbe compiler flag. Perhaps you can specify via CFLAG')
+    if not self.make.haveGNUMake:
+      raise RuntimeError('SUPERLU_DIST: install requires GNU make. Suggest using --download-make')
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+self.packageDir+'\n')
@@ -68,7 +70,7 @@ class Configure(config.package.Package):
 
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make lib LAAUX="" && '+self.installSudo+'cp -f *.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean && '+self.make.make+' lib LAAUX="" && '+self.installSudo+'cp -f *.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
       self.postInstall(output+err,'make.inc')
