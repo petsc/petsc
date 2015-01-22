@@ -14,6 +14,11 @@ class Configure(config.package.Package):
     self.downloadonWindows= 1
     return
 
+  def setupHelp(self, help):
+    import nargs
+    config.package.Package.setupHelp(self, help)
+    help.addArgument('SuperLU_DIST', '-download-superlu_dist-gpu=<bool>',    nargs.ArgBool(None, 0, 'Install Superlu_DIST to use GPUs'))
+
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
@@ -21,7 +26,12 @@ class Configure(config.package.Package):
     self.metis          = framework.require('config.packages.metis',self)
     self.parmetis       = framework.require('config.packages.parmetis',self)
     self.mpi            = framework.require('config.packages.MPI',self)
-    self.deps           = [self.mpi,self.blasLapack,self.parmetis]
+    if self.framework.argDB['download-superlu_dist-gpu']:
+      self.cuda           = framework.require('config.packages.cuda',self)
+      self.openmp         = framework.require('config.packages.openmp',self)
+      self.deps           = [self.mpi,self.blasLapack,self.parmetis,self.metis,self.cuda,self.openmp]
+    else:
+      self.deps           = [self.mpi,self.blasLapack,self.parmetis,self.metis]
     return
 
   def Install(self):
@@ -39,13 +49,24 @@ class Configure(config.package.Package):
     g.write('INCS         = '+self.headers.toString(self.mpi.include)+' '+self.headers.toString(self.parmetis.include)+' '+self.headers.toString(self.metis.include)+'\n')
     g.write('MPILIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
     g.write('PMETISLIB    = '+self.libraries.toString(self.parmetis.lib)+'\n')
-    g.write('LIBS         = $(DSUPERLULIB) $(BLASLIB) $(PMETISLIB) $(MPILIB)\n')
+    g.write('METISLIB     = '+self.libraries.toString(self.metis.lib)+'\n')
+
+    if self.framework.argDB['download-superlu_dist-gpu']:
+      g.write('ACC          = GPU\n')
+      g.write('CUDAFLAGS    = -DGPU_ACC '+self.headers.toString(self.cuda.include)+'\n')
+      g.write('CUDALIB      = '+self.libraries.toString(self.cuda.lib)+'\n')
+    else:
+      g.write('ACC          = \n')
+      g.write('CUDAFLAGS    = \n')
+      g.write('CUDALIB      = \n')
+
+    g.write('LIBS         = $(DSUPERLULIB) $(PMETISLIB) $(METISLIB) $(BLASLIB) $(MPILIB) $(CUDALIB)\n')
     g.write('ARCH         = '+self.setCompilers.AR+'\n')
     g.write('ARCHFLAGS    = '+self.setCompilers.AR_FLAGS+'\n')
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CFLAGS       = $(INCS) '+self.setCompilers.getCompilerFlags()+''+self.compilers.c99flag+'\n')
+    g.write('CFLAGS       = $(INCS) $(CUDAFLAGS) '+self.setCompilers.getCompilerFlags()+''+self.compilers.c99flag+'\n')
     g.write('LOADER       = '+self.setCompilers.getLinker()+' '+'\n')
     g.write('LOADOPTS     = \n')
     self.setCompilers.popLanguage()
