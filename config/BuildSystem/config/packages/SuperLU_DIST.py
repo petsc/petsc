@@ -51,16 +51,14 @@ class Configure(config.package.Package):
     self.setCompilers.popLanguage()
     # set blas/lapack name mangling
     if self.blasLapack.mangling == 'underscore':
-      g.write('CDEFS   = -DAdd_')
+      g.write('CDEFS        = -DAdd_')
     elif self.blasLapack.mangling == 'caps':
-      g.write('CDEFS   = -DUpCase')
+      g.write('CDEFS        = -DUpCase')
     else:
-      g.write('CDEFS   = -DNoChange')
+      g.write('CDEFS        = -DNoChange')
     if self.indexTypes.integerSize == 64:
       g.write(' -D_LONGINT')
     g.write('\n')
-    # not sure what this is for
-    g.write('NOOPTS       = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPointerSizeFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.close()
 
     if self.installNeeded('make.inc'):
