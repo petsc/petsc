@@ -165,6 +165,9 @@ cdef class Object:
     def getDict(self):
         return self.get_dict()
 
+    def stateIncrease(self):
+        PetscINCSTATE(self.obj)
+
     # --- properties ---
 
     property type:
