@@ -282,13 +282,14 @@ PetscErrorCode jacobi(PC pc,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,
 #define __FUNCT__ "interpolate"
 PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 {
-  PetscInt       i,n,N,i2;
-  PetscErrorCode ierr;
-  PetscScalar    *x,*y;
+  PetscInt          i,n,N,i2;
+  PetscErrorCode    ierr;
+  PetscScalar       *y;
+  const PetscScalar *x;
 
   PetscFunctionBegin;
   ierr = VecGetSize(yy,&N);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   n    = N/2;
   for (i=0; i<n; i++) {
@@ -297,7 +298,7 @@ PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
     y[i2+1] +=    x[i];
     y[i2+2] += .5*x[i];
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

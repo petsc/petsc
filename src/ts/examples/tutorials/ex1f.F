@@ -282,7 +282,7 @@
       hxdhy = hx/hy
       hydhx = hy/hx
 
-      call VecGetArray(X,xx,xidx,ierr)
+      call VecGetArrayRead(X,xx,xidx,ierr)
       call VecGetArray(F,ff,fidx,ierr)
       do 10 j=1,my
         do 20 i=1,mx
@@ -304,7 +304,7 @@
  20   continue
  10   continue
 
-      call VecRestoreArray(X,xx,xidx,ierr)
+      call VecRestoreArrayRead(X,xx,xidx,ierr)
       call VecRestoreArray(F,ff,fidx,ierr)
       return
       end
@@ -350,7 +350,7 @@
       hxdhy = hx/hy
       hydhx = hy/hx
 
-      call VecGetArray(X,xx,xidx,ierr)
+      call VecGetArrayRead(X,xx,xidx,ierr)
       do 10 j=1,my
         do 20 i=1,mx
 !

@@ -104,19 +104,20 @@ PetscErrorCode IFunctionLoad(AppCtx **ctx,PetscViewer v)
 */
 PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *u,*udot,*f;
+  PetscErrorCode    ierr;
+  PetscScalar       *f;
+  const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = udot[0] + ctx->k*u[0]*u[1];
   f[1] = udot[1] + ctx->k*u[0]*u[1];
   f[2] = udot[2] - ctx->k*u[0]*u[1];
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -128,19 +129,20 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 */
 PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,AppCtx *ctx)
 {
-  PetscErrorCode ierr;
-  PetscInt       rowcol[] = {0,1,2};
-  PetscScalar    *u,*udot,J[3][3];
+  PetscErrorCode    ierr;
+  PetscInt          rowcol[] = {0,1,2};
+  PetscScalar       J[3][3];
+  const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
-  ierr    = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr    = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   J[0][0] = a + ctx->k*u[1];   J[0][1] = ctx->k*u[0];       J[0][2] = 0.0;
   J[1][0] = ctx->k*u[1];       J[1][1] = a + ctx->k*u[0];   J[1][2] = 0.0;
   J[2][0] = -ctx->k*u[1];      J[2][1] = -ctx->k*u[0];      J[2][2] = a;
   ierr    = MatSetValues(B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

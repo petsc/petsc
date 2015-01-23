@@ -1252,7 +1252,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
 
-  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,Xloc,&x);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMDAGetArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
 
@@ -1316,7 +1316,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
     }
   }
 
-  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,Xloc,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMDARestoreArray(da,PETSC_TRUE,&slope);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
@@ -1358,17 +1358,18 @@ static PetscErrorCode SmallMatMultADB(PetscScalar *C,PetscInt bs,const PetscScal
 #define __FUNCT__ "FVIJacobian"
 static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat A,Mat B,void *vctx)
 {
-  FVCtx          *ctx = (FVCtx*)vctx;
-  PetscErrorCode ierr;
-  PetscInt       i,j,dof = ctx->physics.dof;
-  PetscScalar    *x,*J;
-  PetscReal      hx;
-  DM             da;
-  DMDALocalInfo  dainfo;
+  FVCtx             *ctx = (FVCtx*)vctx;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,dof = ctx->physics.dof;
+  PetscScalar       *J;
+  const PetscScalar *x;
+  PetscReal         hx;
+  DM                da;
+  DMDALocalInfo     dainfo;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,X,&x);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&dainfo);CHKERRQ(ierr);
   hx   = (ctx->xmax - ctx->xmin)/dainfo.mx;
   ierr = PetscMalloc1(dof*dof,&J);CHKERRQ(ierr);
@@ -1380,7 +1381,7 @@ static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
     ierr = MatSetValuesBlocked(B,1,&i,1,&i,J,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree(J);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,X,&x);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1439,7 +1440,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
     ierr  = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
     ierr  = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
     ierr  = DMGlobalToLocalEnd  (da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-    ierr  = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
+    ierr  = DMDAVecGetArrayRead(da,Xloc,&x);CHKERRQ(ierr);
     ierr  = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
     ierr  = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
     tvsum = 0;
@@ -1447,7 +1448,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
       for (j=0; j<dof; j++) tvsum += PetscAbsScalar(x[i*dof+j] - x[(i-1)*dof+j]);
     }
     ierr = MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArrayRead(da,Xloc,&x);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
 
     ierr = VecMin(X,&imin,&xmin);CHKERRQ(ierr);

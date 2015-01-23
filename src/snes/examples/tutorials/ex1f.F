@@ -226,7 +226,7 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the Fortran chapter of the users manual for details.
 
-      call VecGetArray(x,lx_v,lx_i,ierr)
+      call VecGetArrayRead(x,lx_v,lx_i,ierr)
       call VecGetArray(f,lf_v,lf_i,ierr)
 
 !  Compute function
@@ -238,7 +238,7 @@
 
 !  Restore vectors
 
-      call VecRestoreArray(x,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
       call VecRestoreArray(f,lf_v,lf_i,ierr)
 
       return
@@ -283,7 +283,7 @@
 !  Get pointer to vector data
 
       i2 = 2
-      call VecGetArray(x,lx_v,lx_i,ierr)
+      call VecGetArrayRead(x,lx_v,lx_i,ierr)
 
 !  Compute Jacobian entries and insert into matrix.
 !   - Since this is such a small problem, we set all entries for
@@ -301,7 +301,7 @@
 
 !  Restore vector
 
-      call VecRestoreArray(x,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
 
 !  Assemble matrix
 

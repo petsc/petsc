@@ -105,6 +105,12 @@ PETSC_EXTERN PetscErrorCode DMDAVecRestoreArray(DM,Vec,void *);
 PETSC_EXTERN PetscErrorCode DMDAVecGetArrayDOF(DM,Vec,void *);
 PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayDOF(DM,Vec,void *);
 
+PETSC_EXTERN PetscErrorCode DMDAVecGetArrayRead(DM,Vec,void *);
+PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayRead(DM,Vec,void *);
+
+PETSC_EXTERN PetscErrorCode DMDAVecGetArrayDOFRead(DM,Vec,void *);
+PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayDOFRead(DM,Vec,void *);
+
 PETSC_EXTERN PetscErrorCode DMDASplitComm2d(MPI_Comm,PetscInt,PetscInt,PetscInt,MPI_Comm*);
 
 PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*);

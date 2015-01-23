@@ -490,9 +490,11 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->applysymmetricleft) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
+  ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
+  ierr = VecLockPop(x);CHKERRQ(ierr);
   ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -534,9 +536,11 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->applysymmetricright) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
+  ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
+  ierr = VecLockPop(x);CHKERRQ(ierr);
   ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -579,9 +583,11 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->applytranspose) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply transpose");
+  ierr = VecLockPush(x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  ierr = VecLockPop(x);CHKERRQ(ierr);
   ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

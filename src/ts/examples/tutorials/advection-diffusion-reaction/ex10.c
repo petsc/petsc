@@ -253,7 +253,7 @@ PetscErrorCode InitialConditions(DM da,Vec C)
   /*
      Get pointer to vector data
   */
-  ierr = DMDAVecGetArray(da,C,&c);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,C,&c);CHKERRQ(ierr);
   /* Shift the c pointer to allow accessing with index of 1, instead of 0 */
   c = (Concentrations*)(((PetscScalar*)c)-1);
 
@@ -282,7 +282,7 @@ PetscErrorCode InitialConditions(DM da,Vec C)
      Restore vectors
   */
   c    = (Concentrations*)(((PetscScalar*)c)+1);
-  ierr = DMDAVecRestoreArray(da,C,&c);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,C,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -332,7 +332,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec C,Vec F,void *ptr)
   /*
     Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,localC,&c);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localC,&c);CHKERRQ(ierr);
   /* Shift the c pointer to allow accessing with index of 1, instead of 0 */
   c    = (Concentrations*)(((PetscScalar*)c)-1);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);

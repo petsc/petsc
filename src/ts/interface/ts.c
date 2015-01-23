@@ -2801,9 +2801,11 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(u,VEC_CLASSID,4);
+  ierr = VecLockPush(u);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = (*ts->monitor[i])(ts,step,ptime,u,ts->monitorcontext[i]);CHKERRQ(ierr);
   }
+  ierr = VecLockPop(u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

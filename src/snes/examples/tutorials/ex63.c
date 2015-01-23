@@ -233,12 +233,12 @@ int main(int argc, char **argv)
 #define __FUNCT__ "Update_u"
 PetscErrorCode Update_u(Vec X,AppCtx *user)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,n;
-  PetscScalar    *xx,*wv_p,*cv_p,*wi_p,*ci_p,*eta_p;
-  PetscInt       pv1,pi1,peta1,pv2,pi2,peta2;
-  PetscReal      maxv,maxi,maxeta,minv,mini,mineta;
-
+  PetscErrorCode    ierr;
+  PetscInt          i,n;
+  PetscScalar       *wv_p,*cv_p,*wi_p,*ci_p,*eta_p;
+  PetscInt          pv1,pi1,peta1,pv2,pi2,peta2;
+  PetscReal         maxv,maxi,maxeta,minv,mini,mineta;
+  const PetscScalar *xx;
 
   PetscFunctionBeginUser;
   ierr = VecGetLocalSize(user->wv,&n);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   ierr = VecMin(user->eta,&peta2,&mineta);CHKERRQ(ierr);
 
 
-  ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->wi,&wi_p);CHKERRQ(ierr);
@@ -267,7 +267,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
     ci_p[i]  = xx[5*i+3];
     eta_p[i] = xx[5*i+4];
   }
-  ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wi,&wi_p);CHKERRQ(ierr);
@@ -383,18 +383,21 @@ PetscErrorCode DPsi(AppCtx *user)
 #define __FUNCT__ "Llog"
 PetscErrorCode Llog(Vec X, Vec Y)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *x,*y;
-  PetscInt       n,i;
+  PetscErrorCode    ierr;
+  PetscScalar       *y;
+  const PetscScalar *x;
+  PetscInt          n,i;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (x[i] < 1.0e-12) y[i] = log(1.0e-12);
     else y[i] = log(x[i]);
   }
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

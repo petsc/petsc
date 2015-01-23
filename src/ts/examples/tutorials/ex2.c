@@ -421,14 +421,15 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 */
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *ctx)
 {
-  AppCtx         *appctx   = (AppCtx*) ctx;     /* user-defined application context */
-  DM             da        = appctx->da;        /* distributed array */
-  Vec            local_in  = appctx->u_local;   /* local ghosted input vector */
-  Vec            localwork = appctx->localwork; /* local ghosted work vector */
-  PetscErrorCode ierr;
-  PetscInt       i,localsize;
-  PetscMPIInt    rank,size;
-  PetscScalar    *copyptr,*localptr,sc;
+  AppCtx            *appctx   = (AppCtx*) ctx;     /* user-defined application context */
+  DM                da        = appctx->da;        /* distributed array */
+  Vec               local_in  = appctx->u_local;   /* local ghosted input vector */
+  Vec               localwork = appctx->localwork; /* local ghosted work vector */
+  PetscErrorCode    ierr;
+  PetscInt          i,localsize;
+  PetscMPIInt       rank,size;
+  PetscScalar       *copyptr,sc;
+  const PetscScalar *localptr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Get ready for local function computations
@@ -445,7 +446,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   /*
       Access directly the values in our local INPUT work array
   */
-  ierr = VecGetArray(local_in,&localptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(local_in,&localptr);CHKERRQ(ierr);
 
   /*
       Access directly the values in our local OUTPUT work array
@@ -486,7 +487,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(local_in,&localptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(local_in,&localptr);CHKERRQ(ierr);
   ierr = VecRestoreArray(localwork,&copyptr);CHKERRQ(ierr);
 
   /*
@@ -537,12 +538,13 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
 */
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *ctx)
 {
-  AppCtx         *appctx  = (AppCtx*)ctx;    /* user-defined application context */
-  Vec            local_in = appctx->u_local;   /* local ghosted input vector */
-  DM             da       = appctx->da;        /* distributed array */
-  PetscScalar    v[3],*localptr,sc;
-  PetscErrorCode ierr;
-  PetscInt       i,mstart,mend,mstarts,mends,idx[3],is;
+  AppCtx            *appctx  = (AppCtx*)ctx;    /* user-defined application context */
+  Vec               local_in = appctx->u_local;   /* local ghosted input vector */
+  DM                da       = appctx->da;        /* distributed array */
+  PetscScalar       v[3],sc;
+  const PetscScalar *localptr;
+  PetscErrorCode    ierr;
+  PetscInt          i,mstart,mend,mstarts,mends,idx[3],is;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Get ready for local Jacobian computations
@@ -559,7 +561,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArray(local_in,&localptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(local_in,&localptr);CHKERRQ(ierr);
 
   /*
      Get starting and ending locally owned rows of the matrix
@@ -610,7 +612,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat BB,void *c
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(local_in,&localptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(local_in,&localptr);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Complete the matrix assembly process and set some options

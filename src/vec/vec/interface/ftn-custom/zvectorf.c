@@ -122,6 +122,31 @@ PETSC_EXTERN void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,size_t *
   *ierr = VecRestoreArray(*x,&lx);if (*ierr) return;
 }
 
+PETSC_EXTERN void PETSC_STDCALL vecgetarrayread_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+{
+  const PetscScalar *lx;
+  PetscInt          m,bs;
+
+  *ierr = VecGetArrayRead(*x,&lx); if (*ierr) return;
+  *ierr = VecGetLocalSize(*x,&m);if (*ierr) return;
+  bs    = 1;
+  if (VecGetArrayAligned) {
+    *ierr = VecGetBlockSize(*x,&bs);if (*ierr) return;
+  }
+  *ierr = PetscScalarAddressToFortran((PetscObject)*x,bs,fa,(PetscScalar*)lx,m,ia);
+}
+
+/* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
+PETSC_EXTERN void PETSC_STDCALL vecrestorearrayread_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+{
+  PetscInt          m;
+  const PetscScalar *lx;
+
+  *ierr = VecGetLocalSize(*x,&m);if (*ierr) return;
+  *ierr = PetscScalarAddressFromFortran((PetscObject)*x,fa,*ia,m,(PetscScalar**)&lx);if (*ierr) return;
+  *ierr = VecRestoreArrayRead(*x,&lx);if (*ierr) return;
+}
+
 /*
       vecduplicatevecs() and vecdestroyvecs() are slightly different from C since the
     Fortran provides the array to hold the vector objects,while in C that

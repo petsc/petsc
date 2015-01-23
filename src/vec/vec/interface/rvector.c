@@ -2516,6 +2516,418 @@ PetscErrorCode  VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
   PetscFunctionReturn(0);
 }
 
+ #undef __FUNCT__
+#define __FUNCT__ "VecGetArray2dRead"
+/*@C
+   VecGetArray2dRead - Returns a pointer to a 2d contiguous array that contains this
+   processor's portion of the vector data.  You MUST call VecRestoreArray2dRead()
+   when you no longer need access to the array.
+
+   Logically Collective
+
+   Input Parameter:
++  x - the vector
+.  m - first dimension of two dimensional array
+.  n - second dimension of two dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+-  nstart - first index in the second coordinate direction (often 0)
+
+   Output Parameter:
+.  a - location to put pointer to the array
+
+   Level: developer
+
+  Notes:
+   For a vector obtained from DMCreateLocalVector() mstart and nstart are likely
+   obtained from the corner indices obtained from DMDAGetGhostCorners() while for
+   DMCreateGlobalVector() they are the corner indices from DMDAGetCorners(). In both cases
+   the arguments from DMDAGet[Ghost]Corners() are reversed in the call to VecGetArray2d().
+
+   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+
+   Concepts: vector^accessing local values as 2d array
+
+.seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
+          VecRestoreArray2d(), DMDAVecGetArray(), DMDAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+@*/
+PetscErrorCode  VecGetArray2dRead(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,N;
+  const PetscScalar *aa;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidPointer(a,6);
+  PetscValidType(x,1);
+  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  if (m*n != N) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %D does not match 2d array dimensions %D by %D",N,m,n);
+  ierr = VecGetArrayRead(x,&aa);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(m,a);CHKERRQ(ierr);
+  for (i=0; i<m; i++) (*a)[i] = (PetscScalar*) aa + i*n - nstart;
+  *a -= mstart;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArray2dRead"
+/*@C
+   VecRestoreArray2dRead - Restores a vector after VecGetArray2dRead() has been called.
+
+   Logically Collective
+
+   Input Parameters:
++  x - the vector
+.  m - first dimension of two dimensional array
+.  n - second dimension of the two dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+.  nstart - first index in the second coordinate direction (often 0)
+-  a - location of pointer to array obtained from VecGetArray2d()
+
+   Level: developer
+
+   Notes:
+   For regular PETSc vectors this routine does not involve any copies. For
+   any special vectors that do not store local vector data in a contiguous
+   array, this routine will copy the data back into the underlying
+   vector data structure from the array obtained with VecGetArray().
+
+   This routine actually zeros out the a pointer.
+
+.seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
+          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DMDAVecGetArray(), DMDAVecRestoreArray()
+          VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+@*/
+PetscErrorCode  VecRestoreArray2dRead(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
+{
+  PetscErrorCode ierr;
+  void           *dummy;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidPointer(a,6);
+  PetscValidType(x,1);
+  dummy = (void*)(*a + mstart);
+  ierr  = PetscFree(dummy);CHKERRQ(ierr);
+  ierr  = VecRestoreArrayRead(x,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArray1dRead"
+/*@C
+   VecGetArray1dRead - Returns a pointer to a 1d contiguous array that contains this
+   processor's portion of the vector data.  You MUST call VecRestoreArray1dRead()
+   when you no longer need access to the array.
+
+   Logically Collective
+
+   Input Parameter:
++  x - the vector
+.  m - first dimension of two dimensional array
+-  mstart - first index you will use in first coordinate direction (often 0)
+
+   Output Parameter:
+.  a - location to put pointer to the array
+
+   Level: developer
+
+  Notes:
+   For a vector obtained from DMCreateLocalVector() mstart are likely
+   obtained from the corner indices obtained from DMDAGetGhostCorners() while for
+   DMCreateGlobalVector() they are the corner indices from DMDAGetCorners().
+
+   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+
+.seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
+          VecRestoreArray2d(), DMDAVecGetArray(), DMDAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecGetArray2d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+@*/
+PetscErrorCode  VecGetArray1dRead(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+  PetscInt       N;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidPointer(a,4);
+  PetscValidType(x,1);
+  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  if (m != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local array size %D does not match 1d array dimensions %D",N,m);
+  ierr = VecGetArrayRead(x,(const PetscScalar**)a);CHKERRQ(ierr);
+  *a  -= mstart;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArray1dRead"
+/*@C
+   VecRestoreArray1dRead - Restores a vector after VecGetArray1dRead() has been called.
+
+   Logically Collective
+
+   Input Parameters:
++  x - the vector
+.  m - first dimension of two dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+-  a - location of pointer to array obtained from VecGetArray21()
+
+   Level: developer
+
+   Notes:
+   For regular PETSc vectors this routine does not involve any copies. For
+   any special vectors that do not store local vector data in a contiguous
+   array, this routine will copy the data back into the underlying
+   vector data structure from the array obtained with VecGetArray1dRead().
+
+   This routine actually zeros out the a pointer.
+
+   Concepts: vector^accessing local values as 1d array
+
+.seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
+          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DMDAVecGetArray(), DMDAVecRestoreArray()
+          VecGetArray1d(), VecRestoreArray2d(), VecGetArray4d(), VecRestoreArray4d()
+@*/
+PetscErrorCode  VecRestoreArray1dRead(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidType(x,1);
+  ierr = VecRestoreArrayRead(x,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArray3dRead"
+/*@C
+   VecGetArray3dRead - Returns a pointer to a 3d contiguous array that contains this
+   processor's portion of the vector data.  You MUST call VecRestoreArray3dRead()
+   when you no longer need access to the array.
+
+   Logically Collective
+
+   Input Parameter:
++  x - the vector
+.  m - first dimension of three dimensional array
+.  n - second dimension of three dimensional array
+.  p - third dimension of three dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+.  nstart - first index in the second coordinate direction (often 0)
+-  pstart - first index in the third coordinate direction (often 0)
+
+   Output Parameter:
+.  a - location to put pointer to the array
+
+   Level: developer
+
+  Notes:
+   For a vector obtained from DMCreateLocalVector() mstart, nstart, and pstart are likely
+   obtained from the corner indices obtained from DMDAGetGhostCorners() while for
+   DMCreateGlobalVector() they are the corner indices from DMDAGetCorners(). In both cases
+   the arguments from DMDAGet[Ghost]Corners() are reversed in the call to VecGetArray3dRead().
+
+   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+
+   Concepts: vector^accessing local values as 3d array
+
+.seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
+          VecRestoreArray2d(), DMDAVecGetarray(), DMDAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+@*/
+PetscErrorCode  VecGetArray3dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,N,j;
+  const PetscScalar *aa;
+  PetscScalar       **b;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidPointer(a,8);
+  PetscValidType(x,1);
+  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  if (m*n*p != N) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %D does not match 3d array dimensions %D by %D by %D",N,m,n,p);
+  ierr = VecGetArrayRead(x,&aa);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(m*sizeof(PetscScalar**)+m*n,a);CHKERRQ(ierr);
+  b    = (PetscScalar**)((*a) + m);
+  for (i=0; i<m; i++) (*a)[i] = b + i*n - nstart;
+  for (i=0; i<m; i++)
+    for (j=0; j<n; j++)
+      b[i*n+j] = (PetscScalar *)aa + i*n*p + j*p - pstart;
+
+  *a -= mstart;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArray3dRead"
+/*@C
+   VecRestoreArray3dRead - Restores a vector after VecGetArray3dRead() has been called.
+
+   Logically Collective
+
+   Input Parameters:
++  x - the vector
+.  m - first dimension of three dimensional array
+.  n - second dimension of the three dimensional array
+.  p - third dimension of the three dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+.  nstart - first index in the second coordinate direction (often 0)
+.  pstart - first index in the third coordinate direction (often 0)
+-  a - location of pointer to array obtained from VecGetArray3dRead()
+
+   Level: developer
+
+   Notes:
+   For regular PETSc vectors this routine does not involve any copies. For
+   any special vectors that do not store local vector data in a contiguous
+   array, this routine will copy the data back into the underlying
+   vector data structure from the array obtained with VecGetArray().
+
+   This routine actually zeros out the a pointer.
+
+.seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
+          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DMDAVecGetArray(), DMDAVecRestoreArray()
+          VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d(), VecGet
+@*/
+PetscErrorCode  VecRestoreArray3dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscScalar ***a[])
+{
+  PetscErrorCode ierr;
+  void           *dummy;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidPointer(a,8);
+  PetscValidType(x,1);
+  dummy = (void*)(*a + mstart);
+  ierr  = PetscFree(dummy);CHKERRQ(ierr);
+  ierr  = VecRestoreArrayRead(x,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetArray4dRead"
+/*@C
+   VecGetArray4dRead - Returns a pointer to a 4d contiguous array that contains this
+   processor's portion of the vector data.  You MUST call VecRestoreArray4dRead()
+   when you no longer need access to the array.
+
+   Logically Collective
+
+   Input Parameter:
++  x - the vector
+.  m - first dimension of four dimensional array
+.  n - second dimension of four dimensional array
+.  p - third dimension of four dimensional array
+.  q - fourth dimension of four dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+.  nstart - first index in the second coordinate direction (often 0)
+.  pstart - first index in the third coordinate direction (often 0)
+-  qstart - first index in the fourth coordinate direction (often 0)
+
+   Output Parameter:
+.  a - location to put pointer to the array
+
+   Level: beginner
+
+  Notes:
+   For a vector obtained from DMCreateLocalVector() mstart, nstart, and pstart are likely
+   obtained from the corner indices obtained from DMDAGetGhostCorners() while for
+   DMCreateGlobalVector() they are the corner indices from DMDAGetCorners(). In both cases
+   the arguments from DMDAGet[Ghost]Corners() are reversed in the call to VecGetArray3d().
+
+   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+
+   Concepts: vector^accessing local values as 3d array
+
+.seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
+          VecRestoreArray2d(), DMDAVecGetarray(), DMDAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+@*/
+PetscErrorCode  VecGetArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,N,j,k;
+  const PetscScalar *aa;
+  PetscScalar       ***b,**c;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidPointer(a,10);
+  PetscValidType(x,1);
+  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  if (m*n*p*q != N) SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local array size %D does not match 4d array dimensions %D by %D by %D by %D",N,m,n,p,q);
+  ierr = VecGetArrayRead(x,&aa);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(m*sizeof(PetscScalar***)+m*n*sizeof(PetscScalar**)+m*n*p,a);CHKERRQ(ierr);
+  b    = (PetscScalar***)((*a) + m);
+  c    = (PetscScalar**)(b + m*n);
+  for (i=0; i<m; i++) (*a)[i] = b + i*n - nstart;
+  for (i=0; i<m; i++)
+    for (j=0; j<n; j++)
+      b[i*n+j] = c + i*n*p + j*p - pstart;
+  for (i=0; i<m; i++)
+    for (j=0; j<n; j++)
+      for (k=0; k<p; k++)
+        c[i*n*p+j*p+k] = (PetscScalar*) aa + i*n*p*q + j*p*q + k*q - qstart;
+  *a -= mstart;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecRestoreArray4dRead"
+/*@C
+   VecRestoreArray4dRead - Restores a vector after VecGetArray3d() has been called.
+
+   Logically Collective
+
+   Input Parameters:
++  x - the vector
+.  m - first dimension of four dimensional array
+.  n - second dimension of the four dimensional array
+.  p - third dimension of the four dimensional array
+.  q - fourth dimension of the four dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+.  nstart - first index in the second coordinate direction (often 0)
+.  pstart - first index in the third coordinate direction (often 0)
+.  qstart - first index in the fourth coordinate direction (often 0)
+-  a - location of pointer to array obtained from VecGetArray4dRead()
+
+   Level: beginner
+
+   Notes:
+   For regular PETSc vectors this routine does not involve any copies. For
+   any special vectors that do not store local vector data in a contiguous
+   array, this routine will copy the data back into the underlying
+   vector data structure from the array obtained with VecGetArray().
+
+   This routine actually zeros out the a pointer.
+
+.seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
+          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DMDAVecGetArray(), DMDAVecRestoreArray()
+          VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d(), VecGet
+@*/
+PetscErrorCode  VecRestoreArray4dRead(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
+{
+  PetscErrorCode ierr;
+  void           *dummy;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidPointer(a,8);
+  PetscValidType(x,1);
+  dummy = (void*)(*a + mstart);
+  ierr  = PetscFree(dummy);CHKERRQ(ierr);
+  ierr  = VecRestoreArrayRead(x,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_USE_DEBUG)
 
 #undef __FUNCT__
