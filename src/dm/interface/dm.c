@@ -1900,13 +1900,14 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
     ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
-      PetscInt dof, cdof, off, goff, d, g;
+      PetscInt dof, gdof, cdof, off, goff, d, g;
 
       ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(gs, p, &gdof);CHKERRQ(ierr);
       ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(s, p, &off);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(gs, p, &goff);CHKERRQ(ierr);
-      if (goff < 0) continue;
+      if (!gdof || goff < 0) continue;
       if (!cdof) {
         for (d = 0; d < dof; ++d) gArray[goff-gStart+d] = lArray[off+d];
       } else {
