@@ -2840,22 +2840,29 @@ PETSc's AMG solver is constructed as a framework for developers to
 easily add AMG capabilities, like a new AMG algorithm or a new matrix
 triple product, etc.
 PETSc has instantiated one method, (smoothed) aggregation AMG, (\trl{-pc_type gamg -pc_gamg_type
-  agg} or just \trl{-pc_type gamg}) that is supported.
-There is an unsupported implementations of a classical AMG method and a
-hybrid geometric AMG method.
-GAMG provides unsmoothed aggregation (\trl{-pc_gamg_agg_nsmooths 0}) and smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1}).
+  agg} or just \trl{-pc_type gamg}) that is fully supported.
+There is an unsupported implementations of a classical AMG method (\trl{-pc_gamg_type classical}  and a hybrid geometric AMG method (\trl{-pc_gamg_type geo} or PCGAMGType().
+GAMG provides unsmoothed aggregation (\trl{-pc_gamg_agg_nsmooths 0}) and smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1} or PCGAMGSetNSmooths()).
 Smoothed aggregation is recommended for symmetric positive definite
 systems;  unsmoothed aggregation can be useful for asymmetric
 problems and problems where highest eigen estimates are problematic.
+  
+AMG methods benefit greatly from knowledge of the number of degrees of
+freedom per vertex, and is all but required for GAMG.
+The default is one (a scalar problem) but vector problems like elasticity should set the block size of the matrix appropriately: 
+\trl{-mat_block_size} $bs$ (e.g., $bs=3$ for 3D) or manually in the code with MatSetBlockSize().
+
+Smoothed aggregation relies an explicit representation of the (near) null space of the operator.
+One can provide this null space with KSPSetNullSpace().
+Elasticity is a common case where rotational rigid body modes must be explicitly provided; we provide a syntactic sugar method PCSetCoordinates() that will create the approbate rotational modes in 2D or 3D.
+
  
 AMG solvers applied to the broad spectrum of
 matrices that we see at PETSc, in terms of equations, discretizations, and parameter
 regimes (eg, stretched grids), not to mention possible user code bugs,
 can lead to a suboptimal initial experiences with AMG solvers in
 general and with PETSc in particular.
-Hypre has been hardened from over 15 years of use; GAMG is much
-younger but we will fix any code bugs and appreciate users that find
-them and are willing to work with us to fix them.
+%Hypre has been hardened from over 15 years of use; GAMG is much younger but we will fix any code bugs and appreciate users that find them and are willing to work with us to fix them.
 
 {\bf Trouble shooting:}  If GAMG or hypre is not satisfactory, the
 first thing to try is the other one.
@@ -2869,20 +2876,14 @@ thus \trl{-pc_gamg_agg_nsmooths 0} is recommended first if poor convergence rate
 Likewise,  \trl{-mg_levels_ksp_type richardson -mg_levels_pc_type sor}
 removes any dependance on eigen estimates.
 AMG methods are sensitive to coarsening rates and methods; for GAMG use
-\trl{-pc_gamg_threshold x.y} to regulate coarsening rates.
-A high threshold (eg, 0.08) will result in an expensive but potentially
-powerful preconditioner; a low threshold (eg, 0.0) will result in
+\trl{-pc_gamg_threshold} $x$ to regulate coarsening rates (PCGAMGSetThreshold()).
+A high threshold (eg, $x=0.08$) will result in an expensive but potentially
+powerful preconditioner; a low threshold (eg, $x=0.0$) will result in
 faster coarsening, fewer levels, cheaper solves, and generally worse
 convergence rates.
-\trl{-pc_gamg_threshold 0.0} is the most robust option (the reason for
+\trl{-pc_gamg_threshold} $0.0$ is the most robust option (the reason for
 this is not obvious) and is recommended if poor convergence rates are
 observed, at least until the source of the problem is discovered.
-
-AMG methods benefit greatly from knowledge of the number of degrees of
-freedom per vertex, and is all but required for GAMG.
-The default is one (a scalar problem) but vector problems like 2D
-elasticity should set the block size of the matrix appropriately (eg
-\trl{-mat_block_size 2} or manually in the code).
 
 Finally, there are several legitimate sources of poor performance of
 AMG solvers and often special purpose methods must be developed to
