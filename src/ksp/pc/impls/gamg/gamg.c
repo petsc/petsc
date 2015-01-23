@@ -2,7 +2,7 @@
  GAMG geometric-algebric multigrid PC - Mark Adams 2011
  */
 #include <petsc-private/matimpl.h>
-#include <petsc-private/pcgamgimpl.h>           /*I "petscpc.h" I*/
+#include <../src/ksp/pc/impls/gamg/gamg.h>           /*I "petscpc.h" I*/
 #include <petsc-private/kspimpl.h>
 #include <../src/ksp/pc/impls/bjacobi/bjacobi.h> /* Hack to access same_local_solves */
 

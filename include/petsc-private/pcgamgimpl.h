@@ -2,8 +2,6 @@
 #define __GAMG_IMPL
 #include <petsc-private/pcimpl.h>
 #include <petsc-private/pcmgimpl.h>                    /*I "petscksp.h" I*/
-#include <../src/mat/impls/aij/seq/aij.h>
-#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 struct _PCGAMGOps {
   PetscErrorCode (*graph)(PC, const Mat, Mat*);
