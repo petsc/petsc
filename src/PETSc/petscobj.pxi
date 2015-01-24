@@ -22,6 +22,8 @@ cdef extern from * nogil:
     int PetscObjectSetName(PetscObject,char[])
     int PetscObjectGetName(PetscObject,char*[])
 
+    int PetscObjectStateIncrease(PetscObject)
+
     int PetscObjectTypeCompare(PetscObject,char[],PetscBool*)
     int PetscObjectCompose(PetscObject,char[],PetscObject)
     int PetscObjectQuery(PetscObject,char[],PetscObject*)
@@ -48,6 +50,11 @@ cdef inline int PetscDEALLOC(PetscObject* obj) nogil:
     if not (<int>PetscInitializeCalled): return 0
     if     (<int>PetscFinalizeCalled):   return 0
     return PetscObjectDestroy(&tmp)
+
+cdef inline int PetscINCSTATE(PetscObject *obj) nogil:
+    if obj    == NULL: return 0
+    if obj[0] == NULL: return 0
+    return PetscObjectStateIncrease(obj[0])
 
 # --------------------------------------------------------------------
 
