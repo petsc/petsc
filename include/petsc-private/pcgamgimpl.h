@@ -10,7 +10,7 @@ struct _PCGAMGOps {
   PetscErrorCode (*optprol)(PC, const Mat, Mat*);
   PetscErrorCode (*createlevel)(PC, const Mat, PetscInt, Mat *, Mat *, PetscInt *);
   PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
-  PetscErrorCode (*setfromoptions)(PC);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,PC);
   PetscErrorCode (*destroy)(PC);
 };
 
@@ -44,7 +44,6 @@ typedef struct gamg_TAG {
   void *subctx;
 } PC_GAMG;
 
-PetscErrorCode PCSetFromOptions_MG(PC);
 PetscErrorCode PCReset_MG(PC);
 
 /* hooks create derivied classes */
@@ -52,7 +51,6 @@ PetscErrorCode  PCCreateGAMG_GEO(PC pc);
 PetscErrorCode  PCCreateGAMG_AGG(PC pc);
 PetscErrorCode  PCCreateGAMG_Classical(PC pc);
 
-PetscErrorCode PCSetFromOptions_GAMG(PC pc);
 PetscErrorCode PCDestroy_GAMG(PC pc);
 
 /* helper methods */
