@@ -875,7 +875,7 @@ PetscErrorCode  PCSetUp(PC pc)
   ierr = PetscObjectStateGet((PetscObject)pc->pmat,&matstate);CHKERRQ(ierr);
   ierr = MatGetNonzeroState(pc->pmat,&matnonzerostate);CHKERRQ(ierr);
   if (!pc->setupcalled) {
-    ierr            = PetscInfo(pc,"Setting up PC for first time");CHKERRQ(ierr);
+    ierr            = PetscInfo(pc,"Setting up PC for first time\n");CHKERRQ(ierr);
     pc->flag        = DIFFERENT_NONZERO_PATTERN;
   } else if (matstate == pc->matstate) {
     ierr = PetscInfo(pc,"Leaving PC with identical preconditioner since operator is unchanged\n");CHKERRQ(ierr);
@@ -1118,13 +1118,36 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat)
 +  pc - the preconditioner context
 -  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
 
-.seealso: PCGetOperators(), MatZeroEntries()
+.seealso: PCGetOperators(), MatZeroEntries(), PCGetReusePreconditioner(), KSPSetReusePreconditioner()
  @*/
 PetscErrorCode  PCSetReusePreconditioner(PC pc,PetscBool flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   pc->reusepreconditioner = flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGetReusePreconditioner"
+/*@
+   PCGetReusePreconditioner - Determines if the PC reuses the current preconditioner even if the operator in the preconditioner has changed.
+
+   Not Collective
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  flag - PETSC_TRUE do not compute a new preconditioner, PETSC_FALSE do compute a new preconditioner
+
+.seealso: PCGetOperators(), MatZeroEntries(), PCSetReusePreconditioner()
+ @*/
+PetscErrorCode  PCGetReusePreconditioner(PC pc,PetscBool *flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  *flag = pc->reusepreconditioner;
   PetscFunctionReturn(0);
 }
 
