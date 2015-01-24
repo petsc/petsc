@@ -199,12 +199,11 @@ class Configure(config.base.Configure):
       installdir  = self.framework.argDB['prefix']
       installarch = ''
       installpath = os.path.join(installdir,'bin')
-      fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules','petsc',self.petscdir.version),'w')
     else:
       installdir  = self.petscdir.dir
       installarch = self.arch.arch
       installpath = os.path.join(installdir,installarch,'bin')+':'+os.path.join(installdir,'bin')
-      fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules','petsc',self.petscdir.version+'-'+self.arch.arch),'w')
+    fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules','petsc',self.petscdir.version),'w')
     fd.write('''\
 #%%Module
 
