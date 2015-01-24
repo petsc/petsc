@@ -425,6 +425,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
 PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
+  PetscInt       m,n,mv,nv;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -432,6 +433,12 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x,&nv);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(y,&mv);CHKERRQ(ierr);
+  if (mv != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal resulting vector number of rows %D",m,mv);CHKERRQ(ierr);
+  if (nv != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal resulting vector number of rows %D",n,nv);CHKERRQ(ierr);
+
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
