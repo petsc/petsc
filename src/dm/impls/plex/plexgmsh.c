@@ -26,6 +26,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   int             snum;
   PetscBool       match;
   int             fileType;
+  float           version;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -41,8 +42,9 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
     ierr = PetscStrncmp(line, "$MeshFormat", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
     ierr = PetscViewerRead(vheader, line, 2, PETSC_STRING);CHKERRQ(ierr);
-    snum = sscanf(line, "2.2 %d", &fileType);
-    if (snum != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Gmsh file header: %s", line);
+    snum = sscanf(line, "%f %d", &version, &fileType);
+    if (snum != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Gmsh file header: %s", line);
+    if (version < 2.0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Gmsh file must be at least version 2.0");
   }
   ierr = MPI_Bcast(&fileType, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   /* Create appropriate viewer and build plex */
@@ -105,14 +107,16 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   if (!rank || binary) {
     PetscBool match;
     int       fileType, dataSize;
+    float     version;
 
     /* Read header */
     ierr = PetscViewerRead(viewer, line, 1, PETSC_STRING);CHKERRQ(ierr);
     ierr = PetscStrncmp(line, "$MeshFormat", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
     ierr = PetscViewerRead(viewer, line, 3, PETSC_STRING);CHKERRQ(ierr);
-    snum = sscanf(line, "2.2 %d %d", &fileType, &dataSize);
-    if (snum != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Gmsh file header: %s", line);
+    snum = sscanf(line, "%f %d %d", &version, &fileType, &dataSize);
+    if (snum != 3) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Gmsh file header: %s", line);
+    if (version < 2.0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Gmsh file must be at least version 2.0");
     if (dataSize != sizeof(double)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Data size %d is not valid for a Gmsh file", dataSize);
     if (binary) {
       int checkInt;

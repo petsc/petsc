@@ -188,6 +188,63 @@ PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexView_Ascii_Geometry"
+PetscErrorCode DMPlexView_Ascii_Geometry(DM dm, PetscViewer viewer)
+{
+  PetscSection       coordSection;
+  Vec                coordinates;
+  DMLabel            depthLabel;
+  const char        *name[4];
+  const PetscScalar *a;
+  PetscInt           dim, pStart, pEnd, cStart, cEnd, c;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(coordSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates, &a);CHKERRQ(ierr);
+  name[0]     = "vertex";
+  name[1]     = "edge";
+  name[dim-1] = "face";
+  name[dim]   = "cell";
+  for (c = cStart; c < cEnd; ++c) {
+    PetscInt *closure = NULL;
+    PetscInt  closureSize, cl;
+
+    ierr = PetscViewerASCIIPrintf(viewer, "Geometry for cell %d:\n", c);CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      PetscInt point = closure[cl], depth, dof, off, d, p;
+
+      if ((point < pStart) || (point >= pEnd)) continue;
+      ierr = PetscSectionGetDof(coordSection, point, &dof);CHKERRQ(ierr);
+      if (!dof) continue;
+      ierr = DMLabelGetValue(depthLabel, point, &depth);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(coordSection, point, &off);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%s %d coords:", name[depth], point);CHKERRQ(ierr);
+      for (p = 0; p < dof/dim; ++p) {
+        ierr = PetscViewerASCIIPrintf(viewer, " (");CHKERRQ(ierr);
+        for (d = 0; d < dim; ++d) {
+          if (d > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+          ierr = PetscViewerASCIIPrintf(viewer, "%g", PetscRealPart(a[off+p*dim+d]));CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, ")");CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArrayRead(coordinates, &a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexView_Ascii"
 PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
 {
@@ -2666,16 +2723,25 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 /* Set the number of dof on each point and separate by fields */
 PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscSection *section)
 {
-  PetscInt      *numDofTot;
+  PetscInt      *pMax;
   PetscInt       depth, pStart = 0, pEnd = 0;
-  PetscInt       p, d, dep, f;
+  PetscInt       Nf, p, d, dep, f;
+  PetscBool     *isFE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(dim+1, &numDofTot);CHKERRQ(ierr);
-  for (d = 0; d <= dim; ++d) {
-    numDofTot[d] = 0;
-    for (f = 0; f < numFields; ++f) numDofTot[d] += numDof[f*(dim+1)+d];
+  ierr = PetscMalloc1(numFields, &isFE);CHKERRQ(ierr);
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  for (f = 0; f < numFields; ++f) {
+    PetscObject  obj;
+    PetscClassId id;
+
+    isFE[f] = PETSC_FALSE;
+    if (f >= Nf) continue;
+    ierr = DMGetField(dm, f, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
+    else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
   }
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), section);CHKERRQ(ierr);
   if (numFields > 0) {
@@ -2689,17 +2755,25 @@ PetscErrorCode DMPlexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numField
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = PetscMalloc1(depth+1,&pMax);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, depth >= 0 ? &pMax[depth] : NULL, depth>1 ? &pMax[depth-1] : NULL, depth>2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
   for (dep = 0; dep <= depth; ++dep) {
     d    = dim == depth ? dep : (!dep ? 0 : dim);
     ierr = DMPlexGetDepthStratum(dm, dep, &pStart, &pEnd);CHKERRQ(ierr);
+    pMax[dep] = pMax[dep] < 0 ? pEnd : pMax[dep];
     for (p = pStart; p < pEnd; ++p) {
+      PetscInt tot = 0;
+
       for (f = 0; f < numFields; ++f) {
+        if (isFE[f] && p >= pMax[dep]) continue;
         ierr = PetscSectionSetFieldDof(*section, p, f, numDof[f*(dim+1)+d]);CHKERRQ(ierr);
+        tot += numDof[f*(dim+1)+d];
       }
-      ierr = PetscSectionSetDof(*section, p, numDofTot[d]);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(*section, p, tot);CHKERRQ(ierr);
     }
   }
-  ierr = PetscFree(numDofTot);CHKERRQ(ierr);
+  ierr = PetscFree(pMax);CHKERRQ(ierr);
+  ierr = PetscFree(isFE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5379,17 +5453,20 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
     else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
   }
-  /* Allocate boundary point storage */
+  /* Allocate boundary point storage for FEM boundaries */
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetNumBoundary(dm, &numBd);CHKERRQ(ierr);
   for (bd = 0; bd < numBd; ++bd) {
+    PetscInt  field;
     PetscBool isEssential;
-    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-    if (isEssential) ++numBC;
+
+    ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, NULL, &field, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    if (isFE[field] && isEssential) ++numBC;
   }
+  /* Add ghost cell boundaries for FVM */
   for (f = 0; f < numFields; ++f) if (!isFE[f] && cEndInterior >= 0) ++numBC;
   ierr = PetscMalloc2(numBC,&bcFields,numBC,&bcPoints);CHKERRQ(ierr);
   /* Constrain ghost cells for FV */
@@ -5411,6 +5488,7 @@ PetscErrorCode DMCreateDefaultSection_Plex(DM dm)
     PetscBool       isEssential, duplicate = PETSC_FALSE;
 
     ierr = DMPlexGetBoundary(dm, bd, &isEssential, NULL, &bdLabel, &field, NULL, &numValues, &values, NULL);CHKERRQ(ierr);
+    if (!isFE[field]) continue;
     ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     /* Only want to modify label once */
     for (bd2 = 0; bd2 < bd; ++bd2) {

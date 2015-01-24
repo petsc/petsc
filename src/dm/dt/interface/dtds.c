@@ -123,6 +123,48 @@ PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDSView_Ascii"
+static PetscErrorCode PetscDSView_Ascii(PetscDS prob, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscInt          f;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Discrete System with %d fields\n", prob->Nf);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  for (f = 0; f < prob->Nf; ++f) {
+    PetscObject  obj;
+    PetscClassId id;
+    const char  *name;
+    PetscInt     Nc;
+
+    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    ierr = PetscObjectGetName(obj, &name);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Field %s", name ? name : "<unknown>");CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID)      {
+      ierr = PetscFEGetNumComponents((PetscFE) obj, &Nc);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, " FEM");CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      ierr = PetscFVGetNumComponents((PetscFV) obj, &Nc);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, " FVM");CHKERRQ(ierr);
+    }
+    else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
+    if (Nc > 1) {ierr = PetscViewerASCIIPrintf(viewer, "%d components", Nc);CHKERRQ(ierr);}
+    else        {ierr = PetscViewerASCIIPrintf(viewer, "%d component", Nc);CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      if (id == PETSCFE_CLASSID)      {ierr = PetscFEView((PetscFE) obj, viewer);CHKERRQ(ierr);}
+      else if (id == PETSCFV_CLASSID) {ierr = PetscFVView((PetscFV) obj, viewer);CHKERRQ(ierr);}
+    }
+  }
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDSView"
 /*@C
   PetscDSView - Views a PetscDS
@@ -139,11 +181,15 @@ PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)
 @*/
 PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
 {
+  PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if (!v) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject) prob), &v);CHKERRQ(ierr);}
+  else    {PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);}
+  ierr = PetscObjectTypeCompare((PetscObject) v, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscDSView_Ascii(prob, v);CHKERRQ(ierr);}
   if (prob->ops->view) {ierr = (*prob->ops->view)(prob, v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -280,7 +326,8 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
       ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
       Nb   = 1;
       ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
-    } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
+      ierr = PetscFVGetDefaultTabulation(fv, &prob->basis[f], &prob->basisDer[f], NULL);CHKERRQ(ierr);
+    } else SETERRQ1(PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
     if (q) {ierr = PetscQuadratureGetData(q, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);}
     NqMax          = PetscMax(NqMax, Nq);
     NcMax          = PetscMax(NcMax, Nc);
@@ -809,8 +856,8 @@ PetscErrorCode PetscDSGetResidual(PetscDS prob, PetscInt f,
 #undef __FUNCT__
 #define __FUNCT__ "PetscDSSetResidual"
 PetscErrorCode PetscDSSetResidual(PetscDS prob, PetscInt f,
-                                       void (*f0)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[]),
-                                       void (*f1)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f1[]))
+                                  void (*f0)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[]),
+                                  void (*f1)(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f1[]))
 {
   PetscErrorCode ierr;
 
@@ -1127,6 +1174,44 @@ PetscErrorCode PetscDSGetBdFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
     ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
     ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
     *off += Nb*Nc;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDSGetComponentOffset"
+/*@
+  PetscDSGetComponentOffset - Returns the offset of the given field on an evaluation point
+
+  Not collective
+
+  Input Parameters:
++ prob - The PetscDS object
+- f - The field number
+
+  Output Parameter:
+. off - The offset
+
+  Level: beginner
+
+.seealso: PetscDSGetBdFieldOffset(), PetscDSGetNumFields(), PetscDSCreate()
+@*/
+PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off)
+{
+  PetscInt       g;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
+  PetscValidPointer(off, 3);
+  if ((f < 0) || (f >= prob->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
+  *off = 0;
+  for (g = 0; g < f; ++g) {
+    PetscFE  fe = (PetscFE) prob->disc[g];
+    PetscInt Nc;
+
+    ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+    *off += Nc;
   }
   PetscFunctionReturn(0);
 }

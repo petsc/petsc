@@ -58,6 +58,45 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscQuadratureDuplicate"
+/*@
+  PetscQuadratureDuplicate - Create a deep copy of the PetscQuadrature object
+
+  Collective on PetscQuadrature
+
+  Input Parameter:
+. q  - The PetscQuadrature object
+
+  Output Parameter:
+. r  - The new PetscQuadrature object
+
+  Level: beginner
+
+.keywords: PetscQuadrature, quadrature, clone
+.seealso: PetscQuadratureCreate(), PetscQuadratureDestroy(), PetscQuadratureGetData()
+@*/
+PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
+{
+  PetscInt         order, dim, Nq;
+  const PetscReal *points, *weights;
+  PetscReal       *p, *w;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(q, 2);
+  ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject) q), r);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*r, order);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, &dim, &Nq, &points, &weights);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nq*dim, &p);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nq, &w);CHKERRQ(ierr);
+  ierr = PetscMemcpy(p, points, Nq*dim * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMemcpy(w, weights, Nq * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*r, dim, Nq, p, w);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscQuadratureDestroy"
 /*@
   PetscQuadratureDestroy - Destroys a PetscQuadrature object

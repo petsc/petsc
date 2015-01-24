@@ -286,6 +286,7 @@ static PetscErrorCode DMPlexShiftCoordinates_Internal(DM dm, PetscInt depthShift
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &newCoordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) newCoordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(newCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(newCoordinates, dim);CHKERRQ(ierr);
   ierr = VecSetType(newCoordinates,VECSTANDARD);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmNew, newCoordinates);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -572,6 +573,12 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   ierr = DMPlexShiftSF_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = DMPlexShiftLabels_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = PetscFree(depthShift);CHKERRQ(ierr);
+  /* Step 7: Periodicity */
+  if (dm->maxCell) {
+    const PetscReal *maxCell, *L;
+    ierr = DMGetPeriodicity(dm,  &maxCell, &L);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(gdm,  maxCell,  L);CHKERRQ(ierr);
+  }
   if (numGhostCells) *numGhostCells = Ng;
   PetscFunctionReturn(0);
 }
@@ -1389,10 +1396,16 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   IS              dimIS, subpointIS, facePosIS, faceNegIS, crossEdgeIS = NULL;
   const PetscInt *points, *subpoints;
   const PetscInt  rev   = flip ? -1 : 1;
-  PetscInt        shift = 100, shift2 = 200, dim, dep, cStart, cEnd, cMax, fStart, fEnd, vStart, vEnd, numPoints, numSubpoints, p, val;
+  PetscInt       *pMax;
+  PetscInt        shift = 100, shift2 = 200, dim, depth, pSize, dep, cStart, cEnd, cMax, fStart, fEnd, vStart, vEnd, numPoints, numSubpoints, p, val;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  pSize = PetscMax(depth, dim) + 1;
+  ierr = PetscMalloc1(pSize,&pMax);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, depth >= 0 ? &pMax[depth] : NULL, depth>1 ? &pMax[depth-1] : NULL, depth>2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
   ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (subdm) {
@@ -1404,7 +1417,10 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   }
   /* Mark cell on the fault, and its faces which touch the fault: cell orientation for face gives the side of the fault */
   ierr = DMLabelGetStratumIS(label, dim-1, &dimIS);CHKERRQ(ierr);
-  if (!dimIS) PetscFunctionReturn(0);
+  if (!dimIS) {
+    ierr = PetscFree(pMax);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(dimIS, &points);CHKERRQ(ierr);
   for (p = 0; p < numPoints; ++p) { /* Loop over fault faces */
@@ -1489,7 +1505,8 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
         if ((val < 0) || (val > dim)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %d has label value %d, should be part of the fault", point, val);
         ierr = DMLabelClearValue(label, point, val);CHKERRQ(ierr);
         ierr = DMLabelSetValue(label, point, shift2+val);CHKERRQ(ierr);
-        /* Check for cross-edge */
+        /* Check for cross-edge
+             A cross-edge has endpoints which are both on the boundary of the surface, but the edge itself is not. */
         if (val != 0) continue;
         ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
         ierr = DMPlexGetSupportSize(dm, point, &supportSize);CHKERRQ(ierr);
@@ -1522,7 +1539,10 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
     ierr = ISDestroy(&crossEdgeIS);CHKERRQ(ierr);
     ierr = ISDestroy(&vertIS);CHKERRQ(ierr);
   }
-  if (!dimIS) PetscFunctionReturn(0);
+  if (!dimIS) {
+    ierr = PetscFree(pMax);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = ISGetLocalSize(dimIS, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(dimIS, &points);CHKERRQ(ierr);
   for (p = 0; p < numPoints; ++p) { /* Loop over fault vertices */
@@ -1609,7 +1629,8 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
           break;
         }
         ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_FALSE, &sstarSize, &sstar);CHKERRQ(ierr);
-        if (!marked) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d could not be classified", point);
+        ierr = DMLabelGetValue(depthLabel, point, &dep);CHKERRQ(ierr);
+        if (point < pMax[dep] && !marked) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d could not be classified", point);
       }
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
@@ -1666,6 +1687,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
   }
   ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
   ierr = ISDestroy(&dimIS);CHKERRQ(ierr);
+  ierr = PetscFree(pMax);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

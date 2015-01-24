@@ -1395,10 +1395,9 @@ int main(int argc, char **argv)
     if (dmDist) {
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm   = dmDist;
-    } else {
-      ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
     }
   }
+  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   {
     DM gdm;
 

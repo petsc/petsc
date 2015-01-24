@@ -5138,7 +5138,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
 
   Options Describing Matrix Structure:
 +    MAT_SPD - symmetric positive definite
--    MAT_SYMMETRIC - symmetric in terms of both structure and value
+.    MAT_SYMMETRIC - symmetric in terms of both structure and value
 .    MAT_HERMITIAN - transpose is the complex conjugation
 .    MAT_STRUCTURALLY_SYMMETRIC - symmetric nonzero structure
 -    MAT_SYMMETRY_ETERNAL - if you would like the symmetry/Hermitian flag

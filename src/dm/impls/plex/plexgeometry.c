@@ -912,7 +912,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   ierr = DMPlexGetConeSize(dm, cell, &numCorners);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
-  dim  = coordSize/numCorners;
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
   if (normal) {
     if (dim > 2) {
       const PetscReal x0 = PetscRealPart(coords[dim+0] - coords[0]), x1 = PetscRealPart(coords[dim*2+0] - coords[0]);
@@ -1197,9 +1197,9 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
   for (f = fStart; f < fEnd; ++f) {
     PetscFVFaceGeom *fg;
     PetscReal        area;
-    PetscInt         ghost, d;
+    PetscInt         ghost = -1, d;
 
-    ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);
+    if (ghostLabel) {ierr = DMLabelGetValue(ghostLabel, f, &ghost);CHKERRQ(ierr);}
     if (ghost >= 0) continue;
     ierr = DMPlexPointLocalRef(dmFace, f, fgeom, &fg);CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFVM(dm, f, &area, fg->centroid, fg->normal);CHKERRQ(ierr);

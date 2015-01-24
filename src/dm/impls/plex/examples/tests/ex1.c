@@ -102,8 +102,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
-    } else {
-      ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
     }
     /* Refine mesh using a volume constraint */
     ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
@@ -113,15 +111,16 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = refinedMesh;
     }
-    if (user->overlap) {
-      DM overlapMesh = NULL;
-      /* Add the level-1 overlap to refined mesh */
-      ierr = DMPlexDistributeOverlap(*dm, 1, NULL, &overlapMesh);CHKERRQ(ierr);
-      if (overlapMesh) {
-        ierr = DMView(overlapMesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-        ierr = DMDestroy(dm);CHKERRQ(ierr);
-        *dm = overlapMesh;
-      }
+  }
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  if (user->overlap) {
+    DM overlapMesh = NULL;
+    /* Add the level-1 overlap to refined mesh */
+    ierr = DMPlexDistributeOverlap(*dm, 1, NULL, &overlapMesh);CHKERRQ(ierr);
+    if (overlapMesh) {
+      ierr = DMView(overlapMesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      *dm = overlapMesh;
     }
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);

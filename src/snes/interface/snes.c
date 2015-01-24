@@ -3972,6 +3972,39 @@ PetscErrorCode  SNESGetType(SNES snes,SNESType *type)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESSetSolution"
+/*@
+  SNESSetSolution - Sets the solution vector for use by the SNES routines.
+
+  Logically Collective on SNES and Vec
+
+  Input Parameters:
++ snes - the SNES context obtained from SNESCreate()
+- u    - the solution vector
+
+  Level: beginner
+
+.keywords: SNES, set, solution
+@*/
+PetscErrorCode SNESSetSolution(SNES snes, Vec u)
+{
+  DM             dm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidHeaderSpecific(u, VEC_CLASSID, 2);
+  ierr = PetscObjectReference((PetscObject) u);CHKERRQ(ierr);
+  ierr = VecDestroy(&snes->vec_sol);CHKERRQ(ierr);
+
+  snes->vec_sol = u;
+
+  ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+  ierr = DMShellSetGlobalVector(dm, u);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESGetSolution"
 /*@
    SNESGetSolution - Returns the vector where the approximate solution is

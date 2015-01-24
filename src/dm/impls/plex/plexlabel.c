@@ -791,8 +791,10 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
       (*labelNew)->stratumSizes[leafStrata[offset+s]]++;
     }
   }
+  ierr = PetscCalloc1((*labelNew)->numStrata,&(*labelNew)->ht);CHKERRQ(ierr);
   ierr = PetscMalloc1((*labelNew)->numStrata,&(*labelNew)->points);CHKERRQ(ierr);
   for (s = 0; s < (*labelNew)->numStrata; ++s) {
+    PetscHashICreate((*labelNew)->ht[s]);
     ierr = PetscMalloc1((*labelNew)->stratumSizes[s], &(*labelNew)->points[s]);CHKERRQ(ierr);
   }
 

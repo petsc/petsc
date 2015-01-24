@@ -485,6 +485,7 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PCGAMGRegister(PCGAMGType,PetscErrorCode (*)(PC));
 
 typedef const char *PCGAMGClassicalType;
 #define PCGAMGCLASSICALDIRECT   "direct"
