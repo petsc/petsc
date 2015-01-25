@@ -111,14 +111,15 @@ extern PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat,HYPRE_IJMatrix);
 PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A,HYPRE_IJMatrix ij)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,rstart,rend,ncols;
+  PetscInt          i,rstart,rend,ncols,nr,nc;
   const PetscScalar *values;
   const PetscInt    *cols;
   PetscBool         flg;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
-  if (flg) {
+  ierr = MatGetSize(A,&nr,&nc);CHKERRQ(ierr);
+  if (flg && nr == nc) {
     ierr = MatHYPRE_IJMatrixFastCopy_MPIAIJ(A,ij);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
