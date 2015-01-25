@@ -983,14 +983,14 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Moab"
-PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(DM dm)
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(PetscOptions *PetscOptionsObject,DM dm)
 {
   PetscErrorCode ierr;
   DM_Moab        *dmmoab = (DM_Moab*)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscOptionsHead("DMMoab Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMMoab Options");CHKERRQ(ierr);
   ierr  = PetscOptionsInt("-dm_moab_rw_dbg", "The verbosity level for reading and writing MOAB meshes", "DMView", dmmoab->rw_dbglevel, &dmmoab->rw_dbglevel, NULL);CHKERRQ(ierr);
   ierr  = PetscOptionsBool("-dm_moab_partiton_by_rank", "Use partition by rank when reading MOAB meshes from file", "DMView", dmmoab->partition_by_rank, &dmmoab->partition_by_rank, NULL);CHKERRQ(ierr);
   /* TODO: typically, the read options are needed before a DM is completely created and available in which case, the options wont be available ?? */
