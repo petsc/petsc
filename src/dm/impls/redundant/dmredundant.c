@@ -404,7 +404,7 @@ static PetscErrorCode DMRedundantGetSize_Redundant(DM dm,PetscInt *rank,PetscInt
 
   Level: intermediate
 
-.seealso: DMType, DMCOMPOSITE, DMCreateRedundant(), DMCreate(), DMRedundantSetSize(), DMRedundantGetSize()
+.seealso: DMType, DMCOMPOSITE,  DMCreate(), DMRedundantSetSize(), DMRedundantGetSize()
 M*/
 
 #undef __FUNCT__

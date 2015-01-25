@@ -661,11 +661,11 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalVectorRead(x, &bjac->x);CHKERRQ(ierr);
-  ierr = VecGetLocalVector(y, &bjac->y);CHKERRQ(ierr);
+  ierr = VecGetLocalVectorRead(x, bjac->x);CHKERRQ(ierr);
+  ierr = VecGetLocalVector(y, bjac->y);CHKERRQ(ierr);
   ierr = KSPSolve(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr);
-  ierr = VecRestoreLocalVectorRead(x, &bjac->x);CHKERRQ(ierr);
-  ierr = VecRestoreLocalVector(y, &bjac->y);CHKERRQ(ierr);
+  ierr = VecRestoreLocalVectorRead(x, bjac->x);CHKERRQ(ierr);
+  ierr = VecRestoreLocalVector(y, bjac->y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -101,6 +101,8 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data,unsig
 
    You can run src/sys/webclient/examples/tutorials/globusobtainaccesstoken to get an access token
 
+   Level: intermediate
+
 .seealso: PetscGoogleDriveRefresh(), PetscGoogleDriveUpload(), PetscURLShorten(), PetscGlobusUpload()
 
 @*/
@@ -167,6 +169,8 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm,char access_token[],size_t tok
    Output Parameters:
 .  buff - location to put Globus information
 
+   Level: intermediate
+
 .seealso: PetscGoogleDriveRefresh(), PetscGoogleDriveUpload(), PetscURLShorten(), PetscGlobusUpload(), PetscGlobusAuthorize()
 
 @*/
@@ -217,6 +221,8 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm,const char access_token[],c
 
   Options Database:
 .  -globus_access_token   XXX
+
+   Level: intermediate
 
 .seealso: PetscURLShorten(), PetscGoogleDriveAuthorize(), PetscGoogleDriveRefresh(), PetscGlobusAuthorize()
 

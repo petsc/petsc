@@ -30,7 +30,7 @@
 
 #if defined(PETSC_USE_64BIT_INDICES)
  #if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
-  /*sizeof(MKL_INT) == sizeof(long long int) if ilp64*/
+  /* sizeof(MKL_INT) == sizeof(long long int) if ilp64*/
   #define INT_TYPE long long int
   #define MKL_PARDISO pardiso
   #define MKL_PARDISO_INIT pardisoinit
@@ -52,7 +52,7 @@
  */
 typedef struct {
 
-  /*Configuration vector*/
+  /* Configuration vector*/
   INT_TYPE     iparm[IPARM_SIZE];
 
   /*
@@ -61,23 +61,23 @@ typedef struct {
    */
   void         *pt[IPARM_SIZE];
 
-  /*Basic mkl_pardiso info*/
+  /* Basic mkl_pardiso info*/
   INT_TYPE     phase, maxfct, mnum, mtype, n, nrhs, msglvl, err;
 
-  /*Matrix structure*/
+  /* Matrix structure*/
   void         *a;
   INT_TYPE     *ia, *ja;
 
-  /*Number of non-zero elements*/
+  /* Number of non-zero elements*/
   INT_TYPE     nz;
 
-  /*Row permutaton vector*/
+  /* Row permutaton vector*/
   INT_TYPE     *perm;
 
-  /*Deffine is matrix preserve sparce structure.*/
+  /* Define if matrix preserves sparse structure.*/
   MatStructure matstruc;
 
-  /*True if mkl_pardiso function have been used.*/
+  /* True if mkl_pardiso function have been used.*/
   PetscBool CleanUp;
 } Mat_MKL_PARDISO;
 

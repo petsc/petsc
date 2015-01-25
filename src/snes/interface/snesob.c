@@ -33,7 +33,7 @@ M*/
 -  ctx - [optional] user-defined context for private data for the
          function evaluation routine (may be NULL)
 
-   Level: intermediately
+   Level: intermediate
 
    Note: This is not used in the SNESLINESEARCHCP line search.
 
