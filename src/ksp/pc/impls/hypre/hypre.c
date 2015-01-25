@@ -715,7 +715,7 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 /* --------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HYPRE_AMS"
-static PetscErrorCode PCSetFromOptions_HYPRE_AMS(PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_AMS(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -723,7 +723,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_AMS(PC pc)
   PetscBool      flag,flag2,flag3,flag4;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("HYPRE AMS Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE AMS Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_hypre_ams_print_level","Debugging output level for AMS","None",jac->ams_print,&jac->ams_print,&flag);CHKERRQ(ierr);
   if (flag) PetscStackCallStandard(HYPRE_AMSSetPrintLevel,(jac->hsolver,jac->ams_print));
   ierr = PetscOptionsInt("-pc_hypre_ams_max_iter","Maximum number of AMS multigrid iterations within PCApply","None",jac->ams_max_iter,&jac->ams_max_iter,&flag);CHKERRQ(ierr);
@@ -1291,7 +1291,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PetscOptions *PetscOptionsObject,PC
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("HYPRE preconditioner options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE preconditioner options");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,5,"boomeramg",&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCHYPRESetType_HYPRE(pc,type[indx]);CHKERRQ(ierr);
