@@ -286,7 +286,6 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
   } else {
     ierr = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
-    ierr = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
   }
 
   /* Call general purpose update function */
@@ -308,14 +307,14 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
         snes->reason = SNES_DIVERGED_FNORM_NAN;
         PetscFunctionReturn(0);
       }
+      /* Monitor convergence */
+      ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+      snes->iter = i+1;
+      snes->norm = fnorm;
+      ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+      ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
+      ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     }
-    /* Monitor convergence */
-    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
-    snes->iter = i+1;
-    snes->norm = fnorm;
-    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-    ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
-    ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
     if (normschedule == SNES_NORM_ALWAYS) ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
