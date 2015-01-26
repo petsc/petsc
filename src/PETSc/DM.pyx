@@ -189,9 +189,9 @@ cdef class DM(Object):
         return(A, scale)
 
     def createInjection(self, DM dm not None):
-        cdef Scatter sct = Scatter()
-        CHKERR( DMCreateInjection(self.dm, dm.dm, &sct.sct) )
-        return sct
+        cdef Mat inject = Mat()
+        CHKERR( DMCreateInjection(self.dm, dm.dm, &inject.mat) )
+        return inject
 
     def createAggregates(self, DM dm not None):
         cdef Mat mat = Mat()
