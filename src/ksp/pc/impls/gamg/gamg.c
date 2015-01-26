@@ -71,7 +71,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGCreateLevel_GAMG"
-static PetscErrorCode PCGAMGCreateLevel_GAMG(const PC pc,const Mat Amat_fine,const PetscInt cr_bs,
+static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
                                   Mat *a_P_inout,Mat *a_Amat_crs,PetscMPIInt *a_nactive_proc)
 {
   PetscErrorCode  ierr;
