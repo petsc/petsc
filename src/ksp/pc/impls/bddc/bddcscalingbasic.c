@@ -378,9 +378,6 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   PC_BDDC             *pcbddc=(PC_BDDC*)pc->data;
   PCBDDCDeluxeScaling deluxe_ctx=pcbddc->deluxe_ctx;
   PCBDDCSubSchurs     sub_schurs=pcbddc->sub_schurs;
-  PetscBT             bitmask;
-  PetscInt            i;
-  const PetscInt      *idxs;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -396,42 +393,21 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   ierr = PCBDDCScalingSetUp_Deluxe_Seq(pc);CHKERRQ(ierr);
 
   /* diagonal scaling on interface dofs not contained in cc */
-  ierr = PetscBTCreate(pcis->n,&bitmask);CHKERRQ(ierr);
-  ierr = ISGetIndices(pcis->is_I_local,&idxs);CHKERRQ(ierr);
-  for (i=0;i<pcis->n-pcis->n_B;i++) {
-    ierr = PetscBTSet(bitmask,idxs[i]);CHKERRQ(ierr);
-  }
-  ierr = ISRestoreIndices(pcis->is_I_local,&idxs);CHKERRQ(ierr);
-
-  for (i=0;i<sub_schurs->n_subs;i++) {
-    PetscInt subset_size,j;
-
-    ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
-    ierr = ISGetIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
-    for (j=0;j<subset_size;j++) {
-      ierr = PetscBTSet(bitmask,idxs[j]);CHKERRQ(ierr);
+  if (sub_schurs->is_Ej_com) {
+    PetscInt       nmap;
+    const PetscInt *idxs;
+    ierr = ISGetLocalSize(sub_schurs->is_Ej_com,&deluxe_ctx->n_simple);CHKERRQ(ierr);
+    ierr = ISGetIndices(sub_schurs->is_Ej_com,&idxs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(deluxe_ctx->n_simple,&deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,deluxe_ctx->n_simple,idxs,&nmap,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
+    if (nmap != deluxe_ctx->n_simple) {
+      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs! %d != %d",nmap,deluxe_ctx->n_simple);
     }
-    ierr = ISRestoreIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(sub_schurs->is_Ej_com,&idxs);CHKERRQ(ierr);
+  } else {
+    deluxe_ctx->n_simple = 0;
+    deluxe_ctx->idx_simple_B = 0;
   }
-
-  deluxe_ctx->n_simple = 0;
-  for (i=0;i<pcis->n;i++) {
-    if (!PetscBTLookup(bitmask,i)) {
-      deluxe_ctx->n_simple++;
-    }
-  }
-  ierr = PetscMalloc1(deluxe_ctx->n_simple,&deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
-  deluxe_ctx->n_simple = 0;
-  for (i=0;i<pcis->n;i++) {
-    if (!PetscBTLookup(bitmask,i)) {
-      deluxe_ctx->idx_simple_B[deluxe_ctx->n_simple++] = i;
-    }
-  }
-  ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,deluxe_ctx->n_simple,deluxe_ctx->idx_simple_B,&i,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
-  if (i != deluxe_ctx->n_simple) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simple scaling dofs! %d != %d",i,deluxe_ctx->n_simple);
-  }
-  ierr = PetscBTDestroy(&bitmask);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -103,7 +103,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   /* get Schur complement matrices */
   if (!sub_schurs->use_mumps) {
     if (compute_Stilda) {
-      SETERRQ(PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS");
+      SETERRQ(PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Computation of Stildas requires MUMPS");
     }
     ierr = MatSchurComplementGetSubMatrices(sub_schurs->S,&A_II,NULL,&A_IB,&A_BI,&A_BB);CHKERRQ(ierr);
     ierr = PetscMalloc4(sub_schurs->n_subs,&is_subset_B,
@@ -365,7 +365,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 
     /* Work arrays */
     ierr = PetscMalloc1(max_subset_size,&dummy_idx);CHKERRQ(ierr);
-
     /* Loop on local problems end compute Schur complements explicitly */
     local_size = 0;
     for (i=0;i<sub_schurs->n_subs_seq;i++) {
@@ -537,7 +536,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 #define __FUNCT__ "PCBDDCSubSchursInit"
 PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat A, Mat S, IS is_I, IS is_B, PCBDDCGraph graph, ISLocalToGlobalMapping BtoNmap, PetscInt seqthreshold)
 {
-  IS                  *faces,*edges,*all_cc;
+  IS                  *faces,*edges,*all_cc,vertices;
   PetscInt            *index_sequential,*index_parallel;
   PetscInt            *auxlocal_sequential,*auxlocal_parallel;
   PetscInt            *auxglobal_sequential,*auxglobal_parallel;
@@ -562,7 +561,7 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat A, Mat S, IS 
   ierr = PCBDDCSubSchursReset(sub_schurs);CHKERRQ(ierr);
 
   /* get index sets for faces and edges */
-  ierr = PCBDDCGraphGetCandidatesIS(graph,&n_faces,&faces,&n_edges,&edges,NULL);CHKERRQ(ierr);
+  ierr = PCBDDCGraphGetCandidatesIS(graph,&n_faces,&faces,&n_edges,&edges,&vertices);CHKERRQ(ierr);
   n_all_cc = n_faces+n_edges;
   ierr = PetscMalloc1(n_all_cc,&all_cc);CHKERRQ(ierr);
   for (i=0;i<n_faces;i++) {
@@ -653,9 +652,12 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat A, Mat S, IS 
   sub_schurs->n_subs_par_g = n_parallel_problems;
   sub_schurs->n_subs = sub_schurs->n_subs_seq + sub_schurs->n_subs_par;
   sub_schurs->is_subs = all_cc;
-  for (i=0;i<sub_schurs->n_subs;i++) {
-    ierr = ISSort(sub_schurs->is_subs[i]);CHKERRQ(ierr);
+  if (!sub_schurs->use_mumps) { /* for adaptive selection */
+    for (i=0;i<sub_schurs->n_subs;i++) {
+      ierr = ISSort(sub_schurs->is_subs[i]);CHKERRQ(ierr);
+    }
   }
+  sub_schurs->is_Ej_com = vertices;
   sub_schurs->index_sequential = index_sequential;
   sub_schurs->index_parallel = index_parallel;
   sub_schurs->auxglobal_sequential = auxglobal_sequential;
@@ -721,6 +723,7 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   ierr = MatDestroy(&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
   ierr = MatDestroy(&sub_schurs->sum_S_Ej_tilda_all);CHKERRQ(ierr);
   ierr = ISDestroy(&sub_schurs->is_Ej_all);CHKERRQ(ierr);
+  ierr = ISDestroy(&sub_schurs->is_Ej_com);CHKERRQ(ierr);
   for (i=0;i<sub_schurs->n_subs;i++) {
     ierr = ISDestroy(&sub_schurs->is_subs[i]);CHKERRQ(ierr);
     ierr = MatDestroy(&sub_schurs->S_Ej[i]);CHKERRQ(ierr);

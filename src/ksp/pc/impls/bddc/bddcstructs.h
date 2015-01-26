@@ -54,6 +54,7 @@ struct _PCBDDCSubSchurs {
   Mat sum_S_Ej_all;
   Mat sum_S_Ej_tilda_all;
   IS  is_Ej_all;
+  IS  is_Ej_com;
   /* IS */
   IS is_I_layer;
   /* l2g maps */
