@@ -205,10 +205,10 @@ PetscErrorCode SNESSetFromOptions_NGS(SNES snes)
   if (flg) {
     ierr = SNESNGSSetSweeps(snes,sweeps);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-snes_ngs_atol","Number of sweeps of GS to apply","SNESComputeGS",gs->abstol,&atol,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_ngs_rtol","Number of sweeps of GS to apply","SNESComputeGS",gs->rtol,&rtol,&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_ngs_stol","Number of sweeps of GS to apply","SNESComputeGS",gs->stol,&stol,&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_ngs_max_it","Number of sweeps of GS to apply","SNESComputeGS",gs->max_its,&max_its,&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngs_atol","Absolute residual tolerance for GS iteration","SNESComputeGS",gs->abstol,&atol,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngs_rtol","Relative residual tolerance for GS iteration","SNESComputeGS",gs->rtol,&rtol,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ngs_stol","Absolute update tolerance for GS iteration","SNESComputeGS",gs->stol,&stol,&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_ngs_max_it","Maximum number of sweeps of GS to apply","SNESComputeGS",gs->max_its,&max_its,&flg3);CHKERRQ(ierr);
   if (flg || flg1 || flg2 || flg3) {
     ierr = SNESNGSSetTolerances(snes,atol,rtol,stol,max_its);CHKERRQ(ierr);
   }
