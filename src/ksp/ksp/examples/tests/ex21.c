@@ -67,7 +67,7 @@ PetscErrorCode Destroy(Mat *A,IS *is0,IS *is1)
 int main(int argc,char *argv[])
 {
   PetscErrorCode ierr;
-  Mat            A,S,Sexplicit;
+  Mat            A,S = NULL,Sexplicit = NULL;
   IS             is0,is1;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);

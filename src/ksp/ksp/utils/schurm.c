@@ -564,13 +564,15 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
   PetscValidHeaderSpecific(isrow0,IS_CLASSID,2);
   PetscValidHeaderSpecific(iscol0,IS_CLASSID,3);
   PetscValidHeaderSpecific(isrow1,IS_CLASSID,4);
   PetscValidHeaderSpecific(iscol1,IS_CLASSID,5);
+  if (mreuse == MAT_IGNORE_MATRIX && preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
   if (mreuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_CLASSID,7);
   if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newpmat,MAT_CLASSID,9);
-  PetscValidType(mat,1);
+
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   if (mreuse != MAT_IGNORE_MATRIX) {
@@ -581,20 +583,20 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
       if (A != Ap) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Preconditioning matrix does not match operator");
       ierr = MatDestroy(&Ap);CHKERRQ(ierr); /* get rid of extra reference */
     }
-    ierr = MatGetSubMatrix(mat,isrow0,iscol0,mreuse,&A);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(mat,isrow0,iscol1,mreuse,&B);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(mat,isrow1,iscol0,mreuse,&C);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(mat,isrow1,iscol1,mreuse,&D);CHKERRQ(ierr);
-    switch (mreuse) {
-    case MAT_INITIAL_MATRIX:
-      ierr = MatCreateSchurComplement(A,A,B,C,D,newmat);CHKERRQ(ierr);
-      break;
-    case MAT_REUSE_MATRIX:
-      ierr = MatSchurComplementUpdateSubMatrices(*newmat,A,A,B,C,D);CHKERRQ(ierr);
-      break;
-    default:
-      SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Unrecognized value of mreuse");
-    }
+  }
+  ierr = MatGetSubMatrix(mat,isrow0,iscol0,mreuse,&A);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,isrow0,iscol1,mreuse,&B);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,isrow1,iscol0,mreuse,&C);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,isrow1,iscol1,mreuse,&D);CHKERRQ(ierr);
+  switch (mreuse) {
+  case MAT_INITIAL_MATRIX:
+    ierr = MatCreateSchurComplement(A,A,B,C,D,newmat);CHKERRQ(ierr);
+    break;
+  case MAT_REUSE_MATRIX:
+    ierr = MatSchurComplementUpdateSubMatrices(*newmat,A,A,B,C,D);CHKERRQ(ierr);
+    break;
+  default:
+    if (mreuse != MAT_IGNORE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Unrecognized value of mreuse");
   }
   if (preuse != MAT_IGNORE_MATRIX) {
     ierr = MatCreateSchurComplementPmat(A,B,C,D,ainvtype,preuse,newpmat);CHKERRQ(ierr);
@@ -659,10 +661,12 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
   if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*Sp,MAT_CLASSID,9);
   PetscValidType(A,1);
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetSchurComplement_C",&f);CHKERRQ(ierr);
+  f = NULL;
+  if (mreuse == MAT_REUSE_MATRIX) { /* This is the only situation, in which we can demand that the user pass a non-NULL pointer to non-garbage in S. */
+    ierr = PetscObjectQueryFunction((PetscObject)*S,"MatGetSchurComplement_C",&f);CHKERRQ(ierr);
+  }
   if (f) {
-    ierr = (*f)(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,preuse,Sp);CHKERRQ(ierr);
+      ierr = (*f)(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,preuse,Sp);CHKERRQ(ierr);
   } else {
     ierr = MatGetSchurComplement_Basic(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,ainvtype,preuse,Sp);CHKERRQ(ierr);
   }
@@ -795,12 +799,15 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
   /* TODO: Perhaps should create an appropriately-sized zero matrix of the same type as A00? */
   if ((!A01 || !A10) & !A11) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot assemble Spmat: A01, A10 and A11 are all NULL.");
 
+  if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
+
   /* A zero size A00 or empty A01 or A10 imply S = A11. */
   ierr = MatGetSize(A00,&N00,NULL);CHKERRQ(ierr);
   if (!A01 || !A10 || !N00) {
-    if (!preuse) {
+    if (preuse == MAT_INITIAL_MATRIX) {
       ierr = MatDuplicate(A11,MAT_COPY_VALUES,Spmat);CHKERRQ(ierr);
-    } else {
+    } else { /* MAT_REUSE_MATRIX */
+      /* TODO: when can we pass SAME_NONZERO_PATTERN? */
       ierr = MatCopy(A11,*Spmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     }
 
@@ -823,6 +830,7 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
     if (!A11) {
       ierr = MatScale(Sp,-1.0);CHKERRQ(ierr);
     } else {
+      /* TODO: when can we pass SAME_NONZERO_PATTERN? */
       ierr     = MatAYPX(Sp,-1,A11,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     }
     *Spmat    = Sp;

@@ -1844,9 +1844,8 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
     Input Parameters:
 +   dm - the DM object
 .   l - the local vector
-.   mode - if INSERT_VALUES then no parallel communication is used, if ADD_VALUES then all ghost points from the same base point accumulate into that
-           base point.
-- - the global vector
+.   mode - if INSERT_VALUES then no parallel communication is used, if ADD_VALUES then all ghost points from the same base point accumulate into that base point.
+-   g - the global vector
 
     Notes: In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation.
            INSERT_VALUES is not supported for DMDA, in that case simply compute the values directly into a global vector instead of a local one.

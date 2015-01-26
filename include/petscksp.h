@@ -159,6 +159,8 @@ PETSC_EXTERN PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscRe
   KSP_FCG_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
   KSP_FCG_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
 
+   Level: intermediate
+
 .seealso : KSPFCG,KSPFCGSetTruncationType(),KSPFCGGetTruncationType()
 
 E*/

@@ -1406,12 +1406,38 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
 
 /*@C
    VecGetLocalVectorRead - Maps the local portion of a vector into a
-   sequential vector.  This function is similar to VecGetArray which
-   maps the local portion into a raw pointer.
-   */
+   vector.  You must call VecRestoreLocalVectorRead() when the local
+   vector is no longer needed.
+
+   Not collective.
+
+   Input parameter:
+.  v - The vector for which the local vector is desired.
+
+   Output parameter:
+.  w - Upon exit this contains the local vector.
+
+   Level: beginner
+   
+   Notes:
+   This function is similar to VecGetArrayRead() which maps the local
+   portion into a raw pointer.  VecGetLocalVectorRead() is usually
+   almost as efficient as VecGetArrayRead() but in certain circumstances
+   VecGetLocalVectorRead() can be much more efficient than
+   VecGetArrayRead().  This is because the construction of a contiguous
+   array representing the vector data required by VecGetArrayRead() can
+   be an expensive operation for certain vector types.  For example, for
+   GPU vectors VecGetArrayRead() requires that the data between device
+   and host is synchronized.  
+
+   Unlike VecGetLocalVector(), this routine is not collective and
+   preserves cached information.
+
+.seealso: VecRestoreLocalVectorRead(), VecGetLocalVector(), VecGetArrayRead(), VecGetArray()
+@*/
 #undef __FUNCT__
 #define __FUNCT__ "VecGetLocalVectorRead"
-PetscErrorCode VecGetLocalVectorRead(Vec v,Vec *w)
+PetscErrorCode VecGetLocalVectorRead(Vec v,Vec w)
 {
   PetscErrorCode ierr;
   PetscScalar    *a;
@@ -1419,57 +1445,83 @@ PetscErrorCode VecGetLocalVectorRead(Vec v,Vec *w)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidPointer(w,2);
-  PetscValidHeaderSpecific(*w,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   ierr = VecGetLocalSize(v,&m1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(*w,&m2);CHKERRQ(ierr);
-  if (m1 != m2) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vectors of different local sizes.");
-  }
+  ierr = VecGetLocalSize(w,&m2);CHKERRQ(ierr);
+  if (m1 != m2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vectors of different local sizes.");
   if (v->ops->getlocalvectorread) {
     ierr = (*v->ops->getlocalvectorread)(v,w);CHKERRQ(ierr);
   } else {
     ierr = VecGetArrayRead(v,(const PetscScalar**)&a);CHKERRQ(ierr);
-    ierr = VecPlaceArray(*w,a);CHKERRQ(ierr);
+    ierr = VecPlaceArray(w,a);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 /*@C
    VecRestoreLocalVectorRead - Unmaps the local portion of a vector
-   previously mapped into a sequential vector using
-   VecGetLocalVectorRead.  This function is similar to VecGetArray which
-   maps the local portion into a raw pointer.
-   */
+   previously mapped into a vector using VecGetLocalVectorRead().
+
+   Not collective.
+
+   Input parameter:
+.  v - The local portion of this vector was previously mapped into w using VecGetLocalVectorRead().
+.  w - The vector into which the local portion of v was mapped.
+
+   Level: beginner
+
+.seealso: VecGetLocalVectorRead(), VecGetLocalVector(), VecGetArrayRead(), VecGetArray()
+@*/
 #undef __FUNCT__
 #define __FUNCT__ "VecRestoreLocalVectorRead"
-PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec *w)
+PetscErrorCode VecRestoreLocalVectorRead(Vec v,Vec w)
 {
   PetscErrorCode ierr;
   PetscScalar    *a;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidPointer(w,2);
-  PetscValidHeaderSpecific(*w,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   if (v->ops->restorelocalvectorread) {
     ierr = (*v->ops->restorelocalvectorread)(v,w);CHKERRQ(ierr);
   } else {
-    ierr = VecGetArrayRead(*w,(const PetscScalar**)&a);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(w,(const PetscScalar**)&a);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(v,(const PetscScalar**)&a);CHKERRQ(ierr);
-    ierr = VecResetArray(*w);CHKERRQ(ierr);
+    ierr = VecResetArray(w);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 /*@C
    VecGetLocalVector - Maps the local portion of a vector into a
-   sequential vector.  This function is similar to VecGetArray which
-   maps the local portion into a raw pointer.
-   */
+   vector.
+
+   Collective on v, not collective on w.
+
+   Input parameter:
+.  v - The vector for which the local vector is desired.
+
+   Output parameter:
+.  w - Upon exit this contains the local vector.
+
+   Level: beginner
+   
+   Notes:
+   This function is similar to VecGetArray() which maps the local
+   portion into a raw pointer.  VecGetLocalVector() is usually about as
+   efficient as VecGetArray() but in certain circumstances
+   VecGetLocalVector() can be much more efficient than VecGetArray().
+   This is because the construction of a contiguous array representing
+   the vector data required by VecGetArray() can be an expensive
+   operation for certain vector types.  For example, for GPU vectors
+   VecGetArray() requires that the data between device and host is
+   synchronized.
+
+.seealso: VecRestoreLocalVector(), VecGetLocalVectorRead(), VecGetArrayRead(), VecGetArray()
+@*/
 #undef __FUNCT__
 #define __FUNCT__ "VecGetLocalVector"
-PetscErrorCode VecGetLocalVector(Vec v,Vec *w)
+PetscErrorCode VecGetLocalVector(Vec v,Vec w)
 {
   PetscErrorCode ierr;
   PetscScalar    *a;
@@ -1477,45 +1529,49 @@ PetscErrorCode VecGetLocalVector(Vec v,Vec *w)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidPointer(w,2);
-  PetscValidHeaderSpecific(*w,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   ierr = VecGetLocalSize(v,&m1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(*w,&m2);CHKERRQ(ierr);
-  if (m1 != m2) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vectors of different local sizes.");
-  }
+  ierr = VecGetLocalSize(w,&m2);CHKERRQ(ierr);
+  if (m1 != m2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Vectors of different local sizes.");
   if (v->ops->getlocalvector) {
     ierr = (*v->ops->getlocalvector)(v,w);CHKERRQ(ierr);
   } else {
     ierr = VecGetArray(v,&a);CHKERRQ(ierr);
-    ierr = VecPlaceArray(*w,a);CHKERRQ(ierr);
+    ierr = VecPlaceArray(w,a);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 /*@C
    VecRestoreLocalVector - Unmaps the local portion of a vector
-   previously mapped into a sequential vector using
-   VecGetLocalVectorRead.  This function is similar to VecGetArray which
-   maps the local portion into a raw pointer.
-   */
+   previously mapped into a vector using VecGetLocalVector().
+
+   Logically collective.
+
+   Input parameter:
+.  v - The local portion of this vector was previously mapped into w using VecGetLocalVector().
+.  w - The vector into which the local portion of v was mapped.
+
+   Level: beginner
+
+.seealso: VecGetLocalVector(), VecGetLocalVectorRead(), VecRestoreLocalVectorRead(), LocalVectorRead(), VecGetArrayRead(), VecGetArray()
+@*/
 #undef __FUNCT__
 #define __FUNCT__ "VecRestoreLocalVector"
-PetscErrorCode VecRestoreLocalVector(Vec v,Vec *w)
+PetscErrorCode VecRestoreLocalVector(Vec v,Vec w)
 {
   PetscErrorCode ierr;
   PetscScalar    *a;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidPointer(w,2);
-  PetscValidHeaderSpecific(*w,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   if (v->ops->restorelocalvector) {
     ierr = (*v->ops->restorelocalvector)(v,w);CHKERRQ(ierr);
   } else {
-    ierr = VecGetArray(*w,&a);CHKERRQ(ierr);
+    ierr = VecGetArray(w,&a);CHKERRQ(ierr);
     ierr = VecRestoreArray(v,&a);CHKERRQ(ierr);
-    ierr = VecResetArray(*w);CHKERRQ(ierr);
+    ierr = VecResetArray(w);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
