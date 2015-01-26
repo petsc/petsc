@@ -1298,6 +1298,7 @@ static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
     /* there was something here - kill it */
     ierr = (*pc_gamg->ops->destroy)(pc);CHKERRQ(ierr);
     ierr = PetscMemzero(pc_gamg->ops,sizeof(struct _PCGAMGOps));CHKERRQ(ierr);
+    pc_gamg->ops->createlevel = PCGAMGCreateLevel_GAMG;
     /* cleaning up common data in pc_gamg - this should disapear someday */
     pc_gamg->data_cell_cols = 0;
     pc_gamg->data_cell_rows = 0;
