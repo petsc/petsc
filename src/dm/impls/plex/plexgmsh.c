@@ -25,7 +25,8 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   char            line[PETSC_MAX_PATH_LEN];
   int             snum;
   PetscBool       match;
-  int             fileType;
+  int             fT;
+  PetscInt        fileType;
   float           version;
   PetscErrorCode  ierr;
 
@@ -42,7 +43,8 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
     ierr = PetscStrncmp(line, "$MeshFormat", PETSC_MAX_PATH_LEN, &match);CHKERRQ(ierr);
     if (!match) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Gmsh file");
     ierr = PetscViewerRead(vheader, line, 2, PETSC_STRING);CHKERRQ(ierr);
-    snum = sscanf(line, "%f %d", &version, &fileType);
+    snum = sscanf(line, "%f %d", &version, &fT);
+    fileType = (PetscInt) fT;
     if (snum != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Gmsh file header: %s", line);
     if (version < 2.0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Gmsh file must be at least version 2.0");
   }
