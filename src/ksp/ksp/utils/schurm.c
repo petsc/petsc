@@ -662,8 +662,8 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
   PetscValidType(A,1);
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
-  if (S) {
-    ierr = PetscObjectQueryFunction((PetscObject)S,"MatGetSchurComplement_C",&f);CHKERRQ(ierr);
+  if (S && *S) {
+    ierr = PetscObjectQueryFunction((PetscObject)*S,"MatGetSchurComplement_C",&f);CHKERRQ(ierr);
   }
   if (f) {
       ierr = (*f)(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,preuse,Sp);CHKERRQ(ierr);
