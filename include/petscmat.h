@@ -1748,7 +1748,7 @@ PETSC_EXTERN PetscErrorCode MatCreateVecsFFTW(Mat,Vec*,Vec*,Vec*);
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
-PETSC_EXTERN PetscErrorCode MatElementalHermitianGenDefiniteEig(const PetscInt,const PetscInt,Mat,Mat,Vec*,Mat*,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode MatElementalHermitianGenDefiniteEig(const PetscInt,const PetscInt,Mat,Mat,Mat*,Mat*,PetscReal,PetscReal);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);
