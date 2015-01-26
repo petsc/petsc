@@ -127,7 +127,7 @@ extern PetscErrorCode  DMRefine_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMCoarsen_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMRefineHierarchy_DA(DM,PetscInt,DM[]);
 extern PetscErrorCode  DMCoarsenHierarchy_DA(DM,PetscInt,DM[]);
-extern PetscErrorCode  DMCreateInjection_DA(DM,DM,VecScatter*);
+extern PetscErrorCode  DMCreateInjection_DA(DM,DM,Mat*);
 extern PetscErrorCode  DMCreateAggregates_DA(DM,DM,Mat*);
 extern PetscErrorCode  DMView_DA(DM,PetscViewer);
 extern PetscErrorCode  DMSetUp_DA(DM);

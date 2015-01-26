@@ -27,7 +27,7 @@ struct _DMOps {
   PetscErrorCode (*creatematrix)(DM, Mat*);
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
-  PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
+  PetscErrorCode (*getinjection)(DM,DM,Mat*);
 
   PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
   PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*);
