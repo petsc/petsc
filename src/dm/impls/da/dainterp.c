@@ -1280,17 +1280,18 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateInjection_DA"
-PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,VecScatter *inject)
+PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,Mat *mat)
 {
   PetscErrorCode  ierr;
   PetscInt        dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DMBoundaryType  bxc,byc,bzc,bxf,byf,bzf;
   DMDAStencilType stc,stf;
+  VecScatter      inject = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dac,DM_CLASSID,1);
   PetscValidHeaderSpecific(daf,DM_CLASSID,2);
-  PetscValidPointer(inject,3);
+  PetscValidPointer(mat,3);
 
   ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf);CHKERRQ(ierr);
@@ -1304,12 +1305,14 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,VecScatter *inject)
   if (dimc > 2 && Pc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
   if (dimc == 1) {
-    ierr = DMCreateInjection_DA_1D(dac,daf,inject);CHKERRQ(ierr);
+    ierr = DMCreateInjection_DA_1D(dac,daf,&inject);CHKERRQ(ierr);
   } else if (dimc == 2) {
-    ierr = DMCreateInjection_DA_2D(dac,daf,inject);CHKERRQ(ierr);
+    ierr = DMCreateInjection_DA_2D(dac,daf,&inject);CHKERRQ(ierr);
   } else if (dimc == 3) {
-    ierr = DMCreateInjection_DA_3D(dac,daf,inject);CHKERRQ(ierr);
+    ierr = DMCreateInjection_DA_3D(dac,daf,&inject);CHKERRQ(ierr);
   }
+  ierr = MatCreateScatter(PetscObjectComm((PetscObject)inject), inject, mat);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

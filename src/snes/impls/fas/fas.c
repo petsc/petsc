@@ -141,7 +141,6 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
 {
   SNES_FAS       *fas = (SNES_FAS*) snes->data;
   PetscErrorCode ierr;
-  VecScatter     injscatter;
   PetscInt       dm_levels;
   Vec            vec_sol, vec_func, vec_sol_update, vec_rhs; /* preserve these if they're set through the reset */
   SNES           next;
@@ -209,9 +208,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
       }
       /* set the injection from the DM */
       if (!fas->inject) {
-        ierr = DMCreateInjection(next->dm, snes->dm, &injscatter);CHKERRQ(ierr);
-        ierr = MatCreateScatter(PetscObjectComm((PetscObject)snes), injscatter, &fas->inject);CHKERRQ(ierr);
-        ierr = VecScatterDestroy(&injscatter);CHKERRQ(ierr);
+        ierr = DMCreateInjection(next->dm, snes->dm, &fas->inject);CHKERRQ(ierr);
       }
     }
   }

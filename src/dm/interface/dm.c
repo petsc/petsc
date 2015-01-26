@@ -852,7 +852,7 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 -   dm2 - the second, finer DM object
 
     Output Parameter:
-.   ctx - the injection
+.   mat - the injection
 
     Level: developer
 
@@ -862,14 +862,14 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMCreateInterpolation()
 
 @*/
-PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,VecScatter *ctx)
+PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
-  ierr = (*dm1->ops->getinjection)(dm1,dm2,ctx);CHKERRQ(ierr);
+  ierr = (*dm1->ops->getinjection)(dm1,dm2,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3565,7 +3565,7 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
   DM dm_coord,dmc_coord;
   PetscErrorCode ierr;
   Vec coords,ccoords;
-  VecScatter scat;
+  Mat inject;
   PetscFunctionBegin;
   ierr = DMGetCoordinateDM(dm,&dm_coord);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dmc,&dmc_coord);CHKERRQ(ierr);
@@ -3573,11 +3573,10 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
   ierr = DMGetCoordinates(dmc,&ccoords);CHKERRQ(ierr);
   if (coords && !ccoords) {
     ierr = DMCreateGlobalVector(dmc_coord,&ccoords);CHKERRQ(ierr);
-    ierr = DMCreateInjection(dmc_coord,dm_coord,&scat);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scat,coords,ccoords,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scat,coords,ccoords,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = DMCreateInjection(dmc_coord,dm_coord,&inject);CHKERRQ(ierr);
+    ierr = MatRestrict(inject,coords,ccoords);CHKERRQ(ierr);
+    ierr = MatDestroy(&inject);CHKERRQ(ierr);
     ierr = DMSetCoordinates(dmc,ccoords);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
     ierr = VecDestroy(&ccoords);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
