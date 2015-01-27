@@ -663,6 +663,10 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = VecGetLocalVectorRead(x, bjac->x);CHKERRQ(ierr);
   ierr = VecGetLocalVector(y, bjac->y);CHKERRQ(ierr);
+ /* Since the inner KSP matrix may point directly to the diagonal block of an MPI matrix the inner
+     matrix may change even if the outter KSP/PC has not updated the preconditioner, this will trigger a rebuild
+     of the inner preconditioner automatically unless we pass down the outter preconditioners reuse flag.*/
+  ierr = KSPSetReusePreconditioner(jac->ksp[0],pc->reusepreconditioner);CHKERRQ(ierr);
   ierr = KSPSolve(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr);
   ierr = VecRestoreLocalVectorRead(x, bjac->x);CHKERRQ(ierr);
   ierr = VecRestoreLocalVector(y, bjac->y);CHKERRQ(ierr);
