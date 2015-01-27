@@ -417,19 +417,19 @@ runex5_5_ls:
 	   ${RM} -f ex5_5_ls.tmp
 
 runex5_5_fas:
-	-@${MPIEXEC} -n 1 ./ex5 -fas_coarse_snes_max_it 1 -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 > ex5_5_fas.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -fas_coarse_snes_max_it 1 -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 > ex5_5_fas.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_fas.out ex5_5_fas.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex5_5_fas, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_5_fas.tmp
 
 runex5_5_fas_additive:
-	-@${MPIEXEC} -n 1 ./ex5 -fas_coarse_snes_max_it 1 -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_rtol 1.e-12 -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 -snes_fas_type additive -snes_max_it 50 > ex5_5_fas_additive.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -fas_coarse_snes_max_it 1 -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly  -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 -snes_fas_type additive -snes_max_it 50 > ex5_5_fas_additive.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_fas_additive.out ex5_5_fas_additive.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex5_5_fas_additive, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_5_fas_additive.tmp
 
 runex5_5_ngmres_fas:
-	-@${MPIEXEC} -n 1 ./ex5 -snes_type ngmres -npc_fas_coarse_snes_max_it 1 -npc_fas_coarse_snes_type newtonls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly -snes_ngmres_m 10 -snes_rtol 1.e-12 -snes_monitor_short -npc_snes_max_it 1 -npc_snes_type fas -npc_fas_coarse_ksp_type richardson -da_refine 6 > ex5_5_ngmres_fas.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -snes_rtol 1.e-4 -snes_type ngmres -npc_fas_coarse_snes_max_it 1 -npc_fas_coarse_snes_type newtonls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly -snes_ngmres_m 10 -snes_monitor_short -npc_snes_max_it 1 -npc_snes_type fas -npc_fas_coarse_ksp_type richardson -da_refine 6 > ex5_5_ngmres_fas.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_ngmres_fas.out ex5_5_ngmres_fas.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex5_5_ngmres_fas, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_5_ngmres_fas.tmp
@@ -715,12 +715,12 @@ runex19_14:
 	   else  printf "${PWD}\nPossible problem with ex19_14, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_14.tmp
 runex19_17:
-	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_ksp -snes_monitor_short  -ksp_pc_side right  -snes_rtol 1.e-12 -ksp_rtol 1.e-12 > ex19_17.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_ksp -snes_monitor_short  -ksp_pc_side right   > ex19_17.tmp 2>&1; \
 	   if (${DIFF} output/ex19_17.out ex19_17.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_17, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_17.tmp
 runex19_18:
-	-@${MPIEXEC} -n 1 ./ex19 -ksp_monitor_snes_lg -ksp_rtol 1.e-13 -snes_rtol 1.e-13 -ksp_pc_side right > ex19_18.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -ksp_monitor_snes_lg  -ksp_pc_side right > ex19_18.tmp 2>&1; \
 	   if (${DIFF} output/ex19_18.out ex19_18.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex19_18, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex19_18.tmp
@@ -824,21 +824,21 @@ runex19_aspin: #test ex19 with NASM preconditioner globalized with Newton
 
 runex19_fas: #test ex19 with FAS and pointwise GS smoother
 	-@${MPIEXEC} -n 1 ./ex19 -da_refine 4 -snes_monitor_short -snes_type fas \
-        -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 3 -fas_levels_snes_ngs_rtol 1e-15 -fas_levels_snes_ngs_atol 0.0 -fas_levels_snes_ngs_stol 0.0 \
+        -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 3 -fas_levels_snes_ngs_atol 0.0 -fas_levels_snes_ngs_stol 0.0 \
         -grashof 4e4 -snes_fas_smoothup 6 -snes_fas_smoothdown 6 -lidvelocity 100 > ex19_fas.tmp 2>&1; \
 	   ${DIFF} output/ex19_fas.out ex19_fas.tmp || printf "${PWD}\nPossible problem with ex19_fas, diffs above\n=========================================\n"; \
            ${RM} -f ex19_fas.tmp
 
 runex19_fas_full: #test ex19 with FAS and pointwise GS smoother
 	-@${MPIEXEC} -n 1 ./ex19 -da_refine 4 -snes_monitor_short -snes_type fas -snes_fas_type full -snes_fas_full_downsweep \
-        -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 3 -fas_levels_snes_ngs_rtol 1e-15 -fas_levels_snes_ngs_atol 0.0 -fas_levels_snes_ngs_stol 0.0 \
+        -fas_levels_snes_type ngs -fas_levels_snes_ngs_sweeps 3  -fas_levels_snes_ngs_atol 0.0 -fas_levels_snes_ngs_stol 0.0 \
         -grashof 4e4 -snes_fas_smoothup 6 -snes_fas_smoothdown 6 -lidvelocity 100 > ex19_fas_full.tmp 2>&1; \
 	   ${DIFF} output/ex19_fas_full.out ex19_fas_full.tmp || printf "${PWD}\nPossible problem with ex19_fas, diffs above\n=========================================\n"; \
         #           ${RM} -f ex19_fas_full.tmp
 
 runex19_ngmres_fas: #test ex19 with NGMRES preconditioned by FAS with pointwise GS smoother
 	-@${MPIEXEC} -n 1 ./ex19 -da_refine 4 -snes_monitor_short -snes_type ngmres \
-        -npc_fas_levels_snes_type ngs -npc_fas_levels_snes_ngs_sweeps 3 -npc_fas_levels_snes_ngs_rtol 1e-15 -npc_fas_levels_snes_ngs_atol 0.0 -npc_fas_levels_snes_ngs_stol 0.0 \
+        -npc_fas_levels_snes_type ngs -npc_fas_levels_snes_ngs_sweeps 3  -npc_fas_levels_snes_ngs_atol 0.0 -npc_fas_levels_snes_ngs_stol 0.0 \
         -npc_snes_type fas -npc_fas_levels_snes_type ngs -npc_snes_max_it 1 -npc_snes_fas_smoothup 6 -npc_snes_fas_smoothdown 6  \
         -lidvelocity 100 -grashof 4e4 \
          > ex19_ngmres_fas.tmp 2>&1; \
@@ -981,44 +981,44 @@ runex30:
 	   ${RM} -f ex30_1.tmp
 
 runex35:
-	-@${MPIEXEC} -n 1 ./ex35 -snes_rtol 1.e-12 -snes_monitor_short -snes_type nrichardson   > ex35_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex35  -snes_monitor_short -snes_type nrichardson   > ex35_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex35_1.out ex35_1.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex35_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex35_1.tmp
 
 runex35_2:
-	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short -ksp_rtol 1.e-12  -ksp_monitor_short -ksp_type richardson -pc_type none -ksp_richardson_self_scale    > ex35_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex35   -snes_monitor_short -ksp_monitor_short -ksp_type richardson -pc_type none -ksp_richardson_self_scale    > ex35_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex35_2.out ex35_2.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex35_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex35_2.tmp
 
 runex35_3:
-	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short  -snes_type ngmres    > ex35_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex35  -snes_monitor_short  -snes_type ngmres    > ex35_3.tmp 2>&1;	  \
 	   if (${DIFF} output/ex35_3.out ex35_3.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex35_3, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex35_3.tmp
 
 runex35_4:
-	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short  -ksp_type gmres -ksp_monitor_short -ksp_rtol 1.e-12 -pc_type none    > ex35_4.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex35  -snes_monitor_short  -ksp_type gmres -ksp_monitor_short -pc_type none    > ex35_4.tmp 2>&1;	  \
 	   if (${DIFF} output/ex35_4.out ex35_4.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex35_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex35_4.tmp
 
 runex35_5:
-	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short  -snes_type ncg     > ex35_5.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex35   -snes_monitor_short  -snes_type ncg     > ex35_5.tmp 2>&1;	  \
 	   if (${DIFF} output/ex35_5.out ex35_5.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex35_5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex35_5.tmp
 
 runex35_6:
-	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short  -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-12 -pc_type none     > ex35_6.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex35   -snes_monitor_short  -ksp_type cg -ksp_monitor_short  -pc_type none     > ex35_6.tmp 2>&1;	  \
 	   if (${DIFF} output/ex35_6.out ex35_6.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex35_6, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex35_6.tmp
 
 runex35_7:
-	-@${MPIEXEC} -n 1 ./ex35 -da_refine 2 -snes_rtol 1.e-12 -snes_monitor_short  -pc_type mg -mg_levels_ksp_type richardson -mg_levels_pc_type none -mg_levels_ksp_monitor_short \
-            -mg_levels_ksp_richardson_self_scale -ksp_type richardson -ksp_monitor_short -ksp_rtol 1.e-12      > ex35_7.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex35 -da_refine 2  -snes_monitor_short  -pc_type mg -mg_levels_ksp_type richardson -mg_levels_pc_type none -mg_levels_ksp_monitor_short \
+            -mg_levels_ksp_richardson_self_scale -ksp_type richardson -ksp_monitor_short       > ex35_7.tmp 2>&1;	  \
 	   if (${DIFF} output/ex35_7.out ex35_7.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex35_7, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex35_7.tmp
@@ -1036,7 +1036,7 @@ runex40f90:
 	   ${RM} -f ex40f90_1.tmp
 
 runex42:
-	-@${MPIEXEC} -n 1 ./ex42 -snes_monitor_short -snes_max_it 1000 -snes_rtol 1.e-14  > ex42_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex42 -snes_monitor_short -snes_max_it 1000   > ex42_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex42_1.out ex42_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex42_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex42_1.tmp
@@ -1097,11 +1097,11 @@ runex48_5:
          done
 
 runex58:
-	-@${MPIEXEC} -n 1 ./ex58 -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full -snes_rtol 1.e-12 -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex58 -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full  -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
 	   ${DIFF} output/ex58_1.out ex58.tmp || printf "${PWD}\nPossible problem with ex58_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex58.tmp
 runex58_2:
-	-@${MPIEXEC} -n 1 ./ex58 -snes_type vinewtonssls -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full -snes_rtol 1.e-12 -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex58 -snes_type vinewtonssls -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full  -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
 	   ${DIFF} output/ex58_2.out ex58.tmp || printf "${PWD}\nPossible problem with ex58_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex58.tmp
 runex73f90t:
