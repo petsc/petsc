@@ -346,7 +346,7 @@ class PetscBinaryIO(object):
         elif mattype == 'scipy.sparse':
             return self.readMatSciPy(fh)
         else:
-            raise RuntimeError('Invalid matrix type requested: choose sparse/dense')
+            raise RuntimeError('Invalid matrix type requested: choose sparse/dense/scipy.sparse')
 
     @decorate_with_conf
     def readIS(self, fh):
