@@ -1292,7 +1292,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PetscOptions *PetscOptionsObject,PC
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"HYPRE preconditioner options");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,5,"boomeramg",&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,4,"boomeramg",&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCHYPRESetType_HYPRE(pc,type[indx]);CHKERRQ(ierr);
   } else {
