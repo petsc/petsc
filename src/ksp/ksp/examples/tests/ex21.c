@@ -33,11 +33,11 @@ PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
       cols1[]           = {r+1,r+2,(r+4+1)%M,(r+M-4+1)%M},
       cols2[]           = {r,r+2,(r+4+2)%M},
       cols3[]           = {r+1,r+3,(r+4+3)%M};
-    PetscScalar RR      = 1000*rank,
-                vals0[] = {RR+1,RR+2,RR+3,RR+4,RR+5},
-                vals1[] = {RR+6,RR+7,RR+8,RR+9},
-                vals2[] = {RR+10,RR+11,RR+12},
-                vals3[] = {RR+13,RR+14,RR+15};
+    PetscScalar RR      = 1000.*rank,
+                vals0[] = {RR+1.,RR+2.,RR+3.,RR+4.,RR+5.},
+                vals1[] = {RR+6.,RR+7.,RR+8.,RR+9.},
+                vals2[] = {RR+10.,RR+11.,RR+12.},
+                vals3[] = {RR+13.,RR+14.,RR+15.};
     ierr = MatSetValues(A,1,&rows[0],5,cols0,vals0,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatSetValues(A,1,&rows[1],4,cols1,vals1,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatSetValues(A,1,&rows[2],3,cols2,vals2,INSERT_VALUES);CHKERRQ(ierr);
