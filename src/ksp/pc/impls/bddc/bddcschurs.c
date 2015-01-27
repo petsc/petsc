@@ -457,7 +457,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       ierr = MatSetValues(sub_schurs->S_Ej_all,subset_size,dummy_idx,subset_size,dummy_idx,vals,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatDenseRestoreArray(sub_schurs->S_Ej[i],&vals);CHKERRQ(ierr);
 
-      if ((PetscBTLookup(sub_schurs->is_edge,i) && use_edges) || use_faces) {
+      if (compute_Stilda && ((PetscBTLookup(sub_schurs->is_edge,i) && use_edges) || use_faces)) {
         ierr = PetscBTSet(sub_schurs->computed_Stilda_subs,i);CHKERRQ(ierr);
         Stilda_computed = PETSC_TRUE;
       }
