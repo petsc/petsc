@@ -23,11 +23,13 @@ PetscErrorCode PetscElementalInitializePackage(void)
 
   PetscFunctionBegin;
   if (elem::Initialized()) PetscFunctionReturn(0);
+  //#if defined(MV)
   { /* We have already initialized MPI, so this song and dance is just to pass these variables (which won't be used by Elemental) through the interface that needs references */
     int zero = 0;
     char **nothing = 0;
     elem::Initialize(zero,nothing);
   }
+  //#endif
   ierr = PetscRegisterFinalize(PetscElementalFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1012,6 +1014,30 @@ PetscErrorCode MatAssemblyEnd_Elemental(Mat A, MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
+//#include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
+//extern PetscErrorCode MatLoad_SeqDense(Mat,PetscViewer);
+#undef __FUNCT__
+#define __FUNCT__ "MatLoad_Elemental"
+PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  Mat            Adense,Ae;
+  MPI_Comm       comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)newMat,&comm);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&Adense);CHKERRQ(ierr);
+  ierr = MatSetType(Adense,MATDENSE);CHKERRQ(ierr); 
+  ierr = MatLoad(Adense,viewer);CHKERRQ(ierr);
+  ierr = MatConvert(Adense, MATELEMENTAL, MAT_INITIAL_MATRIX,&Ae);CHKERRQ(ierr);
+  ierr = MatDestroy(&Adense);CHKERRQ(ierr);
+  ierr = MatHeaderReplace(newMat,Ae);CHKERRQ(ierr);
+  //ierr = MatDestroy(&newMat);CHKERRQ(ierr);
+  //newMat = Ae;
+  //printf("MatLoad_Elemental is done\n");
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatElementalHermitianGenDefiniteEig_Elemental"
 PetscErrorCode MatElementalHermitianGenDefiniteEig_Elemental(const PetscInt type,const PetscInt uplo1,Mat A,Mat B,Mat *evals,Mat *evec,PetscReal vl,PetscReal vu)
@@ -1024,7 +1050,6 @@ PetscErrorCode MatElementalHermitianGenDefiniteEig_Elemental(const PetscInt type
   const elem::SortType     sort = elem::UNSORTED; /* UNSORTED, DESCENDING, ASCENDING */
   MPI_Comm                 comm;
   Mat                      EVAL;
-  
   
   PetscFunctionBegin;
   /* Compute eigenvalues and eigenvectors */
@@ -1197,7 +1222,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-       0,
+       MatLoad_Elemental,
 /*84*/ 0,
        0,
        0,
