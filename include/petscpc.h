@@ -107,6 +107,7 @@ PETSC_EXTERN PetscErrorCode PCApplyTranspose(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplyTransposeExists(PC,PetscBool *);
 PETSC_EXTERN PetscErrorCode PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCSetReusePreconditioner(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGetReusePreconditioner(PC,PetscBool*);
 
 #define PC_FILE_CLASSID 1211222
 
