@@ -77,6 +77,8 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   ierr = PetscOptionsInt("-pc_bddc_schur_layers","Number of dofs' layers for the computation of principal minors (i.e. -1 uses all dofs)","none",pcbddc->sub_schurs_layers,&pcbddc->sub_schurs_layers,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_schur_use_useradj","Whether or not the CSR graph specified by the user should be used for computing successive layers (default is to use adj of local mat)","none",pcbddc->sub_schurs_use_useradj,&pcbddc->sub_schurs_use_useradj,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsScalar("-pc_bddc_adaptive_threshold","Threshold to be used for adaptive selection of constraints","none",pcbddc->adaptive_threshold,&pcbddc->adaptive_threshold,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_bddc_adaptive_nmin","Minimum number of constraints per connected components","none",pcbddc->adaptive_nmin,&pcbddc->adaptive_nmin,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_bddc_adaptive_nmax","Maximum number of constraints per connected components","none",pcbddc->adaptive_nmax,&pcbddc->adaptive_nmax,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1159,8 +1161,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscErrorCode ierr;
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   Mat_IS*        matis;
-  MatNullSpace   nearnullspace,ad_nearnullspace;
-  PetscBool      computetopography,computesolvers,computesubschurs,adaptive;
+  MatNullSpace   nearnullspace;
+  PetscBool      computetopography,computesolvers,computesubschurs;
   PetscBool      new_nearnullspace_provided,ismatis;
 
   PetscFunctionBegin;
@@ -1188,8 +1190,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (pcbddc->recompute_topography) {
     computetopography = PETSC_TRUE;
   }
-  adaptive = (PetscBool)(pcbddc->adaptive_threshold > 0.0);
-  computesubschurs = pcbddc->use_deluxe_scaling || adaptive;
+  pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0);
+  computesubschurs = pcbddc->use_deluxe_scaling || pcbddc->adaptive_selection;
 
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
@@ -1234,19 +1236,16 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   /* Setup local dirichlet solver ksp_D and sub_schurs solvers */
-  ad_nearnullspace = NULL;
   if (computesolvers) {
     ierr = PCBDDCSetUpLocalSolvers(pc,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
     if (computesubschurs) {
       if (computetopography) {
-        ierr = PCBDDCInitSubSchurs(pc,pcbddc->sub_schurs_rebuild,pcbddc->sub_schurs_threshold);CHKERRQ(ierr);
+        ierr = PCBDDCInitSubSchurs(pc);CHKERRQ(ierr);
       }
-      ierr = PCBDDCSetUpSubSchurs(pc,pcbddc->sub_schurs_layers,pcbddc->sub_schurs_use_useradj,adaptive);CHKERRQ(ierr);
-#if 0
-      if (adaptive) {
-        ierr = PCBDDCAdaptiveSelection(pc,&ad_nearnullspace);CHKERRQ(ierr);
+      ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
+      if (pcbddc->adaptive_selection) {
+        ierr = PCBDDCAdaptiveSelection(pc);CHKERRQ(ierr);
       }
-#endif
     }
   }
 
@@ -1959,6 +1958,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
   /* adaptivity */
   pcbddc->adaptive_threshold = -1.0;
+  pcbddc->adaptive_nmax      = 0;
+  pcbddc->adaptive_nmin      = 0;
 
   /* function pointers */
   pc->ops->apply               = PCApply_BDDC;

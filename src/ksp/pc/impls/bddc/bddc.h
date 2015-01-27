@@ -101,7 +101,14 @@ typedef struct {
   PetscBool       computed_rowadj;
 
   /* adaptive selection of constraints */
-  PetscScalar adaptive_threshold;
+  PetscBool    adaptive_selection;
+  PetscScalar  adaptive_threshold;
+  PetscInt     adaptive_nmin;
+  PetscInt     adaptive_nmax;
+  PetscInt*    adaptive_constraints_n;
+  PetscInt*    adaptive_constraints_ptrs;
+  PetscInt*    adaptive_constraints_idxs;
+  PetscScalar* adaptive_constraints_data;
 
   /* For verbose output of some bddc data structures */
   PetscInt    dbg_flag;

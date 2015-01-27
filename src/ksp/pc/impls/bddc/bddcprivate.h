@@ -55,6 +55,7 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt,Vec[]);
 PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
 PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
 PetscErrorCode PCBDDCGlobalToLocal(VecScatter,Vec,Vec,IS,IS*);
+PetscErrorCode PCBDDCAdaptiveSelection(PC);
 PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,MatStructure,Mat*);
 
 /* feti-dp */
@@ -68,15 +69,15 @@ PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
 PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
 
 /* interface to SubSchurs */
-PetscErrorCode PCBDDCSetUpSubSchurs(PC,PetscInt,PetscBool,PetscBool);
-PetscErrorCode PCBDDCInitSubSchurs(PC pc,PetscBool,PetscInt);
+PetscErrorCode PCBDDCInitSubSchurs(PC);
+PetscErrorCode PCBDDCSetUpSubSchurs(PC);
 
 /* sub schurs */
 PetscErrorCode PCBDDCSubSchursCreate(PCBDDCSubSchurs*);
 PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs,Mat,Mat,IS,IS,PCBDDCGraph,ISLocalToGlobalMapping,PetscInt);
 PetscErrorCode PCBDDCSubSchursDestroy(PCBDDCSubSchurs*);
 PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs);
-PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,PetscInt[],PetscInt[],PetscInt,PetscBool);
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,PetscInt[],PetscInt[],PetscInt,PetscBool,PetscBool,PetscBool,PetscBool);
 
 #endif
 
