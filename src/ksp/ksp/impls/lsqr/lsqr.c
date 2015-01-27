@@ -339,7 +339,7 @@ PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *d
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_LSQR"
-PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
+PetscErrorCode KSPSetFromOptions_LSQR(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
@@ -348,7 +348,7 @@ PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP LSQR Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP LSQR Options");CHKERRQ(ierr);
   ierr = PetscOptionsName("-ksp_lsqr_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",&lsqr->se_flg);CHKERRQ(ierr);
   ierr = PetscOptionsString("-ksp_lsqr_monitor","Monitor residual norm and norm of residual of normal equations","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {

@@ -55,13 +55,13 @@ static PetscErrorCode TaoLineSearchDestroy_OWArmijo(TaoLineSearch ls)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_OWArmijo"
-static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_OWArmijo(PetscOptions *PetscOptionsObject,TaoLineSearch ls)
 {
   TaoLineSearch_OWARMIJO *armP = (TaoLineSearch_OWARMIJO *)ls->data;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("OWArmijo linesearch options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"OWArmijo linesearch options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ls_OWArmijo_alpha", "initial reference constant", "", armP->alpha, &armP->alpha,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ls_OWArmijo_beta_inf", "decrease constant one", "", armP->beta_inf, &armP->beta_inf,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ls_OWArmijo_beta", "decrease constant", "", armP->beta, &armP->beta,NULL);CHKERRQ(ierr);

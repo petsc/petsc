@@ -1433,13 +1433,13 @@ static PetscErrorCode  KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GLTR"
-PetscErrorCode KSPSetFromOptions_GLTR(KSP ksp)
+PetscErrorCode KSPSetFromOptions_GLTR(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GLTR       *cg = (KSP_GLTR*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP GLTR options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP GLTR options");CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-ksp_gltr_radius", "Trust Region Radius", "KSPGLTRSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
 

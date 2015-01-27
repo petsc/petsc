@@ -1170,14 +1170,14 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_ARKIMEX"
-static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts)
+static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
   PetscErrorCode ierr;
   char           arktype[256];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("ARKIMEX ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"ARKIMEX ODE solver options");CHKERRQ(ierr);
   {
     ARKTableauLink link;
     PetscInt       count,choice;

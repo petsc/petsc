@@ -287,10 +287,10 @@ static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys)
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
-  phys->riemann = (RiemannFunction) PhysicsRiemann_Advect;
-  ierr = PetscNew(&advect);CHKERRQ(ierr);
-  phys->data = advect;
-  ierr = PetscOptionsHead("Advect options");CHKERRQ(ierr);
+  phys->riemann = PhysicsRiemann_Advect;
+  ierr = PetscNew(Physics_Advect,&phys->data);CHKERRQ(ierr);
+  advect = (Physics_Advect*)phys->data;
+  ierr = PetscOptionsHead(PetscOptionsObject,"Advect options");CHKERRQ(ierr);
   {
     PetscInt two = 2,dof = 1;
     advect->soltype = ADVECT_SOL_TILTED;
@@ -455,7 +455,7 @@ static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys)
   phys->riemann = (RiemannFunction) PhysicsRiemann_SW;
   ierr          = PetscNew(&sw);CHKERRQ(ierr);
   phys->data    = sw;
-  ierr          = PetscOptionsHead("SW options");CHKERRQ(ierr);
+  ierr          = PetscOptionsHead(PetscOptionsObject,"SW options");CHKERRQ(ierr);
   {
     sw->gravity = 1.0;
     ierr = PetscOptionsReal("-sw_gravity","Gravitational constant","",sw->gravity,&sw->gravity,NULL);CHKERRQ(ierr);
@@ -635,7 +635,7 @@ static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys)
   phys->riemann = (RiemannFunction) PhysicsRiemann_Euler_Rusanov;
   ierr = PetscNew(&eu);CHKERRQ(ierr);
   phys->data    = eu;
-  ierr = PetscOptionsHead("Euler options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Euler options");CHKERRQ(ierr);
   {
     eu->pars[0] = 3.0;
     eu->pars[1] = 1.67;

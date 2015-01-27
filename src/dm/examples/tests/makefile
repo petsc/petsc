@@ -388,7 +388,7 @@ TESTEXAMPLES_C_X	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex6.PETSc r
                             ex6.rm ex7.PETSc ex7.rm  ex11.PETSc runex11 runex11_2 runex11_3 ex11.rm ex14.PETSc runex14 ex14.rm \
                             ex13.PETSc runex13 ex13.rm ex23.PETSc runex23 runex23_2 ex23.rm ex37.PETSc runex37 ex37.rm
 TESTEXAMPLES_FORTRAN	  =
-TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
+TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex6.PETSc ex6.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_COMPLEX	  =
 TESTEXAMPLES_C_NOCOMPLEX  = ex16.PETSc runex16 runex16_2 ex16.rm ex42.PETSc runex42 ex42.rm

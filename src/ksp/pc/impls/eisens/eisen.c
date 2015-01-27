@@ -133,14 +133,14 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Eisenstat"
-static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc)
+static PetscErrorCode PCSetFromOptions_Eisenstat(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;
   PetscBool      set,flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Eisenstat SSOR options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Eisenstat SSOR options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_eisenstat_omega","Relaxation factor 0 < omega < 2","PCEisenstatSetOmega",eis->omega,&eis->omega,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_eisenstat_no_diagonal_scaling","Do not use standard diagonal scaling","PCEisenstatSetNoDiagonalScaling",eis->usediag ? PETSC_FALSE : PETSC_TRUE,&flg,&set);CHKERRQ(ierr);
   if (set) {

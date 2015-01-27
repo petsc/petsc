@@ -254,7 +254,7 @@ PetscErrorCode KSPChebyshevSetNewMatrix(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_Chebyshev"
-PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
+PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
   PetscErrorCode ierr;
@@ -263,7 +263,7 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP Chebyshev Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP Chebyshev Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_chebyshev_eststeps","Number of est steps in Chebyshev","",cheb->eststeps,&cheb->eststeps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsRealArray("-ksp_chebyshev_eigenvalues","extreme eigenvalues","KSPChebyshevSetEigenvalues",&cheb->emin,&two,0);CHKERRQ(ierr);
   ierr = PetscOptionsRealArray("-ksp_chebyshev_estimate_eigenvalues","estimate eigenvalues using a Krylov method, then use this transform for Chebyshev eigenvalue bounds","KSPChebyshevSetEstimateEigenvalues",tform,&four,&flg);CHKERRQ(ierr);

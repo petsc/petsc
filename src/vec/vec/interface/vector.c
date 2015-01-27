@@ -1274,7 +1274,7 @@ PetscErrorCode  VecZeroEntries(Vec vec)
 .keywords: Vec, set, options, database, type
 .seealso: VecSetFromOptions(), VecSetType()
 */
-static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
+static PetscErrorCode VecSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,Vec vec)
 {
   PetscBool      opt;
   VecType        defaultType;
@@ -1330,11 +1330,11 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
 
   ierr = PetscObjectOptionsBegin((PetscObject)vec);CHKERRQ(ierr);
   /* Handle vector type options */
-  ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
+  ierr = VecSetTypeFromOptions_Private(PetscOptionsObject,vec);CHKERRQ(ierr);
 
   /* Handle specific vector options */
   if (vec->ops->setfromoptions) {
-    ierr = (*vec->ops->setfromoptions)(vec);CHKERRQ(ierr);
+    ierr = (*vec->ops->setfromoptions)(PetscOptionsObject,vec);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
@@ -1849,8 +1849,8 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscOptionsVec"
-PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man[],Vec v,PetscBool *set)
+#define __FUNCT__ "PetscOptionsGetVec"
+PetscErrorCode PetscOptionsGetVec(const char prefix[],const char key[],Vec v,PetscBool *set)
 {
   PetscInt       i,N,rstart,rend;
   PetscErrorCode ierr;
@@ -1862,7 +1862,7 @@ PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man
   ierr = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetSize(v,&N);CHKERRQ(ierr);
   ierr = PetscCalloc1(N,&xreal);CHKERRQ(ierr);
-  ierr = PetscOptionsRealArray(key,text,man,xreal,&N,&iset);CHKERRQ(ierr);
+  ierr = PetscOptionsGetRealArray(prefix,key,xreal,&N,&iset);CHKERRQ(ierr);
   if (iset) {
     ierr = VecGetArray(v,&xx);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) xx[i-rstart] = xreal[i];

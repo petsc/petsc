@@ -8,7 +8,7 @@
 
 typedef struct _PetscSpaceOps *PetscSpaceOps;
 struct _PetscSpaceOps {
-  PetscErrorCode (*setfromoptions)(PetscSpace);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,PetscSpace);
   PetscErrorCode (*setup)(PetscSpace);
   PetscErrorCode (*view)(PetscSpace,PetscViewer);
   PetscErrorCode (*destroy)(PetscSpace);
@@ -38,7 +38,7 @@ typedef struct {
 
 typedef struct _PetscDualSpaceOps *PetscDualSpaceOps;
 struct _PetscDualSpaceOps {
-  PetscErrorCode (*setfromoptions)(PetscDualSpace);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,PetscDualSpace);
   PetscErrorCode (*setup)(PetscDualSpace);
   PetscErrorCode (*view)(PetscDualSpace,PetscViewer);
   PetscErrorCode (*destroy)(PetscDualSpace);
@@ -69,7 +69,7 @@ typedef struct {
 
 typedef struct _PetscFEOps *PetscFEOps;
 struct _PetscFEOps {
-  PetscErrorCode (*setfromoptions)(PetscFE);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,PetscFE);
   PetscErrorCode (*setup)(PetscFE);
   PetscErrorCode (*view)(PetscFE,PetscViewer);
   PetscErrorCode (*destroy)(PetscFE);

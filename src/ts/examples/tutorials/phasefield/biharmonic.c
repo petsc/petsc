@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   ctx.netforce    = PETSC_FALSE;
   ierr            = PetscOptionsGetBool(NULL,"-netforce",&ctx.netforce,NULL);CHKERRQ(ierr);
   ctx.energy      = 1;
-  ierr            = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic+double well, 4=logarithmic+double obstacle)","",ctx.energy,&ctx.energy,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetInt(NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr);
   ctx.tol         = 1.0e-8;
   ierr            = PetscOptionsGetReal(NULL,"-tol",&ctx.tol,NULL);CHKERRQ(ierr);
   ctx.theta       = .001;
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   ierr            = PetscOptionsGetReal(NULL,"-theta",&ctx.theta,NULL);CHKERRQ(ierr);
   ierr            = PetscOptionsGetReal(NULL,"-theta_c",&ctx.theta_c,NULL);CHKERRQ(ierr);
   ctx.truncation  = 1;
-  ierr            = PetscOptionsInt("-truncation","order of log truncation (1=cubic, 2=quadratic)","",ctx.truncation,&ctx.truncation,NULL);CHKERRQ(ierr);
+  ierr            = PetscOptionsGetInt(NULL,"-truncation",&ctx.truncation,NULL);CHKERRQ(ierr);
   ierr            = PetscOptionsHasName(NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
   ierr            = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr);
   ierr            = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),800,600);CHKERRQ(ierr);

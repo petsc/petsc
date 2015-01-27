@@ -23,13 +23,13 @@ PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringSetFromOptions_JP"
-PetscErrorCode MatColoringSetFromOptions_JP(MatColoring mc)
+PetscErrorCode MatColoringSetFromOptions_JP(PetscOptions *PetscOptionsObject,MatColoring mc)
 {
   PetscErrorCode ierr;
   MC_JP          *jp = (MC_JP*)mc->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("JP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"JP options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_coloring_jp_local","Do an initial coloring of local columns","",jp->local,&jp->local,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

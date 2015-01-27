@@ -483,7 +483,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
   }
 
   if (coarser->ops->setfromoptions) {
-    ierr = (*coarser->ops->setfromoptions)(coarser);CHKERRQ(ierr);
+    ierr = (*coarser->ops->setfromoptions)(PetscOptionsObject,coarser);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = MatCoarsenViewFromOptions(coarser,NULL,"-mat_coarsen_view");CHKERRQ(ierr);

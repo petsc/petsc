@@ -479,7 +479,7 @@ PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCGTruncationType *truncstrat)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_FCG"
-PetscErrorCode KSPSetFromOptions_FCG(KSP ksp)
+PetscErrorCode KSPSetFromOptions_FCG(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_FCG        *fcg=(KSP_FCG*)ksp->data;
@@ -487,7 +487,7 @@ PetscErrorCode KSPSetFromOptions_FCG(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP FCG Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP FCG Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_fcg_mmax","Maximum number of search directions to store","KSPFCGSetMmax",fcg->mmax,&mmax,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = KSPFCGSetMmax(ksp,mmax);CHKERRQ(ierr); 

@@ -363,6 +363,12 @@ PETSC_EXTERN PetscErrorCode PCSPAISetSp(PC,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCHYPRESetType(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCHYPREGetType(PC,const char*[]);
+PETSC_EXTERN PetscErrorCode PCHYPRESetDiscreteGradient(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCHYPRESetEdgeConstantVectors(PC,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCHYPRESetBetaPoissonMatrix(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCBJacobiGetLocalBlocks(PC,PetscInt*,const PetscInt*[]);
+PETSC_EXTERN PetscErrorCode PCBJacobiGetTotalBlocks(PC,PetscInt*,const PetscInt*[]);
 
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetFields(PC,const char[],PetscInt,const PetscInt*,const PetscInt*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetType(PC,PCCompositeType);
@@ -485,6 +491,7 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PCGAMGRegister(PCGAMGType,PetscErrorCode (*)(PC));
 
 typedef const char *PCGAMGClassicalType;
 #define PCGAMGCLASSICALDIRECT   "direct"

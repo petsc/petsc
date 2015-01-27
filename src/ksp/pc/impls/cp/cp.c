@@ -130,7 +130,7 @@ static PetscErrorCode PCDestroy_CP(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_CP"
-static PetscErrorCode PCSetFromOptions_CP(PC pc)
+static PetscErrorCode PCSetFromOptions_CP(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

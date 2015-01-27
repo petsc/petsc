@@ -195,7 +195,7 @@ PetscErrorCode KSPDestroy_GCR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GCR"
-PetscErrorCode KSPSetFromOptions_GCR(KSP ksp)
+PetscErrorCode KSPSetFromOptions_GCR(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
@@ -203,7 +203,7 @@ PetscErrorCode KSPSetFromOptions_GCR(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP GCR options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP GCR options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_gcr_restart","Number of Krylov search directions","KSPGCRSetRestart",ctx->restart,&restart,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPGCRSetRestart(ksp,restart);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);

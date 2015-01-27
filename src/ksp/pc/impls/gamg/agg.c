@@ -148,7 +148,7 @@ PetscErrorCode PCGAMGSetSquareGraph_GAMG(PC pc, PetscBool n)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GAMG_AGG"
-PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc)
+PetscErrorCode PCSetFromOptions_GAMG_AGG(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg          = (PC_MG*)pc->data;
@@ -156,7 +156,7 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc)
   PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("GAMG-AGG options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"GAMG-AGG options");CHKERRQ(ierr);
   {
     /* -pc_gamg_agg_nsmooths */
     pc_gamg_agg->nsmooths = 1;

@@ -287,13 +287,13 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Redundant"
-static PetscErrorCode PCSetFromOptions_Redundant(PC pc)
+static PetscErrorCode PCSetFromOptions_Redundant(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red = (PC_Redundant*)pc->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Redundant options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Redundant options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_redundant_number","Number of redundant pc","PCRedundantSetNumber",red->nsubcomm,&red->nsubcomm,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

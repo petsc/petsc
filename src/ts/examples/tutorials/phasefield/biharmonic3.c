@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   ierr            = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr);
   ctx.energy      = 1;
   /* ierr = PetscOptionsGetInt(NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr); */
-  ierr        = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic, 4=degenerate mobility and weird splitting)","",ctx.energy,&ctx.energy,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetInt(NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr);
   ctx.tol     = 1.0e-8;
   ierr        = PetscOptionsGetReal(NULL,"-tol",&ctx.tol,NULL);CHKERRQ(ierr);
   ctx.theta   = .001;

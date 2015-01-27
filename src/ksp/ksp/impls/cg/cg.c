@@ -357,13 +357,13 @@ PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_CG"
-PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
+PetscErrorCode KSPSetFromOptions_CG(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_CG         *cg = (KSP_CG*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP CG and CGNE options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP CG and CGNE options");CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscOptionsEnum("-ksp_cg_type","Matrix is Hermitian or complex symmetric","KSPCGSetType",KSPCGTypes,(PetscEnum)cg->type,
                           (PetscEnum*)&cg->type,NULL);CHKERRQ(ierr);

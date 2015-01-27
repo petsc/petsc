@@ -593,7 +593,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 #endif
 
   if (ksp->ops->setfromoptions) {
-    ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
+    ierr = (*ksp->ops->setfromoptions)(PetscOptionsObject,ksp);CHKERRQ(ierr);
   }
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)ksp);CHKERRQ(ierr);

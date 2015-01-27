@@ -968,7 +968,7 @@ PetscErrorCode PCGAMGDestroy_Classical(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetFromOptions_Classical"
-PetscErrorCode PCGAMGSetFromOptions_Classical(PC pc)
+PetscErrorCode PCGAMGSetFromOptions_Classical(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_MG             *mg          = (PC_MG*)pc->data;
   PC_GAMG           *pc_gamg     = (PC_GAMG*)mg->innerctx;
@@ -978,7 +978,7 @@ PetscErrorCode PCGAMGSetFromOptions_Classical(PC pc)
   PetscBool         flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("GAMG-Classical options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"GAMG-Classical options");CHKERRQ(ierr);
   ierr = PetscOptionsFList("-pc_gamg_classical_type","Type of Classical AMG prolongation","PCGAMGClassicalSetType",PCGAMGClassicalProlongatorList,cls->prolongtype, tname, sizeof(tname), &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCGAMGClassicalSetType(pc,tname);CHKERRQ(ierr);

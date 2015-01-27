@@ -21,7 +21,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
   PetscFunctionBegin;
   if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Must call PetscSubcommCreate firt");
   type = psubcomm->type;
-  ierr = PetscOptionsEnum("-psubcomm_type","PETSc subcommunicator","PetscSubcommSetType",PetscSubcommTypes,(PetscEnum)type,(PetscEnum*)&type,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,"-psubcomm_type",PetscSubcommTypes,(PetscEnum*)&type,&flg);CHKERRQ(ierr);
   if (flg && psubcomm->type != type) {
     /* free old structures */
     ierr = PetscCommDestroy(&(psubcomm)->dupparent);CHKERRQ(ierr);

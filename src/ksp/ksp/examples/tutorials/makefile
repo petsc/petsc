@@ -10,7 +10,8 @@ EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex8g.c ex9.c \
                 ex41.c ex42.c ex43.c \
                 ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
                 ex54.c ex55.c ex56.c ex58.c
-EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F ex52f.F ex54f.F
+EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90 ex45f.F \
+                   ex52f.F ex54f.F ex61f.F90
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
 NP               = 1
@@ -298,6 +299,11 @@ ex59: ex59.o chkopts
 ex60: ex60.o  chkopts
 	-${CLINKER} -o ex60 ex60.o  ${PETSC_KSP_LIB}
 	${RM} ex60.o
+
+ex61f: ex61f.o  chkopts
+	-${FLINKER} -o ex61f ex61f.o  ${PETSC_KSP_LIB}
+	${RM} ex61f.o
+
 
 #----------------------------------------------------------------------------
 runex1:
@@ -676,13 +682,7 @@ runex10_17:
 	   if (${DIFF} output/ex10_17.out ex10_17.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_17, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_17.tmp
-#
-#   The following leaves memory unfreed. It appears to be Euclid does something improper with its MPI_Comm
-runex10_18:
-	-@${MPIEXEC} -n 3 ./ex10 -pc_type hypre -pc_hypre_type euclid -f0 ${DATAFILESPATH}/matrices/medium > ex10_18.tmp 2>&1;\
-	   if (${DIFF} output/ex10_18.out ex10_18.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex10_18, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex10_18.tmp
+
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 LEVELS = 0 2 4
 runex10_19:
@@ -1264,7 +1264,7 @@ TESTEXAMPLES_MATLAB_ENGINE     = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17		       = ex10.PETSc runex10_11 ex10.rm
 TESTEXAMPLES_18		       = ex2.PETSc runex2_6 ex2.rm
 TESTEXAMPLES_SPAI	       = ex10.PETSc runex10_14 ex10.rm
-TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_18 ex10.rm
+TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 ex10.rm
 TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_lu_3 runex10_mumps_lu_4 \
                                  runex10_mumps_cholesky_1 runex10_mumps_cholesky_2 runex10_mumps_cholesky_3 runex10_mumps_cholesky_4 runex10_mumps_redundant \

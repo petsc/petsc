@@ -219,7 +219,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   ierr = PetscOptionsInt("-mat_coloring_maxcolors","Maximum colors returned at the end. 1 returns an independent set","MatColoringSetMaxColors",maxcolors,&maxcolors,&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatColoringSetMaxColors(mc,maxcolors);CHKERRQ(ierr);}
   if (mc->ops->setfromoptions) {
-    ierr = (*mc->ops->setfromoptions)(mc);CHKERRQ(ierr);
+    ierr = (*mc->ops->setfromoptions)(PetscOptionsObject,mc);CHKERRQ(ierr);
   }
   ierr = PetscOptionsBool("-mat_coloring_valid","Check that a valid coloring has been produced","",mc->valid,&mc->valid,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-mat_coloring_weight_type","Sets the type of vertex weighting used","MatColoringSetWeightType",MatColoringWeightTypes,(PetscEnum)mc->weight_type,(PetscEnum*)&mc->weight_type,NULL);CHKERRQ(ierr);

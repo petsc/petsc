@@ -338,7 +338,7 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Pseudo"
-static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
+static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -346,7 +346,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
   PetscViewer    viewer;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Pseudo-timestepping options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_monitor_pseudo","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts),"stdout",&viewer);CHKERRQ(ierr);

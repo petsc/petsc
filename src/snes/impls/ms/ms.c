@@ -430,13 +430,13 @@ static PetscErrorCode SNESView_MS(SNES snes,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_MS"
-static PetscErrorCode SNESSetFromOptions_MS(SNES snes)
+static PetscErrorCode SNESSetFromOptions_MS(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_MS        *ms = (SNES_MS*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES MS options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES MS options");CHKERRQ(ierr);
   {
     SNESMSTableauLink link;
     PetscInt          count,choice;

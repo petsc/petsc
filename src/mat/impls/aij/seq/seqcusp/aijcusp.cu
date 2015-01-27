@@ -79,7 +79,7 @@ PetscErrorCode MatCUSPSetFormat(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFo
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_SeqAIJCUSP"
-PetscErrorCode MatSetFromOptions_SeqAIJCUSP(Mat A)
+PetscErrorCode MatSetFromOptions_SeqAIJCUSP(PetscOptions *PetscOptionsObject,Mat A)
 {
   Mat_SeqAIJCUSP       *cuspMat = (Mat_SeqAIJCUSP*)A->spptr;
   PetscErrorCode       ierr;
@@ -87,7 +87,7 @@ PetscErrorCode MatSetFromOptions_SeqAIJCUSP(Mat A)
   PetscBool            flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SeqAIJCUSP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SeqAIJCUSP options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   ierr = PetscOptionsEnum("-mat_cusp_mult_storage_format","sets storage format of (seq)aijcusp gpu matrices for SpMV",
                           "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)cuspMat->format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);

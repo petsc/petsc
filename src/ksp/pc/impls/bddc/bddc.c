@@ -46,13 +46,13 @@
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BDDC"
-PetscErrorCode PCSetFromOptions_BDDC(PC pc)
+PetscErrorCode PCSetFromOptions_BDDC(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("BDDC options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"BDDC options");CHKERRQ(ierr);
   /* Verbose debugging */
   ierr = PetscOptionsInt("-pc_bddc_check_level","Verbose output for PCBDDC (intended for debug)","none",pcbddc->dbg_flag,&pcbddc->dbg_flag,NULL);CHKERRQ(ierr);
   /* Primal space cumstomization */

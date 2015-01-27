@@ -1216,7 +1216,7 @@ PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
 /*
   PetscThreadCommWorldInitialize - Initializes the global thread communicator object
 
-  PetscThreadCommWorldInitialize() defaults to using the nonthreaded communicator.
+    Defaults to using the nonthreaded communicator.
 */
 PetscErrorCode PetscThreadCommWorldInitialize(void)
 {

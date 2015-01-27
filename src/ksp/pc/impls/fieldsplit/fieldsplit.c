@@ -1112,7 +1112,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_FieldSplit"
-static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
+static PetscErrorCode PCSetFromOptions_FieldSplit(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode  ierr;
   PetscInt        bs;
@@ -1121,7 +1121,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
   PCCompositeType ctype;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("FieldSplit options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"FieldSplit options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_fieldsplit_dm_splits","Whether to use DMCreateFieldDecomposition() for splits","PCFieldSplitSetDMSplits",jac->dm_splits,&jac->dm_splits,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_fieldsplit_block_size","Blocksize that defines number of fields","PCFieldSplitSetBlockSize",jac->bs,&bs,&flg);CHKERRQ(ierr);
   if (flg) {

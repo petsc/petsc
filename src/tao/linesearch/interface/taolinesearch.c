@@ -540,7 +540,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   ierr = PetscOptionsReal("-tao_ls_stepmin","lower bound for step","",ls->stepmin,&ls->stepmin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_ls_stepmax","upper bound for step","",ls->stepmax,&ls->stepmax,NULL);CHKERRQ(ierr);
   if (ls->ops->setfromoptions) {
-    ierr = (*ls->ops->setfromoptions)(ls);CHKERRQ(ierr);
+    ierr = (*ls->ops->setfromoptions)(PetscOptionsObject,ls);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);

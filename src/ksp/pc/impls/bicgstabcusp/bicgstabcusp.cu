@@ -203,13 +203,13 @@ static PetscErrorCode PCDestroy_BiCGStabCUSP(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_BiCGStabCUSP"
-static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PC pc)
+static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("BiCGStabCUSP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"BiCGStabCUSP options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_bicgstabcusp_rtol","relative tolerance for BiCGStabCUSP preconditioner","PCBiCGStabCUSPSetTolerance",bicg->rtol,&bicg->rtol,0);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bicgstabcusp_max_it","maximum iterations for BiCGStabCUSP preconditioner","PCBiCGStabCUSPSetIterations",bicg->maxits,&bicg->maxits,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bicgstabcusp_monitor_verbose","Print information about GPU BiCGStabCUSP iterations","PCBiCGStabCUSPSetUseVerboseMonitor",bicg->monitorverbose,&bicg->monitorverbose,0);CHKERRQ(ierr);

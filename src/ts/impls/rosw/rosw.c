@@ -1406,14 +1406,14 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_RosW"
-static PetscErrorCode TSSetFromOptions_RosW(TS ts)
+static PetscErrorCode TSSetFromOptions_RosW(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   PetscErrorCode ierr;
   char           rostype[256];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("RosW ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"RosW ODE solver options");CHKERRQ(ierr);
   {
     RosWTableauLink link;
     PetscInt        count,choice;

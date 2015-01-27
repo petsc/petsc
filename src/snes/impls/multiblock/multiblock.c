@@ -415,7 +415,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Multiblock"
-static PetscErrorCode SNESSetFromOptions_Multiblock(SNES snes)
+static PetscErrorCode SNESSetFromOptions_Multiblock(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
   PCCompositeType ctype;
@@ -424,7 +424,7 @@ static PetscErrorCode SNESSetFromOptions_Multiblock(SNES snes)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES Multiblock options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES Multiblock options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_multiblock_block_size", "Blocksize that defines number of fields", "PCFieldSplitSetBlockSize", mb->bs, &bs, &flg);CHKERRQ(ierr);
   if (flg) {ierr = SNESMultiblockSetBlockSize(snes, bs);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-snes_multiblock_type", "Type of composition", "PCFieldSplitSetType", PCCompositeTypes, (PetscEnum) mb->type, (PetscEnum*) &ctype, &flg);CHKERRQ(ierr);

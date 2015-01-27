@@ -3,7 +3,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_DA"
-PetscErrorCode  DMSetFromOptions_DA(DM da)
+PetscErrorCode  DMSetFromOptions_DA(PetscOptions *PetscOptionsObject,DM da)
 {
   PetscErrorCode ierr;
   DM_DA          *dd         = (DM_DA*)da->data;
@@ -29,7 +29,7 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
     negativeMNP = PETSC_TRUE;
   }
 
-  ierr = PetscOptionsHead("DMDA Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMDA Options");CHKERRQ(ierr);
   if (bM) {ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,NULL);CHKERRQ(ierr);}
   if (bN) {ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,NULL);CHKERRQ(ierr);}
   if (bP) {ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,NULL);CHKERRQ(ierr);}

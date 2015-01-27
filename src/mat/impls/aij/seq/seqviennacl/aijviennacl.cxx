@@ -36,7 +36,7 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
       ierr = PetscLogEventBegin(MAT_ViennaCLCopyToGPU,A,0,0,0);CHKERRQ(ierr);
 
       try {
-        ierr = PetscObjectSetFromOptions_ViennaCL((PetscObject)A);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
+        ierr = PetscObjectViennaCLSetFromOptions((PetscObject)A);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
         if (a->compressedrow.use) {
           if (!viennaclstruct->compressed_mat) viennaclstruct->compressed_mat = new ViennaCLCompressedAIJMatrix();
 

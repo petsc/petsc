@@ -19,7 +19,7 @@ extern PetscErrorCode CkEigenSolutions(PetscInt*,Mat*,PetscReal*,Vec*,PetscInt*,
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   Mat            A,B,A_dense,B_dense,mats[2],A_sp;
   Vec            *evecs;
@@ -30,7 +30,8 @@ PetscInt main(PetscInt argc,char **args)
   PetscBool      preload=PETSC_TRUE,isSymmetric;
   PetscScalar    sigma,one=1.0,*arrayA,*arrayB,*evecs_array,*work,*evals;
   PetscMPIInt    size;
-  PetscInt       m,n,i,j,nevs,il,iu;
+  PetscInt       m,n,i,j;
+  PetscBLASInt   il,iu,nevs,nn;
   PetscLogStage  stages[2];
   PetscReal      vl,vu,abstol=1.e-8;
   PetscBLASInt   *iwork,*ifail,lone=1,lwork,lierr,bn;
@@ -169,12 +170,13 @@ PetscInt main(PetscInt argc,char **args)
   } else {   /* test sygvx()  */
     il    = 1;
     ierr  = PetscBLASIntCast(.6*m,&iu);CHKERRQ(ierr);
+    ierr  = PetscBLASIntCast(n,&nn);CHKERRQ(ierr);    
     ierr  = PetscMalloc1(m*n+1,&evecs_array);CHKERRQ(ierr);
     ierr  = PetscMalloc1(6*n+1,&iwork);CHKERRQ(ierr);
     ifail = iwork + 5*n;
     if (PetscPreLoadIt) {ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);}
     /* in the case "I", vl and vu are not referenced */
-    LAPACKsygvx_(&lone,"V","I","U",&bn,arrayA,&bn,arrayB,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,iwork,ifail,&lierr);
+    LAPACKsygvx_(&lone,"V","I","U",&bn,arrayA,&bn,arrayB,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&nn,work,&lwork,iwork,ifail,&lierr);
     if (PetscPreLoadIt) ierr = PetscLogStagePop();
     ierr = PetscFree(iwork);CHKERRQ(ierr);
   }

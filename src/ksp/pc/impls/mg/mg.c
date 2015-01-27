@@ -2,7 +2,7 @@
 /*
     Defines the multigrid preconditioner interface.
 */
-#include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscksp.h" I*/
+#include <petsc-private/pcmgimpl.h>                    /*I "petscksp.h" I*/
 #include <petscdm.h>
 
 #undef __FUNCT__
@@ -350,7 +350,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_MG"
-PetscErrorCode PCSetFromOptions_MG(PC pc)
+PetscErrorCode PCSetFromOptions_MG(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       m,levels = 1,cycles;
@@ -361,7 +361,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
   PCMGCycleType  mgctype;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Multigrid options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Multigrid options");CHKERRQ(ierr);
   if (!mg->levels) {
     ierr = PetscOptionsInt("-pc_mg_levels","Number of Levels","PCMGSetLevels",levels,&levels,&flg);CHKERRQ(ierr);
     if (!flg && pc->dm) {

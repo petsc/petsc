@@ -5,7 +5,7 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_NoThread(PetscThreadComm);
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm);
 #endif
-#if defined(PETSC_HAVE_OPENMP)
+#if defined(PETSC_HAVE_OPENMPCLASSES)
 PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_OpenMP(PetscThreadComm);
 #endif
 
@@ -35,7 +35,7 @@ PetscErrorCode PetscThreadCommRegisterAll(void)
 #if defined(PETSC_HAVE_PTHREADCLASSES)
   ierr = PetscThreadCommRegister(PTHREAD, PetscThreadCommCreate_PThread);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_OPENMP)
+#if defined(PETSC_HAVE_OPENMPCLASSES)
   ierr = PetscThreadCommRegister(OPENMP,  PetscThreadCommCreate_OpenMP);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);

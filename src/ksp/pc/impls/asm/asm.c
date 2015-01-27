@@ -567,7 +567,7 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ASM"
-static PetscErrorCode PCSetFromOptions_ASM(PC pc)
+static PetscErrorCode PCSetFromOptions_ASM(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
@@ -581,7 +581,7 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc)
     ierr = MatIsSymmetricKnown(pc->pmat,&symset,&flg);CHKERRQ(ierr);
     if (symset && flg) osm->type = PC_ASM_BASIC;
   }
-  ierr = PetscOptionsHead("Additive Schwarz options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Additive Schwarz options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_asm_dm_subdomains","Use DMCreateDomainDecomposition() to define subdomains","PCASMSetDMSubdomains",osm->dm_subdomains,&osm->dm_subdomains,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
   if (flg) {

@@ -98,14 +98,14 @@ PetscErrorCode PCSetData_GEO(PC pc, Mat m)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GEO"
-PetscErrorCode PCSetFromOptions_GEO(PC pc)
+PetscErrorCode PCSetFromOptions_GEO(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("GAMG-GEO options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"GAMG-GEO options");CHKERRQ(ierr);
   {
     /* -pc_gamg_sa_nsmooths */
     /* pc_gamg_sa->smooths = 0; */
