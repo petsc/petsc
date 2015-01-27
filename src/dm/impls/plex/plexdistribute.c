@@ -1380,6 +1380,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscLogEventBegin(DMPLEX_Migrate, dm, 0, 0, 0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(targetDM, dim);CHKERRQ(ierr);
@@ -1430,6 +1431,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
   ierr = DMPlexDistributeSetupHybrid(dm, sf, ltogMigration, targetDM);CHKERRQ(ierr);
   ierr = DMPlexDistributeSetupTree(dm, sf, ltogMigration, targetDM);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltogMigration);
+  ierr = PetscLogEventEnd(DMPLEX_Migrate, dm, 0, 0, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1549,7 +1551,6 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     PetscSFNode       *newRemote;
     const PetscSFNode *oldRemote;
     PetscSF            sfOverlap, sfOverlapPoint;
-    ierr = PetscLogEventBegin(DMPLEX_DistributeOverlap,dm,0,0,0);CHKERRQ(ierr);
     /* Add the partition overlap to the distributed DM */
     ierr = DMPlexDistributeOverlap(*dmParallel, overlap, &sfOverlap, &dmOverlap);CHKERRQ(ierr);
     ierr = DMDestroy(dmParallel);CHKERRQ(ierr);
@@ -1570,7 +1571,6 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     ierr = PetscSFDestroy(&sfOverlap);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sfMigration);CHKERRQ(ierr);
     sfMigration = sfOverlapPoint;
-    ierr = PetscLogEventEnd(DMPLEX_DistributeOverlap,dm,0,0,0);CHKERRQ(ierr);
   }
   /* Cleanup Partition */
   ierr = PetscSFDestroy(&sfProcess);CHKERRQ(ierr);
@@ -1629,6 +1629,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   if (sf) PetscValidPointer(sf, 3);
   PetscValidPointer(dmOverlap, 4);
 
+  ierr = PetscLogEventBegin(DMPLEX_DistributeOverlap, dm, 0, 0, 0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
@@ -1664,5 +1665,6 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   ierr = DMLabelDestroy(&lblOverlap);CHKERRQ(ierr);
   if (sf) *sf = sfOverlap;
   else    {ierr = PetscSFDestroy(&sfOverlap);CHKERRQ(ierr);}
+  ierr = PetscLogEventEnd(DMPLEX_DistributeOverlap, dm, 0, 0, 0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
