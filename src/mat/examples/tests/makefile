@@ -2135,24 +2135,34 @@ runex172_mpisbaij:
 	   ${RM} -f ex172.tmp
 
 runex173:
-	-@${MPIEXEC} -n 1 ./ex173 -f ${DATAFILESPATH}/matrices/small > ex173.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex173 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 > ex173.tmp 2>&1; \
 	   if (${DIFF} output/ex173.out ex173.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex173_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex173.tmp
 runex173_dense:
-	-@${MPIEXEC} -n 1 ./ex173 -f ${DATAFILESPATH}/matrices/small -mat_type dense > ex173.tmp 2>&1; \
-	   if (${DIFF} output/ex173.out ex173.tmp) then true; \
+	-@${MPIEXEC} -n 1 ./ex173 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 -orig_mat_type dense > ex173.tmp 2>&1; \
+	   if (${DIFF} output/ex173_dense.out ex173.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex173_dense, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex173.tmp
+runex173_elemental:
+	-@${MPIEXEC} -n 1 ./ex173 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 -orig_mat_type elemental > ex173.tmp 2>&1; \
+	   if (${DIFF} output/ex173_elemental.out ex173.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex173_elemental, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex173.tmp
 runex173_2:
-	-@${MPIEXEC} -n 3 ./ex173 -f ${DATAFILESPATH}/matrices/medium > ex173.tmp 2>&1; \
+	-@${MPIEXEC} -n 8 ./ex173 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 > ex173.tmp 2>&1; \
 	   if (${DIFF} output/ex173.out ex173.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex173_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex173.tmp
 runex173_2_dense:
-	-@${MPIEXEC} -n 3 ./ex173 -f ${DATAFILESPATH}/matrices/medium -mat_type dense > ex173.tmp 2>&1; \
-	   if (${DIFF} output/ex173.out ex173.tmp) then true; \
+	-@${MPIEXEC} -n 8 ./ex173 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 -orig_mat_type dense > ex173.tmp 2>&1; \
+	   if (${DIFF} output/ex173_dense.out ex173.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex173_2_dense, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex173.tmp
+runex173_2_elemental:
+	-@${MPIEXEC} -n 8 ./ex173 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 -orig_mat_type elemental > ex173.tmp 2>&1; \
+	   if (${DIFF} output/ex173_elemental.out ex173.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex173_elemental, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex173.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
@@ -2231,6 +2241,6 @@ TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm 
                                  ex103.PETSc runex103 runex103_1 runex103_2 ex103.rm \
                                  ex104.PETSc runex104_elemental runex104_elemental_2 ex104.rm \
                                  ex145.PETSc runex145 runex145_2 ex145.rm \
-                                 ex173.PETSc runex173 runex173_dense runex173_2 runex173_2_dense ex173.rm
+                                 ex173.PETSc runex173 runex173_dense runex173_elemental runex173_2 runex173_2_dense runex173_2_elemental ex173.rm
 
 include ${PETSC_DIR}/lib/petsc-conf/test

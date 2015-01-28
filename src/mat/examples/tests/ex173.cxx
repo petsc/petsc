@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatConvert, MatLoad, MatElementalHermitianGenDefiniteEig for MATELEMENTAL interface.\n\n";
+static char help[] = "Tests MatConvert(), MatLoad(), MatElementalHermitianGenDefiniteEig() for MATELEMENTAL interface.\n\n";
 /*
  Example:
    mpiexec -n <np> ./ex173 -fA $Deig/graphene_xxs_A_aij -fB $Deig/graphene_xxs_B_aij -vl -0.8 -vu -0.75 -orig_mat_type <type>
@@ -11,24 +11,29 @@ static char help[] = "Tests MatConvert, MatLoad, MatElementalHermitianGenDefinit
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,Aelem,B,Belem,X,Xe,We,C1,C2,EVAL;
+  Mat            A,Ae,B,Be,X,Xe,We,C1,C2,EVAL;
   Vec            eval;
   PetscErrorCode ierr;
   PetscViewer    view;
   char           file[2][PETSC_MAX_PATH_LEN];
-  PetscBool      flg,flgB,isElemental=PETSC_FALSE;
+  PetscBool      flg,flgB,isElemental,isDense;
   PetscScalar    one = 1.0,*Earray;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank,size;
   PetscReal      vl,vu,norm;
   PetscInt       M,N,m;
-  MatType        type;
-  //elem::HermitianGenDefiniteEigType eigtype = elem::AXBX;
+
+  /* Below are Elemental data types, see <elemental.hpp> */
+  elem::HermitianGenDefiniteEigType eigtype;
+  elem::UpperOrLower                uplo;
+  //elem::SortType                  sort;
+  //elem::Pencil   pencil;
 
   PetscInitialize(&argc,&args,(char*)0,help);
 #if !defined(PETSC_HAVE_ELEMENTAL)
   SETERRQ(PETSC_COMM_WORLD,1,"This example requires ELEMENTAL");
 #endif
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* Load PETSc matrices */
   ierr = PetscOptionsGetString(NULL,"-fA",file[0],PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
@@ -68,21 +73,31 @@ int main(int argc,char **args)
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
-  ierr = MatGetType(A,&type);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATELEMENTAL,&isElemental);CHKERRQ(ierr);
   if (isElemental) {
-    Aelem = A;
-    Belem = B;
+    Ae = A;
+    Be = B;
   } else { /* Convert AIJ/DENSE matrices into Elemental matrices */
-    if (!rank) printf(" Convert AIJ/DENSE matrix A into Elemental matrix... \n");
-    ierr = MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &Aelem);CHKERRQ(ierr);
-    if (!rank) printf(" Convert AIJ/DENSE matrix B into Elemental matrix... \n");
-    ierr = MatConvert(B, MATELEMENTAL, MAT_INITIAL_MATRIX, &Belem);CHKERRQ(ierr);
+    if (size == 1) {
+      ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&isDense);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIDENSE,&isDense);CHKERRQ(ierr);
+    }
+
+    if (!rank) {
+      if (isDense) {
+        printf(" Convert DENSE matrices A and B into Elemental matrix... \n");
+      } else {
+        printf(" Convert AIJ matrices A and B into Elemental matrix... \n");
+      }
+    }
+    ierr = MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &Ae);CHKERRQ(ierr);
+    ierr = MatConvert(B, MATELEMENTAL, MAT_INITIAL_MATRIX, &Be);CHKERRQ(ierr);
 
     /* Test accuracy */
-    ierr = MatMultEqual(A,Aelem,5,&flg);CHKERRQ(ierr);
+    ierr = MatMultEqual(A,Ae,5,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != A_elemental.");
-    ierr = MatMultEqual(B,Belem,5,&flg);CHKERRQ(ierr);
+    ierr = MatMultEqual(B,Be,5,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"B != B_elemental.");
   }
 
@@ -91,14 +106,14 @@ int main(int argc,char **args)
   vl = -0.8, vu = -0.7;
   ierr = PetscOptionsGetReal(NULL,"-vl",&vl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-vu",&vu,NULL);CHKERRQ(ierr);
-  PetscInt eigtype = 1; /* elem::AXBX */
-  PetscInt uplo = 1;    /* = elem::UPPER */
-  ierr = MatElementalHermitianGenDefiniteEig(eigtype,uplo,Aelem,Belem,&We,&Xe,vl,vu);CHKERRQ(ierr);
+ 
+  eigtype = elem::AXBX;
+  uplo    = elem::UPPER;
+  ierr = MatElementalHermitianGenDefiniteEig(eigtype,uplo,Ae,Be,&We,&Xe,vl,vu);CHKERRQ(ierr);
   //ierr = MatView(We,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  //ierr = MatView(Xe,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Check || A*X - B*X*We || */
-  if (!isElemental) {
+  if (!isElemental && !isDense) {
     if (!rank) printf(" Convert Elemental matrices We and Xe into MATDENSE matrices... \n");
     ierr = MatConvert(We,MATDENSE,MAT_INITIAL_MATRIX,&EVAL);CHKERRQ(ierr); /* EVAL is a Mx1 matrix */
     ierr = MatConvert(Xe,MATDENSE,MAT_INITIAL_MATRIX,&X);CHKERRQ(ierr);
@@ -117,15 +132,20 @@ int main(int argc,char **args)
     ierr = MatDiagonalScale(C2,NULL,eval);CHKERRQ(ierr); /* C2 = B*X*eval */
     ierr = MatAXPY(C1,-1.0,C2,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* C1 = - C2 + C1 */
     ierr = MatNorm(C1,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-    if (!rank) printf(" || A*X - B*X*We || = %g\n",norm);
+    if (norm > 1.e-14) {
+      if (!rank) printf(" Warning: || A*X - B*X*We || = %g\n",norm);
+    }
 
     ierr = MatDestroy(&C1);CHKERRQ(ierr);
     ierr = MatDestroy(&C2);CHKERRQ(ierr);
     ierr = VecDestroy(&eval);CHKERRQ(ierr);
     ierr = MatDestroy(&EVAL);CHKERRQ(ierr);
     ierr = MatDestroy(&X);CHKERRQ(ierr);
-    ierr = MatDestroy(&Aelem);CHKERRQ(ierr);
-    ierr = MatDestroy(&Belem);CHKERRQ(ierr);
+
+  } 
+  if (!isElemental) {
+    ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+    ierr = MatDestroy(&Be);CHKERRQ(ierr);
   }
 
   ierr = MatDestroy(&We);CHKERRQ(ierr);

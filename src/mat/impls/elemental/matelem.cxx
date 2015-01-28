@@ -1014,8 +1014,6 @@ PetscErrorCode MatAssemblyEnd_Elemental(Mat A, MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
-//#include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
-//extern PetscErrorCode MatLoad_SeqDense(Mat,PetscViewer);
 #undef __FUNCT__
 #define __FUNCT__ "MatLoad_Elemental"
 PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
@@ -1032,15 +1030,12 @@ PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
   ierr = MatConvert(Adense, MATELEMENTAL, MAT_INITIAL_MATRIX,&Ae);CHKERRQ(ierr);
   ierr = MatDestroy(&Adense);CHKERRQ(ierr);
   ierr = MatHeaderReplace(newMat,Ae);CHKERRQ(ierr);
-  //ierr = MatDestroy(&newMat);CHKERRQ(ierr);
-  //newMat = Ae;
-  //printf("MatLoad_Elemental is done\n");
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatElementalHermitianGenDefiniteEig_Elemental"
-PetscErrorCode MatElementalHermitianGenDefiniteEig_Elemental(const PetscInt type,const PetscInt uplo1,Mat A,Mat B,Mat *evals,Mat *evec,PetscReal vl,PetscReal vu)
+PetscErrorCode MatElementalHermitianGenDefiniteEig_Elemental(elem::HermitianGenDefiniteEigType type,elem::UpperOrLower uplo1,Mat A,Mat B,Mat *evals,Mat *evec,PetscReal vl,PetscReal vu)
 {
   PetscErrorCode           ierr;
   Mat_Elemental            *a=(Mat_Elemental*)A->data,*b=(Mat_Elemental*)B->data,*x;     
@@ -1128,12 +1123,12 @@ PetscErrorCode MatElementalHermitianGenDefiniteEig_Elemental(const PetscInt type
 
 .seealso: MatGetFactor()
 @*/
-PetscErrorCode MatElementalHermitianGenDefiniteEig(const PetscInt type,const PetscInt uplo1,Mat A,Mat B,Mat *evals,Mat *evec,PetscReal vl,PetscReal vu)
+PetscErrorCode MatElementalHermitianGenDefiniteEig(elem::HermitianGenDefiniteEigType type,elem::UpperOrLower uplo,Mat A,Mat B,Mat *evals,Mat *evec,PetscReal vl,PetscReal vu)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"MatElementalHermitianGenDefiniteEig_C",(const PetscInt,const PetscInt,Mat,Mat,Mat*,Mat*,PetscReal,PetscReal),(type,uplo1,A,B,evals,evec,vl,vu));CHKERRQ(ierr);
+  ierr = PetscTryMethod(A,"MatElementalHermitianGenDefiniteEig_C",(elem::HermitianGenDefiniteEigType,elem::UpperOrLower,Mat,Mat,Mat*,Mat*,PetscReal,PetscReal),(type,uplo,A,B,evals,evec,vl,vu));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
