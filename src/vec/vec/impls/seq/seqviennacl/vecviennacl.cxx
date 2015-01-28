@@ -95,7 +95,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector *
 
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscObjectSetFromOptions"
+#define __FUNCT__ "PetscObjectViennaCLSetFromOptions"
 PETSC_EXTERN PetscErrorCode PetscObjectViennaCLSetFromOptions(PetscObject obj)
 {
   PetscErrorCode       ierr;
