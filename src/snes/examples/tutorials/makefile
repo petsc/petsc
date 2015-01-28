@@ -1093,7 +1093,7 @@ runex48_5:
 	-@for mtype in aij baij sbaij; do \
            ${MPIEXEC} -n 6 ./ex48 -M 12 -P 5 -snes_monitor_short -ksp_converged_reason -pc_type asm -pc_asm_type restrict -dm_mat_type $$mtype > ex48_5.tmp 2>&1; \
 	   ${DIFF} output/ex48_5.out ex48_5.tmp || printf "${PWD}\nPossible problem with ex48_5 mtype=$${mtype}, diffs above\n=========================================\n"; \
-	   ${RM} -f ex48.tmp; \
+	   ${RM} -f ex48_5.tmp; \
          done
 
 runex58:
