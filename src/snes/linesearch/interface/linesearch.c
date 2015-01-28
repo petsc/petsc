@@ -237,7 +237,7 @@ PetscErrorCode  SNESLineSearchSetPreCheck(SNESLineSearch linesearch, PetscErrorC
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchGetPreCheck"
 /*@C
-   SNESLineSearchSetPreCheck - Gets the pre-check function for the line search routine.
+   SNESLineSearchGetPreCheck - Gets the pre-check function for the line search routine.
 
    Input Parameters:
 .  linesearch - the SNESLineSearch context
