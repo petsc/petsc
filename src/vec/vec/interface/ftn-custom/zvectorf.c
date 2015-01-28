@@ -15,6 +15,7 @@
 #define vecmax_                   VECMAX
 #define vecgetownershiprange_     VECGETOWNERSHIPRANGE
 #define vecgetownershipranges_    VECGETOWNERSHIPRANGES
+#define vecsetoptionsprefix_      VECSETOPTIONSPREFIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecgetarrayaligned_       vecgetarrayaligned
 #define vecsetvalue_              vecsetvalue
@@ -28,6 +29,7 @@
 #define vecmax_                   vecmax
 #define vecgetownershiprange_     vecgetownershiprange
 #define vecgetownershipranges_    vecgetownershipranges
+#define vecsetoptionsprefix_      vecsetoptionsprefix
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL vecsetvalue_(Vec *v,PetscInt *i,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
@@ -165,3 +167,11 @@ PETSC_EXTERN void PETSC_STDCALL vecgetownershipranges_(Vec *x,PetscInt *range,Pe
   *ierr = PetscMemcpy(range,r,(size+1)*sizeof(PetscInt));
 }
 
+PETSC_EXTERN void PETSC_STDCALL vecsetoptionsprefix_(Vec *v,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(prefix,len,t);
+  *ierr = VecSetOptionsPrefix(*v,t);
+  FREECHAR(prefix,t);
+}
