@@ -362,6 +362,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
     ierr = ISGetLocalSize(islist[i], &n);CHKERRQ(ierr);
     ierr = ISGetIndices(islist[i], &iidx);CHKERRQ(ierr);
     ierr = PetscMemcpy(idx+N,iidx, sizeof(PetscInt)*n);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(islist[i], &iidx);CHKERRQ(ierr);
     N   += n;
   }
   ierr = ISCreateGeneral(comm, N, idx, PETSC_OWN_POINTER, isout);CHKERRQ(ierr);
