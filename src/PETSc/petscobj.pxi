@@ -136,6 +136,8 @@ cdef inline type subtype_DM(PetscDM dm):
     if match == PETSC_TRUE: return DMPlex
     CHKERR( PetscObjectTypeCompare(obj, b"composite", &match) )
     if match == PETSC_TRUE: return DMComposite
+    CHKERR( PetscObjectTypeCompare(obj, b"shell", &match) )
+    if match == PETSC_TRUE: return DMShell
     # ---
     return DM
 

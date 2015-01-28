@@ -291,14 +291,6 @@ cdef class DM(Object):
     def setPointSF(self, SF sf not None):
         CHKERR( DMSetPointSF(self.dm, sf.sf) )
 
-    #
-
-    def setShellGlobalVector(self, Vec gv not None):
-        CHKERR( DMShellSetGlobalVector(self.dm, gv.vec) )
-
-    def setShellLocalVector(self, Vec lv not None):
-        CHKERR( DMShellSetLocalVector(self.dm, lv.vec) )
-
     # backward compatibility
     createGlobalVector = createGlobalVec
     createLocalVector = createLocalVec
