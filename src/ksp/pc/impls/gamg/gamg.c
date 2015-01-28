@@ -919,17 +919,17 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetProcEqLim"
 /*@
-   PCGAMGSetProcEqLim - Set number of equations to aim for on coarse grids via
-   processor reduction.
+   PCGAMGSetProcEqLim - Set number of equations to aim for on coarse grids via processor reduction.
 
-   Not Collective on PC
+   Logically Collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
+-  n - the number of equations
 
 
    Options Database Key:
-.  -pc_gamg_process_eq_limit
+.  -pc_gamg_process_eq_limit <limit>
 
    Level: intermediate
 
@@ -967,18 +967,17 @@ static PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
  Collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
-
++  pc - the preconditioner context
+-  n - maximum number of equations to aim for
 
    Options Database Key:
-.  -pc_gamg_coarse_eq_limit
+.  -pc_gamg_coarse_eq_limit <limit>
 
    Level: intermediate
 
    Concepts: Unstructured multrigrid preconditioner
 
-.seealso: ()
- @*/
+@*/
 PetscErrorCode PCGAMGSetCoarseEqLim(PC pc, PetscInt n)
 {
   PetscErrorCode ierr;
@@ -1009,11 +1008,11 @@ static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
    Collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
-
++  pc - the preconditioner context
+-  n - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-.  -pc_gamg_repartition
+.  -pc_gamg_repartition <true,false>
 
    Level: intermediate
 
@@ -1044,18 +1043,18 @@ static PetscErrorCode PCGAMGSetRepartitioning_GAMG(PC pc, PetscBool n)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetReuseProl"
+#define __FUNCT__ "PCGAMGSetReuseInterpolation"
 /*@
-   PCGAMGSetReuseProl - Reuse prlongation
+   PCGAMGSetReuseInterpolation - Reuse prolongation when rebuilding preconditioner
 
    Collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
-
++  pc - the preconditioner context
+-  n - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-.  -pc_gamg_reuse_interpolation
+.  -pc_gamg_reuse_interpolation <true,false>
 
    Level: intermediate
 
@@ -1063,19 +1062,19 @@ static PetscErrorCode PCGAMGSetRepartitioning_GAMG(PC pc, PetscBool n)
 
 .seealso: ()
 @*/
-PetscErrorCode PCGAMGSetReuseProl(PC pc, PetscBool n)
+PetscErrorCode PCGAMGSetReuseInterpolation(PC pc, PetscBool n)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCGAMGSetReuseProl_C",(PC,PetscBool),(pc,n));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCGAMGSetReuseInterpolation_C",(PC,PetscBool),(pc,n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGSetReuseProl_GAMG"
-static PetscErrorCode PCGAMGSetReuseProl_GAMG(PC pc, PetscBool n)
+#define __FUNCT__ "PCGAMGSetReuseInterpolation_GAMG"
+static PetscErrorCode PCGAMGSetReuseInterpolation_GAMG(PC pc, PetscBool n)
 {
   PC_MG   *mg      = (PC_MG*)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -1130,13 +1129,13 @@ static PetscErrorCode PCGAMGSetUseASMAggs_GAMG(PC pc, PetscBool n)
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetNlevels"
 /*@
-   PCGAMGSetNlevels -
+   PCGAMGSetNlevels -  Sets the maximum number of levels PCGAMG will use
 
    Not collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
-
++  pc - the preconditioner
+-  n - the maximum number of levels to use
 
    Options Database Key:
 .  -pc_mg_levels
@@ -1177,11 +1176,11 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
    Not collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
-
++  pc - the preconditioner context
+-  threshold - the threshold value, 0.0 is the lowest possible
 
    Options Database Key:
-.  -pc_gamg_threshold
+.  -pc_gamg_threshold <threshold>
 
    Level: intermediate
 
@@ -1345,7 +1344,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptions *PetscOptionsObject,PC pc)
     /* -pc_gamg_repartition */
     ierr = PetscOptionsBool("-pc_gamg_repartition","Repartion coarse grids","PCGAMGRepartitioning",pc_gamg->repart,&pc_gamg->repart,NULL);CHKERRQ(ierr);
     /* -pc_gamg_reuse_interpolation */
-    ierr = PetscOptionsBool("-pc_gamg_reuse_interpolation","Reuse prolongation operator","PCGAMGReuseProl",pc_gamg->reuse_prol,&pc_gamg->reuse_prol,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pc_gamg_reuse_interpolation","Reuse prolongation operator","PCGAMGReuseInterpolation",pc_gamg->reuse_prol,&pc_gamg->reuse_prol,NULL);CHKERRQ(ierr);
     /* -pc_gamg_use_agg_gasm */
     ierr = PetscOptionsBool("-pc_gamg_use_agg_gasm","Use aggregation agragates for GASM smoother","PCGAMGUseASMAggs",pc_gamg->use_aggs_in_gasm,&pc_gamg->use_aggs_in_gasm,NULL);CHKERRQ(ierr);
     /* -pc_gamg_process_eq_limit */
@@ -1370,25 +1369,27 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptions *PetscOptionsObject,PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*MC
-     PCGAMG - Geometric algebraic multigrid (AMG) preconditioning framework.
-       - This is the entry point to GAMG, registered in pcregis.c
+     PCGAMG - Geometric algebraic multigrid (AMG) preconditioner
 
    Options Database Keys:
    Multigrid options(inherited)
-+  -pc_mg_cycles <v>: v or w (PCMGSetCycleType)
++  -pc_mg_cycles <v>: v or w (PCMGSetCycleType())
 .  -pc_mg_smoothup <1>: Number of post-smoothing steps (PCMGSetNumberSmoothUp)
 .  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (PCMGSetNumberSmoothDown)
 -  -pc_mg_type <multiplicative>: (one of) additive multiplicative full kascade
 
+
+  Notes: In order to obtain good performance for PCGAMG for vector valued problems you must
+$       Call MatSetBlockSize() to indicate the number of degrees of freedom per grid point
+$       Call MatSetNearNullSpace() (or PCSetCoordinates() if solving the equations of elasticity) to indicate the near null space of the operator
+$       See the Users Manual Chapter 4 for more details
+
   Level: intermediate
 
-  Concepts: multigrid
+  Concepts: algebraic multigrid
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType,
-           PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), PCMGSetCycleType(), PCMGSetNumberSmoothDown(),
-           PCMGSetNumberSmoothUp(), PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
-           PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),
-           PCMGSetCyclesOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
+.seealso:  PCCreate(), PCSetType(), MatSetBlockSize(), PCMGType, PCSetCoordinates(), MatSetNearNullSpace(), PCGAMGSetType(), PCGAMGAGG, PCGAMGGEO, PCGAMGCLASSICAL, PCGAMGSetProcEqLim(), 
+           PCGAMGSetCoarseEqLim(), PCGAMGSetRepartitioning(), PCGAMGRegister(), PCGAMGSetReuseInterpolation(), PCGAMGSetUseASMAggs(), PCGAMGSetNlevels(), PCGAMGSetThreshold(), PCGAMGGetType()
 M*/
 
 #undef __FUNCT__
@@ -1432,7 +1433,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetProcEqLim_C",PCGAMGSetProcEqLim_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetCoarseEqLim_C",PCGAMGSetCoarseEqLim_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetRepartitioning_C",PCGAMGSetRepartitioning_GAMG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetReuseProl_C",PCGAMGSetReuseProl_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetReuseInterpolation_C",PCGAMGSetReuseInterpolation_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetUseASMAggs_C",PCGAMGSetUseASMAggs_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetThreshold_C",PCGAMGSetThreshold_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetType_C",PCGAMGSetType_GAMG);CHKERRQ(ierr);

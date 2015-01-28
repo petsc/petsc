@@ -2534,7 +2534,7 @@ SOR with Eisenstat trick             & PCEISENSTAT   & eisenstat\\
 Incomplete Cholesky                  & PCICC         & icc\\
 Incomplete LU                        & PCILU         & ilu\\
 Additive Schwarz                     & PCASM         & asm\\
-Algebraic Multigrid                    & PCGAMG         & gamg\\
+Algebraic Multigrid                  & PCGAMG         & gamg\\
 Linear solver                        & PCKSP         & ksp \\
 Combination of preconditioners       & PCCOMPOSITE   & composite \\
 \hline
@@ -2827,54 +2827,32 @@ merely allows PETSc to extend that overlap further if desired.
 %----------------------------------------------------------------------
 \subsection{Algebraic Multigrid (AMG) Preconditioners}
 
-PETSc provides a native AMG PC -- {\it gamg} -- and interfaces to two
+PETSc provides a native algebraic multigrid preconditioner PCGAMG -- {\it ``gamg''} -- and interfaces to two
 external AMG packages: {\it hypre} and {\it ML}.
-Note, ML has be depreciated, as a replacement is being developed, and
-is not recommended currently.
-Run any test problem with -help and the appropriate PC to see a listing of all parameters for
-each PC.
-%These packages are monolithic in that they implement one class of
-%algorithms, ``classic" AMG in the case of  {\it hypre}  and smoothed
-%aggregation for {\it ML}.
-PETSc's AMG solver is constructed as a framework for developers to
-easily add AMG capabilities, like a new AMG algorithm or a new matrix
-triple product, etc.
-PETSc has instantiated one method, (smoothed) aggregation AMG, (\trl{-pc_type gamg -pc_gamg_type
-  agg} or just \trl{-pc_type gamg}) that is fully supported.
-There is an unsupported implementations of a classical AMG method (\trl{-pc_gamg_type classical}  and a hybrid geometric AMG method (\trl{-pc_gamg_type geo} or PCGAMGType().
-GAMG provides unsmoothed aggregation (\trl{-pc_gamg_agg_nsmooths 0}) and smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1} or PCGAMGSetNSmooths()).
+
+PETSc provides a (smoothed) aggregation AMG, (\trl{-pc_type gamg -pc_gamg_type agg} or  PCSetType(pc,PCGAMG) and PCGAMGSetType(pc,PCGAMGAgg).
+There are also less developed implementations of a classical AMG method (\trl{-pc_gamg_type classical})  and a hybrid geometric AMG method (\trl{-pc_gamg_type geo}).
+
+GAMG provides unsmoothed aggregation (\trl{-pc_gamg_agg_nsmooths 0}) and smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1} or PCGAMGSetNSmooths(pc,1)).
 Smoothed aggregation is recommended for symmetric positive definite
 systems;  unsmoothed aggregation can be useful for asymmetric
-problems and problems where highest eigen estimates are problematic.
-  
-AMG methods benefit greatly from knowledge of the number of degrees of
-freedom per vertex, and is all but required for GAMG.
-The default is one (a scalar problem) but vector problems like elasticity should set the block size of the matrix appropriately: 
-\trl{-mat_block_size} $bs$ (e.g., $bs=3$ for 3D) or manually in the code with MatSetBlockSize().
-
+problems and problems where highest eigen estimates are problematic. Try \trl{-pc_gamg_agg_nsmooths 0}  if poor convergence rates are observed using the smoothed version.
+AMG methods requires knowledge of the number of degrees of
+freedom per vertex, the default is one (a scalar problem) but vector problems like elasticity should set the block size of the matrix appropriately with MatSetBlockSize(mat,bs).
 Smoothed aggregation relies an explicit representation of the (near) null space of the operator.
-One can provide this null space with KSPSetNullSpace().
-Elasticity is a common case where rotational rigid body modes must be explicitly provided; we provide a syntactic sugar method PCSetCoordinates() that will create the approbate rotational modes in 2D or 3D.
+One can provide this with MatSetNearNullSpace().
+For elasticity, where rotational rigid body modes define the near null space you can call PCSetCoordinates() instead of MatSetNearNullSpace() and it will set the near null space for you.
 
- 
-AMG solvers applied to the broad spectrum of
-matrices that we see at PETSc, in terms of equations, discretizations, and parameter
-regimes (eg, stretched grids), not to mention possible user code bugs,
-can lead to a suboptimal initial experiences with AMG solvers in
-general and with PETSc in particular.
-%Hypre has been hardened from over 15 years of use; GAMG is much younger but we will fix any code bugs and appreciate users that find them and are willing to work with us to fix them.
+Other options for GAMG include PCGAMGSetProcEqLim(),
+PCGAMGSetCoarseEqLim(), PCGAMGSetRepartitioning(),
+PCGAMGRegister(), PCGAMGSetReuseInterpolation(),
+PCGAMGSetUseASMAggs(), PCGAMGSetNlevels(),
+PCGAMGSetThreshold(), and PCGAMGGetType().
 
-{\bf Trouble shooting:}  If GAMG or hypre is not satisfactory, the
-first thing to try is the other one.
-For GAMG we recommend \trl{-pc_gamg_agg_nsmooths 1} for elliptic
-operators because it often improves convergence rates significantly.
-This smoothing requires estimates of the highest eigenvalues of the
-matrix (as does Chebyshev smoothers \trl{-mg_levels_ksp_type
-  chebyshev}).
-These highest eigen estimates are usually robust but not provably so,
-thus \trl{-pc_gamg_agg_nsmooths 0} is recommended first if poor convergence rates are observed.
-Likewise,  \trl{-mg_levels_ksp_type richardson -mg_levels_pc_type sor}
-removes any dependance on eigen estimates.
+
+{\bf Trouble shooting algebraic multigrid methods:}  If GAMG, ML, or hypre does not perform well the
+first thing to try is the other methods.
+You can also try  \trl{-mg_levels_ksp_type richardson -mg_levels_pc_type sor}.
 AMG methods are sensitive to coarsening rates and methods; for GAMG use
 \trl{-pc_gamg_threshold} $x$ to regulate coarsening rates (PCGAMGSetThreshold()).
 A high threshold (eg, $x=0.08$) will result in an expensive but potentially
@@ -2885,16 +2863,21 @@ convergence rates.
 this is not obvious) and is recommended if poor convergence rates are
 observed, at least until the source of the problem is discovered.
 
-Finally, there are several legitimate sources of poor performance of
+Finally, there are several sources of poor performance of
 AMG solvers and often special purpose methods must be developed to
 achieve the full potential of multigrid.
-To name just a few legitimate sources of performance degradation that
+To name just a few sources of performance degradation that
 may not be fixed with parameters or bug fixes in PETSc currently: non-elliptic
 operators, curl/curl operators, highly stretched grids or highly anisotropic problems,
 large jumps in material coefficients with complex geometry (AMG is
 particularly well suited to jumps in coefficients but it is not a
 perfect solution), highly incompressible elasticity, not to mention
 ill-posed problems, and many others.
+
+PETSc's AMG solver is constructed as a framework for developers to
+easily add AMG capabilities, like a new AMG algorithm or a new matrix
+triple product, etc. Contact us directly if you are interested in extending/improving PETSc's algebraic multigrid solvers.
+
 
 %----------------------------------------------------------------------
 \subsection{Shell Preconditioners}

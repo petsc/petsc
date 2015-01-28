@@ -469,7 +469,7 @@ PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC,PetscInt,PetscInt,PetscInt);
 
     Level: intermediate
 
-.seealso: PCMG, PCSetType(), PCGAMGSetThreshold(), PCGAMGSetThreshold(), PCGAMGSetReuseProl()
+.seealso: PCMG, PCSetType(), PCGAMGSetThreshold(), PCGAMGSetThreshold(), PCGAMGSetReuseInterpolation()
 E*/
 typedef const char *PCGAMGType;
 #define PCGAMGAGG         "agg"
@@ -488,7 +488,7 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGSetReuseInterpolation(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGRegister(PCGAMGType,PetscErrorCode (*)(PC));
