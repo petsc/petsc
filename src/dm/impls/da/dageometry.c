@@ -624,7 +624,7 @@ PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
 
   Input Parameter:
 + da - the distributed array
-= s - A MatStencil giving (i,j,k)
+- s - A MatStencil giving (i,j,k)
 
   Output Parameter:
 . cell - the local cell number

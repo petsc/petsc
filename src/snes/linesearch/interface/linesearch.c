@@ -421,6 +421,7 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch,Vec X,Vec Y,Vec
 +  linesearch - linesearch context
 .  X - base state for this step
 .  Y - initial correction
+-  ctx - context for this function
 
    Output Arguments:
 +  Y - correction, possibly modified
@@ -1639,7 +1640,7 @@ extern PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SN
    SNESLineSearchGetVIFunctions - Sets VI-specific functions for line search computation.
 
    Input Parameters:
-.  snes - nonlinear context obtained from SNESCreate()
+.  linesearch - the line search context, obtain with SNESGetLineSearch()
 
    Output Parameters:
 +  projectfunc - function for projecting the function to the bounds

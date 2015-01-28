@@ -428,7 +428,7 @@ PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
     Level: advanced
 
     Note:
-    This is a non-variadic alternative to DMCompositeScatterArray()
+    This is a non-variadic alternative to DMCompositeScatter()
 
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector()
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
@@ -478,6 +478,7 @@ PetscErrorCode  DMCompositeScatterArray(DM dm,Vec gvec,Vec *lvecs)
     Input Parameter:
 +    dm - the packer object
 .    gvec - the global vector
+.    imode - INSERT_VALUES or ADD_VALUES
 -    Vec ... - the individual sequential vectors, NULL for any that are not needed
 
     Level: advanced
@@ -535,6 +536,7 @@ PetscErrorCode  DMCompositeGather(DM dm,Vec gvec,InsertMode imode,...)
     Input Parameter:
 +    dm - the packer object
 .    gvec - the global vector
+.    imode - INSERT_VALUES or ADD_VALUES
 -    lvecs - the individual sequential vectors, NULL for any that are not needed
 
     Level: advanced
@@ -1126,8 +1128,10 @@ PetscErrorCode  DMCompositeGetEntries(DM dm,...)
     Not Collective
 
     Input Parameter:
-+    dm - the packer object
--    dms - array of sufficient length (see DMCompositeGetNumberDM()), holds the DMs on output
+.    dm - the packer object
+
+    Output Parameter:
+.    dms - array of sufficient length (see DMCompositeGetNumberDM()) to hold the individual DMs
 
     Level: advanced
 

@@ -2560,14 +2560,15 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
     Logically Collective on DM
 
     Input Parameters:
-+   dm - the DM object to destroy
--   x  - current solution at which the bounds are computed
+.   dm - the DM object
 
     Output parameters:
 +   xl - lower bound
 -   xu - upper bound
 
-    Level: intermediate
+    Level: advanced
+
+    Notes: This is generally not called by users. It calls the function provided by the user with DMSetVariableBounds()
 
 .seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext()
 

@@ -293,9 +293,9 @@ PetscErrorCode DMDAGetBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
 
    Collective on DMDA
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
-.  nfields - number of fields in new DMDA
+-  nfields - number of fields in new DMDA
 
    Output Parameter:
 .  nda - the new DMDA

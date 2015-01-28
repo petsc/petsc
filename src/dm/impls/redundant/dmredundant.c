@@ -2,9 +2,9 @@
 #include <petscdmredundant.h>   /*I      "petscdmredundant.h" I*/
 
 typedef struct  {
-  PetscInt rank;                /* owner */
-  PetscInt N;                   /* total number of dofs */
-  PetscInt n;                   /* owned number of dofs, n=N on owner, n=0 on non-owners */
+  PetscMPIInt rank;                /* owner */
+  PetscInt    N;                   /* total number of dofs */
+  PetscInt    n;                   /* owned number of dofs, n=N on owner, n=0 on non-owners */
 } DM_Redundant;
 
 #undef __FUNCT__
@@ -323,7 +323,7 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc,DM dmf,Mat *P,Vec *
 
 .seealso DMDestroy(), DMCreateGlobalVector(), DMRedundantCreate(), DMRedundantGetSize()
 @*/
-PetscErrorCode DMRedundantSetSize(DM dm,PetscInt rank,PetscInt N)
+PetscErrorCode DMRedundantSetSize(DM dm,PetscMPIInt rank,PetscInt N)
 {
   PetscErrorCode ierr;
 
@@ -354,7 +354,7 @@ PetscErrorCode DMRedundantSetSize(DM dm,PetscInt rank,PetscInt N)
 
 .seealso DMDestroy(), DMCreateGlobalVector(), DMRedundantCreate(), DMRedundantSetSize()
 @*/
-PetscErrorCode DMRedundantGetSize(DM dm,PetscInt *rank,PetscInt *N)
+PetscErrorCode DMRedundantGetSize(DM dm,PetscMPIInt *rank,PetscInt *N)
 {
   PetscErrorCode ierr;
 
@@ -367,7 +367,7 @@ PetscErrorCode DMRedundantGetSize(DM dm,PetscInt *rank,PetscInt *N)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRedundantSetSize_Redundant"
-static PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscInt rank,PetscInt N)
+static PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscMPIInt rank,PetscInt N)
 {
   DM_Redundant   *red = (DM_Redundant*)dm->data;
   PetscErrorCode ierr;
@@ -453,14 +453,14 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
 -   N - total number of degrees of freedom
 
     Output Parameters:
-.   red - the redundant DM
+.   dm - the redundant DM
 
     Level: advanced
 
 .seealso DMDestroy(), DMCreateGlobalVector(), DMCreateMatrix(), DMCompositeAddDM(), DMREDUNDANT, DMSetType(), DMRedundantSetSize(), DMRedundantGetSize()
 
 @*/
-PetscErrorCode DMRedundantCreate(MPI_Comm comm,PetscInt rank,PetscInt N,DM *dm)
+PetscErrorCode DMRedundantCreate(MPI_Comm comm,PetscMPIInt rank,PetscInt N,DM *dm)
 {
   PetscErrorCode ierr;
 

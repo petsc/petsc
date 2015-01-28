@@ -749,9 +749,9 @@ static PetscErrorCode PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,Petsc
 
    Input Parameters:
 +  viewer - the binary viewer
-.  data - location to write the data
+.  data - location of the data to be written
 .  count - number of items of data to read
--  datatype - type of data to read
+-  dtype - type of data to read
 
    Level: beginner
 
