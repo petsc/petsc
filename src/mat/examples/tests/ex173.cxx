@@ -75,6 +75,7 @@ int main(int argc,char **args)
   if (isElemental) {
     Ae = A;
     Be = B;
+    isDense = isAij = isSbaij = PETSC_FALSE;
   } else { /* Convert AIJ/DENSE/SBAIJ matrices into Elemental matrices */
     if (size == 1) {
       ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&isDense);CHKERRQ(ierr);
@@ -152,6 +153,10 @@ int main(int argc,char **args)
   if (!isElemental) {
     ierr = MatDestroy(&Ae);CHKERRQ(ierr);
     ierr = MatDestroy(&Be);CHKERRQ(ierr);
+
+    /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
+    ierr = MatConvert(A, MATELEMENTAL, MAT_REUSE_MATRIX, &A);CHKERRQ(ierr);
+    //ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   ierr = MatDestroy(&We);CHKERRQ(ierr);
