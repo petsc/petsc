@@ -2,9 +2,9 @@
 static char help[] = "Tests MatConvert(), MatLoad(), MatElementalHermitianGenDefiniteEig() for MATELEMENTAL interface.\n\n";
 /*
  Example:
-   mpiexec -n <np> ./ex173 -fA $Deig/graphene_xxs_A_aij -fB $Deig/graphene_xxs_B_aij -vl -0.8 -vu -0.75 -orig_mat_type <type>
+   mpiexec -n <np> ./ex173 -fA <A_data> -fB <B_data> -vl <vl> -vu <vu> -orig_mat_type <type> -orig_mat_type <mat_type>
 */
-
+ 
 #include <petscmat.h>
 
 #undef __FUNCT__
@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscViewer    view;
   char           file[2][PETSC_MAX_PATH_LEN];
-  PetscBool      flg,flgB,isElemental,isDense,isAij;
+  PetscBool      flg,flgB,isElemental,isDense,isAij,isSbaij;
   PetscScalar    one = 1.0,*Earray;
   PetscMPIInt    rank,size;
   PetscReal      vl,vu,norm;
@@ -25,8 +25,6 @@ int main(int argc,char **args)
   /* Below are Elemental data types, see <elemental.hpp> */
   elem::HermitianGenDefiniteEigType eigtype;
   elem::UpperOrLower                uplo;
-  //elem::SortType                  sort;
-  //elem::Pencil   pencil;
 
   PetscInitialize(&argc,&args,(char*)0,help);
 #if !defined(PETSC_HAVE_ELEMENTAL)
@@ -81,9 +79,11 @@ int main(int argc,char **args)
     if (size == 1) {
       ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&isDense);CHKERRQ(ierr);
       ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isAij);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSbaij);CHKERRQ(ierr);
     } else {
       ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIDENSE,&isDense);CHKERRQ(ierr);
       ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isAij);CHKERRQ(ierr);
+       ierr = PetscObjectTypeCompare((PetscObject)A,MATMPISBAIJ,&isSbaij);CHKERRQ(ierr);
     }
 
     if (!rank) {
@@ -91,8 +91,10 @@ int main(int argc,char **args)
         printf(" Convert DENSE matrices A and B into Elemental matrix... \n");
       } else if (isAij) {
         printf(" Convert AIJ matrices A and B into Elemental matrix... \n");
-      } else {
+      } else if (isSbaij) {
         printf(" Convert SBAIJ matrices A and B into Elemental matrix... \n");
+      } else {
+        SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not supported yet");
       }
     }
     ierr = MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &Ae);CHKERRQ(ierr);

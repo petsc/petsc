@@ -2251,6 +2251,7 @@ TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm 
                                  ex103.PETSc runex103 runex103_1 runex103_2 ex103.rm \
                                  ex104.PETSc runex104_elemental runex104_elemental_2 ex104.rm \
                                  ex145.PETSc runex145 runex145_2 ex145.rm \
-                                 ex173.PETSc runex173 runex173_dense runex173_elemental runex173_2 runex173_2_dense runex173_2_elemental ex173.rm
+                                 ex173.PETSc runex173 runex173_dense runex173_elemental runex173_sbaij \
+                                 runex173_2 runex173_2_dense runex173_2_elemental runex173_2_sbaij ex173.rm
 
 include ${PETSC_DIR}/lib/petsc-conf/test
