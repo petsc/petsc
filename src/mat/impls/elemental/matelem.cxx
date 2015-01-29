@@ -22,11 +22,11 @@ PetscErrorCode PetscElementalInitializePackage(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (elem::Initialized()) PetscFunctionReturn(0);
+  if (El::Initialized()) PetscFunctionReturn(0);
   { /* We have already initialized MPI, so this song and dance is just to pass these variables (which won't be used by Elemental) through the interface that needs references */
     int zero = 0;
     char **nothing = 0;
-    elem::Initialize(zero,nothing);   /* called by the 1st call of MatCreate_Elemental */
+    El::Initialize(zero,nothing);   /* called by the 1st call of MatCreate_Elemental */
   }
   ierr = PetscRegisterFinalize(PetscElementalFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -46,7 +46,7 @@ PetscErrorCode PetscElementalInitializePackage(void)
 PetscErrorCode PetscElementalFinalizePackage(void)
 {
   PetscFunctionBegin;
-  elem::Finalize();  /* called by PetscFinalize() */
+  El::Finalize();  /* called by PetscFinalize() */
   PetscFunctionReturn(0);
 }
 
@@ -75,7 +75,7 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
 
     } else if (format == PETSC_VIEWER_DEFAULT) {
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-      elem::Print( *a->emat, "Elemental matrix (cyclic ordering)" );
+      El::Print( *a->emat, "Elemental matrix (cyclic ordering)" );
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
       if (A->factortype == MAT_FACTOR_NONE){
         Mat Adense;
@@ -146,7 +146,7 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRQ(ierr);
 
-  const elem::Grid &grid = a->emat->Grid();
+  const El::Grid &grid = a->emat->Grid();
   for (i=0; i<nr; i++) {
     PetscInt erow,ecol,elrow,elcol;
     if (rows[i] < 0) continue;
@@ -191,10 +191,10 @@ static PetscErrorCode MatMult_Elemental(Mat A,Vec X,Vec Y)
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe, ye;
+    El::DistMatrix<PetscElemScalar,El::VC,El::STAR> xe, ye;
     xe.LockedAttach(A->cmap->N,1,*a->grid,0,0,x,A->cmap->n);
     ye.Attach(A->rmap->N,1,*a->grid,0,0,y,A->rmap->n);
-    elem::Gemv(elem::NORMAL,one,*a->emat,xe,zero,ye);
+    El::Gemv(El::NORMAL,one,*a->emat,xe,zero,ye);
   }
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
@@ -215,10 +215,10 @@ static PetscErrorCode MatMultTranspose_Elemental(Mat A,Vec X,Vec Y)
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe, ye;
+    El::DistMatrix<PetscElemScalar,El::VC,El::STAR> xe, ye;
     xe.LockedAttach(A->rmap->N,1,*a->grid,0,0,x,A->rmap->n);
     ye.Attach(A->cmap->N,1,*a->grid,0,0,y,A->cmap->n);
-    elem::Gemv(elem::TRANSPOSE,one,*a->emat,xe,zero,ye);
+    El::Gemv(El::TRANSPOSE,one,*a->emat,xe,zero,ye);
   }
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
@@ -240,10 +240,10 @@ static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecGetArray(Z,(PetscScalar **)&z);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe, ze;
+    El::DistMatrix<PetscElemScalar,El::VC,El::STAR> xe, ze;
     xe.LockedAttach(A->cmap->N,1,*a->grid,0,0,x,A->cmap->n);
     ze.Attach(A->rmap->N,1,*a->grid,0,0,z,A->rmap->n);
-    elem::Gemv(elem::NORMAL,one,*a->emat,xe,one,ze);
+    El::Gemv(El::NORMAL,one,*a->emat,xe,one,ze);
   }
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Z,(PetscScalar **)&z);CHKERRQ(ierr);
@@ -265,10 +265,10 @@ static PetscErrorCode MatMultTransposeAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecGetArray(Z,(PetscScalar **)&z);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe, ze;
+    El::DistMatrix<PetscElemScalar,El::VC,El::STAR> xe, ze;
     xe.LockedAttach(A->rmap->N,1,*a->grid,0,0,x,A->rmap->n);
     ze.Attach(A->cmap->N,1,*a->grid,0,0,z,A->cmap->n);
-    elem::Gemv(elem::TRANSPOSE,one,*a->emat,xe,one,ze);
+    El::Gemv(El::TRANSPOSE,one,*a->emat,xe,one,ze);
   }
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Z,(PetscScalar **)&z);CHKERRQ(ierr);
@@ -286,7 +286,7 @@ static PetscErrorCode MatMatMultNumeric_Elemental(Mat A,Mat B,Mat C)
 
   PetscFunctionBegin;
   { /* Scoping so that constructor is called before pointer is returned */
-    elem::Gemm(elem::NORMAL,elem::NORMAL,one,*a->emat,*b->emat,zero,*c->emat);
+    El::Gemm(El::NORMAL,El::NORMAL,one,*a->emat,*b->emat,zero,*c->emat);
   }
   C->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -339,7 +339,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_Elemental(Mat A,Mat B,Mat C)
 
   PetscFunctionBegin;
   { /* Scoping so that constructor is called before pointer is returned */
-    elem::Gemm(elem::NORMAL,elem::TRANSPOSE,one,*a->emat,*b->emat,zero,*c->emat);
+    El::Gemm(El::NORMAL,El::TRANSPOSE,one,*a->emat,*b->emat,zero,*c->emat);
   }
   C->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -422,16 +422,16 @@ static PetscErrorCode MatDiagonalScale_Elemental(Mat X,Vec L,Vec R)
   PetscFunctionBegin;
   if (R) {
     ierr = VecGetArrayRead(R,(const PetscScalar **)&d);CHKERRQ(ierr);
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> de;
+    El::DistMatrix<PetscElemScalar,El::VC,El::STAR> de;
     de.LockedAttach(X->cmap->N,1,*x->grid,0,0,d,X->cmap->n);
-    elem::DiagonalScale(elem::RIGHT,elem::NORMAL,de,*x->emat);
+    El::DiagonalScale(El::RIGHT,El::NORMAL,de,*x->emat);
     ierr = VecRestoreArrayRead(R,(const PetscScalar **)&d);CHKERRQ(ierr);
   }
   if (L) {
     ierr = VecGetArrayRead(L,(const PetscScalar **)&d);CHKERRQ(ierr);
-    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> de;
+    El::DistMatrix<PetscElemScalar,El::VC,El::STAR> de;
     de.LockedAttach(X->rmap->N,1,*x->grid,0,0,d,X->rmap->n);
-    elem::DiagonalScale(elem::LEFT,elem::NORMAL,de,*x->emat);
+    El::DiagonalScale(El::LEFT,El::NORMAL,de,*x->emat);
     ierr = VecRestoreArrayRead(L,(const PetscScalar **)&d);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -444,7 +444,7 @@ static PetscErrorCode MatScale_Elemental(Mat X,PetscScalar a)
   Mat_Elemental  *x = (Mat_Elemental*)X->data;
 
   PetscFunctionBegin;
-  elem::Scale((PetscElemScalar)a,*x->emat);
+  El::Scale((PetscElemScalar)a,*x->emat);
   PetscFunctionReturn(0);
 }
 
@@ -460,7 +460,7 @@ static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure s
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  elem::Axpy((PetscElemScalar)a,*x->emat,*y->emat);
+  El::Axpy((PetscElemScalar)a,*x->emat,*y->emat);
   ierr = PetscObjectStateIncrease((PetscObject)Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -473,7 +473,7 @@ static PetscErrorCode MatCopy_Elemental(Mat A,Mat B,MatStructure str)
   Mat_Elemental *b=(Mat_Elemental*)B->data;
 
   PetscFunctionBegin;
-  elem::Copy(*a->emat,*b->emat);
+  El::Copy(*a->emat,*b->emat);
   PetscFunctionReturn(0);
 }
 
@@ -495,7 +495,7 @@ static PetscErrorCode MatDuplicate_Elemental(Mat A,MatDuplicateOption op,Mat *B)
   *B = Be;
   if (op == MAT_COPY_VALUES) {
     Mat_Elemental *b=(Mat_Elemental*)Be->data;
-    elem::Copy(*a->emat,*b->emat);
+    El::Copy(*a->emat,*b->emat);
   }
   Be->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -521,7 +521,7 @@ static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
     *B = Be;
   }
   b = (Mat_Elemental*)Be->data;
-  elem::Transpose(*a->emat,*b->emat);
+  El::Transpose(*a->emat,*b->emat);
   Be->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -533,7 +533,7 @@ static PetscErrorCode MatConjugate_Elemental(Mat A)
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
 
   PetscFunctionBegin;
-  elem::Conjugate(*a->emat);
+  El::Conjugate(*a->emat);
   PetscFunctionReturn(0);
 }
 
@@ -557,7 +557,7 @@ static PetscErrorCode MatHermitianTranspose_Elemental(Mat A,MatReuse reuse,Mat *
     *B = Be;
   }
   b = (Mat_Elemental*)Be->data;
-  elem::Adjoint(*a->emat,*b->emat);
+  El::Adjoint(*a->emat,*b->emat);
   Be->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -573,22 +573,22 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
   PetscFunctionBegin;
   ierr = VecCopy(B,X);CHKERRQ(ierr);
   ierr = VecGetArray(X,(PetscScalar **)&x);CHKERRQ(ierr);
-  elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe;
+  El::DistMatrix<PetscElemScalar,El::VC,El::STAR> xe;
   xe.Attach(A->rmap->N,1,*a->grid,0,0,x,A->rmap->n);
-  elem::DistMatrix<PetscElemScalar,elem::MC,elem::MR> xer(xe);
+  El::DistMatrix<PetscElemScalar,El::MC,El::MR> xer(xe);
   switch (A->factortype) {
   case MAT_FACTOR_LU:
     if ((*a->pivot).AllocatedMemory()) {
-      elem::lu::SolveAfter(elem::NORMAL,*a->emat,*a->pivot,xer);
-      elem::Copy(xer,xe);
+      El::lu::SolveAfter(El::NORMAL,*a->emat,*a->pivot,xer);
+      El::Copy(xer,xe);
     } else {
-      elem::lu::SolveAfter(elem::NORMAL,*a->emat,xer);
-      elem::Copy(xer,xe);
+      El::lu::SolveAfter(El::NORMAL,*a->emat,xer);
+      El::Copy(xer,xe);
     }
     break;
   case MAT_FACTOR_CHOLESKY:
-    elem::cholesky::SolveAfter(elem::UPPER,elem::NORMAL,*a->emat,xer);
-    elem::Copy(xer,xe);
+    El::cholesky::SolveAfter(El::UPPER,El::NORMAL,*a->emat,xer);
+    El::Copy(xer,xe);
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unfactored Matrix or Unsupported MatFactorType");
@@ -619,17 +619,17 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
   Mat_Elemental *x=(Mat_Elemental*)X->data;
 
   PetscFunctionBegin;
-  elem::Copy(*b->emat,*x->emat);
+  El::Copy(*b->emat,*x->emat);
   switch (A->factortype) {
   case MAT_FACTOR_LU:
     if ((*a->pivot).AllocatedMemory()) {
-      elem::lu::SolveAfter(elem::NORMAL,*a->emat,*a->pivot,*x->emat);
+      El::lu::SolveAfter(El::NORMAL,*a->emat,*a->pivot,*x->emat);
     } else {
-      elem::lu::SolveAfter(elem::NORMAL,*a->emat,*x->emat);
+      El::lu::SolveAfter(El::NORMAL,*a->emat,*x->emat);
     }
     break;
   case MAT_FACTOR_CHOLESKY:
-    elem::cholesky::SolveAfter(elem::UPPER,elem::NORMAL,*a->emat,*x->emat);
+    El::cholesky::SolveAfter(El::UPPER,El::NORMAL,*a->emat,*x->emat);
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unfactored Matrix or Unsupported MatFactorType");
@@ -646,9 +646,9 @@ static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorI
 
   PetscFunctionBegin;
   if (info->dtcol){
-    elem::LU(*a->emat,*a->pivot);
+    El::LU(*a->emat,*a->pivot);
   } else {
-    elem::LU(*a->emat);
+    El::LU(*a->emat);
   }
   A->factortype = MAT_FACTOR_LU;
   A->assembled  = PETSC_TRUE;
@@ -681,10 +681,10 @@ static PetscErrorCode  MatLUFactorSymbolic_Elemental(Mat F,Mat A,IS r,IS c,const
 static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  elem::DistMatrix<PetscElemScalar,elem::MC,elem::STAR> d;
+  El::DistMatrix<PetscElemScalar,El::MC,El::STAR> d;
 
   PetscFunctionBegin;
-  elem::Cholesky(elem::UPPER,*a->emat);
+  El::Cholesky(El::UPPER,*a->emat);
   A->factortype = MAT_FACTOR_CHOLESKY;
   A->assembled  = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -760,13 +760,13 @@ static PetscErrorCode MatNorm_Elemental(Mat A,NormType type,PetscReal *nrm)
   PetscFunctionBegin;
   switch (type){
   case NORM_1:
-    *nrm = elem::OneNorm(*a->emat);
+    *nrm = El::OneNorm(*a->emat);
     break;
   case NORM_FROBENIUS:
-    *nrm = elem::FrobeniusNorm(*a->emat);
+    *nrm = El::FrobeniusNorm(*a->emat);
     break;
   case NORM_INFINITY:
-    *nrm = elem::InfinityNorm(*a->emat);
+    *nrm = El::InfinityNorm(*a->emat);
     break;
   default:
     printf("Error: unsupported norm type!\n");
@@ -781,7 +781,7 @@ static PetscErrorCode MatZeroEntries_Elemental(Mat A)
   Mat_Elemental *a=(Mat_Elemental*)A->data;
 
   PetscFunctionBegin;
-  elem::Zero(*a->emat);
+  El::Zero(*a->emat);
   PetscFunctionReturn(0);
 }
 
@@ -1026,7 +1026,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   delete a->emat;
   delete a->pivot;
 
-  elem::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
+  El::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
   ierr = PetscCommDuplicate(cxxcomm.comm,&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
   /* printf("commgrid->grid_refct = %d, grid=%p\n",commgrid->grid_refct,commgrid->grid); -- memory leak revealed by valgrind? */
@@ -1055,7 +1055,7 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
   a->emat->Resize(A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  elem::Zero(*a->emat);
+  El::Zero(*a->emat);
 
   ierr = MPI_Comm_size(A->rmap->comm,&rsize);CHKERRQ(ierr);
   ierr = MPI_Comm_size(A->cmap->comm,&csize);CHKERRQ(ierr);
@@ -1076,7 +1076,7 @@ PetscErrorCode MatAssemblyBegin_Elemental(Mat A, MatAssemblyType type)
 
   PetscFunctionBegin;
   a->interface->Detach();
-  a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
+  a->interface->Attach(El::LOCAL_TO_GLOBAL,*(a->emat));
   PetscFunctionReturn(0);
 }
 
@@ -1382,7 +1382,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   A->data = (void*)a;
 
   /* Set up the elemental matrix */
-  elem::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
+  El::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
 
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
@@ -1394,15 +1394,15 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
     ierr = PetscNewLog(A,&commgrid);CHKERRQ(ierr);
 
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"Elemental Options","Mat");CHKERRQ(ierr);
-    /* displayed default grid sizes (CommSize,1) are set by us arbitrarily until elem::Grid() is called */
-    ierr = PetscOptionsInt("-mat_elemental_grid_height","Grid Height","None",elem::mpi::Size(cxxcomm),&optv1,&flg1);CHKERRQ(ierr);
+    /* displayed default grid sizes (CommSize,1) are set by us arbitrarily until El::Grid() is called */
+    ierr = PetscOptionsInt("-mat_elemental_grid_height","Grid Height","None",El::mpi::Size(cxxcomm),&optv1,&flg1);CHKERRQ(ierr);
     if (flg1) {
-      if (elem::mpi::Size(cxxcomm) % optv1 != 0) {
-        SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %D must evenly divide CommSize %D",optv1,(PetscInt)elem::mpi::Size(cxxcomm));
+      if (El::mpi::Size(cxxcomm) % optv1 != 0) {
+        SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Grid Height %D must evenly divide CommSize %D",optv1,(PetscInt)El::mpi::Size(cxxcomm));
       }
-      commgrid->grid = new elem::Grid(cxxcomm,optv1); /* use user-provided grid height */
+      commgrid->grid = new El::Grid(cxxcomm,optv1); /* use user-provided grid height */
     } else {
-      commgrid->grid = new elem::Grid(cxxcomm); /* use Elemental default grid sizes */
+      commgrid->grid = new El::Grid(cxxcomm); /* use Elemental default grid sizes */
       /* printf("new commgrid->grid = %p\n",commgrid->grid);  -- memory leak revealed by valgrind? */
     }
     commgrid->grid_refct = 1;
@@ -1413,13 +1413,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   a->grid      = commgrid->grid;
-  a->emat      = new elem::DistMatrix<PetscElemScalar>(*a->grid);
-  a->esubmat   = new elem::Matrix<PetscElemScalar>(1,1);
-  a->interface = new elem::AxpyInterface<PetscElemScalar>;
-  a->pivot     = new elem::DistMatrix<PetscInt,elem::VC,elem::STAR>;
+  a->emat      = new El::DistMatrix<PetscElemScalar>(*a->grid);
+  a->esubmat   = new El::Matrix<PetscElemScalar>(1,1);
+  a->interface = new El::AxpyInterface<PetscElemScalar>;
+  a->pivot     = new El::DistMatrix<PetscInt,El::VC,El::STAR>;
 
   /* build cache for off array entries formed */
-  a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
+  a->interface->Attach(El::LOCAL_TO_GLOBAL,*(a->emat));
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalHermitianGenDefiniteEig_C",MatElementalHermitianGenDefiniteEig_Elemental);CHKERRQ(ierr);
