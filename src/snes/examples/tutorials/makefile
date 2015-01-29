@@ -585,6 +585,10 @@ runex15_lag_pc:
 	-@${MPIEXEC} -n 4 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 6.0 -lambda 0 -jtype NEWTON -snes_type ngmres -npc_snes_type newtonls -npc_snes_lag_preconditioner 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_preconditioner_persists > ex15_lag_pc.tmp 2>&1; \
 	   ${DIFF} output/ex15_lag_pc.out ex15_lag_pc.tmp || printf "${PWD}\nPossible problem with ex15_lag_pc, diffs above\n=========================================\n"; \
            ${RM} -f ex15_lag_pc.tmp
+runex15_nleqerr:
+	-@${MPIEXEC} -n 1 ./ex15 -snes_monitor_short -snes_type newtonls -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -snes_linesearch_monitor -pc_type lu -snes_linesearch_type nleqerr > ex15_nleqerr.tmp 2>&1; \
+	   ${DIFF} output/ex15_nleqerr.out ex15_nleqerr.tmp || printf "${PWD}\nPossible problem with ex15_nleqerr, diffs above\n=========================================\n"; \
+           ${RM} -f ex15_nleqerr.tmp
 runex16:
 	-@${MPIEXEC} -n 2 ./ex16 -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 10 -snes_monitor_short -ksp_monitor_short \
 	   > ex16_1.tmp 2>&1; ${DIFF} output/ex16_1.out ex16_1.tmp || printf "${PWD}\nPossible problem with ex16, diffs above\n=========================================\n"; \

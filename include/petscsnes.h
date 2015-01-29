@@ -493,6 +493,7 @@ typedef struct _p_LineSearch* SNESLineSearch;
 J*/
 typedef const char* SNESLineSearchType;
 #define SNESLINESEARCHBT                 "bt"
+#define SNESLINESEARCHNLEQERR            "nleqerr"
 #define SNESLINESEARCHBASIC              "basic"
 #define SNESLINESEARCHL2                 "l2"
 #define SNESLINESEARCHCP                 "cp"
