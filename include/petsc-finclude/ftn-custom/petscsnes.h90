@@ -2,3 +2,25 @@
 #include "petsc-finclude/ftn-custom/petscsnesdef.h90"
 #endif
 #include "petsc-finclude/ftn-custom/petscsneshide.h90"
+
+      Interface
+        Subroutine DMPlexGetFaceGeometry(m,s,e,f,c,g,v,ierr)
+          PetscInt  s, e
+          Vec       f, c
+          PetscScalar, pointer :: g(:)
+          PetscScalar, pointer :: v(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreFaceGeometry(m,s,e,f,c,g,v,ierr)
+          PetscInt  s, e
+          Vec       f, c
+          PetscScalar, pointer :: g(:)
+          PetscScalar, pointer :: v(:)
+          PetscErrorCode ierr
+          DM m
+        End Subroutine
+      End Interface
