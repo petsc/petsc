@@ -23,13 +23,11 @@ PetscErrorCode PetscElementalInitializePackage(void)
 
   PetscFunctionBegin;
   if (elem::Initialized()) PetscFunctionReturn(0);
-  //#if defined(MV)
   { /* We have already initialized MPI, so this song and dance is just to pass these variables (which won't be used by Elemental) through the interface that needs references */
     int zero = 0;
     char **nothing = 0;
-    elem::Initialize(zero,nothing);
+    elem::Initialize(zero,nothing);   /* called by the 1st call of MatCreate_Elemental */
   }
-  //#endif
   ierr = PetscRegisterFinalize(PetscElementalFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -47,9 +45,8 @@ PetscErrorCode PetscElementalInitializePackage(void)
 @*/
 PetscErrorCode PetscElementalFinalizePackage(void)
 {
-
   PetscFunctionBegin;
-  elem::Finalize();
+  elem::Finalize();  /* called by PetscFinalize() */
   PetscFunctionReturn(0);
 }
 
@@ -951,10 +948,12 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   delete a->interface;
   delete a->esubmat;
   delete a->emat;
+  delete a->pivot;
 
   elem::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
   ierr = PetscCommDuplicate(cxxcomm.comm,&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
+  /* printf("commgrid->grid_refct = %d, grid=%p\n",commgrid->grid_refct,commgrid->grid); -- memory leak revealed by valgrind? */
   if (--commgrid->grid_refct == 0) {
     delete commgrid->grid;
     ierr = PetscFree(commgrid);CHKERRQ(ierr);
@@ -1328,6 +1327,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
       commgrid->grid = new elem::Grid(cxxcomm,optv1); /* use user-provided grid height */
     } else {
       commgrid->grid = new elem::Grid(cxxcomm); /* use Elemental default grid sizes */
+      /* printf("new commgrid->grid = %p\n",commgrid->grid);  -- memory leak revealed by valgrind? */
     }
     commgrid->grid_refct = 1;
     ierr = MPI_Attr_put(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
