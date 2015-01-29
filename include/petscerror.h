@@ -334,7 +334,7 @@ M*/
 
   PETSC_ERROR_IN_CXX indicates the error was detected in C++ and an exception should be generated
 
-  Developer Notes: This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandling()
+  Developer Notes: This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandler()
 
 .seealso: PetscError(), SETERRXX()
 E*/

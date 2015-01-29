@@ -344,8 +344,6 @@ alldoc3: chk_loc
 	if  [ "${MATLAB_COMMAND}" != "" ]; then\
           export MATLABPATH=${MATLABPATH}:${PETSC_DIR}/share/petsc/matlab; \
           cd ${PETSC_DIR}/share/petsc/matlab; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
-          cd classes; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
-          cd examples/tutorials; ${MATLAB_COMMAND} -nodisplay -nodesktop -r "generatehtml;exit" ; \
         fi
 
 #

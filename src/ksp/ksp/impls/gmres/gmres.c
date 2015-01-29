@@ -525,13 +525,17 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 +  ksp - the KSP context
 .  its - iteration number
 .  fgnorm - 2-norm of residual (or gradient)
--  dummy - a PETSCVIEWERDRAW object created with PetscViewerDrawOpen()
+-  dummy - an collection of viewers created with KSPViewerCreate()
 
+   Options Database Keys:
+.   -ksp_gmres_kyrlov_monitor
+
+   Notes: A new PETSCVIEWERDRAW is created for each Krylov vector so they can all be simultaneously viewed
    Level: intermediate
 
 .keywords: KSP, nonlinear, vector, monitor, view, Krylov space
 
-.seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView()
+.seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView(), KSPViewersCreate(), KSPViewersDestroy()
 @*/
 PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
 {
@@ -549,7 +553,6 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
     ierr = PetscViewerSetType(viewer,PETSCVIEWERDRAW);CHKERRQ(ierr);
     ierr = PetscViewerDrawSetInfo(viewer,NULL,"Krylov GMRES Monitor",PETSC_DECIDE,PETSC_DECIDE,300,300);CHKERRQ(ierr);
   }
-
   x    = VEC_VV(gmres->it+1);
   ierr = VecView(x,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

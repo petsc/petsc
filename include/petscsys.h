@@ -2224,6 +2224,22 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Da
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscBLASIntCast"
+/*@C
+    PetscBLASIntCast - casts a PetscInt (which may be 64 bits in size) to a PetscBLASInt (which may be 32 bits in size), generates an
+         error if the PetscBLASInt is not large enough to hold the number.
+
+   Not Collective
+
+   Input Parameter:
+.     a - the PetscInt value
+
+   Output Parameter:
+.     b - the resulting PetscBLASInt value
+
+   Level: advanced
+
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscMPIIntCast()
+@*/
 PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 {
   PetscFunctionBegin;
@@ -2236,6 +2252,22 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBLASIntCast(PetscInt a,PetscBLASInt *b)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscMPIIntCast"
+/*@C
+    PetscMPIIntCast - casts a PetscInt (which may be 64 bits in size) to a PetscMPIInt (which may be 32 bits in size), generates an
+         error if the PetscMPIInt is not large enough to hold the number.
+
+   Not Collective
+
+   Input Parameter:
+.     a - the PetscInt value
+
+   Output Parameter:
+.     b - the resulting PetscMPIInt value
+
+   Level: advanced
+
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscBLASIntCast()
+@*/ 
 PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 {
   PetscFunctionBegin;

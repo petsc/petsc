@@ -436,7 +436,7 @@ typedef struct edge_tag {
   PetscInt  lid0,gid1,cpid1;
 } Edge;
 
-int gamg_hem_compare(const void *a, const void *b)
+static int gamg_hem_compare(const void *a, const void *b)
 {
   PetscReal va = ((Edge*)a)->weight, vb = ((Edge*)b)->weight;
   return (va < vb) ? 1 : (va == vb) ? 0 : -1; /* 0 for equal */
@@ -455,7 +455,7 @@ int gamg_hem_compare(const void *a, const void *b)
 */
 #undef __FUNCT__
 #define __FUNCT__ "heavyEdgeMatchAgg"
-PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarsenData **a_locals_llist)
+static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarsenData **a_locals_llist)
 {
   PetscErrorCode   ierr;
   PetscBool        isMPI;
@@ -1146,7 +1146,7 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenView_HEM"
-PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
+static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
 {
   /* MatCoarsen_HEM *HEM = (MatCoarsen_HEM*)coarse->subctx; */
   PetscErrorCode ierr;
@@ -1167,7 +1167,7 @@ PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenDestroy_HEM"
-PetscErrorCode MatCoarsenDestroy_HEM(MatCoarsen coarse)
+static PetscErrorCode MatCoarsenDestroy_HEM(MatCoarsen coarse)
 {
   MatCoarsen_HEM *HEM = (MatCoarsen_HEM*)coarse->subctx;
   PetscErrorCode ierr;
@@ -1179,21 +1179,13 @@ PetscErrorCode MatCoarsenDestroy_HEM(MatCoarsen coarse)
 }
 
 /*MC
-   MATCOARSENHEM - Creates a coarsen context via the external package HEM.
-
-   Collective on MPI_Comm
-
-   Input Parameter:
-.  coarse - the coarsen context
-
-   Options Database Keys:
-+  -mat_coarsen_HEM_xxx -
+   MATCOARSENHEM - A coarsener that uses HEM a simple greedy coarsener
 
    Level: beginner
 
 .keywords: Coarsen, create, context
 
-.seealso: MatCoarsenSetType(), MatCoarsenType
+.seealso: MatCoarsenSetType(), MatCoarsenType, MatCoarsenCreate()
 
 M*/
 
