@@ -1465,6 +1465,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   PetscPartitioner       partitioner;
   IS                     cellPart;
   PetscSection           cellPartSection;
+  DM                     dmCoord;
   DMLabel                lblPartition, lblMigration;
   PetscSF                sfProcess, sfMigration, sfStratified, sfPoint;
   PetscBool              flg;
@@ -1541,6 +1542,8 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   /* Build the point SF without overlap */
   ierr = DMPlexCreatePointSF(*dmParallel, sfMigration, PETSC_TRUE, &sfPoint);CHKERRQ(ierr);
   ierr = DMSetPointSF(*dmParallel, sfPoint);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(*dmParallel, &dmCoord);CHKERRQ(ierr);
+  if (dmCoord) {ierr = DMSetPointSF(dmCoord, sfPoint);CHKERRQ(ierr);}
   if (flg) {ierr = PetscSFView(sfPoint, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
   if (overlap > 0) {
@@ -1620,6 +1623,7 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   PetscMPIInt            rank;
   PetscSection           rootSection, leafSection;
   IS                     rootrank, leafrank;
+  DM                     dmCoord;
   DMLabel                lblOverlap;
   PetscSF                sfOverlap, sfStratified, sfPoint;
   PetscErrorCode         ierr;
@@ -1659,6 +1663,8 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   /* Build the new point SF */
   ierr = DMPlexCreatePointSF(*dmOverlap, sfOverlap, PETSC_FALSE, &sfPoint);CHKERRQ(ierr);
   ierr = DMSetPointSF(*dmOverlap, sfPoint);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(*dmOverlap, &dmCoord);CHKERRQ(ierr);
+  if (dmCoord) {ierr = DMSetPointSF(dmCoord, sfPoint);CHKERRQ(ierr);}
   ierr = PetscSFDestroy(&sfPoint);CHKERRQ(ierr);
   /* Cleanup overlap partition */
   ierr = DMLabelDestroy(&lblOverlap);CHKERRQ(ierr);
