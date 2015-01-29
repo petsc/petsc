@@ -934,6 +934,82 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat A, MatType newtype,M
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqSBAIJ_Elemental"
+PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat               mat_elemental;
+  PetscErrorCode    ierr;
+  PetscInt          M=A->rmap->N,N=A->cmap->N,row,ncols,j;
+  const PetscInt    *cols;
+  const PetscScalar *vals;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
+  ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
+  for (row=0; row<M; row++) {
+    ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+    /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
+    ierr = MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+    for (j=0; j<ncols; j++) { /* lower triangular part */
+      if (cols[j] == row) continue;
+      ierr = MatSetValues(mat_elemental,1,&cols[j],1,&row,&vals[j],ADD_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+  }
+  ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
+  } else {
+    *newmat = mat_elemental;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_MPISBAIJ_Elemental"
+PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat               mat_elemental;
+  PetscErrorCode    ierr;
+  PetscInt          M=A->rmap->N,N=A->cmap->N,row,ncols,j,rstart=A->rmap->rstart,rend=A->rmap->rend;
+  const PetscInt    *cols;
+  const PetscScalar *vals;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
+  ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
+  for (row=rstart; row<rend; row++) {
+    ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+    /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
+    ierr = MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+    for (j=0; j<ncols; j++) { /* lower triangular part */
+      if (cols[j] == row) continue;
+      ierr = MatSetValues(mat_elemental,1,&cols[j],1,&row,&vals[j],ADD_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+  }
+  ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
+  } else {
+    *newmat = mat_elemental;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Elemental"
 static PetscErrorCode MatDestroy_Elemental(Mat A)
 {
@@ -1351,4 +1427,3 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

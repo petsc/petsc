@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscViewer    view;
   char           file[2][PETSC_MAX_PATH_LEN];
-  PetscBool      flg,flgB,isElemental,isDense;
+  PetscBool      flg,flgB,isElemental,isDense,isAij;
   PetscScalar    one = 1.0,*Earray;
   PetscMPIInt    rank,size;
   PetscReal      vl,vu,norm;
@@ -77,18 +77,22 @@ int main(int argc,char **args)
   if (isElemental) {
     Ae = A;
     Be = B;
-  } else { /* Convert AIJ/DENSE matrices into Elemental matrices */
+  } else { /* Convert AIJ/DENSE/SBAIJ matrices into Elemental matrices */
     if (size == 1) {
       ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&isDense);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isAij);CHKERRQ(ierr);
     } else {
       ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIDENSE,&isDense);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isAij);CHKERRQ(ierr);
     }
 
     if (!rank) {
       if (isDense) {
         printf(" Convert DENSE matrices A and B into Elemental matrix... \n");
-      } else {
+      } else if (isAij) {
         printf(" Convert AIJ matrices A and B into Elemental matrix... \n");
+      } else {
+        printf(" Convert SBAIJ matrices A and B into Elemental matrix... \n");
       }
     }
     ierr = MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &Ae);CHKERRQ(ierr);
@@ -113,7 +117,7 @@ int main(int argc,char **args)
   //ierr = MatView(We,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Check || A*X - B*X*We || */
-  if (!isElemental && !isDense) {
+  if (isAij) {
     if (!rank) printf(" Convert Elemental matrices We and Xe into MATDENSE matrices... \n");
     ierr = MatConvert(We,MATDENSE,MAT_INITIAL_MATRIX,&EVAL);CHKERRQ(ierr); /* EVAL is a Mx1 matrix */
     ierr = MatConvert(Xe,MATDENSE,MAT_INITIAL_MATRIX,&X);CHKERRQ(ierr);

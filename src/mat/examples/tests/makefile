@@ -2149,6 +2149,11 @@ runex173_elemental:
 	   if (${DIFF} output/ex173_elemental.out ex173.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex173_elemental, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex173.tmp
+runex173_sbaij:
+	-@${MPIEXEC} -n 1 ./ex173 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B -vl -0.8 -vu -0.75 -orig_mat_type sbaij > ex173.tmp 2>&1; \
+	   if (${DIFF} output/ex173_sbaij.out ex173.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex173_sbaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex173.tmp
 runex173_2:
 	-@${MPIEXEC} -n 8 ./ex173 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 > ex173.tmp 2>&1; \
 	   if (${DIFF} output/ex173.out ex173.tmp) then true; \
@@ -2163,6 +2168,11 @@ runex173_2_elemental:
 	-@${MPIEXEC} -n 8 ./ex173 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 -orig_mat_type elemental > ex173.tmp 2>&1; \
 	   if (${DIFF} output/ex173_elemental.out ex173.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex173_elemental, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex173.tmp
+runex173_2_sbaij:
+	-@${MPIEXEC} -n 8 ./ex173 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B -vl -0.8 -vu -0.75 -orig_mat_type sbaij > ex173.tmp 2>&1; \
+	   if (${DIFF} output/ex173_sbaij.out ex173.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex173_2_sbaij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex173.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
