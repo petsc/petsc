@@ -5557,7 +5557,7 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   case REFINER_SIMPLEX_1D:
     /* Cell vertices have the average of corner coordinates */
     for (c = cStart; c < cMax; ++c) {
-      const PetscInt newv = vStartNew + (vEnd - vStart) + (eMax - eStart) + (c - cStart) + (dim > 2 ? (fMax - fStart) : 0);
+      const PetscInt newv = vStartNew + (vEnd - vStart) + (dim > 1 ? (eMax - eStart) : 0) + (c - cStart) + (dim > 2 ? (fMax - fStart) : 0);
       PetscInt      *cone = NULL;
       PetscInt       closureSize, coneSize = 0, off[8], offnew, p, d;
 
