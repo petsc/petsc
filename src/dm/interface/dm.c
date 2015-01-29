@@ -1899,25 +1899,31 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
     ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
-      PetscInt dof, cdof, off, goff, d, g;
+      PetscInt dof, gdof, cdof, gcdof, off, goff, d, e;
 
       ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(gs, p, &gdof);CHKERRQ(ierr);
       ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstraintDof(gs, p, &gcdof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(s, p, &off);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(gs, p, &goff);CHKERRQ(ierr);
-      if (goff < 0) continue;
-      if (!cdof) {
+      /* Ignore off-process data and points with no global data */
+      if (!gdof || goff < 0) continue;
+      if (dof != gdof) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes, p: %d dof: %d gdof: %d cdof: %d gcdof: %d", p, dof, gdof, cdof, gcdof);
+      /* If no constraints are enforced in the global vector */
+      if (!gcdof) {
         for (d = 0; d < dof; ++d) gArray[goff-gStart+d] = lArray[off+d];
-      } else {
+      /* If constraints are enforced in the global vector */
+      } else if (cdof == gcdof) {
         const PetscInt *cdofs;
         PetscInt        cind = 0;
 
         ierr = PetscSectionGetConstraintIndices(s, p, &cdofs);CHKERRQ(ierr);
-        for (d = 0, g = 0; d < dof; ++d) {
+        for (d = 0, e = 0; d < dof; ++d) {
           if ((cind < cdof) && (d == cdofs[cind])) {++cind; continue;}
-          gArray[goff-gStart+g++] = lArray[off+d];
+          gArray[goff-gStart+e++] = lArray[off+d];
         }
-      }
+      } else SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes, p: %d dof: %d gdof: %d cdof: %d gcdof: %d", p, dof, gdof, cdof, gcdof);
     }
     ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
     ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
