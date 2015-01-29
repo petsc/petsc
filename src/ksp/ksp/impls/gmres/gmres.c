@@ -517,8 +517,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "KSPGMRESMonitorKrylov"
 /*@C
-   KSPGMRESMonitorKrylov - Calls VecView() for each direction in the
-   GMRES accumulated Krylov space.
+   KSPGMRESMonitorKrylov - Calls VecView() for each new direction in the GMRES accumulated Krylov space.
 
    Collective on KSP
 
@@ -526,13 +525,13 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 +  ksp - the KSP context
 .  its - iteration number
 .  fgnorm - 2-norm of residual (or gradient)
--  a viewers object created with PetscViewersCreate()
+-  dummy - a PETSCVIEWERDRAW object created with PetscViewerDrawOpen()
 
    Level: intermediate
 
 .keywords: KSP, nonlinear, vector, monitor, view, Krylov space
 
-.seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView(), PetscViewersCreate(), PetscViewersDestroy()
+.seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView()
 @*/
 PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
 {
