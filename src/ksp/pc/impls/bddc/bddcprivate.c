@@ -79,6 +79,10 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       B_lwork = -1;
       S = NULL;
       St = NULL;
+      eigs = NULL;
+      eigv = NULL;
+      B_iwork = NULL;
+      B_ifail = NULL;
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
       PetscStackCallBLAS("LAPACKsygvx",LAPACKsygvx_(&B_itype,"V","V","L",&B_N,St,&B_N,S,&B_N,&zero,&thresh,&B_dummyint,&B_dummyint,&eps,&B_neigs,eigs,eigv,&B_N,&lwork,&B_lwork,rwork,B_iwork,B_ifail,&B_ierr));
@@ -1721,11 +1725,11 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscBT           touched,change_basis,qr_needed_idx;
   /* auxiliary stuff */
   PetscInt          *nnz,*is_indices,*aux_primal_numbering_B;
-  PetscInt          ncc,*gidxs,*permutation,*temp_indices_to_constraint_work;
-  PetscScalar       *temp_quadrature_constraint_work;
+  PetscInt          ncc,*gidxs=NULL,*permutation=NULL,*temp_indices_to_constraint_work=NULL;
+  PetscScalar       *temp_quadrature_constraint_work=NULL;
   /* some quantities */
   PetscInt          n_vertices,total_primal_vertices,valid_constraints;
-  PetscInt          size_of_constraint,max_size_of_constraint,max_constraints,temp_constraints;
+  PetscInt          size_of_constraint,max_size_of_constraint=0,max_constraints,temp_constraints;
 
 
   PetscFunctionBegin;

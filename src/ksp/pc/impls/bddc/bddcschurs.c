@@ -114,6 +114,11 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
                         sub_schurs->n_subs,&AE_IE,
                         sub_schurs->n_subs,&AE_EI,
                         sub_schurs->n_subs,&AE_EE);CHKERRQ(ierr);
+  } else {
+    is_subset_B = NULL;
+    AE_IE = NULL;
+    AE_EI = NULL;
+    AE_EE = NULL;
   }
 
   /* determine interior problems */
@@ -253,6 +258,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     for (i=0;i<sub_schurs->n_subs;i++) {
       ierr = MatDestroy(&sub_schurs->S_Ej[i]);CHKERRQ(ierr);
       ierr = MatCreateSchurComplement(AE_II,AE_II,AE_IE[i],AE_EI[i],AE_EE[i],&sub_schurs->S_Ej[i]);CHKERRQ(ierr);
+      ierr = MatDestroy(&AE_EE[i]);CHKERRQ(ierr);
+      ierr = MatDestroy(&AE_IE[i]);CHKERRQ(ierr);
+      ierr = MatDestroy(&AE_EI[i]);CHKERRQ(ierr);
       if (AE_II == A_II) { /* we can reuse the same ksp */
         KSP ksp;
         ierr = MatSchurComplementGetKSP(sub_schurs->S,&ksp);CHKERRQ(ierr);
@@ -287,9 +295,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     ierr = ISDestroy(&is_I);CHKERRQ(ierr);
     ierr = MatDestroy(&AE_II);CHKERRQ(ierr);
     for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = MatDestroy(&AE_EE[i]);CHKERRQ(ierr);
-      ierr = MatDestroy(&AE_IE[i]);CHKERRQ(ierr);
-      ierr = MatDestroy(&AE_EI[i]);CHKERRQ(ierr);
       ierr = ISDestroy(&is_subset_B[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree4(is_subset_B,AE_IE,AE_EI,AE_EE);CHKERRQ(ierr);
@@ -364,6 +369,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 
   S_Ej_tilda_all = 0;
   S_Ej_inv_all = 0;
+  work = NULL;
+  pivots = NULL;
+  Stilda_computed = PETSC_FALSE;
   if (sub_schurs->n_subs && deluxe) { /* workspace needed only for GETRI */
     PetscScalar lwork;
 
@@ -375,9 +383,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
     ierr = PetscBLASIntCast((PetscInt)lwork,&B_lwork);CHKERRQ(ierr);
     ierr = PetscMalloc2(B_lwork,&work,max_subset_size,&pivots);CHKERRQ(ierr);
-  } else {
-    work = NULL;
-    pivots = NULL;
   }
 
   ierr = PetscBTMemzero(sub_schurs->n_subs,sub_schurs->computed_Stilda_subs);CHKERRQ(ierr);
