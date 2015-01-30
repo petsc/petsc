@@ -20,6 +20,10 @@ ex1f90: ex1f90.o  chkopts
 	-${FLINKER} -o ex1f90 ex1f90.o ${PETSC_SYS_LIB}
 	${RM} ex1f90.o
 
+ex3: ex3.o chkopts
+	-${CLINKER} -o ex3 ex3.o ${PETSC_SYS_LIB}
+	${RM} ex3.o
+
 runex1f90:
 	-@${MPIEXEC} -n 1 ./ex1f90 > ex1f90_1.tmp 5>&1; \
 	   if (${DIFF} output/ex1f90_1.out ex1f90_1.tmp) then true; \
