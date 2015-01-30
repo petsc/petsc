@@ -17,6 +17,7 @@ typedef struct {
   PetscInt               *sf_rootdata,*sf_leafdata;
 } Mat_IS;
 
+PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat,Mat,PetscBool);
 #endif
 
 
