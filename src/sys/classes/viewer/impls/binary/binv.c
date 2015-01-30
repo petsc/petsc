@@ -873,6 +873,8 @@ PetscErrorCode  PetscViewerBinaryWriteStringArray(PetscViewer viewer,char **data
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerBinaryReadStringArray"
 /*@C
    PetscViewerBinaryReadStringArray - reads a binary file an array of strings
 
