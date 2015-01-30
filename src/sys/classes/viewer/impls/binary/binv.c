@@ -1064,16 +1064,20 @@ static PetscErrorCode PetscViewerFileSetUp_Binary(PetscViewer viewer)
   size_t             len;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   const char         *fname;
-  char               bname[PETSC_MAX_PATH_LEN],*gz;
+  char               bname[PETSC_MAX_PATH_LEN],*gz,*tfilename;
   PetscBool          found;
   PetscFileMode      type = vbinary->btype;
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode()");
+  ierr = PetscStrallocpy(vbinary->filename,&tfilename);CHKERRQ(ierr);
   ierr = PetscViewerFileClose_Binary(viewer);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
 
+  /* copy name so we can edit it */
+  ierr = PetscStrallocpy(tfilename,&vbinary->filename);CHKERRQ(ierr);
+    
   /* if ends in .gz strip that off and note user wants file compressed */
   vbinary->storecompressed = PETSC_FALSE;
   if (!rank && type == FILE_MODE_WRITE) {
@@ -1146,6 +1150,7 @@ static PetscErrorCode PetscViewerFileSetUp_Binary(PetscViewer viewer)
     }
   }
 
+  ierr = PetscFree(tfilename);CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)viewer,"File: %s",vbinary->filename);
 #endif
@@ -1161,15 +1166,17 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryMPIIO(PetscViewer viewer)
   PetscErrorCode     ierr;
   size_t             len;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
-  char               *gz;
+  char               *gz,*tfilename;
   PetscBool          found;
   PetscFileMode      type = vbinary->btype;
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode()");
+  ierr = PetscStrallocpy(vbinary->filename,&tfilename);CHKERRQ(ierr);
   ierr = PetscViewerFileClose_BinaryMPIIO(viewer);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(tfilename,&vbinary->filename);CHKERRQ(ierr);
 
   vbinary->storecompressed = PETSC_FALSE;
 
@@ -1207,6 +1214,7 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryMPIIO(PetscViewer viewer)
     }
   }
 
+  ierr = PetscFree(tfilename);CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)viewer,"File: %s",vbinary->filename);
 #endif
