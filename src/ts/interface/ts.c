@@ -2406,7 +2406,7 @@ $     TSCostIntegrand(TS ts,PetscReal t,Vec u,PetscReal *f,void *ctx);
 
 .seealso: TSSetRHSJacobianP(),TSSetSensitivity(),TSSetSensitivityP()
 @*/
-PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,TSCostIntegrand fq,void *ctx)
+PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt size;
@@ -2521,14 +2521,14 @@ PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q)
 - func - The function
 
   Calling sequence of func:
-. TSDRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,void *ctx);
+. PetscErroCode func(TS ts,PetscReal t,Vec U,Vec *drdy,void *ctx);
 
   Level: intermediate
 
 .keywords: TS, sensitivity 
 .seealso: 
 @*/
-PetscErrorCode  TSSetDRDYFunction(TS ts,Vec *drdy,TSDRDYFunction func,void *ctx)
+PetscErrorCode  TSSetDRDYFunction(TS ts,Vec *drdy,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 { 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -2536,7 +2536,6 @@ PetscErrorCode  TSSetDRDYFunction(TS ts,Vec *drdy,TSDRDYFunction func,void *ctx)
   ts->drdyfunction    = func;
   ts->drdyfunctionctx = ctx;
   ts->vecs_drdy       = drdy;
-  
   PetscFunctionReturn(0);
 }
 
@@ -2570,7 +2569,6 @@ PetscErrorCode  TSComputeDRDYFunction(TS ts,PetscReal t,Vec X,Vec *drdy)
   PetscStackPush("TS user DRDY function for sensitivity analysis");
   ierr = (*ts->drdyfunction)(ts,t,X,drdy,ts->drdyfunctionctx); CHKERRQ(ierr);
   PetscStackPop;
-  
   PetscFunctionReturn(0);
 }
 
@@ -2586,14 +2584,14 @@ PetscErrorCode  TSComputeDRDYFunction(TS ts,PetscReal t,Vec X,Vec *drdy)
 - func - The function
 
   Calling sequence of func:
-.  
+. func(TS ts,PetscReal t,Vec U,Vec *drdy,void *ctx);
 
   Level: intermediate
 
 .keywords: TS, sensitivity 
 .seealso: 
 @*/
-PetscErrorCode  TSSetDRDPFunction(TS ts,Vec *drdp,TSDRDPFunction func,void *ctx)
+PetscErrorCode  TSSetDRDPFunction(TS ts,Vec *drdp,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 { 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
