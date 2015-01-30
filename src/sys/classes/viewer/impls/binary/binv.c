@@ -24,7 +24,7 @@ typedef struct  {
   PetscInt      flowcontrol;          /* allow only <flowcontrol> messages outstanding at a time while doing IO */
   PetscBool     skipheader;           /* don't write header, only raw data */
   PetscBool     matlabheaderwritten;  /* if format is PETSC_VIEWER_BINARY_MATLAB has the MATLAB .info header been written yet */
-  PetscBool     setupcalled;
+  PetscBool     setupcalled,setfromoptionscalled;
 } PetscViewer_Binary;
 
 static PetscErrorCode PetscViewerSetUp_Binary(PetscViewer v);
@@ -1257,7 +1257,8 @@ static PetscErrorCode PetscViewerSetUp_Binary(PetscViewer v)
 
   PetscFunctionBegin;
   if (binary->setupcalled) { PetscFunctionReturn(0); }
-
+  if (!binary->setfromoptionscalled) { ierr = PetscViewerSetFromOptions(v);CHKERRQ(ierr); }
+    
 #if defined(PETSC_HAVE_MPIIO)
   if (binary->MPIIO) {
     ierr = PetscViewerFileSetUp_BinaryMPIIO(v);CHKERRQ(ierr);
@@ -1295,7 +1296,7 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptions *PetscOption
   }
 #endif
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  ierr = PetscViewerSetUp_Binary(v);CHKERRQ(ierr);
+  binary->setfromoptionscalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1319,6 +1320,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   vbinary->skipoptions     = PETSC_TRUE;
   vbinary->skipheader      = PETSC_FALSE;
   vbinary->setupcalled     = PETSC_FALSE;
+  vbinary->setfromoptionscalled = PETSC_FALSE;
   v->ops->getsingleton     = PetscViewerGetSingleton_Binary;
   v->ops->restoresingleton = PetscViewerRestoreSingleton_Binary;
   v->ops->read             = PetscViewerBinaryRead;
