@@ -1273,6 +1273,7 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptions *PetscOption
 {
   PetscErrorCode     ierr;
   PetscViewer_Binary *binary = (PetscViewer_Binary*)v->data;
+  char               defaultname[PETSC_MAX_PATH_LEN];
   PetscBool          flg;
 #if defined(PETSC_HAVE_MPIIO)
   PetscBool          useMPIIO = PETSC_FALSE;
@@ -1280,11 +1281,14 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptions *PetscOption
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"Binary PetscViewer Options");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(defaultname,PETSC_MAX_PATH_LEN-1,"binaryoutput");CHKERRQ(ierr);
+  ierr = PetscOptionsString("-viewer_binary_filename","Specify filename","PetscViewerFileSetName",defaultname,defaultname,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+  if (flg) { ierr = PetscViewerFileSetName_Binary(v,defaultname);CHKERRQ(ierr); }
   ierr = PetscOptionsBool("-viewer_binary_skip_info","Skip writing/reading .info file","PetscViewerBinarySkipInfo",PETSC_FALSE,&binary->skipinfo,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_binary_skip_options","Skip parsing vec load options","PetscViewerBinarySetSkipOptions",PETSC_TRUE,&binary->skipoptions,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_binary_skip_header","Skip writing/reading header information","PetscViewerBinarySetSkipHeader",PETSC_FALSE,&binary->skipheader,&flg);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
-  ierr = PetscOptionsBool("-viewer_binary_mpiio","Use MPI-IO functionality to write binary file","PetscViewerBinarySetMPIIO",PETSC_FALSE,&useMPIIO,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-viewer_binary_mpiio","Use MPI-IO functionality to write/read binary file","PetscViewerBinarySetMPIIO",PETSC_FALSE,&useMPIIO,&flg);CHKERRQ(ierr);
   if (useMPIIO) {
     ierr = PetscViewerBinarySetMPIIO(v);CHKERRQ(ierr);
   }
