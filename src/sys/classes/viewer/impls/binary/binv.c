@@ -718,8 +718,8 @@ PetscErrorCode  PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscFileM
 
 #if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerBinaryMPIIO"
-static PetscErrorCode PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscBool write)
+#define __FUNCT__ "PetscViewerBinaryWriteReadMPIIO"
+static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscBool write)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
@@ -773,7 +773,7 @@ PetscErrorCode  PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt cou
   ierr = PetscViewerSetUp_Binary(viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   if (vbinary->MPIIO) {
-    ierr = PetscViewerBinaryMPIIO(viewer,data,count,dtype,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWriteReadMPIIO(viewer,data,count,dtype,PETSC_FALSE);CHKERRQ(ierr);
   } else {
 #endif
     ierr = PetscBinarySynchronizedRead(PetscObjectComm((PetscObject)viewer),vbinary->fdes,data,count,dtype);CHKERRQ(ierr);
@@ -817,7 +817,7 @@ PetscErrorCode  PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt co
   ierr = PetscViewerSetUp_Binary(viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
   if (vbinary->MPIIO) {
-    ierr = PetscViewerBinaryMPIIO(viewer,data,count,dtype,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWriteReadMPIIO(viewer,data,count,dtype,PETSC_TRUE);CHKERRQ(ierr);
   } else {
 #endif
     ierr = PetscBinarySynchronizedWrite(PetscObjectComm((PetscObject)viewer),vbinary->fdes,data,count,dtype,istemp);CHKERRQ(ierr);
