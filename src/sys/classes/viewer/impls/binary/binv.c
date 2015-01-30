@@ -334,9 +334,9 @@ PetscErrorCode  PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 
     Level: advanced
 
-    Notes: This must be called after PetscViewerSetType() but before PetscViewerFileSetName(). If you use PetscViewerBinaryOpen() then
+    Notes: This must be called after PetscViewerSetType(). If you use PetscViewerBinaryOpen() then
     you can only skip the info file with the -viewer_binary_skip_info flag. To use the function you must open the
-    viewer with PetscViewerCreate(), PetscViewerSetType(), PetscViewerFileSetName().
+    viewer with PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinarySkipInfo().
 
     The .info contains meta information about the data in the binary file, for example the block size if it was
     set for a vector or matrix.
@@ -672,9 +672,11 @@ $    FILE_MODE_APPEND - open existing file for binary output
 .  binv - PetscViewer for binary input/output to use with the specified file
 
     Options Database Keys:
-+    -viewer_binary_skip_info
++    -viewer_binary_filename <name>
+.    -viewer_binary_skip_info
 .    -viewer_binary_skip_options
--    -viewer_binary_skip_header
+.    -viewer_binary_skip_header
+-    -viewer_binary_mpiio
 
    Level: beginner
 
@@ -1359,7 +1361,9 @@ static int Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
    Options Database Keys:
 +    -viewer_binary_filename <name>
 .    -viewer_binary_skip_info
--    -viewer_binary_skip_options
+.    -viewer_binary_skip_options
+.    -viewer_binary_skip_header
+-    -viewer_binary_mpiio
 
    Environmental variables:
 -   PETSC_VIEWER_BINARY_FILENAME
