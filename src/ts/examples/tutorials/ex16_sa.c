@@ -77,52 +77,6 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "IFunction"
-static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
-{
-  PetscErrorCode ierr;
-  User           user = (User)ctx;
-  PetscScalar    *x,*xdot,*f;
-
-  PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = xdot[0] + (user->imex ? 0 : x[1]);
-  f[1] = xdot[1] - user->mu*(1. - x[0]*x[0])*x[1] + x[0];
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "IJacobian"
-static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
-{
-  PetscErrorCode ierr;
-  User           user     = (User)ctx;
-  PetscReal      mu       = user->mu;
-  PetscInt       rowcol[] = {0,1};
-  PetscScalar    *x,J[2][2];
-
-  PetscFunctionBeginUser;
-  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
-  J[0][0] = a;                    J[0][1] = (user->imex ? 0 : 1.);
-  J[1][0] = 2.*mu*x[0]*x[1]+1.;   J[1][1] = a - mu*(1. - x[0]*x[0]);
-  ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
-
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (A != B) {
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "ADJRHSFunction"
 static PetscErrorCode ADJRHSFunction(TS tsadj,PetscReal t,Vec X,Vec F,void *ctx)
 {
@@ -238,49 +192,6 @@ static PetscErrorCode OutputBIN(const char *filename, PetscViewer *viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TestMonitor"
-static PetscErrorCode TestMonitor(const char *filename, Vec X, PetscReal time, PetscInt ns, Vec *Y, PetscInt stepnum)
-{
-  Vec            odesol,stagesol;
-  PetscInt       Nr,i;
-  PetscBool      equal;
-  PetscReal      timeread;
-  PetscViewer    viewer;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&odesol);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&stagesol);CHKERRQ(ierr);
-  ierr = VecLoad(odesol,viewer);CHKERRQ(ierr);
-  VecEqual(X,odesol,&equal);
-  if(!equal) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the ODE solution from file");
-  } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for ODE solution\n");CHKERRQ(ierr);
-  }
-
-  Nr   = 1;
-  //ierr = PetscRealLoad(Nr,&Nr,&timeread,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryRead(viewer,&timeread,1,PETSC_REAL);CHKERRQ(ierr);
-
-
-  for (i=0;i<ns && stepnum >1;i++) {
-    ierr = VecLoad(stagesol,viewer);CHKERRQ(ierr);
-    VecEqual(Y[i],stagesol,&equal);
-    if(!equal) {
-      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_FILE_UNEXPECTED,"Error in reading the %2d-th stage value from file",i);
-    } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for Stage values\n");CHKERRQ(ierr);
-    }
-  }
-
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&odesol);CHKERRQ(ierr);
-  ierr = VecDestroy(&stagesol);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "LoadChkpts"
@@ -365,7 +276,7 @@ int main(int argc,char **argv)
   Vec            x;             /* solution, residual vectors */
   Mat            A;             /* Jacobian matrix */
   Vec            lambda;        /* adjoint variable */
-  PetscInt       steps;
+  PetscInt       steps = 0;
   PetscReal      ftime   =0.5;
   PetscBool      monitor = PETSC_FALSE;
   PetscScalar    *x_ptr;

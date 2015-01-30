@@ -327,7 +327,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.lambda[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
   ierr = VecRestoreArray(user.lambda[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,user.lambda,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivity(ts,user.lambda,1);CHKERRQ(ierr);
   
   ierr = MatGetVecs(user.Jacp,&user.lambdap[0],NULL);CHKERRQ(ierr);
   ierr = MatGetVecs(user.Jacp,&user.lambdap[1],NULL);CHKERRQ(ierr);
@@ -337,7 +337,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivityP(ts,user.lambdap,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivityP(ts,user.lambdap,1);CHKERRQ(ierr);
 
   //   Switch to reverse mode
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
@@ -349,7 +349,7 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,user.steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
   //   Set RHS JacobianP
-  ierr = TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
 
   //   Set up monitor
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
@@ -508,7 +508,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = VecGetArray(user->lambda[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
   ierr = VecRestoreArray(user->lambda[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,user->lambda,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivity(ts,user->lambda,1);CHKERRQ(ierr);
 
   ierr = VecGetArray(user->lambdap[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
@@ -516,7 +516,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = VecGetArray(user->lambdap[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user->lambdap[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivityP(ts,user->lambdap,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivityP(ts,user->lambdap,1);CHKERRQ(ierr);
 
   //   Switch to reverse mode
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
@@ -528,7 +528,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetDuration(ts,user->steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
   //   Set RHS JacobianP
-  ierr = TSSetRHSJacobianP(ts,user->Jacp,RHSJacobianP,user);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobianP(ts,user->Jacp,RHSJacobianP,user);CHKERRQ(ierr);
 
   //   Set up monitor
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);

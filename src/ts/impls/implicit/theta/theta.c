@@ -258,9 +258,9 @@ static PetscErrorCode TSStepAdj_Theta(TS ts)
   /* Build RHS */
   if (ts->vec_costquad) { /* Cost function has an integral (quadrature) term */
     if (th->endpoint) {
-      ierr = TSComputeDRDYFunction(ts,ts->ptime,ts->vec_sol,ts->vecs_drdy);CHKERRQ(ierr);
+      ierr = TSAdjointComputeDRDYFunction(ts,ts->ptime,ts->vec_sol,ts->vecs_drdy);CHKERRQ(ierr);
     }else {
-      ierr = TSComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
+      ierr = TSAdjointComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
     }
   }
   for (nadj=0; nadj<ts->numberadjs; nadj++) {
@@ -290,11 +290,11 @@ static PetscErrorCode TSStepAdj_Theta(TS ts)
     shift = -1./((th->Theta-1.)*ts->time_step);
     ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr);
     if (ts->vec_costquad) {
-      ierr = TSComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
+      ierr = TSAdjointComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
       /* Evolve ts->vec_costquad to compute integrals */
-      ierr = TSComputeCostIntegrand(ts,ts->ptime,ts->vec_sol,ts->vec_costintegrand);CHKERRQ(ierr);
+      ierr = TSAdjointComputeCostIntegrand(ts,ts->ptime,ts->vec_sol,ts->vec_costintegrand);CHKERRQ(ierr);
       ierr = VecAXPY(ts->vec_costquad,-ts->time_step*th->Theta,ts->vec_costintegrand);CHKERRQ(ierr);
-      ierr = TSComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
+      ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
       ierr = VecAXPY(ts->vec_costquad,ts->time_step*(th->Theta-1.),ts->vec_costintegrand);CHKERRQ(ierr);
     }
     for (nadj=0; nadj<ts->numberadjs; nadj++) {
@@ -306,22 +306,22 @@ static PetscErrorCode TSStepAdj_Theta(TS ts)
     }
     
     if (ts->vecs_sensip) { /* sensitivities wrt parameters */
-      ierr = TSRHSJacobianP(ts,ts->ptime,ts->vec_sol,ts->Jacp);CHKERRQ(ierr);
+      ierr = TSAdjointComputeRHSJacobianP(ts,ts->ptime,ts->vec_sol,ts->Jacp);CHKERRQ(ierr);
       for (nadj=0; nadj<ts->numberadjs; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecDeltaLam[nadj],VecDeltaMu[nadj]);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step*th->Theta,VecDeltaMu[nadj]);CHKERRQ(ierr);
       }
-      ierr = TSRHSJacobianP(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
+      ierr = TSAdjointComputeRHSJacobianP(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
       for (nadj=0; nadj<ts->numberadjs; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecDeltaLam[nadj],VecDeltaMu[nadj]);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step*(1.-th->Theta),VecDeltaMu[nadj]);CHKERRQ(ierr);
       }
       if (ts->vec_costquad) {
-        ierr = TSComputeDRDPFunction(ts,ts->ptime,ts->vec_sol,ts->vecs_drdp);CHKERRQ(ierr);
+        ierr = TSAdjointComputeDRDPFunction(ts,ts->ptime,ts->vec_sol,ts->vecs_drdp);CHKERRQ(ierr);
         for (nadj=0; nadj<ts->numberadjs; nadj++) {
           ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step*th->Theta,ts->vecs_drdp[nadj]);CHKERRQ(ierr);
         }
-        ierr = TSComputeDRDPFunction(ts,th->stage_time,th->X,ts->vecs_drdp);CHKERRQ(ierr);
+        ierr = TSAdjointComputeDRDPFunction(ts,th->stage_time,th->X,ts->vecs_drdp);CHKERRQ(ierr);
         for (nadj=0; nadj<ts->numberadjs; nadj++) {
           ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step*(1.-th->Theta),ts->vecs_drdp[nadj]);CHKERRQ(ierr);
         }
@@ -331,9 +331,9 @@ static PetscErrorCode TSStepAdj_Theta(TS ts)
     shift = 0.0;
     ierr  = TSComputeIJacobian(ts,th->stage_time,th->X,th->Xdot,shift,J,Jp,PETSC_FALSE);CHKERRQ(ierr); /* get -f_y */
     if (ts->vec_costquad) {
-      ierr = TSComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
+      ierr = TSAdjointComputeDRDYFunction(ts,th->stage_time,th->X,ts->vecs_drdy);CHKERRQ(ierr);
       /* Evolve ts->vec_costquad to compute integrals */
-      ierr = TSComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
+      ierr = TSAdjointComputeCostIntegrand(ts,th->stage_time,th->X,ts->vec_costintegrand);CHKERRQ(ierr);
       ierr = VecAXPY(ts->vec_costquad,-ts->time_step,ts->vec_costintegrand);CHKERRQ(ierr);
     }
      /* When th->endpoint is true and th->Theta==1 (beuler method), the Jacobian is supposed to be evaluated at ts->ptime like this: 
@@ -350,13 +350,13 @@ static PetscErrorCode TSStepAdj_Theta(TS ts)
       }     
     }
     if (ts->vecs_sensip) {
-      ierr = TSRHSJacobianP(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
+      ierr = TSAdjointComputeRHSJacobianP(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
       for (nadj=0; nadj<ts->numberadjs; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecDeltaLam[nadj],VecDeltaMu[nadj]);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step,VecDeltaMu[nadj]);CHKERRQ(ierr);
       }
       if (ts->vec_costquad) {
-        ierr = TSComputeDRDPFunction(ts,th->stage_time,th->X,ts->vecs_drdp);CHKERRQ(ierr);
+        ierr = TSAdjointComputeDRDPFunction(ts,th->stage_time,th->X,ts->vecs_drdp);CHKERRQ(ierr);
         for (nadj=0; nadj<ts->numberadjs; nadj++) {
           ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step,ts->vecs_drdp[nadj]);CHKERRQ(ierr);
         }

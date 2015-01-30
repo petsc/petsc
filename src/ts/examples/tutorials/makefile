@@ -5,13 +5,13 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
-                ex9.c ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
-                ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c \
+                ex9.c ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex16adj.c ex16opt_p.c ex16opt_ic.c ex17.c \
+                ex19.c  ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c \
                 ex28.c ex30.cxx ex31.c ex40.c ex41.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
-DIRS            = phasefield advection-diffusion-reaction eimex
+DIRS            = phasefield advection-diffusion-reaction eimex power-grid
 
 include ${PETSC_DIR}/lib/petsc-conf/variables
 include ${PETSC_DIR}/lib/petsc-conf/rules
@@ -419,16 +419,25 @@ runex16:
 	   ${RM} -f ex16_1.tmp
 
 runex16_sa:
-	-@${MPIEXEC} -n 1 ./ex16_sa -monitor 0 -viewer_binary_skip_info; 
+	-@${MPIEXEC} -n 1 ./ex16_sa -monitor 0 -viewer_binary_skip_info > ex16_sa_1.tmp 2>&1; \
+	   ${DIFF} output/ex16_sa_1.out ex16_sa_1.tmp || printf "${PWD}\nPossible problem with ex16_sa_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex16_sa_1.tmp 
 
 runex16adj:
-	-@${MPIEXEC} -n 1 ./ex16adj -monitor 0 -viewer_binary_skip_info; 
+	-@${MPIEXEC} -n 1 ./ex16adj -monitor 0 -viewer_binary_skip_info  > ex16adj_1.tmp 2>&1; \
+	   ${DIFF} output/ex16adj_1.out ex16adj_1.tmp || printf "${PWD}\nPossible problem with ex16adj_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex16adj_1.tmp
 
 runex16opt_p:
-	-@${MPIEXEC} -n 1 ./ex16opt_p -monitor 0 -viewer_binary_skip_info -tao_view; 
+	-@${MPIEXEC} -n 1 ./ex16opt_p -monitor 0 -viewer_binary_skip_info -tao_view -tao_monitor > ex16opt_p_1.tmp 2>&1; \
+	   ${DIFF} output/ex16opt_p_1.out ex16opt_p_1.tmp || printf "${PWD}\nPossible problem with ex16opt_p_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex16opt_p_1.tmp
+
 
 runex16opt_ic:
-	-@${MPIEXEC} -n 1 ./ex16opt_ic -monitor 0 -viewer_binary_skip_info -tao_view; 
+	-@${MPIEXEC} -n 1 ./ex16opt_ic -monitor 0 -viewer_binary_skip_info -tao_view -tao_monitor  > ex16opt_ic_1.tmp 2>&1; \
+	   ${DIFF} output/ex16opt_ic_1.out ex16opt_ic_1.tmp || printf "${PWD}\nPossible problem with ex16opt_ic_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex16opt_ic_1.tmp
 
 runex17:
 	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor_short -ksp_monitor_short -ts_monitor > ex17_1.tmp 2>&1; \
@@ -446,6 +455,7 @@ runex19adj:
 runex19opt_ic:
 	-@${MPIEXEC} -n 1 ./ex19opt_ic -monitor 0 -ts_type theta -ts_theta_endpoint -ts_theta_theta 0.5 -viewer_binary_skip_info -tao_view -ts_dt 0.0001
 
+#  ex20 examples are not in the repository
 runex20:
 	-@${MPIEXEC} -n 1 ./ex20 > ex20_1.tmp 2>&1; \
 	   ${DIFF} output/ex20_1.out ex20_1.tmp || printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n";  \
@@ -541,7 +551,7 @@ runex30_2:
 
 runex31:
 	-@${MPIEXEC} -n 1 ./ex31 > ex31_1.tmp 2>&1; \
-	   ${DIFF} output/ex31_1.out ex31_1.tmp || printf "${PWD}\nPossible problem with ex20_1, diffs above\n=========================================\n";  \
+	   ${DIFF} output/ex31_1.out ex31_1.tmp || printf "${PWD}\nPossible problem with ex31_1, diffs above\n=========================================\n";  \
 	   ${RM} -f ex31_1.tmp
 
 runex35:
@@ -561,8 +571,13 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3
                             ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
                             ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm \
+                            ex16.PETSc runex16  ex16.rm \
+                            ex16_sa.PETSc  runex16_sa  ex16_sa.rm \
+                            ex16adj.PETSc  runex16adj ex16adj.rm \
+                            ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
+                            ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \
                             ex17.PETSc runex17 runex17_2 ex17.rm \
-                            ex20.PETSc ex20.rm \
+                            ex19.PETSc ex19.rm \
                             ex22.PETSc runex22 runex22_2 runex22_3 ex22.rm \
                             ex25.PETSc runex25 ex25.rm \
                             ex31.PETSc ex31.rm

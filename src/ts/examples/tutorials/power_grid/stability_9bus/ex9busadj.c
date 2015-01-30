@@ -847,7 +847,6 @@ static PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ct
   PetscViewer    viewer;
   PetscReal      timepre;
   char           filename[PETSC_MAX_PATH_LEN];
-  Userctx        *user = (Userctx *)ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -888,7 +887,7 @@ int main(int argc,char **argv)
   Mat            J;
   PetscInt       i;
   /* sensitivity context */
-  PetscScalar    *x_ptr,*y_ptr;
+  PetscScalar    *y_ptr;
   Vec            lambda[1];
   PetscInt       steps;
 
@@ -1115,13 +1114,13 @@ int main(int argc,char **argv)
   ierr = VecGetArray(lambda[0],&y_ptr);CHKERRQ(ierr);
   y_ptr[0] = 1.0;
   ierr = VecRestoreArray(lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,lambda,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivity(ts,lambda,1);CHKERRQ(ierr);
   /*
   ierr = MatGetVecs(Jacp,&lambdap[0],NULL);CHKERRQ(ierr);
   ierr = VecGetArray(lambdap[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = -1.0;
   ierr = VecRestoreArray(lambdap[0],&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivityP(ts,lambdap,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivityP(ts,lambdap,1);CHKERRQ(ierr);
 
   ierr = VecDuplicate(lambda[0],&drdy[0]);CHKERRQ(ierr);
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
@@ -1136,15 +1135,15 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,user.shift,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  /* ierr = TSSetRHSJacobianP(ts,Jacp,RHSJacobianP,&user);CHKERRQ(ierr); */
+  /* ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,&user);CHKERRQ(ierr); */
 
   /*   Set up monitor */
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorADJ2,&user,NULL);CHKERRQ(ierr);
   /*
-  ierr = TSSetCostIntegrand(ts,1,q,(TSCostIntegrand)CostIntegrand,&user);CHKERRQ(ierr);
-  ierr = TSSetDRDYFunction(ts,drdy,(TSDRDYFunction)DRDYFunction,&user);CHKERRQ(ierr);
-  ierr = TSSetDRDPFunction(ts,drdp,(TSDRDPFunction)DRDPFunction,&user);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostIntegrand(ts,1,q,(TSCostIntegrand)CostIntegrand,&user);CHKERRQ(ierr);
+  ierr = TSAdjointSetDRDYFunction(ts,drdy,(TSDRDYFunction)DRDYFunction,&user);CHKERRQ(ierr);
+  ierr = TSAdjointSetDRDPFunction(ts,drdp,(TSDRDPFunction)DRDPFunction,&user);CHKERRQ(ierr);
   */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
 

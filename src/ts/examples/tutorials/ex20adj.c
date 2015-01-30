@@ -75,6 +75,7 @@ Input parameters include:\n";
 
   ------------------------------------------------------------------------- */
 #include <petscts.h>
+#include <petsctao.h>
 
 typedef struct _n_User *User;
 struct _n_User {
@@ -361,7 +362,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.lambda[1],&y_ptr);CHKERRQ(ierr); 
   y_ptr[0] = 0.0; y_ptr[1] = 1.0;
   ierr = VecRestoreArray(user.lambda[1],&y_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,user.lambda,2);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivity(ts,user.lambda,2);CHKERRQ(ierr);
 
   ierr = MatGetVecs(user.Jacp,&user.lambdap[0],NULL);CHKERRQ(ierr);
   ierr = VecGetArray(user.lambdap[0],&x_ptr);CHKERRQ(ierr);
@@ -371,7 +372,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivityP(ts,user.lambdap,2);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivityP(ts,user.lambdap,2);CHKERRQ(ierr);
 
   /*   Switch to reverse mode  */
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
@@ -382,7 +383,7 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,user.steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
 
   /*   Set up monitor */
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);

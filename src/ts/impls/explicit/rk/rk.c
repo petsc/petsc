@@ -513,7 +513,7 @@ static PetscErrorCode TSStepAdj_RK(TS ts)
  
     /* Stage values of mu */
     if(ts->vecs_sensip) {
-      ierr = TSRHSJacobianP(ts,rk->stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
+      ierr = TSAdjointComputeRHSJacobianP(ts,rk->stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
       for (nadj=0; nadj<ts->numberadjs; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecSensiTemp[nadj],VecDeltaMu[nadj*s+i]);CHKERRQ(ierr);
       }

@@ -337,7 +337,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.lambda[1],&y_ptr);CHKERRQ(ierr); 
   y_ptr[0] = 0.0; y_ptr[1] = 1.0;
   ierr = VecRestoreArray(user.lambda[1],&y_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,user.lambda,2);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivity(ts,user.lambda,2);CHKERRQ(ierr);
 
   ierr = MatGetVecs(user.Jacp,&user.lambdap[0],NULL);CHKERRQ(ierr);
   ierr = VecGetArray(user.lambdap[0],&x_ptr);CHKERRQ(ierr);
@@ -347,7 +347,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivityP(ts,user.lambdap,2);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivityP(ts,user.lambdap,2);CHKERRQ(ierr);
 
   /*   Switch to reverse mode  */
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
@@ -358,7 +358,7 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,user.steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
 
   /*   Set up monitor */
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
@@ -474,7 +474,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,IFunction,user_ptr);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,user_ptr->A,user_ptr->A,IJacobian,user_ptr);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobianP(ts,user_ptr->Jacp,RHSJacobianP,user_ptr);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobianP(ts,user_ptr->Jacp,RHSJacobianP,user_ptr);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -507,12 +507,12 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   y_ptr[1] = 0.0;
   */
   ierr = VecRestoreArray(user_ptr->lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,user_ptr->lambda,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivity(ts,user_ptr->lambda,1);CHKERRQ(ierr);
 
   ierr = VecGetArray(user_ptr->lambdap[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user_ptr->lambdap[0],&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivityP(ts,user_ptr->lambdap,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivityP(ts,user_ptr->lambdap,1);CHKERRQ(ierr);
 
   /*   Switch to reverse mode */
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);

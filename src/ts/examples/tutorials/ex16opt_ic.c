@@ -292,7 +292,7 @@ int main(int argc,char **argv)
   /* y_ptr[0] = 2.*(x_ptr[0]-user.x_ob[0]);   y_ptr[1] = 0.0; */
   y_ptr[0] = 1.0;   y_ptr[1] = 0.0;
   ierr = VecRestoreArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,user.lambda,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivity(ts,user.lambda,1);CHKERRQ(ierr);
   
   /*   Switch to reverse mode  */
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
@@ -454,7 +454,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   y_ptr[1] = 0.0;
   */
   ierr = VecRestoreArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,user->lambda,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivity(ts,user->lambda,1);CHKERRQ(ierr);
 
   /*   Switch to reverse mode */
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);

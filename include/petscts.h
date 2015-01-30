@@ -203,19 +203,21 @@ PETSC_EXTERN PetscErrorCode TSReset(TS);
 PETSC_EXTERN PetscErrorCode TSSetSolution(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 
-PETSC_EXTERN PetscErrorCode TSSetSensitivity(TS,Vec*,PetscInt);
-PETSC_EXTERN PetscErrorCode TSGetSensitivity(TS,Vec**,PetscInt*);
-PETSC_EXTERN PetscErrorCode TSSetSensitivityP(TS,Vec*,PetscInt);
-PETSC_EXTERN PetscErrorCode TSGetSensitivityP(TS,Vec**,PetscInt*);
-PETSC_EXTERN PetscErrorCode TSSetRHSJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
-PETSC_EXTERN PetscErrorCode TSRHSJacobianP(TS,PetscReal,Vec,Mat);
-PETSC_EXTERN PetscErrorCode TSSetCostIntegrand(TS,PetscInt,Vec,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),void*);
-PETSC_EXTERN PetscErrorCode TSGetCostQuad(TS,Vec*);
-PETSC_EXTERN PetscErrorCode TSComputeCostIntegrand(TS,PetscReal,Vec,Vec);
-PETSC_EXTERN PetscErrorCode TSSetDRDYFunction(TS,Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),void*);
-PETSC_EXTERN PetscErrorCode TSComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
-PETSC_EXTERN PetscErrorCode TSSetDRDPFunction(TS,Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),void*);
-PETSC_EXTERN PetscErrorCode TSComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode TSAdjointSetSensitivity(TS,Vec*,PetscInt);
+PETSC_EXTERN PetscErrorCode TSAdjointGetSensitivity(TS,Vec**,PetscInt*);
+
+PETSC_EXTERN PetscErrorCode TSAdjointSetSensitivityP(TS,Vec*,PetscInt);
+PETSC_EXTERN PetscErrorCode TSAdjointGetSensitivityP(TS,Vec**,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSAdjointSetRHSJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
+PETSC_EXTERN PetscErrorCode TSAdjointComputeRHSJacobianP(TS,PetscReal,Vec,Mat);
+PETSC_EXTERN PetscErrorCode TSAdjointSetCostIntegrand(TS,PetscInt,Vec,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode TSAdjointSetDRDYFunction(TS,Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),void*);
+PETSC_EXTERN PetscErrorCode TSAdjointSetDRDPFunction(TS,Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),void*);
+PETSC_EXTERN PetscErrorCode TSAdjointGetCostQuadrature(TS,Vec*);
+
+PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode TSAdjointComputeCostIntegrand(TS,PetscReal,Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);

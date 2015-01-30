@@ -4973,11 +4973,11 @@ $mode$ must be set to $PETSC_TRUE$ in the beginning of the backward run.
  
 To set up TS for the adjoint sensivity analysis, one must set the initial values for the sensivity (adjoint) variables with
 \begin{tabbing}
-TSSetSensitivity(TS ts,Vec *lambda,PetscInt np);  
+TSAdjointSetSensitivity(TS ts,Vec *lambda,PetscInt np);  
 \end{tabbing}
 and 
 \begin{tabbing}
-TSSetSensitivityP(TS ts,Vec *mu,PetscInt np);  
+TSAdjointSetSensitivityP(TS ts,Vec *mu,PetscInt np);  
 \end{tabbing}
 where $lambda$ and $mu$ are arrays of adjoint variables corresponding to sensitivity wrt initial conditions and parameters respectively, and $np$ is the dimension of the array which indicates the number of cost functions. Note that there are two scenarios for the sensitivity analysis here; $lambda$ is required for both and $mu$ is only needed for the case that parameters are the targets. 
 
@@ -4987,7 +4987,7 @@ Usually the given cost function $g$ does not explicitly depend on the parameters
 Besides the functions needed by the implicit solver, no additional user-provided functions are required if the sensitivity with respect to initial conditions is desired. 
 Otherwise one needs to provide Jacobian $F_p$ with 
 \begin{tabbing}
-TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+TSAdjointSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
 \end{tabbing}
 The arguments for the function \trl{fp()} 
 are the timestep context, current, input stage $u$, and the (optional) user-provided context. 

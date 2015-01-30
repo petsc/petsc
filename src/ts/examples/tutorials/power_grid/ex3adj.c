@@ -429,13 +429,13 @@ int main(int argc,char **argv)
   ierr = VecGetArray(lambda[0],&y_ptr);CHKERRQ(ierr);
   y_ptr[0] = 0.0; y_ptr[1] = 0.0;
   ierr = VecRestoreArray(lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,lambda,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivity(ts,lambda,1);CHKERRQ(ierr);
 
   ierr = MatGetVecs(Jacp,&lambdap[0],NULL);CHKERRQ(ierr);
   ierr = VecGetArray(lambdap[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = -1.0;
   ierr = VecRestoreArray(lambdap[0],&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivityP(ts,lambdap,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivityP(ts,lambdap,1);CHKERRQ(ierr);
 
   ierr = VecDuplicate(lambda[0],&drdy[0]);CHKERRQ(ierr);
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
@@ -450,15 +450,15 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSSetRHSJacobianP(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
 
   /*   Set up monitor */
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorADJ2,&ctx,NULL);CHKERRQ(ierr);
 
-  ierr = TSSetCostIntegrand(ts,1,q,(TSCostIntegrand)CostIntegrand,&ctx);CHKERRQ(ierr);
-  ierr = TSSetDRDYFunction(ts,drdy,(TSDRDYFunction)DRDYFunction,&ctx);CHKERRQ(ierr);
-  ierr = TSSetDRDPFunction(ts,drdp,(TSDRDPFunction)DRDPFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostIntegrand(ts,1,q,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,&ctx);CHKERRQ(ierr);
+  ierr = TSAdjointSetDRDYFunction(ts,drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSAdjointSetDRDPFunction(ts,drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,&ctx);CHKERRQ(ierr);
 
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
 

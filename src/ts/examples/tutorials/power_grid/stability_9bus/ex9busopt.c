@@ -1493,11 +1493,11 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = MatGetVecs(ctx->J,&lambda[0],NULL);CHKERRQ(ierr);
   /*   Set initial conditions for the adjoint integration */
   ierr = VecZeroEntries(lambda[0]);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,lambda,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivity(ts,lambda,1);CHKERRQ(ierr);
   
   ierr = MatGetVecs(ctx->Jacp,&lambdap[0],NULL);CHKERRQ(ierr);
   ierr = VecZeroEntries(lambdap[0]);CHKERRQ(ierr);
-  ierr = TSSetSensitivityP(ts,lambdap,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivityP(ts,lambdap,1);CHKERRQ(ierr);
   
   ierr = VecDuplicate(lambda[0],&drdy[0]);CHKERRQ(ierr);
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
@@ -1509,15 +1509,15 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSSetRHSJacobianP(ts,ctx->Jacp,RHSJacobianP,ctx);CHKERRQ(ierr); 
+  ierr = TSAdjointSetRHSJacobianP(ts,ctx->Jacp,RHSJacobianP,ctx);CHKERRQ(ierr); 
 
   /*   Set up monitor */
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorADJ2,ctx,NULL);CHKERRQ(ierr);
   
-  ierr = TSSetCostIntegrand(ts,1,q,(TSCostIntegrand)CostIntegrand,ctx);CHKERRQ(ierr);
-  ierr = TSSetDRDYFunction(ts,drdy,(TSDRDYFunction)DRDYFunction,ctx);CHKERRQ(ierr);
-  ierr = TSSetDRDPFunction(ts,drdp,(TSDRDPFunction)DRDPFunction,ctx);CHKERRQ(ierr); 
+  ierr = TSAdjointSetCostIntegrand(ts,1,q,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,ctx);CHKERRQ(ierr);
+  ierr = TSAdjointSetDRDYFunction(ts,drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,ctx);CHKERRQ(ierr);
+  ierr = TSAdjointSetDRDPFunction(ts,drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr); 
   
   /*   Reset start time for the adjoint integration */
   ierr = TSSetTime(ts,ctx->tmax);CHKERRQ(ierr);

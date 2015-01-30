@@ -440,7 +440,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   y_ptr[1] = 0.0;
   */
   ierr = VecRestoreArray(user_ptr->lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = TSSetSensitivity(ts,user_ptr->lambda,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetSensitivity(ts,user_ptr->lambda,1);CHKERRQ(ierr);
 
   /*   Switch to reverse mode */
   ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);

@@ -1731,9 +1731,9 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSGetSensitivity"
+#define __FUNCT__ "TSAdjointGetSensitivity"
 /*@
-   TSGetSensitivity - Returns the sensitivity in the reverse mode.
+   TSAdjointGetSensitivity - Returns the sensitivity in the reverse mode.
 
    Not Collective, but Vec returned is parallel if TS is parallel
 
@@ -1749,7 +1749,7 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 
 .keywords: TS, timestep, get, sensitivity
 @*/
-PetscErrorCode  TSGetSensitivity(TS ts,Vec **v,PetscInt *numberadjs)
+PetscErrorCode  TSAdjointGetSensitivity(TS ts,Vec **v,PetscInt *numberadjs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1871,7 +1871,7 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
-  if (ts->reverse_mode && !ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSensitivity() first");
+  if (ts->reverse_mode && !ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetSensitivity() first");
 
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
 
@@ -2245,9 +2245,9 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetSensitivity"
+#define __FUNCT__ "TSAdjointSetSensitivity"
 /*@
-   TSSetSensitivity - Sets the initial value of sensitivity (w.r.t. initial conditions)
+   TSAdjointSetSensitivity - Sets the initial value of sensitivity (w.r.t. initial conditions)
    for use by the TS routines.
 
    Logically Collective on TS and Vec
@@ -2260,22 +2260,22 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
 
 .keywords: TS, timestep, set, sensitivity, initial conditions
 @*/
-PetscErrorCode  TSSetSensitivity(TS ts,Vec *u,PetscInt numberadjs)
+PetscErrorCode  TSAdjointSetSensitivity(TS ts,Vec *u,PetscInt numberadjs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(u,2);
   ts->vecs_sensi = u;
-  if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of adjoint variables (3rd parameter) is inconsistent with the one set by TSSetSensitivityP()");
+  if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of adjoint variables (3rd parameter) is inconsistent with the one set by TSAdjointSetSensitivityP()");
   ts->numberadjs = numberadjs;
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetSensitivityP"
+#define __FUNCT__ "TSAdjointSetSensitivityP"
 /*@
-   TSSetSensitivityP - Sets the initial value of sensitivity (w.r.t. parameters)
+   TSAdjointSetSensitivityP - Sets the initial value of sensitivity (w.r.t. parameters)
    for use by the TS routines.
 
    Logically Collective on TS and Vec
@@ -2288,22 +2288,22 @@ PetscErrorCode  TSSetSensitivity(TS ts,Vec *u,PetscInt numberadjs)
 
 .keywords: TS, timestep, set, sensitivity, initial conditions
 @*/
-PetscErrorCode  TSSetSensitivityP(TS ts,Vec *u,PetscInt numberadjs)
+PetscErrorCode  TSAdjointSetSensitivityP(TS ts,Vec *u,PetscInt numberadjs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(u,2);
   ts->vecs_sensip = u;
-  if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of adjoint variables (3rd parameter) is inconsistent with the one set by TSSetSensitivity()");
+  if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of adjoint variables (3rd parameter) is inconsistent with the one set by TSAdjointSetSensitivity()");
   ts->numberadjs = numberadjs;
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetRHSJacobianP"
+#define __FUNCT__ "TSAdjointSetRHSJacobianP"
 /*@C
-  TSSetRHSJacobianP - Sets the function that computes the Jacobian w.r.t. parameters.
+  TSAdjointSetRHSJacobianP - Sets the function that computes the Jacobian w.r.t. parameters.
 
   Logically Collective on TS
 
@@ -2323,7 +2323,7 @@ $ func (TS ts,PetscReal t,Vec u,Mat A,void *ctx);
 .keywords: TS, sensitivity 
 .seealso: 
 @*/
-PetscErrorCode  TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+PetscErrorCode  TSAdjointSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscReal,Vec,Mat,void*),void *ctx)
 { 
   PetscErrorCode ierr;
 
@@ -2343,25 +2343,21 @@ PetscErrorCode  TSSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(TS,Petsc
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSRHSJacobianP"
+#define __FUNCT__ "TSAdjointComputeRHSJacobianP"
 /*@
-  TSRHSJacobianP - Runs the user-defined JacobianP function.
+  TSAdjointComputeRHSJacobianP - Runs the user-defined JacobianP function.
 
   Collective on TS
 
   Input Parameters:
 . ts   - The TS context obtained from TSCreate()
 
-  Notes:
-  TSJacobianP() is typically used for sensitivity implementation,
-  so most users would not generally call this routine themselves.
-
   Level: developer
 
 .keywords: TS, sensitivity
-.seealso: TSSetRHSJacobianP()
+.seealso: TSAdjointSetRHSJacobianP()
 @*/
-PetscErrorCode  TSRHSJacobianP(TS ts,PetscReal t,Vec X,Mat Amat)
+PetscErrorCode  TSAdjointComputeRHSJacobianP(TS ts,PetscReal t,Vec X,Mat Amat)
 {
   PetscErrorCode ierr;
  
@@ -2378,9 +2374,9 @@ PetscErrorCode  TSRHSJacobianP(TS ts,PetscReal t,Vec X,Mat Amat)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetCostIntegrand"
+#define __FUNCT__ "TSAdjointSetCostIntegrand"
 /*@C
-    TSSetCostIntegrand - Sets the routine for evaluating the quadrature (or integral) term in a cost function,
+    TSAdjointSetCostIntegrand - Sets the routine for evaluating the quadrature (or integral) term in a cost function,
     where Q_t = r(t,u).
 
     Logically Collective on TS
@@ -2404,9 +2400,9 @@ $     TSCostIntegrand(TS ts,PetscReal t,Vec u,PetscReal *f,void *ctx);
 
 .keywords: TS, sensitivity analysis, timestep, set, quadrature, function
 
-.seealso: TSSetRHSJacobianP(),TSSetSensitivity(),TSSetSensitivityP()
+.seealso: TSAdjointSetRHSJacobianP(),TSAdjointSetSensitivity(),TSAdjointSetSensitivityP()
 @*/
-PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),void *ctx)
+PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt size;
@@ -2416,13 +2412,13 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscErrorCod
   if (q) {
     PetscValidHeaderSpecific(q,VEC_CLASSID,2);
   } else {
-    SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"TSSetCostIntegrand() requires a vector of size numberajds to hold the value of integrals as 3rd input parameter"); 
+    SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"TSAdjointSetCostIntegrand() requires a vector of size numberajds to hold the value of integrals as 3rd input parameter"); 
   }
-  if (!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSSetSensitivity() or TSSetSensitivityP() first so that the number of cost functions can be determined.");
-  if (ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetSensitivity() or TSSetSensitivityP()");
+  if (!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSAdjointSetSensitivity() or TSAdjointSetSensitivityP() first so that the number of cost functions can be determined.");
+  if (ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetSensitivity() or TSAdjointSetSensitivityP()");
   ierr = VecGetSize(q,&size);CHKERRQ(ierr);
   ierr = VecZeroEntries(q);CHKERRQ(ierr);
-  if (size!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions is inconsistent with the number of integrals (size of the 3rd input vector of TSSetCostIntegrand()).");
+  if (size!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions is inconsistent with the number of integrals (size of the 3rd input vector of TSAdjointSetCostIntegrand()).");
   
   ierr = PetscObjectReference((PetscObject)q);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costquad);CHKERRQ(ierr);
@@ -2436,9 +2432,9 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscErrorCod
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSGetCostQuad"
+#define __FUNCT__ "TSAdjointGetCostQuadrature"
 /*@
-   TSGetCostQuad - Returns the values of the quadrature (or integral) terms in a cost function.
+   TSAdjointGetCostQuadrature - Returns the values of the quadrature (or integral) terms in a cost function.
    It is valid to call the routine after a backward run.
 
    Not Collective
@@ -2451,11 +2447,11 @@ PetscErrorCode  TSSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscErrorCod
 
    Level: intermediate
 
-.seealso: TSSetCostIntegrand()
+.seealso: TSAdjointSetCostIntegrand()
 
 .keywords: TS, sensitivity analysis
 @*/
-PetscErrorCode  TSGetCostQuad(TS ts,Vec *v)
+PetscErrorCode  TSAdjointGetCostQuadrature(TS ts,Vec *v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2465,9 +2461,9 @@ PetscErrorCode  TSGetCostQuad(TS ts,Vec *v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSComputeCostIntegrand"
+#define __FUNCT__ "TSAdjointComputeCostIntegrand"
 /*@
-   TSComputeCostIntegrand - Evaluates the quadrature function in the cost functions.
+   TSAdjointComputeCostIntegrand - Evaluates the quadrature function in the cost functions.
 
    Input Parameters:
 +  ts - the TS context
@@ -2485,9 +2481,9 @@ PetscErrorCode  TSGetCostQuad(TS ts,Vec *v)
 
 .keywords: TS, compute
 
-.seealso: TSSetCostIntegrand()
+.seealso: TSAdjointSetCostIntegrand()
 @*/
-PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q)
+PetscErrorCode TSAdjointComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q)
 {
   PetscErrorCode ierr;
 
@@ -2510,9 +2506,9 @@ PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetDRDYFunction"
+#define __FUNCT__ "TSAdjointSetDRDYFunction"
 /*@C
-  TSSetDRDYFunction - Sets the function that computes the gradient of the CostIntegrand function r w.r.t. states y.
+  TSAdjointSetDRDYFunction - Sets the function that computes the gradient of the CostIntegrand function r w.r.t. states y.
 
   Logically Collective on TS
 
@@ -2528,7 +2524,7 @@ PetscErrorCode TSComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q)
 .keywords: TS, sensitivity 
 .seealso: 
 @*/
-PetscErrorCode  TSSetDRDYFunction(TS ts,Vec *drdy,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+PetscErrorCode  TSAdjointSetDRDYFunction(TS ts,Vec *drdy,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 { 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -2540,9 +2536,9 @@ PetscErrorCode  TSSetDRDYFunction(TS ts,Vec *drdy,PetscErrorCode (*func)(TS,Pets
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSComputeDRDYFunction"
+#define __FUNCT__ "TSAdjointComputeDRDYFunction"
 /*@
-  TSComputeDRDYFunction - Runs the user-defined DRDY function.
+  TSAdjointComputeDRDYFunction - Runs the user-defined DRDY function.
 
   Collective on TS
 
@@ -2550,15 +2546,15 @@ PetscErrorCode  TSSetDRDYFunction(TS ts,Vec *drdy,PetscErrorCode (*func)(TS,Pets
 . ts   - The TS context obtained from TSCreate()
 
   Notes:
-  TSComputeDRDYFunction() is typically used for sensitivity implementation,
+  TSAdjointComputeDRDYFunction() is typically used for sensitivity implementation,
   so most users would not generally call this routine themselves.
 
   Level: developer
 
 .keywords: TS, sensitivity
-.seealso: TSComputeDRDYFunction()
+.seealso: TSAdjointComputeDRDYFunction()
 @*/
-PetscErrorCode  TSComputeDRDYFunction(TS ts,PetscReal t,Vec X,Vec *drdy)
+PetscErrorCode  TSAdjointComputeDRDYFunction(TS ts,PetscReal t,Vec X,Vec *drdy)
 {
   PetscErrorCode ierr;
  
@@ -2573,9 +2569,9 @@ PetscErrorCode  TSComputeDRDYFunction(TS ts,PetscReal t,Vec X,Vec *drdy)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetDRDPFunction"
+#define __FUNCT__ "TSAdjointSetDRDPFunction"
 /*@C
-  TSSetDRDPFunction - Sets the function that computes the gradient of the CostIntegrand function w.r.t. parameters.
+  TSAdjointSetDRDPFunction - Sets the function that computes the gradient of the CostIntegrand function w.r.t. parameters.
 
   Logically Collective on TS
 
@@ -2591,7 +2587,7 @@ PetscErrorCode  TSComputeDRDYFunction(TS ts,PetscReal t,Vec X,Vec *drdy)
 .keywords: TS, sensitivity 
 .seealso: 
 @*/
-PetscErrorCode  TSSetDRDPFunction(TS ts,Vec *drdp,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+PetscErrorCode  TSAdjointSetDRDPFunction(TS ts,Vec *drdp,PetscErrorCode (*func)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 { 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -2604,9 +2600,9 @@ PetscErrorCode  TSSetDRDPFunction(TS ts,Vec *drdp,PetscErrorCode (*func)(TS,Pets
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSComputeDRDPFunction"
+#define __FUNCT__ "TSAdjointComputeDRDPFunction"
 /*@
-  TSComputeDRDPFunction - Runs the user-defined DRDP function.
+  TSAdjointComputeDRDPFunction - Runs the user-defined DRDP function.
 
   Collective on TS
 
@@ -2620,9 +2616,9 @@ PetscErrorCode  TSSetDRDPFunction(TS ts,Vec *drdp,PetscErrorCode (*func)(TS,Pets
   Level: developer
 
 .keywords: TS, sensitivity
-.seealso: TSSetDRDPFunction()
+.seealso: TSAdjointSetDRDPFunction()
 @*/
-PetscErrorCode  TSComputeDRDPFunction(TS ts,PetscReal t,Vec X,Vec *drdp)
+PetscErrorCode  TSAdjointComputeDRDPFunction(TS ts,PetscReal t,Vec X,Vec *drdp)
 {
   PetscErrorCode ierr;
  
