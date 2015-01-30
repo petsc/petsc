@@ -1051,6 +1051,7 @@ PetscErrorCode PetscViewerFileSetName_Binary(PetscViewer viewer,const char name[
   PetscErrorCode     ierr;
     
   PetscFunctionBegin;
+  if (vbinary->filename) { ierr = PetscFree(vbinary->filename);CHKERRQ(ierr); }
   ierr = PetscStrallocpy(name,&vbinary->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
