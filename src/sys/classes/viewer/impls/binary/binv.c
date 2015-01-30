@@ -597,7 +597,6 @@ static PetscErrorCode PetscViewerFileClose_Binary(PetscViewer v)
     err = fclose(vbinary->fdes_info);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   }
-  ierr = PetscFree(vbinary->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -618,7 +617,6 @@ static PetscErrorCode PetscViewerFileClose_BinaryMPIIO(PetscViewer v)
     err = fclose(vbinary->fdes_info);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   }
-  ierr = PetscFree(vbinary->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -650,6 +648,7 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 #if defined(PETSC_HAVE_MPIIO)
   }
 #endif
+  if (vbinary->filename) { ierr = PetscFree(vbinary->filename);CHKERRQ(ierr); }
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1067,20 +1066,17 @@ static PetscErrorCode PetscViewerFileSetUp_Binary(PetscViewer viewer)
   size_t             len;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   const char         *fname;
-  char               bname[PETSC_MAX_PATH_LEN],*gz,*tfilename;
+  char               bname[PETSC_MAX_PATH_LEN],*gz;
   PetscBool          found;
   PetscFileMode      type = vbinary->btype;
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode()");
-  ierr = PetscStrallocpy(vbinary->filename,&tfilename);CHKERRQ(ierr);
+  if (!vbinary->filename) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetName()");
   ierr = PetscViewerFileClose_Binary(viewer);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
 
-  /* copy name so we can edit it */
-  ierr = PetscStrallocpy(tfilename,&vbinary->filename);CHKERRQ(ierr);
-    
   /* if ends in .gz strip that off and note user wants file compressed */
   vbinary->storecompressed = PETSC_FALSE;
   if (!rank && type == FILE_MODE_WRITE) {
@@ -1152,8 +1148,6 @@ static PetscErrorCode PetscViewerFileSetUp_Binary(PetscViewer viewer)
       if (!vbinary->fdes_info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open .info file %s for writing",infoname);
     }
   }
-
-  ierr = PetscFree(tfilename);CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)viewer,"File: %s",vbinary->filename);
 #endif
@@ -1169,17 +1163,16 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryMPIIO(PetscViewer viewer)
   PetscErrorCode     ierr;
   size_t             len;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
-  char               *gz,*tfilename;
+  char               *gz;
   PetscBool          found;
   PetscFileMode      type = vbinary->btype;
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode()");
-  ierr = PetscStrallocpy(vbinary->filename,&tfilename);CHKERRQ(ierr);
+  if (!vbinary->filename) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetName()");
   ierr = PetscViewerFileClose_BinaryMPIIO(viewer);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(tfilename,&vbinary->filename);CHKERRQ(ierr);
 
   vbinary->storecompressed = PETSC_FALSE;
 
@@ -1216,8 +1209,6 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryMPIIO(PetscViewer viewer)
       if (!vbinary->fdes_info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open .info file %s for writing",infoname);
     }
   }
-
-  ierr = PetscFree(tfilename);CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)viewer,"File: %s",vbinary->filename);
 #endif
