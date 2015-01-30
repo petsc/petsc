@@ -669,6 +669,9 @@ PetscErrorCode MatSolveTranspose_MUMPS(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatMatSolve_MUMPS"
 PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 {
+  Mat_MUMPS      *mumps=(Mat_MUMPS*)A->spptr;
+  PetscInt       nrhs;
+  PetscScalar    *array;
   PetscErrorCode ierr;
   PetscBool      flg;
 
@@ -677,7 +680,33 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
   ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_MUMPS() is not implemented yet");
+  if (mumps->size > 1) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_MUMPS() is not implemented yet for parallel matrices");
+  }
+  if (mumps->id.size_schur) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use MatMatSolve when Schur complement has been requested\n");
+  }
+
+  ierr = MatGetSize(B,NULL,&nrhs);CHKERRQ(ierr);
+  mumps->id.nrhs = nrhs;
+  ierr = MatCopy(B,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(X,&array);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_REAL_SINGLE)
+  mumps->id.rhs = (mumps_complex*)array;
+#else
+  mumps->id.rhs = (mumps_double_complex*)array;
+#endif
+#else
+  mumps->id.rhs = array;
+#endif
+  ierr = MatDenseRestoreArray(X,&array);CHKERRQ(ierr);
+
+  /* solve phase */
+  /*-------------*/
+  mumps->id.job = JOB_SOLVE;
+  PetscMUMPS_c(&mumps->id);
+  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
   PetscFunctionReturn(0);
 }
 
@@ -999,7 +1028,11 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   F->ops->lufactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve           = MatSolve_MUMPS;
   F->ops->solvetranspose  = MatSolveTranspose_MUMPS;
-  F->ops->matsolve        = 0;  /* use MatMatSolve_Basic() until mumps supports distributed rhs */
+  if (mumps->size > 1) {
+    F->ops->matsolve = 0;  /* use MatMatSolve_Basic() until mumps supports distributed rhs */
+  } else {
+    F->ops->matsolve = MatMatSolve_MUMPS;  /* use MatMatSolve_MUMPS() for sequential matrices */
+  }
   PetscFunctionReturn(0);
 }
 
