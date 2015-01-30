@@ -612,6 +612,66 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMShellSetCoarsen"
+PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->coarsen = coarsen;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetRefine"
+PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM,MPI_Comm,DM*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->refine = refine;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetCreateInterpolation"
+PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,DM,Mat*,Vec*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->createinterpolation = interp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetCreateInjection"
+PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,Mat*))
+{
+  PetscErrorCode ierr;
+  PetscBool      isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) PetscFunctionReturn(0);
+  dm->ops->getinjection = inject;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Shell"
 static PetscErrorCode DMDestroy_Shell(DM dm)
 {
