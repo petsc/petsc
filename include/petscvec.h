@@ -459,9 +459,10 @@ PETSC_EXTERN PetscErrorCode VecLockPush(Vec);
 PETSC_EXTERN PetscErrorCode VecLockPop(Vec);
 #define VecLocked(x,arg) do {PetscInt _st; PetscErrorCode __ierr = VecLockGet(x,&_st); CHKERRQ(__ierr); if (_st > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is locked read only, argument # %d",arg);} while (0)
 #else
-#define VecLockPush(x) do {} while (0)
-#define VecLockPop(x)  do {} while (0)
-#define VecLocked(x,arg)   do {} while (0)
+#define VecLockGet(x,arg)     *(arg) = 0
+#define VecLockPush(x)        0
+#define VecLockPop(x)         0
+#define VecLocked(x,arg)
 #endif
 
 PETSC_EXTERN PetscErrorCode VecValidValues(Vec,PetscInt,PetscBool);
