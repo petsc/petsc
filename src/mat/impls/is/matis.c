@@ -13,7 +13,26 @@
 */
 
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
-#include <petscsf.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "MatISComputeSF_Private"
+PetscErrorCode  MatISComputeSF_Private(Mat B)
+{
+  Mat_IS         *matis = (Mat_IS*)(B->data);
+  const PetscInt *gidxs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(matis->A,&matis->sf_nleaves,NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(B,&matis->sf_nroots,NULL);CHKERRQ(ierr);
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)B),&matis->sf);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(matis->mapping,&gidxs);CHKERRQ(ierr);
+  /* PETSC_OWN_POINTER refers to ilocal which is NULL */
+  ierr = PetscSFSetGraphLayout(matis->sf,B->rmap,matis->sf_nleaves,NULL,PETSC_OWN_POINTER,gidxs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(matis->mapping,&gidxs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(matis->sf_nroots,&matis->sf_rootdata,matis->sf_nleaves,&matis->sf_leafdata);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISSetPreallocation"
@@ -68,50 +87,42 @@ PetscErrorCode  MatISSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[]
 PetscErrorCode  MatISSetPreallocation_IS(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_IS         *matis = (Mat_IS*)(B->data);
-  PetscSF        sf;
-  PetscInt       bs,i,nroots,*rootdata,nleaves,*leafdata,nlocalcols;
-  const PetscInt *gidxs;
+  PetscInt       bs,i,nlocalcols;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!matis->A) {
     SETERRQ(PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"You should first call MatSetLocalToGlobalMapping");
   }
-  ierr = MatGetLocalSize(B,&nroots,NULL);CHKERRQ(ierr);
-  ierr = MatGetSize(matis->A,&nleaves,&nlocalcols);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(matis->A,&bs);CHKERRQ(ierr);
-  ierr = PetscCalloc2(nroots,&rootdata,nleaves,&leafdata);CHKERRQ(ierr);
-  ierr = PetscSFCreate(PetscObjectComm((PetscObject)B),&sf);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetIndices(matis->mapping,&gidxs);CHKERRQ(ierr);
-  ierr = PetscSFSetGraphLayout(sf,B->rmap,nleaves,NULL,PETSC_COPY_VALUES,gidxs);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreIndices(matis->mapping,&gidxs);CHKERRQ(ierr);
+  if (!matis->sf) { /* setup SF if not yet created and allocate rootdata and leafdata */
+    ierr = MatISComputeSF_Private(B);CHKERRQ(ierr);
+  }
   if (!d_nnz) {
-    for (i=0;i<nroots;i++) rootdata[i] += d_nz;
+    for (i=0;i<matis->sf_nroots;i++) matis->sf_rootdata[i] = d_nz;
   } else {
-    for (i=0;i<nroots;i++) rootdata[i] += d_nnz[i];
+    for (i=0;i<matis->sf_nroots;i++) matis->sf_rootdata[i] = d_nnz[i];
   }
   if (!o_nnz) {
-    for (i=0;i<nroots;i++) rootdata[i] += o_nz;
+    for (i=0;i<matis->sf_nroots;i++) matis->sf_rootdata[i] += o_nz;
   } else {
-    for (i=0;i<nroots;i++) rootdata[i] += o_nnz[i];
+    for (i=0;i<matis->sf_nroots;i++) matis->sf_rootdata[i] += o_nnz[i];
   }
-  ierr = PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
-  for (i=0;i<nleaves;i++) {
-    leafdata[i] = PetscMin(leafdata[i],nlocalcols);
+  ierr = PetscSFBcastBegin(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+  ierr = MatGetSize(matis->A,NULL,&nlocalcols);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(matis->A,&bs);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(matis->sf,MPIU_INT,matis->sf_rootdata,matis->sf_leafdata);CHKERRQ(ierr);
+  for (i=0;i<matis->sf_nleaves;i++) {
+    matis->sf_leafdata[i] = PetscMin(matis->sf_leafdata[i],nlocalcols);
   }
-  ierr = MatSeqAIJSetPreallocation(matis->A,0,leafdata);CHKERRQ(ierr);
-  for (i=0;i<nleaves/bs;i++) {
-    leafdata[i] = leafdata[i*bs]/bs;
+  ierr = MatSeqAIJSetPreallocation(matis->A,0,matis->sf_leafdata);CHKERRQ(ierr);
+  for (i=0;i<matis->sf_nleaves/bs;i++) {
+    matis->sf_leafdata[i] = matis->sf_leafdata[i*bs]/bs;
   }
-  ierr = MatSeqBAIJSetPreallocation(matis->A,bs,0,leafdata);CHKERRQ(ierr);
-  for (i=0;i<nleaves/bs;i++) {
-    leafdata[i] = leafdata[i]-i;
+  ierr = MatSeqBAIJSetPreallocation(matis->A,bs,0,matis->sf_leafdata);CHKERRQ(ierr);
+  for (i=0;i<matis->sf_nleaves/bs;i++) {
+    matis->sf_leafdata[i] = matis->sf_leafdata[i]-i;
   }
-  ierr = MatSeqSBAIJSetPreallocation(matis->A,bs,0,leafdata);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(matis->A,bs,0,matis->sf_leafdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -464,6 +475,8 @@ PetscErrorCode MatDestroy_IS(Mat A)
   ierr = VecDestroy(&b->x);CHKERRQ(ierr);
   ierr = VecDestroy(&b->y);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&b->mapping);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&b->sf);CHKERRQ(ierr);
+  ierr = PetscFree2(b->sf_rootdata,b->sf_leafdata);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",NULL);CHKERRQ(ierr);
@@ -595,6 +608,8 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
     ierr = VecDestroy(&is->y);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&is->ctx);CHKERRQ(ierr);
     ierr = MatDestroy(&is->A);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&is->sf);CHKERRQ(ierr);
+    ierr = PetscFree2(is->sf_rootdata,is->sf_leafdata);CHKERRQ(ierr);
   }
   ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr);
@@ -1030,11 +1045,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
   /* zeros pointer */
-  b->A       = 0;
-  b->ctx     = 0;
-  b->x       = 0;
-  b->y       = 0;
-  b->mapping = 0;
+  b->A           = 0;
+  b->ctx         = 0;
+  b->x           = 0;
+  b->y           = 0;
+  b->mapping     = 0;
+  b->sf          = 0;
+  b->sf_rootdata = 0;
+  b->sf_leafdata = 0;
 
   /* special MATIS functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
