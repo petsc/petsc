@@ -1145,7 +1145,7 @@ int main(int argc,char **argv)
   ierr = TSAdjointSetDRDYFunction(ts,drdy,(TSDRDYFunction)DRDYFunction,&user);CHKERRQ(ierr);
   ierr = TSAdjointSetDRDPFunction(ts,drdp,(TSDRDPFunction)DRDPFunction,&user);CHKERRQ(ierr);
   */
-  ierr = TSSolve(ts,X);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts,X);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: \n");CHKERRQ(ierr);
   ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

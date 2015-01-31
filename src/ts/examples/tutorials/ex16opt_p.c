@@ -355,7 +355,7 @@ int main(int argc,char **argv)
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorADJ2,&user,NULL);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts,user.x);CHKERRQ(ierr);
 
   ierr = VecView(user.lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(user.lambda[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -534,7 +534,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorADJ2,user,NULL);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,user->x);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts,user->x);CHKERRQ(ierr);
   
   ierr = VecCopy(user->lambdap[0],G);
   ierr = VecView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

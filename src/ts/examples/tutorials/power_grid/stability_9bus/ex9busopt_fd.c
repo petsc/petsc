@@ -828,15 +828,15 @@ static PetscErrorCode MonitorUpdateQ(TS ts,PetscInt stepnum,PetscReal time,Vec X
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Userctx        user;
-  Vec            p;
-  PetscScalar    *x_ptr;
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  PetscInt       i;
-  KSP            ksp;
-  PC             pc;
-  PetscInt       *idx2;
+  Userctx            user;
+  Vec                p;
+  PetscScalar        *x_ptr;
+  PetscErrorCode     ierr;
+  PetscMPIInt        size;
+  PetscInt           i;
+  KSP                ksp;
+  PC                 pc;
+  PetscInt           *idx2;
   Tao                tao;
   TaoConvergedReason reason;
 

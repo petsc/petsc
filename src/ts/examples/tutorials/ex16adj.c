@@ -352,7 +352,7 @@ int main(int argc,char **argv)
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorADJ2,&user,NULL);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts,x);CHKERRQ(ierr);
 
   ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(lambda[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

@@ -516,7 +516,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSAdjointSetDRDYFunction(ts,drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,ctx);CHKERRQ(ierr);
   ierr = TSAdjointSetDRDPFunction(ts,drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts,U);CHKERRQ(ierr);
   /*
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: \n");CHKERRQ(ierr);
   ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

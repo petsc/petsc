@@ -3242,7 +3242,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
-  if (!ts->reverse_mode && ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
+  if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     PetscValidHeaderSpecific(u,VEC_CLASSID,2);
     if (!ts->vec_sol || u == ts->vec_sol) {
       ierr = VecDuplicate(u,&solution);CHKERRQ(ierr);
@@ -3271,13 +3271,9 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   } else {
     /* steps the requested number of timesteps. */   
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
-    else if (!ts->reverse_mode && ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
+    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     while (!ts->reason) {
-      if(!ts->reverse_mode) {
-        ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-      }else {
-        ierr = TSMonitor(ts,ts->max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-      }
+      ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
       if (ts->event) {
 	ierr = TSEventMonitor(ts);CHKERRQ(ierr);
@@ -3288,7 +3284,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 	ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
     }
-    if (!ts->reverse_mode && ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
+    if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
       ts->solvetime = ts->max_time;
       solution = u;
@@ -3297,11 +3293,74 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ts->solvetime = ts->ptime;
       solution = ts->vec_sol;
     }
-    if(!ts->reverse_mode) {
-      ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
-    }
+    ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
     ierr = VecViewFromOptions(u, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
   }
+
+  ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
+  ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointSolve"
+/*@
+   TSAdjointSolve - Solves the discrete ajoint problem for an ODE/DAE
+
+   Collective on TS
+
+   Input Parameter:
++  ts - the TS context obtained from TSCreate()
+-  u - the solution vector  (can be null if TSSetSolution() was used, otherwise must contain the initial conditions)
+
+   Level: intermediate
+
+   Notes:
+   This must be called after a call to TSSolve() that solves the forward problem
+
+.keywords: TS, timestep, solve
+
+.seealso: TSCreate(), TSSetSolution(), TSStep()
+@*/
+PetscErrorCode TSAdjointSolve(TS ts,Vec u)
+{
+  Vec               solution;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
+  if (u) {
+    ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
+  }
+  ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
+  /* reset time step and iteration counters */
+  ts->steps             = 0;
+  ts->ksp_its           = 0;
+  ts->snes_its          = 0;
+  ts->num_snes_failures = 0;
+  ts->reject            = 0;
+  ts->reason            = TS_CONVERGED_ITERATING;
+
+  ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
+
+  if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+  while (!ts->reason) {
+    ierr = TSMonitor(ts,ts->max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSStep(ts);CHKERRQ(ierr);
+    if (ts->event) {
+      ierr = TSEventMonitor(ts);CHKERRQ(ierr);
+      if (ts->event->status != TSEVENT_PROCESSING) {
+        ierr = TSPostStep(ts);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = TSPostStep(ts);CHKERRQ(ierr);
+    }
+  }
+  if (u) {ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);}
+  ts->solvetime = ts->ptime;
+  solution = ts->vec_sol;
+  ierr = VecViewFromOptions(u, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);

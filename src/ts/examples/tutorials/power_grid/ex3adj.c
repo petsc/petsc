@@ -460,7 +460,7 @@ int main(int argc,char **argv)
   ierr = TSAdjointSetDRDYFunction(ts,drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,&ctx);CHKERRQ(ierr);
   ierr = TSAdjointSetDRDPFunction(ts,drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,&ctx);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts,U);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: d[Psi(tf)]/d[phi0]  d[Psi(tf)]/d[omega0]\n");CHKERRQ(ierr);
   ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

@@ -206,13 +206,15 @@ static PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ct
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS             ts;          /* nonlinear solver */
-  Vec            ic;         
-  PetscBool      monitor = PETSC_FALSE;
-  PetscScalar    *x_ptr,*y_ptr;
-  PetscMPIInt    size;
-  struct _n_User user;
-  PetscErrorCode ierr;
+  TS                 ts;          /* nonlinear solver */
+  Vec                ic;
+  PetscBool          monitor = PETSC_FALSE;
+  PetscScalar        *x_ptr,*y_ptr;
+  PetscMPIInt        size;
+  struct _n_User     user;
+  PetscErrorCode     ierr;
+  Tao                tao;
+  TaoConvergedReason reason;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -307,12 +309,10 @@ int main(int argc,char **argv)
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorADJ2,&user,NULL);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts,user.x);CHKERRQ(ierr);
 
   ierr = VecView(user.lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  Tao                tao;
-  TaoConvergedReason reason;
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOCG);CHKERRQ(ierr);
@@ -469,7 +469,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorADJ2,user,NULL);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,user->x);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts,user->x);CHKERRQ(ierr);
  
   ierr = VecCopy(user->lambda[0],G);
   ierr = VecView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
