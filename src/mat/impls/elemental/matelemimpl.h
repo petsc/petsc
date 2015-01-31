@@ -29,6 +29,10 @@ typedef struct {
   PetscInt   grid_refct;
 } Mat_Elemental_Grid;
 
+/*
+ P2RO, RO2P, E2RO and RO2E convert indices between PETSc <-> (Rank,Offset) <-> Elemental 
+ (PETSc parallel vectors can be used with Elemental matries without changes)
+*/
 PETSC_STATIC_INLINE void P2RO(Mat A,PetscInt rc,PetscInt p,PetscInt *rank,PetscInt *offset)
 {
   Mat_Elemental *a       = (Mat_Elemental*)A->data;

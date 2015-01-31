@@ -1261,24 +1261,25 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_ELEMENTAL)
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIDense_Elemental"
 PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            mat_elemental;
   PetscErrorCode ierr;
-  PetscScalar    *array,*v_colwise;
+  PetscScalar    *array,*v_rowwise;
   PetscInt       m=A->rmap->n,N=A->cmap->N,rstart=A->rmap->rstart,i,j,k,*rows,*cols;
   
   PetscFunctionBegin;
-  ierr = PetscMalloc3(m*N,&v_colwise,m,&rows,N,&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc3(m*N,&v_rowwise,m,&rows,N,&cols);CHKERRQ(ierr);
   ierr = MatDenseGetArray(A,&array);CHKERRQ(ierr);
-  /* convert column-wise array into row-wise v_colwise, see MatSetValues_Elemental() */
+  /* convert column-wise array into row-wise v_rowwise, see MatSetValues_Elemental() */
   k = 0;
   for (j=0; j<N; j++) {
     cols[j] = j;
     for (i=0; i<m; i++) {
-      v_colwise[j*m+i] = array[k++];
+      v_rowwise[i*N+j] = array[k++];
     }
   }
   for (i=0; i<m; i++) {
@@ -1292,10 +1293,10 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype
   ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
   
   /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
-  ierr = MatSetValues(mat_elemental,m,rows,N,cols,v_colwise,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(mat_elemental,m,rows,N,cols,v_rowwise,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree3(v_colwise,rows,cols);CHKERRQ(ierr);
+  ierr = PetscFree3(v_rowwise,rows,cols);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
@@ -1304,6 +1305,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIDense_Elemental(Mat A, MatType newtype
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIDense"
