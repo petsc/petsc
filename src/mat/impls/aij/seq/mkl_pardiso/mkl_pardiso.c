@@ -182,8 +182,8 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
 
 
   mat_mkl_pardiso->nrhs = 1;
-  ierr = VecGetArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(b,&barray);CHKERRQ(ierr);
 
   /* solve phase */
   /*-------------*/
@@ -207,8 +207,8 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
 
 
   if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual\n",mat_mkl_pardiso->err);
-  ierr = VecRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
-  ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(b,&barray);CHKERRQ(ierr);
   mat_mkl_pardiso->CleanUp = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
