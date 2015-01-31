@@ -834,8 +834,14 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       i;
+  KSP            ksp;
+  PC             pc;
+  PetscInt       *idx2;
+  Tao                tao;
+  TaoConvergedReason reason;
 
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
@@ -846,7 +852,6 @@ int main(int argc,char **argv)
   user.neqs_pgrid = user.neqs_gen + user.neqs_net;
 
   /* Create indices for differential and algebraic equations */
-  PetscInt *idx2;
   ierr = PetscMalloc1(7*ngen,&idx2);CHKERRQ(ierr);
   for (i=0; i<ngen; i++) {
     idx2[7*i]   = 9*i;   idx2[7*i+1] = 9*i+1; idx2[7*i+2] = 9*i+2; idx2[7*i+3] = 9*i+3;
@@ -891,8 +896,6 @@ int main(int argc,char **argv)
   ierr = DMCompositeAddDM(user.dmpgrid,user.dmgen);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(user.dmpgrid,user.dmnet);CHKERRQ(ierr);
 
-  Tao                tao;
-  TaoConvergedReason reason;
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
@@ -923,8 +926,6 @@ int main(int argc,char **argv)
   ierr = TaoSetVariableBounds(tao,lowerb,upperb);
 
   /* Check for any TAO command line options */
-  KSP ksp;
-  PC  pc;
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
   if (ksp) {
@@ -938,7 +939,7 @@ int main(int argc,char **argv)
   /* Get information on termination */
   ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
   if (reason <= 0){
-      ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
+    ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
   }
 
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -951,7 +952,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&user.dmpgrid);CHKERRQ(ierr);
   ierr = ISDestroy(&user.is_diff);CHKERRQ(ierr);
   ierr = ISDestroy(&user.is_alg);CHKERRQ(ierr);
- 
+
   return(0);
 }
 
@@ -981,6 +982,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   PetscScalar    *x_ptr;
   PetscViewer    Xview,Ybusview;
   Vec            F_alg;
+  Vec            Xdot;
  
   ierr  = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
   PG[0] = x_ptr[0];
@@ -1044,7 +1046,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = SNESSolve(snes_alg,NULL,X);CHKERRQ(ierr);
 
   /* Just to set up the Jacobian structure */
-  Vec          Xdot;
   ierr = VecDuplicate(X,&Xdot);CHKERRQ(ierr);
   ierr = IJacobian(ts,0.0,X,Xdot,0.0,J,J,ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&Xdot);CHKERRQ(ierr);
@@ -1096,7 +1097,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ctx->alg_flg = PETSC_FALSE;
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  
+
   /* Remove the fault */
   row_loc = 2*ctx->faultbus; col_loc = 2*ctx->faultbus+1;
   val     = -1/ctx->Rfault;
@@ -1126,7 +1127,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->vec_q,&x_ptr);CHKERRQ(ierr);
   *f   = x_ptr[0];
-  
+
   ierr = MatDestroy(&ctx->Ybus);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx->V0);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes_alg);CHKERRQ(ierr);

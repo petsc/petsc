@@ -510,13 +510,23 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   if (!th->adapt) {
     ierr = TSAdaptSetType(adapt,TSADAPTNONE);CHKERRQ(ierr);
   }
-  if (ts->reverse_mode) {
-    ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numberadjs,&th->VecDeltaLam);CHKERRQ(ierr);
-    if(ts->vecs_sensip) {
-      ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numberadjs,&th->VecDeltaMu);CHKERRQ(ierr);
-    }
-    ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numberadjs,&th->VecSensiTemp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/*------------------------------------------------------------*/
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointSetUp_Theta"
+static PetscErrorCode TSAdjointSetUp_Theta(TS ts)
+{
+  TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numberadjs,&th->VecDeltaLam);CHKERRQ(ierr);
+  if(ts->vecs_sensip) {
+    ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numberadjs,&th->VecDeltaMu);CHKERRQ(ierr);
   }
+  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numberadjs,&th->VecSensiTemp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -697,6 +707,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   ts->ops->destroy        = TSDestroy_Theta;
   ts->ops->view           = TSView_Theta;
   ts->ops->setup          = TSSetUp_Theta;
+  ts->ops->setupadj       = TSAdjointSetUp_Theta;
   ts->ops->step           = TSStep_Theta;
   ts->ops->interpolate    = TSInterpolate_Theta;
   ts->ops->evaluatestep   = TSEvaluateStep_Theta;

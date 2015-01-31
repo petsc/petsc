@@ -109,13 +109,12 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx0)
   PetscErrorCode ierr;
   PetscInt       row[] = {0,1},col[]={0};
   PetscScalar    *x,J[2][1];
+
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-
   J[0][0] = 0;
   J[1][0] = 1.;
   ierr    = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -127,14 +126,12 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,AppCtx *ctx)
 {
   PetscErrorCode ierr;
   PetscScalar    *u,*r;
-   
+
   PetscFunctionBegin; 
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(R,&r);CHKERRQ(ierr);
-  
   r[0] = ctx->c*PetscPowScalarInt(PetscMax(0., u[0]-ctx->u_s),ctx->beta);CHKERRQ(ierr);
   /* r[0] = ctx->c*PetscPowScalarInt(u[0]-ctx->u_s,ctx->beta);CHKERRQ(ierr); */
-
   ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -149,7 +146,6 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,AppCtx *ctx
   PetscFunctionBegin;
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(drdy[0],&ry);CHKERRQ(ierr);
-  
   ry[0] = ctx->c*ctx->beta*PetscPowScalarInt(PetscMax(0., u[0]-ctx->u_s),ctx->beta-1);CHKERRQ(ierr);
   /* ry[0] = ctx->c*ctx->beta*PetscPowScalarInt(u[0]-ctx->u_s,ctx->beta-1);CHKERRQ(ierr); */
   ierr  = VecRestoreArray(drdy[0],&ry);CHKERRQ(ierr);
@@ -166,7 +162,6 @@ static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,AppCtx *ctx
   PetscFunctionBegin;
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(drdp[0],&rp);CHKERRQ(ierr);
-
   rp[0] = 0.;
   ierr  = VecRestoreArray(drdp[0],&rp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -195,7 +190,6 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   Vec            *Y;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscReal      tprev;
-
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -274,7 +268,7 @@ PetscErrorCode PostStep(TS ts)
 #undef __FUNCT__
 #define __FUNCT__ "ComputeSensiP"
 PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,AppCtx *ctx)
-{ 
+{
   PetscErrorCode ierr;
   PetscScalar *x,*y,sensip;
   
@@ -293,16 +287,21 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,AppCtx *ctx)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Vec            p; 
-  PetscScalar    *x_ptr;
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  AppCtx         ctx;
+  Vec                p;
+  PetscScalar        *x_ptr;
+  PetscErrorCode     ierr;
+  PetscMPIInt        size;
+  AppCtx             ctx;
+  Tao                tao;
+  TaoConvergedReason reason;
+  KSP                ksp;
+  PC                 pc;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,NULL,help);
+  PetscFunctionBeginUser;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
@@ -335,8 +334,6 @@ int main(int argc,char **argv)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  Tao            tao;
-  TaoConvergedReason reason;
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
@@ -362,13 +359,11 @@ int main(int argc,char **argv)
   x_ptr[0] = 0.;
   ierr = VecRestoreArray(lowerb,&x_ptr);CHKERRQ(ierr);
   ierr = VecGetArray(upperb,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 1.1;;
+  x_ptr[0] = 1.1;
   ierr = VecRestoreArray(upperb,&x_ptr);CHKERRQ(ierr);
   ierr = TaoSetVariableBounds(tao,lowerb,upperb);
 
   /* Check for any TAO command line options */
-  KSP ksp;
-  PC  pc;
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
   if (ksp) {
@@ -376,18 +371,20 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
 
-  ierr = TaoSetTolerances(tao,1e-15,1e-15,1e-15,1e-15,1e-15);
+  ierr = TaoSetTolerances(tao,1e-15,1e-15,1e-15,1e-15,1e-15);CHKERRQ(ierr);
   /* SOLVE THE APPLICATION */
-  ierr = TaoSolve(tao); CHKERRQ(ierr);
+  ierr = TaoSolve(tao);CHKERRQ(ierr);
 
   /* Get information on termination */
   ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
   if (reason <= 0){
-      ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
+    ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
   }
 
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  /* Free TAO data structures */
+  ierr = VecDestroy(&p);CHKERRQ(ierr);
+  ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
+  ierr = VecDestroy(&upperb);CHKERRQ(ierr);
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
@@ -412,7 +409,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 {
   AppCtx         *ctx = (AppCtx*)ctx0;
   TS             ts;
-
   Vec            U;             /* solution will be stored here */
   Mat            A;             /* Jacobian matrix */
   Mat            Jacp;          /* Jacobian matrix */
@@ -545,10 +541,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = MatDestroy(&Jacp);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&lambdap[0]);CHKERRQ(ierr);  
   ierr = VecDestroy(&drdy[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&drdp[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&q);CHKERRQ(ierr);
-  ierr = VecDestroy(&lambdap[0]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   return 0;

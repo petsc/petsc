@@ -59,7 +59,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else Pmax = ctx->Pmax;
-  
+
   f[0] = udot[0] - ctx->omega_b*(u[1] - ctx->omega_s);
   f[1] = 2.0*ctx->H/ctx->omega_s*udot[1] +  Pmax*PetscSinScalar(u[0]) + ctx->D*(u[1] - ctx->omega_s)- ctx->Pm;
 
@@ -127,11 +127,11 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,AppCtx *ctx)
 {
   PetscErrorCode ierr;
   PetscScalar    *u,*r;
-   
-  PetscFunctionBegin; 
+
+  PetscFunctionBegin;
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(R,&r);CHKERRQ(ierr);
-  
+
   r[0] = ctx->c*PetscPowScalarInt(PetscMax(0., u[0]-ctx->u_s),ctx->beta);CHKERRQ(ierr);
   /* r[0] = ctx->c*PetscPowScalarInt(u[0]-ctx->u_s,ctx->beta);CHKERRQ(ierr); */
 
@@ -149,7 +149,7 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,AppCtx *ctx
   PetscFunctionBegin;
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(drdy[0],&ry);CHKERRQ(ierr);
-  
+
   ry[0] = ctx->c*ctx->beta*PetscPowScalarInt(PetscMax(0., u[0]-ctx->u_s),ctx->beta-1);CHKERRQ(ierr);
   /* ry[0] = ctx->c*ctx->beta*PetscPowScalarInt(u[0]-ctx->u_s,ctx->beta-1);CHKERRQ(ierr); */
   ierr  = VecRestoreArray(drdy[0],&ry);CHKERRQ(ierr);
@@ -274,17 +274,17 @@ PetscErrorCode PostStep(TS ts)
 #undef __FUNCT__
 #define __FUNCT__ "ComputeSensiP"
 PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,AppCtx *ctx)
-{ 
+{
   PetscErrorCode ierr;
   PetscScalar *x,*y,sensip;
-  
+
   PetscFunctionBegin;
   ierr = VecGetArray(lambda,&x);CHKERRQ(ierr);
   ierr = VecGetArray(lambdap,&y);CHKERRQ(ierr);
 
-  sensip = 1./PetscSqrtScalar(1.-(ctx->Pm/ctx->Pmax)*(ctx->Pm/ctx->Pmax))/ctx->Pmax*x[0]+y[0];  
+  sensip = 1./PetscSqrtScalar(1.-(ctx->Pm/ctx->Pmax)*(ctx->Pm/ctx->Pmax))/ctx->Pmax*x[0]+y[0];
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameter pm: %f \n",sensip);CHKERRQ(ierr);
-  y[0] = sensip; 
+  y[0] = sensip;
   ierr = VecRestoreArray(lambdap,&y);
   PetscFunctionReturn(0);
 }
@@ -293,16 +293,22 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,AppCtx *ctx)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Vec            p; 
-  PetscScalar    *x_ptr;
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  AppCtx         ctx;
+  Vec                p;
+  PetscScalar        *x_ptr;
+  PetscErrorCode     ierr;
+  PetscMPIInt        size;
+  AppCtx             ctx;
+  Vec                lowerb,upperb;
+  Tao                tao;
+  TaoConvergedReason reason;
+  KSP                ksp;
+  PC                 pc;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,NULL,help);
+  PetscFunctionBeginUser;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
@@ -335,8 +341,6 @@ int main(int argc,char **argv)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  Tao            tao;
-  TaoConvergedReason reason;
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
@@ -356,7 +360,6 @@ int main(int argc,char **argv)
   ierr = TaoSetGradientRoutine(tao,TaoDefaultComputeGradient,(void *)&ctx);CHKERRQ(ierr);
 
   /* Set bounds for the optimization */
-  Vec lowerb,upperb;
   ierr = VecDuplicate(p,&lowerb);CHKERRQ(ierr);
   ierr = VecDuplicate(p,&upperb);CHKERRQ(ierr);
   ierr = VecGetArray(lowerb,&x_ptr);CHKERRQ(ierr);
@@ -368,8 +371,6 @@ int main(int argc,char **argv)
   ierr = TaoSetVariableBounds(tao,lowerb,upperb);
 
   /* Check for any TAO command line options */
-  KSP ksp;
-  PC  pc;
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
   if (ksp) {
@@ -384,12 +385,15 @@ int main(int argc,char **argv)
   /* Get information on termination */
   ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
   if (reason <= 0){
-      ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
+    ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");CHKERRQ(ierr);
   }
 
   ierr = VecView(p,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
+  ierr = VecDestroy(&p);CHKERRQ(ierr);
+  ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
+  ierr = VecDestroy(&upperb);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
@@ -531,12 +535,12 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 /*
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n cost function=%.15f\n",x_ptr[0]);CHKERRQ(ierr);
-*/ 
+*/
   ierr = ComputeSensiP(lambda[0],lambdap[0],ctx);CHKERRQ(ierr);
-  
+
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
   *f   = -ctx->Pm + x_ptr[0];
-   
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
