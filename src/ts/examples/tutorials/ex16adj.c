@@ -368,6 +368,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&lambda[1]);CHKERRQ(ierr);
+  ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&mu[1]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = PetscFinalize();

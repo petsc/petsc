@@ -397,7 +397,7 @@ PetscErrorCode  TSSetReverseMode(TS ts,PetscBool reverse_mode)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ts->reverse_mode = reverse_mode;
-  ts->setupcalled  = PETSC_FALSE; 
+  //ts->setupcalled  = PETSC_FALSE; 
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1919,6 +1919,44 @@ PetscErrorCode  TSSetUp(TS ts)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSAdjointSetUp"
+/*@
+   TSAdjointSetUp - Sets up the internal data structures for the later use
+   of an adjoint solver
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Notes:
+   For basic use of the TS solvers the user need not explicitly call
+   TSSetUp(), since these actions will automatically occur during
+   the call to TSStep().  However, if one wishes to control this
+   phase separately, TSSetUp() should be called after TSCreate()
+   and optional routines of the form TSSetXXX(), but before TSStep().
+
+   Level: advanced
+
+.keywords: TS, timestep, setup
+
+.seealso: TSCreate(), TSStep(), TSDestroy()
+@*/
+PetscErrorCode  TSAdjointSetUp(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->adjointsetupcalled) PetscFunctionReturn(0);
+  if (ts->ops->setupadj) {
+    ierr = (*ts->ops->setupadj)(ts);CHKERRQ(ierr);
+  }
+  ts->adjointsetupcalled = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSReset"
 /*@
    TSReset - Resets a TS context and removes any allocated Vecs and Mats.
@@ -1953,17 +1991,11 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
-  if (ts->reverse_mode) {
-    ts->vecs_sensi = 0;
-    if (ts->vecs_sensip) {
-      ts->vecs_sensip = 0;
-      ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
-    }
-    if (ts->vec_costquad) {
-      ierr = VecDestroy(&ts->vec_costquad);CHKERRQ(ierr);
-      ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
-    }
-  }
+  ts->vecs_sensi = 0;
+  ts->vecs_sensip = 0;
+  ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->vec_costquad);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -3104,6 +3136,9 @@ PetscErrorCode  TSStep(TS ts)
 
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
+  if (ts->reverse_mode) {
+    ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
+  }
 
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;

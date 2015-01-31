@@ -215,6 +215,7 @@ PETSC_EXTERN PetscErrorCode TSAdjointSetDRDYFunction(TS,Vec*,PetscErrorCode (*)(
 PETSC_EXTERN PetscErrorCode TSAdjointSetDRDPFunction(TS,Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),void*);
 PETSC_EXTERN PetscErrorCode TSAdjointGetCostQuadrature(TS,Vec*);
 
+PETSC_EXTERN PetscErrorCode TSAdjointSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeCostIntegrand(TS,PetscReal,Vec,Vec);

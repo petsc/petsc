@@ -37,6 +37,7 @@ struct _TSOps {
   PetscErrorCode (*rollback)(TS);
   PetscErrorCode (*getstages)(TS,PetscInt*,Vec**);
   PetscErrorCode (*stepadj)(TS);
+  PetscErrorCode (*setupadj)(TS);
 };
 
 /* 
@@ -70,6 +71,7 @@ struct _p_TS {
   PetscBool checkpoint;
   PetscBool reverse_mode;
   Vec       vec_costquad;
+  PetscInt  adjointsetupcalled;
   /* workspace for SA */
   Vec       vec_costintegrand;
   Mat       Jacp;

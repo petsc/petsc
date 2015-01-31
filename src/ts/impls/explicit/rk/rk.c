@@ -473,6 +473,27 @@ reject_step: continue;
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSAdjointSetUp_RK"
+static PetscErrorCode TSAdjointSetUp_RK(TS ts)
+{
+  TS_RK         *rk = (TS_RK*)ts->data;
+  RKTableau      tab;
+  PetscInt       s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ts->adjointsetupcalled++) PetscFunctionReturn(0);
+  tab  = rk->tableau;
+  s    = tab->s;
+  ierr = VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numberadjs,&rk->VecDeltaLam);CHKERRQ(ierr);
+  if(ts->vecs_sensip) {
+    ierr = VecDuplicateVecs(ts->vecs_sensip[0],s*ts->numberadjs,&rk->VecDeltaMu);CHKERRQ(ierr);
+  }
+  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numberadjs,&rk->VecSensiTemp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSStepAdj_RK"
 static PetscErrorCode TSStepAdj_RK(TS ts)
 {
@@ -487,10 +508,7 @@ static PetscErrorCode TSStepAdj_RK(TS ts)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
- 
-  /*ierr = TSStep_RK(ts);CHKERRQ(ierr); // reuse TSStep */
-  
-  t          = ts->ptime;
+   t          = ts->ptime;
   rk->status = TS_STEP_INCOMPLETE;
   PetscReal h = ts->time_step;
   ierr = TSPreStep(ts);CHKERRQ(ierr);
@@ -692,19 +710,8 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   }
   tab  = rk->tableau;
   s    = tab->s;
-  /* old */ 
-  /*if (ts->reverse_mode) {
-    ierr = RKSetAdjCoe(tab);CHKERRQ(ierr);
-  }*/
   ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&rk->YdotRHS);CHKERRQ(ierr);
-  if (ts->reverse_mode) {
-    ierr = VecDuplicateVecs(ts->vecs_sensi[0],s*ts->numberadjs,&rk->VecDeltaLam);CHKERRQ(ierr);
-    if(ts->vecs_sensip) {
-      ierr = VecDuplicateVecs(ts->vecs_sensip[0],s*ts->numberadjs,&rk->VecDeltaMu);CHKERRQ(ierr);
-    }
-    ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numberadjs,&rk->VecSensiTemp);CHKERRQ(ierr);
-  }
   ierr = PetscMalloc1(s,&rk->work);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {
@@ -713,6 +720,7 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   }
   PetscFunctionReturn(0);
 }
+
 
 /*------------------------------------------------------------*/
 
@@ -940,6 +948,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ts->ops->view           = TSView_RK;
   ts->ops->load           = TSLoad_RK;
   ts->ops->setup          = TSSetUp_RK;
+  ts->ops->setupadj       = TSAdjointSetUp_RK;  
   ts->ops->step           = TSStep_RK;
   ts->ops->interpolate    = TSInterpolate_RK;
   ts->ops->evaluatestep   = TSEvaluateStep_RK;
