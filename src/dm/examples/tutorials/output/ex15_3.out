@@ -1,0 +1,12 @@
+TestDMDAVec [using mpi-io]
+*** PetscViewer[write] using MPI-IO ***
+*** PetscViewer[write] skipping header ***
+*** PetscViewer[load] skipping header ***
+*** PetscViewer[load] using MPI-IO ***
+VecCompare
+  min(a)   = +0.00e+00 [loc 0]
+  max(a)   = +2.81e+03 [loc 359]
+  min(b)   = +0.00e+00 [loc 0]
+  max(b)   = +2.81e+03 [loc 359]
+  min(a-b) < 1.0e-10
+Headerless read of data verified for: dmda-mpiio.pbvec
