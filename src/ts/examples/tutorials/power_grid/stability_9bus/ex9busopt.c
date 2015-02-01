@@ -1009,6 +1009,10 @@ static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,Userctx *us
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MonitorBIN(TS,PetscInt,PetscReal,Vec,void *);
+extern PetscErrorCode MonitorADJ2(TS,PetscInt,PetscReal,Vec,void *);
+
+#if defined(foo)
 #undef __FUNCT__
 #define __FUNCT__ "OutputBIN"
 static PetscErrorCode OutputBIN(const char *filename, PetscViewer *viewer)
@@ -1094,6 +1098,7 @@ static PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ct
 
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeSensiP"

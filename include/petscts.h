@@ -255,6 +255,7 @@ PETSC_EXTERN PetscErrorCode TSGetSNESFailures(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetMaxSNESFailures(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSetErrorIfStepFails(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRollBack(TS);
+PETSC_EXTERN PetscErrorCode TSGetTotalSteps(TS,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode TSGetStages(TS,PetscInt*,Vec**);
 PETSC_EXTERN PetscErrorCode TSSetCheckpoint(TS,PetscBool);
