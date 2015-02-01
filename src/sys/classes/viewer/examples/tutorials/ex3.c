@@ -114,7 +114,12 @@ PetscErrorCode VecCompare(Vec a,Vec b)
   ierr = VecCopy(a,ref);CHKERRQ(ierr);
   ierr = VecAXPY(ref,-1.0,b);CHKERRQ(ierr);
   ierr = VecMin(ref,&locmin[0],&min[0]);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) = %+1.2e\n",min[0]);
+  if (PetscAbsReal(min[0]) > 1.0e-10) {
+    PetscPrintf(PETSC_COMM_WORLD,"  ERROR: min(a-b) < 1.0e-10\n");
+    PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) = %+1.10e\n",PetscAbsReal(min[0]));
+  } else {
+    PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) < 1.0e-10\n",min[0]);
+  }
   ierr = VecDestroy(&ref);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -129,6 +134,7 @@ PetscErrorCode HeaderlessBinaryRead(const char name[])
   PetscScalar    buffer[VEC_LEN];
   PetscInt       i;
   PetscMPIInt    rank;
+  PetscBool      dataverified = PETSC_TRUE;
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
@@ -141,7 +147,11 @@ PetscErrorCode HeaderlessBinaryRead(const char name[])
       v = PetscAbsScalar(test_values[i]-buffer[i]);
       if (v > 1.0e-10) {
         PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = %+1.12e)\n",i,buffer[i]);
+        dataverified = PETSC_FALSE;
       }
+    }
+    if (dataverified) {
+      PetscPrintf(PETSC_COMM_SELF,"Headerless read of data verified\n");
     }
   }
 
