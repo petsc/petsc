@@ -91,9 +91,9 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   } else {
     VecType vtype;
     ierr = VecGetType(vec,&vtype);CHKERRQ(ierr);
-    if (!vtype) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Vector binary file header was skipped, thus the user must specify the type and length of input vector"); }
+    if (!vtype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Vector binary file header was skipped, thus the user must specify the type and length of input vector");
     ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
-    if (!N) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Vector binary file header was skipped, thus the user must specify the length of input vector"); }
+    if (!N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Vector binary file header was skipped, thus the user must specify the length of input vector");
     rows = N;
   }
   /* Set Vec sizes,blocksize,and type if not already set. Block size first so that local sizes will be compatible. */
