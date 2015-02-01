@@ -3234,6 +3234,110 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "OutputBIN"
+static PetscErrorCode OutputBIN(const char *filename, PetscViewer *viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscViewerCreate(PETSC_COMM_WORLD, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(*viewer, filename);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSTrajectorySet"
+PetscErrorCode TSTrajectorySet(TS ts,PetscInt stepnum,PetscReal time,Vec X)
+{
+  PetscViewer    viewer;
+  PetscInt       ns,i;
+  Vec            *Y;
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscReal      tprev;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  if (stepnum == 0) {
+#if defined(PETSC_HAVE_POPEN)
+    ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
+    if (stepnum == 0) {
+      PetscMPIInt rank;
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRQ(ierr);
+      if (!rank) {
+        char command[PETSC_MAX_PATH_LEN];
+        FILE *fd;
+        int  err;
+
+        ierr = PetscMemzero(command,sizeof(command));CHKERRQ(ierr);
+        ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"rm -fr %s","SA-data");CHKERRQ(ierr);
+        ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
+        ierr = PetscPClose(PETSC_COMM_SELF,fd,&err);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"mkdir %s","SA-data");CHKERRQ(ierr);
+        ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
+        ierr = PetscPClose(PETSC_COMM_SELF,fd,&err);CHKERRQ(ierr);
+      }
+    }
+#endif
+    PetscFunctionReturn(0);
+  }
+  ierr = TSGetPrevTime(ts,&tprev);CHKERRQ(ierr);
+  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof(filename),"SA-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
+  ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
+  ierr = VecView(X,viewer);CHKERRQ(ierr);
+  /* ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr); */
+  ierr = PetscViewerBinaryWrite(viewer,&tprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+  /* ierr = PetscViewerBinaryWrite(viewer,&h ,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr); */
+  ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
+
+  for (i=0;i<ns;i++) {
+    ierr = VecView(Y[i],viewer);CHKERRQ(ierr);
+  }
+
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSTrajectoryGet"
+PetscErrorCode TSTrajectoryGet(TS ts,PetscInt step,PetscReal t,Vec X)
+{
+  PetscReal      ptime;
+  Vec            Sol,*Y;
+  PetscInt       Nr,i;
+  PetscViewer    viewer;
+  PetscReal      timepre;
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = TSGetTotalSteps(ts,&step);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-%06d.bin",step);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+
+  ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
+  ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
+
+  Nr   = 1;
+  /* ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr); */
+  ierr = PetscViewerBinaryRead(viewer,&timepre,1,PETSC_REAL);CHKERRQ(ierr);
+
+  ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
+  for (i=0;i<Nr ;i++) {
+    ierr = VecLoad(Y[i],viewer);CHKERRQ(ierr);
+  }
+
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+
+  ierr = TSGetTime(ts,&ptime);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,-ptime+timepre);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSSolve"
 /*@
    TSSolve - Steps the requested number of timesteps.
@@ -3295,6 +3399,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     while (!ts->reason) {
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      ierr = TSTrajectorySet(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
       if (ts->event) {
 	ierr = TSEventMonitor(ts);CHKERRQ(ierr);
@@ -3314,6 +3419,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ts->solvetime = ts->ptime;
       solution = ts->vec_sol;
     }
+    ierr = TSTrajectorySet(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
     ierr = VecViewFromOptions(u, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
   }
@@ -3345,7 +3451,6 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 @*/
 PetscErrorCode TSAdjointSolve(TS ts,Vec u)
 {
-  Vec               solution;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -3367,6 +3472,7 @@ PetscErrorCode TSAdjointSolve(TS ts,Vec u)
 
   if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
   while (!ts->reason) {
+    ierr = TSTrajectoryGet(ts,ts->max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
     if (ts->event) {
@@ -3380,7 +3486,7 @@ PetscErrorCode TSAdjointSolve(TS ts,Vec u)
   }
   if (u) {ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);}
   ts->solvetime = ts->ptime;
-  solution = ts->vec_sol;
+  ierr = TSMonitor(ts,0,ts->ptime,ts->vec_sol);CHKERRQ(ierr);  
   ierr = VecViewFromOptions(u, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
@@ -5694,109 +5800,4 @@ PetscErrorCode  TSGetStages(TS ts,PetscInt *ns, Vec **Y)
   }
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "OutputBIN"
-static PetscErrorCode OutputBIN(const char *filename, PetscViewer *viewer)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = PetscViewerCreate(PETSC_COMM_WORLD, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(*viewer, filename);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MonitorBIN"
-PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,void *ctx)
-{
-  PetscViewer    viewer;
-  PetscInt       ns,i;
-  Vec            *Y;
-  char           filename[PETSC_MAX_PATH_LEN];
-  PetscReal      tprev;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  if (stepnum == 0) {
-#if defined(PETSC_HAVE_POPEN)
-    ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
-    if (stepnum == 0) {
-      PetscMPIInt rank;
-      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRQ(ierr);
-      if (!rank) {
-        char command[PETSC_MAX_PATH_LEN];
-        FILE *fd;
-        int  err;
-
-        ierr = PetscMemzero(command,sizeof(command));CHKERRQ(ierr);
-        ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"rm -fr %s","SA-data");CHKERRQ(ierr);
-        ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
-        ierr = PetscPClose(PETSC_COMM_SELF,fd,&err);CHKERRQ(ierr);
-        ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"mkdir %s","SA-data");CHKERRQ(ierr);
-        ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
-        ierr = PetscPClose(PETSC_COMM_SELF,fd,&err);CHKERRQ(ierr);
-      }
-    }
-#endif
-    PetscFunctionReturn(0);
-  }
-  ierr = TSGetPrevTime(ts,&tprev);CHKERRQ(ierr);
-  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename,sizeof(filename),"SA-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
-  ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
-  ierr = VecView(X,viewer);CHKERRQ(ierr);
-  /* ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr); */
-  ierr = PetscViewerBinaryWrite(viewer,&tprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
-  /* ierr = PetscViewerBinaryWrite(viewer,&h ,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr); */
-  ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
-
-  for (i=0;i<ns;i++) {
-    ierr = VecView(Y[i],viewer);CHKERRQ(ierr);
-  }
-
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MonitorADJ2"
-PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx0)
-{
-  PetscReal      ptime;
-  Vec            Sol,*Y;
-  PetscInt       Nr,i;
-  PetscViewer    viewer;
-  PetscReal      timepre;
-  char           filename[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = TSGetTotalSteps(ts,&step);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-%06d.bin",step);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-
-  ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
-  ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
-
-  Nr   = 1;
-  /* ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr); */
-  ierr = PetscViewerBinaryRead(viewer,&timepre,1,PETSC_REAL);CHKERRQ(ierr);
-
-  ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
-  for (i=0;i<Nr ;i++) {
-    ierr = VecLoad(Y[i],viewer);CHKERRQ(ierr);
-  }
-
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-
-  ierr = TSGetTime(ts,&ptime);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,-ptime+timepre);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-
 

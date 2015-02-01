@@ -138,9 +138,6 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MonitorBIN(TS,PetscInt,PetscReal,Vec,void *);
-extern PetscErrorCode MonitorADJ2(TS,PetscInt,PetscReal,Vec,void *);
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -202,7 +199,6 @@ int main(int argc,char **argv)
   if (monitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
   }
-  ierr = TSMonitorSet(ts,MonitorBIN,&user,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -267,10 +263,6 @@ int main(int argc,char **argv)
 
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
-
-  /*   Set up monitor */
-  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorADJ2,&user,NULL);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts,x);CHKERRQ(ierr);
 

@@ -169,9 +169,6 @@ static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,AppCtx *ctx
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MonitorBIN(TS,PetscInt,PetscReal,Vec,void *);
-extern PetscErrorCode MonitorADJ2(TS,PetscInt,PetscReal,Vec,void *);
-
 #undef __FUNCT__
 #define __FUNCT__ "ComputeSensiP"
 PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,AppCtx *ctx)
@@ -287,8 +284,6 @@ int main(int argc,char **argv)
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
 
-  ierr = TSMonitorSet(ts,MonitorBIN,&ctx,NULL);CHKERRQ(ierr);
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -352,10 +347,6 @@ int main(int argc,char **argv)
 
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
-
-  /*   Set up monitor */
-  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorADJ2,&ctx,NULL);CHKERRQ(ierr);
 
   ierr = TSAdjointSetCostIntegrand(ts,1,q,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,&ctx);CHKERRQ(ierr);
   ierr = TSAdjointSetDRDYFunction(ts,drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,&ctx);CHKERRQ(ierr);

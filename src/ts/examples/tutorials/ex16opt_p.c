@@ -143,9 +143,6 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MonitorBIN(TS,PetscInt,PetscReal,Vec,void *);
-extern PetscErrorCode MonitorADJ2(TS,PetscInt,PetscReal,Vec,void *);
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -201,11 +198,9 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,PETSC_DEFAULT,user.ftime);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   if (monitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
   }
-  ierr = TSMonitorSet(ts,MonitorBIN,&user,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -268,10 +263,6 @@ int main(int argc,char **argv)
 
   //   Set RHS JacobianP
   ierr = TSAdjointSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
-
-  //   Set up monitor
-  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorADJ2,&user,NULL);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts,user.x);CHKERRQ(ierr);
 
@@ -396,8 +387,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   /*ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);*/
   ierr = TSSetDuration(ts,2000,0.5);CHKERRQ(ierr);
 
-  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorBIN,user,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -443,10 +432,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
 
   //   Set RHS JacobianP
   ierr = TSAdjointSetRHSJacobianP(ts,user->Jacp,RHSJacobianP,user);CHKERRQ(ierr);
-
-  //   Set up monitor
-  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorADJ2,user,NULL);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts,user->x);CHKERRQ(ierr);
   

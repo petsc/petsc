@@ -1009,97 +1009,6 @@ static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,Userctx *us
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MonitorBIN(TS,PetscInt,PetscReal,Vec,void *);
-extern PetscErrorCode MonitorADJ2(TS,PetscInt,PetscReal,Vec,void *);
-
-#if defined(foo)
-#undef __FUNCT__
-#define __FUNCT__ "OutputBIN"
-static PetscErrorCode OutputBIN(const char *filename, PetscViewer *viewer)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = PetscViewerCreate(PETSC_COMM_WORLD, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(*viewer, filename);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MonitorBIN"
-static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,void *ctx)
-{
-  PetscViewer    viewer;
-  PetscInt       ns,i;
-  Vec            *Y;
-  char           filename[PETSC_MAX_PATH_LEN];
-  PetscReal      tprev;
-  Userctx        *user = (Userctx *)ctx;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-
-  if (stepnum == 0) PetscFunctionReturn(0);
-  
-  ierr = TSGetPrevTime(ts,&tprev);CHKERRQ(ierr);
-  stepnum += user->shift; /* Shifting the step no. to accomadate for multiple forward runs in a row */
-  ierr = PetscSNPrintf(filename,sizeof filename,"ex9bus-SA-%06d.bin",stepnum);CHKERRQ(ierr);
-  ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
-  ierr = VecView(X,viewer);CHKERRQ(ierr);
-  /* ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr); */
-  ierr = PetscViewerBinaryWrite(viewer,&tprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
-  /* ierr = PetscViewerBinaryWrite(viewer,&h ,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr); */
-  ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
-
-  for (i=0;i<ns;i++) {
-    ierr = VecView(Y[i],viewer);CHKERRQ(ierr);
-  }
-
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MonitorADJ2"
-static PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx0)
-{
-  PetscReal      ptime;
-  Vec            Sol,*Y;
-  PetscInt       Nr,i;
-  PetscViewer    viewer;
-  PetscReal      timepre;
-  char           filename[PETSC_MAX_PATH_LEN];
-  Userctx        *ctx=(Userctx*)ctx0;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  step += ctx->shift; /* Shifting the step no. to accomadate for multiple backward runs in a row */
-  ierr = PetscSNPrintf(filename,sizeof filename,"ex9bus-SA-%06d.bin",step);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-
-  ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
-  ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
-
-  Nr   = 1;
-  /* ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr); */
-  ierr = PetscViewerBinaryRead(viewer,&timepre,1,PETSC_REAL);CHKERRQ(ierr);
-
-  ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
-  for (i=0;i<Nr ;i++) {
-    ierr = VecLoad(Y[i],viewer);CHKERRQ(ierr);
-  }
-
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-
-  ierr = TSGetTime(ts,&ptime);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,-ptime+timepre);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "ComputeSensiP"
 PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,Vec *DICDP,Userctx *user)
@@ -1347,7 +1256,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetIJacobian(ts,ctx->J,ctx->J,(TSIJacobian)IJacobian,ctx);CHKERRQ(ierr);
   ierr = TSSetApplicationContext(ts,ctx);CHKERRQ(ierr);
 
-  ierr = TSMonitorSet(ts,MonitorBIN,ctx,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -1514,10 +1422,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobianP(ts,ctx->Jacp,RHSJacobianP,ctx);CHKERRQ(ierr); 
 
-  /*   Set up monitor */
-  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorADJ2,ctx,NULL);CHKERRQ(ierr);
-  
   ierr = TSAdjointSetCostIntegrand(ts,1,q,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,ctx);CHKERRQ(ierr);
   ierr = TSAdjointSetDRDYFunction(ts,drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,ctx);CHKERRQ(ierr);
   ierr = TSAdjointSetDRDPFunction(ts,drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr); 
