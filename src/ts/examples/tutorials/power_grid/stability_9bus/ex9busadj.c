@@ -917,6 +917,11 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   user.stepnum++;
 
+  /*
+    Save trajectory of solution so that TSAdjointSolve() may be used
+  */
+  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+
   ierr = TSSetDuration(ts,1000,user.tfaulton);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);

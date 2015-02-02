@@ -39,8 +39,7 @@ typedef struct _n_User *User;
 struct _n_User {
   PetscReal mu;
   PetscReal next_output;
-  PetscInt  nstages; 
-    
+
   PetscInt  steps;
   PetscReal ftime,x_ob[2];
   Mat       A;             /* Jacobian matrix */
@@ -182,12 +181,16 @@ int main(int argc,char **argv)
   /*ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);*/
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)(user.ftime));CHKERRQ(ierr);
 
+  /*
+    Save trajectory of solution so that TSAdjointSolve() may be used
+  */
+  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = TSGetStages(ts,&user.nstages,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -310,11 +313,12 @@ int main(int argc,char **argv)
    G   - the newly evaluated gradient
 */
 PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
-{  
+{
   User              user = (User)ctx;
   TS                ts;
   PetscScalar       *x_ptr,*y_ptr;
   PetscErrorCode    ierr;
+  PetscScalar       *ic_ptr;
 
   ierr = VecCopy(IC,user->x);CHKERRQ(ierr);
 
@@ -333,17 +337,22 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetDuration(ts,2000,0.5);CHKERRQ(ierr);
 
   ierr = TSSetTolerances(ts,1e-7,NULL,1e-7,NULL);CHKERRQ(ierr);
+
+  /*
+    Save trajectory of solution so that TSAdjointSolve() may be used
+  */
+  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSGetStages(ts,&user->nstages,NULL);CHKERRQ(ierr);
 
   ierr = TSSolve(ts,user->x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&user->ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&user->steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %.6f, steps %D, ftime %g\n",(double)user->mu,user->steps,(double)user->ftime);CHKERRQ(ierr);
-  PetscScalar *ic_ptr; 
+
   ierr = VecGetArray(IC,&ic_ptr);CHKERRQ(ierr);
   ierr = VecGetArray(user->x,&x_ptr);CHKERRQ(ierr);
   *f   = (x_ptr[0]-user->x_ob[0])*(x_ptr[0]-user->x_ob[0])+(x_ptr[1]-user->x_ob[1])*(x_ptr[1]-user->x_ob[1]);

@@ -45,7 +45,6 @@ struct _n_User {
   PetscReal mu;
   PetscReal next_output;
   PetscReal tprev;
-  PetscInt  stage,nstages;
 };
 
 /*
@@ -167,7 +166,6 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.mu          = 1;
   user.next_output = 0.0;
-  user.stage   = 0; 
 
 
   ierr = PetscOptionsGetReal(NULL,"-mu",&user.mu,NULL);CHKERRQ(ierr);
@@ -208,6 +206,11 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
 
+  /*
+    Have the TS save its trajectory so that TSAdjointSolve() may be used
+  */
+  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+
   /*ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetType(adapt,TSADAPTNONE);CHKERRQ(ierr);*/
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -215,7 +218,6 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = TSGetStages(ts,&user.nstages,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

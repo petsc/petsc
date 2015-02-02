@@ -45,6 +45,19 @@ struct _TSOps {
 */
 typedef struct _p_TSEvent *TSEvent;
 
+typedef struct _TSTrajectoryOps *TSTrajectoryOps;
+
+struct _TSTrajectoryOps {
+  PetscErrorCode (*view)(TSTrajectory,PetscViewer);
+  PetscErrorCode (*destroy)(TSTrajectory);
+  PetscErrorCode (*set)(TSTrajectory,TS,PetscInt,PetscReal,Vec);
+  PetscErrorCode (*get)(TSTrajectory,TS,PetscInt,PetscReal);
+};
+
+struct _p_TSTrajectory {
+  PETSCHEADER(struct _TSTrajectoryOps);
+};
+
 struct _p_TS {
   PETSCHEADER(struct _TSOps);
   DM            dm;
@@ -65,10 +78,10 @@ struct _p_TS {
   PetscErrorCode (*poststep)(TS);
 
   /* ---------------------- Sensitivity Analysis support -----------------*/
+  TSTrajectory trajectory;   /* All solutions are kept here for the entire time integration process */
   Vec       *vecs_sensi;
   Vec       *vecs_sensip;
   PetscInt  numberadjs;
-  PetscBool checkpoint;
   Vec       vec_costquad;
   PetscInt  adjointsetupcalled;
   /* workspace for SA */
@@ -270,5 +283,6 @@ struct _n_TSMonitorLGCtx {
   PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
   PetscInt    ksp_its,snes_its;
 };
+
 
 #endif

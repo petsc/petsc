@@ -1299,6 +1299,11 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   */
   ctx->stepnum++;
 
+  /*
+    Save trajectory of solution so that TSAdjointSolve() may be used
+  */
+  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+
   ierr = TSSetDuration(ts,1000,ctx->tfaulton);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);

@@ -102,7 +102,7 @@ struct _n_TSMonitorDrawCtx {
 @*/
 PetscErrorCode  TSSetFromOptions(TS ts)
 {
-  PetscBool              opt,flg;
+  PetscBool              opt,flg,tflg;
   PetscErrorCode         ierr;
   PetscViewer            monviewer;
   char                   monfilename[PETSC_MAX_PATH_LEN];
@@ -119,7 +119,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSSetTypeFromOptions_Private(PetscOptionsObject,ts);CHKERRQ(ierr);
 
   /* Handle generic TS options */
-  ierr = PetscOptionsBool("-ts_checkpoint","Checkpoint for adjoint sensitivity analysis","TSSetCheckpoint",ts->checkpoint,&ts->checkpoint,NULL);CHKERRQ(ierr);
+  if (ts->trajectory) flg = PETSC_TRUE;
+  else flg = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ts_save_trajectories","Checkpoint for adjoint sensitivity analysis","TSSetSaveTrajectories",tflg,&tflg,NULL);CHKERRQ(ierr);
+  if (tflg) {ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,NULL);CHKERRQ(ierr);
@@ -336,6 +339,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
 
+  if (ts->trajectory) {
+    ierr = TSTrajectorySetFromOptions(ts->trajectory);CHKERRQ(ierr);
+  }
+
   /* Handle specific TS options */
   if (ts->ops->setfromoptions) {
     ierr = (*ts->ops->setfromoptions)(PetscOptionsObject,ts);CHKERRQ(ierr);
@@ -348,28 +355,32 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetCheckpoint"
+#define __FUNCT__ "TSSetSaveTrajectory"
 /*@
-   TSSetCheckpoint - Allows one to checkpoint the forward run,
-   useful for adjoint sensitivity analysis.
+   TSSetSaveTrajectory - Causes the TS to save its solutions as it iterates forward in time in a TSTrajectory object
 
    Collective on TS
 
    Input Parameters:
-+  ts - the TS context obtained from TSCreate()
--  checkpoint - flag that indicates if the forward solution will be checkpointed  
+.  ts - the TS context obtained from TSCreate()
+
 
    Level: intermediate
 
-.seealso: 
+.seealso: TSGetTrajectory(), TSAdjointSolve()
 
-.keywords: TS, set, checkpoint
+.keywords: TS, set, checkpoint, 
 @*/
-PetscErrorCode  TSSetCheckpoint(TS ts,PetscBool checkpoint)
+PetscErrorCode  TSSetSaveTrajectory(TS ts)
 {
+  PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ts->checkpoint = checkpoint;
+  if (!ts->trajectory) {
+    ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
+    /* should it set a default trajectory? */
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2004,6 +2015,8 @@ PetscErrorCode  TSDestroy(TS *ts)
   ierr = PetscObjectSAWsViewOff((PetscObject)*ts);CHKERRQ(ierr);
   if ((*ts)->ops->destroy) {ierr = (*(*ts)->ops->destroy)((*ts));CHKERRQ(ierr);}
 
+  ierr = TSTrajectoryDestroy(&(*ts)->trajectory);CHKERRQ(ierr);
+
   ierr = TSAdaptDestroy(&(*ts)->adapt);CHKERRQ(ierr);
   if ((*ts)->event) {
     ierr = TSEventMonitorDestroy(&(*ts)->event);CHKERRQ(ierr);
@@ -3233,109 +3246,6 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "OutputBIN"
-static PetscErrorCode OutputBIN(const char *filename, PetscViewer *viewer)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = PetscViewerCreate(PETSC_COMM_WORLD, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(*viewer, filename);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySet"
-PetscErrorCode TSTrajectorySet(TS ts,PetscInt stepnum,PetscReal time,Vec X)
-{
-  PetscViewer    viewer;
-  PetscInt       ns,i;
-  Vec            *Y;
-  char           filename[PETSC_MAX_PATH_LEN];
-  PetscReal      tprev;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  if (stepnum == 0) {
-#if defined(PETSC_HAVE_POPEN)
-    ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
-    if (stepnum == 0) {
-      PetscMPIInt rank;
-      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRQ(ierr);
-      if (!rank) {
-        char command[PETSC_MAX_PATH_LEN];
-        FILE *fd;
-        int  err;
-
-        ierr = PetscMemzero(command,sizeof(command));CHKERRQ(ierr);
-        ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"rm -fr %s","SA-data");CHKERRQ(ierr);
-        ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
-        ierr = PetscPClose(PETSC_COMM_SELF,fd,&err);CHKERRQ(ierr);
-        ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"mkdir %s","SA-data");CHKERRQ(ierr);
-        ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
-        ierr = PetscPClose(PETSC_COMM_SELF,fd,&err);CHKERRQ(ierr);
-      }
-    }
-#endif
-    PetscFunctionReturn(0);
-  }
-  ierr = TSGetPrevTime(ts,&tprev);CHKERRQ(ierr);
-  ierr = TSGetTotalSteps(ts,&stepnum);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename,sizeof(filename),"SA-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
-  ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
-  ierr = VecView(X,viewer);CHKERRQ(ierr);
-  /* ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr); */
-  ierr = PetscViewerBinaryWrite(viewer,&tprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
-  /* ierr = PetscViewerBinaryWrite(viewer,&h ,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr); */
-  ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
-
-  for (i=0;i<ns;i++) {
-    ierr = VecView(Y[i],viewer);CHKERRQ(ierr);
-  }
-
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSTrajectoryGet"
-PetscErrorCode TSTrajectoryGet(TS ts,PetscInt step,PetscReal t,Vec X)
-{
-  PetscReal      ptime;
-  Vec            Sol,*Y;
-  PetscInt       Nr,i;
-  PetscViewer    viewer;
-  PetscReal      timepre;
-  char           filename[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = TSGetTotalSteps(ts,&step);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename,sizeof filename,"SA-data/SA-%06d.bin",step);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-
-  ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
-  ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
-
-  Nr   = 1;
-  /* ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr); */
-  ierr = PetscViewerBinaryRead(viewer,&timepre,1,PETSC_REAL);CHKERRQ(ierr);
-
-  ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
-  for (i=0;i<Nr ;i++) {
-    ierr = VecLoad(Y[i],viewer);CHKERRQ(ierr);
-  }
-
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-
-  ierr = TSGetTime(ts,&ptime);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,-ptime+timepre);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSolve"
@@ -3399,7 +3309,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     while (!ts->reason) {
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-      ierr = TSTrajectorySet(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
       if (ts->event) {
 	ierr = TSEventMonitor(ts);CHKERRQ(ierr);
@@ -3419,7 +3329,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ts->solvetime = ts->ptime;
       solution = ts->vec_sol;
     }
-    ierr = TSTrajectorySet(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
+    ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
     ierr = VecViewFromOptions(u, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
   }
@@ -3472,7 +3382,7 @@ PetscErrorCode TSAdjointSolve(TS ts,Vec u)
 
   if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
   while (!ts->reason) {
-    ierr = TSTrajectoryGet(ts,ts->max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->max_steps-ts->steps,ts->ptime);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
     if (ts->event) {

@@ -289,6 +289,11 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
+  /*
+    Save trajectory of solution so that TSAdjointSolve() may be used
+  */
+  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

@@ -203,6 +203,41 @@ PETSC_EXTERN PetscErrorCode TSReset(TS);
 PETSC_EXTERN PetscErrorCode TSSetSolution(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 
+/*S
+     TSTrajectory - Abstract PETSc object that storing the trajectory (solution of ODE/ADE at each time step and stage)
+
+   Level: advanced
+
+  Concepts: ODE solvers, adjoint
+
+.seealso:  TSCreate(), TSSetType(), TSType, SNES, KSP, PC, TSDestroy()
+S*/
+typedef struct _p_TSTrajectory* TSTrajectory;
+
+/*J
+    TSTrajectoryType - String with the name of a PETSc TS trajectory storage method
+
+   Level: intermediate
+
+.seealso: TSSetType(), TS, TSRegister(), TSTrajectoryCreate(), TSTrajectorySetType()
+J*/
+typedef const char* TSTrajectoryType;
+#define TSTRAJECTORYBASIC      "basic"
+
+PETSC_EXTERN PetscFunctionList TSTrajectoryList;
+PETSC_EXTERN PetscClassId      TSTRAJECTORY_CLASSID;
+PETSC_EXTERN PetscBool         TSTrajectoryRegisterAllCalled;
+
+PETSC_EXTERN PetscErrorCode TSSetSaveTrajectory(TS);
+
+PETSC_EXTERN PetscErrorCode TSTrajectoryCreate(MPI_Comm,TSTrajectory*);
+PETSC_EXTERN PetscErrorCode TSTrajectoryDestroy(TSTrajectory*);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetType(TSTrajectory,const TSTrajectoryType);
+PETSC_EXTERN PetscErrorCode TSTrajectorySet(TSTrajectory,TS,PetscInt,PetscReal,Vec);
+PETSC_EXTERN PetscErrorCode TSTrajectoryGet(TSTrajectory,TS,PetscInt,PetscReal);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory);
+PETSC_EXTERN PetscErrorCode TSTrajectoryRegisterAll(void);
+
 PETSC_EXTERN PetscErrorCode TSAdjointSetSensitivity(TS,Vec*,PetscInt);
 PETSC_EXTERN PetscErrorCode TSAdjointGetSensitivity(TS,Vec**,PetscInt*);
 
@@ -258,7 +293,6 @@ PETSC_EXTERN PetscErrorCode TSRollBack(TS);
 PETSC_EXTERN PetscErrorCode TSGetTotalSteps(TS,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode TSGetStages(TS,PetscInt*,Vec**);
-PETSC_EXTERN PetscErrorCode TSSetCheckpoint(TS,PetscBool);
 
 PETSC_EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTimeStep(TS,PetscReal*);

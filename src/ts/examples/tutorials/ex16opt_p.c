@@ -40,8 +40,6 @@ struct _n_User {
   PetscReal mu;
   PetscBool imex;
   PetscReal next_output;
-  PetscInt  nstages; 
-    
   PetscInt  steps;
   PetscReal ftime,x_ob[2];
   Mat       A;             /* Jacobian matrix */
@@ -211,12 +209,16 @@ int main(int argc,char **argv)
   /*ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);*/
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)(user.ftime));CHKERRQ(ierr);
 
+  /*
+    Save trajectory of solution so that TSAdjointSolve() may be used
+  */
+  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = TSGetStages(ts,&user.nstages,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -361,7 +363,7 @@ int main(int argc,char **argv)
    G   - the newly evaluated gradient
 */
 PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
-{  
+{
   User              user = (User)ctx;
   TS                ts;
   PetscScalar       *x_ptr,*y_ptr;
@@ -391,13 +393,12 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSGetStages(ts,&user->nstages,NULL);CHKERRQ(ierr);
 
   ierr = TSSolve(ts,user->x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&user->ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&user->steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %.16f, steps %D, ftime %g\n",(double)user->mu,user->steps,(double)user->ftime);CHKERRQ(ierr);
-   
+
   ierr = VecGetArray(user->x,&x_ptr);CHKERRQ(ierr);
   *f   = (x_ptr[0]-user->x_ob[0])*(x_ptr[0]-user->x_ob[0])+(x_ptr[1]-user->x_ob[1])*(x_ptr[1]-user->x_ob[1]);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Observed value y_ob=[%f; %f], ODE solution y=%f, Cost function f=%f\n",(double)user->x_ob[0],(double)user->x_ob[1],(double)x_ptr[0],(double)(*f));CHKERRQ(ierr);
@@ -407,7 +408,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*   Redet initial conditions for the adjoint integration */
   ierr = VecGetArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
-  y_ptr[0] = 2.*(x_ptr[0]-user->x_ob[0]);   
+  y_ptr[0] = 2.*(x_ptr[0]-user->x_ob[0]);
   y_ptr[1] = 2.*(x_ptr[1]-user->x_ob[1]);
   ierr = VecRestoreArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
   ierr = VecGetArray(user->lambda[1],&x_ptr);CHKERRQ(ierr);
@@ -434,7 +435,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSAdjointSetRHSJacobianP(ts,user->Jacp,RHSJacobianP,user);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts,user->x);CHKERRQ(ierr);
-  
+
   ierr = VecCopy(user->lambdap[0],G);
   ierr = VecView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
