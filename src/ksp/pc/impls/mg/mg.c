@@ -750,7 +750,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   }
 
   for (i=1; i<n; i++) {
-    if (mglevels[i]->smoothu == mglevels[i]->smoothd) {
+    if (mglevels[i]->smoothu == mglevels[i]->smoothd || mg->am == PC_MG_FULL || mg->am == PC_MG_KASKADE){
       /* if doing only down then initial guess is zero */
       ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
     }
