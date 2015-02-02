@@ -8,8 +8,8 @@ EXAMPLESC       = ex1.c ex2.c ex3.c
 EXAMPLESF       = ex1f90.F90
 MANSEC          = Viewer
 
-include ${PETSC_DIR}/lib/petsc-conf/variables
-include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SYS_LIB}
