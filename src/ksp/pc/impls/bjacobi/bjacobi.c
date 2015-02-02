@@ -680,7 +680,8 @@ PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscErrorCode         ierr;
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-  PetscScalar            *x_array,*y_array;
+  PetscScalar            *y_array;
+  const PetscScalar      *x_array;
   PC                     subpc;
 
   PetscFunctionBegin;
@@ -690,7 +691,7 @@ PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
     the bjac->x vector is that we need a sequential vector
     for the sequential solve.
   */
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr);
@@ -700,7 +701,7 @@ PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   ierr = PCApplySymmetricLeft(subpc,bjac->x,bjac->y);CHKERRQ(ierr);
   ierr = VecResetArray(bjac->x);CHKERRQ(ierr);
   ierr = VecResetArray(bjac->y);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -712,7 +713,8 @@ PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscErrorCode         ierr;
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-  PetscScalar            *x_array,*y_array;
+  PetscScalar            *y_array;
+  const PetscScalar      *x_array;
   PC                     subpc;
 
   PetscFunctionBegin;
@@ -722,7 +724,7 @@ PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
     the bjac->x vector is that we need a sequential vector
     for the sequential solve.
   */
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr);
@@ -733,7 +735,7 @@ PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   ierr = KSPGetPC(jac->ksp[0],&subpc);CHKERRQ(ierr);
   ierr = PCApplySymmetricRight(subpc,bjac->x,bjac->y);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -745,7 +747,8 @@ PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscErrorCode         ierr;
   PC_BJacobi             *jac  = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-  PetscScalar            *x_array,*y_array;
+  PetscScalar            *y_array;
+  const PetscScalar      *x_array;
 
   PetscFunctionBegin;
   /*
@@ -754,14 +757,14 @@ PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
     the bjac->x vector is that we need a sequential vector
     for the sequential solve.
   */
-  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr);
   ierr = KSPSolveTranspose(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr);
   ierr = VecResetArray(bjac->x);CHKERRQ(ierr);
   ierr = VecResetArray(bjac->y);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&x_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -924,10 +927,11 @@ PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
   PetscErrorCode        ierr;
   PetscInt              i,n_local = jac->n_local;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
-  PetscScalar           *xin,*yin;
+  PetscScalar           *yin;
+  const PetscScalar     *xin;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(x,&xin);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xin);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yin);CHKERRQ(ierr);
   for (i=0; i<n_local; i++) {
     /*
@@ -945,7 +949,7 @@ PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
     ierr = VecResetArray(bjac->x[i]);CHKERRQ(ierr);
     ierr = VecResetArray(bjac->y[i]);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(x,&xin);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xin);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -961,10 +965,11 @@ PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
   PetscErrorCode        ierr;
   PetscInt              i,n_local = jac->n_local;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
-  PetscScalar           *xin,*yin;
+  PetscScalar           *yin;
+  const PetscScalar     *xin;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(x,&xin);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xin);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yin);CHKERRQ(ierr);
   for (i=0; i<n_local; i++) {
     /*
@@ -982,7 +987,7 @@ PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
     ierr = VecResetArray(bjac->x[i]);CHKERRQ(ierr);
     ierr = VecResetArray(bjac->y[i]);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(x,&xin);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xin);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1167,11 +1172,12 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   PC_BJacobi           *jac   = (PC_BJacobi*)pc->data;
   PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc*)jac->data;
   PetscErrorCode       ierr;
-  PetscScalar          *xarray,*yarray;
+  PetscScalar          *yarray;
+  const PetscScalar    *xarray;
 
   PetscFunctionBegin;
   /* place x's and y's local arrays into xsub and ysub */
-  ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yarray);CHKERRQ(ierr);
   ierr = VecPlaceArray(mpjac->xsub,xarray);CHKERRQ(ierr);
   ierr = VecPlaceArray(mpjac->ysub,yarray);CHKERRQ(ierr);
@@ -1183,7 +1189,7 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
 
   ierr = VecResetArray(mpjac->xsub);CHKERRQ(ierr);
   ierr = VecResetArray(mpjac->ysub);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

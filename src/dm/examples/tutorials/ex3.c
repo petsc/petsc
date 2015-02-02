@@ -20,7 +20,7 @@ PetscErrorCode SetCoordinates1d(DM da)
   ierr = DMGetCoordinates(da,&global);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da,&local);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,global,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cda,local,&coorslocal);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,local,&coorslocal);CHKERRQ(ierr);
   ierr = DMDAGetCorners(cda,&start,0,0,&m,0,0);CHKERRQ(ierr);
   for (i=start; i<start+m; i++) {
     if (i % 2) {
@@ -28,7 +28,7 @@ PetscErrorCode SetCoordinates1d(DM da)
     }
   }
   ierr = DMDAVecRestoreArray(cda,global,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cda,local,&coorslocal);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,local,&coorslocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(cda,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(cda,global,INSERT_VALUES,local);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -50,7 +50,7 @@ PetscErrorCode SetCoordinates2d(DM da)
   ierr = DMGetCoordinates(da,&global);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da,&local);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,global,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cda,local,&coorslocal);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,local,&coorslocal);CHKERRQ(ierr);
   ierr = DMDAGetCorners(cda,&mstart,&nstart,0,&m,&n,0);CHKERRQ(ierr);
   for (i=mstart; i<mstart+m; i++) {
     for (j=nstart; j<nstart+n; j++) {
@@ -63,7 +63,7 @@ PetscErrorCode SetCoordinates2d(DM da)
     }
   }
   ierr = DMDAVecRestoreArray(cda,global,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cda,local,&coorslocal);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,local,&coorslocal);CHKERRQ(ierr);
 
   ierr = DMGlobalToLocalBegin(cda,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(cda,global,INSERT_VALUES,local);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ PetscErrorCode SetCoordinates3d(DM da)
   ierr = DMGetCoordinates(da,&global);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da,&local);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,global,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cda,local,&coorslocal);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,local,&coorslocal);CHKERRQ(ierr);
   ierr = DMDAGetCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p);CHKERRQ(ierr);
   for (i=mstart; i<mstart+m; i++) {
     for (j=nstart; j<nstart+n; j++) {
@@ -104,7 +104,7 @@ PetscErrorCode SetCoordinates3d(DM da)
     }
   }
   ierr = DMDAVecRestoreArray(cda,global,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cda,local,&coorslocal);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,local,&coorslocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(cda,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(cda,global,INSERT_VALUES,local);CHKERRQ(ierr);
   PetscFunctionReturn(0);

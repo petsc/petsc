@@ -209,16 +209,16 @@
       call GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
 
 ! Get access to vector data
-      call VecGetArray(X,xx,ixx,ierr)
-      call VecGetArray(Xdot,xxdot,ixxdot,ierr)
+      call VecGetArrayRead(X,xx,ixx,ierr)
+      call VecGetArrayRead(Xdot,xxdot,ixxdot,ierr)
       call VecGetArray(F,ff,iff,ierr)
 
       call FormIFunctionLocal(mx,xs,xe,gxs,gxe,                         &
      &     xx(ixx),xxdot(ixxdot),ff(iff),                               &
      &     user(user_a),user(user_k),user(user_s),ierr)
 
-      call VecRestoreArray(X,xx,ixx,ierr)
-      call VecRestoreArray(Xdot,xxdot,ixxdot,ierr)
+      call VecRestoreArrayRead(X,xx,ixx,ierr)
+      call VecRestoreArrayRead(Xdot,xxdot,ixxdot,ierr)
       call VecRestoreArray(F,ff,iff,ierr)
       end subroutine
 
@@ -306,14 +306,14 @@
       call DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc,ierr)
 
 ! Get access to vector data
-      call VecGetArray(Xloc,xx,ixx,ierr)
+      call VecGetArrayRead(Xloc,xx,ixx,ierr)
       call VecGetArray(F,ff,iff,ierr)
 
       call FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,                       &
      &     t,xx(ixx),ff(iff),                                           &
      &     user(user_a),user(user_k),user(user_s),ierr)
 
-      call VecRestoreArray(Xloc,xx,ixx,ierr)
+      call VecRestoreArrayRead(Xloc,xx,ixx,ierr)
       call VecRestoreArray(F,ff,iff,ierr)
       call DMRestoreLocalVector(da,Xloc,ierr)
       end subroutine

@@ -703,6 +703,20 @@ the natural grid indexing. This is done with the routines
    ... use the array indexing it with 1 or 2 or 3 dimensions \\
    ... depending on the dimension of the DMDA\\
   DMDAVecRestoreArray(DM da,Vec l,void *array);
+  DMDAVecGetArrayRead(DM da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DMDA\\
+  DMDAVecRestoreArrayRead(DM da,Vec l,void *array);
+\end{tabbing}
+\begin{tabbing}
+  DMDAVecGetArrayDOF(DM da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DMDA\\
+  DMDAVecRestoreArrayDOF(DM da,Vec l,void *array);
+  DMDAVecGetArrayDOFRead(DM da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DMDA\\
+  DMDAVecRestoreArrayDOFRead(DM da,Vec l,void *array);
 \end{tabbing}
 where {\tt array} is a multidimensional C array with the same dimension as
 {\tt da}. The vector l can be either a global vector or a local vector.

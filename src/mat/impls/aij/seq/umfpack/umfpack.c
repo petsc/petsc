@@ -119,11 +119,12 @@ static PetscErrorCode MatDestroy_UMFPACK(Mat A)
 #define __FUNCT__ "MatSolve_UMFPACK_Private"
 static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
 {
-  Mat_UMFPACK    *lu = (Mat_UMFPACK*)A->spptr;
-  Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)lu->A->data;
-  PetscScalar    *av = a->a,*ba,*xa;
-  PetscErrorCode ierr;
-  PetscInt       *ai = a->i,*aj = a->j,status;
+  Mat_UMFPACK       *lu = (Mat_UMFPACK*)A->spptr;
+  Mat_SeqAIJ        *a  = (Mat_SeqAIJ*)lu->A->data;
+  PetscScalar       *av = a->a,*xa;
+  const PetscScalar *ba;
+  PetscErrorCode    ierr;
+  PetscInt          *ai = a->i,*aj = a->j,status;
 
   PetscFunctionBegin;
   /* solve Ax = b by umfpack_*_wsolve */
@@ -134,7 +135,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
     ierr = PetscMalloc1(5*A->rmap->n,&lu->W);CHKERRQ(ierr);
   }
 
-  ierr = VecGetArray(b,&ba);
+  ierr = VecGetArrayRead(b,&ba);
   ierr = VecGetArray(x,&xa);
 #if defined(PETSC_USE_COMPLEX)
   status = umfpack_UMF_wsolve(uflag,ai,aj,(PetscReal*)av,NULL,(PetscReal*)xa,NULL,(PetscReal*)ba,NULL,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
@@ -147,7 +148,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"umfpack_UMF_wsolve failed");
   }
 
-  ierr = VecRestoreArray(b,&ba);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(b,&ba);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

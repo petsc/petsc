@@ -462,12 +462,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  if (yy != ww) {
-    ierr = VecGetArray(ww,&w);CHKERRQ(ierr);
-  } else {
-    w = y;
-  }
+  ierr = VecGetArrayPair(yy,ww,&y,&w);CHKERRQ(ierr);
 
   aj = a->j;   /* aj[k] gives column index for element aa[k]. */
   aa = a->a;   /* Nonzero elements stored row-by-row. */
@@ -573,10 +568,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
 #endif
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  if (yy != ww) {
-    ierr = VecRestoreArray(ww,&w);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayPair(yy,ww,&y,&w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

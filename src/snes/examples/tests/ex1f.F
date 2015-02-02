@@ -263,10 +263,10 @@
      &     'Solution',300,0,300,300,draw,ierr)
       call PetscDrawSetFromOptions(draw,ierr)
 
-      call VecGetArray(x,lx_v,lx_i,ierr)
+      call VecGetArrayRead(x,lx_v,lx_i,ierr)
       call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_REAL,              &
      &     PETSC_NULL_REAL,lx_v(lx_i+1),ierr)
-      call VecRestoreArray(x,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they
@@ -448,7 +448,7 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the Fortran chapter of the users manual for details.
 
-      call VecGetArray(X,lx_v,lx_i,ierr)
+      call VecGetArrayRead(X,lx_v,lx_i,ierr)
       call VecGetArray(F,lf_v,lf_i,ierr)
 
 !  Compute function
@@ -457,7 +457,7 @@
 
 !  Restore vectors
 
-      call VecRestoreArray(X,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(X,lx_v,lx_i,ierr)
       call VecRestoreArray(F,lf_v,lf_i,ierr)
 
       call PetscLogFlops(11.0d0*mx*my,ierr)
@@ -578,7 +578,7 @@
 
 !  Get a pointer to vector data
 
-      call VecGetArray(X,lx_v,lx_i,ierr)
+      call VecGetArrayRead(X,lx_v,lx_i,ierr)
 
 !  Compute Jacobian entries
 
@@ -586,7 +586,7 @@
 
 !  Restore vector
 
-      call VecRestoreArray(X,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(X,lx_v,lx_i,ierr)
 
 !  Assemble matrix
 

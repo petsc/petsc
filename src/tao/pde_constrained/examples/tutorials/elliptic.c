@@ -356,7 +356,6 @@ PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
       ierr = Scatter(X,user->subq,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Scatter(Y,user->suby,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = MatMult(user->JsBlock,user->subq,user->suby);CHKERRQ(ierr);
-      ierr = Gather(X,user->subq,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Gather(Y,user->suby,user->yi_scatter[i],0,0);CHKERRQ(ierr);
     }
   }
@@ -391,7 +390,6 @@ PetscErrorCode StateInvMatMult(Mat J_shell, Vec X, Vec Y)
       ierr = KSPSolve(user->solver,user->subq,user->suby);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(user->solver,&its);CHKERRQ(ierr);
       user->ksp_its+=its;
-      ierr = Gather(X,user->subq,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Gather(Y,user->suby,user->yi_scatter[i],0,0);CHKERRQ(ierr);
     }
   }
@@ -414,7 +412,6 @@ PetscErrorCode QMatMult(Mat J_shell, Vec X, Vec Y)
       ierr = Scatter(X,user->subq,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Scatter(Y,user->subd,user->di_scatter[i],0,0);CHKERRQ(ierr);
       ierr = MatMult(user->Q,user->subq,user->subd);CHKERRQ(ierr);
-      ierr = Gather(X,user->subq,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Gather(Y,user->subd,user->di_scatter[i],0,0);CHKERRQ(ierr);
     }
   }
@@ -438,7 +435,6 @@ PetscErrorCode QMatMultTranspose(Mat J_shell, Vec X, Vec Y)
       ierr = Scatter(X,user->subd,user->di_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Scatter(Y,user->suby,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = MatMultTranspose(user->Q,user->subd,user->suby);CHKERRQ(ierr);
-      ierr = Gather(X,user->subd,user->di_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Gather(Y,user->suby,user->yi_scatter[i],0,0);CHKERRQ(ierr);
     }
   }
@@ -538,7 +534,6 @@ PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
     /* Ywork = pointwisemult(uwork,Ywork) */
     ierr = VecPointwiseMult(user->Ywork,user->uwork,user->Ywork);CHKERRQ(ierr);
     ierr = VecAXPY(Y,1.0,user->Ywork);CHKERRQ(ierr);
-    ierr = Gather(X,user->subq,user->yi_scatter[i],0,0);CHKERRQ(ierr);
     ierr = Gather(user->y,user->suby,user->yi_scatter[i],0,0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

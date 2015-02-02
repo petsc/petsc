@@ -94,13 +94,13 @@ static int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int reques
 #define __FUNCT__ "PetscML_comm"
 static PetscErrorCode PetscML_comm(double p[],void *ML_data)
 {
-  PetscErrorCode ierr;
-  FineGridCtx    *ml = (FineGridCtx*)ML_data;
-  Mat            A   = ml->A;
-  Mat_MPIAIJ     *a  = (Mat_MPIAIJ*)A->data;
-  PetscMPIInt    size;
-  PetscInt       i,in_length=A->rmap->n,out_length=ml->Aloc->cmap->n;
-  PetscScalar    *array;
+  PetscErrorCode    ierr;
+  FineGridCtx       *ml = (FineGridCtx*)ML_data;
+  Mat               A   = ml->A;
+  Mat_MPIAIJ        *a  = (Mat_MPIAIJ*)A->data;
+  PetscMPIInt       size;
+  PetscInt          i,in_length=A->rmap->n,out_length=ml->Aloc->cmap->n;
+  const PetscScalar *array;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
@@ -110,9 +110,9 @@ static PetscErrorCode PetscML_comm(double p[],void *ML_data)
   ierr = VecScatterBegin(a->Mvctx,ml->y,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->Mvctx,ml->y,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecResetArray(ml->y);CHKERRQ(ierr);
-  ierr = VecGetArray(a->lvec,&array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(a->lvec,&array);CHKERRQ(ierr);
   for (i=in_length; i<out_length; i++) p[i] = array[i-in_length];
-  ierr = VecRestoreArray(a->lvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(a->lvec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -147,19 +147,20 @@ static int PetscML_matvec(ML_Operator *ML_data,int in_length,double p[],int out_
 #define __FUNCT__ "MatMult_ML"
 static PetscErrorCode MatMult_ML(Mat A,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
-  Mat_MLShell    *shell;
-  PetscScalar    *xarray,*yarray;
-  PetscInt       x_length,y_length;
+  PetscErrorCode    ierr;
+  Mat_MLShell       *shell;
+  PetscScalar       *yarray;
+  const PetscScalar *xarray;
+  PetscInt          x_length,y_length;
 
   PetscFunctionBegin;
   ierr     = MatShellGetContext(A,(void**)&shell);CHKERRQ(ierr);
-  ierr     = VecGetArray(x,&xarray);CHKERRQ(ierr);
+  ierr     = VecGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr     = VecGetArray(y,&yarray);CHKERRQ(ierr);
   x_length = shell->mlmat->invec_leng;
   y_length = shell->mlmat->outvec_leng;
-  PetscStackCall("ML_Operator_Apply",ML_Operator_Apply(shell->mlmat,x_length,xarray,y_length,yarray));
-  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+  PetscStackCall("ML_Operator_Apply",ML_Operator_Apply(shell->mlmat,x_length,(PetscScalar*)xarray,y_length,yarray));
+  ierr = VecRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -171,10 +172,11 @@ static PetscErrorCode MatMult_ML(Mat A,Vec x,Vec y)
 */
 static PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
 {
-  Mat_MLShell    *shell;
-  PetscScalar    *xarray,*yarray;
-  PetscInt       x_length,y_length;
-  PetscErrorCode ierr;
+  Mat_MLShell       *shell;
+  PetscScalar       *yarray;
+  const PetscScalar *xarray;
+  PetscInt          x_length,y_length;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(A, (void**) &shell);CHKERRQ(ierr);
@@ -182,21 +184,21 @@ static PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
     if (!shell->work) {
       ierr = VecDuplicate(y, &shell->work);CHKERRQ(ierr);
     }
-    ierr     = VecGetArray(x,           &xarray);CHKERRQ(ierr);
+    ierr     = VecGetArrayRead(x,           &xarray);CHKERRQ(ierr);
     ierr     = VecGetArray(shell->work, &yarray);CHKERRQ(ierr);
     x_length = shell->mlmat->invec_leng;
     y_length = shell->mlmat->outvec_leng;
-    PetscStackCall("ML_Operator_Apply",ML_Operator_Apply(shell->mlmat, x_length, xarray, y_length, yarray));
-    ierr = VecRestoreArray(x,           &xarray);CHKERRQ(ierr);
+    PetscStackCall("ML_Operator_Apply",ML_Operator_Apply(shell->mlmat, x_length, (PetscScalar*)xarray, y_length, yarray));
+    ierr = VecRestoreArrayRead(x,           &xarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(shell->work, &yarray);CHKERRQ(ierr);
     ierr = VecAXPY(y, 1.0, shell->work);CHKERRQ(ierr);
   } else {
-    ierr     = VecGetArray(x, &xarray);CHKERRQ(ierr);
+    ierr     = VecGetArrayRead(x, &xarray);CHKERRQ(ierr);
     ierr     = VecGetArray(y, &yarray);CHKERRQ(ierr);
     x_length = shell->mlmat->invec_leng;
     y_length = shell->mlmat->outvec_leng;
-    PetscStackCall("ML_Operator_Apply",ML_Operator_Apply(shell->mlmat, x_length, xarray, y_length, yarray));
-    ierr = VecRestoreArray(x, &xarray);CHKERRQ(ierr);
+    PetscStackCall("ML_Operator_Apply",ML_Operator_Apply(shell->mlmat, x_length, (PetscScalar *)xarray, y_length, yarray));
+    ierr = VecRestoreArrayRead(x, &xarray);CHKERRQ(ierr);
     ierr = VecRestoreArray(y, &yarray);CHKERRQ(ierr);
     ierr = VecAXPY(y, 1.0, w);CHKERRQ(ierr);
   }

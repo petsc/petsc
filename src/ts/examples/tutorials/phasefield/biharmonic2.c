@@ -229,8 +229,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,localXdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localXdot,&xdot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /*
@@ -264,8 +264,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,localXdot,&xdot);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localXdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localX,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localXdot);CHKERRQ(ierr);

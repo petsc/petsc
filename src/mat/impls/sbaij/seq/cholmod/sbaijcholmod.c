@@ -154,16 +154,16 @@ static PetscErrorCode MatWrapCholmod_seqsbaij(Mat A,PetscBool values,cholmod_spa
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecWrapCholmod"
-static PetscErrorCode VecWrapCholmod(Vec X,cholmod_dense *Y)
+#define __FUNCT__ "VecWrapCholmodRead"
+static PetscErrorCode VecWrapCholmodRead(Vec X,cholmod_dense *Y)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *x;
-  PetscInt       n;
+  PetscErrorCode    ierr;
+  const PetscScalar *x;
+  PetscInt          n;
 
   PetscFunctionBegin;
   ierr = PetscMemzero(Y,sizeof(*Y));CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetSize(X,&n);CHKERRQ(ierr);
 
   Y->x     = (double*)x;
@@ -174,6 +174,17 @@ static PetscErrorCode VecWrapCholmod(Vec X,cholmod_dense *Y)
   Y->x     = (double*)x;
   Y->xtype = CHOLMOD_SCALAR_TYPE;
   Y->dtype = CHOLMOD_DOUBLE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecUnWrapCholmodRead"
+static PetscErrorCode VecUnWrapCholmodRead(Vec X,cholmod_dense *Y)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreArrayRead(X,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -288,10 +299,11 @@ static PetscErrorCode MatSolve_CHOLMOD(Mat F,Vec B,Vec X)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr     = VecWrapCholmod(B,&cholB);CHKERRQ(ierr);
+  ierr     = VecWrapCholmodRead(B,&cholB);CHKERRQ(ierr);
   static_F = F;
   cholX    = cholmod_X_solve(CHOLMOD_A,chol->factor,&cholB,chol->common);
   if (!cholX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CHOLMOD failed");
+  ierr = VecUnWrapCholmodRead(B,&cholB);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(x,cholX->x,cholX->nrow*sizeof(*x));CHKERRQ(ierr);
   ierr = !cholmod_X_free_dense(&cholX,chol->common);CHKERRQ(ierr);
