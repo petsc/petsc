@@ -36,8 +36,8 @@ struct _TSOps {
   PetscErrorCode (*load)(TS,PetscViewer);
   PetscErrorCode (*rollback)(TS);
   PetscErrorCode (*getstages)(TS,PetscInt*,Vec**);
-  PetscErrorCode (*stepadj)(TS);
-  PetscErrorCode (*setupadj)(TS);
+  PetscErrorCode (*adjointstep)(TS);
+  PetscErrorCode (*adjointsetup)(TS);
 };
 
 /* 

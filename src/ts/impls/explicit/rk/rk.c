@@ -494,8 +494,8 @@ static PetscErrorCode TSAdjointSetUp_RK(TS ts)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSStepAdj_RK"
-static PetscErrorCode TSStepAdj_RK(TS ts)
+#define __FUNCT__ "TSAdjointStep_RK"
+static PetscErrorCode TSAdjointStep_RK(TS ts)
 {
   TS_RK           *rk   = (TS_RK*)ts->data;
   RKTableau        tab  = rk->tableau;
@@ -944,13 +944,13 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
   ts->ops->view           = TSView_RK;
   ts->ops->load           = TSLoad_RK;
   ts->ops->setup          = TSSetUp_RK;
-  ts->ops->setupadj       = TSAdjointSetUp_RK;  
+  ts->ops->adjointsetup   = TSAdjointSetUp_RK;  
   ts->ops->step           = TSStep_RK;
   ts->ops->interpolate    = TSInterpolate_RK;
   ts->ops->evaluatestep   = TSEvaluateStep_RK;
   ts->ops->setfromoptions = TSSetFromOptions_RK;
   ts->ops->getstages      = TSGetStages_RK;
-  ts->ops->stepadj        = TSStepAdj_RK;
+  ts->ops->adjointstep    = TSAdjointStep_RK;
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
