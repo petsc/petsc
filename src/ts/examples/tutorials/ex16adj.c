@@ -258,7 +258,7 @@ int main(int argc,char **argv)
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&user);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 

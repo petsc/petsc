@@ -306,12 +306,12 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
     }
     
     if (ts->vecs_sensip) { /* sensitivities wrt parameters */
-      ierr = TSAdjointComputeRHSJacobianP(ts,ts->ptime,ts->vec_sol,ts->Jacp);CHKERRQ(ierr);
+      ierr = TSAdjointComputeRHSJacobian(ts,ts->ptime,ts->vec_sol,ts->Jacp);CHKERRQ(ierr);
       for (nadj=0; nadj<ts->numberadjs; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecDeltaLam[nadj],VecDeltaMu[nadj]);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step*th->Theta,VecDeltaMu[nadj]);CHKERRQ(ierr);
       }
-      ierr = TSAdjointComputeRHSJacobianP(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
+      ierr = TSAdjointComputeRHSJacobian(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
       for (nadj=0; nadj<ts->numberadjs; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecDeltaLam[nadj],VecDeltaMu[nadj]);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step*(1.-th->Theta),VecDeltaMu[nadj]);CHKERRQ(ierr);
@@ -350,7 +350,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
       }     
     }
     if (ts->vecs_sensip) {
-      ierr = TSAdjointComputeRHSJacobianP(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
+      ierr = TSAdjointComputeRHSJacobian(ts,th->stage_time,th->X,ts->Jacp);CHKERRQ(ierr);
       for (nadj=0; nadj<ts->numberadjs; nadj++) {
         ierr = MatMultTranspose(ts->Jacp,VecDeltaLam[nadj],VecDeltaMu[nadj]);CHKERRQ(ierr);
         ierr = VecAXPY(ts->vecs_sensip[nadj],-ts->time_step,VecDeltaMu[nadj]);CHKERRQ(ierr);

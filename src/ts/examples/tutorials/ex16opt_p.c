@@ -63,8 +63,8 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  //f[0] = (user->imex ? x[1] : 0);
-  //f[1] = 0.0;
+  /*f[0] = (user->imex ? x[1] : 0);
+   f[1] = 0.0;*/
   f[0] = x[1];
   f[1] = user->mu*(1.-x[0]*x[0])*x[1]-x[0];
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -176,7 +176,6 @@ int main(int argc,char **argv)
   user.ftime       = 0.5;
 
   ierr = PetscOptionsGetReal(NULL,"-mu",&user.mu,NULL);CHKERRQ(ierr);
-  //ierr = PetscOptionsGetBool(NULL,"-imex",&user.imex,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -260,11 +259,8 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
   ierr = TSAdjointSetGradients(ts,1,user.lambda,user.lambdap);CHKERRQ(ierr);
 
-  //   Set RHS Jacobian for the adjoint integration
   ierr = TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user);CHKERRQ(ierr);
-
-  //   Set RHS JacobianP
-  ierr = TSAdjointSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobian(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
@@ -418,11 +414,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = VecRestoreArray(user->lambdap[1],&x_ptr);CHKERRQ(ierr);
   ierr = TSAdjointSetGradients(ts,1,user->lambda,user->lambdap);CHKERRQ(ierr);
 
-  //   Set RHS Jacobian for the adjoint integration
   ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);
-
-  //   Set RHS JacobianP
-  ierr = TSAdjointSetRHSJacobianP(ts,user->Jacp,RHSJacobianP,user);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobian(ts,user->Jacp,RHSJacobianP,user);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 

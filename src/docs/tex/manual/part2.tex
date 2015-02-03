@@ -4987,7 +4987,7 @@ Usually the given cost function $g$ does not explicitly depend on the parameters
 Besides the functions needed by the implicit solver, no additional user-provided functions are required if the sensitivity with respect to initial conditions is desired. 
 Otherwise one needs to provide Jacobian $F_p$ with 
 \begin{tabbing}
-TSAdjointSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
 \end{tabbing}
 The arguments for the function \trl{fp()} 
 are the timestep context, current, input stage $u$, and the (optional) user-provided context. 

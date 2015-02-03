@@ -344,7 +344,7 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&q);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSetCostIntegrand(ts,1,q,   (PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
@@ -361,7 +361,8 @@ int main(int argc,char **argv)
  
   ierr = ComputeSensiP(lambda[0],lambdap[0],&ctx);CHKERRQ(ierr);
 /*
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameters: d[y(tf)]/d[mu]\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity 
+wrt parameters: d[y(tf)]/d[mu]\n");CHKERRQ(ierr);
   ierr = VecView(lambdap[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 */
 

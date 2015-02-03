@@ -185,9 +185,9 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = PetscSNPrintf(filename,sizeof filename,"ex20-SA-%06d.bin",stepnum);CHKERRQ(ierr);
   ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);
-  //ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr);
+  /*ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr); */
   ierr = PetscViewerBinaryWrite(viewer,&tprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
-  //ierr = PetscViewerBinaryWrite(viewer,&h ,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+  /*ierr = PetscViewerBinaryWrite(viewer,&h ,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);*/
   ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
 
   for (i=0;i<ns && stepnum>0;i++) {
@@ -195,7 +195,7 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   }
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  //ierr = TestMonitor(filename,X,time,ns,Y,stepnum);
+  /*ierr = TestMonitor(filename,X,time,ns,Y,stepnum);*/
   PetscFunctionReturn(0);
 }
 
@@ -219,7 +219,7 @@ static PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ct
   ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
 
   Nr   = 1;
-  //ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr);
+  /*ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr); */
   ierr = PetscViewerBinaryRead(viewer,&timepre,1,PETSC_REAL);CHKERRQ(ierr);
 
   ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
@@ -356,7 +356,7 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,user.steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSAdjointSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobian(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
 
   /*   Set up monitor */
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
@@ -472,7 +472,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,IFunction,user_ptr);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,user_ptr->A,user_ptr->A,IJacobian,user_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetRHSJacobianP(ts,user_ptr->Jacp,RHSJacobianP,user_ptr);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobian(ts,user_ptr->Jacp,RHSJacobianP,user_ptr);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

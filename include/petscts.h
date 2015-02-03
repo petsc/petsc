@@ -241,13 +241,13 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSAdjointSetGradients(TS,PetscInt,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointGetGradients(TS,PetscInt*,Vec**,Vec**);
 
-PETSC_EXTERN PetscErrorCode TSAdjointSetRHSJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
-PETSC_EXTERN PetscErrorCode TSAdjointComputeRHSJacobianP(TS,PetscReal,Vec,Mat);
+PETSC_EXTERN PetscErrorCode TSAdjointSetRHSJacobian(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode TSAdjointSetCostIntegrand(TS,PetscInt,Vec,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),void*);
 PETSC_EXTERN PetscErrorCode TSAdjointGetCostIntegral(TS,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointSolve(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointSetSteps(TS,PetscInt);
 
+PETSC_EXTERN PetscErrorCode TSAdjointComputeRHSJacobian(TS,PetscReal,Vec,Mat);
 PETSC_EXTERN PetscErrorCode TSAdjointStep(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDPFunction(TS,PetscReal,Vec,Vec*);

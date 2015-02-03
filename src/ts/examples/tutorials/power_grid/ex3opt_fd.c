@@ -400,7 +400,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&q);CHKERRQ(ierr);
 
-  ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSetCostIntegrand(ts,1,q,   (PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,

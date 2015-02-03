@@ -1517,7 +1517,7 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
   }
 
   Nr   = 1;
-  //ierr = PetscRealLoad(Nr,&Nr,&timeread,viewer);CHKERRQ(ierr);
+  /*ierr = PetscRealLoad(Nr,&Nr,&timeread,viewer);CHKERRQ(ierr); */
   ierr = PetscViewerBinaryRead(viewer,&timeread,1,PETSC_REAL);CHKERRQ(ierr);
 
   if(timeread!=time) {
@@ -1559,7 +1559,7 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = PetscSNPrintf(filename,sizeof filename,"ex9-SA-%06d.bin",stepnum);CHKERRQ(ierr);
   ierr = OutputBIN(dm,filename,&viewer);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);
-  //ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr);
+  /*ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr);*/
   ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
   ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
 
@@ -1683,7 +1683,7 @@ int main(int argc,char *argv[])
   ierr = TSMonitorSet(ts,MonitorBIN,NULL,NULL);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,R,FVRHSFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,B,B,FVIJacobian,&ctx);CHKERRQ(ierr);
-//  ierr = TSSetType(ts,TSSSP);CHKERRQ(ierr);
+  /*  ierr = TSSetType(ts,TSSSP);CHKERRQ(ierr); */
   ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,10);CHKERRQ(ierr);
 

@@ -128,7 +128,6 @@ PetscErrorCode PostStep(TS ts)
   ierr = DMDAVecGetArrayRead(user->da,X,&p);CHKERRQ(ierr);
   for (i=xs; i < xs+xm; i++) {
     for (j=ys; j < ys+ym; j++) {
-      //      printf("i %d j %d y %g %g\n",i,j,coors[j][i].y,p[j][i]);
       if (coors[j][i].y < 5) sum += p[j][i];
     }
   }

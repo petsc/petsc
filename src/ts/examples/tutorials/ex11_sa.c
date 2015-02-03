@@ -1433,8 +1433,8 @@ static PetscErrorCode TestMonitor(DM dm, const char *filename, Vec X, PetscReal 
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"IO test OK for Vec\n");CHKERRQ(ierr);
   }
-  //Nr   = 1;
-  //ierr = PetscRealLoad(Nr,&Nr,&timeread,viewer);CHKERRQ(ierr);
+  /*Nr   = 1;
+   ierr = PetscRealLoad(Nr,&Nr,&timeread,viewer);CHKERRQ(ierr);*/
   ierr = PetscViewerBinaryRead(viewer,&timeread,1,PETSC_REAL);CHKERRQ(ierr);
 
   if(timeread!=time) {
@@ -1464,7 +1464,7 @@ static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = OutputBIN(dm,filename,&viewer);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);
   ierr = PetscRealView(1,&time,PETSC_TRUE,viewer);CHKERRQ(ierr);
-  //ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+  /* ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);*/
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr); 
   ierr = TestMonitor(dm,filename,X,time);
   PetscFunctionReturn(0);
@@ -1583,9 +1583,9 @@ int main(int argc, char **argv)
 
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts, TSSSP);CHKERRQ(ierr);
-  //ierr = TSSetType(ts, TSRK);CHKERRQ(ierr);
+  /* ierr = TSSetType(ts, TSRK);CHKERRQ(ierr); */
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
-  //ierr = TSMonitorSet(ts,MonitorVTK,user,NULL);CHKERRQ(ierr);
+  /* ierr = TSMonitorSet(ts,MonitorVTK,user,NULL);CHKERRQ(ierr); */
   ierr = TSMonitorSet(ts,MonitorBIN,user,NULL);CHKERRQ(ierr);
   ierr = DMPlexTSSetRHSFunctionLocal(dm, user->model->physics->riemann, user->model->physics);CHKERRQ(ierr);
 

@@ -1732,13 +1732,13 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 
 .keywords: TS, timestep, get, sensitivity
 @*/
-PetscErrorCode  TSAdjointGetSensitivity(TS ts,PetscInt *numberadjs,Vec **v,Vec **w)
+PetscErrorCode  TSAdjointGetGradients(TS ts,PetscInt *numberadjs,Vec **v,Vec **w)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (numberadjs) *numberadjs = ts->numberadjs;
   if (v)          *v          = ts->vecs_sensi;
-  if (w)          *w          = ts->vecs_sensip;  
+  if (w)          *w          = ts->vecs_sensip;
   PetscFunctionReturn(0);
 }
 
@@ -2321,9 +2321,9 @@ PetscErrorCode  TSAdjointSetGradients(TS ts,PetscInt numberadjs,Vec *u,Vec *w)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointSetRHSJacobianP"
+#define __FUNCT__ "TSAdjointSetRHSJacobian"
 /*@C
-  TSAdjointSetRHSJacobianP - Sets the function that computes the Jacobian w.r.t. parameters.
+  TSAdjointSetRHSJacobian - Sets the function that computes the Jacobian w.r.t. parameters.
 
   Logically Collective on TS
 
@@ -2343,7 +2343,7 @@ $ func (TS ts,PetscReal t,Vec u,Mat A,void *ctx);
 .keywords: TS, sensitivity 
 .seealso: 
 @*/
-PetscErrorCode  TSAdjointSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+PetscErrorCode  TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscReal,Vec,Mat,void*),void *ctx)
 { 
   PetscErrorCode ierr;
 
@@ -2363,9 +2363,9 @@ PetscErrorCode  TSAdjointSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(T
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointComputeRHSJacobianP"
+#define __FUNCT__ "TSAdjointComputeRHSJacobian"
 /*@
-  TSAdjointComputeRHSJacobianP - Runs the user-defined JacobianP function.
+  TSAdjointComputeRHSJacobian - Runs the user-defined Jacobian function.
 
   Collective on TS
 
@@ -2375,9 +2375,9 @@ PetscErrorCode  TSAdjointSetRHSJacobianP(TS ts,Mat Amat,PetscErrorCode (*func)(T
   Level: developer
 
 .keywords: TS, sensitivity
-.seealso: TSAdjointSetRHSJacobianP()
+.seealso: TSAdjointSetRHSJacobian()
 @*/
-PetscErrorCode  TSAdjointComputeRHSJacobianP(TS ts,PetscReal t,Vec X,Mat Amat)
+PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
 {
   PetscErrorCode ierr;
  
@@ -2429,7 +2429,7 @@ $    PetscErroCode drdpf(TS ts,PetscReal t,Vec U,Vec *drdp,void *ctx);
 
 .keywords: TS, sensitivity analysis, timestep, set, quadrature, function
 
-.seealso: TSAdjointSetRHSJacobianP(),TSAdjointGetGradients(), TSAdjointSetGradients()
+.seealso: TSAdjointSetRHSJacobian(),TSAdjointGetGradients(), TSAdjointSetGradients()
 @*/
 PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),
                                                                     Vec *drdy,PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),

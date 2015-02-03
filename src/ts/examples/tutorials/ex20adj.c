@@ -380,7 +380,7 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,user.steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
-  ierr = TSAdjointSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
+  ierr = TSAdjointSetRHSJacobian(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
 
   /*   Set up monitor */
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
