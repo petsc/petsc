@@ -3,7 +3,7 @@ OPTIND=1
 username=""
 branch="next"
 address="default"
-architecture="none"
+architecture="linux-gcc-real"
 configoptions=""
 silent="no"
 
@@ -12,7 +12,7 @@ while getopts "h?a:b:m:o:su:" opt; do
     h|\?)
       echo "sendToJenkins script"
       echo "Options: -h <help>"
-      echo "         -a <architecture>                  -- default is 'none'"
+      echo "         -a <architecture>                  -- default is 'linux-gcc-real'"
       echo "            eg, one of linux-gcc-real, osx-10.6, etc."
       echo "            Use 'short' for small subset:"
       echo "                linux-gcc-real"
