@@ -145,13 +145,18 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS             ts;          /* nonlinear solver */
-  Vec            p;         
-  PetscBool      monitor = PETSC_FALSE;
-  PetscScalar    *x_ptr,*y_ptr;
-  PetscMPIInt    size;
-  struct _n_User user;
-  PetscErrorCode ierr;
+  TS                 ts;          /* nonlinear solver */
+  Vec                p;
+  PetscBool          monitor = PETSC_FALSE;
+  PetscScalar        *x_ptr,*y_ptr;
+  PetscMPIInt        size;
+  struct _n_User     user;
+  PetscErrorCode     ierr;
+  Tao                tao;
+  TaoConvergedReason reason;
+  Vec                lowerb,upperb;
+  KSP                ksp;
+  PC                 pc;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -256,9 +261,6 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
   ierr = TSAdjointSetSensitivityP(ts,user.lambdap,1);CHKERRQ(ierr);
 
-  //   Reset start time for the adjoint integration
-  ierr = TSSetTime(ts,user.ftime);CHKERRQ(ierr);
-
   //   Set RHS Jacobian for the adjoint integration
   ierr = TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user);CHKERRQ(ierr);
 
@@ -272,8 +274,6 @@ int main(int argc,char **argv)
   ierr = VecView(user.lambdap[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(user.lambdap[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  Tao                tao;
-  TaoConvergedReason reason;
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOCG);CHKERRQ(ierr);
@@ -289,7 +289,6 @@ int main(int argc,char **argv)
   /* Set routine for function and gradient evaluation */
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
   
-  Vec lowerb,upperb;
   ierr = VecDuplicate(p,&lowerb);CHKERRQ(ierr);
   ierr = VecDuplicate(p,&upperb);CHKERRQ(ierr);
   ierr = VecGetArray(lowerb,&x_ptr);CHKERRQ(ierr);
@@ -302,8 +301,6 @@ int main(int argc,char **argv)
   ierr = TaoSetVariableBounds(tao,lowerb,upperb);
  
   /* Check for any TAO command line options */
-  KSP ksp;
-  PC  pc;
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
   if (ksp) {
@@ -422,9 +419,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user->lambdap[1],&x_ptr);CHKERRQ(ierr);
   ierr = TSAdjointSetSensitivityP(ts,user->lambdap,1);CHKERRQ(ierr);
-
-  //   Reset start time for the adjoint integration
-  ierr = TSSetTime(ts,user->ftime);CHKERRQ(ierr);
 
   //   Set RHS Jacobian for the adjoint integration
   ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);

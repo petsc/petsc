@@ -133,7 +133,6 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",user->next_output,step,t,dt,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1]));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"t %.6f (tprev = %.6f) \n",t,tprev);CHKERRQ(ierr);
-    
   PetscFunctionReturn(0);
 }
 
@@ -152,6 +151,7 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   struct _n_User user;
   PetscErrorCode ierr;
+  Vec            lambda[2],mu[2];
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -231,7 +231,6 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  Vec lambda[2],mu[2];        /* adjoint variables */
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Start the Adjoint model
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -255,9 +254,6 @@ int main(int argc,char **argv)
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(mu[1],&x_ptr);CHKERRQ(ierr);
   ierr = TSAdjointSetSensitivityP(ts,mu,2);CHKERRQ(ierr);
-
-  /*   Reset start time for the adjoint integration */
-  ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
 
   /*   Set RHS Jacobian for the adjoint integration */
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&user);CHKERRQ(ierr);

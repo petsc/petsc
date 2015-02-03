@@ -191,7 +191,7 @@ PetscErrorCode PostStep(TS ts)
 PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,AppCtx *ctx)
 {
   PetscErrorCode ierr;
-  PetscScalar *x,*y,sensip;
+  PetscScalar    *x,*y,sensip;
   
   PetscFunctionBegin;
   ierr = VecGetArray(lambda,&x);CHKERRQ(ierr);
@@ -217,6 +217,7 @@ int main(int argc,char **argv)
   TaoConvergedReason reason;
   KSP                ksp;
   PC                 pc;
+  Vec                lowerb,upperb;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -273,7 +274,6 @@ int main(int argc,char **argv)
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&ctx);CHKERRQ(ierr);
 
   /* Set bounds for the optimization */
-  Vec lowerb,upperb;
   ierr = VecDuplicate(p,&lowerb);CHKERRQ(ierr);
   ierr = VecDuplicate(p,&upperb);CHKERRQ(ierr);
   ierr = VecGetArray(lowerb,&x_ptr);CHKERRQ(ierr);
@@ -421,9 +421,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&q);CHKERRQ(ierr);
 
-  /*   Reset start time for the adjoint integration */
-  ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
-
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
 
@@ -432,17 +429,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
                                         drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
-  /*
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: \n");CHKERRQ(ierr);
-  ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameters: \n");CHKERRQ(ierr);
-  ierr = VecView(lambdap[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  */
   ierr = VecView(q,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-/*
-  ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n cost function=%.15f\n",x_ptr[0]);CHKERRQ(ierr);
-*/ 
   ierr = ComputeSensiP(lambda[0],lambdap[0],ctx);CHKERRQ(ierr);
   ierr = VecCopy(lambdap[0],G);
   

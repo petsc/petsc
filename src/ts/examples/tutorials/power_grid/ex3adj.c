@@ -344,9 +344,6 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&q);CHKERRQ(ierr);
 
-  /*   Reset start time for the adjoint integration */
-  ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
-
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
 

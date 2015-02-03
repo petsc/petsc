@@ -109,13 +109,12 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx0)
   PetscErrorCode ierr;
   PetscInt       row[] = {0,1},col[]={0};
   PetscScalar    *x,J[2][1];
+
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-
   J[0][0] = 0;
   J[1][0] = 1.;
   ierr    = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -131,10 +130,7 @@ static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,AppCtx *ctx)
   PetscFunctionBegin;
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(R,&r);CHKERRQ(ierr);
-
   r[0] = ctx->c*PetscPowScalarInt(PetscMax(0., u[0]-ctx->u_s),ctx->beta);CHKERRQ(ierr);
-  /* r[0] = ctx->c*PetscPowScalarInt(u[0]-ctx->u_s,ctx->beta);CHKERRQ(ierr); */
-
   ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -149,9 +145,7 @@ static PetscErrorCode DRDYFunction(TS ts,PetscReal t,Vec U,Vec *drdy,AppCtx *ctx
   PetscFunctionBegin;
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(drdy[0],&ry);CHKERRQ(ierr);
-
   ry[0] = ctx->c*ctx->beta*PetscPowScalarInt(PetscMax(0., u[0]-ctx->u_s),ctx->beta-1);CHKERRQ(ierr);
-  /* ry[0] = ctx->c*ctx->beta*PetscPowScalarInt(u[0]-ctx->u_s,ctx->beta-1);CHKERRQ(ierr); */
   ierr  = VecRestoreArray(drdy[0],&ry);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -166,28 +160,8 @@ static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,AppCtx *ctx
   PetscFunctionBegin;
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(drdp[0],&rp);CHKERRQ(ierr);
-
   rp[0] = 0.;
   ierr  = VecRestoreArray(drdp[0],&rp);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PostStep"
-PetscErrorCode PostStep(TS ts)
-{
-  PetscErrorCode ierr;
-  Vec            X;
-  PetscReal      t;
-
-  PetscFunctionBegin;
-  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
-  if (t >= .2) {
-    ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
-    ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    exit(0);
-    /* results in initial conditions after fault of -u 0.496792,1.00932 */
-  }
   PetscFunctionReturn(0);
 }
 
@@ -196,7 +170,7 @@ PetscErrorCode PostStep(TS ts)
 PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,AppCtx *ctx)
 {
   PetscErrorCode ierr;
-  PetscScalar *x,*y,sensip;
+  PetscScalar    *x,*y,sensip;
 
   PetscFunctionBegin;
   ierr = VecGetArray(lambda,&x);CHKERRQ(ierr);
@@ -397,7 +371,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = TSSetDuration(ts,100000,10.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  /* ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);  */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
@@ -428,10 +401,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&q);CHKERRQ(ierr);
 
-  /*   Reset start time for the adjoint integration */
-  ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
-
-  /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSetCostIntegrand(ts,1,q,   (PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
@@ -439,17 +408,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
                                         drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
-  /*
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: \n");CHKERRQ(ierr);
-  ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameters: \n");CHKERRQ(ierr);
-  ierr = VecView(lambdap[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  */
   ierr = VecView(q,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-/*
-  ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n cost function=%.15f\n",x_ptr[0]);CHKERRQ(ierr);
-*/
   ierr = ComputeSensiP(lambda[0],lambdap[0],ctx);CHKERRQ(ierr);
 
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);

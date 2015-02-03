@@ -131,6 +131,8 @@ int main(int argc,char **argv)
   PetscErrorCode     ierr;
   Tao                tao;
   TaoConvergedReason reason;
+  KSP                ksp;
+  PC                 pc;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -214,9 +216,6 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
   ierr = TSAdjointSetSensitivity(ts,user.lambda,1);CHKERRQ(ierr);
   
-  /*   Reset start time for the adjoint integration */
-  ierr = TSSetTime(ts,user.ftime);CHKERRQ(ierr);
-
   /*   Set RHS Jacobian for the adjoint integration */
   ierr = TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user);CHKERRQ(ierr);
 
@@ -240,23 +239,7 @@ int main(int argc,char **argv)
   /* Set routine for function and gradient evaluation */
   ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
   
-  /* Set bounds for the optimization */
-  /*
-  Vec lowerb,upperb;
-  ierr = VecDuplicate(ic,&lowerb);CHKERRQ(ierr);
-  ierr = VecDuplicate(ic,&upperb);CHKERRQ(ierr);
-  ierr = VecGetArray(lowerb,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 1.0; x_ptr[1] = 0.1;
-  ierr = VecRestoreArray(lowerb,&x_ptr);CHKERRQ(ierr);
-  ierr = VecGetArray(upperb,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 3.0; x_ptr[1] = 0.9;
-  ierr = VecRestoreArray(upperb,&x_ptr);CHKERRQ(ierr);
-  ierr = TaoSetVariableBounds(tao,lowerb,upperb);
-  */
-
   /* Check for any TAO command line options */
-  KSP ksp;
-  PC  pc;
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
   if (ksp) {
@@ -289,8 +272,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&user.lambda[0]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
-  /*ierr = VecDestroy(&lowerb);CHKERRQ(ierr);
-  ierr = VecDestroy(&upperb);CHKERRQ(ierr);*/
   ierr = VecDestroy(&ic);CHKERRQ(ierr);
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
@@ -364,15 +345,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = VecGetArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
   y_ptr[0] = 2.*(x_ptr[0]-user->x_ob[0]);   
   y_ptr[1] = 2.*(x_ptr[1]-user->x_ob[1]);
-  /* 
-  y_ptr[0] = 1.0;
-  y_ptr[1] = 0.0;
-  */
   ierr = VecRestoreArray(user->lambda[0],&y_ptr);CHKERRQ(ierr);
   ierr = TSAdjointSetSensitivity(ts,user->lambda,1);CHKERRQ(ierr);
-
-  /*   Reset start time for the adjoint integration */
-  ierr = TSSetTime(ts,user->ftime);CHKERRQ(ierr);
 
   /*   Set RHS Jacobian  for the adjoint integration */
   ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);
