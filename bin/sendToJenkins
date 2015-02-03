@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/bash 
 OPTIND=1
 username=""
 branch="next"
 address="default"
-architecture="linux-gcc-real"
+architecture="none"
 configoptions=""
 silent="no"
 
@@ -12,7 +12,7 @@ while getopts "h?a:b:m:o:su:" opt; do
     h|\?)
       echo "sendToJenkins script"
       echo "Options: -h <help>"
-      echo "         -a <architecture>                  -- default is 'linux-gcc-real'"
+      echo "         -a <architecture>                  -- default is 'none'"
       echo "            eg, one of linux-gcc-real, osx-10.6, etc."
       echo "            Use 'short' for small subset:"
       echo "                linux-gcc-real"
@@ -31,7 +31,7 @@ while getopts "h?a:b:m:o:su:" opt; do
       ;;
     b)
      branch=$OPTARG
-     ;;
+     ;; 
     m)
      address=$OPTARG
      if [ ${address} == "none" ]; then
@@ -80,6 +80,7 @@ fi
 
 
 if [ ${architecture} == "short" ]; then
+  #linux-gcc-real linux-gcc-real-opt linux-gxx-complex linux-dbg-quad osx-10.6 osx-10.6-cxx-cmplx-pkgs-dbg linux-uni; do
   for arch in linux-gcc-real osx-10.6 linux-gxx-complex linux-dbg-quad; do
     command="ssh -S jenkins-proxy ${url} curl -s -X POST https://jenkins-ci.mcs.anl.gov/job/petsc-branch/buildWithParameters?branch=${branch}${mailto}\&named_test=${arch}${configoptions}"
     if [ ${silent} == "no" ]; then
@@ -88,7 +89,7 @@ if [ ${architecture} == "short" ]; then
     ${command}
   done
 else
-  command="ssh -S jenkins-proxy ${url} curl -s -X POST https://jenkins-ci.mcs.anl.gov/job/petsc-branch/buildWithParameters?branch=${branch}${mailto}\&named_test=${architecture}${configoptions}"
+  command="ssh -S jenkins-proxy ${url} curl -s -X POST https://jenkins-ci.mcs.anl.gov/job/petsc-branch/buildWithParameters?branch='${branch}'${mailto}\&named_test=${architecture}${configoptions}"
   if [ ${silent} == "no" ]; then
       echo "${command}"
   fi
