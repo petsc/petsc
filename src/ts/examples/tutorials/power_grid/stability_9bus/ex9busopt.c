@@ -123,7 +123,6 @@ typedef struct {
   PetscReal   t;
   IS          is_diff; /* indices for differential equations */
   IS          is_alg; /* indices for algebraic equations */
-  PetscInt    shift; /* no. of steps */
   PetscReal   freq_u,freq_l; /* upper and lower frequency limit */
   PetscInt    pow; /* power coefficient used in the cost function */
   PetscBool   jacp_flg;
@@ -1237,9 +1236,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   PG[2] = x_ptr[2];
   ierr  = VecRestoreArray(P,&x_ptr);CHKERRQ(ierr);
 
-  /* reset the checkpoit starting number */
-  ctx->shift = 0;
-
   ctx->stepnum = 0;
 
   ierr = DMCreateGlobalVector(ctx->dmpgrid,&X);CHKERRQ(ierr);
@@ -1313,7 +1309,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   /* Prefault period */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps1);CHKERRQ(ierr);
-  ctx->shift += steps1;
 
   /* Create the nonlinear solver for solving the algebraic system */
   /* Note that although the algebraic system needs to be solved only for
@@ -1362,7 +1357,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps2);CHKERRQ(ierr);
-  ctx->shift += steps2;
   
   /* Remove the fault */
   row_loc = 2*ctx->faultbus; col_loc = 2*ctx->faultbus+1;
@@ -1402,7 +1396,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps3);CHKERRQ(ierr);
-  ctx->shift += steps3;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
@@ -1435,7 +1428,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetTime(ts,ctx->tmax);CHKERRQ(ierr);
   /*   Set RHS Jacobian and number of steps for the adjoint integration */
   ierr = TSSetDuration(ts,steps3,PETSC_DEFAULT);CHKERRQ(ierr);
-  ctx->shift = steps1+steps2;
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
   ierr = MatZeroEntries(ctx->J);CHKERRQ(ierr);
@@ -1456,7 +1448,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetTime(ts,ctx->tfaultoff);CHKERRQ(ierr);
   /*   Set RHS Jacobian and number of steps for the adjoint integration */
   ierr = TSSetDuration(ts,steps2,PETSC_DEFAULT);CHKERRQ(ierr);
-  ctx->shift = steps1;
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
   ierr = MatZeroEntries(ctx->J);CHKERRQ(ierr);
@@ -1475,7 +1466,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSSetTime(ts,ctx->tfaulton);CHKERRQ(ierr);
   /*   Set RHS Jacobian and number of steps for the adjoint integration */
   ierr = TSSetDuration(ts,steps1,PETSC_DEFAULT);CHKERRQ(ierr);
-  ctx->shift = 0;
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
   /* 

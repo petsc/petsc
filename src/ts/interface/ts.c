@@ -3345,8 +3345,6 @@ PetscErrorCode TSAdjointSolve(TS ts)
     }
   }
   ts->solvetime = ts->ptime;
-  ierr = TSMonitor(ts,0,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-  ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

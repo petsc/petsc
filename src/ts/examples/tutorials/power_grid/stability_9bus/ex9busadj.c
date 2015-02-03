@@ -120,7 +120,6 @@ typedef struct {
   PetscReal   t;
   IS          is_diff; /* indices for differential equations */
   IS          is_alg; /* indices for algebraic equations */
-  PetscInt    shift; /* no. of steps */
 } Userctx;
 
 
@@ -805,13 +804,12 @@ int main(int argc,char **argv)
   /* sensitivity context */
   PetscScalar    *y_ptr;
   Vec            lambda[1];
-  PetscInt       steps;
+  PetscInt       steps, total_steps = 0;
 
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
-  user.shift      = 0;
   user.neqs_gen   = 9*ngen; /* # eqs. for generator subsystem */
   user.neqs_net   = 2*nbus; /* # eqs. for network subsystem   */
   user.neqs_pgrid = user.neqs_gen + user.neqs_net;
@@ -931,7 +929,7 @@ int main(int argc,char **argv)
   /* Prefault period */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  user.shift += steps;
+  total_steps += steps;
 
   /* Create the nonlinear solver for solving the algebraic system */
   /* Note that although the algebraic system needs to be solved only for
@@ -985,7 +983,7 @@ int main(int argc,char **argv)
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  user.shift += steps;
+  total_steps += steps;
   /* Remove the fault */
   row_loc = 2*user.faultbus; col_loc = 2*user.faultbus+1;
   val     = -1/user.Rfault;
@@ -1022,7 +1020,7 @@ int main(int argc,char **argv)
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  user.shift += steps;
+  total_steps += steps;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
@@ -1051,7 +1049,7 @@ int main(int argc,char **argv)
   ierr = TSSetTime(ts,user.tmax);CHKERRQ(ierr);
 
   /*   Set RHS Jacobian and number of steps for the adjoint integration */
-  ierr = TSSetDuration(ts,user.shift,PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,total_steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
   /* ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,&user);CHKERRQ(ierr); */
