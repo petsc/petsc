@@ -1436,7 +1436,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   /*   Set RHS Jacobian and number of steps for the adjoint integration */
   ierr = TSSetDuration(ts,steps3,PETSC_DEFAULT);CHKERRQ(ierr);
   ctx->shift = steps1+steps2;
-  ierr = TSAdjointSolve(ts,X);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
   ierr = MatZeroEntries(ctx->J);CHKERRQ(ierr);
   /* Applying disturbance - resistive fault at ctx->faultbus */
@@ -1457,7 +1457,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   /*   Set RHS Jacobian and number of steps for the adjoint integration */
   ierr = TSSetDuration(ts,steps2,PETSC_DEFAULT);CHKERRQ(ierr);
   ctx->shift = steps1;
-  ierr = TSAdjointSolve(ts,X);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
   ierr = MatZeroEntries(ctx->J);CHKERRQ(ierr);
   /* remove the fault */
@@ -1476,7 +1476,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   /*   Set RHS Jacobian and number of steps for the adjoint integration */
   ierr = TSSetDuration(ts,steps1,PETSC_DEFAULT);CHKERRQ(ierr);
   ctx->shift = 0;
-  ierr = TSAdjointSolve(ts,X);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
   /* 
   ierr = MatAssemblyBegin(ctx->Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

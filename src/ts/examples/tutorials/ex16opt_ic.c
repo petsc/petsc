@@ -221,7 +221,7 @@ int main(int argc,char **argv)
   ierr = TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,user.steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
-  ierr = TSAdjointSolve(ts,user.x);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
   ierr = VecView(user.lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -379,7 +379,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec IC,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,user->steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
-  ierr = TSAdjointSolve(ts,user->x);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
  
   ierr = VecCopy(user->lambda[0],G);
   ierr = VecView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

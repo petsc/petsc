@@ -82,7 +82,7 @@ struct _p_TS {
   Vec       *vecs_sensi;
   Vec       *vecs_sensip;
   PetscInt  numberadjs;
-  Vec       vec_costquad;
+  Vec       vec_costintegral;
   PetscInt  adjointsetupcalled;
   /* workspace for Adjoint computations */
   Vec       vec_costintegrand;

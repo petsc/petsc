@@ -1977,7 +1977,7 @@ PetscErrorCode  TSReset(TS ts)
   ts->vecs_sensi = 0;
   ts->vecs_sensip = 0;
   ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
-  ierr = VecDestroy(&ts->vec_costquad);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -2449,10 +2449,10 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscE
   if (qsize!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions is inconsistent with the number of integrals (size of the 3rd input vector of TSAdjointSetCostIntegrand()).");
 
   ierr = PetscObjectReference((PetscObject)q);CHKERRQ(ierr);
-  ierr = VecDestroy(&ts->vec_costquad);CHKERRQ(ierr);
-  ts->vec_costquad = q;
+  ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
+  ts->vec_costintegral = q;
 
-  ierr                  = VecDuplicate(ts->vec_costquad,&ts->vec_costintegrand);CHKERRQ(ierr);
+  ierr                  = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
   ts->costintegrand     = fq;
   ts->costintegrandctx  = ctx;
 
@@ -2466,9 +2466,9 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscE
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointGetCostQuadrature"
+#define __FUNCT__ "TSAdjointGetCostIntegral"
 /*@
-   TSAdjointGetCostQuadrature - Returns the values of the quadrature (or integral) terms in a cost function.
+   TSAdjointGetCostIntegral - Returns the values of the integral term in the cost functions.
    It is valid to call the routine after a backward run.
 
    Not Collective
@@ -2477,7 +2477,7 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscE
 .  ts - the TS context obtained from TSCreate()
 
    Output Parameter:
-.  v - the vector containing the solution
+.  v - the vector containing the integrals for each cost function
 
    Level: intermediate
 
@@ -2485,19 +2485,19 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscE
 
 .keywords: TS, sensitivity analysis
 @*/
-PetscErrorCode  TSAdjointGetCostQuadrature(TS ts,Vec *v)
+PetscErrorCode  TSAdjointGetCostIntegral(TS ts,Vec *v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(v,2);
-  *v = ts->vec_costquad;
+  *v = ts->vec_costintegral;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdjointComputeCostIntegrand"
 /*@
-   TSAdjointComputeCostIntegrand - Evaluates the quadrature function in the cost functions.
+   TSAdjointComputeCostIntegrand - Evaluates the integral function in the cost functions.
 
    Input Parameters:
 +  ts - the TS context
@@ -3302,8 +3302,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
    Collective on TS
 
    Input Parameter:
-+  ts - the TS context obtained from TSCreate()
--  u - the solution vector  (can be null if TSSetSolution() was used, otherwise must contain the initial conditions)
+.  ts - the TS context obtained from TSCreate()
 
    Level: intermediate
 
@@ -3314,16 +3313,12 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
 .seealso: TSCreate(), TSSetSolution(), TSStep()
 @*/
-PetscErrorCode TSAdjointSolve(TS ts,Vec u)
+PetscErrorCode TSAdjointSolve(TS ts)
 {
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
-  if (u) {
-    ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
-  }
   ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
   /* reset time step and iteration counters */
   ts->steps             = 0;
@@ -3349,12 +3344,8 @@ PetscErrorCode TSAdjointSolve(TS ts,Vec u)
       ierr = TSPostStep(ts);CHKERRQ(ierr);
     }
   }
-  if (u) {ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);}
   ts->solvetime = ts->ptime;
-  ierr = TSMonitor(ts,0,ts->ptime,ts->vec_sol);CHKERRQ(ierr);  
-  ierr = VecViewFromOptions(u, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
-
-  ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
+  ierr = TSMonitor(ts,0,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

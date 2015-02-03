@@ -246,8 +246,8 @@ PETSC_EXTERN PetscErrorCode TSAdjointGetSensitivityP(TS,Vec**,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSAdjointSetRHSJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeRHSJacobianP(TS,PetscReal,Vec,Mat);
 PETSC_EXTERN PetscErrorCode TSAdjointSetCostIntegrand(TS,PetscInt,Vec,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),void*);
-PETSC_EXTERN PetscErrorCode TSAdjointGetCostQuadrature(TS,Vec*);
-PETSC_EXTERN PetscErrorCode TSAdjointSolve(TS,Vec);
+PETSC_EXTERN PetscErrorCode TSAdjointGetCostIntegral(TS,Vec*);
+PETSC_EXTERN PetscErrorCode TSAdjointSolve(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointStep(TS);
 
 PETSC_EXTERN PetscErrorCode TSAdjointSetUp(TS);
