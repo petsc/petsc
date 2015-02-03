@@ -1427,10 +1427,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobianP(ts,ctx->Jacp,RHSJacobianP,ctx);CHKERRQ(ierr); 
 
-  ierr = TSAdjointSetCostIntegrand(ts,1,q,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,ctx);CHKERRQ(ierr);
-  ierr = TSAdjointSetDRDYFunction(ts,drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,ctx);CHKERRQ(ierr);
-  ierr = TSAdjointSetDRDPFunction(ts,drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr); 
-  
+  ierr = TSAdjointSetCostIntegrand(ts,1,q,   (PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
+                                        drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
+                                        drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr);
+
   /*   Reset start time for the adjoint integration */
   ierr = TSSetTime(ts,ctx->tmax);CHKERRQ(ierr);
   /*   Set RHS Jacobian and number of steps for the adjoint integration */

@@ -353,9 +353,9 @@ int main(int argc,char **argv)
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
 
-  ierr = TSAdjointSetCostIntegrand(ts,1,q,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,&ctx);CHKERRQ(ierr);
-  ierr = TSAdjointSetDRDYFunction(ts,drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,&ctx);CHKERRQ(ierr);
-  ierr = TSAdjointSetDRDPFunction(ts,drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostIntegrand(ts,1,q,   (PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
+                                        drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
+                                        drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,&ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts,U);CHKERRQ(ierr);
 

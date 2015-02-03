@@ -84,15 +84,13 @@ struct _p_TS {
   PetscInt  numberadjs;
   Vec       vec_costquad;
   PetscInt  adjointsetupcalled;
-  /* workspace for SA */
+  /* workspace for Adjoint computations */
   Vec       vec_costintegrand;
   Mat       Jacp;
   void      *rhsjacobianpctx;
   void      *costintegrandctx;
   Vec       *vecs_drdy;
-  void      *drdyfunctionctx;
   Vec       *vecs_drdp;
-  void      *drdpfunctionctx;
 
   PetscErrorCode (*rhsjacobianp)(TS,PetscReal,Vec,Mat,void*);
   PetscErrorCode (*costintegrand)(TS,PetscReal,Vec,Vec,void*);
