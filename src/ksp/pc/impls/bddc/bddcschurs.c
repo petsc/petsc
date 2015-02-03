@@ -107,7 +107,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   /* get Schur complement matrices */
   if (!sub_schurs->use_mumps) {
     if (compute_Stilda) {
-      SETERRQ(PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Computation of Stildas requires MUMPS");
+      SETERRQ(PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS");
     }
     ierr = MatSchurComplementGetSubMatrices(sub_schurs->S,&A_II,NULL,&A_IB,&A_BI,&A_BB);CHKERRQ(ierr);
     ierr = PetscMalloc4(sub_schurs->n_subs,&is_subset_B,
@@ -123,11 +123,15 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 
   /* determine interior problems */
   ierr = ISDestroy(&sub_schurs->is_I_layer);CHKERRQ(ierr);
-  if (nlayers >= 0 && xadj != NULL && adjncy != NULL) { /* Interior problems can be different from the original one */
+  ierr = ISGetLocalSize(sub_schurs->is_I,&i);CHKERRQ(ierr);
+  if (nlayers >= 0 && i) { /* Interior problems can be different from the original one */
     PetscBT                touched;
     const PetscInt*        idx_B;
     PetscInt               n_I,n_B,n_local_dofs,n_prev_added,j,layer,*local_numbering;
 
+    if (xadj == NULL || adjncy == NULL) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot request layering without adjacency");
+    }
     /* get sizes */
     ierr = ISGetLocalSize(sub_schurs->is_I,&n_I);CHKERRQ(ierr);
     ierr = ISGetLocalSize(sub_schurs->is_B,&n_B);CHKERRQ(ierr);
@@ -191,7 +195,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       AE_II = A_II;
     }
   }
-
   /* Get info on subset sizes and sum of all subsets sizes */
   max_subset_size = 0;
   local_size = 0;
@@ -235,113 +238,118 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 
   S_all = NULL;
   ierr = MatIsSymmetric(sub_schurs->A,0.0,&is_symmetric);CHKERRQ(ierr);
-  if (!sub_schurs->use_mumps) {
-    /* subsets in original and boundary numbering */
-    for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = ISGlobalToLocalMappingApplyIS(sub_schurs->BtoNmap,IS_GTOLM_DROP,sub_schurs->is_subs[i],&is_subset_B[i]);CHKERRQ(ierr);
-    }
+  if (sub_schurs->n_subs) {
+    if (!sub_schurs->use_mumps) {
+      /* subsets in original and boundary numbering */
+      for (i=0;i<sub_schurs->n_subs;i++) {
+        ierr = ISGlobalToLocalMappingApplyIS(sub_schurs->BtoNmap,IS_GTOLM_DROP,sub_schurs->is_subs[i],&is_subset_B[i]);CHKERRQ(ierr);
+      }
 
-    /* EE block */
-    for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = MatGetSubMatrix(A_BB,is_subset_B[i],is_subset_B[i],MAT_INITIAL_MATRIX,&AE_EE[i]);CHKERRQ(ierr);
-    }
-    /* IE block */
-    for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = MatGetSubMatrix(A_IB,is_I,is_subset_B[i],MAT_INITIAL_MATRIX,&AE_IE[i]);CHKERRQ(ierr);
-    }
-    /* EI block */
-    for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = MatGetSubMatrix(A_BI,is_subset_B[i],is_I,MAT_INITIAL_MATRIX,&AE_EI[i]);CHKERRQ(ierr);
-    }
+      /* EE block */
+      for (i=0;i<sub_schurs->n_subs;i++) {
+        ierr = MatGetSubMatrix(A_BB,is_subset_B[i],is_subset_B[i],MAT_INITIAL_MATRIX,&AE_EE[i]);CHKERRQ(ierr);
+      }
+      /* IE block */
+      for (i=0;i<sub_schurs->n_subs;i++) {
+        ierr = MatGetSubMatrix(A_IB,is_I,is_subset_B[i],MAT_INITIAL_MATRIX,&AE_IE[i]);CHKERRQ(ierr);
+      }
+      /* EI block */
+      for (i=0;i<sub_schurs->n_subs;i++) {
+        ierr = MatGetSubMatrix(A_BI,is_subset_B[i],is_I,MAT_INITIAL_MATRIX,&AE_EI[i]);CHKERRQ(ierr);
+      }
 
-    /* setup Schur complements on subset */
-    for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = MatDestroy(&sub_schurs->S_Ej[i]);CHKERRQ(ierr);
-      ierr = MatCreateSchurComplement(AE_II,AE_II,AE_IE[i],AE_EI[i],AE_EE[i],&sub_schurs->S_Ej[i]);CHKERRQ(ierr);
-      ierr = MatDestroy(&AE_EE[i]);CHKERRQ(ierr);
-      ierr = MatDestroy(&AE_IE[i]);CHKERRQ(ierr);
-      ierr = MatDestroy(&AE_EI[i]);CHKERRQ(ierr);
-      if (AE_II == A_II) { /* we can reuse the same ksp */
-        KSP ksp;
-        ierr = MatSchurComplementGetKSP(sub_schurs->S,&ksp);CHKERRQ(ierr);
-        ierr = MatSchurComplementSetKSP(sub_schurs->S_Ej[i],ksp);CHKERRQ(ierr);
-      } else { /* build new ksp object which inherits ksp and pc types from the original one */
-        KSP      origksp,schurksp;
-        PC       origpc,schurpc;
-        KSPType  ksp_type;
-        PCType   pc_type;
-        PetscInt n_internal;
+      /* setup Schur complements on subset */
+      for (i=0;i<sub_schurs->n_subs;i++) {
+        ierr = MatDestroy(&sub_schurs->S_Ej[i]);CHKERRQ(ierr);
+        ierr = MatCreateSchurComplement(AE_II,AE_II,AE_IE[i],AE_EI[i],AE_EE[i],&sub_schurs->S_Ej[i]);CHKERRQ(ierr);
+        ierr = MatDestroy(&AE_EE[i]);CHKERRQ(ierr);
+        ierr = MatDestroy(&AE_IE[i]);CHKERRQ(ierr);
+        ierr = MatDestroy(&AE_EI[i]);CHKERRQ(ierr);
+        if (AE_II == A_II) { /* we can reuse the same ksp */
+          KSP ksp;
+          ierr = MatSchurComplementGetKSP(sub_schurs->S,&ksp);CHKERRQ(ierr);
+          ierr = MatSchurComplementSetKSP(sub_schurs->S_Ej[i],ksp);CHKERRQ(ierr);
+        } else { /* build new ksp object which inherits ksp and pc types from the original one */
+          KSP      origksp,schurksp;
+          PC       origpc,schurpc;
+          KSPType  ksp_type;
+          PCType   pc_type;
+          PetscInt n_internal;
 
-        ierr = MatSchurComplementGetKSP(sub_schurs->S,&origksp);CHKERRQ(ierr);
-        ierr = MatSchurComplementGetKSP(sub_schurs->S_Ej[i],&schurksp);CHKERRQ(ierr);
-        ierr = KSPGetType(origksp,&ksp_type);CHKERRQ(ierr);
-        ierr = KSPSetType(schurksp,ksp_type);CHKERRQ(ierr);
-        ierr = KSPGetPC(schurksp,&schurpc);CHKERRQ(ierr);
-        ierr = KSPGetPC(origksp,&origpc);CHKERRQ(ierr);
-        ierr = PCGetType(origpc,&pc_type);CHKERRQ(ierr);
-        ierr = PCSetType(schurpc,pc_type);CHKERRQ(ierr);
-        ierr = ISGetSize(is_I,&n_internal);CHKERRQ(ierr);
-        if (n_internal) { /* UMFPACK gives error with 0 sized problems */
-          MatSolverPackage solver=NULL;
-          ierr = PCFactorGetMatSolverPackage(origpc,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
-          if (solver) {
-            ierr = PCFactorSetMatSolverPackage(schurpc,solver);CHKERRQ(ierr);
+          ierr = MatSchurComplementGetKSP(sub_schurs->S,&origksp);CHKERRQ(ierr);
+          ierr = MatSchurComplementGetKSP(sub_schurs->S_Ej[i],&schurksp);CHKERRQ(ierr);
+          ierr = KSPGetType(origksp,&ksp_type);CHKERRQ(ierr);
+          ierr = KSPSetType(schurksp,ksp_type);CHKERRQ(ierr);
+          ierr = KSPGetPC(schurksp,&schurpc);CHKERRQ(ierr);
+          ierr = KSPGetPC(origksp,&origpc);CHKERRQ(ierr);
+          ierr = PCGetType(origpc,&pc_type);CHKERRQ(ierr);
+          ierr = PCSetType(schurpc,pc_type);CHKERRQ(ierr);
+          ierr = ISGetSize(is_I,&n_internal);CHKERRQ(ierr);
+          if (n_internal) { /* UMFPACK gives error with 0 sized problems */
+            MatSolverPackage solver=NULL;
+            ierr = PCFactorGetMatSolverPackage(origpc,(const MatSolverPackage*)&solver);CHKERRQ(ierr);
+            if (solver) {
+              ierr = PCFactorSetMatSolverPackage(schurpc,solver);CHKERRQ(ierr);
+            }
           }
+          ierr = KSPSetUp(schurksp);CHKERRQ(ierr);
         }
-        ierr = KSPSetUp(schurksp);CHKERRQ(ierr);
       }
-    }
-    /* free */
-    ierr = ISDestroy(&is_I);CHKERRQ(ierr);
-    ierr = MatDestroy(&AE_II);CHKERRQ(ierr);
-    for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = ISDestroy(&is_subset_B[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree4(is_subset_B,AE_IE,AE_EI,AE_EE);CHKERRQ(ierr);
+      /* free */
+      ierr = ISDestroy(&is_I);CHKERRQ(ierr);
+      ierr = MatDestroy(&AE_II);CHKERRQ(ierr);
+      for (i=0;i<sub_schurs->n_subs;i++) {
+        ierr = ISDestroy(&is_subset_B[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree4(is_subset_B,AE_IE,AE_EI,AE_EE);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS)
-  } else {
-    Mat           A,F;
-    IS            is_A_all;
-    PetscInt      *idxs_schur,n_I;
-
-    /* get working mat */
-    ierr = ISGetLocalSize(sub_schurs->is_I_layer,&n_I);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size+n_I,all_local_idx_N,PETSC_COPY_VALUES,&is_A_all);CHKERRQ(ierr);
-    ierr = MatGetSubMatrixUnsorted(sub_schurs->A,is_A_all,is_A_all,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
-    ierr = ISDestroy(&is_A_all);CHKERRQ(ierr);
-
-    if (n_I) {
-      if (is_symmetric) {
-        ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
-      } else {
-        ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-      }
-
-      /* subsets ordered last */
-      ierr = PetscMalloc1(local_size,&idxs_schur);CHKERRQ(ierr);
-      for (i=0;i<local_size;i++) {
-        idxs_schur[i] = n_I+i+1;
-      }
-      ierr = MatMumpsSetSchurIndices(F,local_size,idxs_schur);CHKERRQ(ierr);
-      ierr = PetscFree(idxs_schur);CHKERRQ(ierr);
-
-      /* factorization step */
-      if (is_symmetric) {
-        ierr = MatCholeskyFactorSymbolic(F,A,NULL,NULL);CHKERRQ(ierr);
-        ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
-      } else {
-        ierr = MatLUFactorSymbolic(F,A,NULL,NULL,NULL);CHKERRQ(ierr);
-        ierr = MatLUFactorNumeric(F,A,NULL);CHKERRQ(ierr);
-      }
-
-      /* get explicit Schur Complement computed during numeric factorization */
-      ierr = MatMumpsGetSchurComplement(F,&S_all);CHKERRQ(ierr);
-      ierr = MatDestroy(&F);CHKERRQ(ierr);
     } else {
-      ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&S_all);CHKERRQ(ierr);
-    }
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+      Mat           A,F;
+      IS            is_A_all;
+      PetscInt      *idxs_schur,n_I;
+
+      /* get working mat */
+      ierr = ISGetLocalSize(sub_schurs->is_I_layer,&n_I);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size+n_I,all_local_idx_N,PETSC_COPY_VALUES,&is_A_all);CHKERRQ(ierr);
+      ierr = MatGetSubMatrixUnsorted(sub_schurs->A,is_A_all,is_A_all,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+      ierr = ISDestroy(&is_A_all);CHKERRQ(ierr);
+
+      if (n_I) {
+        if (is_symmetric) {
+          ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+        } else {
+          ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+        }
+
+        /* subsets ordered last */
+        ierr = PetscMalloc1(local_size,&idxs_schur);CHKERRQ(ierr);
+        for (i=0;i<local_size;i++) {
+          idxs_schur[i] = n_I+i+1;
+        }
+        ierr = MatMumpsSetSchurIndices(F,local_size,idxs_schur);CHKERRQ(ierr);
+        ierr = PetscFree(idxs_schur);CHKERRQ(ierr);
+
+        /* factorization step */
+        if (is_symmetric) {
+          ierr = MatCholeskyFactorSymbolic(F,A,NULL,NULL);CHKERRQ(ierr);
+          ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
+        } else {
+          ierr = MatLUFactorSymbolic(F,A,NULL,NULL,NULL);CHKERRQ(ierr);
+          ierr = MatLUFactorNumeric(F,A,NULL);CHKERRQ(ierr);
+        }
+
+        /* get explicit Schur Complement computed during numeric factorization */
+        ierr = MatMumpsGetSchurComplement(F,&S_all);CHKERRQ(ierr);
+        ierr = MatDestroy(&F);CHKERRQ(ierr);
+      } else {
+        ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&S_all);CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(&A);CHKERRQ(ierr);
 #endif
+    }
+  } else {
+    ierr = PetscFree(nnz);CHKERRQ(ierr);
+    ierr = PetscFree(all_local_idx_N);CHKERRQ(ierr);
   }
 
   if (!sub_schurs->n_subs_seq_g) {
@@ -844,10 +852,10 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   if (sub_schurs->n_subs) {
     ierr = PetscFree(sub_schurs->is_subs);CHKERRQ(ierr);
     ierr = PetscFree2(sub_schurs->S_Ej,sub_schurs->S_Ej_tilda);CHKERRQ(ierr);
-    ierr = PetscFree2(sub_schurs->index_sequential,sub_schurs->index_parallel);CHKERRQ(ierr);
-    ierr = PetscFree(sub_schurs->auxglobal_sequential);CHKERRQ(ierr);
-    ierr = PetscFree(sub_schurs->auxglobal_parallel);CHKERRQ(ierr);
   }
+  ierr = PetscFree2(sub_schurs->index_sequential,sub_schurs->index_parallel);CHKERRQ(ierr);
+  ierr = PetscFree(sub_schurs->auxglobal_sequential);CHKERRQ(ierr);
+  ierr = PetscFree(sub_schurs->auxglobal_parallel);CHKERRQ(ierr);
   sub_schurs->n_subs = 0;
   PetscFunctionReturn(0);
 }
