@@ -1036,12 +1036,18 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,Vec *DICDP,Userctx *user)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Userctx        user;
-  Vec            p;
-  PetscScalar    *x_ptr;
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  PetscInt       i;
+  Userctx            user;
+  Vec                p;
+  PetscScalar        *x_ptr;
+  PetscErrorCode     ierr;
+  PetscMPIInt        size;
+  PetscInt           i;
+  PetscViewer        Xview,Ybusview;
+  PetscInt           *idx2;
+  Tao                tao;
+  TaoConvergedReason reason;
+  KSP                ksp;
+  PC                 pc;
 
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -1053,7 +1059,6 @@ int main(int argc,char **argv)
   user.neqs_pgrid = user.neqs_gen + user.neqs_net;
 
   /* Create indices for differential and algebraic equations */
-  PetscInt *idx2;
   ierr = PetscMalloc1(7*ngen,&idx2);CHKERRQ(ierr);
   for (i=0; i<ngen; i++) {
     idx2[7*i]   = 9*i;   idx2[7*i+1] = 9*i+1; idx2[7*i+2] = 9*i+2; idx2[7*i+3] = 9*i+3;
@@ -1099,7 +1104,6 @@ int main(int argc,char **argv)
   ierr = DMCompositeAddDM(user.dmpgrid,user.dmnet);CHKERRQ(ierr);
 
   /* Read initial voltage vector and Ybus */
-  PetscViewer    Xview,Ybusview;
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"X.bin",FILE_MODE_READ,&Xview);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"Ybus.bin",FILE_MODE_READ,&Ybusview);CHKERRQ(ierr);
 
@@ -1128,8 +1132,6 @@ int main(int argc,char **argv)
   ierr = MatSetUp(user.Jacp);CHKERRQ(ierr);
   ierr = MatZeroEntries(user.Jacp);CHKERRQ(ierr); /* initialize to zeros */
 
-  Tao                tao;
-  TaoConvergedReason reason;
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBLMVM);CHKERRQ(ierr);
@@ -1159,8 +1161,6 @@ int main(int argc,char **argv)
   ierr = TaoSetVariableBounds(tao,lowerb,upperb);
 
   /* Check for any TAO command line options */
-  KSP ksp;
-  PC  pc;
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
   ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
   if (ksp) {
@@ -1229,6 +1229,9 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   PetscInt       steps1,steps2,steps3;
   Vec            DICDP[3];
   Vec            F_alg;
+  PetscInt       row_loc,col_loc;
+  PetscScalar    val;
+  Vec            Xdot;
 
   ierr  = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
   PG[0] = x_ptr[0];
@@ -1275,24 +1278,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = SNESSolve(snes_alg,NULL,X);CHKERRQ(ierr);
 
   /* Just to set up the Jacobian structure */
-  Vec          Xdot;
   ierr = VecDuplicate(X,&Xdot);CHKERRQ(ierr);
   ierr = IJacobian(ts,0.0,X,Xdot,0.0,ctx->J,ctx->J,ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&Xdot);CHKERRQ(ierr);
 
-  /* Save initial solution */
-  /*
-  PetscScalar *x,*mat;
-  PetscInt idx=ctx->stepnum*(ctx->neqs_pgrid+1);
-  ierr = MatDenseGetArray(ctx->Sol,&mat);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-
-  mat[idx] = 0.0;
-
-  ierr = PetscMemcpy(mat+idx+1,x,ctx->neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(ctx->Sol,&mat);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  */
   ctx->stepnum++;
 
   /*
@@ -1321,8 +1310,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   /* Apply disturbance - resistive fault at ctx->faultbus */
   /* This is done by adding shunt conductance to the diagonal location
      in the Ybus matrix */
-  PetscInt    row_loc,col_loc;
-  PetscScalar val;
   row_loc = 2*ctx->faultbus; col_loc = 2*ctx->faultbus+1; /* Location for G */
   val     = 1/ctx->Rfault;
   ierr    = MatSetValues(ctx->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
@@ -1337,16 +1324,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   /* Solve the algebraic equations */
   ierr = SNESSolve(snes_alg,NULL,X);CHKERRQ(ierr);
 
-  /* Save fault-on solution */
-  /*
-  idx      = ctx->stepnum*(ctx->neqs_pgrid+1);
-  ierr     = MatDenseGetArray(ctx->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecGetArray(X,&x);CHKERRQ(ierr);
-  mat[idx] = ctx->tfaulton;
-  ierr     = PetscMemcpy(mat+idx+1,x,ctx->neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr     = MatDenseRestoreArray(ctx->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  */
   ctx->stepnum++;
 
   /* Disturbance period */
@@ -1357,7 +1334,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps2);CHKERRQ(ierr);
-  
+
   /* Remove the fault */
   row_loc = 2*ctx->faultbus; col_loc = 2*ctx->faultbus+1;
   val     = -1/ctx->Rfault;
@@ -1376,16 +1353,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   /* Solve the algebraic equations */
   ierr = SNESSolve(snes_alg,NULL,X);CHKERRQ(ierr);
 
-  /* Save tfault off solution */
-  /*
-  idx      = ctx->stepnum*(ctx->neqs_pgrid+1);
-  ierr     = MatDenseGetArray(ctx->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecGetArray(X,&x);CHKERRQ(ierr);
-  mat[idx] = ctx->tfaultoff;
-  ierr     = PetscMemcpy(mat+idx+1,x,ctx->neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr     = MatDenseRestoreArray(ctx->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  */
   ctx->stepnum++;
 
   /* Post-disturbance period */
@@ -1405,11 +1372,11 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   /*   Set initial conditions for the adjoint integration */
   ierr = VecZeroEntries(lambda[0]);CHKERRQ(ierr);
   ierr = TSAdjointSetSensitivity(ts,lambda,1);CHKERRQ(ierr);
-  
+
   ierr = MatGetVecs(ctx->Jacp,&lambdap[0],NULL);CHKERRQ(ierr);
   ierr = VecZeroEntries(lambdap[0]);CHKERRQ(ierr);
   ierr = TSAdjointSetSensitivityP(ts,lambdap,1);CHKERRQ(ierr);
-  
+
   ierr = VecDuplicate(lambda[0],&drdy[0]);CHKERRQ(ierr);
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
   ierr = VecZeroEntries(drdy[0]);CHKERRQ(ierr);
@@ -1423,9 +1390,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = TSAdjointSetCostIntegrand(ts,1,q,   (PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
                                         drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr);
-
-  /*   Reset start time for the adjoint integration */
-  ierr = TSSetTime(ts,ctx->tmax);CHKERRQ(ierr);
 
   ierr = TSAdjointSetSteps(ts,steps3);CHKERRQ(ierr);
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
@@ -1444,9 +1408,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = MatAssemblyBegin(ctx->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(ctx->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /*   Reset start time for the adjoint integration */
-  ierr = TSSetTime(ts,ctx->tfaultoff);CHKERRQ(ierr);
-  /*   Set RHS Jacobian and number of steps for the adjoint integration */
+
+  /*   Set number of steps for the adjoint integration */
   ierr = TSAdjointSetSteps(ts,steps2);CHKERRQ(ierr);
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
@@ -1462,22 +1425,11 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = MatAssemblyBegin(ctx->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(ctx->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /*   Reset start time for the adjoint integration */
-  ierr = TSSetTime(ts,ctx->tfaulton);CHKERRQ(ierr);
-  /*   Set RHS Jacobian and number of steps for the adjoint integration */
+  /*   Set number of steps for the adjoint integration */
   ierr = TSAdjointSetSteps(ts,steps1);CHKERRQ(ierr);
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
-  /* 
-  ierr = MatAssemblyBegin(ctx->Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(ctx->Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  */
-  /*
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial condition: \n");CHKERRQ(ierr);
-  ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameter: \n");CHKERRQ(ierr);
-  ierr = VecView(lambdap[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  */
+
   ierr = ComputeSensiP(lambda[0],lambdap[0],DICDP,ctx);CHKERRQ(ierr);
   ierr = VecCopy(lambdap[0],G);CHKERRQ(ierr);
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
@@ -1488,21 +1440,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = VecDestroy(&q);CHKERRQ(ierr);
   ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr); 
   ierr = VecDestroy(&lambdap[0]);CHKERRQ(ierr); 
-  /*
-  Mat         A;
-  PetscScalar *amat;
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,ctx->neqs_pgrid+1,ctx->stepnum,NULL,&A);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(ctx->Sol,&mat);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(A,&amat);CHKERRQ(ierr);
-  ierr = PetscMemcpy(amat,mat,(ctx->stepnum*(ctx->neqs_pgrid+1))*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(A,&amat);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(ctx->Sol,&mat);CHKERRQ(ierr);
-  PetscViewer viewer;
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  ierr = MatView(A,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  */
 
   ierr = SNESDestroy(&snes_alg);CHKERRQ(ierr);
   ierr = VecDestroy(&F_alg);CHKERRQ(ierr);

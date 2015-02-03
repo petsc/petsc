@@ -251,6 +251,9 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
   PetscScalar    Id,Iq;  /* Generator dq axis currents */
   PetscScalar    Vd,Vq,SE;
   PetscScalar    IGr,IGi,IDr,IDi;
+  PetscScalar    Zdq_inv[4],det;
+  PetscScalar    PD,QD,Vm0,*v0;
+  PetscInt       k;
 
   PetscFunctionBegin;
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
@@ -297,7 +300,6 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
 
     ierr = ri2dq(Vr,Vi,delta,&Vd,&Vq);CHKERRQ(ierr);
     /* Algebraic equations for stator currents */
-    PetscScalar Zdq_inv[4],det;
     det = Rs[i]*Rs[i] + Xdp[i]*Xqp[i];
 
     Zdq_inv[0] = Rs[i]/det;
@@ -326,8 +328,6 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
     idx = idx + 9;
   }
 
-  PetscScalar PD,QD,Vm0,*v0;
-  PetscInt    k;
   ierr = VecGetArray(user->V0,&v0);CHKERRQ(ierr);
   for (i=0; i < nload; i++) {
     Vr  = xnet[2*lbus[i]]; /* Real part of load bus voltage */
@@ -428,6 +428,7 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
   PetscErrorCode ierr;
   PetscInt       *d_nnz;
   PetscInt       i,idx=0,start=0;
+  PetscInt       ncols;
 
   PetscFunctionBegin;
   ierr = PetscMalloc1(user->neqs_pgrid,&d_nnz);CHKERRQ(ierr);
@@ -454,8 +455,6 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
 
   start = user->neqs_gen;
 
-  PetscInt ncols;
-
   for (i=0; i < nbus; i++) {
     ierr = MatGetRow(user->Ybus,2*i,&ncols,NULL,NULL);CHKERRQ(ierr);
     d_nnz[start+2*i]   += ncols;
@@ -477,19 +476,31 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
 #define __FUNCT__ "ResidualJacobian"
 PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
-  Userctx        *user=(Userctx*)ctx;
-  Vec            Xgen,Xnet;
-  PetscScalar    *xgen,*xnet;
-  PetscInt       i,idx=0;
-  PetscScalar    Vr,Vi,Vm,Vm2;
-  PetscScalar    Eqp,Edp,delta,w; /* Generator variables */
-  PetscScalar    Efd,RF,VR; /* Exciter variables */
-  PetscScalar    Id,Iq;  /* Generator dq axis currents */
-  PetscScalar    Vd,Vq;
-  PetscScalar    val[10];
-  PetscInt       row[2],col[10];
-  PetscInt       net_start=user->neqs_gen;
+  PetscErrorCode    ierr;
+  Userctx           *user=(Userctx*)ctx;
+  Vec               Xgen,Xnet;
+  PetscScalar       *xgen,*xnet;
+  PetscInt          i,idx=0;
+  PetscScalar       Vr,Vi,Vm,Vm2;
+  PetscScalar       Eqp,Edp,delta,w; /* Generator variables */
+  PetscScalar       Efd,RF,VR; /* Exciter variables */
+  PetscScalar       Id,Iq;  /* Generator dq axis currents */
+  PetscScalar       Vd,Vq;
+  PetscScalar       val[10];
+  PetscInt          row[2],col[10];
+  PetscInt          net_start=user->neqs_gen;
+  PetscScalar       Zdq_inv[4],det;
+  PetscScalar       dVd_dVr,dVd_dVi,dVq_dVr,dVq_dVi,dVd_ddelta,dVq_ddelta;
+  PetscScalar       dIGr_ddelta,dIGi_ddelta,dIGr_dId,dIGr_dIq,dIGi_dId,dIGi_dIq;
+  PetscScalar       dSE_dEfd;
+  PetscScalar       dVm_dVd,dVm_dVq,dVm_dVr,dVm_dVi,dVm_ddelta;
+  PetscInt          ncols;
+  const PetscInt    *cols;
+  const PetscScalar *yvals;
+  PetscInt          k;
+  PetscScalar       PD,QD,Vm0,*v0,Vm4;
+  PetscScalar       dPD_dVr,dPD_dVi,dQD_dVr,dQD_dVi;
+  PetscScalar       dIDr_dVr,dIDr_dVi,dIDi_dVr,dIDi_dVi;
 
   PetscFunctionBegin;
   ierr  = MatZeroEntries(B);CHKERRQ(ierr);
@@ -540,7 +551,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
     Vi   = xnet[2*gbus[i]+1]; /* Imaginary part of the generator terminal voltage */
     ierr = ri2dq(Vr,Vi,delta,&Vd,&Vq);CHKERRQ(ierr);
 
-    PetscScalar Zdq_inv[4],det;
     det = Rs[i]*Rs[i] + Xdp[i]*Xqp[i];
 
     Zdq_inv[0] = Rs[i]/det;
@@ -548,7 +558,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
     Zdq_inv[2] = -Xdp[i]/det;
     Zdq_inv[3] = Rs[i]/det;
 
-    PetscScalar dVd_dVr,dVd_dVi,dVq_dVr,dVq_dVi,dVd_ddelta,dVq_ddelta;
     dVd_dVr    = PetscSinScalar(delta); dVd_dVi = -PetscCosScalar(delta);
     dVq_dVr    = PetscCosScalar(delta); dVq_dVi = PetscSinScalar(delta);
     dVd_ddelta = Vr*PetscCosScalar(delta) + Vi*PetscSinScalar(delta);
@@ -570,7 +579,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
     val[3] = 1;       val[4] = Zdq_inv[2]*dVd_dVr + Zdq_inv[3]*dVq_dVr; val[5] = Zdq_inv[2]*dVd_dVi + Zdq_inv[3]*dVq_dVi;
     ierr   = MatSetValues(J,1,row,6,col,val,INSERT_VALUES);CHKERRQ(ierr);
 
-    PetscScalar dIGr_ddelta,dIGi_ddelta,dIGr_dId,dIGr_dIq,dIGi_dId,dIGi_dIq;
     dIGr_ddelta = Id*PetscCosScalar(delta) - Iq*PetscSinScalar(delta);
     dIGi_ddelta = Id*PetscSinScalar(delta) + Iq*PetscCosScalar(delta);
     dIGr_dId    = PetscSinScalar(delta);  dIGr_dIq = PetscCosScalar(delta);
@@ -592,7 +600,7 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 
     /*    fgen[idx+6] = (KE[i]*Efd + SE - VR)/TE[i]; */
     /*    SE  = k1[i]*PetscExpScalar(k2[i]*Efd); */
-    PetscScalar dSE_dEfd;
+
     dSE_dEfd = k1[i]*k2[i]*PetscExpScalar(k2[i]*Efd);
 
     row[0] = idx + 6;
@@ -610,7 +618,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 
     /*    fgen[idx+8] = (VR - KA[i]*RF + KA[i]*KF[i]*Efd/TF[i] - KA[i]*(Vref[i] - Vm))/TA[i]; */
     /* Vm = (Vd^2 + Vq^2)^0.5; */
-    PetscScalar dVm_dVd,dVm_dVq,dVm_dVr,dVm_dVi,dVm_ddelta;
     dVm_dVd    = Vd/Vm; dVm_dVq = Vq/Vm;
     dVm_ddelta = dVm_dVd*dVd_ddelta + dVm_dVq*dVq_ddelta;
     dVm_dVr    = dVm_dVd*dVd_dVr + dVm_dVq*dVq_dVr;
@@ -624,10 +631,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
     idx        = idx + 9;
   }
 
-  PetscInt          ncols;
-  const PetscInt    *cols;
-  const PetscScalar *yvals;
-  PetscInt          k;
 
   for (i=0; i<nbus; i++) {
     ierr   = MatGetRow(user->Ybus,2*i,&ncols,&cols,&yvals);CHKERRQ(ierr);
@@ -651,10 +654,6 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 
   ierr = MatAssemblyBegin(J,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-
-  PetscScalar PD,QD,Vm0,*v0,Vm4;
-  PetscScalar dPD_dVr,dPD_dVi,dQD_dVr,dQD_dVi;
-  PetscScalar dIDr_dVr,dIDr_dVi,dIDi_dVr,dIDi_dVi;
 
   ierr = VecGetArray(user->V0,&v0);CHKERRQ(ierr);
   for (i=0; i < nload; i++) {
@@ -983,7 +982,9 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   PetscViewer    Xview,Ybusview;
   Vec            F_alg;
   Vec            Xdot;
- 
+  PetscInt       row_loc,col_loc;
+  PetscScalar    val;
+
   ierr  = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
   PG[0] = x_ptr[0];
   PG[1] = x_ptr[1];
@@ -1017,7 +1018,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,ctx->neqs_pgrid,ctx->neqs_pgrid);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
   ierr = PreallocateJacobian(J,ctx);CHKERRQ(ierr);
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -1072,8 +1073,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   /* Apply disturbance - resistive fault at ctx->faultbus */
   /* This is done by adding shunt conductance to the diagonal location
      in the Ybus matrix */
-  PetscInt    row_loc,col_loc;
-  PetscScalar val;
   row_loc = 2*ctx->faultbus; col_loc = 2*ctx->faultbus+1; /* Location for G */
   val     = 1/ctx->Rfault;
   ierr    = MatSetValues(ctx->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
