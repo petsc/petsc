@@ -84,6 +84,7 @@ struct _p_TS {
   PetscInt  numberadjs;
   Vec       vec_costintegral;
   PetscInt  adjointsetupcalled;
+  PetscInt  adjoint_max_steps;
   /* workspace for Adjoint computations */
   Vec       vec_costintegrand;
   Mat       Jacp;

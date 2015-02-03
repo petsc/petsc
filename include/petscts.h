@@ -248,8 +248,9 @@ PETSC_EXTERN PetscErrorCode TSAdjointComputeRHSJacobianP(TS,PetscReal,Vec,Mat);
 PETSC_EXTERN PetscErrorCode TSAdjointSetCostIntegrand(TS,PetscInt,Vec,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),void*);
 PETSC_EXTERN PetscErrorCode TSAdjointGetCostIntegral(TS,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointSolve(TS);
-PETSC_EXTERN PetscErrorCode TSAdjointStep(TS);
+PETSC_EXTERN PetscErrorCode TSAdjointSetSteps(TS,PetscInt);
 
+PETSC_EXTERN PetscErrorCode TSAdjointStep(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDYFunction(TS,PetscReal,Vec,Vec*);

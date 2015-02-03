@@ -2262,6 +2262,37 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSAdjointSetSteps"
+/*@
+   TSAdjointSetSteps - Sets the number of steps the adjoint solver should take backward in time
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+.  steps - number of steps to use
+
+   Level: intermediate
+
+   Notes: Normally one does not call this and TSAdjointSolve() integrates back to the original timestep. One can call this
+          so as to integrate back to less than the original timestep
+
+.keywords: TS, timestep, set, maximum, iterations
+
+.seealso: TSSetExactFinalTime()
+@*/
+PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ts,steps,2);
+  if (steps < 0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Cannot step back a negative number of steps");
+  if (steps > ts->total_steps) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Cannot step back more than the total number of forward steps");
+  ts->adjoint_max_steps = steps;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSAdjointSetSensitivity"
 /*@
    TSAdjointSetSensitivity - Sets the initial value of sensitivity (w.r.t. initial conditions)
@@ -3158,8 +3189,8 @@ PetscErrorCode  TSAdjointStep(TS ts)
       } else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
   } else if (!ts->reason) {
-    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
+    if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
+    else if (ts->ptime >= ts->max_time)         ts->reason = TS_CONVERGED_TIME;
   }
   ts->total_steps--;
   PetscFunctionReturn(0);
@@ -3309,6 +3340,8 @@ PetscErrorCode TSSolve(TS ts,Vec u)
    Notes:
    This must be called after a call to TSSolve() that solves the forward problem
 
+   By default this will integrate back to the initial time, one can use TSAdjointSetSteps() to step back to a later time
+
 .keywords: TS, timestep, solve
 
 .seealso: TSCreate(), TSSetSolution(), TSStep()
@@ -3328,12 +3361,12 @@ PetscErrorCode TSAdjointSolve(TS ts)
   ts->reject            = 0;
   ts->reason            = TS_CONVERGED_ITERATING;
 
-  ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
+  if (!ts->adjoint_max_steps) ts->adjoint_max_steps = ts->total_steps;
 
-  if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+  if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
   while (!ts->reason) {
-    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->max_steps-ts->steps,ts->ptime);CHKERRQ(ierr);
-    ierr = TSMonitor(ts,ts->max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->adjoint_max_steps-ts->steps,ts->ptime);CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->adjoint_max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
     if (ts->event) {
       ierr = TSEventMonitor(ts);CHKERRQ(ierr);

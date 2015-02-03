@@ -259,9 +259,8 @@ int main(int argc,char **argv)
   //   Reset start time for the adjoint integration
   ierr = TSSetTime(ts,user.ftime);CHKERRQ(ierr);
 
-  //   Set RHS Jacobian and number of steps for the adjoint integration
+  //   Set RHS Jacobian for the adjoint integration
   ierr = TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,user.steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
   //   Set RHS JacobianP
   ierr = TSAdjointSetRHSJacobianP(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
@@ -427,9 +426,8 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   //   Reset start time for the adjoint integration
   ierr = TSSetTime(ts,user->ftime);CHKERRQ(ierr);
 
-  //   Set RHS Jacobian and number of steps for the adjoint integration
+  //   Set RHS Jacobian for the adjoint integration
   ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,user->steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
   //   Set RHS JacobianP
   ierr = TSAdjointSetRHSJacobianP(ts,user->Jacp,RHSJacobianP,user);CHKERRQ(ierr);

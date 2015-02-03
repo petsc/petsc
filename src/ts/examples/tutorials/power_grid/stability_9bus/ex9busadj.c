@@ -1048,9 +1048,6 @@ int main(int argc,char **argv)
   /*   Reset start time for the adjoint integration */
   ierr = TSSetTime(ts,user.tmax);CHKERRQ(ierr);
 
-  /*   Set RHS Jacobian and number of steps for the adjoint integration */
-  ierr = TSSetDuration(ts,total_steps,PETSC_DEFAULT);CHKERRQ(ierr);
-
   /*   Set RHS JacobianP */
   /* ierr = TSAdjointSetRHSJacobianP(ts,Jacp,RHSJacobianP,&user);CHKERRQ(ierr); */
 
