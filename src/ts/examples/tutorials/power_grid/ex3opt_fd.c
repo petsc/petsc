@@ -398,15 +398,15 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 
   ierr = VecDuplicate(lambda[0],&drdy[0]);CHKERRQ(ierr);
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&q);CHKERRQ(ierr);
 
   ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,ctx);CHKERRQ(ierr);
 
-  ierr = TSAdjointSetCostIntegrand(ts,1,q,   (PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
+  ierr = TSAdjointSetCostIntegrand(ts,1,     (PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
                                         drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
+  ierr = TSAdjointGetCostIntegral(ts,&q);CHKERRQ(ierr);
   ierr = VecView(q,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ComputeSensiP(lambda[0],lambdap[0],ctx);CHKERRQ(ierr);
 
@@ -422,7 +422,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&drdy[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&drdp[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&q);CHKERRQ(ierr);
   ierr = VecDestroy(&lambdap[0]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 

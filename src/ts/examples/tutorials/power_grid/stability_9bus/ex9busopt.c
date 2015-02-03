@@ -1381,12 +1381,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = VecZeroEntries(drdy[0]);CHKERRQ(ierr);
   ierr = VecZeroEntries(drdp[0]);CHKERRQ(ierr);
 
-  ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&q);CHKERRQ(ierr);
-
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobian(ts,ctx->Jacp,RHSJacobianP,ctx);CHKERRQ(ierr); 
 
-  ierr = TSAdjointSetCostIntegrand(ts,1,q,   (PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
+  ierr = TSAdjointSetCostIntegrand(ts,1,     (PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
                                         drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
                                         drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,ctx);CHKERRQ(ierr);
 
@@ -1431,12 +1429,12 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
 
   ierr = ComputeSensiP(lambda[0],lambdap[0],DICDP,ctx);CHKERRQ(ierr);
   ierr = VecCopy(lambdap[0],G);CHKERRQ(ierr);
+  ierr = TSAdjointGetCostIntegral(ts,&q);CHKERRQ(ierr);
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
   *f   = x_ptr[0];
   
   ierr = VecDestroy(&drdy[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&drdp[0]);CHKERRQ(ierr); 
-  ierr = VecDestroy(&q);CHKERRQ(ierr);
   ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr); 
   ierr = VecDestroy(&lambdap[0]);CHKERRQ(ierr); 
 

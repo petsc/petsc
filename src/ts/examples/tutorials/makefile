@@ -11,7 +11,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
-DIRS            = phasefield advection-diffusion-reaction eimex power-grid
+DIRS            = phasefield advection-diffusion-reaction eimex power_grid
 
 include ${PETSC_DIR}/lib/petsc-conf/variables
 include ${PETSC_DIR}/lib/petsc-conf/rules

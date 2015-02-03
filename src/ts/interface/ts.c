@@ -2396,14 +2396,13 @@ PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
 #undef __FUNCT__
 #define __FUNCT__ "TSAdjointSetCostIntegrand"
 /*@C
-    TSAdjointSetCostIntegrand - Sets the routine for evaluating the quadrature (or integral) term in a cost function,
-    where Q_t = r(t,u).
+    TSAdjointSetCostIntegrand - Sets the routine for evaluating the integral term in a cost function
 
     Logically Collective on TS
 
     Input Parameters:
 +   ts - the TS context obtained from TSCreate()
-.   q -  vector to put the computed quadrature term in the cost function (or NULL to have it created)
+.   numberadjs - number of gradients to be computed
 .   fq - routine for evaluating the right-hand-side function
 .   drdy - array of vectors to contain the gradient of the r's with respect to y, NULL if not a function of y
 .   drdyf - function that computes the gradients of the r's with respect to y,NULL if not a function y
@@ -2431,26 +2430,18 @@ $    PetscErroCode drdpf(TS ts,PetscReal t,Vec U,Vec *drdp,void *ctx);
 
 .seealso: TSAdjointSetRHSJacobian(),TSAdjointGetGradients(), TSAdjointSetGradients()
 @*/
-PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),
+PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,          PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),
                                                                     Vec *drdy,PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
                                                                     Vec *drdp,PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt       qsize;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(q,VEC_CLASSID,2);
   if (!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSAdjointSetGradients() first so that the number of cost functions can be determined.");
   if (ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetGradients()");
-  ierr = VecGetSize(q,&qsize);CHKERRQ(ierr);
-  ierr = VecZeroEntries(q);CHKERRQ(ierr);
-  if (qsize!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions is inconsistent with the number of integrals (size of the 3rd input vector of TSAdjointSetCostIntegrand()).");
 
-  ierr = PetscObjectReference((PetscObject)q);CHKERRQ(ierr);
-  ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
-  ts->vec_costintegral = q;
-
+  ierr                  = VecCreateSeq(PETSC_COMM_SELF,numberadjs,&ts->vec_costintegral);CHKERRQ(ierr);
   ierr                  = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
   ts->costintegrand     = fq;
   ts->costintegrandctx  = ctx;
