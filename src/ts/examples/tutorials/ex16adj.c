@@ -243,8 +243,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(lambda[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
   ierr = VecRestoreArray(lambda[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetSensitivity(ts,lambda,2);CHKERRQ(ierr);
-  
+
   ierr = MatGetVecs(Jacp,&mu[0],NULL);CHKERRQ(ierr);
   ierr = MatGetVecs(Jacp,&mu[1],NULL);CHKERRQ(ierr);
   ierr = VecGetArray(mu[0],&x_ptr);CHKERRQ(ierr);
@@ -253,7 +252,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(mu[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(mu[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetSensitivityP(ts,mu,2);CHKERRQ(ierr);
+  ierr = TSAdjointSetGradients(ts,2,lambda,mu);CHKERRQ(ierr);
 
   /*   Set RHS Jacobian for the adjoint integration */
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&user);CHKERRQ(ierr);

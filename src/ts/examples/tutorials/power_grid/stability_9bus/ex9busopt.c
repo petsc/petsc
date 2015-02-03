@@ -1371,11 +1371,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = MatGetVecs(ctx->J,&lambda[0],NULL);CHKERRQ(ierr);
   /*   Set initial conditions for the adjoint integration */
   ierr = VecZeroEntries(lambda[0]);CHKERRQ(ierr);
-  ierr = TSAdjointSetSensitivity(ts,lambda,1);CHKERRQ(ierr);
 
   ierr = MatGetVecs(ctx->Jacp,&lambdap[0],NULL);CHKERRQ(ierr);
   ierr = VecZeroEntries(lambdap[0]);CHKERRQ(ierr);
-  ierr = TSAdjointSetSensitivityP(ts,lambdap,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetGradients(ts,1,lambda,lambdap);CHKERRQ(ierr);
 
   ierr = VecDuplicate(lambda[0],&drdy[0]);CHKERRQ(ierr);
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);

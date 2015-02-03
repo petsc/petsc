@@ -389,13 +389,12 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = VecGetArray(lambda[0],&y_ptr);CHKERRQ(ierr);
   y_ptr[0] = 0.0; y_ptr[1] = 0.0;
   ierr = VecRestoreArray(lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetSensitivity(ts,lambda,1);CHKERRQ(ierr);
 
   ierr = MatGetVecs(Jacp,&lambdap[0],NULL);CHKERRQ(ierr);
   ierr = VecGetArray(lambdap[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = -1.0;
   ierr = VecRestoreArray(lambdap[0],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetSensitivityP(ts,lambdap,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetGradients(ts,1,lambda,lambdap);CHKERRQ(ierr);
 
   ierr = VecDuplicate(lambda[0],&drdy[0]);CHKERRQ(ierr);
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);

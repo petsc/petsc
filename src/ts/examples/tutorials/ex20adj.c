@@ -362,7 +362,6 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.lambda[1],&y_ptr);CHKERRQ(ierr); 
   y_ptr[0] = 0.0; y_ptr[1] = 1.0;
   ierr = VecRestoreArray(user.lambda[1],&y_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetSensitivity(ts,user.lambda,2);CHKERRQ(ierr);
 
   ierr = MatGetVecs(user.Jacp,&user.lambdap[0],NULL);CHKERRQ(ierr);
   ierr = VecGetArray(user.lambdap[0],&x_ptr);CHKERRQ(ierr);
@@ -372,7 +371,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetSensitivityP(ts,user.lambdap,2);CHKERRQ(ierr);
+  ierr = TSAdjointSetGradients(ts,2,user.lambda,user.lambdap);CHKERRQ(ierr);
 
   /*   Reset start time for the adjoint integration */
   ierr = TSSetTime(ts,user.ftime);CHKERRQ(ierr);

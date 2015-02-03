@@ -1713,9 +1713,9 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointGetSensitivity"
+#define __FUNCT__ "TSAdjointGetGradients"
 /*@
-   TSAdjointGetSensitivity - Returns the sensitivity in the reverse mode.
+   TSAdjointGetGradients - Returns the gradients from the TSAdjointSolve()
 
    Not Collective, but Vec returned is parallel if TS is parallel
 
@@ -1723,7 +1723,8 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 .  ts - the TS context obtained from TSCreate()
 
    Output Parameter:
-.  v - the vector containing the solution
++  v - vectors containing the gradients with respect to the ODE/DAE solution variables
+-  w - vectors containing the gradients with respect to the problem parameters
 
    Level: intermediate
 
@@ -1731,13 +1732,13 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 
 .keywords: TS, timestep, get, sensitivity
 @*/
-PetscErrorCode  TSAdjointGetSensitivity(TS ts,Vec **v,PetscInt *numberadjs)
+PetscErrorCode  TSAdjointGetSensitivity(TS ts,PetscInt *numberadjs,Vec **v,Vec **w)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(v,2);
-  *v          = ts->vecs_sensi;
-  if(numberadjs) *numberadjs = ts->numberadjs;
+  if (numberadjs) *numberadjs = ts->numberadjs;
+  if (v)          *v          = ts->vecs_sensi;
+  if (w)          *w          = ts->vecs_sensip;  
   PetscFunctionReturn(0);
 }
 
@@ -1931,7 +1932,7 @@ PetscErrorCode  TSAdjointSetUp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->adjointsetupcalled) PetscFunctionReturn(0);
-  if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetSensitivity() first");
+  if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetGradients() first");
   if (ts->ops->adjointsetup) {
     ierr = (*ts->ops->adjointsetup)(ts);CHKERRQ(ierr);
   }
@@ -2293,58 +2294,29 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointSetSensitivity"
+#define __FUNCT__ "TSAdjointSetGradients"
 /*@
-   TSAdjointSetSensitivity - Sets the initial value of sensitivity (w.r.t. initial conditions)
-   for use by the TS routines.
+   TSAdjointSetGradients - Sets the initial value of gradients w.r.t. initial conditions and w.r.t. the problem parameters  for use by the TS routines.
 
    Logically Collective on TS and Vec
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
--  u - the solution vector
+.  u - gradients with respect to the initial condition variables
+-  w - gradients with respect to the parameters
 
    Level: beginner
 
 .keywords: TS, timestep, set, sensitivity, initial conditions
 @*/
-PetscErrorCode  TSAdjointSetSensitivity(TS ts,Vec *u,PetscInt numberadjs)
+PetscErrorCode  TSAdjointSetGradients(TS ts,PetscInt numberadjs,Vec *u,Vec *w)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(u,2);
-  ts->vecs_sensi = u;
-  if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of adjoint variables (3rd parameter) is inconsistent with the one set by TSAdjointSetSensitivityP()");
-  ts->numberadjs = numberadjs;
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSAdjointSetSensitivityP"
-/*@
-   TSAdjointSetSensitivityP - Sets the initial value of sensitivity (w.r.t. parameters)
-   for use by the TS routines.
-
-   Logically Collective on TS and Vec
-
-   Input Parameters:
-+  ts - the TS context obtained from TSCreate()
--  u - the solution vector
-
-   Level: beginner
-
-.keywords: TS, timestep, set, sensitivity, initial conditions
-@*/
-PetscErrorCode  TSAdjointSetSensitivityP(TS ts,Vec *u,PetscInt numberadjs)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(u,2);
-  ts->vecs_sensip = u;
-  if(ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of adjoint variables (3rd parameter) is inconsistent with the one set by TSAdjointSetSensitivity()");
-  ts->numberadjs = numberadjs;
-
+  ts->vecs_sensi  = u;
+  ts->vecs_sensip = w;  
+  ts->numberadjs  = numberadjs;
   PetscFunctionReturn(0);
 }
 
@@ -2457,7 +2429,7 @@ $    PetscErroCode drdpf(TS ts,PetscReal t,Vec U,Vec *drdp,void *ctx);
 
 .keywords: TS, sensitivity analysis, timestep, set, quadrature, function
 
-.seealso: TSAdjointSetRHSJacobianP(),TSAdjointSetSensitivity(),TSAdjointSetSensitivityP()
+.seealso: TSAdjointSetRHSJacobianP(),TSAdjointGetGradients(), TSAdjointSetGradients()
 @*/
 PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),
                                                                     Vec *drdy,PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
@@ -2468,13 +2440,9 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,Vec q,PetscE
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (q) {
-    PetscValidHeaderSpecific(q,VEC_CLASSID,2);
-  } else {
-    SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"TSAdjointSetCostIntegrand() requires a vector of size numberajds to hold the value of integrals as 3rd input parameter"); 
-  }
-  if (!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSAdjointSetSensitivity() or TSAdjointSetSensitivityP() first so that the number of cost functions can be determined.");
-  if (ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetSensitivity() or TSAdjointSetSensitivityP()");
+  PetscValidHeaderSpecific(q,VEC_CLASSID,2);
+  if (!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSAdjointSetGradients() first so that the number of cost functions can be determined.");
+  if (ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetGradients()");
   ierr = VecGetSize(q,&qsize);CHKERRQ(ierr);
   ierr = VecZeroEntries(q);CHKERRQ(ierr);
   if (qsize!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions is inconsistent with the number of integrals (size of the 3rd input vector of TSAdjointSetCostIntegrand()).");

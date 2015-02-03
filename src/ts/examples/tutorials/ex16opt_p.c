@@ -249,8 +249,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.lambda[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
   ierr = VecRestoreArray(user.lambda[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetSensitivity(ts,user.lambda,1);CHKERRQ(ierr);
-  
+
   ierr = MatGetVecs(user.Jacp,&user.lambdap[0],NULL);CHKERRQ(ierr);
   ierr = MatGetVecs(user.Jacp,&user.lambdap[1],NULL);CHKERRQ(ierr);
   ierr = VecGetArray(user.lambdap[0],&x_ptr);CHKERRQ(ierr);
@@ -259,7 +258,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetSensitivityP(ts,user.lambdap,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetGradients(ts,1,user.lambda,user.lambdap);CHKERRQ(ierr);
 
   //   Set RHS Jacobian for the adjoint integration
   ierr = TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user);CHKERRQ(ierr);
@@ -410,7 +409,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = VecGetArray(user->lambda[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
   ierr = VecRestoreArray(user->lambda[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetSensitivity(ts,user->lambda,1);CHKERRQ(ierr);
 
   ierr = VecGetArray(user->lambdap[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
@@ -418,7 +416,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = VecGetArray(user->lambdap[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user->lambdap[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetSensitivityP(ts,user->lambdap,1);CHKERRQ(ierr);
+  ierr = TSAdjointSetGradients(ts,1,user->lambda,user->lambdap);CHKERRQ(ierr);
 
   //   Set RHS Jacobian for the adjoint integration
   ierr = TSSetRHSJacobian(ts,user->A,user->A,RHSJacobian,user);CHKERRQ(ierr);

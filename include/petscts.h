@@ -238,11 +238,9 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryGet(TSTrajectory,TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory);
 PETSC_EXTERN PetscErrorCode TSTrajectoryRegisterAll(void);
 
-PETSC_EXTERN PetscErrorCode TSAdjointSetSensitivity(TS,Vec*,PetscInt);
-PETSC_EXTERN PetscErrorCode TSAdjointGetSensitivity(TS,Vec**,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSAdjointSetGradients(TS,PetscInt,Vec*,Vec*);
+PETSC_EXTERN PetscErrorCode TSAdjointGetGradients(TS,PetscInt*,Vec**,Vec**);
 
-PETSC_EXTERN PetscErrorCode TSAdjointSetSensitivityP(TS,Vec*,PetscInt);
-PETSC_EXTERN PetscErrorCode TSAdjointGetSensitivityP(TS,Vec**,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSAdjointSetRHSJacobianP(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
 PETSC_EXTERN PetscErrorCode TSAdjointComputeRHSJacobianP(TS,PetscReal,Vec,Mat);
 PETSC_EXTERN PetscErrorCode TSAdjointSetCostIntegrand(TS,PetscInt,Vec,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),void*);
