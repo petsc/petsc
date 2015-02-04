@@ -4930,9 +4930,26 @@ database with \trl{-ts_sundials_gmres_restart} \trl{restart}. \findex{-ts_sundia
 The TS library also provides a framework based on discrete adjoint models for sensitivity analysis for ODEs and DAEs. 
 The solution can be obtained by using either explicit or implicit solvers in TS, depending on the problem propeties. 
 We refer to this process as a forward run. 
-To perform the discrete adjoint sensivity analysis, a backward run using the same TS object is required with certain checkpointing scheme which can pass information such as stage values and time stepping trajectory from the forward run to the backward run. 
+To perform the discrete adjoint sensivity analysis, a backward run using the same TS object is required with certain checkpointing scheme, which can pass information such as stage values and time stepping trajectory from the forward run to the backward run. 
    
+Currently supported method types are TSRK (Runge-Kutta) explicit
+methods and TSTHETA implicit methods, which include TSBEULER and TSCN.
 
+Examples
+include:
+\begin{itemize}
+\item a discrete adjoint sensitivity using explicit time stepping
+methods \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16adj.c},
+\item a discrete adjoint sensitivity using implicit time stepping
+methods \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20adj.c},
+\item an optimization using the discrete adjoint models of ERK
+\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16opt_ic.c} and \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16opt_p.c},
+\item an optimization using the discrete adjoint models of Theta
+methods for stiff DAEs
+\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_ic.c} and \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_p.c},
+\item an optimization using the discrete adjoint models of Theta
+methods for cost function with an integral term \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3opt.c}.
+\end{itemize}
 \vspace{.2cm}
 
 \noindent
@@ -4999,9 +5016,7 @@ Currently TSTHETA (Theta) methods support the sensivity analysis.
 
 \section{Using explicit methods} 
 
-Currently supported method types are TSRK (Runge-Kutta) methods and the problems to be solved are assumed not to have mass matrices.
-
-The procedure is similar to that for using implicit methods. 
+The sensitivity analysis procedure for explicit methods is similar to that for using implicit methods. 
 A forward run using an explicit solver must be run first, followed by a backward run advancing the sensitivity variables from one step to another. 
 One must provide Jacobian $F_u$   
 \begin{tabbing}
