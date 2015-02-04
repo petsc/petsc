@@ -1131,6 +1131,72 @@ PetscErrorCode MatImaginaryPart_MPISBAIJ(Mat A)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetSubMatrix_MPISBAIJ"
+PetscErrorCode MatGetSubMatrix_MPISBAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  IS             iscol_local;
+  PetscInt       csize;
+
+  PetscFunctionBegin;
+  MPI_Comm    comm;
+  PetscMPIInt rank;
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+
+  ierr = ISGetLocalSize(iscol,&csize);CHKERRQ(ierr);
+  if (call == MAT_REUSE_MATRIX) {
+    ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
+    if (!iscol_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
+  } else {
+    ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
+
+    { /* check if isrow == iscol_local Note: isrow is distributed, but iscol_local is locally owned! */
+    PetscInt  sz1,sz2,*a1,*a2,i,j,k,nmatch;
+    const PetscInt *ptr1,*ptr2;
+    ierr = ISGetLocalSize(isrow,&sz1);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(iscol_local,&sz2);CHKERRQ(ierr);
+    if (sz1 > sz2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isrow");
+
+    ierr = ISGetIndices(isrow,&ptr1);CHKERRQ(ierr);
+    ierr = ISGetIndices(iscol_local,&ptr2);CHKERRQ(ierr);
+
+    ierr = PetscMalloc1(sz1,&a1);CHKERRQ(ierr);
+    ierr = PetscMalloc1(sz2,&a2);CHKERRQ(ierr);
+    ierr = PetscMemcpy(a1,ptr1,sz1*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(a2,ptr2,sz2*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscSortInt(sz1,a1);CHKERRQ(ierr);
+    ierr = PetscSortInt(sz2,a2);CHKERRQ(ierr);
+
+    nmatch=0;
+    k = 0;
+    for (i=0; i<sz1; i++){
+      for (j=k; j<sz2; j++){
+        if (a1[i] == a2[j]) {
+          k = j; nmatch++;
+          if (rank == 1) printf("match %d\n",a2[j]);
+          break;
+        }
+      }
+    }
+    ierr = ISRestoreIndices(isrow,&ptr1);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(iscol_local,&ptr2);CHKERRQ(ierr);
+    ierr = PetscFree(a1);CHKERRQ(ierr);
+    ierr = PetscFree(a2);CHKERRQ(ierr);
+    if (nmatch < sz1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isrow");
+    }
+  }
+
+  /* now call MatGetSubMatrix_MPIBAIJ() */
+  ierr = MatGetSubMatrix_MPIBAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr); //csize: global iscol size
+  if (call == MAT_INITIAL_MATRIX) {
+    ierr = PetscObjectCompose((PetscObject)*newmat,"ISAllGather",(PetscObject)iscol_local);CHKERRQ(ierr);
+    ierr = ISDestroy(&iscol_local);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatZeroEntries_MPISBAIJ"
 PetscErrorCode MatZeroEntries_MPISBAIJ(Mat A)
 {
@@ -1515,7 +1581,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        MatSetUnfactored_MPISBAIJ,
                                        0,
                                        MatSetValuesBlocked_MPISBAIJ,
-                               /* 59*/ 0,
+                               /* 59*/ MatGetSubMatrix_MPISBAIJ,
                                        0,
                                        0,
                                        0,

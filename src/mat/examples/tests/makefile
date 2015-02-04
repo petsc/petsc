@@ -1321,22 +1321,37 @@ runex56_5:
 	   ${RM} -f ex56_5.tmp
 
 runex59:
-	-@${MPIEXEC} -n 1  ./ex59  > ex59_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex59  > ex59_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex59_1.out ex59_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex59_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex59_1.tmp
 
 runex59_2:
-	-@${MPIEXEC} -n 2  ./ex59  > ex59_2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./ex59  > ex59_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex59_2.out ex59_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex59_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex59_2.tmp
+runex59_baij:
+	-@${MPIEXEC} -n 1 ./ex59 -mat_type baij > ex59_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex59_1_baij.out ex59_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex59_1_baij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex59_1.tmp
+runex59_2_baij:
+	-@${MPIEXEC} -n 3 ./ex59 -mat_type baij > ex59_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex59_2_baij.out ex59_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex59_2_baij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex59_2.tmp
+runex59_sbaij:
+	-@${MPIEXEC} -n 1 ./ex59 -mat_type sbaij > ex59_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex59_1_sbaij.out ex59_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex59_1_sbaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex59_1.tmp
 
-runex59_3:
-	-@${MPIEXEC} -n 3  ./ex59  > ex59_3.tmp 2>&1;   \
-	   if (${DIFF} output/ex59_3.out ex59_3.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex59_3, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex59_3.tmp
+runex59_2_sbaij:
+	-@${MPIEXEC} -n 3 ./ex59 -mat_type sbaij > ex59_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex59_2_sbaij.out ex59_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex59_2_sbaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex59_2.tmp
 
 runex60:
 	-@${MPIEXEC} -n 3  ./ex60  -col 7 > ex60_1.tmp 2>&1;   \
@@ -2193,8 +2208,9 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex19.PETSc ex19.rm ex20.PETSc runex20 \
                                  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm ex16.PETSc runex16 ex16.rm \
                                  ex29.PETSc runex29 ex29.rm \
-                                 ex45.PETSc ex45.rm ex55.PETSc runex55 runex55_2 ex55.rm ex59.PETSc runex59 runex59_2 runex59_3 \
-                                 ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
+                                 ex45.PETSc ex45.rm ex55.PETSc runex55 runex55_2 ex55.rm \
+                                 ex59.PETSc runex59 runex59_2 runex59_baij runex59_2_baij  runex59_sbaij runex59_2_sbaij ex59.rm\
+                                 ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
                                  ex65.rm ex66.PETSc ex66.rm ex68.PETSc runex68 ex68.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
                                  ex86.PETSc runex86 runex86_2 runex86_3 ex86.rm \

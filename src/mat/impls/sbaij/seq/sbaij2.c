@@ -94,7 +94,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrix_SeqSBAIJ_Private"
-PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B)
+PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *B) //rm
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data,*c;
   PetscErrorCode  ierr;
@@ -107,9 +107,9 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse
   PetscBool       flag,sorted;
 
   PetscFunctionBegin;
-  if (isrow != iscol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro");
-  ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
+  if (isrow != iscol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isrow"); //rm!!!
+  ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr); //rm!!!
+  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted"); //rm!!!
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
@@ -184,13 +184,18 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,M
   const PetscInt *irow;
 
   PetscFunctionBegin;
-  if (isrow != iscol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro");
+  if (isrow != iscol) {
+    PetscBool isequal;
+    ierr = ISEqual(isrow,iscol,&isequal);CHKERRQ(ierr);
+    if (!isequal)
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isrow");
+  }
 
-  ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
+  ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr); //isrow == iscol, so delete below!!!
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
 
   /* Verify if the indices corespond to each element in a block
-   and form the IS with compressed IS */
+   and form the IS with compressed IS -- also sort it!!! */
   ierr = PetscMalloc2(a->mbs,&vary,a->mbs,&iary);CHKERRQ(ierr);
   ierr = PetscMemzero(vary,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
@@ -204,7 +209,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,M
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
   ierr = PetscFree2(vary,iary);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrix_SeqSBAIJ_Private(A,is1,is1,scall,B);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix_SeqSBAIJ_Private(A,is1,is1,scall,B);CHKERRQ(ierr); //remove a is1!!!
   ierr = ISDestroy(&is1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
