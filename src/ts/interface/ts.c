@@ -839,6 +839,8 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
     Level: beginner
 
+    Notes: You must call this function or TSSetIFunction() to define your ODE. You cannot use this function when solving a DAE.
+
 .keywords: TS, timestep, set, right-hand-side, function
 
 .seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSSetIFunction()
@@ -1052,7 +1054,7 @@ $  f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
 -  ctx - [optional] user-defined context for matrix evaluation routine
 
    Important:
-   The user MUST call either this routine, TSSetRHSFunction().  This routine must be used when not solving an ODE, for example a DAE.
+   The user MUST call either this routine or TSSetRHSFunction() to define the ODE.  When solving DAEs you must use this function.
 
    Level: beginner
 
@@ -1139,7 +1141,7 @@ PetscErrorCode TSGetIFunction(TS ts,Vec *r,TSIFunction *func,void **ctx)
 
 .keywords: TS, nonlinear, get, function
 
-.seealso: TSSetRhsfunction(), SNESGetFunction()
+.seealso: TSSetRHSFunction(), SNESGetFunction()
 @*/
 PetscErrorCode TSGetRHSFunction(TS ts,Vec *r,TSRHSFunction *func,void **ctx)
 {
