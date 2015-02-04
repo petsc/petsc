@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 #
-# Author: Eloy Romero (slepc-maint@grycap.upv.es)
+# Author: Eloy Romero (slepc-maint@upv.es)
 #         Universidad Politecnica de Valencia, Spain
 #
 
