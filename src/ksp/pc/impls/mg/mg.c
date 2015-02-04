@@ -750,7 +750,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   }
 
   for (i=1; i<n; i++) {
-    if (mglevels[i]->smoothu == mglevels[i]->smoothd || mg->am == PC_MG_FULL || mg->am == PC_MG_KASKADE){
+    if (mglevels[i]->smoothu == mglevels[i]->smoothd || mg->am == PC_MG_FULL || mg->am == PC_MG_KASKADE || mg->cyclesperpcapply > 1){
       /* if doing only down then initial guess is zero */
       ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
     }
@@ -990,16 +990,11 @@ PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
 PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 {
   PC_MG        *mg        = (PC_MG*)pc->data;
-  PC_MG_Levels **mglevels = mg->levels;
-  PetscInt     i,levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscValidLogicalCollectiveInt(pc,n,2);
-  levels = mglevels[0]->levels;
-
-  for (i=0; i<levels; i++) mg->cyclesperpcapply = n;
+  mg->cyclesperpcapply = n;
   PetscFunctionReturn(0);
 }
 
