@@ -166,6 +166,17 @@ PetscErrorCode  PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer,MPI_File 
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode  PetscViewerBinaryGetMPIIO_Binary(PetscViewer viewer,PetscBool  *flg)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+    
+  PetscFunctionBegin;
+  *flg = vbinary->MPIIO;
+  PetscFunctionReturn(0);
+}
+#endif
+
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryGetMPIIO"
 /*@C
@@ -192,15 +203,15 @@ PetscErrorCode  PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer,MPI_File 
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetInfoPointer()
 @*/
-PetscErrorCode  PetscViewerBinaryGetMPIIO(PetscViewer viewer,PetscBool  *flg)
+PetscErrorCode  PetscViewerBinaryGetMPIIO(PetscViewer viewer,PetscBool *flg)
 {
-  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
-
+  PetscErrorCode     ierr;
+    
   PetscFunctionBegin;
-  *flg = vbinary->MPIIO;
+  *flg = PETSC_FALSE;
+  ierr = PetscTryMethod(viewer,"PetscViewerBinaryGetMPIIO_C",(PetscViewer,PetscBool*),(viewer,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryGetFlowControl_Binary"
@@ -1335,6 +1346,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetMode_C",PetscViewerFileGetMode_Binary);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_Binary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetMPIIO_C",PetscViewerBinaryGetMPIIO_Binary);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetMPIIO_C",PetscViewerBinarySetMPIIO_Binary);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
