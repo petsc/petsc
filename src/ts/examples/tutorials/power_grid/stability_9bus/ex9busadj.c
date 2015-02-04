@@ -150,12 +150,13 @@ PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar
 #define __FUNCT__ "SaveSolution"
 PetscErrorCode SaveSolution(TS ts)
 {
-  PetscErrorCode ierr;
-  Userctx        *user;
-  Vec            X;
-  PetscScalar    *x,*mat;
-  PetscInt       idx;
-  PetscReal      t;
+  PetscErrorCode    ierr;
+  Userctx           *user;
+  Vec               X;
+  PetscScalar       *mat;
+  const PetscScalar *x;
+  PetscInt          idx;
+  PetscReal         t;
 
   PetscFunctionBegin;
   ierr     = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
@@ -163,11 +164,11 @@ PetscErrorCode SaveSolution(TS ts)
   ierr     = TSGetSolution(ts,&X);CHKERRQ(ierr);
   idx      = user->stepnum*(user->neqs_pgrid+1);
   ierr     = MatDenseGetArray(user->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr     = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   mat[idx] = t;
   ierr     = PetscMemcpy(mat+idx+1,x,user->neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr     = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr     = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   user->stepnum++;
   PetscFunctionReturn(0);
 }
@@ -388,10 +389,11 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
 #define __FUNCT__ "IFunction"
 PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *user)
 {
-  PetscErrorCode ierr;
-  SNES           snes;
-  PetscScalar    *f,*xdot;
-  PetscInt       i;
+  PetscErrorCode    ierr;
+  SNES              snes;
+  PetscScalar       *f;
+  const PetscScalar *xdot;
+  PetscInt          i;
 
   PetscFunctionBegin;
   user->t = t;
@@ -399,7 +401,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *use
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = ResidualFunction(snes,X,F,user);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);
-  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   for (i=0;i < ngen;i++) {
     f[9*i]   += xdot[9*i];
     f[9*i+1] += xdot[9*i+1];
@@ -410,7 +412,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *use
     f[9*i+8] += xdot[9*i+8];
   }
   ierr = VecRestoreArray(F,&f);
-  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -430,7 +432,7 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
 
   PetscFunctionBegin;
   ierr = ResidualFunction(snes,X,F,user);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   for (i=0; i < ngen; i++) {
     f[9*i]   = 0;
     f[9*i+1] = 0;
@@ -440,7 +442,7 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
     f[9*i+7] = 0;
     f[9*i+8] = 0;
   }
-  ierr = VecRestoreArray(F,&f);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1029,7 +1031,7 @@ int main(int argc,char **argv)
      Adjoint model starts here
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetPostStep(ts,NULL);CHKERRQ(ierr);
-  ierr = MatGetVecs(J,&lambda[0],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(J,&lambda[0],NULL);CHKERRQ(ierr);
   /*   Set initial conditions for the adjoint integration */
   ierr = VecZeroEntries(lambda[0]);CHKERRQ(ierr);
   ierr = VecGetArray(lambda[0],&y_ptr);CHKERRQ(ierr);

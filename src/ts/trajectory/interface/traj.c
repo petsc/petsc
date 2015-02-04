@@ -251,9 +251,9 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *ts)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSTrajectorySetTypeFromOptions"
+#define __FUNCT__ "TSTrajectorySetTypeFromOptions_Private"
 /*
-  TSTrajectorySetTypeFromOptions - Sets the type of ts from user options.
+  TSTrajectorySetTypeFromOptions_Private - Sets the type of ts from user options.
 
   Collective on TSTrajectory
 
@@ -265,7 +265,7 @@ PetscErrorCode  TSTrajectoryDestroy(TSTrajectory *ts)
 .keywords: TS, set, options, database, type
 .seealso: TSSetFromOptions(), TSSetType()
 */
-static PetscErrorCode TSTrajectorySetTypeFromOptions(TSTrajectory ts)
+static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,TSTrajectory ts)
 {
   PetscBool      opt;
   const char     *defaultType;
@@ -315,7 +315,7 @@ PetscErrorCode  TSTrajectorySetFromOptions(TSTrajectory ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TSTRAJECTORY_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
-  ierr = TSTrajectorySetTypeFromOptions(ts);CHKERRQ(ierr);
+  ierr = TSTrajectorySetTypeFromOptions_Private(PetscOptionsObject,ts);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

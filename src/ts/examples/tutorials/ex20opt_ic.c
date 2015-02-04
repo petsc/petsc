@@ -262,7 +262,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(user.A);CHKERRQ(ierr);
   ierr = MatSetUp(user.A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(user.A,&user.x,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.A,&user.x,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -303,13 +303,13 @@ int main(int argc,char **argv)
   ierr = VecView(user.x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Create sensitivity variable */
-  ierr = MatGetVecs(user.A,&user.lambda[0],NULL);CHKERRQ(ierr);
-  ierr = MatGetVecs(user.A,&user.lambda[1],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.A,&user.lambda[0],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.A,&user.lambda[1],NULL);CHKERRQ(ierr);
   /*
      Optimization starts
   */
   /* Set initial solution guess */
-  ierr = MatGetVecs(user.A,&ic,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.A,&ic,NULL);CHKERRQ(ierr);
   ierr = VecGetArray(ic,&x_ptr);CHKERRQ(ierr);
   x_ptr[0]  = 2.1;
   x_ptr[1]  = -0.7;

@@ -54,16 +54,17 @@ struct _n_User {
 #define __FUNCT__ "RHSFunction"
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
-  User           user = (User)ctx;
-  PetscScalar    *x,*f;
+  PetscErrorCode    ierr;
+  User              user = (User)ctx;
+  PetscScalar       *f;
+  const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = x[1];
   f[1] = user->mu*(1.-x[0]*x[0])*x[1]-x[0];
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -72,27 +73,27 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 #define __FUNCT__ "RHSJacobian"
 static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
-  User           user = (User)ctx;
-  PetscReal      mu   = user->mu;
-  PetscInt       rowcol[] = {0,1};
-  PetscScalar    *x,J[2][2];
+  PetscErrorCode    ierr;
+  User              user = (User)ctx;
+  PetscReal         mu   = user->mu;
+  PetscInt          rowcol[] = {0,1};
+  PetscScalar       J[2][2];
+  const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   J[0][0] = 0;
   J[1][0] = -2.*mu*x[1]*x[0]-1;
   J[0][1] = 1.0;
   J[1][1] = mu*(1.0-x[0]*x[0]);
   ierr    = MatSetValues(A,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (A != B) {
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -100,19 +101,19 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 #define __FUNCT__ "RHSJacobianP"
 static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscInt       row[] = {0,1},col[]={0};
-  PetscScalar    *x,J[2][1];
+  PetscErrorCode    ierr;
+  PetscInt          row[] = {0,1},col[]={0};
+  PetscScalar       J[2][1];
+  const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   J[0][0] = 0;
   J[1][0] = (1-x[0]*x[0])*x[1];
   ierr    = MatSetValues(A,2,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -133,6 +134,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",user->next_output,step,t,dt,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1]));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"t %.6f (tprev = %.6f) \n",t,tprev);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -179,7 +181,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&Jacp);CHKERRQ(ierr);
   ierr = MatSetSizes(Jacp,PETSC_DECIDE,PETSC_DECIDE,2,1);CHKERRQ(ierr);
@@ -234,8 +236,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Start the Adjoint model
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatGetVecs(A,&lambda[0],NULL);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&lambda[1],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&lambda[0],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&lambda[1],NULL);CHKERRQ(ierr);
   /*   Redet initial conditions for the adjoint integration */
   ierr = VecGetArray(lambda[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 1.0;   x_ptr[1] = 0.0;
@@ -244,8 +246,8 @@ int main(int argc,char **argv)
   x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
   ierr = VecRestoreArray(lambda[1],&x_ptr);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(Jacp,&mu[0],NULL);CHKERRQ(ierr);
-  ierr = MatGetVecs(Jacp,&mu[1],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(Jacp,&mu[0],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(Jacp,&mu[1],NULL);CHKERRQ(ierr);
   ierr = VecGetArray(mu[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(mu[0],&x_ptr);CHKERRQ(ierr);

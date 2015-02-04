@@ -365,10 +365,11 @@ PetscErrorCode ResidualFunction(SNES snes,Vec X, Vec F, Userctx *user)
 #define __FUNCT__ "IFunction"
 PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *user)
 {
-  PetscErrorCode ierr;
-  SNES           snes;
-  PetscScalar    *f,*xdot;
-  PetscInt       i;
+  PetscErrorCode    ierr;
+  SNES              snes;
+  PetscScalar       *f;
+  const PetscScalar *xdot;  
+  PetscInt          i;
 
   PetscFunctionBegin;
   user->t = t;
@@ -376,7 +377,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *use
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = ResidualFunction(snes,X,F,user);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);
-  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   for (i=0;i < ngen;i++) {
     f[9*i]   += xdot[9*i];
     f[9*i+1] += xdot[9*i+1];
@@ -387,7 +388,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *use
     f[9*i+8] += xdot[9*i+8];
   }
   ierr = VecRestoreArray(F,&f);
-  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -769,30 +770,31 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat 
 #define __FUNCT__ "CostIntegrand"
 static PetscErrorCode CostIntegrand(TS ts,PetscReal t,Vec U,Vec R,Userctx *user)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *u,*r;
-  PetscInt       idx;
-  Vec            Xgen,Xnet;
-  PetscScalar    *xgen;
-  PetscInt       i;
+  PetscErrorCode    ierr;
+  PetscScalar       *r;
+  const PetscScalar *u;
+  PetscInt          idx;
+  Vec               Xgen,Xnet;
+  PetscScalar       *xgen;
+  PetscInt          i;
 
   PetscFunctionBegin;
   ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
-  ierr = DMCompositeScatter(user->dmpgrid,U,Xgen,Xnet);CHKERRQ(ierr); 
+  ierr = DMCompositeScatter(user->dmpgrid,U,Xgen,Xnet);CHKERRQ(ierr);
 
   ierr = VecGetArray(Xgen,&xgen);CHKERRQ(ierr);
-   
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(R,&r);CHKERRQ(ierr);
   r[0] = 0.;
-   
+
   idx = 0;
   for (i=0;i<ngen;i++) {
     r[0] += PetscPowScalarInt(PetscMax(0.,PetscMax(xgen[idx+3]/(2.*PETSC_PI)-user->freq_u,user->freq_l-xgen[idx+3]/(2.*PETSC_PI))),user->pow);
     idx  += 9;
   }
- 
   ierr = VecRestoreArray(R,&r);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -910,7 +912,7 @@ int main(int argc,char **argv)
   ierr = TaoSetInitialVector(tao,p);CHKERRQ(ierr);
   /* Set routine for function and gradient evaluation */
   ierr = TaoSetObjectiveRoutine(tao,FormFunction,(void *)&user);CHKERRQ(ierr);
-  ierr = TaoSetGradientRoutine(tao,TaoDefaultComputeGradient,(void *)&user);CHKERRQ(ierr);  
+  ierr = TaoSetGradientRoutine(tao,TaoDefaultComputeGradient,(void *)&user);CHKERRQ(ierr);
 
   /* Set bounds for the optimization */
   Vec lowerb,upperb;
@@ -1125,6 +1127,7 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->vec_q,&x_ptr);CHKERRQ(ierr);
   *f   = x_ptr[0];
+  ierr = VecRestoreArray(ctx->vec_q,&x_ptr);CHKERRQ(ierr);
 
   ierr = MatDestroy(&ctx->Ybus);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx->V0);CHKERRQ(ierr);

@@ -307,7 +307,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(user.A,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
   ierr = MatSetFromOptions(user.A);CHKERRQ(ierr);
   ierr = MatSetUp(user.A);CHKERRQ(ierr);
-  ierr = MatGetVecs(user.A,&user.x,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.A,&user.x,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&user.Jacp);CHKERRQ(ierr);
   ierr = MatSetSizes(user.Jacp,PETSC_DECIDE,PETSC_DECIDE,2,1);CHKERRQ(ierr);
@@ -353,21 +353,21 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatGetVecs(user.A,&user.lambda[0],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.A,&user.lambda[0],NULL);CHKERRQ(ierr);
   /*   Set initial conditions for the adjoint integration */
   ierr = VecGetArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
   y_ptr[0] = 1.0; y_ptr[1] = 0.0;
   ierr = VecRestoreArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = MatGetVecs(user.A,&user.lambda[1],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.A,&user.lambda[1],NULL);CHKERRQ(ierr);
   ierr = VecGetArray(user.lambda[1],&y_ptr);CHKERRQ(ierr); 
   y_ptr[0] = 0.0; y_ptr[1] = 1.0;
   ierr = VecRestoreArray(user.lambda[1],&y_ptr);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(user.Jacp,&user.lambdap[0],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.Jacp,&user.lambdap[0],NULL);CHKERRQ(ierr);
   ierr = VecGetArray(user.lambdap[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user.lambdap[0],&x_ptr);CHKERRQ(ierr);
-  ierr = MatGetVecs(user.Jacp,&user.lambdap[1],NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(user.Jacp,&user.lambdap[1],NULL);CHKERRQ(ierr);
   ierr = VecGetArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
