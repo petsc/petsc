@@ -398,13 +398,9 @@ static PetscErrorCode TSReset_Theta(TS ts)
   ierr = VecDestroy(&th->Xdot);CHKERRQ(ierr);
   ierr = VecDestroy(&th->X0);CHKERRQ(ierr);
   ierr = VecDestroy(&th->affine);CHKERRQ(ierr);
-  if(ts->reverse_mode) {
-    ierr = VecDestroyVecs(ts->numberadjs,&th->VecDeltaLam);CHKERRQ(ierr);
-    if(th->VecDeltaMu) {
-      ierr = VecDestroyVecs(ts->numberadjs,&th->VecDeltaMu);CHKERRQ(ierr);
-    }
-    ierr = VecDestroyVecs(ts->numberadjs,&th->VecSensiTemp);CHKERRQ(ierr);
-  } 
+  ierr = VecDestroyVecs(ts->numberadjs,&th->VecDeltaLam);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numberadjs,&th->VecDeltaMu);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numberadjs,&th->VecSensiTemp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

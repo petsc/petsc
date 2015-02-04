@@ -96,10 +96,6 @@ ex16: ex16.o  chkopts
 	-${CLINKER} -o ex16 ex16.o  ${PETSC_TS_LIB}
 	${RM} ex16.o
 
-ex16_sa: ex16_sa.o chkopts
-	-${CLINKER} -o ex16_sa ex16_sa.o ${PETSC_TS_LIB}
-	${RM} ex16_sa.o
-
 ex16adj: ex16adj.o chkopts
 	-${CLINKER} -o ex16adj ex16adj.o ${PETSC_TS_LIB}
 	${RM} ex16adj.o
@@ -418,11 +414,6 @@ runex16:
 	   ${DIFF} output/ex16_1.out ex16_1.tmp || printf "${PWD}\nPossible problem with ex16_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex16_1.tmp
 
-runex16_sa:
-	-@${MPIEXEC} -n 1 ./ex16_sa -monitor 0 -viewer_binary_skip_info > ex16_sa_1.tmp 2>&1; \
-	   ${DIFF} output/ex16_sa_1.out ex16_sa_1.tmp || printf "${PWD}\nPossible problem with ex16_sa_1, diffs above\n=========================================\n"; \
-	   ${RM} -f ex16_sa_1.tmp 
-
 runex16adj:
 	-@${MPIEXEC} -n 1 ./ex16adj -monitor 0 -viewer_binary_skip_info  > ex16adj_1.tmp 2>&1; \
 	   ${DIFF} output/ex16adj_1.out ex16adj_1.tmp || printf "${PWD}\nPossible problem with ex16adj_1, diffs above\n=========================================\n"; \
@@ -572,7 +563,6 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3
                             ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm \
                             ex16.PETSc runex16  ex16.rm \
-                            ex16_sa.PETSc  runex16_sa  ex16_sa.rm \
                             ex16adj.PETSc  runex16adj ex16adj.rm \
                             ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
                             ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \

@@ -374,35 +374,6 @@ PetscErrorCode  TSSetCheckpoint(TS ts,PetscBool checkpoint)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetReverseMode"
-/*@
-   TSSetReverseMode - Allows one to reset the run mode, 
-   useful for adjoint sensitivity analysis.
-
-   Collective on TS
-
-   Input Parameters:
-+  ts - the TS context obtained from TSCreate()
--  reverse_mode - run in forward (default) or reverse mode
-
-   Level: intermediate
-
-.seealso:
-
-.keywords: TS, set, reverse
-@*/
-PetscErrorCode  TSSetReverseMode(TS ts,PetscBool reverse_mode)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ts->reverse_mode = reverse_mode;
-  //ts->setupcalled  = PETSC_FALSE; 
-  ierr = TSSetUp(ts);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSJacobian"
 /*@
    TSComputeRHSJacobian - Computes the Jacobian matrix that has been
@@ -1871,7 +1842,6 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
-  if (ts->reverse_mode && !ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetSensitivity() first");
 
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
 
@@ -1949,6 +1919,7 @@ PetscErrorCode  TSAdjointSetUp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->adjointsetupcalled) PetscFunctionReturn(0);
+  if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetSensitivity() first");
   if (ts->ops->setupadj) {
     ierr = (*ts->ops->setupadj)(ts);CHKERRQ(ierr);
   }
@@ -3136,9 +3107,6 @@ PetscErrorCode  TSStep(TS ts)
 
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
-  if (ts->reverse_mode) {
-    ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
-  }
 
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
@@ -3147,15 +3115,65 @@ PetscErrorCode  TSStep(TS ts)
 
   if (!ts->ops->step) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSStep not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
-  if(ts->reverse_mode) {
-    if(!ts->ops->stepadj) {
-      SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
-    }else {
-      ierr = (*ts->ops->stepadj)(ts);CHKERRQ(ierr);
+  ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
+
+  ts->time_step_prev = ts->ptime - ts->ptime_prev;
+  ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
+
+  if (ts->reason < 0) {
+    if (ts->errorifstepfailed) {
+      if (ts->reason == TS_DIVERGED_NONLINEAR_SOLVE) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
+      else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
-  }else { 
-    ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
+  } else if (!ts->reason) {
+    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointStep"
+/*@
+   TSAdjointStep - Steps one time step
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: intermediate
+
+   Notes:
+   The hook set using TSSetPreStep() is called before each attempt to take the step. In general, the time step size may
+   be changed due to adaptive error controller or solve failures. Note that steps may contain multiple stages.
+
+   This may over-step the final time provided in TSSetDuration() depending on the time-step used. TSSolve() interpolates to exactly the
+   time provided in TSSetDuration(). One can use TSInterpolate() to determine an interpolated solution within the final timestep.
+
+.keywords: TS, timestep, solve
+
+.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage(), TSSetPostStage(), TSInterpolate()
+@*/
+PetscErrorCode  TSAdjointStep(TS ts)
+{
+  DM               dm;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+  ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
+
+  ts->reason = TS_CONVERGED_ITERATING;
+  ts->ptime_prev = ts->ptime;
+  ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ts->vec_sol, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
+  if (!ts->ops->stepadj) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->stepadj)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
 
   ts->time_step_prev = ts->ptime - ts->ptime_prev;
@@ -3347,7 +3365,7 @@ PetscErrorCode TSAdjointSolve(TS ts,Vec u)
   if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
   while (!ts->reason) {
     ierr = TSMonitor(ts,ts->max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-    ierr = TSStep(ts);CHKERRQ(ierr);
+    ierr = TSAdjointStep(ts);CHKERRQ(ierr);
     if (ts->event) {
       ierr = TSEventMonitor(ts);CHKERRQ(ierr);
       if (ts->event->status != TSEVENT_PROCESSING) {

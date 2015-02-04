@@ -349,8 +349,6 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
   ierr = TSAdjointSetSensitivityP(ts,user.lambdap,2);CHKERRQ(ierr);
 
-  /*   Switch to reverse mode  */
-  ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
   /*   Reset start time for the adjoint integration */
   ierr = TSSetTime(ts,user.ftime);CHKERRQ(ierr);
 
@@ -514,8 +512,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = VecRestoreArray(user_ptr->lambdap[0],&x_ptr);CHKERRQ(ierr);
   ierr = TSAdjointSetSensitivityP(ts,user_ptr->lambdap,1);CHKERRQ(ierr);
 
-  /*   Switch to reverse mode */
-  ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
   /*   Reset start time for the adjoint integration */
   ierr = TSSetTime(ts,user_ptr->ftime);CHKERRQ(ierr);
 

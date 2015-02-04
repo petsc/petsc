@@ -482,8 +482,8 @@ PetscErrorCode  VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
    Collective on Vec
 
    Input Parameters:
-+  vv - pointer to pointer to array of vector pointers
--  m - the number of vectors previously obtained
++  vv - pointer to pointer to array of vector pointers, if NULL no vectors are destroyed
+-  m - the number of vectors previously obtained, if zero no vectors are destroyed
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
@@ -503,6 +503,8 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
   PetscValidHeaderSpecific(**vv,VEC_CLASSID,1);
   PetscValidType(**vv,1);
   if (m < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %D",m);
+  if (!m) PetscFunctionReturn(0);
+  if (!*vv) PetscFunctionReturn(0);
   ierr = (*(**vv)->ops->destroyvecs)(m,*vv);CHKERRQ(ierr);
   *vv  = 0;
   PetscFunctionReturn(0);
@@ -850,7 +852,6 @@ PetscErrorCode VecDestroyVecs_Default(PetscInt m,Vec v[])
 
   PetscFunctionBegin;
   PetscValidPointer(v,1);
-  if (m <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
   for (i=0; i<m; i++) {ierr = VecDestroy(&v[i]);CHKERRQ(ierr);}
   ierr = PetscFree(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);

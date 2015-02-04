@@ -1505,8 +1505,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx0)
   ierr = VecZeroEntries(drdp[0]);CHKERRQ(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&q);CHKERRQ(ierr);
-  /*   Switch to reverse mode  */
-  ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobianP(ts,ctx->Jacp,RHSJacobianP,ctx);CHKERRQ(ierr); 

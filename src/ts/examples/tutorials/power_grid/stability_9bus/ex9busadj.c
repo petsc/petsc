@@ -1126,8 +1126,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,1,&q);CHKERRQ(ierr);
   */
-  /*   Switch to reverse mode  */
-  ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
+
   /*   Reset start time for the adjoint integration */
   ierr = TSSetTime(ts,user.tmax);CHKERRQ(ierr);
 

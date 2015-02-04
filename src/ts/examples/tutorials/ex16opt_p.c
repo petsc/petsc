@@ -339,8 +339,6 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
   ierr = TSAdjointSetSensitivityP(ts,user.lambdap,1);CHKERRQ(ierr);
 
-  //   Switch to reverse mode
-  ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
   //   Reset start time for the adjoint integration
   ierr = TSSetTime(ts,user.ftime);CHKERRQ(ierr);
 
@@ -478,8 +476,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   /*ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);*/
   ierr = TSSetDuration(ts,2000,0.5);CHKERRQ(ierr);
 
-  //   Switch to forward mode
-  //ierr = TSSetReverseMode(ts,PETSC_FALSE);CHKERRQ(ierr);
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MonitorBIN,user,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -518,8 +514,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = VecRestoreArray(user->lambdap[1],&x_ptr);CHKERRQ(ierr);
   ierr = TSAdjointSetSensitivityP(ts,user->lambdap,1);CHKERRQ(ierr);
 
-  //   Switch to reverse mode
-  ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
   //   Reset start time for the adjoint integration
   ierr = TSSetTime(ts,user->ftime);CHKERRQ(ierr);
 

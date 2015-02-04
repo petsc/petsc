@@ -69,7 +69,6 @@ struct _p_TS {
   Vec       *vecs_sensip;
   PetscInt  numberadjs;
   PetscBool checkpoint;
-  PetscBool reverse_mode;
   Vec       vec_costquad;
   PetscInt  adjointsetupcalled;
   /* workspace for SA */

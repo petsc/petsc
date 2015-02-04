@@ -608,13 +608,9 @@ static PetscErrorCode TSReset_RK(TS ts)
   s    = rk->tableau->s;
   ierr = VecDestroyVecs(s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDestroyVecs(s,&rk->YdotRHS);CHKERRQ(ierr);
-  if(ts->reverse_mode) {
-    ierr = VecDestroyVecs(s*ts->numberadjs,&rk->VecDeltaLam);CHKERRQ(ierr);
-    if(rk->VecDeltaMu) {
-      ierr = VecDestroyVecs(s*ts->numberadjs,&rk->VecDeltaMu);CHKERRQ(ierr);
-    }
-    ierr = VecDestroyVecs(ts->numberadjs,&rk->VecSensiTemp);CHKERRQ(ierr);
-  }
+  ierr = VecDestroyVecs(s*ts->numberadjs,&rk->VecDeltaLam);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(s*ts->numberadjs,&rk->VecDeltaMu);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ts->numberadjs,&rk->VecSensiTemp);CHKERRQ(ierr);
   ierr = PetscFree(rk->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

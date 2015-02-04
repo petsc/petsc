@@ -336,8 +336,6 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(mu[1],&x_ptr);CHKERRQ(ierr);
   ierr = TSAdjointSetSensitivityP(ts,mu,2);CHKERRQ(ierr);
 
-  /*   Switch to reverse mode */
-  ierr = TSSetReverseMode(ts,PETSC_TRUE);CHKERRQ(ierr);
   /*   Reset start time for the adjoint integration */
   ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
 
