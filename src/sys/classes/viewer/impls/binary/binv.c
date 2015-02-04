@@ -233,11 +233,9 @@ PetscErrorCode  PetscViewerBinaryGetFlowControl_Binary(PetscViewer viewer,PetscI
 @*/
 PetscErrorCode  PetscViewerBinaryGetFlowControl(PetscViewer viewer,PetscInt *fc)
 {
-  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  *fc  = vbinary->flowcontrol;
   ierr = PetscTryMethod(viewer,"PetscViewerBinaryGetFlowControl_C",(PetscViewer,PetscInt*),(viewer,fc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
