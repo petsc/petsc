@@ -1,16 +1,8 @@
 
 #include <../src/mat/impls/baij/mpi/mpibaij.h>   /*I  "petscmat.h"  I*/
+
 #include <petscblaslapack.h>
 #include <petscsf.h>
-
-extern PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat);
-extern PetscErrorCode MatDisAssemble_MPIBAIJ(Mat);
-extern PetscErrorCode MatGetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt [],PetscScalar []);
-extern PetscErrorCode MatSetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
-extern PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-extern PetscErrorCode MatGetRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
-extern PetscErrorCode MatRestoreRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
-extern PetscErrorCode MatZeroRows_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetRowMaxAbs_MPIBAIJ"

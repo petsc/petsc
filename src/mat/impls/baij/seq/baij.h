@@ -230,6 +230,16 @@ PETSC_INTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscBool);
 PETSC_INTERN PetscErrorCode MatGetRow_SeqBAIJ_private(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**,PetscInt*,PetscInt*,PetscScalar*);
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqBAIJ(Mat,Mat,PetscInt*);
 
+/* used by mpibaij.c */
+PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat);
+PETSC_INTERN PetscErrorCode MatDisAssemble_MPIBAIJ(Mat);
+PETSC_INTERN PetscErrorCode MatGetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt [],PetscScalar []);
+PETSC_INTERN PetscErrorCode MatSetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
+PETSC_INTERN PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+PETSC_INTERN PetscErrorCode MatGetRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
+PETSC_INTERN PetscErrorCode MatRestoreRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
+PETSC_INTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
+
 /*
   PetscKernel_A_gets_A_times_B_2: A = A * B with size bs=2
 
