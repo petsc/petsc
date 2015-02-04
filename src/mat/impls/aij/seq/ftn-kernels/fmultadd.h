@@ -8,7 +8,7 @@
 #define fortranmultaddaij_ fortranmultaddaij
 #endif
 
-PETSC_EXTERN void fortranmultaddaij_(PetscInt*,const void*,PetscInt*,PetscInt*,const MatScalar*,void*,void*);
+PETSC_EXTERN void fortranmultaddaij_(PetscInt*,const void*,const PetscInt*,const PetscInt*,const MatScalar*,void*,void*);
 
 #endif
 #endif
