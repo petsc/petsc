@@ -1303,7 +1303,7 @@ PetscErrorCode  PetscOptionsRealArray_Private(PetscOptions *PetscOptionsObject,c
   }
   ierr = PetscOptionsGetRealArray(PetscOptionsObject->prefix,opt,value,n,set);CHKERRQ(ierr);
   if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) {
-    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%G",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,value[0]);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,"  -%s%s <%g",PetscOptionsObject->prefix?PetscOptionsObject->prefix:"",opt+1,(double)value[0]);CHKERRQ(ierr);
     for (i=1; i<*n; i++) {
       ierr = (*PetscHelpPrintf)(PetscOptionsObject->comm,",%g",(double)value[i]);CHKERRQ(ierr);
     }
