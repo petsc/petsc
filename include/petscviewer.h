@@ -46,8 +46,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerASCIISetFILE(PetscViewer,FILE*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetFlowControl(PetscViewer,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinarySetFlowControl(PetscViewer,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscViewerBinarySetMPIIO(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetMPIIO(PetscViewer,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscViewerBinarySetUseMPIIO(PetscViewer,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetUseMPIIO(PetscViewer,PetscBool *);
 #if defined(PETSC_HAVE_MPIIO)
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetMPIIODescriptor(PetscViewer,MPI_File*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer,MPI_Offset*);

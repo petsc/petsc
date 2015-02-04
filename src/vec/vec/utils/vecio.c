@@ -100,7 +100,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   if (N != rows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", rows, N);
 
 #if defined(PETSC_HAVE_MPIIO)
-  ierr = PetscViewerBinaryGetMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
   if (useMPIIO) {
     ierr = VecLoad_Binary_MPIIO(vec, viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);

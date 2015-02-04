@@ -373,7 +373,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   }
 
 #if defined(PETSC_HAVE_MPIIO)
-  ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
   if (!isMPIIO) {
 #endif
     ierr = PetscViewerFlowControlStart(viewer,&message_count,&flowcontrolcount);CHKERRQ(ierr);

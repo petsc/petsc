@@ -11,7 +11,7 @@
 typedef struct  {
   int           fdes;                 /* file descriptor, ignored if using MPI IO */
 #if defined(PETSC_HAVE_MPIIO)
-  PetscBool     MPIIO;
+  PetscBool     usempiio;
   MPI_File      mfdes;                /* ignored unless using MPI IO */
   MPI_Offset    moff;
 #endif
@@ -167,22 +167,22 @@ PetscErrorCode  PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer,MPI_File 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerBinaryGetMPIIO_Binary"
-PetscErrorCode  PetscViewerBinaryGetMPIIO_Binary(PetscViewer viewer,PetscBool  *flg)
+#define __FUNCT__ "PetscViewerBinaryGetUseMPIIO_Binary"
+PetscErrorCode  PetscViewerBinaryGetUseMPIIO_Binary(PetscViewer viewer,PetscBool  *flg)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
     
   PetscFunctionBegin;
-  *flg = vbinary->MPIIO;
+  *flg = vbinary->usempiio;
   PetscFunctionReturn(0);
 }
 #endif
 
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerBinaryGetMPIIO"
+#define __FUNCT__ "PetscViewerBinaryGetUseMPIIO"
 /*@C
-    PetscViewerBinaryGetMPIIO - Returns PETSC_TRUE if the binary viewer is an MPI viewer.
+    PetscViewerBinaryGetUseMPIIO - Returns PETSC_TRUE if the binary viewer uses MPI-IO.
 
     Not Collective
 
@@ -190,12 +190,15 @@ PetscErrorCode  PetscViewerBinaryGetMPIIO_Binary(PetscViewer viewer,PetscBool  *
 .   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
 
     Output Parameter:
--   flg - PETSC_TRUE if MPI IO is being used
+-   flg - PETSC_TRUE if MPI-IO is being used
 
     Options Database:
     -viewer_binary_mpiio : Flag for using MPI-IO
 
     Level: advanced
+
+    Note:
+    If MPI-IO is not available, this function will always return PETSC_FALSE
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -205,13 +208,13 @@ PetscErrorCode  PetscViewerBinaryGetMPIIO_Binary(PetscViewer viewer,PetscBool  *
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetInfoPointer()
 @*/
-PetscErrorCode  PetscViewerBinaryGetMPIIO(PetscViewer viewer,PetscBool *flg)
+PetscErrorCode  PetscViewerBinaryGetUseMPIIO(PetscViewer viewer,PetscBool *flg)
 {
   PetscErrorCode     ierr;
     
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
-  ierr = PetscTryMethod(viewer,"PetscViewerBinaryGetMPIIO_C",(PetscViewer,PetscBool*),(viewer,flg));CHKERRQ(ierr);
+  ierr = PetscTryMethod(viewer,"PetscViewerBinaryGetUseMPIIO_C",(PetscViewer,PetscBool*),(viewer,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -755,7 +758,7 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
     ierr = PetscFPrintf(comm,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
   }
 #if defined(PETSC_HAVE_MPIIO)
-  if (vbinary->MPIIO) {
+  if (vbinary->usempiio) {
     ierr = PetscViewerFileClose_BinaryMPIIO(v);CHKERRQ(ierr);
   } else {
 #endif
@@ -888,7 +891,7 @@ PetscErrorCode  PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt cou
 
   ierr = PetscViewerSetUp_Binary(viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
-  if (vbinary->MPIIO) {
+  if (vbinary->usempiio) {
     ierr = PetscViewerBinaryWriteReadMPIIO(viewer,data,count,dtype,PETSC_FALSE);CHKERRQ(ierr);
   } else {
 #endif
@@ -932,7 +935,7 @@ PetscErrorCode  PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt co
   PetscFunctionBegin;
   ierr = PetscViewerSetUp_Binary(viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
-  if (vbinary->MPIIO) {
+  if (vbinary->usempiio) {
     ierr = PetscViewerBinaryWriteReadMPIIO(viewer,data,count,dtype,PETSC_TRUE);CHKERRQ(ierr);
   } else {
 #endif
@@ -1078,34 +1081,35 @@ PetscErrorCode  PetscViewerFileGetMode(PetscViewer viewer,PetscFileMode *type)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerBinarySetMPIIO"
+#define __FUNCT__ "PetscViewerBinarySetUseMPIIO"
 /*@
-     PetscViewerBinarySetMPIIO - Sets a binary viewer to use MPI IO for reading/writing. Must be called
+    PetscViewerBinarySetUseMPIIO - Sets a binary viewer to use MPI-IO for reading/writing. Must be called
         before PetscViewerFileSetName()
 
     Logically Collective on PetscViewer
 
-  Input Parameters:
-.  viewer - the PetscViewer; must be a binary
+    Input Parameters:
++   viewer - the PetscViewer; must be a binary
+-   flg - PETSC_TRUE means MPI-IO will be used
 
     Options Database:
     -viewer_binary_mpiio : Flag for using MPI-IO
 
-  Level: advanced
+    Level: advanced
 
-.seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
+.seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen(),
+          PetscViewerBinaryGetUseMPIIO()
 
 @*/
-PetscErrorCode  PetscViewerBinarySetMPIIO(PetscViewer viewer)
+PetscErrorCode  PetscViewerBinarySetUseMPIIO(PetscViewer viewer,PetscBool flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscTryMethod(viewer,"PetscViewerBinarySetMPIIO_C",(PetscViewer),(viewer));CHKERRQ(ierr);
+  ierr = PetscTryMethod(viewer,"PetscViewerBinarySetUseMPIIO_C",(PetscViewer,PetscBool),(viewer,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetMode"
@@ -1333,12 +1337,12 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryMPIIO(PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerBinarySetMPIIO_Binary"
-PetscErrorCode PetscViewerBinarySetMPIIO_Binary(PetscViewer viewer)
+#define __FUNCT__ "PetscViewerBinarySetUseMPIIO_Binary"
+PetscErrorCode PetscViewerBinarySetUseMPIIO_Binary(PetscViewer viewer,PetscBool flg)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscFunctionBegin;
-  vbinary->MPIIO       = PETSC_TRUE;
+  vbinary->usempiio = flg;
   PetscFunctionReturn(0);
 }
 #endif
@@ -1369,7 +1373,7 @@ static PetscErrorCode PetscViewerSetUp_Binary(PetscViewer v)
   if (!binary->setfromoptionscalled) { ierr = PetscViewerSetFromOptions(v);CHKERRQ(ierr); }
     
 #if defined(PETSC_HAVE_MPIIO)
-  if (binary->MPIIO) {
+  if (binary->usempiio) {
     ierr = PetscViewerFileSetUp_BinaryMPIIO(v);CHKERRQ(ierr);
   } else {
 #endif
@@ -1399,17 +1403,14 @@ static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscOptions *PetscOption
   ierr = PetscSNPrintf(defaultname,PETSC_MAX_PATH_LEN-1,"binaryoutput");CHKERRQ(ierr);
   ierr = PetscOptionsString("-viewer_binary_filename","Specify filename","PetscViewerFileSetName",defaultname,defaultname,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (flg) { ierr = PetscViewerFileSetName_Binary(v,defaultname);CHKERRQ(ierr); }
-  ierr = PetscOptionsBool("-viewer_binary_skip_info","Skip writing/reading .info file","PetscViewerBinarySkipInfo",PETSC_FALSE,&binary->skipinfo,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-viewer_binary_skip_info","Skip writing/reading .info file","PetscViewerBinarySetSkipInfo",PETSC_FALSE,&binary->skipinfo,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_binary_skip_options","Skip parsing vec load options","PetscViewerBinarySetSkipOptions",PETSC_TRUE,&binary->skipoptions,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-viewer_binary_skip_header","Skip writing/reading header information","PetscViewerBinarySetSkipHeader",PETSC_FALSE,&binary->skipheader,&flg);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
-  ierr = PetscOptionsBool("-viewer_binary_mpiio","Use MPI-IO functionality to write/read binary file","PetscViewerBinarySetMPIIO",PETSC_FALSE,&useMPIIO,&flg);CHKERRQ(ierr);
-  if (useMPIIO) {
-    ierr = PetscViewerBinarySetMPIIO(v);CHKERRQ(ierr);
-  }
+  ierr = PetscOptionsBool("-viewer_binary_mpiio","Use MPI-IO functionality to write/read binary file","PetscViewerBinarySetUseMPIIO",PETSC_FALSE,&binary->usempiio,&flg);CHKERRQ(ierr);
 #endif
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  binary->setfromoptionscalled = PETSC_FALSE;
+  binary->setfromoptionscalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1456,8 +1457,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetMode_C",PetscViewerFileGetMode_Binary);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_Binary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetMPIIO_C",PetscViewerBinaryGetMPIIO_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetMPIIO_C",PetscViewerBinarySetMPIIO_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetUseMPIIO_C",PetscViewerBinaryGetUseMPIIO_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetUseMPIIO_C",PetscViewerBinarySetUseMPIIO_Binary);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
