@@ -166,6 +166,8 @@ PetscErrorCode  PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer,MPI_File 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerBinaryGetMPIIO_Binary"
 PetscErrorCode  PetscViewerBinaryGetMPIIO_Binary(PetscViewer viewer,PetscBool  *flg)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
@@ -353,7 +355,7 @@ PetscErrorCode  PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
    Concepts: PetscViewerBinary^accessing info file
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySetSkipOptions(),
-          PetscViewerBinaryGetSkipOptions()
+          PetscViewerBinaryGetSkipOptions(), PetscViewerBinaryGetSkipInfo()
 @*/
 PetscErrorCode  PetscViewerBinarySkipInfo(PetscViewer viewer)
 {
@@ -361,6 +363,99 @@ PetscErrorCode  PetscViewerBinarySkipInfo(PetscViewer viewer)
 
   PetscFunctionBegin;
   vbinary->skipinfo = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerBinarySetSkipInfo_Binary"
+PetscErrorCode PetscViewerBinarySetSkipInfo_Binary(PetscViewer viewer,PetscBool skip)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  vbinary->skipinfo = skip;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerBinarySetSkipInfo"
+/*@
+    PetscViewerBinarySetSkipInfo - Binary file will not have .info file created with it
+
+    Not Collective
+
+    Input Paramter:
+.   viewer - PetscViewer context, obtained from PetscViewerCreate()
+
+    Options Database Key:
+.   -viewer_binary_skip_info
+
+    Level: advanced
+
+    Concepts: PetscViewerBinary^accessing info file
+
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySetSkipOptions(),
+          PetscViewerBinaryGetSkipOptions(), PetscViewerBinaryGetSkipInfo()
+@*/
+PetscErrorCode PetscViewerBinarySetSkipInfo(PetscViewer viewer,PetscBool skip)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(viewer,"PetscViewerBinarySetSkipInfo_C",(PetscViewer,PetscBool),(viewer,skip));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerBinaryGetSkipInfo_Binary"
+PetscErrorCode  PetscViewerBinaryGetSkipInfo_Binary(PetscViewer viewer,PetscBool *skip)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  *skip  = vbinary->skipinfo;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerBinaryGetSkipInfo"
+/*@
+    PetscViewerBinaryGetSkipInfo - check if viewer wrote a .info file
+
+    Not Collective
+
+    Input Parameter:
+.   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
+
+    Output Parameter:
+.   skip - PETSC_TRUE implies the .info file was not generated
+
+    Level: advanced
+
+    Notes: This must be called after PetscViewerSetType()
+
+    Concepts: PetscViewerBinary^accessing info file
+
+.seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
+          PetscViewerBinarySetSkipOptions(), PetscViewerBinarySetSkipInfo()
+@*/
+PetscErrorCode PetscViewerBinaryGetSkipInfo(PetscViewer viewer,PetscBool *skip)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(viewer,"PetscViewerBinaryGetSkipInfo_C",(PetscViewer,PetscBool*),(viewer,skip));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerBinarySetSkipOptions_Binary"
+PetscErrorCode PetscViewerBinarySetSkipOptions_Binary(PetscViewer viewer,PetscBool skip)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  vbinary->skipoptions = skip;
   PetscFunctionReturn(0);
 }
 
@@ -387,12 +482,25 @@ PetscErrorCode  PetscViewerBinarySkipInfo(PetscViewer viewer)
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
           PetscViewerBinaryGetSkipOptions()
 @*/
-PetscErrorCode  PetscViewerBinarySetSkipOptions(PetscViewer viewer,PetscBool skip)
+PetscErrorCode PetscViewerBinarySetSkipOptions(PetscViewer viewer,PetscBool skip)
 {
-  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  vbinary->skipoptions = skip;
+  ierr = PetscUseMethod(viewer,"PetscViewerBinarySetSkipOptions_C",(PetscViewer,PetscBool),(viewer,skip));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerBinaryGetSkipOptions_Binary"
+PetscErrorCode PetscViewerBinaryGetSkipOptions_Binary(PetscViewer viewer,PetscBool *skip)
+{
+  PetscViewer_Binary *vbinary;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  vbinary = (PetscViewer_Binary*)viewer->data;
+  *skip   = vbinary->skipoptions;
   PetscFunctionReturn(0);
 }
 
@@ -418,14 +526,12 @@ PetscErrorCode  PetscViewerBinarySetSkipOptions(PetscViewer viewer,PetscBool ski
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetDescriptor(), PetscViewerBinarySkipInfo(),
           PetscViewerBinarySetSkipOptions()
 @*/
-PetscErrorCode  PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool  *skip)
+PetscErrorCode PetscViewerBinaryGetSkipOptions(PetscViewer viewer,PetscBool *skip)
 {
-  PetscViewer_Binary *vbinary;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  vbinary = (PetscViewer_Binary*)viewer->data;
-  *skip   = vbinary->skipoptions;
+  ierr = PetscUseMethod(viewer,"PetscViewerBinaryGetSkipOptions_C",(PetscViewer,PetscBool*),(viewer,skip));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1340,6 +1446,10 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetFlowControl_C",PetscViewerBinarySetFlowControl_Binary);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipHeader_C",PetscViewerBinarySetSkipHeader_Binary);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipHeader_C",PetscViewerBinaryGetSkipHeader_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipOptions_C",PetscViewerBinaryGetSkipOptions_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipOptions_C",PetscViewerBinarySetSkipOptions_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipInfo_C",PetscViewerBinaryGetSkipInfo_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipInfo_C",PetscViewerBinarySetSkipInfo_Binary);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetInfoPointer_C",PetscViewerBinaryGetInfoPointer_Binary);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_Binary);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_Binary);CHKERRQ(ierr);
