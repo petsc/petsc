@@ -1346,7 +1346,6 @@ runex59_sbaij:
 	   if (${DIFF} output/ex59_1_sbaij.out ex59_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex59_1_sbaij, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex59_1.tmp
-
 runex59_2_sbaij:
 	-@${MPIEXEC} -n 3 ./ex59 -mat_type sbaij > ex59_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex59_2_sbaij.out ex59_2.tmp) then true; \
