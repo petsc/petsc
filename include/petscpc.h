@@ -499,7 +499,6 @@ typedef const char *PCGAMGClassicalType;
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC,PCGAMGClassicalType);
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalGetType(PC,PCGAMGClassicalType*);
 
-#if defined(PETSC_HAVE_PCBDDC)
 PETSC_EXTERN PetscErrorCode PCBDDCSetChangeOfBasisMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
@@ -519,7 +518,6 @@ PETSC_EXTERN PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC,PetscInt,const Petsc
 PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPOperators(PC,Mat*,PC*);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat,Vec,Vec);
-#endif
 
 PETSC_EXTERN PetscErrorCode PCISSetUseStiffnessScaling(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainScalingFactor(PC,PetscScalar);

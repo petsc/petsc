@@ -1,4 +1,3 @@
-#requirespackage 'PETSC_HAVE_PCBDDC'
 
 ALL: lib
 

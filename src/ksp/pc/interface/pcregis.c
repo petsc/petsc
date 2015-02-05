@@ -53,9 +53,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC);
 #if defined(PETSC_HAVE_PARMS)
 PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC);
 #endif
-#if defined(PETSC_HAVE_PCBDDC)
 PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC);
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PCRegisterAll"
@@ -131,8 +129,6 @@ PetscErrorCode  PCRegisterAll(void)
 #if defined(PETSC_HAVE_PARMS)
   ierr = PCRegister(PCPARMS        ,PCCreate_PARMS);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_PCBDDC)
   ierr = PCRegister(PCBDDC         ,PCCreate_BDDC);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
