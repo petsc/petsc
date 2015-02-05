@@ -1719,6 +1719,7 @@ static PetscErrorCode PetscDualSpaceGetDimension_SingleCell_Lagrange(PetscDualSp
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  *dim = -1;                    /* Ensure that the compiler knows *dim is set. */
   ierr = DMGetDimension(sp->dm, &n);CHKERRQ(ierr);
   if (lag->simplex || !lag->continuous) {
     for (i = 1; i <= n; ++i) {

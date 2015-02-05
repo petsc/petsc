@@ -1574,6 +1574,11 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* allocate some auxiliary stuff */
   if (!skip_lapack || pcbddc->use_qr_single) {
     ierr = PetscMalloc4(max_size_of_constraint,&gidxs,max_size_of_constraint,&permutation,max_size_of_constraint,&temp_indices_to_constraint_work,max_size_of_constraint,&temp_quadrature_constraint_work);CHKERRQ(ierr);
+  } else {
+    gidxs = NULL;
+    permutation = NULL;
+    temp_indices_to_constraint_work = NULL;
+    temp_quadrature_constraint_work = NULL;
   }
 
   /* First we issue queries to allocate optimal workspace for LAPACKgesvd (or LAPACKsyev if SVD is missing) */
@@ -1855,9 +1860,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
 
   /* free workspace */
-  if (!skip_lapack || pcbddc->use_qr_single) {
-    ierr = PetscFree4(gidxs,permutation,temp_indices_to_constraint_work,temp_quadrature_constraint_work);CHKERRQ(ierr);
-  }
+  ierr = PetscFree4(gidxs,permutation,temp_indices_to_constraint_work,temp_quadrature_constraint_work);CHKERRQ(ierr);
   if (!skip_lapack) {
     ierr = PetscFree(work);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
