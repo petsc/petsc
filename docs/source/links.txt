@@ -6,7 +6,7 @@
 
 .. _PETSc:        http://www.mcs.anl.gov/petsc/
 
-.. _SLEPc:        http://www.grycap.upv.es/slepc/
+.. _SLEPc:        http://slepc.upv.es
 
 .. _TAO:          http://www.mcs.anl.gov/tao/
 
@@ -21,5 +21,3 @@
 .. _slepc4py:     http://bitbucket.org/slepc/slepc4py
 
 .. _CIMEC:        http://www.cimec.org.ar
-
-.. _GRyCAP:       http://www.grycap.upv.es
