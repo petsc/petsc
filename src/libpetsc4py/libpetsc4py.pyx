@@ -67,6 +67,8 @@ cdef extern from * nogil:
     PetscErrorCode PetscObjectComposeFunction(PetscObject,char[],void (*ptr)())
     PetscErrorCode PetscObjectTypeCompare(PetscObject,char[],PetscBool*)
     PetscErrorCode PetscObjectChangeTypeName(PetscObject, char[])
+
+    ctypedef struct PetscOptions
     PetscErrorCode PetscOptionsString(char[],char[],char[],char[],char[],size_t,PetscBool*)
     PetscErrorCode PetscOptionsGetString(char[],char[],char[],size_t,PetscBool*)
     PetscErrorCode PetscStrcmp(char[],char[],PetscBool*)
@@ -454,7 +456,7 @@ cdef extern from * nogil:
 cdef extern from * nogil:
     struct _MatOps:
         PetscErrorCode (*destroy)(PetscMat) except IERR
-        PetscErrorCode (*setfromoptions)(PetscMat) except IERR
+        PetscErrorCode (*setfromoptions)(PetscOptions*,PetscMat) except IERR
         PetscErrorCode (*view)(PetscMat,PetscViewer) except IERR
         PetscErrorCode (*duplicate)(PetscMat,MatDuplicateOption,PetscMat*) except IERR
         PetscErrorCode (*copy)(PetscMat,PetscMat,MatStructure) except IERR
@@ -615,6 +617,7 @@ cdef PetscErrorCode MatDestroy_Python(
     return FunctionEnd()
 
 cdef PetscErrorCode MatSetFromOptions_Python(
+    PetscOptions *PetscOptionsObject,
     PetscMat mat,
     ) \
     except IERR with gil:
@@ -622,6 +625,7 @@ cdef PetscErrorCode MatSetFromOptions_Python(
     #
     cdef char name[2048], *defval = PyMat(mat).getname()
     cdef PetscBool found = PETSC_FALSE
+    cdef PetscOptions *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
             b"-mat_python_type",b"Python [package.]module[.{class|function}]",
             b"MatPythonSetType",defval,name,sizeof(name),&found) )
@@ -1120,7 +1124,7 @@ cdef extern from * nogil:
       PetscErrorCode (*destroy)(PetscPC) except IERR
       PetscErrorCode (*setup)(PetscPC) except IERR
       PetscErrorCode (*reset)(PetscPC) except IERR
-      PetscErrorCode (*setfromoptions)(PetscPC) except IERR
+      PetscErrorCode (*setfromoptions)(PetscOptions*,PetscPC) except IERR
       PetscErrorCode (*view)(PetscPC,PetscViewer) except IERR
       PetscErrorCode (*presolve)(PetscPC,PetscKSP,PetscVec,PetscVec) except IERR
       PetscErrorCode (*postsolve)(PetscPC,PetscKSP,PetscVec,PetscVec) except IERR
@@ -1257,6 +1261,7 @@ cdef PetscErrorCode PCReset_Python(
     return FunctionEnd()
 
 cdef PetscErrorCode PCSetFromOptions_Python(
+    PetscOptions *PetscOptionsObject,
     PetscPC pc,
     ) \
     except IERR with gil:
@@ -1264,6 +1269,7 @@ cdef PetscErrorCode PCSetFromOptions_Python(
     #
     cdef char name[2048], *defval = PyPC(pc).getname()
     cdef PetscBool found = PETSC_FALSE
+    cdef PetscOptions *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
             b"-pc_python_type",b"Python [package.]module[.{class|function}]",
             b"PCPythonSetType",defval,name,sizeof(name),&found) )
@@ -1376,7 +1382,7 @@ cdef extern from * nogil:
       PetscErrorCode (*destroy)(PetscKSP)          except IERR
       PetscErrorCode (*setup)(PetscKSP)            except IERR
       PetscErrorCode (*reset)(PetscKSP)            except IERR
-      PetscErrorCode (*setfromoptions)(PetscKSP)   except IERR
+      PetscErrorCode (*setfromoptions)(PetscOptions*, PetscKSP) except IERR
       PetscErrorCode (*view)(PetscKSP,PetscViewer) except IERR
       PetscErrorCode (*solve)(PetscKSP)            except IERR
       PetscErrorCode (*buildsolution)(PetscKSP,PetscVec,PetscVec*) except IERR
@@ -1532,6 +1538,7 @@ cdef PetscErrorCode KSPReset_Python(
     return FunctionEnd()
 
 cdef PetscErrorCode KSPSetFromOptions_Python(
+    PetscOptions *PetscOptionsObject,
     PetscKSP ksp,
     ) \
     except IERR with gil:
@@ -1539,6 +1546,7 @@ cdef PetscErrorCode KSPSetFromOptions_Python(
     #
     cdef char name[2048], *defval = PyKSP(ksp).getname()
     cdef PetscBool found = PETSC_FALSE
+    cdef PetscOptions *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
             b"-ksp_python_type",b"Python [package.]module[.{class|function}]",
             b"KSPPythonSetType",defval,name,sizeof(name),&found) )
@@ -1720,7 +1728,7 @@ cdef extern from * nogil:
       PetscErrorCode (*destroy)(PetscSNES)          except IERR
       PetscErrorCode (*setup)(PetscSNES)            except IERR
       PetscErrorCode (*reset)(PetscSNES)            except IERR
-      PetscErrorCode (*setfromoptions)(PetscSNES)   except IERR
+      PetscErrorCode (*setfromoptions)(PetscOptions*,PetscSNES) except IERR
       PetscErrorCode (*view)(PetscSNES,PetscViewer) except IERR
       PetscErrorCode (*solve)(PetscSNES)            except IERR
     ctypedef _SNESOps *SNESOps
@@ -1869,6 +1877,7 @@ cdef PetscErrorCode SNESReset_Python(
     return FunctionEnd()
 
 cdef PetscErrorCode SNESSetFromOptions_Python(
+    PetscOptions *PetscOptionsObject,
     PetscSNES snes,
     ) \
     except IERR with gil:
@@ -1876,6 +1885,7 @@ cdef PetscErrorCode SNESSetFromOptions_Python(
     #
     cdef char name[2048], *defval = PySNES(snes).getname()
     cdef PetscBool found = PETSC_FALSE
+    cdef PetscOptions *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
             b"-snes_python_type",b"Python [package.]module[.{class|function}]",
             b"SNESPythonSetType",defval,name,sizeof(name),&found) )
@@ -2035,7 +2045,7 @@ cdef extern from * nogil:
       PetscErrorCode (*destroy)(PetscTS)          except IERR
       PetscErrorCode (*setup)(PetscTS)            except IERR
       PetscErrorCode (*reset)(PetscTS)            except IERR
-      PetscErrorCode (*setfromoptions)(PetscTS)   except IERR
+      PetscErrorCode (*setfromoptions)(PetscOptions*,PetscTS) except IERR
       PetscErrorCode (*view)(PetscTS,PetscViewer) except IERR
       PetscErrorCode (*prestep)(PetscTS)          except IERR
       PetscErrorCode (*poststep)(PetscTS)         except IERR
@@ -2208,12 +2218,14 @@ cdef PetscErrorCode TSReset_Python(
     return FunctionEnd()
 
 cdef PetscErrorCode TSSetFromOptions_Python(
+    PetscOptions *PetscOptionsObject,
     PetscTS ts,
     ) \
     except IERR with gil:
     FunctionBegin(b"TSSetFromOptions_Python")
     cdef char name[2048], *defval = PyTS(ts).getname()
     cdef PetscBool found = PETSC_FALSE
+    cdef PetscOptions *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
             b"-ts_python_type",b"Python [package.]module[.{class|function}]",
             b"TSPythonSetType",defval,name,sizeof(name),&found) )
