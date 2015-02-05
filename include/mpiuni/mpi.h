@@ -103,6 +103,30 @@
 /* Requred by abort() in mpi.c & for win64 */
 #include <petscconf.h>
 
+/*  This is reproduced from petscsys.h so that mpi.h can be used standalone without first including petscsys.h */
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#  define MPIUni_PETSC_DLLEXPORT __declspec(dllexport)
+#  define MPIUni_PETSC_DLLIMPORT __declspec(dllimport)
+#elif defined(PETSC_USE_VISIBILITY)
+#  define MPIUni_PETSC_DLLEXPORT __attribute__((visibility ("default")))
+#  define MPIUni_PETSC_DLLIMPORT __attribute__((visibility ("default")))
+#else
+#  define MPIUni_PETSC_DLLEXPORT
+#  define MPIUni_PETSC_DLLIMPORT
+#endif
+
+#if defined(petsc_EXPORTS)
+#  define MPIUni_PETSC_VISIBILITY_PUBLIC MPIUni_PETSC_DLLEXPORT
+#else  /* Win32 users need this to import symbols from petsc.dll */
+#  define MPIUni_PETSC_VISIBILITY_PUBLIC MPIUni_PETSC_DLLIMPORT
+#endif
+
+#if defined(__cplusplus)
+#define MPIUni_PETSC_EXTERN extern "C" MPIUni_PETSC_VISIBILITY_PUBLIC
+#else
+#define MPIUni_PETSC_EXTERN extern MPIUni_PETSC_VISIBILITY_PUBLIC
+#endif
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -117,7 +141,7 @@ extern "C" {
     MPIUNI_TMP is used in the macros below only to stop various C/C++ compilers
 from generating warning messages about unused variables while compiling PETSc.
 */
-PETSC_EXTERN void *MPIUNI_TMP;
+MPIUni_PETSC_EXTERN void *MPIUNI_TMP;
 
 #define MPI_COMM_SELF        1
 #define MPI_COMM_WORLD       2
@@ -189,7 +213,7 @@ extern MPI_Datatype MPIU___FLOAT128;
 #else
 #define MPI_sizeof(datatype) ((datatype) & 0xff)
 #endif
-PETSC_EXTERN int MPIUNI_Memcpy(void*,const void*,int);
+MPIUni_PETSC_EXTERN int MPIUNI_Memcpy(void*,const void*,int);
 
 #define MPI_MAX_PROCESSOR_NAME 1024
 
@@ -261,22 +285,22 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 #define MPI_Comm_get_attr      Petsc_MPI_Attr_get
 #define MPI_Comm_set_attr      Petsc_MPI_Attr_put
 
-PETSC_EXTERN int    MPI_Abort(MPI_Comm,int);
-PETSC_EXTERN int    MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag);
-PETSC_EXTERN int    MPI_Keyval_free(int*);
-PETSC_EXTERN int    MPI_Attr_put(MPI_Comm,int,void *);
-PETSC_EXTERN int    MPI_Attr_delete(MPI_Comm,int);
-PETSC_EXTERN int    MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
-PETSC_EXTERN int    MPI_Comm_free(MPI_Comm*);
-PETSC_EXTERN int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
-PETSC_EXTERN int    MPI_Comm_create(MPI_Comm,MPI_Group,MPI_Comm *);
-PETSC_EXTERN int    MPI_Init(int *, char ***);
-PETSC_EXTERN int    MPI_Finalize(void);
-PETSC_EXTERN int    MPI_Initialized(int*);
-PETSC_EXTERN int    MPI_Finalized(int*);
-PETSC_EXTERN int    MPI_Comm_size(MPI_Comm,int*);
-PETSC_EXTERN int    MPI_Comm_rank(MPI_Comm,int*);
-PETSC_EXTERN double MPI_Wtime(void);
+MPIUni_PETSC_EXTERN int    MPI_Abort(MPI_Comm,int);
+MPIUni_PETSC_EXTERN int    MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag);
+MPIUni_PETSC_EXTERN int    MPI_Keyval_free(int*);
+MPIUni_PETSC_EXTERN int    MPI_Attr_put(MPI_Comm,int,void *);
+MPIUni_PETSC_EXTERN int    MPI_Attr_delete(MPI_Comm,int);
+MPIUni_PETSC_EXTERN int    MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
+MPIUni_PETSC_EXTERN int    MPI_Comm_free(MPI_Comm*);
+MPIUni_PETSC_EXTERN int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
+MPIUni_PETSC_EXTERN int    MPI_Comm_create(MPI_Comm,MPI_Group,MPI_Comm *);
+MPIUni_PETSC_EXTERN int    MPI_Init(int *, char ***);
+MPIUni_PETSC_EXTERN int    MPI_Finalize(void);
+MPIUni_PETSC_EXTERN int    MPI_Initialized(int*);
+MPIUni_PETSC_EXTERN int    MPI_Finalized(int*);
+MPIUni_PETSC_EXTERN int    MPI_Comm_size(MPI_Comm,int*);
+MPIUni_PETSC_EXTERN int    MPI_Comm_rank(MPI_Comm,int*);
+MPIUni_PETSC_EXTERN double MPI_Wtime(void);
 
 #define MPI_Aint MPIUNI_INTPTR
 /*

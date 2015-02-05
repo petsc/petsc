@@ -45,11 +45,13 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.programs      = framework.require('config.programs',           self)
     self.setCompilers  = framework.require('config.setCompilers',       self)
-    self.arch          = framework.require('PETSc.options.arch',      self.setCompilers)
-    self.petscdir      = framework.require('PETSc.options.petscdir',  self.arch)
-    self.installdir    = framework.require('PETSc.options.installDir',self)
-    self.languages     = framework.require('PETSc.options.languages', self.setCompilers)
-    self.debugging     = framework.require('PETSc.options.debugging', self.setCompilers)
+    self.compilers     = framework.require('config.compilers',          self)
+    self.arch          = framework.require('PETSc.options.arch',        self.setCompilers)
+    self.petscdir      = framework.require('PETSc.options.petscdir',    self.arch)
+    self.installdir    = framework.require('PETSc.options.installDir',  self)
+    self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
+    self.debugging     = framework.require('PETSc.options.debugging',   self.setCompilers)
+    self.indexTypes    = framework.require('PETSc.options.indexTypes',  self.compilers)
     self.compilers     = framework.require('config.compilers',          self)
     self.types         = framework.require('config.types',              self)
     self.headers       = framework.require('config.headers',            self)
@@ -103,13 +105,15 @@ class Configure(config.base.Configure):
           packageObj.archProvider       = self.arch
           packageObj.languageProvider   = self.languages
           packageObj.precisionProvider  = self.scalartypes
+          packageObj.indexProvider      = self.indexTypes
           packageObj.installDirProvider = self.installdir
           packageObj.externalPackagesDirProvider = self.externalpackagesdir
           setattr(self, packageName.lower(), packageObj)
-    # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
+    # Force blaslapack and opencl to depend on scalarType so precision is set before BlasLapack is built
     framework.require('PETSc.options.scalarTypes', self.f2cblaslapack)
     framework.require('PETSc.options.scalarTypes', self.fblaslapack)
     framework.require('PETSc.options.scalarTypes', self.blaslapack)
+    framework.require('PETSc.options.scalarTypes', self.opencl)
     framework.require('PETSc.Regression', self)
 
     self.programs.headerPrefix   = self.headerPrefix
@@ -187,18 +191,20 @@ class Configure(config.base.Configure):
 
   def DumpModule(self):
     ''' Create a module file '''
-    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules')):
-      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules'))
+    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'conf','modules')):
+      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'conf','modules'))
+    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'conf','modules','petsc')):
+      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'conf','modules','petsc'))
     if self.framework.argDB['prefix']:
       installdir  = self.framework.argDB['prefix']
       installarch = ''
       installpath = os.path.join(installdir,'bin')
-      fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules',self.petscdir.version),'w')
+      fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'conf','modules','petsc',self.petscdir.version),'w')
     else:
       installdir  = self.petscdir.dir
       installarch = self.arch.arch
       installpath = os.path.join(installdir,installarch,'bin')+':'+os.path.join(installdir,'bin')
-      fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules',self.petscdir.version+'-'+self.arch.arch),'w')
+      fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'conf','modules','petsc',self.petscdir.version+'-'+self.arch.arch),'w')
     fd.write('''\
 #%%Module
 

@@ -3,6 +3,7 @@
    This file defines the initialization of PETSc, including PetscInitialize()
 */
 #include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petscvalgrind.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_CUDA)

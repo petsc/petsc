@@ -118,8 +118,10 @@ class Installer(script.Script):
         sys.exit(1)
     return
 
-  def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2):
+  def copytree(self, src, dst, symlinks = False, copyFunc = shutil.copy2, exclude = []):
     """Recursively copy a directory tree using copyFunc, which defaults to shutil.copy2().
+
+       The copyFunc() you provide is only used on the top level, lower levels always use shutil.copy2
 
     The destination directory must not already exist.
     If exception(s) occur, an shutil.Error is raised with a list of reasons.
@@ -144,8 +146,8 @@ class Installer(script.Script):
           linkto = os.readlink(srcname)
           os.symlink(linkto, dstname)
         elif os.path.isdir(srcname):
-          copies.extend(self.copytree(srcname, dstname, symlinks))
-        else:
+          copies.extend(self.copytree(srcname, dstname, symlinks,exclude = exclude))
+        elif not os.path.basename(srcname) in exclude:
           copyFunc(srcname, dstname)
           copies.append((srcname, dstname))
         # XXX What about devices, sockets etc.?
@@ -215,7 +217,7 @@ for src, dst in copies:
     return
 
   def installIncludes(self):
-    self.copies.extend(self.copytree(self.rootIncludeDir, self.destIncludeDir))
+    self.copies.extend(self.copytree(self.rootIncludeDir, self.destIncludeDir,exclude = ['makefile']))
     self.copies.extend(self.copytree(self.archIncludeDir, self.destIncludeDir))
     return
 
@@ -225,7 +227,7 @@ for src, dst in copies:
     return
 
   def installBin(self):
-    self.copies.extend(self.copytree(self.rootBinDir, self.destBinDir))
+    self.copies.extend(self.copytree(os.path.join(self.rootBinDir,'petscpythonscripts'), os.path.join(self.destBinDir,'petscpythonscripts')))
     self.copies.extend(self.copytree(self.archBinDir, self.destBinDir))
     return
 

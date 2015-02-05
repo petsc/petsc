@@ -8,18 +8,6 @@
 #include <petscfvtypes.h>
 #include <petscdstypes.h>
 
-/* Assuming dim <= 3 */
-typedef struct {
-  PetscReal   normal[3];   /* Area-scaled normals */
-  PetscReal   centroid[3]; /* Location of centroid (quadrature point) */
-  PetscScalar grad[2][3];  /* Face contribution to gradient in left and right cell */
-} PetscFVFaceGeom;
-
-typedef struct {
-  PetscReal centroid[3];
-  PetscReal volume;
-} PetscFVCellGeom;
-
 PETSC_EXTERN PetscClassId PETSCLIMITER_CLASSID;
 
 /*J

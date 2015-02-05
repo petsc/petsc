@@ -802,6 +802,31 @@ PetscErrorCode  PetscOptionsView(PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscOptionsViewError"
+/*
+   Called by error handlers to print options used in run
+*/
+PetscErrorCode  PetscOptionsViewError(void)
+{
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (options->N) {
+    (*PetscErrorPrintf)("PETSc Option Table entries:\n");
+  } else {
+    (*PetscErrorPrintf)("No PETSc Option Table entries\n");
+  }
+  for (i=0; i<options->N; i++) {
+    if (options->values[i]) {
+      (*PetscErrorPrintf)("-%s %s\n",options->names[i],options->values[i]);
+    } else {
+      (*PetscErrorPrintf)("-%s\n",options->names[i]);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetAll"
 /*@C
    PetscOptionsGetAll - Lists all the options the program was run with in a single string.
@@ -2492,6 +2517,8 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
   PetscFunctionReturn(0);
 }
 
+#define CHKERRQI(incall,ierr) if (ierr) {incall = PETSC_FALSE; CHKERRQ(ierr);}
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectViewFromOptions"
 /*@C
@@ -2518,16 +2545,13 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj,const char prefix[],co
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
-  if (prefix) {
-    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  } else {
-    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),((PetscObject)obj)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
-  }
+  if (!prefix) prefix = ((PetscObject)obj)->prefix;
+  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj),prefix,optionname,&viewer,&format,&flg);CHKERRQI(incall,ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = PetscObjectView(obj,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQI(incall,ierr);
+    ierr = PetscObjectView(obj,viewer);CHKERRQI(incall,ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQI(incall,ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQI(incall,ierr);
   }
   incall = PETSC_FALSE;
   PetscFunctionReturn(0);

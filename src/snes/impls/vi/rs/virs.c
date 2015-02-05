@@ -122,7 +122,8 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = (*dmsnesvi1->coarsen)(dm1,comm,dm2);CHKERRQ(ierr);
 
   /* not sure why this extra reference is needed, but without the dm2 disappears too early */
-  ierr = PetscObjectReference((PetscObject)*dm2);CHKERRQ(ierr);
+  /* Updating the KSPCreateVecs() to avoid using DMGetGlobalVector() when matrix is available removes the need for this reference? */
+  /*  ierr = PetscObjectReference((PetscObject)*dm2);CHKERRQ(ierr);*/
 
   /* need to set back global vectors in order to use the original injection */
   ierr = DMClearGlobalVectors(dm1);CHKERRQ(ierr);

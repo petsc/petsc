@@ -1225,8 +1225,8 @@ If one wishes to repeatedly assemble matrices that retain the same
 nonzero pattern (such as within a nonlinear or time-dependent
 problem), the option
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
-\end{tabbing}
+  MatSetOption(Mat A,MAT\_NEW\_NONZERO\_LOCATIONS,PETSC\_FALSE);
+\end{tabbing} \findex{MAT_NEW_NONZERO_LOCATIONS}
 should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
 information will be reused (instead of regenerated) during successive
@@ -2825,14 +2825,75 @@ PCASMSetLocalSubdomains(); the routine PCASMSetOverlap()
 merely allows PETSc to extend that overlap further if desired.
 
 %----------------------------------------------------------------------
-\subsection{Algebraic Multigrid Preconditioners}
+\subsection{Algebraic Multigrid (AMG) Preconditioners}
 
-PETSc provides a framework and tools for developing algebraic multigrid (AMG) methods.
-Developers can write a preconditioner (PC) class and an application can select this PC as a command line argument or explicitly in the code.
-PETSc provides interfaces to two external AMG packages have been imported into PETSc as external, downloaded packages: {\it hypre} and {\it ML}.
-These packages are monolithic in that they implement one class of algorithms, ``classic" AMG in the case of  {\it hypre}  and smoothed aggregation for {\it ML}.
-The PETSc AMG framework provides one basic aggregation AMG method (\trl{-pc_gamg_type agg}) and the popular variant smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1}).
-Smoothed aggregation is recommended for symmetric positive definite systems;  unsmoothed aggregation can be useful for unsymmetric problems.
+PETSc provides a native AMG PC -- {\it gamg} -- and interfaces to two
+external AMG packages: {\it hypre} and {\it ML}.
+Note, ML has be depreciated, as a replacement is being developed, and
+is not recommended currently.
+Run any test problem with -help and the appropriate PC to see a listing of all parameters for
+each PC.
+%These packages are monolithic in that they implement one class of
+%algorithms, ``classic" AMG in the case of  {\it hypre}  and smoothed
+%aggregation for {\it ML}.
+PETSc's AMG solver is constructed as a framework for developers to
+easily add AMG capabilities, like a new AMG algorithm or a new matrix
+triple product, etc.
+PETSc has instantiated one method, (smoothed) aggregation AMG, (\trl{-pc_type gamg -pc_gamg_type
+  agg} or just \trl{-pc_type gamg}) that is supported.
+There is an unsupported implementations of a classical AMG method and a
+hybrid geometric AMG method.
+GAMG provides unsmoothed aggregation (\trl{-pc_gamg_agg_nsmooths 0}) and smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1}).
+Smoothed aggregation is recommended for symmetric positive definite
+systems;  unsmoothed aggregation can be useful for asymmetric
+problems and problems where highest eigen estimates are problematic.
+
+AMG solvers applied to the broad spectrum of
+matrices that we see at PETSc, in terms of equations, discretizations, and parameter
+regimes (eg, stretched grids), not to mention possible user code bugs,
+can lead to a suboptimal initial experiences with AMG solvers in
+general and with PETSc in particular.
+Hypre has been hardened from over 15 years of use; GAMG is much
+younger but we will fix any code bugs and appreciate users that find
+them and are willing to work with us to fix them.
+
+{\bf Trouble shooting:}  If GAMG or hypre is not satisfactory, the
+first thing to try is the other one.
+For GAMG we recommend \trl{-pc_gamg_agg_nsmooths 1} for elliptic
+operators because it often improves convergence rates significantly.
+This smoothing requires estimates of the highest eigenvalues of the
+matrix (as does Chebyshev smoothers \trl{-mg_levels_ksp_type
+  chebyshev}).
+These highest eigen estimates are usually robust but not provably so,
+thus \trl{-pc_gamg_agg_nsmooths 0} is recommended first if poor convergence rates are observed.
+Likewise,  \trl{-mg_levels_ksp_type richardson -mg_levels_pc_type sor}
+removes any dependance on eigen estimates.
+AMG methods are sensitive to coarsening rates and methods; for GAMG use
+\trl{-pc_gamg_threshold x.y} to regulate coarsening rates.
+A high threshold (eg, 0.08) will result in an expensive but potentially
+powerful preconditioner; a low threshold (eg, 0.0) will result in
+faster coarsening, fewer levels, cheaper solves, and generally worse
+convergence rates.
+\trl{-pc_gamg_threshold 0.0} is the most robust option (the reason for
+this is not obvious) and is recommended if poor convergence rates are
+observed, at least until the source of the problem is discovered.
+
+AMG methods benefit greatly from knowledge of the number of degrees of
+freedom per vertex, and is all but required for GAMG.
+The default is one (a scalar problem) but vector problems like 2D
+elasticity should set the block size of the matrix appropriately (eg
+\trl{-mat_block_size 2} or manually in the code).
+
+Finally, there are several legitimate sources of poor performance of
+AMG solvers and often special purpose methods must be developed to
+achieve the full potential of multigrid.
+To name just a few legitimate sources of performance degradation that
+may not be fixed with parameters or bug fixes in PETSc currently: non-elliptic
+operators, curl/curl operators, highly stretched grids or highly anisotropic problems,
+large jumps in material coefficients with complex geometry (AMG is
+particularly well suited to jumps in coefficients but it is not a
+perfect solution), highly incompressible elasticity, not to mention
+ill-posed problems, and many others.
 
 %----------------------------------------------------------------------
 \subsection{Shell Preconditioners}
@@ -6511,8 +6572,7 @@ For example,
    alias -kspt -ksp\_type\\
    alias -sd -start\_in\_debugger
 \end{tabbing}
-Comments can be placed in the .petscrc file by using one of the
-following symbols in the first column of a line: \trl{#, %}, or \trl{!}.
+Comments can be placed in the .petscrc file by using \trl{#} in the first column of a line.
 
 \subsection{User-Defined PetscOptions}
 

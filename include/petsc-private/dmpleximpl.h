@@ -4,12 +4,24 @@
 #include <petscmat.h>       /*I      "petscmat.h"          I*/
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
 #include <petscbt.h>
+#include <petscsf.h>
 #include <petsc-private/dmimpl.h>
 #include <../src/sys/utils/hash.h>
 
 PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner);
+
+typedef enum {REFINER_NOOP = 0,
+              REFINER_SIMPLEX_1D,
+              REFINER_SIMPLEX_2D,
+              REFINER_HYBRID_SIMPLEX_2D,
+              REFINER_HEX_2D,
+              REFINER_HYBRID_HEX_2D,
+              REFINER_SIMPLEX_3D,
+              REFINER_HYBRID_SIMPLEX_3D,
+              REFINER_HEX_3D,
+              REFINER_HYBRID_HEX_3D} CellRefiner;
 
 typedef struct _PetscPartitionerOps *PetscPartitionerOps;
 struct _PetscPartitionerOps {
@@ -51,10 +63,9 @@ struct _n_DMLabel {
   PetscInt    numStrata;      /* Number of integer values */
   PetscInt   *stratumValues;  /* Value of each stratum */
   /* Basic sorted array storage */
-  PetscBool   arrayValid;     /* The array storage is valid (no additions need to be merged in) */
-  PetscInt   *stratumOffsets; /* Offset of each stratum */
+  PetscBool  *arrayValid;     /* The array storage is valid (no additions need to be merged in) */
   PetscInt   *stratumSizes;   /* Size of each stratum */
-  PetscInt   *points;         /* Points for each stratum, always sorted */
+  PetscInt  **points;         /* Points for each stratum, always sorted */
   /* Hashtable for fast insertion */
   PetscHashI *ht;             /* Hash table for fast insertion */
   /* Index for fast search */

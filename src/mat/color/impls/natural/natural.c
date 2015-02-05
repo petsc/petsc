@@ -1,4 +1,5 @@
 #include <petsc-private/matimpl.h>      /*I "petscmat.h"  I*/
+#include <petsc-private/isimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringApply_Natural"
@@ -42,7 +43,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *
   for (i=start; i<end; i++) {
     colors[i-start] = (ISColoringValue)i;
   }
-  ierr = ISColoringCreate(comm,n,end-start,colors,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(comm,n,end-start,colors,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
 
   if (size > 1) {
     ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
@@ -60,7 +61,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *
     }
     /* create a parallel iscoloring */
     nc   = iscoloring_seq->n;
-    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

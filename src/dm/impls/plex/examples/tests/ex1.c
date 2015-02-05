@@ -114,28 +114,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = refinedMesh;
     }
     if (user->overlap) {
-      /* Derive global point numbering for refined mesh */
       DM overlapMesh = NULL;
-      PetscInt numComp = 1, pStart, pEnd;
-      PetscInt numDofs[4] = {1, 1, 1, 1};
-      PetscSection secLocal, secGlobal;
-      PetscSF sfDefault;
-      ISLocalToGlobalMapping numbering;
-      ierr = DMPlexCreateSection(*dm, dim, 1, &numComp, numDofs, 0, NULL, NULL, NULL, &secLocal);CHKERRQ(ierr);
-      ierr = DMSetDefaultSection(*dm, secLocal);CHKERRQ(ierr);
-      ierr = DMGetDefaultGlobalSection(*dm, &secGlobal);CHKERRQ(ierr);
-      ierr = DMGetDefaultSF(*dm, &sfDefault);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffsetRange(secGlobal, &pStart, &pEnd);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingCreateSF(sfDefault, pStart, &numbering);CHKERRQ(ierr);
       /* Add the level-1 overlap to refined mesh */
-      ierr = DMPlexDistributeOverlap(*dm, 1, numbering, NULL, &overlapMesh);CHKERRQ(ierr);
+      ierr = DMPlexDistributeOverlap(*dm, 1, NULL, &overlapMesh);CHKERRQ(ierr);
       if (overlapMesh) {
         ierr = DMView(overlapMesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
         ierr = DMDestroy(dm);CHKERRQ(ierr);
         *dm = overlapMesh;
       }
-      ierr = PetscSectionDestroy(&secLocal);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(&numbering);CHKERRQ(ierr);
     }
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);

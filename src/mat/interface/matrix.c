@@ -5,6 +5,7 @@
 
 #include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
 #include <petsc-private/vecimpl.h>
+#include <petsc-private/isimpl.h>
 
 /* Logging support */
 PetscClassId MAT_CLASSID;
@@ -3251,7 +3252,7 @@ PetscErrorCode  MatMatSolve(Mat A,Mat B,Mat X)
 
   ierr = PetscLogEventBegin(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
   if (!A->ops->matsolve) {
-    ierr = PetscInfo1(A,"Mat type %s using basic MatMatSolve",((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Mat type %s using basic MatMatSolve\n",((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatMatSolve_Basic(A,B,X);CHKERRQ(ierr);
   } else {
     ierr = (*A->ops->matsolve)(A,B,X);CHKERRQ(ierr);
@@ -4136,9 +4137,9 @@ PetscErrorCode  MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType 
   MatCheckPreallocated(mat,1);
 
   ierr = MatSolverPackageGet(type,((PetscObject)mat)->type_name,ftype,&foundpackage,&foundmtype,&conv);CHKERRQ(ierr);
-  if (!foundpackage) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Could not locate solver package %s. Perhaps you must ./configure with --download-%s",type,type);
-  if (!foundmtype) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MatSolverPackage %s does not support matrix type %s",type,((PetscObject)mat)->type_name);
-  if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"MatSolverPackage %s does not support factorization type %s for  matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
+  if (!foundpackage) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"Could not locate solver package %s. Perhaps you must ./configure with --download-%s",type,type);
+  if (!foundmtype) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support matrix type %s",type,((PetscObject)mat)->type_name);
+  if (!conv) SETERRQ3(PetscObjectComm((PetscObject)mat),PETSC_ERR_MISSING_FACTOR,"MatSolverPackage %s does not support factorization type %s for  matrix type %s",type,MatFactorTypes[ftype],((PetscObject)mat)->type_name);
 
   ierr = (*conv)(mat,ftype,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -7209,7 +7210,7 @@ PetscErrorCode  MatColoringPatch(Mat mat,PetscInt ncolors,PetscInt n,ISColoringV
   MatCheckPreallocated(mat,1);
 
   if (!mat->ops->coloringpatch) {
-    ierr = ISColoringCreate(PetscObjectComm((PetscObject)mat),ncolors,n,colorarray,iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(PetscObjectComm((PetscObject)mat),ncolors,n,colorarray,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
   } else {
     ierr = (*mat->ops->coloringpatch)(mat,ncolors,n,colorarray,iscoloring);CHKERRQ(ierr);
   }

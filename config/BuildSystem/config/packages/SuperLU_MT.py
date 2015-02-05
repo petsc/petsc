@@ -15,7 +15,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
+    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
     self.deps           = [self.blasLapack]
     return
@@ -45,7 +45,7 @@ class Configure(config.package.Package):
       g.write('CDEFS   = -DUpCase')
     else:
       g.write('CDEFS   = -DNoChange')
-    if self.libraryOptions.integerSize == 64:
+    if self.indexTypes.integerSize == 64:
       g.write(' -D_LONGINT')
     g.write('\n')
     # not sure what this is for

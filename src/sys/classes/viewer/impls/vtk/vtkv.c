@@ -238,6 +238,8 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm,const char name[],PetscFileMode 
 
    Level: developer
 
+   Notes: If PetscScalar is __float128 then the binary files are written in double precision
+
    Concepts: VTK files
    Concepts: PetscViewer^creating
 
@@ -247,6 +249,11 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
+#if defined(PETSC_USE_REAL___FLOAT128)
+  PetscInt       i;
+  double         *tmp = NULL;
+  PetscReal      *ttmp = (PetscReal*)data;
+#endif
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
@@ -263,6 +270,14 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
     case PETSC_FLOAT:
       size = sizeof(float);
       break;
+#if defined(PETSC_USE_REAL___FLOAT128)
+    case PETSC___FLOAT128:
+      size = sizeof(double);
+      ierr = PetscMalloc1(n,&tmp);CHKERRQ(ierr);
+      for (i=0; i<n; i++) tmp[i] = ttmp[i];
+      data = (void*) tmp;
+      break;
+#endif
     case PETSC_INT:
       size = sizeof(PetscInt);
       break;
@@ -280,6 +295,9 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
     if (count != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing byte count");
     count = fwrite(data,size,(size_t)n,fp);
     if ((PetscInt)count != n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %D/%D array members of size %D",(PetscInt)count,n,(PetscInt)size);
+#if defined(PETSC_USE_REAL___FLOAT128)
+    ierr = PetscFree(tmp);CHKERRQ(ierr);
+#endif
   }
   PetscFunctionReturn(0);
 }

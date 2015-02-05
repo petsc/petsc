@@ -3,10 +3,13 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
+    self.giturls           = ['git@bitbucket.org:petsc/petsc4py.git']
+    self.gitcommit         = 'cde2915'
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-418f86b7e1b8.tar.gz']
     self.functions         = []
     self.includes          = []
     self.liblist           = []
+    self.skippackagewithoptions = 1
     return
 
   def setupDependencies(self, framework):
@@ -57,7 +60,7 @@ class Configure(config.package.Package):
     self.addMakeRule('petsc4pyinstall','', \
                        ['@echo "*** Installing petsc4py ***"',\
                           '@(MPICC=${PCC} && export MPICC && cd '+self.packageDir+' && \\\n\
-           '+newdir+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir,'lib')+') >> ${PETSC_ARCH}/conf/petsc4py.log 2>&1 || \\\n\
+           '+newdir+archflags+'python setup.py install --install-lib='+os.path.join(self.installDir)+') >> ${PETSC_ARCH}/conf/petsc4py.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py. Check ${PETSC_ARCH}/conf/petsc4py.log" && \\\n\
              echo "********************************************************************" && \\\n\

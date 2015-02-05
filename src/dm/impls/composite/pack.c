@@ -1,5 +1,6 @@
 
 #include <../src/dm/impls/composite/packimpl.h>       /*I  "petscdmcomposite.h"  I*/
+#include <petsc-private/isimpl.h>
 #include <petscds.h>
 
 #undef __FUNCT__
@@ -1323,7 +1324,7 @@ PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,ISColoring
       next    = next->next;
     }
   }
-  ierr = ISColoringCreate(PetscObjectComm((PetscObject)dm),maxcol,n,colors,coloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(PetscObjectComm((PetscObject)dm),maxcol,n,colors,PETSC_OWN_POINTER,coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

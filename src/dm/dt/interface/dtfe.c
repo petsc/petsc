@@ -4757,7 +4757,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscDS prob, PetscI
   PetscInt          N_bc;   /* The batch size, N_bl*N_q*N_b */
   PetscInt          N_cb;   /* The number of batches */
   PetscInt          numFlops, f0Flops = 0, f1Flops = 0;
-  PetscBool         useAux      = coefficientsAux ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool         useAux      = probAux ? PETSC_TRUE : PETSC_FALSE;
   PetscBool         useField    = PETSC_FALSE;
   PetscBool         useFieldDer = PETSC_TRUE;
   PetscBool         useF0       = PETSC_TRUE;
@@ -5319,7 +5319,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
   ierr      = PetscNewLog(fem, &cmp);CHKERRQ(ierr);
   fem->data = cmp;
 
-  cmp->cellRefiner    = 0;
+  cmp->cellRefiner    = REFINER_NOOP;
   cmp->numSubelements = -1;
   cmp->v0             = NULL;
   cmp->jac            = NULL;

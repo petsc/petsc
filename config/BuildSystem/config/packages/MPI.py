@@ -48,6 +48,7 @@ class Configure(config.package.Package):
     self.commf2c          = 0
     self.commc2f          = 0
     self.needBatchMPI     = 1
+    self.alternativedownload = 'mpich'
     return
 
   def setupHelp(self, help):

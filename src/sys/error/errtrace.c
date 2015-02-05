@@ -144,6 +144,7 @@ static void PetscErrorPrintfNormal(void)
 #endif
 }
 
+extern PetscErrorCode  PetscOptionsViewError(void);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscTraceBackErrorHandler"
@@ -231,6 +232,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
     PetscStrncmp(fun,"main",4,&ismain);
     PetscStrncmp(fun,"unknown",7,&isunknown);
     if (ismain || isunknown) {
+      PetscOptionsViewError();
       PetscErrorPrintfHilight();
       (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");
       PetscErrorPrintfNormal();

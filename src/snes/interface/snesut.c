@@ -211,8 +211,9 @@ PetscErrorCode  KSPMonitorSNESLGResidualNormCreate(const char host[],const char 
   ierr = PetscDrawLGSetLegend(drawlg,names);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)drawlg,(PetscObject)draw);CHKERRQ(ierr);
 
-  ierr = PetscMalloc1(2,objs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(3,objs);CHKERRQ(ierr);
   (*objs)[1] = (PetscObject)drawlg;
+  (*objs)[2] = (PetscObject)draw;
   PetscFunctionReturn(0);
 }
 
@@ -268,12 +269,11 @@ PetscErrorCode  KSPMonitorSNESLGResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
 @*/
 PetscErrorCode  KSPMonitorSNESLGResidualNormDestroy(PetscObject **objs)
 {
-  PetscDraw      draw;
   PetscErrorCode ierr;
   PetscDrawLG    drawlg = (PetscDrawLG) (*objs)[1];
+  PetscDraw      draw = (PetscDraw) (*objs)[2];
 
   PetscFunctionBegin;
-  ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(&drawlg);CHKERRQ(ierr);
   ierr = PetscFree(*objs);CHKERRQ(ierr);

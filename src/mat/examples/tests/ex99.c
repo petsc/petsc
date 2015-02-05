@@ -9,6 +9,8 @@ Input parameters include\n\
 e.g. ./ex99 -f0 $D/small -fA $D/Eigdftb/dftb_bin/diamond_xxs_A -fB $D/Eigdftb/dftb_bin/diamond_xxs_B -mat_getrow_uppertriangular,\n\
      where $D = /home/petsc/datafiles/matrices/Eigdftb/dftb_bin\n\n";
 
+/* This example only works with real numbers */
+
 #include <petscmat.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <petscblaslapack.h>
@@ -78,6 +80,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
     ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+    ierr = MatSetUp(B);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       ierr = MatSetValues(B,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -137,8 +140,8 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatDestroy(&A_sp);CHKERRQ(ierr);
 
     ratio = (PetscReal)nzeros[0]/sbaij->nz;
-    ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g, ratio %g of %d nonzeros\n",nzeros[0],(double)ntols[0],(double)ratio,sbaij->nz);CHKERRQ(ierr);
-    ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g\n",nzeros[1],(double)ntols[1]);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g, ratio %g of %d nonzeros\n",nzeros[0],(double)tols[0],(double)ratio,sbaij->nz);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_SELF," %D matrix entries < %g\n",nzeros[1],(double)tols[1]);CHKERRQ(ierr);
   }
 
   /* Convert aij matrix to MATSEQDENSE for LAPACK */
@@ -175,15 +178,17 @@ PetscInt main(PetscInt argc,char **args)
     if (PetscPreLoadIt) ierr = PetscLogStagePop();
     ierr = PetscFree(iwork);CHKERRQ(ierr);
   }
-  ierr = MatDenseRestoreArray(A,&arrayA);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(B,&arrayB);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(A_dense,&arrayA);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(B_dense,&arrayB);CHKERRQ(ierr);
 
   if (nevs <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
   /* View evals */
   ierr = PetscOptionsHasName(NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
-    printf(" %d evals: \n",nevs);
-    for (i=0; i<nevs; i++) printf("%D  %g\n",i+il,(double)nevals[i]);
+    ierr = PetscPrintf(PETSC_COMM_SELF," %D evals: \n",nevs);CHKERRQ(ierr);
+    for (i=0; i<nevs; i++) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"%D  %g\n",i+il,(double)evals[i]);CHKERRQ(ierr);
+    }
   }
 
   /* Check residuals and orthogonality */
@@ -272,12 +277,12 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
 #if defined(DEBUG_CkEigenSolutions)
         if (dot > tols[1]) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%D,%D)|: %g, norm: %g\n",i,j,(double)ndot,(double)nnorm);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%D,%D)|: %g, norm: %g\n",i,j,(double)ndot,(double)nnorm);CHKERRQ(ierr);
         }
 #endif
       } /* for (j=i; j<nev_loc; j++) */
     }
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j*B*x_i) - delta_ji|: %g\n",(double)ndot_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j*B*x_i) - delta_ji|: %g\n",(double)dot_max);CHKERRQ(ierr);
 
   case 1:
     norm_max = 0.0;
@@ -292,16 +297,16 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,PetscReal *eval,Vec *
 #if defined(DEBUG_CkEigenSolutions)
       /* sniff, and bark if necessary */
       if (norm > tols[0]) {
-        printf("  residual violation: %D, resi: %g\n",i, (double)nnorm);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  residual violation: %D, resi: %g\n",i, (double)nnorm);CHKERRQ(ierr);
       }
 #endif
     }
 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)nnorm_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);CHKERRQ(ierr);
 
     break;
   default:
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%D is not supported \n",cklvl);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%D is not supported \n",cklvl);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&vt2);
   ierr = VecDestroy(&vt1);

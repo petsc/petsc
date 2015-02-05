@@ -32,7 +32,7 @@ $       ascii[:[filename][:[format][:append]]]    defaults to stdout - format ca
 $       binary[:[filename][:[format][:append]]]   defaults to the file binaryoutput
 $       draw[:drawtype}                           for example, draw:tikz  or draw:x
 $       socket[:port]                             defaults to the standard output port
-$       ams[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
+$       saws[:communicatorname]                    publishes object to the Scientific Application Webserver (SAWs)
 
    Use PetscViewerDestroy() after using the viewer, otherwise a memory leak will occur
 

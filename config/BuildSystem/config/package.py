@@ -61,6 +61,8 @@ class Package(config.base.Configure):
     self.double           = 0   # 1 means requires double precision
     self.complex          = 1   # 0 means cannot use complex
     self.requires32bitint = 0;  # 1 means that the package will not work with 64 bit integers
+    self.skippackagewithoptions = 0  # packages like fblaslapack and MPICH do not support --with-package* options so do not print them in help
+    self.alternativedownload = [] # Used by, for example mpi.py which does not support --download-mpi but one can use --download-mpich
 
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
@@ -98,11 +100,12 @@ class Package(config.base.Configure):
   def setupHelp(self,help):
     '''Prints help messages for the package'''
     import nargs
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required+self.lookforbydefault,'Indicate if you wish to test for '+self.name))
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
-    help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.Arg(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in'))
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
+    if not self.skippackagewithoptions:
+      help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required+self.lookforbydefault,'Indicate if you wish to test for '+self.name))
+      help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
+      help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.Arg(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in'))
+      help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
+      help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
     if self.download or self.giturls:
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
     return
@@ -138,6 +141,30 @@ class Package(config.base.Configure):
     self._defaultPrecision = defaultPrecision
     return
   defaultPrecision = property(getDefaultPrecision, setDefaultPrecision, doc = 'The precision of the library')
+
+  def getDefaultScalarType(self):
+    '''The scalar type for the library'''
+    if hasattr(self, 'precisionProvider'):
+      if hasattr(self.precisionProvider, 'scalartype'):
+        return self.precisionProvider.scalartype
+    return self._defaultScalarType
+  def setDefaultScalarType(self, defaultScalarType):
+    '''The scalar type for the library'''
+    self._defaultScalarType = defaultScalarType
+    return
+  defaultScalarType = property(getDefaultScalarType, setDefaultScalarType, doc = 'The scalar type for of the library')
+
+  def getDefaultIndexSize(self):
+    '''The index size for the library'''
+    if hasattr(self, 'indexProvider'):
+      if hasattr(self.indexProvider, 'integerSize'):
+        return self.indexProvider.integerSize
+    return self._defaultIndexSize
+  def setDefaultIndexSize(self, defaultIndexSize):
+    '''The index size for the library'''
+    self._defaultIndexSize = defaultIndexSize
+    return
+  defaultIndexSize = property(getDefaultIndexSize, setDefaultIndexSize, doc = 'The index size for of the library')
 
   def checkNoOptFlag(self):
     flag = '-O0'
@@ -375,6 +402,7 @@ class Package(config.base.Configure):
     if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.framework.argDB['with-'+self.package]):
       mesg = 'Unable to find '+self.package+' in default locations!\nPerhaps you can specify with --with-'+self.package+'-dir=<directory>\nIf you do not want '+self.name+', then give --with-'+self.package+'=0'
       if self.download: mesg +='\nYou might also consider using --download-'+self.package+' instead'
+      if self.alternativedownload: mesg +='\nYou might also consider using --download-'+self.alternativedownload+' instead'
       raise RuntimeError(mesg)
 
   def checkDownload(self, requireDownload = 1):
@@ -598,6 +626,7 @@ class Package(config.base.Configure):
     pass
 
   def consistencyChecks(self):
+    if self.skippackagewithoptions: return
     if 'with-'+self.package+'-dir' in self.framework.argDB and ('with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB):
       raise RuntimeError('Specify either "--with-'+self.package+'-dir" or "--with-'+self.package+'-lib --with-'+self.package+'-include". But not both!')
     if self.framework.argDB['with-'+self.package]:
@@ -611,12 +640,12 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' without enabling C++11, see --with-cxx-dialect=C++11')
       if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
-#      if self.double and not self.scalartypes.precision.lower() == 'double':
-#        raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')
-#      if not self.complex and self.scalartypes.scalartype.lower() == 'complex':
-#        raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
-#      if self.libraryOptions.integerSize == 64 and self.requires32bitint:
-#        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
+      if self.double and not self.defaultPrecision.lower() == 'double':
+        raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')
+      if not self.complex and self.defaultScalarType.lower() == 'complex':
+        raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')
+      if self.defaultIndexSize == 64 and self.requires32bitint:
+        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
     if not (self.download or self.giturls) and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return
@@ -624,6 +653,8 @@ class Package(config.base.Configure):
   def configure(self):
     if self.download and self.framework.argDB['download-'+self.downloadname.lower()]:
       self.framework.argDB['with-'+self.package] = 1
+    if not 'with-'+self.package in self.framework.argDB:
+      self.framework.argDB['with-'+self.package] = 0
     if 'with-'+self.package+'-dir' in self.framework.argDB or 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
     if 'with-'+self.package+'-pkg-config' in self.framework.argDB:
@@ -1043,7 +1074,7 @@ class GNUPackage(Package):
       output3,err3,ret3  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+pmake, timeout=6000, log = self.framework.log)
       self.logPrintBox('Running make install on '+self.PACKAGE+'; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(self.installSudo)
-      output4,err4,ret4  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+self.make.make+' install', timeout=300, log = self.framework.log)
+      output4,err4,ret4  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && '+self.installSudo+self.make.make+' install', timeout=1000, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make; make install on '+self.PACKAGE+': '+str(e))
     self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
