@@ -3161,7 +3161,7 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
   ierr = VecScatterBegin(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   /* get global ordering of local dofs */
-  ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(local_vec,(const PetscScalar**)&array);CHKERRQ(ierr);
   if (local_dofs_mult) {
     for (i=0;i<n_local_dofs;i++) {
       temp_global_dofs[i] = (PetscInt)PetscRealPart(array[local_dofs[i]])-local_dofs_mult[i];
@@ -3171,7 +3171,7 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
       temp_global_dofs[i] = (PetscInt)PetscRealPart(array[local_dofs[i]])-1;
     }
   }
-  ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(local_vec,(const PetscScalar**)&array);CHKERRQ(ierr);
   /* free workspace */
   ierr = VecScatterDestroy(&scatter_ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&local_vec);CHKERRQ(ierr);

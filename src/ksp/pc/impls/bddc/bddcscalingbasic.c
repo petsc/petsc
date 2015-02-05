@@ -42,16 +42,17 @@ static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y)
   ierr = VecSet(pcbddc->work_scaling,0.0);CHKERRQ(ierr); /* needed by the fake work below */
   if (deluxe_ctx->n_simple) {
     /* scale deluxe vertices using diagonal scaling */
-    PetscScalar *array_x,*array_D,*array;
-    ierr = VecGetArray(x,&array_x);CHKERRQ(ierr);
-    ierr = VecGetArray(pcis->D,&array_D);CHKERRQ(ierr);
+    const PetscScalar *array_x,*array_D;
+    PetscScalar       *array;
+    ierr = VecGetArrayRead(x,&array_x);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(pcis->D,&array_D);CHKERRQ(ierr);
     ierr = VecGetArray(pcbddc->work_scaling,&array);CHKERRQ(ierr);
     for (i=0;i<deluxe_ctx->n_simple;i++) {
       array[deluxe_ctx->idx_simple_B[i]] = array_x[deluxe_ctx->idx_simple_B[i]]*array_D[deluxe_ctx->idx_simple_B[i]];
     }
     ierr = VecRestoreArray(pcbddc->work_scaling,&array);CHKERRQ(ierr);
-    ierr = VecRestoreArray(pcis->D,&array_D);CHKERRQ(ierr);
-    ierr = VecRestoreArray(x,&array_x);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(pcis->D,&array_D);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(x,&array_x);CHKERRQ(ierr);
   }
   /* sequential part : all problems and Schur applications collapsed into a single matrix vector multiplication and ksp solution */
   if (deluxe_ctx->seq_ksp) {
@@ -145,13 +146,14 @@ static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y)
   ierr = VecScatterEnd(pcis->global_to_B,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   if (deluxe_ctx->n_simple) {
     /* scale deluxe vertices using diagonal scaling */
-    PetscScalar *array_y,*array_D;
+    PetscScalar       *array_y;
+    const PetscScalar *array_D;
     ierr = VecGetArray(y,&array_y);CHKERRQ(ierr);
-    ierr = VecGetArray(pcis->D,&array_D);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(pcis->D,&array_D);CHKERRQ(ierr);
     for (i=0;i<deluxe_ctx->n_simple;i++) {
       array_y[deluxe_ctx->idx_simple_B[i]] *= array_D[deluxe_ctx->idx_simple_B[i]];
     }
-    ierr = VecRestoreArray(pcis->D,&array_D);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(pcis->D,&array_D);CHKERRQ(ierr);
     ierr = VecRestoreArray(y,&array_y);CHKERRQ(ierr);
   }
   /* sequential part : all problems and Schur applications collapsed into a single matrix vector multiplication and ksp solution */
