@@ -2606,24 +2606,53 @@ typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_I
 PETSC_EXTERN const char *const PetscSubcommTypes[];
 
 /*S
-   PetscSubcomm - Context of MPI subcommunicators, used by PCREDUNDANT
+   PetscSubcomm - A decomposition of an MPI communicator into subcommunicators
+
+   Notes: After a call to PetscSubcommSetType(), PetscSubcommSetTypeGeneral(), or PetscSubcommSetFromOptions() one may call
+$     PetscSubcommChild() returns the associated subcommunicator on this process
+$     PetscSubcommContiquousParent() returns a parent communitor but with all child of the same subcommunicator having contiquous rank
+
+   Sample Usage:
+       PetscSubcommCreate()
+       PetscSubcommSetNumber()
+       PetscSubcommSetType(PETSC_SUBCOMM_INTERLACED);
+       ccomm = PetscSubcommChild()
+       PetscSubcommDestroy()
 
    Level: advanced
 
    Concepts: communicator, create
+
+   Notes:
+$   PETSC_SUBCOMM_GENERAL - similar to MPI_Comm_split() each process sets the new communicator (color) they will belong to and the order within that communicator
+$   PETSC_SUBCOMM_CONTIGUOUS - each new communicator contains a set of process with contiquous ranks in the original MPI communicator
+$   PETSC_SUBCOMM_INTERLACED - each new communictor contains a set of processes equally far apart in rank from the others in that new communicator
+
+   Examaple: Consider a communicator with six processes split into 3 subcommunicators.
+$     PETSC_SUBCOMM_CONTIGUOUS - the first communicator contains rank 0,1  the second rank 2,3 and the third rank 4,5 in the original ordering of the original communicator
+$     PETSC_SUBCOMM_INTERLACED - the first communicator contains rank 0,3, the second 1,4 and the third 2,5
+
+   Developer Notes: This is used in objects such as PCREDUNDANT() to manage the subcommunicators on which the redundant computations
+      are performed.
+
+
+.seealso: PetscSubcommCreate(), PetscSubcommSetNumber(), PetscSubcommSetType(), PetscSubcommView(), PetscSubcommSetFromOptions()
+
 S*/
 typedef struct _n_PetscSubcomm* PetscSubcomm;
 
 struct _n_PetscSubcomm {
-  MPI_Comm    parent;           /* parent communicator */
-  MPI_Comm    dupparent;        /* duplicate parent communicator, under which the processors of this subcomm have contiguous rank */
-  MPI_Comm    comm;             /* this communicator */
-  PetscMPIInt n;                /* num of subcommunicators under the parent communicator */
-  PetscMPIInt color;            /* color of processors belong to this communicator */
-  PetscMPIInt *subsize;         /* size of subcommunicator[color] */
+  MPI_Comm         parent;           /* parent communicator */
+  MPI_Comm         dupparent;        /* duplicate parent communicator, under which the processors of this subcomm have contiguous rank */
+  MPI_Comm         child;            /* the sub-communicator */
+  PetscMPIInt      n;                /* num of subcommunicators under the parent communicator */
+  PetscMPIInt      color;            /* color of processors belong to this communicator */
+  PetscMPIInt      *subsize;         /* size of subcommunicator[color] */
   PetscSubcommType type;
 };
 
+PETSC_STATIC_INLINE MPI_Comm PetscSubcommChild(PetscSubcomm scomm) {return scomm->child;}
+PETSC_STATIC_INLINE MPI_Comm PetscSubcommContiquousParent(PetscSubcomm scomm) {return scomm->dupparent;}
 PETSC_EXTERN PetscErrorCode PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommDestroy(PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetNumber(PetscSubcomm,PetscInt);

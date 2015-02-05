@@ -217,7 +217,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
         }
         ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
       } else if (jac->psubcomm && !jac->psubcomm->color) {
-        ierr = PetscViewerASCIIGetStdout(mpjac->psubcomm->comm,&sviewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIGetStdout(PetscSubcommChild(mpjac->psubcomm),&sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(*(jac->ksp),sviewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -1225,7 +1225,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
       ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
     }
     mpjac->psubcomm = jac->psubcomm;
-    subcomm         = mpjac->psubcomm->comm;
+    subcomm         = PetscSubcommChild(mpjac->psubcomm);
 
     /* Get matrix blocks of pmat */
     if (!pc->pmat->ops->getmultiprocblock) SETERRQ(PetscObjectComm((PetscObject)pc->pmat),PETSC_ERR_SUP,"No support for the requested operation");
@@ -1269,7 +1269,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     pc->ops->destroy = PCDestroy_BJacobi_Multiproc;
     pc->ops->apply   = PCApply_BJacobi_Multiproc;
   } else { /* pc->setupcalled */
-    subcomm = mpjac->psubcomm->comm;
+    subcomm = PetscSubcommChild(mpjac->psubcomm);
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* destroy old matrix blocks, then get new matrix blocks */
       if (mpjac->submats) {ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);}
