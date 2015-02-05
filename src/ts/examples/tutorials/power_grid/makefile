@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/power_grid/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex3adj.c ex3opt.c ex3opt_fd.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex3adj.c ex3opt.c ex3opt_fd.c ex4.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
@@ -155,11 +155,11 @@ ex27: ex27.o chkopts
 
 #---------------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls > ex1_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex1_1.out ex1_1.tmp || printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIEXEC} -n 1 ./ex1 -ts_monitor_pseudo > ex1_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1  > ex1_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex1_2.out ex1_2.tmp || printf "${PWD}\nPossible problem with ex1_2, diffs above\n=========================================\n"; \
 	   ${RM} -f ex1_2.tmp
 
@@ -169,13 +169,13 @@ runex1f:
 	   ${RM} -f ex1f_1.tmp
 
 runex2:
-	-@${MPIEXEC} -n 2 ./ex2 -nox -ts_dt 10 -mymonitor > ex2_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex2 -nox -ts_dt 10  > ex2_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex2_1.out ex2_1.tmp || printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex2_1.tmp
 
 runex2f:
 	-@${MPIEXEC} -n 1 ./ex2f -ts_max_steps 100 > ex2f_1.tmp 2>&1; \
-	  ${DIFF} output/ex2f_1.out ex2f_1.tmp || printf "${PWD}\nPossible problem with ex2_1, diffs above\n=========================================\n"; \
+	  ${DIFF} output/ex2f_1.out ex2f_1.tmp || printf "${PWD}\nPossible problem with ex2f_1, diffs above\n=========================================\n"; \
 	  ${RM} -f ex2_1.tmp
 
 runex3:
@@ -398,8 +398,8 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3
                             ex3adj.PETSc runex3adj ex3adj.rm \
                             ex3opt.PETSc runex3opt ex3opt.rm \
                             ex3opt_fd.PETSc runex3opt_fd ex3opt_fd.rm \
-                            ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
-                            ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
+                            ex5.PETSc ex5.rm \
+                            ex6.PETSc ex6.rm ex7.PETSc  ex7.rm \
                             
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  = 
