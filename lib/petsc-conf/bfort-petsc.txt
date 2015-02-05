@@ -62,6 +62,7 @@ nativeptr PF
 nativeptr SNES
 nativeptr SNESLineSearch
 nativeptr TS
+nativeptr TSTrajectory
 nativeptr Vec
 nativeptr Vecs
 nativeptr VecScatter

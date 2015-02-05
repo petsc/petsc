@@ -9,9 +9,11 @@
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define TS PetscFortranAddr
 #define TSAdapt PetscFortranAddr
+#define TSTrajectory PetscFortranAddr
 #endif
 #define TSType character*(80)
 #define TSAdaptType character*(80)
+#define TSTrajectoryType character*(80)
 #define TSEquationType PetscEnum
 #define TSConvergedReason PetscEnum
 #define TSExactFinalTimeOption PetscEnum
@@ -34,6 +36,8 @@
 #define TSARKIMEX         'arkimex'
 #define TSROSW            'rosw'
 #define TSEIMEX           'eimex'
+
+#define TSTRAJECTORYBASIC 'basic'
 
 #define TSSSPType character*(80)
 #define TSSSPRKS2  'rks2'

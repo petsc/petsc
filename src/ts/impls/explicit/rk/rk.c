@@ -506,14 +506,15 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
   PetscInt         i,j,nadj;
   PetscReal        t;
   PetscErrorCode   ierr;
+  PetscReal        h = ts->time_step;
+  Mat              J,Jp;
 
   PetscFunctionBegin;
-   t          = ts->ptime;
+  t          = ts->ptime;
   rk->status = TS_STEP_INCOMPLETE;
-  PetscReal h = ts->time_step;
+  h = ts->time_step;
   ierr = TSPreStep(ts);CHKERRQ(ierr);
   for (i=s-1; i>=0; i--) {
-    Mat J,Jp;
     rk->stage_time = t + h*(1.0-c[i]);
     for (nadj=0; nadj<ts->numberadjs; nadj++) {
       ierr = VecCopy(ts->vecs_sensi[nadj],VecSensiTemp[nadj]);CHKERRQ(ierr);
@@ -528,7 +529,7 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
     for (nadj=0; nadj<ts->numberadjs; nadj++) {
       ierr = MatMultTranspose(J,VecSensiTemp[nadj],VecDeltaLam[nadj*s+i]);CHKERRQ(ierr);
     }
- 
+
     /* Stage values of mu */
     if(ts->vecs_sensip) {
       ierr = TSAdjointComputeRHSJacobian(ts,rk->stage_time,Y[i],ts->Jacp);CHKERRQ(ierr);
