@@ -22,34 +22,43 @@ typedef struct {
   Vec                 local;
 } Vec_MOAB;
 
+namespace moab {
+  class NestedRefine;
+}
 
 typedef struct {
+  /* common data */
   PetscInt                dim;                            /* Current topological dimension handled by DMMoab */
-  PetscInt                n,nloc,nghost;                  /* Number of global, local only and shared vertices for current partition */
-  PetscInt                nele,neleloc,neleghost;         /* Number of global, local only and shared elements for current partition */
   PetscInt                bs;                             /* Block size that controls the strided vs interlaced configuration in discrete systems -
                                                              This affects the layout and hence the degree-of-freedom of the different fields (components) */
+
+  PetscInt               *dfill, *ofill;                  /* The diagonal and off-diagonal block-fill to indicate coupling between components */
+  PetscInt               *materials;                      /* The array that caches the material data for each element */
+
+  PetscInt                numFields;
+  const char              **fieldNames;
+
+  /* level specific data */
+  PetscInt                n,nloc,nghost;                  /* Number of global, local only and shared vertices for current partition */
+  PetscInt                nele,neleloc,neleghost;         /* Number of global, local only and shared elements for current partition */
   PetscInt                *gsindices;                     /* Global ID for all local+ghosted vertices */
   PetscInt                *gidmap,*lidmap,*llmap,*lgmap;  /* Global ID indices, Local ID indices, field-based local map, field-based global map */
   PetscInt                vstart,vend;                    /* Global start and end index for distributed Vec */
-
-  /* MOAB objects cached internally in DMMoab */
-  moab::Interface         *mbiface;                       /* MOAB Interface/Core reference */
-  moab::ParallelComm      *pcomm;                         /* MOAB ParallelComm reference */
-  moab::Tag               ltog_tag;                       /* MOAB supports "global id" tags */
-  moab::Tag               material_tag;                   /* MOAB supports "material_set" tags */
-  moab::Range             *vowned, *vghost, *vlocal;      /* Vertex entities: strictly owned, strictly ghosted, owned+ghosted */
-  moab::Range             *elocal, *eghost;               /* Topological dimensional entities: strictly owned, strictly ghosted */
-  moab::Range             *bndyvtx,*bndyfaces,*bndyelems; /* Boundary entities: skin vertices, skin faces and elements on the outer skin */
-  moab::EntityHandle      fileset;                        /* The Global set to which all local entities belong */
-
-  PetscInt               *dfill, *ofill;
 
   /* store the mapping information */
   ISLocalToGlobalMapping  ltog_map;
   VecScatter              ltog_sendrecv;
 
-  /* store options to customize DMMoab */
+  /* MOAB objects cached internally in DMMoab */
+
+  /* common data */
+  moab::Interface         *mbiface;                       /* MOAB Interface/Core reference */
+  moab::ParallelComm      *pcomm;                         /* MOAB ParallelComm reference */
+  moab::Tag               ltog_tag;                       /* MOAB supports "global id" tags */
+  moab::Tag               material_tag;                   /* MOAB supports "material_set" tags */
+  PetscBool               icreatedinstance;               /* true if DM created moab instance internally, will destroy instance in DMDestroy */
+
+  /* store options to customize DMMoab I/O */
   PetscInt                rw_dbglevel;
   PetscBool               partition_by_rank;
   char                    extra_read_options[PETSC_MAX_PATH_LEN];
@@ -57,11 +66,25 @@ typedef struct {
   MoabReadMode            read_mode;
   MoabWriteMode           write_mode;
 
-  PetscInt                numFields;
-  const char              **fieldNames;
-  PetscBool               icreatedinstance;               /* true if DM created moab instance internally, will destroy instance in DMDestroy */
+  /* level specific data */
+  moab::Range             *vowned, *vghost, *vlocal;      /* Vertex entities: strictly owned, strictly ghosted, owned+ghosted */
+  moab::Range             *elocal, *eghost;               /* Topological dimensional entities: strictly owned, strictly ghosted */
+  moab::Range             *bndyvtx,*bndyfaces,*bndyelems; /* Boundary entities: skin vertices, skin faces and elements on the outer skin */
+  moab::EntityHandle      fileset;                        /* The Global set to which all local entities belong */
+
+  /* level hierarchy in MOAB */
+  moab::NestedRefine     *hierarchy;
+  PetscInt                nhlevels, hlevel;
+  moab::EntityHandle     *hsets;
+
 } DM_Moab;
 
+typedef struct {
+  DM_Moab             *pdmmoab;
+  moab::NestedRefine  *hierarchy;
+  PetscInt             nhlevels, hlevel;
+  moab::EntityHandle  *hsets;
+} SubDM_MOAB;
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Moab(DM,Vec *);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Moab(DM,Vec *);
@@ -70,6 +93,13 @@ PETSC_EXTERN PetscErrorCode DMGlobalToLocalBegin_Moab(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEnd_Moab(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalBegin_Moab(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalEnd_Moab(DM,Vec,InsertMode,Vec);
+
+PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM,PetscInt,DM[]);
+PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM,PetscInt,DM[]);
+PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM,DM,Mat*,Vec*);
+PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM,DM,VecScatter*);
+PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM,MPI_Comm,DM*);
+PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM,MPI_Comm,DM*);
 
 #endif /* _DMMBIMPL_H */
 

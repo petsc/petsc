@@ -3,6 +3,7 @@
 
 #include <petscdmmoab.h>
 #include <MBTagConventions.hpp>
+#include <moab/NestedRefine.hpp>
 
 static PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscBool);
 
@@ -61,12 +62,11 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm,Mat *J)
 
 PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscInt* nnz,PetscInt* ionz,PetscInt* onz,PetscBool isbaij)
 {
-  PetscInt        i,f,nloc,vpere,bs,ivtx,n_nnz,n_onz;
+  PetscInt        i,f,nloc,vpere,bs,n_nnz,n_onz,ivtx=0;
   PetscInt        ibs,jbs,inbsize,iobsize,nfields,nlsiz;
   DM_Moab         *dmmoab = (DM_Moab*)dm->data;
   const moab::EntityHandle *connect;
   moab::Range     adjs,found,allvlocal,allvghost;
-  moab::Range::iterator iter,jter;
   std::vector<moab::EntityHandle> storage;
   PetscBool isinterlaced;
   moab::EntityHandle vtx;
@@ -80,29 +80,39 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
   nlsiz = (isinterlaced ? nloc:nloc*nfields);
 
   /* find the truly user-expected layer of ghosted entities to decipher NNZ pattern */
-  merr = dmmoab->mbiface->get_entities_by_type(dmmoab->fileset,moab::MBVERTEX,allvlocal,true);MBERRNM(merr);
+  merr = dmmoab->mbiface->get_entities_by_type(dmmoab->fileset,moab::MBVERTEX,allvlocal/*,true*/);MBERRNM(merr);
   merr = dmmoab->pcomm->filter_pstatus(allvlocal,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,&adjs);MBERRNM(merr);
   allvghost = moab::subtract(allvlocal, adjs);
 
   /* loop over the locally owned vertices and figure out the NNZ pattern using connectivity information */
-  for(iter = dmmoab->vowned->begin(),ivtx=0; iter != dmmoab->vowned->end(); iter++,ivtx++) {
+  for(moab::Range::iterator iter = dmmoab->vowned->begin(); iter != dmmoab->vowned->end(); iter++,ivtx++) {
 
     vtx = *iter;
     adjs.clear();
     /* Get adjacency information for current vertex - i.e., all elements of dimension (dim) that connects
        to the current vertex. We can then decipher if a vertex is ghosted or not and compute the
        non-zero pattern accordingly. */
-    merr = dmmoab->mbiface->get_adjacencies(&vtx,1,dmmoab->dim,false,adjs,moab::Interface::INTERSECT);
+    std::vector<moab::EntityHandle> adjstl;
+    if (dmmoab->hierarchy) {
+      merr = dmmoab->hierarchy->get_adjacencies(vtx,dmmoab->dim,adjstl);MBERRNM(merr);
+    }
+    else {
+      merr = dmmoab->mbiface->get_adjacencies(&vtx,1,dmmoab->dim,true,adjs,moab::Interface::INTERSECT);MBERRNM(merr);
+    }
 
     /* reset counters */
     n_nnz=n_onz=0;
     found.clear();
 
     /* loop over vertices and update the number of connectivity */
-    for(jter = adjs.begin(); jter != adjs.end(); jter++) {
+    for(unsigned jter = 0; jter < (dmmoab->hierarchy ? adjstl.size(): adjs.size()); jter++) {
+
+      moab::EntityHandle jhandle;
+      if (dmmoab->hierarchy) jhandle = adjstl[jter];
+      else jhandle = adjs[jter];
 
       /* Get connectivity information in canonical ordering for the local element */
-      merr = dmmoab->mbiface->get_connectivity(*jter,connect,vpere,false,&storage);MBERRNM(merr);
+      merr = dmmoab->mbiface->get_connectivity(jhandle,connect,vpere,false,&storage);MBERRNM(merr);
 
       /* loop over each element connected to the adjacent vertex and update as needed */
       for (i=0; i<vpere; ++i) {

@@ -49,7 +49,7 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
 }
 
 /*@
-  DMMoabCreate - Creates a DMMoab object, optionally from an instance and other data
+  DMMoabCreateMoab - Creates a DMMoab object, optionally from an instance and other data
 
   Collective on MPI_Comm
 
@@ -94,6 +94,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
 
   /* by default the fileset = root set. This set stores the hierarchy of entities belonging to current DM */
   dmmoab->fileset=0;
+  dmmoab->hlevel=0;
 
   if (!pcomm) {
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -808,7 +809,10 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm,const moab::EntityHandle ent,Petsc
 
   *ent_on_boundary=PETSC_FALSE;
   if(etype == moab::MBVERTEX && edim == 0) {
-    if (dmmoab->bndyvtx->index(ent) >= 0) *ent_on_boundary=PETSC_TRUE;
+    if (dmmoab->hlevel) {
+      *ent_on_boundary=(dmmoab->hierarchy->is_boundary_vertex(ent) ? PETSC_TRUE:PETSC_FALSE);
+    }
+    else *ent_on_boundary=((dmmoab->bndyvtx->index(ent) >= 0) ? PETSC_TRUE:PETSC_FALSE);
   }
   else {
     if (edim == dmmoab->dim) {  /* check the higher-dimensional elements first */
@@ -849,7 +853,12 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::Enti
   dmmoab = (DM_Moab*)(dm)->data;
 
   for (i=0; i < nconn; ++i) {
-    isbdvtx[i]=(dmmoab->bndyvtx->index(cnt[i]) >= 0 ? PETSC_TRUE:PETSC_FALSE);
+    if (dmmoab->hlevel) {
+      isbdvtx[i]=(dmmoab->hierarchy->is_boundary_vertex(cnt[i]) ? PETSC_TRUE:PETSC_FALSE);
+    }
+    else {
+      isbdvtx[i]=(dmmoab->bndyvtx->index(cnt[i]) >= 0 ? PETSC_TRUE:PETSC_FALSE);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -917,6 +926,10 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
       ierr = PetscFree(dmmoab->fieldNames[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dmmoab->fieldNames);CHKERRQ(ierr);
+  }
+
+  if (dmmoab->nhlevels) {
+    ierr = PetscFree(dmmoab->hsets);CHKERRQ(ierr);
   }
   ierr = VecScatterDestroy(&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&dmmoab->ltog_map);CHKERRQ(ierr);
@@ -995,6 +1008,8 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
         break;
       }
     }
+
+    ierr = DMSetDimension(dm, dmmoab->dim);CHKERRQ(ierr);
 
     /* filter the ghosted and owned element list */
     *dmmoab->eghost = *dmmoab->elocal;
@@ -1182,6 +1197,12 @@ PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
   dm->ops->creatematrix             = DMCreateMatrix_Moab;
   dm->ops->setup                    = DMSetUp_Moab;
   dm->ops->destroy                  = DMDestroy_Moab;
+  //dm->ops->coarsenhierarchy         = DMCoarsenHierarchy_Moab;
+  //dm->ops->refinehierarchy          = DMRefineHierarchy_Moab;
+  dm->ops->createinterpolation      = DMCreateInterpolation_Moab;
+  //dm->ops->getinjection             = DMCreateInjection_Moab;
+  dm->ops->refine                   = DMRefine_Moab;
+  dm->ops->coarsen                  = DMCoarsen_Moab;
   dm->ops->setfromoptions           = DMSetFromOptions_Moab;
   dm->ops->globaltolocalbegin       = DMGlobalToLocalBegin_Moab;
   dm->ops->globaltolocalend         = DMGlobalToLocalEnd_Moab;

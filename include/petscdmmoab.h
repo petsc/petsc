@@ -28,22 +28,24 @@ PETSC_EXTERN PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *moab);
 PETSC_EXTERN PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::ParallelComm *pcomm, moab::Tag *ltog_tag, moab::Range *range, DM *moab);
 PETSC_EXTERN PetscErrorCode DMMoabOutput(DM,const char*,const char*);
 
-PETSC_EXTERN PetscErrorCode DMMoabSetParallelComm(DM dm,moab::ParallelComm *pcomm);
-PETSC_EXTERN PetscErrorCode DMMoabGetParallelComm(DM dm,moab::ParallelComm **pcomm);
-PETSC_EXTERN PetscErrorCode DMMoabSetInterface(DM dm,moab::Interface *iface);
-PETSC_EXTERN PetscErrorCode DMMoabGetInterface(DM dm,moab::Interface **iface);
-PETSC_EXTERN PetscErrorCode DMMoabSetLocalVertices(DM dm,moab::Range *range);
-PETSC_EXTERN PetscErrorCode DMMoabGetAllVertices(DM dm,moab::Range *local);
-PETSC_EXTERN PetscErrorCode DMMoabGetLocalVertices(DM dm,const moab::Range **owned,const moab::Range **ghost);
-PETSC_EXTERN PetscErrorCode DMMoabSetLocalElements(DM dm,moab::Range *range);
-PETSC_EXTERN PetscErrorCode DMMoabGetLocalElements(DM dm,const moab::Range **range);
-PETSC_EXTERN PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm,moab::Tag ltogtag);
-PETSC_EXTERN PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm,moab::Tag *ltog_tag);
-PETSC_EXTERN PetscErrorCode DMMoabSetBlockSize(DM dm,PetscInt bs);
-PETSC_EXTERN PetscErrorCode DMMoabGetBlockSize(DM dm,PetscInt *bs);
+PETSC_EXTERN PetscErrorCode DMMoabSetParallelComm(DM,moab::ParallelComm*);
+PETSC_EXTERN PetscErrorCode DMMoabGetParallelComm(DM,moab::ParallelComm**);
+PETSC_EXTERN PetscErrorCode DMMoabSetInterface(DM,moab::Interface *);
+PETSC_EXTERN PetscErrorCode DMMoabGetInterface(DM,moab::Interface **);
+PETSC_EXTERN PetscErrorCode DMMoabSetLocalVertices(DM,moab::Range *);
+PETSC_EXTERN PetscErrorCode DMMoabGetAllVertices(DM,moab::Range *local);
+PETSC_EXTERN PetscErrorCode DMMoabGetLocalVertices(DM,const moab::Range**,const moab::Range**);
+PETSC_EXTERN PetscErrorCode DMMoabSetLocalElements(DM,moab::Range*);
+PETSC_EXTERN PetscErrorCode DMMoabGetLocalElements(DM,const moab::Range**);
+PETSC_EXTERN PetscErrorCode DMMoabSetLocalToGlobalTag(DM,moab::Tag);
+PETSC_EXTERN PetscErrorCode DMMoabGetLocalToGlobalTag(DM,moab::Tag*);
+PETSC_EXTERN PetscErrorCode DMMoabSetBlockSize(DM,PetscInt bs);
+PETSC_EXTERN PetscErrorCode DMMoabGetBlockSize(DM,PetscInt *bs);
+PETSC_EXTERN PetscErrorCode DMMoabSetBlockFills(DM,const PetscInt*,const PetscInt*);
+
 PETSC_EXTERN PetscErrorCode DMMoabGetDimension(DM dm,PetscInt *dim);
-PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range *bdvtx,moab::Range* bdfaces,moab::Range* bdelems);
-PETSC_EXTERN PetscErrorCode DMMoabGetMaterialBlock(DM dm,const moab::EntityHandle ehandle, PetscInt *mat);
+PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range*,moab::Range*,moab::Range*);
+PETSC_EXTERN PetscErrorCode DMMoabGetMaterialBlock(DM dm,const moab::EntityHandle,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode DMMoabGetSize(DM dm,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMMoabGetLocalSize(DM dm,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
@@ -87,5 +89,10 @@ PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryMarkers(DM dm,const moab::Range **b
 /* DM utility creation interface */
 PETSC_EXTERN PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm,PetscInt,PetscBool,const PetscReal*,PetscInt,PetscInt,DM*);
 PETSC_EXTERN PetscErrorCode DMMoabLoadFromFile(MPI_Comm,PetscInt,const char*,const char*,DM*);
+
+/* Uniform refinement hierarchy interface */
+PETSC_EXTERN PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees);
+//PETSC_EXTERN PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees);
+//PETSC_EXTERN PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees);
 
 #endif
