@@ -52,6 +52,7 @@ PetscErrorCode  DMRegisterAll()
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner);
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPartitionerRegisterAll"
@@ -78,6 +79,7 @@ PetscErrorCode PetscPartitionerRegisterAll()
   ierr = PetscPartitionerRegister(PETSCPARTITIONERCHACO,    PetscPartitionerCreate_Chaco);CHKERRQ(ierr);
   ierr = PetscPartitionerRegister(PETSCPARTITIONERPARMETIS, PetscPartitionerCreate_ParMetis);CHKERRQ(ierr);
   ierr = PetscPartitionerRegister(PETSCPARTITIONERSHELL,    PetscPartitionerCreate_Shell);CHKERRQ(ierr);
+  ierr = PetscPartitionerRegister(PETSCPARTITIONERSIMPLE,   PetscPartitionerCreate_Simple);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #include <petscfe.h>     /*I  "petscfe.h"  I*/

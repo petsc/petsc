@@ -23,6 +23,7 @@ typedef const char *PetscPartitionerType;
 #define PETSCPARTITIONERCHACO    "chaco"
 #define PETSCPARTITIONERPARMETIS "parmetis"
 #define PETSCPARTITIONERSHELL    "shell"
+#define PETSCPARTITIONERSIMPLE   "simple"
 
 PETSC_EXTERN PetscFunctionList PetscPartitionerList;
 PETSC_EXTERN PetscBool         PetscPartitionerRegisterAllCalled;
