@@ -119,8 +119,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSSetTypeFromOptions_Private(PetscOptionsObject,ts);CHKERRQ(ierr);
 
   /* Handle generic TS options */
-  if (ts->trajectory) flg = PETSC_TRUE;
-  else flg = PETSC_FALSE;
+  if (ts->trajectory) tflg = PETSC_TRUE;
+  else tflg = PETSC_FALSE;
   ierr = PetscOptionsBool("-ts_save_trajectories","Checkpoint for adjoint sensitivity analysis","TSSetSaveTrajectories",tflg,&tflg,NULL);CHKERRQ(ierr);
   if (tflg) {ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);

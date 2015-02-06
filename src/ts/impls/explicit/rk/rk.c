@@ -549,10 +549,6 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
   ts->ptime += ts->time_step;
   ts->steps++;
   rk->status = TS_STEP_COMPLETE;
-  ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vecs_sensi,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
-  if(ts->vecs_sensip) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vecs_sensip,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
