@@ -879,9 +879,8 @@ PetscErrorCode PetscPartitionerView_Simple(PetscPartitioner part, PetscViewer vi
 #define __FUNCT__ "PetscPartitionerPartition_Simple"
 PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, DM dm, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection partSection, IS *partition)
 {
-  PetscPartitioner_Simple *p = (PetscPartitioner_Simple *) part->data;
-  PetscInt                 np;
-  PetscErrorCode           ierr;
+  PetscInt       np;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscSectionSetChart(partSection, 0, nparts);CHKERRQ(ierr);
