@@ -274,7 +274,8 @@ PetscErrorCode DMPlexOrient(DM dm)
       for (c = 0; c < coneSize; ++c) if (cone[c] == face) break;
       if (dim == 1) {
         /* Use cone position instead, shifted to -1 or 1 */
-        rorntComp[face].rank = c*2-1;
+        if (PetscBTLookup(flippedCells, support[0]-cStart)) rorntComp[face].rank = 1-c*2;
+        else                                                rorntComp[face].rank = c*2-1;
       } else {
         if (PetscBTLookup(flippedCells, support[0]-cStart)) rorntComp[face].rank = ornt[c] < 0 ? -1 :  1;
         else                                                rorntComp[face].rank = ornt[c] < 0 ?  1 : -1;
