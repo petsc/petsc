@@ -1145,7 +1145,10 @@ PetscErrorCode ISEqual_private(IS isrow,IS iscol_local,PetscBool  *flg)
   PetscFunctionBegin;
   ierr = ISGetLocalSize(isrow,&sz1);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol_local,&sz2);CHKERRQ(ierr);
-  if (sz1 > sz2) *flg = PETSC_FALSE; 
+  if (sz1 > sz2) {
+    *flg = PETSC_FALSE; 
+    PetscFunctionReturn(0);
+  }
 
   ierr = ISGetIndices(isrow,&ptr1);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol_local,&ptr2);CHKERRQ(ierr);
@@ -1171,7 +1174,11 @@ PetscErrorCode ISEqual_private(IS isrow,IS iscol_local,PetscBool  *flg)
   ierr = ISRestoreIndices(iscol_local,&ptr2);CHKERRQ(ierr);
   ierr = PetscFree(a1);CHKERRQ(ierr);
   ierr = PetscFree(a2);CHKERRQ(ierr);
-  if (nmatch < sz1) *flg = PETSC_FALSE; 
+  if (nmatch < sz1) {
+    *flg = PETSC_FALSE; 
+  } else {
+    *flg = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }
 
