@@ -162,12 +162,13 @@ PetscErrorCode DMPlexOrient(DM dm)
   PetscBT            seenCells, flippedCells, seenFaces;
   PetscInt          *faceFIFO, fTop, fBottom, *cellComp, *faceComp;
   PetscInt           numLeaves, numRoots, dim, h, cStart, cEnd, c, cell, fStart, fEnd, face, off, totNeighbors = 0;
-  PetscMPIInt        numComponents, comp = 0;
+  PetscMPIInt        rank, numComponents, comp = 0;
   PetscBool          flg;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-orientation_view", &flg);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf, &numRoots, &numLeaves, &lpoints, &rpoints);CHKERRQ(ierr);
@@ -249,9 +250,7 @@ PetscErrorCode DMPlexOrient(DM dm)
   numComponents = comp;
   if (flg) {
     PetscViewer v;
-    PetscMPIInt rank;
 
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
     ierr = PetscViewerASCIIGetStdout(comm, &v);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(v, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(v, "[%d]BT for serial flipped cells:\n", rank);CHKERRQ(ierr);
@@ -308,6 +307,7 @@ PetscErrorCode DMPlexOrient(DM dm)
 
           ierr = DMPlexGetSupportSize(dm, face, &supportSize);CHKERRQ(ierr);
           if (supportSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Boundary faces should see one cell, not %d", supportSize);
+          if (flg) {ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]: component %d, Found representative leaf %d (face %d) connecting to face %d on (%d, %d) with orientation %d\n", rank, comp, l, face, rpoints[l].index, rrank, rcomp, lorntComp[face].rank);CHKERRQ(ierr);}
           neighbors[comp][numNeighbors[comp]++] = l;
         }
       }
@@ -339,11 +339,9 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscSFNode *adj = NULL;
     PetscBool   *val = NULL;
     PetscMPIInt *recvcounts = NULL, *displs = NULL, *Nc, p, o;
-    PetscMPIInt  numProcs = 0, rank;
-    PetscInt     debug = 0;
+    PetscMPIInt  numProcs = 0;
 
     ierr = PetscCalloc1(numComponents, &flipped);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
     if (!rank) {ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);}
     ierr = PetscCalloc4(numProcs, &recvcounts, numProcs+1, &displs, numProcs, &Nc, numProcs+1, &Noff);CHKERRQ(ierr);
     ierr = MPI_Gather(&numComponents, 1, MPI_INT, Nc, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
@@ -363,7 +361,7 @@ PetscErrorCode DMPlexOrient(DM dm)
     ierr = PetscFree2(numNeighbors, neighbors);CHKERRQ(ierr);
     if (!rank) {
       for (p = 1; p <= numProcs; ++p) {Noff[p] = Noff[p-1] + Nc[p-1];}
-      if (debug) {
+      if (flg) {
         PetscInt n;
 
         for (p = 0, off = 0; p < numProcs; ++p) {
@@ -449,7 +447,7 @@ PetscErrorCode DMPlexOrient(DM dm)
         ierr = PetscMalloc1(Noff[numProcs], &flips);CHKERRQ(ierr);
         for (p = 0; p < Noff[numProcs]; ++p) {
           flips[p] = PetscBTLookup(flippedProcs, p) ? PETSC_TRUE : PETSC_FALSE;
-          if (debug && flips[p]) {ierr = PetscPrintf(comm, "Flipping Proc+Comp %d:\n", p);}
+          if (flg && flips[p]) {ierr = PetscPrintf(comm, "Flipping Proc+Comp %d:\n", p);}
         }
         for (p = 0; p < numProcs; ++p) {
           displs[p+1] = displs[p] + Nc[p];
@@ -469,9 +467,7 @@ PetscErrorCode DMPlexOrient(DM dm)
   }
   if (flg) {
     PetscViewer v;
-    PetscMPIInt rank;
 
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
     ierr = PetscViewerASCIIGetStdout(comm, &v);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(v, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(v, "[%d]BT for parallel flipped cells:\n", rank);CHKERRQ(ierr);
