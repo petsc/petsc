@@ -1168,7 +1168,7 @@ int main(int argc, char **argv)
     if (r > 0) dt /= refine_fac;
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving ODE \"%s\" with dt %f, final time %f and system size %D.\n",ptype,(double)dt,(double)tfinal,GetSize(&ptype[0]));
-    ierr = SolveODE(&ptype[0],dt,tfinal,maxiter,&error[r],&flag);
+    ierr = SolveODE(&ptype[0],dt,tfinal,maxiter,&error[r],&flag);CHKERRQ(ierr);
     if (flag) {
       /* If exact solution available for the specified ODE */
       if (r > 0) {
