@@ -298,10 +298,10 @@ PetscErrorCode DMPlexOrient(DM dm)
 
       /* Find a representative face (edge) separating pairs of procs */
       if ((face >= fStart) && (face < fEnd) && (faceComp[face-fStart] == comp)) {
-        const PetscInt rank  = rpoints[l].rank;
+        const PetscInt rrank = rpoints[l].rank;
         const PetscInt rcomp = lorntComp[face].index;
 
-        for (n = 0; n < numNeighbors[comp]; ++n) if ((rank == rpoints[neighbors[comp][n]].rank) && (rcomp == lorntComp[lpoints[neighbors[comp][n]]].index)) break;
+        for (n = 0; n < numNeighbors[comp]; ++n) if ((rrank == rpoints[neighbors[comp][n]].rank) && (rcomp == lorntComp[lpoints[neighbors[comp][n]]].index)) break;
         if (n >= numNeighbors[comp]) {
           PetscInt supportSize;
 
