@@ -960,7 +960,7 @@ PetscErrorCode  TSSetForcingFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,
 #undef __FUNCT__
 #define __FUNCT__ "TSSetRHSJacobian"
 /*@C
-   TSSetRHSJacobian - Sets the function to compute the Jacobian of F,
+   TSSetRHSJacobian - Sets the function to compute the Jacobian of G,
    where U_t = G(U,t), as well as the location to store the matrix.
 
    Logically Collective on TS
@@ -973,7 +973,7 @@ PetscErrorCode  TSSetForcingFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,
 -  ctx - [optional] user-defined context for private data for the
          Jacobian evaluation routine (may be NULL)
 
-   Calling sequence of func:
+   Calling sequence of f:
 $     func (TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
 
 +  t - current timestep
