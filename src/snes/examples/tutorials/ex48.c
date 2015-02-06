@@ -260,8 +260,8 @@ struct _n_Units {
 };
 
 static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo*,Node***,Mat,Mat,THI);
-static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo*,Node***,Mat,THI);
-static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo*,Node**,Mat,THI);
+static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo*,Node***,Mat,Mat,THI);
+static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo*,Node**,Mat,Mat,THI);
 
 static void PrmHexGetZ(const PrmNode pn[],PetscInt k,PetscInt zm,PetscReal zn[])
 {
@@ -994,7 +994,7 @@ static PetscErrorCode THISolveStatistics(THI thi,SNES snes,PetscInt coarsened,co
 
 #undef __FUNCT__
 #define __FUNCT__ "THIJacobianLocal_2D"
-static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,Node **x,Mat B,THI thi)
+static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,Node **x,Mat J,Mat B,THI thi)
 {
   PetscInt       xs,ys,xm,ym,i,j,q,l,ll;
   PetscReal      hx,hy;
@@ -1280,7 +1280,7 @@ static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo *info,Node ***x,Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "THIJacobianLocal_3D_Tridiagonal"
-static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo *info,Node ***x,Mat B,THI thi)
+static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo *info,Node ***x,Mat A,Mat B,THI thi)
 {
   PetscErrorCode ierr;
 
