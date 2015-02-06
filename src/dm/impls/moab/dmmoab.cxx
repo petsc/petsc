@@ -896,8 +896,9 @@ PetscErrorCode DMMoabGetBoundaryMarkers(DM dm,const moab::Range **bdvtx,const mo
 
 PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
+  PetscErrorCode  ierr;
+  PetscInt        i;
+  moab::ErrorCode merr;
   DM_Moab        *dmmoab = (DM_Moab*)dm->data;
 
   PetscFunctionBegin;
@@ -930,7 +931,18 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
 
   if (dmmoab->nhlevels) {
     ierr = PetscFree(dmmoab->hsets);CHKERRQ(ierr);
+    dmmoab->nhlevels=0;
+    if (!dmmoab->hlevel && dmmoab->icreatedinstance) delete dmmoab->hierarchy;
+    dmmoab->hierarchy=NULL;
   }
+
+  if (dmmoab->icreatedinstance) {
+    merr = dmmoab->mbiface->delete_mesh();MBERRNM(merr);
+    delete dmmoab->mbiface;
+  }
+  dmmoab->mbiface = NULL;
+  dmmoab->pcomm = NULL;
+
   ierr = VecScatterDestroy(&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&dmmoab->ltog_map);CHKERRQ(ierr);
   ierr = PetscFree(dm->data);CHKERRQ(ierr);
@@ -1197,8 +1209,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
   dm->ops->creatematrix             = DMCreateMatrix_Moab;
   dm->ops->setup                    = DMSetUp_Moab;
   dm->ops->destroy                  = DMDestroy_Moab;
-  //dm->ops->coarsenhierarchy         = DMCoarsenHierarchy_Moab;
-  //dm->ops->refinehierarchy          = DMRefineHierarchy_Moab;
+  dm->ops->coarsenhierarchy         = DMCoarsenHierarchy_Moab;
+  dm->ops->refinehierarchy          = DMRefineHierarchy_Moab;
   dm->ops->createinterpolation      = DMCreateInterpolation_Moab;
   //dm->ops->getinjection             = DMCreateInjection_Moab;
   dm->ops->refine                   = DMRefine_Moab;

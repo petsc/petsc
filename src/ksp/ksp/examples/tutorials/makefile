@@ -189,7 +189,7 @@ ex35: ex35.o chkopts
 
 ex36: ex36.o chkopts
 	-${CLINKER} -o ex36 ex36.o ${PETSC_SNES_LIB}
-	${RM} ex36.o
+#	${RM} ex36.o
 
 ex37: ex37.o chkopts
 	-${CLINKER} -o ex37 ex37.o ${PETSC_SNES_LIB}

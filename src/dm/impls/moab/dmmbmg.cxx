@@ -30,6 +30,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees
   PetscErrorCode  ierr;
   moab::ErrorCode merr;
   PetscInt *pdegrees,i;
+  std::vector<moab::EntityHandle> hsets;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -47,8 +48,12 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees
   /* Instantiate the nested refinement class */
   dmmoab->hierarchy = new moab::NestedRefine(dynamic_cast<moab::Core*>(dmmoab->mbiface), dmmoab->fileset);
 
+  ierr = PetscMalloc1(nlevels+1,&dmmoab->hsets);CHKERRQ(ierr);
+
   /* generate the mesh hierarchy */
-  merr = dmmoab->hierarchy->generate_mesh_hierarchy(pdegrees, nlevels, &dmmoab->hsets);MBERRNM(merr);
+  merr = dmmoab->hierarchy->generate_mesh_hierarchy(pdegrees, nlevels, hsets);MBERRNM(merr);
+
+  for (i=0; i<=nlevels; i++) dmmoab->hsets[i]=hsets[i];
 
   if (!ldegrees) {
     ierr = PetscFree(pdegrees);CHKERRQ(ierr);
@@ -59,80 +64,66 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees
 #undef __FUNCT__
 #define __FUNCT__ "DMRefineHierarchy_Moab"
 /*@
-  DMRefineHierarchy_Moab - Generate a multi-level uniform refinement hierarchy
-  by succesively refining a coarse mesh, already defined in the DM object
-  provided by the user.
+  DMRefineHierarchy_Moab - Generate a multi-level DM hierarchy
+  by succesively refining a coarse mesh.
 
   Collective on MPI_Comm
 
   Input Parameter:
-. dmb  - The DMMoab object
++ dm  - The DMMoab object
 
   Output Parameter:
-. nlevels   - The number of levels of refinement needed to generate the hierarchy
-+ ldegrees  - The degree of refinement at each level in the hierarchy
++ nlevels   - The number of levels of refinement needed to generate the hierarchy
+. dmf  - The DM objects after successive refinement of the hierarchy
 
   Level: beginner
 
-.keywords: DMMoab, create, refinement
+.keywords: DMMoab, generate, refinement
 @*/
 PetscErrorCode  DMRefineHierarchy_Moab(DM dm,PetscInt nlevels,DM dmf[])
 {
-  DM_Moab        *dmmoab;
   PetscErrorCode  ierr;
-  moab::ErrorCode merr;
   PetscInt        i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  dmmoab = (DM_Moab*)(dm)->data;
 
-  for (i=0; i<nlevels; i++) {
-    dmf[i] = dm;
-    PetscObjectReference((PetscObject)dm);
+  ierr = DMRefine(dm,PetscObjectComm((PetscObject)dm),&dmf[0]);CHKERRQ(ierr);
+  for (i=1; i<nlevels; i++) {
+    ierr = DMRefine(dmf[i-1],PetscObjectComm((PetscObject)dm),&dmf[i]);CHKERRQ(ierr);
   }
-
-  PetscPrintf(PETSC_COMM_WORLD, "[DMRefineHierarchy_Moab] :: Placeholder\n");
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCoarsenHierarchy_Moab"
 /*@
-  DMCoarsenHierarchy_Moab - Generate a multi-level uniform refinement hierarchy
-  by succesively refining a coarse mesh, already defined in the DM object
-  provided by the user.
+  DMCoarsenHierarchy_Moab - Generate a multi-level DM hierarchy
+  by succesively coarsening a refined mesh.
 
   Collective on MPI_Comm
 
   Input Parameter:
-. dmb  - The DMMoab object
++ dm  - The DMMoab object
 
   Output Parameter:
-. nlevels   - The number of levels of refinement needed to generate the hierarchy
-+ ldegrees  - The degree of refinement at each level in the hierarchy
++ nlevels   - The number of levels of refinement needed to generate the hierarchy
+. dmc  - The DM objects after successive coarsening of the hierarchy
 
   Level: beginner
 
-.keywords: DMMoab, create, refinement
+.keywords: DMMoab, generate, coarsening
 @*/
 PetscErrorCode DMCoarsenHierarchy_Moab(DM dm,PetscInt nlevels,DM dmc[])
 {
-  DM_Moab        *dmmoab;
   PetscErrorCode  ierr;
-  moab::ErrorCode merr;
   PetscInt        i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  dmmoab = (DM_Moab*)(dm)->data;
 
-  for (i=0; i<nlevels; i++) {
-    dmc[i] = dm;
-    PetscObjectReference((PetscObject)dm);
+  ierr = DMCoarsen(dm,PetscObjectComm((PetscObject)dm),&dmc[0]);CHKERRQ(ierr);
+  for (i=1; i<nlevels; i++) {
+    ierr = DMCoarsen(dmc[i-1],PetscObjectComm((PetscObject)dm),&dmc[i]);CHKERRQ(ierr);
   }
-
-  PetscPrintf(PETSC_COMM_WORLD, "[DMCoarsenHierarchy_Moab] :: Placeholder\n");
   PetscFunctionReturn(0);
 }
 
@@ -140,20 +131,21 @@ PetscErrorCode DMCoarsenHierarchy_Moab(DM dm,PetscInt nlevels,DM dmc[])
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_Moab"
 /*@
-  DMCreateInterpolation_Moab - Generate a multi-level uniform refinement hierarchy
-  by succesively refining a coarse mesh, already defined in the DM object
-  provided by the user.
+  DMCreateInterpolation_Moab - Generate the interpolation operators to transform
+  operators (matrices, vectors) from parent level to child level as defined by
+  the DM inputs provided by the user.
 
   Collective on MPI_Comm
 
   Input Parameter:
-. dmb  - The DMMoab object
++ dm1  - The DMMoab object
+- dm2  - the second, finer DMMoab object
 
   Output Parameter:
-. nlevels   - The number of levels of refinement needed to generate the hierarchy
-+ ldegrees  - The degree of refinement at each level in the hierarchy
++ interpl  - The interpolation operator for transferring data between the levels
+- vec      - The scaling vector (optional)
 
-  Level: beginner
+  Level: developer
 
 .keywords: DMMoab, create, refinement
 @*/
@@ -162,9 +154,7 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
   DM_Moab        *dmb1, *dmb2;
   PetscErrorCode  ierr;
   moab::ErrorCode merr;
-  Vec             unitv;
-  PetscInt        dim,dofs_per_element=4;
-  PetscReal       unitval=1.0;
+  PetscInt        dim;
   PetscBool       eonbnd,dbdry[27];
   std::vector<int> bndrows;
 
@@ -175,7 +165,7 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
   dmb2 = (DM_Moab*)(dm2)->data;
 
   ierr = MatCreate(PetscObjectComm((PetscObject)dm1), interpl);CHKERRQ(ierr);
-  ierr = MatSetType(*interpl, MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(*interpl, dm1->mattype);CHKERRQ(ierr);
   ierr = MatSetSizes(*interpl, dmb2->nloc, dmb1->nloc, dmb2->n, dmb1->n);CHKERRQ(ierr);
 
   /* TODO: This is a hack for the rectangular system - decipher NNZ pattern better */
@@ -191,11 +181,11 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
 
   ierr = DMGetDimension(dm1, &dim);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD, "Creating a %D DIM matrix that is %D X %D and setting diagonal to 1.0", dim, dmb1->nloc, dmb2->nloc);
+  PetscPrintf(PETSC_COMM_WORLD, "Creating a %D DIM matrix that is %D X %D and setting diagonal to 1.0\n", dim, dmb1->nloc, dmb2->nloc);
 
   double factor = std::pow(2.0,(dmb2->hlevel-dmb1->hlevel)*dmb1->dim*1.0);
 
-    //Loop through the remaining vertices. These vertices appear only on the current refined_level.
+  /* Loop through the remaining vertices. These vertices appear only on the current refined_level. */
   for(moab::Range::iterator iter = dmb1->elocal->begin(); iter!= dmb1->elocal->end(); iter++) {
 
     const moab::EntityHandle ehandle = *iter;
@@ -207,11 +197,11 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
 
     /* Get connectivity and coordinates of the parent vertices */
     merr = dmb1->hierarchy->get_connectivity(ehandle, dmb1->hlevel, connp);MBERRNM(merr);
-    for (int ic=0; ic < children.size(); ic++) {
+    for (unsigned ic=0; ic < children.size(); ic++) {
       std::vector<moab::EntityHandle> tconnc;
       /* Get coordinates of the parent vertices in canonical order */
       merr = dmb1->hierarchy->get_connectivity(children[ic], dmb2->hlevel, tconnc);MBERRNM(merr);
-      for (int tc=0; tc<tconnc.size(); tc++) {
+      for (unsigned tc=0; tc<tconnc.size(); tc++) {
         connc.push_back(tconnc[tc]);
       }
     }
@@ -226,33 +216,29 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
     ierr = DMMoabGetFieldDofs(dm1, connp.size(), &connp[0], 0, &dofsp[0]);CHKERRQ(ierr);
     ierr = DMMoabGetFieldDofs(dm2, connc.size(), &connc[0], 0, &dofsc[0]);CHKERRQ(ierr);
 
-    // Compute the interoplation weights by determining distance of 1-ring neighbor vertices
-    // from current vertex
-    for (int i=0;i<connp.size(); i++) {
+    /* Compute the interpolation weights by determining distance of 1-ring 
+       neighbor vertices from current vertex */
+    for (unsigned i=0;i<connp.size(); i++) {
       double normsum=0.0;
-      for (int j=0;j<connc.size(); j++) {
-        int offset=j;
+      for (unsigned j=0;j<connc.size(); j++) {
+        unsigned offset=j;
         values_phi[offset] = 0.0;
-        for (int k=0;k<3; k++)
+        for (unsigned k=0;k<3; k++)
           values_phi[offset] += (pcoords[i*3+k]-ccoords[k+j*3])*(pcoords[i*3+k]-ccoords[k+j*3]);
         if (values_phi[offset] < 1e-12) {
           values_phi[offset] = 1e12;
-          // PetscPrintf(PETSC_COMM_WORLD, "Found coarse and fine restrictive space: %D, %D\n",dofsp[i],dofsc[j]);
         }
         else {
           values_phi[offset] = 1.0/(values_phi[offset]);
           normsum += values_phi[offset];
         }
       }
-      //PetscPrintf(PETSC_COMM_WORLD, "\nRow [%D]: ", dofsp[i]);
-      for (int j=0;j<connc.size(); j++) {
-        //int offset=i*connc.size()+j;
-        int offset=j;
+      for (unsigned j=0;j<connc.size(); j++) {
+        unsigned offset=j;
         if (values_phi[offset] > 1e11)
           values_phi[offset] = factor*0.5/connc.size();
         else
           values_phi[offset] = factor*values_phi[offset]*0.5/(connc.size()*normsum);
-        //PetscPrintf(PETSC_COMM_WORLD, "%D : %g, ", dofsc[j], values_phi[offset]);
       }
       ierr = MatSetValues(*interpl, connc.size(), &dofsc[0], 1, &dofsp[i], &values_phi[0], ADD_VALUES);CHKERRQ(ierr);
     }
@@ -261,7 +247,7 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
     //ierr = DMMoabIsEntityOnBoundary(dm1,ehandle,&eonbnd);CHKERRQ(ierr);
     ierr = DMMoabCheckBoundaryVertices(dm2,connc.size(),&connc[0],dbdry);CHKERRQ(ierr);
     eonbnd=PETSC_FALSE;
-    for (int i=0; i< connc.size(); ++i)
+    for (unsigned i=0; i< connc.size(); ++i)
       if (dbdry[i]) eonbnd=PETSC_TRUE;
 
     values_phi.clear();
@@ -273,7 +259,7 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
       ierr = MatAssemblyEnd(*interpl,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       /* get the list of nodes on boundary so that we can enforce dirichlet conditions strongly */
       //ierr = DMMoabCheckBoundaryVertices(dm2,connc.size(),&connc[0],dbdry);CHKERRQ(ierr);
-      for (int i=0; i < connc.size(); i++) {
+      for (unsigned i=0; i < connc.size(); i++) {
         if (dmb2->hierarchy->is_boundary_vertex(connc[i])) {  /* dirichlet node */
           /* think about strongly imposing dirichlet */
           //bndrows.push_back(dofsc[i]);
@@ -290,8 +276,8 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
 
     //get interpolation weights
     //ierr = Compute_Quad4_Basis(pcoords, 1, coord, values_phi);CHKERRQ(ierr);
-    /*for (int j=0;j<dofs_per_element; j++)
-      std::cout<<"values "<<values_phi[j]<<std::endl;*/
+    // for (int j=0;j<dofs_per_element; j++)
+    //  std::cout<<"values "<<values_phi[j]<<std::endl;
 
     //get row and column indices, zero weights are ignored
     /*
@@ -305,8 +291,6 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
     }
     */
 
-    //PetscPrintf(PETSC_COMM_WORLD, "Setting basis for row %D: %g %g %g %g\n", idx, values_phi[0], values_phi[1], values_phi[2], values_phi[3]);
-    //PetscPrintf(PETSC_COMM_WORLD, "Setting entries for row %D: %D %D %D %D\n", idx, idy[0], idy[1], idy[2], idy[3]);
     //ierr = MatSetValues(*interpl, nz_ind, idy, 1, &idx, values_phi, INSERT_VALUES);CHKERRQ(ierr);
     //ierr = MatSetValues(*interpl, connp.size(), dofsp, connc.size(), dofsc, &values_phi[0], INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -316,9 +300,6 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
 
   ierr = MatAssemblyBegin(*interpl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*interpl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //MatView(*interpl, 0);
-
-  PetscPrintf(PETSC_COMM_WORLD, "[DMCreateInterpolation_Moab] :: Placeholder\n");
   PetscFunctionReturn(0);
 }
 
@@ -344,14 +325,12 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
 @*/
 PetscErrorCode DMCreateInjection_Moab(DM dm1,DM dm2,VecScatter* ctx)
 {
-  DM_Moab        *dmmoab;
-  PetscErrorCode  ierr;
-  moab::ErrorCode merr;
+  //DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
-  dmmoab = (DM_Moab*)(dm1)->data;
+  //dmmoab = (DM_Moab*)(dm1)->data;
 
   PetscPrintf(PETSC_COMM_WORLD, "[DMCreateInjection_Moab] :: Placeholder\n");
   PetscFunctionReturn(0);
@@ -363,7 +342,7 @@ PetscErrorCode DMCreateInjection_Moab(DM dm1,DM dm2,VecScatter* ctx)
 PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmref)
 {
   PetscErrorCode  ierr;
-  PetscInt        M,N,P,i,dim;
+  PetscInt        i,dim;
   DM              dm2;
   moab::ErrorCode merr;
   DM_Moab        *dmb = (DM_Moab*)dm->data,*dd2;
@@ -372,11 +351,10 @@ PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmr
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(dmref,4);
 
-  //if (dmb->hlevel+1 > dmb->nhlevels && refine) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Invalid multigrid refinement hierarchy level specified (%D). MOAB UMR max levels = %D\n",dmb->hlevel+1,dmb->nhlevels);
-  //if (dmb->hlevel-1 < 0 && !refine) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Invalid multigrid coarsen hierarchy level specified (%D).\n",dmb->hlevel-1);
-
-  if ( (dmb->hlevel == dmb->nhlevels && refine) || (dmb->hlevel == 0 && !refine) )  {
-    dmref = PETSC_NULL;
+  if ( (dmb->hlevel == dmb->nhlevels && refine) || (dmb->hlevel == 0 && !refine) ) {
+    if (dmb->hlevel+1 > dmb->nhlevels && refine) PetscInfo2(NULL,"Invalid multigrid refinement hierarchy level specified (%D). MOAB UMR max levels = %D. Creating a NULL object.\n",dmb->hlevel+1,dmb->nhlevels);
+    if (dmb->hlevel-1 < 0 && !refine) PetscInfo1(NULL,"Invalid multigrid coarsen hierarchy level specified (%D). Creating a NULL object.\n",dmb->hlevel-1);
+    *dmref = PETSC_NULL;
     PetscFunctionReturn(0);
   }
 
@@ -419,7 +397,6 @@ PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmr
 
   merr = dd2->mbiface->tag_get_handle(MATERIAL_SET_TAG_NAME, dd2->material_tag);MBERRNM(merr);
 
-  //ierr = DMMoabCreateMoab(PetscObjectComm((PetscObject)dm),dmb->mbiface,dmb->pcomm,&dmb->ltog_tag,NULL,&dm2);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dm2,((PetscObject)dm)->prefix);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(dm2,dim);CHKERRQ(ierr);
@@ -452,32 +429,29 @@ PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmr
   by succesively refining a coarse mesh, already defined in the DM object
   provided by the user.
 
-  Collective on MPI_Comm
+  Collective on DM
 
   Input Parameter:
-. dmb  - The DMMoab object
++ dm  - The DMMoab object
+- comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 
   Output Parameter:
-. nlevels   - The number of levels of refinement needed to generate the hierarchy
-+ ldegrees  - The degree of refinement at each level in the hierarchy
+. dmf - the refined DM, or NULL
 
-  Level: beginner
+  Note: If no refinement was done, the return value is NULL
+
+  Level: developer
 
 .keywords: DMMoab, create, refinement
 @*/
 PetscErrorCode DMRefine_Moab(DM dm,MPI_Comm comm,DM* dmf)
 {
-  DM_Moab        *dmmoab;
   PetscErrorCode  ierr;
-  moab::ErrorCode merr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  dmmoab = (DM_Moab*)(dm)->data;
 
-  PetscPrintf(PETSC_COMM_WORLD, "[DMRefine_Moab] :: Placeholder\n");
   ierr = DM_UMR_Moab_Private(dm,comm,PETSC_TRUE,dmf);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "[DMRefine_Moab] :: All done\n");
   PetscFunctionReturn(0);
 }
 
@@ -488,31 +462,28 @@ PetscErrorCode DMRefine_Moab(DM dm,MPI_Comm comm,DM* dmf)
   by succesively refining a coarse mesh, already defined in the DM object
   provided by the user.
 
-  Collective on MPI_Comm
+  Collective on DM
 
   Input Parameter:
-. dmb  - The DMMoab object
+. dm  - The DMMoab object
+- comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 
   Output Parameter:
-. nlevels   - The number of levels of refinement needed to generate the hierarchy
-+ ldegrees  - The degree of refinement at each level in the hierarchy
+. dmf - the coarsened DM, or NULL
 
-  Level: beginner
+  Note: If no coarsening was done, the return value is NULL
 
-.keywords: DMMoab, create, refinement
+  Level: developer
+
+.keywords: DMMoab, create, coarsening
 @*/
 PetscErrorCode DMCoarsen_Moab(DM dm,MPI_Comm comm,DM* dmc)
 {
-  DM_Moab        *dmmoab;
   PetscErrorCode  ierr;
-  moab::ErrorCode merr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  dmmoab = (DM_Moab*)(dm)->data;
 
-  PetscPrintf(PETSC_COMM_WORLD, "[DMCoarsen_Moab] :: Placeholder\n");
   ierr = DM_UMR_Moab_Private(dm,comm,PETSC_FALSE,dmc);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD, "[DMCoarsen_Moab] :: All done\n");
   PetscFunctionReturn(0);
 }
