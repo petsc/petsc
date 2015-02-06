@@ -3544,8 +3544,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   PetscFunctionBegin;
   /* Assign global numbering to coarse dofs */
   if (pcbddc->new_primal_space || pcbddc->coarse_size == -1) { /* a new primal space is present or it is the first initialization, so recompute global numbering */
-    compute_vecs = PETSC_TRUE;
     PetscInt ocoarse_size;
+    compute_vecs = PETSC_TRUE;
     ocoarse_size = pcbddc->coarse_size;
     ierr = PetscFree(pcbddc->global_primal_indices);CHKERRQ(ierr);
     ierr = PCBDDCComputePrimalNumbering(pc,&pcbddc->coarse_size,&pcbddc->global_primal_indices);CHKERRQ(ierr);
