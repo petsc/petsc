@@ -6,7 +6,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.__init__(self, framework)
     self.giturls           = ['https://bitbucket.org/petsc/pkg-sowing.git']
     self.gitcommit         = '9c5b20c'
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.17.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.17-p1.tar.gz']
     self.complex           = 1
     self.double            = 0
     self.requires32bitint  = 0
