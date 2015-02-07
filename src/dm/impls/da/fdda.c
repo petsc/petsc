@@ -1138,7 +1138,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   PetscErrorCode         ierr;
   DM_DA                  *dd = (DM_DA*)da->data;
   PetscInt               xs,nx,i,j,gxs,gnx,row,k,l;
-  PetscInt               m,dim,s,*cols = NULL,nc,col,cnt,maxcnt = 0,*ocols;
+  PetscInt               m,dim,s,*cols = NULL,nc,cnt,maxcnt = 0,*ocols;
   PetscInt               *ofill = dd->ofill,*dfill = dd->dfill;
   PetscScalar            *values;
   DMBoundaryType         bx;
@@ -1152,12 +1152,9 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
 
   /*
          nc - number of components per grid point
-         col - number of colors needed in one direction for single component problem
 
   */
   ierr = DMDAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&bx,0,0,0);CHKERRQ(ierr);
-  col  = 2*s + 1;
-
   ierr = DMDAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
 
