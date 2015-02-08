@@ -18,7 +18,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   PetscScalar     *Sarray,*Starray;
   PetscScalar     *Smult,*Seigv;
   PetscReal       *eigs,thresh;
-  PetscInt        i,nmax,nmin,nv,cum,mss,cum2,cumarray,maxneigs,maxneigs_r,cumsubs;
+  PetscInt        i,nmax,nmin,nv,cum,mss,cum2,cumarray,maxneigs;
 #if defined(PETSC_USE_COMPLEX)
   PetscReal       *rwork;
 #endif
@@ -140,7 +140,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&Starray);CHKERRQ(ierr);
   }
 
-  cumsubs = 0;
   for (i=0;i<sub_schurs->n_subs;i++) {
     PetscInt j,subset_size;
 
@@ -195,7 +194,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         }
 
         if (B_neigs > nmax) {
-          PetscPrintf(PETSC_COMM_SELF,"[%d]   found %d eigs, more than required %d.\n",PetscGlobalRank,B_neigs,nmax);
+          PetscPrintf(PETSC_COMM_SELF,"[%d]   found %d eigs, more than maximum required %d.\n",PetscGlobalRank,B_neigs,nmax);
           B_neigs = nmax;
         }
 
@@ -204,7 +203,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 
           B_IL = B_neigs + 1;
           ierr = PetscBLASIntCast(nmin,&B_IU);CHKERRQ(ierr);
-          PetscPrintf(PETSC_COMM_SELF,"[%d]   found %d eigs, less than required %d. Asking for %d to %d incl (fortran like)\n",PetscGlobalRank,B_neigs,nmin,B_IL,B_IU);
+          PetscPrintf(PETSC_COMM_SELF,"[%d]   found %d eigs, less than minimum required %d. Asking for %d to %d incl (fortran like)\n",PetscGlobalRank,B_neigs,nmin,B_IL,B_IU);
           if (symmetric) {
             PetscInt j;
             for (j=0;j<subset_size;j++) {
@@ -247,8 +246,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           /* TODO */
       }
       maxneigs = PetscMax(B_neigs,maxneigs);
-      pcbddc->adaptive_constraints_n[cumsubs+nv] = B_neigs;
-      cumsubs++;
+      pcbddc->adaptive_constraints_n[i+nv] = B_neigs;
 
       ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
       PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&B_N,&B_neigs,&B_N,&one,Smult,&B_N,eigv,&B_N,&zero,Seigv,&B_N));
@@ -294,6 +292,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   ierr = PetscFree(rwork);CHKERRQ(ierr);
 #endif
   if (pcbddc->dbg_flag) {
+    PetscInt maxneigs_r;
     ierr = MPI_Allreduce(&maxneigs,&maxneigs_r,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
     ierr = PetscPrintf(PetscObjectComm((PetscObject)pc),"Maximum number of constraints per cc %d\n",maxneigs_r);CHKERRQ(ierr);
   }
@@ -711,14 +710,14 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
     }
     if (!pcbddc->issym) {
       ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_B,pcbddc->local_primal_size,marray+n,&pcbddc->coarse_psi_B);CHKERRQ(ierr);
-      if (pcbddc->switch_static) {
+      if (pcbddc->switch_static || pcbddc->dbg_flag) {
         n = n_B*pcbddc->local_primal_size;
         ierr = MatCreateSeqDense(PETSC_COMM_SELF,n_D,pcbddc->local_primal_size,marray+n,&pcbddc->coarse_psi_D);CHKERRQ(ierr);
       }
     } else {
       ierr = PetscObjectReference((PetscObject)pcbddc->coarse_phi_B);CHKERRQ(ierr);
       pcbddc->coarse_psi_B = pcbddc->coarse_phi_B;
-      if (pcbddc->switch_static) {
+      if (pcbddc->switch_static || pcbddc->dbg_flag) {
         ierr = PetscObjectReference((PetscObject)pcbddc->coarse_phi_D);CHKERRQ(ierr);
         pcbddc->coarse_psi_D = pcbddc->coarse_phi_D;
       }
@@ -2165,6 +2164,12 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         printf("  idxs %d",temp_indices_to_constraint[j]);
         printf("  data %1.2e\n",temp_quadrature_constraint[j]);
       }
+    }
+    for (i=0;i<n_vertices;i++) {
+      PetscPrintf(PETSC_COMM_SELF,"[%d] vertex %d, n %d\n",PetscGlobalRank,i,pcbddc->adaptive_constraints_n[i+n_vertices]);
+    }
+    for (i=0;i<sub_schurs->n_subs;i++) {
+      PetscPrintf(PETSC_COMM_SELF,"[%d] sub %d, edge %d, n %d\n",PetscGlobalRank,i,PetscBTLookup(sub_schurs->is_edge,i),pcbddc->adaptive_constraints_n[i+n_vertices]);
     }
 #endif
 

@@ -380,6 +380,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   PC_BDDC             *pcbddc=(PC_BDDC*)pc->data;
   PCBDDCDeluxeScaling deluxe_ctx=pcbddc->deluxe_ctx;
   PCBDDCSubSchurs     sub_schurs=pcbddc->sub_schurs;
+  IS                  dirIS;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -395,21 +396,48 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
   ierr = PCBDDCScalingSetUp_Deluxe_Seq(pc);CHKERRQ(ierr);
 
   /* diagonal scaling on interface dofs not contained in cc */
-  if (sub_schurs->is_Ej_com) {
-    PetscInt       nmap;
-    const PetscInt *idxs;
-    ierr = ISGetLocalSize(sub_schurs->is_Ej_com,&deluxe_ctx->n_simple);CHKERRQ(ierr);
-    ierr = ISGetIndices(sub_schurs->is_Ej_com,&idxs);CHKERRQ(ierr);
-    ierr = PetscMalloc1(deluxe_ctx->n_simple,&deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
-    ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,deluxe_ctx->n_simple,idxs,&nmap,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
-    if (nmap != deluxe_ctx->n_simple) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs! %d != %d",nmap,deluxe_ctx->n_simple);
+  dirIS = NULL;
+  if (pcbddc->DirichletBoundariesLocal) {
+    ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirIS);CHKERRQ(ierr);
+  }
+  if (sub_schurs->is_Ej_com || dirIS) {
+    PetscInt n_com,n_dir;
+    n_com = 0;
+    if (sub_schurs->is_Ej_com) {
+      ierr = ISGetLocalSize(sub_schurs->is_Ej_com,&n_com);CHKERRQ(ierr);
     }
-    ierr = ISRestoreIndices(sub_schurs->is_Ej_com,&idxs);CHKERRQ(ierr);
+    n_dir = 0;
+    if (dirIS) {
+      ierr = ISGetLocalSize(dirIS,&n_dir);CHKERRQ(ierr);
+    }
+    deluxe_ctx->n_simple = n_dir + n_com;
+    ierr = PetscMalloc1(deluxe_ctx->n_simple,&deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
+    if (sub_schurs->is_Ej_com) {
+      PetscInt       nmap;
+      const PetscInt *idxs;
+
+      ierr = ISGetIndices(sub_schurs->is_Ej_com,&idxs);CHKERRQ(ierr);
+      ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,n_com,idxs,&nmap,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
+      if (nmap != n_com) {
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error when mapping simply scaled dofs (is_Ej_com)! %d != %d",nmap,n_com);
+      }
+      ierr = ISRestoreIndices(sub_schurs->is_Ej_com,&idxs);CHKERRQ(ierr);
+    }
+    if (dirIS) {
+      PetscInt       nmap;
+      const PetscInt *idxs;
+
+      ierr = ISGetIndices(dirIS,&idxs);CHKERRQ(ierr);
+      ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,n_dir,idxs,&nmap,deluxe_ctx->idx_simple_B+n_com);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(dirIS,&idxs);CHKERRQ(ierr);
+    }
+    ierr = PetscSortInt(deluxe_ctx->n_simple,deluxe_ctx->idx_simple_B);CHKERRQ(ierr);
   } else {
     deluxe_ctx->n_simple = 0;
     deluxe_ctx->idx_simple_B = 0;
   }
+  ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

@@ -3,6 +3,34 @@
 #include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCGraphGetDirichletDofs"
+PetscErrorCode PCBDDCGraphGetDirichletDofs(PCBDDCGraph graph,IS* dirdofs)
+{
+  PetscInt       i,size,sizer;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  size = 0;
+  for (i=0;i<graph->nvtxs;i++) {
+    if (graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK) size++;
+  }
+  ierr = MPI_Allreduce(&size,&sizer,1,MPIU_INT,MPI_LOR,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
+  if (sizer) {
+    PetscInt *dirdofs_idxs;
+
+    ierr = PetscMalloc1(size,&dirdofs_idxs);CHKERRQ(ierr);
+    size = 0;
+    for (i=0;i<graph->nvtxs;i++) {
+      if (graph->special_dof[i] == PCBDDCGRAPH_DIRICHLET_MARK) dirdofs_idxs[size++] = i;
+    }
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)graph->l2gmap),size,dirdofs_idxs,PETSC_OWN_POINTER,dirdofs);CHKERRQ(ierr);
+  } else {
+    *dirdofs = NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCGraphASCIIView"
 PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level, PetscViewer viewer)
 {

@@ -941,7 +941,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscErrorCode ierr;
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PC_IS          *pcis = (PC_IS*)(pc->data);
-  IS             dirIS;
   Vec            used_vec;
   PetscBool      copy_rhs = PETSC_TRUE;
 
@@ -982,14 +981,15 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   pcbddc->rhs_change = PETSC_FALSE;
 
   /* Take into account zeroed rows -> change rhs and store solution removed */
-  /* note that Dirichlet boundaries in global ordering (if any) has already been translated into local ordering in PCBDDCAnalyzeInterface */
-  ierr = PCBDDCGetDirichletBoundariesLocal(pc,&dirIS);CHKERRQ(ierr);
-  if (rhs && dirIS) {
+  if (rhs && pcbddc->DirichletBoundariesLocal) {
+    IS                dirIS;
     Mat_IS            *matis = (Mat_IS*)pc->pmat->data;
     PetscInt          dirsize,i,*is_indices;
     PetscScalar       *array_x;
     const PetscScalar *array_diagonal;
 
+    /* DirichletBoundariesLocal may not be consistent among neighbours */
+    ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirIS);CHKERRQ(ierr);
     ierr = MatGetDiagonal(pc->pmat,pcis->vec1_global);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(pcis->vec1_global,rhs,pcis->vec1_global);CHKERRQ(ierr);
     ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1007,6 +1007,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     pcbddc->rhs_change = PETSC_TRUE;
+    ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
   }
 
   /* remove the computed solution or the initial guess from the rhs */
