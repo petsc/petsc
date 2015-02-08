@@ -564,14 +564,14 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm \
                             ex16.PETSc runex16  ex16.rm \
                             ex16adj.PETSc  runex16adj ex16adj.rm \
-                            ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
-                            ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \
                             ex17.PETSc runex17 runex17_2 ex17.rm \
                             ex19.PETSc ex19.rm \
                             ex22.PETSc runex22 runex22_2 runex22_3 ex22.rm \
                             ex25.PETSc runex25 ex25.rm \
                             ex31.PETSc ex31.rm
-TESTEXAMPLES_C_NOCOMPLEX  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm
+TESTEXAMPLES_C_NOCOMPLEX  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm\
+                            ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
+                            ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm 
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex22f.PETSc ex22f.rm # ex22f_mf.PETSc ex22f_mf.rm
 TESTEXAMPLES_C_X_MPIUNI =

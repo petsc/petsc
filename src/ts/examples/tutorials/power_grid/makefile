@@ -394,13 +394,12 @@ clean_files:
 	-@${RM} *.bin; \
 	  ${RM} *.info
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
+TESTEXAMPLES_C_NOCOMPLEX   = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex3adj.PETSc runex3adj ex3adj.rm \
                             ex3opt.PETSc runex3opt ex3opt.rm \
                             ex3opt_fd.PETSc runex3opt_fd ex3opt_fd.rm \
                             ex5.PETSc ex5.rm \
-                            ex6.PETSc ex6.rm ex7.PETSc  ex7.rm \
-                            
+                            ex6.PETSc ex6.rm ex7.PETSc  ex7.rm 
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  = 
 TESTEXAMPLES_C_X_MPIUNI =
