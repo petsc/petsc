@@ -79,6 +79,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   ierr = PetscOptionsScalar("-pc_bddc_adaptive_threshold","Threshold to be used for adaptive selection of constraints","none",pcbddc->adaptive_threshold,&pcbddc->adaptive_threshold,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_adaptive_nmin","Minimum number of constraints per connected components","none",pcbddc->adaptive_nmin,&pcbddc->adaptive_nmin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_adaptive_nmax","Maximum number of constraints per connected components","none",pcbddc->adaptive_nmax,&pcbddc->adaptive_nmax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_adaptive_invert_stildas","Whether or not to invert the Stildas matrices","none",pcbddc->adaptive_invert_Stildas,&pcbddc->adaptive_invert_Stildas,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1959,9 +1960,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->computed_rowadj = PETSC_FALSE;
 
   /* adaptivity */
-  pcbddc->adaptive_threshold = -1.0;
-  pcbddc->adaptive_nmax      = 0;
-  pcbddc->adaptive_nmin      = 0;
+  pcbddc->adaptive_threshold      = -1.0;
+  pcbddc->adaptive_invert_Stildas = PETSC_TRUE;
+  pcbddc->adaptive_nmax           = 0;
+  pcbddc->adaptive_nmin           = 0;
 
   /* function pointers */
   pc->ops->apply               = PCApply_BDDC;

@@ -62,7 +62,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       PetscInt n,subset_size;
       ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
       n = PetscMin(subset_size,nmax);
-      n = PetscMax(n,nmin);
       cum += subset_size*n;
       cum2 += n;
       maxneigs = PetscMax(maxneigs,n);
@@ -172,6 +171,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         PetscBLASInt B_itype = 1;
         PetscBLASInt B_IL = 1, B_IU;
         PetscScalar  eps = -1.0; /* dlamch? */
+        PetscInt     nmin_s;
 
         /* ask for eigenvalues lower than thresh */
         PetscPrintf(PETSC_COMM_SELF,"[%d] Computing for sub %d/%d.\n",PetscGlobalRank,i,sub_schurs->n_subs);
@@ -189,7 +189,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           } else if (B_ierr <= B_N) {
             SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: %d eigenvalues failed to converge",(int)B_ierr);
           } else {
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: %d principal minor not posdef",(int)B_ierr-B_N-1);
+            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: leading minor of order %d is not positive definite",(int)B_ierr-B_N-1);
           }
         }
 
@@ -198,11 +198,12 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           B_neigs = nmax;
         }
 
-        if (B_neigs < nmin) {
+        nmin_s = PetscMin(nmin,B_N);
+        if (B_neigs < nmin_s) {
           PetscBLASInt B_neigs2;
 
           B_IL = B_neigs + 1;
-          ierr = PetscBLASIntCast(nmin,&B_IU);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(nmin_s,&B_IU);CHKERRQ(ierr);
           PetscPrintf(PETSC_COMM_SELF,"[%d]   found %d eigs, less than minimum required %d. Asking for %d to %d incl (fortran like)\n",PetscGlobalRank,B_neigs,nmin,B_IL,B_IU);
           if (symmetric) {
             PetscInt j;
@@ -231,7 +232,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           } else if (B_ierr <= B_N) {
             SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: %d eigenvalues failed to converge",(int)B_ierr);
           } else {
-            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: %d principal minor not posdef",(int)B_ierr-B_N-1);
+            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: leading minor of order %d is not positive definite",(int)B_ierr-B_N-1);
           }
         }
         PetscPrintf(PETSC_COMM_SELF,"[%d]   -> Got %d eigs\n",PetscGlobalRank,B_neigs);
@@ -251,6 +252,15 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
       PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&B_N,&B_neigs,&B_N,&one,Smult,&B_N,eigv,&B_N,&zero,Seigv,&B_N));
       ierr = PetscMemcpy(pcbddc->adaptive_constraints_data+cum2,Seigv,B_neigs*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
+#if 0
+      PetscInt ii;
+      for (ii=0;ii<B_neigs;ii++) {
+        PetscPrintf(PETSC_COMM_SELF,"[%d]   -> Eigenvector %d/%d (%d)\n",PetscGlobalRank,ii,B_neigs,B_N);
+        for (j=0;j<B_N;j++) {
+          PetscPrintf(PETSC_COMM_SELF,"[%d]       %1.4e %1.4e\n",PetscGlobalRank,eigv[ii*B_N+j],Seigv[ii*B_N+j]);
+        }
+      }
+#endif
       ierr = ISGetIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
       for (j=0;j<B_neigs;j++) {
 #if 0
@@ -4591,7 +4601,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       free_used_adj = PETSC_TRUE;
     }
   }
-  ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->adaptive_selection,pcbddc->use_deluxe_scaling,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->adaptive_selection,pcbddc->use_deluxe_scaling,pcbddc->adaptive_invert_Stildas,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
 
   /* free adjacency */
   if (free_used_adj) {
