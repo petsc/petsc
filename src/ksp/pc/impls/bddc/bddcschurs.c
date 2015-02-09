@@ -98,7 +98,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   PetscInt               *nnz,*all_local_idx_G,*all_local_idx_B,*all_local_idx_N;
   PetscInt               i,subset_size,max_subset_size;
   PetscInt               extra,local_size,global_size;
-  PetscBool              is_symmetric,Stilda_computed;
+  PetscBool              is_symmetric;
   PetscBLASInt           B_N,B_ierr,B_lwork,*pivots;
   PetscScalar            *work;
   PetscErrorCode         ierr;
@@ -381,7 +381,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   S_Ej_inv_all = 0;
   work = NULL;
   pivots = NULL;
-  Stilda_computed = PETSC_FALSE;
   if (sub_schurs->n_subs && deluxe) { /* workspace needed only for GETRI */
     PetscScalar lwork;
 
@@ -447,12 +446,15 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       }
     }
 
-    ierr = MatGetSize(S_all,&n_all,NULL);CHKERRQ(ierr);
+    if (S_all) { /* multilevel */
+      ierr = MatGetSize(S_all,&n_all,NULL);CHKERRQ(ierr);
+    } else {
+      n_all = 0;
+    }
     local_size = 0;
     /* Work arrays */
     ierr = PetscMalloc1(max_subset_size,&dummy_idx);CHKERRQ(ierr);
 
-    Stilda_computed = PETSC_FALSE;
     for (i=0;i<sub_schurs->n_subs;i++) {
       IS  is_E;
       PetscScalar *vals;
@@ -474,7 +476,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 
       if (compute_Stilda && ((PetscBTLookup(sub_schurs->is_edge,i) && use_edges) || use_faces)) {
         ierr = PetscBTSet(sub_schurs->computed_Stilda_subs,i);CHKERRQ(ierr);
-        Stilda_computed = PETSC_TRUE;
       }
 
       if (PetscBTLookup(sub_schurs->computed_Stilda_subs,i)) {
@@ -565,13 +566,13 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   ierr = MatDestroy(&S_all);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (compute_Stilda) {
+  if (S_Ej_tilda_all) {
     ierr = MatAssemblyBegin(S_Ej_tilda_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(S_Ej_tilda_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    if (deluxe) {
-      ierr = MatAssemblyBegin(S_Ej_inv_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(S_Ej_inv_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    }
+  }
+  if (S_Ej_inv_all) {
+    ierr = MatAssemblyBegin(S_Ej_inv_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(S_Ej_inv_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
   /* Global matrix of all assembled Schur on subsets */
@@ -594,7 +595,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     ierr = MatGetSubMatrixUnsorted(global_schur_subsets,temp_is,temp_is,MAT_INITIAL_MATRIX,&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
   }
 
-  if (Stilda_computed) {
+  if (S_Ej_tilda_all) {
     ierr = MatISSetLocalMat(work_mat,S_Ej_tilda_all);CHKERRQ(ierr);
     ierr = MatISGetMPIXAIJ(work_mat,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
     if (sub_schurs->sum_S_Ej_tilda_all) {
@@ -602,43 +603,43 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     } else {
       ierr = MatGetSubMatrixUnsorted(global_schur_subsets,temp_is,temp_is,MAT_INITIAL_MATRIX,&sub_schurs->sum_S_Ej_tilda_all);CHKERRQ(ierr);
     }
-    if (deluxe) {
-      PetscInt    cum;
-      PetscScalar *array,*array2;
-      ierr = MatISSetLocalMat(work_mat,S_Ej_inv_all);CHKERRQ(ierr);
-      ierr = MatISGetMPIXAIJ(work_mat,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
-      if (sub_schurs->sum_S_Ej_inv_all) {
-        ierr = MatGetSubMatrixUnsorted(global_schur_subsets,temp_is,temp_is,MAT_REUSE_MATRIX,&sub_schurs->sum_S_Ej_inv_all);CHKERRQ(ierr);
-      } else {
-        ierr = MatGetSubMatrixUnsorted(global_schur_subsets,temp_is,temp_is,MAT_INITIAL_MATRIX,&sub_schurs->sum_S_Ej_inv_all);CHKERRQ(ierr);
-      }
-      /* invert blocks of sum_S_Ej_inv_all */
-      ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_inv_all,&array);CHKERRQ(ierr);
-      ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&array2);CHKERRQ(ierr);
-      cum = 0;
-      for (i=0;i<sub_schurs->n_subs;i++) {
-        ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
-        if (PetscBTLookup(sub_schurs->computed_Stilda_subs,i)) {
-          /* need to be optimized (cholesky) */
-          ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
-          ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-          PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array+cum,&B_N,pivots,&B_ierr));
-          if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-          PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array+cum,&B_N,pivots,work,&B_lwork,&B_ierr));
-          if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
-          if (invert_Stildas) { /* Stildas can be singular */
-            PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array2+cum,&B_N,pivots,&B_ierr));
-            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-            PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array2+cum,&B_N,pivots,work,&B_lwork,&B_ierr));
-            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
-          }
-          ierr = PetscFPTrapPop();CHKERRQ(ierr);
-        }
-        cum += subset_size*subset_size;
-      }
-      ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_inv_all,&array);CHKERRQ(ierr);
-      ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_tilda_all,&array2);CHKERRQ(ierr);
+  }
+  if (S_Ej_inv_all) {
+    PetscInt    cum;
+    PetscScalar *array,*array2;
+    ierr = MatISSetLocalMat(work_mat,S_Ej_inv_all);CHKERRQ(ierr);
+    ierr = MatISGetMPIXAIJ(work_mat,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
+    if (sub_schurs->sum_S_Ej_inv_all) {
+      ierr = MatGetSubMatrixUnsorted(global_schur_subsets,temp_is,temp_is,MAT_REUSE_MATRIX,&sub_schurs->sum_S_Ej_inv_all);CHKERRQ(ierr);
+    } else {
+      ierr = MatGetSubMatrixUnsorted(global_schur_subsets,temp_is,temp_is,MAT_INITIAL_MATRIX,&sub_schurs->sum_S_Ej_inv_all);CHKERRQ(ierr);
     }
+    /* invert blocks of sum_S_Ej_inv_all */
+    ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_inv_all,&array);CHKERRQ(ierr);
+    ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&array2);CHKERRQ(ierr);
+    cum = 0;
+    for (i=0;i<sub_schurs->n_subs;i++) {
+      ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
+      if (PetscBTLookup(sub_schurs->computed_Stilda_subs,i)) {
+        /* need to be optimized (cholesky) */
+        ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
+        ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+        PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array+cum,&B_N,pivots,&B_ierr));
+        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
+        PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array+cum,&B_N,pivots,work,&B_lwork,&B_ierr));
+        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+        if (invert_Stildas) { /* Stildas can be singular */
+          PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array2+cum,&B_N,pivots,&B_ierr));
+          if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
+          PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array2+cum,&B_N,pivots,work,&B_lwork,&B_ierr));
+          if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+        }
+        ierr = PetscFPTrapPop();CHKERRQ(ierr);
+      }
+      cum += subset_size*subset_size;
+    }
+    ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_inv_all,&array);CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_tilda_all,&array2);CHKERRQ(ierr);
   }
 
   ierr = PetscFree2(work,pivots);CHKERRQ(ierr);
