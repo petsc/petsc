@@ -94,7 +94,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrix_SeqSBAIJ_Private"
-PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,MatReuse scall,Mat *B) 
+PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,MatReuse scall,Mat *B)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data,*c;
   PetscErrorCode  ierr;
@@ -107,8 +107,8 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,MatReuse scall,Ma
   PetscBool       flag,sorted;
 
   PetscFunctionBegin;
-  ierr = ISSorted(isrow,&sorted);CHKERRQ(ierr); 
-  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted"); 
+  ierr = ISSorted(isrow,&sorted);CHKERRQ(ierr);
+  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,M
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isrow");
   }
 
-  ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr); 
+  ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
 
   /* Verify if the indices corespond to each element in a block
@@ -208,7 +208,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,M
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
   ierr = PetscFree2(vary,iary);CHKERRQ(ierr);
 
-  ierr = MatGetSubMatrix_SeqSBAIJ_Private(A,is1,scall,B);CHKERRQ(ierr); 
+  ierr = MatGetSubMatrix_SeqSBAIJ_Private(A,is1,scall,B);CHKERRQ(ierr);
   ierr = ISDestroy(&is1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
