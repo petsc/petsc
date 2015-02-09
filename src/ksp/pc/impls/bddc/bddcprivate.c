@@ -46,7 +46,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 
   /* min/max and threshold */
   nmax = pcbddc->adaptive_nmax > 0 ? pcbddc->adaptive_nmax : mss;
-  nmin = pcbddc->adaptive_nmin > 0 ? pcbddc->adaptive_nmin : 1;
+  nmin = pcbddc->adaptive_nmin > -1 ? pcbddc->adaptive_nmin : 1;
   nmax = PetscMax(nmin,nmax);
   if (pcbddc->adaptive_threshold > 1.0) {
     thresh = 1.0/pcbddc->adaptive_threshold;
@@ -3891,8 +3891,14 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   if (pcbddc->current_level && void_procs) {
     csin_ml = PETSC_TRUE;
     ncoarse_ml = void_procs;
-    csin_ds = PETSC_TRUE;
-    ncoarse_ds = void_procs;
+    if (pcbddc->redistribute_coarse && pcbddc->redistribute_coarse < void_procs) {
+      csin_ds = PETSC_TRUE;
+      ncoarse_ds = pcbddc->redistribute_coarse;
+      redist = PETSC_TRUE;
+    } else {
+      csin_ds = PETSC_TRUE;
+      ncoarse_ds = void_procs;
+    }
   } else {
     csin_ml = PETSC_FALSE;
     ncoarse_ml = all_procs;
