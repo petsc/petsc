@@ -78,7 +78,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
 
       /* create a new PC that processors in each subcomm have copy of */
-      subcomm = red->psubcomm->comm;
+      subcomm = PetscSubcommChild(red->psubcomm);
 
       ierr = KSPCreate(subcomm,&red->ksp);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr);
     } else {
-      subcomm = red->psubcomm->comm;
+      subcomm = PetscSubcommChild(red->psubcomm);
     }
 
     if (red->useparallelmat) {
@@ -107,8 +107,8 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
        ydup concatenates all ysub and has empty local arrays because ysub's arrays will be place into it.
        Note: we use communicator dupcomm, not PetscObjectComm((PetscObject)pc)! */
       ierr = MatGetLocalSize(red->pmats,&mloc_sub,NULL);CHKERRQ(ierr);
-      ierr = VecCreateMPI(red->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
-      ierr = VecCreateMPIWithArray(red->psubcomm->dupparent,1,mloc_sub,PETSC_DECIDE,NULL,&red->ydup);CHKERRQ(ierr);
+      ierr = VecCreateMPI(PetscSubcommContiquousParent(red->psubcomm),mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
+      ierr = VecCreateMPIWithArray(PetscSubcommContiquousParent(red->psubcomm),1,mloc_sub,PETSC_DECIDE,NULL,&red->ydup);CHKERRQ(ierr);
 
       /* create vecscatters */
       if (!red->scatterin) { /* efficiency of scatterin is independent from psubcomm_type! */
@@ -157,7 +157,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       } else {
         reuse = MAT_REUSE_MATRIX;
       }
-      ierr = MatCreateRedundantMatrix(pc->pmat,red->psubcomm->n,red->psubcomm->comm,reuse,&red->pmats);CHKERRQ(ierr);
+      ierr = MatCreateRedundantMatrix(pc->pmat,red->psubcomm->n,PetscSubcommChild(red->psubcomm),reuse,&red->pmats);CHKERRQ(ierr);
       ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats);CHKERRQ(ierr);
     } else { /* !red->useparallelmat */
       ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat);CHKERRQ(ierr);
@@ -404,7 +404,7 @@ static PetscErrorCode  PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
     ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
 
     /* create a new PC that processors in each subcomm have copy of */
-    subcomm = red->psubcomm->comm;
+    subcomm = PetscSubcommChild(red->psubcomm);
 
     ierr = KSPCreate(subcomm,&red->ksp);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);

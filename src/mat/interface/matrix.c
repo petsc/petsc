@@ -9378,7 +9378,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subco
     ierr = PetscSubcommSetNumber(psubcomm,nsubcomm);CHKERRQ(ierr);
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
     ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
-    ierr = PetscCommDuplicate(psubcomm->comm,&subcomm,NULL);CHKERRQ(ierr);
+    ierr = PetscCommDuplicate(PetscSubcommChild(psubcomm),&subcomm,NULL);CHKERRQ(ierr);
     newsubcomm = PETSC_TRUE;
     ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
   } 
