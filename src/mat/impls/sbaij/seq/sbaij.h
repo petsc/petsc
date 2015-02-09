@@ -159,4 +159,12 @@ PETSC_INTERN PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat,Petsc
 
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqSBAIJ(Mat,Mat,PetscInt*);
 
+/* required by mpisbaij.c */
+PETSC_INTERN PetscErrorCode MatGetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []);
+PETSC_INTERN PetscErrorCode MatSetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt [],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
+PETSC_INTERN PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+PETSC_INTERN PetscErrorCode MatGetRow_SeqSBAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
+PETSC_INTERN PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
+PETSC_INTERN PetscErrorCode MatZeroRows_SeqSBAIJ(Mat,IS,PetscScalar*,Vec,Vec);
+
 #endif
