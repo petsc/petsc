@@ -670,7 +670,7 @@ PetscErrorCode MatSolveTranspose_MUMPS(Mat A,Vec b,Vec x)
 PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 {
   Mat_MUMPS      *mumps=(Mat_MUMPS*)A->spptr;
-  PetscInt       nrhs;
+  PetscInt       nrhs,lrhs;
   PetscScalar    *array;
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -687,8 +687,9 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use MatMatSolve when Schur complement has been requested\n");
   }
 
-  ierr = MatGetSize(B,NULL,&nrhs);CHKERRQ(ierr);
+  ierr = MatGetSize(B,&lrhs,&nrhs);CHKERRQ(ierr);
   mumps->id.nrhs = nrhs;
+  mumps->id.lrhs = lrhs;
   ierr = MatCopy(B,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatDenseGetArray(X,&array);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
