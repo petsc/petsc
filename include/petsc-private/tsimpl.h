@@ -35,12 +35,28 @@ struct _TSOps {
   PetscErrorCode (*linearstability)(TS,PetscReal,PetscReal,PetscReal*,PetscReal*);
   PetscErrorCode (*load)(TS,PetscViewer);
   PetscErrorCode (*rollback)(TS);
+  PetscErrorCode (*getstages)(TS,PetscInt*,Vec**);
+  PetscErrorCode (*adjointstep)(TS);
+  PetscErrorCode (*adjointsetup)(TS);
 };
 
 /* 
    TSEvent - Abstract object to handle event monitoring
 */
 typedef struct _p_TSEvent *TSEvent;
+
+typedef struct _TSTrajectoryOps *TSTrajectoryOps;
+
+struct _TSTrajectoryOps {
+  PetscErrorCode (*view)(TSTrajectory,PetscViewer);
+  PetscErrorCode (*destroy)(TSTrajectory);
+  PetscErrorCode (*set)(TSTrajectory,TS,PetscInt,PetscReal,Vec);
+  PetscErrorCode (*get)(TSTrajectory,TS,PetscInt,PetscReal);
+};
+
+struct _p_TSTrajectory {
+  PETSCHEADER(struct _TSTrajectoryOps);
+};
 
 struct _p_TS {
   PETSCHEADER(struct _TSOps);
@@ -60,6 +76,27 @@ struct _p_TS {
   PetscErrorCode (*prestage)(TS,PetscReal);
   PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
   PetscErrorCode (*poststep)(TS);
+
+  /* ---------------------- Sensitivity Analysis support -----------------*/
+  TSTrajectory trajectory;   /* All solutions are kept here for the entire time integration process */
+  Vec       *vecs_sensi;
+  Vec       *vecs_sensip;
+  PetscInt  numberadjs;
+  Vec       vec_costintegral;
+  PetscInt  adjointsetupcalled;
+  PetscInt  adjoint_max_steps;
+  /* workspace for Adjoint computations */
+  Vec       vec_costintegrand;
+  Mat       Jacp;
+  void      *rhsjacobianpctx;
+  void      *costintegrandctx;
+  Vec       *vecs_drdy;
+  Vec       *vecs_drdp;
+
+  PetscErrorCode (*rhsjacobianp)(TS,PetscReal,Vec,Mat,void*);
+  PetscErrorCode (*costintegrand)(TS,PetscReal,Vec,Vec,void*);
+  PetscErrorCode (*drdyfunction)(TS,PetscReal,Vec,Vec*,void*);
+  PetscErrorCode (*drdpfunction)(TS,PetscReal,Vec,Vec*,void*);
 
   /* ---------------------- IMEX support ---------------------------------*/
   /* These extra slots are only used when the user provides both Implicit and RHS */
@@ -107,7 +144,8 @@ struct _p_TS {
   PetscInt  time_steps_since_decrease; /* number of timesteps since timestep was decreased due to lack of convergence */
   /* ----------------------------------------------------------------------------------------------------------------*/
 
-  PetscInt  steps;                  /* steps taken so far */
+  PetscInt  steps;                  /* steps taken so far in latest call to TSSolve() */
+  PetscInt  total_steps;            /* steps taken in all calls to TSSolve() since the TS was created or since TSSetUp() was called */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
   PetscReal ptime_prev;             /* time at the start of the previous step */
   PetscReal solvetime;              /* time at the conclusion of TSSolve() */
@@ -244,5 +282,6 @@ struct _n_TSMonitorLGCtx {
   PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
   PetscInt    ksp_its,snes_its;
 };
+
 
 #endif

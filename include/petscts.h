@@ -203,6 +203,57 @@ PETSC_EXTERN PetscErrorCode TSReset(TS);
 PETSC_EXTERN PetscErrorCode TSSetSolution(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 
+/*S
+     TSTrajectory - Abstract PETSc object that storing the trajectory (solution of ODE/ADE at each time step and stage)
+
+   Level: advanced
+
+  Concepts: ODE solvers, adjoint
+
+.seealso:  TSCreate(), TSSetType(), TSType, SNES, KSP, PC, TSDestroy()
+S*/
+typedef struct _p_TSTrajectory* TSTrajectory;
+
+/*J
+    TSTrajectoryType - String with the name of a PETSc TS trajectory storage method
+
+   Level: intermediate
+
+.seealso: TSSetType(), TS, TSRegister(), TSTrajectoryCreate(), TSTrajectorySetType()
+J*/
+typedef const char* TSTrajectoryType;
+#define TSTRAJECTORYBASIC      "basic"
+
+PETSC_EXTERN PetscFunctionList TSTrajectoryList;
+PETSC_EXTERN PetscClassId      TSTRAJECTORY_CLASSID;
+PETSC_EXTERN PetscBool         TSTrajectoryRegisterAllCalled;
+
+PETSC_EXTERN PetscErrorCode TSSetSaveTrajectory(TS);
+
+PETSC_EXTERN PetscErrorCode TSTrajectoryCreate(MPI_Comm,TSTrajectory*);
+PETSC_EXTERN PetscErrorCode TSTrajectoryDestroy(TSTrajectory*);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetType(TSTrajectory,const TSTrajectoryType);
+PETSC_EXTERN PetscErrorCode TSTrajectorySet(TSTrajectory,TS,PetscInt,PetscReal,Vec);
+PETSC_EXTERN PetscErrorCode TSTrajectoryGet(TSTrajectory,TS,PetscInt,PetscReal);
+PETSC_EXTERN PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory);
+PETSC_EXTERN PetscErrorCode TSTrajectoryRegisterAll(void);
+
+PETSC_EXTERN PetscErrorCode TSAdjointSetGradients(TS,PetscInt,Vec*,Vec*);
+PETSC_EXTERN PetscErrorCode TSAdjointGetGradients(TS,PetscInt*,Vec**,Vec**);
+
+PETSC_EXTERN PetscErrorCode TSAdjointSetRHSJacobian(TS,Mat,PetscErrorCode(*)(TS,PetscReal,Vec,Mat,void*),void*);
+PETSC_EXTERN PetscErrorCode TSAdjointSetCostIntegrand(TS,PetscInt,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),Vec*,PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*),void*);
+PETSC_EXTERN PetscErrorCode TSAdjointGetCostIntegral(TS,Vec*);
+PETSC_EXTERN PetscErrorCode TSAdjointSolve(TS);
+PETSC_EXTERN PetscErrorCode TSAdjointSetSteps(TS,PetscInt);
+
+PETSC_EXTERN PetscErrorCode TSAdjointComputeRHSJacobian(TS,PetscReal,Vec,Mat);
+PETSC_EXTERN PetscErrorCode TSAdjointStep(TS);
+PETSC_EXTERN PetscErrorCode TSAdjointSetUp(TS);
+PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDPFunction(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode TSAdjointComputeDRDYFunction(TS,PetscReal,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode TSAdjointComputeCostIntegrand(TS,PetscReal,Vec,Vec);
+
 PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS,TSExactFinalTimeOption);
@@ -236,6 +287,9 @@ PETSC_EXTERN PetscErrorCode TSGetSNESFailures(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetMaxSNESFailures(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSetErrorIfStepFails(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRollBack(TS);
+PETSC_EXTERN PetscErrorCode TSGetTotalSteps(TS,PetscInt*);
+
+PETSC_EXTERN PetscErrorCode TSGetStages(TS,PetscInt*,Vec**);
 
 PETSC_EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTimeStep(TS,PetscReal*);
@@ -243,6 +297,7 @@ PETSC_EXTERN PetscErrorCode TSGetTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetTime(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTimeStepNumber(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetTimeStep(TS,PetscReal);
+PETSC_EXTERN PetscErrorCode TSGetPrevTime(TS,PetscReal*);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunction)(TS,PetscReal,Vec,Vec,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobian)(TS,PetscReal,Vec,Mat,Mat,void*);
@@ -369,6 +424,7 @@ PETSC_EXTERN PetscErrorCode TSGetKSP(TS,KSP*);
 PETSC_EXTERN PetscErrorCode TSView(TS,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSLoad(TS,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode TSViewFromOptions(TS A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+
 
 #define TS_FILE_CLASSID 1211225
 

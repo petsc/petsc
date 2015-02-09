@@ -4,9 +4,21 @@ static char help[] = "Basic equation for generator stability analysis.\n";
 /*F
 
 \begin{eqnarray}
-                 \frac{2 H}{\omega_s}\frac{d \omega}{dt} & = & P_m - \frac{EV}{X} \sin(\theta) \\
-                 \frac{d \theta}{dt} = \omega - \omega_s
+                 \frac{d \theta}{dt} = \omega_b (\omega - \omega_s)
+                 \frac{2 H}{\omega_s}\frac{d \omega}{dt} & = & P_m - P_max \sin(\theta) -D(\omega - \omega_s)\\
 \end{eqnarray}
+
+
+
+  Ensemble of initial conditions
+   ./ex2 -ensemble -ts_monitor_draw_solution_phase -1,-3,3,3      -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
+
+  Fault at .1 seconds
+   ./ex2           -ts_monitor_draw_solution_phase .42,.95,.6,1.05 -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
+
+  Initial conditions same as when fault is ended
+   ./ex2 -u 0.496792,1.00932 -ts_monitor_draw_solution_phase .42,.95,.6,1.05  -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly 
+
 
 F*/
 
@@ -22,8 +34,8 @@ F*/
 #include <petscts.h>
 
 typedef struct {
-  PetscScalar H,omega_s,E,V,X;
-  PetscRandom rand;
+  PetscScalar H,D,omega_b,omega_s,Pmax,Pm,E,V,X;
+  PetscReal   tf,tcl;
 } AppCtx;
 
 #undef __FUNCT__
@@ -33,25 +45,22 @@ typedef struct {
 */
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
-  PetscErrorCode     ierr;
-  PetscScalar        *f,r;
-  const PetscScalar  *u,*udot;
-  static PetscScalar R = .4;
+  PetscErrorCode ierr;
+  PetscScalar    *u,*udot,*f,Pmax;
 
   PetscFunctionBegin;
-  ierr = PetscRandomGetValue(ctx->rand,&r);CHKERRQ(ierr);
-  if (r > .9) R = .5;
-  if (r < .1) R = .4;
-  R = .4;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = 2.0*ctx->H*udot[0]/ctx->omega_s + ctx->E*ctx->V*PetscSinScalar(u[1])/ctx->X - R;
-  f[1] = udot[1] - u[0] + ctx->omega_s;
+  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  else Pmax = ctx->Pmax;
+  
+  f[0] = udot[0] - ctx->omega_b*(u[1] - ctx->omega_s);
+  f[1] = 2.0*ctx->H/ctx->omega_s*udot[1] +  Pmax*PetscSinScalar(u[0]) + ctx->D*(u[1] - ctx->omega_s)- ctx->Pm;
 
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -63,19 +72,22 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
 */
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,AppCtx *ctx)
 {
-  PetscErrorCode    ierr;
-  PetscInt          rowcol[] = {0,1};
-  PetscScalar       J[2][2];
-  const PetscScalar *u,*udot;
+  PetscErrorCode ierr;
+  PetscInt       rowcol[] = {0,1};
+  PetscScalar    *u,*udot,J[2][2],Pmax;
 
   PetscFunctionBegin;
-  ierr    = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr    = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  J[0][0] = 2.0*ctx->H*a/ctx->omega_s;   J[0][1] = -ctx->E*ctx->V*PetscCosScalar(u[1])/ctx->X;
-  J[1][0] = -1.0;                        J[1][1] = a;
+  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  else Pmax = ctx->Pmax;
+
+  J[0][0] = a;                       J[0][1] = -ctx->omega_b;
+  J[1][1] = 2.0*ctx->H/ctx->omega_s*a + ctx->D;   J[1][0] = Pmax*PetscCosScalar(u[0]);
+
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr    = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(U,&u);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -98,6 +110,8 @@ int main(int argc,char **argv)
   PetscInt       n = 2;
   AppCtx         ctx;
   PetscScalar    *u;
+  PetscReal      du[2] = {0.0,0.0};
+  PetscBool      ensemble = PETSC_FALSE,flg1,flg2;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -111,6 +125,7 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
@@ -119,38 +134,56 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Reaction options","");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");CHKERRQ(ierr);
   {
-    ctx.omega_s = 1.0;
-    ierr        = PetscOptionsScalar("-omega_s","","",ctx.omega_s,&ctx.omega_s,NULL);CHKERRQ(ierr);
-    ctx.H       = 1.0;
-    ierr        = PetscOptionsScalar("-H","","",ctx.H,&ctx.H,NULL);CHKERRQ(ierr);
-    ctx.E       = 1.0;
-    ierr        = PetscOptionsScalar("-E","","",ctx.E,&ctx.E,NULL);CHKERRQ(ierr);
+    ctx.omega_b = 1.0;
+    ctx.omega_s = 2.0*PETSC_PI*60.0;
+    ctx.H       = 5.0;
+    ierr        = PetscOptionsScalar("-Inertia","","",ctx.H,&ctx.H,NULL);CHKERRQ(ierr);
+    ctx.D       = 5.0;
+    ierr        = PetscOptionsScalar("-D","","",ctx.D,&ctx.D,NULL);CHKERRQ(ierr);
+    ctx.E       = 1.1378;
     ctx.V       = 1.0;
-    ierr        = PetscOptionsScalar("-V","","",ctx.V,&ctx.V,NULL);CHKERRQ(ierr);
-    ctx.X       = 1.0;
-    ierr        = PetscOptionsScalar("-X","","",ctx.X,&ctx.X,NULL);CHKERRQ(ierr);
+    ctx.X       = 0.545;
+    ctx.Pmax    = ctx.E*ctx.V/ctx.X;;
+    ierr        = PetscOptionsScalar("-Pmax","","",ctx.Pmax,&ctx.Pmax,NULL);CHKERRQ(ierr);
+    ctx.Pm      = 0.9;
+    ierr        = PetscOptionsScalar("-Pm","","",ctx.Pm,&ctx.Pm,NULL);CHKERRQ(ierr);
+    ctx.tf      = 1.0;
+    ctx.tcl     = 1.05;
+    ierr        = PetscOptionsReal("-tf","Time to start fault","",ctx.tf,&ctx.tf,NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-tcl","Time to end fault","",ctx.tcl,&ctx.tcl,NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsBool("-ensemble","Run ensemble of different initial conditions","",ensemble,&ensemble,NULL);CHKERRQ(ierr);
+    if (ensemble) {
+      ctx.tf      = -1;
+      ctx.tcl     = -1;
+    }
 
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-    u[0] = 1;
-    u[1] = .7;
+    u[0] = PetscAsinScalar(ctx.Pm/ctx.Pmax);
+    u[1] = 1.0;
+    ierr = PetscOptionsRealArray("-u","Initial solution","",u,&n,&flg1);CHKERRQ(ierr);
+    n    = 2;
+    ierr = PetscOptionsRealArray("-du","Perturbation in initial solution","",du,&n,&flg2);CHKERRQ(ierr);
+    u[0] += du[0];
+    u[1] += du[1];
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscOptionsGetVec(NULL,"-initial",U,NULL);CHKERRQ(ierr);
+    if (flg1 || flg2) {
+      ctx.tf      = -1;
+      ctx.tcl     = -1;
+    }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ctx.rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(ctx.rand);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -160,22 +193,35 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetDuration(ts,100000,2000.0);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,100000,35.0);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,U);CHKERRQ(ierr);
-
+  if (ensemble) {
+    for (du[1] = -2.5; du[1] <= .01; du[1] += .1) {
+      ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+      u[0] = PetscAsinScalar(ctx.Pm/ctx.Pmax);
+      u[1] = ctx.omega_s;
+      u[0] += du[0];
+      u[1] += du[1];
+      ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
+      ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
+      ierr = TSSolve(ts,U);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  }
+  ierr = VecView(U,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&ctx.rand);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return(0);
