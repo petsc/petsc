@@ -383,10 +383,10 @@ PetscErrorCode PetscOptionsSAWsDestroy(void)
 
 
 */
-PetscErrorCode PetscOptionsAMSInput(PetscOptions *PetscOptionsObject)
+PetscErrorCode PetscOptionsSAWsInput(PetscOptions *PetscOptionsObject)
 {
   PetscErrorCode ierr;
-  PetscOption   next     = PetscOptionsObject->next;
+  PetscOption    next     = PetscOptionsObject->next;
   static int     mancount = 0;
   char           options[16];
   PetscBool      changedmethod = PETSC_FALSE;
@@ -479,12 +479,12 @@ PetscErrorCode PetscOptionsAMSInput(PetscOptions *PetscOptionsObject)
   next = PetscOptionsObject->next;
   while (next) {
     ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->option);CHKERRQ(ierr);
-    PetscStackCallSAWs(SAWs_Selected,(dir,&next->set));
+    PetscStackCallSAWs(SAWs_Selected,(dir,(int*)&next->set));
     next = next->next;
   }
 
   /* reset counter to -2; this updates the screen with the new options for the selected method */
-  if (changedmethod) PetscOptionsPublishCount = -2;
+  if (changedmethod) PetscOptionsObject->count = -2;
 
   PetscStackCallSAWs(SAWs_Delete,("/PETSc/Options"));
   PetscFunctionReturn(0);
@@ -504,7 +504,7 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptions *PetscOptionsObject)
   if (PetscOptionsObject->next) {
     if (!PetscOptionsObject->count) {
 #if defined(PETSC_HAVE_SAWS)
-      ierr = PetscOptionsSAWsInput();CHKERRQ(ierr);
+      ierr = PetscOptionsSAWsInput(PetscOptionsObject);CHKERRQ(ierr);
 #else
       ierr = PetscOptionsGetFromTextInput(PetscOptionsObject);CHKERRQ(ierr);
 #endif
