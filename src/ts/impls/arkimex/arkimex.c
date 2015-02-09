@@ -66,7 +66,7 @@ typedef struct {
      This method has one explicit stage and one implicit stage.
 
      References:
-     U. Ascher, S. Ruuth, R. J. Spitheri, Implicit-explicit Runge-Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997), pp. 151-167.
+     U. Ascher, S. Ruuth, R. J. Spiteri, Implicit-explicit Runge-Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997), pp. 151-167.
 
      Level: advanced
 
@@ -161,7 +161,7 @@ M*/
      This method has one explicit stage and four implicit stages.
 
      References:
-     U. Ascher, S. Ruuth, R. J. Spitheri, Implicit-explicit Runge-Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997), pp. 151-167.
+     U. Ascher, S. Ruuth, R. J. Spiteri, Implicit-explicit Runge-Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997), pp. 151-167.
 
      This method is referred to as ARS(4,4,3) in http://arxiv.org/abs/1110.4375
 
@@ -1412,10 +1412,13 @@ PetscErrorCode  TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts,PetscBool flg)
 
   Methods with an explicit stage can only be used with ODE in which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
 
+  Consider trying TSROSW if the stiff part is linear or weakly nonlinear.
+
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXSetType(), TSARKIMEXGetType(), TSARKIMEXSetFullyImplicit(), TSARKIMEX2D, TTSARKIMEX2E, TSARKIMEX3,
-           TSARKIMEX4, TSARKIMEX5, TSARKIMEXPRSSP2, TSARKIMEXBPR3, TSARKIMEXType, TSARKIMEXRegister()
+.seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXSetType(), TSARKIMEXGetType(), TSARKIMEXSetFullyImplicit(), TSARKIMEX1BEE,
+           TSARKIMEX2C, TSARKIMEX2D, TSARKIMEX2E, TSARKIMEX3, TSARKIMEXL2, TSARKIMEXA2, TSARKIMEXARS122,
+           TSARKIMEX4, TSARKIMEX5, TSARKIMEXPRSSP2, TSARKIMEXARS443, TSARKIMEXBPR3, TSARKIMEXType, TSARKIMEXRegister()
 
 M*/
 #undef __FUNCT__

@@ -4,25 +4,9 @@
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <petscblaslapack.h>
 
-extern PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat);
-extern PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat);
-extern PetscErrorCode MatDisAssemble_MPISBAIJ(Mat);
-extern PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat,PetscInt,IS[],PetscInt);
-extern PetscErrorCode MatGetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []);
-extern PetscErrorCode MatGetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []);
-extern PetscErrorCode MatSetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt [],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
-extern PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-extern PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-extern PetscErrorCode MatGetRow_SeqSBAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
-extern PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
-extern PetscErrorCode MatZeroRows_SeqSBAIJ(Mat,IS,PetscScalar*,Vec,Vec);
-extern PetscErrorCode MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar*,Vec,Vec);
-extern PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat,Vec,PetscInt[]);
-extern PetscErrorCode MatSOR_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
 #endif
-
 #undef __FUNCT__
 #define __FUNCT__ "MatStoreValues_MPISBAIJ"
 PetscErrorCode  MatStoreValues_MPISBAIJ(Mat mat)
