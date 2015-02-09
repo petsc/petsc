@@ -1963,7 +1963,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->adaptive_threshold      = -1.0;
   pcbddc->adaptive_invert_Stildas = PETSC_TRUE;
   pcbddc->adaptive_nmax           = 0;
-  pcbddc->adaptive_nmin           = 0;
+  pcbddc->adaptive_nmin           = -1;
 
   /* function pointers */
   pc->ops->apply               = PCApply_BDDC;
