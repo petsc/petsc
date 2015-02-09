@@ -170,7 +170,7 @@ PetscErrorCode  TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tstra)
 .seealso: TS, TSSolve(), TSCreate(), TSSetFromOptions(), TSDestroy(), TSType
 
 @*/
-PetscErrorCode  TSTrajectorySetType(TSTrajectory ts,TSTrajectoryType type)
+PetscErrorCode  TSTrajectorySetType(TSTrajectory ts,const TSTrajectoryType type)
 {
   PetscErrorCode (*r)(TSTrajectory);
   PetscBool      match;
