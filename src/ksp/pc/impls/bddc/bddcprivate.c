@@ -3438,10 +3438,10 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
   subcomm = 0;
   destroy_mat = PETSC_FALSE;
   if (restrict_comm) {
-    PetscMPIInt color,rank,subcommsize;
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    PetscMPIInt color,subcommsize;
+
     color = 0;
-    if (n_sends && !n_recvs) color = 1; /* sending only processes will not partecipate in new comm */
+    if (!n_recvs) color = 1; /* processes not receiving anything will not partecipate in new comm */
     ierr = MPI_Allreduce(&color,&subcommsize,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
     subcommsize = commsize - subcommsize;
     /* check if reuse has been requested */
@@ -3455,6 +3455,9 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
         comm_n = PETSC_COMM_SELF;
       }
     } else { /* MAT_INITIAL_MATRIX */
+      PetscMPIInt rank;
+
+      ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
       ierr = PetscSubcommCreate(comm,&subcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetNumber(subcomm,2);CHKERRQ(ierr);
       ierr = PetscSubcommSetTypeGeneral(subcomm,color,rank);CHKERRQ(ierr);
@@ -3891,13 +3894,15 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   if (pcbddc->current_level && void_procs) {
     csin_ml = PETSC_TRUE;
     ncoarse_ml = void_procs;
-    if (pcbddc->redistribute_coarse && pcbddc->redistribute_coarse < void_procs) {
+    /* it has no sense to redistribute on a set of processors larger than the number of active processes */
+    if (pcbddc->redistribute_coarse > 0 && pcbddc->redistribute_coarse < active_procs) {
       csin_ds = PETSC_TRUE;
       ncoarse_ds = pcbddc->redistribute_coarse;
       redist = PETSC_TRUE;
     } else {
       csin_ds = PETSC_TRUE;
-      ncoarse_ds = void_procs;
+      ncoarse_ds = active_procs;
+      redist = PETSC_TRUE;
     }
   } else {
     csin_ml = PETSC_FALSE;
@@ -3907,7 +3912,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ncoarse_ds = void_procs;
       csin_type_simple = PETSC_FALSE;
     } else {
-      if (pcbddc->redistribute_coarse && pcbddc->redistribute_coarse < all_procs) {
+      if (pcbddc->redistribute_coarse > 0 && pcbddc->redistribute_coarse < all_procs) {
         csin_ds = PETSC_TRUE;
         ncoarse_ds = pcbddc->redistribute_coarse;
         redist = PETSC_TRUE;
@@ -4026,53 +4031,62 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     if (!pcbddc->coarse_subassembling_init ) { /* creates subassembling init pattern if not present */
       if (redist) {
         PetscMPIInt rank;
-        PetscInt spc,n_spc_p1,dest[1];
+        PetscInt    spc,n_spc_p1,dest[1],destsize;
 
         ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
-        spc = all_procs/pcbddc->redistribute_coarse;
-        n_spc_p1 = all_procs%pcbddc->redistribute_coarse;
-        if (rank > n_spc_p1*(spc+1)-1) {
-          dest[0] = n_spc_p1+(rank-(n_spc_p1*(spc+1)))/spc;
+        spc = active_procs/pcbddc->redistribute_coarse;
+        n_spc_p1 = active_procs%pcbddc->redistribute_coarse;
+        if (im_active) {
+          destsize = 1;
+          if (rank > n_spc_p1*(spc+1)-1) {
+            dest[0] = n_spc_p1+(rank-(n_spc_p1*(spc+1)))/spc;
+          } else {
+            dest[0] = rank/(spc+1);
+          }
         } else {
-          dest[0] = rank/(spc+1);
+          destsize = 0;
         }
-        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),1,dest,PETSC_COPY_VALUES,&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
-      } else {
-        PetscInt j,tissize,*nisindices;
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),destsize,dest,PETSC_COPY_VALUES,&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
+      } else if (csin_type_simple) {
+        PetscMPIInt rank;
+        PetscInt    issize,isidx;
+
+        ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
+        if (im_active) {
+          issize = 1;
+          isidx = (PetscInt)rank;
+        } else {
+          issize = 0;
+          isidx = -1;
+        }
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),issize,&isidx,PETSC_COPY_VALUES,&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
+      } else { /* get a suitable subassembling pattern from MATIS code */
+        ierr = MatISGetSubassemblingPattern(t_coarse_mat_is,ncoarse,PETSC_TRUE,&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
+      }
+
+      /* we need to shift on coarse candidates either if we are not redistributing or we are redistributing and we have enough void processes */
+      if (!redist || ncoarse <= void_procs) {
+        PetscInt ncoarse_cand,tissize,*nisindices;
         PetscInt *coarse_candidates;
         const PetscInt* tisindices;
+
         /* get coarse candidates' ranks in pc communicator */
         ierr = PetscMalloc1(all_procs,&coarse_candidates);CHKERRQ(ierr);
         ierr = MPI_Allgather(&im_active,1,MPIU_INT,coarse_candidates,1,MPIU_INT,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-        for (i=0,j=0;i<all_procs;i++) {
+        for (i=0,ncoarse_cand=0;i<all_procs;i++) {
           if (!coarse_candidates[i]) {
-            coarse_candidates[j]=i;
-            j++;
+            coarse_candidates[ncoarse_cand++]=i;
           }
         }
-        if (j < ncoarse) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen! %d < %d",j,ncoarse);
-        /* get a suitable subassembling pattern */
-        if (csin_type_simple) {
-          PetscMPIInt rank;
-          PetscInt    issize,isidx;
-          ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
-          if (im_active) {
-            issize = 1;
-            isidx = (PetscInt)rank;
-          } else {
-            issize = 0;
-            isidx = -1;
-          }
-          ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),issize,&isidx,PETSC_COPY_VALUES,&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
-        } else {
-          ierr = MatISGetSubassemblingPattern(t_coarse_mat_is,ncoarse,PETSC_TRUE,&pcbddc->coarse_subassembling_init);CHKERRQ(ierr);
-        }
+        if (ncoarse_cand < ncoarse) SETERRQ2(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen! %d < %d",ncoarse_cand,ncoarse);
+
+
         if (pcbddc->dbg_flag) {
           ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
           ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Subassembling pattern init (before shift)\n");CHKERRQ(ierr);
           ierr = ISView(pcbddc->coarse_subassembling_init,pcbddc->dbg_viewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse candidates\n");CHKERRQ(ierr);
-          for (i=0;i<j;i++) {
+          for (i=0;i<ncoarse_cand;i++) {
             ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"%d ",coarse_candidates[i]);CHKERRQ(ierr);
           }
           ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"\n");CHKERRQ(ierr);
@@ -4087,12 +4101,12 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = ISGeneralSetIndices(pcbddc->coarse_subassembling_init,tissize,nisindices,PETSC_OWN_POINTER);CHKERRQ(ierr);
         ierr = PetscFree(coarse_candidates);CHKERRQ(ierr);
       }
-    }
-    if (pcbddc->dbg_flag) {
-      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Subassembling pattern init\n");CHKERRQ(ierr);
-      ierr = ISView(pcbddc->coarse_subassembling_init,pcbddc->dbg_viewer);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+      if (pcbddc->dbg_flag) {
+        ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Subassembling pattern init\n");CHKERRQ(ierr);
+        ierr = ISView(pcbddc->coarse_subassembling_init,pcbddc->dbg_viewer);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+      }
     }
     /* get temporary coarse mat in IS format restricted on coarse procs (plus additional index sets of isarray) */
     ierr = MatISSubassemble(t_coarse_mat_is,pcbddc->coarse_subassembling_init,0,PETSC_TRUE,MAT_INITIAL_MATRIX,&coarse_mat_is,nis,isarray);CHKERRQ(ierr);
@@ -4370,7 +4384,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = MatMult(coarse_mat,check_vec,coarse_vec);CHKERRQ(ierr);
         ierr = VecNorm(coarse_vec,NORM_INFINITY,&abs_infty_error);CHKERRQ(ierr);
         ierr = VecDestroy(&check_vec);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(dbg_viewer,"Coarse problem details (%d)\n",pcbddc->use_coarse_estimates);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(dbg_viewer,"Coarse problem details (use estimates %d)\n",pcbddc->use_coarse_estimates);CHKERRQ(ierr);
         ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(pcbddc->coarse_ksp),dbg_viewer);CHKERRQ(ierr);
         ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(check_pc),dbg_viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(dbg_viewer,"Coarse problem exact infty_error   : %1.6e\n",infty_error);CHKERRQ(ierr);
