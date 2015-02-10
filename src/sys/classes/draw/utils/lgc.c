@@ -169,8 +169,8 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outct
   }
   ierr = PetscHeaderCreate(lg,_p_PetscDrawLG,int,PETSC_DRAWLG_CLASSID,"PetscDrawLG","Line graph","Draw",PetscObjectComm((PetscObject)obj),PetscDrawLGDestroy,0);CHKERRQ(ierr);
 
-  lg->view    = 0;
-  lg->destroy = 0;
+  lg->view    = NULL;
+  lg->destroy = NULL;
   lg->nopts   = 0;
   lg->win     = draw;
   lg->dim     = dim;
