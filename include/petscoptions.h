@@ -78,7 +78,7 @@ struct _n_PetscOption{
   void              *edata;
 };
 
-typedef struct {
+typedef struct _p_PetscOptions {
   PetscInt         count;
   PetscOption      next;
   char             *prefix,*pprefix;

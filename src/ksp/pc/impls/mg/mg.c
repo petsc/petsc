@@ -594,9 +594,10 @@ PetscErrorCode PCSetUp_MG(PC pc)
     Vec rscale;
     ierr     = PetscMalloc1(n,&dms);CHKERRQ(ierr);
     dms[n-1] = pc->dm;
+    /* Separately create them so we do not get DMKSP interference between levels */
+    for (i=n-2; i>-1; i--) {ierr = DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]);CHKERRQ(ierr);}
     for (i=n-2; i>-1; i--) {
       DMKSP kdm;
-      ierr = DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]);CHKERRQ(ierr);
       ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       if (mg->galerkin) {ierr = KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE);CHKERRQ(ierr);}
       ierr = DMGetDMKSPWrite(dms[i],&kdm);CHKERRQ(ierr);
@@ -613,9 +614,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       }
     }
 
-    for (i=n-2; i>-1; i--) {
-      ierr = DMDestroy(&dms[i]);CHKERRQ(ierr);
-    }
+    for (i=n-2; i>-1; i--) {ierr = DMDestroy(&dms[i]);CHKERRQ(ierr);}
     ierr = PetscFree(dms);CHKERRQ(ierr);
   }
 
