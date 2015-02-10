@@ -79,11 +79,14 @@ class Configure(config.base.Configure):
     self.precision = self.framework.argDB['with-precision'].lower()
     if self.precision == 'single':
       self.addDefine('USE_REAL_SINGLE', '1')
+      self.addMakeMacro('PETSC_SCALAR_SIZE', '32')
     elif self.precision == 'double':
       self.addDefine('USE_REAL_DOUBLE', '1')
+      self.addMakeMacro('PETSC_SCALAR_SIZE', '64')
     elif self.precision == '__float128':  # supported by gcc 4.6
       if self.libraries.add('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f; logq(f);'):
         self.addDefine('USE_REAL___FLOAT128', '1')
+        self.addMakeMacro('PETSC_SCALAR_SIZE', '128')
       else:
         raise RuntimeError('quadmath support not found. --with-precision=__float128 works with gcc-4.6 and newer compilers.')
     else:

@@ -555,7 +555,7 @@ runex8g_3:
 
 
 runex10:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${PETSC_DIR}/include/datafiles/matrices/spd-real-${PETSC_INDEX_SIZE}-${PETSC_SCALAR_SIZE} > ex10_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${PETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int${PETSC_INDEX_SIZE}-float${PETSC_SCALAR_SIZE} > ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_1.tmp
@@ -1241,7 +1241,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex56.PETSc runex56_nns runex56 ex56.rm ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm \
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm \
                                  ex60.PETSc runex60 ex60.rm
-TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm 
+TESTEXAMPLES_C_NOCOMPLEX       = ex54.PETSc ex54.rm ex10.PETSc runex10 ex10.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f \

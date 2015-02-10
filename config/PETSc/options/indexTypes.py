@@ -34,8 +34,10 @@ class Configure(config.base.Configure):
       self.addDefine('USE_64BIT_INDICES', 1)
       if self.libraries.check('-lgcc_s.1', '__floatdidf'):
         self.compilers.LIBS += ' '+self.libraries.getLibArgument('-lgcc_s.1')
+      self.addMakeMacro('PETSC_INDEX_SIZE', '64')
     else:
       self.integerSize = 32
+      self.addMakeMacro('PETSC_INDEX_SIZE', '32')
     return
 
   def configure(self):
