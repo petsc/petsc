@@ -74,7 +74,7 @@ int main(int argc,char **args)
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
   } else SETERRQ1(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);
   ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
-  subcomm = psubcomm->comm;
+  subcomm = PetscSubcommChild(psubcomm);
 
   /* Test MatCreateRedundantMatrix() */
   if (size > 1) {

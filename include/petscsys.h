@@ -2610,7 +2610,7 @@ PETSC_EXTERN const char *const PetscSubcommTypes[];
 
    Notes: After a call to PetscSubcommSetType(), PetscSubcommSetTypeGeneral(), or PetscSubcommSetFromOptions() one may call
 $     PetscSubcommChild() returns the associated subcommunicator on this process
-$     PetscSubcommContiquousParent() returns a parent communitor but with all child of the same subcommunicator having contiquous rank
+$     PetscSubcommContiguousParent() returns a parent communitor but with all child of the same subcommunicator having contiquous rank
 
    Sample Usage:
        PetscSubcommCreate()
@@ -2652,7 +2652,7 @@ struct _n_PetscSubcomm {
 };
 
 PETSC_STATIC_INLINE MPI_Comm PetscSubcommChild(PetscSubcomm scomm) {return scomm->child;}
-PETSC_STATIC_INLINE MPI_Comm PetscSubcommContiquousParent(PetscSubcomm scomm) {return scomm->dupparent;}
+PETSC_STATIC_INLINE MPI_Comm PetscSubcommContiguousParent(PetscSubcomm scomm) {return scomm->dupparent;}
 PETSC_EXTERN PetscErrorCode PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommDestroy(PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetNumber(PetscSubcomm,PetscInt);

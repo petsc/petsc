@@ -107,8 +107,8 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
        ydup concatenates all ysub and has empty local arrays because ysub's arrays will be place into it.
        Note: we use communicator dupcomm, not PetscObjectComm((PetscObject)pc)! */
       ierr = MatGetLocalSize(red->pmats,&mloc_sub,NULL);CHKERRQ(ierr);
-      ierr = VecCreateMPI(PetscSubcommContiquousParent(red->psubcomm),mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
-      ierr = VecCreateMPIWithArray(PetscSubcommContiquousParent(red->psubcomm),1,mloc_sub,PETSC_DECIDE,NULL,&red->ydup);CHKERRQ(ierr);
+      ierr = VecCreateMPI(PetscSubcommContiguousParent(red->psubcomm),mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
+      ierr = VecCreateMPIWithArray(PetscSubcommContiguousParent(red->psubcomm),1,mloc_sub,PETSC_DECIDE,NULL,&red->ydup);CHKERRQ(ierr);
 
       /* create vecscatters */
       if (!red->scatterin) { /* efficiency of scatterin is independent from psubcomm_type! */
