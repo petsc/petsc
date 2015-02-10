@@ -195,7 +195,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     KSPCreate_CGNE - Creates the data structure for the Krylov method CGNE and sets the
        function pointers for all the routines it needs to call (KSPSolve_CGNE() etc)
 
-    It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
+    It must be labeled as PETSC_EXTERN to be dynamically linkable in C++
 */
 
 /*MC
@@ -236,7 +236,7 @@ M*/
 extern PetscErrorCode KSPDestroy_CG(KSP);
 extern PetscErrorCode KSPReset_CG(KSP);
 extern PetscErrorCode KSPView_CG(KSP,PetscViewer);
-extern PetscErrorCode KSPSetFromOptions_CG(KSP);
+extern PetscErrorCode KSPSetFromOptions_CG(PetscOptions *PetscOptionsObject,KSP);
 PETSC_EXTERN PetscErrorCode KSPCGSetType_CG(KSP,KSPCGType);
 
 #undef __FUNCT__

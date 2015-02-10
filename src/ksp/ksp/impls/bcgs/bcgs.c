@@ -3,12 +3,12 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_BCGS"
-PetscErrorCode KSPSetFromOptions_BCGS(KSP ksp)
+PetscErrorCode KSPSetFromOptions_BCGS(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP BCGS Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP BCGS Options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

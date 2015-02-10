@@ -20,7 +20,6 @@ typedef struct {
   DMBoundaryType        bx,by,bz;              /* indicates type of ghost nodes at boundary */
   VecScatter            gtol,ltol;        /* scatters, see below for details */
   DMDAStencilType       stencil_type;          /* stencil, either box or star */
-  PetscInt              dim;                   /* DMDA dimension (1,2, or 3) */
   DMDAInterpolationType interptype;
 
   PetscInt              nlocal,Nlocal;         /* local size of local vector and global vector, includes the * w term */
@@ -33,6 +32,7 @@ typedef struct {
   PetscInt              nonxm,nonym,nonzm;     /* the nonoverlapping sizes in the case of a subdomain da */
 
   AO                    ao;                    /* application ordering context */
+  AOType                aotype;                /* type of application ordering */
 
   char                  **fieldname;           /* names of individual components in vectors */
   char                  **coordinatename;      /* names of coordinate directions, for example, x, y, z */

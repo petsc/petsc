@@ -33,21 +33,22 @@ struct _User {
 #define __FUNCT__ "FormRHSFunction"
 static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
 {
-  User           user = (User) ctx;
-  DM             dm, cdm;
-  DMDALocalInfo  info;
-  Vec            C;
-  Field         *u, *f;
-  PetscScalar   *x;
-  PetscInt       i;
-  PetscErrorCode ierr;
+  User              user = (User) ctx;
+  DM                dm, cdm;
+  DMDALocalInfo     info;
+  Vec               C;
+  Field             *f;
+  const Field       *u;
+  const PetscScalar *x;
+  PetscInt          i;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &C);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(dm,  U, &u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(dm,  U, &u);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(dm,  F, &f);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cdm, C, &x);CHKERRQ(ierr);
   for (i = info.xs; i < info.xs+info.xm; ++i) {
@@ -57,9 +58,9 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ct
     f[i].v  = -hx*(PetscSqr(user->gammaTilde)*u[i].u + (PetscSqr(user->gamma) / user->xi)*(u[i].th + log(u[i].v + 1)));
     f[i].th = -hx*(u[i].v + 1)*(u[i].th + (1 + user->epsilon)*log(u[i].v + 1));
   }
-  ierr = DMDAVecRestoreArray(dm,  U, &u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(dm,  U, &u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dm,  F, &f);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cdm, C, &x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cdm, C, &x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -84,10 +85,10 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, 
   ierr = DMGetLocalVector(dm, &Uloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, U, INSERT_VALUES, Uloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, U, INSERT_VALUES, Uloc);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(dm,  Uloc, &u);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(dm,  Udot, &udot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(dm,  Uloc, &u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(dm,  Udot, &udot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(dm,  F,    &f);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cdm, C,    &x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cdm, C,    &x);CHKERRQ(ierr);
   for (i = info.xs; i < info.xs+info.xm; ++i) {
     if (i == 0) {
       const PetscScalar hx = x[i+1] - x[i];
@@ -106,10 +107,10 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, 
       f[i].th = hx * udot[i].th;
     }
   }
-  ierr = DMDAVecRestoreArray(dm,  Uloc, &u);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(dm,  Udot, &udot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(dm,  Uloc, &u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(dm,  Udot, &udot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dm,  F,    &f);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cdm, C,    &x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cdm, C,    &x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &Uloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -133,9 +134,9 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, M
   ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &C);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(dm,  U,    &u);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(dm,  Udot, &udot);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cdm, C,    &x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(dm,  U,    &u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(dm,  Udot, &udot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cdm, C,    &x);CHKERRQ(ierr);
   for (i = info.xs; i < info.xs+info.xm; ++i) {
     if (i == 0) {
       const PetscScalar hx            = x[i+1] - x[i];
@@ -166,9 +167,9 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, M
       ierr = MatSetValuesBlocked(Jpre, 1, &row, 3, col, &vals[0][0][0], INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = DMDAVecRestoreArray(dm,  U,    &u);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(dm,  Udot, &udot);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cdm, C,    &x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(dm,  U,    &u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(dm,  Udot, &udot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cdm, C,    &x);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Jpre, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Jpre, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (J != Jpre) {
@@ -198,14 +199,14 @@ PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ctx)
   ierr = DMGetCoordinatesLocal(dm, &C);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(dm,  U, &u);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cdm, C, &x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cdm, C, &x);CHKERRQ(ierr);
   for (i = info.xs; i < info.xs+info.xm; ++i) {
     u[i].u  = 1.5 * PetscExpScalar(-PetscSqr(x[i] - 10)/PetscSqr(sigma));
     u[i].v  = 0.0;
     u[i].th = 0.0;
   }
   ierr = DMDAVecRestoreArray(dm,  U, &u);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cdm, C, &x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cdm, C, &x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

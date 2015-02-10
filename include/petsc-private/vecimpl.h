@@ -64,7 +64,7 @@ struct _VecOps {
   PetscErrorCode (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping);
   PetscErrorCode (*setvalueslocal)(Vec,PetscInt,const PetscInt *,const PetscScalar *,InsertMode);
   PetscErrorCode (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
-  PetscErrorCode (*setfromoptions)(Vec);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,Vec);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
@@ -87,6 +87,10 @@ struct _VecOps {
   PetscErrorCode (*stridesubsetscatter)(Vec,PetscInt,const PetscInt[],const PetscInt[],Vec,InsertMode);
   PetscErrorCode (*viewnative)(Vec,PetscViewer);
   PetscErrorCode (*loadnative)(Vec,PetscViewer);
+  PetscErrorCode (*getlocalvector)(Vec,Vec);
+  PetscErrorCode (*restorelocalvector)(Vec,Vec);
+  PetscErrorCode (*getlocalvectorread)(Vec,Vec);
+  PetscErrorCode (*restorelocalvectorread)(Vec,Vec);
 };
 
 /*
@@ -130,6 +134,7 @@ struct _p_Vec {
   PetscBool              array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscBool              petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
+  PetscInt               lock;   /* vector is locked to read only */
 #if defined(PETSC_HAVE_CUSP)
   PetscCUSPFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
   void                   *spptr; /* if we're using CUSP, then this is the special pointer to the array on the GPU */
@@ -186,11 +191,18 @@ typedef enum { VEC_SCATTER_SEQ_GENERAL,VEC_SCATTER_SEQ_STRIDE,
                VEC_SCATTER_MPI_GENERAL,VEC_SCATTER_MPI_TOALL,
                VEC_SCATTER_MPI_TOONE} VecScatterType;
 
+#define VECSCATTER_IMPL_HEADER \
+      VecScatterType type;
+
+typedef struct {
+  VECSCATTER_IMPL_HEADER
+} VecScatter_Common;
+
 /*
    These scatters are for the purely local case.
 */
 typedef struct {
-  VecScatterType type;
+  VECSCATTER_IMPL_HEADER
   PetscInt       n;                    /* number of components to scatter */
   PetscInt       *vslots;              /* locations of components */
   /*
@@ -208,7 +220,7 @@ typedef struct {
 } VecScatter_Seq_General;
 
 typedef struct {
-  VecScatterType type;
+  VECSCATTER_IMPL_HEADER
   PetscInt       n;
   PetscInt       first;
   PetscInt       step;
@@ -218,7 +230,7 @@ typedef struct {
    This scatter is for a global vector copied (completely) to each processor (or all to one)
 */
 typedef struct {
-  VecScatterType type;
+  VECSCATTER_IMPL_HEADER
   PetscMPIInt    *count;        /* elements of vector on each processor */
   PetscMPIInt    *displx;
   PetscScalar    *work1;
@@ -229,7 +241,7 @@ typedef struct {
    This is the general parallel scatter
 */
 typedef struct {
-  VecScatterType         type;
+  VECSCATTER_IMPL_HEADER
   PetscInt               n;        /* number of processors to send/receive */
   PetscInt               *starts;  /* starting point in indices and values for each proc*/
   PetscInt               *indices; /* list of all components sent or received */
@@ -258,19 +270,30 @@ typedef struct {
 #endif
 } VecScatter_MPI_General;
 
+
+PETSC_INTERN PetscErrorCode VecScatterGetTypes_Private(VecScatter,VecScatterType*,VecScatterType*);
+PETSC_INTERN PetscErrorCode VecScatterIsSequential_Private(VecScatter_Common*,PetscBool*);
+
+typedef struct _VecScatterOps *VecScatterOps;
+struct _VecScatterOps {
+  PetscErrorCode (*begin)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+  PetscErrorCode (*end)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+  PetscErrorCode (*copy)(VecScatter,VecScatter);
+  PetscErrorCode (*destroy)(VecScatter);
+  PetscErrorCode (*view)(VecScatter,PetscViewer);
+  PetscErrorCode (*viewfromoptions)(VecScatter,const char prefix[],const char name[]); 
+  PetscErrorCode (*remap)(VecScatter,PetscInt *,PetscInt*);
+  PetscErrorCode (*getmerged)(VecScatter,PetscBool *);
+};
+
 struct _p_VecScatter {
-  PETSCHEADER(int);
+  PETSCHEADER(struct _VecScatterOps);
   PetscInt       to_n,from_n;
   PetscBool      inuse;                /* prevents corruption from mixing two scatters */
   PetscBool      beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd()
                                           is then treated as a nop */
   PetscBool      packtogether;         /* packs all the messages before sending, same with receive */
   PetscBool      reproduce;            /* always receive the ghost points in the same order of processes */
-  PetscErrorCode (*begin)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-  PetscErrorCode (*end)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
-  PetscErrorCode (*copy)(VecScatter,VecScatter);
-  PetscErrorCode (*destroy)(VecScatter);
-  PetscErrorCode (*view)(VecScatter,PetscViewer);
   void           *fromdata,*todata;
   void           *spptr;
 };

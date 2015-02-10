@@ -133,9 +133,7 @@ static PetscErrorCode MatSolveTranspose_KLU(Mat A,Vec b,Vec x)
   ierr = VecCopy(b,x); /* klu_solve stores the solution in rhs */
   ierr = VecGetArray(x,&xa);
   status = klu_K_solve(lu->Symbolic,lu->Numeric,A->rmap->n,1,(PetscReal*)xa,&lu->Common);
-  if (status != 1) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
-  }
+  if (status != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
   ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -160,9 +158,7 @@ static PetscErrorCode MatSolve_KLU(Mat A,Vec b,Vec x)
 #else
   status = klu_K_tsolve(lu->Symbolic,lu->Numeric,A->rmap->n,1,xa,&lu->Common);
 #endif  
-  if (status != 1) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
-  }
+  if (status != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"KLU Solve failed");
   ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -311,6 +307,8 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_klu(Mat A,const MatSolverPackage
 . -mat_klu_use_btf <1>                        - Use BTF preordering
 . -mat_klu_ordering <AMD>                     - KLU reordering scheme to reduce fill-in (choose one of) AMD COLAMD PETSC
 - -mat_klu_row_scale <NONE>                   - Matrix row scaling (choose one of) NONE SUM MAX 
+
+   Note: KLU is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
    Level: beginner
 

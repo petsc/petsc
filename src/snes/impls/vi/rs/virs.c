@@ -108,7 +108,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   DM_SNESVI      *dmsnesvi1;
   Vec            finemarked,coarsemarked;
   IS             inactive;
-  VecScatter     inject;
+  Mat            inject;
   const PetscInt *index;
   PetscInt       n,k,cnt = 0,rstart,*coarseindex;
   PetscScalar    *marked;
@@ -122,7 +122,8 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = (*dmsnesvi1->coarsen)(dm1,comm,dm2);CHKERRQ(ierr);
 
   /* not sure why this extra reference is needed, but without the dm2 disappears too early */
-  ierr = PetscObjectReference((PetscObject)*dm2);CHKERRQ(ierr);
+  /* Updating the KSPCreateVecs() to avoid using DMGetGlobalVector() when matrix is available removes the need for this reference? */
+  /*  ierr = PetscObjectReference((PetscObject)*dm2);CHKERRQ(ierr);*/
 
   /* need to set back global vectors in order to use the original injection */
   ierr = DMClearGlobalVectors(dm1);CHKERRQ(ierr);
@@ -145,9 +146,8 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = VecAssemblyEnd(finemarked);CHKERRQ(ierr);
 
   ierr = DMCreateInjection(*dm2,dm1,&inject);CHKERRQ(ierr);
-  ierr = VecScatterBegin(inject,finemarked,coarsemarked,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(inject,finemarked,coarsemarked,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+  ierr = MatRestrict(inject,finemarked,coarsemarked);CHKERRQ(ierr);
+  ierr = MatDestroy(&inject);CHKERRQ(ierr);
 
   /*
      create index set list of coarse inactive points from coarsemarked
@@ -689,7 +689,7 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char *func,mxArray
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr      = PetscMalloc(sizeof(SNESMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr      = PetscNew(&sctx);CHKERRQ(ierr);
   ierr      = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
   sctx->ctx = mxDuplicateArray(ctx);
   ierr      = SNESVISetRedundancyCheck(snes,SNESVIRedundancyCheck_Matlab,sctx);CHKERRQ(ierr);

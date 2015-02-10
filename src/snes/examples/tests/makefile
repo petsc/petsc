@@ -4,13 +4,13 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/snes/examples/tests/
-EXAMPLESC       = ex1.c ex5.c ex7.c ex8.c ex15.c ex16.c ex17.c ex68.c
+EXAMPLESC       = ex1.c ex7.c ex8.c ex15.c ex16.c ex17.c ex68.c
 EXAMPLESF       = ex1f.F ex12f.F ex14f.F
 DIRS	        =
 MANSEC          = SNES
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}
@@ -84,6 +84,10 @@ ex17: ex17.o chkopts
 	-${CLINKER} -o ex17 ex17.o ${PETSC_SNES_LIB}
 	${RM} ex17.o
 
+ex18f90: ex18f90.o chkopts
+	-${FLINKER} -o ex18f90 ex18f90.o ${PETSC_SNES_LIB}
+	${RM} ex18f90.o
+
 ex68: ex68.o chkopts
 	-${CLINKER} -o ex68 ex68.o ${PETSC_SNES_LIB}
 	${RM} ex68.o
@@ -136,16 +140,7 @@ runex3_2:
 	   if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex3_2.tmp
-runex5:
-	-@${MPIEXEC} -n 1 ./ex5 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex5_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5_1, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex5_1.tmp
-runex5_2:
-	-@${MPIEXEC} -n 1 ./ex5 -ksp_gmres_cgs_refinement_type refine_always -snes_mf -snes_monitor_short > ex5_2.tmp 2>&1;   \
-	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex5_2, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex5_2.tmp
+
 runex6:
 	-@${MPIEXEC} -n 4 ./ex6 -ksp_gmres_cgs_refinement_type refine_always -snes_mf -Nx 4 -Ny 1 -snes_monitor_short > ex6_1.tmp 2>&1; \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
@@ -221,6 +216,11 @@ runex17:
 	   ${DIFF} output/ex17_1.out ex17_1.tmp || printf "${PWD}\nPossible problem with ex17, diffs above\n=========================================\n"; \
 	   ${RM} -f ex17_1.tmp
 
+runex18f90:
+	-@${MPIEXEC} -n 1 ./ex18f90 > ex18f90_1.tmp 2>&1; \
+	   ${DIFF} output/ex18f90_1.out ex18f90_1.tmp || printf "${PWD}\nPossible problem with ex18f90, diffs above\n=========================================\n"; \
+	   ${RM} -f ex18f90_1.tmp
+
 #
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex17.PETSc runex17 ex17.rm ex68.PETSc ex68.rm
@@ -229,6 +229,7 @@ TESTEXAMPLES_FORTRAN	       = ex12f.PETSc runex12f ex12f.rm  ex1f.PETSc runex1f_
 TESTEXAMPLES_C_X_MPIUNI        = ex7.PETSc ex7.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_F2003             = ex18f90.PETSc runex18f90 ex18f90.rm
 
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test

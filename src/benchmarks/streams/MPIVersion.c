@@ -73,7 +73,7 @@ static double bytes[4] = {
   3 * sizeof(double) * N
 };
 
-#include <petscsys.h>
+#include <mpi.h>
 
 int main(int argc,char **args)
 {
@@ -87,18 +87,19 @@ int main(int argc,char **args)
   MPI_Init(&argc,&args);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-  if (!rank) printf("Number of MPI processes %d\n",size);
+  if (!rank) printf("Number of MPI processes %d ",size);
 
   for (j=0; j<MPI_MAX_PROCESSOR_NAME; j++) {
     hostname[j] = 0;
   }
   MPI_Get_processor_name(hostname,&resultlen);
   if (!rank) {
-    printf("Process %d %s\n",rank,hostname);
+    printf("Processor names  %s ",hostname);
     for (j=1; j<size; j++) {
       MPI_Recv(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,j,0,MPI_COMM_WORLD,&status);
-      printf("Process %d %s\n",j,hostname);
+      printf("%s ",hostname);
     }
+    printf("\n");
  } else {
    MPI_Send(hostname,MPI_MAX_PROCESSOR_NAME,MPI_CHAR,0,0,MPI_COMM_WORLD);
  }
@@ -185,8 +186,8 @@ int main(int argc,char **args)
   MPI_Reduce(irate,rate,4,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
 
   if (!rank) {
-    printf("Function      Rate (MB/s) \n");
-    for (j=0; j<4; j++) printf("%s%11.4f\n", label[j],rate[j]);
+    printf("%s  %11.4f   Rate (MB/s) \n", label[3],rate[3]);
+    /* for (j=0; j<4; j++) printf("%s%11.4f\n", label[j],rate[j]);*/
   }
   MPI_Finalize();
   return 0;

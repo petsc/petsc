@@ -248,7 +248,6 @@ PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   hid_t           memspace;   /* memory dataspace identifier */
   hid_t           inttype;    /* int type (H5T_NATIVE_INT or H5T_NATIVE_LLONG) */
   hid_t           file_id, group;
-  herr_t          status;
   hsize_t         dim, maxDims[3], dims[3], chunkDims[3], count[3],offset[3];
   PetscInt        bs, N, n, timestep, low;
   const PetscInt *ind;
@@ -291,8 +290,7 @@ PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
     chunkDims[dim] = dims[dim];
     ++dim;
   }
-  filespace = H5Screate_simple(dim, dims, maxDims);
-  if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
+  PetscStackCallHDF5Return(filespace,H5Screate_simple,(dim, dims, maxDims));
 
 #if defined(PETSC_USE_64BIT_INDICES)
   inttype = H5T_NATIVE_LLONG;
@@ -304,22 +302,20 @@ PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   ierr = PetscObjectGetName((PetscObject) is, &isname);CHKERRQ(ierr);
   if (!H5Lexists(group, isname, H5P_DEFAULT)) {
     /* Create chunk */
-    chunkspace = H5Pcreate(H5P_DATASET_CREATE);
-    if (chunkspace == -1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot H5Pcreate()");
-    status = H5Pset_chunk(chunkspace, dim, chunkDims);CHKERRQ(status);
+    PetscStackCallHDF5Return(chunkspace,H5Pcreate,(H5P_DATASET_CREATE));
+    PetscStackCallHDF5(H5Pset_chunk,(chunkspace, dim, chunkDims));
 
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-    dset_id = H5Dcreate2(group, isname, inttype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT);
+    PetscStackCallHDF5Return(dset_id,H5Dcreate2,(group, isname, inttype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT));
 #else
-    dset_id = H5Dcreate(group, isname, inttype, filespace, H5P_DEFAULT);
+    PetscStackCallHDF5Return(dset_id,H5Dcreate,(group, isname, inttype, filespace, H5P_DEFAULT));
 #endif
-    if (dset_id == -1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot H5Dcreate2()");
-    status = H5Pclose(chunkspace);CHKERRQ(status);
+    PetscStackCallHDF5(H5Pclose,(chunkspace));
   } else {
-    dset_id = H5Dopen2(group, isname, H5P_DEFAULT);
-    status  = H5Dset_extent(dset_id, dims);CHKERRQ(status);
+    PetscStackCallHDF5Return(dset_id,H5Dopen2,(group, isname, H5P_DEFAULT));
+    PetscStackCallHDF5(H5Dset_extent,(dset_id, dims));
   }
-  status = H5Sclose(filespace);CHKERRQ(status);
+  PetscStackCallHDF5(H5Sclose,(filespace));
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
   dim = 0;
@@ -334,12 +330,10 @@ PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
     ++dim;
   }
   if (n > 0) {
-    memspace = H5Screate_simple(dim, count, NULL);
-    if (memspace == -1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot H5Screate_simple()");
+    PetscStackCallHDF5Return(memspace,H5Screate_simple,(dim, count, NULL));
   } else {
     /* Can't create dataspace with zero for any dimension, so create null dataspace. */
-    memspace = H5Screate(H5S_NULL);
-    if (memspace == -1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot H5Screate()");
+    PetscStackCallHDF5Return(memspace,H5Screate,(H5S_NULL));
   }
 
   /* Select hyperslab in the file */
@@ -356,34 +350,31 @@ PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
     ++dim;
   }
   if (n > 0) {
-    filespace = H5Dget_space(dset_id);
-    if (filespace == -1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot H5Dget_space()");
-    status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
+    PetscStackCallHDF5Return(filespace,H5Dget_space,(dset_id));
+    PetscStackCallHDF5(H5Sselect_hyperslab,(filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
   } else {
     /* Create null filespace to match null memspace. */
-    filespace = H5Screate(H5S_NULL);
-    if (filespace == -1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot H5Screate(H5S_NULL)");
+    PetscStackCallHDF5Return(filespace,H5Screate,(H5S_NULL));
   }
 
   /* Create property list for collective dataset write */
-  plist_id = H5Pcreate(H5P_DATASET_XFER);
-  if (plist_id == -1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot H5Pcreate()");
+  PetscStackCallHDF5Return(plist_id,H5Pcreate,(H5P_DATASET_XFER));
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
+  PetscStackCallHDF5(H5Pset_dxpl_mpio,(plist_id, H5FD_MPIO_COLLECTIVE));
 #endif
   /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
 
   ierr   = ISGetIndices(is, &ind);CHKERRQ(ierr);
-  status = H5Dwrite(dset_id, inttype, memspace, filespace, plist_id, ind);CHKERRQ(status);
-  status = H5Fflush(file_id, H5F_SCOPE_GLOBAL);CHKERRQ(status);
+  PetscStackCallHDF5(H5Dwrite,(dset_id, inttype, memspace, filespace, plist_id, ind));
+  PetscStackCallHDF5(H5Fflush,(file_id, H5F_SCOPE_GLOBAL));
   ierr   = ISGetIndices(is, &ind);CHKERRQ(ierr);
 
   /* Close/release resources */
-  if (group != file_id) {status = H5Gclose(group);CHKERRQ(status);}
-  status = H5Pclose(plist_id);CHKERRQ(status);
-  status = H5Sclose(filespace);CHKERRQ(status);
-  status = H5Sclose(memspace);CHKERRQ(status);
-  status = H5Dclose(dset_id);CHKERRQ(status);
+  if (group != file_id) PetscStackCallHDF5(H5Gclose,(group));
+  PetscStackCallHDF5(H5Pclose,(plist_id));
+  PetscStackCallHDF5(H5Sclose,(filespace));
+  PetscStackCallHDF5(H5Sclose,(memspace));
+  PetscStackCallHDF5(H5Dclose,(dset_id));
   ierr = PetscInfo1(is, "Wrote IS object with name %s\n", isname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -14,7 +14,7 @@ struct _PCOps {
   PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec);
   PetscErrorCode (*applytranspose)(PC,Vec,Vec);
   PetscErrorCode (*applyBAtranspose)(PC,PetscInt,Vec,Vec,Vec);
-  PetscErrorCode (*setfromoptions)(PC);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,PC);
   PetscErrorCode (*presolve)(PC,KSP,Vec,Vec);
   PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec);
   PetscErrorCode (*getfactoredmatrix)(PC,Mat*);
@@ -35,7 +35,7 @@ struct _p_PC {
   DM               dm;
   PetscInt         setupcalled;
   PetscObjectState matstate,matnonzerostate;          /* last known nonzero state of the pmat associated with this PC */
-  PetscReal        reusepreconditioner;
+  PetscBool        reusepreconditioner;
   MatStructure     flag;                              /* reset each PCSetUp() to indicate to PC implementations if nonzero structure has changed */ 
 
   PetscInt         setfromoptionscalled;

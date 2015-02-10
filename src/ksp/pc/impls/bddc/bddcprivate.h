@@ -23,11 +23,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph,PetscInt,IS,IS,PetscInt,IS[],IS);
 PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph);
 PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph);
 PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph,PetscInt,PetscViewer);
-PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph,PetscBool,PetscBool,PetscBool,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
-
-/* application of local Schur complements */
-PetscErrorCode PCBDDCApplySchur(PC,Vec,Vec,Vec,Vec,Vec);
-PetscErrorCode PCBDDCApplySchurTranspose(PC,Vec,Vec,Vec,Vec,Vec);
+PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph,PetscInt*,IS*[],PetscInt*,IS*[],IS*);
 
 /* interface for scaling operator */
 PetscErrorCode PCBDDCScalingSetUp(PC);
@@ -69,6 +65,12 @@ PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
 PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
 PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
 PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
+
+/* sub schurs */
+PetscErrorCode PCBDDCSubSchursCreate(PCBDDCSubSchurs*);
+PetscErrorCode PCBDDCSubSchursDestroy(PCBDDCSubSchurs*);
+PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs);
+PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs,Mat,IS,IS,PetscInt,IS[],PetscInt[],PetscInt[],PetscInt);
 
 #endif
 

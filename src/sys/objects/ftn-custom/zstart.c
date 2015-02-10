@@ -11,7 +11,6 @@
 #define T3DMPI_FORTRAN
 #define T3EMPI_FORTRAN
 
-#define PETSC_DESIRE_COMPLEX
 #include <petsc-private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_CUDA)

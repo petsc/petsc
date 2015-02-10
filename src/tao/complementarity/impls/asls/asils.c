@@ -249,6 +249,8 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
     ierr = KSPReset(tao->ksp);
     ierr = KSPSetOperators(tao->ksp, asls->J_sub, asls->Jpre_sub);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, asls->r2, asls->dxfree);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(tao->ksp,&tao->ksp_its);CHKERRQ(ierr);
+    tao->ksp_tot_its+=tao->ksp_its;
 
     /* Add the direction in the free variables back into the real direction. */
     ierr = VecISAXPY(tao->stepdirection, asls->free, 1.0,asls->dxfree);CHKERRQ(ierr);
@@ -288,10 +290,9 @@ static PetscErrorCode TaoSolve_ASILS(Tao tao)
 
   Level: beginner 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_ASILS"
-PetscErrorCode TaoCreate_ASILS(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
 {
   TAO_SSLS       *asls;
   PetscErrorCode ierr;
@@ -343,5 +344,5 @@ PetscErrorCode TaoCreate_ASILS(Tao tao)
 #endif
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

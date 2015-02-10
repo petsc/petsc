@@ -60,8 +60,7 @@ runex3_mpiio:
 	   ${RM} -f ex3.tmp
 
 
-TESTEXAMPLES_C          = ex2.PETSc ex2.rm \
-			  ex3.PETSc runex3_1 runex3_2 runex3_3 runex3_mpiio ex3.rm
+TESTEXAMPLES_C          = ex2.PETSc ex2.rm ex3.PETSc runex3_1 runex3_2 runex3_3 runex3_mpiio ex3.rm
 TESTEXAMPLES_F90        =
 TESTEXAMPLES_C_X_MPIUNI =
 

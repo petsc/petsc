@@ -121,7 +121,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     PetscScalar    *work;
     PetscContainer container;
 
-    ierr = PetscMalloc1((N+align),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N+align,&work);CHKERRQ(ierr);
 
     /* recompute shift for newly allocated space */
     tmp3 = (size_t) work;

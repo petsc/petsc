@@ -51,6 +51,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
   ierr = TaoMonitor(tao,iter++,ipmP->kkt_f,ipmP->phi,0.0,1.0,&reason);
 
   while (reason == TAO_CONTINUE_ITERATING) {
+    tao->ksp_its=0;
     ierr = IPMUpdateK(tao);CHKERRQ(ierr);
     /*
        rhs.x    = -rd
@@ -77,6 +78,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
     ierr = IPMScatterStep(tao,ipmP->bigstep,tao->stepdirection,ipmP->ds,ipmP->dlamdae,ipmP->dlamdai);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
     tao->ksp_its += its;
+    tao->ksp_tot_its+=its;
      /* Find distance along step direction to closest bound */
     if (ipmP->nb > 0) {
       ierr = VecStepBoundInfo(ipmP->s,ipmP->ds,ipmP->Zero_nb,ipmP->Inf_nb,&step_s,NULL,NULL);CHKERRQ(ierr);
@@ -143,7 +145,7 @@ static PetscErrorCode TaoSolve_IPM(Tao tao)
     ierr = IPMScatterStep(tao,ipmP->bigstep,tao->stepdirection,ipmP->ds,ipmP->dlamdae,ipmP->dlamdai);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
     tao->ksp_its += its;
-
+    tao->ksp_tot_its+=its;
     if (ipmP->nb > 0) {
       /* Get max step size and apply frac-to-boundary */
       tau = PetscMax(ipmP->taumin,1.0-ipmP->mu);
@@ -528,19 +530,18 @@ static PetscErrorCode TaoDestroy_IPM(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_IPM"
-static PetscErrorCode TaoSetFromOptions_IPM(Tao tao)
+static PetscErrorCode TaoSetFromOptions_IPM(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_IPM        *ipmP = (TAO_IPM*)tao->data;
   PetscErrorCode ierr;
-  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("IPM method for constrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tao_ipm_monitorkkt","monitor kkt status",NULL,ipmP->monitorkkt,&ipmP->monitorkkt,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_ipm_pushs","parameter to push initial slack variables away from bounds",NULL,ipmP->pushs,&ipmP->pushs,&flg);
-  ierr = PetscOptionsReal("-tao_ipm_pushnu","parameter to push initial (inequality) dual variables away from bounds",NULL,ipmP->pushnu,&ipmP->pushnu,&flg);
+  ierr = PetscOptionsHead(PetscOptionsObject,"IPM method for constrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-tao_ipm_monitorkkt","monitor kkt status",NULL,ipmP->monitorkkt,&ipmP->monitorkkt,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_ipm_pushs","parameter to push initial slack variables away from bounds",NULL,ipmP->pushs,&ipmP->pushs,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_ipm_pushnu","parameter to push initial (inequality) dual variables away from bounds",NULL,ipmP->pushnu,&ipmP->pushnu,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  ierr =KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -882,7 +883,7 @@ PetscErrorCode IPMUpdateK(Tao tao)
   klocalsize = kend-kstart;
   if (!ipmP->K) {
     if (size == 1) {
-      ierr = PetscMalloc1((kend-kstart),&nonzeros);CHKERRQ(ierr);
+      ierr = PetscMalloc1(kend-kstart,&nonzeros);CHKERRQ(ierr);
       for (i=0;i<bigsize;i++) {
         if (i<r1) {
           ierr = MatGetRow(tao->hessian,i,&ncols,NULL,NULL);CHKERRQ(ierr);
@@ -904,8 +905,8 @@ PetscErrorCode IPMUpdateK(Tao tao)
       ierr = MatSetFromOptions(ipmP->K);CHKERRQ(ierr);
       ierr = PetscFree(nonzeros);CHKERRQ(ierr);
     } else {
-      ierr = PetscMalloc1((kend-kstart),&d_nonzeros);CHKERRQ(ierr);
-      ierr = PetscMalloc1((kend-kstart),&o_nonzeros);CHKERRQ(ierr);
+      ierr = PetscMalloc1(kend-kstart,&d_nonzeros);CHKERRQ(ierr);
+      ierr = PetscMalloc1(kend-kstart,&o_nonzeros);CHKERRQ(ierr);
       for (i=kstart;i<kend;i++) {
         if (i<r1) {
           /* TODO fix preallocation for mpi mats */
@@ -1096,10 +1097,9 @@ PetscErrorCode IPMScatterStep(Tao tao, Vec STEP, Vec X1, Vec X2, Vec X3, Vec X4)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_IPM"
-PetscErrorCode TaoCreate_IPM(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao)
 {
   TAO_IPM        *ipmP;
   PetscErrorCode ierr;
@@ -1126,5 +1126,5 @@ PetscErrorCode TaoCreate_IPM(Tao tao)
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

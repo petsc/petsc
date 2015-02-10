@@ -8,8 +8,8 @@ EXAMPLESC       = allen_cahn.c ct_vdp_imex.c
 MANSEC          = TS
 DIRS            =
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ct_vdp_imex: ct_vdp_imex.o  chkopts
 	-${CLINKER} -o ct_vdp_imex ct_vdp_imex.o ${PETSC_TS_LIB}
@@ -42,4 +42,4 @@ runallen_cahn:
 
 TESTEXAMPLES_C = ct_vdp_imex.PETSc ct_vdp_imex.rm allen_cahn.PETSc allen_cahn.rm
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test

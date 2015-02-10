@@ -8,6 +8,7 @@
 #
 #
 export PETSC_ARCH=arch-ios-simulator
+rm -rf ${PETSC_ARCH}
 ./systems/Apple/iOS/bin/arch-ios-simulator.py
 ./systems/Apple/iOS/bin/iosbuilder.py
 ./systems/Apple/iOS/bin/makeframework simulator

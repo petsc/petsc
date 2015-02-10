@@ -8,19 +8,21 @@
 #
 #
 export PETSC_ARCH=arch-osx-debug
+rm -rf arch-osx-debug
 ./systems/Apple/osx/bin/arch-osx-debug.py
 make all test
 ./systems/Apple/osx/bin/makeframework debug
 
 export PETSC_ARCH=arch-osx-release
+rm -rf arch-osx-release
 ./systems/Apple/osx/bin/arch-osx-release.py
 make all test
 ./systems/Apple/osx/bin/makeframework release
 
 export LOC=$PETSC_DIR
-#make alldoc
-#make allman
-#./systems/Apple/osx/bin/makedocs
+make alldoc
+make allman
+./systems/Apple/osx/bin/makedocs
 
 ./systems/Apple/osx/bin/makedmg
 

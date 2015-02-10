@@ -1,5 +1,6 @@
 
 #include <../src/dm/impls/composite/packimpl.h>       /*I  "petscdmcomposite.h"  I*/
+#include <petsc-private/isimpl.h>
 #include <petscds.h>
 
 #undef __FUNCT__
@@ -180,6 +181,7 @@ PetscErrorCode  DMCompositeGetAccess(DM dm,Vec gvec,...)
   PetscErrorCode         ierr;
   struct DMCompositeLink *next;
   DM_Composite           *com = (DM_Composite*)dm->data;
+  PetscInt               readonly;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -189,17 +191,26 @@ PetscErrorCode  DMCompositeGetAccess(DM dm,Vec gvec,...)
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
 
+  ierr = VecLockGet(gvec,&readonly);CHKERRQ(ierr);
   /* loop over packed objects, handling one at at time */
   va_start(Argp,gvec);
   while (next) {
     Vec *vec;
     vec = va_arg(Argp, Vec*);
     if (vec) {
-      PetscScalar *array;
       ierr = DMGetGlobalVector(next->dm,vec);CHKERRQ(ierr);
-      ierr = VecGetArray(gvec,&array);CHKERRQ(ierr);
-      ierr = VecPlaceArray(*vec,array+next->rstart);CHKERRQ(ierr);
-      ierr = VecRestoreArray(gvec,&array);CHKERRQ(ierr);
+      if (readonly) {
+        const PetscScalar *array;
+        ierr = VecGetArrayRead(gvec,&array);CHKERRQ(ierr);
+        ierr = VecPlaceArray(*vec,array+next->rstart);CHKERRQ(ierr);
+        ierr = VecLockPush(*vec);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(gvec,&array);CHKERRQ(ierr);
+      } else {
+        PetscScalar *array;
+        ierr = VecGetArray(gvec,&array);CHKERRQ(ierr);
+        ierr = VecPlaceArray(*vec,array+next->rstart);CHKERRQ(ierr);
+        ierr = VecRestoreArray(gvec,&array);CHKERRQ(ierr);
+      }
     }
     next = next->next;
   }
@@ -284,6 +295,7 @@ PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
   PetscErrorCode         ierr;
   struct DMCompositeLink *next;
   DM_Composite           *com = (DM_Composite*)dm->data;
+  PetscInt               readonly;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -293,6 +305,7 @@ PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
 
+  ierr = VecLockGet(gvec,&readonly);CHKERRQ(ierr);
   /* loop over packed objects, handling one at at time */
   va_start(Argp,gvec);
   while (next) {
@@ -300,7 +313,12 @@ PetscErrorCode  DMCompositeRestoreAccess(DM dm,Vec gvec,...)
     vec = va_arg(Argp, Vec*);
     if (vec) {
       ierr = VecResetArray(*vec);CHKERRQ(ierr);
-      ierr = DMRestoreGlobalVector(next->dm,vec);CHKERRQ(ierr);
+      if (readonly) {
+        ierr = VecLockPop(*vec);CHKERRQ(ierr);
+        ierr = DMRestoreGlobalVector(next->dm,vec);CHKERRQ(ierr);
+      } else {
+        ierr = DMRestoreGlobalVector(next->dm,vec);CHKERRQ(ierr);
+      }
     }
     next = next->next;
   }
@@ -395,15 +413,15 @@ PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
     Vec local;
     local = va_arg(Argp, Vec);
     if (local) {
-      Vec         global;
-      PetscScalar *array;
+      Vec               global;
+      const PetscScalar *array;
       PetscValidHeaderSpecific(local,VEC_CLASSID,cnt);
       ierr = DMGetGlobalVector(next->dm,&global);CHKERRQ(ierr);
-      ierr = VecGetArray(gvec,&array);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(gvec,&array);CHKERRQ(ierr);
       ierr = VecPlaceArray(global,array+next->rstart);CHKERRQ(ierr);
       ierr = DMGlobalToLocalBegin(next->dm,global,INSERT_VALUES,local);CHKERRQ(ierr);
       ierr = DMGlobalToLocalEnd(next->dm,global,INSERT_VALUES,local);CHKERRQ(ierr);
-      ierr = VecRestoreArray(gvec,&array);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(gvec,&array);CHKERRQ(ierr);
       ierr = VecResetArray(global);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr);
     }
@@ -427,7 +445,7 @@ PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
     Level: advanced
 
     Note:
-    This is a non-variadic alternative to DMCompositeScatterArray()
+    This is a non-variadic alternative to DMCompositeScatter()
 
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector()
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
@@ -477,6 +495,7 @@ PetscErrorCode  DMCompositeScatterArray(DM dm,Vec gvec,Vec *lvecs)
     Input Parameter:
 +    dm - the packer object
 .    gvec - the global vector
+.    imode - INSERT_VALUES or ADD_VALUES
 -    Vec ... - the individual sequential vectors, NULL for any that are not needed
 
     Level: advanced
@@ -534,6 +553,7 @@ PetscErrorCode  DMCompositeGather(DM dm,Vec gvec,InsertMode imode,...)
     Input Parameter:
 +    dm - the packer object
 .    gvec - the global vector
+.    imode - INSERT_VALUES or ADD_VALUES
 -    lvecs - the individual sequential vectors, NULL for any that are not needed
 
     Level: advanced
@@ -754,7 +774,7 @@ PetscErrorCode  DMCompositeGetISLocalToGlobalMappings(DM dm,ISLocalToGlobalMappi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMSetUp(dm);CHKERRQ(ierr);
-  ierr = PetscMalloc1((com->nDM),ltogs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(com->nDM,ltogs);CHKERRQ(ierr);
   next = com->next;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
 
@@ -885,7 +905,7 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscMalloc1((com->nDM),is);CHKERRQ(ierr);
+  ierr = PetscMalloc1(com->nDM,is);CHKERRQ(ierr);
   next = com->next;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
 
@@ -1125,8 +1145,10 @@ PetscErrorCode  DMCompositeGetEntries(DM dm,...)
     Not Collective
 
     Input Parameter:
-+    dm - the packer object
--    dms - array of sufficient length (see DMCompositeGetNumberDM()), holds the DMs on output
+.    dm - the packer object
+
+    Output Parameter:
+.    dms - array of sufficient length (see DMCompositeGetNumberDM()) to hold the individual DMs
 
     Level: advanced
 
@@ -1323,7 +1345,7 @@ PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,ISColoring
       next    = next->next;
     }
   }
-  ierr = ISColoringCreate(PetscObjectComm((PetscObject)dm),maxcol,n,colors,coloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(PetscObjectComm((PetscObject)dm),maxcol,n,colors,PETSC_OWN_POINTER,coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1388,7 +1410,7 @@ PetscErrorCode  DMGlobalToLocalEnd_Composite(DM dm,Vec gvec,InsertMode mode,Vec 
 
   Level: intermediate
 
-.seealso: DMType, DMCOMPOSITE, DMDACreate(), DMCreate(), DMSetType(), DMCompositeCreate()
+.seealso: DMType, DM, DMDACreate(), DMCreate(), DMSetType(), DMCompositeCreate()
 M*/
 
 
@@ -1441,7 +1463,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
 
     Level: advanced
 
-.seealso DMDestroy(), DMCompositeAddDM(), DMCompositeScatter(),
+.seealso DMDestroy(), DMCompositeAddDM(), DMCompositeScatter(), DMCOMPOSITE,DMCreate()
          DMCompositeGather(), DMCreateGlobalVector(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess()
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
 

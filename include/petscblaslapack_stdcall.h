@@ -1,10 +1,11 @@
 /*
-  This file deals with STDCALL Fortran 77 naming conventions.  This also
-  assumes PETSC_HAVE_FORTRAN_CAPS is also defined, which is the case on certain Windows
-  FORTRAN compilers which use STDCALL.
+  This file deals with
+     1) STDCALL BLAS/LAPACK calling conventions
+     2) capitalization of BLAS/LAPACK names
+     3) character strings passing conventions where the string length is passed in the stack immediately after the string
+        as opposed to at the end of the function arguements.
 
-  Another problem is character strings are represented differently on
-  on some machines in C and Fortran 77. This problem comes up on some Windows compilers.
+  This issue only comes up on some Microsoft Windows compilers.
 */
 #if !defined(_BLASLAPACK_STDCALL_H)
 #define _BLASLAPACK_STDCALL_H
@@ -15,7 +16,7 @@
 #endif
 
 #if !defined(PETSC_USE_COMPLEX)
-# if defined(PETSC_USES_FORTRAN_SINGLE) || defined(PETSC_USE_REAL_SINGLE)
+# if defined(PETSC_BLASLAPACK_SINGLEISDOUBLE) || defined(PETSC_USE_REAL_SINGLE)
 /* Real single precision without character string arguments. */
 #  define LAPACKgeqrf_ SGEQRF
 #  define LAPACKungqr_ SORGQR
@@ -141,7 +142,7 @@ PETSC_EXTERN void PETSC_STDCALL DGGES(const char*,int,const char*,int,const char
 PETSC_EXTERN void PETSC_STDCALL DHSEQR(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 # endif
 #else
-# if defined(PETSC_USES_FORTRAN_SINGLE) || defined(PETSC_USE_REAL_SINGLE)
+# if defined(PETSC_BLASLAPACK_SINGLEISDOUBLE) || defined(PETSC_USE_REAL_SINGLE)
 /* Complex single precision without character string arguments. */
 #  define LAPACKgeqrf_ CGEQRF
 #  define LAPACKungqr_ CUNGQR

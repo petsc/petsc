@@ -257,15 +257,15 @@
       PetscOffset      g_i,left_i,right_i
       PetscOffset      bottom_i,top_i,x_i
 
-      ft = 0.0d0
-      zero = 0.0d0
-      hx = 1.0d0/(mx + 1)
-      hy = 1.0d0/(my + 1)
+      ft = 0.0
+      zero = 0.0
+      hx = 1.0/(mx + 1)
+      hy = 1.0/(my + 1)
       hydhx = hy/hx
       hxdhy = hx/hy
-      area = 0.5d0 * hx * hy
-      rhx = mx + 1.0d0
-      rhy = my + 1.0d0
+      area = 0.5 * hx * hy
+      rhx = mx + 1.0
+      rhy = my + 1.0
 
 
 ! Get local mesh boundaries
@@ -362,12 +362,12 @@
             d7 = d7 * rhy
             d8 = d8 * rhx
 
-            f1 = sqrt(1.0d0 + d1*d1 + d7*d7)
-            f2 = sqrt(1.0d0 + d1*d1 + d4*d4)
-            f3 = sqrt(1.0d0 + d3*d3 + d8*d8)
-            f4 = sqrt(1.0d0 + d3*d3 + d2*d2)
-            f5 = sqrt(1.0d0 + d2*d2 + d5*d5)
-            f6 = sqrt(1.0d0 + d4*d4 + d6*d6)
+            f1 = sqrt(1.0 + d1*d1 + d7*d7)
+            f2 = sqrt(1.0 + d1*d1 + d4*d4)
+            f3 = sqrt(1.0 + d3*d3 + d8*d8)
+            f4 = sqrt(1.0 + d3*d3 + d2*d2)
+            f5 = sqrt(1.0 + d2*d2 + d5*d5)
+            f6 = sqrt(1.0 + d4*d4 + d6*d6)
 
             ft = ft + f2 + f4
 
@@ -390,7 +390,7 @@
      &                 * rhy
             d2 = (left_v(j-ys+1+left_i) - x_v((j-gys)*gxm + x_i))        &
      &                 * rhx
-            ft = ft + sqrt(1.0d0 + d3*d3 + d2*d2)
+            ft = ft + sqrt(1.0 + d3*d3 + d2*d2)
          enddo
       endif
 
@@ -409,7 +409,7 @@
          do j=ys,ys+ym-1
             d1 = (x_v((j+1-gys)*gxm-1+x_i)-right_v(j-ys+1+right_i))*rhx
             d4 = (right_v(j-ys+right_i) - right_v(j-ys+1+right_i))*rhy
-            ft = ft + sqrt(1.0d0 + d1*d1 + d4*d4)
+            ft = ft + sqrt(1.0 + d1*d1 + d4*d4)
          enddo
       endif
 
@@ -418,7 +418,7 @@
          do i=xs,xs+xm-1
             d1 = (x_v((gym-1)*gxm+i-gxs+x_i) - top_v(i-xs+1+top_i))*rhy
             d4 = (top_v(i-xs+1+top_i) - top_v(i-xs+top_i))*rhx
-            ft = ft + sqrt(1.0d0 + d1*d1 + d4*d4)
+            ft = ft + sqrt(1.0 + d1*d1 + d4*d4)
          enddo
       endif
 
@@ -426,13 +426,13 @@
       if ((ys .eq. 0) .and. (xs .eq. 0)) then
          d1 = (left_v(0 + left_i) - left_v(1 + left_i)) * rhy
          d2 = (bottom_v(0+bottom_i)-bottom_v(1+bottom_i))*rhx
-         ft = ft + sqrt(1.0d0 + d1*d1 + d2*d2)
+         ft = ft + sqrt(1.0 + d1*d1 + d2*d2)
       endif
 
       if ((ys + ym .eq. my) .and. (xs + xm .eq. mx)) then
          d1 = (right_v(ym+1+right_i) - right_v(ym+right_i))*rhy
          d2 = (top_v(xm+1+top_i) - top_v(xm + top_i))*rhx
-         ft = ft + sqrt(1.0d0 + d1*d1 + d2*d2)
+         ft = ft + sqrt(1.0 + d1*d1 + d2*d2)
       endif
 
       ft = ft * area
@@ -616,12 +616,12 @@
             d7 = (xlt-xl)*rhy
             d8 = (xlt-xt)*rhx
 
-            f1 = sqrt( 1.0d0 + d1*d1 + d7*d7)
-            f2 = sqrt( 1.0d0 + d1*d1 + d4*d4)
-            f3 = sqrt( 1.0d0 + d3*d3 + d8*d8)
-            f4 = sqrt( 1.0d0 + d3*d3 + d2*d2)
-            f5 = sqrt( 1.0d0 + d2*d2 + d5*d5)
-            f6 = sqrt( 1.0d0 + d4*d4 + d6*d6)
+            f1 = sqrt( 1.0 + d1*d1 + d7*d7)
+            f2 = sqrt( 1.0 + d1*d1 + d4*d4)
+            f3 = sqrt( 1.0 + d3*d3 + d8*d8)
+            f4 = sqrt( 1.0 + d3*d3 + d2*d2)
+            f5 = sqrt( 1.0 + d2*d2 + d5*d5)
+            f6 = sqrt( 1.0 + d4*d4 + d6*d6)
 
 
             hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+                 &
@@ -762,15 +762,15 @@
       limit=0
       maxits = 5
       tol=1e-10
-      b=-0.5d0
-      t= 0.5d0
-      l=-0.5d0
-      r= 0.5d0
+      b=-0.5
+      t= 0.5
+      l=-0.5
+      r= 0.5
       xt=0
       yt=0
-      one=1.0d0
-      two=2.0d0
-      three=3.0d0
+      one=1.0
+      two=2.0
+      three=3.0
 
 
       call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &
@@ -931,8 +931,8 @@
 
       print *,'msa_plate'
 
-      lb = -1.0d300
-      ub = 1.0d300
+      lb = PETSC_NINFINITY
+      ub = PETSC_INFINITY
 
       if (bmy .lt. 0) bmy = 0
       if (bmy .gt. my) bmy = my
@@ -1010,8 +1010,8 @@
       PetscBool     flg
       PetscRandom   rctx
 
-      zero = 0.0d0
-      np5 = -0.5d0
+      zero = 0.0
+      np5 = -0.5
 
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,"-start",            &
      &                        start,flg,ierr)

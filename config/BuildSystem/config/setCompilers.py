@@ -65,7 +65,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-CFLAGS=<string>',       nargs.Arg(None, None, 'Specify the C compiler options'))
     help.addArgument('Compilers', '-CC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the C linker flags'))
 
-    help.addArgument('Compilers', '-CXXPP=<prog>',          nargs.Arg(None, None, 'Specify the C++ preprocessor'))
+    help.addArgument('Compilers', '-CXXCPP=<prog>',          nargs.Arg(None, None, 'Specify the C++ preprocessor'))
     help.addArgument('Compilers', '-CXXCPPFLAGS=<string>',  nargs.Arg(None, None, 'Specify the C++ preprocessor options'))
     help.addArgument('Compilers', '-with-cxx=<prog>', nargs.Arg(None, None, 'Specify the C++ compiler'))
     help.addArgument('Compilers', '-CXX=<prog>',            nargs.Arg(None, None, 'Specify the C++ compiler'))
@@ -104,6 +104,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-sharedLibraryFlags=<string>',     nargs.Arg(None, [], 'Specify the shared library flags'))
     help.addArgument('Compilers', '-dynamicLibraryFlags=<string>',    nargs.Arg(None, [], 'Specify the dynamic library flags'))
     help.addArgument('Compilers', '-LIBS=<string>',          nargs.Arg(None, None, 'Specify extra libraries for all links'))
+    help.addArgument('Compilers', '-with-environment-variables=<bool>',nargs.ArgBool(None, 0, 'Use compiler variables found in environment'))
     return
 
   def setupDependencies(self, framework):
@@ -450,7 +451,7 @@ class Configure(config.base.Configure):
     self.LIBS = oldlibs
     if not self.framework.argDB['with-batch']:
       if not self.checkRun():
-        msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n'
+        msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your compiler \''+ self.getCompiler()+'\'?\n'
         if self.isIntel(self.getCompiler()):
           msg = msg + 'See http://www.mcs.anl.gov/petsc/documentation/faq.html#libimf'
         self.popLanguage()
@@ -580,6 +581,7 @@ class Configure(config.base.Configure):
     return
 
   def generateCUDACompilerGuesses(self):
+    import os
     '''Determine the CUDA compiler using CUDAC, then --with-cudac, then vendors
        - Any given category can be excluded'''
     if hasattr(self, 'CUDAC'):
@@ -590,17 +592,23 @@ class Configure(config.base.Configure):
     elif self.framework.argDB.has_key('CUDAC'):
       yield self.framework.argDB['CUDAC']
       raise RuntimeError('CUDA compiler you provided with -CUDAC='+self.framework.argDB['CUDAC']+' does not work.'+'\n'+self.mesg)
+    elif self.framework.argDB.has_key('with-cuda-dir'):
+      import os
+      nvccPath = os.path.join(self.framework.argDB['with-cuda-dir'], 'bin','nvcc')
+      yield nvccPath
     else:
       vendor = self.vendor
       if not self.vendor is None:
         if vendor == 'nvidia' or not vendor:
           yield 'nvcc'
       yield 'nvcc'
+      yield os.path.join('/Developer','NVIDIA','CUDA-6.5','bin','nvcc')
+      yield os.path.join('/usr','local','cuda','bin','nvcc')
     return
 
   def checkCUDACompiler(self):
     '''Locate a functional CUDA compiler'''
-    if 'with-cudac' in self.framework.argDB and self.framework.argDB['with-cudac'] == '0':
+    if not self.framework.clArgDB.has_key('with-cuda') or self.framework.argDB['with-cuda'] == '0':
       if 'CUDAC' in self.framework.argDB:
         del self.framework.argDB['CUDAC']
       return
@@ -635,7 +643,7 @@ class Configure(config.base.Configure):
       yield self.framework.argDB['CUDAPP']
     else:
       if hasattr(self, 'CUDAC'):
-        yield self.CUDAC+' -E'
+        yield self.CUDAC+' -arch=sm_20 -E'
     return
 
   def checkCUDAPreprocessor(self):
@@ -1330,7 +1338,7 @@ class Configure(config.base.Configure):
       if not Configure.isDarwin():
         testFlags = ['-Wl,-rpath,', '-R','-rpath ' , '-Wl,-R,']
       else:
-        testFlags = []
+        testFlags = ['-Wl,-rpath,']
       # test '-R' before '-Wl,-rpath' for SUN compilers [as cc on linux accepts -Wl,-rpath, but  f90 & CC do not.
       if self.isSun(self.framework.getCompiler()):
         testFlags.insert(0,'-R')
@@ -1532,20 +1540,45 @@ if (dlclose(handle)) {
     return
 
   def resetEnvCompilers(self):
-    ignoreEnv = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS',
-                 'F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS',
-                 'LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
+    ignoreEnvCompilers = ['CC','CXX','FC','F77','F90']
+    for envVal in ignoreEnvCompilers:
+      if envVal in os.environ:
+        if self.framework.clArgDB.has_key(envVal) or self.framework.clArgDB.has_key('with-'+envVal.lower()):
+          self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
+          del os.environ[envVal]
+        elif self.framework.argDB['with-environment-variables']:
+          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables ******')
+        else:
+          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
+          del os.environ[envVal]
+
+    ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
     for envVal in ignoreEnv:
       if envVal in os.environ:
-        self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
-        del os.environ[envVal]
+        if self.framework.clArgDB.has_key(envVal):
+          self.logPrint(envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring since also set on command line')
+          del os.environ[envVal]
+        elif self.framework.argDB['with-environment-variables']:
+          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - using it \n use ./configure --disable-environment-variables to NOT use the environmental variables******')
+        else:
+          self.logPrintBox('***** WARNING: '+envVal+' (set to '+os.environ[envVal]+') found in environment variables - ignoring \n use ./configure '+envVal+'=$'+envVal+' if you really want to use that value ******')
+          del os.environ[envVal]
+    return
+
+
+  def checkEnvCompilers(self):
+    if self.framework.clArgDB.has_key('with-environment-variables'):
+      envVarChecklist = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS','F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR']
+      for ev in envVarChecklist:
+        if ev in os.environ:
+          self.argDB[ev] = os.environ[ev]
     return
 
   def checkIntoShared(self,symbol,lib):
     '''Check that a given library can be linked into a shared library'''
     import sys
     if not self.checkCompile(includes = 'char *'+symbol+'(void);\n',body = 'return '+symbol+'();\n', cleanup = 0, codeBegin = 'char* testroutine(void){', codeEnd = '}'):
-      raise RunTimeError('Unable to compile test file with symbol: '+symbol)
+      raise RuntimeError('Unable to compile test file with symbol: '+symbol)
     oldLibs = self.LIBS
     self.LIBS = self.libraries.toStringNoDupes(lib) + ' '+self.LIBS
     ret = self.checkLink(includes = 'char *'+symbol+'(void);\n',body = 'return '+symbol+'();\n', cleanup = 0, codeBegin = 'char* testroutine(void){', codeEnd = '}',shared =1)
@@ -1555,6 +1588,7 @@ if (dlclose(handle)) {
   def configure(self):
     self.executeTest(self.printEnvVariables)
     self.executeTest(self.resetEnvCompilers)
+    self.executeTest(self.checkEnvCompilers)
     self.executeTest(self.checkMPICompilerOverride)
     self.executeTest(self.requireMpiLdPath)
     self.executeTest(self.checkVendor)

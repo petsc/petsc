@@ -94,9 +94,6 @@ static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X,
 {
   DM             dm;
   Vec            locX;
-#if 0
-  Vec            locF;
-#endif
   DMTS_Local    *dmlocalts = (DMTS_Local *) ctx;
   PetscErrorCode ierr;
 

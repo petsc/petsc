@@ -12,12 +12,12 @@
 		2899E5220DE3E06400AC0155 /* iphoneViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2899E5210DE3E06400AC0155 /* iphoneViewController.xib */; };
 		28AD733F0D9D9553002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD733E0D9D9553002E5188 /* MainWindow.xib */; };
 		28D7ACF80DDB3853001CB0EB /* iphoneViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 28D7ACF70DDB3853001CB0EB /* iphoneViewController.m */; };
+		D81E3DA519F0C3E60076ADC5 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D89698F315C85DE600C720F1 /* Accelerate.framework */; };
 		D83A8D7E119DD87B009DD17A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D83A8D7D119DD87B009DD17A /* UIKit.framework */; };
 		D83A8DD0119DD88A009DD17A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D83A8DCF119DD88A009DD17A /* Foundation.framework */; };
 		D83A8DF3119DD897009DD17A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D83A8DF2119DD897009DD17A /* CoreGraphics.framework */; };
+		D8688CBE19F3620700CBDDD1 /* PETSc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8688CBD19F3620700CBDDD1 /* PETSc.framework */; };
 		D881964719614152002E6C1C /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D881964619614152002E6C1C /* Default-568h@2x.png */; };
-		D88E3B0719610C25007171FE /* PETSc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D88E3B0619610C25007171FE /* PETSc.framework */; };
-		D89698F415C85DE600C720F1 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D89698F315C85DE600C720F1 /* Accelerate.framework */; };
 		D8B4FA0E195E5D1900608859 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8B4FA0D195E5D1900608859 /* GLKit.framework */; };
 		D8B4FA10195E5D4800608859 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8B4FA0F195E5D4800608859 /* OpenGLES.framework */; };
 /* End PBXBuildFile section */
@@ -36,8 +36,8 @@
 		D83A8D7D119DD87B009DD17A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		D83A8DCF119DD88A009DD17A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D83A8DF2119DD897009DD17A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		D8688CBD19F3620700CBDDD1 /* PETSc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PETSc.framework; path = "../../../../../../../../../Library/Frameworks/PETSc-iOS/simulator/PETSc.framework"; sourceTree = "<group>"; };
 		D881964619614152002E6C1C /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
-		D88E3B0619610C25007171FE /* PETSc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PETSc.framework; path = ../../../../../../../../Library/Frameworks/PETSc.framework; sourceTree = "<group>"; };
 		D89698F115C85D3100C720F1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		D89698F315C85DE600C720F1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		D8B4FA0D195E5D1900608859 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
@@ -49,14 +49,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D88E3B0719610C25007171FE /* PETSc.framework in Frameworks */,
+				D8688CBE19F3620700CBDDD1 /* PETSc.framework in Frameworks */,
 				D83A8D7E119DD87B009DD17A /* UIKit.framework in Frameworks */,
 				D8B4FA0E195E5D1900608859 /* GLKit.framework in Frameworks */,
 				D8B4FA10195E5D4800608859 /* OpenGLES.framework in Frameworks */,
 				D83A8DD0119DD88A009DD17A /* Foundation.framework in Frameworks */,
 				D83A8DF3119DD897009DD17A /* CoreGraphics.framework in Frameworks */,
-				D89698F415C85DE600C720F1 /* Accelerate.framework in Frameworks */,
-				D89698F415C85DE600C720F1 /* Accelerate.framework in Frameworks */,
+				D81E3DA519F0C3E60076ADC5 /* Accelerate.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,7 +117,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D88E3B0619610C25007171FE /* PETSc.framework */,
+				D8688CBD19F3620700CBDDD1 /* PETSc.framework */,
 				D8B4FA0F195E5D4800608859 /* OpenGLES.framework */,
 				D8B4FA0D195E5D1900608859 /* GLKit.framework */,
 				D83A8D7D119DD87B009DD17A /* UIKit.framework */,
@@ -155,7 +154,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0440;
+				LastUpgradeCheck = 0600;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "examples" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -213,10 +212,12 @@
 				GCC_PREFIX_HEADER = examples_Prefix.pch;
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "examples-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = examples;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = NO;
 			};
 			name = Debug;
 		};
@@ -224,17 +225,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks/PETSc-iOS/simulator",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = examples_Prefix.pch;
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "examples-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = examples;
 				SDKROOT = iphoneos;
@@ -246,13 +248,13 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				"CODE_SIGN_IDENTITY[sdk=iphonesimulator5.1]" = "iPhone Developer: Barry Smith (5HETQ7Q6GP)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				ONLY_ACTIVE_ARCH = YES;
 				"PROVISIONING_PROFILE[sdk=iphonesimulator5.1]" = "AFDA94A8-BF9D-4B65-999C-118FE0474B66";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
@@ -262,7 +264,6 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
 				"CODE_SIGN_IDENTITY[sdk=iphonesimulator5.1]" = "iPhone Developer: Barry Smith (5HETQ7Q6GP)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;

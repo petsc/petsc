@@ -203,7 +203,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
     /* Remap row index set to global space */
     ierr = ISGetIndices(lrowperm,&lidx);CHKERRQ(ierr);
-    ierr = PetscMalloc1((rend-rstart),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rend-rstart,&idx);CHKERRQ(ierr);
     for (i=0; i+rstart<rend; i++) idx[i] = rstart + lidx[i];
     ierr = ISRestoreIndices(lrowperm,&lidx);CHKERRQ(ierr);
     ierr = ISDestroy(&lrowperm);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
     /* Remap column index set to global space */
     ierr = ISGetIndices(lcolperm,&lidx);CHKERRQ(ierr);
-    ierr = PetscMalloc1((rend-rstart),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rend-rstart,&idx);CHKERRQ(ierr);
     for (i=0; i+rstart<rend; i++) idx[i] = rstart + lidx[i];
     ierr = ISRestoreIndices(lcolperm,&lidx);CHKERRQ(ierr);
     ierr = ISDestroy(&lcolperm);CHKERRQ(ierr);

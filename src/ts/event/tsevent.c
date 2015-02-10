@@ -60,15 +60,15 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
 
   PetscFunctionBegin;
   ierr = PetscNew(&event);CHKERRQ(ierr);
-  ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue);CHKERRQ(ierr);
-  ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue_prev);CHKERRQ(ierr);
-  ierr = PetscMalloc(nevents*sizeof(PetscInt),&event->direction);CHKERRQ(ierr);
-  ierr = PetscMalloc(nevents*sizeof(PetscInt),&event->terminate);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nevents,&event->fvalue);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nevents,&event->fvalue_prev);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nevents,&event->direction);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nevents,&event->terminate);CHKERRQ(ierr);
   for (i=0; i < nevents; i++) {
     event->direction[i] = direction[i];
     event->terminate[i] = terminate[i];
   }
-  ierr = PetscMalloc(nevents*sizeof(PetscInt),&event->events_zero);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nevents,&event->events_zero);CHKERRQ(ierr);
   event->monitor = eventmonitor;
   event->postevent = postevent;
   event->monitorcontext = (void*)mectx;

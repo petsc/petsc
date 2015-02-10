@@ -4,8 +4,8 @@
 
 #include <petscdm.h>
 
-PETSC_EXTERN PetscErrorCode DMRedundantCreate(MPI_Comm,PetscInt,PetscInt,DM*);
-PETSC_EXTERN PetscErrorCode DMRedundantSetSize(DM,PetscInt,PetscInt);
-PETSC_EXTERN PetscErrorCode DMRedundantGetSize(DM,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMRedundantCreate(MPI_Comm,PetscMPIInt,PetscInt,DM*);
+PETSC_EXTERN PetscErrorCode DMRedundantSetSize(DM,PetscMPIInt,PetscInt);
+PETSC_EXTERN PetscErrorCode DMRedundantGetSize(DM,PetscMPIInt*,PetscInt*);
 
 #endif

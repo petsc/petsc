@@ -315,7 +315,7 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
   ierr = PetscLayoutSetUp(N->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(N->cmap);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&Na->rwork,&Na->lwork);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&Na->rwork,&Na->lwork);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject)isrow),&left);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject)iscol),&right);CHKERRQ(ierr);
   ierr = VecSetSizes(left,m,PETSC_DETERMINE);CHKERRQ(ierr);

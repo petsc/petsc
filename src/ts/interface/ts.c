@@ -12,7 +12,7 @@ PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEva
 const char *const TSExactFinalTimeOptions[] = {"STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",0};
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetTypeFromOptions"
+#define __FUNCT__ "TSSetTypeFromOptions_Private"
 /*
   TSSetTypeFromOptions - Sets the type of ts from user options.
 
@@ -26,7 +26,7 @@ const char *const TSExactFinalTimeOptions[] = {"STEPOVER","INTERPOLATE","MATCHST
 .keywords: TS, set, options, database, type
 .seealso: TSSetFromOptions(), TSSetType()
 */
-static PetscErrorCode TSSetTypeFromOptions(TS ts)
+static PetscErrorCode TSSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,TS ts)
 {
   PetscBool      opt;
   const char     *defaultType;
@@ -69,6 +69,7 @@ struct _n_TSMonitorDrawCtx {
 
    Options Database Keys:
 +  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSGL, TSSSP
+.  -ts_checkpoint - checkpoint for adjoint sensitivity analysis
 .  -ts_max_steps maxsteps - maximum number of time-steps to take
 .  -ts_final_time time - maximum time to compute to
 .  -ts_dt dt - initial time step
@@ -101,7 +102,7 @@ struct _n_TSMonitorDrawCtx {
 @*/
 PetscErrorCode  TSSetFromOptions(TS ts)
 {
-  PetscBool              opt,flg;
+  PetscBool              opt,flg,tflg;
   PetscErrorCode         ierr;
   PetscViewer            monviewer;
   char                   monfilename[PETSC_MAX_PATH_LEN];
@@ -115,9 +116,13 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
   /* Handle TS type options */
-  ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
+  ierr = TSSetTypeFromOptions_Private(PetscOptionsObject,ts);CHKERRQ(ierr);
 
   /* Handle generic TS options */
+  if (ts->trajectory) tflg = PETSC_TRUE;
+  else tflg = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ts_save_trajectories","Checkpoint for adjoint sensitivity analysis","TSSetSaveTrajectories",tflg,&tflg,NULL);CHKERRQ(ierr);
+  if (tflg) {ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,NULL);CHKERRQ(ierr);
@@ -329,14 +334,18 @@ PetscErrorCode  TSSetFromOptions(TS ts)
      will bleed memory. Also one is using a PetscOptionsBegin() inside a PetscOptionsBegin()
   */
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptSetFromOptions(adapt);CHKERRQ(ierr);
+  ierr = TSAdaptSetFromOptions(PetscOptionsObject,adapt);CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
 
+  if (ts->trajectory) {
+    ierr = TSTrajectorySetFromOptions(ts->trajectory);CHKERRQ(ierr);
+  }
+
   /* Handle specific TS options */
   if (ts->ops->setfromoptions) {
-    ierr = (*ts->ops->setfromoptions)(ts);CHKERRQ(ierr);
+    ierr = (*ts->ops->setfromoptions)(PetscOptionsObject,ts);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
@@ -346,6 +355,35 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetSaveTrajectory"
+/*@
+   TSSetSaveTrajectory - Causes the TS to save its solutions as it iterates forward in time in a TSTrajectory object
+
+   Collective on TS
+
+   Input Parameters:
+.  ts - the TS context obtained from TSCreate()
+
+
+   Level: intermediate
+
+.seealso: TSGetTrajectory(), TSAdjointSolve()
+
+.keywords: TS, set, checkpoint, 
+@*/
+PetscErrorCode  TSSetSaveTrajectory(TS ts)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (!ts->trajectory) {
+    ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
+    /* should it set a default trajectory? */
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSJacobian"
 /*@
@@ -839,6 +877,8 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
     Level: beginner
 
+    Notes: You must call this function or TSSetIFunction() to define your ODE. You cannot use this function when solving a DAE.
+
 .keywords: TS, timestep, set, right-hand-side, function
 
 .seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSSetIFunction()
@@ -958,7 +998,7 @@ PetscErrorCode  TSSetForcingFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,
 #undef __FUNCT__
 #define __FUNCT__ "TSSetRHSJacobian"
 /*@C
-   TSSetRHSJacobian - Sets the function to compute the Jacobian of F,
+   TSSetRHSJacobian - Sets the function to compute the Jacobian of G,
    where U_t = G(U,t), as well as the location to store the matrix.
 
    Logically Collective on TS
@@ -971,7 +1011,7 @@ PetscErrorCode  TSSetForcingFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,
 -  ctx - [optional] user-defined context for private data for the
          Jacobian evaluation routine (may be NULL)
 
-   Calling sequence of func:
+   Calling sequence of f:
 $     func (TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
 
 +  t - current timestep
@@ -1052,7 +1092,7 @@ $  f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
 -  ctx - [optional] user-defined context for matrix evaluation routine
 
    Important:
-   The user MUST call either this routine, TSSetRHSFunction().  This routine must be used when not solving an ODE, for example a DAE.
+   The user MUST call either this routine or TSSetRHSFunction() to define the ODE.  When solving DAEs you must use this function.
 
    Level: beginner
 
@@ -1139,7 +1179,7 @@ PetscErrorCode TSGetIFunction(TS ts,Vec *r,TSIFunction *func,void **ctx)
 
 .keywords: TS, nonlinear, get, function
 
-.seealso: TSSetRhsfunction(), SNESGetFunction()
+.seealso: TSSetRHSFunction(), SNESGetFunction()
 @*/
 PetscErrorCode TSGetRHSFunction(TS ts,Vec *r,TSRHSFunction *func,void **ctx)
 {
@@ -1674,6 +1714,36 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointGetGradients"
+/*@
+   TSAdjointGetGradients - Returns the gradients from the TSAdjointSolve()
+
+   Not Collective, but Vec returned is parallel if TS is parallel
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameter:
++  v - vectors containing the gradients with respect to the ODE/DAE solution variables
+-  w - vectors containing the gradients with respect to the problem parameters
+
+   Level: intermediate
+
+.seealso: TSGetTimeStep()
+
+.keywords: TS, timestep, get, sensitivity
+@*/
+PetscErrorCode  TSAdjointGetGradients(TS ts,PetscInt *numberadjs,Vec **v,Vec **w)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (numberadjs) *numberadjs = ts->numberadjs;
+  if (v)          *v          = ts->vecs_sensi;
+  if (w)          *w          = ts->vecs_sensip;
+  PetscFunctionReturn(0);
+}
+
 /* ----- Routines to initialize and destroy a timestepper ---- */
 #undef __FUNCT__
 #define __FUNCT__ "TSSetProblemType"
@@ -1780,11 +1850,13 @@ PetscErrorCode  TSSetUp(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->setupcalled) PetscFunctionReturn(0);
 
+  ts->total_steps = 0;
   if (!((PetscObject)ts)->type_name) {
     ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
   }
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
+
 
   ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
 
@@ -1806,7 +1878,6 @@ PetscErrorCode  TSSetUp(TS ts)
       ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
     }
   }
-
   if (ts->ops->setup) {
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
   }
@@ -1833,6 +1904,45 @@ PetscErrorCode  TSSetUp(TS ts)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSAdjointSetUp"
+/*@
+   TSAdjointSetUp - Sets up the internal data structures for the later use
+   of an adjoint solver
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Notes:
+   For basic use of the TS solvers the user need not explicitly call
+   TSSetUp(), since these actions will automatically occur during
+   the call to TSStep().  However, if one wishes to control this
+   phase separately, TSSetUp() should be called after TSCreate()
+   and optional routines of the form TSSetXXX(), but before TSStep().
+
+   Level: advanced
+
+.keywords: TS, timestep, setup
+
+.seealso: TSCreate(), TSStep(), TSDestroy()
+@*/
+PetscErrorCode  TSAdjointSetUp(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->adjointsetupcalled) PetscFunctionReturn(0);
+  if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetGradients() first");
+  if (ts->ops->adjointsetup) {
+    ierr = (*ts->ops->adjointsetup)(ts);CHKERRQ(ierr);
+  }
+  ts->adjointsetupcalled = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSReset"
 /*@
    TSReset - Resets a TS context and removes any allocated Vecs and Mats.
@@ -1854,6 +1964,7 @@ PetscErrorCode  TSReset(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+
   if (ts->ops->reset) {
     ierr = (*ts->ops->reset)(ts);CHKERRQ(ierr);
   }
@@ -1866,7 +1977,11 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
-
+  ts->vecs_sensi = 0;
+  ts->vecs_sensip = 0;
+  ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -1902,6 +2017,8 @@ PetscErrorCode  TSDestroy(TS *ts)
   /* if memory was published with SAWs then destroy it */
   ierr = PetscObjectSAWsViewOff((PetscObject)*ts);CHKERRQ(ierr);
   if ((*ts)->ops->destroy) {ierr = (*(*ts)->ops->destroy)((*ts));CHKERRQ(ierr);}
+
+  ierr = TSTrajectoryDestroy(&(*ts)->trajectory);CHKERRQ(ierr);
 
   ierr = TSAdaptDestroy(&(*ts)->adapt);CHKERRQ(ierr);
   if ((*ts)->event) {
@@ -2144,6 +2261,339 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMShellSetGlobalVector(dm,u);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointSetSteps"
+/*@
+   TSAdjointSetSteps - Sets the number of steps the adjoint solver should take backward in time
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+.  steps - number of steps to use
+
+   Level: intermediate
+
+   Notes: Normally one does not call this and TSAdjointSolve() integrates back to the original timestep. One can call this
+          so as to integrate back to less than the original timestep
+
+.keywords: TS, timestep, set, maximum, iterations
+
+.seealso: TSSetExactFinalTime()
+@*/
+PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveInt(ts,steps,2);
+  if (steps < 0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Cannot step back a negative number of steps");
+  if (steps > ts->total_steps) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Cannot step back more than the total number of forward steps");
+  ts->adjoint_max_steps = steps;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointSetGradients"
+/*@
+   TSAdjointSetGradients - Sets the initial value of gradients w.r.t. initial conditions and w.r.t. the problem parameters  for use by the TS routines.
+
+   Logically Collective on TS and Vec
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+.  u - gradients with respect to the initial condition variables
+-  w - gradients with respect to the parameters
+
+   Level: beginner
+
+.keywords: TS, timestep, set, sensitivity, initial conditions
+@*/
+PetscErrorCode  TSAdjointSetGradients(TS ts,PetscInt numberadjs,Vec *u,Vec *w)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(u,2);
+  ts->vecs_sensi  = u;
+  ts->vecs_sensip = w;  
+  ts->numberadjs  = numberadjs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointSetRHSJacobian"
+/*@C
+  TSAdjointSetRHSJacobian - Sets the function that computes the Jacobian w.r.t. parameters.
+
+  Logically Collective on TS
+
+  Input Parameters:
++ ts   - The TS context obtained from TSCreate()
+- func - The function
+
+  Calling sequence of func:
+$ func (TS ts,PetscReal t,Vec u,Mat A,void *ctx);
++   t - current timestep
+.   u - input vector
+.   A - output matrix
+-   ctx - [optional] user-defined function context
+
+  Level: intermediate
+
+.keywords: TS, sensitivity 
+.seealso: 
+@*/
+PetscErrorCode  TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+{ 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  if (Amat) PetscValidHeaderSpecific(Amat,MAT_CLASSID,2);
+
+  ts->rhsjacobianp    = func;
+  ts->rhsjacobianpctx = ctx;
+  if(Amat) {
+    ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);
+    ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
+    
+    ts->Jacp = Amat;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointComputeRHSJacobian"
+/*@
+  TSAdjointComputeRHSJacobian - Runs the user-defined Jacobian function.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Level: developer
+
+.keywords: TS, sensitivity
+.seealso: TSAdjointSetRHSJacobian()
+@*/
+PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
+{
+  PetscErrorCode ierr;
+ 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
+  PetscValidPointer(Amat,4);
+  
+  PetscStackPush("TS user JacobianP function for sensitivity analysis");
+  ierr = (*ts->rhsjacobianp)(ts,t,X,Amat,ts->rhsjacobianpctx); CHKERRQ(ierr);
+  PetscStackPop;
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointSetCostIntegrand"
+/*@C
+    TSAdjointSetCostIntegrand - Sets the routine for evaluating the integral term in a cost function
+
+    Logically Collective on TS
+
+    Input Parameters:
++   ts - the TS context obtained from TSCreate()
+.   numberadjs - number of gradients to be computed
+.   fq - routine for evaluating the right-hand-side function
+.   drdy - array of vectors to contain the gradient of the r's with respect to y, NULL if not a function of y
+.   drdyf - function that computes the gradients of the r's with respect to y,NULL if not a function y
+.   drdp - array of vectors to contain the gradient of the r's with respect to p, NULL if not a function of p
+.   drdpf - function that computes the gradients of the r's with respect to p, NULL if not a function of p
+-   ctx - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
+
+    Calling sequence of fq:
+$     TSCostIntegrand(TS ts,PetscReal t,Vec u,PetscReal *f,void *ctx);
+
++   t - current timestep
+.   u - input vector
+.   f - function vector
+-   ctx - [optional] user-defined function context
+
+   Calling sequence of drdyf:
+$    PetscErroCode drdyf(TS ts,PetscReal t,Vec U,Vec *drdy,void *ctx);
+
+   Calling sequence of drdpf:
+$    PetscErroCode drdpf(TS ts,PetscReal t,Vec U,Vec *drdp,void *ctx);
+
+    Level: intermediate
+
+.keywords: TS, sensitivity analysis, timestep, set, quadrature, function
+
+.seealso: TSAdjointSetRHSJacobian(),TSAdjointGetGradients(), TSAdjointSetGradients()
+@*/
+PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,          PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),
+                                                                    Vec *drdy,PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
+                                                                    Vec *drdp,PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSAdjointSetGradients() first so that the number of cost functions can be determined.");
+  if (ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetGradients()");
+
+  ierr                  = VecCreateSeq(PETSC_COMM_SELF,numberadjs,&ts->vec_costintegral);CHKERRQ(ierr);
+  ierr                  = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
+  ts->costintegrand     = fq;
+  ts->costintegrandctx  = ctx;
+
+  ts->drdyfunction    = drdyf;
+  ts->vecs_drdy       = drdy;
+
+  ts->drdpfunction    = drdpf;
+  ts->vecs_drdp       = drdp;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointGetCostIntegral"
+/*@
+   TSAdjointGetCostIntegral - Returns the values of the integral term in the cost functions.
+   It is valid to call the routine after a backward run.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameter:
+.  v - the vector containing the integrals for each cost function
+
+   Level: intermediate
+
+.seealso: TSAdjointSetCostIntegrand()
+
+.keywords: TS, sensitivity analysis
+@*/
+PetscErrorCode  TSAdjointGetCostIntegral(TS ts,Vec *v)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(v,2);
+  *v = ts->vec_costintegral;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointComputeCostIntegrand"
+/*@
+   TSAdjointComputeCostIntegrand - Evaluates the integral function in the cost functions.
+
+   Input Parameters:
++  ts - the TS context
+.  t - current time
+-  U - state vector
+
+   Output Parameter:
+.  q - vector of size numberadjs to hold the outputs
+
+   Note:
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the sensitivity analysis context.
+
+   Level: developer
+
+.keywords: TS, compute
+
+.seealso: TSAdjointSetCostIntegrand()
+@*/
+PetscErrorCode TSAdjointComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(q,VEC_CLASSID,4);
+
+  ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,q,0);CHKERRQ(ierr);
+  if (ts->costintegrand) {
+    PetscStackPush("TS user integrand in the cost function");
+    ierr = (*ts->costintegrand)(ts,t,U,q,ts->costintegrandctx);CHKERRQ(ierr);
+    PetscStackPop;
+  } else {
+    ierr = VecZeroEntries(q);CHKERRQ(ierr);
+  }
+
+  ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,q,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointComputeDRDYFunction"
+/*@
+  TSAdjointComputeDRDYFunction - Runs the user-defined DRDY function.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSAdjointComputeDRDYFunction() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+.seealso: TSAdjointComputeDRDYFunction()
+@*/
+PetscErrorCode  TSAdjointComputeDRDYFunction(TS ts,PetscReal t,Vec X,Vec *drdy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
+
+  PetscStackPush("TS user DRDY function for sensitivity analysis");
+  ierr = (*ts->drdyfunction)(ts,t,X,drdy,ts->costintegrandctx); CHKERRQ(ierr);
+  PetscStackPop;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointComputeDRDPFunction"
+/*@
+  TSAdjointComputeDRDPFunction - Runs the user-defined DRDP function.
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSDRDPFunction() is typically used for sensitivity implementation,
+  so most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, sensitivity
+.seealso: TSAdjointSetDRDPFunction()
+@*/
+PetscErrorCode  TSAdjointComputeDRDPFunction(TS ts,PetscReal t,Vec X,Vec *drdp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
+
+  PetscStackPush("TS user DRDP function for sensitivity analysis");
+  ierr = (*ts->drdpfunction)(ts,t,X,drdp,ts->costintegrandctx); CHKERRQ(ierr);
+  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
@@ -2587,9 +3037,11 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
-   Level: intermediate
+   Level: developer
 
    Notes:
+   The public interface for the ODE/DAE solvers is TSSolve(), you should almost for sure be using that routine and not this routine.
+
    The hook set using TSSetPreStep() is called before each attempt to take the step. In general, the time step size may
    be changed due to adaptive error controller or solve failures. Note that steps may contain multiple stages.
 
@@ -2622,11 +3074,69 @@ PetscErrorCode  TSStep(TS ts)
   ts->reason = TS_CONVERGED_ITERATING;
   ts->ptime_prev = ts->ptime;
   ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ts->vec_sol, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
 
   if (!ts->ops->step) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSStep not implemented for type '%s'",((PetscObject)ts)->type_name);
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
+
+  ts->time_step_prev = ts->ptime - ts->ptime_prev;
+  ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
+
+  if (ts->reason < 0) {
+    if (ts->errorifstepfailed) {
+      if (ts->reason == TS_DIVERGED_NONLINEAR_SOLVE) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
+      else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
+    }
+  } else if (!ts->reason) {
+    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
+    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
+  }
+  ts->total_steps++;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointStep"
+/*@
+   TSAdjointStep - Steps one time step
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: intermediate
+
+   Notes:
+   The hook set using TSSetPreStep() is called before each attempt to take the step. In general, the time step size may
+   be changed due to adaptive error controller or solve failures. Note that steps may contain multiple stages.
+
+   This may over-step the final time provided in TSSetDuration() depending on the time-step used. TSSolve() interpolates to exactly the
+   time provided in TSSetDuration(). One can use TSInterpolate() to determine an interpolated solution within the final timestep.
+
+.keywords: TS, timestep, solve
+
+.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage(), TSSetPostStage(), TSInterpolate()
+@*/
+PetscErrorCode  TSAdjointStep(TS ts)
+{
+  DM               dm;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+  ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
+
+  ts->reason = TS_CONVERGED_ITERATING;
+  ts->ptime_prev = ts->ptime;
+  ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ts->vec_sol, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
+  if (!ts->ops->adjointstep) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed because the adjoint of  %s has not been implemented, try other time stepping methods for adjoint sensitivity analysis",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->adjointstep)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
 
   ts->time_step_prev = ts->ptime - ts->ptime_prev;
@@ -2641,9 +3151,10 @@ PetscErrorCode  TSStep(TS ts)
       } else SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
     }
   } else if (!ts->reason) {
-    if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
+    if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
+    else if (ts->ptime >= ts->max_time)         ts->reason = TS_CONVERGED_TIME;
   }
+  ts->total_steps--;
   PetscFunctionReturn(0);
 }
 
@@ -2682,6 +3193,7 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
   ierr = (*ts->ops->evaluatestep)(ts,order,U,done);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSolve"
@@ -2724,7 +3236,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   } else if (u) {
     ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   }
-  ierr = TSSetUp(ts);CHKERRQ(ierr);
+  ierr = TSSetUp(ts);CHKERRQ(ierr); /*compute adj coefficients if the reverse mode is on*/
   /* reset time step and iteration counters */
   ts->steps             = 0;
   ts->ksp_its           = 0;
@@ -2740,11 +3252,12 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);
     ts->solvetime = ts->ptime;
   } else {
-    /* steps the requested number of timesteps. */
+    /* steps the requested number of timesteps. */   
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     while (!ts->reason) {
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+      ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
       if (ts->event) {
 	ierr = TSEventMonitor(ts);CHKERRQ(ierr);
@@ -2764,11 +3277,69 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ts->solvetime = ts->ptime;
       solution = ts->vec_sol;
     }
+    ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(u, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
+    ierr = VecViewFromOptions(solution, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
   }
+
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointSolve"
+/*@
+   TSAdjointSolve - Solves the discrete ajoint problem for an ODE/DAE
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: intermediate
+
+   Notes:
+   This must be called after a call to TSSolve() that solves the forward problem
+
+   By default this will integrate back to the initial time, one can use TSAdjointSetSteps() to step back to a later time
+
+.keywords: TS, timestep, solve
+
+.seealso: TSCreate(), TSSetSolution(), TSStep()
+@*/
+PetscErrorCode TSAdjointSolve(TS ts)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSAdjointSetUp(ts);CHKERRQ(ierr);
+  /* reset time step and iteration counters */
+  ts->steps             = 0;
+  ts->ksp_its           = 0;
+  ts->snes_its          = 0;
+  ts->num_snes_failures = 0;
+  ts->reject            = 0;
+  ts->reason            = TS_CONVERGED_ITERATING;
+
+  if (!ts->adjoint_max_steps) ts->adjoint_max_steps = ts->total_steps;
+
+  if (ts->steps >= ts->adjoint_max_steps)     ts->reason = TS_CONVERGED_ITS;
+  while (!ts->reason) {
+    ierr = TSTrajectoryGet(ts->trajectory,ts,ts->adjoint_max_steps-ts->steps,ts->ptime);CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->adjoint_max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    ierr = TSAdjointStep(ts);CHKERRQ(ierr);
+    if (ts->event) {
+      ierr = TSEventMonitor(ts);CHKERRQ(ierr);
+      if (ts->event->status != TSEVENT_PROCESSING) {
+        ierr = TSPostStep(ts);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = TSPostStep(ts);CHKERRQ(ierr);
+    }
+  }
+  ts->solvetime = ts->ptime;
   PetscFunctionReturn(0);
 }
 
@@ -2801,9 +3372,11 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(u,VEC_CLASSID,4);
+  ierr = VecLockPush(u);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = (*ts->monitor[i])(ts,step,ptime,u,ts->monitorcontext[i]);CHKERRQ(ierr);
   }
+  ierr = VecLockPop(u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2944,6 +3517,34 @@ PetscErrorCode  TSGetTime(TS ts,PetscReal *t)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidRealPointer(t,2);
   *t = ts->ptime;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetPrevTime"
+/*@
+   TSGetPrevTime - Gets the starting time of the previously completed step.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Output Parameter:
+.  t  - the previous time
+
+   Level: beginner
+
+.seealso: TSSetInitialTimeStep(), TSGetTimeStep()
+
+.keywords: TS, get, time
+@*/
+PetscErrorCode  TSGetPrevTime(TS ts,PetscReal *t)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidRealPointer(t,2);
+  *t = ts->ptime_prev;
   PetscFunctionReturn(0);
 }
 
@@ -3858,6 +4459,37 @@ PetscErrorCode  TSGetSolveTime(TS ts,PetscReal *ftime)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSGetTotalSteps"
+/*@
+   TSGetTotalSteps - Gets the total number of steps done since the last call to TSSetUp() or TSCreate()
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context
+
+   Output Parameter:
+.  steps - the number of steps
+
+   Level: beginner
+
+   Notes:
+   Includes the number of steps for all calls to TSSolve() since TSSetUp() was called
+
+.keywords: TS, nonlinear, set, convergence, test
+
+.seealso: TSSetConvergenceTest(), TSConvergedReason
+@*/
+PetscErrorCode  TSGetTotalSteps(TS ts,PetscInt *steps)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(steps,2);
+  *steps = ts->total_steps;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSGetSNESIterations"
 /*@
    TSGetSNESIterations - Gets the total number of nonlinear iterations
@@ -4354,7 +4986,7 @@ PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
 
   ierr  = MPI_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
   *norm = PetscSqrtReal(gsum / N);
-  if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  if (PetscIsInfOrNanReal(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   PetscFunctionReturn(0);
 }
 
@@ -4986,6 +5618,35 @@ PetscErrorCode  TSRollBack(TS ts)
   ierr = (*ts->ops->rollback)(ts);CHKERRQ(ierr);
   ts->time_step = ts->ptime - ts->ptime_prev;
   ts->ptime = ts->ptime_prev;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetStages"
+/*@
+   TSGetStages - Get the number of stages and stage values 
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: advanced
+
+.keywords: TS, getstages
+
+.seealso: TSCreate()
+@*/
+PetscErrorCode  TSGetStages(TS ts,PetscInt *ns, Vec **Y)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  PetscValidPointer(ns,2);
+
+  if (!ts->ops->getstages) *ns=0;
+  else {
+    ierr = (*ts->ops->getstages)(ts,ns,Y);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

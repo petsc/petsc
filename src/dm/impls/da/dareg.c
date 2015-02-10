@@ -18,12 +18,12 @@ PetscErrorCode  DMSetUp_DA(DM da)
   if (dd->s < 0) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",dd->s);
 
   ierr = PetscCalloc1(dd->w,&dd->fieldname);CHKERRQ(ierr);
-  ierr = PetscCalloc1(dd->dim,&dd->coordinatename);CHKERRQ(ierr);
-  if (dd->dim == 1) {
+  ierr = PetscCalloc1(da->dim,&dd->coordinatename);CHKERRQ(ierr);
+  if (da->dim == 1) {
     ierr = DMSetUp_DA_1D(da);CHKERRQ(ierr);
-  } else if (dd->dim == 2) {
+  } else if (da->dim == 2) {
     ierr = DMSetUp_DA_2D(da);CHKERRQ(ierr);
-  } else if (dd->dim == 3) {
+  } else if (da->dim == 3) {
     ierr = DMSetUp_DA_3D(da);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"DMs only supported for 1, 2, and 3d");
   ierr = DMViewFromOptions(da,NULL,"-dm_view");CHKERRQ(ierr);

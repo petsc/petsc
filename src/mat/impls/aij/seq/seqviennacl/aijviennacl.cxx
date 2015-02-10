@@ -36,7 +36,7 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
       ierr = PetscLogEventBegin(MAT_ViennaCLCopyToGPU,A,0,0,0);CHKERRQ(ierr);
 
       try {
-        ierr = PetscObjectSetFromOptions_ViennaCL((PetscObject)A);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
+        ierr = PetscObjectViennaCLSetFromOptions((PetscObject)A);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
         if (a->compressedrow.use) {
           if (!viennaclstruct->compressed_mat) viennaclstruct->compressed_mat = new ViennaCLCompressedAIJMatrix();
 
@@ -173,8 +173,8 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecs_SeqAIJViennaCL"
-PetscErrorCode MatGetVecs_SeqAIJViennaCL(Mat mat, Vec *right, Vec *left)
+#define __FUNCT__ "MatCreateVecs_SeqAIJViennaCL"
+PetscErrorCode MatCreateVecs_SeqAIJViennaCL(Mat mat, Vec *right, Vec *left)
 {
   PetscErrorCode ierr;
   PetscInt rbs,cbs;
@@ -393,7 +393,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
 
   B->ops->assemblyend    = MatAssemblyEnd_SeqAIJViennaCL;
   B->ops->destroy        = MatDestroy_SeqAIJViennaCL;
-  B->ops->getvecs        = MatGetVecs_SeqAIJViennaCL;
+  B->ops->getvecs        = MatCreateVecs_SeqAIJViennaCL;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
 

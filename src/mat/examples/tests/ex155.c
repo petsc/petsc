@@ -1,7 +1,7 @@
 static char help[]="This program illustrates the use of PETSc-fftw interface for parallel real DFT\n";
 #include <petscmat.h>
 #include <fftw3-mpi.h>
-/*extern PetscErrorCode MatGetVecsFFT(Mat,Vec *,Vec *,Vec *);*/
+/*extern PetscErrorCode MatCreateVecsFFT(Mat,Vec *,Vec *,Vec *);*/
 #undef __FUNCT__
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
@@ -35,7 +35,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&row,&col);CHKERRQ(ierr);
   printf("The Matrix size  is %d and %d from process %d\n",row,col,rank);
-  ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
+  ierr = MatCreateVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
 
   ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
 

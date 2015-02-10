@@ -29,7 +29,7 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_MT"
-static PetscErrorCode TaoLineSearchSetFromOptions_MT(TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_MT(PetscOptions *PetscOptionsObject,TaoLineSearch ls)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
@@ -306,10 +306,9 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchCreate_MT"
-PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
 {
   PetscErrorCode   ierr;
   TaoLineSearch_MT *ctx;
@@ -329,7 +328,6 @@ PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
   ls->ops->setfromoptions=TaoLineSearchSetFromOptions_MT;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*
      The subroutine mcstep is taken from the work of Jorge Nocedal.

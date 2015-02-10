@@ -33,7 +33,7 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
    Routines: TaoSetJacobianRoutine();
    Routines: TaoSetInitialVector();
    Routines: TaoSetFromOptions();
-   Routines: TaoSetHistory(); TaoGetHistory();
+   Routines: TaoSetConvergenceHistory(); TaoGetConvergenceHistory();
    Routines: TaoSolve();
    Routines: TaoView(); TaoDestroy();
    Processors: 1
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
   Tao            tao;                /* Tao solver context */
   PetscInt       i;               /* iteration information */
   PetscReal      hist[100],resid[100];
-  PetscInt       nhist;
+  PetscInt       nhist,lits[100];
   PetscBool      printhistory;
   AppCtx         user;               /* user-defined work context */
 
@@ -103,11 +103,11 @@ int main(int argc,char **argv)
   /* Check for any TAO command line arguments */
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
-  ierr = TaoSetHistory(tao,hist,resid,0,100,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = TaoSetConvergenceHistory(tao,hist,resid,0,lits,100,PETSC_TRUE);CHKERRQ(ierr);
   /* Perform the Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
   if (printhistory) {
-    ierr = TaoGetHistory(tao,0,0,0,&nhist);CHKERRQ(ierr);
+    ierr = TaoGetConvergenceHistory(tao,0,0,0,0,&nhist);CHKERRQ(ierr);
     for (i=0;i<nhist;i++) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"%g\t%g\n",(double)hist[i],(double)resid[i]);CHKERRQ(ierr);
     }

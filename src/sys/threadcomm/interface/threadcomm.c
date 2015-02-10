@@ -336,7 +336,7 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
   if (nthreads == PETSC_DECIDE) {
     tcomm->nworkThreads = 1;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting number of threads",NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-threadcomm_nthreads","number of threads to use in the thread communicator","PetscThreadCommSetNThreads",1,&nthr,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-threadcomm_nthreads","number of threads to use in the thread communicator","PetscThreadCommSetNThreads",tcomm->nworkThreads,&nthr,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (flg) {
       if (nthr == PETSC_DECIDE) tcomm->nworkThreads = N_CORES;
@@ -1216,7 +1216,7 @@ PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
 /*
   PetscThreadCommWorldInitialize - Initializes the global thread communicator object
 
-  PetscThreadCommWorldInitialize() defaults to using the nonthreaded communicator.
+    Defaults to using the nonthreaded communicator.
 */
 PetscErrorCode PetscThreadCommWorldInitialize(void)
 {
@@ -1234,7 +1234,7 @@ PetscErrorCode PetscThreadCommWorldInitialize(void)
   tcomm->nkernels = 16;
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting number of kernels",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-threadcomm_nkernels","number of kernels that can be launched simultaneously","",16,&tcomm->nkernels,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-threadcomm_nkernels","number of kernels that can be launched simultaneously","",tcomm->nkernels,&tcomm->nkernels,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscMalloc1(tcomm->nkernels,&PetscJobQueue->jobs);CHKERRQ(ierr);
@@ -1281,7 +1281,7 @@ PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm comm,PetscInt N,PetscI
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
 
-  ierr            = PetscMalloc1((tcomm->nworkThreads+1),&trstarts_out);CHKERRQ(ierr);
+  ierr            = PetscMalloc1(tcomm->nworkThreads+1,&trstarts_out);CHKERRQ(ierr);
   trstarts_out[0] = 0;
   Q               = N/tcomm->nworkThreads;
   R               = N - Q*tcomm->nworkThreads;

@@ -217,12 +217,12 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_LMVM"
-static PetscErrorCode TaoSetFromOptions_LMVM(Tao tao)
+static PetscErrorCode TaoSetFromOptions_LMVM(PetscOptions *PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Limited-memory variable-metric method for unconstrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for unconstrained optimization");CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -281,10 +281,9 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
   Level: beginner
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_LMVM"
-PetscErrorCode TaoCreate_LMVM(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
 {
   TAO_LMVM       *lmP;
   const char     *morethuente_type = TAOLINESEARCHMT;
@@ -314,4 +313,4 @@ PetscErrorCode TaoCreate_LMVM(Tao tao)
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

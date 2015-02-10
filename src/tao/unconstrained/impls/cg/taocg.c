@@ -230,18 +230,18 @@
 
  #undef __FUNCT__
  #define __FUNCT__ "TaoSetFromOptions_CG"
- static PetscErrorCode TaoSetFromOptions_CG(Tao tao)
+static PetscErrorCode TaoSetFromOptions_CG(PetscOptions *PetscOptionsObject,Tao tao)
  {
     TAO_CG         *cgP = (TAO_CG*)tao->data;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
     ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
-    ierr = PetscOptionsHead("Nonlinear Conjugate Gradient method for unconstrained optimization");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_cg_eta","restart tolerance", "", cgP->eta,&cgP->eta,0);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-tao_cg_type","cg formula", "", CG_Table, CG_Types, CG_Table[cgP->cg_type], &cgP->cg_type, 0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_cg_delta_min","minimum delta value", "", cgP->delta_min,&cgP->delta_min,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-tao_cg_delta_max","maximum delta value", "", cgP->delta_max,&cgP->delta_max,0);CHKERRQ(ierr);
+    ierr = PetscOptionsHead(PetscOptionsObject,"Nonlinear Conjugate Gradient method for unconstrained optimization");CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-tao_cg_eta","restart tolerance", "", cgP->eta,&cgP->eta,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-tao_cg_type","cg formula", "", CG_Table, CG_Types, CG_Table[cgP->cg_type], &cgP->cg_type,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-tao_cg_delta_min","minimum delta value", "", cgP->delta_min,&cgP->delta_min,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-tao_cg_delta_max","maximum delta value", "", cgP->delta_max,&cgP->delta_max,NULL);CHKERRQ(ierr);
    ierr = PetscOptionsTail();CHKERRQ(ierr);
    PetscFunctionReturn(0);
 }
@@ -287,10 +287,9 @@ nonlinear conjugate gradient solver for nonlinear optimization.
 M*/
 
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_CG"
-PetscErrorCode TaoCreate_CG(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
 {
   TAO_CG         *cgP;
   const char     *morethuente_type = TAOLINESEARCHMT;
@@ -324,4 +323,3 @@ PetscErrorCode TaoCreate_CG(Tao tao)
   cgP->cg_type = CG_PolakRibierePlus;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

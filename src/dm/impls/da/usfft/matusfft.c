@@ -204,7 +204,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   usfft->freqDA = freqDA;
   /* NB: we reverse the freq and resample DMDA sizes, since the DMDA ordering (natural on x-y-z, with x varying the fastest)
      is the order opposite of that assumed by FFTW: z varying the fastest */
-  ierr = PetscMalloc1((usfft->ndim+1),&usfft->indim);CHKERRQ(ierr);
+  ierr = PetscMalloc1(usfft->ndim+1,&usfft->indim);CHKERRQ(ierr);
   for (i = usfft->ndim; i > 0; --i) usfft->indim[usfft->ndim-i] = dim[i-1];
 
   /* outda */
@@ -214,7 +214,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   /* Store output dimensions */
   /* NB: we reverse the DMDA dimensions, since the DMDA ordering (natural on x-y-z, with x varying the fastest)
      is the order opposite of that assumed by FFTW: z varying the fastest */
-  ierr = PetscMalloc1((usfft->ndim+1),&usfft->outdim);CHKERRQ(ierr);
+  ierr = PetscMalloc1(usfft->ndim+1,&usfft->outdim);CHKERRQ(ierr);
   for (i = usfft->ndim; i > 0; --i) usfft->outdim[usfft->ndim-i] = dim[i-1];
 
   /* TODO: Use the new form of DMDACreate() */

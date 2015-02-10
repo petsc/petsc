@@ -9,7 +9,7 @@ PetscErrorCode PCBDDCCreateFETIDPMatContext(PC pc, FETIDPMat_ctx *fetidpmat_ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(*newctx),&newctx);CHKERRQ(ierr);
+  ierr = PetscNew(&newctx);CHKERRQ(ierr);
   newctx->lambda_local    = 0;
   newctx->temp_solution_B = 0;
   newctx->temp_solution_D = 0;
@@ -31,7 +31,7 @@ PetscErrorCode PCBDDCCreateFETIDPPCContext(PC pc, FETIDPPC_ctx *fetidppc_ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(*newctx),&newctx);CHKERRQ(ierr);
+  ierr = PetscNew(&newctx);CHKERRQ(ierr);
   newctx->lambda_local    = 0;
   newctx->B_Ddelta        = 0;
   newctx->l2g_lambda      = 0;
@@ -74,6 +74,7 @@ PetscErrorCode PCBDDCDestroyFETIDPPC(PC pc)
   ierr = VecDestroy(&pc_ctx->lambda_local);CHKERRQ(ierr);
   ierr = MatDestroy(&pc_ctx->B_Ddelta);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pc_ctx->l2g_lambda);CHKERRQ(ierr);
+  ierr = MatDestroy(&pc_ctx->S_j);CHKERRQ(ierr);
   ierr = PCDestroy(&pc_ctx->pc);CHKERRQ(ierr); /* decrease PCBDDC reference count */
   ierr = PetscFree(pc_ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -184,8 +185,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   partial_sum = 0;
   j = 0;
   ierr = PetscMalloc1(pcis->n_neigh,&ptrs_buffer);CHKERRQ(ierr);
-  ierr = PetscMalloc1((pcis->n_neigh-1),&send_reqs);CHKERRQ(ierr);
-  ierr = PetscMalloc1((pcis->n_neigh-1),&recv_reqs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcis->n_neigh-1,&send_reqs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(pcis->n_neigh-1,&recv_reqs);CHKERRQ(ierr);
   ierr = PetscMalloc1(pcis->n,&all_factors);CHKERRQ(ierr);
   ptrs_buffer[0]=0;
   for (i=1;i<pcis->n_neigh;i++) {
@@ -539,6 +540,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
 PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx)
 {
   FETIDPMat_ctx  mat_ctx;
+  PC_IS          *pcis;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -550,6 +552,10 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
   fetidppc_ctx->B_Ddelta = mat_ctx->B_Ddelta;
   ierr = PetscObjectReference((PetscObject)mat_ctx->l2g_lambda);CHKERRQ(ierr);
   fetidppc_ctx->l2g_lambda = mat_ctx->l2g_lambda;
+  /* create local Schur complement matrix */
+  pcis = (PC_IS*)fetidppc_ctx->pc->data;
+  ierr = MatCreateSchurComplement(pcis->A_II,pcis->A_II,pcis->A_IB,pcis->A_BI,pcis->A_BB,&fetidppc_ctx->S_j);CHKERRQ(ierr);
+  ierr = MatSchurComplementSetKSP(fetidppc_ctx->S_j,pcis->ksp_D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -621,8 +627,8 @@ PetscErrorCode FETIDPPCApply(PC fetipc, Vec x, Vec y)
   ierr = VecScatterEnd(pc_ctx->l2g_lambda,x,pc_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecSet(pcis->vec2_B,0.0);CHKERRQ(ierr);
   ierr = MatMultTranspose(pc_ctx->B_Ddelta,pc_ctx->lambda_local,pcis->vec2_B);CHKERRQ(ierr);
-  /* Application of S */
-  ierr = PCBDDCApplySchur(pc_ctx->pc,pcis->vec2_B,pcis->vec1_B,(Vec)0,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+  /* Application of local Schur complement */
+  ierr = MatMult(pc_ctx->S_j,pcis->vec2_B,pcis->vec1_B);CHKERRQ(ierr);
   /* Application of B_Ddelta */
   ierr = MatMult(pc_ctx->B_Ddelta,pcis->vec1_B,pc_ctx->lambda_local);CHKERRQ(ierr);
   ierr = VecSet(y,0.0);CHKERRQ(ierr);
@@ -647,8 +653,8 @@ PetscErrorCode FETIDPPCApplyTranspose(PC fetipc, Vec x, Vec y)
   ierr = VecScatterEnd(pc_ctx->l2g_lambda,x,pc_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecSet(pcis->vec2_B,0.0);CHKERRQ(ierr);
   ierr = MatMultTranspose(pc_ctx->B_Ddelta,pc_ctx->lambda_local,pcis->vec2_B);CHKERRQ(ierr);
-  /* Application of S */
-  ierr = PCBDDCApplySchurTranspose(pc_ctx->pc,pcis->vec2_B,pcis->vec1_B,(Vec)0,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+  /* Application of local Schur complement */
+  ierr = MatMultTranspose(pc_ctx->S_j,pcis->vec2_B,pcis->vec1_B);CHKERRQ(ierr);
   /* Application of B_Ddelta */
   ierr = MatMult(pc_ctx->B_Ddelta,pcis->vec1_B,pc_ctx->lambda_local);CHKERRQ(ierr);
   ierr = VecSet(y,0.0);CHKERRQ(ierr);

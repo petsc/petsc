@@ -138,7 +138,7 @@ PetscInt main(PetscInt argc,char **args)
 
   if (TestZHEEV) { /* test zheev() */
     printf(" LAPACKsyev: compute all %d eigensolutions...\n",m);
-    ierr = PetscMalloc1((3*n-2),&rwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(3*n-2,&rwork);CHKERRQ(ierr);
     LAPACKsyev_("V","U",&bn,arrayA,&bn,evals,work,&lwork,rwork,&lierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
 
@@ -150,10 +150,10 @@ PetscInt main(PetscInt argc,char **args)
     il   = 1;
     ierr = PetscBLASIntCast((0.2*m),&iu);CHKERRQ(ierr);
     printf(" LAPACKsyevx: compute %d to %d-th eigensolutions...\n",il,iu);
-    ierr = PetscMalloc1((m*n+1),&evecs_array);CHKERRQ(ierr);
-    ierr = PetscMalloc1((7*n+1),&rwork);CHKERRQ(ierr);
-    ierr = PetscMalloc1((5*n+1),&iwork);CHKERRQ(ierr);
-    ierr = PetscMalloc1((n+1),&ifail);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m*n+1,&evecs_array);CHKERRQ(ierr);
+    ierr = PetscMalloc1(7*n+1,&rwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(5*n+1,&iwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n+1,&ifail);CHKERRQ(ierr);
 
     /* in the case "I", vl and vu are not referenced */
     vl = 0.0; vu = 8.0;
@@ -164,7 +164,7 @@ PetscInt main(PetscInt argc,char **args)
   }
   if (TestZHEGV) {
     printf(" LAPACKsygv: compute all %d eigensolutions...\n",m);
-    ierr = PetscMalloc1((3*n+1),&rwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(3*n+1,&rwork);CHKERRQ(ierr);
     ierr = MatDenseGetArray(B,&arrayB);CHKERRQ(ierr);
     LAPACKsygv_(&one,"V","U",&bn,arrayA,&bn,arrayB,&bn,evals,work,&lwork,rwork,&lierr);
     evecs_array = arrayA;
@@ -177,10 +177,10 @@ PetscInt main(PetscInt argc,char **args)
     il   = 1;
     ierr = PetscBLASIntCast((0.2*m),&iu);CHKERRQ(ierr);
     printf(" LAPACKsygv: compute %d to %d-th eigensolutions...\n",il,iu);
-    ierr  = PetscMalloc1((m*n+1),&evecs_array);CHKERRQ(ierr);
-    ierr  = PetscMalloc1((6*n+1),&iwork);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(m*n+1,&evecs_array);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(6*n+1,&iwork);CHKERRQ(ierr);
     ifail = iwork + 5*n;
-    ierr  = PetscMalloc1((7*n+1),&rwork);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(7*n+1,&rwork);CHKERRQ(ierr);
     ierr  = MatDenseGetArray(B,&arrayB);CHKERRQ(ierr);
     vl    = 0.0; vu = 8.0;
     LAPACKsygvx_(&one,"V","I","U",&bn,arrayA,&bn,arrayB,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,rwork,iwork,ifail,&lierr);
@@ -199,7 +199,7 @@ PetscInt main(PetscInt argc,char **args)
   }
 
   /* Check residuals and orthogonality */
-  ierr = PetscMalloc1((nevs+1),&evecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nevs+1,&evecs);CHKERRQ(ierr);
   for (i=0; i<nevs; i++) {
     ierr = VecCreate(PETSC_COMM_SELF,&evecs[i]);CHKERRQ(ierr);
     ierr = VecSetSizes(evecs[i],PETSC_DECIDE,n);CHKERRQ(ierr);

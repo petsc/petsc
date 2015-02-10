@@ -119,11 +119,12 @@ static PetscErrorCode MatDestroy_UMFPACK(Mat A)
 #define __FUNCT__ "MatSolve_UMFPACK_Private"
 static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
 {
-  Mat_UMFPACK    *lu = (Mat_UMFPACK*)A->spptr;
-  Mat_SeqAIJ     *a  = (Mat_SeqAIJ*)lu->A->data;
-  PetscScalar    *av = a->a,*ba,*xa;
-  PetscErrorCode ierr;
-  PetscInt       *ai = a->i,*aj = a->j,status;
+  Mat_UMFPACK       *lu = (Mat_UMFPACK*)A->spptr;
+  Mat_SeqAIJ        *a  = (Mat_SeqAIJ*)lu->A->data;
+  PetscScalar       *av = a->a,*xa;
+  const PetscScalar *ba;
+  PetscErrorCode    ierr;
+  PetscInt          *ai = a->i,*aj = a->j,status;
 
   PetscFunctionBegin;
   /* solve Ax = b by umfpack_*_wsolve */
@@ -134,7 +135,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
     ierr = PetscMalloc1(5*A->rmap->n,&lu->W);CHKERRQ(ierr);
   }
 
-  ierr = VecGetArray(b,&ba);
+  ierr = VecGetArrayRead(b,&ba);
   ierr = VecGetArray(x,&xa);
 #if defined(PETSC_USE_COMPLEX)
   status = umfpack_UMF_wsolve(uflag,ai,aj,(PetscReal*)av,NULL,(PetscReal*)xa,NULL,(PetscReal*)ba,NULL,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
@@ -147,7 +148,7 @@ static PetscErrorCode MatSolve_UMFPACK_Private(Mat A,Vec b,Vec x,int uflag)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"umfpack_UMF_wsolve failed");
   }
 
-  ierr = VecRestoreArray(b,&ba);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(b,&ba);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -364,13 +365,15 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
 . -mat_umfpack_fixq <0>                - Control[UMFPACK_FIXQ]
 . -mat_umfpack_aggressive <1>          - Control[UMFPACK_AGGRESSIVE]
 . -mat_umfpack_pivot_tolerance <delta> - UMFPACK partial pivot tolerance: Control[UMFPACK_PIVOT_TOLERANCE]
-.  -mat_umfpack_sym_pivot_tolerance <0.001> - Control[UMFPACK_SYM_PIVOT_TOLERANCE]
-.  -mat_umfpack_scale <NONE>           - (choose one of) NONE SUM MAX
+. -mat_umfpack_sym_pivot_tolerance <0.001> - Control[UMFPACK_SYM_PIVOT_TOLERANCE]
+. -mat_umfpack_scale <NONE>           - (choose one of) NONE SUM MAX
 . -mat_umfpack_alloc_init <delta>      - UMFPACK factorized matrix allocation modifier: Control[UMFPACK_ALLOC_INIT]
-.  -mat_umfpack_droptol <0>            - Control[UMFPACK_DROPTOL]
+. -mat_umfpack_droptol <0>            - Control[UMFPACK_DROPTOL]
 - -mat_umfpack_irstep <maxit>          - UMFPACK maximum number of iterative refinement steps: Control[UMFPACK_IRSTEP]
 
    Level: beginner
+
+   Note: UMFPACK is part of SuiteSparse http://faculty.cse.tamu.edu/davis/suitesparse.html
 
 .seealso: PCLU, MATSOLVERSUPERLU, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
@@ -461,4 +464,20 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftyp
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat,MatFactorType,Mat*);
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_SuiteSparse"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_SuiteSparse(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERUMFPACK,MATSEQAIJ,      MAT_FACTOR_LU,MatGetFactor_seqaij_umfpack);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERCHOLMOD,MATSEQAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqaij_cholmod);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERCHOLMOD,MATSEQSBAIJ,      MAT_FACTOR_CHOLESKY,MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
+  ierr = MatSolverPackageRegister(MATSOLVERKLU,MATSEQAIJ,          MAT_FACTOR_LU,MatGetFactor_seqaij_klu);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

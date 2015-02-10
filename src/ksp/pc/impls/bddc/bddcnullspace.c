@@ -21,15 +21,15 @@ PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC pc, Mat coarse_mat, MatNullSpace
   coarse_nsp_vecs = 0;
   ierr = MatNullSpaceGetVecs(pcbddc->NullSpace,&nsp_has_cnst,&nsp_size,&nsp_vecs);CHKERRQ(ierr);
   if (coarse_mat) {
-    ierr = PetscMalloc1((nsp_size+1),&coarse_nsp_vecs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nsp_size+1,&coarse_nsp_vecs);CHKERRQ(ierr);
     for (i=0;i<nsp_size+1;i++) {
-      ierr = MatGetVecs(coarse_mat,&coarse_nsp_vecs[i],NULL);CHKERRQ(ierr);
+      ierr = MatCreateVecs(coarse_mat,&coarse_nsp_vecs[i],NULL);CHKERRQ(ierr);
     }
     if (pcbddc->dbg_flag) {
-      ierr = MatGetVecs(coarse_mat,&wcoarse_vec,&wcoarse_rhs);CHKERRQ(ierr);
+      ierr = MatCreateVecs(coarse_mat,&wcoarse_vec,&wcoarse_rhs);CHKERRQ(ierr);
     }
   }
-  ierr = MatGetVecs(pcbddc->ConstraintMatrix,&local_vec,&local_primal_vec);CHKERRQ(ierr);
+  ierr = MatCreateVecs(pcbddc->ConstraintMatrix,&local_vec,&local_primal_vec);CHKERRQ(ierr);
   if (nsp_has_cnst) {
     ierr = VecSet(local_vec,1.0);CHKERRQ(ierr);
     ierr = MatMult(pcbddc->ConstraintMatrix,local_vec,local_primal_vec);CHKERRQ(ierr);
@@ -198,29 +198,29 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
 
   if (basis_dofs) {
      /* Create shell ctx */
-     ierr = PetscMalloc(sizeof(*shell_ctx),&shell_ctx);CHKERRQ(ierr);
+    ierr = PetscNew(&shell_ctx);CHKERRQ(ierr);
 
-     /* Create work vectors in shell context */
-     ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_small_1);CHKERRQ(ierr);
-     ierr = VecSetSizes(shell_ctx->work_small_1,basis_size,basis_size);CHKERRQ(ierr);
-     ierr = VecSetType(shell_ctx->work_small_1,VECSEQ);CHKERRQ(ierr);
-     ierr = VecDuplicate(shell_ctx->work_small_1,&shell_ctx->work_small_2);CHKERRQ(ierr);
-     ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_full_1);CHKERRQ(ierr);
-     ierr = VecSetSizes(shell_ctx->work_full_1,basis_dofs,basis_dofs);CHKERRQ(ierr);
-     ierr = VecSetType(shell_ctx->work_full_1,VECSEQ);CHKERRQ(ierr);
-     ierr = VecDuplicate(shell_ctx->work_full_1,&shell_ctx->work_full_2);CHKERRQ(ierr);
+    /* Create work vectors in shell context */
+    ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_small_1);CHKERRQ(ierr);
+    ierr = VecSetSizes(shell_ctx->work_small_1,basis_size,basis_size);CHKERRQ(ierr);
+    ierr = VecSetType(shell_ctx->work_small_1,VECSEQ);CHKERRQ(ierr);
+    ierr = VecDuplicate(shell_ctx->work_small_1,&shell_ctx->work_small_2);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_SELF,&shell_ctx->work_full_1);CHKERRQ(ierr);
+    ierr = VecSetSizes(shell_ctx->work_full_1,basis_dofs,basis_dofs);CHKERRQ(ierr);
+    ierr = VecSetType(shell_ctx->work_full_1,VECSEQ);CHKERRQ(ierr);
+    ierr = VecDuplicate(shell_ctx->work_full_1,&shell_ctx->work_full_2);CHKERRQ(ierr);
 
-     /* Allocate workspace */
-     ierr = MatCreateSeqDense(PETSC_COMM_SELF,basis_dofs,basis_size,NULL,&shell_ctx->basis_mat );CHKERRQ(ierr);
-     ierr = MatCreateSeqDense(PETSC_COMM_SELF,basis_dofs,basis_size,NULL,&shell_ctx->Kbasis_mat);CHKERRQ(ierr);
-     ierr = MatDenseGetArray(shell_ctx->basis_mat,&basis_mat);CHKERRQ(ierr);
-     ierr = MatDenseGetArray(shell_ctx->Kbasis_mat,&Kbasis_mat);CHKERRQ(ierr);
+    /* Allocate workspace */
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF,basis_dofs,basis_size,NULL,&shell_ctx->basis_mat );CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(PETSC_COMM_SELF,basis_dofs,basis_size,NULL,&shell_ctx->Kbasis_mat);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(shell_ctx->basis_mat,&basis_mat);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(shell_ctx->Kbasis_mat,&Kbasis_mat);CHKERRQ(ierr);
 
-     /* Restrict local null space on selected dofs (Dirichlet or Neumann)
-        and compute matrices N and K*N */
-     ierr = VecDuplicate(shell_ctx->work_full_1,&work1);CHKERRQ(ierr);
-     ierr = VecDuplicate(shell_ctx->work_full_1,&work2);CHKERRQ(ierr);
-     ierr = VecScatterCreate(pcis->vec1_N,local_dofs,work1,(IS)0,&scatter_ctx);CHKERRQ(ierr);
+    /* Restrict local null space on selected dofs (Dirichlet or Neumann)
+       and compute matrices N and K*N */
+    ierr = VecDuplicate(shell_ctx->work_full_1,&work1);CHKERRQ(ierr);
+    ierr = VecDuplicate(shell_ctx->work_full_1,&work2);CHKERRQ(ierr);
+    ierr = VecScatterCreate(pcis->vec1_N,local_dofs,work1,(IS)0,&scatter_ctx);CHKERRQ(ierr);
   }
 
   for (k=0;k<nnsp_size;k++) {
@@ -362,8 +362,6 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
   PetscFunctionReturn(0);
 }
 
-/* uncomment to test nullspace adaptation when change of basis has been requested */
-/* #define PCBDDC_TESTNULLSPACE 1 */
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCNullSpaceAdaptGlobal"
 PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC pc)
@@ -371,7 +369,6 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC pc)
   PC_IS*         pcis = (PC_IS*)(pc->data);
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
   KSP            inv_change;
-  PC             pc_change;
   const Vec      *nsp_vecs;
   Vec            *new_nsp_vecs;
   PetscInt       i,nsp_size,new_nsp_size,start_new;
@@ -381,88 +378,61 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC pc)
 
   PetscFunctionBegin;
   /* create KSP for change of basis */
-  ierr = KSPCreate(PETSC_COMM_SELF,&inv_change);CHKERRQ(ierr);
+  ierr = MatGetSize(pcbddc->ChangeOfBasisMatrix,&i,NULL);CHKERRQ(ierr);
+  ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&inv_change);CHKERRQ(ierr);
   ierr = KSPSetOperators(inv_change,pcbddc->ChangeOfBasisMatrix,pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
-  ierr = KSPSetType(inv_change,KSPPREONLY);CHKERRQ(ierr);
-  ierr = KSPGetPC(inv_change,&pc_change);CHKERRQ(ierr);
-  ierr = PCSetType(pc_change,PCLU);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(inv_change,1.e-8,1.e-8,PETSC_DEFAULT,2*i);CHKERRQ(ierr);
+  if (pcbddc->dbg_flag) {
+    ierr = KSPMonitorSet(inv_change,KSPMonitorDefault,pcbddc->dbg_viewer,NULL);CHKERRQ(ierr);
+  }
   ierr = KSPSetUp(inv_change);CHKERRQ(ierr);
+
   /* get nullspace and transform it */
   ierr = MatNullSpaceGetVecs(pcbddc->NullSpace,&nsp_has_cnst,&nsp_size,&nsp_vecs);CHKERRQ(ierr);
   new_nsp_size = nsp_size;
   if (nsp_has_cnst) {
     new_nsp_size++;
   }
-  ierr = PetscMalloc1(new_nsp_size,&new_nsp_vecs);CHKERRQ(ierr);
-  for (i=0;i<new_nsp_size;i++) {
-    ierr = VecDuplicate(pcis->vec1_global,&new_nsp_vecs[i]);CHKERRQ(ierr);
-  }
+  ierr = VecDuplicateVecs(pcis->vec1_global,new_nsp_size,&new_nsp_vecs);CHKERRQ(ierr);
+
   start_new = 0;
   if (nsp_has_cnst) {
     start_new = 1;
     ierr = VecSet(new_nsp_vecs[0],1.0);CHKERRQ(ierr);
-    ierr = VecSet(pcis->vec1_B,1.0);CHKERRQ(ierr);
-    ierr = KSPSolve(inv_change,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,new_nsp_vecs[0],INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_B,new_nsp_vecs[0],INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    if (pcbddc->dbg_flag) {
+      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Mapping constant in nullspace\n");CHKERRQ(ierr);
+    }
+    ierr = KSPSolve(inv_change,new_nsp_vecs[0],new_nsp_vecs[0]);CHKERRQ(ierr);
   }
   for (i=0;i<nsp_size;i++) {
-    ierr = VecCopy(nsp_vecs[i],new_nsp_vecs[i+start_new]);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcis->global_to_B,nsp_vecs[i],pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->global_to_B,nsp_vecs[i],pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = KSPSolve(inv_change,pcis->vec1_B,pcis->vec1_B);
-    ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,new_nsp_vecs[i+start_new],INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_B,new_nsp_vecs[i+start_new],INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Mapping %dth vector in nullspace\n",i);CHKERRQ(ierr);
+    ierr = KSPSolve(inv_change,nsp_vecs[i],new_nsp_vecs[i+start_new]);CHKERRQ(ierr);
   }
   ierr = PCBDDCOrthonormalizeVecs(new_nsp_size,new_nsp_vecs);CHKERRQ(ierr);
-#ifdef PCBDDC_TESTNULLSPACE
-  {
-    PetscBool nsp_t=PETSC_FALSE;
-    PetscReal test_norm;
-    Mat       temp_mat;
-    Mat_IS*   matis = (Mat_IS*)pc->pmat->data;
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)(pc->pmat)),"Testing BDDC nullspace (mat nullspace)\n",nsp_t);
-    ierr = MatNullSpaceTest(pcbddc->NullSpace,pc->pmat,&nsp_t);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)(pc->pmat)),"ORI ORI: %d\n",nsp_t);
-    temp_mat = matis->A;
-    matis->A = pcbddc->local_mat;
-    pcbddc->local_mat = temp_mat;
-    ierr = MatNullSpaceTest(pcbddc->NullSpace,pc->pmat,&nsp_t);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)(pc->pmat)),"NEW ORI: %d\n",nsp_t);
-    for (i=0;i<new_nsp_size;i++) {
-      ierr = MatMult(pc->pmat,new_nsp_vecs[i],pcis->vec1_global);CHKERRQ(ierr);
-      ierr = VecNorm(pcis->vec1_global,NORM_2,&test_norm);CHKERRQ(ierr);
-      if (test_norm > 1.e-12) {
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)(pc->pmat)),"------------ERROR VEC %d------------------\n",i);
-        ierr = VecView(pcis->vec1_global,PETSC_VIEWER_STDOUT_WORLD);
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)(pc->pmat)),"------------------------------------------\n");
-      }
-    }
-  }
-#endif
-
-  ierr = KSPDestroy(&inv_change);CHKERRQ(ierr);
   ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)pc),PETSC_FALSE,new_nsp_size,new_nsp_vecs,&new_nsp);CHKERRQ(ierr);
   ierr = PCBDDCSetNullSpace(pc,new_nsp);CHKERRQ(ierr);
+
+  /* free */
+  ierr = KSPDestroy(&inv_change);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&new_nsp);CHKERRQ(ierr);
-#ifdef PCBDDC_TESTNULLSPACE
-  {
+  ierr = VecDestroyVecs(new_nsp_size,&new_nsp_vecs);CHKERRQ(ierr);
+
+  /* check */
+  if (pcbddc->dbg_flag) {
     PetscBool nsp_t=PETSC_FALSE;
     Mat       temp_mat;
     Mat_IS*   matis = (Mat_IS*)pc->pmat->data;
-    ierr = MatNullSpaceTest(pcbddc->NullSpace,pc->pmat,&nsp_t);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)(pc->pmat)),"NEW NEW: %d\n",nsp_t);
+
     temp_mat = matis->A;
     matis->A = pcbddc->local_mat;
     pcbddc->local_mat = temp_mat;
     ierr = MatNullSpaceTest(pcbddc->NullSpace,pc->pmat,&nsp_t);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)(pc->pmat)),"ORI NEW: %d\n",nsp_t);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)(pc->pmat)),"Check nullspace with change of basis: %d\n",nsp_t);CHKERRQ(ierr);
+    temp_mat = matis->A;
+    matis->A = pcbddc->local_mat;
+    pcbddc->local_mat = temp_mat;
   }
-#endif
-
-  for (i=0;i<new_nsp_size;i++) {
-    ierr = VecDestroy(&new_nsp_vecs[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(new_nsp_vecs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

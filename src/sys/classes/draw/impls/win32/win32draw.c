@@ -818,10 +818,9 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_Win32"
-PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
+PETSC_EXTERN PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
 {
   PetscDraw_Win32 *windraw;
   HANDLE          hThread = NULL;
@@ -878,7 +877,6 @@ PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
   ReleaseMutex(g_hWindowListMutex);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 /* FUNCTION: PetscWndProc(HWND, unsigned, WORD, LONG)

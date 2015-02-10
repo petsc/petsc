@@ -167,7 +167,7 @@ int main(int argc, char **argv)
   /* Solve simple system with random rhs */
   ierr = PetscOptionsGetBool(NULL, "-solve", &doSolve, NULL);CHKERRQ(ierr);
   if (doSolve) {
-    ierr = MatGetVecs(A, &x, &b);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A, &x, &b);CHKERRQ(ierr);
     ierr = VecSetRandom(b, NULL);CHKERRQ(ierr);
     ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(ksp, A, A);CHKERRQ(ierr);

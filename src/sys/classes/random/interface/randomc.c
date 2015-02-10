@@ -127,7 +127,7 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
 .keywords: PetscRandom, set, options, database, type
 .seealso: PetscRandomSetFromOptions(), PetscRandomSetType()
 */
-static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
+static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,PetscRandom rnd)
 {
   PetscBool      opt;
   const char     *defaultType;
@@ -188,11 +188,11 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
   ierr = PetscObjectOptionsBegin((PetscObject)rnd);CHKERRQ(ierr);
 
   /* Handle PetscRandom type options */
-  ierr = PetscRandomSetTypeFromOptions_Private(rnd);CHKERRQ(ierr);
+  ierr = PetscRandomSetTypeFromOptions_Private(PetscOptionsObject,rnd);CHKERRQ(ierr);
 
   /* Handle specific random generator's options */
   if (rnd->ops->setfromoptions) {
-    ierr = (*rnd->ops->setfromoptions)(rnd);CHKERRQ(ierr);
+    ierr = (*rnd->ops->setfromoptions)(PetscOptionsObject,rnd);CHKERRQ(ierr);
   }
   ierr = PetscOptionsInt("-random_seed","Seed to use to generate random numbers","PetscRandomSetSeed",0,&seed,&set);CHKERRQ(ierr);
   if (set) {

@@ -13,7 +13,7 @@ struct _LineSearchOps {
   SNESLineSearchVIProjectFunc    viproject;
   SNESLineSearchVINormFunc       vinorm;
   PetscErrorCode (*postcheck)(SNESLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *,void*);
-  PetscErrorCode (*setfromoptions)(SNESLineSearch);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,SNESLineSearch);
   PetscErrorCode (*reset)(SNESLineSearch);
   PetscErrorCode (*destroy)(SNESLineSearch);
   PetscErrorCode (*setup)(SNESLineSearch);

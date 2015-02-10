@@ -40,7 +40,7 @@ int main(int argc,char **args)
   DIM    = 2;
   dim[0] = N0; dim[1] = N1;
   ierr   = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
-  ierr   = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
+  ierr   = MatCreateVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
 
   /* Scatter PETSc vector 'input' to FFTW vector 'x' */
   ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);

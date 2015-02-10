@@ -27,8 +27,8 @@ PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc,Petsc
     }
     ierr = MatRestoreRow(m,i,&ncol,NULL,&vcol);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc(sizeof(PetscInt)*nentries,&rowleaf);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*nentries,&rowdata);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nentries,&rowleaf);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nentries,&rowdata);CHKERRQ(ierr);
   idx=0;
   for (i=rs;i<re;i++) {
     ierr = MatGetRow(m,i,&ncol,&icol,&vcol);CHKERRQ(ierr);
@@ -55,7 +55,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc,Petsc
   for (i=0;i<cn;i++) {
     ncolentries += coldegrees[i];
   }
-  ierr = PetscMalloc(sizeof(PetscInt)*ncolentries,&colleaf);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ncolentries,&colleaf);CHKERRQ(ierr);
 
   /* create the one going the other way by building the leaf set */
   ierr = PetscLogEventBegin(Mat_Coloring_Comm,*etoc,0,0,0);CHKERRQ(ierr);

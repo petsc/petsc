@@ -666,13 +666,13 @@ static PetscErrorCode  KSPNASHGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_NASH"
-PetscErrorCode KSPSetFromOptions_NASH(KSP ksp)
+PetscErrorCode KSPSetFromOptions_NASH(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_NASH       *cg = (KSP_NASH*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP NASH options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP NASH options");CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-ksp_nash_radius", "Trust Region Radius", "KSPNASHSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
 

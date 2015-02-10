@@ -6,8 +6,8 @@
   what malloc is being used until it has already processed the input.
 */
 
-#define PETSC_DESIRE_COMPLEX
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <petscvalgrind.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
@@ -42,17 +42,13 @@ MPI_Datatype MPIU_C_COMPLEX;
    PETSC_i - the imaginary number i
 
    Synopsis:
-   #define PETSC_DESIRE_COMPLEX
    #include <petscsys.h>
    PetscComplex PETSC_i;
 
    Level: beginner
 
    Note:
-   Complex numbers are automatically available if PETSc was configured --with-scalar-type=complex (in which case
-   PetscComplex will match PetscScalar), otherwise the macro PETSC_DESIRE_COMPLEX must be defined before including any
-   PETSc headers. If the compiler supports complex numbers, PetscComplex and associated variables and functions will be
-   defined and PETSC_HAVE_COMPLEX will be set.
+   Complex numbers are automatically available if PETSc located a working complex implementation
 
 .seealso: PetscRealPart(), PetscImaginaryPart(), PetscRealPartComplex(), PetscImaginaryPartComplex()
 M*/

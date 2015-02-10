@@ -230,7 +230,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
   if (napp) {
     if (!ispetsc) {
       start = disp[rank];
-      ierr  = PetscMalloc1((napp+1), &petsc);CHKERRQ(ierr);
+      ierr  = PetscMalloc1(napp+1, &petsc);CHKERRQ(ierr);
       for (i=0; i<napp; i++) petsc[i] = start + i;
     } else {
       ierr  = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);

@@ -3,7 +3,7 @@
 #include <petscsf.h>
 
 static PetscErrorCode MatSetUp_NestIS_Private(Mat,PetscInt,const IS[],PetscInt,const IS[]);
-static PetscErrorCode MatGetVecs_Nest(Mat A,Vec *right,Vec *left);
+static PetscErrorCode MatCreateVecs_Nest(Mat A,Vec *right,Vec *left);
 
 /* private functions */
 #undef __FUNCT__
@@ -526,8 +526,8 @@ static PetscErrorCode MatShift_Nest(Mat A,PetscScalar a)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecs_Nest"
-static PetscErrorCode MatGetVecs_Nest(Mat A,Vec *right,Vec *left)
+#define __FUNCT__ "MatCreateVecs_Nest"
+static PetscErrorCode MatCreateVecs_Nest(Mat A,Vec *right,Vec *left)
 {
   Mat_Nest       *bA = (Mat_Nest*)A->data;
   Vec            *L,*R;
@@ -539,12 +539,12 @@ static PetscErrorCode MatGetVecs_Nest(Mat A,Vec *right,Vec *left)
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   if (right) {
     /* allocate R */
-    ierr = PetscMalloc(sizeof(Vec) * bA->nc, &R);CHKERRQ(ierr);
+    ierr = PetscMalloc1(bA->nc, &R);CHKERRQ(ierr);
     /* Create the right vectors */
     for (j=0; j<bA->nc; j++) {
       for (i=0; i<bA->nr; i++) {
         if (bA->m[i][j]) {
-          ierr = MatGetVecs(bA->m[i][j],&R[j],NULL);CHKERRQ(ierr);
+          ierr = MatCreateVecs(bA->m[i][j],&R[j],NULL);CHKERRQ(ierr);
           break;
         }
       }
@@ -563,12 +563,12 @@ static PetscErrorCode MatGetVecs_Nest(Mat A,Vec *right,Vec *left)
 
   if (left) {
     /* allocate L */
-    ierr = PetscMalloc(sizeof(Vec) * bA->nr, &L);CHKERRQ(ierr);
+    ierr = PetscMalloc1(bA->nr, &L);CHKERRQ(ierr);
     /* Create the left vectors */
     for (i=0; i<bA->nr; i++) {
       for (j=0; j<bA->nc; j++) {
         if (bA->m[i][j]) {
-          ierr = MatGetVecs(bA->m[i][j],NULL,&L[i]);CHKERRQ(ierr);
+          ierr = MatCreateVecs(bA->m[i][j],NULL,&L[i]);CHKERRQ(ierr);
           break;
         }
       }
@@ -990,7 +990,7 @@ PetscErrorCode  MatNestSetVecType_Nest(Mat A,VecType vtype)
   PetscFunctionBegin;
   ierr = PetscStrcmp(vtype,VECNEST,&flg);CHKERRQ(ierr);
   /* In reality, this only distinguishes VECNEST and "other" */
-  if (flg) A->ops->getvecs = MatGetVecs_Nest;
+  if (flg) A->ops->getvecs = MatCreateVecs_Nest;
   else A->ops->getvecs = (PetscErrorCode (*)(Mat,Vec*,Vec*)) 0;
   PetscFunctionReturn(0);
 }
@@ -998,7 +998,7 @@ PetscErrorCode  MatNestSetVecType_Nest(Mat A,VecType vtype)
 #undef __FUNCT__
 #define __FUNCT__ "MatNestSetVecType"
 /*@C
- MatNestSetVecType - Sets the type of Vec returned by MatGetVecs()
+ MatNestSetVecType - Sets the type of Vec returned by MatCreateVecs()
 
  Not collective
 
@@ -1010,7 +1010,7 @@ PetscErrorCode  MatNestSetVecType_Nest(Mat A,VecType vtype)
 
  Level: developer
 
-.seealso: MatGetVecs()
+.seealso: MatCreateVecs()
 @*/
 PetscErrorCode  MatNestSetVecType(Mat A,VecType vtype)
 {
@@ -1034,9 +1034,9 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
   s->nc = nc;
 
   /* Create space for submatrices */
-  ierr = PetscMalloc(sizeof(Mat*)*nr,&s->m);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nr,&s->m);CHKERRQ(ierr);
   for (i=0; i<nr; i++) {
-    ierr = PetscMalloc(sizeof(Mat)*nc,&s->m[i]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nc,&s->m[i]);CHKERRQ(ierr);
   }
   for (i=0; i<nr; i++) {
     for (j=0; j<nc; j++) {
@@ -1049,8 +1049,8 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
 
   ierr = MatSetUp_NestIS_Private(A,nr,is_row,nc,is_col);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscInt)*nr,&s->row_len);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*nc,&s->col_len);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nr,&s->row_len);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nc,&s->col_len);CHKERRQ(ierr);
   for (i=0; i<nr; i++) s->row_len[i]=-1;
   for (j=0; j<nc; j++) s->col_len[j]=-1;
 
@@ -1212,8 +1212,8 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
   Mat            sub = NULL;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(IS)*nr,&vs->isglobal.row);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(IS)*nc,&vs->isglobal.col);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nr,&vs->isglobal.row);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nc,&vs->isglobal.col);CHKERRQ(ierr);
   if (is_row) { /* valid IS is passed in */
     /* refs on is[] are incremeneted */
     for (i=0; i<vs->nr; i++) {

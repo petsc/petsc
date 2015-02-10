@@ -66,7 +66,7 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
     ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
     ierr = VecSetDM(*g, da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-    if (dd->w == 1  && dd->dim == 2) {
+    if (dd->w == 1  && da->dim == 2) {
       ierr = PetscObjectComposeFunction((PetscObject)*g,"PetscMatlabEnginePut_C",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
     }
 #endif
@@ -95,7 +95,7 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
 PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, PetscInt *numCellsZ, PetscInt *numCells)
 {
   DM_DA         *da  = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  const PetscInt dim = dm->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
   const PetscInt nC  = (mx)*(dim > 1 ? (my)*(dim > 2 ? (mz) : 1) : 1);
 
@@ -138,8 +138,7 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
 @*/
 PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, PetscInt *point)
 {
-  DM_DA         *da  = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  const PetscInt dim = dm->dim;
   DMDALocalInfo  info;
   PetscErrorCode ierr;
 
@@ -159,7 +158,7 @@ PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, Petsc
 PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVerticesY, PetscInt *numVerticesZ, PetscInt *numVertices)
 {
   DM_DA          *da = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  const PetscInt dim = dm->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
   const PetscInt nVx = mx+1;
   const PetscInt nVy = dim > 1 ? (my+1) : 1;
@@ -191,7 +190,7 @@ PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVe
 PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces, PetscInt *numYFacesY, PetscInt *numYFaces, PetscInt *numZFacesZ, PetscInt *numZFaces)
 {
   DM_DA          *da = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  const PetscInt dim = dm->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
   const PetscInt nxF = (dim > 1 ? (my)*(dim > 2 ? (mz) : 1) : 1);
   const PetscInt nXF = (mx+1)*nxF;
@@ -232,8 +231,7 @@ PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces,
 #define __FUNCT__ "DMDAGetHeightStratum"
 PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, PetscInt *pEnd)
 {
-  DM_DA          *da = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  const PetscInt dim = dm->dim;
   PetscInt       nC, nV, nXF, nYF, nZF;
   PetscErrorCode ierr;
 
@@ -267,8 +265,7 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
 #define __FUNCT__ "DMDAGetDepthStratum"
 PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, PetscInt *pEnd)
 {
-  DM_DA         *da  = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  const PetscInt dim = dm->dim;
   PetscInt       nC, nV, nXF, nYF, nZF;
   PetscErrorCode ierr;
 
@@ -302,8 +299,7 @@ PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, Pets
 #define __FUNCT__ "DMDAGetConeSize"
 PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize)
 {
-  DM_DA         *da  = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  const PetscInt dim = dm->dim;
   PetscInt       nC, nV, nXF, nYF, nZF;
   PetscErrorCode ierr;
 
@@ -335,8 +331,7 @@ PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize)
 #define __FUNCT__ "DMDAGetCone"
 PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
 {
-  DM_DA         *da  = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  const PetscInt dim = dm->dim;
   PetscInt       nCx, nCy, nCz, nC, nVx, nVy, nVz, nV, nxF, nyF, nzF, nXF, nYF, nZF;
   PetscErrorCode ierr;
 
@@ -419,9 +414,8 @@ PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
 @*/
 PetscErrorCode DMDACreateSection(DM dm, const PetscInt numComp[], const PetscInt numDof[], const PetscInt numFaceDof[], PetscSection *s)
 {
-  DM_DA            *da  = (DM_DA*) dm->data;
   PetscSection      section;
-  const PetscInt    dim = da->dim;
+  const PetscInt    dim = dm->dim;
   PetscInt          numFields, numVertexTotDof = 0, numCellTotDof = 0, numFaceTotDof[3] = {0, 0, 0};
   PetscBT           isLeaf;
   PetscSF           sf;
@@ -1209,7 +1203,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
     }
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = DMSetCoordinateSection(dm, section);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dm, PETSC_DETERMINE, section);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
@@ -1226,8 +1220,7 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal []
   PetscQuadrature q;
   PetscSection    section;
   PetscScalar    *values;
-  PetscReal      *v0, *J, *detJ;
-  PetscInt        numFields, numComp, numPoints, dim, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
+  PetscInt        numFields, numComp, numPoints, dim, dimEmbed, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1238,19 +1231,18 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal []
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm, &dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMDAVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
   if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
   ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(q, NULL, &numPoints, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc3(dim*numPoints,&v0,dim*dim*numPoints,&J,numPoints,&detJ);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscCellGeometry geom;
+    PetscFECellGeom geom;
 
-    ierr = DMDAComputeCellGeometry(dm, c, q, v0, J, NULL, detJ);CHKERRQ(ierr);
-    geom.v0   = v0;
-    geom.J    = J;
-    geom.detJ = detJ;
+    ierr          = DMDAComputeCellGeometryFEM(dm, c, q, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
+    geom.dim      = dim;
+    geom.dimEmbed = dimEmbed;
     for (f = 0, v = 0; f < numFields; ++f) {
       void * const ctx = ctxs ? ctxs[f] : NULL;
 
@@ -1259,14 +1251,13 @@ PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal []
       ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
       ierr = PetscDualSpaceGetDimension(sp, &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
-        ierr = PetscDualSpaceApply(sp, d, geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+        ierr = PetscDualSpaceApply(sp, d, &geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
         v += numComp;
       }
     }
     ierr = DMDAVecSetClosure(dm, section, localX, c, values, mode);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
-  ierr = PetscFree3(v0,J,detJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1353,7 +1344,7 @@ PetscErrorCode DMDAComputeL2Diff(DM dm, void (**funcs)(const PetscReal [], Petsc
     PetscScalar *x = NULL;
     PetscReal    elemDiff = 0.0;
 
-    ierr = DMDAComputeCellGeometry(dm, c, quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    ierr = DMDAComputeCellGeometryFEM(dm, c, quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMDAVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
 
@@ -1457,7 +1448,7 @@ PetscErrorCode DMDAComputeL2GradientDiff(DM dm, void (**funcs)(const PetscReal [
     PetscScalar *x = NULL;
     PetscReal    elemDiff = 0.0;
 
-    ierr = DMDAComputeCellGeometry(dm, c, quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    ierr = DMDAComputeCellGeometryFEM(dm, c, quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMDAVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
 
@@ -1587,7 +1578,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
     zm = dd->ze-dd->zs;
   }
 
-  switch (dd->dim) {
+  switch (da->dim) {
   case 1: {
     void *ptr;
 
@@ -1624,7 +1615,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
     break;
   }
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
+    SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
 done:

@@ -35,29 +35,40 @@ struct _PCBDDCGraph {
 };
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 
+struct _PCBDDCSubSchurs {
+  /* local Schur complements */
+  Mat *S_Ej;
+  /* work vectors */
+  Vec *work1;
+  Vec *work2;
+  /* IS */
+  IS *is_AEj_I;
+  IS *is_AEj_B;
+  /* number of subproblems (i.e. the size of the arrays) */
+  PetscInt n_subs;
+};
+typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
+
 /* Structure for deluxe scaling */
 struct _PCBDDCDeluxeScaling {
-  /* vertex scaling */
-  PetscInt      n_simple;
-  PetscInt*     idx_simple_B;
+  /* schur complements on interface's subsets */
+  PCBDDCSubSchurs sub_schurs;
+  /* simple scaling on selected dofs (i.e. primal vertices and nodes on interface dirichlet boundaries) */
+  PetscInt        n_simple;
+  PetscInt*       idx_simple_B;
   /* sequential problems  */
-  VecScatter    seq_scctx;
-  Vec           seq_work1;
-  Vec           seq_work2;
-  Mat           seq_mat;
-  KSP           seq_ksp;
+  VecScatter      seq_scctx;
+  Vec             seq_work1;
+  Vec             seq_work2;
+  Mat             seq_mat;
+  KSP             seq_ksp;
   /* parallel problems */
-  PetscInt      par_colors;
-  VecScatter*   par_scctx_s;
-  VecScatter*   par_scctx_p;
-  Vec*          par_vec;
-  KSP*          par_ksp;
-  PetscSubcomm* par_subcomm;
-  /* work vectors for local Schur complement */
-  Vec           work1_D;
-  Vec           work2_D;
-  Vec           work1_B;
-  Vec           work2_B;
+  PetscInt        par_colors;
+  VecScatter*     par_scctx_s;
+  VecScatter*     par_scctx_p;
+  Vec*            par_vec;
+  KSP*            par_ksp;
+  PetscInt*       par_col2sub;
 };
 typedef struct _PCBDDCDeluxeScaling *PCBDDCDeluxeScaling;
 
@@ -74,6 +85,14 @@ struct _NullSpaceCorrection_ctx {
 };
 typedef struct _NullSpaceCorrection_ctx *NullSpaceCorrection_ctx;
 
+/* change of basis */
+struct _PCBDDCChange_ctx {
+  Mat original_mat;
+  Mat global_change;
+  Vec *work;
+};
+typedef struct _PCBDDCChange_ctx *PCBDDCChange_ctx;
+
 /* feti-dp mat */
 struct _FETIDPMat_ctx {
   PetscInt   n_lambda;
@@ -89,6 +108,7 @@ typedef struct _FETIDPMat_ctx *FETIDPMat_ctx;
 
 /* feti-dp dirichlet preconditioner */
 struct _FETIDPPC_ctx {
+  Mat        S_j;
   Vec        lambda_local;
   Mat        B_Ddelta;
   VecScatter l2g_lambda;

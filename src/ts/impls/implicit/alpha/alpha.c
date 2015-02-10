@@ -201,13 +201,13 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Alpha"
-static PetscErrorCode TSSetFromOptions_Alpha(TS ts)
+static PetscErrorCode TSSetFromOptions_Alpha(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Alpha ODE solver options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Alpha ODE solver options");CHKERRQ(ierr);
   {
     PetscBool flag, adapt = PETSC_FALSE;
     PetscReal radius = 1.0;

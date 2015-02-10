@@ -274,8 +274,11 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj,PetscFortranCallbac
    Logically Collective on PetscViewer
 
    Input Parameter:
-+  viewer - must be an PETSCVIEWERASCII viewer
++  fd - file pointer
 -  all - by default only tries to display objects created explicitly by the user, if all is PETSC_TRUE then lists all outstanding objects
+
+   Options Database:
+.  -objects_dump <all>
 
    Level: advanced
 

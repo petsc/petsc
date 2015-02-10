@@ -43,6 +43,7 @@
       PetscReal      hist(100) ! objective value history
       PetscReal      resid(100)! residual history
       PetscReal      cnorm(100)! cnorm history
+      PetscReal      lits(100) ! #ksp history
       TaoConvergedReason reason
 
 
@@ -100,13 +101,13 @@
 !  Check for TAO command line options
       call TaoSetFromOptions(tao,ierr)
       CHKERRQ(ierr)
-      call TaoSetHistory(tao,hist,resid,cnorm,                          &
+      call TaoSetConvergenceHistory(tao,hist,resid,cnorm,lits,          &
      &     100,PETSC_TRUE,ierr)
       CHKERRQ(ierr)
 !  SOLVE THE APPLICATION
       call TaoSolve(tao,ierr)
       CHKERRQ(ierr)
-      call TaoGetHistory(tao,nhist,ierr)
+      call TaoGetConvergenceHistory(tao,nhist,ierr)
       CHKERRQ(ierr)
       do i=1,nhist
          print *,hist(i),resid(i)

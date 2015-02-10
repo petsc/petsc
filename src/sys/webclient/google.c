@@ -33,6 +33,7 @@
    Options Database:
 .  -google_refresh_token XXX   where XXX was obtained from PetscGoogleDriveAuthorize()
 
+   Level: intermediate
 
 .seealso: PetscURLShorten(), PetscGoogleDriveAuthorize(), PetscGoogleDriveUpload()
 
@@ -116,6 +117,8 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm,const char refresh_token[],
 
     PetscGoogleDriveAuthorize(comm,access_token,refresh_token,sizeof(access_token));
     PetscGoogleDriveUpload(comm,access_token,filename);
+
+   Level: intermediate
 
 .seealso: PetscURLShorten(), PetscGoogleDriveAuthorize(), PetscGoogleDriveRefresh()
 
@@ -201,6 +204,8 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm,const char access_token[],co
    You can run src/sys/webclient/examples/tutorials/googleobtainrefreshtoken to get a refresh token and then in the future pass it to
    PETSc programs with -google_refresh_token XXX
 
+   Level: intermediate
+
 .seealso: PetscGoogleDriveRefresh(), PetscGoogleDriveUpload(), PetscURLShorten()
 
 @*/
@@ -272,6 +277,8 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm,char access_token[],char 
 
     Output Parameter:
 .    shorturl - the shortened URL
+
+   Level: intermediate
 
 .seealso: PetscGoogleDriveRefresh(), PetscGoogleDriveUpload(), PetscGoogleDriveAuthorize()
 @*/

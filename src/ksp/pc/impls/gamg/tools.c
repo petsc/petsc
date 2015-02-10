@@ -249,7 +249,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
 #endif
   /* scale Gmat so filter works */
-  ierr = MatGetVecs(Gmat, &diag, 0);CHKERRQ(ierr);
+  ierr = MatCreateVecs(Gmat, &diag, 0);CHKERRQ(ierr);
   ierr = MatGetDiagonal(Gmat, diag);CHKERRQ(ierr);
   ierr = VecReciprocal(diag);CHKERRQ(ierr);
   ierr = VecSqrtAbs(diag);CHKERRQ(ierr);
@@ -308,8 +308,9 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
 
   if (verbose) {
     if (verbose == 1) {
+      double t1 = (!nnz0) ? 1. : 100.*(double)nnz1/(double)nnz0, t2 = (!nloc) ? 1. : (double)nnz0/(double)nloc;
       ierr = PetscPrintf(comm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",rank,__FUNCT__,
-                         100.*(double)nnz1/(double)nnz0,vfilter,(double)nnz0/(double)nloc,MM);CHKERRQ(ierr);
+                         t1,vfilter,t2,MM);CHKERRQ(ierr);
     } else {
       PetscInt nnz[2],out[2];
       nnz[0] = nnz0; nnz[1] = nnz1;
@@ -356,7 +357,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,const PetscInt data_sz,con
   ierr      = VecGetLocalSize(mpimat->lvec, &num_ghosts);CHKERRQ(ierr);
   nnodes    = num_ghosts + nloc;
   *a_stride = nnodes;
-  ierr      = MatGetVecs(Gmat, &tmp_crds, 0);CHKERRQ(ierr);
+  ierr      = MatCreateVecs(Gmat, &tmp_crds, 0);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(data_sz*nnodes, &datas);CHKERRQ(ierr);
   for (dir=0; dir<data_sz; dir++) {

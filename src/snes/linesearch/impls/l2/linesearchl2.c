@@ -136,7 +136,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
     if (lambda_update < steptol) lambda_update = 0.5*(lambda + lambda_old);
 
-    if (PetscIsInfOrNanScalar(lambda_update)) break;
+    if (PetscIsInfOrNanReal(lambda_update)) break;
 
     if (lambda_update > maxstep) break;
 

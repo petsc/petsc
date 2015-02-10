@@ -59,7 +59,7 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   /* create data - syntactic sugar that should be refactored at some point */
   if (pc_gamg->data==0 || (pc_gamg->data_sz != arrsz)) {
     ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
-    ierr = PetscMalloc1((arrsz+1), &pc_gamg->data);CHKERRQ(ierr);
+    ierr = PetscMalloc1(arrsz+1, &pc_gamg->data);CHKERRQ(ierr);
   }
   for (kk=0; kk<arrsz; kk++) pc_gamg->data[kk] = -999.;
   pc_gamg->data[arrsz] = -99.;
@@ -98,14 +98,14 @@ PetscErrorCode PCSetData_GEO(PC pc, Mat m)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GEO"
-PetscErrorCode PCSetFromOptions_GEO(PC pc)
+PetscErrorCode PCSetFromOptions_GEO(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("GAMG-GEO options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"GAMG-GEO options");CHKERRQ(ierr);
   {
     /* -pc_gamg_sa_nsmooths */
     /* pc_gamg_sa->smooths = 0; */
@@ -493,7 +493,7 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,const Pets
     } else Gmat2 = Gmat1;  /* use local to get crsGIDs at least */
     /* get coarse grid GIDS for selected (locals and ghosts) */
     mpimat2 = (Mat_MPIAIJ*)Gmat2->data;
-    ierr    = MatGetVecs(Gmat2, &locState, 0);CHKERRQ(ierr);
+    ierr    = MatCreateVecs(Gmat2, &locState, 0);CHKERRQ(ierr);
     ierr    = VecSet(locState, (PetscScalar)(PetscReal)(-1));CHKERRQ(ierr); /* set with UNKNOWN state */
     for (kk=0; kk<nselected_1; kk++) {
       PetscInt    fgid = clid_lid_1[kk] + my0;
@@ -509,10 +509,10 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,const Pets
     for (kk=0,num_crs_ghost=0; kk<num_fine_ghosts; kk++) {
       if ((PetscInt)PetscRealPart(cpcol_state[kk]) != -1) num_crs_ghost++;
     }
-    ierr = PetscMalloc1((nselected_1+num_crs_ghost), &crsGID);CHKERRQ(ierr); /* output */
+    ierr = PetscMalloc1(nselected_1+num_crs_ghost, &crsGID);CHKERRQ(ierr); /* output */
     {
       PetscInt *selected_set;
-      ierr = PetscMalloc1((nselected_1+num_crs_ghost), &selected_set);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nselected_1+num_crs_ghost, &selected_set);CHKERRQ(ierr);
       /* do ghost of 'crsGID' */
       for (kk=0,idx=nselected_1; kk<num_fine_ghosts; kk++) {
         if ((PetscInt)PetscRealPart(cpcol_state[kk]) != -1) {
