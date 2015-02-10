@@ -614,20 +614,26 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
   MPI_Aint          ub,ul;
   PetscInt          type,rows,vecrows,tr[2];
   DM_DA             *dd = (DM_DA*)da->data;
+  PetscBool         skipheader;
 
   PetscFunctionBegin;
   ierr = VecGetSize(xin,&vecrows);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipheader);CHKERRQ(ierr);
   if (!write) {
     /* Read vector header. */
-    ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
-    type = tr[0];
-    rows = tr[1];
-    if (type != VEC_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Not vector next in file");
-    if (rows != vecrows) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Vector in file not same size as DMDA vector");
+    if (!skipheader) {
+      ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
+      type = tr[0];
+      rows = tr[1];
+      if (type != VEC_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Not vector next in file");
+      if (rows != vecrows) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Vector in file not same size as DMDA vector");
+    }
   } else {
     tr[0] = VEC_FILE_CLASSID;
     tr[1] = vecrows;
-    ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    if (!skipheader) {
+      ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    }
   }
 
   ierr       = PetscMPIIntCast(dd->w,&dof);CHKERRQ(ierr);
