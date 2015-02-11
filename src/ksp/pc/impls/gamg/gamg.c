@@ -577,6 +577,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   for (level=0, Aarr[0]=Pmat, nactivepe = size; /* hard wired stopping logic */
        level < (pc_gamg->Nlevels-1) && (level==0 || M>pc_gamg->coarse_eq_limit);  /* && (size==1 || nactivepe>1); */
        level++) {
+    pc_gamg->firstCoarsen = (level ? PETSC_FALSE : PETSC_TRUE);
     level1 = level + 1;
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET1],0,0,0,0);CHKERRQ(ierr);
@@ -669,6 +670,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     ierr = PetscLogStagePop();CHKERRQ(ierr);
 #endif
   } /* levels */
+  pc_gamg->firstCoarsen = PETSC_FALSE;
 
   if (pc_gamg->data) {
     ierr          = PetscFree(pc_gamg->data);CHKERRQ(ierr);
@@ -1448,6 +1450,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->Nlevels          = GAMG_MAXLEVELS;
   pc_gamg->verbose          = 0;
   pc_gamg->emax_id          = -1;
+  pc_gamg->firstCoarsen     = PETSC_FALSE;
   pc_gamg->eigtarget[0]     = 0.05;
   pc_gamg->eigtarget[1]     = 1.05;
   pc_gamg->ops->createlevel = PCGAMGCreateLevel_GAMG;

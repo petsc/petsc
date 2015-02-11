@@ -968,7 +968,7 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   if (bs != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bs %D must be 1",bs);
   nloc = n/bs;
 
-  if (pc_gamg_agg->square_graph) {
+  if (pc_gamg->firstCoarsen && pc_gamg_agg->square_graph) { /* we don't want to square coarse grids */
     if (verbose > 1) PetscPrintf(comm,"[%d]%s square graph\n",rank,__FUNCT__);
     /* ierr = MatMatTransposeMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2); */
     ierr = MatTransposeMatMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2);CHKERRQ(ierr);
@@ -979,7 +979,6 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
 
       }
     }
-    pc_gamg_agg->square_graph = PETSC_FALSE; /* we don't want to square coarse grids */
   } else Gmat2 = Gmat1;
 
   /* get MIS aggs */
