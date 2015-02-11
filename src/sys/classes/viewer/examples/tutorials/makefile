@@ -24,7 +24,7 @@ ex1f90: ex1f90.o  chkopts
 	${RM} ex1f90.o
 
 ex3: ex3.o chkopts
-	-${CLINKER} -o ex3 ex3.o ${PETSC_SYS_LIB}
+	-${CLINKER} -o ex3 ex3.o ${PETSC_LIB}
 	${RM} ex3.o
 
 #----------------------------------------------------------------------------
