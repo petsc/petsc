@@ -37,10 +37,10 @@ ex3adj: ex3adj.o  chkopts
 	-${CLINKER} -o ex3adj ex3adj.o  ${PETSC_TS_LIB}
 
 ex3opt: ex3opt.o  chkopts
-	-${CLINKER} -o ex3opt ex3opt.o  ${PETSC_TS_LIB}
+	-${CLINKER} -o ex3opt ex3opt.o  ${PETSC_LIB}
 
 ex3opt_fd: ex3opt_fd.o  chkopts
-	-${CLINKER} -o ex3opt_fd ex3opt_fd.o  ${PETSC_TS_LIB}
+	-${CLINKER} -o ex3opt_fd ex3opt_fd.o  ${PETSC_LIB}
 
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_TS_LIB}

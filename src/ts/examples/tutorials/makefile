@@ -101,11 +101,11 @@ ex16adj: ex16adj.o chkopts
 	${RM} ex16adj.o
 
 ex16opt_p: ex16opt_p.o chkopts
-	-${CLINKER} -o ex16opt_p ex16opt_p.o ${PETSC_TS_LIB}
+	-${CLINKER} -o ex16opt_p ex16opt_p.o ${PETSC_LIB}
 	${RM} ex16opt_p.o
 
 ex16opt_ic: ex16opt_ic.o chkopts
-	-${CLINKER} -o ex16opt_ic ex16opt_ic.o ${PETSC_TS_LIB}
+	-${CLINKER} -o ex16opt_ic ex16opt_ic.o ${PETSC_LIB}
 	${RM} ex16opt_ic.o
 
 ex17: ex17.o  chkopts
@@ -133,11 +133,11 @@ ex20adj: ex20adj.o  chkopts
 	${RM} ex20adj.o
 
 ex20opt_ic: ex20opt_ic.o chkopts
-	-${CLINKER} -o ex20opt_ic ex20opt_ic.o ${PETSC_TS_LIB}
+	-${CLINKER} -o ex20opt_ic ex20opt_ic.o ${PETSC_LIB}
 	${RM} ex20opt_ic.o
 
 ex20opt_p: ex20opt_p.o chkopts
-	-${CLINKER} -o ex20opt_p ex20opt_p.o ${PETSC_TS_LIB}
+	-${CLINKER} -o ex20opt_p ex20opt_p.o ${PETSC_LIB}
 	${RM} ex20opt_p.o
 
 ex21: ex21.o  chkopts

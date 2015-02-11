@@ -22,10 +22,10 @@ ex9busadj: ex9busadj.o  chkopts
 	${RM} ex9busadj.o
 
 ex9busopt: ex9busopt.o  chkopts
-	-${CLINKER} -o ex9busopt ex9busopt.o  ${PETSC_TS_LIB}
+	-${CLINKER} -o ex9busopt ex9busopt.o  ${PETSC_LIB}
 
 ex9busopt_fd: ex9busopt_fd.o  chkopts
-	-${CLINKER} -o ex9busopt_fd ex9busopt_fd.o  ${PETSC_TS_LIB}
+	-${CLINKER} -o ex9busopt_fd ex9busopt_fd.o  ${PETSC_LIB}
 
 runex9bus:
 	-@${MPIEXEC} -n 1 ./ex9bus
