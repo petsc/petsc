@@ -2,7 +2,7 @@
 #include <petscdraw.h>
 #include <petscviewer.h>
 
-extern PetscLogEvent PETSC_Barrier;
+extern PetscLogEvent PETSC_Barrier,PETSC_BuildTwoSided,PETSC_BuildTwoSidedF;
 
 static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
@@ -51,6 +51,8 @@ PetscErrorCode  PetscSysInitializePackage(void)
 
   /* Register Events */
   ierr = PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_CLASSID,&PETSC_Barrier);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("BuildTwoSided",PETSC_SMALLEST_CLASSID,&PETSC_BuildTwoSided);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("BuildTwoSidedF",PETSC_SMALLEST_CLASSID,&PETSC_BuildTwoSidedF);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {

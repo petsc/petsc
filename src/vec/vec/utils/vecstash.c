@@ -390,3 +390,95 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "VecStashSortCompress_Private"
+/*
+ * Sort the stash, removing duplicates (combining as appropriate).
+ */
+PetscErrorCode VecStashSortCompress_Private(VecStash *stash)
+{
+  PetscErrorCode ierr;
+  PetscInt i,j,bs = stash->bs;
+
+  PetscFunctionBegin;
+  if (!stash->n) PetscFunctionReturn(0);
+  if (bs == 1) {
+    ierr = PetscSortIntWithScalarArray(stash->n,stash->idx,stash->array);CHKERRQ(ierr);
+    for (i=1,j=0; i<stash->n; i++) {
+      if (stash->idx[i] == stash->idx[j]) {
+        switch (stash->insertmode) {
+        case ADD_VALUES:
+          stash->array[j] += stash->array[i];
+          break;
+        case INSERT_VALUES:
+          stash->array[j] = stash->array[i];
+          break;
+        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",stash->insertmode);
+        }
+      } else {
+        j++;
+        stash->idx[j]   = stash->idx[i];
+        stash->array[j] = stash->array[i];
+      }
+    }
+    stash->n = j + 1;
+  } else {                      /* block stash */
+    PetscInt *perm;
+    PetscScalar *arr;
+    ierr = PetscMalloc2(stash->n,&perm,stash->n*bs,&arr);CHKERRQ(ierr);
+    for (i=0; i<stash->n; i++) perm[i] = i;
+    ierr = PetscSortIntWithArray(stash->n,stash->idx,perm);CHKERRQ(ierr);
+
+    /* Out-of-place copy of arr */
+    ierr = PetscMemcpy(arr,stash->array,bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    for (i=1,j=0; i<stash->n; i++) {
+      PetscInt k;
+      if (stash->idx[i] == stash->idx[j]) {
+        switch (stash->insertmode) {
+        case ADD_VALUES:
+          for (k=0; k<bs; k++) arr[j*bs+k] += stash->array[perm[i]*bs+k];
+          break;
+        case INSERT_VALUES:
+          for (k=0; k<bs; k++) arr[j*bs+k] = stash->array[perm[i]*bs+k];
+          break;
+        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Insert mode not supported 0x%x",stash->insertmode);
+        }
+      } else {
+        j++;
+        stash->idx[j] = stash->idx[i];
+        for (k=0; k<bs; k++) arr[j*bs+k] = stash->array[perm[i]*bs+k];
+      }
+    }
+    stash->n = j + 1;
+    ierr = PetscMemcpy(stash->array,arr,stash->n*bs*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscFree2(perm,arr);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecStashGetOwnerList_Private"
+PetscErrorCode VecStashGetOwnerList_Private(VecStash *stash,PetscLayout map,PetscMPIInt *nowners,PetscMPIInt **owners)
+{
+  PetscErrorCode ierr;
+  PetscInt i,bs = stash->bs,r;
+  PetscSegBuffer seg;
+
+  PetscFunctionBegin;
+  if (bs != 1 && bs != map->bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Stash block size %D does not match layout block size %D",bs,map->bs);
+  ierr = PetscSegBufferCreate(sizeof(PetscMPIInt),50,&seg);CHKERRQ(ierr);
+  *nowners = 0;
+  for (i=0,r=-1; i<stash->n; i++) {
+    if (stash->idx[i]*bs > map->range[r+1]) {
+      PetscMPIInt *rank;
+      ierr = PetscSegBufferGet(seg,1,&rank);CHKERRQ(ierr);
+      ierr = PetscLayoutFindOwner(map,stash->idx[i]*bs,&r);CHKERRQ(ierr);
+      *rank = r;
+      (*nowners)++;
+    }
+  }
+  ierr = PetscSegBufferExtractAlloc(seg,owners);CHKERRQ(ierr);
+  ierr = PetscSegBufferDestroy(&seg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

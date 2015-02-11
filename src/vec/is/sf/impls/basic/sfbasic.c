@@ -43,7 +43,7 @@ struct _n_PetscSFBasicPack {
 
 typedef struct {
   PetscMPIInt      tag;
-  PetscInt         niranks;     /* Number of incoming ranks (ranks accessing my roots) */
+  PetscMPIInt      niranks;     /* Number of incoming ranks (ranks accessing my roots) */
   PetscMPIInt      *iranks;     /* Array of ranks that reference my roots */
   PetscInt         itotal;      /* Total number of graph edges referencing my roots */
   PetscInt         *ioffset;    /* Array of length niranks+1 holding offset in irootloc[] for each rank */
@@ -636,8 +636,9 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
     link->unitbytes *= nPetscComplexContig;
 #endif
   } else {
-    PetscMPIInt bytes;
-    ierr = MPI_Type_size(unit,&bytes);CHKERRQ(ierr);
+    MPI_Aint lb,bytes;
+    ierr = MPI_Type_get_extent(unit,&lb,&bytes);CHKERRQ(ierr);
+    if (lb != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Datatype with nonzero lower bound %ld\n",(long)lb);
     if (bytes % sizeof(int)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for type size not divisible by %D",sizeof(int));
     switch (bytes / sizeof(int)) {
     case 1: PackInit_block_int_1(link); break;
