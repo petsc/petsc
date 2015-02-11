@@ -52,6 +52,12 @@ class Configure(config.base.Configure):
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
 
+  def hasOptFlags(self,flags):
+    for flag in flags.split():
+      if flag.startswith('-g') or flag.startswith('-O') or flag in ['-fast']:
+        return 1
+    return 0
+
   def getOptionsObject(self):
     '''Get a configure object which will return default options for each compiler'''
     options = None
@@ -77,7 +83,7 @@ class Configure(config.base.Configure):
       if not hasattr(self.setCompilers, compiler):
         continue
       self.setCompilers.pushLanguage(language)
-      flagsArg = self.getCompilerFlagsArg()
+      flagsName = self.getCompilerFlagsName(language)
       try:
         self.version[language] = self.argDB[language.upper()+'_VERSION']
         if self.version[language] == 'Unknown':
@@ -90,8 +96,11 @@ class Configure(config.base.Configure):
           if not bopt == '' and self.getOptionalFlagsName(language) in self.framework.argDB:
             # treat user supplied options as single option - as it could include options separated by spaces '-tp k8-64'
             flags = [self.framework.argDB[self.getOptionalFlagsName(language)]]
-          elif bopt == '' and self.getCompilerFlagsName(language) in self.framework.argDB:
-            self.logPrint('Ignoring default options which were overridden using --'+self.getCompilerFlagsName(language)+ ' ' + self.framework.argDB[self.getCompilerFlagsName(language)])
+          elif not bopt == '' and self.hasOptFlags(getattr(self.setCompilers,flagsName)):
+            self.logPrint('Optimization options found in '+flagsName+ '. Skipping setting defaults')
+            flags = []
+          elif bopt == '' and flagsName in self.framework.argDB:
+            self.logPrint('Ignoring default options which were overridden using --'+flagsName+ ' ' + self.framework.argDB[flagsName])
             flags = []
           else:
             flags = options.getCompilerFlags(language, self.setCompilers.getCompiler(), bopt)

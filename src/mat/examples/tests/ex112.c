@@ -52,8 +52,8 @@ int main(int argc,char **args)
     ierr = MatCreateFFT(PETSC_COMM_SELF,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
 
     /* create vectors of length N=n^DIM */
-    ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
-    ierr = MatGetVecs(A,&z,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A,&z,NULL);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);

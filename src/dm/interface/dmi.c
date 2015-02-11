@@ -1,4 +1,5 @@
 #include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
+#include <petscds.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector_Section_Private"
@@ -141,29 +142,35 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
         nf       = f;
       }
     }
-    if (haveNull) {
+    if (haveNull && is) {
       MatNullSpace nullSpace;
 
       ierr = (*(*subdm)->nullspaceConstructors[nf])(*subdm, nf, &nullSpace);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) *is, "nullspace", (PetscObject) nullSpace);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
     }
-    if (dm->fields) {
-      if (nF != dm->numFields) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "The number of DM fields %d does not match the number of Section fields %d", dm->numFields, nF);
+    if (dm->prob) {
+      PetscInt Nf;
+
+      ierr = PetscDSGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
+      if (nF != Nf) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "The number of DM fields %d does not match the number of Section fields %d", Nf, nF);
       ierr = DMSetNumFields(*subdm, numFields);CHKERRQ(ierr);
       for (f = 0; f < numFields; ++f) {
-        ierr = PetscObjectListDuplicate(((PetscObject) dm->fields[fields[f]])->olist, &((PetscObject) (*subdm)->fields[f])->olist);CHKERRQ(ierr);
-      }
-      if (numFields == 1) {
-        MatNullSpace space;
-        Mat          pmat;
+        PetscObject disc;
 
-        ierr = PetscObjectQuery((PetscObject) (*subdm)->fields[0], "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
-        if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nullspace", (PetscObject) space);CHKERRQ(ierr);}
-        ierr = PetscObjectQuery((PetscObject) (*subdm)->fields[0], "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
-        if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nearnullspace", (PetscObject) space);CHKERRQ(ierr);}
-        ierr = PetscObjectQuery((PetscObject) (*subdm)->fields[0], "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
-        if (pmat) {ierr = PetscObjectCompose((PetscObject) *is, "pmat", (PetscObject) pmat);CHKERRQ(ierr);}
+        ierr = DMGetField(dm, fields[f], &disc);CHKERRQ(ierr);
+        ierr = DMSetField(*subdm, f, disc);CHKERRQ(ierr);
+      }
+      if (numFields == 1 && is) {
+        PetscObject disc, space, pmat;
+
+        ierr = DMGetField(*subdm, 0, &disc);CHKERRQ(ierr);
+        ierr = PetscObjectQuery(disc, "nullspace", &space);CHKERRQ(ierr);
+        if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nullspace", space);CHKERRQ(ierr);}
+        ierr = PetscObjectQuery(disc, "nearnullspace", &space);CHKERRQ(ierr);
+        if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nearnullspace", space);CHKERRQ(ierr);}
+        ierr = PetscObjectQuery(disc, "pmat", &pmat);CHKERRQ(ierr);
+        if (pmat) {ierr = PetscObjectCompose((PetscObject) *is, "pmat", pmat);CHKERRQ(ierr);}
       }
     }
   }

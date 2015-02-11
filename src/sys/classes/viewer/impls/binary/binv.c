@@ -749,9 +749,9 @@ static PetscErrorCode PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,Petsc
 
    Input Parameters:
 +  viewer - the binary viewer
-.  data - location to write the data
+.  data - location of the data to be written
 .  count - number of items of data to read
--  datatype - type of data to read
+-  dtype - type of data to read
 
    Level: beginner
 
@@ -789,8 +789,8 @@ PetscErrorCode  PetscViewerBinaryRead(PetscViewer viewer,void *data,PetscInt cou
    Input Parameters:
 +  viewer - the binary viewer
 .  data - location of data
-.  count - number of items of data to read
-.  dtype - type of data to read
+.  count - number of items of data to write
+.  dtype - type of data to write
 -  istemp - data may be overwritten
 
    Level: beginner
@@ -851,7 +851,7 @@ PetscErrorCode  PetscViewerBinaryWriteStringArray(PetscViewer viewer,char **data
   /* count number of strings */
   while (data[n++]) ;
   n--;
-  ierr     = PetscMalloc1((n+1),&sizes);CHKERRQ(ierr);
+  ierr     = PetscMalloc1(n+1,&sizes);CHKERRQ(ierr);
   sizes[0] = n;
   for (i=0; i<n; i++) {
     size_t tmp;
@@ -897,7 +897,7 @@ PetscErrorCode  PetscViewerBinaryReadStringArray(PetscViewer viewer,char ***data
   ierr = PetscMalloc1(n,&sizes);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer,sizes,n,PETSC_INT);CHKERRQ(ierr);
   for (i=0; i<n; i++) N += sizes[i];
-  ierr = PetscMalloc1((n+1)*sizeof(char*) + N,data);CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(char*) + N*sizeof(char),data);CHKERRQ(ierr);
   (*data)[0] = (char*)((*data) + n + 1);
   for (i=1; i<n; i++) (*data)[i] = (*data)[i-1] + sizes[i-1];
   ierr = PetscViewerBinaryRead(viewer,(*data)[0],N,PETSC_CHAR);CHKERRQ(ierr);
@@ -1256,6 +1256,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   vbinary->skipheader      = PETSC_FALSE;
   v->ops->getsingleton     = PetscViewerGetSingleton_Binary;
   v->ops->restoresingleton = PetscViewerRestoreSingleton_Binary;
+  v->ops->read             = PetscViewerBinaryRead;
   vbinary->btype           = (PetscFileMode) -1;
   vbinary->storecompressed = PETSC_FALSE;
   vbinary->filename        = 0;

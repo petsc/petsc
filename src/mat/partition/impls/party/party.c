@@ -83,7 +83,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
   redm     = party->redm ? "lam" : ""; /* matching method */
   redo     = party->redo ? "w3" : "";  /* matching optimization method */
 
-  ierr = PetscMalloc1((mat->rmap->N),&part_party);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mat->rmap->N,&part_party);CHKERRQ(ierr);
 
   /* redirect output to buffer */
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -119,7 +119,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part,IS *partit
 #endif
   if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Party failed");
 
-  ierr = PetscMalloc1((mat->rmap->N),&parttab);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mat->rmap->N,&parttab);CHKERRQ(ierr);
   for (i=0; i<mat->rmap->N; i++) parttab[i] = part_party[i];
 
   /* creation of the index set */
@@ -378,7 +378,7 @@ PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part,PetscBoo
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Party"
-PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Party(PetscOptions *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode        ierr;
   PetscBool             flag;
@@ -387,7 +387,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part)
   MatPartitioning_Party *party = (MatPartitioning_Party*)part->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Set Party partitioning options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Set Party partitioning options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-mat_partitioning_party_global","Global method","MatPartitioningPartySetGlobal",party->global,value,256,&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatPartitioningPartySetGlobal(part,value);CHKERRQ(ierr); }
   ierr = PetscOptionsString("-mat_partitioning_party_local","Local method","MatPartitioningPartySetLocal",party->local,value,256,&flag);CHKERRQ(ierr);

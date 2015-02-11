@@ -186,6 +186,9 @@ def modifylevel(filename,secname):
       re_loc = re.compile('</BODY></HTML>')
       outbuf = re_loc.sub('<BR><A HREF="./index.html">Index of all ' + secname + ' routines</A>\n<BR><A HREF="../../index.html">Table of Contents for all manual pages</A>\n<BR><A HREF="../singleindex.html">Index of all manual pages</A>\n</BODY></HTML>',tmpbuf)
 
+      re_loc = re.compile(r' (http://[A-Za-z09_\(\)\./]*)[ \n]')
+      outbuf = re_loc.sub(' <a href="\\1">\\1 </a> ',outbuf)
+
       # write the modified manpage
       try:
             #fd = open(filename[:-1],'w')

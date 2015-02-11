@@ -116,7 +116,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     PetscReal norm;
     Vec       x, y;
 
-    ierr = MatGetVecs(L, &x, NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(L, &x, NULL);CHKERRQ(ierr);
     ierr = VecDuplicate(x, &y);CHKERRQ(ierr);
     ierr = VecSet(x, 1.0);CHKERRQ(ierr);
     ierr = MatMult(L, x, y);CHKERRQ(ierr);

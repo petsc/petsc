@@ -147,14 +147,6 @@ void (*signal())();
     self.popLanguage()
     return
 
-  def checkFortranDReal(self):
-    '''Checks whether dreal is provided in Fortran, and if not defines MISSING_DREAL'''
-    self.pushLanguage('FC')
-    if not self.checkLink('', '      double precision d\n      d = dreal(3.0)'):
-      self.addDefine('MISSING_DREAL', 1)
-    self.popLanguage()
-    return
-
   def checkConst(self):
     '''Checks for working const, and if not found defines it to empty string'''
     body = '''
@@ -382,7 +374,6 @@ void (*signal())();
     if hasattr(self.compilers, 'FC'):
       #self.executeTest(self.checkFortranStar)
       self.executeTest(self.checkFortranKind)
-      self.executeTest(self.checkFortranDReal)
     self.executeTest(self.checkConst)
     self.executeTest(self.checkEndian)
     map(lambda type: self.executeTest(self.checkSizeof, type), ['char','void *', 'short', 'int', 'long', 'long long', 'float', 'double', 'size_t'])

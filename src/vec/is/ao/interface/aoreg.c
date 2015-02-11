@@ -37,7 +37,7 @@ PetscErrorCode  AOSetType(AO ao, AOType method)
   ierr = PetscObjectTypeCompare((PetscObject)ao, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!AORegisterAllCalled) {ierr = AORegisterAll();CHKERRQ(ierr);}
+  ierr = AORegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(AOList,method,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown AO type: %s", method);
   if (ao->ops->destroy) {
@@ -73,10 +73,8 @@ PetscErrorCode  AOGetType(AO ao, AOType *type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
-  PetscValidCharPointer(type,2);
-  if (!AORegisterAllCalled) {
-    ierr = AORegisterAll();CHKERRQ(ierr);
-  }
+  PetscValidPointer(type,2);
+  ierr = AORegisterAll();CHKERRQ(ierr);
   *type = ((PetscObject)ao)->type_name;
   PetscFunctionReturn(0);
 }

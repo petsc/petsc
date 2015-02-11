@@ -3,14 +3,12 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.downloadpath      = 'http://ftp.mcs.anl.gov/pub/fathom/'
     # To track MOAB.git, update gitcommit to 'git describe --always' or 'git rev-parse HEAD'
-    self.gitcommit         = '23ce6f7956f8a9e233edd17ac82e20726d3be500' # master 2013-06-25
     self.giturls           = ['https://bitbucket.org/fathomteam/moab.git']
-    self.downloadname      = 'moab'
+    self.gitcommit         = 'c97ac0f30a3f927637ba3d27ab6df55ef973e0c6' # HEAD of MOAB/petsc branch: Jun 23, 2014
+    self.download          = ['http://ftp.mcs.anl.gov/pub/fathom/moab-c97ac0f30a3f.tar.gz']
     self.downloadfilename  = 'moab'
-    self.downloadversion   = 'nightly'
-    self.downloadext       = 'tar.gz'
+    # Check for moab::Core and includes/libraries to verify build
     self.functions         = ['Core']
     self.functionsCxx     = [1, 'namespace moab {class Core {public: Core();};}','moab::Core *mb = new moab::Core()']
     self.includes          = ['moab/Core.hpp']
@@ -26,6 +24,20 @@ class Configure(config.package.GNUPackage):
 #    self.netcdfcxx = framework.require('config.packages.netcdf-cxx', self)
     self.odeps     = [self.mpi, self.hdf5, self.netcdf]
     return
+
+  def formGNUConfigureArgs(self):
+    '''Add MOAB specific configure arguments'''
+    args = config.package.GNUPackage.formGNUConfigureArgs(self)
+    args.append('--with-mpi="'+self.mpi.directory+'"')
+    if self.hdf5.found:
+      args.append('--with-hdf5="'+self.hdf5.directory+'"')
+    else:
+      args.append('--without-hdf5')
+    if self.netcdf.found:
+      args.append('--with-netcdf="'+self.netcdf.directory+'"')
+    else:
+      args.append('--without-netcdf')
+    return args
 
   def gitPreReqCheck(self):
     return self.programs.autoreconf_flg

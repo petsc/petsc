@@ -1,5 +1,5 @@
 
-#include <../src/ksp/pc/impls/mg/mgimpl.h>       /*I "petscksp.h" I*/
+#include <petsc-private/pcmgimpl.h>       /*I "petscksp.h" I*/
 
 /* ---------------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -342,7 +342,7 @@ PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
     Vec      X,Y,coarse,fine;
     PetscInt M,N;
     ierr = PCMGGetRestriction(pc,l,&R);CHKERRQ(ierr);
-    ierr = MatGetVecs(R,&X,&Y);CHKERRQ(ierr);
+    ierr = MatCreateVecs(R,&X,&Y);CHKERRQ(ierr);
     ierr = MatGetSize(R,&M,&N);CHKERRQ(ierr);
     if (M < N) {
       fine = X;

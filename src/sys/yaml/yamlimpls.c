@@ -114,7 +114,7 @@ extern PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[]
       fseek(source,0,SEEK_END);
       yamlLength = ftell(source);
       fseek(source,0,SEEK_SET);
-      ierr = PetscMalloc1((yamlLength+1),&optionsStr);CHKERRQ(ierr);
+      ierr = PetscMalloc1(yamlLength+1,&optionsStr);CHKERRQ(ierr);
       /* Read the content of the YAML file one char at a time*/
       for (offset = 0; offset < yamlLength; offset++) {
         fread(&(optionsStr[offset]), sizeof(unsigned char),1,source);
@@ -128,7 +128,7 @@ extern PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[]
     ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_UNSIGNED_CHAR,0,comm);CHKERRQ(ierr);
   } else {
     ierr = MPI_Bcast(&yamlLength,1,MPI_INT,0,comm);CHKERRQ(ierr);
-    ierr = PetscMalloc1((yamlLength+1),&optionsStr);CHKERRQ(ierr);
+    ierr = PetscMalloc1(yamlLength+1,&optionsStr);CHKERRQ(ierr);
     ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_UNSIGNED_CHAR,0,comm);CHKERRQ(ierr);
   }
   yaml_parser_initialize(&parser);

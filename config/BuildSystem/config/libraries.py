@@ -470,6 +470,18 @@ int checkInit(void) {
       self.framework.logPrint('Library was not shared')
     return isShared
 
+  def isBGL(self):
+    '''Returns true if compiler is IBM cross compiler for BGL'''
+    if not hasattr(self, '_isBGL'):
+      self.logPrint('**********Checking if running on BGL/IBM detected')
+      if (self.check('', 'bgl_perfctr_void') or self.check('','ADIOI_BGL_Open')) and self.check('', '_xlqadd'):
+        self.logPrint('*********BGL/IBM detected')
+        self._isBGL = 1
+      else:
+        self.logPrint('*********BGL/IBM test failure')
+        self._isBGL = 0
+    return self._isBGL
+
   def configure(self):
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
     self.executeTest(self.checkMath)

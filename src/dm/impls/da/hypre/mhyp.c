@@ -111,14 +111,15 @@ extern PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat,HYPRE_IJMatrix);
 PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A,HYPRE_IJMatrix ij)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,rstart,rend,ncols;
+  PetscInt          i,rstart,rend,ncols,nr,nc;
   const PetscScalar *values;
   const PetscInt    *cols;
   PetscBool         flg;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
-  if (flg) {
+  ierr = MatGetSize(A,&nr,&nc);CHKERRQ(ierr);
+  if (flg && nr == nc) {
     ierr = MatHYPRE_IJMatrixFastCopy_MPIAIJ(A,ij);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -386,11 +387,12 @@ PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
 #define __FUNCT__ "MatSetupDM_HYPREStruct"
 static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
 {
-  PetscErrorCode   ierr;
-  Mat_HYPREStruct  *ex = (Mat_HYPREStruct*) mat->data;
-  PetscInt         dim,dof,sw[3],nx,ny,nz,ilower[3],iupper[3],ssize,i;
-  DMBoundaryType   px,py,pz;
-  DMDAStencilType  st;
+  PetscErrorCode         ierr;
+  Mat_HYPREStruct        *ex = (Mat_HYPREStruct*) mat->data;
+  PetscInt               dim,dof,sw[3],nx,ny,nz,ilower[3],iupper[3],ssize,i;
+  DMBoundaryType         px,py,pz;
+  DMDAStencilType        st;
+  ISLocalToGlobalMapping ltog;
 
   PetscFunctionBegin;
   ex->da = da;
@@ -482,7 +484,8 @@ static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   ierr        = MatGetOwnershipRange(mat,&ex->rstart,NULL);CHKERRQ(ierr);
-  ierr        = DMDAGetGlobalIndices(ex->da,NULL, (const PetscInt **) &ex->gindices);CHKERRQ(ierr);
+  ierr        = DMGetLocalToGlobalMapping(ex->da,&ltog);CHKERRQ(ierr);
+  ierr        = ISLocalToGlobalMappingGetIndices(ltog, (const PetscInt **) &ex->gindices);CHKERRQ(ierr);
   ierr        = DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,0);CHKERRQ(ierr);
   ex->gnxgny *= ex->gnx;
   ierr        = DMDAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,0);CHKERRQ(ierr);
@@ -820,15 +823,15 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 #define __FUNCT__ "MatSetupDM_HYPRESStruct"
 static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
 {
-  PetscErrorCode   ierr;
-  Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
-  PetscInt         dim,dof,sw[3],nx,ny,nz;
-  PetscInt         ilower[3],iupper[3],ssize,i;
-  DMBoundaryType   px,py,pz;
-  DMDAStencilType  st;
-  PetscInt         nparts= 1;  /* assuming only one part */
-  PetscInt         part  = 0;
-
+  PetscErrorCode         ierr;
+  Mat_HYPRESStruct       *ex = (Mat_HYPRESStruct*) mat->data;
+  PetscInt               dim,dof,sw[3],nx,ny,nz;
+  PetscInt               ilower[3],iupper[3],ssize,i;
+  DMBoundaryType         px,py,pz;
+  DMDAStencilType        st;
+  PetscInt               nparts= 1;  /* assuming only one part */
+  PetscInt               part  = 0;
+  ISLocalToGlobalMapping ltog;
   PetscFunctionBegin;
   ex->da = da;
   ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
@@ -960,7 +963,8 @@ static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   ierr = MatGetOwnershipRange(mat,&ex->rstart,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(ex->da,NULL,(const PetscInt **) &ex->gindices);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(ex->da,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltog, (const PetscInt **) &ex->gindices);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,&ex->gnxgnygnz);CHKERRQ(ierr);
 
   ex->gnxgny    *= ex->gnx;

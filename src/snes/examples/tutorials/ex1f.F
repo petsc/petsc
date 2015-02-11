@@ -29,12 +29,12 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -204,9 +204,9 @@
       subroutine FormFunction(snes,x,f,dummy,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscsnes.h>
 
       SNES     snes
       Vec      x,f
@@ -226,7 +226,7 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the Fortran chapter of the users manual for details.
 
-      call VecGetArray(x,lx_v,lx_i,ierr)
+      call VecGetArrayRead(x,lx_v,lx_i,ierr)
       call VecGetArray(f,lf_v,lf_i,ierr)
 
 !  Compute function
@@ -238,7 +238,7 @@
 
 !  Restore vectors
 
-      call VecRestoreArray(x,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
       call VecRestoreArray(f,lf_v,lf_i,ierr)
 
       return
@@ -261,11 +261,11 @@
       subroutine FormJacobian(snes,X,jac,B,dummy,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
       SNES         snes
       Vec          X
@@ -283,7 +283,7 @@
 !  Get pointer to vector data
 
       i2 = 2
-      call VecGetArray(x,lx_v,lx_i,ierr)
+      call VecGetArrayRead(x,lx_v,lx_i,ierr)
 
 !  Compute Jacobian entries and insert into matrix.
 !   - Since this is such a small problem, we set all entries for
@@ -301,7 +301,7 @@
 
 !  Restore vector
 
-      call VecRestoreArray(x,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
 
 !  Assemble matrix
 
@@ -313,12 +313,12 @@
 
 
       subroutine MyLineSearch(linesearch, lctx, ierr)
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
       SNES              snes
       integer           lctx

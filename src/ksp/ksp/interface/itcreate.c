@@ -231,12 +231,9 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 $   KSP_NORM_NONE - skips computing the norm, this should only be used if you are using
 $                 the Krylov method as a smoother with a fixed small number of iterations.
 $                 Implicitly sets KSPConvergedSkip as KSP convergence test.
-$                 Supported only by CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 $   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
-$                 of the preconditioned residual
-$   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual, supported only by
-$                 CG, CHEBYSHEV, and RICHARDSON, automatically true for right (see KSPSetPCSide())
-$                 preconditioning..
+$                 of the preconditioned residual P^{-1}(b - A x)
+$   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual.
 $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
 
@@ -244,13 +241,19 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 .   -ksp_norm_type <none,preconditioned,unpreconditioned,natural>
 
    Notes:
-   Currently only works with the CG, Richardson, Bi-CG-stab, CR, and CGS methods.
+   Not all combinations of preconditioner side (see KSPSetPCSide()) and norm type are supported by all Krylov methods.
+   If only one is set, PETSc tries to automatically change the other to find a compatible pair.  If no such combination
+   is supported, PETSc will generate an error.
+
+   Developer Notes:
+   Supported combinations of norm and preconditioner side are set using KSPSetSupportedNorm().
+
 
    Level: advanced
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetCheckNormIteration()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetCheckNormIteration(), KSPSetPCSide(), KSPGetPCSide()
 @*/
 PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
@@ -259,7 +262,7 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveEnum(ksp,normtype,2);
-  ksp->normtype = normtype;
+  ksp->normtype = ksp->normtype_set = normtype;
   if (normtype == KSP_NORM_NONE) {
     ierr = KSPSetConvergenceTest(ksp,KSPConvergedSkip,0,0);CHKERRQ(ierr);
     ierr = PetscInfo(ksp,"Warning: setting KSPNormType to skip computing the norm\n\
@@ -360,8 +363,9 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
    which norms and preconditioner sides are supported. Users should not need to call this
    function.
 
-   KSP_NORM_NONE is supported by default with all KSP methods and any PC side. If a KSP explicitly does not support
-   KSP_NORM_NONE, it should set this by setting priority=0.
+   KSP_NORM_NONE is supported by default with all KSP methods and any PC side at priority 1.  If a KSP explicitly does
+   not support KSP_NORM_NONE, it should set this by setting priority=0.  Since defaulting to KSP_NORM_NONE is usually
+   undesirable, more desirable norms should usually have priority 2 or higher.
 
 .seealso: KSPSetNormType(), KSPSetPCSide()
 @*/
@@ -384,6 +388,8 @@ PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
   ierr = PetscMemzero(ksp->normsupporttable,sizeof(ksp->normsupporttable));CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
+  ksp->pc_side  = ksp->pc_side_set;
+  ksp->normtype = ksp->normtype_set;
   PetscFunctionReturn(0);
 }
 
@@ -400,9 +406,6 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcsid
       if ((ksp->normtype == KSP_NORM_DEFAULT || ksp->normtype == i)
           && (ksp->pc_side == PC_SIDE_DEFAULT || ksp->pc_side == j)
           && (ksp->normsupporttable[i][j] > best)) {
-        if (ksp->normtype == KSP_NORM_DEFAULT && i == KSP_NORM_NONE && ksp->normsupporttable[i][j] <= 1) {
-          continue; /* Skip because we don't want to default to no norms unless set by the KSP (preonly). */
-        }
         best  = ksp->normsupporttable[i][j];
         ibest = i;
         jbest = j;
@@ -519,7 +522,7 @@ $           set size, type, etc of mat and pmat
 
 .keywords: KSP, set, operators, matrix, preconditioner, linear system
 
-.seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPGetOperators()
+.seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPGetOperators(), KSPSetComputeOperators(), KSPSetComputeInitialGuess(), KSPSetComputeRHS()
 @*/
 PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat)
 {
@@ -704,7 +707,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
 
   ksp->max_it  = 10000;
-  ksp->pc_side = PC_SIDE_DEFAULT;
+  ksp->pc_side = ksp->pc_side_set = PC_SIDE_DEFAULT;
   ksp->rtol    = 1.e-5;
 #if defined(PETSC_USE_REAL_SINGLE)
   ksp->abstol  = 1.e-25;
@@ -714,7 +717,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->divtol  = 1.e4;
 
   ksp->chknorm        = -1;
-  ksp->normtype       = KSP_NORM_DEFAULT;
+  ksp->normtype       = ksp->normtype_set = KSP_NORM_DEFAULT;
   ksp->rnorm          = 0.0;
   ksp->its            = 0;
   ksp->guess_zero     = PETSC_TRUE;

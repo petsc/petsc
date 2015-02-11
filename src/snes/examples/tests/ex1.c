@@ -324,11 +324,12 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
  */
 PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx         *user = (AppCtx*)ptr;
-  PetscInt       i,j,row,mx,my;
-  PetscErrorCode ierr;
-  PetscReal      two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
-  PetscScalar    ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
+  AppCtx            *user = (AppCtx*)ptr;
+  PetscInt          i,j,row,mx,my;
+  PetscErrorCode    ierr;
+  PetscReal         two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
+  PetscScalar       ut,ub,ul,ur,u,uxx,uyy,sc,*f;
+  const PetscScalar *x;
 
   mx     = user->mx;
   my     = user->my;
@@ -342,7 +343,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /*
@@ -369,7 +370,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   return 0;
 }
@@ -391,11 +392,12 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
 {
-  AppCtx         *user = (AppCtx*)ptr;   /* user-defined applicatin context */
-  PetscInt       i,j,row,mx,my,col[5];
-  PetscErrorCode ierr;
-  PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;
-  PetscReal      hx,hy,hxdhy,hydhx;
+  AppCtx            *user = (AppCtx*)ptr;   /* user-defined applicatin context */
+  PetscInt          i,j,row,mx,my,col[5];
+  PetscErrorCode    ierr;
+  PetscScalar       two = 2.0,one = 1.0,lambda,v[5],sc;
+  const PetscScalar *x;
+  PetscReal         hx,hy,hxdhy,hydhx;
 
   mx     = user->mx;
   my     = user->my;
@@ -409,7 +411,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
 
   /*
      Compute entries of the Jacobian
@@ -433,7 +435,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   /*
      Assemble matrix

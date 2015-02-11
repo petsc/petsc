@@ -144,12 +144,12 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
 /*MC
    KSPPIPECR - Pipelined conjugate residual method
 
-   There method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CR.  The
-   non-blocking reduction is overlapped by the matrix-vector product, but not preconditioner application.
+   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CR.  The
+   non-blocking reduction is overlapped by the matrix-vector product, but not the preconditioner application.
 
    See also KSPPIPECG, where the reduction is only overlapped with the matrix-vector product.
 
-   Level: beginner
+   Level: intermediate
 
    Notes:
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
@@ -172,8 +172,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_PIPECR;
   ksp->ops->solve          = KSPSolve_PIPECR;

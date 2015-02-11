@@ -19,12 +19,28 @@ PetscErrorCode MatDSFischer(Mat, Vec, Vec, Vec, Vec, PetscReal, Vec, Vec, Vec, V
   Options database keys:
 . -different_hessian - TAO will use a copy of the hessian operator for masking.  By default
                        TAO will directly alter the hessian operator.
+  Level: intermediate
 
 E*/
+
 typedef enum {TAO_SUBSET_SUBVEC,TAO_SUBSET_MASK,TAO_SUBSET_MATRIXFREE} TaoSubsetType;
 PETSC_EXTERN const char *const TaoSubsetTypes[];
+/*S
+     Tao - Abstract PETSc object that manages nonlinear optimization solves
+
+   Level: advanced
+
+.seealso TaoCreate(), TaoDestroy(), TaoSetType(), TaoType
+S*/
 
 typedef struct _p_Tao*   Tao;
+
+/*J
+        TaoType - String with the name of a TAO method
+
+       Level: beginner
+
+J*/
 #define TaoType char*
 #define TAOLMVM     "lmvm"
 #define TAONLS      "nls"
@@ -52,7 +68,7 @@ PETSC_EXTERN PetscFunctionList TaoList;
 
 /*  Convergence flags.
     Be sure to check that these match the flags in
-    include/finclude/petsctao.h
+    include/petsc-finclude/petsctao.h
 */
 typedef enum {/* converged */
   TAO_CONVERGED_FATOL          =  1, /* f(X)-f(X*) <= fatol */
@@ -80,7 +96,6 @@ PETSC_EXTERN PetscErrorCode TaoInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TaoFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TaoCreate(MPI_Comm,Tao*);
 PETSC_EXTERN PetscErrorCode TaoSetFromOptions(Tao);
-PETSC_EXTERN PetscErrorCode TaoSetFiniteDifferencesOptions(Tao);
 PETSC_EXTERN PetscErrorCode TaoSetUp(Tao);
 PETSC_EXTERN PetscErrorCode TaoSetType(Tao, const TaoType);
 PETSC_EXTERN PetscErrorCode TaoGetType(Tao, const TaoType *);
@@ -90,11 +105,11 @@ PETSC_EXTERN PetscErrorCode TaoDestroy(Tao*);
 
 PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(Tao,const char []);
 PETSC_EXTERN PetscErrorCode TaoView(Tao, PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode TaoViewFromOptions(Tao A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 PETSC_EXTERN PetscErrorCode TaoSolve(Tao);
 
 PETSC_EXTERN PetscErrorCode TaoRegister(const char [],PetscErrorCode (*)(Tao));
-PETSC_EXTERN PetscErrorCode TaoRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TaoRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode TaoGetConvergedReason(Tao,TaoConvergedReason*);
@@ -162,6 +177,7 @@ PETSC_EXTERN PetscErrorCode TaoGetFunctionLowerBound(Tao, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoGetInitialTrustRegionRadius(Tao, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoGetCurrentTrustRegionRadius(Tao, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoGetMaximumIterations(Tao, PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoGetCurrentFunctionEvaluations(Tao, PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoGetMaximumFunctionEvaluations(Tao, PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoSetOptionsPrefix(Tao, const char p[]);
 PETSC_EXTERN PetscErrorCode TaoAppendOptionsPrefix(Tao, const char p[]);
@@ -169,13 +185,14 @@ PETSC_EXTERN PetscErrorCode TaoGetOptionsPrefix(Tao, const char *p[]);
 PETSC_EXTERN PetscErrorCode TaoResetStatistics(Tao);
 
 PETSC_EXTERN PetscErrorCode TaoGetKSP(Tao, KSP*);
+PETSC_EXTERN PetscErrorCode TaoGetLinearSolveIterations(Tao,PetscInt *);
 
 #include <petsctaolinesearch.h>
 PETSC_EXTERN PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch, Tao);
 PETSC_EXTERN PetscErrorCode TaoGetLineSearch(Tao, TaoLineSearch*);
 
-PETSC_EXTERN PetscErrorCode TaoSetHistory(Tao,PetscReal*,PetscReal*,PetscReal*,PetscInt,PetscBool);
-PETSC_EXTERN PetscErrorCode TaoGetHistory(Tao,PetscReal**,PetscReal**,PetscReal**,PetscInt*);
+PETSC_EXTERN PetscErrorCode TaoSetConvergenceHistory(Tao,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt,PetscBool);
+PETSC_EXTERN PetscErrorCode TaoGetConvergenceHistory(Tao,PetscReal**,PetscReal**,PetscReal**,PetscInt**,PetscInt*);
 PETSC_EXTERN PetscErrorCode TaoSetMonitor(Tao, PetscErrorCode (*)(Tao,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode TaoCancelMonitors(Tao);
 PETSC_EXTERN PetscErrorCode TaoDefaultMonitor(Tao, void*);
@@ -197,32 +214,5 @@ PETSC_EXTERN PetscErrorCode TaoSQPCONSetStateDesignIS(Tao, IS, IS);
 PETSC_EXTERN PetscErrorCode TaoLCLSetStateDesignIS(Tao, IS, IS);
 PETSC_EXTERN PetscErrorCode TaoMonitor(Tao, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoConvergedReason*);
 
-typedef struct _p_TaoDM* TaoDM;
-PETSC_EXTERN PetscClassId TAODM_CLASSID;
-
-PETSC_EXTERN PetscErrorCode TaoDMSetMatType(TaoDM *, const MatType);
-PETSC_EXTERN PetscErrorCode TaoDMCreate(MPI_Comm, PetscInt, void*, TaoDM**);
-PETSC_EXTERN PetscErrorCode TaoDMSetSolverType(TaoDM*, const TaoType);
-PETSC_EXTERN PetscErrorCode TaoDMSetOptionsPrefix(TaoDM *, const char []);
-PETSC_EXTERN PetscErrorCode TaoDMDestroy(TaoDM*);
-PETSC_EXTERN PetscErrorCode TaoDMDestroyLevel(TaoDM);
-PETSC_EXTERN PetscErrorCode TaoDMSetFromOptions(TaoDM*);
-PETSC_EXTERN PetscErrorCode TaoDMSetTolerances(TaoDM*,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode TaoDMSetUp(TaoDM*);
-PETSC_EXTERN PetscErrorCode TaoDMSolve(TaoDM*);
-PETSC_EXTERN PetscErrorCode TaoDMView(TaoDM*, PetscViewer);
-PETSC_EXTERN PetscErrorCode TaoDMSetDM(TaoDM *, DM);
-PETSC_EXTERN PetscErrorCode TaoDMGetDM(TaoDM , DM*);
-PETSC_EXTERN PetscErrorCode TaoDMSetContext(TaoDM , void*);
-PETSC_EXTERN PetscErrorCode TaoDMGetContext(TaoDM , void**);
-
-PETSC_EXTERN PetscErrorCode TaoDMSetPreLevelMonitor(TaoDM*,PetscErrorCode(*)(TaoDM, PetscInt, void*),void*);
-PETSC_EXTERN PetscErrorCode TaoDMSetPostLevelMonitor(TaoDM*,PetscErrorCode(*)(TaoDM, PetscInt, void*),void*);
-PETSC_EXTERN PetscErrorCode TaoDMSetInitialGuessRoutine(TaoDM*,PetscErrorCode(*)(TaoDM,Vec));
-PETSC_EXTERN PetscErrorCode TaoDMSetVariableBoundsRoutine(TaoDM*,PetscErrorCode(*)(TaoDM,Vec, Vec));
-PETSC_EXTERN PetscErrorCode TaoDMSetObjectiveAndGradientRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, PetscReal*, Vec, void*));
-PETSC_EXTERN PetscErrorCode TaoDMSetObjectiveRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, PetscReal*, void*));
-PETSC_EXTERN PetscErrorCode TaoDMSetGradientRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, Vec, void*));
-PETSC_EXTERN PetscErrorCode TaoDMSetHessianRoutine(TaoDM*,PetscErrorCode(*)(Tao, Vec, Mat*, Mat*, void*));
 
 #endif

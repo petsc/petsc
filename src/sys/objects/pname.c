@@ -46,6 +46,10 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
    Notes: If the viewer format is PETSC_VIEWER_ASCII_MATLAB then the information is printed after a % symbol
           so that MATLAB will treat it as a comment.
 
+          If the viewer format is PETSC_VIEWER_ASCII_VTK*, PETSC_VIEWER_ASCII_LATEX, or
+          PETSC_VIEWER_ASCII_MATRIXMARKET then don't print header information
+          as these formats can't process it.
+
 .seealso: PetscObjectSetName(), PetscObjectName()
 
 @*/
@@ -62,6 +66,8 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
   if (!flg) PetscFunctionReturn(0);
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL || format == PETSC_VIEWER_ASCII_VTK_COORDS || format == PETSC_VIEWER_ASCII_MATRIXMARKET || format == PETSC_VIEWER_ASCII_LATEX) PetscFunctionReturn(0);
+
   if (format == PETSC_VIEWER_ASCII_MATLAB) {ierr = PetscViewerASCIIPrintf(viewer,"%%");CHKERRQ(ierr);}
   ierr = PetscViewerASCIIPrintf(viewer,"%s Object:",obj->class_name);CHKERRQ(ierr);
   if (obj->name) {

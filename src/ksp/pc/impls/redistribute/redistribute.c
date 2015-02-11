@@ -83,7 +83,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       ierr = MatRestoreRow(pc->mat,i,&nz,NULL,NULL);CHKERRQ(ierr);
     }
     ierr = PetscMalloc1(cnt,&rows);CHKERRQ(ierr);
-    ierr = PetscMalloc1((rend - rstart - cnt),&drows);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rend - rstart - cnt,&drows);CHKERRQ(ierr);
 
     /* list non-diagonal rows on process */
     cnt = 0; dcnt = 0;
@@ -197,7 +197,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
     ierr = VecCreateMPI(comm,slen,PETSC_DETERMINE,&red->b);CHKERRQ(ierr);
     ierr = VecDuplicate(red->b,&red->x);CHKERRQ(ierr);
-    ierr = MatGetVecs(pc->pmat,&tvec,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(pc->pmat,&tvec,NULL);CHKERRQ(ierr);
     ierr = VecScatterCreate(tvec,red->is,red->b,NULL,&red->scatter);CHKERRQ(ierr);
     ierr = VecDestroy(&tvec);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
@@ -208,7 +208,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   /* get diagonal portion of matrix */
   ierr = PetscFree(red->diag);CHKERRQ(ierr);
   ierr = PetscMalloc1(red->dcnt,&red->diag);CHKERRQ(ierr);
-  ierr = MatGetVecs(pc->pmat,&diag,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(pc->pmat,&diag,NULL);CHKERRQ(ierr);
   ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
   ierr = VecGetArrayRead(diag,&d);CHKERRQ(ierr);
   for (i=0; i<red->dcnt; i++) red->diag[i] = 1.0/d[red->drows[i]];
@@ -275,7 +275,7 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Redistribute"
-static PetscErrorCode PCSetFromOptions_Redistribute(PC pc)
+static PetscErrorCode PCSetFromOptions_Redistribute(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode  ierr;
   PC_Redistribute *red = (PC_Redistribute*)pc->data;

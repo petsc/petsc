@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# This script makes a Apple iOS installer for PETSc, it uses arch-osx-simulator.py, makeframework, makedocs, makedmg
+#
+# Run from the root PETSc directory
+#
+# See ./makeframework on how to use the framework:
+#
+#
+export PETSC_ARCH=arch-ios-simulator
+rm -rf ${PETSC_ARCH}
+./systems/Apple/iOS/bin/arch-ios-simulator.py
+./systems/Apple/iOS/bin/iosbuilder.py
+./systems/Apple/iOS/bin/makeframework simulator
+
+export LOC=$PETSC_DIR
+make alldoc
+make allman
+./systems/Apple/iOS/bin/makedocs
+
+./systems/Apple/iOS/bin/makedmg
+
+echo "To use the PETSc.framework in examples either run the installer ${PETSC_DIR}/PETSc-iOS.dmg"
+echo "  or sudo cp -r ${PETSC_DIR}/PETSc-iOS  /Library/Frameworks"
+
+
+
+

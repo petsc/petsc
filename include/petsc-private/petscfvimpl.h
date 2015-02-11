@@ -4,6 +4,11 @@
 #include <petscfv.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool PetscLimiterRegisterAllCalled;
+PETSC_EXTERN PetscBool PetscFVRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscLimiterRegisterAll(void);
+PETSC_EXTERN PetscErrorCode PetscFVRegisterAll(void);
+
 typedef struct _PetscLimiterOps *PetscLimiterOps;
 struct _PetscLimiterOps {
   PetscErrorCode (*setfromoptions)(PetscLimiter);
@@ -57,9 +62,7 @@ struct _PetscFVOps {
   PetscErrorCode (*view)(PetscFV,PetscViewer);
   PetscErrorCode (*destroy)(PetscFV);
   PetscErrorCode (*computegradient)(PetscFV, PetscInt, const PetscScalar[], PetscScalar []);
-  PetscErrorCode (*integraterhsfunction)(PetscFV, PetscInt, PetscInt, PetscFV[], PetscInt, PetscCellGeometry, PetscCellGeometry, PetscScalar[], PetscScalar[],
-                                         void (*)(const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[], void *),
-                                         PetscScalar[], PetscScalar[], void *);
+  PetscErrorCode (*integraterhsfunction)(PetscFV, PetscDS, PetscInt, PetscInt, PetscFVFaceGeom *, PetscReal *, PetscScalar[], PetscScalar[], PetscScalar[], PetscScalar[]);
 };
 
 struct _p_PetscFV {
@@ -70,6 +73,8 @@ struct _p_PetscFV {
   PetscInt        dim;              /* The spatial dimension */
   PetscBool       computeGradients; /* Flag for gradient computation */
   PetscScalar    *fluxWork;         /* The work array for flux calculation */
+  PetscQuadrature quadrature;       /* Suitable quadrature on the volume */
+  PetscReal      *B, *D, *H;        /* Tabulation of pseudo-basis and derivatives at quadrature points */
 };
 
 typedef struct {
@@ -80,5 +85,18 @@ typedef struct {
   PetscInt     maxFaces, workSize;
   PetscScalar *B, *Binv, *tau, *work;
 } PetscFV_LeastSquares;
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVInterpolate_Static"
+PETSC_STATIC_INLINE PetscErrorCode PetscFVInterpolate_Static(PetscFV fv, const PetscScalar x[], PetscInt q, PetscScalar interpolant[])
+{
+  PetscInt       Nc, fc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginHot;
+  ierr = PetscFVGetNumComponents(fv, &Nc);CHKERRQ(ierr);
+  for (fc = 0; fc < Nc; ++fc) {interpolant[fc] = x[fc];}
+  PetscFunctionReturn(0);
+}
 
 #endif

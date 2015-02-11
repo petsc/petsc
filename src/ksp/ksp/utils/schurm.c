@@ -13,22 +13,22 @@ typedef struct {
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetVecs_SchurComplement"
-PetscErrorCode MatGetVecs_SchurComplement(Mat N,Vec *right,Vec *left)
+#define __FUNCT__ "MatCreateVecs_SchurComplement"
+PetscErrorCode MatCreateVecs_SchurComplement(Mat N,Vec *right,Vec *left)
 {
   Mat_SchurComplement *Na = (Mat_SchurComplement*)N->data;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   if (Na->D) {
-    ierr = MatGetVecs(Na->D,right,left);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Na->D,right,left);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (right) {
-    ierr = MatGetVecs(Na->B,right,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Na->B,right,NULL);CHKERRQ(ierr);
   }
   if (left) {
-    ierr = MatGetVecs(Na->C,NULL,left);CHKERRQ(ierr);
+    ierr = MatCreateVecs(Na->C,NULL,left);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -65,6 +65,28 @@ PetscErrorCode MatView_SchurComplement(Mat N,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*
+           A11^T - A01^T ksptrans(A00,Ap00) A10^T
+*/
+#undef __FUNCT__
+#define __FUNCT__ "MatMultTranspose_SchurComplement"
+PetscErrorCode MatMultTranspose_SchurComplement(Mat N,Vec x,Vec y)
+{
+  Mat_SchurComplement *Na = (Mat_SchurComplement*)N->data;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  if (!Na->work1) {ierr = MatCreateVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
+  if (!Na->work2) {ierr = MatCreateVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
+  ierr = MatMultTranspose(Na->C,x,Na->work1);CHKERRQ(ierr);
+  ierr = KSPSolveTranspose(Na->ksp,Na->work1,Na->work2);CHKERRQ(ierr);
+  ierr = MatMultTranspose(Na->B,Na->work2,y);CHKERRQ(ierr);
+  ierr = VecScale(y,-1.0);CHKERRQ(ierr);
+  if (Na->D) {
+    ierr = MatMultTransposeAdd(Na->D,x,y,y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 /*
            A11 - A10 ksp(A00,Ap00) A01
@@ -77,8 +99,8 @@ PetscErrorCode MatMult_SchurComplement(Mat N,Vec x,Vec y)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
-  if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
+  if (!Na->work1) {ierr = MatCreateVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
+  if (!Na->work2) {ierr = MatCreateVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
   ierr = MatMult(Na->B,x,Na->work1);CHKERRQ(ierr);
   ierr = KSPSolve(Na->ksp,Na->work1,Na->work2);CHKERRQ(ierr);
   ierr = MatMult(Na->C,Na->work2,y);CHKERRQ(ierr);
@@ -100,8 +122,8 @@ PetscErrorCode MatMultAdd_SchurComplement(Mat N,Vec x,Vec y,Vec z)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
-  if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
+  if (!Na->work1) {ierr = MatCreateVecs(Na->A,&Na->work1,NULL);CHKERRQ(ierr);}
+  if (!Na->work2) {ierr = MatCreateVecs(Na->A,&Na->work2,NULL);CHKERRQ(ierr);}
   ierr = MatMult(Na->B,x,Na->work1);CHKERRQ(ierr);
   ierr = KSPSolve(Na->ksp,Na->work1,Na->work2);CHKERRQ(ierr);
   if (y == z) {
@@ -119,13 +141,13 @@ PetscErrorCode MatMultAdd_SchurComplement(Mat N,Vec x,Vec y,Vec z)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_SchurComplement"
-PetscErrorCode MatSetFromOptions_SchurComplement(Mat N)
+PetscErrorCode MatSetFromOptions_SchurComplement(PetscOptions *PetscOptionsObject,Mat N)
 {
   Mat_SchurComplement *Na = (Mat_SchurComplement*)N->data;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("MatSchurComplementOptions");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"MatSchurComplementOptions");CHKERRQ(ierr);
   Na->ainvtype = MAT_SCHUR_COMPLEMENT_AINV_DIAG;
   ierr = PetscOptionsEnum("-mat_schur_complement_ainv_type","Type of approximation for inv(A00) used when assembling Sp = A11 - A10 inv(A00) A01","MatSchurComplementSetAinvType",MatSchurComplementAinvTypes,(PetscEnum)Na->ainvtype,(PetscEnum*)&Na->ainvtype,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -240,7 +262,6 @@ PetscErrorCode  MatSchurComplementSetSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A01,
   if (A11) {
     PetscValidHeaderSpecific(A11,MAT_CLASSID,5);
     PetscCheckSameComm(A00,1,A11,5);
-    if (A11->rmap->n != A11->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A11 %D do not equal local columns %D",A11->rmap->n,A11->cmap->n);
     if (A10->rmap->n != A11->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A10 %D do not equal local rows A11 %D",A10->rmap->n,A11->rmap->n);
   }
 
@@ -379,7 +400,6 @@ PetscErrorCode  MatSchurComplementUpdateSubMatrices(Mat S,Mat A00,Mat Ap00,Mat A
   if (A11) {
     PetscValidHeaderSpecific(A11,MAT_CLASSID,5);
     PetscCheckSameComm(A00,1,A11,5);
-    if (A11->rmap->n != A11->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A11 %D do not equal local columns %D",A11->rmap->n,A11->cmap->n);
     if (A10->rmap->n != A11->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local rows of A10 %D do not equal local rows A11 %D",A10->rmap->n,A11->rmap->n);
   }
 
@@ -544,13 +564,15 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
   PetscValidHeaderSpecific(isrow0,IS_CLASSID,2);
   PetscValidHeaderSpecific(iscol0,IS_CLASSID,3);
   PetscValidHeaderSpecific(isrow1,IS_CLASSID,4);
   PetscValidHeaderSpecific(iscol1,IS_CLASSID,5);
+  if (mreuse == MAT_IGNORE_MATRIX && preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
   if (mreuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_CLASSID,7);
   if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newpmat,MAT_CLASSID,9);
-  PetscValidType(mat,1);
+
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   if (mreuse != MAT_IGNORE_MATRIX) {
@@ -561,20 +583,20 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
       if (A != Ap) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Preconditioning matrix does not match operator");
       ierr = MatDestroy(&Ap);CHKERRQ(ierr); /* get rid of extra reference */
     }
-    ierr = MatGetSubMatrix(mat,isrow0,iscol0,mreuse,&A);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(mat,isrow0,iscol1,mreuse,&B);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(mat,isrow1,iscol0,mreuse,&C);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(mat,isrow1,iscol1,mreuse,&D);CHKERRQ(ierr);
-    switch (mreuse) {
-    case MAT_INITIAL_MATRIX:
-      ierr = MatCreateSchurComplement(A,A,B,C,D,newmat);CHKERRQ(ierr);
-      break;
-    case MAT_REUSE_MATRIX:
-      ierr = MatSchurComplementUpdateSubMatrices(*newmat,A,A,B,C,D);CHKERRQ(ierr);
-      break;
-    default:
-      SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Unrecognized value of mreuse");
-    }
+  }
+  ierr = MatGetSubMatrix(mat,isrow0,iscol0,mreuse,&A);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,isrow0,iscol1,mreuse,&B);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,isrow1,iscol0,mreuse,&C);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,isrow1,iscol1,mreuse,&D);CHKERRQ(ierr);
+  switch (mreuse) {
+  case MAT_INITIAL_MATRIX:
+    ierr = MatCreateSchurComplement(A,A,B,C,D,newmat);CHKERRQ(ierr);
+    break;
+  case MAT_REUSE_MATRIX:
+    ierr = MatSchurComplementUpdateSubMatrices(*newmat,A,A,B,C,D);CHKERRQ(ierr);
+    break;
+  default:
+    if (mreuse != MAT_IGNORE_MATRIX) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Unrecognized value of mreuse");
   }
   if (preuse != MAT_IGNORE_MATRIX) {
     ierr = MatCreateSchurComplementPmat(A,B,C,D,ainvtype,preuse,newpmat);CHKERRQ(ierr);
@@ -599,10 +621,10 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 .   iscol0 - columns to eliminate, (isrow0,iscol0) should be square and nonsingular
 .   isrow1 - rows in which the Schur complement is formed
 .   iscol1 - columns in which the Schur complement is formed
-.   mreuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in newmat
+.   mreuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in S
 .   plump  - the type of approximation used for the inverse of the (0,0) block used in forming Sp:
-$                        MAT_SCHUR_COMPLEMENT_AINV_DIAG | MAT_SCHUR_COMPLEMENT_AINV_LUMP
--   preuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in newpmat
+                       MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
+-   preuse - MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX, use MAT_IGNORE_MATRIX to put nothing in Sp
 
     Output Parameters:
 +   S      - exact Schur complement, often of type MATSCHURCOMPLEMENT which is difficult to use for preconditioning
@@ -627,7 +649,7 @@ $                        MAT_SCHUR_COMPLEMENT_AINV_DIAG | MAT_SCHUR_COMPLEMENT_A
 @*/
 PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *S,MatSchurComplementAinvType ainvtype,MatReuse preuse,Mat *Sp)
 {
-  PetscErrorCode ierr,(*f)(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatReuse,Mat*);
+  PetscErrorCode ierr,(*f)(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatReuse,Mat*) = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -639,10 +661,12 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
   if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*Sp,MAT_CLASSID,9);
   PetscValidType(A,1);
   if (A->factortype) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-
-  ierr = PetscObjectQueryFunction((PetscObject)S,"MatGetSchurComplement_C",&f);CHKERRQ(ierr);
+  f = NULL;
+  if (mreuse == MAT_REUSE_MATRIX) { /* This is the only situation, in which we can demand that the user pass a non-NULL pointer to non-garbage in S. */
+    ierr = PetscObjectQueryFunction((PetscObject)*S,"MatGetSchurComplement_C",&f);CHKERRQ(ierr);
+  }
   if (f) {
-    ierr = (*f)(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,preuse,Sp);CHKERRQ(ierr);
+      ierr = (*f)(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,preuse,Sp);CHKERRQ(ierr);
   } else {
     ierr = MatGetSchurComplement_Basic(A,isrow0,iscol0,isrow1,iscol1,mreuse,S,ainvtype,preuse,Sp);CHKERRQ(ierr);
   }
@@ -659,7 +683,7 @@ PetscErrorCode  MatGetSchurComplement(Mat A,IS isrow0,IS iscol0,IS isrow1,IS isc
     Input Parameters:
 +   S        - matrix obtained with MatCreateSchurComplement() (or equivalent) and implementing the action of A11 - A10 ksp(A00,Ap00) A01
 -   ainvtype - type of approximation used to form A00inv from A00 when assembling Sp = A11 - A10 A00inv A01:
-$                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
+                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
 
     Options database:
     -mat_schur_complement_ainv_type diag | lump
@@ -706,7 +730,7 @@ PetscErrorCode  MatSchurComplementSetAinvType(Mat S,MatSchurComplementAinvType a
 
     Output Parameter:
 .   ainvtype - type of approximation used to form A00inv from A00 when assembling Sp = A11 - A10 A00inv A01:
-$                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
+                      MAT_SCHUR_COMPLEMENT_AINV_DIAG or MAT_SCHUR_COMPLEMENT_AINV_LUMP
 
     Note:
     Since the real Schur complement is usually dense, providing a good approximation to newpmat usually requires
@@ -768,16 +792,22 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
 {
 
   PetscErrorCode ierr;
+  PetscInt       N00;
 
   PetscFunctionBegin;
   /* Use an appropriate approximate inverse of A00 to form A11 - A10 inv(diag(A00)) A01; a NULL A01, A10 or A11 indicates a zero matrix. */
   /* TODO: Perhaps should create an appropriately-sized zero matrix of the same type as A00? */
   if ((!A01 || !A10) & !A11) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot assemble Spmat: A01, A10 and A11 are all NULL.");
 
-  if (!A01 || !A10) {
-    if (!preuse) {
+  if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(0);
+
+  /* A zero size A00 or empty A01 or A10 imply S = A11. */
+  ierr = MatGetSize(A00,&N00,NULL);CHKERRQ(ierr);
+  if (!A01 || !A10 || !N00) {
+    if (preuse == MAT_INITIAL_MATRIX) {
       ierr = MatDuplicate(A11,MAT_COPY_VALUES,Spmat);CHKERRQ(ierr);
-    } else {
+    } else { /* MAT_REUSE_MATRIX */
+      /* TODO: when can we pass SAME_NONZERO_PATTERN? */
       ierr = MatCopy(A11,*Spmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     }
 
@@ -785,7 +815,7 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
     Mat         AdB,Sp;
     Vec         diag;
 
-    ierr = MatGetVecs(A00,&diag,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A00,&diag,NULL);CHKERRQ(ierr);
     if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_LUMP) {
       ierr = MatGetRowSum(A00,diag);CHKERRQ(ierr);
     } else if (ainvtype == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
@@ -800,6 +830,7 @@ PetscErrorCode  MatCreateSchurComplementPmat(Mat A00,Mat A01,Mat A10,Mat A11,Mat
     if (!A11) {
       ierr = MatScale(Sp,-1.0);CHKERRQ(ierr);
     } else {
+      /* TODO: when can we pass SAME_NONZERO_PATTERN? */
       ierr     = MatAYPX(Sp,-1,A11,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     }
     *Spmat    = Sp;
@@ -887,9 +918,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)
   N->data = (void*) Na;
 
   N->ops->destroy        = MatDestroy_SchurComplement;
-  N->ops->getvecs        = MatGetVecs_SchurComplement;
+  N->ops->getvecs        = MatCreateVecs_SchurComplement;
   N->ops->view           = MatView_SchurComplement;
   N->ops->mult           = MatMult_SchurComplement;
+  N->ops->multtranspose  = MatMultTranspose_SchurComplement;
   N->ops->multadd        = MatMultAdd_SchurComplement;
   N->ops->setfromoptions = MatSetFromOptions_SchurComplement;
   N->assembled           = PETSC_FALSE;

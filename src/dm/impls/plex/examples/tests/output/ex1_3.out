@@ -1,6 +1,6 @@
-DM Object:Simplical Mesh 1 MPI processes
+DM Object:Simplicial Mesh 1 MPI processes
   type: plex
-Mesh 'Simplical Mesh':
+Mesh 'Simplicial Mesh':
 Max sizes cone: 3 support: 6
 orientation is missing
 cap --> base:

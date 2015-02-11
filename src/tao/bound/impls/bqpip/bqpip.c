@@ -230,6 +230,7 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ierr = TaoMonitor(tao,iter++,qp->pobj,PetscSqrtScalar(qp->gap + qp->dinfeas),
                             qp->pinfeas, step, &reason);CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING) break;
+    tao->ksp_its=0;
 
     /*
        Dual Infeasibility Direction should already be in the right
@@ -276,14 +277,19 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     ksptol = PetscMin(ksptol,0.001);
 
     ierr = MatDiagonalSet(tao->hessian, qp->DiagAxpy, ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     ierr = KSPSetOperators(tao->ksp, tao->hessian, tao->hessian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, qp->RHS, tao->stepdirection);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
     tao->ksp_its+=its;
+    tao->ksp_tot_its+=its;
 
     ierr = VecScale(qp->DiagAxpy, -1.0);CHKERRQ(ierr);
     ierr = MatDiagonalSet(tao->hessian, qp->DiagAxpy, ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecScale(qp->DiagAxpy, -1.0);CHKERRQ(ierr);
     ierr = QPComputeStepDirection(qp,tao);CHKERRQ(ierr);
     ierr = QPStepLength(qp); CHKERRQ(ierr);
@@ -328,11 +334,16 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
 
       /* Approximately solve the linear system */
       ierr = MatDiagonalSet(tao->hessian, qp->DiagAxpy, ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = KSPSolve(tao->ksp, qp->RHS2, tao->stepdirection);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
+      tao->ksp_tot_its+=its;
 
       ierr = MatDiagonalSet(tao->hessian, qp->HDiag, INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(tao->hessian,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = QPComputeStepDirection(qp,tao);CHKERRQ(ierr);
       ierr = QPStepLength(qp);CHKERRQ(ierr);
 
@@ -508,14 +519,14 @@ PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *norm)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BQPIP"
-static PetscErrorCode TaoSetFromOptions_BQPIP(Tao tao)
+static PetscErrorCode TaoSetFromOptions_BQPIP(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_BQPIP      *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Interior point method for bound constrained quadratic optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-predcorr","Use a predictor-corrector method","",qp->predcorr,&qp->predcorr,0);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Interior point method for bound constrained quadratic optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_bqpip_predcorr","Use a predictor-corrector method","",qp->predcorr,&qp->predcorr,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -530,10 +541,22 @@ static PetscErrorCode TaoView_BQPIP(Tao tao, PetscViewer viewer)
 }
 
 /* --------------------------------------------------------- */
-EXTERN_C_BEGIN
+/*MC
+ TAOBQPIP - bounded quadratic interior point algorithm for quadratic 
+    optimization with box constraints.
+
+ Notes: This algorithms solves quadratic problems only, the linear Hessian will
+        only be computed once.
+
+ Options Database Keys:
+. -tao_bqpip_predcorr - use a predictor/corrector method
+
+  Level: beginner
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BQPIP"
-PetscErrorCode TaoCreate_BQPIP(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
 {
   TAO_BQPIP      *qp;
   PetscErrorCode ierr;
@@ -576,4 +599,4 @@ PetscErrorCode TaoCreate_BQPIP(Tao tao)
   ierr = KSPSetTolerances(tao->ksp, 1e-14, 1e-30, 1e30, PetscMax(10,qp->n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

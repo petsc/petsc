@@ -179,12 +179,12 @@ static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BLMVM"
-static PetscErrorCode TaoSetFromOptions_BLMVM(Tao tao)
+static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptions* PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Limited-memory variable-metric method for bound constrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for bound constrained optimization");CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -235,10 +235,33 @@ static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
 }
 
 /* ---------------------------------------------------------- */
-EXTERN_C_BEGIN
+/*MC
+  TAOBLMVM - Bounded limited memory variable metric is a quasi-Newton method
+         for nonlinear minimization with bound constraints. It is an extension
+         of TAOLMVM
+
+  Options Database Keys:
++     -tao_lmm_vectors - number of vectors to use for approximation
+.     -tao_lmm_scale_type - "none","scalar","broyden"
+.     -tao_lmm_limit_type - "none","average","relative","absolute"
+.     -tao_lmm_rescale_type - "none","scalar","gl"
+.     -tao_lmm_limit_mu - mu limiting factor
+.     -tao_lmm_limit_nu - nu limiting factor
+.     -tao_lmm_delta_min - minimum delta value
+.     -tao_lmm_delta_max - maximum delta value
+.     -tao_lmm_broyden_phi - phi factor for Broyden scaling
+.     -tao_lmm_scalar_alpha - alpha factor for scalar scaling
+.     -tao_lmm_rescale_alpha - alpha factor for rescaling diagonal
+.     -tao_lmm_rescale_beta - beta factor for rescaling diagonal
+.     -tao_lmm_scalar_history - amount of history for scalar scaling
+.     -tao_lmm_rescale_history - amount of history for rescaling diagonal
+-     -tao_lmm_eps - rejection tolerance
+
+  Level: beginner
+M*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BLMVM"
-PetscErrorCode TaoCreate_BLMVM(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
 {
   TAO_BLMVM      *blmP;
   const char     *morethuente_type = TAOLINESEARCHMT;
@@ -264,5 +287,4 @@ PetscErrorCode TaoCreate_BLMVM(Tao tao)
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

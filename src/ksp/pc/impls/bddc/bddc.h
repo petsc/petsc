@@ -4,7 +4,7 @@
 #include <../src/ksp/pc/impls/is/pcis.h>
 #include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
-//typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType;
+/* typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType; */
 
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
@@ -34,6 +34,7 @@ typedef struct {
   VecScatter    R_to_D;
   KSP           ksp_R;
   KSP           ksp_D;
+  PetscBool     issym;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
   ISLocalToGlobalMapping BtoNmap;
@@ -47,11 +48,16 @@ typedef struct {
   PetscBool     use_change_of_basis;
   PetscBool     use_change_on_faces;
   Mat           ChangeOfBasisMatrix;
+  Mat           user_ChangeOfBasisMatrix;
+  Mat           new_global_mat;
   Vec           original_rhs;
   Vec           temp_solution;
   Mat           local_mat;
   PetscBool     use_exact_dirichlet_trick;
+  PetscBool     ksp_guess_nonzero;
+  PetscBool     rhs_change;
   /* Some defaults on selecting vertices and constraints*/
+  PetscBool     use_local_adj;
   PetscBool     use_vertices;
   PetscBool     use_faces;
   PetscBool     use_edges;
@@ -63,19 +69,33 @@ typedef struct {
   MatNullSpace               NullSpace;
   IS                         user_primal_vertices;
   PetscBool                  use_nnsp_true;
+  PetscBool                  use_qr_single;
   PetscBool                  user_provided_isfordofs;
   PetscInt                   n_ISForDofs;
+  PetscInt                   n_ISForDofsLocal;
   IS                         *ISForDofs;
+  IS                         *ISForDofsLocal;
   IS                         NeumannBoundaries;
+  IS                         NeumannBoundariesLocal;
   IS                         DirichletBoundaries;
+  IS                         DirichletBoundariesLocal;
   PetscBool                  switch_static;
   PetscInt                   coarsening_ratio;
   PetscInt                   current_level;
   PetscInt                   max_levels;
+  PetscInt                   redistribute_coarse;
+  IS                         coarse_subassembling;
+  IS                         coarse_subassembling_init;
+  PetscBool                  use_coarse_estimates;
   /* scaling */
   Vec                        work_scaling;
   PetscBool                  use_deluxe_scaling;
   PCBDDCDeluxeScaling        deluxe_ctx;
+  PetscInt                   deluxe_threshold;
+  PetscBool                  deluxe_rebuild;
+  PetscInt                   deluxe_layers;
+  PetscBool                  deluxe_compute_rowadj;
+  PetscBool                  deluxe_use_useradj;
   /* For verbose output of some bddc data structures */
   PetscInt                   dbg_flag;
   PetscViewer                dbg_viewer;

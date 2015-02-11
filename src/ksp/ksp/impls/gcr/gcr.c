@@ -155,11 +155,11 @@ PetscErrorCode KSPSetUp_GCR(KSP ksp)
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
-  ierr = MatGetVecs(A, &ctx->R, NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A, &ctx->R, NULL);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->VV);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ctx->R, ctx->restart, &ctx->SS);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscScalar)*ctx->restart, &ctx->val);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->restart, &ctx->val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -195,7 +195,7 @@ PetscErrorCode KSPDestroy_GCR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GCR"
-PetscErrorCode KSPSetFromOptions_GCR(KSP ksp)
+PetscErrorCode KSPSetFromOptions_GCR(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
@@ -203,7 +203,7 @@ PetscErrorCode KSPSetFromOptions_GCR(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP GCR options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP GCR options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_gcr_restart","Number of Krylov search directions","KSPGCRSetRestart",ctx->restart,&restart,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPGCRSetRestart(ksp,restart);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -373,7 +373,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
   ctx->n_restarts = 0;
   ksp->data       = (void*)ctx;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,3);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_GCR;
   ksp->ops->solve          = KSPSolve_GCR;

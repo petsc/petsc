@@ -13,7 +13,7 @@ struct _TaoLineSearchOps {
     PetscErrorCode (*setup)(TaoLineSearch);
     PetscErrorCode (*apply)(TaoLineSearch,Vec,PetscReal*,Vec,Vec);
     PetscErrorCode (*view)(TaoLineSearch,PetscViewer);
-    PetscErrorCode (*setfromoptions)(TaoLineSearch);
+    PetscErrorCode (*setfromoptions)(PetscOptions*,TaoLineSearch);
     PetscErrorCode (*reset)(TaoLineSearch);
     PetscErrorCode (*destroy)(TaoLineSearch);
 };
@@ -59,7 +59,6 @@ struct _p_TaoLineSearch {
     PetscReal gtol;      /* tol for curvature condition (gtol>0)*/
     PetscReal stepmin;   /* lower bound for step */
     PetscReal stepmax;   /* upper bound for step */
-    PetscBool viewls;    /* print out information if true */
 
     Tao tao;
 };

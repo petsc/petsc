@@ -185,7 +185,7 @@ PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
   PetscFunctionBegin;
   if (s) {
     ierr = PetscStrlen(s,&len);CHKERRQ(ierr);
-    ierr = PetscMalloc1((1+len),&tmp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(1+len,&tmp);CHKERRQ(ierr);
     ierr = PetscStrcpy(tmp,s);CHKERRQ(ierr);
   }
   *t = tmp;
@@ -222,7 +222,7 @@ PetscErrorCode  PetscStrArrayallocpy(const char *const *list,char ***t)
 
   PetscFunctionBegin;
   while (list[n++]) ;
-  ierr = PetscMalloc1((n+1),t);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,t);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscStrallocpy(list[i],(*t)+i);CHKERRQ(ierr);
   }
@@ -332,8 +332,12 @@ PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
   PetscFunctionBegin;
   if (t && !s) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
   if (t) {
-    strncpy(s,t,n);
-    s[n-1] = '\0';
+    if (n > 1) {
+      strncpy(s,t,n-1);
+      s[n-1] = '\0';
+    } else {
+      s[0] = '\0';
+    }
   } else if (s) s[0] = 0;
   PetscFunctionReturn(0);
 }

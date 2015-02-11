@@ -565,11 +565,71 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscMergeIntArray"
+/*@
+   PetscMergeIntArray -     Merges two SORTED integer arrays, removes duplicate elements.
+
+   Not Collective
+
+   Input Parameters:
++  an  - number of values in the first array
+.  aI  - first sorted array of integers
+.  bn  - number of values in the second array
+-  bI  - second array of integers
+
+   Output Parameters:
++  n   - number of values in the merged array
+-  I   - merged sorted array, this is allocated if an array is not provided 
+
+   Level: intermediate
+
+   Concepts: merging^arrays
+
+.seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
+@*/
+PetscErrorCode  PetscMergeIntArray(PetscInt an,const PetscInt *aI, PetscInt bn, const PetscInt *bI,  PetscInt *n, PetscInt **L)
+{
+  PetscErrorCode ierr;
+  PetscInt       *L_ = *L, ak, bk, k;
+
+  if (!L_) {
+    ierr = PetscMalloc1(an+bn, L);CHKERRQ(ierr);
+    L_   = *L;
+  }
+  k = ak = bk = 0;
+  while (ak < an && bk < bn) {
+    if (aI[ak] == bI[bk]) {
+      L_[k] = aI[ak];
+      ++ak;
+      ++bk;
+      ++k;
+    } else if (aI[ak] < bI[bk]) {
+      L_[k] = aI[ak];
+      ++ak;
+      ++k;
+    } else {
+      L_[k] = bI[bk];
+      ++bk;
+      ++k;
+    }
+  }
+  if (ak < an) {
+    ierr = PetscMemcpy(L_+k,aI+ak,(an-ak)*sizeof(PetscInt));CHKERRQ(ierr);
+    k   += (an-ak);
+  }
+  if (bk < bn) {
+    ierr = PetscMemcpy(L_+k,bI+bk,(bn-bk)*sizeof(PetscInt));CHKERRQ(ierr);
+    k   += (bn-bk);
+  }
+  *n = k;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscMergeIntArrayPair"
 /*@
-   PetscMergeIntArrayPair -     Merges two SORTED integer arrays along with an additional array of integers.
+   PetscMergeIntArrayPair -     Merges two SORTED integer arrays that share NO common values along with an additional array of integers.
                                 The additional arrays are the same length as sorted arrays and are merged
                                 in the order determined by the merging of the sorted pair.
 

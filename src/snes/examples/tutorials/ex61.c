@@ -339,13 +339,14 @@ int main(int argc, char **argv)
 #define __FUNCT__ "Update_u"
 PetscErrorCode Update_u(Vec X,AppCtx *user)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,n;
-  PetscScalar    *xx,*wv_p,*cv_p,*wi_p,*ci_p,*eta_p;
+  PetscErrorCode    ierr;
+  PetscInt          i,n;
+  PetscScalar       *wv_p,*cv_p,*wi_p,*ci_p,*eta_p;
+  const PetscScalar *xx;
 
   PetscFunctionBeginUser;
   ierr = VecGetLocalSize(user->wv,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->wi,&wi_p);CHKERRQ(ierr);
@@ -360,7 +361,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
     ci_p[i]  = xx[5*i+3];
     eta_p[i] = xx[5*i+4];
   }
-  ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wi,&wi_p);CHKERRQ(ierr);
@@ -504,18 +505,21 @@ PetscErrorCode DPsi(AppCtx *user)
 #define __FUNCT__ "Llog"
 PetscErrorCode Llog(Vec X, Vec Y)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *x,*y;
-  PetscInt       n,i;
+  PetscErrorCode    ierr;
+  PetscScalar       *y;
+  const PetscScalar *x;
+  PetscInt          n,i;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (x[i] < 1.0e-12) y[i] = log(1.0e-12);
     else y[i] = log(x[i]);
   }
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -524,9 +528,10 @@ PetscErrorCode Llog(Vec X, Vec Y)
 #define __FUNCT__ "SetInitialGuess"
 PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
 {
-  PetscErrorCode ierr;
-  PetscInt       n,i,Mda,Nda;
-  PetscScalar    *xx,*cv_p,*ci_p,*wv_p,*wi_p,*eta;
+  PetscErrorCode    ierr;
+  PetscInt          n,i,Mda,Nda;
+  const PetscScalar *xx;
+  PetscScalar       *cv_p,*ci_p,*wv_p,*wi_p,*eta;
 
   /* needed for the void growth case */
   PetscScalar       xmid,ymid,cv_v=1.0,cv_m=0.122,ci_v=0.0,ci_m=.00069,eta_v=1.0,eta_m=0.0,h,lambda;
@@ -611,7 +616,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
   ierr = VecCopy(user->DPsiv,user->wv);CHKERRQ(ierr);
   ierr = VecCopy(user->DPsii,user->wi);CHKERRQ(ierr);
 
-  ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->wv,&wv_p);CHKERRQ(ierr);
@@ -631,7 +636,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
   ierr = VecView(user->ci,view);CHKERRQ(ierr);
    ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);*/
 
-  ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->ci,&ci_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wv,&wv_p);CHKERRQ(ierr);

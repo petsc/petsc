@@ -5,7 +5,6 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ScientificPythonSimple.tar.gz']
-    self.worksonWindows    = 1
     self.downloadonWindows = 1
     self.liblist           = [['Derivatives.py']]
     self.libdir            = os.path.join('lib', 'python', 'site-packages')
@@ -25,15 +24,22 @@ class Configure(config.package.Package):
     installLoc = os.path.join(self.installDir, self.altlibdir)
     initfile   = os.path.join(installLoc, '__init__.py')
     packageDir = os.path.join(installLoc, 'Scientific')
-    if not os.path.isdir(installLoc):
-      os.makedirs(installLoc)
-    if not os.path.exists(initfile):
-      f = file(initfile, 'w')
-      f.write('')
-      f.close()
-    if os.path.exists(packageDir):
-      shutil.rmtree(packageDir)
-    shutil.copytree(os.path.join(self.packageDir, 'Scientific'), packageDir)
+    if self.installSudo:
+      self.installDirProvider.printSudoPasswordMessage()
+      try:
+        output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+installLoc+' && '+self.installSudo+'rm -rf '+packageDir+'  && '+self.installSudo+'cp -rf '+os.path.join(self.packageDir, 'Scientific')+' '+packageDir, timeout=6000, log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error copying Scientific Python files from '+os.path.join(self.packageDir, 'Scientific')+' to '+packageDir)
+    else:
+      if not os.path.isdir(installLoc):
+        os.makedirs(installLoc)
+      if not os.path.exists(initfile):
+        f = file(initfile, 'w')
+        f.write('')
+        f.close()
+      if os.path.exists(packageDir):
+        shutil.rmtree(packageDir)
+      shutil.copytree(os.path.join(self.packageDir, 'Scientific'), packageDir)
     self.framework.actions.addArgument('Scientific Python', 'Install', 'Installed Scientific Python into '+self.installDir)
     return self.installDir
 

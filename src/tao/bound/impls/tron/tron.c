@@ -32,15 +32,15 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_TRON"
-static PetscErrorCode TaoSetFromOptions_TRON(Tao tao)
+static PetscErrorCode TaoSetFromOptions_TRON(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_TRON       *tron = (TAO_TRON *)tao->data;
   PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Newton Trust Region Method for bound constrained optimization");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tron_maxgpits","maximum number of gradient projections per TRON iterate","TaoSetMaxGPIts",tron->maxgpits,&tron->maxgpits,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Newton Trust Region Method for bound constrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_tron_maxgpits","maximum number of gradient projections per TRON iterate","TaoSetMaxGPIts",tron->maxgpits,&tron->maxgpits,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
@@ -134,7 +134,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   tron->stepsize=tao->trust;
   ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason);CHKERRQ(ierr);
   while (reason==TAO_CONTINUE_ITERATING){
-
+    tao->ksp_its=0;
     ierr = TronGradientProjections(tao,tron);CHKERRQ(ierr);
     f=tron->f; delta=tao->trust;
     tron->n_free_last = tron->n_free;
@@ -145,7 +145,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
     /* If no free variables */
     if (tron->n_free == 0) {
       actred=0;
-      PetscInfo(tao,"No free variables in tron iteration.");
+      ierr = PetscInfo(tao,"No free variables in tron iteration.\n");CHKERRQ(ierr);
       break;
 
     }
@@ -172,6 +172,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
       ierr = KSPSolve(tao->ksp, tron->R, tron->DXFree);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
+      tao->ksp_tot_its+=its;
       ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
 
       /* Add dxfree matrix to compute step direction vector */
@@ -328,10 +329,19 @@ static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU) {
 }
 
 /*------------------------------------------------------------*/
-EXTERN_C_BEGIN
+/*MC
+  TAOTRON - The TRON algorithm is an active-set Newton trust region method
+  for bound-constrained minimization.
+
+  Options Database Keys:
++ -tao_tron_maxgpits - maximum number of gradient projections per TRON iterate
+- -tao_subset_type - "subvec","mask","matrix-free", strategies for handling active-sets
+
+  Level: beginner
+M*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_TRON"
-PetscErrorCode TaoCreate_TRON(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
 {
   TAO_TRON       *tron;
   PetscErrorCode ierr;
@@ -396,4 +406,4 @@ PetscErrorCode TaoCreate_TRON(Tao tao)
   ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

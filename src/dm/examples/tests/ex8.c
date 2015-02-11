@@ -51,7 +51,7 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
     on each processor. Just list them in the global natural ordering.
 
   */
-  ierr = PetscMalloc1((nslice+1),&sliceindices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nslice+1,&sliceindices);CHKERRQ(ierr);
   count = 0;
   if (rank < P) {
     for (j=0; j<N; j++) {

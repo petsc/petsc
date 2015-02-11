@@ -29,12 +29,12 @@
             <li><a href="referencing.html">Citing PETSc</a></li>
             <li><a href="tutorials/index.html">Tutorials</a></li>
             <li><a href="installation.html">Installation</a> </li>
-            <li><a href="SAWs.html">SAWs</a></li>
+            <li><a href="saws.html">SAWs</a></li>
             <li><a href="changes/index.html">Changes</a></li>
             <li><a href="bugreporting.html">Bug Reporting</a></li>
             <li><a href="codemanagement.html">Code Management</a></li>
             <li><span class="current">FAQ</span></li>
-            <li><a href="copyright.html">License</a></li>
+            <li><a href="license.html">License</a></li>
             <li><a href="linearsolvertable.html">Linear Solver Table</a></li>
           </ul>
         </li>
@@ -119,6 +119,7 @@
         <li><a href="#redistribute">When solving a system with Dirichlet boundary conditions I can use MatZeroRows() to eliminate the Dirichlet rows but this results in a non-symmetric system. How can I apply Dirichlet boundary conditions and yet keep the matrix symmetric?</a></li>
         <li><a href="#matlab">How can I use PETSc with MATLAB? How can I get PETSc Vecs and Mats to MATLAB or vice versa?</a></li>
         <li><a href="#cython">How do I get started with Cython so that I can extend petsc4py?</a></li>
+        <li><a href="#customnormforksp">I would like to compute a custom norm for KSP to use as a convergence test or for monitoring?</a></li>
       </ul>
 
       <h4><a href="#Execution">Execution</a></h4>
@@ -282,7 +283,7 @@
 
       <h3><a name="license">What kind of license is PETSc released under?</a></h3>
 
-      See the <a href="copyright.html">licensing notice.</a>
+      See the <a href="license.html">licensing notice.</a>
 
       <h3><a name="why-c">Why is PETSc programmed in C, instead of Fortran or C++?</a></h3>
 
@@ -339,7 +340,7 @@
 
         <li>
           We constantly seek out and experiment with new design
-          ideas; we retain the the useful ones and discard the rest.
+          ideas; we retain the useful ones and discard the rest.
           All of these decisions are based on <u>practicality</u>.
         </li>
 
@@ -435,7 +436,7 @@
       except KSPIBCGS, run all their vector operations on the GPU thus, for
       example Jacobi preconditioned Krylov methods run completely on the GPU.
       Preconditioners are a problem, we could do with some help for these. The
-      example <a href="http://www.mcs.anl.gov/petsc/petsc-dev/src/snes/examples/tutorials/ex47cu.cu.html">src/snes/examples/tutorials/ex47cu.cu</a>
+      example <a href="http://www.mcs.anl.gov/petsc/petsc-master/src/snes/examples/tutorials/ex47cu.cu.html">src/snes/examples/tutorials/ex47cu.cu</a>
       demonstates how the nonlinear function evaluation can be done on the
       GPU.
 
@@ -606,7 +607,7 @@
       <h3><a name="packagelocations">How can I find the URL locations of the packages you install using --download-PACKAGE??</a></h3>
 
       <p>
-        grep "self.download " config/PETSc/packages/*.py config/BuildSystem/config/packages/*.py
+        grep "self.download "  config/BuildSystem/config/packages/*.py
       </p>
 
       <hr>
@@ -737,7 +738,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
         and several others. You may see the available ASM options by using
         <code>-pc_type asm -help</code> Also, see the procedural interfaces in the
         manual pages, with names <code>PCASMxxxx()</code> and check the index of the
-        <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manual.pdf">users manual</a>
+        <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users manual</a>
         for <code>PCASMxxx</code>().
       </p>
 
@@ -751,10 +752,9 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       </p>
 
       <p>
-        PETSc also contains a balancing Neumann-Neumann preconditioner, see the
-        manual page for PCNN. This requires matrices be constructed with
-        <code>MatCreateIS()</code> via the finite element method. There are currently
-        no examples that demonstrate its use.
+        PETSc also contains a balancing Neumann-Neumann type preconditioner, see the
+        manual page for PCBDDC. This requires matrices be constructed with
+        <code>MatCreateIS()</code> via the finite element method. See src/ksp/ksp/examples/tests/ex59.c
       </p>
 
       <h3><a name="blocks">Can I create BAIJ matrices with different size blocks for different block rows?</a></h3>
@@ -957,13 +957,13 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
        To write the code (rather than use the options above) use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/MatCreateSNESMF.html">MatCreateSNESMF()</a> and pass the resulting matrix object to
        SNESSetJacobian(). For purely matrix-free (like -snes_mf) pass the matrix object for both matrix arguments and pass the function MatMFFDComputeJacobian(). To provide your own approximate Jacobian matrix to compute
        the preconditioner (like -snes_mf_operator), pass this other matrix as the second matrix argument to SNESSetJacobian(). Make sure your provided computejacobian() function calls MatAssemblyBegin/End() seperately on BOTH
-       matrix arguments to this function. See <a href="http://www.mcs.anl.gov/petsc/petsc-dev/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c</a>
+       matrix arguments to this function. See <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c</a>
       </p>
 
       <p>
        To difference a different function than that passed to SNESSetJacobian() to compute the matrix-free Jacobian multiply call
        <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatMFFDSetFunction.html">MatMFFDSetFunction()</a> to set that other function. 
-       See <a href="http://www.mcs.anl.gov/petsc/petsc-dev/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c.h</a>
+       See <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c.h</a>
       </p>
 
       <h3><a name="conditionnumber">How can I determine the condition number of a matrix?</a></h3>
@@ -1047,7 +1047,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       <ol>
         <li>
           use DMPlex, which is a high level approach to manage your mesh and
-          discretization. <a href="http://www.mcs.anl.gov/petsc/petsc-dev/src/snes/examples/tutorials/ex62.c.html">SNES
+          discretization. <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex62.c.html">SNES
           ex62</a> solves the Stokes equation using this approach.
         </li>
         <li>
@@ -1126,15 +1126,15 @@ PETSC_COMM_WORLD = NewComm;
           Using the MATLAB Engine, allowing PETSc to automatically call MATLAB
           to perform some specific computations. This does not allow MATLAB to be
           used interactively by the user. See the <a
-            href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Sys/PetscMatlabEngine.html">PetscMatlabEngine</a>.
+            href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Sys/PetscMatlabEngine.html">PetscMatlabEngine</a>.
         </li>
 
         <li>
           To save PETSc Mats and Vecs to files that can be read from MATLAB use <a
-            href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Viewer/PetscViewerBinaryOpen.html">PetscViewerBinaryOpen()</a>
+            href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/PetscViewerBinaryOpen.html">PetscViewerBinaryOpen()</a>
           viewer and VecView() or MatView() to save objects for MATLAB and
           VecLoad() and MatLoad() to get the objects that MATLAB has saved. See
-          PetscBinaryRead.m and PetscBinaryWrite.m in bin/matlab for loading and
+          PetscBinaryRead.m and PetscBinaryWrite.m in share/petsc/matlab for loading and
           saving the objects in MATLAB.
         </li>
 
@@ -1142,21 +1142,21 @@ PETSC_COMM_WORLD = NewComm;
           You can open a socket connection between MATLAB and PETSc to allow
           sending objects back and forth between an interactive MATLAB session
           and a running PETSc program. See
-          <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Viewer/PetscViewerSocketOpen.html">PetscViewerSocketOpen</a>()
-          for access from the PETSc side and PetscOpenSocket in bin/matlab for
+          <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/PetscViewerSocketOpen.html">PetscViewerSocketOpen</a>()
+          for access from the PETSc side and PetscReadBinary.m in share/petsc/matlab for
           access from the MATLAB side.
         </li>
 
         <li>
           You can save PETSc Vecs (not Mats) with the <a
-            href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
+            href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
           viewer that saves .mat files can then be loaded into MATLAB.
         </li>
         <li>
           We are just beginning to develop in <a
-            href="../developers/index.html">petsc-dev</a> an API to call most of
+            href="../developers/index.html">petsc master (branch in git)</a> an API to call most of
           the PETSc function directly from MATLAB; we could use help in
-          developing this. See bin/matlab/classes/PetscInitialize.m
+          developing this. See share/petsc/matlab/classes/PetscInitialize.m
         </li>
       </ol>
 
@@ -1179,6 +1179,14 @@ PETSC_COMM_WORLD = NewComm;
           Have a look at the petsc4py <a href="http://code.google.com/p/petsc4py/source/browse/src/PETSc/arraynpy.pxi">array source</a>
         </li>
       </ol>
+
+     <h3><a name="customnormforksp">I would like to compute a custom norm for KSP to use as a convergence test or for monitoring?</a></h3>
+
+     You need to call <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPBuildResidual.html">KSPBuildResidual</a>() on your KSP object and then
+      compute the     appropriate norm on the resulting residual. Note that depending on the 
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetNormType.html">KSPSetNormType</a>() of the method you may not return the same
+      norm as provided by the method. See also
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetPCSide.html">KSPSetPCSide</a>()
 
       <hr>
 
@@ -1212,7 +1220,7 @@ PETSC_COMM_WORLD = NewComm;
 
       <h3><a name="efficient-assembly">Assembling large sparse matrices takes a long time. What can I do make this process faster? or MatSetValues() is so slow, what can I do to speed it up?</a></h3>
 
-      See the <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a> for many tips on this.
+      See the <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a> for many tips on this.
 
       <ol>
         <li>
@@ -1252,7 +1260,7 @@ PETSC_COMM_WORLD = NewComm;
 
       <h3><a name="log-summary">How can I generate performance summaries with PETSc?</a></h3>
 
-      Use these options at runtime: -log_summary. See the <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a>
+      Use these options at runtime: -log_summary. See the <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a>
       for information on interpreting the summary data. If using the PETSc
       (non)linear solvers, one can also specify -snes_view or -ksp_view for
       a printout of solver info. Only the highest level PETSc object used needs
@@ -1910,7 +1918,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       This process can be as follows:
 
       <ul>
-        <li>get petsc-dev sources:
+        <li>get petsc development (master branch in git) sources:
           <ul>
             <li><code>git clone https://bitbucket.org/petsc/petsc</code></li>
           </ul>

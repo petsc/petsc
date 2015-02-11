@@ -72,7 +72,7 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *sub
     if (!_classbase) {
       ierr = PetscRegisterFinalize(PetscFortranCallbackFinalize);CHKERRQ(ierr);
     }
-    ierr = PetscCalloc1((newmax-PETSC_SMALLEST_CLASSID),&newbase);CHKERRQ(ierr);
+    ierr = PetscCalloc1(newmax-PETSC_SMALLEST_CLASSID,&newbase);CHKERRQ(ierr);
     ierr = PetscMemcpy(newbase,_classbase,(_maxclassid-PETSC_SMALLEST_CLASSID)*sizeof(_classbase[0]));CHKERRQ(ierr);
     ierr = PetscFree(_classbase);CHKERRQ(ierr);
 
@@ -90,7 +90,7 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *sub
       }
     }
     /* Not found. Create node and prepend to class' subtype list */
-    ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+    ierr = PetscNew(&link);CHKERRQ(ierr);
     ierr = PetscStrallocpy(subtype,&link->type_name);CHKERRQ(ierr);
 
     link->max      = PETSC_SMALLEST_FORTRAN_CALLBACK;

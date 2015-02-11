@@ -250,6 +250,8 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
     ierr = KSPReset(tao->ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(tao->ksp, asls->J_sub, asls->Jpre_sub);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, asls->r2, asls->dxfree);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(tao->ksp,&tao->ksp_its);CHKERRQ(ierr);
+    tao->ksp_tot_its+=tao->ksp_its;
 
     /* Add the direction in the free variables back into the real direction. */
     ierr = VecISAXPY(tao->stepdirection, asls->free, 1.0,asls->dxfree);CHKERRQ(ierr);
@@ -284,10 +286,19 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
 }
 
 /* ---------------------------------------------------------- */
-EXTERN_C_BEGIN
+/*MC
+   TAOASFLS - Active-set feasible linesearch algorithm for solving
+       complementarity constraints
+
+   Options Database Keys:
++ -tao_ssls_delta - descent test fraction
+- -tao_ssls_rho - descent test power
+
+   Level: beginner
+M*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_ASFLS"
-PetscErrorCode TaoCreate_ASFLS(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_ASFLS(Tao tao)
 {
   TAO_SSLS       *asls;
   PetscErrorCode ierr;
@@ -336,9 +347,6 @@ PetscErrorCode TaoCreate_ASFLS(Tao tao)
   tao->gatol = 1.0e-16;
   tao->fmin = 1.0e-8;
 #endif
-
-
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

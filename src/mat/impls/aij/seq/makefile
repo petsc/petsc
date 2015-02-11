@@ -10,10 +10,10 @@ SOURCEF  =
 SOURCEH  = aij.h
 LIBBASE  = libpetscmat
 DIRS     = superlu umfpack essl lusol matlab csrperm crl bas ftn-kernels seqcusp seqviennacl \
-           cholmod seqcusparse klu
+           cholmod seqcusparse klu mkl_pardiso
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test

@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   if (rank < size-1) m = n + 2;
   else m = n;
 
-  ierr = PetscMalloc1((m),&blks);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&blks);CHKERRQ(ierr);
   blks[0] = n*rank;
   for (i=1; i<m; i++) blks[i] = blks[i-1] + 1;
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,m,blks,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);

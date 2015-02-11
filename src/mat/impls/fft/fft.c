@@ -24,7 +24,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateFFT"
-/*@
+/*@C
       MatCreateFFT - Creates a matrix object that provides FFT via an external package
 
    Collective on MPI_Comm

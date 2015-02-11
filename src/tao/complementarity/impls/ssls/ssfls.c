@@ -34,7 +34,7 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
   TAO_SSLS                     *ssls = (TAO_SSLS *)tao->data;
   PetscReal                    psi, ndpsi, normd, innerd, t=0;
   PetscReal                    delta, rho;
-  PetscInt                     iter=0,kspits;
+  PetscInt                     iter=0;
   TaoConvergedReason           reason;
   TaoLineSearchConvergedReason ls_reason;
   PetscErrorCode               ierr;
@@ -66,8 +66,8 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
        rest of the code uses -d.) */
     ierr = KSPSetOperators(tao->ksp,tao->jacobian,tao->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp,ssls->ff,tao->stepdirection);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
-    tao->ksp_its+=kspits;
+    ierr = KSPGetIterationNumber(tao->ksp,&tao->ksp_its);CHKERRQ(ierr);
+    tao->ksp_tot_its+=tao->ksp_its;
 
     ierr = VecCopy(tao->stepdirection,ssls->w);CHKERRQ(ierr);
     ierr = VecScale(ssls->w,-1.0);CHKERRQ(ierr);
@@ -113,10 +113,20 @@ PetscErrorCode TaoDestroy_SSFLS(Tao tao)
 }
 
 /* ---------------------------------------------------------- */
-EXTERN_C_BEGIN
+/*MC
+   TAOSSFLS - Semi-smooth feasible linesearch algorithm for solving
+       complementarity constraints
+
+   Options Database Keys:
++ -tao_ssls_delta - descent test fraction
+- -tao_ssls_rho - descent test power
+
+   Level: beginner
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_SSFLS"
-PetscErrorCode TaoCreate_SSFLS(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_SSFLS(Tao tao)
 {
   TAO_SSLS       *ssls;
   PetscErrorCode ierr;
@@ -128,7 +138,7 @@ PetscErrorCode TaoCreate_SSFLS(Tao tao)
   tao->ops->solve=TaoSolve_SSFLS;
   tao->ops->setup=TaoSetUp_SSFLS;
   tao->ops->view=TaoView_SSLS;
-  tao->ops->setfromoptions=TaoSetFromOptions_SSLS;
+  tao->ops->setfromoptions = TaoSetFromOptions_SSLS;
   tao->ops->destroy = TaoDestroy_SSFLS;
 
   ssls->delta = 1e-10;
@@ -155,5 +165,5 @@ PetscErrorCode TaoCreate_SSFLS(Tao tao)
 #endif
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

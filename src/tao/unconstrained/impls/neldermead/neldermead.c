@@ -17,8 +17,8 @@ static PetscErrorCode TaoSetUp_NM(Tao tao)
   nm->N = n;
   nm->oneOverN = 1.0/n;
   ierr = VecDuplicateVecs(tao->solution,nm->N+1,&nm->simplex);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nm->N+1),&nm->f_values);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nm->N+1),&nm->indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nm->N+1,&nm->f_values);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nm->N+1,&nm->indices);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&nm->Xbar);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&nm->Xmur);CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&nm->Xmue);CHKERRQ(ierr);
@@ -55,16 +55,15 @@ PetscErrorCode TaoDestroy_NM(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_NM"
-PetscErrorCode TaoSetFromOptions_NM(Tao tao)
+PetscErrorCode TaoSetFromOptions_NM(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
-  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Nelder-Mead options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nm_lamda","initial step length","",nm->lamda,&nm->lamda,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nm_mu","mu","",nm->mu_oc,&nm->mu_oc,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Nelder-Mead options");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nm_lamda","initial step length","",nm->lamda,&nm->lamda,NULL); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_nm_mu","mu","",nm->mu_oc,&nm->mu_oc,NULL);CHKERRQ(ierr);
   nm->mu_ic = -nm->mu_oc;
   nm->mu_r = nm->mu_oc*2.0;
   nm->mu_e = nm->mu_oc*4.0;
@@ -213,10 +212,19 @@ PetscErrorCode TaoSolve_NM(Tao tao)
 }
 
 /* ---------------------------------------------------------- */
-EXTERN_C_BEGIN
+/*MC
+ TAONM - Nelder-Mead solver for derivative free, unconstrained minimization
+
+ Options Database Keys:
++ -tao_nm_lamda - initial step length
+. -tao_nm_mu - expansion/contraction factor
+
+ Level: beginner
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_NM"
-PetscErrorCode TaoCreate_NM(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao)
 {
   TAO_NelderMead *nm;
   PetscErrorCode ierr;
@@ -251,7 +259,6 @@ PetscErrorCode TaoCreate_NM(Tao tao)
 
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 /*------------------------------------------------------------*/

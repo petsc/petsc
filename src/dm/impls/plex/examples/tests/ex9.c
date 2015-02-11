@@ -87,7 +87,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
   ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "triangular");CHKERRQ(ierr);
   ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(dm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   for (p = 0; p < 4; ++p) {
     ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
@@ -114,7 +114,7 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
   ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "tetrahedral");CHKERRQ(ierr);
   ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(dm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   for (p = 0; p < 5; ++p) {
     ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
   ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "quadrilateral");CHKERRQ(ierr);
   ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(dm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   for (p = 0; p < 6; ++p) {
     ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
@@ -170,7 +170,7 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
   ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) dm, "hexahedral");CHKERRQ(ierr);
   ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(dm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
   for(p = 0; p < 12; ++p) {
     ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
@@ -261,10 +261,8 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  ierr = PetscLogGetStageLog(&stageLog);
-  ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
-  numRuns   = (cEnd-cStart) * user->iterations;
-  eventInfo = eventLog->eventInfo[event];
+  ierr = PetscLogEventGetPerfInfo(stage, event, &eventInfo);CHKERRQ(ierr);
+  numRuns = (cEnd-cStart) * user->iterations;
   if (eventInfo.count != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
   if ((PetscInt) eventInfo.flops != 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
   if (eventInfo.time > maxTimePerRun * numRuns) {
@@ -305,10 +303,8 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  ierr = PetscLogGetStageLog(&stageLog);
-  ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
-  numRuns   = (cEnd-cStart) * user->iterations;
-  eventInfo = eventLog->eventInfo[event];
+  ierr = PetscLogEventGetPerfInfo(stage, event, &eventInfo);CHKERRQ(ierr);
+  numRuns = (cEnd-cStart) * user->iterations;
   if (eventInfo.count != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
   if ((PetscInt) eventInfo.flops != 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
   if (eventInfo.time > maxTimePerRun * numRuns) {
@@ -364,10 +360,8 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, AppCtx *user)
   ierr = DMRestoreLocalVector(dm, &v);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  ierr = PetscLogGetStageLog(&stageLog);
-  ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
-  numRuns   = (cEnd-cStart) * user->iterations;
-  eventInfo = eventLog->eventInfo[event];
+  ierr = PetscLogEventGetPerfInfo(stage, event, &eventInfo);CHKERRQ(ierr);
+  numRuns = (cEnd-cStart) * user->iterations;
   if (eventInfo.count != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event calls %d should be %d", eventInfo.count, 1);
   if ((PetscInt) eventInfo.flops != 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of event flops %d should be %d", (PetscInt) eventInfo.flops, 0);
   if (eventInfo.time > maxTimePerRun * numRuns) {

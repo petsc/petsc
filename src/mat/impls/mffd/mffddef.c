@@ -144,13 +144,13 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx,PetscViewer viewer)
 .  ctx - the matrix free context
 
 */
-static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx)
+static PetscErrorCode MatMFFDSetFromOptions_DS(PetscOptions *PetscOptionsObject,MatMFFD ctx)
 {
   PetscErrorCode ierr;
   MatMFFD_DS     *hctx = (MatMFFD_DS*)ctx->hctx;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Finite difference matrix free parameters");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Finite difference matrix free parameters");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_mffd_umin","umin","MatMFFDDSSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

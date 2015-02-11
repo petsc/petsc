@@ -180,14 +180,14 @@ PetscErrorCode KSPView_LCD(KSP ksp,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_LCD"
-PetscErrorCode KSPSetFromOptions_LCD(KSP ksp)
+PetscErrorCode KSPSetFromOptions_LCD(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
   KSP_LCD        *lcd = (KSP_LCD*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP LCD options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP LCD options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_lcd_restart","Number of vectors conjugate","KSPLCDSetRestart",lcd->restart,&lcd->restart,&flg);CHKERRQ(ierr);
   if (flg && lcd->restart < 1) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
   ierr = PetscOptionsReal("-ksp_lcd_haptol","Tolerance for exact convergence (happy ending)","KSPLCDSetHapTol",lcd->haptol,&lcd->haptol,&flg);CHKERRQ(ierr);
@@ -241,7 +241,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
   PetscFunctionBegin;
   ierr         = PetscNewLog(ksp,&lcd);CHKERRQ(ierr);
   ksp->data    = (void*)lcd;
-  ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
   lcd->restart = 30;
   lcd->haptol  = 1.0e-30;
 

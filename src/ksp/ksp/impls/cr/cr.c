@@ -146,7 +146,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
    Level: beginner
 
    Notes: The operator and the preconditioner must be symmetric for this method. The
-          preconditioner must be POSITIVE-DEFINITE and the operator POSITIVE-SEMIDEFINITE
+          preconditioner must be POSITIVE-DEFINITE and the operator POSITIVE-SEMIDEFINITE.
           Support only for left preconditioning.
 
    References:
@@ -164,9 +164,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_CR;
   ksp->ops->solve          = KSPSolve_CR;

@@ -39,6 +39,33 @@ PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCGAMGClassicalGetType"
+/*@C
+   PCGAMGClassicalGetType - Gets the type of classical interpolation to use
+
+   Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  type - the type used
+
+   Level: intermediate
+
+.seealso: ()
+@*/
+PetscErrorCode PCGAMGClassicalGetType(PC pc, PCGAMGClassicalType *type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCGAMGClassicalGetType_C",(PC,PCGAMGType*),(pc,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCGAMGClassicalSetType_GAMG"
 static PetscErrorCode PCGAMGClassicalSetType_GAMG(PC pc, PCGAMGClassicalType type)
 {
@@ -49,6 +76,19 @@ static PetscErrorCode PCGAMGClassicalSetType_GAMG(PC pc, PCGAMGClassicalType typ
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(cls->prolongtype,type);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGAMGClassicalGetType_GAMG"
+static PetscErrorCode PCGAMGClassicalGetType_GAMG(PC pc, PCGAMGClassicalType *type)
+{
+  PC_MG             *mg          = (PC_MG*)pc->data;
+  PC_GAMG           *pc_gamg     = (PC_GAMG*)mg->innerctx;
+  PC_GAMG_Classical *cls         = (PC_GAMG_Classical*)pc_gamg->subctx;
+
+  PetscFunctionBegin;
+  *type = cls->prolongtype;
   PetscFunctionReturn(0);
 }
 
@@ -876,7 +916,7 @@ PetscErrorCode PCGAMGOptProl_Classical_Jacobi(PC pc,const Mat A,Mat *P)
     }
     ierr = MatRestoreRow(*P,i,&ncols,&pcols,&pvals);CHKERRQ(ierr);
   }
-  ierr = MatGetVecs(A,&diag,0);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&diag,0);CHKERRQ(ierr);
   ierr = MatGetDiagonal(A,diag);CHKERRQ(ierr);
   ierr = VecReciprocal(diag);CHKERRQ(ierr);
   for (i=0;i<cls->nsmooths;i++) {
@@ -922,12 +962,13 @@ PetscErrorCode PCGAMGDestroy_Classical(PC pc)
   PetscFunctionBegin;
   ierr = PetscFree(pc_gamg->subctx);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGClassicalSetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGClassicalGetType_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetFromOptions_Classical"
-PetscErrorCode PCGAMGSetFromOptions_Classical(PC pc)
+PetscErrorCode PCGAMGSetFromOptions_Classical(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_MG             *mg          = (PC_MG*)pc->data;
   PC_GAMG           *pc_gamg     = (PC_GAMG*)mg->innerctx;
@@ -937,9 +978,8 @@ PetscErrorCode PCGAMGSetFromOptions_Classical(PC pc)
   PetscBool         flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("GAMG-Classical options");CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-pc_gamg_classical_type","Type of Classical AMG prolongation",
-                          "PCGAMGClassicalSetType",PCGAMGClassicalProlongatorList,cls->prolongtype, tname, sizeof(tname), &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"GAMG-Classical options");CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_gamg_classical_type","Type of Classical AMG prolongation","PCGAMGClassicalSetType",PCGAMGClassicalProlongatorList,cls->prolongtype, tname, sizeof(tname), &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCGAMGClassicalSetType(pc,tname);CHKERRQ(ierr);
   }
@@ -1031,6 +1071,7 @@ PetscErrorCode  PCCreateGAMG_Classical(PC pc)
   pc_gamg_classical->interp_threshold = 0.2;
   pc_gamg_classical->nsmooths         = 0;
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGClassicalSetType_C",PCGAMGClassicalSetType_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGClassicalGetType_C",PCGAMGClassicalGetType_GAMG);CHKERRQ(ierr);
   ierr = PCGAMGClassicalSetType(pc,PCGAMGCLASSICALSTANDARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

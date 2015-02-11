@@ -666,13 +666,13 @@ static PetscErrorCode  KSPNASHGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_NASH"
-PetscErrorCode KSPSetFromOptions_NASH(KSP ksp)
+PetscErrorCode KSPSetFromOptions_NASH(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_NASH       *cg = (KSP_NASH*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP NASH options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP NASH options");CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-ksp_nash_radius", "Trust Region Radius", "KSPNASHSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
 
@@ -734,9 +734,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
   cg->dtype  = NASH_UNPRECONDITIONED_DIRECTION;
 
   ksp->data = (void*) cg;
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Sets the functions that are associated with this data structure         */

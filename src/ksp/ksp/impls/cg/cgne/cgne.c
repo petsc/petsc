@@ -195,7 +195,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     KSPCreate_CGNE - Creates the data structure for the Krylov method CGNE and sets the
        function pointers for all the routines it needs to call (KSPSolve_CGNE() etc)
 
-    It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
+    It must be labeled as PETSC_EXTERN to be dynamically linkable in C++
 */
 
 /*MC
@@ -236,7 +236,7 @@ M*/
 extern PetscErrorCode KSPDestroy_CG(KSP);
 extern PetscErrorCode KSPReset_CG(KSP);
 extern PetscErrorCode KSPView_CG(KSP,PetscViewer);
-extern PetscErrorCode KSPSetFromOptions_CG(KSP);
+extern PetscErrorCode KSPSetFromOptions_CG(PetscOptions *PetscOptionsObject,KSP);
 PETSC_EXTERN PetscErrorCode KSPCGSetType_CG(KSP,KSPCGType);
 
 #undef __FUNCT__
@@ -254,9 +254,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
   cg->type = KSP_CG_HERMITIAN;
 #endif
   ksp->data = (void*)cg;
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
 
   /*
        Sets the functions that are associated with this data structure

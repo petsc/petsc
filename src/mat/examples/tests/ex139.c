@@ -43,11 +43,11 @@ int main(int argc,char *argv[])
   ierr = PetscOptionsBegin(comm,NULL,"LocalRef Test Options",NULL);CHKERRQ(ierr);
   {
     top_bs = 2; row_bs = 2; col_bs = 2; diag = PETSC_FALSE; blocked = PETSC_FALSE;
-    ierr   = PetscOptionsInt("-top_bs","Block size of top-level matrix",0,top_bs,&top_bs,0);CHKERRQ(ierr);
-    ierr   = PetscOptionsInt("-row_bs","Block size of row map",0,row_bs,&row_bs,0);CHKERRQ(ierr);
-    ierr   = PetscOptionsInt("-col_bs","Block size of col map",0,col_bs,&col_bs,0);CHKERRQ(ierr);
-    ierr   = PetscOptionsBool("-diag","Extract a diagonal black",0,diag,&diag,0);CHKERRQ(ierr);
-    ierr   = PetscOptionsBool("-blocked","Use block insertion",0,blocked,&blocked,0);CHKERRQ(ierr);
+    ierr   = PetscOptionsInt("-top_bs","Block size of top-level matrix",0,top_bs,&top_bs,NULL);CHKERRQ(ierr);
+    ierr   = PetscOptionsInt("-row_bs","Block size of row map",0,row_bs,&row_bs,NULL);CHKERRQ(ierr);
+    ierr   = PetscOptionsInt("-col_bs","Block size of col map",0,col_bs,&col_bs,NULL);CHKERRQ(ierr);
+    ierr   = PetscOptionsBool("-diag","Extract a diagonal black",0,diag,&diag,NULL);CHKERRQ(ierr);
+    ierr   = PetscOptionsBool("-blocked","Use block insertion",0,blocked,&blocked,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

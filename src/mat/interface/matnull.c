@@ -52,6 +52,9 @@ PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(M
 
    Level: developer
 
+   Notes:
+      These vectors and the array are owned by the MatNullSpace and should not be destroyed or freeded by the caller
+
 .seealso: MatNullSpaceCreate(), MatGetNullSpace(), MatGetNearNullSpace()
 @*/
 PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp,PetscBool *has_const,PetscInt *n,const Vec **vecs)
@@ -397,7 +400,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   if (n) {
     ierr = VecDuplicate(sp->vecs[0],&l);CHKERRQ(ierr);
   } else {
-    ierr = MatGetVecs(mat,&l,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(mat,&l,NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp),&viewer);CHKERRQ(ierr);

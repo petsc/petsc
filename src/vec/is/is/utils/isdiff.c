@@ -281,7 +281,7 @@ PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
     }
   } else imin = imax = 0;
 
-  ierr = PetscMalloc1((n1+n2),&iout);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n1+n2,&iout);CHKERRQ(ierr);
   nout = 0;
   ierr = PetscBTCreate(imax-imin,&mask);CHKERRQ(ierr);
   /* Put the values from is1 */
@@ -362,6 +362,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
     ierr = ISGetLocalSize(islist[i], &n);CHKERRQ(ierr);
     ierr = ISGetIndices(islist[i], &iidx);CHKERRQ(ierr);
     ierr = PetscMemcpy(idx+N,iidx, sizeof(PetscInt)*n);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(islist[i], &iidx);CHKERRQ(ierr);
     N   += n;
   }
   ierr = ISCreateGeneral(comm, N, idx, PETSC_OWN_POINTER, isout);CHKERRQ(ierr);

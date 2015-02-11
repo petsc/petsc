@@ -4,10 +4,58 @@
 #include <petscmat.h>       /*I      "petscmat.h"          I*/
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
 #include <petscbt.h>
+#include <petscsf.h>
 #include <petsc-private/dmimpl.h>
 #include <../src/sys/utils/hash.h>
 
-PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
+
+PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
+PETSC_EXTERN PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner);
+
+typedef enum {REFINER_NOOP = 0,
+              REFINER_SIMPLEX_1D,
+              REFINER_SIMPLEX_2D,
+              REFINER_HYBRID_SIMPLEX_2D,
+              REFINER_HEX_2D,
+              REFINER_HYBRID_HEX_2D,
+              REFINER_SIMPLEX_3D,
+              REFINER_HYBRID_SIMPLEX_3D,
+              REFINER_HEX_3D,
+              REFINER_HYBRID_HEX_3D} CellRefiner;
+
+typedef struct _PetscPartitionerOps *PetscPartitionerOps;
+struct _PetscPartitionerOps {
+  PetscErrorCode (*setfromoptions)(PetscPartitioner);
+  PetscErrorCode (*setup)(PetscPartitioner);
+  PetscErrorCode (*view)(PetscPartitioner,PetscViewer);
+  PetscErrorCode (*destroy)(PetscPartitioner);
+  PetscErrorCode (*partition)(PetscPartitioner, DM, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscSection, IS *);
+};
+
+struct _p_PetscPartitioner {
+  PETSCHEADER(struct _PetscPartitionerOps);
+  void           *data;             /* Implementation object */
+  PetscInt        height;           /* Height of points to partition into non-overlapping subsets */
+};
+
+typedef struct {
+  PetscInt dummy;
+} PetscPartitioner_Chaco;
+
+typedef struct {
+  PetscInt dummy;
+} PetscPartitioner_ParMetis;
+
+typedef struct {
+  PetscSection section;   /* Sizes for each partition */
+  IS           partition; /* Points in each partition */
+} PetscPartitioner_Shell;
+
+typedef struct {
+  PetscInt dummy;
+} PetscPartitioner_Simple;
 
 /* This is an integer map, in addition it is also a container class
    Design points:
@@ -21,18 +69,32 @@ struct _n_DMLabel {
   PetscInt    numStrata;      /* Number of integer values */
   PetscInt   *stratumValues;  /* Value of each stratum */
   /* Basic sorted array storage */
-  PetscBool   arrayValid;     /* The array storage is valid (no additions need to be merged in) */
-  PetscInt   *stratumOffsets; /* Offset of each stratum */
+  PetscBool  *arrayValid;     /* The array storage is valid (no additions need to be merged in) */
   PetscInt   *stratumSizes;   /* Size of each stratum */
-  PetscInt   *points;         /* Points for each stratum, always sorted */
+  PetscInt  **points;         /* Points for each stratum, always sorted */
   /* Hashtable for fast insertion */
   PetscHashI *ht;             /* Hash table for fast insertion */
   /* Index for fast search */
   PetscInt    pStart, pEnd;   /* Bounds for index lookup */
   PetscBT     bt;             /* A bit-wise index */
-  DMLabel     next;           /* Linked list */
 };
 
+struct _n_PlexLabel {
+  DMLabel              label;
+  PetscBool            output;
+  struct _n_PlexLabel *next;
+};
+typedef struct _n_PlexLabel *PlexLabel;
+
+/* Utility struct to store the contents of a Gmsh file in memory */
+typedef struct {
+  PetscInt dim;      /* Entity dimension */
+  PetscInt id;       /* Element number */
+  PetscInt numNodes; /* Size of node array */
+  int *nodes;        /* Node array */
+  PetscInt numTags;  /* Size of tag array */
+  int *tags;         /* Tag array */
+} GmshElement;
 
 struct _n_Boundary {
   const char *name;
@@ -49,7 +111,6 @@ struct _n_Boundary {
 
 typedef struct {
   PetscInt             refct;
-  PetscInt             dim;               /* Topological mesh dimension */
 
   /* Sieve */
   PetscSection         coneSection;       /* Layout of cones (inedges for DAG) */
@@ -68,18 +129,42 @@ typedef struct {
   /* Hierarchy */
   DM                   coarseMesh;        /* This mesh was obtained from coarse mesh using DMRefineHierarchy() */
 
+  /* Generation */
+  char                *tetgenOpts;
+  char                *triangleOpts;
+  PetscPartitioner     partitioner;
+
   /* Submesh */
   DMLabel              subpointMap;       /* Label each original mesh point in the submesh with its depth, subpoint are the implicit numbering */
 
   /* Labels and numbering */
-  DMLabel              labels;            /* Linked list of labels */
+  PlexLabel            labels;            /* Linked list of labels */
   DMLabel              depthLabel;
   IS                   globalVertexNumbers;
   IS                   globalCellNumbers;
 
+  /* Constraints */
+  PetscSection         anchorSection;      /* maps constrained points to anchor points */
+  IS                   anchorIS;           /* anchors indexed by the above section */
+  PetscErrorCode     (*createanchors)(DM); /* automatically compute anchors (probably from tree constraints) */
+  PetscErrorCode     (*computeanchormatrix)(DM,PetscSection,PetscSection,Mat);
+
+  /* Tree: automatically construct constraints for hierarchically non-conforming meshes */
+  PetscSection         parentSection;     /* dof == 1 if point has parent */
+  PetscInt            *parents;           /* point to parent */
+  PetscInt            *childIDs;          /* point to child ID */
+  PetscSection         childSection;      /* inverse of parent section */
+  PetscInt            *children;          /* point to children */
+  DM                   referenceTree;     /* reference tree to which child ID's refer */
+  PetscErrorCode      (*getchildsymmetry)(DM,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*);
+
   /* Adjacency */
   PetscBool            useCone;           /* Use cone() first when defining adjacency */
   PetscBool            useClosure;        /* Use the transitive closure when defining adjacency */
+  PetscBool            useAnchors;        /* Replace constrained points with their anchors in adjacency lists */
+
+  /* Projection */
+  PetscInt             maxProjectionHeight; /* maximum height of cells used in DMPlexProject functions */
 
   /* Output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
@@ -87,6 +172,10 @@ typedef struct {
 
   /* Problem definition */
   DMBoundary           boundary;          /* List of boundary conditions */
+
+  /* Geometry */
+  PetscReal            minradius;         /* Minimum distance from cell centroid to face */
+
 
   /* Debugging */
   PetscBool            printSetValues;
@@ -109,7 +198,7 @@ PETSC_EXTERN PetscErrorCode DMPlexView_HDF5(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexLoad_HDF5(DM, PetscViewer);
 #endif
 
-PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,PetscBool,PetscInt*,PetscInt*[]);
+PETSC_EXTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM,PetscInt,PetscBool,PetscBool,PetscBool,PetscInt*,PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetRawFaces_Internal(DM,PetscInt,PetscInt,const PetscInt[], PetscInt*,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode DMPlexRestoreFaces_Internal(DM,PetscInt,PetscInt,PetscInt*,PetscInt*,const PetscInt*[]);
@@ -117,11 +206,48 @@ PETSC_EXTERN PetscErrorCode DMPlexRefineUniform_Internal(DM,CellRefiner,DM*);
 PETSC_EXTERN PetscErrorCode DMPlexGetCellRefiner_Internal(DM,CellRefiner*);
 PETSC_EXTERN PetscErrorCode CellRefinerGetAffineTransforms_Internal(CellRefiner, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
 PETSC_EXTERN PetscErrorCode CellRefinerRestoreAffineTransforms_Internal(CellRefiner, PetscInt *, PetscReal *[], PetscReal *[], PetscReal *[]);
-PETSC_EXTERN PetscErrorCode DMPlexCreateGmsh_ReadElement(FILE *, PetscInt *, int *, PetscInt *, int[], int[]);
+PETSC_EXTERN PetscErrorCode CellRefinerInCellTest_Internal(CellRefiner, const PetscReal[], PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateGmsh_ReadElement(PetscViewer, PetscBool, PetscBool, GmshElement *);
 PETSC_EXTERN PetscErrorCode DMPlexInvertCell_Internal(PetscInt, PetscInt, PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexVecSetFieldClosure_Internal(DM, PetscSection, Vec, PetscBool[], PetscInt, const PetscScalar[], InsertMode);
+PETSC_EXTERN PetscErrorCode DMPlexProjectConstraints_Internal(DM, Vec, Vec);
+
+#undef __FUNCT__
+#define __FUNCT__ "DihedralInvert"
+/* invert dihedral symmetry: return a^-1,
+ * using the representation described in
+ * DMPlexGetConeOrientation() */
+PETSC_STATIC_INLINE PetscInt DihedralInvert(PetscInt N, PetscInt a)
+{
+  return (a <= 0) ? a : (N - a);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DihedralCompose"
+/* invert dihedral symmetry: return b * a,
+ * using the representation described in
+ * DMPlexGetConeOrientation() */
+PETSC_STATIC_INLINE PetscInt DihedralCompose(PetscInt N, PetscInt a, PetscInt b)
+{
+  if (!N) return 0;
+  return  (a >= 0) ?
+         ((b >= 0) ? ((a + b) % N) : -(((a - b - 1) % N) + 1)) :
+         ((b >= 0) ? -(((N - b - a - 1) % N) + 1) : ((N + b - a) % N));
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DihedralSwap"
+/* swap dihedral symmetries: return b * a^-1,
+ * using the representation described in
+ * DMPlexGetConeOrientation() */
+PETSC_STATIC_INLINE PetscInt DihedralSwap(PetscInt N, PetscInt a, PetscInt b)
+{
+  return DihedralCompose(N,DihedralInvert(N,a),b);
+}
+
+PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscReal, Vec, Vec, Vec, void *);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlex_Invert2D_Internal"
@@ -171,5 +297,22 @@ PETSC_STATIC_INLINE void DMPlex_Det3D_Internal(PetscReal *detJ, PetscReal J[])
            J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
   PetscLogFlops(12.0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlex_WaxpyD_Internal"
+PETSC_STATIC_INLINE void DMPlex_WaxpyD_Internal(PetscInt dim, PetscReal a, const PetscReal *x, const PetscReal *y, PetscReal *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlex_DotD_Internal"
+PETSC_STATIC_INLINE PetscReal DMPlex_DotD_Internal(PetscInt dim, const PetscScalar *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += PetscRealPart(x[d])*y[d]; return sum;}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlex_DotRealD_Internal"
+PETSC_STATIC_INLINE PetscReal DMPlex_DotRealD_Internal(PetscInt dim, const PetscReal *x, const PetscReal *y) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlex_NormD_Internal"
+PETSC_STATIC_INLINE PetscReal DMPlex_NormD_Internal(PetscInt dim, const PetscReal *x) {PetscReal sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*x[d]; return PetscSqrtReal(sum);}
+
 
 #endif /* _PLEXIMPL_H */

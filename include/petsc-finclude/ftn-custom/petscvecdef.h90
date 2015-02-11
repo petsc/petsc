@@ -1,0 +1,11 @@
+#if !defined(__PETSCVECDEF_H90)
+#define __PETSCVECDEF_H90
+#if defined(PETSC_USE_FORTRAN_DATATYPES)
+      type Vec
+        PetscFortranAddr:: v
+      end type Vec
+      type VecScatter
+        PetscFortranAddr:: v
+      end type VecScatter
+#endif
+#endif

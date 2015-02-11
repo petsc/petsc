@@ -1,0 +1,31 @@
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(PETSCQUADRATURE_HIDE)
+#define PETSCQUADRATURE_HIDE type(PetscQuadrature)
+#define USE_PETSCQUADRATURE_HIDE use petscquadraturedef
+#elif !defined(PETSCQUADRATURE_HIDE)
+#define PETSCQUADRATURE_HIDE PetscQuadrature
+#define USE_PETSCQUADRATURE_HIDE
+#endif
+
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(PETSCFE_HIDE)
+#define PETSCFE_HIDE type(PetscFE)
+#define USE_PETSCFE_HIDE use petscfedef
+#elif !defined(PETSCFE_HIDE)
+#define PETSCFE_HIDE PetscFE
+#define USE_PETSCFE_HIDE
+#endif
+
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(PETSCFV_HIDE)
+#define PETSCFV_HIDE type(PetscFV)
+#define USE_PETSCFV_HIDE use petscfvdef
+#elif !defined(PETSCFV_HIDE)
+#define PETSCFV_HIDE PetscFV
+#define USE_PETSCFV_HIDE
+#endif
+
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(PETSCDS_HIDE)
+#define PETSCDS_HIDE type(PetscDS)
+#define USE_PETSCDS_HIDE use petscdsdef
+#elif !defined(PETSCDS_HIDE)
+#define PETSCDS_HIDE PetscDS
+#define USE_PETSCDS_HIDE
+#endif

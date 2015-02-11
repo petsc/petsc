@@ -17,7 +17,7 @@ PetscErrorCode PetscCDCreate(PetscInt a_size, PetscCoarsenData **a_out)
 
   PetscFunctionBegin;
   /* alocate pool, partially */
-  ierr                 = PetscMalloc(sizeof(PetscCoarsenData), &ail);CHKERRQ(ierr);
+  ierr                 = PetscNew(&ail);CHKERRQ(ierr);
   *a_out               = ail;
   ail->pool_list.next  = NULL;
   ail->pool_list.array = NULL;
@@ -436,7 +436,7 @@ typedef struct edge_tag {
   PetscInt  lid0,gid1,cpid1;
 } Edge;
 
-int gamg_hem_compare(const void *a, const void *b)
+static int gamg_hem_compare(const void *a, const void *b)
 {
   PetscReal va = ((Edge*)a)->weight, vb = ((Edge*)b)->weight;
   return (va < vb) ? 1 : (va == vb) ? 0 : -1; /* 0 for equal */
@@ -455,7 +455,7 @@ int gamg_hem_compare(const void *a, const void *b)
 */
 #undef __FUNCT__
 #define __FUNCT__ "heavyEdgeMatchAgg"
-PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarsenData **a_locals_llist)
+static PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarsenData **a_locals_llist)
 {
   PetscErrorCode   ierr;
   PetscBool        isMPI;
@@ -521,15 +521,15 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
     }
 
     /* set max edge on nodes */
-    ierr = MatGetVecs(cMat, &locMaxEdge, 0);CHKERRQ(ierr);
-    ierr = MatGetVecs(cMat, &locMaxPE, 0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(cMat, &locMaxEdge, 0);CHKERRQ(ierr);
+    ierr = MatCreateVecs(cMat, &locMaxPE, 0);CHKERRQ(ierr);
 
     /* get 'cpcol_pe' & 'cpcol_gid' & init. 'cpcol_matched' using 'mpimat->lvec' */
     if (mpimat) {
       Vec         vec;
       PetscScalar vval;
 
-      ierr = MatGetVecs(cMat, &vec, 0);CHKERRQ(ierr);
+      ierr = MatCreateVecs(cMat, &vec, 0);CHKERRQ(ierr);
       /* cpcol_pe */
       vval = (PetscScalar)(rank);
       for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
@@ -800,7 +800,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
             PetscInt    *sbuff,*pt;
             MPI_Request *request;
             n   /= 2;
-            ierr = PetscMalloc1((2 + 2*n + n*CHUNCK_SIZE)*sizeof(PetscInt) + 2, &sbuff);CHKERRQ(ierr);
+            ierr = PetscMalloc1(2 + 2*n + n*CHUNCK_SIZE + 2, &sbuff);CHKERRQ(ierr);
             /* PetscMalloc4(2+2*n,sbuffs1[nSend1],n*CHUNCK_SIZE,rbuffs1[nSend1],1,rreqs2[nSend1],1,sreqs2[nSend1]); */
             /* save requests */
             sbuffs1[nSend1] = sbuff;
@@ -1063,7 +1063,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
       ierr = MatDestroy(&P);CHKERRQ(ierr);
       ierr = MatDestroy(&cMat);CHKERRQ(ierr);
       cMat = tMat;
-      ierr = MatGetVecs(cMat, &diag, 0);CHKERRQ(ierr);
+      ierr = MatCreateVecs(cMat, &diag, 0);CHKERRQ(ierr);
       ierr = MatGetDiagonal(cMat, diag);CHKERRQ(ierr); /* effectively PCJACOBI */
       ierr = VecReciprocal(diag);CHKERRQ(ierr);
       ierr = VecSqrtAbs(diag);CHKERRQ(ierr);
@@ -1146,7 +1146,7 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenView_HEM"
-PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
+static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
 {
   /* MatCoarsen_HEM *HEM = (MatCoarsen_HEM*)coarse->subctx; */
   PetscErrorCode ierr;
@@ -1167,7 +1167,7 @@ PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenDestroy_HEM"
-PetscErrorCode MatCoarsenDestroy_HEM(MatCoarsen coarse)
+static PetscErrorCode MatCoarsenDestroy_HEM(MatCoarsen coarse)
 {
   MatCoarsen_HEM *HEM = (MatCoarsen_HEM*)coarse->subctx;
   PetscErrorCode ierr;
@@ -1179,21 +1179,13 @@ PetscErrorCode MatCoarsenDestroy_HEM(MatCoarsen coarse)
 }
 
 /*MC
-   MATCOARSENHEM - Creates a coarsen context via the external package HEM.
-
-   Collective on MPI_Comm
-
-   Input Parameter:
-.  coarse - the coarsen context
-
-   Options Database Keys:
-+  -mat_coarsen_HEM_xxx -
+   MATCOARSENHEM - A coarsener that uses HEM a simple greedy coarsener
 
    Level: beginner
 
 .keywords: Coarsen, create, context
 
-.seealso: MatCoarsenSetType(), MatCoarsenType
+.seealso: MatCoarsenSetType(), MatCoarsenType, MatCoarsenCreate()
 
 M*/
 

@@ -497,7 +497,7 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_BCGSL"
-PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
+PetscErrorCode KSPSetFromOptions_BCGSL(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL*)ksp->data;
   PetscErrorCode ierr;
@@ -509,7 +509,7 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
   /* PetscOptionsBegin/End are called in KSPSetFromOptions. They
      don't need to be called here.
   */
-  ierr = PetscOptionsHead("KSP BiCGStab(L) Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP BiCGStab(L) Options");CHKERRQ(ierr);
 
   /* Set number of search directions */
   ierr = PetscOptionsInt("-ksp_bcgsl_ell","Number of Krylov search directions","KSPBCGSLSetEll",bcgsl->ell,&this_ell,&flg);CHKERRQ(ierr);
@@ -628,8 +628,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
   ierr      = PetscNewLog(ksp,&bcgsl);CHKERRQ(ierr);
   ksp->data = (void*)bcgsl;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_BCGSL;
   ksp->ops->solve          = KSPSolve_BCGSL;

@@ -29,7 +29,7 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_MT"
-static PetscErrorCode TaoLineSearchSetFromOptions_MT(TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_MT(PetscOptions *PetscOptionsObject,TaoLineSearch ls)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
@@ -306,10 +306,9 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchCreate_MT"
-PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
 {
   PetscErrorCode   ierr;
   TaoLineSearch_MT *ctx;
@@ -322,13 +321,13 @@ PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
   ls->data = (void*)ctx;
   ls->initstep = 1.0;
   ls->ops->setup=0;
+  ls->ops->reset=0;
   ls->ops->apply=TaoLineSearchApply_MT;
   ls->ops->view =TaoLineSearchView_MT;
   ls->ops->destroy=TaoLineSearchDestroy_MT;
   ls->ops->setfromoptions=TaoLineSearchSetFromOptions_MT;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*
      The subroutine mcstep is taken from the work of Jorge Nocedal.
@@ -468,7 +467,7 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,PetscReal *stx,PetscReal *fx,P
      in the direction of the step or if the minimum of the cubic
      is beyond stp. Otherwise the cubic step is defined to be
      either stepmin or stepmax. The quadratic (secant) step is also
-     computed and if the minimum is bracketed then the the step
+     computed and if the minimum is bracketed then the step
      closest to stx is taken, else the step farthest away is taken. */
 
     mtP->infoc = 3;

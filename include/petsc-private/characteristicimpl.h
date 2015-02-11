@@ -7,6 +7,8 @@
 
 /* Logging support */
 PETSC_EXTERN PetscClassId CHARACTERISTIC_CLASSID;
+PETSC_EXTERN PetscBool        CharacteristicRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode   CharacteristicRegisterAll(void);
 PETSC_EXTERN PetscLogEvent CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
 PETSC_EXTERN PetscLogEvent CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemote, CHARACTERISTIC_HalfTimeExchange;
 PETSC_EXTERN PetscLogEvent CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;

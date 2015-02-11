@@ -136,7 +136,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
     if (lambda_update < steptol) lambda_update = 0.5*(lambda + lambda_old);
 
-    if (PetscIsInfOrNanScalar(lambda_update)) break;
+    if (PetscIsInfOrNanReal(lambda_update)) break;
 
     if (lambda_update > maxstep) break;
 
@@ -188,7 +188,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_L2"
 /*MC
-   SNESLINESEARCHL2 - Secant search in the L2 norm of the function.
+   SNESLINESEARCHL2 - Secant search in the L2 norm of the function or the objective function if it is provided with SNESSetObjective().
 
    The function norm is evaluated at points in [0, damping] to construct
    a polynomial fitting.  This fitting is used to construct a new lambda
@@ -196,9 +196,10 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
    interval, [lambda, lambda_old], max_it - 1 times.
 
    Options Database Keys:
-+  -snes_linesearch_max_it<1> - maximum number of iterations
-.  -snes_linesearch_damping<1.0> - initial steplength
--  -snes_linesearch_minlambda - minimum allowable lambda
++  -snes_linesearch_max_it <maxit> - maximum number of iterations, default is 1
+.  -snes_linesearch_maxstep <length> - the algorithm insures that a step length is never longer than this value
+.  -snes_linesearch_damping <damping> - initial step is scaled back by this factor, default is 1.0
+-  -snes_linesearch_minlambda <minlambda> - minimum allowable lambda
 
    Level: advanced
 

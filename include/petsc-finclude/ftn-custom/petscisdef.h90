@@ -1,0 +1,14 @@
+#if !defined(__PETSCISDEF_H90)
+#define __PETSCISDEF_H90
+#if defined(PETSC_USE_FORTRAN_DATATYPES)
+      type IS
+        PetscFortranAddr:: v
+      end type IS
+      type ISColoring
+        PetscFortranAddr:: v
+      end type ISColoring
+      type PetscSection
+        PetscFortranAddr:: v
+      end type PetscSection
+#endif
+#endif

@@ -340,7 +340,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
           ncols = mo_i[idx+1]-mo_i[idx];
           cidx = &(mo_j[mo_i[idx]]);
           for (j=0;j<ncols;j++) {
-            ccol=dcolors[cidx[j]];
+            ccol=ocolors[cidx[j]];
             if (ccol != maxcolors) {
               if (ccol>=masksize) {
                 PetscInt *newmask;
@@ -575,7 +575,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
   finalcolor_global=0;
   ierr = MPI_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRQ(ierr);
   ierr = PetscLogEventBegin(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
-  ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor_global+1,ncols,colors,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor_global+1,ncols,colors,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mat_Coloring_ISCreate,mc,0,0,0);CHKERRQ(ierr);
   if (!mc->user_weights) {
     ierr = PetscFree(wts);CHKERRQ(ierr);

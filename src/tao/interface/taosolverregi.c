@@ -67,7 +67,9 @@ PetscErrorCode TaoRegisterAll()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (TaoRegisterAllCalled) PetscFunctionReturn(0);
   TaoRegisterAllCalled = PETSC_TRUE;
+#if !defined(PETSC_USE_COMPLEX)
   ierr = TaoRegister(TAOLMVM,TaoCreate_LMVM);CHKERRQ(ierr);
   ierr = TaoRegister(TAONLS,TaoCreate_NLS);CHKERRQ(ierr);
   ierr = TaoRegister(TAONTR,TaoCreate_NTR);CHKERRQ(ierr);
@@ -87,8 +89,7 @@ PetscErrorCode TaoRegisterAll()
   ierr = TaoRegister(TAOASILS,TaoCreate_ASILS);CHKERRQ(ierr);
   ierr = TaoRegister(TAOASFLS,TaoCreate_ASFLS);CHKERRQ(ierr);
   ierr = TaoRegister(TAOIPM,TaoCreate_IPM);CHKERRQ(ierr);
+#endif
   ierr = TaoRegister(TAOTEST,TaoCreate_Test);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-

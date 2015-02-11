@@ -171,8 +171,8 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
 
   /* Allocate some temporary work arrays that will be used in
    * calculating the permuation vector and groupings. */
-  ierr = PetscMalloc1((m+1), &rows_in_bucket);CHKERRQ(ierr);
-  ierr = PetscMalloc1((m+1), &ipnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1, &rows_in_bucket);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1, &ipnz);CHKERRQ(ierr);
   ierr = PetscMalloc1(m, &nz_in_row);CHKERRQ(ierr);
 
   /* Now actually figure out the permutation and grouping. */
@@ -202,8 +202,8 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
    * We allocate space for the maximum number of groups;
    * that is potentially a little wasteful, but not too much so.
    * Perhaps I should fix it later. */
-  ierr = PetscMalloc1((maxnz+2), &aijperm->xgroup);CHKERRQ(ierr);
-  ierr = PetscMalloc1((maxnz+1), &aijperm->nzgroup);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxnz+2, &aijperm->xgroup);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxnz+1, &aijperm->nzgroup);CHKERRQ(ierr);
 
   /* Second pass.  Look at what is in the buckets and create the groupings.
    * Note that it is OK to have a group of rows with no non-zero values. */
@@ -462,12 +462,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  if (yy != ww) {
-    ierr = VecGetArray(ww,&w);CHKERRQ(ierr);
-  } else {
-    w = y;
-  }
+  ierr = VecGetArrayPair(yy,ww,&y,&w);CHKERRQ(ierr);
 
   aj = a->j;   /* aj[k] gives column index for element aa[k]. */
   aa = a->a;   /* Nonzero elements stored row-by-row. */
@@ -573,10 +568,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
 #endif
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  if (yy != ww) {
-    ierr = VecRestoreArray(ww,&w);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayPair(yy,ww,&y,&w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

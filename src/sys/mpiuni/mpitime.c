@@ -1,4 +1,4 @@
-#include <mpiuni/mpi.h>
+#include <petscsys.h>
 #if !defined(__MPIUNI_H)
 #error "Wrong mpi.h included! require mpi.h from MPIUNI"
 #endif

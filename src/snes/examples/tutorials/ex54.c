@@ -125,9 +125,10 @@ int main(int argc, char **argv)
 #define __FUNCT__ "Update_q"
 PetscErrorCode Update_q(Vec q,Vec u,Mat M_0,AppCtx *user)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *q_arr,*w_arr;
-  PetscInt       i,n;
+  PetscErrorCode    ierr;
+  PetscScalar       *q_arr;
+  const PetscScalar *w_arr;
+  PetscInt          i,n;
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(event_update_q,0,0,0,0);CHKERRQ(ierr);
@@ -135,10 +136,10 @@ PetscErrorCode Update_q(Vec q,Vec u,Mat M_0,AppCtx *user)
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
   ierr = VecGetLocalSize(u,&n);CHKERRQ(ierr);
   ierr = VecGetArray(q,&q_arr);CHKERRQ(ierr);
-  ierr = VecGetArray(user->work1,&w_arr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(user->work1,&w_arr);CHKERRQ(ierr);
   for (i=0; i<n; i++) q_arr[2*i]=q_arr[2*i+1] = w_arr[i];
   ierr = VecRestoreArray(q,&q_arr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->work1,&w_arr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(user->work1,&w_arr);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(event_update_q,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -147,10 +148,11 @@ PetscErrorCode Update_q(Vec q,Vec u,Mat M_0,AppCtx *user)
 #define __FUNCT__ "SetInitialGuess"
 PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *x,*u;
-  PetscInt       n,i;
-  Vec            rand;
+  PetscErrorCode    ierr;
+  const PetscScalar *u;
+  PetscScalar       *x;
+  PetscInt          n,i;
+  Vec               rand;
 
   PetscFunctionBeginUser;
   /* u = -0.4 + 0.05*rand(N,1)*(rand(N,1) - 0.5) */
@@ -165,11 +167,11 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
 
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(user->u,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(user->u,&u);CHKERRQ(ierr);
   /* Set initial guess, only set value for 2nd dof */
   for (i=0; i<n/2; i++) x[2*i+1] = u[i];
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->u,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(user->u,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -197,7 +199,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
   /* for active set method the matrix does not get changed, so do not need to copy each time,
      if the active set remains the same for several solves the preconditioner does not need to be rebuilt*/
   if (!copied) {
-    ierr   = MatCopy(user->M,J,*flg);CHKERRQ(ierr);
+    ierr   = MatCopy(user->M,J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     copied = PETSC_TRUE;
   }
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

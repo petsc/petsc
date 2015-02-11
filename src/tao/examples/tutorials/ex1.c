@@ -76,14 +76,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM             distributedMesh = NULL;
-  DMLabel        label;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMPlexCreateBoxMesh(comm, user->dim, PETSC_TRUE, dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
-  ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
-  if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
   ierr = DMPlexDistribute(*dm, NULL, 0, NULL, &distributedMesh);CHKERRQ(ierr);
   if (distributedMesh) {
     ierr = DMDestroy(dm);CHKERRQ(ierr);
@@ -230,9 +227,9 @@ static PetscErrorCode SetupSection(DM dm, PetscInt numFields, PetscFE fe[], AppC
   ierr = DMSetField(dm, 2, (PetscObject) user->fe[2]);CHKERRQ(ierr);
   ierr = DMPlexGetLabel(dm, "marker", &label);CHKERRQ(ierr);
   if (label) {
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "marker", 0, user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "marker", 1, user->exactFuncs[1], 1, &id, user);CHKERRQ(ierr);
-    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "marker", 2, user->exactFuncs[2], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "marker", 0, (void (*)()) user->exactFuncs[0], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "marker", 1, (void (*)()) user->exactFuncs[1], 1, &id, user);CHKERRQ(ierr);
+    ierr = DMPlexAddBoundary(dm, PETSC_TRUE, "marker", 2, (void (*)()) user->exactFuncs[2], 1, &id, user);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

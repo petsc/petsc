@@ -57,7 +57,7 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx)
 @*/
 PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec X,Vec G,void *dummy)
 {
-  PetscReal      *g;
+  PetscScalar    *x,*g;
   PetscReal      f, f2;
   PetscErrorCode ierr;
   PetscInt       low,high,N,i;
@@ -72,19 +72,17 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec X,Vec G,void *dummy)
   ierr = VecGetArray(G,&g);CHKERRQ(ierr);
   for (i=0;i<N;i++) {
     if (i>=low && i<high) {
-      PetscScalar *xx;
-      ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
-      xx[i-low] += h;
-      ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
+      ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+      x[i-low] += h;
+      ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
     }
 
     ierr = TaoComputeObjective(tao,X,&f2);CHKERRQ(ierr);
 
     if (i>=low && i<high) {
-      PetscScalar *xx;
-      ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
-      xx[i-low] -= h;
-      ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
+      ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+      x[i-low] -= h;
+      ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
     }
     if (i>=low && i<high) {
       g[i-low]=(f2-f)/h;
@@ -108,8 +106,7 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec X,Vec G,void *dummy)
 
    Output Parameters:
 +  H - Hessian matrix (not altered in this routine)
-.  B - newly computed Hessian matrix to use with preconditioner (generally the same as H)
--  flag - flag indicating whether the matrix sparsity structure has changed
+-  B - newly computed Hessian matrix to use with preconditioner (generally the same as H)
 
    Options Database Key:
 +  -tao_fd - Activates TaoDefaultComputeHessian()
@@ -123,8 +120,6 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao,Vec X,Vec G,void *dummy)
    TaoDefaultComputeHessian() is not recommended for general use
    in large-scale applications, It can be useful in checking the
    correctness of a user-provided Hessian.
-
-
 
 .seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessianColor(), SNESComputeJacobianDefault(), TaoSetGradientRoutine(), TaoDefaultComputeGradient()
 
@@ -168,8 +163,7 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao,Vec V,Mat H,Mat B,void *dummy)
 
    Output Parameters:
 +  H - Hessian matrix (not altered in this routine)
-.  B - newly computed Hessian matrix to use with preconditioner (generally the same as H)
--  flag - flag indicating whether the matrix sparsity structure has changed
+-  B - newly computed Hessian matrix to use with preconditioner (generally the same as H)
 
    Level: advanced
 

@@ -5,6 +5,8 @@
 #include <petsc-private/petscimpl.h>
 #include <petscksp.h>
 
+PETSC_EXTERN PetscErrorCode TaoRegisterAll(void);
+
 typedef struct _TaoOps *TaoOps;
 
 struct _TaoOps {
@@ -32,7 +34,7 @@ struct _TaoOps {
     PetscErrorCode (*setup)(Tao);
     PetscErrorCode (*solve)(Tao);
     PetscErrorCode (*view)(Tao, PetscViewer);
-    PetscErrorCode (*setfromoptions)(Tao);
+    PetscErrorCode (*setfromoptions)(PetscOptions*,Tao);
     PetscErrorCode (*destroy)(Tao);
 };
 
@@ -119,7 +121,8 @@ struct _p_Tao {
     PetscInt  njac_state;
     PetscInt  njac_design;
 
-    PetscInt  ksp_its;
+    PetscInt  ksp_its; /* KSP iterations for this solver iteration */
+    PetscInt  ksp_tot_its; /* Total (cumulative) KSP iterations */
 
 
     TaoLineSearch linesearch;
@@ -140,34 +143,47 @@ struct _p_Tao {
     PetscReal fmin;
 
     PetscBool printreason;
-    PetscBool viewtao;
     PetscBool viewsolution;
     PetscBool viewgradient;
     PetscBool viewconstraints;
     PetscBool viewhessian;
     PetscBool viewjacobian;
-    PetscViewer viewer;
 
     TaoSubsetType subset_type;
     PetscInt      hist_max;/* Number of iteration histories to keep */
     PetscReal     *hist_obj; /* obj value at each iteration */
     PetscReal     *hist_resid; /* residual at each iteration */
     PetscReal     *hist_cnorm; /* constraint norm at each iteration */
+    PetscInt      *hist_lits; /* number of ksp its at each TAO iteration */
     PetscInt      hist_len;
     PetscBool     hist_reset;
+    PetscBool     hist_malloc;
 };
 
 extern PetscLogEvent Tao_Solve, Tao_ObjectiveEval, Tao_ObjGradientEval, Tao_GradientEval, Tao_HessianEval, Tao_ConstraintsEval, Tao_JacobianEval;
 
-#define TaoLogHistory(tao,obj,resid,cnorm) \
-  { if (tao->hist_max > tao->hist_len) \
-      { if (tao->hist_obj) tao->hist_obj[tao->hist_len]=obj;\
-        if (tao->hist_resid) tao->hist_resid[tao->hist_len]=resid;\
-        if (tao->hist_cnorm) tao->hist_cnorm[tao->hist_len]=cnorm;} \
-    tao->hist_len++;\
+#undef __FUNCT__
+#define __FUNCT__ "TaoLogConvergenceHistory"
+PETSC_STATIC_INLINE PetscErrorCode TaoLogConvergenceHistory(Tao tao, PetscReal obj, PetscReal resid, PetscReal cnorm, PetscInt totits)
+{
+  PetscFunctionBegin;
+  if (tao->hist_max > tao->hist_len) {
+    if (tao->hist_obj) tao->hist_obj[tao->hist_len]=obj;
+    if (tao->hist_resid) tao->hist_resid[tao->hist_len]=resid;
+    if (tao->hist_cnorm) tao->hist_cnorm[tao->hist_len]=cnorm;
+    if (tao->hist_lits) {
+      if (tao->hist_len <= 0) {
+        tao->hist_lits[0] = totits;
+      } else {
+        tao->hist_lits[tao->hist_len]=totits - tao->hist_lits[tao->hist_len-1];
+      }
+    }
+    tao->hist_len++;
   }
-
-#endif
+  PetscFunctionReturn(0);
+}
 
 PETSC_INTERN PetscErrorCode TaoVecGetSubVec(Vec, IS, TaoSubsetType, PetscReal, Vec*);
 PETSC_INTERN PetscErrorCode TaoMatGetSubMat(Mat, IS, Vec, TaoSubsetType, Mat*);
+
+#endif

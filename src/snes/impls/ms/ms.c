@@ -220,8 +220,7 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
   PetscValidPointer(delta,5);
   PetscValidPointer(betasub,6);
 
-  ierr          = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
-  ierr          = PetscMemzero(link,sizeof(*link));CHKERRQ(ierr);
+  ierr          = PetscNew(&link);CHKERRQ(ierr);
   t             = &link->tab;
   ierr          = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->nstages    = nstages;
@@ -431,13 +430,13 @@ static PetscErrorCode SNESView_MS(SNES snes,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_MS"
-static PetscErrorCode SNESSetFromOptions_MS(SNES snes)
+static PetscErrorCode SNESSetFromOptions_MS(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_MS        *ms = (SNES_MS*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES MS options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES MS options");CHKERRQ(ierr);
   {
     SNESMSTableauLink link;
     PetscInt          count,choice;

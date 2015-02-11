@@ -144,6 +144,7 @@ static void PetscErrorPrintfNormal(void)
 #endif
 }
 
+extern PetscErrorCode  PetscOptionsViewError(void);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscTraceBackErrorHandler"
@@ -161,7 +162,7 @@ static void PetscErrorPrintfNormal(void)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
-.  p - PETSC_ERROR_INITIAL if this is the first call the the error handler, otherwise PETSC_ERROR_REPEAT
+.  p - PETSC_ERROR_INITIAL if this is the first call the error handler, otherwise PETSC_ERROR_REPEAT
 -  ctx - error handler context
 
    Level: developer
@@ -231,6 +232,7 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
     PetscStrncmp(fun,"main",4,&ismain);
     PetscStrncmp(fun,"unknown",7,&isunknown);
     if (ismain || isunknown) {
+      PetscOptionsViewError();
       PetscErrorPrintfHilight();
       (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");
       PetscErrorPrintfNormal();

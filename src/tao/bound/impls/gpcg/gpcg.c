@@ -33,16 +33,17 @@ static PetscErrorCode TaoDestroy_GPCG(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_GPCG"
-static PetscErrorCode TaoSetFromOptions_GPCG(Tao tao)
+static PetscErrorCode TaoSetFromOptions_GPCG(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_GPCG       *gpcg = (TAO_GPCG *)tao->data;
   PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Gradient Projection, Conjugate Gradient method for bound constrained optimization");CHKERRQ(ierr);
-  ierr=PetscOptionsInt("-gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",0,gpcg->maxgpits,&gpcg->maxgpits,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Gradient Projection, Conjugate Gradient method for bound constrained optimization");CHKERRQ(ierr);
+  ierr=PetscOptionsInt("-tao_gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",NULL,gpcg->maxgpits,&gpcg->maxgpits,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -122,9 +123,6 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao)
   ierr=VecDuplicate(tao->solution,&gpcg->DXFree);CHKERRQ(ierr);
   ierr=VecDuplicate(tao->solution,&gpcg->R);CHKERRQ(ierr);
   ierr=VecDuplicate(tao->solution,&gpcg->PG);CHKERRQ(ierr);
-  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
-  ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   /*
     if (gpcg->ksp_type == GPCG_KSP_NASH) {
         ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
@@ -187,6 +185,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
   ierr=TaoMonitor(tao,iter,f,gpcg->gnorm,0.0,tao->step,&reason);CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING){
+    tao->ksp_its=0;
 
     ierr = GPCGGradProjections(tao);CHKERRQ(ierr);
     ierr = ISGetSize(gpcg->Free_Local,&gpcg->n_free);CHKERRQ(ierr);
@@ -220,7 +219,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
       ierr = KSPSolve(tao->ksp,gpcg->R,gpcg->DXFree);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its);CHKERRQ(ierr);
       tao->ksp_its+=its;
-
+      tao->ksp_tot_its+=its;
       ierr = VecSet(tao->stepdirection,0.0);CHKERRQ(ierr);
       ierr = VecISAXPY(tao->stepdirection,gpcg->Free_Local,1.0,gpcg->DXFree);CHKERRQ(ierr);
 
@@ -320,10 +319,19 @@ static PetscErrorCode TaoComputeDual_GPCG(Tao tao, Vec DXL, Vec DXU)
 }
 
 /*------------------------------------------------------------*/
-EXTERN_C_BEGIN
+/*MC
+  TAOGPCG - gradient projected conjugate gradient algorithm is an active-set
+        conjugate-gradient based method for bound-constrained minimization
+
+  Options Database Keys:
++ -tao_gpcg_maxpgits - maximum number of gradient projections for GPCG iterate
+- -tao_subset_type - "subvec","mask","matrix-free", strategies for handling active-sets
+
+  Level: beginner
+M*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_GPCG"
-PetscErrorCode TaoCreate_GPCG(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_GPCG(Tao tao)
 {
   TAO_GPCG       *gpcg;
   PetscErrorCode ierr;
@@ -366,12 +374,15 @@ PetscErrorCode TaoCreate_GPCG(Tao tao)
   gpcg->subset_type = TAO_SUBSET_MASK;
   /* gpcg->ksp_type = GPCG_KSP_STCG; */
 
+  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp);CHKERRQ(ierr);
+  ierr = KSPSetType(tao->ksp,KSPNASH);CHKERRQ(ierr);
+
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCHGPCG);CHKERRQ(ierr);
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch, GPCGObjectiveAndGradient, tao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 
 
 

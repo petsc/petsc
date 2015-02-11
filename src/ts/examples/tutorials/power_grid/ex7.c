@@ -124,16 +124,15 @@ PetscErrorCode PostStep(TS ts)
   ierr = DMGetCoordinateDM(user->da,&cda);CHKERRQ(ierr);
   ierr = DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   ierr = DMGetCoordinates(user->da,&gc);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cda,gc,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(user->da,X,&p);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,gc,&coors);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(user->da,X,&p);CHKERRQ(ierr);
   for (i=xs; i < xs+xm; i++) {
     for (j=ys; j < ys+ym; j++) {
-      //      printf("i %d j %d y %g %g\n",i,j,coors[j][i].y,p[j][i]);
       if (coors[j][i].y < 5) sum += p[j][i];
     }
   }
-  ierr = DMDAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(user->da,X,&p);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,gc,&coors);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(user->da,X,&p);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&sum,&asum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %f = %f\n",(double)t,(double)(asum));CHKERRQ(ierr);
   if (sum  < 1.0e-2) {
@@ -290,9 +289,9 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 
   ierr = DMGetCoordinatesLocal(user->da,&gc);CHKERRQ(ierr);
 
-  ierr = DMDAVecGetArray(cda,gc,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(user->da,localX,&p);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(user->da,localXdot,&pdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,gc,&coors);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(user->da,localX,&p);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(user->da,localXdot,&pdot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da,F,&f);CHKERRQ(ierr);
 
   user->disper_coe = PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda));
@@ -304,12 +303,12 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
       f[j][i] = -p_adv1 - p_adv2  + p_diff - pdot[j][i];
     }
   }
-  ierr = DMDAVecRestoreArray(user->da,localX,&p);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(user->da,localX,&pdot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(user->da,localX,&p);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(user->da,localX,&pdot);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->da,&localXdot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(user->da,F,&f);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,gc,&coors);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -335,7 +334,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat 
   ierr = DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
 
   ierr = DMGetCoordinatesLocal(user->da,&gc);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cda,gc,&coors);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,gc,&coors);CHKERRQ(ierr);
   for (i=xs; i < xs+xm; i++) {
     for (j=ys; j < ys+ym; j++) {
       PetscInt nc = 0;
@@ -356,7 +355,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat J,Mat 
       ierr = MatSetValuesStencil(Jpre,1,&row,nc,col,val,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = DMDAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,gc,&coors);CHKERRQ(ierr);
 
   ierr =  MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

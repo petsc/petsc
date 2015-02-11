@@ -11,7 +11,6 @@
 #define T3DMPI_FORTRAN
 #define T3EMPI_FORTRAN
 
-#define PETSC_DESIRE_COMPLEX
 #include <petsc-private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_CUDA)
@@ -253,6 +252,11 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   /* this must be initialized in a routine, not as a constant declaration*/
   PETSC_STDOUT = stdout;
   PETSC_STDERR = stderr;
+
+  /* on Windows - set printf to default to printing 2 digit exponents */
+#if defined(PETSC_HAVE__SET_OUTPUT_FORMAT)
+  _set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
 
   *ierr = PetscOptionsCreate();
   if (*ierr) return;

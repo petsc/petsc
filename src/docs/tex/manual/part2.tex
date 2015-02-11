@@ -463,9 +463,9 @@ with a local numbering scheme that includes ghost points.  The mapping from this
 numbering scheme back to the global PETSc numbering can be handled with the
 ISLocalToGlobalMapping routines.
 
-If one is given a list of indices in a global numbering, the routine
+If one is given a list of block indices in a global numbering, the routine
 \begin{tabbing}
-  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping ctx,\\
+  ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping ctx,\\
                               ISGlobalToLocalMappingType type,int nin,int idxin[],int *nout,int idxout[]);
 \end{tabbing}
 \sindex{global to local mapping} will provide
@@ -480,10 +480,10 @@ are replaced by -1. When \trl{type} is set to \trl{IS_GTOLM_DROP},
 represented locally in the mapping are not included in \trl{idxout}, so that
 potentially \trl{nout} is smaller than \trl{nin}.  One must
 pass in an array long enough to hold all the indices. One can call
-ISGlobalToLocalMappingApply() with \trl{idxout} equal to
+ISGlobalToLocalMappingApplyBlock() with \trl{idxout} equal to
 PETSC\_NULL to determine the required length (returned in
 \trl{nout}) and then allocate the required space and call
-ISGlobalToLocalMappingApply() a second time to set the values.
+ISGlobalToLocalMappingApplyBlock() a second time to set the values.
 
 Often it is convenient to set elements into a vector using the local node
 numbering rather than the global node numbering (e.g.,  each process may
@@ -657,8 +657,8 @@ with the command
   DMLocalToGlobalBegin(DM da,Vec l,InsertMode mode,Vec g);
   DMLocalToGlobalEnd(DM da,Vec l,InsertMode mode,Vec g);
 \end{tabbing}
-Note that this function is not
-subdivided into beginning and ending phases, since it is purely local.
+In general this is used with an InsertMode of  ADD\_VALUES, because if one wishes to insert values into the global vector they should
+just access the global vector directly and put in the values.
 
 A third type of distributed array scatter is from a local
 vector (including ghost points that contain irrelevant values) to
@@ -703,6 +703,20 @@ the natural grid indexing. This is done with the routines
    ... use the array indexing it with 1 or 2 or 3 dimensions \\
    ... depending on the dimension of the DMDA\\
   DMDAVecRestoreArray(DM da,Vec l,void *array);
+  DMDAVecGetArrayRead(DM da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DMDA\\
+  DMDAVecRestoreArrayRead(DM da,Vec l,void *array);
+\end{tabbing}
+\begin{tabbing}
+  DMDAVecGetArrayDOF(DM da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DMDA\\
+  DMDAVecRestoreArrayDOF(DM da,Vec l,void *array);
+  DMDAVecGetArrayDOFRead(DM da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DMDA\\
+  DMDAVecRestoreArrayDOFRead(DM da,Vec l,void *array);
 \end{tabbing}
 where {\tt array} is a multidimensional C array with the same dimension as
 {\tt da}. The vector l can be either a global vector or a local vector.
@@ -772,22 +786,9 @@ To assemble global stiffness matrices, one needs either
 \begin{itemize}
 \item
 the global node number of each local node
-including the ghost nodes. This number may be determined by using the
-command
+including the ghost nodes cqn be obtained by first calling
 \begin{tabbing}
-  DMDAGetGlobalIndices(DM da,int *n,const int *idx[]);
-  DMDARestoreGlobalIndices(DM da,int *n,const int *idx[]);
-\end{tabbing}
-The output argument \trl{n} contains the number of
-local nodes, including ghost nodes, while \trl{idx} contains a list of length
-\trl{n} containing the global indices that correspond to the local nodes. Either
-parameter may be omitted by passing PETSC\_NULL. Note that the Fortran
-interface differs slightly; see Section~\ref{sec_fortranarrays} for details.
-\item
-or to set up the vectors and matrices so that their entries may be
-added using the local numbering. This is done by first calling
-\begin{tabbing}
-  DMDAGetISLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map);
+  DMGetLocalToGlobalMapping(DM da,ISLocalToGlobalMapping *map);
 \end{tabbing}
 followed by
 \begin{tabbing}
@@ -1238,8 +1239,8 @@ If one wishes to repeatedly assemble matrices that retain the same
 nonzero pattern (such as within a nonlinear or time-dependent
 problem), the option
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
-\end{tabbing}
+  MatSetOption(Mat A,MAT\_NEW\_NONZERO\_LOCATIONS,PETSC\_FALSE);
+\end{tabbing} \findex{MAT_NEW_NONZERO_LOCATIONS}
 should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
 information will be reused (instead of regenerated) during successive
@@ -2060,7 +2061,7 @@ In particular, KSP {\em does} support matrix-free methods.
 The routine MatCreateShell()
 in Section~\ref{sec_matrixfree} provides further information regarding
 matrix-free methods.
-Typically the the matrix from which the
+Typically the matrix from which the
 preconditioner is to be constructed, \trl{Pmat}, is the same as
 the matrix that defines the linear system, \trl{Amat}; however,
 occasionally these matrices differ (for instance, \sindex{preconditioning}
@@ -2346,7 +2347,7 @@ The user can retain the default value of any of these parameters by
 specifying PETSC\_DEFAULT as the
 corresponding tolerance; the
 defaults are \trl{rtol}=$10^{-5}$, \trl{atol}=$10^{-50}$,
-\trl{dtol}=$10^{5}$, and \trl{maxits}=$10^5$.
+\trl{dtol}=$10^{5}$, and \trl{maxits}=$10^4$.
 These parameters can also be set from the options database with the
 commands \trl{-ksp_rtol} \trl{<rtol>}, \trl{-ksp_atol} \trl{<atol>}, \trl{-ksp_divtol} \trl{<dtol>},
 \findex{-ksp_rtol} \findex{-ksp_atol} \findex{-ksp_divtol}
@@ -2547,7 +2548,7 @@ SOR with Eisenstat trick             & PCEISENSTAT   & eisenstat\\
 Incomplete Cholesky                  & PCICC         & icc\\
 Incomplete LU                        & PCILU         & ilu\\
 Additive Schwarz                     & PCASM         & asm\\
-Algebraic Multigrid                    & PCGAMG         & gamg\\
+Algebraic Multigrid                  & PCGAMG         & gamg\\
 Linear solver                        & PCKSP         & ksp \\
 Combination of preconditioners       & PCCOMPOSITE   & composite \\
 \hline
@@ -2578,8 +2579,8 @@ Some of the options for ILU preconditioner are
   PCFactorSetReuseOrdering(PC pc,PetscBool  flag);\\
   PCFactorSetDropTolerance(PC pc,double dt,double dtcol,int dtcount);\\
   PCFactorSetReuseFill(PC pc,PetscBool  flag);\\
-  PCFactorSetUseInPlace(PC pc); \\
-  PCFactorSetAllowDiagonalFill(PC pc);
+  PCFactorSetUseInPlace(PC pc,PetscBool flg); \\
+  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg);
 \end{tabbing}
 
 When repeatedly solving linear systems with the same KSP
@@ -2675,7 +2676,7 @@ By using both left and right preconditioning of the linear system,
 this variant of SSOR requires about half of the floating-point operations
 for conventional SSOR. The option
 \trl{-pc_eisenstat_no_diagonal_scaling})
-(or the routine PCEisenstatNoDiagonalScaling())
+(or the routine PCEisenstatSetNoDiagonalScaling())
 turns off diagonal scaling in conjunction with Eisenstat SSOR method, while
 the option \trl{-pc_eisenstat_omega <omega>} (or the routine
 PCEisenstatSetOmega(PC pc,double omega))
@@ -2691,7 +2692,7 @@ The LU preconditioner provides several options.  The first, given by
 the \sindex{direct solver}
 command  \sindex{in-place solvers}
 \begin{tabbing}
-  PCFactorSetUseInPlace(PC pc);
+  PCFactorSetUseInPlace(PC pc,PetscBool flg);
 \end{tabbing}
 causes the factorization to be performed in-place and hence
 destroys the original matrix.  The options database variant of
@@ -2769,7 +2770,7 @@ user {\em must} explicitly call KSPSetUp()
 before calling PCBJacobiGetSubKSP() or
 PCASMGetSubKSP().
 For further details, see the
-example \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex7.c}.
+examples \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex7.c} or \trl{${PETSC_DIR}/src/ksp/ksp/examples/tutorials/ex8.c}.
 
 The block Jacobi, block Gauss-Seidel, and additive Schwarz
 preconditioners allow the user
@@ -2780,7 +2781,7 @@ are \sindex{block Jacobi} \sindex{block Gauss-Seidel}
 \findex{-pc_bjacobi_blocks} \findex{-pc_bgs_blocks}
 \begin{tabbing}
   PCBJacobiSetTotalBlocks(PC pc,int blocks,int *size);\\
-  PCASMSetTotalSubdomains(PC pc,int n,IS *is);\\
+  PCASMSetTotalSubdomains(PC pc,int n,IS *is,IS *islocal);\\
   PCASMSetType(PC pc,PCASMType type);
 \end{tabbing}
 The
@@ -2818,7 +2819,7 @@ The user can also set the number of blocks and sizes on a per-process
 basis with the commands
 \begin{tabbing}
   PCBJacobiSetLocalBlocks(PC pc,int blocks,int *size);\\
-  PCASMSetLocalSubdomains(PC pc,int N,IS *is);
+  PCASMSetLocalSubdomains(PC pc,int N,IS *is,IS *islocal);
 \end{tabbing}
 
 For the ASM preconditioner one can use the following command to set
@@ -2838,14 +2839,59 @@ PCASMSetLocalSubdomains(); the routine PCASMSetOverlap()
 merely allows PETSc to extend that overlap further if desired.
 
 %----------------------------------------------------------------------
-\subsection{Algebraic Multigrid Preconditioners}
+\subsection{Algebraic Multigrid (AMG) Preconditioners}
 
-PETSc provides a framework and tools for developing algebraic multigrid (AMG) methods.
-Developers can write a preconditioner (PC) class and an application can select this PC as a command line argument or explicitly in the code.
-PETSc provides interfaces to two external AMG packages have been imported into PETSc as external, downloaded packages: {\it hypre} and {\it ML}.
-These packages are monolithic in that they implement one class of algorithms, ``classic" AMG in the case of  {\it hypre}  and smoothed aggregation for {\it ML}.
-The PETSc AMG framework provides one basic aggregation AMG method (\trl{-pc_gamg_type agg}) and the popular variant smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1}).
-Smoothed aggregation is recommended for symmetric positive definite systems;  unsmoothed aggregation can be useful for unsymmetric problems.
+PETSc provides a native algebraic multigrid preconditioner PCGAMG -- {\it ``gamg''} -- and interfaces to two
+external AMG packages: {\it hypre} and {\it ML}.
+
+PETSc provides a (smoothed) aggregation AMG, (\trl{-pc_type gamg -pc_gamg_type agg} or  PCSetType(pc,PCGAMG) and PCGAMGSetType(pc,PCGAMGAgg).
+There are also less developed implementations of a classical AMG method (\trl{-pc_gamg_type classical})  and a hybrid geometric AMG method (\trl{-pc_gamg_type geo}).
+
+GAMG provides unsmoothed aggregation (\trl{-pc_gamg_agg_nsmooths 0}) and smoothed aggregation (\trl{-pc_gamg_agg_nsmooths 1} or PCGAMGSetNSmooths(pc,1)).
+Smoothed aggregation is recommended for symmetric positive definite
+systems;  unsmoothed aggregation can be useful for asymmetric
+problems and problems where highest eigen estimates are problematic. Try \trl{-pc_gamg_agg_nsmooths 0}  if poor convergence rates are observed using the smoothed version.
+AMG methods requires knowledge of the number of degrees of
+freedom per vertex, the default is one (a scalar problem) but vector problems like elasticity should set the block size of the matrix appropriately with MatSetBlockSize(mat,bs).
+Smoothed aggregation relies an explicit representation of the (near) null space of the operator.
+One can provide this with MatSetNearNullSpace().
+For elasticity, where rotational rigid body modes define the near null space you can call PCSetCoordinates() instead of MatSetNearNullSpace() and it will set the near null space for you.
+
+Other options for GAMG include PCGAMGSetProcEqLim(),
+PCGAMGSetCoarseEqLim(), PCGAMGSetRepartitioning(),
+PCGAMGRegister(), PCGAMGSetReuseInterpolation(),
+PCGAMGSetUseASMAggs(), PCGAMGSetNlevels(),
+PCGAMGSetThreshold(), and PCGAMGGetType().
+
+
+{\bf Trouble shooting algebraic multigrid methods:}  If GAMG, ML, or hypre does not perform well the
+first thing to try is the other methods.
+You can also try  \trl{-mg_levels_ksp_type richardson -mg_levels_pc_type sor}.
+AMG methods are sensitive to coarsening rates and methods; for GAMG use
+\trl{-pc_gamg_threshold} $x$ to regulate coarsening rates (PCGAMGSetThreshold()).
+A high threshold (eg, $x=0.08$) will result in an expensive but potentially
+powerful preconditioner; a low threshold (eg, $x=0.0$) will result in
+faster coarsening, fewer levels, cheaper solves, and generally worse
+convergence rates.
+\trl{-pc_gamg_threshold} $0.0$ is the most robust option (the reason for
+this is not obvious) and is recommended if poor convergence rates are
+observed, at least until the source of the problem is discovered.
+
+Finally, there are several sources of poor performance of
+AMG solvers and often special purpose methods must be developed to
+achieve the full potential of multigrid.
+To name just a few sources of performance degradation that
+may not be fixed with parameters or bug fixes in PETSc currently: non-elliptic
+operators, curl/curl operators, highly stretched grids or highly anisotropic problems,
+large jumps in material coefficients with complex geometry (AMG is
+particularly well suited to jumps in coefficients but it is not a
+perfect solution), highly incompressible elasticity, not to mention
+ill-posed problems, and many others.
+
+PETSc's AMG solver is constructed as a framework for developers to
+easily add AMG capabilities, like a new AMG algorithm or a new matrix
+triple product, etc. Contact us directly if you are interested in extending/improving PETSc's algebraic multigrid solvers.
+
 
 %----------------------------------------------------------------------
 \subsection{Shell Preconditioners}
@@ -2881,7 +2927,7 @@ can be used to obtain the operators with PCGetOperators() and the
 application-provided data structure that was set with PCShellSetContext().
 
 %----------------------------------------------------------------------
-\subsection{Combining Preconditioners} \sindex{combining preconditioners}
+\subsection{Combining Preconditioners\label{sec:combining-pcs}} \sindex{combining preconditioners}
 
 The PC type PCCOMPOSITE  allows one to form
 new preconditioners by combining already defined preconditioners and
@@ -3119,7 +3165,7 @@ Or
 \begin{tabbing}
   -mg\_levels\_pc\_type ilu -mg\_levels\_pc\_factor\_levels 2
 \end{tabbing}
-will cause the the ILU preconditioner to be used on each level with
+will cause the ILU preconditioner to be used on each level with
 two levels of fill in the incomplete factorization.
 
 \section{Solving Block Matrices}
@@ -3279,7 +3325,14 @@ A_{00}^{-1}   & 0 \\
 0 & I \\
 \end{array} \right).
 \]
-These can be access with \trl{-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative>} \findex{-pc_fieldsplit_type} or the function PCFieldSplitSetType(). The option prefixes for the internal KSPs are given by \trl{-fieldsplit_name_}.
+These can be accessed with \trl{-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative>} \findex{-pc_fieldsplit_type} or the function PCFieldSplitSetType(). The option prefixes for the internal KSPs are given by \trl{-fieldsplit_name_}.
+
+By default blocks $A_{00}, A_{01}$ and so on are extracted out of \trl{Pmat}, the matrix that the KSP uses to build the preconditioner,
+and not out of \trl{Amat} (i.e., $A$ itself). As discussed above in Sec.~\ref{sec:combining-pcs}, however, it is possible to use \trl{Amat}
+instead of \trl{Pmat} by calling PCSetUseAmat(pc) or using \trl{-pc_use_amat} on the command line.  Alternatively, you can have PCFieldSplit
+extract the diagonal blocks $A_{00}, A_{11}$ etc. out of \trl{Amat} by calling PCFieldSplitSetDiagUseAmat(pc,\trl{PETSC_TRUE}) or supplying
+command-line argument \trl{-pc_fieldsplit_diag_use_amat}.  Similarly, PCFieldSplitSetOffDiagUseAmat(pc,\trl{PETSC_TRUE}) or \trl{-pc_fieldsplit_off_diag_use_amat}
+will cause the off-diagonal blocks $A_{01},A_{10}$ etc. to be extracted out of \trl{Amat}.
 
 For two by two blocks only there are another family of solvers, based on Schur complements. The inverse of the Schur complement factorization is
 \[
@@ -3371,18 +3424,40 @@ I   & 0 \\
 -A_{10} ksp(A_{00},Ap_{00}) & I \\
 \end{array} \right).
 \]
-Where $\hat{S} = A_{11} - A_{10} ksp(A_{00},Ap_{00}) A_{01}$ is the approximate Schur complement. By default $\hat{S}p$ is $Ap_{11}.$
+Where $\hat{S} = A_{11} - A_{10} ksp(A_{00},Ap_{00}) A_{01}$ is the approximate Schur complement.
 
 There are several variants of the Schur complement preconditioner obtained by dropping some of the terms, these can be obtained with \trl{-pc_fieldsplit_schur_fact_type <diag,lower,upper,full>} or the function PCFieldSplitSetSchurFactType(). Note that the \trl{diag} form uses the preconditioner
 \[
 \left( \begin{array}{cc}
 ksp(A_{00},Ap_{00})   & 0 \\
 0 & -ksp(\hat{S},\hat{S}p) \\
-\end{array} \right)
+\end{array} \right).
 \]
-since the Schur complement for saddle point problems is negative definite. IS THIS ALWAYS TRUE, SHOULD THERE BE A FLAG TO SET THE SIGN?
+This is done to ensure the preconditioner is positive definite for a common class of problems, saddle points with a positive definite $A_{00}$:
+for these the Schur complement is negative definite. SHOULD THERE BE A FLAG TO SET THE SIGN?
 
-You can use the PCLSC preconditioner for the Schur complement with \trl{-pc_fieldsplit_type schur -fieldsplit_1_pc_type lsc}. This uses for the preconditioner to $\hat{S}$ the operator
+The effectiveness of the Schur complement preconditioner depends on the availability of a good preconditioner $\hat Sp$ for the Schur complement matrix.
+In general, you are responsible for supplying $\hat Sp$ via
+PCFieldSplitSchurPrecondition(pc,\trl{PC_FIELDSPLIT_SCHUR_PRE_USER},Sp).
+In the absence of a good
+problem-specific $\hat Sp$, you can use some of the built-in options.
+
+Using \trl{-pc_fieldsplit_schur_precondition user} on the command line activates
+the matrix supplied programmatically as explained above.
+
+With \trl{-pc_fieldsplit_schur_precondition a11} (default) $\hat Sp = A_{11}$ is used to build a
+preconditioner for $\hat S$.
+
+Otherwise, \trl{-pc_fieldsplit_schur_precondition self} will set $\hat Sp = \hat S$ and use the Schur complement matrix itself to build the preconditioner.
+
+The problem with the last approach is that $\hat S$ is used in unassembled, matrix-free form, and many preconditioners (e.g., ILU) cannot be built out of
+such matrices. Instead, you can \emph{assemble}  an approximation to $\hat S$ by inverting $A_{00}$, but only approximately, so as to ensure the sparsity of $\hat Sp$ as much as possible.
+Specifically, using \trl{-pc_fieldsplit_schur_precondition selfp} will assemble $\hat Sp = A_{11} - A_{10} inv(A_{00}) A_{01}$.
+
+By default $inv(A_{00})$ is the inverse of the diagonal of $A_{00}$, but using \trl{-fieldsplit_1_mat_schur_complement_ainv_type lump} will lump $A_{00}$ first.  Option \trl{-mat_schur_complement_ainv_type}
+applies to any matrix of MatSchurComplement type and here it is used with the prefix \trl{-fieldsplit_1} of the linear system in the second split.
+
+Finally, you can use the PCLSC preconditioner for the Schur complement with \trl{-pc_fieldsplit_type schur -fieldsplit_1_pc_type lsc}. This uses for the preconditioner to $\hat{S}$ the operator
 \[
  ksp(A_{10} A_{01},A_{10} A_{01}) A_{10} A_{00} A_{01} ksp(A_{10} A_{01},A_{10} A_{01})
 \]
@@ -3419,9 +3494,10 @@ The PETSc solvers will now handle the null space during the solution process.
 
 \emph{But} if one chooses a direct solver (or an incomplete factorization)
 it may still detect a zero pivot. \sindex{zero pivot}
-You can run with the additional options \trl{-pc_factor_shift_nonzero <dampingfactor>}
-\findex{-pc_factor_shift_nonzero} or \trl{-pc_factor_shift_nonzero <dampingfactor>} \findex{-pc_factor_sshift_nonzero} to
-prevent the zero pivot. A good choice for the \trl{damping} factor is 1.e-10.
+You can run with the additional options \trl{-pc_factor_shift_type <shifttype>}
+\findex{-pc_factor_shift_type} or 
+\trl{-pc_factor_shift_type NONZERO}  \trl{-pc_factor_shift_amount  <dampingfactor>} \findex{-pc_factor_shift_amount} to
+prevent the zero pivot. A good choice for the \trl{dampingfactor} is 1.e-10.
 \sindex{damping}
 
 % ---------------------------------------------------------------
@@ -3591,7 +3667,7 @@ call
 \begin{tabbing}
   SNESSetType(SNES snes,SNESType method);
 \end{tabbing}
-or use the the option \trl{-snes_type <method>}, \findex{-snes_type}
+or use the option \trl{-snes_type <method>}, \findex{-snes_type}
 where details regarding the available methods are presented in
 Section~\ref{sec_nlsolvers}.
 The application code can take complete control of the linear and
@@ -4550,7 +4626,7 @@ To solve an ODE or DAE one uses:
     TSSetRHSFunction(TS ts,Vec R,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *funP);
   \end{tabbing}
 
-\item Jacobian $F_u + (shift)F_{\dot{u}}$ \\
+\item Jacobian $ (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^n,u^n,\dot{u}^n) $ \\
   If using a fully implicit or semi-implicit (IMEX) method one also can provide an appropriate (approximate) Jacobian matrix of $F()$.
   \begin{tabbing}
     TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
@@ -4558,21 +4634,34 @@ To solve an ODE or DAE one uses:
   \end{tabbing}
   The arguments for the function \trl{fjac()}
   are the timestep context, current time, input state $u$, input
-  derivative $\dot{u}$, $shift$, matrix $A$, preconditioning matrix
-  $B$, flag describing structure of preconditioning matrix (see the
-  discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
-  details), and the (optional) user-provided context \trl{jacP}.
-  This form for Jacobian arises because for all implicit and semi-implicit time integrator in PETSc $\dot{u}^n$ is approximated by $(shift) u^n + g(u^{n-1},...)$
-  where the $shift$ is positive and $ g(u^{n-1},...)$ depends on previous iterations;
-  for example for backward Euler $\dot{u} = (u^n - u^{n-1})/\delta t = u^n/\delta t - u^{n-1}/\delta t.$  Hence
+  derivative $\dot{u}$, input $shift$, matrix $A$, preconditioning matrix
+  $B$, and the (optional) user-provided context \trl{jacP}.
+
+  The Jacobian needed for the nonlinear system is, by the chain rule,
 \begin{eqnarray*}
-    \frac{d F}{d u^n} &  = &  \frac{\partial F}{\partial \dot{u}}\frac{\partial \dot{u}}{\partial u} + \frac{\partial F}{\partial u}\\
-                      & = &   (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^t,u^n,\dot{u}^n).
+    \frac{d F}{d u^n} &  = &  \frac{\partial F}{\partial \dot{u}}|_{u^n} \frac{\partial \dot{u}}{\partial u}|_{u^n} + \frac{\partial F}{\partial u}|_{u^n}.
 \end{eqnarray*}
-  For example, again with the backwards Euler method, one obtains
+For any ODE integration method the approximation of $ \dot{u} $ is linear in $ u^n$ hence $ \frac{\partial \dot{u}}{\partial u}|_{u^n} = (shift) $, where shift depends on the
+ODE integrator and time step but not on the function being integrated. Thus
 \begin{eqnarray*}
-    \frac{d F}{d u^n} & = &   u^n/\delta t + F_u(t^t,u^n,\dot{u}^n).
+    \frac{d F}{d u^n} &  = &    (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^n,u^n,\dot{u}^n).
 \end{eqnarray*}
+This explains why the user provide Jacobian is in the given form for all integration methods. An equivalent way to derive the formula is to note that
+\[
+   F(t^n,u^n,\dot{u}^n) = F(t^n,u^n,w+shift*u^n)
+\]
+where $ w $ is some linear combination of previous time solutions of $u$ so that
+\[
+\frac{d F}{d u^n} = (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^n,u^n,\dot{u}^n)
+\]
+again by the chain rule.
+
+  For example, consider backward Euler's method applied to the ODE $ F(t, u, \dot{u}) = \dot{u} - f(t, u) $ with $ \dot{u} = (u^n - u^{n-1})/\delta t$ and
+$ \frac{\partial \dot{u}}{\partial u}|_{u^n} = 1/\delta t $ resulting in
+\begin{eqnarray*}
+    \frac{d F}{d u^n} & = &   (1/\delta t)F_{\dot{u}} + F_u(t^n,u^n,\dot{u}^n).
+\end{eqnarray*}
+But $ F_{\dot{u}} = 1 $, in this special case, resulting in the expected Jacobian $ I/\delta t - f_u(t,u^n)$.
 
 \item Jacobian $G_u$ \\
   If using a fully implicit method and the function $ G() $ is provided, one also can provide an appropriate (approximate) Jacobian matrix of $G()$.
@@ -4582,9 +4671,7 @@ To solve an ODE or DAE one uses:
   \end{tabbing}
   The arguments for the function \trl{fjac()}
   are the timestep context, current time, input state $u$, matrix $A$, preconditioning matrix
-  $B$, flag describing structure of preconditioning matrix (see the
-  discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
-  details), and the (optional) user-provided context \trl{jacP}.
+  $B$, and the (optional) user-provided context \trl{jacP}.
 \end{itemize}
 
 Providing appropriate $ F() $ and $G() $ for your problem allows for the easy runtime switching between explicit, semi-implicit (IMEX), and fully implicit method.
@@ -4692,13 +4779,13 @@ the Jacobians need not be provided.\footnote{PETSc will automatically translate 
 
 The Explicit Runge-Kutta timestepper with variable timesteps is an \sindex{Runge-Kutta}
 implementation of the standard Runge-Kutta with an embedded method. The error in each
-timestep is calculated using the solutions from the Runge-Kutta method and its embedded 
+timestep is calculated using the solutions from the Runge-Kutta method and its embedded
 method (the 2-norm of the difference is used). The default method is the \sindex{Bogacki-Shampine}
-$3$rd-order Bogacki-Shampine method with a $2$nd-order embedded method (TSRK3BS). 
-Other available methods are the \sindex{Fehlberg} $5$th-order Fehlberg RK scheme with a $4$th-order embedded 
-method (TSRK5F), and the \sindex{Dormand-Prince} $5$th-order Dormand-Prince RK scheme with a $4$th-order embedded method 
-(TSRK5DP). Variable timesteps cannot be used with RK schemes that do not have an embedded 
-method (TSRK1 - $1$st-order, $1$-stage forward Euler, TSRK2A - $2$nd-order, $2$-stage RK scheme, 
+$3$rd-order Bogacki-Shampine method with a $2$nd-order embedded method (TSRK3BS).
+Other available methods are the \sindex{Fehlberg} $5$th-order Fehlberg RK scheme with a $4$th-order embedded
+method (TSRK5F), and the \sindex{Dormand-Prince} $5$th-order Dormand-Prince RK scheme with a $4$th-order embedded method
+(TSRK5DP). Variable timesteps cannot be used with RK schemes that do not have an embedded
+method (TSRK1 - $1$st-order, $1$-stage forward Euler, TSRK2A - $2$nd-order, $2$-stage RK scheme,
 TSRK3 - $3$rd-order, $3$-stage RK scheme, TSRK4 - $4$-th order, $4$-stage RK scheme).
 
 \subsection{Special Cases}
@@ -4748,6 +4835,31 @@ where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$
 \end{itemize}
 
 \subsection{Error control via variable time-stepping}
+
+\subsection{Handling of discontinuities}
+
+For problems that involve discontinuous right hand sides, one can set an ``event'' function 
+$ g(t,u) $ for PETSc to detect and locate the times of discontinuities (zeros of $g(t,u)$). Events can be defined through the
+event monitoring routine
+\begin{tabbing}
+     TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate, \\
+     ~~PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void* eventP), \\
+     ~~PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void* eventP),void *eventP);
+\end{tabbing}
+Here, \trl{nevents} denotes the number of events, \trl{direction} sets the type of zero crossing to be detected for 
+an event (+1 for positive zero-crossing, -1 for negative zero-crossing, and 0 for both), \trl{terminate} conveys whether 
+the time-stepping should continue or halt when an event is located, \trl{eventmonitor} is a user-
+defined routine that specifies the event description, \trl{postevent} is an optional user-defined routine to take
+specific actions following an event.
+
+The arguments to \trl{eventmonitor()} are the timestep context, current time, input state $u$, array of event function
+value, and the (optional) user-provided context \trl{eventP}. 
+
+The arguments to \trl{posteventmonitor()} routine are
+the timestep context, number of events occured, indices of events occured, current time, input state $u$, and the (optional)
+user-provided context \trl{eventP}. 
+
+The event monitoring functionality is only available with PETSc's implicit time-stepping solvers TSTHETA, TSARKIMEX, and TSROSW.
 
 \subsection{Debugging ODE solvers}
 
@@ -4812,8 +4924,116 @@ sets the number of vectors in the Krylov subpspace used by GMRES.
 This may be set in the options
 database with \trl{-ts_sundials_gmres_restart} \trl{restart}. \findex{-ts_sundials_gmres_restart}
 
+% ---------------------------------------------------------------
+\cleardoublepage
+\chapter{Performing sensitivity analysis with ODE and DAE solvers in PETSc}
+\label{chapter_sa}
+The TS library also provides a framework based on discrete adjoint models for sensitivity analysis for ODEs and DAEs. 
+The solution can be obtained by using either explicit or implicit solvers in TS, depending on the problem propeties. 
+We refer to this process as a forward run. 
+To perform the discrete adjoint sensivity analysis, a backward run using the same TS object is required with certain checkpointing scheme, which can pass information such as stage values and time stepping trajectory from the forward run to the backward run. 
+   
+Currently supported method types are TSRK (Runge-Kutta) explicit
+methods and TSTHETA implicit methods, which include TSBEULER and TSCN.
 
-\chapter{Solving Steady-State Problems with Pseudo-Timestepping}
+Examples
+include:
+\begin{itemize}
+\item a discrete adjoint sensitivity using explicit time stepping
+methods \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16adj.c},
+\item a discrete adjoint sensitivity using implicit time stepping
+methods \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20adj.c},
+\item an optimization using the discrete adjoint models of ERK
+\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16opt_ic.c} and \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex16opt_p.c},
+\item an optimization using the discrete adjoint models of Theta
+methods for stiff DAEs
+\trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_ic.c} and \trl{${PETSC_DIR}/src/ts/examples/tutorials/ex20opt_p.c},
+\item an optimization using the discrete adjoint models of Theta
+methods for cost function with an integral term \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3opt.c}.
+\end{itemize}
+\vspace{.2cm}
+
+\noindent
+
+\section{Using implicit methods}
+{\bf Simple Example:} Consider an ODE or DAE in the general form which may have nontrivial mass matrices (not necessarily nonsingular)
+\[
+    F(t,u,\dot{u}) = 0, \quad u(t_0)=u_0.
+\]
+We are interested in calculating the sensivity $d g/d p$ of a cost function $g(u,T,p)$ defined only time T. Here $p$ can be either constant system parameters or ODE/DAE initial conditions. 
+The function $g$ is assumed to be smooth enough so that $g_u$ and $g_p$ exist and are bounded. 
+
+First one solves the problem with a forward run, instructions of which can be found in Chapter \ref{chapter_ts}. 
+In the backward run, one uses 
+\begin{tabbing}
+
+\end{tabbing} 
+to switch between the reverse mode and the forward mode. 
+By default, TS object is in the forward mode. 
+$mode$ must be set to $PETSC_TRUE$ in the beginning of the backward run.  
+ 
+To set up TS for the adjoint sensivity analysis, one must set the initial values for the sensivity (adjoint) variables with
+\begin{tabbing}
+TSAdjointSetSensitivity(TS ts,Vec *lambda,PetscInt np);  
+\end{tabbing}
+and 
+\begin{tabbing}
+TSAdjointSetSensitivityP(TS ts,Vec *mu,PetscInt np);  
+\end{tabbing}
+where $lambda$ and $mu$ are arrays of adjoint variables corresponding to sensitivity wrt initial conditions and parameters respectively, and $np$ is the dimension of the array which indicates the number of cost functions. Note that there are two scenarios for the sensitivity analysis here; $lambda$ is required for both and $mu$ is only needed for the case that parameters are the targets. 
+
+$lambda$ and $mu$ should be initialized as $dg/du|_{t=T}$ and $dg/dp|_{t=T}$ respectively at time T. 
+Usually the given cost function $g$ does not explicitly depend on the parameters $p$ so that $mu$ can be set to $0$\'s initially.    
+
+Besides the functions needed by the implicit solver, no additional user-provided functions are required if the sensitivity with respect to initial conditions is desired. 
+Otherwise one needs to provide Jacobian $F_p$ with 
+\begin{tabbing}
+TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+\end{tabbing}
+The arguments for the function \trl{fp()} 
+are the timestep context, current, input stage $u$, and the (optional) user-provided context. 
+
+In the backward run, one should use exactly the same time stepping method as in the forward run. 
+The initial time must be set to the final time of the forward run with 
+\begin{tabbing}
+TSSetTime(TS ts,double time);CHKERRQ(ierr);
+\end{tabbing}
+since the integration will start at that point and go in the reverse direction. 
+One must also set the total number of steps to be the number of steps taken by the forward run with the routine
+\begin{tabbing}
+TSSetDuration(TS ts,PetscInt nsteps,PetscReal maxtime);
+\end{tabbing}
+
+But one does not need to set the final time of the backward run because each timestep will be determined automatically according to the information checkpointed in the forward run. 
+Actually, any other options related to time step control will not take effect for this reason. 
+
+Lastly one can start the backward run by calling again
+\begin{tabbing}
+TSSolve(TS ts,Vec U);
+\end{tabbing}
+$U$ can be the same vector used in the forward run. It only serves as storage for state variables, which are loaded from checkpointed data.   
+
+Currently TSTHETA (Theta) methods support the sensivity analysis. 
+
+\section{Using explicit methods} 
+
+The sensitivity analysis procedure for explicit methods is similar to that for using implicit methods. 
+A forward run using an explicit solver must be run first, followed by a backward run advancing the sensitivity variables from one step to another. 
+One must provide Jacobian $F_u$   
+\begin{tabbing}
+ TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat,Mat,\\
+                  \>        void*),void *fP);
+\end{tabbing}
+The  arguments for the function \trl{f()} are
+the timestep context, the current time, the location where the
+Jacobian is to be computed, the (approximate) Jacobian matrix, an alternative
+approximate Jacobian matrix used to construct the preconditioner, and the optional
+user-provided context, passed in as \trl{fP}. The user must provide the
+Jacobian as a matrix. 
+
+Note that the Jacobian is not needed in the forward run. In contrast, it is needed by implicit methods both in forward run and backward run.  
+
+ \chapter{Solving Steady-State Problems with Pseudo-Timestepping}
 
 \vspace{.2cm}
 
@@ -5032,7 +5252,7 @@ One can also send arrays or integer arrays via PetscIntView(), PetscRealView() a
 One may start the MATLAB program manually or use the PETSc command
 PetscStartMATLAB\trl{(MPI_Comm,char *machine,char *script,FILE **fp)}; where machine and script may be PETSC\_NULL.
 
-To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/bin/matlab}
+To receive the objects in MATLAB you must first make sure that \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab}
 is in your MATLAB path. Use \trl{p = sopen;} (or \trl{p = sopen(portnum)} if you provided a port number in
 your call to PetscViewerSocketOpen()), then \trl{a = PetscBinaryRead(p);} returns the object you have passed from PETSc.
 PetscBinaryRead() may be called any number of times. Each call should correspond on the PETSc side with
@@ -5091,10 +5311,12 @@ with \trl{PETSC_MATLAB_ENGINE_(MPI_Comm)}.
 
 \section{Using PETSc objects directly in MATLAB}
 
+This code is not currently supported due to lack of interest and usage. If you really want to use this and are interested in maintaining it please contact us.
+
 PETSc must be configured with \trl{--with-shared-libraries} \trl{--with-matlab-engine} \trl{--with-matlab} \trl{[--download-f2cblaslapack]}. The option \trl{--download-f2cblaslapack} must be used if using 64bit MATLAB on LINUX or 64bit MATLAB and the \trl{--download-ml} external package on Apple Mac OS X.
 You can build with or without MPI, but cannot run on more than one process
-There is currently no MPI in the API, the MPI_Comm is not in any of the argument lists but otherwise the argument lists try to mimic the C binding.
-Add \trl{${PETSC_DIR}/bin/matlab/classes} to your MATLAB path.
+There is currently no MPI in the API, the MPI\_Comm is not in any of the argument lists but otherwise the argument lists try to mimic the C binding.
+Add \trl{${PETSC_DIR}/share/petsc/matlab/classes} to your MATLAB path.
 
 In MATLAB use help PETSc to get started using PETSc from MATLAB once you have setup PETSc to support MATLAB.
 
@@ -5139,10 +5361,10 @@ Section \ref{sec_fortran_exceptions}.
 \label{sec_fortran_includes}
 
 The Fortran include files for PETSc are located in the directory
-\trl{${PETSC_DIR}/include/finclude} and should be used via statements
+\trl{${PETSC_DIR}/include/petsc-finclude} and should be used via statements
 such as the following:
 \begin{tabbing}
-    \#include "finclude/includefile.h"
+    \#include "petsc-finclude/includefile.h"
 \end{tabbing}
 Since one must be very careful to include each file no more than once
 in a Fortran routine, application programmers must manually include
@@ -5164,8 +5386,8 @@ makefile.)
 For some of the Fortran 90 functionality of PETSc and type checking
 of PETSc function calls you can use
 \begin{tabbing}
-    \#include "finclude/includefile.h
-    \#include "finclude/includefile.h90"
+    \#include "petsc-finclude/includefile.h
+    \#include "petsc-finclude/includefile.h90"
 \end{tabbing}
 See the manual page UsingFortran for how you can use PETSc Fortran
 module files in your code.
@@ -5213,7 +5435,7 @@ final \trl{ierr} argument.
 Since Fortran 77 does not allow arrays to be returned in routine
 arguments, all PETSc routines that return arrays, such as
 VecGetArray(), MatDenseGetArray(),
-ISGetIndices(), and DMDAGetGlobalIndices()
+and ISGetIndices(), 
 are defined slightly differently in Fortran than in C.
 Instead of returning the array itself, these routines
 accept as input a user-specified array of dimension one and return an
@@ -5232,7 +5454,6 @@ The Fortran interface for several routines is as follows:
    call VecGetArray(x,xx\_v,xx\_i,ierr)\\
    call MatDenseGetArray(A,aa\_v,aa\_i,ierr)\\
    call ISGetIndices(s,ss\_v,ss\_i,ierr)\\
-   call DMDAGetGlobalIndices(d,nloc,dd\_v,dd\_i,ierr)
 \end{tabbing}
 
 To access array elements directly, both the user-specified array and
@@ -5264,8 +5485,7 @@ indexing begins with 1, not 0 (unless the array is declared as \trl{xx_v(0:1)}).
 This is different from the use of VecSetValues()
 where, indexing always starts with 0.
 
-{\em Note}: If using VecGetArray(), MatDenseGetArray(), ISGetIndices(),
-or DMDAGetGlobalIndices()
+{\em Note}: If using VecGetArray(), MatDenseGetArray(), or ISGetIndices(),
 from Fortran, the user {\em must not} compile the Fortran code with options
 to check for ``array entries out of bounds'' (e.g., on the IBM RS/6000 this
 is done with the \trl{-C} compiler option, so never use the \trl{-C} option with this).
@@ -5385,7 +5605,7 @@ manual pages and previous discussion in this chapter for details:
  PetscInitialize(char *filename,int \trl{ierr)}\\
  PetscError(MPI\_COMM,int err,char *message,int \trl{ierr)}\\
  VecGetArray(), MatDenseGetArray()\\
- ISGetIndices(), DMDAGetGlobalIndices()\\
+ ISGetIndices(), \\
  VecDuplicateVecs(), VecDestroyVecs()\\
  PetscOptionsGetString()
 \end{tabbing}
@@ -5408,7 +5628,7 @@ Current routines include:
 \begin{tabbing}
  VecGetArrayF90(), VecRestoreArrayF90()\\
  VecDuplicateVecsF90(), VecDestroyVecsF90()\\
- DMDAVecGetArrayF90(), DMDAGetGlobalIndicesF90()\\
+ DMDAVecGetArrayF90(), ISLocalToGlobalMappingGetIndicesF90()\\
  MatDenseGetArrayF90(), MatDenseRestoreArrayF90()\\
  ISGetIndicesF90(), ISRestoreIndicesF90()
 \end{tabbing}
@@ -5417,7 +5637,7 @@ use the routines VecGetArrayF90(), VecRestoreArrayF90()
 VecDuplicateVecsF90(), and VecDestroyVecsF90(), one must
 use the Fortran90 vector include file,
 \begin{tabbing}
-    \#include "finclude/petscvec.h90"
+    \#include "petsc-finclude/petscvec.h90"
 \end{tabbing}
 Analogous include files for other libraries are \trl{petscdm.h90},
 \trl{petscmat.h90}, and \trl{petscis.h90}.
@@ -6060,7 +6280,7 @@ than the entire executable.  When the execution proceeds to code
 segments that are not in memory, a pagefault occurs, prompting the
 required pages to be loaded from the disk (a very slow process).  This
 activity distorts the results significantly. (The paging effects are
-noticeable in the the log files generated by \trl{-log_mpe}, which is
+noticeable in the log files generated by \trl{-log_mpe}, which is
 described in Section~\ref{sec_mpelogs}.)
 
 To eliminate the effects of paging when profiling the performance of a
@@ -6460,8 +6680,7 @@ For example,
    alias -kspt -ksp\_type\\
    alias -sd -start\_in\_debugger
 \end{tabbing}
-Comments can be placed in the .petscrc file by using one of the
-following symbols in the first column of a line: \trl{#, %}, or \trl{!}.
+Comments can be placed in the .petscrc file by using \trl{#} in the first column of a line.
 
 \subsection{User-Defined PetscOptions}
 
@@ -6997,11 +7216,11 @@ SOURCES += \
 	$$APP_DIR/src/main.cpp
 HEADERS += \
 	$$APP_DIR/src/source1.h \
-	$$APP_DIR/src/source2.h 	
+	$$APP_DIR/src/source2.h
 OTHER_FILES += \
 	$$APP_DIR/src/some_file.cpp \
 	$$APP_DIR/dir/another_file.xyz
-	
+
 \end{lstlisting}
 
 In this example, there are different keywords used. These include:
@@ -7347,8 +7566,8 @@ The first is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraries.
 The most important line in this makefile is the line starting with \trl{include}:
 \begin{tabbing}
-   include  \$\trl{{PETSC_DIR}/conf/variables}
-   include \$\trl{{PETSC_DIR}/conf/rules}
+   include  \$\trl{{PETSC_DIR}/lib/petsc-conf/variables}
+   include \$\trl{{PETSC_DIR}/lib/petsc-conf/rules}
 \end{tabbing}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
@@ -7369,8 +7588,8 @@ within the makefile.
    FPPFLAGS   =
    CLEANFILES = ex2
 
-   include ${PETSC_DIR}/conf/variables
-   include ${PETSC_DIR}/conf/rules
+   include ${PETSC_DIR}/lib/petsc-conf/variables
+   include ${PETSC_DIR}/lib/petsc-conf/rules
 
    ex2: ex2.o chkopts
            ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
@@ -7392,7 +7611,7 @@ include variables instead of base. That is, use something like
    CFLAGS   = ${PETSC_CC_INCLUDES}
    FFLAGS   = ${PETSC_FC_INCLUDES}
 
-   include ${PETSC_DIR}/conf/variables
+   include ${PETSC_DIR}/lib/petsc-conf/variables
 
    ex2: ex2.o
            mylinkercommand -o ex2 ex2.o  ${PETSC_LIB}
@@ -7402,7 +7621,7 @@ include variables instead of base. That is, use something like
 \label{fig_make1var}
 \end{figure}
 The variables \trl{${PETSC_CC_INCLUDES}}, \trl{${PETSC_FC_INCLUDES}}
-and \trl{${PETSC_LIB}} are defined by the included conf/variables file.
+and \trl{${PETSC_LIB}} are defined by the included petsc-conf/variables file.
 
 If you do not wish to include any PETSc makefiles in your makefile,
 you can use the commands (run in the PETSc root directory) to get the information
@@ -7435,8 +7654,8 @@ controls the generation of several example programs.
    CPPFLAGS =
    FPPFLAGS =
 
-   include ${PETSC_DIR}/conf/variables
-   include ${PETSC_DIR}/conf/rules
+   include ${PETSC_DIR}/lib/petsc-conf/variables
+   include ${PETSC_DIR}/lib/petsc-conf/rules
 
    ex1: ex1.o
         -${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
@@ -7469,7 +7688,7 @@ controls the generation of several example programs.
    EXAMPLES_2    = ex4
    EXAMPLES_3    = ex3
 
-   include ${PETSC_DIR}/conf/test
+   include ${PETSC_DIR}/lib/petsc-conf/test
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Several Example Programs}
@@ -7519,8 +7738,8 @@ makefiles, they are also easily used.
    LIBBASE  = libpetscmat\\
    MANSEC   = Mat\\
 
-   include \${PETSC\_DIR}/conf/variables
-   include \${PETSC\_DIR}/conf/rules
+   include \${PETSC\_DIR}/lib/petsc-conf/variables
+   include \${PETSC\_DIR}/lib/petsc-conf/rules
 \end{tabbing}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}
@@ -7939,7 +8158,7 @@ which can also be represented as the DAG
 \caption{The Hasse diagram for our 2D doublet mesh, expressed as a DAG.}
 \label{fig:doubletSieve}
 \end{figure}
-To use the PETSc API, we first consecutively number the mesh pieces. The PETSc convention is to numbers first cells,
+To use the PETSc API, we first consecutively number the mesh pieces. The PETSc convention is to number first cells,
 then vertices, then faces, and then edges, but the user is free to violate this convention. First, we declare the set of
 points present in a mesh,
 \begin{tabbing}
@@ -8025,7 +8244,7 @@ element method,
 Now a PETSc local vector can be created manually using this layout,
 \begin{tabbing}
   PetscSectionGetStorageSize(s, \&n);\\
-  VecSetSizes(localVec, n, PETSC_DETERMINE);\\
+  VecSetSizes(localVec, n, PETSC\_DETERMINE);\\
   VecSetFromOptions(localVec);
 \end{tabbing}
 however it is usually easier to use the DM directly, which also provides global vectors,
@@ -8114,6 +8333,110 @@ methods where we want the data from neighboring cells for each face
 \end{tabbing}
 This kind of calculation is used in TS ex11.
 
+\section{Networks}
+Built on top of \trl{DMPlex}, the \trl{DMNetwork} subclass provides abstractions for representing general unstructured 
+networks such as communication networks, power grid, computer networks, transportation networks, electrical circuits, graphs, and others. 
+
+\subsection{Application flow}
+The general flow of an application code using \trl{DMNetwork} is as follows:
+
+\begin{enumerate}
+  \item Create a network object and a ``component'' library:
+  \begin{tabbing}
+  DMNetworkCreate(MPI\_Comm, DM*);
+  \end{tabbing}
+  creates an empty network object. A ``component'' is specific application data at a node/edge of the network required for its residual evaluation. For example, components could be resistor, inductor data for circuit applications, edge weights for graph problems, generator/transmission line data for power grids. Components are registered by calling
+  \begin{tabbing}
+    DMNetworkRegisterComponent(DM,const char* name, PetscInt size, PetscInt* compkey);
+  \end{tabbing}
+  Here, \trl{name} is the component name,\trl{size} is the size of component data type, and \trl{compkey} is an integer key that can be used for
+  setting/getting the component at a node or an edge.
+  \item Set network size (number of nodes, edges), edge connectivity.
+  \item Set the bare layout (graph) of the network
+  \begin{tabbing}
+    DMNetworkLayoutSetUp(DM dm);
+  \end{tabbing}   
+  \begin{tabbing}
+    DMNetworkSetSizes(DM dm, PetscInt nnodes, PetscInt nedges, PetscInt Nnodes, PetscInt Nedges);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkSetEdgeList(DM dm, int edgeconns[]);
+  \end{tabbing}  
+  \item Set components and number of variables for nodes/edges.
+  \begin{tabbing}
+    DMNetworkAddComponent(DM dm, PetscInt p,PetscInt component,void* component);
+  \end{tabbing}
+  Multiple components can be added at a node/edge.
+  \begin{tabbing}
+    DMNetworkSetNumVariables(DM dm,PetscInt p,PetscInt nvar);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkAddNumVariables(DM dm,PetscInt p,PetscInt nvar);
+   \end{tabbing}
+  \item Signal network ready to be distributed.
+  \begin{tabbing}
+    DMSetUp(DM dm);
+  \end{tabbing}
+  \item Distribute the network (also moves components attached with nodes/edges)
+  \begin{tabbing}
+    DMNetworkDistribute(DM oldDM, const char partitioner[], PetscInt overlap,DM *distDM);
+  \end{tabbing}  
+  \item Hook up the DM with the solver: KSPSetDM, SNESSetDM, TSSetDM
+\end{enumerate}
+
+\subsection{Utility functions}
+  \trl{DMNetwork} provides functions for obtaining iterators for nodes/edges, checking the ``ghost'' 
+  status of a node (vertex), and retrieving local/global indices of node/edge variables for inserting 
+  elements in vectors/matrices.
+  \begin{tabbing}
+    DMNetworkGetEdgeRange(DM dm,PetscInt *eStart,PetscInt *eEnd);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkGetVertexRange(DM dm,PetscInt *vStart, PetscInt *vEnd);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkIsGhostVertex(DM dm,PetscInt p,PetscBool *isghost);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkGetVariableOffset(DM dm,PetscInt p,PetscInt *offset);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkGetVariableGlobalOffset(DM dm,PetscInt p,PetscInt *offsetg);
+  \end{tabbing}
+  In network applications, one frequently needs to find the supporting edges for a node or
+  the connecting nodes covering an edge. These can be obtained by the following two routines.
+  \begin{tabbing}
+    DMNetworkGetConnectedNodes(DM dm,PetscInt edge,const PetscInt *vertices[]);
+  \end{tabbing}
+  \begin{tabbing}
+    DMNetworkGetSupportingEdges(DM dm,PetscInt vertex,PetscInt *nedges,const PetscInt *edges[]) ;
+  \end{tabbing}  
+
+\subsection{Retrieving components}
+The components set at nodes/edges are stored in a container that can be accessed by
+\begin{tabbing}
+   DMNetworkGetComponentDataArray(DM dm,DMNetworkComponentGenericDataType **componentdataarray);
+\end{tabbing}
+  Using \trl{componentdataarray}, individual components set at a node/edge can be retrieved by
+\begin{tabbing}
+ DMNetworkGetComponentTypeOffset(DM dm,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset);
+\end{tabbing}
+\trl{compkey} is the key set by DMNetworkRegisterComponent. An example of accessing and retrieving the components at nodes is:
+
+\begin{tabbing}
+DMNetworkComponentGenericDataType *arr; \\
+PetscInt Start, End, numcomps,offset,key,v,compnum; \\
+\\
+DMNetworkGetComponentDataArray(dm, \&arr); \\
+DMNetworkGetVertexRange(dm,\&Start,\&End); \\
+for(v=Start; v \trl{<} End; v++) \{ \\
+~~DMNetworkGetNumComponents(dm,v,\&numcomps); \\
+~~for(compnum=0; compnum \trl{<} numcomps;compnum++) \{ \\
+~~~~DMNetworkGetComponentTypeOffset(dm,v,compnum,\&key,\&offset); \\
+~~~~compdata = (UserCompDataType)(arr+offset); \\
+~~\} \\
+\}
+\end{tabbing}
 %------------------------------------------------------------------
 
 \cleardoublepage

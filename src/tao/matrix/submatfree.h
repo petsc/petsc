@@ -30,5 +30,5 @@ PetscErrorCode MatGetDiagonal_SMF(Mat,Vec);
 PetscErrorCode MatGetColumnVector_SMF(Mat,Vec, PetscInt);
 PetscErrorCode MatNorm_SMF(Mat,NormType,PetscReal *);
 PetscErrorCode MatGetRowMax_SMF(Mat, Vec);
-PetscErrorCode MatGetRow_SMF(Mat,PetscInt,PetscInt *,const PetscInt **,const PetscReal **);
-PetscErrorCode MatRestoreRow_SMF(Mat,PetscInt,PetscInt *,const PetscInt **,const PetscReal **);
+PetscErrorCode MatGetRow_SMF(Mat,PetscInt,PetscInt *,const PetscInt **,const PetscScalar **);
+PetscErrorCode MatRestoreRow_SMF(Mat,PetscInt,PetscInt *,const PetscInt **,const PetscScalar **);

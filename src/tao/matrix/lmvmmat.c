@@ -2,6 +2,11 @@
 #include <petsctao.h>  /*I "petsctao.h" */
 #include <petscksp.h>
 
+/* This is a vile hack */
+#if defined(PETSC_USE_COMPLEX)
+#define VecDot VecDotRealPart
+#endif
+
 #define TaoMid(a,b,c)    (((a) < (b)) ?                    \
                            (((b) < (c)) ? (b) :            \
                              (((a) < (c)) ? (c) : (a))) :  \
@@ -62,21 +67,23 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
   ctx->delta_max = 100.0;
 
   /*  Begin configuration */
-  ierr = PetscOptionsInt("-tao_lmm_vectors", "vectors to use for approximation", "", ctx->lm, &ctx->lm, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lmm_limit_mu", "mu limiting factor", "", ctx->mu, &ctx->mu, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lmm_limit_nu", "nu limiting factor", "", ctx->nu, &ctx->nu, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lmm_broyden_phi", "phi factor for Broyden scaling", "", ctx->phi, &ctx->phi, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lmm_scalar_alpha", "alpha factor for scalar scaling", "",ctx->s_alpha, &ctx->s_alpha, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lmm_rescale_alpha", "alpha factor for rescaling diagonal", "", ctx->r_alpha, &ctx->r_alpha, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lmm_rescale_beta", "beta factor for rescaling diagonal", "", ctx->r_beta, &ctx->r_beta, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tao_lmm_scalar_history", "amount of history for scalar scaling", "", ctx->scalar_history, &ctx->scalar_history, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-tao_lmm_rescale_history", "amount of history for rescaling diagonal", "", ctx->rescale_history, &ctx->rescale_history, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lmm_eps", "rejection tolerance", "", ctx->eps, &ctx->eps, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_lmm_scale_type", "scale type", "", Scale_Table, MatLMVM_Scale_Types, Scale_Table[ctx->scaleType], &ctx->scaleType, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_lmm_rescale_type", "rescale type", "", Rescale_Table, MatLMVM_Rescale_Types, Rescale_Table[ctx->rScaleType], &ctx->rScaleType, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-tao_lmm_limit_type", "limit type", "", Limit_Table, MatLMVM_Limit_Types, Limit_Table[ctx->limitType], &ctx->limitType, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lmm_delta_min", "minimum delta value", "", ctx->delta_min, &ctx->delta_min, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_lmm_delta_max", "maximum delta value", "", ctx->delta_max, &ctx->delta_max, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,NULL,NULL,NULL);
+  ierr = PetscOptionsInt("-tao_lmm_vectors", "vectors to use for approximation", "", ctx->lm, &ctx->lm,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lmm_limit_mu", "mu limiting factor", "", ctx->mu, &ctx->mu,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lmm_limit_nu", "nu limiting factor", "", ctx->nu, &ctx->nu,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lmm_broyden_phi", "phi factor for Broyden scaling", "", ctx->phi, &ctx->phi,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lmm_scalar_alpha", "alpha factor for scalar scaling", "",ctx->s_alpha, &ctx->s_alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lmm_rescale_alpha", "alpha factor for rescaling diagonal", "", ctx->r_alpha, &ctx->r_alpha,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lmm_rescale_beta", "beta factor for rescaling diagonal", "", ctx->r_beta, &ctx->r_beta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_lmm_scalar_history", "amount of history for scalar scaling", "", ctx->scalar_history, &ctx->scalar_history,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-tao_lmm_rescale_history", "amount of history for rescaling diagonal", "", ctx->rescale_history, &ctx->rescale_history,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lmm_eps", "rejection tolerance", "", ctx->eps, &ctx->eps,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_lmm_scale_type", "scale type", "", Scale_Table, MatLMVM_Scale_Types, Scale_Table[ctx->scaleType], &ctx->scaleType,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_lmm_rescale_type", "rescale type", "", Rescale_Table, MatLMVM_Rescale_Types, Rescale_Table[ctx->rScaleType], &ctx->rScaleType,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-tao_lmm_limit_type", "limit type", "", Limit_Table, MatLMVM_Limit_Types, Limit_Table[ctx->limitType], &ctx->limitType,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lmm_delta_min", "minimum delta value", "", ctx->delta_min, &ctx->delta_min,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_lmm_delta_max", "maximum delta value", "", ctx->delta_max, &ctx->delta_max,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
   
   /*  Complete configuration */
   ctx->rescale_history = PetscMin(ctx->rescale_history, ctx->lm);
@@ -390,7 +397,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
             denom = TAO_ZERO_SAFEGUARD;
           }
 
-          sigmanew = ((2*ctx->s_alpha-1)*ys_sum +  PetscSqrtScalar((2*ctx->s_alpha-1)*(2*ctx->s_alpha-1)*ys_sum*ys_sum - 4*(ctx->s_alpha)*(ctx->s_alpha-1)*yy_sum*ss_sum)) / denom;
+          sigmanew = ((2*ctx->s_alpha-1)*ys_sum +  PetscSqrtReal((2*ctx->s_alpha-1)*(2*ctx->s_alpha-1)*ys_sum*ys_sum - 4*(ctx->s_alpha)*(ctx->s_alpha-1)*yy_sum*ss_sum)) / denom;
         }
 
         switch(ctx->limitType) {
@@ -622,7 +629,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
               denom = TAO_ZERO_SAFEGUARD;
             }
 
-            sigmanew = ((2*ctx->r_alpha-1)*ys_sum + PetscSqrtScalar((2*ctx->r_alpha-1)*(2*ctx->r_alpha-1)*ys_sum*ys_sum - 4*ctx->r_alpha*(ctx->r_alpha-1)*yy_sum*ss_sum)) / denom;
+            sigmanew = ((2*ctx->r_alpha-1)*ys_sum + PetscSqrtReal((2*ctx->r_alpha-1)*(2*ctx->r_alpha-1)*ys_sum*ys_sum - 4*ctx->r_alpha*(ctx->r_alpha-1)*yy_sum*ss_sum)) / denom;
           }
 
           /*  If Q has small values, then Q^(r_beta - 1) */

@@ -29,6 +29,7 @@ const char *const PetscViewerFormats[] = {
   "VTK_VTU",
   "BINARY_MATLAB",
   "NATIVE",
+  "HDF5_VIZ",
   "NOFORMAT",
   "PetscViewerFormat",
   "PETSC_VIEWER_",

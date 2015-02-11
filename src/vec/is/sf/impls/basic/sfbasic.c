@@ -1,4 +1,4 @@
-#define PETSC_DESIRE_COMPLEX
+
 #include <petsc-private/sfimpl.h> /*I "petscsf.h" I*/
 
 typedef struct _n_PetscSFBasicPack *PetscSFBasicPack;
@@ -579,10 +579,11 @@ static PetscErrorCode PetscSFBasicPackTypeSetup(PetscSFBasicPack link,MPI_Dataty
 {
   PetscErrorCode ierr;
   PetscBool      isInt,isPetscInt,isPetscReal,is2Int,is2PetscInt;
+  PetscInt       nPetscIntContig,nPetscRealContig;
 #if defined(PETSC_HAVE_COMPLEX)
   PetscBool isPetscComplex;
+  PetscInt nPetscComplexContig;
 #endif
-  PetscInt       nPetscIntContig,nPetscRealContig,nPetscComplexContig;
 
   PetscFunctionBegin;
   ierr = MPIPetsc_Type_compare(unit,MPI_INT,&isInt);CHKERRQ(ierr);
@@ -776,7 +777,7 @@ static PetscErrorCode PetscSFBasicGetPack(PetscSF sf,MPI_Datatype unit,const voi
   ierr = PetscNew(&link);CHKERRQ(ierr);
   ierr = PetscSFBasicPackTypeSetup(link,unit);CHKERRQ(ierr);
   ierr = PetscMalloc2(rootoffset[nrootranks]*link->unitbytes,&link->root,leafoffset[nleafranks]*link->unitbytes,&link->leaf);CHKERRQ(ierr);
-  ierr = PetscMalloc1((nrootranks+nleafranks),&link->requests);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrootranks+nleafranks,&link->requests);CHKERRQ(ierr);
 
 found:
   link->key  = key;
@@ -830,12 +831,12 @@ static PetscErrorCode PetscSFBasicReclaimPack(PetscSF sf,PetscSFBasicPack *link)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFSetFromOptions_Basic"
-static PetscErrorCode PetscSFSetFromOptions_Basic(PetscSF sf)
+static PetscErrorCode PetscSFSetFromOptions_Basic(PetscOptions *PetscOptionsObject,PetscSF sf)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("PetscSF Basic options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"PetscSF Basic options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

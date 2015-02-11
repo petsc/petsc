@@ -25,6 +25,22 @@ const char       GaussCitation[] = "@article{GolubWelsch1969,\n"
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscQuadratureCreate"
+/*@
+  PetscQuadratureCreate - Create a PetscQuadrature object
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. comm - The communicator for the PetscQuadrature object
+
+  Output Parameter:
+. q  - The PetscQuadrature object
+
+  Level: beginner
+
+.keywords: PetscQuadrature, quadrature, create
+.seealso: PetscQuadratureDestroy(), PetscQuadratureGetData()
+@*/
 PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 {
   PetscErrorCode ierr;
@@ -34,6 +50,7 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
   ierr = DMInitializePackage();CHKERRQ(ierr);
   ierr = PetscHeaderCreate(*q,_p_PetscQuadrature,int,PETSC_OBJECT_CLASSID,"PetscQuadrature","Quadrature","DT",comm,PetscQuadratureDestroy,PetscQuadratureView);CHKERRQ(ierr);
   (*q)->dim       = -1;
+  (*q)->order     = -1;
   (*q)->numPoints = 0;
   (*q)->points    = NULL;
   (*q)->weights   = NULL;
@@ -41,7 +58,59 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscQuadratureDuplicate"
+/*@
+  PetscQuadratureDuplicate - Create a deep copy of the PetscQuadrature object
+
+  Collective on PetscQuadrature
+
+  Input Parameter:
+. q  - The PetscQuadrature object
+
+  Output Parameter:
+. r  - The new PetscQuadrature object
+
+  Level: beginner
+
+.keywords: PetscQuadrature, quadrature, clone
+.seealso: PetscQuadratureCreate(), PetscQuadratureDestroy(), PetscQuadratureGetData()
+@*/
+PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
+{
+  PetscInt         order, dim, Nq;
+  const PetscReal *points, *weights;
+  PetscReal       *p, *w;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(q, 2);
+  ierr = PetscQuadratureCreate(PetscObjectComm((PetscObject) q), r);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*r, order);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, &dim, &Nq, &points, &weights);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nq*dim, &p);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nq, &w);CHKERRQ(ierr);
+  ierr = PetscMemcpy(p, points, Nq*dim * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMemcpy(w, weights, Nq * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*r, dim, Nq, p, w);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscQuadratureDestroy"
+/*@
+  PetscQuadratureDestroy - Destroys a PetscQuadrature object
+
+  Collective on PetscQuadrature
+
+  Input Parameter:
+. q  - The PetscQuadrature object
+
+  Level: beginner
+
+.keywords: PetscQuadrature, quadrature, destroy
+.seealso: PetscQuadratureCreate(), PetscQuadratureGetData()
+@*/
 PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 {
   PetscErrorCode ierr;
@@ -60,7 +129,77 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscQuadratureGetOrder"
+/*@
+  PetscQuadratureGetOrder - Return the quadrature information
+
+  Not collective
+
+  Input Parameter:
+. q - The PetscQuadrature object
+
+  Output Parameter:
+. order - The order of the quadrature, i.e. the highest degree polynomial that is exactly integrated
+
+  Output Parameter:
+
+  Level: intermediate
+
+.seealso: PetscQuadratureSetOrder(), PetscQuadratureGetData(), PetscQuadratureSetData()
+@*/
+PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature q, PetscInt *order)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidPointer(order, 2);
+  *order = q->order;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscQuadratureSetOrder"
+/*@
+  PetscQuadratureSetOrder - Return the quadrature information
+
+  Not collective
+
+  Input Parameters:
++ q - The PetscQuadrature object
+- order - The order of the quadrature, i.e. the highest degree polynomial that is exactly integrated
+
+  Level: intermediate
+
+.seealso: PetscQuadratureGetOrder(), PetscQuadratureGetData(), PetscQuadratureSetData()
+@*/
+PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  q->order = order;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscQuadratureGetData"
+/*@C
+  PetscQuadratureGetData - Returns the data defining the quadrature
+
+  Not collective
+
+  Input Parameter:
+. q  - The PetscQuadrature object
+
+  Output Parameters:
++ dim - The spatial dimension
+. npoints - The number of quadrature points
+. points - The coordinates of each quadrature point
+- weights - The weight of each quadrature point
+
+  Level: intermediate
+
+.keywords: PetscQuadrature, quadrature
+.seealso: PetscQuadratureCreate(), PetscQuadratureSetData()
+@*/
 PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt *npoints, const PetscReal *points[], const PetscReal *weights[])
 {
   PetscFunctionBegin;
@@ -86,6 +225,23 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscQuadratureSetData"
+/*@C
+  PetscQuadratureSetData - Sets the data defining the quadrature
+
+  Not collective
+
+  Input Parameters:
++ q  - The PetscQuadrature object
+. dim - The spatial dimension
+. npoints - The number of quadrature points
+. points - The coordinates of each quadrature point
+- weights - The weight of each quadrature point
+
+  Level: intermediate
+
+.keywords: PetscQuadrature, quadrature
+.seealso: PetscQuadratureCreate(), PetscQuadratureGetData()
+@*/
 PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt npoints, const PetscReal points[], const PetscReal weights[])
 {
   PetscFunctionBegin;
@@ -105,6 +261,20 @@ PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscQuadratureView"
+/*@C
+  PetscQuadratureView - Views a PetscQuadrature object
+
+  Collective on PetscQuadrature
+
+  Input Parameters:
++ q  - The PetscQuadrature object
+- viewer - The PetscViewer object
+
+  Level: beginner
+
+.keywords: PetscQuadrature, quadrature, view
+.seealso: PetscQuadratureCreate(), PetscQuadratureGetData()
+@*/
 PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 {
   PetscInt       q, d;
@@ -320,6 +490,7 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt npoints, Pets
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, npoints);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*q, dim, totpoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -535,6 +706,7 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
   ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, order);CHKERRQ(ierr);
   ierr = PetscQuadratureSetData(*q, dim, npoints, x, w);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

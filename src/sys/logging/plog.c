@@ -176,9 +176,6 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_CHUD)
-#include <CHUD/CHUD.h>
-#endif
 #if defined(PETSC_HAVE_PAPI)
 #include <papi.h>
 int PAPIEventSet = PAPI_NULL;
@@ -212,24 +209,6 @@ PetscErrorCode  PetscLogBegin_Private(void)
   /* Setup default logging structures */
   ierr = PetscStageLogCreate(&petsc_stageLog);CHKERRQ(ierr);
   ierr = PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CHUD)
-  ierr = chudInitialize();CHKERRQ(ierr);
-  ierr = chudAcquireSamplingFacility(CHUD_BLOCKING);CHKERRQ(ierr);
-  ierr = chudSetSamplingDevice(chudCPU1Dev);CHKERRQ(ierr);
-  ierr = chudSetStartDelay(0,chudNanoSeconds);CHKERRQ(ierr);
-  ierr = chudClearPMCMode(chudCPU1Dev,chudUnused);CHKERRQ(ierr);
-  ierr = chudClearPMCs();CHKERRQ(ierr);
-  /* ierr = chudSetPMCMuxPosition(chudCPU1Dev,0,0);CHKERRQ(ierr); */
-  printf("%s\n",chudGetEventName(chudCPU1Dev,PMC_1,193));
-  printf("%s\n",chudGetEventDescription(chudCPU1Dev,PMC_1,193));
-  printf("%s\n",chudGetEventNotes(chudCPU1Dev,PMC_1,193));
-  ierr = chudSetPMCEvent(chudCPU1Dev,PMC_1,193);CHKERRQ(ierr);
-  ierr = chudSetPMCMode(chudCPU1Dev,PMC_1,chudCounter);CHKERRQ(ierr);
-  ierr = chudSetPrivilegeFilter(chudCPU1Dev,PMC_1,chudCountUserEvents);CHKERRQ(ierr);
-  ierr = chudSetPMCEventMask(chudCPU1Dev,PMC_1,0xFE);CHKERRQ(ierr);
-  if (!chudIsEventValid(chudCPU1Dev,PMC_1,193)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Event is not valid %d",193);
-  ierr = chudStartPMCs();CHKERRQ(ierr);
-#endif
 #if defined(PETSC_HAVE_PAPI)
   ierr = PAPI_library_init(PAPI_VER_CURRENT);
   if (ierr != PAPI_VER_CURRENT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot initialize PAPI");
@@ -729,6 +708,9 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
   can either use an existing classid, such as MAT_CLASSID, or create
   their own as shown in the example.
 
+  If an existing event with the same name exists, its event handle is
+  returned instead of creating a new event.
+
   Level: intermediate
 
 .keywords: log, event, register
@@ -745,6 +727,8 @@ PetscErrorCode  PetscLogEventRegister(const char name[],PetscClassId classid,Pet
   PetscFunctionBegin;
   *event = PETSC_DECIDE;
   ierr   = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr   = EventRegLogGetEvent(stageLog->eventLog, name, event);CHKERRQ(ierr);
+  if (*event > 0) PetscFunctionReturn(0);
   ierr   = EventRegLogRegister(stageLog->eventLog, name, classid, event);CHKERRQ(ierr);
   for (stage = 0; stage < stageLog->numStages; stage++) {
     ierr = EventPerfLogEnsureSize(stageLog->stageInfo[stage].eventLog, stageLog->eventLog->numEvents);CHKERRQ(ierr);
@@ -1100,7 +1084,7 @@ M*/
 . name  - The event name
 
   Output Parameter:
-. event - The event
+. event - The event, or -1 if no event with that name exists
 
   Level: intermediate
 
@@ -1257,6 +1241,7 @@ PetscErrorCode  PetscLogView_Detailed(PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"Stages = {}\n");CHKERRQ(ierr);
   for (stage=0; stage<numStages; stage++) {
     ierr = PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"] = {}\n",stageLog->stageInfo[stage].name);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"][\"summary\"] = {}\n",stageLog->stageInfo[stage].name);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&stageLog->stageInfo[stage].eventLog->numEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
     for (event = 0; event < numEvents; event++) {
       ierr = PetscViewerASCIIPrintf(viewer,"Stages[\"%s\"][\"%s\"] = {}\n",stageLog->stageInfo[stage].name,stageLog->eventLog->eventInfo[event].name);CHKERRQ(ierr);

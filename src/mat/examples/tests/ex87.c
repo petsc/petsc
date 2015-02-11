@@ -12,40 +12,47 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
   PetscErrorCode ierr;
-  PetscInt       n = 2,issize;
+  PetscInt       n = 2,issize,M,N;
   PetscMPIInt    rank;
-  IS             is,iss[2];
+  IS             isrow,iscol,irow[n],icol[n];
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+
   ierr = MatCreate(PETSC_COMM_WORLD,&BAIJ);CHKERRQ(ierr);
   ierr = MatSetType(BAIJ,MATMPIBAIJ);CHKERRQ(ierr);
   ierr = MatLoad(BAIJ,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&SBAIJ);CHKERRQ(ierr);
   ierr = MatSetType(SBAIJ,MATMPISBAIJ);CHKERRQ(ierr);
   ierr = MatLoad(SBAIJ,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
-  ierr   = MatGetSize(BAIJ,&issize,0);CHKERRQ(ierr);
-  issize = 9;
-  ierr   = ISCreateStride(PETSC_COMM_SELF,issize,0,1,&is);CHKERRQ(ierr);
-  iss[0] = is;iss[1] = is;
-  ierr   = MatGetSubMatrices(BAIJ,n,iss,iss,MAT_INITIAL_MATRIX,&subBAIJ);CHKERRQ(ierr);
-  ierr   = MatGetSubMatrices(SBAIJ,n,iss,iss,MAT_INITIAL_MATRIX,&subSBAIJ);CHKERRQ(ierr);
+  ierr   = MatGetSize(BAIJ,&M,&N);CHKERRQ(ierr);
+  issize = M/4;
+  ierr   = ISCreateStride(PETSC_COMM_SELF,issize,0,1,&isrow);CHKERRQ(ierr);
+  irow[0] = irow[1] = isrow;
+  issize = N/2;
+  ierr   = ISCreateStride(PETSC_COMM_SELF,issize,0,1,&iscol);CHKERRQ(ierr);
+  icol[0] = icol[1] = iscol;
+  ierr   = MatGetSubMatrices(BAIJ,n,irow,icol,MAT_INITIAL_MATRIX,&subBAIJ);CHKERRQ(ierr);
+
+  /* irow and icol must be same for SBAIJ matrices! */
+  icol[0] = icol[1] = isrow;
+  ierr   = MatGetSubMatrices(SBAIJ,n,irow,icol,MAT_INITIAL_MATRIX,&subSBAIJ);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-#if defined(PETSC_USE_SOCKET_VIEWER)
   if (!rank) {
-    ierr = MatView(subBAIJ[0],PETSC_VIEWER_SOCKET_SELF);CHKERRQ(ierr);
-    ierr = MatView(subSBAIJ[0],PETSC_VIEWER_SOCKET_SELF);CHKERRQ(ierr);
+    ierr = MatView(subBAIJ[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = MatView(subSBAIJ[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
-#endif
 
   /* Free data structures */
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(n,&subBAIJ);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(n,&subSBAIJ);CHKERRQ(ierr);
   ierr = MatDestroy(&BAIJ);CHKERRQ(ierr);

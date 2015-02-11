@@ -15,8 +15,8 @@ EXAMPLESFH         =
 EXAMPLESMATLAB     =
 DIRS		   =
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_TS_LIB}
@@ -33,4 +33,4 @@ ex4: ex4.o  chkopts
 
 TESTEXAMPLES_C_NOCOMPLEX =
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test

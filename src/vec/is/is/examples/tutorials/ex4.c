@@ -33,20 +33,20 @@ int main(int argc,char **argv)
      Map a set of local indices to their global values
   */
   ierr = ISLocalToGlobalMappingApply(mapping,m,input,output);CHKERRQ(ierr);
-  ierr = PetscIntView(m,output,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = PetscIntView(m,output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
      Map some global indices to local, retaining the ones without a local index by -1
   */
   for (i=0; i<13; i++) inglobals[i] = i;
   ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,13,inglobals,NULL,outlocals);CHKERRQ(ierr);
-  ierr = PetscIntView(13,outlocals,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = PetscIntView(13,outlocals,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
      Map some global indices to local, dropping the ones without a local index.
   */
   ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_DROP,13,inglobals,&m,outlocals);CHKERRQ(ierr);
-  ierr = PetscIntView(m,outlocals,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = PetscIntView(m,outlocals,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
      Free the space used by the local to global mapping

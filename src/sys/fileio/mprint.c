@@ -64,10 +64,10 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
 #endif
         break;
       case 'G':
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%%G format is no longer supported, use %%g and caste the argument to double");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%%G format is no longer supported, use %%g and cast the argument to double");
         break;
       case 'F':
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%%F format is no longer supported, use %%g and caste the argument to double");
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%%F format is no longer supported, use %%f and cast the argument to double");
         break;
       default:
         newformat[j++] = format[i];
@@ -425,7 +425,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
 
 .seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf()
-C@*/
+@*/
 PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm,FILE *fd)
 {
   PetscErrorCode ierr;
@@ -651,6 +651,39 @@ PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char st
   ierr = MPI_Bcast(string,len,MPI_BYTE,0,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_CLOSURES)
+int (^SwiftClosure)(const char*) = 0;
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscVFPrintfToString"
+PetscErrorCode  PetscVFPrintfToString(FILE *fd,const char format[],va_list Argp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (fd != stdout && fd != stderr) { /* handle regular files */
+    ierr = PetscVFPrintfDefault(fd,format,Argp);CHKERRQ(ierr);
+  } else {
+    size_t len=8*1024,length;
+    char   buf[len];
+
+    ierr = PetscVSNPrintf(buf,len,format,&length,Argp);CHKERRQ(ierr);
+    ierr = SwiftClosure(buf);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+   Provide a Swift function that processes all the PETSc calls to PetscVFPrintf()
+*/
+PetscErrorCode PetscVFPrintfSetClosure(int (^closure)(const char*))
+{
+  PetscVFPrintf = PetscVFPrintfToString;
+  SwiftClosure  = closure;
+  return 0;
+}
+#endif
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <mex.h>

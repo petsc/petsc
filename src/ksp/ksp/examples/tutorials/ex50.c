@@ -1,4 +1,4 @@
-/*   DM/KSP solving a system of linear equations.
+/*   DMDA/KSP solving a system of linear equations.
      Poisson equation in 2D:
 
      div(grad p) = f,  0 < x,y < 1
@@ -12,10 +12,10 @@
          based on petsc/src/ksp/ksp/examples/tutorials/ex29.c and ex32.c
 
      Example of Usage:
-          ./ex50 -mglevels 3 -ksp_monitor -M 3 -N 3 -ksp_view -dm_view draw -draw_pause -1
-          ./ex50 -M 100 -N 100 -mglevels 1 -mg_levels_0_pc_factor_levels <ilu_levels> -ksp_monitor -cmp_solu
-          ./ex50 -M 100 -N 100 -mglevels 1 -mg_levels_0_pc_type lu -mg_levels_0_pc_factor_shift_type NONZERO -ksp_monitor -cmp_solu
-          mpiexec -n 4 ./ex50 -M 3 -N 3 -ksp_monitor -ksp_view -mglevels 10 -log_summary
+          ./ex50 -da_grid_x 3 -da_grid_y 3 -pc_type mg -da_refine 3 -ksp_monitor -ksp_view -dm_view draw -draw_pause -1
+          ./ex50 -da_grid_x 100 -da_grid_y 100 -pc_type mg  -pc_mg_levels 1 -mg_levels_0_pc_type ilu -mg_levels_0_pc_factor_levels 1 -ksp_monitor -ksp_view
+          ./ex50 -da_grid_x 100 -da_grid_y 100 -pc_type mg -pc_mg_levels 1 -mg_levels_0_pc_type lu -mg_levels_0_pc_factor_shift_type NONZERO -ksp_monitor
+          mpiexec -n 4 ./ex50 -da_grid_x 3 -da_grid_y 3 -pc_type mg -da_refine 10 -ksp_monitor -ksp_view -log_summary
 */
 
 static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";

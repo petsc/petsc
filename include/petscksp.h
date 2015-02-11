@@ -39,6 +39,7 @@ typedef const char* KSPType;
 #define   KSPNASH       "nash"
 #define   KSPSTCG       "stcg"
 #define   KSPGLTR       "gltr"
+#define KSPFCG        "fcg"
 #define KSPGMRES      "gmres"
 #define   KSPFGMRES     "fgmres"
 #define   KSPLGMRES     "lgmres"
@@ -71,6 +72,7 @@ PETSC_EXTERN PetscClassId DMKSP_CLASSID;
 
 PETSC_EXTERN PetscErrorCode KSPCreate(MPI_Comm,KSP *);
 PETSC_EXTERN PetscErrorCode KSPSetType(KSP,KSPType);
+PETSC_EXTERN PetscErrorCode KSPGetType(KSP,KSPType *);
 PETSC_EXTERN PetscErrorCode KSPSetUp(KSP);
 PETSC_EXTERN PetscErrorCode KSPSetUpOnBlocks(KSP);
 PETSC_EXTERN PetscErrorCode KSPSolve(KSP,Vec,Vec);
@@ -81,33 +83,30 @@ PETSC_EXTERN PetscErrorCode KSPSetReusePreconditioner(KSP,PetscBool);
 PETSC_EXTERN PetscErrorCode KSPSetSkipPCSetFromOptions(KSP,PetscBool);
 
 PETSC_EXTERN PetscFunctionList KSPList;
-PETSC_EXTERN PetscBool         KSPRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
 PETSC_EXTERN PetscErrorCode KSPRegister(const char[],PetscErrorCode (*)(KSP));
-PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);
 
-PETSC_EXTERN PetscErrorCode KSPGetType(KSP,KSPType *);
 PETSC_EXTERN PetscErrorCode KSPSetPCSide(KSP,PCSide);
 PETSC_EXTERN PetscErrorCode KSPGetPCSide(KSP,PCSide*);
-PETSC_EXTERN PetscErrorCode KSPGetTolerances(KSP,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPSetTolerances(KSP,PetscReal,PetscReal,PetscReal,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPGetTolerances(KSP,PetscReal*,PetscReal*,PetscReal*,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPSetInitialGuessNonzero(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPGetInitialGuessNonzero(KSP,PetscBool  *);
 PETSC_EXTERN PetscErrorCode KSPSetInitialGuessKnoll(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPGetInitialGuessKnoll(KSP,PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPSetErrorIfNotConverged(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPGetErrorIfNotConverged(KSP,PetscBool  *);
-PETSC_EXTERN PetscErrorCode KSPGetComputeEigenvalues(KSP,PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPSetComputeEigenvalues(KSP,PetscBool );
-PETSC_EXTERN PetscErrorCode KSPGetComputeSingularValues(KSP,PetscBool *);
+PETSC_EXTERN PetscErrorCode KSPGetComputeEigenvalues(KSP,PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPSetComputeSingularValues(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPGetComputeSingularValues(KSP,PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPGetRhs(KSP,Vec *);
 PETSC_EXTERN PetscErrorCode KSPGetSolution(KSP,Vec *);
 PETSC_EXTERN PetscErrorCode KSPGetResidualNorm(KSP,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPGetIterationNumber(KSP,PetscInt*);
 PETSC_EXTERN PetscErrorCode KSPSetNullSpace(KSP,MatNullSpace);
 PETSC_EXTERN PetscErrorCode KSPGetNullSpace(KSP,MatNullSpace*);
-PETSC_EXTERN PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
+PETSC_EXTERN PetscErrorCode KSPCreateVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
+PETSC_DEPRECATED("Use KSPCreateVecs()") PETSC_STATIC_INLINE PetscErrorCode KSPGetVecs(KSP ksp,PetscInt n,Vec **x,PetscInt m,Vec **y) {return KSPCreateVecs(ksp,n,x,m,y);}
 
 PETSC_EXTERN PetscErrorCode KSPSetPreSolve(KSP,PetscErrorCode (*)(KSP,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode KSPSetPostSolve(KSP,PetscErrorCode (*)(KSP,Vec,Vec,void*),void*);
@@ -150,6 +149,28 @@ PETSC_EXTERN PetscErrorCode KSPChebyshevSetNewMatrix(KSP);
 PETSC_EXTERN PetscErrorCode KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPComputeEigenvalues(KSP,PetscInt,PetscReal[],PetscReal[],PetscInt *);
 PETSC_EXTERN PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscReal[],PetscReal[]);
+
+/*E
+
+  KSPFCGTruncationType - Define how stored directions are used to orthogonalize in FCG
+
+  KSP_FCG_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
+  KSP_FCG_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
+
+   Level: intermediate
+
+.seealso : KSPFCG,KSPFCGSetTruncationType(),KSPFCGGetTruncationType()
+
+E*/
+typedef enum {KSP_FCG_TRUNC_TYPE_STANDARD,KSP_FCG_TRUNC_TYPE_NOTAY} KSPFCGTruncationType;
+PETSC_EXTERN const char *const KSPFCGTruncationTypes[];
+
+PETSC_EXTERN PetscErrorCode KSPFCGSetMmax(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPFCGGetMmax(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPFCGSetNprealloc(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPFCGGetNprealloc(KSP,PetscInt*);
+PETSC_EXTERN PetscErrorCode KSPFCGSetTruncationType(KSP,KSPFCGTruncationType);
+PETSC_EXTERN PetscErrorCode KSPFCGGetTruncationType(KSP,KSPFCGTruncationType*);
 
 PETSC_EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGMRESGetRestart(KSP, PetscInt*);
@@ -275,6 +296,8 @@ PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP,PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPView(KSP,PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPLoad(KSP,PetscViewer);
 PETSC_STATIC_INLINE PetscErrorCode KSPViewFromOptions(KSP A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
+PETSC_EXTERN PetscErrorCode KSPReasonView(KSP,PetscViewer);
+PETSC_EXTERN PetscErrorCode KSPReasonViewFromOptions(KSP);
 
 #define KSP_FILE_CLASSID 1211223
 
@@ -293,7 +316,7 @@ PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC,KSP*);
    Each solver only supports a subset of these and some may support different ones
    depending on left or right preconditioning, see KSPSetPCSide()
 
-   Notes: this must match finclude/petscksp.h
+   Notes: this must match petsc-finclude/petscksp.h
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest(), KSPSetPCSide()
@@ -334,7 +357,7 @@ M*/
 
 /*MC
     KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the
-       convergence test routine. This is only supported by  KSPCG, KSPCR, KSPCGNE, KSPCGS
+       convergence test routine. This is only supported by  KSPCG, KSPCR, KSPCGNE, KSPCGS, KSPFCG
 
    Level: advanced
 
@@ -354,7 +377,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
    Notes: See KSPGetConvergedReason() for explanation of each value
 
-   Developer notes: this must match finclude/petscksp.h
+   Developer notes: this must match petsc-finclude/petscksp.h
 
       The string versions of these are KSPConvergedReasons; if you change
       any of the values here also change them that array of names.
@@ -563,12 +586,12 @@ PETSC_EXTERN PetscErrorCode PCPreSolve(PC,KSP);
 PETSC_EXTERN PetscErrorCode PCPostSolve(PC,KSP);
 
 #include <petscdrawtypes.h>
-PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
-PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNorm(KSP,PetscInt,PetscReal,void*);
-PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormDestroy(PetscDrawLG*);
-PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNormCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG*);
-PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNorm(KSP,PetscInt,PetscReal,void*);
-PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNormDestroy(PetscDrawLG*);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormCreate(const char[],const char[],int,int,int,int,PetscObject**);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNorm(KSP,PetscInt,PetscReal,PetscObject*);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormDestroy(PetscObject**);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNormCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscObject**);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNorm(KSP,PetscInt,PetscReal,PetscObject*);
+PETSC_EXTERN PetscErrorCode KSPMonitorLGTrueResidualNormDestroy(PetscObject**);
 PETSC_EXTERN PetscErrorCode KSPMonitorLGRange(KSP,PetscInt,PetscReal,void*);
 
 PETSC_EXTERN PetscErrorCode PCShellSetPreSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
@@ -626,4 +649,6 @@ PETSC_EXTERN PetscErrorCode DMKSPGetComputeRHS(DM,PetscErrorCode(**)(KSP,Vec,voi
 PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM,PetscErrorCode(*)(KSP,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM,PetscErrorCode(**)(KSP,Vec,void*),void*);
 
+PETSC_EXTERN PetscErrorCode DMGlobalToLocalSolve(DM,Vec,Vec);
+PETSC_EXTERN PetscErrorCode DMPlexProjectField(DM, Vec, void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal [], PetscScalar []), InsertMode, Vec);
 #endif

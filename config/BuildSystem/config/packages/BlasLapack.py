@@ -12,10 +12,11 @@ class Configure(config.package.Package):
     self.argDB             = framework.argDB
     self.found             = 0
     self.f2c               = 0  # indicates either the f2c BLAS/LAPACK are used (with or without Fortran compiler) or there is no Fortran compiler (and system BLAS/LAPACK is used)
+    self.mkl               = 0  # indicates BLAS/LAPACK library used is Intel MKL
     self.missingRoutines   = []
     self.separateBlas      = 1
     self.defaultPrecision  = 'double'
-    self.worksonWindows    = 1
+    self.alternativedownload = 'f2cblaslapack'
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -183,28 +184,52 @@ class Configure(config.package.Package):
         dir = os.path.abspath(dir)
       self.framework.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
       self.framework.log.write('Files and directorys in that directory:\n'+str(os.listdir(dir))+'\n')
+
+      # Look for Multi-Threaded MKL for MKL_Pardiso
+      if self.framework.argDB['with-mkl_pardiso'] or 'with-mkl_pardiso-dir' in self.framework.argDB or 'with-mkl_pardiso-lib' in self.framework.argDB:
+        self.logPrintBox('BLASLAPACK: Looking for Multithreaded MKL for Pardiso')
+        for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64',
+                       os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
+          if not os.path.exists(os.path.join(dir,libdir)):
+            self.framework.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
+          else:
+            yield ('User specified MKL-Pardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
+            yield ('User specified MKL-Pardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
+            yield ('User specified MKL-Pardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
+            yield ('User specified MKL-Pardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
+        return
+
+      # Look for Multi-Threaded MKL for MKL_CPardiso
+      if self.framework.argDB['with-mkl_cpardiso'] or 'with-mkl_cpardiso-dir' in self.framework.argDB or 'with-mkl_cpardiso-lib' in self.framework.argDB:
+        self.logPrintBox('BLASLAPACK: Looking for Multithreaded MKL for CPardiso')
+        for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64',
+                       os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
+          if not os.path.exists(os.path.join(dir,libdir)):
+            self.framework.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
+          else:
+            yield ('User specified MKL-CPardiso Intel-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
+            yield ('User specified MKL-CPardiso GNU-Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
+            yield ('User specified MKL-CPardiso Intel-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_intel_thread','iomp5','dl','pthread','m'],1)
+            yield ('User specified MKL-CPardiso GNU-Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_core','mkl_gnu_thread','gomp','dl','pthread','m'],1)
+        return
+
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'), 1)
       f2cLibs = [os.path.join(dir,'libf2cblas.a')]
       if self.libraries.math:
         f2cLibs = f2cLibs+self.libraries.math
       yield ('User specified installation root (F2C)', f2cLibs, os.path.join(dir, 'libf2clapack.a'), 1)
       yield ('User specified installation root', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'), 1)
-      # Check AMD ACML libraries
-      yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml.a'), 1)
-      yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)
-      yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml_mp.a'), 1)
-      yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)
       # Check MATLAB [ILP64] MKL
       yield ('User specified MATLAB [ILP64] MKL Linux lib dir', None, [os.path.join(dir,'bin','glnxa64','mkl.so'), os.path.join(dir,'sys','os','glnxa64','libiomp5.so'), 'pthread'], 1)
       # Some new MKL 11/12 variations
       for libdir in [os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
         if not os.path.exists(os.path.join(dir,libdir)):
-          self.framework.logPrint('MLK Path not found.. skipping: '+os.path.join(dir,libdir))
+          self.framework.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
           yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_sequential','mkl_core','pthread','-lm'],1)
       for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64','']:
         if not os.path.exists(os.path.join(dir,libdir)):
-          self.framework.logPrint('MLK Path not found.. skipping: '+os.path.join(dir,libdir))
+          self.framework.logPrint('MKL Path not found.. skipping: '+os.path.join(dir,libdir))
         else:
           yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_sequential','mkl_core','pthread','-lm'],1)
       # Older Linux MKL checks
@@ -244,6 +269,11 @@ class Configure(config.package.Package):
       mkldir = os.path.join(dir, 'ia64', 'lib')
       yield ('User specified ia64 MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_dll.lib')], 1)
       yield ('User specified MKL10-64 Windows installation root', None, [os.path.join(mkldir, 'mkl_intel_lp64_dll.lib'),'mkl_intel_thread_dll.lib','mkl_core_dll.lib','libiomp5md.lib'], 1)
+      # Check AMD ACML libraries
+      yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml.a'), 1)
+      yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)
+      yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml_mp.a'), 1)
+      yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)
       # Search for atlas
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
@@ -289,7 +319,7 @@ class Configure(config.package.Package):
     for MKL_Version in [os.path.join('MKL','9.0'),os.path.join('MKL','8.1.1'),os.path.join('MKL','8.1'),os.path.join('MKL','8.0.1'),os.path.join('MKL','8.0'),'MKL72','MKL70','MKL61','MKL']:
       mklpath = os.path.join('/cygdrive', 'c', 'Program Files', 'Intel', MKL_Version)
       if not os.path.exists(mklpath):
-        self.framework.logPrint('MLK Path not found.. skipping: '+mklpath)
+        self.framework.logPrint('MKL Path not found.. skipping: '+mklpath)
       else:
         mkldir = os.path.join(mklpath, 'ia32', 'lib')
         yield ('Microsoft Windows, Intel MKL library', None, os.path.join(mkldir,'mkl_c_dll.lib'), 1)
@@ -301,6 +331,10 @@ class Configure(config.package.Package):
     return
 
   def configureLibrary(self):
+
+    if hasattr(self.compilers, 'FC'):
+      self.alternativedownload = 'fblaslapack'
+
     self.functionalBlasLapack = []
     self.foundBlas   = 0
     self.foundLapack = 0
@@ -365,6 +399,12 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_ESSL',1)
     return
 
+  def checkMKL(self):
+    '''Check for Intel MKL library'''
+    if self.libraries.check(self.lapackLibrary, 'mkl_set_num_threads'):
+      self.mkl = 1
+    return
+
   def checkPESSL(self):
     '''Check for the IBM PESSL library - and error out - if used instead of ESSL'''
     if self.libraries.check(self.lapackLibrary, 'ipessl'):
@@ -420,11 +460,65 @@ class Configure(config.package.Package):
         self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
     return
 
+  def runTimeTest(self,name,includes,body,lib = None):
+    '''Either runs a test or adds it to the batch of runtime tests'''
+    if name in self.framework.argDB: return self.framework.argDB[name]
+    if self.framework.argDB['with-batch']:
+      self.framework.addBatchInclude(includes)
+      self.framework.addBatchBody(body)
+      if lib: self.framework.addBatchLib(lib)
+      return None
+    else:
+      result = None
+      self.pushLanguage('C')
+      filename = 'runtimetestoutput'
+      body = '''FILE *output = fopen("'''+filename+'''","w");\n'''+body
+      if lib:
+        if not isinstance(lib, list): lib = [lib]
+        oldLibs  = self.compilers.LIBS
+        self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+      if self.checkRun(includes, body) and os.path.exists(filename):
+        f    = file(filename)
+        out  = f.read()
+        f.close()
+        os.remove(filename)
+        result = out.split("=")[1].split("'")[0]
+      self.popLanguage()
+      if lib:
+        self.compilers.LIBS = oldLibs
+      return result
+
+  def checksdotreturnsdouble(self):
+    '''Determines if BLAS sdot routine returns a float or a double'''
+    self.framework.log.write('Checking if sdot() returns a float or a double\n')
+    includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
+    body     = '''extern float '''+self.compilers.mangleFortranFunction('sdot')+'''(int*,float*,int *,float*,int*);\n
+                  float x1[1] = {3.0};\n
+                  int one1 = 1;\n
+                  float sdotresult = '''+self.compilers.mangleFortranFunction('sdot')+'''(&one1,x1,&one1,x1,&one1);\n
+                  fprintf(output, "  '--known-sdot-returns-double=%d',\\n",(sdotresult != 9.0));\n'''
+    result = self.runTimeTest('known-sdot-returns-double',includes,body,self.dlib)
+    if result:
+      result = int(result)
+      if result: self.addDefine('BLASLAPACK_SDOT_RETURNS_DOUBLE', 1)
+    self.framework.log.write('Checking if snrm() returns a float or a double\n')
+    includes = '''#include <sys/types.h>\n#if STDC_HEADERS\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n#endif\n'''
+    body     = '''extern float '''+self.compilers.mangleFortranFunction('snrm2')+'''(int*,float*,int*);\n
+                  float x2[1] = {3.0};\n
+                  int one2 = 1;\n
+                  float normresult = '''+self.compilers.mangleFortranFunction('snrm2')+'''(&one2,x2,&one2);\n
+                  fprintf(output, "  '--known-snrm2-returns-double=%d',\\n",(normresult != 3.0));\n'''
+    result = self.runTimeTest('known-snrm2-returns-double',includes,body,self.dlib)
+    if result:
+      result = int(result)
+      if result: self.addDefine('BLASLAPACK_SNRM2_RETURNS_DOUBLE', 1)
+
   def configure(self):
     self.executeTest(self.configureLibrary)
     self.executeTest(self.check64BitBLASIndices)
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkPESSL)
+    self.executeTest(self.checkMKL)
     self.executeTest(self.checkMissing)
     self.executeTest(self.checklsame)
     if self.framework.argDB['with-shared-libraries']:
@@ -434,6 +528,7 @@ class Configure(config.package.Package):
       elif hasattr(self.compilers, 'FC'):
         symbol = self.compilers.mangleFortranFunction(symbol)
       if not self.setCompilers.checkIntoShared(symbol,self.lapackLibrary+self.getOtherLibs()):
-        raise RuntimeError('The BLAS/LAPACK libraries '+self.libraries.toStringNoDupes(self.lapackLibrary+self.getOtherLibs())+'\ncannot used with a shared library\nEither run ./configure with --with-shared-libraries=0 or use a different BLAS/LAPACK library');
+        raise RuntimeError('The BLAS/LAPACK libraries '+self.libraries.toStringNoDupes(self.lapackLibrary+self.getOtherLibs())+'\ncannot be used with a shared library\nEither run ./configure with --with-shared-libraries=0 or use a different BLAS/LAPACK library');
+    self.executeTest(self.checksdotreturnsdouble)
     return
 

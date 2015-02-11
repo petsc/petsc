@@ -27,20 +27,6 @@ typedef const char *PetscSFType;
 #define PETSCSFBASIC  "basic"
 #define PETSCSFWINDOW "window"
 
-/*S
-   PetscSFNode - specifier of owner and index
-
-   Level: beginner
-
-  Concepts: indexing, stride, distribution
-
-.seealso: PetscSFSetGraph()
-S*/
-typedef struct {
-  PetscInt rank;                /* Rank of owner */
-  PetscInt index;               /* Index of node on rank */
-} PetscSFNode;
-
 /*E
     PetscSFWindowSyncType - Type of synchronization for PETSCSFWINDOW
 
@@ -70,7 +56,6 @@ typedef enum {PETSCSF_DUPLICATE_CONFONLY,PETSCSF_DUPLICATE_RANKS,PETSCSF_DUPLICA
 PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
 
 PETSC_EXTERN PetscFunctionList PetscSFList;
-PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],PetscErrorCode (*)(PetscSF));
 
 PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(void);

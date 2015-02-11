@@ -229,15 +229,14 @@ static PetscErrorCode TaoDestroy_BMRM(Tao tao)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BMRM"
-static PetscErrorCode TaoSetFromOptions_BMRM(Tao tao)
+static PetscErrorCode TaoSetFromOptions_BMRM(PetscOptions *PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
   TAO_BMRM*      bmrm = (TAO_BMRM*)tao->data;
-  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("BMRM for regularized risk minimization");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_bmrm_lambda", "regulariser weight","", 100,&bmrm->lambda,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"BMRM for regularized risk minimization");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_bmrm_lambda", "regulariser weight","", 100,&bmrm->lambda,NULL); CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -260,10 +259,18 @@ static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
 }
 
 /*------------------------------------------------------------*/
-EXTERN_C_BEGIN
+/*MC
+  TAOBMRM - bundle method for regularized risk minimization
+
+  Options Database Keys:
+. - tao_bmrm_lambda - regulariser weight
+
+  Level: beginner
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoCreate_BMRM"
-PetscErrorCode TaoCreate_BMRM(Tao tao)
+PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
 {
   TAO_BMRM       *bmrm;
   PetscErrorCode ierr;
@@ -289,7 +296,6 @@ PetscErrorCode TaoCreate_BMRM(Tao tao)
 
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "init_df_solver"

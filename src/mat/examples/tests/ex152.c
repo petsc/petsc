@@ -38,6 +38,9 @@ int main(int argc, char *argv[])
   char           fname[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN] = "";
 
   PetscInitialize(&argc,&argv,NULL,help);
+#if defined(PETSC_USE_64BIT_INDICES)
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"This example only works with 32 bit indices\n");
+#endif
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
@@ -46,7 +49,7 @@ int main(int argc, char *argv[])
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -prefix");CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscMalloc1((size+1),&vtxdist);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size+1,&vtxdist);CHKERRQ(ierr);
 
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s.%d.graph",prefix,rank);CHKERRQ(ierr);
 
@@ -56,7 +59,7 @@ int main(int argc, char *argv[])
 
   ni = vtxdist[rank+1]-vtxdist[rank];
 
-  ierr = PetscMalloc1((ni+1),&xadj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ni+1,&xadj);CHKERRQ(ierr);
 
   fread(xadj, sizeof(idx_t), ni+1, fp);
 

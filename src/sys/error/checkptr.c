@@ -1,4 +1,5 @@
 #include <petsc-private/petscimpl.h>
+#include <petscvalgrind.h>
 
 static PetscInt petsc_checkpointer_intensity = 1;
 
@@ -100,7 +101,7 @@ PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
       break;
     }
     case PETSC_CHAR:{
-      PETSC_UNUSED char *x = *(char*volatile*)ptr;
+      PETSC_UNUSED char x = *(volatile char*)ptr;
       break;
     }
     case PETSC_OBJECT:{

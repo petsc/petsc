@@ -949,8 +949,6 @@ PetscErrorCode L_2Error(DM da, Vec fVec, PetscReal *error, AppCtx *user)
   }
 
   ierr = DMDAVecRestoreArray(da, fLocalVec, &f);CHKERRQ(ierr);
-  /* ierr = DMLocalToGlobalBegin(da,xLocalVec,ADD_VALUES,xVec);CHKERRQ(ierr); */
-  /* ierr = DMLocalToGlobalEnd(da,xLocalVec,ADD_VALUES,xVec);CHKERRQ(ierr); */
   ierr = DMRestoreLocalVector(da, &fLocalVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

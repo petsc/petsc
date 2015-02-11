@@ -29,12 +29,12 @@
             <li><a href="referencing.html">Citing PETSc</a></li>
             <li><a href="tutorials/index.html">Tutorials</a></li>
             <li><a href="installation.html">Installation</a></li>
-            <li><a href="SAWs.html">SAWs</a></li>
+            <li><a href="saws.html">SAWs</a></li>
             <li><a href="changes/index.html">Changes</a></li>
             <li><a href="bugreporting.html">Bug Reporting</a></li>
             <li><a href="codemanagement.html">Code Management</a></li>
             <li><a href="faq.html">FAQ</a></li>
-            <li><a href="copyright.html">License</a></li>
+            <li><a href="license.html">License</a></li>
             <li><span class="current">Linear Solver Table</span></li>
           </ul>
         </li>
@@ -65,7 +65,7 @@
         <thead>
           <tr>
             <th>Algorithm</th>
-            <th><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESType.html">Name of solver</a></th>
+            <th><a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESType.html">Name of solver</a></th>
           </tr>
             <th></th>
         </thead>
@@ -87,7 +87,7 @@
           <tr>
             <td>Newton's method</td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESNEWTONLS.html">newtonls</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESNEWTONLS.html">newtonls</a>
             </td>
             <th>Use -snes_mf for matrix-free linear solvers</th>
           </tr>
@@ -95,7 +95,7 @@
           <tr>
             <td>Newton's method with trust region<a href="#nolinesearch">*</a></td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESNEWTONTR.html">newtontr</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESNEWTONTR.html">newtontr</a>
             </td>
             <th></th>
           </tr>
@@ -103,7 +103,7 @@
           <tr>
             <td>Single linearization<a href="#nolinesearch">*</a></td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESKSPONLY.html">ksponly</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESKSPONLY.html">ksponly</a>
             </td>
             <th>Essentially one step of Newtwon without a line search</th>
           </tr>
@@ -111,7 +111,7 @@
           <tr>
             <td>Quasi-Newton method (BFGS)</td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESNEWTONQN.html">qn</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESNEWTONQN.html">qn</a>
             </td>
             <th></th>
           </tr>
@@ -119,7 +119,7 @@
           <tr>
             <td>Nonlinear CG</td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESNCG.html">ncg</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESNCG.html">ncg</a>
             </td>
             <th>Requires nearly symmetric Jacobian for good convergence</th>
           </tr>
@@ -127,7 +127,7 @@
           <tr>
             <td>Nonlinear GMRES</td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESNGMRES.html">ngmres</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESNGMRES.html">ngmres</a>
             </td>
             <th></th>
           </tr>
@@ -135,7 +135,7 @@
           <tr>
             <td>Anderson mixing</td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESANDERSON.html">anderson</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESANDERSON.html">anderson</a>
             </td>
             <th></th>
           </tr>
@@ -143,7 +143,7 @@
           <tr>
             <td>Nonlinear Richardson</td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESNRICHARDSON.html">nrichardson</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESNRICHARDSON.html">nrichardson</a>
             </td>
             <th></th>
           </tr>
@@ -151,7 +151,7 @@
           <tr>
             <td>Nonlinear Gauss-Siedel<a href="#nolinesearch">*</td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESNGS.html">ngs</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESNGS.html">ngs</a>
             </td>
             <th></th>
           </tr>
@@ -159,7 +159,7 @@
           <tr>
             <td>Full Approximation Scheme (nonlinear multigrid)</td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESFAS.html">fas</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESFAS.html">fas</a>
             </td>
             <th></th>
           </tr>
@@ -167,7 +167,7 @@
           <tr>
             <td>Nonlinear additive Schwarz method<a href="#nolinesearch">*</td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESNASM.html">nasm</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESNASM.html">nasm</a>
             </td>
             <th></th>
           </tr>
@@ -175,7 +175,7 @@
           <tr>
             <td>Nonlinear additive Schwarz preconditioned inexact Newton (ASPIN) methods</td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESASPIN.html">aspin</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESASPIN.html">aspin</a>
             </td>
             <th></th>
           </tr>
@@ -183,7 +183,7 @@
           <tr>
             <td>Composite; combine several nonlinear solvers</td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESCOMPOSITE.html">composite</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESCOMPOSITE.html">composite</a>
             </td>
             <th></th>
           </tr>
@@ -191,7 +191,7 @@
           <tr>
             <td>Preconditioned nonlinear solver/td>
             <td>
-              <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/SNES/SNESGetPC.html">SNESGetPC()</a>
+              <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESGetPC.html">SNESGetPC()</a>
             </td>
             <th>Can be combined to accelerate many of the solvers</th>
           </tr>

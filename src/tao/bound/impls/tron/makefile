@@ -3,13 +3,13 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = tron.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = tron.h
 LIBBASE  = libpetsctao
-MANSEC   = 
+MANSEC   = Tao
 LOCDIR   = src/tao/bound/impls/tron/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test
 
