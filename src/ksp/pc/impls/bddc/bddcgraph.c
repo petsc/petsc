@@ -433,29 +433,35 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     ierr = MPI_Waitall(sum_requests,recv_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
     ierr = MPI_Waitall(sum_requests,send_requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
     for (j=0;j<buffer_size;) {
-       ierr = ISGlobalToLocalMappingApply(graph->l2gmap,IS_GTOLM_MASK,recv_buffer[j],&recv_buffer[j+1],&recv_buffer[j],&recv_buffer[j+1]);CHKERRQ(ierr);
-       /* we need to adapt the output of GlobalToLocal mapping if there are mirrored nodes */
-       if (graph->mirrors) {
-         PetscBool mirrored_found=PETSC_FALSE;
-         for (k=0;k<recv_buffer[j];k++) {
-           if (graph->mirrors[recv_buffer[j+k+1]]) {
-             mirrored_found=PETSC_TRUE;
-             recv_buffer[j+k+1]=graph->mirrors_set[recv_buffer[j+k+1]][0];
-           }
-         }
-         if (mirrored_found) {
-           ierr = PetscSortInt(recv_buffer[j],&recv_buffer[j+1]);CHKERRQ(ierr);
-           k=0;
-           while (k<recv_buffer[j]) {
-             for (s=1;s<graph->mirrors[recv_buffer[j+1+k]];s++) {
-               recv_buffer[j+1+k+s] = graph->mirrors_set[recv_buffer[j+1+k]][s];
-             }
-             k+=graph->mirrors[recv_buffer[j+1+k]]+s;
-           }
-         }
-       }
-       k = recv_buffer[j]+1;
-       j += k;
+      PetscInt rbs = recv_buffer[j];
+
+      ierr = ISGlobalToLocalMappingApply(graph->l2gmap,IS_GTOLM_DROP,rbs,&recv_buffer[j+1],&recv_buffer[j],&recv_buffer[j+1]);CHKERRQ(ierr);
+      if (rbs != recv_buffer[j]) {
+        SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Mapped received buffer size %d differs from input size %d\n",rbs,recv_buffer[j]);
+      }
+      /* we need to adapt the output of GlobalToLocal mapping if there are mirrored nodes */
+      if (graph->mirrors) {
+        PetscBool mirrored_found=PETSC_FALSE;
+        for (k=0;k<recv_buffer[j];k++) {
+          if (graph->mirrors[recv_buffer[j+k+1]]) {
+            mirrored_found=PETSC_TRUE;
+            recv_buffer[j+k+1]=graph->mirrors_set[recv_buffer[j+k+1]][0];
+          }
+        }
+        if (mirrored_found) {
+          ierr = PetscSortInt(recv_buffer[j],&recv_buffer[j+1]);CHKERRQ(ierr);
+          k=0;
+          while (k<recv_buffer[j]) {
+            PetscInt nmir = graph->mirrors[recv_buffer[j+1+k]];
+            for (s=1;s<nmir;s++) {
+              recv_buffer[j+1+k+s] = graph->mirrors_set[recv_buffer[j+1+k]][s];
+            }
+            k += nmir;
+          }
+        }
+      }
+      k = recv_buffer[j]+1;
+      j += k;
     }
     sum_requests = cum_recv_counts[graph->n_subsets];
     start_of_recv = 0;
