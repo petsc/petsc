@@ -202,14 +202,15 @@ PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact,Mat A,const MatFactorInfo *i
 #define __FUNCT__ "MatSolve_SeqDense"
 PetscErrorCode MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
-  PetscErrorCode ierr;
-  PetscScalar    *x,*y;
-  PetscBLASInt   one = 1,info,m;
+  Mat_SeqDense      *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode    ierr;
+  const PetscScalar *x;
+  PetscScalar       *y;
+  PetscBLASInt      one = 1,info,m;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscMemcpy(y,x,A->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
   if (A->factortype == MAT_FACTOR_LU) {
@@ -227,7 +228,7 @@ PetscErrorCode MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
     if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"POTRS Bad solve");
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*A->cmap->n*A->cmap->n - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -284,14 +285,15 @@ PetscErrorCode MatMatSolve_SeqDense(Mat A,Mat B,Mat X)
 #define __FUNCT__ "MatSolveTranspose_SeqDense"
 PetscErrorCode MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
-  PetscErrorCode ierr;
-  PetscScalar    *x,*y;
-  PetscBLASInt   one = 1,info,m;
+  Mat_SeqDense      *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode    ierr;
+  const PetscScalar *x;
+  PetscScalar       *y;
+  PetscBLASInt      one = 1,info,m;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscMemcpy(y,x,A->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
   /* assume if pivots exist then use LU; else Cholesky */
@@ -310,7 +312,7 @@ PetscErrorCode MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
     if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"POTRS - Bad solve");
 #endif
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*A->cmap->n*A->cmap->n - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -320,15 +322,16 @@ PetscErrorCode MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatSolveAdd_SeqDense"
 PetscErrorCode MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
-  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
-  PetscErrorCode ierr;
-  PetscScalar    *x,*y,sone = 1.0;
-  Vec            tmp = 0;
-  PetscBLASInt   one = 1,info,m;
+  Mat_SeqDense      *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode    ierr;
+  const PetscScalar *x;
+  PetscScalar       *y,sone = 1.0;
+  Vec               tmp = 0;
+  PetscBLASInt      one = 1,info,m;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   if (yy == zz) {
@@ -359,7 +362,7 @@ PetscErrorCode MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   } else {
     ierr = VecAXPY(yy,sone,zz);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*A->cmap->n*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -369,16 +372,17 @@ PetscErrorCode MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatSolveTransposeAdd_SeqDense"
 PetscErrorCode MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
-  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
-  PetscErrorCode ierr;
-  PetscScalar    *x,*y,sone = 1.0;
-  Vec            tmp;
-  PetscBLASInt   one = 1,info,m;
+  Mat_SeqDense      *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode    ierr;
+  const PetscScalar *x;
+  PetscScalar       *y,sone = 1.0;
+  Vec               tmp;
+  PetscBLASInt      one = 1,info,m;
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp);CHKERRQ(ierr);
@@ -408,7 +412,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   } else {
     ierr = VecAXPY(yy,sone,zz);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*A->cmap->n*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1277,34 +1281,35 @@ PetscErrorCode MatGetDiagonal_SeqDense(Mat A,Vec v)
 #define __FUNCT__ "MatDiagonalScale_SeqDense"
 PetscErrorCode MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
 {
-  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
-  PetscScalar    *l,*r,x,*v;
-  PetscErrorCode ierr;
-  PetscInt       i,j,m = A->rmap->n,n = A->cmap->n;
+  Mat_SeqDense      *mat = (Mat_SeqDense*)A->data;
+  const PetscScalar *l,*r;
+  PetscScalar       x,*v;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,m = A->rmap->n,n = A->cmap->n;
 
   PetscFunctionBegin;
   if (ll) {
     ierr = VecGetSize(ll,&m);CHKERRQ(ierr);
-    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(ll,&l);CHKERRQ(ierr);
     if (m != A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Left scaling vec wrong size");
     for (i=0; i<m; i++) {
       x = l[i];
       v = mat->v + i;
       for (j=0; j<n; j++) { (*v) *= x; v+= m;}
     }
-    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(ll,&l);CHKERRQ(ierr);
     ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
   }
   if (rr) {
     ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
-    ierr = VecGetArray(rr,&r);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(rr,&r);CHKERRQ(ierr);
     if (n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Right scaling vec wrong size");
     for (i=0; i<n; i++) {
       x = r[i];
       v = mat->v + i*m;
       for (j=0; j<m; j++) (*v++) *= x;
     }
-    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(rr,&r);CHKERRQ(ierr);
     ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
