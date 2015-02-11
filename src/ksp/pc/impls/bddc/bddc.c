@@ -982,32 +982,35 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   pcbddc->rhs_change = PETSC_FALSE;
 
   /* Take into account zeroed rows -> change rhs and store solution removed */
-  if (rhs && pcbddc->DirichletBoundariesLocal) {
-    IS                dirIS;
-    Mat_IS            *matis = (Mat_IS*)pc->pmat->data;
-    PetscInt          dirsize,i,*is_indices;
-    PetscScalar       *array_x;
-    const PetscScalar *array_diagonal;
+  if (rhs) {
+    IS dirIS = NULL;
 
     /* DirichletBoundariesLocal may not be consistent among neighbours */
     ierr = PCBDDCGraphGetDirichletDofs(pcbddc->mat_graph,&dirIS);CHKERRQ(ierr);
-    ierr = MatGetDiagonal(pc->pmat,pcis->vec1_global);CHKERRQ(ierr);
-    ierr = VecPointwiseDivide(pcis->vec1_global,rhs,pcis->vec1_global);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(matis->ctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(dirIS,&dirsize);CHKERRQ(ierr);
-    ierr = VecGetArray(pcis->vec1_N,&array_x);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(pcis->vec2_N,&array_diagonal);CHKERRQ(ierr);
-    ierr = ISGetIndices(dirIS,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    for (i=0; i<dirsize; i++) array_x[is_indices[i]] = array_diagonal[is_indices[i]];
-    ierr = ISRestoreIndices(dirIS,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(pcis->vec2_N,&array_diagonal);CHKERRQ(ierr);
-    ierr = VecRestoreArray(pcis->vec1_N,&array_x);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    pcbddc->rhs_change = PETSC_TRUE;
+    if (dirIS) {
+      Mat_IS            *matis = (Mat_IS*)pc->pmat->data;
+      PetscInt          dirsize,i,*is_indices;
+      PetscScalar       *array_x;
+      const PetscScalar *array_diagonal;
+
+      ierr = MatGetDiagonal(pc->pmat,pcis->vec1_global);CHKERRQ(ierr);
+      ierr = VecPointwiseDivide(pcis->vec1_global,rhs,pcis->vec1_global);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->ctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->ctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(dirIS,&dirsize);CHKERRQ(ierr);
+      ierr = VecGetArray(pcis->vec1_N,&array_x);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(pcis->vec2_N,&array_diagonal);CHKERRQ(ierr);
+      ierr = ISGetIndices(dirIS,(const PetscInt**)&is_indices);CHKERRQ(ierr);
+      for (i=0; i<dirsize; i++) array_x[is_indices[i]] = array_diagonal[is_indices[i]];
+      ierr = ISRestoreIndices(dirIS,(const PetscInt**)&is_indices);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(pcis->vec2_N,&array_diagonal);CHKERRQ(ierr);
+      ierr = VecRestoreArray(pcis->vec1_N,&array_x);CHKERRQ(ierr);
+      ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      pcbddc->rhs_change = PETSC_TRUE;
+    }
     ierr = ISDestroy(&dirIS);CHKERRQ(ierr);
   }
 
@@ -1300,7 +1303,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCBDDCConstraintsSetUp(pc);CHKERRQ(ierr);
     /* Allocate needed local vectors (which depends on quantities defined during ConstraintsSetUp) */
     ierr = PCBDDCSetUpLocalWorkVectors(pc);CHKERRQ(ierr);
+  }
 
+  if (computesolvers || pcbddc->new_primal_space) {
     if (pcbddc->use_change_of_basis) {
       PC_IS *pcis = (PC_IS*)(pc->data);
 
@@ -1312,14 +1317,13 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_BB);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_I_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_IB);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_BI);CHKERRQ(ierr);
+      /* set flag in pcis to not reuse submatrices during PCISCreate */
+      pcis->reusesubmatrices = PETSC_FALSE;
     } else if (!pcbddc->user_ChangeOfBasisMatrix) {
       ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
       pcbddc->local_mat = matis->A;
     }
-  }
-
-  if (computesolvers || pcbddc->new_primal_space) {
     /* SetUp coarse and local Neumann solvers */
     ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
     /* SetUp Scaling operator */

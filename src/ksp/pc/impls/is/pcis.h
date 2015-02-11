@@ -73,6 +73,7 @@ typedef struct {
   /* proc[k].loc_to_glob(proc[k].shared[i][m]) == proc[l].loc_to_glob(proc[l].shared[j][m])   */
   /* for all 0 <= m < proc[k].n_shared[i], or equiv'ly, for all 0 <= m < proc[l].n_shared[j]  */
   ISLocalToGlobalMapping BtoNmap;
+  PetscBool reusesubmatrices;
 } PC_IS;
 
 PETSC_EXTERN PetscErrorCode PCISSetUp(PC pc, PetscBool computesolvers);

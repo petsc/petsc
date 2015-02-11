@@ -225,7 +225,7 @@ PetscErrorCode  PCISSetUp(PC pc, PetscBool computesolvers)
         [ A_BI | A_BB ]
   */
   reuse = MAT_INITIAL_MATRIX;
-  if (pc->setupcalled) {
+  if (pcis->reusesubmatrices && pc->setupcalled) {
     if (pc->flag == SAME_NONZERO_PATTERN) {
       reuse = MAT_REUSE_MATRIX;
     } else {
@@ -415,35 +415,35 @@ PetscErrorCode  PCISCreate(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  pcis->is_B_local  = 0;
-  pcis->is_I_local  = 0;
-  pcis->is_B_global = 0;
-  pcis->is_I_global = 0;
-  pcis->A_II        = 0;
-  pcis->A_IB        = 0;
-  pcis->A_BI        = 0;
-  pcis->A_BB        = 0;
-  pcis->D           = 0;
-  pcis->ksp_N       = 0;
-  pcis->ksp_D       = 0;
-  pcis->vec1_N      = 0;
-  pcis->vec2_N      = 0;
-  pcis->vec1_D      = 0;
-  pcis->vec2_D      = 0;
-  pcis->vec3_D      = 0;
-  pcis->vec1_B      = 0;
-  pcis->vec2_B      = 0;
-  pcis->vec3_B      = 0;
-  pcis->vec1_global = 0;
-  pcis->work_N      = 0;
-  pcis->global_to_D = 0;
-  pcis->N_to_B      = 0;
-  pcis->global_to_B = 0;
-  pcis->mapping     = 0;
-  pcis->BtoNmap     = 0;
-  pcis->n_neigh     = -1;
-
-  pcis->scaling_factor = 1.0;
+  pcis->is_B_local       = 0;
+  pcis->is_I_local       = 0;
+  pcis->is_B_global      = 0;
+  pcis->is_I_global      = 0;
+  pcis->A_II             = 0;
+  pcis->A_IB             = 0;
+  pcis->A_BI             = 0;
+  pcis->A_BB             = 0;
+  pcis->D                = 0;
+  pcis->ksp_N            = 0;
+  pcis->ksp_D            = 0;
+  pcis->vec1_N           = 0;
+  pcis->vec2_N           = 0;
+  pcis->vec1_D           = 0;
+  pcis->vec2_D           = 0;
+  pcis->vec3_D           = 0;
+  pcis->vec1_B           = 0;
+  pcis->vec2_B           = 0;
+  pcis->vec3_B           = 0;
+  pcis->vec1_global      = 0;
+  pcis->work_N           = 0;
+  pcis->global_to_D      = 0;
+  pcis->N_to_B           = 0;
+  pcis->global_to_B      = 0;
+  pcis->mapping          = 0;
+  pcis->BtoNmap          = 0;
+  pcis->n_neigh          = -1;
+  pcis->scaling_factor   = 1.0;
+  pcis->reusesubmatrices = PETSC_TRUE;
   /* composing functions */
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetUseStiffnessScaling_C",PCISSetUseStiffnessScaling_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetSubdomainScalingFactor_C",PCISSetSubdomainScalingFactor_IS);CHKERRQ(ierr);
