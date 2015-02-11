@@ -54,7 +54,7 @@ Input parameters include:\n";
    in the equation G(u',u,t) = F(u,t),
 
               dG   dG
-   J(G) = a * -- - --
+   J(G) = a * -- + --
               du'  du
 
    where d is the partial derivative. In this example,
@@ -65,7 +65,7 @@ Input parameters include:\n";
 
    dG   [ 0                       ;         0         ]
    -- = [                                             ]
-   du   [ -mu*(1.0 + 2.0*u_1*u_2) ; mu*(1-u_1*u_1)    ]
+   du   [ mu*(1.0 + 2.0*u_1*u_2) ; -mu*(1-u_1*u_1)    ]
 
    Hence,
 
@@ -83,14 +83,12 @@ struct _n_User {
   PetscReal next_output;
  
   /* Sensitivity analysis support */ 
-  PetscInt  steps,nstages;
+  PetscInt  steps;
   PetscReal ftime;
   Mat       A;                       /* Jacobian matrix */
   Mat       Jacp;                    /* JacobianP matrix */
   Vec       x,lambda[2],lambdap[2];  /* adjoint variables */
 };
-
-PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
 
 /*
 *  User-defined routines
@@ -99,18 +97,19 @@ PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal*,Vec,void*);
 #define __FUNCT__ "IFunction"
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
-  User           user = (User)ctx;
-  PetscScalar    *x,*xdot,*f;
+  PetscErrorCode    ierr;
+  User              user = (User)ctx;
+  const PetscScalar *x,*xdot;
+  PetscScalar       *f;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = xdot[0] - x[1];
   f[1] = c21*(xdot[0]-x[1]) + xdot[1] - user->mu*((1.0-x[0]*x[0])*x[1] - x[0]) ;
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -119,19 +118,20 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
 #define __FUNCT__ "IJacobian"
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
-  User           user     = (User)ctx;
-  PetscInt       rowcol[] = {0,1};
-  PetscScalar    *x,J[2][2];
+  PetscErrorCode    ierr;
+  User              user     = (User)ctx;
+  PetscInt          rowcol[] = {0,1};
+  PetscScalar       J[2][2];
+  const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(X,&x);CHKERRQ(ierr);
 
   J[0][0] = a;     J[0][1] =  -1.0;
   J[1][0] = c21*a + user->mu*(1.0 + 2.0*x[0]*x[1]);   J[1][1] = -c21 + a - user->mu*(1.0-x[0]*x[0]);
  
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -146,12 +146,13 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 #define __FUNCT__ "RHSJacobianP"
 static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscInt       row[] = {0,1},col[]={0};
-  PetscScalar    *x,J[2][1];
+  PetscErrorCode    ierr;
+  PetscInt          row[] = {0,1},col[]={0};
+  PetscScalar       J[2][1];
+  const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
 
   J[0][0] = 0;
   J[1][0] = (1.-x[0]*x[0])*x[1]-x[0];
@@ -192,86 +193,6 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "OutputBIN"
-static PetscErrorCode OutputBIN(const char *filename, PetscViewer *viewer)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = PetscViewerCreate(PETSC_COMM_WORLD, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer, PETSCVIEWERBINARY);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(*viewer, filename);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MonitorBIN"
-static PetscErrorCode MonitorBIN(TS ts,PetscInt stepnum,PetscReal time,Vec X,void *ctx)
-{
-  PetscViewer    viewer;
-  PetscInt       ns,i;
-  Vec            *Y;
-  char           filename[PETSC_MAX_PATH_LEN];
-  PetscReal      tprev;
-
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = TSGetPrevTime(ts,&tprev);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename,sizeof filename,"ex20-SA-%06d.bin",stepnum);CHKERRQ(ierr);
-  ierr = OutputBIN(filename,&viewer);CHKERRQ(ierr);
-  ierr = VecView(X,viewer);CHKERRQ(ierr);
-  /* ierr = PetscRealView(1,&time,viewer);CHKERRQ(ierr); */
-  ierr = PetscViewerBinaryWrite(viewer,&tprev,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
-  /* ierr = PetscViewerBinaryWrite(viewer,&h ,1,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr); */
-  ierr = TSGetStages(ts,&ns,&Y);CHKERRQ(ierr);
-
-  for (i=0;i<ns && stepnum>0;i++) {
-    ierr = VecView(Y[i],viewer);CHKERRQ(ierr);
-  }
-
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MonitorADJ2"
-static PetscErrorCode MonitorADJ2(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
-{
-  PetscReal      ptime;
-  Vec            Sol,*Y;
-  PetscInt       Nr,i;
-  PetscViewer    viewer;
-  PetscReal      timepre;
-  char           filename[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = PetscSNPrintf(filename,sizeof filename,"ex20-SA-%06d.bin",step);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-
-  ierr = TSGetSolution(ts,&Sol);CHKERRQ(ierr);
-  ierr = VecLoad(Sol,viewer);CHKERRQ(ierr);
-
-  Nr   = 1;
-  /* ierr = PetscRealLoad(Nr,&Nr,&timepre,viewer);CHKERRQ(ierr); */
-  ierr = PetscViewerBinaryRead(viewer,&timepre,1,PETSC_REAL);CHKERRQ(ierr);
-
-  ierr = TSGetStages(ts,&Nr,&Y);CHKERRQ(ierr);
-  for (i=0;i<Nr ;i++) {
-    ierr = VecLoad(Y[i],viewer);CHKERRQ(ierr);
-  }
-
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-
-  ierr = TSGetTime(ts,&ptime);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,-ptime+timepre);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
@@ -298,7 +219,7 @@ int main(int argc,char **argv)
   user.steps       = 0;
   user.ftime       = 0.5;
   ierr = PetscOptionsGetBool(NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mu","Stiffness parameter","<1.0e6>",user.mu,&user.mu,NULL);
+  ierr = PetscOptionsGetReal(NULL,"-mu",&user.mu,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
@@ -316,17 +237,17 @@ int main(int argc,char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,NULL,IFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,user.A,user.A,IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,PETSC_DEFAULT,user.ftime);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,200000,user.ftime);CHKERRQ(ierr);
   if (monitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
   }
-  ierr = TSMonitorSet(ts,MonitorBIN,&user,NULL);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -334,12 +255,16 @@ int main(int argc,char **argv)
   x_ptr[0] = 2.0;   x_ptr[1] = -0.66666654321;
   ierr = VecRestoreArray(user.x,&x_ptr);CHKERRQ(ierr);
 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    Save trajectory of solution so that TSAdjointSolve() may be used
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = TSGetStages(ts,&user.nstages,NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -371,22 +296,13 @@ int main(int argc,char **argv)
   ierr = VecGetArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 0.0;
   ierr = VecRestoreArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
+
   ierr = TSAdjointSetGradients(ts,2,user.lambda,user.lambdap);CHKERRQ(ierr);
-
-  /*   Reset start time for the adjoint integration */
-  ierr = TSSetTime(ts,user.ftime);CHKERRQ(ierr);
-
-  /*   Set RHS Jacobian and number of steps for the adjoint integration */
-  ierr = TSSetDuration(ts,user.steps,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobian(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
 
-  /*   Set up monitor */
-  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorADJ2,&user,NULL);CHKERRQ(ierr);
-
-  ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
+  ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: d[y(tf)]/d[y0]  d[y(tf)]/d[z0]\n");CHKERRQ(ierr);
   ierr = VecView(user.lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

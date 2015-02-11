@@ -238,7 +238,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatCreateVecs(A,&lambda[0],NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,&lambda[1],NULL);CHKERRQ(ierr);
-  /*   Redet initial conditions for the adjoint integration */
+  /*   Reset initial conditions for the adjoint integration */
   ierr = VecGetArray(lambda[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 1.0;   x_ptr[1] = 0.0;
   ierr = VecRestoreArray(lambda[0],&x_ptr);CHKERRQ(ierr);
