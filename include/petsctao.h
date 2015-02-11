@@ -110,7 +110,6 @@ PETSC_STATIC_INLINE PetscErrorCode TaoViewFromOptions(Tao A,const char prefix[],
 PETSC_EXTERN PetscErrorCode TaoSolve(Tao);
 
 PETSC_EXTERN PetscErrorCode TaoRegister(const char [],PetscErrorCode (*)(Tao));
-PETSC_EXTERN PetscErrorCode TaoRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TaoRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode TaoGetConvergedReason(Tao,TaoConvergedReason*);

@@ -43,6 +43,7 @@ PetscErrorCode  MatOrderingRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (MatOrderingRegisterAllCalled) PetscFunctionReturn(0);
   MatOrderingRegisterAllCalled = PETSC_TRUE;
 
   ierr = MatOrderingRegister(MATORDERINGNATURAL,  MatGetOrdering_Natural);CHKERRQ(ierr);

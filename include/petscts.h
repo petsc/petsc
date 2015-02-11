@@ -411,11 +411,9 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGDMDARay(TS,PetscInt,PetscReal,Vec,void*);
 
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFunctionList TSList;
-PETSC_EXTERN PetscBool         TSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TSGetType(TS,TSType*);
 PETSC_EXTERN PetscErrorCode TSSetType(TS,TSType);
 PETSC_EXTERN PetscErrorCode TSRegister(const char[], PetscErrorCode (*)(TS));
-PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode TSGetSNES(TS,SNES*);
 PETSC_EXTERN PetscErrorCode TSSetSNES(TS,SNES);
@@ -487,7 +485,6 @@ typedef const char *TSAdaptType;
 
 PETSC_EXTERN PetscErrorCode TSGetAdapt(TS,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],PetscErrorCode (*)(TSAdapt));
-PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSAdaptInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate(MPI_Comm,TSAdapt*);
@@ -531,7 +528,6 @@ typedef const char *TSGLAdaptType;
 #define TSGLADAPT_BOTH "both"
 
 PETSC_EXTERN PetscErrorCode TSGLAdaptRegister(const char[],PetscErrorCode (*)(TSGLAdapt));
-PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptCreate(MPI_Comm,TSGLAdapt*);
@@ -566,7 +562,6 @@ typedef const char* TSGLType;
 #define TSGL_IRKS   "irks"
 
 PETSC_EXTERN PetscErrorCode TSGLRegister(const char[],PetscErrorCode(*)(TS));
-PETSC_EXTERN PetscErrorCode TSGLRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLSetType(TS,TSGLType);
@@ -608,7 +603,6 @@ PETSC_EXTERN PetscErrorCode TSRKRegister(TSRKType,PetscInt,PetscInt,const PetscR
 PETSC_EXTERN PetscErrorCode TSRKFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRKInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSRKRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode TSRKRegisterAll(void);
 
 /*J
     TSARKIMEXType - String with the name of an Additive Runge-Kutta IMEX method.
@@ -638,7 +632,6 @@ PETSC_EXTERN PetscErrorCode TSARKIMEXRegister(TSARKIMEXType,PetscInt,PetscInt,co
 PETSC_EXTERN PetscErrorCode TSARKIMEXFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterAll(void);
 
 /*J
     TSRosWType - String with the name of a Rosenbrock-W method.
@@ -673,7 +666,6 @@ PETSC_EXTERN PetscErrorCode TSRosWRegisterRos4(TSRosWType,PetscReal,PetscReal,Pe
 PETSC_EXTERN PetscErrorCode TSRosWFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRosWInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode TSRosWRegisterAll(void);
 
 /*
        PETSc interface to Sundials

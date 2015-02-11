@@ -375,9 +375,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 
   ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
   {
-    if (!TaoRegisterAllCalled) {
-      ierr = TaoRegisterAll();CHKERRQ(ierr);
-    }
+    ierr = TaoRegisterAll();CHKERRQ(ierr);
     if (((PetscObject)tao)->type_name) {
       default_type = ((PetscObject)tao)->type_name;
     }

@@ -57,5 +57,6 @@ struct _p_MatMFFD {    /* context for default matrix-free SNES */
 
 PETSC_EXTERN PetscFunctionList MatMFFDList;
 PETSC_EXTERN PetscBool         MatMFFDRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode    MatMFFDRegisterAll(void);
 
 #endif

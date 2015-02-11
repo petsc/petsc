@@ -674,7 +674,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll();CHKERRQ(ierr);}
+  ierr = SNESRegisterAll();CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)snes);CHKERRQ(ierr);
   if (((PetscObject)snes)->type_name) deft = ((PetscObject)snes)->type_name;
   ierr = PetscOptionsFList("-snes_type","Nonlinear solver method","SNESSetType",SNESList,deft,type,256,&flg);CHKERRQ(ierr);

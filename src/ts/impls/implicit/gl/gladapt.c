@@ -79,6 +79,8 @@ PetscErrorCode  TSGLAdaptRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (TSGLAdaptRegisterAllCalled) PetscFunctionReturn(0);
+  TSGLAdaptRegisterAllCalled = PETSC_TRUE;
   ierr = TSGLAdaptRegister(TSGLADAPT_NONE,TSGLAdaptCreate_None);CHKERRQ(ierr);
   ierr = TSGLAdaptRegister(TSGLADAPT_SIZE,TSGLAdaptCreate_Size);CHKERRQ(ierr);
   ierr = TSGLAdaptRegister(TSGLADAPT_BOTH,TSGLAdaptCreate_Both);CHKERRQ(ierr);

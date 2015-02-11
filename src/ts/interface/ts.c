@@ -37,7 +37,7 @@ static PetscErrorCode TSSetTypeFromOptions_Private(PetscOptions *PetscOptionsObj
   if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
   else defaultType = TSEULER;
 
-  if (!TSRegisterAllCalled) {ierr = TSRegisterAll();CHKERRQ(ierr);}
+  ierr = TSRegisterAll();CHKERRQ(ierr);
   ierr = PetscOptionsFList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = TSSetType(ts, typeName);CHKERRQ(ierr);

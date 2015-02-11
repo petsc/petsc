@@ -76,6 +76,7 @@ PetscErrorCode  PCRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PCRegisterAllCalled) PetscFunctionReturn(0);
   PCRegisterAllCalled = PETSC_TRUE;
 
   ierr = PCRegister(PCNONE         ,PCCreate_None);CHKERRQ(ierr);

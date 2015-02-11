@@ -26,6 +26,7 @@ PetscErrorCode SNESLineSearchRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (SNESLineSearchRegisterAllCalled) PetscFunctionReturn(0);
   SNESLineSearchRegisterAllCalled = PETSC_TRUE;
   ierr = SNESLineSearchRegister(SNESLINESEARCHSHELL,   SNESLineSearchCreate_Shell);CHKERRQ(ierr);
   ierr = SNESLineSearchRegister(SNESLINESEARCHBASIC,   SNESLineSearchCreate_Basic);CHKERRQ(ierr);

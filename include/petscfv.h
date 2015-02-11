@@ -28,7 +28,6 @@ typedef const char *PetscLimiterType;
 #define PETSCLIMITERMC        "mc"
 
 PETSC_EXTERN PetscFunctionList PetscLimiterList;
-PETSC_EXTERN PetscBool         PetscLimiterRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate(MPI_Comm, PetscLimiter *);
 PETSC_EXTERN PetscErrorCode PetscLimiterDestroy(PetscLimiter *);
 PETSC_EXTERN PetscErrorCode PetscLimiterSetType(PetscLimiter, PetscLimiterType);
@@ -38,7 +37,6 @@ PETSC_EXTERN PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter);
 PETSC_EXTERN PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter, const char[], const char[]);
 PETSC_EXTERN PetscErrorCode PetscLimiterView(PetscLimiter, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscLimiterRegister(const char [], PetscErrorCode (*)(PetscLimiter));
-PETSC_EXTERN PetscErrorCode PetscLimiterRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscLimiterRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscLimiterLimit(PetscLimiter, PetscReal, PetscReal *);
@@ -60,7 +58,6 @@ typedef const char *PetscFVType;
 #define PETSCFVLEASTSQUARES "leastsquares"
 
 PETSC_EXTERN PetscFunctionList PetscFVList;
-PETSC_EXTERN PetscBool         PetscFVRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscFVCreate(MPI_Comm, PetscFV *);
 PETSC_EXTERN PetscErrorCode PetscFVDestroy(PetscFV *);
 PETSC_EXTERN PetscErrorCode PetscFVSetType(PetscFV, PetscFVType);
@@ -70,7 +67,6 @@ PETSC_EXTERN PetscErrorCode PetscFVSetFromOptions(PetscFV);
 PETSC_EXTERN PetscErrorCode PetscFVViewFromOptions(PetscFV, const char[], const char[]);
 PETSC_EXTERN PetscErrorCode PetscFVView(PetscFV, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFVRegister(const char [], PetscErrorCode (*)(PetscFV));
-PETSC_EXTERN PetscErrorCode PetscFVRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscFVRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscFVSetLimiter(PetscFV, PetscLimiter);

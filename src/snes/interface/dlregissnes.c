@@ -24,6 +24,7 @@ PetscErrorCode  SNESFinalizePackage(void)
   ierr = PetscFunctionListDestroy(&SNESLineSearchList);CHKERRQ(ierr);
   SNESPackageInitialized = PETSC_FALSE;
   SNESRegisterAllCalled  = PETSC_FALSE;
+  SNESLineSearchRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

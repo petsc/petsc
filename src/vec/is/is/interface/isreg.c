@@ -78,7 +78,7 @@ PetscErrorCode  ISSetType(IS is, ISType method)
   ierr = PetscObjectTypeCompare((PetscObject) is, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!ISRegisterAllCalled) {ierr = ISRegisterAll();CHKERRQ(ierr);}
+  ierr = ISRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(ISList,method,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
   if (is->ops->destroy) {

@@ -1,5 +1,6 @@
 
 #include <petscmat.h>
+#include <petsc-private/matimpl.h>
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning);
@@ -37,6 +38,7 @@ PetscErrorCode  MatPartitioningRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (MatPartitioningRegisterAllCalled) PetscFunctionReturn(0);
   MatPartitioningRegisterAllCalled = PETSC_TRUE;
 
   ierr = MatPartitioningRegister(MATPARTITIONINGCURRENT, MatPartitioningCreate_Current);CHKERRQ(ierr);

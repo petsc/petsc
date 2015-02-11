@@ -63,6 +63,7 @@ PetscErrorCode  KSPRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (KSPRegisterAllCalled) PetscFunctionReturn(0);
   KSPRegisterAllCalled = PETSC_TRUE;
 
   ierr = KSPRegister(KSPCG,          KSPCreate_CG);CHKERRQ(ierr);

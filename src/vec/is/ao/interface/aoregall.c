@@ -20,6 +20,7 @@ PetscErrorCode  AORegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (AORegisterAllCalled) PetscFunctionReturn(0);
   AORegisterAllCalled = PETSC_TRUE;
 
   ierr = AORegister(AOBASIC,          AOCreate_Basic);CHKERRQ(ierr);

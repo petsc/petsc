@@ -134,8 +134,6 @@ PETSC_EXTERN PetscErrorCode PCGetInitialGuessNonzero(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCSetUseAmat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGetUseAmat(PC,PetscBool*);
 
-PETSC_EXTERN PetscErrorCode PCRegisterAll(void);
-PETSC_EXTERN PetscBool PCRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode PCRegister(const char[],PetscErrorCode(*)(PC));
 

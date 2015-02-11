@@ -35,7 +35,6 @@ typedef const char *PetscSpaceType;
 #define PETSCSPACEDG         "dg"
 
 PETSC_EXTERN PetscFunctionList PetscSpaceList;
-PETSC_EXTERN PetscBool         PetscSpaceRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate(MPI_Comm, PetscSpace *);
 PETSC_EXTERN PetscErrorCode PetscSpaceDestroy(PetscSpace *);
 PETSC_EXTERN PetscErrorCode PetscSpaceSetType(PetscSpace, PetscSpaceType);
@@ -45,7 +44,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceSetFromOptions(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceViewFromOptions(PetscSpace,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscSpaceView(PetscSpace,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSpaceRegister(const char [], PetscErrorCode (*)(PetscSpace));
-PETSC_EXTERN PetscErrorCode PetscSpaceRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscSpaceRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscSpaceGetDimension(PetscSpace, PetscInt *);
@@ -75,7 +73,6 @@ typedef const char *PetscDualSpaceType;
 #define PETSCDUALSPACESIMPLE   "simple"
 
 PETSC_EXTERN PetscFunctionList PetscDualSpaceList;
-PETSC_EXTERN PetscBool         PetscDualSpaceRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate(MPI_Comm, PetscDualSpace *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace, PetscDualSpace *);
@@ -86,7 +83,6 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceView(PetscDualSpace,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRegister(const char [], PetscErrorCode (*)(PetscDualSpace));
-PETSC_EXTERN PetscErrorCode PetscDualSpaceRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace, PetscInt *);
@@ -124,7 +120,6 @@ typedef const char *PetscFEType;
 #define PETSCFECOMPOSITE "composite"
 
 PETSC_EXTERN PetscFunctionList PetscFEList;
-PETSC_EXTERN PetscBool         PetscFERegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscFECreate(MPI_Comm, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFEDestroy(PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFESetType(PetscFE, PetscFEType);
@@ -134,7 +129,6 @@ PETSC_EXTERN PetscErrorCode PetscFESetFromOptions(PetscFE);
 PETSC_EXTERN PetscErrorCode PetscFEViewFromOptions(PetscFE,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscFEView(PetscFE,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFERegister(const char [], PetscErrorCode (*)(PetscFE));
-PETSC_EXTERN PetscErrorCode PetscFERegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscFERegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscFECreateDefault(DM, PetscInt, PetscInt, PetscBool, const char [], PetscInt, PetscFE *);
 

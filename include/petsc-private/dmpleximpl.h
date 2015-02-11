@@ -10,6 +10,8 @@
 
 PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
 
+PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner);
 
 typedef enum {REFINER_NOOP = 0,

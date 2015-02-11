@@ -22,7 +22,6 @@ typedef const char *PetscDSType;
 #define PETSCDSBASIC "basic"
 
 PETSC_EXTERN PetscFunctionList PetscDSList;
-PETSC_EXTERN PetscBool         PetscDSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscDSCreate(MPI_Comm, PetscDS *);
 PETSC_EXTERN PetscErrorCode PetscDSDestroy(PetscDS *);
 PETSC_EXTERN PetscErrorCode PetscDSSetType(PetscDS, PetscDSType);
@@ -32,7 +31,6 @@ PETSC_EXTERN PetscErrorCode PetscDSSetFromOptions(PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSViewFromOptions(PetscDS,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscDSView(PetscDS,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscDSRegister(const char [], PetscErrorCode (*)(PetscDS));
-PETSC_EXTERN PetscErrorCode PetscDSRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscDSRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscDSGetSpatialDimension(PetscDS, PetscInt *);

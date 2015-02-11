@@ -5,6 +5,17 @@
 #include <petscmat.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool MatRegisterAllCalled;
+PETSC_EXTERN PetscBool MatOrderingRegisterAllCalled;
+PETSC_EXTERN PetscBool MatColoringRegisterAllCalled;
+PETSC_EXTERN PetscBool MatPartitioningRegisterAllCalled;
+PETSC_EXTERN PetscBool MatCoarsenRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode MatRegisterAll(void);
+PETSC_EXTERN PetscErrorCode MatOrderingRegisterAll(void);
+PETSC_EXTERN PetscErrorCode MatColoringRegisterAll(void);
+PETSC_EXTERN PetscErrorCode MatPartitioningRegisterAll(void);
+PETSC_EXTERN PetscErrorCode MatCoarsenRegisterAll(void);
+
 /*
   This file defines the parts of the matrix data structure that are
   shared by all matrix types.

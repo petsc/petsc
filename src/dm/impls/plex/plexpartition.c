@@ -385,7 +385,7 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
   ierr = PetscObjectTypeCompare((PetscObject) part, name, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!PetscPartitionerRegisterAllCalled) {ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscPartitionerList, name, &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscPartitioner type: %s", name);
 
@@ -423,7 +423,7 @@ PetscErrorCode PetscPartitionerGetType(PetscPartitioner part, PetscPartitionerTy
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidPointer(name, 2);
-  if (!PetscPartitionerRegisterAllCalled) {ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
   *name = ((PetscObject) part)->type_name;
   PetscFunctionReturn(0);
 }
@@ -502,7 +502,7 @@ PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner part
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   if (!((PetscObject) part)->type_name) defaultType = PETSCPARTITIONERCHACO;
   else                                  defaultType = ((PetscObject) part)->type_name;
-  if (!PetscPartitionerRegisterAllCalled) {ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscPartitionerRegisterAll();CHKERRQ(ierr);
 
   ierr = PetscObjectOptionsBegin((PetscObject) part);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-petscpartitioner_type", "Graph partitioner", "PetscPartitionerSetType", PetscPartitionerList, defaultType, name, 256, &flg);CHKERRQ(ierr);
