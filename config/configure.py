@@ -108,6 +108,7 @@ def chkenable():
         if tail == '1': tail = '0'
         sys.argv[l] = head.replace('without-','with-')+'='+tail
 
+
 def chksynonyms():
   #replace common configure options with ones that PETSc BuildSystem recognizes
   for l in range(0,len(sys.argv)):
@@ -128,7 +129,19 @@ def chksynonyms():
         head, tail = name.split('=', 1)
         sys.argv[l] = head.replace('with-shared','with-shared-libraries')+'='+tail
 
+    if name.find('with-index-size=') >=0:
+      head,tail = name.split('=',1)
+      if int(tail)==32:
+        sys.argv[l] = '--with-64-bit-indices=0'
+      elif int(tail)==64:
+        sys.argv[l] = '--with-64-bit-indices=1'
+      else:
+        raise RuntimeError('--with-index-size= must be 32 or 64')
 
+    if name.find('with-precision=') >=0:
+      head,tail = name.split('=',1)
+      if tail.find('quad')>=0:
+        sys.argv[l]='--with-precision=__float128'
 
 
 def chkwinf90():
