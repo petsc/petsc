@@ -1739,9 +1739,9 @@ PETSC_EXTERN PetscErrorCode MatCreateVecsFFTW(Mat,Vec*,Vec*,Vec*);
 */
 #if defined(PETSC_HAVE_ELEMENTAL)
 #if defined(__cplusplus)
-#include <elemental.hpp> 
+#include <El.hpp>
 /* c++ prototypes requiring elemental datatypes. */
-PETSC_EXTERN PetscErrorCode MatElementalHermitianGenDefiniteEig(elem::HermitianGenDefiniteEigType,elem::UpperOrLower,Mat,Mat,Mat*,Mat*,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode MatElementalHermitianGenDefEig(El::Pencil,El::UpperOrLower,Mat,Mat,Mat*,Mat*,PetscReal,PetscReal);
 #endif
 PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
