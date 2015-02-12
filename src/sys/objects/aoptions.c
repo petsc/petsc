@@ -381,7 +381,9 @@ static const char *OptionsHeader = "<head>\n"
                                       "})\n"
                                   "</script>\n"
                                   "</head>\n";
-static const char *OptionsBodyBottom = "<div id=\"variablesInfo\" style=\"height:550px;overflow:scroll;\"></div>\n<br>\n</body>";
+
+/*  Determines the size and style of the scroll region where PETSc options selectable from users are displayed */
+static const char *OptionsBodyBottom = "<div id=\"variablesInfo\" style=\"background-color:lightblue;height:auto;max-height:500px;overflow:scroll;\"></div>\n<br>\n</body>";
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsSAWsInput"

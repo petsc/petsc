@@ -1,4 +1,5 @@
-//this js file contains methods copied from matt's original SAWs.js but modified to fit our needs
+//
+//  Contains methods from SAWs.js but modified to display in a PETSc specific way
 
 PETSc = {};
 
