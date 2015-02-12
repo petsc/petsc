@@ -2830,20 +2830,19 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 
   /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
   if (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy) {
-    Mat       mat_adj;
-    PetscInt  *xadj,*adjncy;
-    PetscInt  nvtxs;
-    PetscBool flg_row=PETSC_TRUE;
+    PetscInt *xadj,*adjncy;
+    PetscInt nvtxs;
 
-    ierr = MatConvert(matis->A,MATMPIADJ,MAT_INITIAL_MATRIX,&mat_adj);CHKERRQ(ierr);
-    ierr = MatGetRowIJ(mat_adj,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
-    if (!flg_row) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatGetRowIJ called in %s\n",__FUNCT__);
-    }
     if (pcbddc->use_local_adj) {
-      ierr = PCBDDCSetLocalAdjacencyGraph(pc,nvtxs,xadj,adjncy,PETSC_COPY_VALUES);CHKERRQ(ierr);
-      pcbddc->computed_rowadj = PETSC_TRUE;
-    } else { /* just compute subdomain's connected components */
+      PetscBool flg_row=PETSC_FALSE;
+
+      ierr = MatGetRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
+      if (flg_row) {
+        ierr = PCBDDCSetLocalAdjacencyGraph(pc,nvtxs,xadj,adjncy,PETSC_COPY_VALUES);CHKERRQ(ierr);
+        pcbddc->computed_rowadj = PETSC_TRUE;
+      }
+      ierr = MatRestoreRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
+    } else if (pcbddc->current_level) { /* just compute subdomain's connected components for coarser levels */
       IS                     is_dummy;
       ISLocalToGlobalMapping l2gmap_dummy;
       PetscInt               j,sum;
@@ -2926,11 +2925,6 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       ierr = PCBDDCGraphDestroy(&graph);CHKERRQ(ierr);
       ierr = PetscBTDestroy(&is_on_boundary);CHKERRQ(ierr);
     }
-    ierr = MatRestoreRowIJ(mat_adj,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
-    if (!flg_row) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatRestoreRowIJ called in %s\n",__FUNCT__);
-    }
-    ierr = MatDestroy(&mat_adj);CHKERRQ(ierr);
   }
 
   /* Set default dofs' splitting if no information has been provided by the user with PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal */
@@ -4612,25 +4606,22 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       used_xadj = pcbddc->mat_graph->xadj;
       used_adjncy = pcbddc->mat_graph->adjncy;
     } else {
-      Mat            mat_adj;
-      PetscBool      flg_row=PETSC_TRUE;
+      PetscBool      flg_row=PETSC_FALSE;
       const PetscInt *xadj,*adjncy;
       PetscInt       nvtxs;
 
-      ierr = MatConvert(pcbddc->local_mat,MATMPIADJ,MAT_INITIAL_MATRIX,&mat_adj);CHKERRQ(ierr);
-      ierr = MatGetRowIJ(mat_adj,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,&xadj,&adjncy,&flg_row);CHKERRQ(ierr);
-      if (!flg_row) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatGetRowIJ called in %s\n",__FUNCT__);
+      ierr = MatGetRowIJ(pcbddc->local_mat,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,&xadj,&adjncy,&flg_row);CHKERRQ(ierr);
+      if (flg_row) {
+        ierr = PetscMalloc2(nvtxs+1,&used_xadj,xadj[nvtxs],&used_adjncy);CHKERRQ(ierr);
+        ierr = PetscMemcpy(used_xadj,xadj,(nvtxs+1)*sizeof(*xadj));CHKERRQ(ierr);
+        ierr = PetscMemcpy(used_adjncy,adjncy,(xadj[nvtxs])*sizeof(*adjncy));CHKERRQ(ierr);
+        free_used_adj = PETSC_TRUE;
+      } else {
+        pcbddc->sub_schurs_layers = -1;
+        used_xadj = NULL;
+        used_adjncy = NULL;
       }
-      ierr = PetscMalloc2(nvtxs+1,&used_xadj,xadj[nvtxs],&used_adjncy);CHKERRQ(ierr);
-      ierr = PetscMemcpy(used_xadj,xadj,(nvtxs+1)*sizeof(*xadj));CHKERRQ(ierr);
-      ierr = PetscMemcpy(used_adjncy,adjncy,(xadj[nvtxs])*sizeof(*adjncy));CHKERRQ(ierr);
-      ierr = MatRestoreRowIJ(mat_adj,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,&xadj,&adjncy,&flg_row);CHKERRQ(ierr);
-      if (!flg_row) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatRestoreRowIJ called in %s\n",__FUNCT__);
-      }
-      ierr = MatDestroy(&mat_adj);CHKERRQ(ierr);
-      free_used_adj = PETSC_TRUE;
+      ierr = MatRestoreRowIJ(pcbddc->local_mat,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,&xadj,&adjncy,&flg_row);CHKERRQ(ierr);
     }
   }
   ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->adaptive_selection,pcbddc->use_deluxe_scaling,pcbddc->adaptive_invert_Stildas,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
