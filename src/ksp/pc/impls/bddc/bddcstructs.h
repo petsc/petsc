@@ -80,6 +80,9 @@ struct _PCBDDCSubSchurs {
   PetscInt *index_parallel;
   PetscInt *auxglobal_sequential;
   PetscInt *auxglobal_parallel;
+  /* mat flags */
+  PetscBool is_hermitian;
+  PetscBool is_posdef;
 };
 typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
 

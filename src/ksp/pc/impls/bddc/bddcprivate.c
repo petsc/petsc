@@ -22,15 +22,13 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 #if defined(PETSC_USE_COMPLEX)
   PetscReal       *rwork;
 #endif
-  PetscBool       symmetric;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (!sub_schurs->use_mumps) {
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS");
   }
-  ierr = MatIsSymmetric(sub_schurs->A,0.0,&symmetric);CHKERRQ(ierr);
-  if (!symmetric) {
+  if (!sub_schurs->is_hermitian || !sub_schurs->is_posdef) {
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not yet implemented");
   }
 
@@ -69,7 +67,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   }
 
   if (mss) {
-    if (symmetric) {
+    if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
       PetscBLASInt B_itype = 1;
       PetscBLASInt B_N = mss;
       PetscScalar  zero = 0.0;
@@ -149,7 +147,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       PetscBLASInt   B_N;
 
       /* S should be copied since we need it for deluxe scaling */
-      if (symmetric) {
+      if (sub_schurs->is_hermitian) {
         PetscInt j;
         for (j=0;j<subset_size;j++) {
           ierr = PetscMemcpy(S+j*(subset_size+1),Sarray+cumarray+j*(subset_size+1),(subset_size-j)*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -167,7 +165,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       /* we could reuse space already allocated when building sum_S_Ej_tilda_all */
       /* St = Starray+cumarray; */
 
-      if (symmetric) {
+      if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
         PetscBLASInt B_itype = 1;
         PetscBLASInt B_IL = 1, B_IU;
         PetscScalar  eps = -1.0; /* dlamch? */
@@ -205,7 +203,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           B_IL = B_neigs + 1;
           ierr = PetscBLASIntCast(nmin_s,&B_IU);CHKERRQ(ierr);
           PetscPrintf(PETSC_COMM_SELF,"[%d]   found %d eigs, less than minimum required %d. Asking for %d to %d incl (fortran like)\n",PetscGlobalRank,B_neigs,nmin,B_IL,B_IU);
-          if (symmetric) {
+          if (sub_schurs->is_hermitian) {
             PetscInt j;
             for (j=0;j<subset_size;j++) {
               ierr = PetscMemcpy(S+j*(subset_size+1),Sarray+cumarray+j*(subset_size+1),(subset_size-j)*sizeof(PetscScalar));CHKERRQ(ierr);

@@ -98,7 +98,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   PetscInt               *nnz,*all_local_idx_G,*all_local_idx_B,*all_local_idx_N;
   PetscInt               i,subset_size,max_subset_size;
   PetscInt               extra,local_size,global_size;
-  PetscBool              is_symmetric;
   PetscBLASInt           B_N,B_ierr,B_lwork,*pivots;
   PetscScalar            *work;
   PetscErrorCode         ierr;
@@ -237,8 +236,23 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   }
 
   S_all = NULL;
+  sub_schurs->is_hermitian = PETSC_FALSE;
+  sub_schurs->is_posdef = PETSC_FALSE;
   if (sub_schurs->A) {
-    ierr = MatIsSymmetric(sub_schurs->A,0.0,&is_symmetric);CHKERRQ(ierr);
+    ierr = MatIsHermitian(sub_schurs->A,0.0,&sub_schurs->is_hermitian);CHKERRQ(ierr);
+    if (sub_schurs->is_hermitian) {
+      PetscScalar val;
+      Vec         vec1,vec2;
+
+      ierr = MatCreateVecs(sub_schurs->A,&vec1,&vec2);CHKERRQ(ierr);
+      ierr = VecSetRandom(vec1,NULL);
+      ierr = VecCopy(vec1,vec2);CHKERRQ(ierr);
+      ierr = MatMult(sub_schurs->A,vec2,vec1);CHKERRQ(ierr);
+      ierr = VecDot(vec1,vec2,&val);CHKERRQ(ierr);
+      if (PetscRealPart(val) > 0. && PetscImaginaryPart(val) == 0.) sub_schurs->is_posdef = PETSC_TRUE;
+      ierr = VecDestroy(&vec1);CHKERRQ(ierr);
+      ierr = VecDestroy(&vec2);CHKERRQ(ierr);
+    }
   }
   if (sub_schurs->n_subs) {
     if (!sub_schurs->use_mumps) {
@@ -317,7 +331,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       ierr = ISDestroy(&is_A_all);CHKERRQ(ierr);
 
       if (n_I) {
-        if (is_symmetric) {
+        if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
           ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
         } else {
           ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
@@ -332,7 +346,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
         ierr = PetscFree(idxs_schur);CHKERRQ(ierr);
 
         /* factorization step */
-        if (is_symmetric) {
+        if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
           ierr = MatCholeskyFactorSymbolic(F,A,NULL,NULL);CHKERRQ(ierr);
           ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
         } else {
@@ -507,7 +521,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
           ierr = MatSchurComplementGetKSP(Stilda_impl,&ksp);CHKERRQ(ierr);
           ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
           ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-          if (is_symmetric) {
+          if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
             ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
           } else {
             ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
@@ -528,7 +542,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 */
         ierr = MatDestroy(&sub_schurs->S_Ej_tilda[i]);CHKERRQ(ierr);
         sub_schurs->S_Ej_tilda[i] = Stilda;
-
 
         ierr = MatDenseGetArray(sub_schurs->S_Ej_tilda[i],&vals);CHKERRQ(ierr);
         if (deluxe) { /* when using deluxe scaling, we need (S_1^-1+S_2^-1)^-1 */
@@ -755,8 +768,15 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat A, Mat S, IS 
 
   /* update info in sub_schurs */
   if (sub_schurs->use_mumps && A) {
-    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-    sub_schurs->A = A;
+    PetscBool isseqaij;
+
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
+    if (isseqaij) {
+      ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+      sub_schurs->A = A;
+    } else { /* SeqBAIJ matrices does not support symmetry checking, SeqSBAIJ does not support MatPermute */
+      ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&sub_schurs->A);CHKERRQ(ierr);
+    }
   }
   ierr = PetscObjectReference((PetscObject)S);CHKERRQ(ierr);
   sub_schurs->S = S;
