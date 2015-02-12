@@ -506,7 +506,7 @@ PetscErrorCode PetscOptionsSAWsInput(PetscOptions *PetscOptionsObject)
 
   if (stopasking) {
     PetscOptionsPublish      = PETSC_FALSE;
-    PetscOptionsPublishCount = 0;//do not ask for same thing again
+    PetscOptionsObject->count = 0;//do not ask for same thing again
   }
 
   PetscStackCallSAWs(SAWs_Delete,("/PETSc/Options"));
@@ -723,17 +723,18 @@ $                 if (flg) {
 PetscErrorCode  PetscOptionsInt_Private(PetscOptions *PetscOptionsObject,const char opt[],const char text[],const char man[],PetscInt currentvalue,PetscInt *value,PetscBool  *set)
 {
   PetscErrorCode ierr;
-  PetscOption   amsopt;
-
+  PetscOption    amsopt;
+  PetscBool      wasset;
+  
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
     ierr = PetscOptionsCreate_Private(PetscOptionsObject,opt,text,man,OPTION_INT,&amsopt);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
-    *(PetscInt*)amsopt->data = defaultv;
+    *(PetscInt*)amsopt->data = currentvalue;
 
-    ierr = PetscOptionsGetInt(PetscOptionsObject.prefix,opt,&defaultv,&wasset);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PetscOptionsObject->prefix,opt,&currentvalue,&wasset);CHKERRQ(ierr);
     if (wasset) {
-      *(PetscInt*)amsopt->data = defaultv;
+      *(PetscInt*)amsopt->data = currentvalue;
     }
   }
   ierr = PetscOptionsGetInt(PetscOptionsObject->prefix,opt,value,set);CHKERRQ(ierr);

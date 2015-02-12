@@ -6,9 +6,9 @@
 PetscErrorCode  DMSetFromOptions_DA(PetscOptions *PetscOptionsObject,DM da)
 {
   PetscErrorCode ierr;
-  DM_DA          *dd         = (DM_DA*)da->data;
-  PetscInt       refine      = 0,dim = da->dim,maxnlevels = 100,refx[100],refy[100],refz[100],n,i;
-  PetscBool      negativeMNP = PETSC_FALSE,bM = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE,flg;
+  DM_DA          *dd    = (DM_DA*)da->data;
+  PetscInt       refine = 0,dim = da->dim,maxnlevels = 100,refx[100],refy[100],refz[100],n,i;
+  PetscBool      bM     = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE,flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -18,12 +18,12 @@ PetscErrorCode  DMSetFromOptions_DA(PetscOptions *PetscOptionsObject,DM da)
     bM              = PETSC_TRUE;
     dd->negativeMNP = PETSC_TRUE;
   }
-  if (dd->dim > 1 && dd->N < 0) {
+  if (da->dim > 1 && dd->N < 0) {
     dd->N           = -dd->N;
     bN              = PETSC_TRUE;
     dd->negativeMNP = PETSC_TRUE;
   }
-  if (dd->dim > 2 && dd->P < 0) {
+  if (da->dim > 2 && dd->P < 0) {
     dd->P           = -dd->P;
     bP              = PETSC_TRUE;
     dd->negativeMNP = PETSC_TRUE;
