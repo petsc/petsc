@@ -327,7 +327,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   PetscScalar    *x_ptr,*y_ptr;
   Vec            lambda[1],q,drdy[1],lambdap[1],drdp[1];
 
-  ierr = VecView(P,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetArray(P,&x_ptr);CHKERRQ(ierr);
   ctx->Pm = x_ptr[0];
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -365,15 +364,15 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
-  /*
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Save trajectory of solution so that TSAdjointSolve() may be used
-  */
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetDuration(ts,100000,10.0);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,PETSC_DEFAULT,10.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -384,7 +383,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = VecView(U,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Adjoint model starts here
@@ -412,7 +410,6 @@ PetscErrorCode FormFunction(Tao tao,Vec P,PetscReal *f,void *ctx0)
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
   ierr = TSAdjointGetCostIntegral(ts,&q);CHKERRQ(ierr);
-  ierr = VecView(q,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ComputeSensiP(lambda[0],lambdap[0],ctx);CHKERRQ(ierr);
 
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);

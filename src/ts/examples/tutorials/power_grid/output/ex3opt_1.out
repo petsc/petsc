@@ -1,8 +1,5 @@
 Vec Object: 1 MPI processes
   type: seq
-0.4
-Vec Object: 1 MPI processes
-  type: seq
 0.178593
 1.00002
 Vec Object: 1 MPI processes
@@ -13,9 +10,6 @@ Vec Object: 1 MPI processes
 iter =   0, Function value: -0.4,  Residual: 1 
 Vec Object: 1 MPI processes
   type: seq
-1.1
-Vec Object: 1 MPI processes
-  type: seq
 0.513862
 0.999881
 Vec Object: 1 MPI processes
@@ -23,9 +17,6 @@ Vec Object: 1 MPI processes
 1.36345
 
  sensitivity wrt parameter pm: 83.680260 
-Vec Object: 1 MPI processes
-  type: seq
-0.771962
 Vec Object: 1 MPI processes
   type: seq
 0.400617
@@ -37,9 +28,6 @@ Vec Object: 1 MPI processes
  sensitivity wrt parameter pm: -1.000000 
 Vec Object: 1 MPI processes
   type: seq
-1.04615
-Vec Object: 1 MPI processes
-  type: seq
 0.493539
 1.00054
 Vec Object: 1 MPI processes
@@ -47,9 +35,6 @@ Vec Object: 1 MPI processes
 0
 
  sensitivity wrt parameter pm: -1.000000 
-Vec Object: 1 MPI processes
-  type: seq
-1.1
 Vec Object: 1 MPI processes
   type: seq
 0.513862
@@ -61,9 +46,6 @@ Vec Object: 1 MPI processes
  sensitivity wrt parameter pm: 83.680260 
 Vec Object: 1 MPI processes
   type: seq
-1.07335
-Vec Object: 1 MPI processes
-  type: seq
 0.500784
 1.00024
 Vec Object: 1 MPI processes
@@ -73,9 +55,6 @@ Vec Object: 1 MPI processes
  sensitivity wrt parameter pm: 15.344860 
 Vec Object: 1 MPI processes
   type: seq
-1.05489
-Vec Object: 1 MPI processes
-  type: seq
 0.495323
 1.00046
 Vec Object: 1 MPI processes
@@ -83,9 +62,6 @@ Vec Object: 1 MPI processes
 0
 
  sensitivity wrt parameter pm: -1.000000 
-Vec Object: 1 MPI processes
-  type: seq
-1.06049
 Vec Object: 1 MPI processes
   type: seq
 0.496718
@@ -98,7 +74,13 @@ Vec Object: 1 MPI processes
 iter =   1, Function value: -1.06031,  Residual: 0.56813 
 Vec Object: 1 MPI processes
   type: seq
-1.1
+0.513862
+0.999881
+Vec Object: 1 MPI processes
+  type: seq
+1.36345
+
+ sensitivity wrt parameter pm: 83.680260 
 Vec Object: 1 MPI processes
   type: seq
 0.513862
@@ -110,9 +92,6 @@ Vec Object: 1 MPI processes
  sensitivity wrt parameter pm: 83.680260 
 Vec Object: 1 MPI processes
   type: seq
-1.1
-Vec Object: 1 MPI processes
-  type: seq
 0.513862
 0.999881
 Vec Object: 1 MPI processes
@@ -120,21 +99,6 @@ Vec Object: 1 MPI processes
 1.36345
 
  sensitivity wrt parameter pm: 83.680260 
-Vec Object: 1 MPI processes
-  type: seq
-1.1
-Vec Object: 1 MPI processes
-  type: seq
-0.513862
-0.999881
-Vec Object: 1 MPI processes
-  type: seq
-1.36345
-
- sensitivity wrt parameter pm: 83.680260 
-Vec Object: 1 MPI processes
-  type: seq
-1.07208
 Vec Object: 1 MPI processes
   type: seq
 0.500322
@@ -144,9 +108,6 @@ Vec Object: 1 MPI processes
 0.0736108
 
  sensitivity wrt parameter pm: 13.366996 
-Vec Object: 1 MPI processes
-  type: seq
-1.06118
 Vec Object: 1 MPI processes
   type: seq
 0.496905
@@ -159,9 +120,6 @@ Vec Object: 1 MPI processes
 iter =   2, Function value: -1.06057,  Residual: 0.216865 
 Vec Object: 1 MPI processes
   type: seq
-1.06161
-Vec Object: 1 MPI processes
-  type: seq
 0.497021
 1.00038
 Vec Object: 1 MPI processes
@@ -172,9 +130,6 @@ Vec Object: 1 MPI processes
 iter =   3, Function value: -1.06062,  Residual: 0.000190298 
 Vec Object: 1 MPI processes
   type: seq
-1.06161
-Vec Object: 1 MPI processes
-  type: seq
 0.497021
 1.00038
 Vec Object: 1 MPI processes
@@ -183,9 +138,6 @@ Vec Object: 1 MPI processes
 
  sensitivity wrt parameter pm: -0.000000 
 iter =   4, Function value: -1.06062,  Residual: 6.36971e-08 
-Vec Object: 1 MPI processes
-  type: seq
-1.06161
 Vec Object: 1 MPI processes
   type: seq
 0.497021

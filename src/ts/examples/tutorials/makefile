@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex16adj.c ex16opt_p.c ex16opt_ic.c ex17.c \
-                ex19.c  ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c \
+                ex19.c ex20.c ex20adj.c ex20opt_p.c ex20opt_ic.c  ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c \
                 ex28.c ex30.cxx ex31.c ex40.c ex41.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
@@ -568,7 +568,9 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3
                             ex31.PETSc ex31.rm
 TESTEXAMPLES_C_NOCOMPLEX  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm\
                             ex16opt_p.PETSc  runex16opt_p  ex16opt_p.rm \
-                            ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm 
+                            ex16opt_ic.PETSc runex16opt_ic ex16opt_ic.rm \
+                            ex20opt_p.PETSc  runex20opt_p  ex20opt_p.rm \
+                            ex20opt_ic.PETSc runex20opt_ic ex20opt_ic.rm 
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex22f.PETSc ex22f.rm # ex22f_mf.PETSc ex22f_mf.rm
 TESTEXAMPLES_C_X_MPIUNI =
