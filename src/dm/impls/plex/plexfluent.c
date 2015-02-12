@@ -92,6 +92,15 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
     } else {               /* Data section */
       snum = sscanf(buffer, "(%x %x %x %d %d)", &(s->zoneID), &(s->first), &(s->last), &(s->type), &(s->nd));
       if (snum != 5) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+      if (s->nd == 0) {
+        /* Read cell type definitions for mixed cells */
+        PetscInt i, numCells = s->last - s->first + 1;
+        ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '(');CHKERRQ(ierr);
+        for (i = 0; i < numCells; i++) {
+          ierr = PetscViewerRead(viewer, buffer, 1, PETSC_STRING);CHKERRQ(ierr);
+        }
+        ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+      }
     }
     ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
 
@@ -104,25 +113,44 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
       if (snum != 4) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
     } else {               /* Data section */
       PetscInt f, e, numEntries, numFaces;
+      int      numFaceVert;
       snum = sscanf(buffer, "(%x %x %x %d %d)", &(s->zoneID), &(s->first), &(s->last), &(s->type), &(s->nd));
       if (snum != 5) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
       ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '(');CHKERRQ(ierr);
       switch (s->nd) {
-      case 0: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mixed faces in Fluent files are not supported");
+      case 0: numEntries = PETSC_DETERMINE; break;
       case 2: numEntries = 2 + 2; break;  /* linear */
       case 3: numEntries = 2 + 3; break;  /* triangular */
       case 4: numEntries = 2 + 4; break;  /* quadrilateral */
       default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown face type in Fluent file");
       }
       numFaces = s->last-s->first + 1;
-      ierr = PetscMalloc1(numEntries*numFaces, (PetscInt**)&s->data);CHKERRQ(ierr);
+      if (numEntries != PETSC_DETERMINE) {
+        /* Allocate space only if we already know the size of the block */
+        ierr = PetscMalloc1(numEntries*numFaces, (PetscInt**)&s->data);CHKERRQ(ierr);
+      }
       for (f = 0; f < numFaces; f++) {
+        if (s->nd == 0) {
+          /* Determine the size of the block for "mixed" facets */
+          ierr = PetscViewerRead(viewer, buffer, 1, PETSC_STRING);CHKERRQ(ierr);
+          snum = sscanf(buffer, "%x", &numFaceVert);
+          if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+          if (numEntries == PETSC_DETERMINE) {
+            numEntries = numFaceVert + 2;
+            ierr = PetscMalloc1(numEntries*numFaces, (PetscInt**)&s->data);CHKERRQ(ierr);
+          } else {
+            if (numEntries != numFaceVert + 2) {
+              SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No support for mixed faces in Fluent files");
+            }
+          }
+        }
         for (e = 0; e < numEntries; e++) {
           ierr = PetscViewerRead(viewer, buffer, 1, PETSC_STRING);CHKERRQ(ierr);
           snum = sscanf(buffer, "%x", &(((PetscInt*)s->data)[f*numEntries + e]));
           if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
         }
       }
+      s->nd = numEntries - 2;
       ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
     }
     ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
@@ -196,25 +224,27 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
         if (s.zoneID == 0) numCells = s.last;
         else {
           switch (s.nd) {
-          case 0: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mixed elements in Fluent files are not supported");
+          case 0: numCellVertices = PETSC_DETERMINE; break;
           case 1: numCellVertices = 3; break;  /* triangular */
           case 2: numCellVertices = 4; break;  /* tetrahedral */
           case 3: numCellVertices = 4; break;  /* quadrilateral */
           case 4: numCellVertices = 8; break;  /* hexahedral */
           case 5: numCellVertices = 5; break;  /* pyramid */
           case 6: numCellVertices = 6; break;  /* wedge */
-          default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell element-type in Fluent file");
+          default: numCellVertices = PETSC_DETERMINE;
           }
         }
 
       } else if (s.index == 13) {         /* Facets */
         if (s.zoneID == 0) {  /* Header section */
           numFaces = s.last - s.first + 1;
+          if (s.nd == 0) numFaceVertices = PETSC_DETERMINE;
+          else numFaceVertices = s.nd;
         } else {              /* Data section */
-          if (s.nd == 0 || (numFaceVertices != PETSC_DETERMINE && s.nd != numFaceVertices)) {
-            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mixed facets in Fluent files are currently not supported");
+          if (numFaceVertices != PETSC_DETERMINE && s.nd != numFaceVertices) {
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mixed facets in Fluent files are not supported");
           }
-          if (numFaces == PETSC_DETERMINE) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No header section for facets in Fluent file");
+          if (numFaces < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No header section for facets in Fluent file");
           if (numFaceVertices == PETSC_DETERMINE) numFaceVertices = s.nd;
           numFaceEntries = numFaceVertices + 2;
           if (!faces) {ierr = PetscMalloc1(numFaces*numFaceEntries, &faces);CHKERRQ(ierr);}
@@ -233,16 +263,15 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
   ierr = DMPlexSetChart(*dm, 0, numCells + numVertices);CHKERRQ(ierr);
   if (!rank) {
-    if (numCellVertices == PETSC_DETERMINE) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type not specified in Fluent file");
+    if (numCells < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown number of cells in Fluent file");
+    /* If no cell type was given we assume simplices */
+    if (numCellVertices == PETSC_DETERMINE) numCellVertices = numFaceVertices + 1;
     for (c = 0; c < numCells; ++c) {ierr = DMPlexSetConeSize(*dm, c, numCellVertices);CHKERRQ(ierr);}
   }
   ierr = DMSetUp(*dm);CHKERRQ(ierr);
 
   if (!rank) {
     /* Derive cell-vertex list from face-vertex and face-cell maps */
-    if (numCells == PETSC_DETERMINE || numCellVertices == PETSC_DETERMINE) {
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Insufficent cell header information in Fluent file");
-    }
     ierr = PetscMalloc1(numCells*numCellVertices, &cellVertices);CHKERRQ(ierr);
     for (c = 0; c < numCells*numCellVertices; c++) cellVertices[c] = -1;
     for (f = 0; f < numFaces; f++) {
