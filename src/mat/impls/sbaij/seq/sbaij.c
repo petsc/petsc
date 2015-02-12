@@ -87,12 +87,12 @@ static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscBool symme
     ierr = PetscMalloc2((n+1)*bs,ia,nz*bs,ja);CHKERRQ(ierr);
     for (i=0; i<n+1; i++) {
       for (j=0; j<bs; j++) {
-        *ia[i*bs+j] = a->i[i]*bs+j+oshift;
+        (*ia)[i*bs+j] = a->i[i]*bs+j+oshift;
       }
     }
     for (i=0; i<nz; i++) {
       for (j=0; j<bs; j++) {
-        *ja[i*bs+j] = a->j[i]*bs+j+oshift;
+        (*ja)[i*bs+j] = a->j[i]*bs+j+oshift;
       }
     }
   } else { /* blockcompressed */
