@@ -507,7 +507,7 @@ class Package(config.base.Configure):
       for giturl in self.giturls: # First try to fetch using Git
         self.logPrintBox('Trying to download '+giturl+' for '+self.PACKAGE)
         try:
-          gitrepo = os.path.join(self.externalPackagesDir, self.downloadname)
+          gitrepo = os.path.join(self.externalPackagesDir, self.downloadfilename)
           self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo])
           self.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=gitrepo)
           self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Git cloned '+self.name+' into '+self.getDir(0))
