@@ -1018,7 +1018,7 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,Vec *DICDP,Userctx *user)
   for (i=0;i<3;i++) {
     ierr   = VecDot(lambda,DICDP[i],&sensip);CHKERRQ(ierr);
     sensip = sensip+y[i];
-    /* ierr   = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt %d th parameter: %f \n",i,sensip);CHKERRQ(ierr); */
+    /* ierr   = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt %D th parameter: %g \n",i,(double)sensip);CHKERRQ(ierr); */
      y[i] = sensip;
   }
   ierr = VecRestoreArray(lambdap,&y);
