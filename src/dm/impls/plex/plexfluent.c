@@ -48,6 +48,55 @@ PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *buffer, c
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateFluent_ReadValues"
+PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *data, PetscInt count, PetscDataType dtype, PetscBool binary)
+{
+  int            fdes;
+  FILE          *file;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (binary) {
+    /* Extract raw file descriptor to read binary block */
+    ierr = PetscViewerASCIIGetPointer(viewer, &file);CHKERRQ(ierr);
+    fflush(file); fdes = fileno(file);
+  }
+
+  if (!binary && dtype == PETSC_INT) {
+    char cbuf[256];
+    int ibuf, snum;
+    /* Parse hexadecimal ascii integers */
+    for (i = 0; i < count; i++) {
+      ierr = PetscViewerRead(viewer, cbuf, 1, PETSC_STRING);CHKERRQ(ierr);
+      snum = sscanf(cbuf, "%x", &ibuf);
+      if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+      ((PetscInt*)data)[i] = (PetscInt)ibuf;
+    }
+  } else if (binary && dtype == PETSC_INT) {
+    /* Always read 32-bit ints and cast to PetscInt */
+    int *ibuf;
+    ierr = PetscMalloc1(count, &ibuf);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fdes, ibuf, count, PETSC_ENUM);CHKERRQ(ierr);
+    ierr = PetscByteSwap(ibuf, PETSC_ENUM, count);CHKERRQ(ierr);
+    for (i = 0; i < count; i++) ((PetscInt*)data)[i] = (PetscInt)(ibuf[i]);
+    ierr = PetscFree(ibuf);CHKERRQ(ierr);
+
+ } else if (binary && dtype == PETSC_SCALAR) {
+    float *fbuf;
+    /* Always read 32-bit floats and cast to PetscScalar */
+    ierr = PetscMalloc1(count, &fbuf);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fdes, fbuf, count, PETSC_FLOAT);CHKERRQ(ierr);
+    ierr = PetscByteSwap(fbuf, PETSC_FLOAT, count);CHKERRQ(ierr);
+    for (i = 0; i < count; i++) ((PetscScalar*)data)[i] = (PetscScalar)(fbuf[i]);
+    ierr = PetscFree(fbuf);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIRead(viewer, data, count, dtype);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateFluent_ReadSection"
 PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection *s)
 {
@@ -71,7 +120,7 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
     snum = sscanf(buffer, "%d", &(s->nd));
     if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
 
-  } else if (s->index == 10) {   /* Vertices */
+  } else if (s->index == 10 || s->index == 2010) {   /* Vertices */
     ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
     snum = sscanf(buffer, "(%x %x %x %d %d)", &(s->zoneID), &(s->first), &(s->last), &(s->type), &(s->nd));
     if (snum != 5) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
@@ -79,10 +128,12 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
       PetscInt numCoords = s->last - s->first + 1;
       ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '(');CHKERRQ(ierr);
       ierr = PetscMalloc1(s->nd*numCoords, (PetscScalar**)&s->data);CHKERRQ(ierr);
-      ierr = PetscViewerRead(viewer, (PetscScalar*)s->data, numCoords*s->nd, PETSC_REAL);CHKERRQ(ierr);
+      ierr = DMPlexCreateFluent_ReadValues(viewer, s->data, s->nd*numCoords, PETSC_SCALAR, s->index==2010);CHKERRQ(ierr);
+      ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
     }
+    ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
 
-  } else if (s->index == 12) {   /* Cells */
+  } else if (s->index == 12 || s->index == 2012) {   /* Cells */
     ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
     snum = sscanf(buffer, "(%x", &(s->zoneID));
     if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
@@ -94,17 +145,17 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
       if (snum != 5) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
       if (s->nd == 0) {
         /* Read cell type definitions for mixed cells */
-        PetscInt i, numCells = s->last - s->first + 1;
+        PetscInt numCells = s->last - s->first + 1;
         ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '(');CHKERRQ(ierr);
-        for (i = 0; i < numCells; i++) {
-          ierr = PetscViewerRead(viewer, buffer, 1, PETSC_STRING);CHKERRQ(ierr);
-        }
+        ierr = PetscMalloc1(numCells, (PetscInt**)&s->data);CHKERRQ(ierr);
+        ierr = DMPlexCreateFluent_ReadValues(viewer, s->data, numCells, PETSC_INT, s->index==2012);CHKERRQ(ierr);
+        ierr = PetscFree(s->data);CHKERRQ(ierr);
         ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
       }
     }
     ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
 
-  } else if (s->index == 13) {   /* Faces */
+  } else if (s->index == 13 || s->index == 2013) {   /* Faces */
     ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
     snum = sscanf(buffer, "(%x", &(s->zoneID));
     if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
@@ -112,8 +163,7 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
       snum = sscanf(buffer, "(%x %x %x %d)", &(s->zoneID), &(s->first), &(s->last), &(s->nd));
       if (snum != 4) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
     } else {               /* Data section */
-      PetscInt f, e, numEntries, numFaces;
-      int      numFaceVert;
+      PetscInt f, numEntries, numFaces, numFaceVert;
       snum = sscanf(buffer, "(%x %x %x %d %d)", &(s->zoneID), &(s->first), &(s->last), &(s->type), &(s->nd));
       if (snum != 5) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
       ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '(');CHKERRQ(ierr);
@@ -132,9 +182,7 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
       for (f = 0; f < numFaces; f++) {
         if (s->nd == 0) {
           /* Determine the size of the block for "mixed" facets */
-          ierr = PetscViewerRead(viewer, buffer, 1, PETSC_STRING);CHKERRQ(ierr);
-          snum = sscanf(buffer, "%x", &numFaceVert);
-          if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
+          ierr = DMPlexCreateFluent_ReadValues(viewer, &numFaceVert, 1, PETSC_INT, s->index==2013);CHKERRQ(ierr);
           if (numEntries == PETSC_DETERMINE) {
             numEntries = numFaceVert + 2;
             ierr = PetscMalloc1(numEntries*numFaces, (PetscInt**)&s->data);CHKERRQ(ierr);
@@ -144,11 +192,7 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
             }
           }
         }
-        for (e = 0; e < numEntries; e++) {
-          ierr = PetscViewerRead(viewer, buffer, 1, PETSC_STRING);CHKERRQ(ierr);
-          snum = sscanf(buffer, "%x", &(((PetscInt*)s->data)[f*numEntries + e]));
-          if (snum != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
-        }
+        ierr = DMPlexCreateFluent_ReadValues(viewer, &(((PetscInt*)s->data)[f*numEntries]), numEntries, PETSC_INT, s->index==2013);CHKERRQ(ierr);
       }
       s->nd = numEntries - 2;
       ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
@@ -213,14 +257,14 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
       if (s.index == 2) {                 /* Dimension */
         dim = s.nd;
 
-      } else if (s.index == 10) {         /* Vertices */
+      } else if (s.index == 10 || s.index == 2010) { /* Vertices */
         if (s.zoneID == 0) numVertices = s.last;
         else {
           if (coordsIn) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Currently no support for multiple coordinate sets in Fluent files");
           coordsIn = s.data;
         }
 
-      } else if (s.index == 12) {         /* Cells */
+      } else if (s.index == 12 || s.index == 2012) { /* Cells */
         if (s.zoneID == 0) numCells = s.last;
         else {
           switch (s.nd) {
@@ -235,7 +279,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
           }
         }
 
-      } else if (s.index == 13) {         /* Facets */
+      } else if (s.index == 13 || s.index == 2013) { /* Facets */
         if (s.zoneID == 0) {  /* Header section */
           numFaces = s.last - s.first + 1;
           if (s.nd == 0) numFaceVertices = PETSC_DETERMINE;
