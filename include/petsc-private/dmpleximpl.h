@@ -96,6 +96,18 @@ typedef struct {
   int *tags;         /* Tag array */
 } GmshElement;
 
+
+/* Utility struct to store the contents of a Fluent file in memory */
+typedef struct {
+  int   index;    /* Type of section */
+  int   zoneID;
+  int   first;
+  int   last;
+  int   type;
+  int   nd;       /* Either ND or element-type */
+  void *data;
+} FluentSection;
+
 struct _n_Boundary {
   const char *name;
   const char *labelname;
