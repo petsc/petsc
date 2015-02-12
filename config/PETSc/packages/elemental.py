@@ -13,6 +13,7 @@ class Configure(PETSc.package.NewPackage):
     self.requires32bitint = 0
     self.complex          = 1
     self.downloadonWindows= 0
+    self.downloadfilename = 'Elemental'
     return
 
   def setupDependencies(self, framework):
