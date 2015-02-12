@@ -38,7 +38,6 @@ Input parameters include:\n\
 typedef struct _n_User *User;
 struct _n_User {
   PetscReal mu;
-  PetscBool imex;
   PetscReal next_output;
   PetscInt  steps;
   PetscReal ftime,x_ob[2];
@@ -64,8 +63,6 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
   PetscFunctionBeginUser;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  /*f[0] = (user->imex ? x[1] : 0);
-   f[1] = 0.0;*/
   f[0] = x[1];
   f[1] = user->mu*(1.-x[0]*x[0])*x[1]-x[0];
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
@@ -149,7 +146,7 @@ int main(int argc,char **argv)
   TS                 ts;          /* nonlinear solver */
   Vec                p;
   PetscBool          monitor = PETSC_FALSE;
-  PetscScalar        *x_ptr,*y_ptr;
+  PetscScalar        *x_ptr;
   PetscMPIInt        size;
   struct _n_User     user;
   PetscErrorCode     ierr;
@@ -171,7 +168,6 @@ int main(int argc,char **argv)
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.mu          = 1.0;
-  user.imex        = PETSC_FALSE;
   user.next_output = 0.0;
   user.steps       = 0;
   user.ftime       = 0.5;
@@ -204,6 +200,7 @@ int main(int argc,char **argv)
   if (monitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
   }
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -211,12 +208,11 @@ int main(int argc,char **argv)
   x_ptr[0] = 2.0;   x_ptr[1] = 0.66666654321;
   ierr = VecRestoreArray(user.x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
-  /*ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);*/
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)(user.ftime));CHKERRQ(ierr);
 
-  /*
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Save trajectory of solution so that TSAdjointSolve() may be used
-  */
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -231,44 +227,15 @@ int main(int argc,char **argv)
   ierr = TSGetSolveTime(ts,&(user.ftime));CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&user.steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user.mu,user.steps,(double)user.ftime);CHKERRQ(ierr);
-  ierr = VecView(user.x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
   user.x_ob[0] = x_ptr[0];
   user.x_ob[1] = x_ptr[1];
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Adjoint model starts here
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   ierr = MatCreateVecs(user.A,&user.lambda[0],NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(user.A,&user.lambda[1],NULL);CHKERRQ(ierr);
-  /*   Redet initial conditions for the adjoint integration */
-  ierr = VecGetArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
-  y_ptr[0] = 2.*(x_ptr[0]-user.x_ob[0]);   y_ptr[1] = 0.0;
-  /*y_ptr[0] = 1.0;   y_ptr[1] = 0.0;*/
-  ierr = VecRestoreArray(user.lambda[0],&y_ptr);CHKERRQ(ierr);
-  ierr = VecGetArray(user.lambda[1],&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 0.0;   x_ptr[1] = 1.0;
-  ierr = VecRestoreArray(user.lambda[1],&x_ptr);CHKERRQ(ierr);
-
   ierr = MatCreateVecs(user.Jacp,&user.lambdap[0],NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(user.Jacp,&user.lambdap[1],NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(user.lambdap[0],&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 0.0;
-  ierr = VecRestoreArray(user.lambdap[0],&x_ptr);CHKERRQ(ierr);
-  ierr = VecGetArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = 0.0;
-  ierr = VecRestoreArray(user.lambdap[1],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetGradients(ts,1,user.lambda,user.lambdap);CHKERRQ(ierr);
-
-  ierr = TSSetRHSJacobian(ts,user.A,user.A,RHSJacobian,&user);CHKERRQ(ierr);
-  ierr = TSAdjointSetRHSJacobian(ts,user.Jacp,RHSJacobianP,&user);CHKERRQ(ierr);
-
-  ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
-
-  ierr = VecView(user.lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(user.lambda[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(user.lambdap[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(user.lambdap[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
@@ -319,7 +286,7 @@ int main(int argc,char **argv)
   /* Free TAO data structures */
   ierr = TaoDestroy(&tao);CHKERRQ(ierr);
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -371,19 +338,19 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,user);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
- /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecGetArray(user->x,&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = 2;   x_ptr[1] = 0.66666654321;
   ierr = VecRestoreArray(user->x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
-  /*ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);*/
-  ierr = TSSetDuration(ts,2000,0.5);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,PETSC_DEFAULT,0.5);CHKERRQ(ierr);
 
-  /*
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Save trajectory of solution so that TSAdjointSolve() may be used
-  */
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -426,7 +393,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
   ierr = VecCopy(user->lambdap[0],G);
-  ierr = VecView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
