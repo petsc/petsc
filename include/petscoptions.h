@@ -140,7 +140,6 @@ M*/
              for (PetscOptionsObject->count=(PetscOptionsPublish?-1:1); PetscOptionsObject->count<2; PetscOptionsObject->count++) {\
              PetscErrorCode _5_ierr = PetscOptionsBegin_Private(PetscOptionsObject,comm,prefix,mess,sec);CHKERRQ(_5_ierr);
 
-extern PetscClassId KSP_CLASSID,PC_CLASSID;
 /*MC
     PetscObjectOptionsBegin - Begins a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively.
