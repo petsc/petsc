@@ -722,6 +722,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   for (i=0;i<graph->nvtxs;i++) {
     j = PetscMax(j,is_indices[i]);
   }
+  ierr = ISLocalToGlobalMappingRestoreIndices(graph->l2gmap,&is_indices);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&j,&i,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
   i++;
   ierr = VecCreate(PETSC_COMM_SELF,&local_vec);CHKERRQ(ierr);
