@@ -673,6 +673,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         ierr = MatGetSubMatrix(newmat,is_aux,pcbddc->is_R_local,MAT_INITIAL_MATRIX,&A_VR);CHKERRQ(ierr);
         ierr = MatTranspose(A_VR,MAT_INITIAL_MATRIX,&A_RV);CHKERRQ(ierr);
         ierr = MatDestroy(&newmat);CHKERRQ(ierr);
+        ierr = MatConvert(A_VV,MATSEQBAIJ,MAT_REUSE_MATRIX,&A_VV);CHKERRQ(ierr);
       } else {
         ierr = MatGetSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,is_aux,MAT_INITIAL_MATRIX,&A_RV);CHKERRQ(ierr);
         ierr = MatGetSubMatrix(pcbddc->local_mat,is_aux,pcbddc->is_R_local,MAT_INITIAL_MATRIX,&A_VR);CHKERRQ(ierr);
