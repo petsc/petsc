@@ -1110,14 +1110,14 @@ PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatElementalHermitianGenDefEig_Elemental"
-PetscErrorCode MatElementalHermitianGenDefEig_Elemental(El::Pencil type,El::UpperOrLower uplo1,Mat A,Mat B,Mat *evals,Mat *evec,PetscReal vl,PetscReal vu)
+PetscErrorCode MatElementalHermitianGenDefEig_Elemental(El::Pencil eigtype,El::UpperOrLower uplo1,Mat A,Mat B,Mat *evals,Mat *evec,PetscReal vl,PetscReal vu)
 {
   PetscErrorCode           ierr;
   Mat_Elemental            *a=(Mat_Elemental*)A->data,*b=(Mat_Elemental*)B->data,*x;     
-  PetscElemScalar          vle=(PetscElemScalar)vl,vue=(PetscElemScalar)vu;
-  El::Pencil eigtype = El::AXBX;
-  const El::UpperOrLower uplo = El::UPPER;
-  const El::SortType     sort = El::UNSORTED; /* UNSORTED, DESCENDING, ASCENDING */
+  const El::UpperOrLower   uplo = El::UPPER;
+  const El::SortType       sort = El::UNSORTED; /* UNSORTED, DESCENDING, ASCENDING */
+  El::HermitianEigSubset<PetscElemScalar>       subset;
+  const El::HermitianEigCtrl<PetscElemScalar>   ctrl;
   MPI_Comm                 comm;
   Mat                      EVAL;
   
@@ -1125,7 +1125,10 @@ PetscErrorCode MatElementalHermitianGenDefEig_Elemental(El::Pencil type,El::Uppe
   /* Compute eigenvalues and eigenvectors */
   El::DistMatrix<PetscElemScalar,El::VR,El::STAR> w( *a->grid ); /* holding eigenvalues */
   El::DistMatrix<PetscElemScalar> X( *a->grid ); /* holding eigenvectors */
-  El::HermitianGenDefEig(eigtype,uplo,*a->emat,*b->emat,w,X,vle,vue,sort);
+  subset.rangeSubset = PETSC_TRUE; 
+  subset.lowerBound  = vl;
+  subset.upperBound  = vu;
+  El::HermitianGenDefEig(eigtype,uplo,*a->emat,*b->emat,w,X,sort,subset,ctrl);
   /* El::Print(w, "Eigenvalues"); */
 
   /* Wrap w and X into PETSc's MATMATELEMENTAL matrices */

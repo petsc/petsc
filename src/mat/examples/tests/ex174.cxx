@@ -23,8 +23,8 @@ int main(int argc,char **args)
   PetscInt       M,N,m;
 
   /* Below are Elemental data types, see <elemental.hpp> */
-  elem::Pencil eigtype;
-  elem::UpperOrLower                uplo;
+  El::Pencil       eigtype;
+  El::UpperOrLower uplo;
 
   PetscInitialize(&argc,&args,(char*)0,help);
 #if !defined(PETSC_HAVE_ELEMENTAL)
@@ -114,8 +114,8 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetReal(NULL,"-vl",&vl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-vu",&vu,NULL);CHKERRQ(ierr);
  
-  eigtype = elem::AXBX;
-  uplo    = elem::UPPER;
+  eigtype = El::AXBX;
+  uplo    = El::UPPER;
   ierr = MatElementalHermitianGenDefEig(eigtype,uplo,Ae,Be,&We,&Xe,vl,vu);CHKERRQ(ierr);
   //ierr = MatView(We,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
