@@ -20,7 +20,6 @@ petsc-dist/src/tops/images
 petsc-dist/src/tops/slides.ppt
 petsc-dist/src/tops/twopager.ppt
 petsc-dist/bin/maint
-petsc-dist/lib
 petsc-dist/BitKeeper
 petsc-dist/ChangeSet
 petsc-dist/arch-build
