@@ -247,6 +247,17 @@ PETSC_EXTERN PetscErrorCode PetscMatStashSpaceGet(PetscInt,PetscInt,PetscMatStas
 PETSC_EXTERN PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashSpace *,PetscScalar *,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace*);
 
+ typedef struct {
+  PetscInt    count;
+  PetscInt    insertmode;       /* PetscInt so it can be packed in a message containing only ints */
+} MatStashHeader;
+
+ typedef struct {
+  void        *buffer;          /* Of type blocktype, dynamically constructed  */
+  PetscInt    count;
+  char        pending;
+} MatStashFrame;
+
 typedef struct _MatStash MatStash;
 struct _MatStash {
   PetscInt      nmax;                   /* maximum stash size */
@@ -278,6 +289,32 @@ struct _MatStash {
   PetscMPIInt   *flg_v;                 /* indicates what messages have arrived so far and from whom */
   PetscBool     reproduce;
   PetscInt      reproduce_count;
+
+  /* The following variables are used for BTS communication */
+  PetscBool      assembly_subset; /* Subsequent assemblies will set a subset (perhaps equal) of off-process entries set on first assembly */
+  PetscBool      use_status;      /* Use MPI_Status to determine number of items in each message */
+  PetscMPIInt    nsendranks;
+  PetscMPIInt    nrecvranks;
+  PetscMPIInt    *sendranks;
+  PetscMPIInt    *recvranks;
+  MatStashHeader *sendhdr,*recvhdr;
+  MatStashFrame  *sendframes;   /* pointers to the main messages */
+  MatStashFrame  *recvframes;
+  MatStashFrame  *recvframe_active;
+  PetscInt       recvframe_i;     /* index of block within active frame */
+  PetscMPIInt    recvframe_count; /* Count actually sent for current frame */
+  PetscInt       recvcount;       /* Number of receives processed so far */
+  PetscMPIInt    *some_indices;   /* From last call to MPI_Waitsome */
+  MPI_Status     *some_statuses;  /* Statuses from last call to MPI_Waitsome */
+  PetscMPIInt    some_count;      /* Number of requests completed in last call to MPI_Waitsome */
+  PetscMPIInt    some_i;          /* Index of request currently being processed */
+  MPI_Request    *sendreqs;
+  MPI_Request    *recvreqs;
+  PetscSegBuffer segsendblocks;
+  PetscSegBuffer segrecvframe;
+  PetscSegBuffer segrecvblocks;
+  MPI_Datatype   blocktype;
+  size_t         blocktype_size;
 };
 
 PETSC_INTERN PetscErrorCode MatStashCreate_Private(MPI_Comm,PetscInt,MatStash*);
