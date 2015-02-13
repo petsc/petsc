@@ -9,6 +9,7 @@ class Configure(config.package.Package):
     self.includes  = ['triangle.h']
     self.liblist   = [['libtriangle.a']]
     self.needsMath = 1
+    self.requires32bitint = 1;  # 1 means that the package will not work with 64 bit integers
     return
 
   def setupDependencies(self, framework):
