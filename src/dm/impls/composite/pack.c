@@ -470,14 +470,14 @@ PetscErrorCode  DMCompositeScatterArray(DM dm,Vec gvec,Vec *lvecs)
   for (i=0,next=com->next; next; next=next->next,i++) {
     if (lvecs[i]) {
       Vec         global;
-      PetscScalar *array;
+      const PetscScalar *array;
       PetscValidHeaderSpecific(lvecs[i],VEC_CLASSID,3);
       ierr = DMGetGlobalVector(next->dm,&global);CHKERRQ(ierr);
-      ierr = VecGetArray(gvec,&array);CHKERRQ(ierr);
-      ierr = VecPlaceArray(global,array+next->rstart);CHKERRQ(ierr);
+      ierr = VecGetArrayRead(gvec,&array);CHKERRQ(ierr);
+      ierr = VecPlaceArray(global,(PetscScalar*)array+next->rstart);CHKERRQ(ierr);
       ierr = DMGlobalToLocalBegin(next->dm,global,INSERT_VALUES,lvecs[i]);CHKERRQ(ierr);
       ierr = DMGlobalToLocalEnd(next->dm,global,INSERT_VALUES,lvecs[i]);CHKERRQ(ierr);
-      ierr = VecRestoreArray(gvec,&array);CHKERRQ(ierr);
+      ierr = VecRestoreArrayRead(gvec,&array);CHKERRQ(ierr);
       ierr = VecResetArray(global);CHKERRQ(ierr);
       ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr);
     }
