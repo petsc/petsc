@@ -247,7 +247,8 @@ PETSC_EXTERN PetscErrorCode PetscMatStashSpaceGet(PetscInt,PetscInt,PetscMatStas
 PETSC_EXTERN PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashSpace *,PetscScalar *,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace*);
 
-typedef struct {
+typedef struct _MatStash MatStash;
+struct _MatStash {
   PetscInt      nmax;                   /* maximum stash size */
   PetscInt      umax;                   /* user specified max-size */
   PetscInt      oldnmax;                /* the nmax value used previously */
@@ -255,6 +256,12 @@ typedef struct {
   PetscInt      bs;                     /* block size of the stash */
   PetscInt      reallocs;               /* preserve the no of mallocs invoked */
   PetscMatStashSpace space_head,space;  /* linked list to hold stashed global row/column numbers and matrix values */
+
+  PetscErrorCode (*ScatterBegin)(Mat,MatStash*,PetscInt*);
+  PetscErrorCode (*ScatterGetMesg)(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
+  PetscErrorCode (*ScatterEnd)(MatStash*);
+  PetscErrorCode (*ScatterDestroy)(MatStash*);
+
   /* The following variables are used for communication */
   MPI_Comm      comm;
   PetscMPIInt   size,rank;
@@ -271,7 +278,7 @@ typedef struct {
   PetscMPIInt   *flg_v;                 /* indicates what messages have arrived so far and from whom */
   PetscBool     reproduce;
   PetscInt      reproduce_count;
-} MatStash;
+};
 
 PETSC_INTERN PetscErrorCode MatStashCreate_Private(MPI_Comm,PetscInt,MatStash*);
 PETSC_INTERN PetscErrorCode MatStashDestroy_Private(MatStash*);

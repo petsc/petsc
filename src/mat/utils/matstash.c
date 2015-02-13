@@ -3,6 +3,9 @@
 
 #define DEFAULT_STASH_SIZE   10000
 
+static PetscErrorCode MatStashScatterBegin_Ref(Mat,MatStash*,PetscInt*);
+static PetscErrorCode MatStashScatterGetMesg_Ref(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
+static PetscErrorCode MatStashScatterEnd_Ref(MatStash*);
 /*
   MatStashCreate_Private - Creates a stash,currently used for all the parallel
   matrix implementations. The stash is where elements of a matrix destined
@@ -72,6 +75,15 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   stash->reproduce   = PETSC_FALSE;
 
   ierr = PetscOptionsGetBool(NULL,"-matstash_reproduce",&stash->reproduce,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-matstash_bts",&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    SETERRQ(comm,PETSC_ERR_SUP,"Not implemented yet");
+  } else {
+    stash->ScatterBegin   = MatStashScatterBegin_Ref;
+    stash->ScatterGetMesg = MatStashScatterGetMesg_Ref;
+    stash->ScatterEnd     = MatStashScatterEnd_Ref;
+    stash->ScatterDestroy = NULL;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -86,6 +98,7 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
 
   PetscFunctionBegin;
   ierr = PetscMatStashSpaceDestroy(&stash->space_head);CHKERRQ(ierr);
+  if (stash->ScatterDestroy) {ierr = (*stash->ScatterDestroy)(stash);CHKERRQ(ierr);}
 
   stash->space = 0;
 
@@ -104,6 +117,17 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
 #undef __FUNCT__
 #define __FUNCT__ "MatStashScatterEnd_Private"
 PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = (*stash->ScatterEnd)(stash);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatStashScatterEnd_Ref"
+static PetscErrorCode MatStashScatterEnd_Ref(MatStash *stash)
 {
   PetscErrorCode ierr;
   PetscInt       nsends=stash->nsends,bs2,oldnmax,i;
@@ -440,6 +464,17 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,Pet
 #define __FUNCT__ "MatStashScatterBegin_Private"
 PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *owners)
 {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = (*stash->ScatterBegin)(mat,stash,owners);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatStashScatterBegin_Ref"
+static PetscErrorCode MatStashScatterBegin_Ref(Mat mat,MatStash *stash,PetscInt *owners)
+{
   PetscInt           *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
   PetscInt           size=stash->size,nsends;
   PetscErrorCode     ierr;
@@ -605,6 +640,17 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
 #undef __FUNCT__
 #define __FUNCT__ "MatStashScatterGetMesg_Private"
 PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscInt **cols,PetscScalar **vals,PetscInt *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = (*stash->ScatterGetMesg)(stash,nvals,rows,cols,vals,flg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatStashScatterGetMesg_Ref"
+static PetscErrorCode MatStashScatterGetMesg_Ref(MatStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscInt **cols,PetscScalar **vals,PetscInt *flg)
 {
   PetscErrorCode ierr;
   PetscMPIInt    i,*flg_v = stash->flg_v,i1,i2;
