@@ -4,12 +4,6 @@
 #include <El.hpp>
 #include <petsc-private/matimpl.h>
 
-#if defined(PETSC_USE_COMPLEX)
-typedef El::Complex<PetscReal> PetscElemScalar;
-#else
-typedef PetscScalar PetscElemScalar;
-#endif
-
 typedef struct {
   PetscInt commsize;
   PetscInt m[2];       /* Number of entries in a local block of the row (column) space */

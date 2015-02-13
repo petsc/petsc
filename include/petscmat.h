@@ -1738,10 +1738,15 @@ PETSC_EXTERN PetscErrorCode MatCreateVecsFFTW(Mat,Vec*,Vec*,Vec*);
    PETSc interface to ELEMENTAL
 */
 #if defined(PETSC_HAVE_ELEMENTAL)
+#if defined(PETSC_USE_COMPLEX)
+typedef El::Complex<PetscReal> PetscElemScalar;
+#else
+typedef PetscScalar PetscElemScalar;
+#endif
 #if defined(__cplusplus)
 #include <El.hpp>
 /* c++ prototypes requiring elemental datatypes. */
-PETSC_EXTERN PetscErrorCode MatElementalHermitianGenDefEig(El::Pencil,El::UpperOrLower,Mat,Mat,Mat*,Mat*,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode MatElementalHermitianGenDefEig(El::Pencil,El::UpperOrLower,Mat,Mat,Mat*,Mat*,El::SortType,El::HermitianEigSubset<PetscElemScalar>,const El::HermitianEigCtrl<PetscElemScalar>);
 #endif
 PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);

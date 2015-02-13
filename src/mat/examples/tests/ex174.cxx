@@ -23,8 +23,11 @@ int main(int argc,char **args)
   PetscInt       M,N,m;
 
   /* Below are Elemental data types, see <elemental.hpp> */
-  El::Pencil       eigtype;
-  El::UpperOrLower uplo;
+  El::Pencil       eigtype = El::AXBX;
+  El::UpperOrLower uplo    = El::UPPER;
+  El::SortType     sort    = El::UNSORTED; /* UNSORTED, DESCENDING, ASCENDING */
+  El::HermitianEigSubset<PetscElemScalar>       subset;
+  const El::HermitianEigCtrl<PetscElemScalar>   ctrl;
 
   PetscInitialize(&argc,&args,(char*)0,help);
 #if !defined(PETSC_HAVE_ELEMENTAL)
@@ -113,10 +116,10 @@ int main(int argc,char **args)
   vl = -0.8, vu = -0.7;
   ierr = PetscOptionsGetReal(NULL,"-vl",&vl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-vu",&vu,NULL);CHKERRQ(ierr);
- 
-  eigtype = El::AXBX;
-  uplo    = El::UPPER;
-  ierr = MatElementalHermitianGenDefEig(eigtype,uplo,Ae,Be,&We,&Xe,vl,vu);CHKERRQ(ierr);
+  subset.rangeSubset = PETSC_TRUE; 
+  subset.lowerBound  = vl;
+  subset.upperBound  = vu;
+  ierr = MatElementalHermitianGenDefEig(eigtype,uplo,Ae,Be,&We,&Xe,sort,subset,ctrl);CHKERRQ(ierr);
   //ierr = MatView(We,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Check || A*X - B*X*We || */

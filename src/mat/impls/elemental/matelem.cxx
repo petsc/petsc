@@ -1110,24 +1110,18 @@ PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatElementalHermitianGenDefEig_Elemental"
-PetscErrorCode MatElementalHermitianGenDefEig_Elemental(El::Pencil eigtype,El::UpperOrLower uplo1,Mat A,Mat B,Mat *evals,Mat *evec,PetscReal vl,PetscReal vu)
+PetscErrorCode MatElementalHermitianGenDefEig_Elemental(El::Pencil eigtype,El::UpperOrLower uplo,Mat A,Mat B,Mat *evals,Mat *evec,El::SortType sort,El::HermitianEigSubset<PetscElemScalar> subset,const El::HermitianEigCtrl<PetscElemScalar> ctrl)
 {
-  PetscErrorCode           ierr;
-  Mat_Elemental            *a=(Mat_Elemental*)A->data,*b=(Mat_Elemental*)B->data,*x;     
-  const El::UpperOrLower   uplo = El::UPPER;
-  const El::SortType       sort = El::UNSORTED; /* UNSORTED, DESCENDING, ASCENDING */
-  El::HermitianEigSubset<PetscElemScalar>       subset;
-  const El::HermitianEigCtrl<PetscElemScalar>   ctrl;
-  MPI_Comm                 comm;
-  Mat                      EVAL;
+  PetscErrorCode ierr;
+  Mat_Elemental  *a=(Mat_Elemental*)A->data,*b=(Mat_Elemental*)B->data,*x;
+  MPI_Comm       comm;
+  Mat            EVAL;
+  Mat_Elemental  *e;
   
   PetscFunctionBegin;
   /* Compute eigenvalues and eigenvectors */
   El::DistMatrix<PetscElemScalar,El::VR,El::STAR> w( *a->grid ); /* holding eigenvalues */
-  El::DistMatrix<PetscElemScalar> X( *a->grid ); /* holding eigenvectors */
-  subset.rangeSubset = PETSC_TRUE; 
-  subset.lowerBound  = vl;
-  subset.upperBound  = vu;
+  El::DistMatrix<PetscElemScalar>                 X( *a->grid ); /* holding eigenvectors */
   El::HermitianGenDefEig(eigtype,uplo,*a->emat,*b->emat,w,X,sort,subset,ctrl);
   /* El::Print(w, "Eigenvalues"); */
 
@@ -1152,7 +1146,7 @@ PetscErrorCode MatElementalHermitianGenDefEig_Elemental(El::Pencil eigtype,El::U
   ierr = MatSetUp(EVAL);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(EVAL,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(EVAL,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  Mat_Elemental  *e = (Mat_Elemental*)EVAL->data;
+  e         = (Mat_Elemental*)EVAL->data;
   *e->emat = w; //-- memory leak???
   *evals   = EVAL;
 
@@ -1183,30 +1177,20 @@ PetscErrorCode MatElementalHermitianGenDefEig_Elemental(El::Pencil eigtype,El::U
 #undef __FUNCT__
 #define __FUNCT__ "MatElementalHermitianGenDefEig"
 /*@
-  MatElementalHermitianGenDefEig - 
+  MatElementalHermitianGenDefEig - Compute the set of eigenvalues of the Hermitian-definite matrix pencil determined by the subset structure
 
    Logically Collective on Mat
 
-   Input Parameters:
-+  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
-.  icntl - index of MUMPS parameter array ICNTL()
--  ival - value of MUMPS ICNTL(icntl)
-
-  Options Database:
-.   -mat_mumps_icntl_<icntl> <ival>
-
    Level: beginner
 
-   References: MUMPS Users' Guide
-
-.seealso: MatGetFactor()
+   References: Elemental Users' Guide
 @*/
-PetscErrorCode MatElementalHermitianGenDefEig(El::Pencil type,El::UpperOrLower uplo,Mat A,Mat B,Mat *evals,Mat *evec,PetscReal vl,PetscReal vu)
+PetscErrorCode MatElementalHermitianGenDefEig(El::Pencil type,El::UpperOrLower uplo,Mat A,Mat B,Mat *evals,Mat *evec,El::SortType sort,El::HermitianEigSubset<PetscElemScalar> subset,const El::HermitianEigCtrl<PetscElemScalar> ctrl)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"MatElementalHermitianGenDefEig_C",(El::Pencil,El::UpperOrLower,Mat,Mat,Mat*,Mat*,PetscReal,PetscReal),(type,uplo,A,B,evals,evec,vl,vu));CHKERRQ(ierr);
+  ierr = PetscTryMethod(A,"MatElementalHermitianGenDefEig_C",(El::Pencil,El::UpperOrLower,Mat,Mat,Mat*,Mat*,El::SortType,El::HermitianEigSubset<PetscElemScalar>,const El::HermitianEigCtrl<PetscElemScalar>),(type,uplo,A,B,evals,evec,sort,subset,ctrl));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1221,8 +1205,8 @@ static struct _MatOps MatOps_Values = {
        MatMultTransposeAdd_Elemental,
        MatSolve_Elemental,
        MatSolveAdd_Elemental,
-       0, //MatSolveTranspose_Elemental,
-/*10*/ 0, //MatSolveTransposeAdd_Elemental,
+       0, 
+/*10*/ 0, 
        MatLUFactor_Elemental,
        MatCholeskyFactor_Elemental,
        0,
@@ -1234,7 +1218,7 @@ static struct _MatOps MatOps_Values = {
        MatNorm_Elemental,
 /*20*/ MatAssemblyBegin_Elemental,
        MatAssemblyEnd_Elemental,
-       0, //MatSetOption_Elemental,
+       0, 
        MatZeroEntries_Elemental,
 /*24*/ 0,
        MatLUFactorSymbolic_Elemental,
