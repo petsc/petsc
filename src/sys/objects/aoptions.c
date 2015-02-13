@@ -411,7 +411,7 @@ PetscErrorCode PetscOptionsSAWsInput(PetscOptions *PetscOptionsObject)
   /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
   sprintf(options,"Options_%d",count++);
 
-  PetscOptionsObject->pprefix = PetscOptionsObject->prefix; /* AMS will change this, so cannot pass prefix directly */
+  PetscOptionsObject->pprefix = PetscOptionsObject->prefix; /* SAWs will change this, so cannot pass prefix directly */
 
   ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s","_title");CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&PetscOptionsObject->title,1,SAWs_READ,SAWs_STRING));
@@ -1511,7 +1511,7 @@ PetscErrorCode  PetscOptionsBoolArray_Private(PetscOptions *PetscOptionsObject,c
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscOption   amsopt;
+  PetscOption    amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsObject->count) {
