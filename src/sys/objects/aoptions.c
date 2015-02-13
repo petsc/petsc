@@ -537,7 +537,6 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptions *PetscOptionsObject)
   }
 
   ierr = PetscFree(PetscOptionsObject->title);CHKERRQ(ierr);
-  ierr = PetscFree(PetscOptionsObject->prefix);CHKERRQ(ierr);
 
   /* reset counter to -2; this updates the screen with the new options for the selected method */
   if (PetscOptionsObject->changedmethod) PetscOptionsObject->count = -2;
@@ -625,6 +624,7 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptions *PetscOptionsObject)
     PetscOptionsObject->next = PetscOptionsObject->next->next;
     ierr                    = PetscFree(last);CHKERRQ(ierr);
   }
+  ierr = PetscFree(PetscOptionsObject->prefix);CHKERRQ(ierr);
   PetscOptionsObject->next = 0;
   PetscFunctionReturn(0);
 }
