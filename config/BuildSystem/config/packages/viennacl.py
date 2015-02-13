@@ -4,8 +4,8 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download        = ['http://downloads.sourceforge.net/project/viennacl/1.6.x/ViennaCL-1.6.1.tar.gz']
-    self.downloadfilename = str('ViennaCL-1.6.1')
+    self.download        = ['http://downloads.sourceforge.net/project/viennacl/1.6.x/ViennaCL-1.6.2.tar.gz']
+    self.downloadfilename = str('ViennaCL-1.6.2')
     self.includes        = ['viennacl/forwards.h']
     self.cxx             = 1
     self.downloadonWindows = 1
