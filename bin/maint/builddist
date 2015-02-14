@@ -150,7 +150,7 @@ cat include/petscversion.h.bak | \
 /bin/rm -f include/petscversion.h.bak
 
 # just to be sure
-/bin/rm -rf configure.log* RDict.* lib RESYNC PENDING
+/bin/rm -rf configure.log* RDict.* RESYNC PENDING
 # eliminate .html files in src/contrib
 /usr/bin/find src/contrib -type f -name "*.html" -exec /bin/rm -f {} \;
 # eliminate .pyc files if any
