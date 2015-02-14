@@ -3216,7 +3216,7 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
     size_t    len;
 
     ierr = PetscViewerDrawGetDraw(ictx->viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(time,32,"Timestep %d Time %f",(int)step,(double)ptime);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(time,32,"Timestep %d Time %g",(int)step,(double)ptime);CHKERRQ(ierr);
     ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
     ierr =  PetscStrlen(time,&len);CHKERRQ(ierr);
     ierr = PetscDrawStringGetSize(draw,&tw,NULL);CHKERRQ(ierr);
@@ -3285,7 +3285,7 @@ PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,V
 
   if (ictx->showtimestepandtime) {
     ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(time,32,"Timestep %d Time %f",(int)step,(double)ptime);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(time,32,"Timestep %d Time %g",(int)step,(double)ptime);CHKERRQ(ierr);
     ierr = PetscStrlen(time,&len);CHKERRQ(ierr);
     ierr = PetscDrawStringGetSize(draw,&tw,NULL);CHKERRQ(ierr);
     w    = xl + .5*(xr - xl) - .5*len*tw;
