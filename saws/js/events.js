@@ -81,35 +81,17 @@ $(document).on("click","#copyToClipboard",function(){
 
 //call this method to refresh all the diagram (only the ones that are checked will be displayed)
 function refresh() {
-    if(displayCmdOptions) {
         $("#rightPanel").html(""); //clear the rightPanel
         var cmdOptions = getCmdOptions(matInfo,"0","","newline");
         clipboardText  = getCmdOptions(matInfo,"0","","space");
         $("#rightPanel").append("<b>Command Line Options:</b>");
         $("#rightPanel").append("<input type=button value=\"Copy to Clipboard\" id=\"copyToClipboard\" style=\"float:right;font-size:12px;\"><br><br>");
         $("#rightPanel").append(cmdOptions);
-    }
-    else {
-        $("#rightPanel").html("");
-        clipboardText = "";
-    }
-
-    if(displayTree) {
-        //$("#tree").html("");
-        //buildTree();
 
         calculateSizes(matInfo,"0");
         var svgString = getBoxTree(matInfo,"0",0,0);
         $("#tree").html("<svg id=\"treeCanvas\" width=\"" + matInfo["0"].total_size.width + "\" height=\"" + matInfo["0"].total_size.height + "\" viewBox=\"0 0 " + matInfo["0"].total_size.width + " " + matInfo["0"].total_size.height + "\">" + svgString + "</svg>");
-    }
-    else
-        $("#tree").html("");
 
-    if(displayMatrix) {
-        $("#matrixPic").html("<center>" + "\\(\\require{color}\\)" + "\\(" + getMatrixTex(matInfo, "0") + "\\)" + "</center>");
-        MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-    }
-    else
         $("#matrixPic").html("");
 
     /*if(displayDiagram) {
