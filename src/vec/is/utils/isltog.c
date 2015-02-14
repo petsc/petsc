@@ -556,10 +556,10 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
   if (type == IS_GTOLM_MASK) {
     if (idxout) {
       for (i=0; i<n; i++) {
-        if (idx[i] < 0) idxout[i] = idx[i];
-        else if (idx[i] < bs*start) idxout[i] = -1;
-        else if (idx[i] > bs*end)   idxout[i] = -1;
-        else                        idxout[i] = bs*globals[idx[i]/bs - start] + (idx[i] % bs);
+        if (idx[i] < 0)                   idxout[i] = idx[i];
+        else if (idx[i] < bs*start)       idxout[i] = -1;
+        else if (idx[i] > bs*(end+1)-1)   idxout[i] = -1;
+        else                              idxout[i] = bs*globals[idx[i]/bs - start] + (idx[i] % bs);
       }
     }
     if (nout) *nout = n;
@@ -568,7 +568,7 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
       for (i=0; i<n; i++) {
         if (idx[i] < 0) continue;
         if (idx[i] < bs*start) continue;
-        if (idx[i] > bs*end) continue;
+        if (idx[i] > bs*(end+1)-1) continue;
         tmp = bs*globals[idx[i]/bs - start] + (idx[i] % bs);
         if (tmp < 0) continue;
         idxout[nf++] = tmp;
@@ -577,7 +577,7 @@ PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlo
       for (i=0; i<n; i++) {
         if (idx[i] < 0) continue;
         if (idx[i] < bs*start) continue;
-        if (idx[i] > bs*end) continue;
+        if (idx[i] > bs*(end+1)-1) continue;
         tmp = bs*globals[idx[i]/bs - start] + (idx[i] % bs);
         if (tmp < 0) continue;
         nf++;
