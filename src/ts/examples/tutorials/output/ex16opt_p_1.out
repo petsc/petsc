@@ -1,360 +1,153 @@
 mu 1, steps 0, ftime 0.5
 mu 1, steps 7, ftime 0.5
-Vec Object: 1 MPI processes
-  type: seq
-2.00704
--0.377169
-Vec Object: 1 MPI processes
-  type: seq
-0
-0
-Vec Object: 1 MPI processes
-  type: seq
-0
-1
-Vec Object: 1 MPI processes
-  type: seq
-0
-Vec Object: 1 MPI processes
-  type: seq
-0
 WARNING: Variable bounds have been set but will be ignored by cg algorithm
 mu 6.0000000000000000, steps 16, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=1.987294, Cost function f=0.070862
-Vec Object: 1 MPI processes
-  type: seq
-0.00976762
 iter =   0, Function value: 0.070862,  Residual: 0.00976762 
 mu 5.0232377457490971, steps 15, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=1.986172, Cost function f=0.060024
-Vec Object: 1 MPI processes
-  type: seq
-0.0125672
 mu 1.1161887287454864, steps 8, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.003580, Cost function f=0.000122
-Vec Object: 1 MPI processes
-  type: seq
-0.00211561
 iter =   1, Function value: 0.000121547,  Residual: 0.00211561 
 mu 1.1140731203971408, steps 8, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.003639, Cost function f=0.000117
-Vec Object: 1 MPI processes
-  type: seq
-0.00207535
 mu 1.1056106870037581, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.003893, Cost function f=0.000099
-Vec Object: 1 MPI processes
-  type: seq
-0.00190812
 mu 1.0717609534302275, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.004853, Cost function f=0.000046
-Vec Object: 1 MPI processes
-  type: seq
-0.00128192
 iter =   2, Function value: 4.56101e-05,  Residual: 0.00128192 
 mu 1.0704790367709804, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.004891, Cost function f=0.000044
-Vec Object: 1 MPI processes
-  type: seq
-0.00125842
 mu 1.0653513701339927, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.005040, Cost function f=0.000038
-Vec Object: 1 MPI processes
-  type: seq
-0.00116459
 mu 1.0448407035860419, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.005650, Cost function f=0.000018
-Vec Object: 1 MPI processes
-  type: seq
-0.000792421
 iter =   3, Function value: 1.76888e-05,  Residual: 0.000792421 
 mu 1.0440482822072912, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.005674, Cost function f=0.000017
-Vec Object: 1 MPI processes
-  type: seq
-0.000778151
 mu 1.0408785966922887, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.005770, Cost function f=0.000015
-Vec Object: 1 MPI processes
-  type: seq
-0.000721157
 mu 1.0281998546322788, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006157, Cost function f=0.000007
-Vec Object: 1 MPI processes
-  type: seq
-0.000494625
 iter =   4, Function value: 6.96351e-06,  Residual: 0.000494625 
 mu 1.0277052296441935, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006173, Cost function f=0.000007
-Vec Object: 1 MPI processes
-  type: seq
-0.000485836
 mu 1.0257267296918524, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006234, Cost function f=0.000006
-Vec Object: 1 MPI processes
-  type: seq
-0.000450719
 mu 1.0178127298824879, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006480, Cost function f=0.000003
-Vec Object: 1 MPI processes
-  type: seq
-0.000310875
 iter =   5, Function value: 2.76984e-06,  Residual: 0.000310875 
 mu 1.0175018550020518, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006490, Cost function f=0.000003
-Vec Object: 1 MPI processes
-  type: seq
-0.000305402
 mu 1.0162583554803075, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006529, Cost function f=0.000002
-Vec Object: 1 MPI processes
-  type: seq
-0.000283529
 mu 1.0112843573933303, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006685, Cost function f=0.000001
-Vec Object: 1 MPI processes
-  type: seq
-0.000196295
 iter =   6, Function value: 1.10936e-06,  Residual: 0.000196295 
 mu 1.0110880627667660, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006691, Cost function f=0.000001
-Vec Object: 1 MPI processes
-  type: seq
-0.000192861
 mu 1.0103028842605088, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006716, Cost function f=0.000001
-Vec Object: 1 MPI processes
-  type: seq
-0.000179132
 mu 1.0071621702354800, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006816, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-0.000124324
 iter =   7, Function value: 4.46317e-07,  Residual: 0.000124324 
 mu 1.0070378464216336, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006820, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-0.000122158
 mu 1.0065405511662484, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006835, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-0.000113497
 mu 1.0045513701447071, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006899, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-7.88967e-05
 iter =   8, Function value: 1.80084e-07,  Residual: 7.88967e-05 
 mu 1.0044724734752524, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006901, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-7.75258e-05
 mu 1.0041568867974340, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006911, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-7.20434e-05
 mu 1.0028945400861602, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006952, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-5.01321e-05
 iter =   9, Function value: 7.27977e-08,  Residual: 5.01321e-05 
 mu 1.0028444079860548, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006953, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-4.92625e-05
 mu 1.0026438795856332, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006960, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-4.57847e-05
 mu 1.0018417659839463, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006985, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-3.18807e-05
 iter =  10, Function value: 2.94631e-08,  Residual: 3.18807e-05 
 mu 1.0018098852960640, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006986, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-3.13283e-05
 mu 1.0016823625445348, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.006990, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-2.9119e-05
 mu 1.0011722715384184, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007007, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-2.02846e-05
 iter =  11, Function value: 1.19336e-08,  Residual: 2.02846e-05 
 mu 1.0011519869476786, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007007, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-1.99334e-05
 mu 1.0010708485847195, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007010, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-1.85286e-05
 mu 1.0007462951328834, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007020, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-1.29107e-05
 iter =  12, Function value: 4.83588e-09,  Residual: 1.29107e-05 
 mu 1.0007333844374526, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007021, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-1.26873e-05
 mu 1.0006817416557297, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007022, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-1.17935e-05
 mu 1.0004751705288375, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007029, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-8.21912e-06
 iter =  13, Function value: 1.96027e-09,  Residual: 8.21912e-06 
 mu 1.0004669514071611, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007029, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-8.07692e-06
 mu 1.0004340749204552, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007030, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-7.50812e-06
 mu 1.0003025689736320, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007035, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-5.23311e-06
 iter =  14, Function value: 7.94768e-10,  Residual: 5.23311e-06 
 mu 1.0002973358609661, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007035, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-5.14259e-06
 mu 1.0002764034103031, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007035, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-4.7805e-06
 mu 1.0001926736076507, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007038, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-3.33221e-06
 iter =  15, Function value: 3.2227e-10,  Residual: 3.33221e-06 
 mu 1.0001893413981569, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007038, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-3.27457e-06
 mu 1.0001760125601813, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007039, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-3.04404e-06
 mu 1.0001226972082795, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007040, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-2.12192e-06
 iter =  16, Function value: 1.30688e-10,  Residual: 2.12192e-06 
 mu 1.0001205752911138, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007040, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-2.08522e-06
 mu 1.0001120876224512, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007041, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-1.93842e-06
 mu 1.0000781369478009, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007042, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-1.35126e-06
 iter =  17, Function value: 5.29996e-11,  Residual: 1.35126e-06 
 mu 1.0000767856850965, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007042, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-1.32789e-06
 mu 1.0000713806342787, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007042, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-1.23442e-06
 mu 1.0000497604310079, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007043, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-8.6052e-07
 iter =  18, Function value: 2.14943e-11,  Residual: 8.6052e-07 
 mu 1.0000488999112258, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007043, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-8.45638e-07
 mu 1.0000454578320970, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007043, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-7.86112e-07
 mu 1.0000316895155816, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007043, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-5.4801e-07
 iter =  19, Function value: 8.71734e-12,  Residual: 5.4801e-07 
 mu 1.0000311415060554, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007043, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-5.38533e-07
 mu 1.0000289494679508, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007043, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-5.00625e-07
 mu 1.0000201813155323, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007044, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-3.48995e-07
 iter =  20, Function value: 3.53549e-12,  Residual: 3.48995e-07 
 mu 1.0000198323204608, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007044, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-3.4296e-07
 mu 1.0000184363401745, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007044, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-3.18819e-07
 mu 1.0000128524190295, steps 7, ftime 0.5
 Observed value y_ob=[2.007044; -0.377169], ODE solution y=2.007044, Cost function f=0.000000
-Vec Object: 1 MPI processes
-  type: seq
-2.22256e-07
 iter =  21, Function value: 1.4339e-12,  Residual: 2.22256e-07 
 Tao Object: 1 MPI processes
   type: cg
