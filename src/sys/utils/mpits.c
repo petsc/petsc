@@ -553,9 +553,14 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Da
                                    PetscErrorCode (*send)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,PetscMPIInt,void*,MPI_Request[],void*),
                                    PetscErrorCode (*recv)(MPI_Comm,const PetscMPIInt[],PetscMPIInt,void*,MPI_Request[],void*),void *ctx);
   PetscBuildTwoSidedType buildtype = PETSC_BUILDTWOSIDED_NOTSET;
+  PetscMPIInt i,size;
 
   PetscFunctionBegin;
   ierr = PetscSysInitializePackage();CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  for (i=0; i<nto; i++) {
+    if (toranks[i] < 0 || size <= toranks[i]) SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"toranks[%d] %d not in comm size %d",i,toranks[i],size);
+  }
   ierr = PetscLogEventBegin(PETSC_BuildTwoSidedF,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscCommBuildTwoSidedGetType(comm,&buildtype);CHKERRQ(ierr);
   switch (buildtype) {
