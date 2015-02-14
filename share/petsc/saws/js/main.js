@@ -23,7 +23,7 @@ $(document).ready(function(){
     };
 
     //to start, append the first div (div0) in the table and the first pc/ksp options dropdown
-    $("#results").append("<div id=\"leftPanel\" style=\"float:left;\"> </div> <div id=\"rightPanel\" style=\"float:left;padding-left:30px;\"></div>");
+    $("#results").append("<div id=\"leftPanel\" style=\"background-color:lightblue;float:left;\"> </div> <div id=\"rightPanel\" style=\"float:left;padding-left:30px;\"></div>");
     $("#leftPanel").append("<div id=\"solver0\"> </div><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>");
 
     $("#solver0").append("<b>Root Solver Options (Matrix is <input type=\"checkbox\" id=\"symm0\">symmetric, <input type=\"checkbox\" id=\"posdef0\">positive definite, <input type=\"checkbox\" id=\"logstruc0\">block structured)</b>");//text: Solver Level: 0

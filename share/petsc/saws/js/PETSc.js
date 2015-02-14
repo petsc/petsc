@@ -25,10 +25,10 @@ PETSc.getAndDisplayDirectory = function(names,divEntry){
         $("head").append('<script src="js/drawDiagrams.js"></script>');//contains the code to draw diagrams of the solver structure. in particular, fieldsplit and multigrid
         $("head").append('<script src="js/boxTree.js"></script>');//contains the code to draw the tree
         $("head").append('<script src="js/getCmdOptions.js"></script>');//contains the code to draw the tree
+        $("body").append("<div id=\"tree\" align=\"center\" style=\"background-color:#90C7E3\"></div");
         $("body").append("<div id=\"leftDiv\" style=\"float:left;\"></div>");
         $(divEntry).appendTo("#leftDiv");
         $("body").append("<div id=\"diagram\"></div>");
-        $("body").append("<div id=\"tree\"></div");
 
         init = true;
     }
@@ -74,7 +74,7 @@ PETSc.displayDirectory = function(sub,divEntry)
             }
             calculateSizes(sawsInfo,"0");
             var svgString = getBoxTree(sawsInfo,"0",0,0);
-            $("#tree").html("<svg id=\"treeCanvas\" width=\"" + sawsInfo["0"].total_size.width + "\" height=\"" + sawsInfo["0"].total_size.height + "\" viewBox=\"0 0 " + sawsInfo["0"].total_size.width + " " + sawsInfo["0"].total_size.height + "\">" + svgString + "</svg>");
+            $("#tree").html("<svg id=\"treeCanvas\" align=\"center\" width=\"" + sawsInfo["0"].total_size.width + "\" height=\"" + sawsInfo["0"].total_size.height + "\" viewBox=\"0 0 " + sawsInfo["0"].total_size.width + " " + sawsInfo["0"].total_size.height + "\">" + svgString + "</svg>");
         }
     }
     PETSc.displayDirectoryRecursive(sub.directories,divEntry,0,"");//this method is recursive on itself and actually fills the div with text and dropdown lists
