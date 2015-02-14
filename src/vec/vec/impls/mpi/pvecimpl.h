@@ -27,8 +27,8 @@ typedef struct {
 
   PetscBool   assembly_subset;          /* Subsequent assemblies will set a subset (perhaps equal) of off-process entries set on first assembly */
   PetscBool   use_status;               /* Use MPI_Status to determine number of items in each message */
-  PetscInt    nsendranks;
-  PetscInt    nrecvranks;
+  PetscMPIInt nsendranks;
+  PetscMPIInt nrecvranks;
   PetscMPIInt *sendranks;
   PetscMPIInt *recvranks;
   VecAssemblyHeader *sendhdr,*recvhdr;

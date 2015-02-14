@@ -284,7 +284,7 @@ PETSC_INTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt
 PETSC_INTERN PetscErrorCode VecStashScatterBegin_Private(VecStash*,PetscInt*);
 PETSC_INTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,PetscInt**,PetscScalar**,PetscInt*);
 PETSC_INTERN PetscErrorCode VecStashSortCompress_Private(VecStash*);
-PETSC_INTERN PetscErrorCode VecStashGetOwnerList_Private(VecStash*,PetscLayout,PetscInt*,PetscMPIInt**);
+PETSC_INTERN PetscErrorCode VecStashGetOwnerList_Private(VecStash*,PetscLayout,PetscMPIInt*,PetscMPIInt**);
 
 /*
   VecStashValue_Private - inserts a single value into the stash.

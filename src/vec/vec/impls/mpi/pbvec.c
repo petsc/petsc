@@ -188,10 +188,12 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
   ierr = VecStashSortCompress_Private(&X->bstash);CHKERRQ(ierr);
 
   if (!x->sendranks) {
-    PetscInt nowners,bnowners,*owners,*bowners;
+    PetscMPIInt nowners,bnowners,*owners,*bowners;
+    PetscInt ntmp;
     ierr = VecStashGetOwnerList_Private(&X->stash,X->map,&nowners,&owners);CHKERRQ(ierr);
     ierr = VecStashGetOwnerList_Private(&X->bstash,X->map,&bnowners,&bowners);CHKERRQ(ierr);
-    ierr = PetscMergeMPIIntArray(nowners,owners,bnowners,bowners,&x->nsendranks,&x->sendranks);CHKERRQ(ierr);
+    ierr = PetscMergeMPIIntArray(nowners,owners,bnowners,bowners,&ntmp,&x->sendranks);CHKERRQ(ierr);
+    x->nsendranks = ntmp;
     ierr = PetscFree(owners);CHKERRQ(ierr);
     ierr = PetscFree(bowners);CHKERRQ(ierr);
     ierr = PetscMalloc1(x->nsendranks,&x->sendhdr);CHKERRQ(ierr);
