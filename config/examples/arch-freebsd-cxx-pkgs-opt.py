@@ -25,6 +25,7 @@ configure_options = [
   '--download-spai=1',
   '--download-netcdf=1',
   '--download-moab=1',
+  '--download-saws',
   ]
 
 if __name__ == '__main__':
