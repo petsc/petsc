@@ -47,7 +47,6 @@ struct _PCBDDCSubSchurs {
   PetscBool use_mumps;
   /* local Schur complements on subsets (principal minors) */
   Mat *S_Ej;
-  Mat *S_Ej_tilda;
   PetscBT is_edge;
   PetscBT computed_Stilda_subs;
   /* matrices cointained explicit schur complements cat together */

@@ -439,10 +439,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       ierr = MatDestroy(&sub_schurs->S_Ej[lpi]);CHKERRQ(ierr);
       sub_schurs->S_Ej[lpi] = S_Ej_expl;
     }
-    /* Stildas are not computed without mumps */
-    for (i=0;i<sub_schurs->n_subs;i++) {
-      ierr = MatDestroy(&sub_schurs->S_Ej_tilda[i]);CHKERRQ(ierr);
-    }
     ierr = PetscFree(dummy_idx);CHKERRQ(ierr);
   } else {
     PetscInt  *dummy_idx,n_all;
@@ -540,10 +536,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
         ierr = MatView(Stilda,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
         PetscViewerPopFormat(PETSC_VIEWER_STDOUT_SELF);
 */
-        ierr = MatDestroy(&sub_schurs->S_Ej_tilda[i]);CHKERRQ(ierr);
-        sub_schurs->S_Ej_tilda[i] = Stilda;
-
-        ierr = MatDenseGetArray(sub_schurs->S_Ej_tilda[i],&vals);CHKERRQ(ierr);
+        ierr = MatDenseGetArray(Stilda,&vals);CHKERRQ(ierr);
         if (deluxe) { /* when using deluxe scaling, we need (S_1^-1+S_2^-1)^-1 */
           PetscScalar *vals2;
 
@@ -566,9 +559,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
           ierr = MatDenseRestoreArray(sub_schurs->S_Ej[i],&vals2);CHKERRQ(ierr);
         }
         ierr = MatSetValues(S_Ej_tilda_all,subset_size,dummy_idx,subset_size,dummy_idx,vals,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatDenseRestoreArray(sub_schurs->S_Ej_tilda[i],&vals);CHKERRQ(ierr);
-      } else {
-        ierr = MatDestroy(&sub_schurs->S_Ej_tilda[i]);CHKERRQ(ierr);
+        ierr = MatDenseRestoreArray(Stilda,&vals);CHKERRQ(ierr);
+        ierr = MatDestroy(&Stilda);CHKERRQ(ierr);
       }
       ierr = ISDestroy(&is_E);CHKERRQ(ierr);
       local_size += subset_size;
@@ -807,8 +799,7 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat A, Mat S, IS 
 
 
   /* allocate space for schur complements */
-  ierr = PetscCalloc2(sub_schurs->n_subs,&sub_schurs->S_Ej,
-                      sub_schurs->n_subs,&sub_schurs->S_Ej_tilda);CHKERRQ(ierr);
+  ierr = PetscCalloc1(sub_schurs->n_subs,&sub_schurs->S_Ej);CHKERRQ(ierr);
   sub_schurs->S_Ej_all = NULL;
   sub_schurs->sum_S_Ej_all = NULL;
   sub_schurs->sum_S_Ej_inv_all = NULL;
@@ -873,12 +864,11 @@ PetscErrorCode PCBDDCSubSchursReset(PCBDDCSubSchurs sub_schurs)
   for (i=0;i<sub_schurs->n_subs;i++) {
     ierr = ISDestroy(&sub_schurs->is_subs[i]);CHKERRQ(ierr);
     ierr = MatDestroy(&sub_schurs->S_Ej[i]);CHKERRQ(ierr);
-    ierr = MatDestroy(&sub_schurs->S_Ej_tilda[i]);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&sub_schurs->is_I_layer);CHKERRQ(ierr);
   if (sub_schurs->n_subs) {
     ierr = PetscFree(sub_schurs->is_subs);CHKERRQ(ierr);
-    ierr = PetscFree2(sub_schurs->S_Ej,sub_schurs->S_Ej_tilda);CHKERRQ(ierr);
+    ierr = PetscFree(sub_schurs->S_Ej);CHKERRQ(ierr);
   }
   ierr = PetscFree2(sub_schurs->index_sequential,sub_schurs->index_parallel);CHKERRQ(ierr);
   ierr = PetscFree(sub_schurs->auxglobal_sequential);CHKERRQ(ierr);
