@@ -1704,34 +1704,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscInt          *temp_indices,*temp_indices_to_constraint,*temp_indices_to_constraint_B;
   /* iterators */
   PetscInt          i,j,k,total_counts,temp_start_ptr;
-  /* stuff to store connected components stored in pcbddc->mat_graph */
-  IS                ISForVertices,*ISForFaces,*ISForEdges,*used_IS;
-  PetscInt          n_ISForFaces,n_ISForEdges;
-  /* near null space stuff */
-  MatNullSpace      nearnullsp;
-  const Vec         *nearnullvecs;
-  Vec               *localnearnullsp;
-  PetscBool         nnsp_has_cnst;
-  PetscInt          nnsp_size;
-  PetscScalar       *array;
   /* BLAS integers */
   PetscBLASInt      lwork,lierr;
   PetscBLASInt      Blas_N,Blas_M,Blas_K,Blas_one=1;
   PetscBLASInt      Blas_LDA,Blas_LDB,Blas_LDC;
-  /* LAPACK working arrays for SVD or POD */
-  PetscBool         skip_lapack;
-  PetscScalar       *work;
-  PetscReal         *singular_vals;
-#if defined(PETSC_USE_COMPLEX)
-  PetscReal         *rwork;
-#endif
-#if defined(PETSC_MISSING_LAPACK_GESVD)
-  PetscBLASInt      Blas_one_2=1;
-  PetscScalar       *temp_basis,*correlation_mat;
-#else
-  PetscBLASInt      dummy_int_1=1,dummy_int_2=1;
-  PetscScalar       dummy_scalar_1=0.0,dummy_scalar_2=0.0;
-#endif
   /* reuse */
   PetscInt          olocal_primal_size;
   PetscInt          *oprimal_indices_local_idxs;
@@ -1747,63 +1723,85 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscInt          n_vertices,total_primal_vertices,valid_constraints;
   PetscInt          size_of_constraint,max_size_of_constraint=0,max_constraints,temp_constraints;
 
-
   PetscFunctionBegin;
   /* Destroy Mat objects computed previously */
   ierr = MatDestroy(&pcbddc->ChangeOfBasisMatrix);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->ConstraintMatrix);CHKERRQ(ierr);
-  /* TODO synch with adaptive selection */
-  /* Get index sets for faces, edges and vertices from graph */
-  ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices);CHKERRQ(ierr);
-  /* free unneeded index sets */
-  if (!pcbddc->use_vertices) {
-    ierr = ISDestroy(&ISForVertices);CHKERRQ(ierr);
-  }
-  if (!pcbddc->use_edges) {
-    for (i=0;i<n_ISForEdges;i++) {
-      ierr = ISDestroy(&ISForEdges[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(ISForEdges);CHKERRQ(ierr);
-    n_ISForEdges = 0;
-  }
-  if (!pcbddc->use_faces) {
-    for (i=0;i<n_ISForFaces;i++) {
-      ierr = ISDestroy(&ISForFaces[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(ISForFaces);CHKERRQ(ierr);
-    n_ISForFaces = 0;
-  }
-  /* HACKS (the following two blocks of code) */
-  if (!ISForVertices && pcbddc->NullSpace && !pcbddc->user_ChangeOfBasisMatrix) {
-    pcbddc->use_change_of_basis = PETSC_TRUE;
-    if (!ISForEdges) {
-      pcbddc->use_change_on_faces = PETSC_TRUE;
-    }
-  }
-  if (pcbddc->NullSpace) {
-    /* use_change_of_basis should be consistent among processors */
-    PetscBool tbool[2],gbool[2];
-    tbool [0] = pcbddc->use_change_of_basis;
-    tbool [1] = pcbddc->use_change_on_faces;
-    ierr = MPI_Allreduce(tbool,gbool,2,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-    pcbddc->use_change_of_basis = gbool[0];
-    pcbddc->use_change_on_faces = gbool[1];
-  }
+
   /* print some info */
   if (pcbddc->dbg_flag) {
+    IS       vertices;
+    PetscInt nv,nedges,nfaces;
+    ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,&nfaces,NULL,&nedges,NULL,&vertices);CHKERRQ(ierr);
+    ierr = ISGetSize(vertices,&nv);CHKERRQ(ierr);
+    ierr = ISDestroy(&vertices);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"--------------------------------------------------------------\n");CHKERRQ(ierr);
-    i = 0;
-    if (ISForVertices) {
-      ierr = ISGetSize(ISForVertices,&i);CHKERRQ(ierr);
-    }
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate vertices\n",PetscGlobalRank,i);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate edges\n",PetscGlobalRank,n_ISForEdges);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate faces\n",PetscGlobalRank,n_ISForFaces);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate vertices (%d)\n",PetscGlobalRank,nv,pcbddc->use_vertices);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate edges    (%d)\n",PetscGlobalRank,nfaces,pcbddc->use_edges);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate faces    (%d)\n",PetscGlobalRank,nedges,pcbddc->use_faces);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
 
   if (!pcbddc->adaptive_selection) {
+    IS           ISForVertices,*ISForFaces,*ISForEdges,*used_IS;
+    MatNullSpace nearnullsp;
+    const Vec    *nearnullvecs;
+    Vec          *localnearnullsp;
+    PetscScalar  *array;
+    PetscInt     n_ISForFaces,n_ISForEdges,nnsp_size;
+    PetscBool    nnsp_has_cnst;
+    /* LAPACK working arrays for SVD or POD */
+    PetscBool    skip_lapack;
+    PetscScalar  *work;
+    PetscReal    *singular_vals;
+#if defined(PETSC_USE_COMPLEX)
+    PetscReal    *rwork;
+#endif
+#if defined(PETSC_MISSING_LAPACK_GESVD)
+    PetscScalar  *temp_basis,*correlation_mat;
+#else
+    PetscBLASInt dummy_int;
+    PetscScalar  dummy_scalar;
+#endif
+
+    /* Get index sets for faces, edges and vertices from graph */
+    ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices);CHKERRQ(ierr);
+    /* free unneeded index sets */
+    if (!pcbddc->use_vertices) {
+      ierr = ISDestroy(&ISForVertices);CHKERRQ(ierr);
+    }
+    if (!pcbddc->use_edges) {
+      for (i=0;i<n_ISForEdges;i++) {
+        ierr = ISDestroy(&ISForEdges[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(ISForEdges);CHKERRQ(ierr);
+      n_ISForEdges = 0;
+    }
+    if (!pcbddc->use_faces) {
+      for (i=0;i<n_ISForFaces;i++) {
+        ierr = ISDestroy(&ISForFaces[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(ISForFaces);CHKERRQ(ierr);
+      n_ISForFaces = 0;
+    }
+    /* HACKS (the following two blocks of code) */
+    if (!ISForVertices && pcbddc->NullSpace && !pcbddc->user_ChangeOfBasisMatrix) {
+      pcbddc->use_change_of_basis = PETSC_TRUE;
+      if (!ISForEdges) {
+        pcbddc->use_change_on_faces = PETSC_TRUE;
+      }
+    }
+    if (pcbddc->NullSpace) {
+      /* use_change_of_basis should be consistent among processors */
+      PetscBool tbool[2],gbool[2];
+      tbool [0] = pcbddc->use_change_of_basis;
+      tbool [1] = pcbddc->use_change_on_faces;
+      ierr = MPI_Allreduce(tbool,gbool,2,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+      pcbddc->use_change_of_basis = gbool[0];
+      pcbddc->use_change_on_faces = gbool[1];
+    }
+
     /* check if near null space is attached to global mat */
     ierr = MatGetNearNullSpace(pc->pmat,&nearnullsp);CHKERRQ(ierr);
     if (nearnullsp) {
@@ -1918,9 +1916,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = PetscBLASIntCast(max_n,&Blas_LDA);CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-      PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&temp_quadrature_constraint[0],&Blas_LDA,singular_vals,&dummy_scalar_1,&dummy_int_1,&dummy_scalar_2,&dummy_int_2,&temp_work,&lwork,&lierr));
+      PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&temp_quadrature_constraint[0],&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,&lierr));
 #else
-      PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&temp_quadrature_constraint[0],&Blas_LDA,singular_vals,&dummy_scalar_1,&dummy_int_1,&dummy_scalar_2,&dummy_int_2,&temp_work,&lwork,rwork,&lierr));
+      PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&temp_quadrature_constraint[0],&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,rwork,&lierr));
 #endif
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GESVD Lapack routine %d",(int)lierr);
@@ -2069,7 +2067,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
           for (j=0;j<temp_constraints;j++) {
             for (k=0;k<j+1;k++) {
-              PetscStackCallBLAS("BLASdot",correlation_mat[j*temp_constraints+k]=BLASdot_(&Blas_N,&temp_quadrature_constraint[temp_indices[temp_start_ptr+k]],&Blas_one,&temp_quadrature_constraint[temp_indices[temp_start_ptr+j]],&Blas_one_2));
+              PetscStackCallBLAS("BLASdot",correlation_mat[j*temp_constraints+k]=BLASdot_(&Blas_N,&temp_quadrature_constraint[temp_indices[temp_start_ptr+k]],&Blas_one,&temp_quadrature_constraint[temp_indices[temp_start_ptr+j]],&Blas_one));
             }
           }
           /* compute eigenvalues and eigenvectors of correlation matrix */
@@ -2112,9 +2110,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-          PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Blas_LDA,singular_vals,&dummy_scalar_1,&dummy_int_1,&dummy_scalar_2,&dummy_int_2,work,&lwork,&lierr));
+          PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,&lierr));
 #else
-          PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Blas_LDA,singular_vals,&dummy_scalar_1,&dummy_int_1,&dummy_scalar_2,&dummy_int_2,work,&lwork,rwork,&lierr));
+          PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,rwork,&lierr));
 #endif
           if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESVD Lapack routine %d",(int)lierr);
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -2154,6 +2152,20 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = VecDestroy(&localnearnullsp[k]);CHKERRQ(ierr);
     }
     ierr = PetscFree(localnearnullsp);CHKERRQ(ierr);
+    /* free index sets of faces, edges and vertices */
+    for (i=0;i<n_ISForFaces;i++) {
+      ierr = ISDestroy(&ISForFaces[i]);CHKERRQ(ierr);
+    }
+    if (n_ISForFaces) {
+      ierr = PetscFree(ISForFaces);CHKERRQ(ierr);
+    }
+    for (i=0;i<n_ISForEdges;i++) {
+      ierr = ISDestroy(&ISForEdges[i]);CHKERRQ(ierr);
+    }
+    if (n_ISForEdges) {
+      ierr = PetscFree(ISForEdges);CHKERRQ(ierr);
+    }
+    ierr = ISDestroy(&ISForVertices);CHKERRQ(ierr);
   } else {
     PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
     PetscInt        cum = 0;
@@ -2206,21 +2218,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       }
     }
   }
-
-  /* free index sets of faces, edges and vertices */
-  for (i=0;i<n_ISForFaces;i++) {
-    ierr = ISDestroy(&ISForFaces[i]);CHKERRQ(ierr);
-  }
-  if (n_ISForFaces) {
-    ierr = PetscFree(ISForFaces);CHKERRQ(ierr);
-  }
-  for (i=0;i<n_ISForEdges;i++) {
-    ierr = ISDestroy(&ISForEdges[i]);CHKERRQ(ierr);
-  }
-  if (n_ISForEdges) {
-    ierr = PetscFree(ISForEdges);CHKERRQ(ierr);
-  }
-  ierr = ISDestroy(&ISForVertices);CHKERRQ(ierr);
 
   /* map temp_indices_to_constraint in boundary numbering */
   ierr = ISGlobalToLocalMappingApply(pcis->BtoNmap,IS_GTOLM_DROP,temp_indices[total_counts],temp_indices_to_constraint,&i,temp_indices_to_constraint_B);CHKERRQ(ierr);
@@ -2367,6 +2364,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     PetscInt     global_size,local_size;
     /* temporary change of basis */
     Mat          localChangeOfBasisMatrix;
+    /* extra space for debugging */
+    PetscScalar  *dbg_work;
 
     /* local temporary change of basis acts on local interfaces -> dimension is n_B x n_B */
     ierr = MatCreate(PETSC_COMM_SELF,&localChangeOfBasisMatrix);CHKERRQ(ierr);
@@ -2451,7 +2450,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = PetscMalloc1(max_constraints*max_constraints,&trs_rhs);CHKERRQ(ierr);
       /* allocating workspace for check */
       if (pcbddc->dbg_flag) {
-        ierr = PetscMalloc1(max_size_of_constraint*(max_constraints+max_size_of_constraint),&work);CHKERRQ(ierr);
+        ierr = PetscMalloc1(max_size_of_constraint*(max_constraints+max_size_of_constraint),&dbg_work);CHKERRQ(ierr);
       }
     }
     /* array to store whether a node is primal or not */
@@ -2489,7 +2488,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
           /* copy quadrature constraints for change of basis check */
           if (pcbddc->dbg_flag) {
-            ierr = PetscMemcpy(work,&temp_quadrature_constraint[temp_indices[total_counts]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
+            ierr = PetscMemcpy(dbg_work,&temp_quadrature_constraint[temp_indices[total_counts]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
           }
           /* copy temporary constraints into larger work vector (in order to store all columns of Q) */
           ierr = PetscMemcpy(qr_basis,&temp_quadrature_constraint[temp_indices[total_counts]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -2568,23 +2567,23 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
             ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDB);CHKERRQ(ierr);
             ierr = PetscBLASIntCast(primal_dofs,&Blas_LDC);CHKERRQ(ierr);
             ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-            PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&Blas_M,&Blas_N,&Blas_K,&one,work,&Blas_LDA,qr_basis,&Blas_LDB,&zero,&work[size_of_constraint*primal_dofs],&Blas_LDC));
+            PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&Blas_M,&Blas_N,&Blas_K,&one,dbg_work,&Blas_LDA,qr_basis,&Blas_LDB,&zero,&dbg_work[size_of_constraint*primal_dofs],&Blas_LDC));
             ierr = PetscFPTrapPop();CHKERRQ(ierr);
             for (jj=0;jj<size_of_constraint;jj++) {
               for (ii=0;ii<primal_dofs;ii++) {
-                if (ii != jj && PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]) > 1.e-12) valid_qr = PETSC_FALSE;
-                if (ii == jj && PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]-1.0) > 1.e-12) valid_qr = PETSC_FALSE;
+                if (ii != jj && PetscAbsScalar(dbg_work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]) > 1.e-12) valid_qr = PETSC_FALSE;
+                if (ii == jj && PetscAbsScalar(dbg_work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]-1.0) > 1.e-12) valid_qr = PETSC_FALSE;
               }
             }
             if (!valid_qr) {
               ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\t-> wrong change of basis!\n");CHKERRQ(ierr);
               for (jj=0;jj<size_of_constraint;jj++) {
                 for (ii=0;ii<primal_dofs;ii++) {
-                  if (ii != jj && PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]) > 1.e-12) {
-                    PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\tQr basis function %d is not orthogonal to constraint %d (%1.14e)!\n",jj,ii,PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]));
+                  if (ii != jj && PetscAbsScalar(dbg_work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]) > 1.e-12) {
+                    PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\tQr basis function %d is not orthogonal to constraint %d (%1.14e)!\n",jj,ii,PetscAbsScalar(dbg_work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]));
                   }
-                  if (ii == jj && PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]-1.0) > 1.e-12) {
-                    PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\tQr basis function %d is not unitary w.r.t constraint %d (%1.14e)!\n",jj,ii,PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]));
+                  if (ii == jj && PetscAbsScalar(dbg_work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]-1.0) > 1.e-12) {
+                    PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\tQr basis function %d is not unitary w.r.t constraint %d (%1.14e)!\n",jj,ii,PetscAbsScalar(dbg_work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]));
                   }
                 }
               }
@@ -2635,7 +2634,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* free workspace */
     if (qr_needed) {
       if (pcbddc->dbg_flag) {
-        ierr = PetscFree(work);CHKERRQ(ierr);
+        ierr = PetscFree(dbg_work);CHKERRQ(ierr);
       }
       ierr = PetscFree(trs_rhs);CHKERRQ(ierr);
       ierr = PetscFree(qr_tau);CHKERRQ(ierr);
