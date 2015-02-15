@@ -150,7 +150,7 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerCreate(ccomm, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
         CHKERR( PetscViewerSetType(self.vwr, PETSCVIEWERBINARY) )
-        CHKERR( PetscViewerBinarySetMPIIO(self.vwr) )
+        CHKERR( PetscViewerBinarySetUseMPIIO(self.vwr, PETSC_TRUE) )
         CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
         CHKERR( PetscViewerFileSetName(self.vwr, cname) )
         CHKERR( PetscViewerSetFormat(self.vwr, cvfmt) )

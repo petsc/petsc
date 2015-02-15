@@ -74,7 +74,7 @@ cdef extern from * nogil:
     int PetscViewerBinaryOpen(MPI_Comm,char[],PetscFileMode,PetscViewer*)
     int PetscViewerDrawOpen(MPI_Comm,char[],char[],int,int,int,int,PetscViewer*)
 
-    int PetscViewerBinarySetMPIIO(PetscViewer)
+    int PetscViewerBinarySetUseMPIIO(PetscViewer,PetscBool)
 
     int PetscViewerSetFormat(PetscViewer,PetscViewerFormat)
     int PetscViewerGetFormat(PetscViewer,PetscViewerFormat*)
