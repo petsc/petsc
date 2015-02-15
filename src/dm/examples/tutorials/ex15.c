@@ -29,7 +29,7 @@ PetscErrorCode MyVecDump(const char fname[],PetscBool skippheader,PetscBool usem
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   if (skippheader) { ierr = PetscViewerBinarySetSkipHeader(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-  if (usempiio) { ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr); }
+  if (usempiio) { ierr = PetscViewerBinarySetUseMPIIO(viewer);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetName(viewer,fname);CHKERRQ(ierr);
 
   ierr = VecView(x,viewer);CHKERRQ(ierr);
@@ -59,7 +59,7 @@ PetscErrorCode MyVecLoad(const char fname[],PetscBool skippheader,PetscBool usem
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   if (skippheader) { ierr = PetscViewerBinarySetSkipHeader(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_READ);CHKERRQ(ierr);
-  if (usempiio) { ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr); }
+  if (usempiio) { ierr = PetscViewerBinarySetUseMPIIO(viewer);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetName(viewer,fname);CHKERRQ(ierr);
 
   ierr = VecLoad(x,viewer);CHKERRQ(ierr);
