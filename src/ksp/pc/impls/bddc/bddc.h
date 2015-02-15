@@ -12,7 +12,6 @@ typedef struct {
   PC_IS         pcis;
   /* Coarse stuffs needed by BDDC application in KSP */
   Vec           coarse_vec;
-  Vec           coarse_rhs;
   KSP           coarse_ksp;
   Mat           coarse_phi_B;
   Mat           coarse_phi_D;

@@ -391,9 +391,10 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
 
   PetscFunctionBegin;
   ierr = VecDestroy(&pcbddc->coarse_vec);CHKERRQ(ierr);
-  ierr = VecDestroy(&pcbddc->coarse_rhs);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(pcbddc->coarse_phi_B,&array);CHKERRQ(ierr);
-  ierr = PetscFree(array);CHKERRQ(ierr);
+  if (pcbddc->coarse_phi_B) {
+    ierr = MatDenseGetArray(pcbddc->coarse_phi_B,&array);CHKERRQ(ierr);
+    ierr = PetscFree(array);CHKERRQ(ierr);
+  }
   ierr = MatDestroy(&pcbddc->coarse_phi_B);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->coarse_phi_D);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->coarse_psi_B);CHKERRQ(ierr);
@@ -1620,14 +1621,13 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
   PetscFunctionReturn(0);
 }
 
-/* TODO: the following two function can be optimized using VecPlaceArray whenever possible and using overlap flag */
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScatterCoarseDataBegin"
 PetscErrorCode PCBDDCScatterCoarseDataBegin(PC pc,InsertMode imode, ScatterMode smode)
 {
   PetscErrorCode ierr;
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
-  PetscScalar    *array,*array2;
+  PetscScalar    *array;
   Vec            from,to;
 
   PetscFunctionBegin;
@@ -1636,14 +1636,13 @@ PetscErrorCode PCBDDCScatterCoarseDataBegin(PC pc,InsertMode imode, ScatterMode 
     to = pcbddc->vec1_P;
     if (pcbddc->coarse_ksp) { /* get array from coarse processes */
       Vec tvec;
-      PetscInt lsize;
+
+      ierr = KSPGetRhs(pcbddc->coarse_ksp,&tvec);CHKERRQ(ierr);
+      ierr = VecResetArray(tvec);CHKERRQ(ierr);
       ierr = KSPGetSolution(pcbddc->coarse_ksp,&tvec);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(tvec,&lsize);CHKERRQ(ierr);
-      ierr = VecGetArrayRead(tvec,(const PetscScalar**)&array);CHKERRQ(ierr);
-      ierr = VecGetArray(from,&array2);CHKERRQ(ierr);
-      ierr = PetscMemcpy(array2,array,lsize*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr = VecRestoreArrayRead(tvec,(const PetscScalar**)&array);CHKERRQ(ierr);
-      ierr = VecRestoreArray(from,&array2);CHKERRQ(ierr);
+      ierr = VecGetArray(tvec,&array);CHKERRQ(ierr);
+      ierr = VecPlaceArray(from,array);CHKERRQ(ierr);
+      ierr = VecRestoreArray(tvec,&array);CHKERRQ(ierr);
     }
   } else { /* from local to global -> put data in coarse right hand side */
     from = pcbddc->vec1_P;
@@ -1659,7 +1658,7 @@ PetscErrorCode PCBDDCScatterCoarseDataEnd(PC pc, InsertMode imode, ScatterMode s
 {
   PetscErrorCode ierr;
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
-  PetscScalar    *array,*array2;
+  PetscScalar    *array;
   Vec            from,to;
 
   PetscFunctionBegin;
@@ -1674,14 +1673,15 @@ PetscErrorCode PCBDDCScatterCoarseDataEnd(PC pc, InsertMode imode, ScatterMode s
   if (smode == SCATTER_FORWARD) {
     if (pcbddc->coarse_ksp) { /* get array from coarse processes */
       Vec tvec;
-      PetscInt lsize;
+
       ierr = KSPGetRhs(pcbddc->coarse_ksp,&tvec);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(tvec,&lsize);CHKERRQ(ierr);
-      ierr = VecGetArrayRead(to,(const PetscScalar**)&array);CHKERRQ(ierr);
-      ierr = VecGetArray(tvec,&array2);CHKERRQ(ierr);
-      ierr = PetscMemcpy(array2,array,lsize*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr = VecRestoreArrayRead(to,(const PetscScalar**)&array);CHKERRQ(ierr);
-      ierr = VecRestoreArray(tvec,&array2);CHKERRQ(ierr);
+      ierr = VecGetArray(to,&array);CHKERRQ(ierr);
+      ierr = VecPlaceArray(tvec,array);CHKERRQ(ierr);
+      ierr = VecRestoreArray(to,&array);CHKERRQ(ierr);
+    }
+  } else {
+    if (pcbddc->coarse_ksp) { /* restore array of pcbddc->coarse_vec */
+     ierr = VecResetArray(from);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -3947,6 +3947,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   if (multilevel_allowed) {
     ncoarse = ncoarse_ml;
     csin = csin_ml;
+    redist = PETSC_FALSE;
   } else {
     ncoarse = ncoarse_ds;
     csin = csin_ds;
@@ -4038,8 +4039,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         PetscInt    spc,n_spc_p1,dest[1],destsize;
 
         ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
-        spc = active_procs/pcbddc->redistribute_coarse;
-        n_spc_p1 = active_procs%pcbddc->redistribute_coarse;
+        spc = active_procs/ncoarse;
+        n_spc_p1 = active_procs%ncoarse;
         if (im_active) {
           destsize = 1;
           if (rank > n_spc_p1*(spc+1)-1) {

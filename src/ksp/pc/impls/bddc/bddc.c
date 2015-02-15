@@ -1912,7 +1912,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->user_ChangeOfBasisMatrix   = 0;
   pcbddc->new_global_mat             = 0;
   pcbddc->coarse_vec                 = 0;
-  pcbddc->coarse_rhs                 = 0;
   pcbddc->coarse_ksp                 = 0;
   pcbddc->coarse_phi_B               = 0;
   pcbddc->coarse_phi_D               = 0;
