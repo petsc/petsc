@@ -3,6 +3,7 @@
 
 #include <El.hpp>
 #include <petsc-private/matimpl.h>
+#include <petscmatelemental.h>
 
 typedef struct {
   PetscInt commsize;

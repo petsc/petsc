@@ -6,6 +6,7 @@ static char help[] = "Tests MatConvert(), MatLoad(), MatElementalHermitianGenDef
 */
  
 #include <petscmat.h>
+#include <petscmatelemental.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
