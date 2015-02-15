@@ -272,13 +272,19 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       for (i=0;i<sub_schurs->n_subs;i++) {
         ierr = MatGetSubMatrix(A_BB,is_subset_B[i],is_subset_B[i],MAT_INITIAL_MATRIX,&AE_EE[i]);CHKERRQ(ierr);
       }
+
       /* IE block */
       for (i=0;i<sub_schurs->n_subs;i++) {
         ierr = MatGetSubMatrix(A_IB,is_I,is_subset_B[i],MAT_INITIAL_MATRIX,&AE_IE[i]);CHKERRQ(ierr);
       }
+
       /* EI block */
       for (i=0;i<sub_schurs->n_subs;i++) {
-        ierr = MatGetSubMatrix(A_BI,is_subset_B[i],is_I,MAT_INITIAL_MATRIX,&AE_EI[i]);CHKERRQ(ierr);
+        if (sub_schurs->is_hermitian) {
+          ierr = MatCreateTranspose(AE_IE[i],&AE_EI[i]);CHKERRQ(ierr);
+        } else {
+          ierr = MatGetSubMatrix(A_BI,is_subset_B[i],is_I,MAT_INITIAL_MATRIX,&AE_EI[i]);CHKERRQ(ierr);
+        }
       }
 
       /* setup Schur complements on subset */
@@ -402,7 +408,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   S_Ej_inv_all = 0;
   work = NULL;
   pivots = NULL;
-  if (sub_schurs->n_subs && deluxe) { /* workspace needed only for GETRI */
+  if (sub_schurs->n_subs && deluxe && compute_Stilda) { /* workspace needed only for GETRI */
     PetscScalar lwork;
 
     B_lwork = -1;
@@ -433,8 +439,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 
         ierr = ISGetLocalSize(sub_schurs->is_subs[lpi],&subset_size);CHKERRQ(ierr);
         ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,work,&S_Ej_expl);CHKERRQ(ierr);
-        /* TODO manage sym flag */
-        ierr = PCBDDCComputeExplicitSchur(sub_schurs->S_Ej[lpi],PETSC_FALSE,MAT_REUSE_MATRIX,&S_Ej_expl);CHKERRQ(ierr);
+        ierr = PCBDDCComputeExplicitSchur(sub_schurs->S_Ej[lpi],sub_schurs->is_hermitian,MAT_REUSE_MATRIX,&S_Ej_expl);CHKERRQ(ierr);
         ierr = PetscObjectTypeCompare((PetscObject)S_Ej_expl,MATSEQDENSE,&Sdense);CHKERRQ(ierr);
         if (Sdense) {
           for (j=0;j<subset_size;j++) {
@@ -775,7 +780,7 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat A, Mat S, IS 
   ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)graph->l2gmap),graph->l2gmap,n_local_sequential_problems,auxlocal_sequential,PETSC_NULL,&n_sequential_problems,&auxglobal_sequential);CHKERRQ(ierr);
 
   /* update info in sub_schurs */
-  if (sub_schurs->use_mumps && A) {
+  if (A) {
     PetscBool isseqaij;
 
     ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
