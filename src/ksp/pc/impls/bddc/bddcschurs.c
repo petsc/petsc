@@ -14,6 +14,7 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
   PC             pc;
   PetscBool      isLU, isILU, isCHOL, Bdense, Cdense;
   PetscReal      fill = 2.0;
+  PetscInt       n_I;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
@@ -21,6 +22,14 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)M),&size);CHKERRQ(ierr);
   if (size != 1) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for parallel matrices");
+  }
+  if (reuse == MAT_REUSE_MATRIX) {
+    PetscBool Sdense;
+
+    ierr = PetscObjectTypeCompare((PetscObject)*S, MATSEQDENSE, &Sdense);CHKERRQ(ierr);
+    if (!Sdense) {
+      SETERRQ(PetscObjectComm((PetscObject)M),PETSC_ERR_SUP,"S should dense");
+    }
   }
   ierr = MatSchurComplementGetSubMatrices(M, NULL, NULL, &B, &C, &D);CHKERRQ(ierr);
   ierr = MatSchurComplementGetKSP(M, &ksp);CHKERRQ(ierr);
@@ -30,47 +39,50 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
   ierr = PetscObjectTypeCompare((PetscObject) pc, PCCHOLESKY, &isCHOL);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) B, MATSEQDENSE, &Bdense);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) C, MATSEQDENSE, &Cdense);CHKERRQ(ierr);
-  if (!Bdense) {
-    ierr = MatConvert(B, MATSEQDENSE, MAT_INITIAL_MATRIX, &Bd);CHKERRQ(ierr);
-  } else {
-    Bd = B;
-  }
-
-  if (isLU || isILU || isCHOL) {
-    Mat fact;
-
-    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-    ierr = PCFactorGetMatrix(pc, &fact);CHKERRQ(ierr);
-    ierr = MatDuplicate(Bd, MAT_DO_NOT_COPY_VALUES, &AinvBd);CHKERRQ(ierr);
-    ierr = MatMatSolve(fact, Bd, AinvBd);CHKERRQ(ierr);
-  } else {
-    Mat Ainvd;
-
-    ierr = PCComputeExplicitOperator(pc, &Ainvd);CHKERRQ(ierr);
-    ierr = MatMatMult(Ainvd, Bd, MAT_INITIAL_MATRIX, fill, &AinvBd);CHKERRQ(ierr);
-    ierr = MatDestroy(&Ainvd);CHKERRQ(ierr);
-  }
-  if (!Bdense & !issym) {
-    ierr = MatDestroy(&Bd);CHKERRQ(ierr);
-  }
-
-  if (!issym) {
-    if (!Cdense) {
-      ierr = MatConvert(C, MATSEQDENSE, MAT_INITIAL_MATRIX, &Cd);CHKERRQ(ierr);
-    } else {
-      Cd = C;
-    }
-    ierr = MatMatMult(Cd, AinvBd, reuse, fill, S);CHKERRQ(ierr);
-    if (!Cdense) {
-      ierr = MatDestroy(&Cd);CHKERRQ(ierr);
-    }
-  } else {
-    ierr = MatTransposeMatMult(Bd, AinvBd, reuse, fill, S);CHKERRQ(ierr);
+  ierr = MatGetSize(B,&n_I,NULL);CHKERRQ(ierr);
+  if (n_I) {
     if (!Bdense) {
+      ierr = MatConvert(B, MATSEQDENSE, MAT_INITIAL_MATRIX, &Bd);CHKERRQ(ierr);
+    } else {
+      Bd = B;
+    }
+
+    if (isLU || isILU || isCHOL) {
+      Mat fact;
+
+      ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+      ierr = PCFactorGetMatrix(pc, &fact);CHKERRQ(ierr);
+      ierr = MatDuplicate(Bd, MAT_DO_NOT_COPY_VALUES, &AinvBd);CHKERRQ(ierr);
+      ierr = MatMatSolve(fact, Bd, AinvBd);CHKERRQ(ierr);
+    } else {
+      Mat Ainvd;
+
+      ierr = PCComputeExplicitOperator(pc, &Ainvd);CHKERRQ(ierr);
+      ierr = MatMatMult(Ainvd, Bd, MAT_INITIAL_MATRIX, fill, &AinvBd);CHKERRQ(ierr);
+      ierr = MatDestroy(&Ainvd);CHKERRQ(ierr);
+    }
+    if (!Bdense & !issym) {
       ierr = MatDestroy(&Bd);CHKERRQ(ierr);
     }
+
+    if (!issym) {
+      if (!Cdense) {
+        ierr = MatConvert(C, MATSEQDENSE, MAT_INITIAL_MATRIX, &Cd);CHKERRQ(ierr);
+      } else {
+        Cd = C;
+      }
+      ierr = MatMatMult(Cd, AinvBd, reuse, fill, S);CHKERRQ(ierr);
+      if (!Cdense) {
+        ierr = MatDestroy(&Cd);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = MatTransposeMatMult(Bd, AinvBd, reuse, fill, S);CHKERRQ(ierr);
+      if (!Bdense) {
+        ierr = MatDestroy(&Bd);CHKERRQ(ierr);
+      }
+    }
+    ierr = MatDestroy(&AinvBd);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(&AinvBd);CHKERRQ(ierr);
 
   if (D) {
     Mat       Dd;
@@ -82,7 +94,15 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
     } else {
       Dd = D;
     }
-    ierr = MatAYPX(*S,-1.0,Dd,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    if (n_I) {
+      ierr = MatAYPX(*S,-1.0,Dd,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    } else {
+      if (reuse == MAT_INITIAL_MATRIX) {
+        ierr = MatDuplicate(Dd,MAT_COPY_VALUES,S);CHKERRQ(ierr);
+      } else {
+        ierr = MatCopy(Dd,*S,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      }
+    }
     if (!Ddense) {
       ierr = MatDestroy(&Dd);CHKERRQ(ierr);
     }
@@ -112,10 +132,18 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   PetscFunctionBegin;
   /* get Schur complement matrices */
   if (!sub_schurs->use_mumps) {
+    PetscBool isseqaij;
+
     if (compute_Stilda) {
       SETERRQ(PetscObjectComm((PetscObject)sub_schurs->l2gmap),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS");
     }
     ierr = MatSchurComplementGetSubMatrices(sub_schurs->S,&A_II,NULL,&A_IB,&A_BI,&A_BB);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A_BB,MATSEQAIJ,&isseqaij);CHKERRQ(ierr);
+    if (!isseqaij) {
+      ierr = MatConvert(A_BB,MATSEQAIJ,MAT_REUSE_MATRIX,&A_BB);CHKERRQ(ierr);
+      ierr = MatConvert(A_IB,MATSEQAIJ,MAT_REUSE_MATRIX,&A_IB);CHKERRQ(ierr);
+      ierr = MatConvert(A_BI,MATSEQAIJ,MAT_REUSE_MATRIX,&A_BI);CHKERRQ(ierr);
+    }
     ierr = PetscMalloc4(sub_schurs->n_subs,&is_subset_B,
                         sub_schurs->n_subs,&AE_IE,
                         sub_schurs->n_subs,&AE_EI,
