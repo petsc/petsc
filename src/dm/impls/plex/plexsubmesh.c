@@ -1829,7 +1829,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
 #define __FUNCT__ "DMPlexMarkSubmesh_Interpolated"
 static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscInt value, DMLabel subpointMap, DM subdm)
 {
-  IS               subvertexIS;
+  IS               subvertexIS = NULL;
   const PetscInt  *subvertices;
   PetscInt        *pStart, *pEnd, *pMax;
   PetscInt         dim, d, numSubVerticesInitial = 0, v;
@@ -1844,10 +1844,12 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
     if (pMax[d] >= 0) pEnd[d] = PetscMin(pEnd[d], pMax[d]);
   }
   /* Loop over initial vertices and mark all faces in the collective star() */
-  ierr = DMLabelGetStratumIS(vertexLabel, value, &subvertexIS);CHKERRQ(ierr);
-  if (subvertexIS) {
-    ierr = ISGetSize(subvertexIS, &numSubVerticesInitial);CHKERRQ(ierr);
-    ierr = ISGetIndices(subvertexIS, &subvertices);CHKERRQ(ierr);
+  if (vertexLabel) {
+    ierr = DMLabelGetStratumIS(vertexLabel, value, &subvertexIS);CHKERRQ(ierr);
+    if (subvertexIS) {
+      ierr = ISGetSize(subvertexIS, &numSubVerticesInitial);CHKERRQ(ierr);
+      ierr = ISGetIndices(subvertexIS, &subvertices);CHKERRQ(ierr);
+    }
   }
   for (v = 0; v < numSubVerticesInitial; ++v) {
     const PetscInt vertex = subvertices[v];
@@ -1902,9 +1904,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
   }
-  if (subvertexIS) {
-    ierr = ISRestoreIndices(subvertexIS, &subvertices);CHKERRQ(ierr);
-  }
+  if (subvertexIS) {ierr = ISRestoreIndices(subvertexIS, &subvertices);CHKERRQ(ierr);}
   ierr = ISDestroy(&subvertexIS);CHKERRQ(ierr);
   ierr = PetscFree3(pStart,pEnd,pMax);CHKERRQ(ierr);
   PetscFunctionReturn(0);
