@@ -196,6 +196,7 @@ PetscErrorCode PetscOptionsGetFromTextInput(PetscOptions *PetscOptionsObject)
   PetscInt       *vald;
   size_t         i;
 
+  PetscFunctionBegin;
   ierr = (*PetscPrintf)(PETSC_COMM_WORLD,"%s -------------------------------------------------\n",PetscOptionsObject->title);CHKERRQ(ierr);
   while (next) {
     switch (next->type) {
@@ -408,6 +409,7 @@ PetscErrorCode PetscOptionsSAWsInput(PetscOptions *PetscOptionsObject)
   char           manname[16],textname[16];
   char           dir[1024];
 
+  PetscFunctionBegin;
   /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
   sprintf(options,"Options_%d",count++);
 

@@ -9848,6 +9848,7 @@ PetscErrorCode  MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTran
 @*/
 PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   *state = mat->nonzerostate;
   PetscFunctionReturn(0);
