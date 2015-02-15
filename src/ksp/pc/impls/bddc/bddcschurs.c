@@ -261,6 +261,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       ierr = VecDestroy(&vec2);CHKERRQ(ierr);
     }
   }
+
   if (sub_schurs->n_subs) {
     if (!sub_schurs->use_mumps) {
       /* subsets in original and boundary numbering */
@@ -408,7 +409,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   S_Ej_inv_all = 0;
   Bwork = NULL;
   pivots = NULL;
-  if (sub_schurs->n_subs && deluxe && compute_Stilda) { /* workspace needed only for GETRI */
+  if (sub_schurs->n_subs && deluxe && compute_Stilda && !sub_schurs->is_hermitian) { /* workspace needed only for GETRI */
     PetscScalar lwork;
 
     B_lwork = -1;
@@ -525,16 +526,16 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
           nc   = n_all - subset_size;
           cum  = 0;
           ierr = MatCreateSeqDense(PETSC_COMM_SELF,nc,nc,work+cum,&S_FF);CHKERRQ(ierr);
-          cum  = nc*nc;
+          cum += nc*nc;
           ierr = MatCreateSeqDense(PETSC_COMM_SELF,nc,subset_size,work+cum,&S_FE);CHKERRQ(ierr);
-          cum  = nc*subset_size;
+          cum += nc*subset_size;
           ierr = MatGetSubMatrix(S_all,is_F,is_F,MAT_REUSE_MATRIX,&S_FF);CHKERRQ(ierr);
           ierr = MatGetSubMatrix(S_all,is_F,is_E,MAT_REUSE_MATRIX,&S_FE);CHKERRQ(ierr);
           if (sub_schurs->is_hermitian) { /* just need a placeholder for S_EF */
             ierr = MatCreateTranspose(S_FE,&S_EF);CHKERRQ(ierr);
           } else {
-            ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,nc,work+cum,&S_FE);CHKERRQ(ierr);
-            cum  = nc*subset_size;
+            ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,nc,work+cum,&S_EF);CHKERRQ(ierr);
+            cum += nc*subset_size;
             ierr = MatGetSubMatrix(S_all,is_E,is_F,MAT_REUSE_MATRIX,&S_EF);CHKERRQ(ierr);
           }
           ierr = ISDestroy(&is_F);CHKERRQ(ierr);
@@ -574,19 +575,46 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
           PetscScalar *vals2;
 
           ierr = MatDenseGetArray(sub_schurs->S_Ej[i],&vals2);CHKERRQ(ierr);
-          /* need to be optimized (cholesky) */
           ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
           if (invert_Stildas) { /* Stildas can be singular */
-            PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,vals,&B_N,pivots,&B_ierr));
-            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-            PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,vals,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+            if (!sub_schurs->is_hermitian) {
+              PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,vals,&B_N,pivots,&B_ierr));
+              if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
+              PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,vals,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+              if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+            } else {
+              PetscInt j,k;
+
+              PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,vals,&B_N,&B_ierr));
+              if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
+              PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,vals,&B_N,&B_ierr));
+              if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
+              for (j=0;j<B_N;j++) {
+                for (k=j+1;k<B_N;k++) {
+                  vals[k*B_N+j] = vals[j*B_N+k];
+                }
+              }
+            }
           }
-          PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,vals2,&B_N,pivots,&B_ierr));
-          if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-          PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,vals2,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-          if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+          if (!sub_schurs->is_hermitian) {
+            PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,vals2,&B_N,pivots,&B_ierr));
+            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
+            PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,vals2,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+          } else {
+            PetscInt j,k;
+
+            PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,vals2,&B_N,&B_ierr));
+            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
+            PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,vals2,&B_N,&B_ierr));
+            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
+            for (j=0;j<B_N;j++) {
+              for (k=j+1;k<B_N;k++) {
+                vals2[k*B_N+j] = vals2[j*B_N+k];
+              }
+            }
+          }
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
           ierr = MatSetValues(S_Ej_inv_all,subset_size,dummy_idx,subset_size,dummy_idx,vals2,INSERT_VALUES);CHKERRQ(ierr);
           ierr = MatDenseRestoreArray(sub_schurs->S_Ej[i],&vals2);CHKERRQ(ierr);
@@ -659,18 +687,45 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     for (i=0;i<sub_schurs->n_subs;i++) {
       ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
       if (PetscBTLookup(sub_schurs->computed_Stilda_subs,i)) {
-        /* need to be optimized (cholesky) */
         ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-        PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array+cum,&B_N,pivots,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-        PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
-        if (invert_Stildas) { /* Stildas can be singular */
-          PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array2+cum,&B_N,pivots,&B_ierr));
+        if (!sub_schurs->is_hermitian) {
+          PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array+cum,&B_N,pivots,&B_ierr));
           if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-          PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array2+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+          PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
           if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+        } else {
+          PetscInt j,k;
+
+          PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,array+cum,&B_N,&B_ierr));
+          if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
+          PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,array+cum,&B_N,&B_ierr));
+          if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
+          for (j=0;j<B_N;j++) {
+            for (k=j+1;k<B_N;k++) {
+              array[k*B_N+j+cum] = array[j*B_N+k+cum];
+            }
+          }
+        }
+        if (invert_Stildas) { /* Stildas can be singular */
+          if (!sub_schurs->is_hermitian) {
+            PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,array2+cum,&B_N,pivots,&B_ierr));
+            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
+            PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,array2+cum,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+          } else {
+            PetscInt j,k;
+
+            PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,array2+cum,&B_N,&B_ierr));
+            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
+            PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,array2+cum,&B_N,&B_ierr));
+            if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
+            for (j=0;j<B_N;j++) {
+              for (k=j+1;k<B_N;k++) {
+                array2[k*B_N+j+cum] = array2[j*B_N+k+cum];
+              }
+            }
+          }
         }
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
       }

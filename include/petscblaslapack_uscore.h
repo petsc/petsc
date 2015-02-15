@@ -28,6 +28,7 @@
 #  define LAPACKtgsen_ stgsen_
 /* Real single precision with character string arguments. */
 #  define LAPACKpotrf_ spotrf_
+#  define LAPACKpotri_ spotri_
 #  define LAPACKpotrs_ spotrs_
 #  define BLASgemv_    sgemv_
 #  define LAPACKgetrs_ sgetrs_
@@ -71,6 +72,7 @@
 #  define LAPACKtgsen_ dtgsen_
 /* Real double precision with character string arguments. */
 #  define LAPACKpotrf_ dpotrf_
+#  define LAPACKpotri_ dpotri_
 #  define LAPACKpotrs_ dpotrs_
 #  define BLASgemv_    dgemv_
 #  define LAPACKgetrs_ dgetrs_
@@ -114,6 +116,7 @@
 #  define LAPACKtgsen_ qtgsen_
 /* Real quad precision with character string arguments. */
 #  define LAPACKpotrf_ qpotrf_
+#  define LAPACKpotri_ qpotri_
 #  define LAPACKpotrs_ qpotrs_
 #  define BLASgemv_    qgemv_
 #  define LAPACKgetrs_ qgetrs_
@@ -157,6 +160,7 @@
 #  define LAPACKtgsen_ ctgsen_
 /* Complex single precision with character string arguments */
 #  define LAPACKpotrf_ cpotrf_
+#  define LAPACKpotri_ cpotri_
 #  define LAPACKpotrs_ cpotrs_
 #  define BLASgemv_    cgemv_
 #  define LAPACKgetrs_ cgetrs_
@@ -201,6 +205,7 @@
 #  define LAPACKtgsen_ ztgsen_
 /* Complex double precision with character string arguments */
 #  define LAPACKpotrf_ zpotrf_
+#  define LAPACKpotri_ zpotri_
 #  define LAPACKpotrs_ zpotrs_
 #  define BLASgemv_    zgemv_
 #  define LAPACKgetrs_ zgetrs_
@@ -244,6 +249,7 @@
 #  define LAPACKtgsen_ wtgsen_
 /* Complex quad precision with character string arguments */
 #  define LAPACKpotrf_ wpotrf_
+#  define LAPACKpotri_ wpotri_
 #  define LAPACKpotrs_ wpotrs_
 #  define BLASgemv_    wgemv_
 #  define LAPACKgetrs_ wgetrs_

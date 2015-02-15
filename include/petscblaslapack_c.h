@@ -29,6 +29,7 @@
 #  define LAPACKtgsen_ stgsen
 /* Real single precision with character string arguments. */
 #  define LAPACKpotrf_ spotrf
+#  define LAPACKpotri_ spotri
 #  define LAPACKpotrs_ spotrs
 #  define BLASgemv_    sgemv
 #  define LAPACKgetrs_ sgetrs
@@ -72,6 +73,7 @@
 #  define LAPACKtgsen_ dtgsen
 /* Real double precision with character string arguments. */
 #  define LAPACKpotrf_ dpotrf
+#  define LAPACKpotri_ dpotri
 #  define LAPACKpotrs_ dpotrs
 #  define BLASgemv_    dgemv
 #  define LAPACKgetrs_ dgetrs
@@ -115,6 +117,7 @@
 #  define LAPACKtgsen_ ctgsen
 /* Complex single precision with character string arguments */
 #  define LAPACKpotrf_ cpotrf
+#  define LAPACKpotri_ cpotri
 #  define LAPACKpotrs_ cpotrs
 #  define BLASgemv_    cgemv
 #  define LAPACKgetrs_ cgetrs
@@ -159,6 +162,7 @@
 #  define LAPACKtgsen_ ztgsen
 /* Complex double precision with character string arguments */
 #  define LAPACKpotrf_ zpotrf
+#  define LAPACKpotri_ zpotri
 #  define LAPACKpotrs_ zpotrs
 #  define BLASgemv_    zgemv
 #  define LAPACKgetrs_ zgetrs
