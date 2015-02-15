@@ -1029,7 +1029,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrixUnsorted"
-PetscErrorCode MatGetSubMatrixUnsorted(Mat A, IS isrow, IS iscol, MatStructure reuse, Mat* B)
+PetscErrorCode MatGetSubMatrixUnsorted(Mat A, IS isrow, IS iscol, Mat* B)
 {
   Mat            *work_mat;
   IS             isrow_s,iscol_s;
@@ -1090,7 +1090,7 @@ PetscErrorCode MatGetSubMatrixUnsorted(Mat A, IS isrow, IS iscol, MatStructure r
     iscol_s = iscol;
   }
 
-  ierr = MatGetSubMatrices(A,1,&isrow_s,&iscol_s,reuse,&work_mat);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(A,1,&isrow_s,&iscol_s,MAT_INITIAL_MATRIX,&work_mat);CHKERRQ(ierr);
 
   if (!rsorted || !csorted) {
     Mat      new_mat;
@@ -1160,7 +1160,7 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
   ierr = ISCreateStride(PetscObjectComm((PetscObject)matis->A),local_size,0,1,&is_local);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApplyIS(matis->mapping,is_local,&is_global);CHKERRQ(ierr);
   ierr = ISDestroy(&is_local);CHKERRQ(ierr);
-  ierr = MatGetSubMatrixUnsorted(ChangeOfBasisMatrix,is_global,is_global,MAT_INITIAL_MATRIX,&new_mat);CHKERRQ(ierr);
+  ierr = MatGetSubMatrixUnsorted(ChangeOfBasisMatrix,is_global,is_global,&new_mat);CHKERRQ(ierr);
   ierr = ISDestroy(&is_global);CHKERRQ(ierr);
 
   /* check */
@@ -2705,7 +2705,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         IS is_all_N;
 
         ierr = ISLocalToGlobalMappingApplyIS(pcis->BtoNmap,sub_schurs->is_Ej_all,&is_all_N);CHKERRQ(ierr);
-        ierr = MatGetSubMatrixUnsorted(localChangeOfBasisMatrix,is_all_N,is_all_N,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
+        ierr = MatGetSubMatrixUnsorted(localChangeOfBasisMatrix,is_all_N,is_all_N,&tmat);CHKERRQ(ierr);
         ierr = ISDestroy(&is_all_N);CHKERRQ(ierr);
         ierr = MatPtAP(sub_schurs->S_Ej_all,tmat,MAT_INITIAL_MATRIX,1.0,&S_1);CHKERRQ(ierr);
         ierr = MatDestroy(&sub_schurs->S_Ej_all);CHKERRQ(ierr);

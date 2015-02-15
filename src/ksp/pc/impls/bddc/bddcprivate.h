@@ -57,7 +57,7 @@ PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
 PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
 PetscErrorCode PCBDDCGlobalToLocal(VecScatter,Vec,Vec,IS,IS*);
 PetscErrorCode PCBDDCAdaptiveSelection(PC);
-PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,MatStructure,Mat*);
+PetscErrorCode MatGetSubMatrixUnsorted(Mat,IS,IS,Mat*);
 
 /* feti-dp */
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);
