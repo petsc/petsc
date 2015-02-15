@@ -1169,6 +1169,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   Mat_IS*        matis;
   MatNullSpace   nearnullspace;
   PetscBool      computetopography,computesolvers,computesubschurs;
+  PetscBool      computeconstraintsmatrix;
   PetscBool      new_nearnullspace_provided,ismatis;
 
   PetscFunctionBegin;
@@ -1196,6 +1197,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (pcbddc->recompute_topography) {
     computetopography = PETSC_TRUE;
   }
+  computeconstraintsmatrix = PETSC_FALSE;
   pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0);
   computesubschurs = pcbddc->use_deluxe_scaling || pcbddc->adaptive_selection;
 
@@ -1239,6 +1241,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   /* Analyze interface and setup sub_schurs data */
   if (computetopography) {
     ierr = PCBDDCAnalyzeInterface(pc);CHKERRQ(ierr);
+    computeconstraintsmatrix = PETSC_TRUE;
   }
 
   /* Setup local dirichlet solver ksp_D and sub_schurs solvers */
@@ -1251,6 +1254,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       ierr = PCBDDCSetUpSubSchurs(pc);CHKERRQ(ierr);
       if (pcbddc->adaptive_selection) {
         ierr = PCBDDCAdaptiveSelection(pc);CHKERRQ(ierr);
+        computeconstraintsmatrix = PETSC_TRUE;
       }
     }
   }
@@ -1287,18 +1291,12 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
       new_nearnullspace_provided = PETSC_TRUE;
     }
   }
-#if 0
-  if (adaptive) {
-    /* join nullspaces */
-  }
-  /* set null space in BDDC */
-#endif
 
   /* Setup constraints and related work vectors */
   /* reset primal space flags */
   pcbddc->new_primal_space = PETSC_FALSE;
   pcbddc->new_primal_space_local = PETSC_FALSE;
-  if (computetopography || new_nearnullspace_provided) {
+  if (computeconstraintsmatrix || new_nearnullspace_provided) {
     /* It also sets the primal space flags */
     ierr = PCBDDCConstraintsSetUp(pc);CHKERRQ(ierr);
     /* Allocate needed local vectors (which depends on quantities defined during ConstraintsSetUp) */
