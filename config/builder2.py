@@ -91,6 +91,9 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
   if args.testnum is not None:
     if args.testnum[0] == '[':
       validTestnum = args.testnum[1:-1].split(',')
+    elif args.testnum[0] == '@':
+      import re
+      validTestnum = [key for key in map(lambda p: p.get('num', ''), params) if re.match(args.testnum[1:], key)]
     else:
       validTestnum = [args.testnum]
     numtests = len(validTestnum)
