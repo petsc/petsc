@@ -11,43 +11,6 @@ PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEva
 
 const char *const TSExactFinalTimeOptions[] = {"STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetTypeFromOptions_Private"
-/*
-  TSSetTypeFromOptions - Sets the type of ts from user options.
-
-  Collective on TS
-
-  Input Parameter:
-. ts - The ts
-
-  Level: intermediate
-
-.keywords: TS, set, options, database, type
-.seealso: TSSetFromOptions(), TSSetType()
-*/
-static PetscErrorCode TSSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,TS ts)
-{
-  PetscBool      opt;
-  const char     *defaultType;
-  char           typeName[256];
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Setting TSType");CHKERRQ(ierr);
-  if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
-  else defaultType = TSEULER;
-
-  ierr = TSRegisterAll();CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = TSSetType(ts, typeName);CHKERRQ(ierr);
-  } else {
-    ierr = TSSetType(ts, defaultType);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 struct _n_TSMonitorDrawCtx {
   PetscViewer   viewer;
   PetscDrawAxis axis;
