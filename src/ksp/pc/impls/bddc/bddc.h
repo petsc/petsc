@@ -4,8 +4,6 @@
 #include <../src/ksp/pc/impls/is/pcis.h>
 #include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
-/* typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType; */
-
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
   /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */
