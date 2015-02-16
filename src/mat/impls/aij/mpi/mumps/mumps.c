@@ -1405,7 +1405,6 @@ PetscErrorCode MatMumpsSetSchurIndices(Mat F,PetscInt size,PetscInt idxs[])
   ierr = PetscTryMethod(F,"MatMumpsSetSchurIndices_C",(Mat,PetscInt,PetscInt[]),(F,size,idxs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 /* -------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "MatMumpsGetSchurComplement_MUMPS"
@@ -1414,6 +1413,9 @@ PetscErrorCode MatMumpsGetSchurComplement_MUMPS(Mat F,Mat* S)
   Mat            St;
   Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
   PetscScalar    *array;
+#if defined(PETSC_USE_COMPLEX)
+  PetscScalar    im = PetscSqrtScalar(-1.0);
+#endif
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1433,7 +1435,11 @@ PetscErrorCode MatMumpsGetSchurComplement_MUMPS(Mat F,Mat* S)
       PetscInt i,j,N=mumps->id.size_schur;
       for (i=0;i<N;i++) {
         for (j=0;j<N;j++) {
+#if !defined(PETSC_USE_COMPLEX)
           PetscScalar val = mumps->id.schur[i*N+j];
+#else
+          PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
+#endif
           array[j*N+i] = val;
         }
       }
@@ -1445,11 +1451,19 @@ PetscErrorCode MatMumpsGetSchurComplement_MUMPS(Mat F,Mat* S)
       PetscInt i,j,N=mumps->id.size_schur;
       for (i=0;i<N;i++) {
         for (j=i;j<N;j++) {
+#if !defined(PETSC_USE_COMPLEX)
           PetscScalar val = mumps->id.schur[i*N+j];
+#else
+          PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
+#endif
           array[i*N+j] = val;
         }
         for (j=i;j<N;j++) {
+#if !defined(PETSC_USE_COMPLEX)
           PetscScalar val = mumps->id.schur[i*N+j];
+#else
+          PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
+#endif
           array[j*N+i] = val;
         }
       }
@@ -1459,11 +1473,19 @@ PetscErrorCode MatMumpsGetSchurComplement_MUMPS(Mat F,Mat* S)
       PetscInt i,j,N=mumps->id.size_schur;
       for (i=0;i<N;i++) {
         for (j=0;j<i+1;j++) {
+#if !defined(PETSC_USE_COMPLEX)
           PetscScalar val = mumps->id.schur[i*N+j];
+#else
+          PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
+#endif
           array[i*N+j] = val;
         }
         for (j=0;j<i+1;j++) {
+#if !defined(PETSC_USE_COMPLEX)
           PetscScalar val = mumps->id.schur[i*N+j];
+#else
+          PetscScalar val = mumps->id.schur[i*N+j].r + im*mumps->id.schur[i*N+j].i;
+#endif
           array[j*N+i] = val;
         }
       }
