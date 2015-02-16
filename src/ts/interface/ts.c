@@ -34,6 +34,7 @@ static PetscErrorCode TSSetTypeFromOptions_Private(PetscOptions *PetscOptionsObj
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject,"Setting TSType");CHKERRQ(ierr);
   if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
   else defaultType = TSEULER;
 
@@ -111,12 +112,22 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscReal              time_step;
   TSExactFinalTimeOption eftopt;
   char                   dir[16];
+  const char             *defaultType;
+  char                   typeName[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
-  /* Handle TS type options */
-  ierr = TSSetTypeFromOptions_Private(PetscOptionsObject,ts);CHKERRQ(ierr);
+  if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
+  else defaultType = TSEULER;
+
+  ierr = TSRegisterAll();CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = TSSetType(ts, typeName);CHKERRQ(ierr);
+  } else {
+    ierr = TSSetType(ts, defaultType);CHKERRQ(ierr);
+  }
 
   /* Handle generic TS options */
   if (ts->trajectory) tflg = PETSC_TRUE;
@@ -336,21 +347,24 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetFromOptions(PetscOptionsObject,adapt);CHKERRQ(ierr);
 
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
+    /* Handle specific TS options */
+  if (ts->ops->setfromoptions) {
+    ierr = (*ts->ops->setfromoptions)(PetscOptionsObject,ts);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject)ts);CHKERRQ(ierr);
 
   if (ts->trajectory) {
     ierr = TSTrajectorySetFromOptions(ts->trajectory);CHKERRQ(ierr);
   }
 
-  /* Handle specific TS options */
-  if (ts->ops->setfromoptions) {
-    ierr = (*ts->ops->setfromoptions)(PetscOptionsObject,ts);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (snes) {
+    if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
+    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
-
-  /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject)ts);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

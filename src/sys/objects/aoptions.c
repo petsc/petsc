@@ -594,6 +594,8 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptions *PetscOptionsObject)
         }
         break;
       case OPTION_FLIST:
+        ierr = PetscStrcpy(value,(char*)PetscOptionsObject->next->data);CHKERRQ(ierr);
+        break;
       case OPTION_ELIST:
         ierr = PetscStrcpy(value,(char*)PetscOptionsObject->next->data);CHKERRQ(ierr);
         break;
@@ -610,6 +612,9 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptions *PetscOptionsObject)
         break;
       }
       ierr = PetscOptionsSetValue(option,value);CHKERRQ(ierr);
+    }
+    if (PetscOptionsObject->next->type == OPTION_ELIST) {
+      ierr = PetscStrNArrayDestroy(PetscOptionsObject->next->nlist,(char ***)&PetscOptionsObject->next->list);CHKERRQ(ierr);
     }
     ierr   = PetscFree(PetscOptionsObject->next->text);CHKERRQ(ierr);
     ierr   = PetscFree(PetscOptionsObject->next->option);CHKERRQ(ierr);
@@ -1061,7 +1066,7 @@ PetscErrorCode  PetscOptionsEList_Private(PetscOptions *PetscOptionsObject,const
     ierr = PetscOptionsCreate_Private(PetscOptionsObject,opt,ltext,man,OPTION_ELIST,&amsopt);CHKERRQ(ierr);
     /* must use system malloc since SAWs may free this */
     ierr = PetscStrdup(currentvalue ? currentvalue : "",(char**)&amsopt->data);CHKERRQ(ierr);
-    amsopt->list  = list;
+    ierr = PetscStrNArrayallocpy(ntext,list,(char***)&amsopt->list);CHKERRQ(ierr);    
     amsopt->nlist = ntext;
   }
   ierr = PetscOptionsGetEList(PetscOptionsObject->prefix,opt,list,ntext,value,set);CHKERRQ(ierr);
