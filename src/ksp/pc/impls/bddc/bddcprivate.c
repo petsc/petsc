@@ -32,6 +32,13 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not yet implemented");
   }
 
+  if (pcbddc->dbg_flag) {
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Check adaptive selection of constraints\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
   /* max size of subsets */
   mss = 0;
   for (i=0;i<sub_schurs->n_subs;i++) {
@@ -137,6 +144,10 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&Starray);CHKERRQ(ierr);
   }
 
+  if (pcbddc->dbg_flag) {
+    PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d cc %d (%d,%d).\n",PetscGlobalRank,sub_schurs->n_subs,sub_schurs->is_hermitian,sub_schurs->is_posdef);
+  }
+
   for (i=0;i<sub_schurs->n_subs;i++) {
     PetscInt j,subset_size;
 
@@ -173,7 +184,9 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         PetscInt     nmin_s;
 
         /* ask for eigenvalues lower than thresh */
-        PetscPrintf(PETSC_COMM_SELF,"[%d] Computing for sub %d/%d.\n",PetscGlobalRank,i,sub_schurs->n_subs);
+        if (pcbddc->dbg_flag) {
+          PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Computing for sub %d/%d.\n",i,sub_schurs->n_subs);
+        }
         ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
@@ -193,7 +206,9 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         }
 
         if (B_neigs > nmax) {
-          PetscPrintf(PETSC_COMM_SELF,"[%d]   found %d eigs, more than maximum required %d.\n",PetscGlobalRank,B_neigs,nmax);
+          if (pcbddc->dbg_flag) {
+            PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   found %d eigs, more than maximum required %d.\n",B_neigs,nmax);
+          }
           B_neigs = nmax;
         }
 
@@ -203,7 +218,9 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 
           B_IL = B_neigs + 1;
           ierr = PetscBLASIntCast(nmin_s,&B_IU);CHKERRQ(ierr);
-          PetscPrintf(PETSC_COMM_SELF,"[%d]   found %d eigs, less than minimum required %d. Asking for %d to %d incl (fortran like)\n",PetscGlobalRank,B_neigs,nmin,B_IL,B_IU);
+          if (pcbddc->dbg_flag) {
+            PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   found %d eigs, less than minimum required %d. Asking for %d to %d incl (fortran like)\n",B_neigs,nmin,B_IL,B_IU);
+          }
           if (sub_schurs->is_hermitian) {
             PetscInt j;
             for (j=0;j<subset_size;j++) {
@@ -234,12 +251,14 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
             SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYGVX Lapack routine: leading minor of order %d is not positive definite",(int)B_ierr-B_N-1);
           }
         }
-        PetscPrintf(PETSC_COMM_SELF,"[%d]   -> Got %d eigs\n",PetscGlobalRank,B_neigs);
-        for (j=0;j<B_neigs;j++) {
-          if (eigs[j] == 0.0) {
-            PetscPrintf(PETSC_COMM_SELF,"[%d]     Inf\n",PetscGlobalRank);
-          } else {
-            PetscPrintf(PETSC_COMM_SELF,"[%d]     %1.6e\n",PetscGlobalRank,1.0/eigs[j]);
+        if (pcbddc->dbg_flag) {
+          PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   -> Got %d eigs\n",B_neigs);
+          for (j=0;j<B_neigs;j++) {
+            if (eigs[j] == 0.0) {
+              PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     Inf\n");
+            } else {
+              PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"     %1.6e\n",1.0/eigs[j]);
+            }
           }
         }
       } else {
@@ -251,15 +270,16 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
       PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&B_N,&B_neigs,&B_N,&one,Smult,&B_N,eigv,&B_N,&scalar_zero,Seigv,&B_N));
       ierr = PetscMemcpy(pcbddc->adaptive_constraints_data+cum2,Seigv,B_neigs*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
-#if 0
-      PetscInt ii;
-      for (ii=0;ii<B_neigs;ii++) {
-        PetscPrintf(PETSC_COMM_SELF,"[%d]   -> Eigenvector %d/%d (%d)\n",PetscGlobalRank,ii,B_neigs,B_N);
-        for (j=0;j<B_N;j++) {
-          PetscPrintf(PETSC_COMM_SELF,"[%d]       %1.4e %1.4e\n",PetscGlobalRank,eigv[ii*B_N+j],Seigv[ii*B_N+j]);
+
+      if (pcbddc->dbg_flag > 1) {
+        PetscInt ii;
+        for (ii=0;ii<B_neigs;ii++) {
+          PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"   -> Eigenvector %d/%d (%d)\n",ii,B_neigs,B_N);
+          for (j=0;j<B_N;j++) {
+            PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"       %1.4e %1.4e\n",eigv[ii*B_N+j],Seigv[ii*B_N+j]);
+          }
         }
       }
-#endif
       ierr = ISGetIndices(sub_schurs->is_subs[i],&idxs);CHKERRQ(ierr);
       for (j=0;j<B_neigs;j++) {
 #if 0
@@ -284,6 +304,9 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     }
     /* shift for next computation */
     cumarray += subset_size*subset_size;
+  }
+  if (pcbddc->dbg_flag) {
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
   pcbddc->adaptive_constraints_ptrs[cum] = cum2;
   ierr = PetscFree2(Smult,Seigv);CHKERRQ(ierr);
@@ -1739,8 +1762,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"--------------------------------------------------------------\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate vertices (%d)\n",PetscGlobalRank,nv,pcbddc->use_vertices);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate edges    (%d)\n",PetscGlobalRank,nfaces,pcbddc->use_edges);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate faces    (%d)\n",PetscGlobalRank,nedges,pcbddc->use_faces);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate edges    (%d)\n",PetscGlobalRank,nedges,pcbddc->use_edges);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d got %02d local candidate faces    (%d)\n",PetscGlobalRank,nfaces,pcbddc->use_faces);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
 
