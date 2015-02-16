@@ -229,54 +229,6 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt sizes[],PetscInt *max,P
 }
 
 /* ----------------------------------------------------------------------------*/
-MPI_Op  PetscADMax_Op = 0;
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscADMax_Local"
-PETSC_EXTERN void MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
-{
-  PetscScalar *xin = (PetscScalar*)in,*xout = (PetscScalar*)out;
-  PetscInt    i,count = *cnt;
-
-  PetscFunctionBegin;
-  if (*datatype != MPIU_2SCALAR) {
-    (*PetscErrorPrintf)("Can only handle MPIU_2SCALAR data (i.e. double or complex) types");
-    MPI_Abort(MPI_COMM_WORLD,1);
-  }
-
-  for (i=0; i<count; i++) {
-    if (PetscRealPart(xout[2*i]) < PetscRealPart(xin[2*i])) {
-      xout[2*i]   = xin[2*i];
-      xout[2*i+1] = xin[2*i+1];
-    }
-  }
-  PetscFunctionReturnVoid();
-}
-
-MPI_Op PetscADMin_Op = 0;
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscADMin_Local"
-PETSC_EXTERN void MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
-{
-  PetscScalar *xin = (PetscScalar*)in,*xout = (PetscScalar*)out;
-  PetscInt    i,count = *cnt;
-
-  PetscFunctionBegin;
-  if (*datatype != MPIU_2SCALAR) {
-    (*PetscErrorPrintf)("Can only handle MPIU_2SCALAR data (i.e. double or complex) types");
-    MPI_Abort(MPI_COMM_WORLD,1);
-  }
-
-  for (i=0; i<count; i++) {
-    if (PetscRealPart(xout[2*i]) > PetscRealPart(xin[2*i])) {
-      xout[2*i]   = xin[2*i];
-      xout[2*i+1] = xin[2*i+1];
-    }
-  }
-  PetscFunctionReturnVoid();
-}
-/* ---------------------------------------------------------------------------------------*/
 
 #if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 MPI_Op MPIU_SUM = 0;
@@ -849,8 +801,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   ierr = MPI_Type_contiguous(2,MPIU_SCALAR,&MPIU_2SCALAR);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2SCALAR);CHKERRQ(ierr);
-  ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);CHKERRQ(ierr);
-  ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_64BIT_INDICES) || !defined(MPI_2INT)
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRQ(ierr);
@@ -1367,8 +1317,6 @@ PetscErrorCode  PetscFinalize(void)
   ierr = MPI_Type_free(&MPIU_2INT);CHKERRQ(ierr);
 #endif
   ierr = MPI_Op_free(&PetscMaxSum_Op);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&PetscADMax_Op);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&PetscADMin_Op);CHKERRQ(ierr);
 
   /*
      Destroy any known inner MPI_Comm's and attributes pointing to them
