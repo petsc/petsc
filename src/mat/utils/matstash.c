@@ -884,17 +884,13 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
     /* Count number of send ranks and allocate for sends */
     stash->nsendranks = 0;
     for (rowstart=0; rowstart<nblocks; ) {
-      PetscInt lastowner,owner;
+      PetscInt owner;
       MatStashBlock *sendblock_rowstart = (MatStashBlock*)&sendblocks[rowstart*stash->blocktype_size];
       ierr = PetscFindInt(sendblock_rowstart->row,stash->size+1,owners,&owner);CHKERRQ(ierr);
       if (owner < 0) owner = -(owner+2);
-      lastowner = owner;
       for (i=rowstart+1; i<nblocks; i++) { /* Move forward through a run of blocks with the same owner */
         MatStashBlock *sendblock_i = (MatStashBlock*)&sendblocks[i*stash->blocktype_size];
-        if (sendblock_i->row == sendblock_rowstart->row) continue;
-        ierr = PetscFindInt(sendblock_i->row,stash->size+1,owners,&owner);CHKERRQ(ierr);
-        if (owner < 0) owner = -(owner+2);
-        if (owner != lastowner) break;
+        if (sendblock_i->row >= owners[owner+1]) break;
       }
       stash->nsendranks++;
       rowstart = i;
@@ -911,10 +907,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
       stash->sendranks[sendno] = owner;
       for (i=rowstart+1; i<nblocks; i++) { /* Move forward through a run of blocks with the same owner */
         MatStashBlock *sendblock_i = (MatStashBlock*)&sendblocks[i*stash->blocktype_size];
-        if (sendblock_i->row == sendblock_rowstart->row) continue;
-        ierr = PetscFindInt(sendblock_i->row,stash->size+1,owners,&owner);CHKERRQ(ierr);
-        if (owner < 0) owner = -(owner+2);
-        if (owner != stash->sendranks[sendno]) break;
+        if (sendblock_i->row >= owners[owner+1]) break;
       }
       stash->sendframes[sendno].buffer = sendblock_rowstart;
       stash->sendframes[sendno].pending = 0;
