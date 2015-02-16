@@ -124,14 +124,16 @@ static PetscErrorCode PCDestroy_LSC(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_LSC"
-static PetscErrorCode PCSetFromOptions_LSC(PC pc)
+static PetscErrorCode PCSetFromOptions_LSC(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("LSC options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"LSC options");CHKERRQ(ierr);
+  {
     ierr = PetscOptionsBool("-pc_lsc_scale_diag","Use diagonal of velocity block (A) for scaling","None",lsc->scalediag,&lsc->scalediag,NULL);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

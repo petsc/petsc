@@ -66,7 +66,7 @@ static const char *Err_MSG_CPardiso(int errNo){
 
 typedef struct {
 
-  /*Configuration vector*/
+  /* Configuration vector */
   INT_TYPE     iparm[IPARM_SIZE];
 
   /*
@@ -77,26 +77,26 @@ typedef struct {
 
   MPI_Comm     comm_mkl_cpardiso;
 
-  /*Basic mkl_cpardiso info*/
+  /* Basic mkl_cpardiso info*/
   INT_TYPE     phase, maxfct, mnum, mtype, n, nrhs, msglvl, err;
 
-  /*Matrix structure*/
+  /* Matrix structure */
   PetscScalar  *a;
 
   INT_TYPE     *ia, *ja;
 
-  /*Number of non-zero elements*/
+  /* Number of non-zero elements */
   INT_TYPE     nz;
 
-  /*Row permutaton vector*/
+  /* Row permutaton vector*/
   INT_TYPE     *perm;
 
-  /*Deffine is matrix preserve sparce structure.*/
+  /* Define is matrix preserve sparce structure. */
   MatStructure matstruc;
 
   PetscErrorCode (*ConvertToTriples)(Mat, MatReuse, PetscInt*, PetscInt**, PetscInt**, PetscScalar**);
 
-  /*True if mkl_cpardiso function have been used.*/
+  /* True if mkl_cpardiso function have been used. */
   PetscBool CleanUp;
 } Mat_MKL_CPARDISO;
 
@@ -118,8 +118,10 @@ typedef struct {
  */
 #undef __FUNCT__
 #define __FUNCT__ "MatCopy_seqaij_seqaij_MKL_CPARDISO"
-PetscErrorCode MatCopy_seqaij_seqaij_MKL_CPARDISO(Mat A, MatReuse reuse, PetscInt *nnz, PetscInt **r, PetscInt **c, PetscScalar **v){
-  Mat_SeqAIJ     *aa=(Mat_SeqAIJ*)A->data;
+PetscErrorCode MatCopy_seqaij_seqaij_MKL_CPARDISO(Mat A, MatReuse reuse, PetscInt *nnz, PetscInt **r, PetscInt **c, PetscScalar **v)
+{
+  Mat_SeqAIJ *aa=(Mat_SeqAIJ*)A->data;
+
   PetscFunctionBegin;
   *v=aa->a;
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -143,13 +145,13 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO(Mat A, MatReuse re
   Mat_MPIAIJ        *mat = (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ        *aa  = (Mat_SeqAIJ*)(mat->A)->data;
   Mat_SeqAIJ        *bb  = (Mat_SeqAIJ*)(mat->B)->data;
-  PetscInt nn, colA_start,jB,jcol;
-  
+  PetscInt          nn, colA_start,jB,jcol;
+
   PetscFunctionBegin;
   ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= A->rmap->rstart;
   av=aa->a; bv=bb->a;
 
-  garray = mat->garray; 
+  garray = mat->garray;
 
   if (reuse == MAT_INITIAL_MATRIX) {
     nz   = aa->nz + bb->nz;
@@ -207,9 +209,10 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij_MKL_CPARDISO(Mat A, MatReuse re
  */
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MKL_CPARDISO"
-PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A){
+PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A)
+{
   Mat_MKL_CPARDISO *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)A->spptr;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   /* Terminate instance, deallocate memories */
@@ -249,16 +252,17 @@ PetscErrorCode MatDestroy_MKL_CPARDISO(Mat A){
  */
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_MKL_CPARDISO"
-PetscErrorCode MatSolve_MKL_CPARDISO(Mat A,Vec b,Vec x){
+PetscErrorCode MatSolve_MKL_CPARDISO(Mat A,Vec b,Vec x)
+{
   Mat_MKL_CPARDISO   *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(A)->spptr;
   PetscErrorCode    ierr;
-  PetscScalar       *barray, *xarray;
+  PetscScalar       *xarray;
+  const PetscScalar *barray;
 
   PetscFunctionBegin;
-
   mat_mkl_cpardiso->nrhs = 1;
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
-  ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(b,&barray);CHKERRQ(ierr);
 
   /* solve phase */
   /*-------------*/
@@ -284,15 +288,18 @@ PetscErrorCode MatSolve_MKL_CPARDISO(Mat A,Vec b,Vec x){
 
   if (mat_mkl_cpardiso->err < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_CPARDISO: err=%d, msg = \"%s\". Please check manual\n",mat_mkl_cpardiso->err,Err_MSG_CPardiso(mat_mkl_cpardiso->err));
 
+  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(b,&barray);CHKERRQ(ierr);
   mat_mkl_cpardiso->CleanUp = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolveTranspose_MKL_CPARDISO"
-PetscErrorCode MatSolveTranspose_MKL_CPARDISO(Mat A,Vec b,Vec x){
+PetscErrorCode MatSolveTranspose_MKL_CPARDISO(Mat A,Vec b,Vec x)
+{
   Mat_MKL_CPARDISO *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)A->spptr;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -307,14 +314,14 @@ PetscErrorCode MatSolveTranspose_MKL_CPARDISO(Mat A,Vec b,Vec x){
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatSolve_MKL_CPARDISO"
-PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X){
-  Mat_MKL_CPARDISO   *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(A)->spptr;
+PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X)
+{
+  Mat_MKL_CPARDISO  *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(A)->spptr;
   PetscErrorCode    ierr;
   PetscScalar       *barray, *xarray;
-  PetscBool      flg;
+  PetscBool         flg;
 
   PetscFunctionBegin;
-
   ierr = PetscObjectTypeCompare((PetscObject)B,MATSEQDENSE,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATSEQDENSE matrix");
   ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSE,&flg);CHKERRQ(ierr);
@@ -359,17 +366,17 @@ PetscErrorCode MatMatSolve_MKL_CPARDISO(Mat A,Mat B,Mat X){
  */
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorNumeric_MKL_CPARDISO"
-PetscErrorCode MatFactorNumeric_MKL_CPARDISO(Mat F,Mat A,const MatFactorInfo *info){
+PetscErrorCode MatFactorNumeric_MKL_CPARDISO(Mat F,Mat A,const MatFactorInfo *info)
+{
   Mat_MKL_CPARDISO *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)(F)->spptr;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
 
   /* numerical factorization phase */
   /*-------------------------------*/
 
   PetscFunctionBegin;
-
   mat_mkl_cpardiso->matstruc = SAME_NONZERO_PATTERN;
-  ierr = (*mat_mkl_cpardiso->ConvertToTriples)(A, MAT_REUSE_MATRIX, &mat_mkl_cpardiso->nz, &mat_mkl_cpardiso->ia, &mat_mkl_cpardiso->ja, &mat_mkl_cpardiso->a);CHKERRQ(ierr);
+  ierr = (*mat_mkl_cpardiso->ConvertToTriples)(A, MAT_REUSE_MATRIX,&mat_mkl_cpardiso->nz,&mat_mkl_cpardiso->ia,&mat_mkl_cpardiso->ja,&mat_mkl_cpardiso->a);CHKERRQ(ierr);
 
   /* numerical factorization phase */
   /*-------------------------------*/
@@ -402,7 +409,8 @@ PetscErrorCode MatFactorNumeric_MKL_CPARDISO(Mat F,Mat A,const MatFactorInfo *in
 /* Sets mkl_cpardiso options from the options database */
 #undef __FUNCT__
 #define __FUNCT__ "PetscSetMKL_CPARDISOFromOptions"
-PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A){
+PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A)
+{
   Mat_MKL_CPARDISO    *mat_mkl_cpardiso = (Mat_MKL_CPARDISO*)F->spptr;
   PetscErrorCode      ierr;
   PetscInt            icntl;
@@ -434,7 +442,7 @@ PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A){
     &icntl,
     &flg);CHKERRQ(ierr);
   if (flg) mat_mkl_cpardiso->mnum = icntl;
- 
+
   ierr = PetscOptionsInt("-mat_mkl_cpardiso_68",
     "Message level information",
     "None",
@@ -617,15 +625,16 @@ PetscErrorCode PetscSetMKL_CPARDISOFromOptions(Mat F, Mat A){
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscInitialize_MKL_CPARDISO"
-PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_mkl_cpardiso){
+PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_mkl_cpardiso)
+{
   PetscErrorCode  ierr;
   PetscInt        i;
-  int SizeComm = -1;
+  PetscMPIInt     size;
 
   PetscFunctionBegin;
 
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)A),&(mat_mkl_cpardiso->comm_mkl_cpardiso));CHKERRQ(ierr);
-  ierr = MPI_Comm_size(mat_mkl_cpardiso->comm_mkl_cpardiso, &SizeComm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(mat_mkl_cpardiso->comm_mkl_cpardiso, &size);CHKERRQ(ierr);
 
   mat_mkl_cpardiso->CleanUp = PETSC_FALSE;
   mat_mkl_cpardiso->maxfct = 1;
@@ -661,14 +670,12 @@ PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_mkl_cpa
   mat_mkl_cpardiso->iparm[26] =  1; /* Check input data for correctness */
 
   mat_mkl_cpardiso->iparm[39] = 0;
-  if (SizeComm > 1) {
+  if (size > 1) {
     mat_mkl_cpardiso->iparm[39] = 2;
     mat_mkl_cpardiso->iparm[40] = A->rmap->rstart;
     mat_mkl_cpardiso->iparm[41] = A->rmap->rend-1;
   }
-
   mat_mkl_cpardiso->perm = 0;
-
   PetscFunctionReturn(0);
 }
 
@@ -677,25 +684,24 @@ PetscErrorCode PetscInitialize_MKL_CPARDISO(Mat A, Mat_MKL_CPARDISO *mat_mkl_cpa
  */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMKL_CPARDISO"
-PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info){
-
+PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
+{
   Mat_MKL_CPARDISO *mat_mkl_cpardiso = (Mat_MKL_CPARDISO*)F->spptr;
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-
   mat_mkl_cpardiso->matstruc = DIFFERENT_NONZERO_PATTERN;
 
   /* Set MKL_CPARDISO options from the options database */
   ierr = PetscSetMKL_CPARDISOFromOptions(F,A);CHKERRQ(ierr);
 
-  ierr = (*mat_mkl_cpardiso->ConvertToTriples)(A, MAT_INITIAL_MATRIX, &mat_mkl_cpardiso->nz, &mat_mkl_cpardiso->ia, &mat_mkl_cpardiso->ja, &mat_mkl_cpardiso->a);CHKERRQ(ierr);
+  ierr = (*mat_mkl_cpardiso->ConvertToTriples)(A,MAT_INITIAL_MATRIX,&mat_mkl_cpardiso->nz,&mat_mkl_cpardiso->ia,&mat_mkl_cpardiso->ja,&mat_mkl_cpardiso->a);CHKERRQ(ierr);
 
   mat_mkl_cpardiso->n = A->rmap->N;
 
   /* analysis phase */
   /*----------------*/
-  mat_mkl_cpardiso->phase = JOB_ANALYSIS;  
+  mat_mkl_cpardiso->phase = JOB_ANALYSIS;
 
   cluster_sparse_solver (
     mat_mkl_cpardiso->pt,
@@ -728,11 +734,12 @@ PetscErrorCode MatLUFactorSymbolic_AIJMKL_CPARDISO(Mat F,Mat A,IS r,IS c,const M
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_MKL_CPARDISO"
-PetscErrorCode MatView_MKL_CPARDISO(Mat A, PetscViewer viewer){
+PetscErrorCode MatView_MKL_CPARDISO(Mat A, PetscViewer viewer)
+{
   PetscErrorCode    ierr;
   PetscBool         iascii;
   PetscViewerFormat format;
-  Mat_MKL_CPARDISO   *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)A->spptr;
+  Mat_MKL_CPARDISO  *mat_mkl_cpardiso=(Mat_MKL_CPARDISO*)A->spptr;
   PetscInt          i;
 
   PetscFunctionBegin;
@@ -761,7 +768,8 @@ PetscErrorCode MatView_MKL_CPARDISO(Mat A, PetscViewer viewer){
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetInfo_MKL_CPARDISO"
-PetscErrorCode MatGetInfo_MKL_CPARDISO(Mat A, MatInfoType flag, MatInfo *info){
+PetscErrorCode MatGetInfo_MKL_CPARDISO(Mat A, MatInfoType flag, MatInfo *info)
+{
   Mat_MKL_CPARDISO *mat_mkl_cpardiso =(Mat_MKL_CPARDISO*)A->spptr;
 
   PetscFunctionBegin;
@@ -779,8 +787,10 @@ PetscErrorCode MatGetInfo_MKL_CPARDISO(Mat A, MatInfoType flag, MatInfo *info){
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMkl_CPardisoSetCntl_MKL_CPARDISO"
-PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt ival){
+PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt ival)
+{
   Mat_MKL_CPARDISO *mat_mkl_cpardiso =(Mat_MKL_CPARDISO*)F->spptr;
+
   PetscFunctionBegin;
   if(icntl <= 64){
     mat_mkl_cpardiso->iparm[icntl - 1] = ival;
@@ -839,7 +849,8 @@ PetscErrorCode MatMkl_CPardisoSetCntl(Mat F,PetscInt icntl,PetscInt ival)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_mkl_cpardiso"
-static PetscErrorCode MatFactorGetSolverPackage_mkl_cpardiso(Mat A, const MatSolverPackage *type){
+static PetscErrorCode MatFactorGetSolverPackage_mkl_cpardiso(Mat A, const MatSolverPackage *type)
+{
   PetscFunctionBegin;
   *type = MATSOLVERMKL_CPARDISO;
   PetscFunctionReturn(0);
@@ -848,12 +859,13 @@ static PetscErrorCode MatFactorGetSolverPackage_mkl_cpardiso(Mat A, const MatSol
 /* MatGetFactor for MPI AIJ matrices */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_mpiaij_mkl_cpardiso"
-PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType ftype,Mat *F){
-  Mat            B;
-  PetscErrorCode ierr;
+PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType ftype,Mat *F)
+{
+  Mat              B;
+  PetscErrorCode   ierr;
   Mat_MKL_CPARDISO *mat_mkl_cpardiso;
-  PetscBool      isSeqAIJ;
-    
+  PetscBool        isSeqAIJ;
+
   PetscFunctionBegin;
   /* Create the factorization matrix */
 
@@ -896,6 +908,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_mkl_cpardiso(Mat A,MatFactorType
 PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_MKL_CPardiso(void)
 {
   PetscErrorCode ierr;
+  
   PetscFunctionBegin;
   ierr = MatSolverPackageRegister(MATSOLVERMKL_CPARDISO,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_mpiaij_mkl_cpardiso);CHKERRQ(ierr);
   ierr = MatSolverPackageRegister(MATSOLVERMKL_CPARDISO,MATSEQAIJ,MAT_FACTOR_LU,MatGetFactor_mpiaij_mkl_cpardiso);CHKERRQ(ierr);

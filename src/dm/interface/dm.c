@@ -608,7 +608,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   }
   ierr = PetscOptionsEnum("-dm_is_coloring_type","Global or local coloring of Jacobian","ISColoringType",ISColoringTypes,(PetscEnum)dm->coloringtype,(PetscEnum*)&dm->coloringtype,NULL);CHKERRQ(ierr);
   if (dm->ops->setfromoptions) {
-    ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
+    ierr = (*dm->ops->setfromoptions)(PetscOptionsObject,dm);CHKERRQ(ierr);
   }
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
@@ -852,7 +852,7 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 -   dm2 - the second, finer DM object
 
     Output Parameter:
-.   ctx - the injection
+.   mat - the injection
 
     Level: developer
 
@@ -862,14 +862,14 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMCreateInterpolation()
 
 @*/
-PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,VecScatter *ctx)
+PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,Mat *mat)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
-  ierr = (*dm1->ops->getinjection)(dm1,dm2,ctx);CHKERRQ(ierr);
+  ierr = (*dm1->ops->getinjection)(dm1,dm2,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1683,14 +1683,15 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
   }
   ierr = DMGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   if (sf) {
-    PetscScalar *lArray, *gArray;
+    const PetscScalar *gArray;
+    PetscScalar       *lArray;
 
     if (mode == ADD_VALUES) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
     ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
-    ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(g, &gArray);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
     ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
-    ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(g, &gArray);CHKERRQ(ierr);
   } else {
     ierr = (*dm->ops->globaltolocalbegin)(dm,g,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),l);CHKERRQ(ierr);
   }
@@ -1720,7 +1721,8 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscSF                 sf;
   PetscErrorCode          ierr;
-  PetscScalar             *lArray, *gArray;
+  const PetscScalar      *gArray;
+  PetscScalar            *lArray;
   DMGlobalToLocalHookLink link;
 
   PetscFunctionBegin;
@@ -1730,10 +1732,10 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
     if (mode == ADD_VALUES) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
 
     ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
-    ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(g, &gArray);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
     ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
-    ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(g, &gArray);CHKERRQ(ierr);
   } else {
     ierr = (*dm->ops->globaltolocalend)(dm,g,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),l);CHKERRQ(ierr);
   }
@@ -1844,12 +1846,11 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
     Input Parameters:
 +   dm - the DM object
 .   l - the local vector
-.   mode - if INSERT_VALUES then no parallel communication is used, if ADD_VALUES then all ghost points from the same base point accumulate into that
-           base point.
-- - the global vector
+.   mode - if INSERT_VALUES then no parallel communication is used, if ADD_VALUES then all ghost points from the same base point accumulate into that base point.
+-   g - the global vector
 
     Notes: In the ADD_VALUES case you normally would zero the receiving vector before beginning this operation.
-           INSERT_VALUES is not support for DMDA, in that case simply compute the values directly into a global vector instead of a local one.
+           INSERT_VALUES is not supported for DMDA, in that case simply compute the values directly into a global vector instead of a local one.
 
     Level: beginner
 
@@ -1859,8 +1860,12 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
 PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
 {
   PetscSF                 sf;
-  PetscErrorCode          ierr;
+  PetscSection            s, gs;
   DMLocalToGlobalHookLink link;
+  const PetscScalar      *lArray;
+  PetscScalar            *gArray;
+  PetscBool               isInsert;
+  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -1871,24 +1876,59 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   }
   ierr = DMLocalToGlobalHook_Constraints(dm,l,mode,g,NULL);CHKERRQ(ierr);
   ierr = DMGetDefaultSF(dm, &sf);CHKERRQ(ierr);
-  if (sf) {
-    MPI_Op      op;
-    PetscScalar *lArray, *gArray;
-
-    switch (mode) {
-    case INSERT_VALUES:
-    case INSERT_ALL_VALUES:
-      op = MPIU_REPLACE; break;
-    case ADD_VALUES:
-    case ADD_ALL_VALUES:
-      op = MPI_SUM; break;
-    default:
-      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
-    }
-    ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+  switch (mode) {
+  case INSERT_VALUES:
+  case INSERT_ALL_VALUES:
+    isInsert = PETSC_TRUE; break;
+  case ADD_VALUES:
+  case ADD_ALL_VALUES:
+    isInsert = PETSC_FALSE; break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
+  }
+  if (sf && !isInsert) {
+    ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-    ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, op);CHKERRQ(ierr);
-    ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(sf, MPIU_SCALAR, lArray, gArray, MPI_SUM);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
+    ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
+  } else if (s && isInsert) {
+    PetscInt gStart, pStart, pEnd, p;
+
+    ierr = DMGetDefaultGlobalSection(dm, &gs);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(g, &gStart, NULL);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
+    ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt dof, gdof, cdof, gcdof, off, goff, d, e;
+
+      ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(gs, p, &gdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstraintDof(gs, p, &gcdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(s, p, &off);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(gs, p, &goff);CHKERRQ(ierr);
+      /* Ignore off-process data and points with no global data */
+      if (!gdof || goff < 0) continue;
+      if (dof != gdof) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes, p: %d dof: %d gdof: %d cdof: %d gcdof: %d", p, dof, gdof, cdof, gcdof);
+      /* If no constraints are enforced in the global vector */
+      if (!gcdof) {
+        for (d = 0; d < dof; ++d) gArray[goff-gStart+d] = lArray[off+d];
+      /* If constraints are enforced in the global vector */
+      } else if (cdof == gcdof) {
+        const PetscInt *cdofs;
+        PetscInt        cind = 0;
+
+        ierr = PetscSectionGetConstraintIndices(s, p, &cdofs);CHKERRQ(ierr);
+        for (d = 0, e = 0; d < dof; ++d) {
+          if ((cind < cdof) && (d == cdofs[cind])) {++cind; continue;}
+          gArray[goff-gStart+e++] = lArray[off+d];
+        }
+      } else SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes, p: %d dof: %d gdof: %d cdof: %d gcdof: %d", p, dof, gdof, cdof, gcdof);
+    }
+    ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
     ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
   } else {
     ierr = (*dm->ops->localtoglobalbegin)(dm,l,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),g);CHKERRQ(ierr);
@@ -1917,32 +1957,36 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
 @*/
 PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 {
-  PetscSF        sf;
-  PetscErrorCode ierr;
+  PetscSF                 sf;
+  PetscSection            s;
   DMLocalToGlobalHookLink link;
+  PetscBool               isInsert;
+  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDefaultSF(dm, &sf);CHKERRQ(ierr);
-  if (sf) {
-    MPI_Op      op;
-    PetscScalar *lArray, *gArray;
+  ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+  switch (mode) {
+  case INSERT_VALUES:
+  case INSERT_ALL_VALUES:
+    isInsert = PETSC_TRUE; break;
+  case ADD_VALUES:
+  case ADD_ALL_VALUES:
+    isInsert = PETSC_FALSE; break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
+  }
+  if (sf && !isInsert) {
+    const PetscScalar *lArray;
+    PetscScalar       *gArray;
 
-    switch (mode) {
-    case INSERT_VALUES:
-    case INSERT_ALL_VALUES:
-      op = MPIU_REPLACE; break;
-    case ADD_VALUES:
-    case ADD_ALL_VALUES:
-      op = MPI_SUM; break;
-    default:
-      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
-    }
-    ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, op);CHKERRQ(ierr);
-    ierr = VecRestoreArray(l, &lArray);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, MPI_SUM);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(l, &lArray);CHKERRQ(ierr);
     ierr = VecRestoreArray(g, &gArray);CHKERRQ(ierr);
+  } else if (s && isInsert) {
   } else {
     ierr = (*dm->ops->localtoglobalend)(dm,l,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),g);CHKERRQ(ierr);
   }
@@ -2526,14 +2570,15 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
     Logically Collective on DM
 
     Input Parameters:
-+   dm - the DM object to destroy
--   x  - current solution at which the bounds are computed
+.   dm - the DM object
 
     Output parameters:
 +   xl - lower bound
 -   xu - upper bound
 
-    Level: intermediate
+    Level: advanced
+
+    Notes: This is generally not called by users. It calls the function provided by the user with DMSetVariableBounds()
 
 .seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext()
 
@@ -2644,7 +2689,7 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
   ierr = PetscObjectTypeCompare((PetscObject) dm, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!DMRegisterAllCalled) {ierr = DMRegisterAll();CHKERRQ(ierr);}
+  ierr = DMRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(DMList,method,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
@@ -2682,9 +2727,7 @@ PetscErrorCode  DMGetType(DM dm, DMType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID,1);
   PetscValidPointer(type,2);
-  if (!DMRegisterAllCalled) {
-    ierr = DMRegisterAll();CHKERRQ(ierr);
-  }
+  ierr = DMRegisterAll();CHKERRQ(ierr);
   *type = ((PetscObject)dm)->type_name;
   PetscFunctionReturn(0);
 }
@@ -2974,7 +3017,10 @@ PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *section)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(section, 2);
-  if (!dm->defaultSection && dm->ops->createdefaultsection) {ierr = (*dm->ops->createdefaultsection)(dm);CHKERRQ(ierr);}
+  if (!dm->defaultSection && dm->ops->createdefaultsection) {
+    ierr = (*dm->ops->createdefaultsection)(dm);CHKERRQ(ierr);
+    ierr = PetscObjectViewFromOptions((PetscObject) dm->defaultSection, "dm_", "-petscsection_view");CHKERRQ(ierr);
+  }
   *section = dm->defaultSection;
   PetscFunctionReturn(0);
 }
@@ -3528,7 +3574,7 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
   DM dm_coord,dmc_coord;
   PetscErrorCode ierr;
   Vec coords,ccoords;
-  VecScatter scat;
+  Mat inject;
   PetscFunctionBegin;
   ierr = DMGetCoordinateDM(dm,&dm_coord);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dmc,&dmc_coord);CHKERRQ(ierr);
@@ -3536,11 +3582,10 @@ PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
   ierr = DMGetCoordinates(dmc,&ccoords);CHKERRQ(ierr);
   if (coords && !ccoords) {
     ierr = DMCreateGlobalVector(dmc_coord,&ccoords);CHKERRQ(ierr);
-    ierr = DMCreateInjection(dmc_coord,dm_coord,&scat);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scat,coords,ccoords,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scat,coords,ccoords,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = DMCreateInjection(dmc_coord,dm_coord,&inject);CHKERRQ(ierr);
+    ierr = MatRestrict(inject,coords,ccoords);CHKERRQ(ierr);
+    ierr = MatDestroy(&inject);CHKERRQ(ierr);
     ierr = DMSetCoordinates(dmc,ccoords);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
     ierr = VecDestroy(&ccoords);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

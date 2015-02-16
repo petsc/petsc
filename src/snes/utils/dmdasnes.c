@@ -262,13 +262,14 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*
 
    Input Arguments:
 +  dm - DM to associate callback with
-.  func - local residual evaluation
--  ctx - optional context for local residual evaluation
+.  func - local Jacobian evaluation
+-  ctx - optional context for local Jacobian evaluation
 
    Calling sequence for func:
-+  info - DMDALocalInfo defining the subdomain to evaluate the residual on
-.  x - dimensional pointer to state at which to evaluate residual
-.  f - dimensional pointer to residual, write the residual here
++  info - DMDALocalInfo defining the subdomain to evaluate the Jacobian at
+.  x - dimensional pointer to state at which to evaluate Jacobian
+.  J - Mat object for the Jacobian
+.  M - Mat object for the Jacobian preconditioner matrix
 -  ctx - optional context passed above
 
    Level: beginner

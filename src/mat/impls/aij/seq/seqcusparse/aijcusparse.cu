@@ -25,7 +25,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat,Vec,Vec);
 static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat,Vec,Vec);
 static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat,Vec,Vec);
 static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat,Vec,Vec);
-static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat);
+static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptions *PetscOptionsObject,Mat);
 static PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat,Vec,Vec);
 static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat,Vec,Vec,Vec);
 static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat,Vec,Vec);
@@ -181,7 +181,7 @@ PetscErrorCode MatCUSPARSESetFormat(Mat A,MatCUSPARSEFormatOperation op,MatCUSPA
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_SeqAIJCUSPARSE"
-static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat A)
+static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(PetscOptions *PetscOptionsObject,Mat A)
 {
   PetscErrorCode           ierr;
   MatCUSPARSEStorageFormat format;
@@ -189,7 +189,7 @@ static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat A)
   Mat_SeqAIJCUSPARSE       *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SeqAIJCUSPARSE options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SeqAIJCUSPARSE options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   if (A->factortype==MAT_FACTOR_NONE) {
     ierr = PetscOptionsEnum("-mat_cusparse_mult_storage_format","sets storage format of (seq)aijcusparse gpu matrices for SpMV",

@@ -44,7 +44,7 @@ PetscErrorCode  PCFactorSetReuseFill_LU(PC pc,PetscBool flag)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_LU"
-static PetscErrorCode PCSetFromOptions_LU(PC pc)
+static PetscErrorCode PCSetFromOptions_LU(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_LU          *lu = (PC_LU*)pc->data;
   PetscErrorCode ierr;
@@ -52,8 +52,8 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
   PetscReal      tol;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("LU options");CHKERRQ(ierr);
-  ierr = PCSetFromOptions_Factor(pc);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"LU options");CHKERRQ(ierr);
+  ierr = PCSetFromOptions_Factor(PetscOptionsObject,pc);CHKERRQ(ierr);
 
   ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
   if (flg) {

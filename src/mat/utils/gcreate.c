@@ -188,7 +188,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   ierr = PetscOptionsBool("-mat_null_space_test","Checks if provided null space is correct in MatAssemblyEnd()","MatSetNullSpaceTest",B->checknullspaceonassembly,&B->checknullspaceonassembly,NULL);CHKERRQ(ierr);
 
   if (B->ops->setfromoptions) {
-    ierr = (*B->ops->setfromoptions)(B);CHKERRQ(ierr);
+    ierr = (*B->ops->setfromoptions)(PetscOptionsObject,B);CHKERRQ(ierr);
   }
 
   flg  = PETSC_FALSE;

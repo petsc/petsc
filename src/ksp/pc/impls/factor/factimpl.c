@@ -227,7 +227,7 @@ PetscErrorCode  PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Factor"
-PetscErrorCode  PCSetFromOptions_Factor(PC pc)
+PetscErrorCode  PCSetFromOptions_Factor(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_Factor         *factor = (PC_Factor*)pc->data;
   PetscErrorCode    ierr;
@@ -238,7 +238,6 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   PetscBool         inplace;
 
   PetscFunctionBegin;
-  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll();CHKERRQ(ierr);}
   ierr = PCFactorGetUseInPlace(pc,&inplace);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",inplace,&flg,&set);CHKERRQ(ierr);
   if (set) {

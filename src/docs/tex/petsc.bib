@@ -4,13 +4,6 @@
 %
 %   DO NOT DEFINE ANY ABREVIATIONS TO USE IN ENTRIES BELOW: Always write out the names of journels etc
 
-@techreport{knepley2013accurately,
-  title={Accurately Citing Software and Algorithms Used in Publications},
-  author={Knepley, Matthew G and Brown, Jed and McInnes, Lois Curfman and Smith, Barry F.},
-  year={2013},
-  institution={http://files.figshare.com/1187013/paper.pdf}
-}
-
 @inproceedings{devito2011liszt,
   title={Liszt: a domain specific language for building portable mesh-based PDE solvers},
   author={DeVito, Zachary and Joubert, Niels and Palacios, Francisco and Oakley, Stephen and Medina, Montserrat and Barrientos, Mike and Elsen, Erich and Ham, Frank and Aiken, Alex and Duraisamy, Karthik and others},
@@ -244,6 +237,24 @@ address = {Los Alamitos, CA},
   year={1997},
   publisher={Citeseer}
 }
+@article{spillane2011abstract,
+  title={Abstract robust coarse spaces for systems of {PDEs} via generalized eigenproblems in the overlaps},
+  author={Spillane, N and Dolean, V and Hauret, P and Nataf, F and Pechstein, C and Scheichl, R},
+  journal={NuMa-Report},
+  volume={7},
+  pages={2007},
+  year={2011}
+}
+
+@inproceedings{jolivet2013scalabledd,
+  title={Scalable domain decomposition preconditioners for heterogeneous elliptic problems},
+  author={Jolivet, Pierre and Hecht, Fr{\'e}d{\'e}ric and Nataf, Fr{\'e}d{\'e}ric and Prud'homme, Christophe},
+  booktitle={Proceedings of SC13: International Conference for High Performance Computing, Networking, Storage and Analysis},
+  pages={80},
+  year={2013},
+  organization={ACM}
+}
+
 @book{KS2000,
 	Author = {D. Kinderlehrer and G. Stampacchia},
 	Publisher = {Society for Industrial Mathematics},
@@ -1273,7 +1284,7 @@ address = {Los Alamitos, CA},
 }
 
 @Unpublished{petsc:use-by-external-packages,
-  author =       {B. {Smith et al.}},
+  author =       {B. F. {Smith et al.}},
   title =        "{Software Packages that Use or Interface to PETSc}",
   note =         "\url{http://www.mcs.anl.gov/petsc/publications/petscapps.html#packages}",
   Institution = "Argonne National Laboratory"
@@ -4032,7 +4043,7 @@ year = 2003}
   author =	 "Peter {Lichtner (PI)}",
   title =	 "Modeling Multiscale-Multiphase-Multicomponent Subsurface Reactive Flows
                   Using Advanced Computing",
-  url = "http://www.scidac.gov/groundwater/gwflow.html"
+  howpublished = "http://www.scidac.gov/groundwater/gwflow.html"
 }
 
 @misc{pflotran:web,
@@ -4318,6 +4329,17 @@ http://csdrm.caltech.edu/
   series = "Lecture Notes in Computer Science",
   volume = 2073,
   publisher = "Springer-Verlag",
+}
+
+@article{chen2008new,
+  title={New generation of multi-scale {NWP} system {(GRAPES)}: General scientific design},
+  author={Chen, DeHui and Xue, JiShan and Yang, XueSheng and Zhang, HongLiang and Shen, XueShun and Hu, JiangLin and Wang, Yu and Ji, LiRen and Chen, JiaBin},
+  journal={Chinese Science Bulletin},
+  volume={53},
+  number={22},
+  pages={3433--3445},
+  year={2008},
+  publisher={Springer}
 }
 
 @inproceedings{baum01,
@@ -5139,6 +5161,28 @@ It begins with a general introduction to bundles, including such topics as diffe
  address = {Philadelphia, PA}
 }
 
+@article{chartier2003spectral,
+  title={Spectral AMGe ($\rho$ AMGe)},
+  author={Chartier, Tim and Falgout, RD and Henson, VE and Jones, J and Manteuffel, T and McCormick, S and Ruge, J and Vassilevski, PS},
+  journal={SIAM Journal on Scientific Computing},
+  volume={25},
+  number={1},
+  pages={1--26},
+  year={2003},
+  publisher={SIAM}
+}
+
+@article{galvis2010domain,
+  title={Domain decomposition preconditioners for multiscale flows in high-contrast media},
+  author={Galvis, Juan and Efendiev, Yalchin},
+  journal={Multiscale Modeling \& Simulation},
+  volume={8},
+  number={4},
+  pages={1461--1483},
+  year={2010},
+  publisher={SIAM}
+}
+
 @book{BrennerScott02,
  author = {Susanne~C. Brenner and L.~Ridgway Scott},
  title = {The mathematical theory of finite element methods},
@@ -5335,6 +5379,7 @@ url = "http://science.energy.gov/~/media/ascr/pdf/program-documents/docs/Brown_r
 author= "D. Brown and P. {Messina (Chairs)}",
 title=  "{Scientific Grand Challenges: Crosscutting Technologies for Computing at the Exascale}",
 year =  2010,
+howpublished = "Office of Science, U.S. Department of Energy",
 url = "http://extremecomputing.labworks.org/SumReps/Crosscutting-SumRep-PNNL_20168.pdf"
 }
 
@@ -5946,7 +5991,7 @@ year = {1993}
 
 @article{MoresiZhongGurnis96,
   author  = {Louis N. Moresi and Shijie Zhong and Michael Gurnis},
-  title   = {The accuracy of finite element solutions of Stokes' flow with strongly varying viscosity},
+  title   = {The accuracy of finite element solutions of {S}tokes' flow with strongly varying viscosity},
   journal = {Physics of the Earth and Planetary Interiors},
   volume  = {97},
   pages   = {83-–94},
@@ -5955,7 +6000,7 @@ year = {1993}
 
 @article{MoresiSolomatov95,
   author  = {Louis N. Moresi and V. S. Solomatov},
-  title   = {Numerical investigation of 2D convection with extremely large viscosity variations},
+  title   = {Numerical investigation of {2D} convection with extremely large viscosity variations},
   journal = {Physics of Fluids},
   volume  = {7},
   number  = {9},
@@ -6134,6 +6179,7 @@ summarize challenges and forecast opportunities.}
 }
 
 @Misc{DOEGrandChallengeWorkshops,
+  key = {Office of Science, U.S. Department of Energy},
   title = "{Scientific Grand Challenges Workshop Series}",
   howpublished = "Office of Science, U.S. Department of Energy, see
       \url{http://extremecomputing.labworks.org/workshops.stm}"
@@ -6332,7 +6378,16 @@ year      = {2011},
 pages     = {407-423},
 ee        = {http://dx.doi.org/10.1137/100791142}
 }
-	
+@article{chen2011algebraic,
+  title={Algebraic distance on graphs},
+  author={Chen, Jie and Safro, Ilya},
+  journal={SIAM Journal on Scientific Computing},
+  volume={33},
+  number={6},
+  pages={3468--3490},
+  year={2011},
+  publisher={SIAM}
+}
 @inproceedings{Adams04,
 	Author = {Adams, M.~F. and Bayraktar, H.~H. and Keaveny, T.~M. and Papadopoulos, P.},
 	Booktitle = {ACM/IEEE Proceedings of SC2004: High Performance Networking and Computing},
@@ -6470,9 +6525,9 @@ keywords = "Parallelization"
 @misc{elemental-web-page,
   author = {Jack Poulson},
   title  = {Elemental: Distributed memory dense linear algebra},
-  howpublished = {\url{http://code.google.com/p/elemental/}},
-  url    = {http://code.google.com/p/elemental/},
-  year   = {2012}
+  howpublished = {\url{http://libelemental.org}},
+  url    = {http://libelemental.org/},
+  year   = {2015}
 }
 
 @book{ScalesReport,
@@ -6949,12 +7004,12 @@ year = {2010}
   year    = {2013}
 }
 
-@article{BardhanKnepleyBrune2012,
-  author  = {Jaydeep P. Bardhan and Matthew G. Knepley and Peter Brune},
+@article{BardhanKnepleyBrune2015,
+  author  = {Jaydeep P. Bardhan and Matthew G. Knepley and Peter R. Brune},
   title   = {Analytical Nonlocal Electrostatics Using Eigenfunction Expansions of Boundary-Integral Operators},
-  journal = {Journal of Chemical Physics},
-  note    = {Submitted},
-  year    = {2012}
+  journal = {Molecular Based Mathematical Biology},
+  note    = {to appear},
+  year    = {2015}
 }
 
 @inproceedings{McClanahan2011,
@@ -7663,7 +7718,7 @@ part I: Theory},
   publisher={Society for Industrial and Applied Mathematics}
 }
 @article{vogel2007fbicg,
-  title={Flexible BiCG and flexible Bi-CGSTAB for nonsymmetric linear systems},
+  title={Flexible {BiCG} and flexible {Bi-CGSTAB} for nonsymmetric linear systems},
   author={Vogel,J.A.},
   journal={Applied Mathematics and Computation},
   volume={188},
@@ -7673,7 +7728,7 @@ part I: Theory},
   publisher={Elsevier}
 }
 @article{ZhengEtAl12,
-  title   = {Implementation of a multigrid solver on GPU for Stokes equations with strongly variable viscosity based on Matlab and CUDA},
+  title   = {Implementation of a multigrid solver on {GPU} for {S}tokes equations with strongly variable viscosity based on {M}atlab and {CUDA}},
   author  = {Liang Zheng and Taras Gerya and Matthew G. Knepley and David A. Yuen and Huai Zhang and Yaolin Shi},
   journal = {IJHPCA},
   year    = {2012},
@@ -8087,7 +8142,7 @@ part I: Theory},
 }
 @article{EisenstatWalker1994,
   author  = {Stanley Eisenstat and Homer Walker},
-  title   = {Globally Convergent Inexact Newton Methods},
+  title   = {Globally Convergent Inexact {N}ewton Methods},
   journal = {SIAM Journal on Optimization},
   volume  = {4},
   number  = {2},
@@ -8136,8 +8191,8 @@ year = {2009}
   publisher={SIAM}
 }
 @misc{SimplifiedBSD,
-  author = {University of California, Berkeley},
-  title  = {Simplified Berkeley Software Distribution License},
+  author = {{University of California, Berkeley}},
+  title  = {Simplified {Berkeley} Software Distribution License},
   note   = {see \url{http://en.wikipedia.org/wiki/BSD_licenses#2-clause_license_.28.22Simplified_BSD_License.22_or_.22FreeBSD_License.22.29}},
 }
 @book{ChaconStraub14,
@@ -8160,4 +8215,90 @@ year = {2009}
 @misc{FigShare,
   author = {FigShare},
   note   = {Available at \url{http://palgrave.figshare.com/}}
+}
+
+@misc{SoftwareProductivityWorkshopReport14,
+  author = {H. Johansen and L. C. McInnes and D. Bernholdt and J. Carver and M. Heroux and
+           R. Hornung and P. Jones and B. Lucas and A. Siegel and T. Ndousse-Fetter},
+  title = {Software Productivity for Extreme-Scale Science},
+  note = {Report on DOE Workshop, January 13-14, 2014},
+  url = {http://www.orau.gov/swproductivity2014/SoftwareProductivityWorkshopReport2014.pdf},
+  year = 2014
+}
+
+@misc{SoftwareProductivityWhitepaper13,
+  author = {H. Johansen and D. Bernholdt and B. Collins and M. Heroux and R. Jacob and
+            P. Jones and L. C. McInnes and J. D. Moulton and T. Ndousse-Fetter and
+            D. Post and W. Tang},
+  title = {Extreme-Scale Scientific Application Software Productivity: Harnessing the Full Capability of Extreme-Scale Computing},
+  note = {whitepaper submitted to DOE, available via \url{http://www.orau.gov/swproductivity2014/reference.htm}},
+  year = 2013
+}
+
+@Misc{IDEAS:project,
+  author = {Michael Heroux and Lois Curfman McInnes and J. David {Moulton (PIs)}},
+  title  = {{Interoperable Design of Extreme-Scale Application Software (IDEAS)}},
+  howpublished = "\url{http://ideas-productivity.org}",
+  year = 2015
+}
+
+@techreport{KeyesMcInnesWoodwardEtAl2012,
+  author = {D. E. Keyes and L. C. McInnes and C. Woodward and E. Constantinescu and D. Estep and B. Sheehan},
+  title = {First Steps Toward a Multiphysics Exemplars and Benchmarks Suite},
+  institution = {Argonne National Laboratory},
+  number = {ANL/MCS-TM-330},
+  month = {Oct},
+  year = 2012
+}
+
+@Misc{ sawsFS-web-page,
+  author =       "Surtai Han and Barry Smith and Hong Zhang",
+  title =        "{{SAWs Tutorial: Fieldsplit Preconditioner}}",
+  note =         "\url{https://www.youtube.com/watch?v=-w0fPhmZT3c}",
+  year = 2015
+}
+@Misc{ sawsHK-web-page,
+  author =       "Surtai Han and Barry Smith and Hong Zhang",
+  title =        "{{SAWs Tutorial: Hierarchical Krylov Method}}",
+  note =         "\url{https://www.youtube.com/watch?v=hWbqppTrcOw}",
+  year = 2015
+}
+@Misc{ sawsNestK-web-page,
+  author =       "Surtai Han and Barry Smith and Hong Zhang",
+  title =        "{{SAWs Tutorial: Nested Krylov Method}}",
+  note =         "\url{https://www.youtube.com/watch?v=kqPXZxMOJmA}",
+  year = 2015
+}
+
+@misc{m2acs:project,
+   author = "M. {Anitescu et al.}",
+   title = "{Multifaceted Mathematics for Complex Energy Systems (M2ACS) {W}eb page}",
+   howpublished  = "\url{http://www.mcs.anl.gov/MACS}",
+   year = 2015
+}
+
+@misc{hssmn13,
+  author = {P. Hovland and B. Smith and M. Snir and L. C. McInnes and B. Norris},
+  title = {Exposing and Expanding Compiler Technologies to Improve Software Productivity in Developing Mathematical Libraries and Simulation Codes},
+  note = {whitepaper submitted to DOE Workshop on Software Productivity for Extreme-Scale Science, available via \url{http://www.orau.gov/swproductivity2014/papers.htm}},
+  year = 2013
+}
+
+@misc{atpesc:website,
+   author = "P. {Messina et al.}",
+   title = "{Argonne Training Program for Extreme-Scale Computing}",
+   howpublished  = "\url{http://extremecomputingtraining.anl.gov}",
+   year = 2015
+}
+@article{BarraultMadayNguyenPatera2004,
+  author  = "Maxime Barrault and Yvon Maday and Ngoc Cuong Nguyen and Anthony T. Patera",
+  title   = "An empirical interpolation method: application to efficient reduced-basis discretization of partial differential equations",
+  journal = "Comptes Rendus Mathematique",
+  volume  = "339",
+  number  = "9",
+  pages   = "667--672",
+  year    = "2004",
+  issn    = "1631-073X",
+  doi     = "http://dx.doi.org/10.1016/j.crma.2004.08.006",
+  url     = "http://www.sciencedirect.com/science/article/pii/S1631073X04004248"
 }

@@ -43,7 +43,7 @@
 !  in them
 !
       module petsc_kkt_solver_module
-#include <finclude/petscdmdef.h>
+#include <petsc-finclude/petscdmdef.h>
       use petscdmdef
       type petsc_kkt_solver
         type(DM) da
@@ -63,7 +63,7 @@
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
         use petscsnes
         use petsc_kkt_solver_module
           type(SNES)    snesIn
@@ -74,7 +74,7 @@
 
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
         use petscsnes
         use petsc_kkt_solver_module
           type(SNES)     snesIn
@@ -85,8 +85,8 @@
       end module petsc_kkt_solver_moduleinterfaces
 
       program main
-#include <finclude/petscdmdef.h>
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscdmdef.h>
+#include <petsc-finclude/petscsnesdef.h>
       use petscdm
       use petscdmda
       use petscsnes
@@ -386,7 +386,7 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(mysnes,Xnest,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver_module
       use petsc_kkt_solver_moduleinterfaces
@@ -436,7 +436,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(solver,X1,ierr)
-#include <finclude/petscsysdef.h>
+#include <petsc-finclude/petscsysdef.h>
       use petscsys
       use petsc_kkt_solver_module
       implicit none
@@ -491,7 +491,7 @@
 !  flag     - flag indicating matrix structure
 !
       subroutine FormJacobian(dummy,X,jac,jac_prec,solver,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver_module
       implicit none
@@ -550,7 +550,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormJacobianLocal(X1,jac,solver,add_nl_term,ierr)
-#include <finclude/petscmatdef.h>
+#include <petsc-finclude/petscmatdef.h>
       use petscmat
       use petsc_kkt_solver_module
       implicit none
@@ -633,7 +633,7 @@
 !  F - function vector
 !
       subroutine FormFunction(snesIn,X,F,solver,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver_module
       implicit none
@@ -688,7 +688,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormFunctionNLTerm(X1,F1,solver,ierr)
-#include <finclude/petscvecdef.h>
+#include <petsc-finclude/petscvecdef.h>
       use petscvec
       use petsc_kkt_solver_module
       implicit none

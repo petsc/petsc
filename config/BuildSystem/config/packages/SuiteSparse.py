@@ -3,8 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self,framework)
-    self.download = ['http://www.cise.ufl.edu/research/sparse/SuiteSparse/SuiteSparse-4.2.1.tar.gz',
-                     'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuiteSparse-4.2.1.tar.gz']
+    self.download = ['http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-4.4.3.tar.gz']
     self.liblist  = [['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a'],
                      ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libsuitesparseconfig.a','-lrt'],
                      ['libumfpack.a','libklu.a','libcholmod.a','libbtf.a','libccolamd.a','libcolamd.a','libcamd.a','libamd.a','libmetis.a','libsuitesparseconfig.a'],
@@ -14,10 +13,19 @@ class Configure(config.package.Package):
     self.needsMath = 1
     return
 
+  def setupHelp(self, help):
+    import nargs
+    config.package.Package.setupHelp(self, help)
+    help.addArgument('SuiteSparse', '-download-suitesparse-gpu=<bool>',    nargs.ArgBool(None, 0, 'Install SuiteSparse to use GPUs'))
+    
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.blasLapack]
+    if self.framework.argDB['download-suitesparse-gpu']:
+      self.cuda       = framework.require('config.packages.cuda',self)
+      self.deps       = [self.blasLapack,self.cuda]
+    else:
+      self.deps       = [self.blasLapack]
     return
 
   def Install(self):
@@ -52,7 +60,38 @@ class Configure(config.package.Package):
     else:
       flg = '-DBLAS_NO_UNDERSCORE'
     g.write('UMFPACK_CONFIG    = '+flg+'\n')
-    g.write('CHOLMOD_CONFIG    = '+flg+' -DNPARTITION\n')
+    if self.framework.argDB['download-suitesparse-gpu']:
+      if self.defaultIndexSize == 32:
+        raise RuntimeError('SuiteSparse only uses GPUs with --with-64-bit-indices')
+      if not self.framework.clArgDB.has_key('with-cuda') or not self.framework.argDB['with-cuda']:
+        raise RuntimeError('Run with --with-cuda to use allow SuiteSparse to compile using CUDA')
+      # code taken from cuda.py
+      self.pushLanguage('CUDA')
+      petscNvcc = self.getCompiler()
+      self.popLanguage()
+      self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
+      if hasattr(self,'systemNvcc'):
+        nvccDir = os.path.dirname(self.systemNvcc)
+        cudaDir = os.path.split(nvccDir)[0]
+      else:
+        raise RuntimeError('Unable to locate CUDA NVCC compiler')
+      g.write('CUDA_ROOT     = '+cudaDir+'\n')
+      g.write('GPU_BLAS_PATH = $(CUDA_ROOT)\n')
+      g.write('GPU_CONFIG    = -I$(CUDA_ROOT)/include -DGPU_BLAS\n')
+# GPU_CONFIG    = -I$(CUDA_ROOT)/include -DGPU_BLAS -DCHOLMOD_OMP_NUM_THREADS=10
+      g.write('CUDA_PATH     = $(CUDA_ROOT)\n')
+      g.write('CUDART_LIB    = $(CUDA_ROOT)/lib64/libcudart.so\n')
+      g.write('CUBLAS_LIB    = $(CUDA_ROOT)/lib64/libcublas.so\n')
+      g.write('CUDA_INC_PATH = $(CUDA_ROOT)/include/\n')
+      g.write('NV20          = -arch=sm_20 -Xcompiler -fPIC\n')
+      g.write('NV30          = -arch=sm_30 -Xcompiler -fPIC\n')
+      g.write('NV35          = -arch=sm_35 -Xcompiler -fPIC\n')
+      g.write('NVCC          = $(CUDA_ROOT)/bin/nvcc\n')
+      g.write('NVCCFLAGS     = -O3 -gencode=arch=compute_20,code=sm_20 -gencode=arch=compute_30,code=sm_30 -gencode=arch=compute_35,code=sm_35 -Xcompiler -fPIC\n')
+      g.write('CHOLMOD_CONFIG    = '+flg+' -DNPARTITION $(GPU_CONFIG)\n')
+      self.addDefine('USE_SUITESPARSE_GPU',1)
+    else:
+      g.write('CHOLMOD_CONFIG    = '+flg+' -DNPARTITION\n')
     g.close()
 
     if self.installNeeded(mkfile):

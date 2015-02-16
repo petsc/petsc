@@ -1871,6 +1871,11 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* allocate some auxiliary stuff */
     if (!skip_lapack || pcbddc->use_qr_single) {
       ierr = PetscMalloc4(max_size_of_constraint,&gidxs,max_size_of_constraint,&permutation,max_size_of_constraint,&temp_indices_to_constraint_work,max_size_of_constraint,&temp_quadrature_constraint_work);CHKERRQ(ierr);
+    } else {
+      gidxs = NULL;
+      permutation = NULL;
+      temp_indices_to_constraint_work = NULL;
+      temp_quadrature_constraint_work = NULL;
     }
 
     /* First we issue queries to allocate optimal workspace for LAPACKgesvd (or LAPACKsyev if SVD is missing) */
@@ -3297,10 +3302,10 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
     ierr = PetscFree(adjncy_wgt);CHKERRQ(ierr);
   } else {
     PetscInt coarsening_ratio;
-    ierr = MPI_Comm_size(subcomm->comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscSubcommChild(subcomm),&size);CHKERRQ(ierr);
     ierr = PetscMalloc1(size,&oldranks);CHKERRQ(ierr);
     prank = rank;
-    ierr = MPI_Allgather(&prank,1,MPIU_INT,oldranks,1,MPIU_INT,subcomm->comm);CHKERRQ(ierr);
+    ierr = MPI_Allgather(&prank,1,MPIU_INT,oldranks,1,MPIU_INT,PetscSubcommChild(subcomm));CHKERRQ(ierr);
     /*
     for (i=0;i<size;i++) {
       PetscPrintf(subcomm->comm,"oldranks[%d] = %d\n",i,oldranks[i]);
@@ -3310,11 +3315,11 @@ PetscErrorCode MatISGetSubassemblingPattern(Mat mat, PetscInt n_subdomains, Pets
       ierr = PetscFindInt(adjncy[i],size,oldranks,&adjncy[i]);CHKERRQ(ierr);
     }
     ierr = PetscSortIntWithArray(xadj[1],adjncy,adjncy_wgt);CHKERRQ(ierr);
-    ierr = MatCreateMPIAdj(subcomm->comm,1,(PetscInt)size,xadj,adjncy,adjncy_wgt,&subdomain_adj);CHKERRQ(ierr);
+    ierr = MatCreateMPIAdj(PetscSubcommChild(subcomm),1,(PetscInt)size,xadj,adjncy,adjncy_wgt,&subdomain_adj);CHKERRQ(ierr);
     /* ierr = MatView(subdomain_adj,0);CHKERRQ(ierr); */
 
     /* Partition */
-    ierr = MatPartitioningCreate(subcomm->comm,&partitioner);CHKERRQ(ierr);
+    ierr = MatPartitioningCreate(PetscSubcommChild(subcomm),&partitioner);CHKERRQ(ierr);
     ierr = MatPartitioningSetAdjacency(partitioner,subdomain_adj);CHKERRQ(ierr);
     if (use_vwgt) {
       ierr = PetscMalloc1(1,&v_wgt);CHKERRQ(ierr);
@@ -3465,7 +3470,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomains, Pet
       ierr = PetscSubcommCreate(comm,&subcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetNumber(subcomm,2);CHKERRQ(ierr);
       ierr = PetscSubcommSetTypeGeneral(subcomm,color,rank);CHKERRQ(ierr);
-      comm_n = subcomm->comm;
+      comm_n = PetscSubcommChild(subcomm);
     }
     /* flag to destroy *mat_n if not significative */
     if (color) destroy_mat = PETSC_TRUE;
@@ -3865,8 +3870,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   PetscFunctionBegin;
   /* Assign global numbering to coarse dofs */
   if (pcbddc->new_primal_space || pcbddc->coarse_size == -1) { /* a new primal space is present or it is the first initialization, so recompute global numbering */
-    compute_vecs = PETSC_TRUE;
     PetscInt ocoarse_size;
+    compute_vecs = PETSC_TRUE;
     ocoarse_size = pcbddc->coarse_size;
     ierr = PetscFree(pcbddc->global_primal_indices);CHKERRQ(ierr);
     ierr = PCBDDCComputePrimalNumbering(pc,&pcbddc->coarse_size,&pcbddc->global_primal_indices);CHKERRQ(ierr);

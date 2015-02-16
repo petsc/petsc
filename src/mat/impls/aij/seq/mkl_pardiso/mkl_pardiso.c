@@ -30,7 +30,7 @@
 
 #if defined(PETSC_USE_64BIT_INDICES)
  #if defined(PETSC_HAVE_LIBMKL_INTEL_ILP64)
-  /*sizeof(MKL_INT) == sizeof(long long int) if ilp64*/
+  /* sizeof(MKL_INT) == sizeof(long long int) if ilp64*/
   #define INT_TYPE long long int
   #define MKL_PARDISO pardiso
   #define MKL_PARDISO_INIT pardisoinit
@@ -52,7 +52,7 @@
  */
 typedef struct {
 
-  /*Configuration vector*/
+  /* Configuration vector*/
   INT_TYPE     iparm[IPARM_SIZE];
 
   /*
@@ -61,23 +61,23 @@ typedef struct {
    */
   void         *pt[IPARM_SIZE];
 
-  /*Basic mkl_pardiso info*/
+  /* Basic mkl_pardiso info*/
   INT_TYPE     phase, maxfct, mnum, mtype, n, nrhs, msglvl, err;
 
-  /*Matrix structure*/
+  /* Matrix structure*/
   void         *a;
   INT_TYPE     *ia, *ja;
 
-  /*Number of non-zero elements*/
+  /* Number of non-zero elements*/
   INT_TYPE     nz;
 
-  /*Row permutaton vector*/
+  /* Row permutaton vector*/
   INT_TYPE     *perm;
 
-  /*Deffine is matrix preserve sparce structure.*/
+  /* Define if matrix preserves sparse structure.*/
   MatStructure matstruc;
 
-  /*True if mkl_pardiso function have been used.*/
+  /* True if mkl_pardiso function have been used.*/
   PetscBool CleanUp;
 } Mat_MKL_PARDISO;
 
@@ -171,17 +171,19 @@ PetscErrorCode MatDestroy_MKL_PARDISO(Mat A){
  */
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_MKL_PARDISO"
-PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x){
+PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x)
+{
   Mat_MKL_PARDISO   *mat_mkl_pardiso=(Mat_MKL_PARDISO*)(A)->spptr;
   PetscErrorCode    ierr;
-  PetscScalar       *barray, *xarray;
+  PetscScalar       *xarray;
+  const PetscScalar *barray;
 
   PetscFunctionBegin;
 
 
   mat_mkl_pardiso->nrhs = 1;
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
-  ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(b,&barray);CHKERRQ(ierr);
 
   /* solve phase */
   /*-------------*/
@@ -205,7 +207,8 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x){
 
 
   if (mat_mkl_pardiso->err < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MKL_PARDISO: err=%d. Please check manual\n",mat_mkl_pardiso->err);
-
+  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(b,&barray);CHKERRQ(ierr);
   mat_mkl_pardiso->CleanUp = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -213,7 +216,8 @@ PetscErrorCode MatSolve_MKL_PARDISO(Mat A,Vec b,Vec x){
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolveTranspose_MKL_PARDISO"
-PetscErrorCode MatSolveTranspose_MKL_PARDISO(Mat A,Vec b,Vec x){
+PetscErrorCode MatSolveTranspose_MKL_PARDISO(Mat A,Vec b,Vec x)
+{
   Mat_MKL_PARDISO *mat_mkl_pardiso=(Mat_MKL_PARDISO*)A->spptr;
   PetscErrorCode ierr;
 
@@ -231,11 +235,12 @@ PetscErrorCode MatSolveTranspose_MKL_PARDISO(Mat A,Vec b,Vec x){
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatSolve_MKL_PARDISO"
-PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X){
+PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
+{
   Mat_MKL_PARDISO   *mat_mkl_pardiso=(Mat_MKL_PARDISO*)(A)->spptr;
   PetscErrorCode    ierr;
   PetscScalar       *barray, *xarray;
-  PetscBool      flg;
+  PetscBool         flg;
 
   PetscFunctionBegin;
 

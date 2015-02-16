@@ -375,9 +375,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 
   ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
   {
-    if (!TaoRegisterAllCalled) {
-      ierr = TaoRegisterAll();CHKERRQ(ierr);
-    }
+    ierr = TaoRegisterAll();CHKERRQ(ierr);
     if (((PetscObject)tao)->type_name) {
       default_type = ((PetscObject)tao)->type_name;
     }
@@ -475,7 +473,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
     ierr = PetscOptionsEnum("-tao_subset_type","subset type", "", TaoSubSetTypes,(PetscEnum)tao->subset_type, (PetscEnum*)&tao->subset_type, 0);CHKERRQ(ierr);
 
     if (tao->ops->setfromoptions) {
-      ierr = (*tao->ops->setfromoptions)(tao);CHKERRQ(ierr);
+      ierr = (*tao->ops->setfromoptions)(PetscOptionsObject,tao);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

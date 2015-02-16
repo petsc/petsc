@@ -345,7 +345,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   const char     *convtests[] = {"default","skip"};
   char           type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer    monviewer;
-  PetscBool      flg,flag,set;
+  PetscBool      flg,flag,reuse,set;
   PetscInt       model[2]={0,0},nmax;
   KSPNormType    normtype;
   PCSide         pcside;
@@ -356,7 +356,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetFromOptions(ksp->pc);CHKERRQ(ierr);
 
-  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll();CHKERRQ(ierr);}
+  ierr = KSPRegisterAll();CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES),type,256,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -382,6 +382,9 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (flg) {
     ierr = KSPSetInitialGuessNonzero(ksp,flag);CHKERRQ(ierr);
   }
+  ierr = PCGetReusePreconditioner(ksp->pc,&reuse);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one ","KSPReusePreconditioner",reuse,&reuse,NULL);CHKERRQ(ierr);
+  ierr = KSPSetReusePreconditioner(ksp,reuse);CHKERRQ(ierr);
 
   ierr = PetscOptionsBool("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,&ksp->guess_knoll,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL);CHKERRQ(ierr);
@@ -590,7 +593,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 #endif
 
   if (ksp->ops->setfromoptions) {
-    ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
+    ierr = (*ksp->ops->setfromoptions)(PetscOptionsObject,ksp);CHKERRQ(ierr);
   }
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)ksp);CHKERRQ(ierr);

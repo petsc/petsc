@@ -67,6 +67,8 @@ PetscErrorCode  TSAdaptRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (TSAdaptRegisterAllCalled) PetscFunctionReturn(0);
+  TSAdaptRegisterAllCalled = PETSC_TRUE;
   ierr = TSAdaptRegister(TSADAPTBASIC,TSAdaptCreate_Basic);CHKERRQ(ierr);
   ierr = TSAdaptRegister(TSADAPTNONE, TSAdaptCreate_None);CHKERRQ(ierr);
   ierr = TSAdaptRegister(TSADAPTCFL,  TSAdaptCreate_CFL);CHKERRQ(ierr);
@@ -348,7 +350,7 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptSetFromOptions"
-/*@
+/*
    TSAdaptSetFromOptions - Sets various TSAdapt parameters from user options.
 
    Collective on TSAdapt
@@ -367,8 +369,8 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
 .keywords: TS, TSGetAdapt(), TSAdaptSetType()
 
 .seealso: TSGetType()
-@*/
-PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
+*/
+PetscErrorCode  TSAdaptSetFromOptions(PetscOptions *PetscOptionsObject,TSAdapt adapt)
 {
   PetscErrorCode ierr;
   char           type[256] = TSADAPTBASIC;
@@ -378,7 +380,7 @@ PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   /* This should use PetscOptionsBegin() if/when this becomes an object used outside of TS, but currently this
   * function can only be called from inside TSSetFromOptions_GL()  */
-  ierr = PetscOptionsHead("TS Adaptivity options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"TS Adaptivity options");CHKERRQ(ierr);
   ierr = PetscOptionsFList("-ts_adapt_type","Algorithm to use for adaptivity","TSAdaptSetType",TSAdaptList,
                           ((PetscObject)adapt)->type_name ? ((PetscObject)adapt)->type_name : type,type,sizeof(type),&flg);CHKERRQ(ierr);
   if (flg || !((PetscObject)adapt)->type_name) {
@@ -389,7 +391,7 @@ PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
   ierr = PetscOptionsReal("-ts_adapt_scale_solve_failed","Scale step by this factor if solve fails","",adapt->scale_solve_failed,&adapt->scale_solve_failed,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = TSAdaptSetMonitor(adapt,flg);CHKERRQ(ierr);}
-  if (adapt->ops->setfromoptions) {ierr = (*adapt->ops->setfromoptions)(adapt);CHKERRQ(ierr);}
+  if (adapt->ops->setfromoptions) {ierr = (*adapt->ops->setfromoptions)(PetscOptionsObject,adapt);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

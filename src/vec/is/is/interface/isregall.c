@@ -21,6 +21,7 @@ PetscErrorCode  ISRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (ISRegisterAllCalled) PetscFunctionReturn(0);
   ISRegisterAllCalled = PETSC_TRUE;
 
   ierr = ISRegister(ISGENERAL, ISCreate_General);CHKERRQ(ierr);

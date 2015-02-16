@@ -76,12 +76,12 @@ PETSC_EXTERN PetscErrorCode SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
 
 PETSC_EXTERN PetscErrorCode SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, PetscInt));
 
-PETSC_EXTERN PetscErrorCode SNESRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode SNESRegister(const char[],PetscErrorCode (*)(SNES));
 
 PETSC_EXTERN PetscErrorCode SNESGetKSP(SNES,KSP*);
 PETSC_EXTERN PetscErrorCode SNESSetKSP(SNES,KSP);
+PETSC_EXTERN PetscErrorCode SNESSetSolution(SNES,Vec);
 PETSC_EXTERN PetscErrorCode SNESGetSolution(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESGetSolutionUpdate(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESGetRhs(SNES,Vec*);
@@ -204,7 +204,7 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
    convergence criteria. SNES_CONVERGED_ITS means that SNESConvergedSkip() was chosen as the convergence test;
    thus the usual convergence criteria have not been checked and may or may not be satisfied.
 
-   Developer Notes: this must match finclude/petscsnes.h
+   Developer Notes: this must match petsc-finclude/petscsnes.h
 
        The string versions of these are in SNESConvergedReason, if you change any value here you must
      also adjust that array.
@@ -471,7 +471,6 @@ PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec))
 
 /* --------- Routines specifically for line search methods --------------- */
 
-typedef struct _p_LineSearch* SNESLineSearch;
 
 /*S
      SNESLineSearch - Abstract PETSc object that manages line-search operations
@@ -482,6 +481,7 @@ typedef struct _p_LineSearch* SNESLineSearch;
 
 .seealso:  SNESLineSearchCreate(), SNESLineSearchSetType(), SNES
 S*/
+typedef struct _p_LineSearch* SNESLineSearch;
 
 /*J
     SNESLineSearchType - String with the name of a PETSc line search method
@@ -490,18 +490,16 @@ S*/
 
 .seealso: SNESLineSearchSetType(), SNES
 J*/
-
 typedef const char* SNESLineSearchType;
 #define SNESLINESEARCHBT                 "bt"
+#define SNESLINESEARCHNLEQERR            "nleqerr"
 #define SNESLINESEARCHBASIC              "basic"
 #define SNESLINESEARCHL2                 "l2"
 #define SNESLINESEARCHCP                 "cp"
 #define SNESLINESEARCHSHELL              "shell"
 
-PETSC_EXTERN PetscBool         SNESRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList SNESList;
 PETSC_EXTERN PetscClassId      SNESLINESEARCH_CLASSID;
-PETSC_EXTERN PetscBool         SNESLineSearchRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList SNESLineSearchList;
 PETSC_EXTERN PetscLogEvent     SNESLineSearch_Apply;
 
@@ -587,7 +585,6 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch, PetscReal*)
 
 /*register line search types */
 PETSC_EXTERN PetscErrorCode SNESLineSearchRegister(const char[],PetscErrorCode(*)(SNESLineSearch));
-PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterAll(void);
 
 /* Routines for VI solver */
 PETSC_EXTERN PetscErrorCode SNESVISetVariableBounds(SNES,Vec,Vec);
@@ -682,7 +679,6 @@ PETSC_EXTERN PetscErrorCode SNESMSSetType(SNES,SNESMSType);
 PETSC_EXTERN PetscErrorCode SNESMSFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode SNESMSInitializePackage(void);
 PETSC_EXTERN PetscErrorCode SNESMSRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode SNESMSRegisterAll(void);
 
 /* routines for NGMRES solver */
 

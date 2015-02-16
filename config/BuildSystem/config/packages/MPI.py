@@ -287,10 +287,10 @@ class Configure(config.package.Package):
     #  Even though MPI-Uni is not an external package (it is in PETSc source) we need to stick the
     #  include path for its mpi.h and mpif.h so that external packages that are built with PETSc to
     #  use MPI-Uni can find them.
-    self.include = [os.path.abspath(os.path.join('include', 'mpiuni'))]
+    self.include = [os.path.abspath(os.path.join('include', 'petsc-mpiuni'))]
     self.framework.packages.append(self)
-    self.mpiexec = '${PETSC_DIR}/bin/mpiexec.uni'
-    self.addMakeMacro('MPIEXEC','${PETSC_DIR}/bin/mpiexec.uni')
+    self.mpiexec = '${PETSC_DIR}/bin/petsc-mpiexec.uni'
+    self.addMakeMacro('MPIEXEC','${PETSC_DIR}/bin/petsc-mpiexec.uni')
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
@@ -398,11 +398,11 @@ class Configure(config.package.Package):
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.framework.log.write('Checking for header mpif.h\n')
-    if not self.libraries.checkCompile(body = '       include \'mpif.h\''):
+    if not self.libraries.checkCompile(body = '#include "mpif.h"'):
       raise RuntimeError('Fortran error! mpif.h could not be located at: '+str(self.include))
     # check if mpi_init form fortran works
     self.framework.log.write('Checking for fortran mpi_init()\n')
-    if not self.libraries.check(self.lib,'', call = '       include \'mpif.h\'\n       integer ierr\n       call mpi_init(ierr)'):
+    if not self.libraries.check(self.lib,'', call = '#include "mpif.h"\n       integer ierr\n       call mpi_init(ierr)'):
       raise RuntimeError('Fortran error! mpi_init() could not be located!')
     # check if mpi.mod exists
     if self.compilers.fortranIsF90:

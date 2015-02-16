@@ -26,7 +26,7 @@ PetscErrorCode PetscElementalInitializePackage(void)
   { /* We have already initialized MPI, so this song and dance is just to pass these variables (which won't be used by Elemental) through the interface that needs references */
     int zero = 0;
     char **nothing = 0;
-    elem::Initialize(zero,nothing);
+    elem::Initialize(zero,nothing);   /* called by the 1st call of MatCreate_Elemental */
   }
   ierr = PetscRegisterFinalize(PetscElementalFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -45,9 +45,8 @@ PetscErrorCode PetscElementalInitializePackage(void)
 @*/
 PetscErrorCode PetscElementalFinalizePackage(void)
 {
-
   PetscFunctionBegin;
-  elem::Finalize();
+  elem::Finalize();  /* called by PetscFinalize() */
   PetscFunctionReturn(0);
 }
 
@@ -449,6 +448,9 @@ static PetscErrorCode MatScale_Elemental(Mat X,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
+/*
+  MatAXPY - Computes Y = a*X + Y.
+*/
 #undef __FUNCT__
 #define __FUNCT__ "MatAXPY_Elemental"
 static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure str)
@@ -932,6 +934,82 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_Elemental(Mat A, MatType newtype,M
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqSBAIJ_Elemental"
+PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat               mat_elemental;
+  PetscErrorCode    ierr;
+  PetscInt          M=A->rmap->N,N=A->cmap->N,row,ncols,j;
+  const PetscInt    *cols;
+  const PetscScalar *vals;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
+  ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
+  for (row=0; row<M; row++) {
+    ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+    /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
+    ierr = MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+    for (j=0; j<ncols; j++) { /* lower triangular part */
+      if (cols[j] == row) continue;
+      ierr = MatSetValues(mat_elemental,1,&cols[j],1,&row,&vals[j],ADD_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+  }
+  ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
+  } else {
+    *newmat = mat_elemental;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_MPISBAIJ_Elemental"
+PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  Mat               mat_elemental;
+  PetscErrorCode    ierr;
+  PetscInt          M=A->rmap->N,N=A->cmap->N,row,ncols,j,rstart=A->rmap->rstart,rend=A->rmap->rend;
+  const PetscInt    *cols;
+  const PetscScalar *vals;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(PetscObjectComm((PetscObject)A), &mat_elemental);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat_elemental,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  ierr = MatSetType(mat_elemental,MATELEMENTAL);CHKERRQ(ierr);
+  ierr = MatSetUp(mat_elemental);CHKERRQ(ierr);
+  ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
+  for (row=rstart; row<rend; row++) {
+    ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+    /* PETSc-Elemental interaface uses axpy for setting off-processor entries, only ADD_VALUES is allowed */
+    ierr = MatSetValues(mat_elemental,1,&row,ncols,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+    for (j=0; j<ncols; j++) { /* lower triangular part */
+      if (cols[j] == row) continue;
+      ierr = MatSetValues(mat_elemental,1,&cols[j],1,&row,&vals[j],ADD_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+  }
+  ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat_elemental, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatHeaderReplace(A,mat_elemental);CHKERRQ(ierr);
+  } else {
+    *newmat = mat_elemental;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Elemental"
 static PetscErrorCode MatDestroy_Elemental(Mat A)
 {
@@ -946,10 +1024,12 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   delete a->interface;
   delete a->esubmat;
   delete a->emat;
+  delete a->pivot;
 
   elem::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
   ierr = PetscCommDuplicate(cxxcomm.comm,&icomm,NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
+  /* printf("commgrid->grid_refct = %d, grid=%p\n",commgrid->grid_refct,commgrid->grid); -- memory leak revealed by valgrind? */
   if (--commgrid->grid_refct == 0) {
     delete commgrid->grid;
     ierr = PetscFree(commgrid);CHKERRQ(ierr);
@@ -957,6 +1037,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalHermitianGenDefiniteEig_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1005,6 +1086,124 @@ PetscErrorCode MatAssemblyEnd_Elemental(Mat A, MatAssemblyType type)
 {
   PetscFunctionBegin;
   /* Currently does nothing */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatLoad_Elemental"
+PetscErrorCode MatLoad_Elemental(Mat newMat, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  Mat            Adense,Ae;
+  MPI_Comm       comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)newMat,&comm);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&Adense);CHKERRQ(ierr);
+  ierr = MatSetType(Adense,MATDENSE);CHKERRQ(ierr); 
+  ierr = MatLoad(Adense,viewer);CHKERRQ(ierr);
+  ierr = MatConvert(Adense, MATELEMENTAL, MAT_INITIAL_MATRIX,&Ae);CHKERRQ(ierr);
+  ierr = MatDestroy(&Adense);CHKERRQ(ierr);
+  ierr = MatHeaderReplace(newMat,Ae);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatElementalHermitianGenDefiniteEig_Elemental"
+PetscErrorCode MatElementalHermitianGenDefiniteEig_Elemental(elem::HermitianGenDefiniteEigType type,elem::UpperOrLower uplo1,Mat A,Mat B,Mat *evals,Mat *evec,PetscReal vl,PetscReal vu)
+{
+  PetscErrorCode           ierr;
+  Mat_Elemental            *a=(Mat_Elemental*)A->data,*b=(Mat_Elemental*)B->data,*x;     
+  PetscElemScalar          vle=(PetscElemScalar)vl,vue=(PetscElemScalar)vu;
+  elem::HermitianGenDefiniteEigType eigtype = elem::AXBX;
+  const elem::UpperOrLower uplo = elem::UPPER;
+  const elem::SortType     sort = elem::UNSORTED; /* UNSORTED, DESCENDING, ASCENDING */
+  MPI_Comm                 comm;
+  Mat                      EVAL;
+  
+  PetscFunctionBegin;
+  /* Compute eigenvalues and eigenvectors */
+  elem::DistMatrix<PetscElemScalar,elem::VR,elem::STAR> w( *a->grid ); /* holding eigenvalues */
+  elem::DistMatrix<PetscElemScalar> X( *a->grid ); /* holding eigenvectors */
+  elem::HermitianGenDefiniteEig(eigtype,uplo,*a->emat,*b->emat,w,X,vle,vue,sort);
+  /* elem::Print(w, "Eigenvalues"); */
+
+  /* Wrap w and X into PETSc's MATMATELEMENTAL matrices */
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MatCreate(comm,evec);CHKERRQ(ierr);
+  ierr = MatSetSizes(*evec,PETSC_DECIDE,PETSC_DECIDE,X.Height(),X.Width());CHKERRQ(ierr);
+  ierr = MatSetType(*evec,MATELEMENTAL);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(*evec);CHKERRQ(ierr);
+  ierr = MatSetUp(*evec);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*evec,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*evec,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  x = (Mat_Elemental*)(*evec)->data;
+  //delete x->emat; //-- memory leak???
+  *x->emat = X;
+  
+  ierr = MatCreate(comm,&EVAL);CHKERRQ(ierr);
+  ierr = MatSetSizes(EVAL,PETSC_DECIDE,PETSC_DECIDE,w.Height(),w.Width());CHKERRQ(ierr);
+  ierr = MatSetType(EVAL,MATELEMENTAL);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(EVAL);CHKERRQ(ierr);
+  ierr = MatSetUp(EVAL);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(EVAL,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(EVAL,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  Mat_Elemental  *e = (Mat_Elemental*)EVAL->data;
+  *e->emat = w; //-- memory leak???
+  *evals   = EVAL;
+
+#if defined(MV)
+  /* Test correctness norm = || - A*X + B*X*w || */
+  {
+    PetscElemScalar alpha,beta;
+    elem::DistMatrix<PetscElemScalar> Y(*a->grid); //tmp matrix
+    alpha = 1.0; beta=0.0;
+    elem::Gemm(elem::NORMAL,elem::NORMAL,alpha,*b->emat,X,beta,Y); //Y = B*X
+    elem::DiagonalScale(elem::RIGHT,elem::NORMAL, w, Y); //Y = Y*w
+    alpha = -1.0; beta=1.0;
+    elem::Gemm(elem::NORMAL,elem::NORMAL,alpha,*a->emat,X,beta,Y); //Y = - A*X + B*X*w
+
+    PetscElemScalar norm = elem::FrobeniusNorm(Y);
+    if ((*a->grid).Rank()==0) printf("  norm (- A*X + B*X*w) = %g\n",norm);
+  }
+
+  {
+    PetscMPIInt rank;
+    ierr = MPI_Comm_rank(comm,&rank);
+    printf("w: [%d] [%d, %d %d] %d; X: %d %d\n",rank,w.DistRank(),w.ColRank(),w.RowRank(),w.LocalHeight(),X.LocalHeight(),X.LocalWidth());   
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatElementalHermitianGenDefiniteEig"
+/*@
+  MatElementalHermitianGenDefiniteEig - 
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+.  icntl - index of MUMPS parameter array ICNTL()
+-  ival - value of MUMPS ICNTL(icntl)
+
+  Options Database:
+.   -mat_mumps_icntl_<icntl> <ival>
+
+   Level: beginner
+
+   References: MUMPS Users' Guide
+
+.seealso: MatGetFactor()
+@*/
+PetscErrorCode MatElementalHermitianGenDefiniteEig(elem::HermitianGenDefiniteEigType type,elem::UpperOrLower uplo,Mat A,Mat B,Mat *evals,Mat *evec,PetscReal vl,PetscReal vu)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod(A,"MatElementalHermitianGenDefiniteEig_C",(elem::HermitianGenDefiniteEigType,elem::UpperOrLower,Mat,Mat,Mat*,Mat*,PetscReal,PetscReal),(type,uplo,A,B,evals,evec,vl,vu));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1093,7 +1292,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-       0,
+       MatLoad_Elemental,
 /*84*/ 0,
        0,
        0,
@@ -1204,6 +1403,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
       commgrid->grid = new elem::Grid(cxxcomm,optv1); /* use user-provided grid height */
     } else {
       commgrid->grid = new elem::Grid(cxxcomm); /* use Elemental default grid sizes */
+      /* printf("new commgrid->grid = %p\n",commgrid->grid);  -- memory leak revealed by valgrind? */
     }
     commgrid->grid_refct = 1;
     ierr = MPI_Attr_put(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
@@ -1222,8 +1422,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatElementalHermitianGenDefiniteEig_C",MatElementalHermitianGenDefiniteEig_Elemental);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-

@@ -66,7 +66,7 @@ static PetscErrorCode TSDestroy_Euler(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Euler"
-static PetscErrorCode TSSetFromOptions_Euler(TS ts)
+static PetscErrorCode TSSetFromOptions_Euler(PetscOptions *PetscOptionsObject,TS ts)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

@@ -357,7 +357,7 @@ static PetscErrorCode PCDestroy_Jacobi(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Jacobi"
-static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
+static PetscErrorCode PCSetFromOptions_Jacobi(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
   PetscErrorCode ierr;
@@ -366,7 +366,7 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 
   PetscFunctionBegin;
   ierr = PCJacobiGetType(pc,&deflt);CHKERRQ(ierr);
-  ierr = PetscOptionsHead("Jacobi options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Jacobi options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-pc_jacobi_type","How to construct diagonal matrix","PCJacobiSetType",PCJacobiTypes,(PetscEnum)deflt,(PetscEnum*)&type,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCJacobiSetType(pc,type);CHKERRQ(ierr);

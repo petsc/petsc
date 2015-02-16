@@ -39,13 +39,13 @@ static PetscErrorCode  PCFactorSetReuseFill_Cholesky(PC pc,PetscBool flag)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Cholesky"
-static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
+static PetscErrorCode PCSetFromOptions_Cholesky(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Cholesky options");CHKERRQ(ierr);
-  ierr = PCSetFromOptions_Factor(pc);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Cholesky options");CHKERRQ(ierr);
+  ierr = PCSetFromOptions_Factor(PetscOptionsObject,pc);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

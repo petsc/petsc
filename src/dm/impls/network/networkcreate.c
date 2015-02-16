@@ -4,13 +4,13 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Network"
-PetscErrorCode  DMSetFromOptions_Network(DM dm)
+PetscErrorCode  DMSetFromOptions_Network(PetscOptions *PetscOptionsObject,DM dm)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscOptionsHead("DMNetwork Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMNetwork Options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

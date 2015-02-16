@@ -21,11 +21,11 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
-                ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex180.c
+                ex150.c ex151.c ex152.c ex153.c ex155.c ex157.c ex158.c ex159.c ex164.c ex169.c ex171.c ex172.c ex173.c ex174.c ex180.c
 EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F ex171f.F
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER}  -o ex1 ex1.o ${PETSC_MAT_LIB}
@@ -685,6 +685,15 @@ ex172: ex172.o chkopts
 	-${CLINKER} -o ex172 ex172.o ${PETSC_MAT_LIB}
 	${RM} ex172.o
 
+
+ex173: ex173.o chkopts
+	-${CLINKER} -o ex173 ex173.o ${PETSC_MAT_LIB}
+	${RM} ex173.o
+
+ex174: ex174.o chkopts
+	-${CLINKER} -o ex174 ex174.o ${PETSC_MAT_LIB}
+	${RM} ex174.o
+
 ex180: ex180.o chkopts
 	-${CLINKER} -o ex180 ex180.o ${PETSC_MAT_LIB}
 	${RM} ex180.o
@@ -1312,22 +1321,36 @@ runex56_5:
 	   ${RM} -f ex56_5.tmp
 
 runex59:
-	-@${MPIEXEC} -n 1  ./ex59  > ex59_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex59  > ex59_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex59_1.out ex59_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex59_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex59_1.tmp
 
 runex59_2:
-	-@${MPIEXEC} -n 2  ./ex59  > ex59_2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./ex59  > ex59_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex59_2.out ex59_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex59_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex59_2.tmp
-
-runex59_3:
-	-@${MPIEXEC} -n 3  ./ex59  > ex59_3.tmp 2>&1;   \
-	   if (${DIFF} output/ex59_3.out ex59_3.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex59_3, diffs above\n=========================================\n"; fi; \
-	   ${RM} -f ex59_3.tmp
+runex59_baij:
+	-@${MPIEXEC} -n 1 ./ex59 -mat_type baij > ex59_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex59_1_baij.out ex59_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex59_1_baij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex59_1.tmp
+runex59_2_baij:
+	-@${MPIEXEC} -n 3 ./ex59 -mat_type baij > ex59_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex59_2_baij.out ex59_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex59_2_baij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex59_2.tmp
+runex59_sbaij:
+	-@${MPIEXEC} -n 1 ./ex59 -mat_type sbaij > ex59_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex59_1_sbaij.out ex59_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex59_1_sbaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex59_1.tmp
+runex59_2_sbaij:
+	-@${MPIEXEC} -n 3 ./ex59 -mat_type sbaij > ex59_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex59_2_sbaij.out ex59_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex59_2_sbaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex59_2.tmp
 
 runex60:
 	-@${MPIEXEC} -n 3  ./ex60  -col 7 > ex60_1.tmp 2>&1;   \
@@ -2129,6 +2152,51 @@ runex172_mpisbaij:
 	-@${MPIEXEC} -n 4 ./ex172 -mat_type sbaij> ex172.tmp 2>&1; \
 	   ${DIFF} output/ex172.out ex172.tmp || printf "${PWD}\nPossible problem with ex172_mpisbaij, diffs above\n=========================================\n"; \
 	   ${RM} -f ex172.tmp
+runex173:
+	-@${MPIEXEC} -n 1 ./ex173 -f0 ${PETSC_DIR}/share/petsc/datafiles/matrices/ns-real-int32-float64 > ex173.tmp 3>&1; \
+	   ${DIFF} output/ex173_1.out ex173.tmp || printf "${PWD}\nPossible problem with ex173, diffs above\n=========================================\n"; \
+	   ${RM} -f ex173.tmp
+
+runex174:
+	-@${MPIEXEC} -n 1 ./ex174 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 > ex174.tmp 2>&1; \
+	   if (${DIFF} output/ex174.out ex174.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex174_1, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex174.tmp
+runex174_dense:
+	-@${MPIEXEC} -n 1 ./ex174 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 -orig_mat_type dense > ex174.tmp 2>&1; \
+	   if (${DIFF} output/ex174_dense.out ex174.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex174_dense, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex174.tmp
+runex174_elemental:
+	-@${MPIEXEC} -n 1 ./ex174 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 -orig_mat_type elemental > ex174.tmp 2>&1; \
+	   if (${DIFF} output/ex174_elemental.out ex174.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex174_elemental, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex174.tmp
+runex174_sbaij:
+	-@${MPIEXEC} -n 1 ./ex174 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B -vl -0.8 -vu -0.75 -orig_mat_type sbaij > ex174.tmp 2>&1; \
+	   if (${DIFF} output/ex174_sbaij.out ex174.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex174_sbaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex174.tmp
+runex174_2:
+	-@${MPIEXEC} -n 8 ./ex174 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 > ex174.tmp 2>&1; \
+	   if (${DIFF} output/ex174.out ex174.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex174_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex174.tmp
+runex174_2_dense:
+	-@${MPIEXEC} -n 8 ./ex174 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 -orig_mat_type dense > ex174.tmp 2>&1; \
+	   if (${DIFF} output/ex174_dense.out ex174.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex174_2_dense, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex174.tmp
+runex174_2_elemental:
+	-@${MPIEXEC} -n 8 ./ex174 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -vl -0.8 -vu -0.75 -orig_mat_type elemental > ex174.tmp 2>&1; \
+	   if (${DIFF} output/ex174_elemental.out ex174.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex174_elemental, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex174.tmp
+runex174_2_sbaij:
+	-@${MPIEXEC} -n 8 ./ex174 -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B -vl -0.8 -vu -0.75 -orig_mat_type sbaij > ex174.tmp 2>&1; \
+	   if (${DIFF} output/ex174_sbaij.out ex174.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex174_2_sbaij, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex174.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
@@ -2139,8 +2207,9 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex19.PETSc ex19.rm ex20.PETSc runex20 \
                                  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm ex16.PETSc runex16 ex16.rm \
                                  ex29.PETSc runex29 ex29.rm \
-                                 ex45.PETSc ex45.rm ex55.PETSc runex55 runex55_2 ex55.rm ex59.PETSc runex59 runex59_2 runex59_3 \
-                                 ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
+                                 ex45.PETSc ex45.rm ex55.PETSc runex55 runex55_2 ex55.rm \
+                                 ex59.PETSc runex59 runex59_2 runex59_baij runex59_2_baij  runex59_sbaij runex59_2_sbaij ex59.rm\
+                                 ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
                                  ex65.rm ex66.PETSc ex66.rm ex68.PETSc runex68 ex68.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
                                  ex86.PETSc runex86 runex86_2 runex86_3 ex86.rm \
@@ -2190,7 +2259,8 @@ TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 e
                                  ex138.PETSc runex138_1 runex138_2 ex138.rm \
                                  ex140.PETSc runex140 runex140_2 runex140_3 runex140_4 ex140.rm \
                                  ex100.PETSc runex100 ex100.rm ex125.PETSc runex125 ex125.rm \
-                                 ex163.PETSc runex163 runex163_2 ex163.rm ex169.PETSc runex169 ex169.rm ex171.PETSc runex171 ex171.rm ex180.PETSc runex180 ex180.rm
+                                 ex173.PETSc runex173 ex173.rm ex163.PETSc runex163 runex163_2 ex163.rm ex169.PETSc runex169 ex169.rm ex171.PETSc runex171 ex171.rm \
+                                 ex180.PETSc runex180 ex180.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex79f ex79f.rm
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
@@ -2204,6 +2274,8 @@ TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm 
                                  ex39.PETSc runex39 runex39_2 ex39.rm \
                                  ex103.PETSc runex103 runex103_1 runex103_2 ex103.rm \
                                  ex104.PETSc runex104_elemental runex104_elemental_2 ex104.rm \
-                                 ex145.PETSc runex145 runex145_2 ex145.rm
+                                 ex145.PETSc runex145 runex145_2 ex145.rm \
+                                 ex174.PETSc runex174 runex174_dense runex174_elemental runex174_sbaij \
+                                 runex174_2 runex174_2_dense runex174_2_elemental runex174_2_sbaij ex174.rm
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test

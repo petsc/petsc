@@ -33,14 +33,14 @@ static PetscErrorCode TaoDestroy_GPCG(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_GPCG"
-static PetscErrorCode TaoSetFromOptions_GPCG(Tao tao)
+static PetscErrorCode TaoSetFromOptions_GPCG(PetscOptions *PetscOptionsObject,Tao tao)
 {
   TAO_GPCG       *gpcg = (TAO_GPCG *)tao->data;
   PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Gradient Projection, Conjugate Gradient method for bound constrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Gradient Projection, Conjugate Gradient method for bound constrained optimization");CHKERRQ(ierr);
   ierr=PetscOptionsInt("-tao_gpcg_maxpgits","maximum number of gradient projections per GPCG iterate",NULL,gpcg->maxgpits,&gpcg->maxgpits,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);

@@ -129,6 +129,7 @@ int main(int argc, char **argv)
 
   PetscInitialize(&argc, &argv, (char*)0,help);
   user.mx = 8;
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL);CHKERRQ(ierr);
   user.ns = 6;
   ierr = PetscOptionsInt("-ns","Number of data samples (1<=ns<=8)","",user.ns,&user.ns,NULL);CHKERRQ(ierr);
@@ -145,7 +146,6 @@ int main(int argc, char **argv)
   ierr = PetscOptionsBool("-use_ptap","Use ptap matrix for DSG","",user.use_ptap,&user.use_ptap,NULL);CHKERRQ(ierr);
   user.use_lrc = PETSC_FALSE;
   ierr = PetscOptionsBool("-use_lrc","Use lrc matrix for Js","",user.use_lrc,&user.use_lrc,NULL);CHKERRQ(ierr);
-
   user.m = user.ns*user.mx*user.mx*user.mx; /* number of constraints */
   user.nstate =  user.m;
   user.ndesign = user.mx*user.mx*user.mx;
@@ -176,6 +176,7 @@ int main(int argc, char **argv)
 
   /* SOLVE THE APPLICATION */
   ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Trials",&user.stages[1]);CHKERRQ(ierr);
   ierr = PetscLogStagePush(user.stages[1]);CHKERRQ(ierr);
   for (i=0; i<ntests; i++){
@@ -355,7 +356,6 @@ PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
       ierr = Scatter(X,user->subq,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Scatter(Y,user->suby,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = MatMult(user->JsBlock,user->subq,user->suby);CHKERRQ(ierr);
-      ierr = Gather(X,user->subq,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Gather(Y,user->suby,user->yi_scatter[i],0,0);CHKERRQ(ierr);
     }
   }
@@ -390,7 +390,6 @@ PetscErrorCode StateInvMatMult(Mat J_shell, Vec X, Vec Y)
       ierr = KSPSolve(user->solver,user->subq,user->suby);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(user->solver,&its);CHKERRQ(ierr);
       user->ksp_its+=its;
-      ierr = Gather(X,user->subq,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Gather(Y,user->suby,user->yi_scatter[i],0,0);CHKERRQ(ierr);
     }
   }
@@ -413,7 +412,6 @@ PetscErrorCode QMatMult(Mat J_shell, Vec X, Vec Y)
       ierr = Scatter(X,user->subq,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Scatter(Y,user->subd,user->di_scatter[i],0,0);CHKERRQ(ierr);
       ierr = MatMult(user->Q,user->subq,user->subd);CHKERRQ(ierr);
-      ierr = Gather(X,user->subq,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Gather(Y,user->subd,user->di_scatter[i],0,0);CHKERRQ(ierr);
     }
   }
@@ -437,7 +435,6 @@ PetscErrorCode QMatMultTranspose(Mat J_shell, Vec X, Vec Y)
       ierr = Scatter(X,user->subd,user->di_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Scatter(Y,user->suby,user->yi_scatter[i],0,0);CHKERRQ(ierr);
       ierr = MatMultTranspose(user->Q,user->subd,user->suby);CHKERRQ(ierr);
-      ierr = Gather(X,user->subd,user->di_scatter[i],0,0);CHKERRQ(ierr);
       ierr = Gather(Y,user->suby,user->yi_scatter[i],0,0);CHKERRQ(ierr);
     }
   }
@@ -537,7 +534,6 @@ PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
     /* Ywork = pointwisemult(uwork,Ywork) */
     ierr = VecPointwiseMult(user->Ywork,user->uwork,user->Ywork);CHKERRQ(ierr);
     ierr = VecAXPY(Y,1.0,user->Ywork);CHKERRQ(ierr);
-    ierr = Gather(X,user->subq,user->yi_scatter[i],0,0);CHKERRQ(ierr);
     ierr = Gather(user->y,user->suby,user->yi_scatter[i],0,0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -9,8 +9,8 @@ EXAMPLESF       = ex1f.F ex12f.F ex14f.F
 DIRS	        =
 MANSEC          = SNES
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}
@@ -83,6 +83,10 @@ ex16: ex16.o  chkopts
 ex17: ex17.o chkopts
 	-${CLINKER} -o ex17 ex17.o ${PETSC_SNES_LIB}
 	${RM} ex17.o
+
+ex18f90: ex18f90.o chkopts
+	-${FLINKER} -o ex18f90 ex18f90.o ${PETSC_SNES_LIB}
+	${RM} ex18f90.o
 
 ex68: ex68.o chkopts
 	-${CLINKER} -o ex68 ex68.o ${PETSC_SNES_LIB}
@@ -212,6 +216,11 @@ runex17:
 	   ${DIFF} output/ex17_1.out ex17_1.tmp || printf "${PWD}\nPossible problem with ex17, diffs above\n=========================================\n"; \
 	   ${RM} -f ex17_1.tmp
 
+runex18f90:
+	-@${MPIEXEC} -n 1 ./ex18f90 > ex18f90_1.tmp 2>&1; \
+	   ${DIFF} output/ex18f90_1.out ex18f90_1.tmp || printf "${PWD}\nPossible problem with ex18f90, diffs above\n=========================================\n"; \
+	   ${RM} -f ex18f90_1.tmp
+
 #
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex17.PETSc runex17 ex17.rm ex68.PETSc ex68.rm
@@ -220,6 +229,7 @@ TESTEXAMPLES_FORTRAN	       = ex12f.PETSc runex12f ex12f.rm  ex1f.PETSc runex1f_
 TESTEXAMPLES_C_X_MPIUNI        = ex7.PETSc ex7.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_F2003             = ex18f90.PETSc runex18f90 ex18f90.rm
 
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test

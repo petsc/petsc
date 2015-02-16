@@ -1243,14 +1243,14 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   /*
+     Close any open dynamic libraries
+  */
+  ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
+
+  /*
      Destroy any packages that registered a finalize
   */
   ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
-
-  /*
-     Destroy all the function registration lists created
-  */
-  ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
 
   /*
      Print PetscFunctionLists that have not been properly freed

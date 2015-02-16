@@ -4,6 +4,9 @@
 #include <petscds.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool      PetscDSRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscDSRegisterAll(void);
+
 typedef struct _PetscDSOps *PetscDSOps;
 struct _PetscDSOps {
   PetscErrorCode (*setfromoptions)(PetscDS);

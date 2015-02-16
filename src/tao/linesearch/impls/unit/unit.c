@@ -13,11 +13,11 @@ static PetscErrorCode TaoLineSearchDestroy_Unit(TaoLineSearch ls)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_Unit"
-static PetscErrorCode TaoLineSearchSetFromOptions_Unit(TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_Unit(PetscOptions *PetscOptionsObject,TaoLineSearch ls)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("No Unit line search options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"No Unit line search options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

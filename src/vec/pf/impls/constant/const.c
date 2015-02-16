@@ -55,13 +55,13 @@ PetscErrorCode PFDestroy_Constant(void *value)
 
 #undef __FUNCT__
 #define __FUNCT__ "PFSetFromOptions_Constant"
-PetscErrorCode PFSetFromOptions_Constant(PF pf)
+PetscErrorCode PFSetFromOptions_Constant(PetscOptions *PetscOptionsObject,PF pf)
 {
   PetscErrorCode ierr;
   PetscScalar    *value = (PetscScalar*)pf->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Constant function options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Constant function options");CHKERRQ(ierr);
   ierr = PetscOptionsScalar("-pf_constant","The constant value","None",*value,value,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

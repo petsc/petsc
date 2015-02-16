@@ -111,14 +111,14 @@ static PetscErrorCode KSPView_SpecEst(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_SpecEst"
-static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
+static PetscErrorCode KSPSetFromOptions_SpecEst(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_SpecEst    *spec = (KSP_SpecEst*)ksp->data;
   char           prefix[256];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP SpecEst Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP SpecEst Options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_specest_minfactor","Multiplier on the minimum eigen/singular value","None",spec->minfactor,&spec->minfactor,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_specest_maxfactor","Multiplier on the maximum eigen/singular value","None",spec->maxfactor,&spec->maxfactor,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_specest_richfactor","Multiplier on the richimum eigen/singular value","None",spec->richfactor,&spec->richfactor,NULL);CHKERRQ(ierr);

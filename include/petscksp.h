@@ -82,10 +82,7 @@ PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
 PETSC_EXTERN PetscErrorCode KSPSetReusePreconditioner(KSP,PetscBool);
 
 PETSC_EXTERN PetscFunctionList KSPList;
-PETSC_EXTERN PetscBool         KSPRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
 PETSC_EXTERN PetscErrorCode KSPRegister(const char[],PetscErrorCode (*)(KSP));
-PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode KSPSetPCSide(KSP,PCSide);
 PETSC_EXTERN PetscErrorCode KSPGetPCSide(KSP,PCSide*);
@@ -158,6 +155,8 @@ PETSC_EXTERN PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscRe
 
   KSP_FCG_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
   KSP_FCG_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
+
+   Level: intermediate
 
 .seealso : KSPFCG,KSPFCGSetTruncationType(),KSPFCGGetTruncationType()
 
@@ -316,7 +315,7 @@ PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC,KSP*);
    Each solver only supports a subset of these and some may support different ones
    depending on left or right preconditioning, see KSPSetPCSide()
 
-   Notes: this must match finclude/petscksp.h
+   Notes: this must match petsc-finclude/petscksp.h
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest(), KSPSetPCSide()
@@ -377,7 +376,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
 
    Notes: See KSPGetConvergedReason() for explanation of each value
 
-   Developer notes: this must match finclude/petscksp.h
+   Developer notes: this must match petsc-finclude/petscksp.h
 
       The string versions of these are KSPConvergedReasons; if you change
       any of the values here also change them that array of names.

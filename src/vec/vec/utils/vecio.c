@@ -70,7 +70,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   int            fd;
   PetscInt       i,rows = 0,n,*range,N,bs;
   PetscErrorCode ierr;
-  PetscBool      flag;
+  PetscBool      flag,skipheader;
   PetscScalar    *avec,*avecwork;
   MPI_Comm       comm;
   MPI_Request    request;
@@ -85,7 +85,17 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryReadVecHeader_Private(viewer,&rows);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipheader);CHKERRQ(ierr);
+  if (!skipheader) {
+    ierr = PetscViewerBinaryReadVecHeader_Private(viewer,&rows);CHKERRQ(ierr);
+  } else {
+    VecType vtype;
+    ierr = VecGetType(vec,&vtype);CHKERRQ(ierr);
+    if (!vtype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Vector binary file header was skipped, thus the user must specify the type and length of input vector");
+    ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
+    if (!N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER, "Vector binary file header was skipped, thus the user must specify the length of input vector");
+    rows = N;
+  }
   /* Set Vec sizes,blocksize,and type if not already set. Block size first so that local sizes will be compatible. */
   ierr = PetscOptionsGetInt(((PetscObject)vec)->prefix, "-vecload_block_size", &bs, &flag);CHKERRQ(ierr);
   if (flag) {
@@ -100,7 +110,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   if (N != rows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", rows, N);
 
 #if defined(PETSC_HAVE_MPIIO)
-  ierr = PetscViewerBinaryGetMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
   if (useMPIIO) {
     ierr = VecLoad_Binary_MPIIO(vec, viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);

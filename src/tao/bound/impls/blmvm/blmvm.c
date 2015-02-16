@@ -179,12 +179,12 @@ static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetFromOptions_BLMVM"
-static PetscErrorCode TaoSetFromOptions_BLMVM(Tao tao)
+static PetscErrorCode TaoSetFromOptions_BLMVM(PetscOptions* PetscOptionsObject,Tao tao)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Limited-memory variable-metric method for bound constrained optimization");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Limited-memory variable-metric method for bound constrained optimization");CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

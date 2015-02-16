@@ -31,6 +31,12 @@ class Configure(config.package.GNUPackage):
     args.append('--with-mpi="'+self.mpi.directory+'"')
     if self.hdf5.found:
       args.append('--with-hdf5="'+self.hdf5.directory+'"')
+    else:
+      args.append('--without-hdf5')
+    if self.netcdf.found:
+      args.append('--with-netcdf="'+self.netcdf.directory+'"')
+    else:
+      args.append('--without-netcdf')
     return args
 
   def gitPreReqCheck(self):

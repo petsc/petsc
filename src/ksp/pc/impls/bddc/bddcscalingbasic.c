@@ -551,8 +551,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
     /* print debug info */
     if (pcbddc->dbg_flag) {
       PetscMPIInt crank,csize;
-      ierr = MPI_Comm_rank(par_subcomm->comm,&crank);CHKERRQ(ierr);
-      ierr = MPI_Comm_size(par_subcomm->comm,&csize);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscSubcommChild(par_subcomm),&crank);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(PetscSubcommChild(par_subcomm),&csize);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Color %d: size %d, details follows.\n",i,color_size);CHKERRQ(ierr);
       ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
@@ -579,17 +579,17 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
       ierr = ISSum(sub_schurs->is_I_layer,sub_schurs->is_subs[subidx],&is_local_numbering);CHKERRQ(ierr);
       ierr = ISGetLocalSize(is_local_numbering,&n_local_dofs);CHKERRQ(ierr);
       ierr = ISGetIndices(is_local_numbering,(const PetscInt **)&local_numbering);CHKERRQ(ierr);
-      ierr = PCBDDCSubsetNumbering(par_subcomm->comm,pcbddc->mat_graph->l2gmap,n_local_dofs,local_numbering,PETSC_NULL,&n_global_dofs,&global_numbering);CHKERRQ(ierr);
+      ierr = PCBDDCSubsetNumbering(PetscSubcommChild(par_subcomm),pcbddc->mat_graph->l2gmap,n_local_dofs,local_numbering,PETSC_NULL,&n_global_dofs,&global_numbering);CHKERRQ(ierr);
       ierr = ISRestoreIndices(is_local_numbering,(const PetscInt **)&local_numbering);CHKERRQ(ierr);
 
       /* L2Gmap from relevant dofs to local dofs */
       ierr = ISLocalToGlobalMappingCreateIS(is_local_numbering,&WtoNmap);CHKERRQ(ierr);
 
       /* L2Gmap from local to global dofs */
-      ierr = ISLocalToGlobalMappingCreate(par_subcomm->comm,1,n_local_dofs,global_numbering,PETSC_COPY_VALUES,&l2gmap_subset);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingCreate(PetscSubcommChild(par_subcomm),1,n_local_dofs,global_numbering,PETSC_COPY_VALUES,&l2gmap_subset);CHKERRQ(ierr);
 
       /* compute parallel matrix (extended dirichlet problem on subset) */
-      ierr = MatCreateIS(par_subcomm->comm,1,PETSC_DECIDE,PETSC_DECIDE,n_global_dofs,n_global_dofs,l2gmap_subset,&color_mat_is);CHKERRQ(ierr);
+      ierr = MatCreateIS(PetscSubcommChild(par_subcomm),1,PETSC_DECIDE,PETSC_DECIDE,n_global_dofs,n_global_dofs,l2gmap_subset,&color_mat_is);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(pcbddc->local_mat,is_local_numbering,is_local_numbering,MAT_INITIAL_MATRIX,&temp_mat);CHKERRQ(ierr);
       ierr = MatISSetLocalMat(color_mat_is,temp_mat);CHKERRQ(ierr);
       ierr = MatDestroy(&temp_mat);CHKERRQ(ierr);
@@ -619,7 +619,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Par(PC pc, PetscInt n_local_para
       ierr = PetscFree(global_numbering);CHKERRQ(ierr);
 
       /* KSP for extended dirichlet problem */
-      ierr = KSPCreate(par_subcomm->comm,&deluxe_ctx->par_ksp[i]);CHKERRQ(ierr);
+      ierr = KSPCreate(PetscSubcommChild(par_subcomm),&deluxe_ctx->par_ksp[i]);CHKERRQ(ierr);
       ierr = KSPSetOperators(deluxe_ctx->par_ksp[i],color_mat,color_mat);CHKERRQ(ierr);
       ierr = KSPSetTolerances(deluxe_ctx->par_ksp[i],1.e-12,1.e-12,1.e10,10000);CHKERRQ(ierr);
       ierr = KSPSetType(deluxe_ctx->par_ksp[i],KSPPREONLY);CHKERRQ(ierr);

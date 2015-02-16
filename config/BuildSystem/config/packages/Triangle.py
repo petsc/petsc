@@ -28,7 +28,6 @@ class Configure(config.package.Package):
     installmakeinc = os.path.join(self.installDir, 'make.inc')
 
     g = open(makeinc,'w')
-    ##g.write('include '+os.path.join(self.petscdir.dir, 'conf', 'rules')+'\n')
     g.write('SHELL            = '+self.programs.SHELL+'\n')
     g.write('CP               = '+self.programs.cp+'\n')
     g.write('RM               = '+self.programs.RM+'\n')

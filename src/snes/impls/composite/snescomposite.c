@@ -269,7 +269,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   total = 0.;
   for (i=0; i<jac->n; i++) {
     if (PetscIsInfOrNanScalar(jac->beta[i])) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
-    ierr = PetscInfo2(snes,"%d: %f\n",i,PetscRealPart(jac->beta[i]));CHKERRQ(ierr);
+    ierr = PetscInfo2(snes,"%D: %g\n",i,(double)PetscRealPart(jac->beta[i]));CHKERRQ(ierr);
     tot += jac->beta[i];
     total += PetscAbsScalar(jac->beta[i]);
   }
@@ -399,7 +399,7 @@ static PetscErrorCode SNESDestroy_Composite(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Composite"
-static PetscErrorCode SNESSetFromOptions_Composite(SNES snes)
+static PetscErrorCode SNESSetFromOptions_Composite(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_Composite     *jac = (SNES_Composite*)snes->data;
   PetscErrorCode     ierr;
@@ -410,7 +410,7 @@ static PetscErrorCode SNESSetFromOptions_Composite(SNES snes)
   PetscBool          flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Composite preconditioner options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Composite preconditioner options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_composite_type","Type of composition","SNESCompositeSetType",SNESCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESCompositeSetType(snes,jac->type);CHKERRQ(ierr);

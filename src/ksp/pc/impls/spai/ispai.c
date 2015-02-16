@@ -522,7 +522,7 @@ PetscErrorCode  PCSPAISetSp(PC pc,int sp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SPAI"
-static PetscErrorCode PCSetFromOptions_SPAI(PC pc)
+static PetscErrorCode PCSetFromOptions_SPAI(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_SPAI        *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;
@@ -531,7 +531,7 @@ static PetscErrorCode PCSetFromOptions_SPAI(PC pc)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SPAI options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SPAI options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon1,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCSPAISetEpsilon(pc,epsilon1);CHKERRQ(ierr);

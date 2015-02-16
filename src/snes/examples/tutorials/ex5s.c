@@ -355,10 +355,11 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx      *user = (AppCtx*)ptr;
-  int         ierr,i,j,row,mx,my;
-  PetscReal   two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar u,uxx,uyy,*x,*f;
+  AppCtx            *user = (AppCtx*)ptr;
+  int               ierr,i,j,row,mx,my;
+  PetscReal         two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar       u,uxx,uyy,*f;
+  const PetscScalar *x;
 
   /*
       Process 0 has to wait for all other processes to get here
@@ -383,7 +384,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /*
@@ -414,7 +415,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
 
   ierr = PetscLogFlops(11.0*(mx-2)*(my-2))CHKERRQ(ierr);
@@ -437,9 +438,10 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx      *user = (AppCtx*)ptr;
-  int         ierr;
-  PetscScalar *x,*f;
+  AppCtx            *user = (AppCtx*)ptr;
+  int               ierr;
+  PetscScalar       *f;
+  const PetscScalar *x;  
 
   /*
       Process 0 has to wait for all other processes to get here
@@ -447,10 +449,10 @@ int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
   */
   ierr = PetscBarrier((PetscObject)snes);CHKERRQ(ierr);
   if (!user->rank) {
-    ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
     ierr = VecGetArray(F,&f);CHKERRQ(ierr);
     applicationfunctionfortran_(&user->param,&user->mx,&user->my,x,f,&ierr);
-    ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
     ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
     ierr = PetscLogFlops(11.0*(user->mx-2)*(user->my-2))CHKERRQ(ierr);
   }

@@ -573,7 +573,7 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
   }
 
   if (part->ops->setfromoptions) {
-    ierr = (*part->ops->setfromoptions)(part);CHKERRQ(ierr);
+    ierr = (*part->ops->setfromoptions)(PetscOptionsObject,part);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);

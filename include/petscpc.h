@@ -117,7 +117,7 @@ PETSC_EXTERN PetscErrorCode PCGetReusePreconditioner(PC,PetscBool*);
 
    Level: advanced
 
-   Notes: this must match finclude/petscpc.h and the KSPConvergedReason values in petscksp.h
+   Notes: this must match petsc-finclude/petscpc.h and the KSPConvergedReason values in petscksp.h
 
 .seealso: PCApplyRichardson()
 E*/
@@ -134,8 +134,6 @@ PETSC_EXTERN PetscErrorCode PCGetInitialGuessNonzero(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCSetUseAmat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGetUseAmat(PC,PetscBool*);
 
-PETSC_EXTERN PetscErrorCode PCRegisterAll(void);
-PETSC_EXTERN PetscBool PCRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode PCRegister(const char[],PetscErrorCode(*)(PC));
 
@@ -363,6 +361,12 @@ PETSC_EXTERN PetscErrorCode PCSPAISetSp(PC,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCHYPRESetType(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCHYPREGetType(PC,const char*[]);
+PETSC_EXTERN PetscErrorCode PCHYPRESetDiscreteGradient(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCHYPRESetEdgeConstantVectors(PC,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCHYPRESetBetaPoissonMatrix(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCBJacobiGetLocalBlocks(PC,PetscInt*,const PetscInt*[]);
+PETSC_EXTERN PetscErrorCode PCBJacobiGetTotalBlocks(PC,PetscInt*,const PetscInt*[]);
 
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetFields(PC,const char[],PetscInt,const PetscInt*,const PetscInt*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetType(PC,PCCompositeType);
@@ -463,7 +467,7 @@ PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC,PetscInt,PetscInt,PetscInt);
 
     Level: intermediate
 
-.seealso: PCMG, PCSetType(), PCGAMGSetThreshold(), PCGAMGSetThreshold(), PCGAMGSetReuseProl()
+.seealso: PCMG, PCSetType(), PCGAMGSetThreshold(), PCGAMGSetThreshold(), PCGAMGSetReuseInterpolation()
 E*/
 typedef const char *PCGAMGType;
 #define PCGAMGAGG         "agg"
@@ -482,9 +486,10 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGSetReuseInterpolation(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PCGAMGRegister(PCGAMGType,PetscErrorCode (*)(PC));
 
 typedef const char *PCGAMGClassicalType;
 #define PCGAMGCLASSICALDIRECT   "direct"
@@ -492,7 +497,6 @@ typedef const char *PCGAMGClassicalType;
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC,PCGAMGClassicalType);
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalGetType(PC,PCGAMGClassicalType*);
 
-#if defined(PETSC_HAVE_PCBDDC)
 PETSC_EXTERN PetscErrorCode PCBDDCSetChangeOfBasisMat(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
@@ -512,7 +516,6 @@ PETSC_EXTERN PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC,PetscInt,const Petsc
 PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPOperators(PC,Mat*,PC*);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat,Vec,Vec);
-#endif
 
 PETSC_EXTERN PetscErrorCode PCISSetUseStiffnessScaling(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainScalingFactor(PC,PetscScalar);

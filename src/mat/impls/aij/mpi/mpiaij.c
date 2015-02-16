@@ -189,6 +189,40 @@ PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatFindOffBlockDiagonalEntries_MPIAIJ"
+PetscErrorCode MatFindOffBlockDiagonalEntries_MPIAIJ(Mat A,IS *is)
+{
+  Mat_MPIAIJ      *a  = (Mat_MPIAIJ*)A->data;
+  IS              sis,gis;
+  PetscErrorCode  ierr;
+  const PetscInt  *isis,*igis;
+  PetscInt        n,*iis,nsis,ngis,rstart,i;
+
+  PetscFunctionBegin;
+  ierr = MatFindOffBlockDiagonalEntries(a->A,&sis);CHKERRQ(ierr);
+  ierr = MatFindNonzeroRows(a->B,&gis);CHKERRQ(ierr);
+  ierr = ISGetSize(gis,&ngis);CHKERRQ(ierr);
+  ierr = ISGetSize(sis,&nsis);CHKERRQ(ierr);
+  ierr = ISGetIndices(sis,&isis);CHKERRQ(ierr);
+  ierr = ISGetIndices(gis,&igis);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(ngis+nsis,&iis);CHKERRQ(ierr);
+  ierr = PetscMemcpy(iis,igis,ngis*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(iis+ngis,isis,nsis*sizeof(PetscInt));CHKERRQ(ierr);
+  n    = ngis + nsis;
+  ierr = PetscSortRemoveDupsInt(&n,iis);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,NULL);CHKERRQ(ierr);
+  for (i=0; i<n; i++) iis[i] += rstart;
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A),n,iis,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+
+  ierr = ISRestoreIndices(sis,&isis);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(gis,&igis);CHKERRQ(ierr);
+  ierr = ISDestroy(&sis);CHKERRQ(ierr);
+  ierr = ISDestroy(&gis);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDistribute_MPIAIJ"
 /*
     Distributes a SeqAIJ matrix across a set of processes. Code stolen from
@@ -1364,6 +1398,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     Mat_SeqAIJ *Aloc;
     PetscInt   M = mat->rmap->N,N = mat->cmap->N,m,*ai,*aj,row,*cols,i,*ct;
     MatScalar  *a;
+    const char *matname;
 
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),&A);CHKERRQ(ierr);
     if (!rank) {
@@ -1410,7 +1445,9 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
        synchronized across all processors that share the PetscDraw object
     */
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)mat,&matname);CHKERRQ(ierr);
     if (!rank) {
+      ierr = PetscObjectSetName((PetscObject)((Mat_MPIAIJ*)(A->data))->A,matname);CHKERRQ(ierr);
       ierr = MatView_SeqAIJ(((Mat_MPIAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
@@ -2705,7 +2742,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        0,
                                        0,
                                        MatFDColoringSetUp_MPIXAIJ,
-                                       0,
+                                       MatFindOffBlockDiagonalEntries_MPIAIJ,
                                 /*144*/MatCreateMPIMatConcatenateSeqMat_MPIAIJ
 };
 
@@ -5110,7 +5147,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
           MPIAIJ, MatCreateAIJ(), MatCreateMPIAIJWithArrays()
-C@*/
+@*/
 PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt i[],PetscInt j[],PetscScalar a[],PetscInt oi[], PetscInt oj[],PetscScalar oa[],Mat *mat)
 {
   PetscErrorCode ierr;

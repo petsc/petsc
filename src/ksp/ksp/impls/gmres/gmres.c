@@ -517,8 +517,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "KSPGMRESMonitorKrylov"
 /*@C
-   KSPGMRESMonitorKrylov - Calls VecView() for each direction in the
-   GMRES accumulated Krylov space.
+   KSPGMRESMonitorKrylov - Calls VecView() for each new direction in the GMRES accumulated Krylov space.
 
    Collective on KSP
 
@@ -526,13 +525,17 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 +  ksp - the KSP context
 .  its - iteration number
 .  fgnorm - 2-norm of residual (or gradient)
--  a viewers object created with PetscViewersCreate()
+-  dummy - an collection of viewers created with KSPViewerCreate()
 
+   Options Database Keys:
+.   -ksp_gmres_kyrlov_monitor
+
+   Notes: A new PETSCVIEWERDRAW is created for each Krylov vector so they can all be simultaneously viewed
    Level: intermediate
 
 .keywords: KSP, nonlinear, vector, monitor, view, Krylov space
 
-.seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView(), PetscViewersCreate(), PetscViewersDestroy()
+.seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView(), KSPViewersCreate(), KSPViewersDestroy()
 @*/
 PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
 {
@@ -550,7 +553,6 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
     ierr = PetscViewerSetType(viewer,PETSCVIEWERDRAW);CHKERRQ(ierr);
     ierr = PetscViewerDrawSetInfo(viewer,NULL,"Krylov GMRES Monitor",PETSC_DECIDE,PETSC_DECIDE,300,300);CHKERRQ(ierr);
   }
-
   x    = VEC_VV(gmres->it+1);
   ierr = VecView(x,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -558,7 +560,7 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GMRES"
-PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
+PetscErrorCode KSPSetFromOptions_GMRES(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       restart;
@@ -567,7 +569,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP GMRES Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP GMRES Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_gmres_restart","Number of Krylov search directions","KSPGMRESSetRestart",gmres->max_k,&restart,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
   ierr = PetscOptionsReal("-ksp_gmres_haptol","Tolerance for exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);

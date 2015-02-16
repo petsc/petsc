@@ -169,8 +169,8 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outct
   }
   ierr = PetscHeaderCreate(lg,_p_PetscDrawLG,int,PETSC_DRAWLG_CLASSID,"PetscDrawLG","Line graph","Draw",PetscObjectComm((PetscObject)obj),PetscDrawLGDestroy,0);CHKERRQ(ierr);
 
-  lg->view    = 0;
-  lg->destroy = 0;
+  lg->view    = NULL;
+  lg->destroy = NULL;
   lg->nopts   = 0;
   lg->win     = draw;
   lg->dim     = dim;
@@ -485,7 +485,6 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRQ(ierr);
   if (!rank) {
-
     for (i=0; i<dim; i++) {
       for (j=1; j<nopts; j++) {
         if (lg->colors) cl = lg->colors[i];
@@ -497,7 +496,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
       }
     }
   }
-  if (lg->legend) {
+  if (!rank && lg->legend) {
     PetscReal xl,yl,xr,yr,tw,th;
     size_t    len,mlen = 0;
     int       cl;
@@ -517,7 +516,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
     ierr = PetscDrawLine(draw,xr - 2*tw,yr - 3*th,xr - 2*tw,yr - (4+lg->dim)*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xr - (mlen + 8)*tw,yr - (4+lg->dim)*th,xr - 2*tw,yr - (4+lg->dim)*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
   }
-  ierr = PetscDrawFlush(lg->win);CHKERRQ(ierr);
+  if (!rank) {ierr = PetscDrawFlush(lg->win);CHKERRQ(ierr);}
   ierr = PetscDrawPause(lg->win);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
   XSetIOErrorHandler(NULL);

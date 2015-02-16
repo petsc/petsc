@@ -49,8 +49,8 @@ PETSC_INTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqCUSP(Vec);
 PETSC_INTERN PetscErrorCode VecAYPX_SeqCUSP(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUSP(Vec,PetscRandom);
-PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqCUSP(Vec,Vec*);
-PETSC_INTERN PetscErrorCode VecRestoreLocalVector_SeqCUSP(Vec,Vec*);
+PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqCUSP(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecRestoreLocalVector_SeqCUSP(Vec,Vec);
 
 PETSC_INTERN PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
 PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck_Public(Vec);

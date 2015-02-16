@@ -50,15 +50,9 @@ PetscErrorCode  DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
   if (mode == ADD_VALUES) {
     ierr = VecScatterBegin(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
-    if ((dd->bx == DM_BOUNDARY_MIRROR || dd->bx == DM_BOUNDARY_PERIODIC) && dd->m == 1) {
-      SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not available for mirror or periodic boundary conditions and no parallism in x direction");
-    }
-    if ((dd->by == DM_BOUNDARY_MIRROR || dd->by == DM_BOUNDARY_PERIODIC) && dd->n == 1) {
-      SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not available for mirror or periodic boundary conditions and no parallism in y direction");
-    }
-    if ((dd->bz == DM_BOUNDARY_MIRROR || dd->bz == DM_BOUNDARY_PERIODIC) && dd->p == 1) {
-      SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not available for mirror or periodic boundary conditions and no parallism in z direction");
-    }
+    if (dd->bx != DM_BOUNDARY_GHOSTED && dd->bx != DM_BOUNDARY_NONE && dd->s > 0 && dd->m == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallism in x direction");
+    if (dd->bx != DM_BOUNDARY_GHOSTED && dd->by != DM_BOUNDARY_NONE && dd->s > 0 && dd->n == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallism in y direction");
+    if (dd->bx != DM_BOUNDARY_GHOSTED && dd->bz != DM_BOUNDARY_NONE && dd->s > 0 && dd->p == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Available only for boundary none or with parallism in z direction");
     ierr = VecScatterBegin(dd->gtol,l,g,INSERT_VALUES,SCATTER_REVERSE_LOCAL);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented");
   PetscFunctionReturn(0);

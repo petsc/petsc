@@ -6,6 +6,9 @@
 #include <petscpc.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool PCRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PCRegisterAll(void);
+
 typedef struct _PCOps *PCOps;
 struct _PCOps {
   PetscErrorCode (*setup)(PC);
@@ -14,7 +17,7 @@ struct _PCOps {
   PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec);
   PetscErrorCode (*applytranspose)(PC,Vec,Vec);
   PetscErrorCode (*applyBAtranspose)(PC,PetscInt,Vec,Vec,Vec);
-  PetscErrorCode (*setfromoptions)(PC);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,PC);
   PetscErrorCode (*presolve)(PC,KSP,Vec,Vec);
   PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec);
   PetscErrorCode (*getfactoredmatrix)(PC,Mat*);

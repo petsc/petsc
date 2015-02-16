@@ -1,5 +1,3 @@
-DM Object:Simplicial Mesh 1 MPI processes
-  type: plex
 \documentclass[tikz]{standalone}
 \usepackage{pgflibraryshapes}
 \usetikzlibrary{backgrounds}

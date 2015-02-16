@@ -500,7 +500,7 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,PetscThreadCommType 
 
   PetscFunctionBegin;
   PetscValidCharPointer(type,2);
-  if (!PetscThreadCommRegisterAllCalled) { ierr = PetscThreadCommRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscThreadCommRegisterAll();CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting threading model",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-threadcomm_type","Thread communicator model","PetscThreadCommSetType",PetscThreadCommList,type,ttype,256,&flg);CHKERRQ(ierr);
@@ -1216,7 +1216,7 @@ PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
 /*
   PetscThreadCommWorldInitialize - Initializes the global thread communicator object
 
-  PetscThreadCommWorldInitialize() defaults to using the nonthreaded communicator.
+    Defaults to using the nonthreaded communicator.
 */
 PetscErrorCode PetscThreadCommWorldInitialize(void)
 {

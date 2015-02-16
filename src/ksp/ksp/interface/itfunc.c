@@ -502,6 +502,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   /* KSPSetUp() scales the matrix if needed */
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+  VecLocked(ksp->vec_sol,3);
 
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
@@ -542,7 +543,9 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecNormAvailable(ksp->vec_sol,NORM_2,&flg,&norm);CHKERRQ(ierr);
     if (flg && !norm) ksp->guess_zero = PETSC_TRUE;
   }
+  ierr = VecLockPush(ksp->vec_rhs);CHKERRQ(ierr);
   ierr            = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+  ierr = VecLockPop(ksp->vec_rhs);CHKERRQ(ierr);
   ksp->guess_zero = guess_zero;
 
   if (!ksp->reason) SETERRQ(comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");

@@ -166,7 +166,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
   ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   /* Get pointer to local vector data */
-  ierr = DMDAVecGetArray(user->da,localX, &x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(user->da,localX, &x);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da,G, &g);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
@@ -245,7 +245,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArray(user->da,localX, &x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(user->da,localX, &x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(user->da,G, &g);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops(67*mx*my);CHKERRQ(ierr);
@@ -294,7 +294,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
   ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArray(user->da,localX, &x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(user->da,localX, &x);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
   /* Compute Jacobian over the locally owned part of the mesh */
@@ -416,7 +416,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
 
   /* Assemble the matrix */
   ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(user->da,localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
 

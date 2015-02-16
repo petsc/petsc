@@ -8,8 +8,10 @@
 #include <petsc-private/dmimpl.h>
 #include <../src/sys/utils/hash.h>
 
-PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate, PETSCPARTITIONER_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_Stratify, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM;
 
+PETSC_EXTERN PetscBool      PetscPartitionerRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscPartitionerSetTypeFromOptions_Internal(PetscPartitioner);
 
 typedef enum {REFINER_NOOP = 0,
@@ -50,6 +52,10 @@ typedef struct {
   PetscSection section;   /* Sizes for each partition */
   IS           partition; /* Points in each partition */
 } PetscPartitioner_Shell;
+
+typedef struct {
+  PetscInt dummy;
+} PetscPartitioner_Simple;
 
 /* This is an integer map, in addition it is also a container class
    Design points:

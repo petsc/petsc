@@ -1,6 +1,9 @@
 
 #include <petsc-private/dmdaimpl.h>
 #include <petsc-private/dmpleximpl.h>
+#include <petsc-private/petscdsimpl.h>
+#include <petsc-private/petscfeimpl.h>
+#include <petsc-private/petscfvimpl.h>
 
 static PetscBool DMPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
@@ -72,6 +75,7 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMDALocalADFunc",        DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("Mesh Partition",         PETSCPARTITIONER_CLASSID,&PETSCPARTITIONER_Partition);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Mesh Migration",         DM_CLASSID,&DMPLEX_Migrate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexInterp",           DM_CLASSID,&DMPLEX_Interpolate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistribute",       DM_CLASSID,&DMPLEX_Distribute);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistCones",        DM_CLASSID,&DMPLEX_DistributeCones);CHKERRQ(ierr);

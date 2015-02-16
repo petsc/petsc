@@ -505,8 +505,8 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
   PetscScalar    *xgen,*xnet;
   PetscInt       i,idx=0;
   PetscScalar    Vr,Vi,Vm,Vm2;
-  PetscScalar    Eqp,Edp,delta,w; /* Generator variables */
-  PetscScalar    Efd,RF,VR; /* Exciter variables */
+  PetscScalar    Eqp,Edp,delta; /* Generator variables */
+  PetscScalar    Efd;
   PetscScalar    Id,Iq;  /* Generator dq axis currents */
   PetscScalar    Vd,Vq;
   PetscScalar    val[10];
@@ -526,12 +526,9 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
     Eqp   = xgen[idx];
     Edp   = xgen[idx+1];
     delta = xgen[idx+2];
-    w     = xgen[idx+3];
     Id    = xgen[idx+4];
     Iq    = xgen[idx+5];
     Efd   = xgen[idx+6];
-    RF    = xgen[idx+7];
-    VR    = xgen[idx+8];
 
     /*    fgen[idx]   = (Eqp + (Xd[i] - Xdp[i])*Id - Efd)/Td0p[i]; */
     row[0] = idx;
@@ -632,9 +629,8 @@ PetscErrorCode ResidualJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 
     /*    fgen[idx+8] = (VR - KA[i]*RF + KA[i]*KF[i]*Efd/TF[i] - KA[i]*(Vref[i] - Vm))/TA[i]; */
     /* Vm = (Vd^2 + Vq^2)^0.5; */
-    PetscScalar dVm_dVd,dVm_dVq,dVm_dVr,dVm_dVi,dVm_ddelta;
+    PetscScalar dVm_dVd,dVm_dVq,dVm_dVr,dVm_dVi;
     dVm_dVd    = Vd/Vm; dVm_dVq = Vq/Vm;
-    dVm_ddelta = dVm_dVd*dVd_ddelta + dVm_dVq*dVq_ddelta;
     dVm_dVr    = dVm_dVd*dVd_dVr + dVm_dVq*dVq_dVr;
     dVm_dVi    = dVm_dVd*dVd_dVi + dVm_dVq*dVq_dVi;
     row[0]     = idx + 8;

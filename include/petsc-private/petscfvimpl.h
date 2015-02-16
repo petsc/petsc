@@ -4,6 +4,11 @@
 #include <petscfv.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool PetscLimiterRegisterAllCalled;
+PETSC_EXTERN PetscBool PetscFVRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscLimiterRegisterAll(void);
+PETSC_EXTERN PetscErrorCode PetscFVRegisterAll(void);
+
 typedef struct _PetscLimiterOps *PetscLimiterOps;
 struct _PetscLimiterOps {
   PetscErrorCode (*setfromoptions)(PetscLimiter);
@@ -69,6 +74,7 @@ struct _p_PetscFV {
   PetscBool       computeGradients; /* Flag for gradient computation */
   PetscScalar    *fluxWork;         /* The work array for flux calculation */
   PetscQuadrature quadrature;       /* Suitable quadrature on the volume */
+  PetscReal      *B, *D, *H;        /* Tabulation of pseudo-basis and derivatives at quadrature points */
 };
 
 typedef struct {

@@ -7,12 +7,12 @@ LOCDIR          = src/vec/vec/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
                 ex11.c ex12.c ex14.c ex15.c ex16.c ex17.c ex18.c ex21.c ex22.c \
                 ex23.c ex24.c ex25.c ex28.c ex29.c ex31.c ex33.c ex34.c ex35.c \
-                ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex45.c
+                ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex45.c ex46.c
 EXAMPLESF       = ex17f.F ex19f.F ex20f.F ex30f.F ex32f.F
 MANSEC          = Vec
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_VEC_LIB}
@@ -205,6 +205,10 @@ ex44: ex44.o  chkopts
 ex45: ex45.o  chkopts
 	-${CLINKER} -o ex45 ex45.o ${PETSC_VEC_LIB}
 	${RM} -f ex45.o
+
+ex46: ex46.o  chkopts
+	-${CLINKER} -o ex46 ex46.o ${PETSC_VEC_LIB}
+	${RM} -f ex46.o
 
 #--------------------------------------------------------------------------
 runex1:
@@ -452,6 +456,31 @@ runex45:
 	   ${DIFF} output/ex45_1.out ex45.tmp || printf "${PWD}\nPossible problem with ex45, diffs above\n=========================================\n"; \
 	   ${RM} -f ex45.tmp
 
+runex46:
+	-@${MPIEXEC} -n 1 ./ex46 > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_1_p1.out ex46.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex46, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex46.tmp
+
+runex46_2:
+	-@${MPIEXEC} -n 6 ./ex46 > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_1_p6.out ex46.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex46_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex46.tmp
+
+runex46_3:
+	-@${MPIEXEC} -n 12 ./ex46 > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_1_p12.out ex46.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex46_3, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex46.tmp
+
+runex46_mpiio:
+	-@${MPIEXEC} -n 6 ./ex46 -usempiio > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_2_p6.out ex46.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with with ex46_mpiio, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex46.tmp
+
+
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                               ex4.PETSc runex4 ex4.rm ex5.PETSc ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc \
                               runex7 ex7.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex11.PETSc runex11 \
@@ -459,7 +488,8 @@ TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc 
                               ex14.rm ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex17.PETSc runex17 \
                               ex17.rm ex21.PETSc runex21 runex21_2 ex21.rm ex25.PETSc runex25 ex25.rm ex29.PETSc \
                               runex29 ex29.rm ex34.PETSc runex34 ex34.rm ex36.PETSc runex36 ex36.rm \
-                              ex37.PETSc runex37 runex37_2 runex37_3 runex37_4  ex37.rm ex38.PETSc runex38 ex38.rm ex45.PETSc runex45 ex45.rm
+                              ex37.PETSc runex37 runex37_2 runex37_3 runex37_4  ex37.rm ex38.PETSc runex38 ex38.rm ex45.PETSc runex45 ex45.rm \
+                              ex46.PETSc runex46 runex46_2 runex46_3 runex46_mpiio ex46.rm
 TESTEXAMPLES_C_X	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \
                               ex24.PETSc runex24 ex24.rm ex28.PETSc runex28 runex28_2 ex28.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	    = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc ex19f.rm ex20f.PETSc ex20f.rm ex30f.PETSc \
@@ -471,4 +501,4 @@ TESTEXAMPLES_C_X_MPIUNI   = ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex6.PETSc r
 TESTEXAMPLES_CUSP           = ex44.PETSc runex44 ex44.rm \
                               ex4.PETSc runex4_cusp runex4_cusp2 ex4.rm 
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test

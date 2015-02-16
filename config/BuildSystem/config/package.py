@@ -435,7 +435,7 @@ class Package(config.base.Configure):
 
   def installNeeded(self, mkfile):
     makefile      = os.path.join(self.packageDir, mkfile)
-    makefileSaved = os.path.join(self.confDir, 'conf',self.name)
+    makefileSaved = os.path.join(self.confDir, 'lib','petsc-conf',self.name)
     if not os.path.isfile(makefileSaved) or not (self.getChecksum(makefileSaved) == self.getChecksum(makefile)):
       self.framework.log.write('Have to rebuild '+self.name+', '+makefile+' != '+makefileSaved+'\n')
       return 1
@@ -448,7 +448,7 @@ class Package(config.base.Configure):
     self.framework.log.write('********Output of running make on '+self.name+' follows *******\n')
     self.framework.log.write(output)
     self.framework.log.write('********End of Output of running make on '+self.name+' *******\n')
-    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir,'conf', self.name), timeout=5, log = self.framework.log)
+    output,err,ret  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir,'lib','petsc-conf', self.name), timeout=5, log = self.framework.log)
     self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.name+' into '+self.installDir)
 
   def matchExcludeDir(self,dir):
@@ -507,7 +507,7 @@ class Package(config.base.Configure):
       for giturl in self.giturls: # First try to fetch using Git
         self.logPrintBox('Trying to download '+giturl+' for '+self.PACKAGE)
         try:
-          gitrepo = os.path.join(self.externalPackagesDir, self.downloadname)
+          gitrepo = os.path.join(self.externalPackagesDir, self.downloadfilename)
           self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo])
           self.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=gitrepo)
           self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Git cloned '+self.name+' into '+self.getDir(0))

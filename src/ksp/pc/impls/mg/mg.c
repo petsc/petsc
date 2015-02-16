@@ -2,7 +2,7 @@
 /*
     Defines the multigrid preconditioner interface.
 */
-#include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscksp.h" I*/
+#include <petsc-private/pcmgimpl.h>                    /*I "petscksp.h" I*/
 #include <petscdm.h>
 
 #undef __FUNCT__
@@ -350,7 +350,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_MG"
-PetscErrorCode PCSetFromOptions_MG(PC pc)
+PetscErrorCode PCSetFromOptions_MG(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       m,levels = 1,cycles;
@@ -361,7 +361,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
   PCMGCycleType  mgctype;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Multigrid options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Multigrid options");CHKERRQ(ierr);
   if (!mg->levels) {
     ierr = PetscOptionsInt("-pc_mg_levels","Number of Levels","PCMGSetLevels",levels,&levels,&flg);CHKERRQ(ierr);
     if (!flg && pc->dm) {
@@ -594,9 +594,10 @@ PetscErrorCode PCSetUp_MG(PC pc)
     Vec rscale;
     ierr     = PetscMalloc1(n,&dms);CHKERRQ(ierr);
     dms[n-1] = pc->dm;
+    /* Separately create them so we do not get DMKSP interference between levels */
+    for (i=n-2; i>-1; i--) {ierr = DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]);CHKERRQ(ierr);}
     for (i=n-2; i>-1; i--) {
       DMKSP kdm;
-      ierr = DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]);CHKERRQ(ierr);
       ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       if (mg->galerkin) {ierr = KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE);CHKERRQ(ierr);}
       ierr = DMGetDMKSPWrite(dms[i],&kdm);CHKERRQ(ierr);
@@ -613,9 +614,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       }
     }
 
-    for (i=n-2; i>-1; i--) {
-      ierr = DMDestroy(&dms[i]);CHKERRQ(ierr);
-    }
+    for (i=n-2; i>-1; i--) {ierr = DMDestroy(&dms[i]);CHKERRQ(ierr);}
     ierr = PetscFree(dms);CHKERRQ(ierr);
   }
 
@@ -750,7 +749,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   }
 
   for (i=1; i<n; i++) {
-    if (mglevels[i]->smoothu == mglevels[i]->smoothd) {
+    if (mglevels[i]->smoothu == mglevels[i]->smoothd || mg->am == PC_MG_FULL || mg->am == PC_MG_KASKADE || mg->cyclesperpcapply > 1){
       /* if doing only down then initial guess is zero */
       ierr = KSPSetInitialGuessNonzero(mglevels[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
     }
@@ -990,16 +989,11 @@ PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
 PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 {
   PC_MG        *mg        = (PC_MG*)pc->data;
-  PC_MG_Levels **mglevels = mg->levels;
-  PetscInt     i,levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscValidLogicalCollectiveInt(pc,n,2);
-  levels = mglevels[0]->levels;
-
-  for (i=0; i<levels; i++) mg->cyclesperpcapply = n;
+  mg->cyclesperpcapply = n;
   PetscFunctionReturn(0);
 }
 

@@ -447,14 +447,14 @@ static PetscErrorCode SNESLineSearchDestroy_BT(SNESLineSearch linesearch)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetFromOptions_BT"
-static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
+static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptions *PetscOptionsObject,SNESLineSearch linesearch)
 {
 
   PetscErrorCode    ierr;
   SNESLineSearch_BT *bt = (SNESLineSearch_BT*)linesearch->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNESLineSearch BT options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNESLineSearch BT options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_linesearch_alpha",   "Descent tolerance",        "SNESLineSearchBT", bt->alpha, &bt->alpha, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

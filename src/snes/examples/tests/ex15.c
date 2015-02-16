@@ -153,7 +153,6 @@ PetscErrorCode ComputeB(AppCtx *user)
 
   /* Get pointer to local vector data */
   ierr = DMDAVecGetArray(user->da,user->B, &b);CHKERRQ(ierr);
-
   ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /* Compute the linear term in the objective function */
@@ -203,7 +202,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
   ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   /* Get pointer to vector data */
-  ierr = DMDAVecGetArray(user->da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(user->da,localX,&x);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da,G,&g);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
@@ -254,7 +253,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArray(user->da,localX, &x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(user->da,localX, &x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(user->da,G, &g);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
 
@@ -309,7 +308,7 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat H, Mat Hpre, void *ptr)
   ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArray(user->da,localX, &x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(user->da,localX, &x);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
@@ -355,7 +354,7 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat H, Mat Hpre, void *ptr)
   }
 
   ierr = MatAssemblyBegin(hes,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(user->da,localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(hes,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
 

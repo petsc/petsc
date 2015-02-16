@@ -704,7 +704,7 @@ PetscErrorCode KSPView_AGMRES(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_AGMRES"
-PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp)
+PetscErrorCode KSPSetFromOptions_AGMRES(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       neig;
@@ -712,8 +712,8 @@ PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions_DGMRES(ksp);  /* Set common options from DGMRES and GMRES */
-  ierr = PetscOptionsHead("KSP AGMRES Options");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions_DGMRES(PetscOptionsObject,ksp);  /* Set common options from DGMRES and GMRES */
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP AGMRES Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_agmres_eigen", "Number of eigenvalues to deflate", "KSPDGMRESSetEigen", agmres->neig, &neig, &flg);CHKERRQ(ierr);
   if (flg) {
     ierr      = KSPDGMRESSetEigen_DGMRES(ksp, neig);CHKERRQ(ierr);

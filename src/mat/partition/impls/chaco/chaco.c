@@ -683,7 +683,7 @@ PetscErrorCode MatPartitioningChacoGetEigenNumber_Chaco(MatPartitioning part,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Chaco"
-PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Chaco(PetscOptions *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode        ierr;
   PetscInt              i;
@@ -695,7 +695,7 @@ PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
   MPChacoEigenType      eigen;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Chaco partitioning options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Chaco partitioning options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-mat_partitioning_chaco_global","Global method","MatPartitioningChacoSetGlobal",MPChacoGlobalTypes,(PetscEnum)chaco->global_method,(PetscEnum*)&global,&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatPartitioningChacoSetGlobal(part,global);CHKERRQ(ierr); }
   ierr = PetscOptionsEnum("-mat_partitioning_chaco_local","Local method","MatPartitioningChacoSetLocal",MPChacoLocalTypes,(PetscEnum)chaco->local_method,(PetscEnum*)&local,&flag);CHKERRQ(ierr);

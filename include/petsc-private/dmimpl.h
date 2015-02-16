@@ -6,6 +6,8 @@
 #include <petscdm.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool DMRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode DMRegisterAll(void);
 typedef PetscErrorCode (*NullSpaceFunc)(DM dm, PetscInt field, MatNullSpace *nullSpace);
 
 typedef struct _DMOps *DMOps;
@@ -13,7 +15,7 @@ struct _DMOps {
   PetscErrorCode (*view)(DM,PetscViewer);
   PetscErrorCode (*load)(DM,PetscViewer);
   PetscErrorCode (*clone)(DM,DM*);
-  PetscErrorCode (*setfromoptions)(DM);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,DM);
   PetscErrorCode (*setup)(DM);
   PetscErrorCode (*createdefaultsection)(DM);
   PetscErrorCode (*createdefaultconstraints)(DM);
@@ -27,7 +29,7 @@ struct _DMOps {
   PetscErrorCode (*creatematrix)(DM, Mat*);
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
-  PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
+  PetscErrorCode (*getinjection)(DM,DM,Mat*);
 
   PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
   PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*);

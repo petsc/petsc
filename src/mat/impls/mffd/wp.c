@@ -126,13 +126,13 @@ static PetscErrorCode MatMFFDView_WP(MatMFFD ctx,PetscViewer viewer)
 .  ctx - the matrix free context
 
 */
-static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx)
+static PetscErrorCode MatMFFDSetFromOptions_WP(PetscOptions *PetscOptionsObject,MatMFFD ctx)
 {
   PetscErrorCode ierr;
   MatMFFD_WP     *hctx = (MatMFFD_WP*)ctx->hctx;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Walker-Pernice options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Walker-Pernice options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_mffd_compute_normu","Compute the norm of u","MatMFFDWPSetComputeNormU", hctx->computenormU,&hctx->computenormU,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

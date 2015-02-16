@@ -4,22 +4,9 @@
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <petscblaslapack.h>
 
-extern PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat);
-extern PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat);
-extern PetscErrorCode MatDisAssemble_MPISBAIJ(Mat);
-extern PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat,PetscInt,IS[],PetscInt);
-extern PetscErrorCode MatGetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []);
-extern PetscErrorCode MatGetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []);
-extern PetscErrorCode MatSetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt [],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
-extern PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-extern PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-extern PetscErrorCode MatGetRow_SeqSBAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
-extern PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
-extern PetscErrorCode MatZeroRows_SeqSBAIJ(Mat,IS,PetscScalar*,Vec,Vec);
-extern PetscErrorCode MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar*,Vec,Vec);
-extern PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat,Vec,PetscInt[]);
-extern PetscErrorCode MatSOR_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
-
+#if defined(PETSC_HAVE_ELEMENTAL)
+PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat,MatType,MatReuse,Mat*);
+#endif
 #undef __FUNCT__
 #define __FUNCT__ "MatStoreValues_MPISBAIJ"
 PetscErrorCode  MatStoreValues_MPISBAIJ(Mat mat)
@@ -658,6 +645,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
     Mat_SeqBAIJ  *Bloc;
     PetscInt     M = mat->rmap->N,N = mat->cmap->N,*ai,*aj,col,i,j,k,*rvals,mbs = baij->mbs;
     MatScalar    *a;
+    const char   *matname;
 
     /* Should this be the same type as mat? */
     ierr = MatCreate(PetscObjectComm((PetscObject)mat),&A);CHKERRQ(ierr);
@@ -712,8 +700,10 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
        synchronized across all processors that share the PetscDraw object
     */
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)mat,&matname);CHKERRQ(ierr);
     if (!rank) {
-        ierr = MatView_SeqSBAIJ_ASCII(((Mat_MPISBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject)((Mat_MPISBAIJ*)(A->data))->A,matname);CHKERRQ(ierr);
+      ierr = MatView_SeqSBAIJ_ASCII(((Mat_MPISBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -788,6 +778,9 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPISBAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpisbaij_mpisbstrm_C",NULL);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ELEMENTAL)
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpisbaij_elemental_C",NULL);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -830,10 +823,11 @@ PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMult_MPISBAIJ"
 PetscErrorCode MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 {
-  Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       nt,mbs=a->mbs,bs=A->rmap->bs;
-  PetscScalar    *x,*from;
+  Mat_MPISBAIJ      *a = (Mat_MPISBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          nt,mbs=a->mbs,bs=A->rmap->bs;
+  PetscScalar       *from;
+  const PetscScalar *x;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
@@ -848,11 +842,11 @@ PetscErrorCode MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 
   /* copy x into the vec slvec0 */
   ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
 
   ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
 
   ierr = VecScatterBegin(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -893,10 +887,11 @@ PetscErrorCode MatMult_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMultAdd_MPISBAIJ"
 PetscErrorCode MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,bs=A->rmap->bs;
-  PetscScalar    *x,*from,zero=0.0;
+  Mat_MPISBAIJ      *a = (Mat_MPISBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          mbs=a->mbs,bs=A->rmap->bs;
+  PetscScalar       *from,zero=0.0;
+  const PetscScalar *x;
 
   PetscFunctionBegin;
   /*
@@ -912,12 +907,12 @@ PetscErrorCode MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
   /* copy x into the vec slvec0 */
   ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);
 
   ierr = VecScatterBegin(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* supperdiagonal part */
@@ -1116,6 +1111,87 @@ PetscErrorCode MatImaginaryPart_MPISBAIJ(Mat A)
   PetscFunctionBegin;
   ierr = MatImaginaryPart(a->A);CHKERRQ(ierr);
   ierr = MatImaginaryPart(a->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Check if isrow is a subset of iscol_local, called by MatGetSubMatrix_MPISBAIJ()
+   Input: isrow       - distributed(parallel), 
+          iscol_local - locally owned (seq) 
+*/
+#undef __FUNCT__
+#define __FUNCT__ "ISEqual_private"
+PetscErrorCode ISEqual_private(IS isrow,IS iscol_local,PetscBool  *flg)
+{
+  PetscErrorCode ierr;
+  PetscInt       sz1,sz2,*a1,*a2,i,j,k,nmatch;
+  const PetscInt *ptr1,*ptr2;
+
+  PetscFunctionBegin;
+  ierr = ISGetLocalSize(isrow,&sz1);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscol_local,&sz2);CHKERRQ(ierr);
+  if (sz1 > sz2) {
+    *flg = PETSC_FALSE; 
+    PetscFunctionReturn(0);
+  }
+
+  ierr = ISGetIndices(isrow,&ptr1);CHKERRQ(ierr);
+  ierr = ISGetIndices(iscol_local,&ptr2);CHKERRQ(ierr);
+
+  ierr = PetscMalloc1(sz1,&a1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(sz2,&a2);CHKERRQ(ierr);
+  ierr = PetscMemcpy(a1,ptr1,sz1*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(a2,ptr2,sz2*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscSortInt(sz1,a1);CHKERRQ(ierr);
+  ierr = PetscSortInt(sz2,a2);CHKERRQ(ierr);
+
+  nmatch=0;
+  k     = 0;
+  for (i=0; i<sz1; i++){
+    for (j=k; j<sz2; j++){
+      if (a1[i] == a2[j]) {
+        k = j; nmatch++;
+        break;
+      }
+    }
+  }
+  ierr = ISRestoreIndices(isrow,&ptr1);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol_local,&ptr2);CHKERRQ(ierr);
+  ierr = PetscFree(a1);CHKERRQ(ierr);
+  ierr = PetscFree(a2);CHKERRQ(ierr);
+  if (nmatch < sz1) {
+    *flg = PETSC_FALSE; 
+  } else {
+    *flg = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetSubMatrix_MPISBAIJ"
+PetscErrorCode MatGetSubMatrix_MPISBAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  IS             iscol_local;
+  PetscInt       csize;
+  PetscBool      isequal;
+
+  PetscFunctionBegin;
+  ierr = ISGetLocalSize(iscol,&csize);CHKERRQ(ierr);
+  if (call == MAT_REUSE_MATRIX) {
+    ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
+    if (!iscol_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
+  } else {
+    ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
+    ierr = ISEqual_private(isrow,iscol_local,&isequal);CHKERRQ(ierr);
+    if (!isequal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isrow");
+  }
+
+  /* now call MatGetSubMatrix_MPIBAIJ() */
+  ierr = MatGetSubMatrix_MPIBAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr); 
+  if (call == MAT_INITIAL_MATRIX) {
+    ierr = PetscObjectCompose((PetscObject)*newmat,"ISAllGather",(PetscObject)iscol_local);CHKERRQ(ierr);
+    ierr = ISDestroy(&iscol_local);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1504,7 +1580,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        MatSetUnfactored_MPISBAIJ,
                                        0,
                                        MatSetValuesBlocked_MPISBAIJ,
-                               /* 59*/ 0,
+                               /* 59*/ MatGetSubMatrix_MPISBAIJ,
                                        0,
                                        0,
                                        0,
@@ -1809,6 +1885,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",MatMPISBAIJSetPreallocation_MPISBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocationCSR_C",MatMPISBAIJSetPreallocationCSR_MPISBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpisbstrm_C",MatConvert_MPISBAIJ_MPISBSTRM);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ELEMENTAL)
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_elemental_C",MatConvert_MPISBAIJ_Elemental);CHKERRQ(ierr);
+#endif
 
   B->symmetric                  = PETSC_TRUE;
   B->structurally_symmetric     = PETSC_TRUE;

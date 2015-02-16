@@ -110,8 +110,8 @@ int main(int argc,char **args)
     /* enable runtime switch of psubcomm type, e.g., '-psubcomm_type interlaced */
     ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
 
-    ierr = MatCreateRedundantMatrix(C,nsubcomms,psubcomm->comm,MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);
-    ierr = MatCreateRedundantMatrix(C,nsubcomms,psubcomm->comm,MAT_REUSE_MATRIX,&Credundant);CHKERRQ(ierr);
+    ierr = MatCreateRedundantMatrix(C,nsubcomms,PetscSubcommChild(psubcomm),MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);
+    ierr = MatCreateRedundantMatrix(C,nsubcomms,PetscSubcommChild(psubcomm),MAT_REUSE_MATRIX,&Credundant);CHKERRQ(ierr);
 
     ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
     ierr = MatDestroy(&Credundant);CHKERRQ(ierr);

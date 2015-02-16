@@ -236,7 +236,7 @@ M*/
 extern PetscErrorCode KSPDestroy_CG(KSP);
 extern PetscErrorCode KSPReset_CG(KSP);
 extern PetscErrorCode KSPView_CG(KSP,PetscViewer);
-extern PetscErrorCode KSPSetFromOptions_CG(KSP);
+extern PetscErrorCode KSPSetFromOptions_CG(PetscOptions *PetscOptionsObject,KSP);
 PETSC_EXTERN PetscErrorCode KSPCGSetType_CG(KSP,KSPCGType);
 
 #undef __FUNCT__

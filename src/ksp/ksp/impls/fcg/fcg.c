@@ -479,7 +479,7 @@ PetscErrorCode KSPFCGGetTruncationType(KSP ksp,KSPFCGTruncationType *truncstrat)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_FCG"
-PetscErrorCode KSPSetFromOptions_FCG(KSP ksp)
+PetscErrorCode KSPSetFromOptions_FCG(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_FCG        *fcg=(KSP_FCG*)ksp->data;
@@ -487,7 +487,7 @@ PetscErrorCode KSPSetFromOptions_FCG(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP FCG Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP FCG Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_fcg_mmax","Maximum number of search directions to store","KSPFCGSetMmax",fcg->mmax,&mmax,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = KSPFCGSetMmax(ksp,mmax);CHKERRQ(ierr); 
@@ -504,24 +504,27 @@ PetscErrorCode KSPSetFromOptions_FCG(KSP ksp)
 /*MC
       KSPFCG - Implements the Flexible Conjugate Gradient method (FCG)
 
-  References:
-    1) Notay, Y."Flexible Conjugate Gradients", SIAM J. Sci. Comput. 22:4, pp 1444-1460, 2000
-
-    2) Axelsson, O. and Vassilevski, P. S. "A Black Box Generalized Conjugate Gradient Solver with Inner Iterations and Variable-Step Preconditioning",
-    SIAM J. Matrix Anal. Appl. 12:4, pp 625-44, 1991
-
- Options Database Keys:
+  Options Database Keys:
 +   -ksp_fcg_mmax <N>
 .   -ksp_fcg_nprealloc <N>
 -   -ksp_fcg_truncation_type <standard,notay>
 
     Contributed by Patrick Sanan
 
- Supports left preconditioning only.
+   Notes:
+   Supports left preconditioning only.
+
+   Level: beginner
+
+  References:
+    1) Notay, Y."Flexible Conjugate Gradients", SIAM J. Sci. Comput. 22:4, pp 1444-1460, 2000
+
+    2) Axelsson, O. and Vassilevski, P. S. "A Black Box Generalized Conjugate Gradient Solver with Inner Iterations and Variable-Step Preconditioning",
+    SIAM J. Matrix Anal. Appl. 12:4, pp 625-44, 1991
 
  .seealso : KSPGCR, KSPFGMRES, KSPCG, KSPFCGSetMmax(), KSPFCGGetMmax(), KSPFCGSetNprealloc(), KSPFCGGetNprealloc(), KSPFCGSetTruncationType(), KSPFCGGetTruncationType()
 
-MC*/
+M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_FCG"
 PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)

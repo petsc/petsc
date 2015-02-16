@@ -188,7 +188,7 @@ PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_Richardson"
-PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp)
+PetscErrorCode KSPSetFromOptions_Richardson(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   KSP_Richardson *rich = (KSP_Richardson*)ksp->data;
   PetscErrorCode ierr;
@@ -196,7 +196,7 @@ PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp)
   PetscBool      flg,flg2;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP Richardson Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP Richardson Options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_richardson_scale","damping factor","KSPRichardsonSetScale",rich->scale,&tmp,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp);CHKERRQ(ierr); }
   ierr = PetscOptionsBool("-ksp_richardson_self_scale","dynamically determine optimal damping factor","KSPRichardsonSetSelfScale",rich->selfscale,&flg2,&flg);CHKERRQ(ierr);

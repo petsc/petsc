@@ -5,6 +5,10 @@
 #include <petscksp.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool KSPRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
+PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);
+
 typedef struct _KSPOps *KSPOps;
 
 struct _KSPOps {
@@ -16,7 +20,7 @@ struct _KSPOps {
                                                           user-provided area.  */
   PetscErrorCode (*solve)(KSP);                        /* actual solver */
   PetscErrorCode (*setup)(KSP);
-  PetscErrorCode (*setfromoptions)(KSP);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,KSP);
   PetscErrorCode (*publishoptions)(KSP);
   PetscErrorCode (*computeextremesingularvalues)(KSP,PetscReal*,PetscReal*);
   PetscErrorCode (*computeeigenvalues)(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);

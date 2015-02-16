@@ -440,14 +440,12 @@ int FormJacobian(SNES snes, Vec x, Mat Jac, Mat jac,void *dummy)
   Vec            localX = grid->qnodeLoc;
   PetscScalar    *qnode;
   PetscErrorCode ierr;
-  PetscInt       nnodes;
 
   /*
   ierr = VecScatterBegin(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   */
   ierr   = MatSetUnfactored(jac);CHKERRQ(ierr);
-  nnodes = grid->nnodes;
   ierr   = VecGetArray(localX,&qnode);CHKERRQ(ierr);
   /*ierr = MatZeroEntries(jac);CHKERRQ(ierr);*/
 
@@ -482,7 +480,6 @@ int Update(SNES snes, void *ctx)
   PetscScalar fratio;
   PetscScalar time1, time2, cpuloc, cpuglo;
   PetscInt         max_steps;
-  PetscScalar max_time;
   FILE        *fptr;
   static PetscInt  PreLoadFlag    = 1;
   PetscInt         Converged      = 0;
@@ -510,7 +507,6 @@ int Update(SNES snes, void *ctx)
   }
   if (PreLoadFlag) max_steps = 1;
   else max_steps = tsCtx->max_steps;
-  max_time     = tsCtx->max_time;
   fratio       = 1.0;
   tsCtx->ptime = 0.0;
   /*ierr = VecDuplicate(grid->qnode,&tsCtx->qold);CHKERRQ(ierr);

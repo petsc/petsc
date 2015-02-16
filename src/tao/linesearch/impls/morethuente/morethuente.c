@@ -29,7 +29,7 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetFromOptions_MT"
-static PetscErrorCode TaoLineSearchSetFromOptions_MT(TaoLineSearch ls)
+static PetscErrorCode TaoLineSearchSetFromOptions_MT(PetscOptions *PetscOptionsObject,TaoLineSearch ls)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);

@@ -67,6 +67,7 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
   ctx->delta_max = 100.0;
 
   /*  Begin configuration */
+  ierr = PetscOptionsBegin(comm,NULL,NULL,NULL);
   ierr = PetscOptionsInt("-tao_lmm_vectors", "vectors to use for approximation", "", ctx->lm, &ctx->lm,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_lmm_limit_mu", "mu limiting factor", "", ctx->mu, &ctx->mu,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_lmm_limit_nu", "nu limiting factor", "", ctx->nu, &ctx->nu,NULL);CHKERRQ(ierr);
@@ -82,6 +83,7 @@ extern PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
   ierr = PetscOptionsEList("-tao_lmm_limit_type", "limit type", "", Limit_Table, MatLMVM_Limit_Types, Limit_Table[ctx->limitType], &ctx->limitType,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_lmm_delta_min", "minimum delta value", "", ctx->delta_min, &ctx->delta_min,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_lmm_delta_max", "maximum delta value", "", ctx->delta_max, &ctx->delta_max,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
   
   /*  Complete configuration */
   ctx->rescale_history = PetscMin(ctx->rescale_history, ctx->lm);

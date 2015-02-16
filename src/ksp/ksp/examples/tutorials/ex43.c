@@ -323,7 +323,7 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
 
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da,&coords);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(cda,coords,&_coords);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
   for (j = sj; j < sj+ny-1; j++) {
     for (i = si; i < si+nx-1; i++) {
@@ -334,7 +334,7 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e %1.6e \n\n",(double)PetscRealPart(_coords[j][i].x),(double)PetscRealPart(_coords[j][i].y));CHKERRQ(ierr);
     }
   }
-  ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
