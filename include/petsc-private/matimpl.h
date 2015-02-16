@@ -291,7 +291,7 @@ struct _MatStash {
   PetscInt      reproduce_count;
 
   /* The following variables are used for BTS communication */
-  PetscBool      assembly_subset; /* Subsequent assemblies will set a subset (perhaps equal) of off-process entries set on first assembly */
+  PetscBool      subset_off_proc; /* Subsequent assemblies will set a subset (perhaps equal) of off-process entries set on first assembly */
   PetscBool      use_status;      /* Use MPI_Status to determine number of items in each message */
   PetscMPIInt    nsendranks;
   PetscMPIInt    nrecvranks;
@@ -365,6 +365,7 @@ struct _p_Mat {
   PetscBool              symmetric_set,hermitian_set,structurally_symmetric_set,spd_set; /* if true, then corresponding flag is correct*/
   PetscBool              symmetric_eternal;
   PetscBool              nooffprocentries,nooffproczerorows;
+  PetscBool              subsetoffprocentries;
 #if defined(PETSC_HAVE_CUSP)
   PetscCUSPFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif

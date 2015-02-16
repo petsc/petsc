@@ -857,11 +857,28 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
   char *sendblocks;
 
   PetscFunctionBegin;
+  if (stash->subset_off_proc && !mat->subsetoffprocentries) { /* We won't use the old scatter context. */
+    ierr = MatStashScatterDestroy_BTS(stash);CHKERRQ(ierr);
+  }
+
   ierr = MatStashBlockTypeSetUp(stash);CHKERRQ(ierr);
   ierr = MatStashSortCompress_Private(stash,mat->insertmode);CHKERRQ(ierr);
   ierr = PetscSegBufferGetSize(stash->segsendblocks,&nblocks);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractInPlace(stash->segsendblocks,&sendblocks);CHKERRQ(ierr);
-  {
+  if (stash->subset_off_proc && mat->subsetoffprocentries) { /* Set up sendhdrs and sendframes for each rank that we sent before */
+    PetscInt i,b;
+    for (i=0,b=0; i<stash->nsendranks; i++) {
+      stash->sendframes[i].buffer = &sendblocks[b*stash->blocktype_size];
+      /* sendhdr is never actually sent, but the count is used by MatStashBTSSend_Private */
+      stash->sendhdr[i].count = 0; /* Might remain empty (in which case we send a zero-sized message) if no values are communicated to that process */
+      for ( ; b<nblocks; b++) {
+        MatStashBlock *sendblock_b = (MatStashBlock*)&sendblocks[b*stash->blocktype_size];
+        if (PetscUnlikely(sendblock_b->row < owners[stash->sendranks[i]])) SETERRQ2(stash->comm,PETSC_ERR_ARG_WRONG,"MAT_SUBSET_OFF_PROC_ENTRIES set, but row %D owned by %d not communicated in initial assembly",sendblock_b->row,stash->sendranks[i]);
+        if (sendblock_b->row >= owners[stash->sendranks[i]+1]) break;
+        stash->sendhdr[i].count++;
+      }
+    }
+  } else {                      /* Dynamically count and pack (first time) */
     PetscInt i,rowstart,sendno;
 
     /* Count number of send ranks and allocate for sends */
@@ -909,9 +926,22 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
     if (sendno != stash->nsendranks) SETERRQ2(stash->comm,PETSC_ERR_PLIB,"BTS counted %D sendranks, but %D sends",stash->nsendranks,sendno);
   }
 
-  ierr = PetscCommBuildTwoSidedFReq(stash->comm,2,MPIU_INT,stash->nsendranks,stash->sendranks,stash->sendhdr,
-                                    &stash->nrecvranks,&stash->recvranks,&stash->recvhdr,1,&stash->sendreqs,&stash->recvreqs,
-                                    MatStashBTSSend_Private,MatStashBTSRecv_Private,stash);CHKERRQ(ierr);
+  if (stash->subset_off_proc && mat->subsetoffprocentries) {
+    PetscMPIInt i,tag;
+    ierr = PetscCommGetNewTag(stash->comm,&tag);CHKERRQ(ierr);
+    for (i=0; i<stash->nrecvranks; i++) {
+      ierr = MatStashBTSRecv_Private(stash->comm,&tag,stash->recvranks[i],&stash->recvhdr[i],&stash->recvreqs[i],stash);CHKERRQ(ierr);
+    }
+    for (i=0; i<stash->nsendranks; i++) {
+      ierr = MatStashBTSSend_Private(stash->comm,&tag,i,stash->sendranks[i],&stash->sendhdr[i],&stash->sendreqs[i],stash);CHKERRQ(ierr);
+    }
+    stash->use_status = PETSC_TRUE; /* Use count from message status. */
+  } else {
+    ierr = PetscCommBuildTwoSidedFReq(stash->comm,2,MPIU_INT,stash->nsendranks,stash->sendranks,stash->sendhdr,
+                                      &stash->nrecvranks,&stash->recvranks,&stash->recvhdr,1,&stash->sendreqs,&stash->recvreqs,
+                                      MatStashBTSSend_Private,MatStashBTSRecv_Private,stash);CHKERRQ(ierr);
+    stash->use_status = PETSC_FALSE; /* Use count from header instead of from message. */
+  }
 
   ierr = PetscMalloc2(stash->nrecvranks,&stash->some_indices,stash->nrecvranks,&stash->some_statuses);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractInPlace(stash->segrecvframe,&stash->recvframes);CHKERRQ(ierr);
@@ -920,8 +950,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
   stash->some_i           = 0;
   stash->some_count       = 0;
   stash->recvcount        = 0;
-  stash->use_status       = PETSC_FALSE; /* Use count from header instead of from message. */
-
+  stash->subset_off_proc  = mat->subsetoffprocentries;
   PetscFunctionReturn(0);
 }
 
@@ -967,7 +996,9 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
 
   PetscFunctionBegin;
   ierr = MPI_Waitall(stash->nsendranks,stash->sendreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  ierr = MatStashScatterDestroy_BTS(stash);CHKERRQ(ierr);
+  if (!stash->subset_off_proc) { /* Only collect the communication contexts if it won't be reused. */
+    ierr = MatStashScatterDestroy_BTS(stash);CHKERRQ(ierr);
+  }
 
   /* Now update nmaxold to be app 10% more than max n used, this way the
      wastage of space is reduced the next time this stash is used.

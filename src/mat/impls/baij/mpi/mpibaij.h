@@ -24,6 +24,7 @@
   /* The following variables are used for matrix assembly */                                   \
                                                                                                \
   PetscBool   donotstash;               /* if 1, off processor entries dropped */              \
+  PetscBool   subset_off_proc_entries;  /* PETSC_TRUE if assembly will always communicate a subset of the entries communicated the first time */ \
   MPI_Request *send_waits;              /* array of send requests */                           \
   MPI_Request *recv_waits;              /* array of receive requests */                        \
   PetscInt    nsends,nrecvs;           /* numbers of sends and receives */                     \
