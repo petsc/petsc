@@ -280,16 +280,16 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Advect"
-static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys)
+static PetscErrorCode PhysicsCreate_Advect(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_Advect *advect;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
-  phys->riemann = PhysicsRiemann_Advect;
-  ierr = PetscNew(Physics_Advect,&phys->data);CHKERRQ(ierr);
-  advect = (Physics_Advect*)phys->data;
+  phys->riemann    = PhysicsRiemann_Advect;
+  ierr = PetscNew(&advect);CHKERRQ(ierr);
+  phys->data       = advect;
   ierr = PetscOptionsHead(PetscOptionsObject,"Advect options");CHKERRQ(ierr);
   {
     PetscInt two = 2,dof = 1;
@@ -445,7 +445,7 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscR
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_SW"
-static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys)
+static PetscErrorCode PhysicsCreate_SW(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_SW     *sw;
   PetscErrorCode ierr;
@@ -625,7 +625,7 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Euler"
-static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys)
+static PetscErrorCode PhysicsCreate_Euler(DM dm, Model mod,Physics phys,PetscOptions *PetscOptionsObject)
 {
   Physics_Euler   *eu;
   PetscErrorCode  ierr;
@@ -1093,7 +1093,7 @@ static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscIn
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelFunctionalSetFromOptions"
-static PetscErrorCode ModelFunctionalSetFromOptions(Model mod)
+static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptions *PetscOptionsObject)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
@@ -1369,21 +1369,21 @@ int main(int argc, char **argv)
 
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Physics Options","");CHKERRQ(ierr);
   {
-    PetscErrorCode (*physcreate)(DM,Model,Physics);
+    PetscErrorCode (*physcreate)(DM,Model,Physics,PetscOptions*);
     char             physname[256]  = "advect";
 
     ierr = DMPlexCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
     ierr = PetscOptionsFList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,NULL);CHKERRQ(ierr);
     ierr = PetscFunctionListFind(PhysicsList,physname,&physcreate);CHKERRQ(ierr);
     ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
-    ierr = (*physcreate)(dm,mod,phys);CHKERRQ(ierr);
+    ierr = (*physcreate)(dm,mod,phys,PetscOptionsObject);CHKERRQ(ierr);
     mod->maxspeed = phys->maxspeed;
     /* Count number of fields and dofs */
     for (phys->nfields=0,phys->dof=0; phys->field_desc[phys->nfields].name; phys->nfields++) phys->dof += phys->field_desc[phys->nfields].dof;
 
     if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
     if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
-    ierr = ModelFunctionalSetFromOptions(mod);CHKERRQ(ierr);
+    ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   {
