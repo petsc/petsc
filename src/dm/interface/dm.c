@@ -3149,6 +3149,7 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_USE_DEBUG
 #undef __FUNCT__
 #define __FUNCT__ "DMDefaultSectionCheckConsistency"
 /*
@@ -3163,7 +3164,7 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
 
 .seealso: DMGetDefaultSF(), DMSetDefaultSF()
 */
-static PetscErrorCode DMDefaultSectionCheckConsistency(DM dm, PetscSection localSection, PetscSection globalSection)
+static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSection localSection, PetscSection globalSection)
 {
   MPI_Comm        comm;
   PetscLayout     layout;
@@ -3186,8 +3187,7 @@ static PetscErrorCode DMDefaultSectionCheckConsistency(DM dm, PetscSection local
   ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
   ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    const PetscInt *cind;
-    PetscInt       dof, cdof, off, gdof, gcdof, goff, gsize, d, c;
+    PetscInt       dof, cdof, off, gdof, gcdof, goff, gsize, d;
 
     ierr = PetscSectionGetDof(localSection, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(localSection, p, &off);CHKERRQ(ierr);
@@ -3218,6 +3218,7 @@ static PetscErrorCode DMDefaultSectionCheckConsistency(DM dm, PetscSection local
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGetDefaultGlobalSection"
@@ -3285,7 +3286,7 @@ PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection section)
   ierr = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
   dm->defaultGlobalSection = section;
 #ifdef PETSC_USE_DEBUG
-  if (section) {ierr = DMDefaultSectionCheckConsistency(dm, dm->defaultSection, section);CHKERRQ(ierr);}
+  if (section) {ierr = DMDefaultSectionCheckConsistency_Internal(dm, dm->defaultSection, section);CHKERRQ(ierr);}
 #endif
   PetscFunctionReturn(0);
 }
