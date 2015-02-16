@@ -70,8 +70,8 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
       PetscBLASInt B_itype = 1;
       PetscBLASInt B_N = mss;
-      PetscScalar  zero = 0.0;
-      PetscScalar  eps = 0.0; /* dlamch? */
+      PetscReal    zero = 0.0;
+      PetscReal    eps = 0.0; /* dlamch? */
 
       B_lwork = -1;
       S = NULL;
@@ -99,7 +99,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   if (sub_schurs->is_Ej_com) { /* complement of subsets, each entry is a vertex */
     ierr = ISGetLocalSize(sub_schurs->is_Ej_com,&nv);CHKERRQ(ierr);
   }
-  ierr = PetscBLASIntCast((PetscInt)lwork,&B_lwork);CHKERRQ(ierr);
+  ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork);CHKERRQ(ierr);
   ierr = PetscMalloc7(mss*mss,&S,mss*mss,&St,mss*mss,&eigv,mss,&eigs,
                       B_lwork,&work,5*mss,&B_iwork,mss,&B_ifail);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
@@ -143,7 +143,8 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     ierr = ISGetLocalSize(sub_schurs->is_subs[i],&subset_size);CHKERRQ(ierr);
     if (PetscBTLookup(sub_schurs->computed_Stilda_subs,i)) {
       const PetscInt *idxs;
-      PetscScalar    one = 1.0,zero=0.0;
+      PetscScalar    one = 1.0,scalar_zero = 0.0;
+      PetscReal      zero=0.0;
       PetscBLASInt   B_N;
 
       /* S should be copied since we need it for deluxe scaling */
@@ -168,7 +169,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
         PetscBLASInt B_itype = 1;
         PetscBLASInt B_IL = 1, B_IU;
-        PetscScalar  eps = -1.0; /* dlamch? */
+        PetscReal    eps = -1.0; /* dlamch? */
         PetscInt     nmin_s;
 
         /* ask for eigenvalues lower than thresh */
@@ -248,7 +249,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       pcbddc->adaptive_constraints_n[i+nv] = B_neigs;
 
       ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
-      PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&B_N,&B_neigs,&B_N,&one,Smult,&B_N,eigv,&B_N,&zero,Seigv,&B_N));
+      PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&B_N,&B_neigs,&B_N,&one,Smult,&B_N,eigv,&B_N,&scalar_zero,Seigv,&B_N));
       ierr = PetscMemcpy(pcbddc->adaptive_constraints_data+cum2,Seigv,B_neigs*subset_size*sizeof(PetscScalar));CHKERRQ(ierr);
 #if 0
       PetscInt ii;

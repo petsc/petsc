@@ -76,7 +76,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   ierr = PetscOptionsBool("-pc_bddc_schur_rebuild","Whether or not the interface graph for Schur principal minors has to be rebuilt (i.e. define the interface without any adjacency)","none",pcbddc->sub_schurs_rebuild,&pcbddc->sub_schurs_rebuild,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_schur_layers","Number of dofs' layers for the computation of principal minors (i.e. -1 uses all dofs)","none",pcbddc->sub_schurs_layers,&pcbddc->sub_schurs_layers,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_schur_use_useradj","Whether or not the CSR graph specified by the user should be used for computing successive layers (default is to use adj of local mat)","none",pcbddc->sub_schurs_use_useradj,&pcbddc->sub_schurs_use_useradj,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsScalar("-pc_bddc_adaptive_threshold","Threshold to be used for adaptive selection of constraints","none",pcbddc->adaptive_threshold,&pcbddc->adaptive_threshold,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_bddc_adaptive_threshold","Threshold to be used for adaptive selection of constraints","none",pcbddc->adaptive_threshold,&pcbddc->adaptive_threshold,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_adaptive_nmin","Minimum number of constraints per connected components","none",pcbddc->adaptive_nmin,&pcbddc->adaptive_nmin,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_adaptive_nmax","Maximum number of constraints per connected components","none",pcbddc->adaptive_nmax,&pcbddc->adaptive_nmax,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_adaptive_invert_stildas","Whether or not to invert the Stildas matrices","none",pcbddc->adaptive_invert_Stildas,&pcbddc->adaptive_invert_Stildas,NULL);CHKERRQ(ierr);
@@ -1199,7 +1199,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   }
   computeconstraintsmatrix = PETSC_FALSE;
   pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0);
-  computesubschurs = pcbddc->use_deluxe_scaling || pcbddc->adaptive_selection;
+  computesubschurs = (PetscBool)(pcbddc->use_deluxe_scaling || pcbddc->adaptive_selection);
 
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {

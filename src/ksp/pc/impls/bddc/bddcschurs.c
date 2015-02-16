@@ -448,7 +448,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,Bwork,&B_N,pivots,&lwork,&B_lwork,&B_ierr));
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
-    ierr = PetscBLASIntCast((PetscInt)lwork,&B_lwork);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork);CHKERRQ(ierr);
     ierr = PetscMalloc2(B_lwork,&Bwork,max_subset_size_seq,&pivots);CHKERRQ(ierr);
   }
 
@@ -548,7 +548,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
           PC          pc;
           Mat         S_EF,S_FE,S_FF,Stilda_impl;
           IS          is_F;
-          PetscScalar eps=1.e-8;
           PetscInt    nc,cum;
           PetscBool   chop=PETSC_FALSE;
 
@@ -570,6 +569,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
           }
           ierr = ISDestroy(&is_F);CHKERRQ(ierr);
           if (chop) {
+            PetscReal eps=1.e-8;
             ierr = MatChop(S_FF,eps);CHKERRQ(ierr);
             ierr = MatConvert(S_FF,MATAIJ,MAT_REUSE_MATRIX,&S_FF);CHKERRQ(ierr);
           }
@@ -827,7 +827,7 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, Mat A, Mat S, IS 
   if (seqthreshold < 0) {
     seqthreshold = max_subset_size;
 #if defined(PETSC_HAVE_MUMPS)
-    sub_schurs->use_mumps = !!A;
+    sub_schurs->use_mumps = (PetscBool)(!!A);
 #endif
   }
 
