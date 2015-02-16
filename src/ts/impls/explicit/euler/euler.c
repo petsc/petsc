@@ -14,12 +14,18 @@ static PetscErrorCode TSStep_Euler(TS ts)
   TS_Euler       *euler = (TS_Euler*)ts->data;
   Vec            sol    = ts->vec_sol,update = euler->update;
   PetscErrorCode ierr;
+  PetscBool      accept;
 
   PetscFunctionBegin;
   ierr = TSPreStep(ts);CHKERRQ(ierr);
   ierr = TSPreStage(ts,ts->ptime);CHKERRQ(ierr);
   ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update);CHKERRQ(ierr);
   ierr = VecAXPY(sol,ts->time_step,update);CHKERRQ(ierr);
+  ierr = TSFunctionDomainError(ts,ts->ptime,0,&sol,&accept);CHKERRQ(ierr);
+  if(!accept) {
+    ts->reason = TS_DIVERGED_STEP_REJECTED;
+    PetscFunctionReturn(0);
+  }
   ierr = TSPostStage(ts,ts->ptime,0,&sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
   ts->steps++;
