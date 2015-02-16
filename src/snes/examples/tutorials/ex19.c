@@ -1,12 +1,14 @@
 
-static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
+static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n \
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
 The flow can be driven with the lid or with bouyancy or both:\n\
-  -lidvelocity <lid>, where <lid> = dimensionless velocity of lid\n\
-  -grashof <gr>, where <gr> = dimensionless temperature gradent\n\
-  -prandtl <pr>, where <pr> = dimensionless thermal/momentum diffusity ratio\n\
-  -contours : draw contour plots of solution\n\n";
+  -lidvelocity &ltlid&gt, where &ltlid&gt = dimensionless velocity of lid\n\
+  -grashof &ltgr&gt, where &ltgr&gt = dimensionless temperature gradent\n\
+  -prandtl &ltpr&gt, where &ltpr&gt = dimensionless thermal/momentum diffusity ratio\n\
+ -contours : draw contour plots of solution\n\n";
+//in HTML, '&lt' = '<' and '&gt' = '>'
+
 /*
       See src/ksp/ksp/examples/tutorials/ex45.c
 */

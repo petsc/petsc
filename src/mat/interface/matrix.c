@@ -820,7 +820,7 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
   PetscBool         iascii;
   PetscViewerFormat format;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool         isams;
+  PetscBool         issaws;
 #endif
 
   PetscFunctionBegin;
@@ -841,7 +841,7 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
   }
 
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (iascii) {
     if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ORDER,"Must call MatAssemblyBegin/End() before viewing matrix");
@@ -871,7 +871,7 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
       if (mat->nearnullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached near null space\n");CHKERRQ(ierr);}
     }
 #if defined(PETSC_HAVE_SAWS)
-  } else if (isams) {
+  } else if (issaws) {
     PetscMPIInt rank;
 
     ierr = PetscObjectName((PetscObject)mat);CHKERRQ(ierr);
@@ -9848,6 +9848,7 @@ PetscErrorCode  MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTran
 @*/
 PetscErrorCode MatGetNonzeroState(Mat mat,PetscObjectState *state)
 {
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   *state = mat->nonzerostate;
   PetscFunctionReturn(0);

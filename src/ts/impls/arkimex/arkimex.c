@@ -1187,15 +1187,14 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(PetscOptions *PetscOptionsObject,
     for (link=ARKTableauList,count=0; link; link=link->next,count++) ;
     ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
     for (link=ARKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
-    ierr      = PetscOptionsEList("-ts_arkimex_type","Family of ARK IMEX method","TSARKIMEXSetType",(const char*const*)namelist,count,arktype,&choice,&flg);CHKERRQ(ierr);
-    ierr      = TSARKIMEXSetType(ts,flg ? namelist[choice] : arktype);CHKERRQ(ierr);
+      ierr      = PetscOptionsEList("-ts_arkimex_type","Family of ARK IMEX method","TSARKIMEXSetType",(const char*const*)namelist,count,arktype,&choice,&flg);CHKERRQ(ierr);
+      ierr      = TSARKIMEXSetType(ts,flg ? namelist[choice] : arktype);CHKERRQ(ierr);
     ierr      = PetscFree(namelist);CHKERRQ(ierr);
     flg       = (PetscBool) !ark->imex;
     ierr      = PetscOptionsBool("-ts_arkimex_fully_implicit","Solve the problem fully implicitly","TSARKIMEXSetFullyImplicit",flg,&flg,NULL);CHKERRQ(ierr);
     ark->imex = (PetscBool) !flg;
     ark->init_guess_extrp = PETSC_FALSE;
     ierr      = PetscOptionsBool("-ts_arkimex_initial_guess_extrapolate","Extrapolate the initial guess for the stage solution from stage values of the previous time step","",ark->init_guess_extrp,&ark->init_guess_extrp,NULL);CHKERRQ(ierr);
-    ierr      = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

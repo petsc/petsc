@@ -521,7 +521,8 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     PetscBool      flg,rootlocal = PETSC_FALSE,flg2;
     size_t         applinelen,introlen;
     PetscErrorCode ierr;
-
+    char           sawsurl[256];
+    
     ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
     if (flg) {
       char  sawslog[PETSC_MAX_PATH_LEN];
@@ -545,6 +546,12 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     if (flg) {
       PetscStackCallSAWs(SAWs_Set_Document_Root,(root));CHKERRQ(ierr);
       ierr = PetscStrcmp(root,".",&rootlocal);CHKERRQ(ierr);
+    } else {
+      ierr = PetscOptionsHasName(NULL,"-saws_options",&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = PetscStrreplace(PETSC_COMM_WORLD,"${PETSC_DIR}/share/petsc/saws",root,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+        PetscStackCallSAWs(SAWs_Set_Document_Root,(root));CHKERRQ(ierr);
+      }
     }
     ierr = PetscOptionsHasName(NULL,"-saws_local",&flg2);CHKERRQ(ierr);
     if (flg2) {
@@ -558,7 +565,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     ierr = PetscGetProgramName(programname,64);CHKERRQ(ierr);
     ierr = PetscStrlen(help,&applinelen);CHKERRQ(ierr);
     introlen   = 4096 + applinelen;
-    applinelen += 256;
+    applinelen += 1024;
     ierr = PetscMalloc(applinelen,&appline);CHKERRQ(ierr);
     ierr = PetscMalloc(introlen,&intro);CHKERRQ(ierr);
 
@@ -570,7 +577,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     if (rootlocal && help) {
       ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a> %s</center><br><center><pre>%s</pre></center><br>\n",programname,programname,options,help);
     } else if (help) {
-      ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s %s</center><br><center><pre>%s</pre></center><br>\n",programname,options,help);
+      ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s %s</center><br><center><pre>%s</pre></center><br>",programname,options,help);
     } else {
       ierr = PetscSNPrintf(appline,applinelen,"<center> Running %s %s</center><br>\n",programname,options);
     }
@@ -584,6 +591,8 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     ierr = PetscFree(intro);CHKERRQ(ierr);
     ierr = PetscFree(appline);CHKERRQ(ierr);
     PetscStackCallSAWs(SAWs_Initialize,());
+    PetscStackCallSAWs(SAWs_Get_FullURL,(sizeof(sawsurl),sawsurl));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Point your browser to %s for SAWs\n",sawsurl);CHKERRQ(ierr);
     ierr = PetscCitationsRegister("@TechReport{ saws,\n"
                                   "  Author = {Matt Otten and Jed Brown and Barry Smith},\n"
                                   "  Title  = {Scientific Application Web Server (SAWs) Users Manual},\n"

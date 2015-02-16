@@ -794,10 +794,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
   }
 
-  if (!pc->setupcalled) {
-    ierr = KSPSetFromOptions(mglevels[0]->smoothd);CHKERRQ(ierr);
-  }
-
   if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSetUp(mglevels[0]->smoothd);CHKERRQ(ierr);
   if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
