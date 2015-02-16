@@ -27,15 +27,15 @@ PetscErrorCode MyVecDump(const char fname[],PetscBool skippheader,PetscBool usem
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   if (skippheader) { ierr = PetscViewerBinarySetSkipHeader(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-  if (usempiio) { ierr = PetscViewerBinarySetUseMPIIO(viewer);CHKERRQ(ierr); }
+  if (usempiio) { ierr = PetscViewerBinarySetUseMPIIO(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetName(viewer,fname);CHKERRQ(ierr);
 
   ierr = VecView(x,viewer);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryGetMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
-  if (ismpiio) { PetscPrintf(comm,"*** PetscViewer[write] using MPI-IO ***\n"); }
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
+  if (ismpiio) { ierr = PetscPrintf(comm,"*** PetscViewer[write] using MPI-IO ***\n");CHKERRQ(ierr); }
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&isskip);CHKERRQ(ierr);
-  if (isskip) { PetscPrintf(comm,"*** PetscViewer[write] skipping header ***\n"); }
+  if (isskip) { ierr = PetscPrintf(comm,"*** PetscViewer[write] skipping header ***\n");CHKERRQ(ierr); }
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -57,15 +57,15 @@ PetscErrorCode MyVecLoad(const char fname[],PetscBool skippheader,PetscBool usem
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   if (skippheader) { ierr = PetscViewerBinarySetSkipHeader(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_READ);CHKERRQ(ierr);
-  if (usempiio) { ierr = PetscViewerBinarySetUseMPIIO(viewer);CHKERRQ(ierr); }
+  if (usempiio) { ierr = PetscViewerBinarySetUseMPIIO(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetName(viewer,fname);CHKERRQ(ierr);
 
   ierr = VecLoad(x,viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&isskip);CHKERRQ(ierr);
-  if (isskip) { PetscPrintf(comm,"*** PetscViewer[load] skipping header ***\n"); }
-  ierr = PetscViewerBinaryGetMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
-  if (ismpiio) { PetscPrintf(comm,"*** PetscViewer[load] using MPI-IO ***\n"); }
+  if (isskip) { ierr = PetscPrintf(comm,"*** PetscViewer[load] skipping header ***\n");CHKERRQ(ierr); }
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
+  if (ismpiio) { ierr = PetscPrintf(comm,"*** PetscViewer[load] using MPI-IO ***\n");CHKERRQ(ierr); }
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -104,22 +104,22 @@ PetscErrorCode VecCompare(Vec a,Vec b)
   ierr = VecMin(b,&locmin[1],&min[1]);CHKERRQ(ierr);
   ierr = VecMax(b,&locmax[1],&max[1]);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"VecCompare\n");
-  PetscPrintf(PETSC_COMM_WORLD,"  min(a)   = %+1.2e [loc %D]\n",(double)min[0],locmin[0]);
-  PetscPrintf(PETSC_COMM_WORLD,"  max(a)   = %+1.2e [loc %D]\n",(double)max[0],locmax[0]);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecCompare\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  min(a)   = %+1.2e [loc %D]\n",(double)min[0],locmin[0]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  max(a)   = %+1.2e [loc %D]\n",(double)max[0],locmax[0]);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"  min(b)   = %+1.2e [loc %D]\n",(double)min[1],locmin[1]);
-  PetscPrintf(PETSC_COMM_WORLD,"  max(b)   = %+1.2e [loc %D]\n",(double)max[1],locmax[1]);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  min(b)   = %+1.2e [loc %D]\n",(double)min[1],locmin[1]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  max(b)   = %+1.2e [loc %D]\n",(double)max[1],locmax[1]);CHKERRQ(ierr);
 
   ierr = VecDuplicate(a,&ref);CHKERRQ(ierr);
   ierr = VecCopy(a,ref);CHKERRQ(ierr);
   ierr = VecAXPY(ref,-1.0,b);CHKERRQ(ierr);
   ierr = VecMin(ref,&locmin[0],&min[0]);CHKERRQ(ierr);
   if (PetscAbsReal(min[0]) > 1.0e-10) {
-    PetscPrintf(PETSC_COMM_WORLD,"  ERROR: min(a-b) > 1.0e-10\n");
-    PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) = %+1.10e\n",(double)PetscAbsReal(min[0]));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  ERROR: min(a-b) > 1.0e-10\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) = %+1.10e\n",(double)PetscAbsReal(min[0]));CHKERRQ(ierr);
   } else {
-    PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) < 1.0e-10\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  min(a-b) < 1.0e-10\n");CHKERRQ(ierr);
   }
   ierr = VecDestroy(&ref);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -148,18 +148,18 @@ PetscErrorCode HeaderlessBinaryRead(const char name[])
       v = PetscAbsScalar(test_values[i]-buffer[i]);
 #if defined(PETSC_USE_COMPLEX)
       if ((PetscRealPart(v) > 1.0e-10) || (PetscImaginaryPart(v) > 1.0e-10)) {
-        PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = (%+1.12e,%+1.12e) [loc %D])\n",(double)PetscRealPart(buffer[i]),(double)PetscImaginaryPart(buffer[i]),i);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = (%+1.12e,%+1.12e) [loc %D])\n",(double)PetscRealPart(buffer[i]),(double)PetscImaginaryPart(buffer[i]),i);CHKERRQ(ierr);
         dataverified = PETSC_FALSE;
       }
 #else
       if (PetscRealPart(v) > 1.0e-10) {
-        PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = %+1.12e [loc %D])\n",(double)PetscRealPart(buffer[i]),i);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = %+1.12e [loc %D])\n",(double)PetscRealPart(buffer[i]),i);CHKERRQ(ierr);
         dataverified = PETSC_FALSE;
       }
 #endif
     }
     if (dataverified) {
-      PetscPrintf(PETSC_COMM_SELF,"Headerless read of data verified\n");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Headerless read of data verified\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -233,7 +233,7 @@ int main(int argc,char **args)
 {
   PetscErrorCode ierr;
   PetscBool      usempiio = PETSC_FALSE;
-    
+
   PetscInitialize(&argc,&args,(char*)0,help);
 
   ierr = PetscOptionsGetBool(NULL,"-usempiio",&usempiio,NULL);CHKERRQ(ierr);
@@ -243,7 +243,7 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_MPIIO)
     ierr = TestBinaryMPIIO();CHKERRQ(ierr);
 #else
-    PetscPrintf(PETSC_COMM_WORLD,"Warning: Executing TestBinaryMPIIO() requires a working MPI-2 implementation\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Executing TestBinaryMPIIO() requires a working MPI-2 implementation\n");CHKERRQ(ierr);
 #endif
   }
   ierr = PetscFinalize();
