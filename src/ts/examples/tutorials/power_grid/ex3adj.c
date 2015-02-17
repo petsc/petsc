@@ -184,7 +184,7 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,AppCtx *ctx)
   ierr = VecGetArrayRead(lambda,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(lambdap,&y);CHKERRQ(ierr);
   sensip = 1./PetscSqrtScalar(1.-(ctx->Pm/ctx->Pmax)*(ctx->Pm/ctx->Pmax))/ctx->Pmax*x[0]+y[0];  
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameter pm: %.7f \n",sensip);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameter pm: %.7f \n",(double)sensip);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(lambda,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(lambdap,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -361,7 +361,7 @@ int main(int argc,char **argv)
   ierr = TSAdjointGetCostIntegral(ts,&q);CHKERRQ(ierr);
   ierr = VecView(q,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n cost function=%.15f\n",x_ptr[0]-ctx.Pm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n cost function=%g\n",(double)(x_ptr[0]-ctx.Pm));CHKERRQ(ierr);
  
   ierr = ComputeSensiP(lambda[0],lambdap[0],&ctx);CHKERRQ(ierr);
 
