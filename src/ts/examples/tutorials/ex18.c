@@ -58,8 +58,10 @@ typedef struct {
   VelocityDistribution velocityDist;
   PorosityDistribution porosityDist;
   /* Monitoring */
-  Functional     functionalRegistry;
+  PetscInt       numMonitorFuncs, maxMonitorFunc;
+  Functional    *monitorFuncs;
   PetscInt       errorFunctional;
+  Functional     functionalRegistry;
 } AppCtx;
 
 #undef __FUNCT__
@@ -79,6 +81,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->useFV        = PETSC_FALSE;
   options->velocityDist = VEL_HARMONIC;
   options->porosityDist = ZERO;
+  options->numMonitorFuncs = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Magma Dynamics Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
@@ -99,6 +102,45 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->porosityDist = (PorosityDistribution) pd;
   ierr = PetscOptionsEnd();
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ProcessMonitorOptions"
+static PetscErrorCode ProcessMonitorOptions(MPI_Comm comm, AppCtx *options)
+{
+  Functional     func;
+  char          *names[256];
+  PetscInt       f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscOptionsBegin(comm, "", "Simulation Monitor Options", "DMPLEX");CHKERRQ(ierr);
+  options->numMonitorFuncs = ALEN(names);
+  ierr = PetscOptionsStringArray("-monitor", "List of functionals to monitor", "", names, &options->numMonitorFuncs, NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc1(options->numMonitorFuncs, &options->monitorFuncs);CHKERRQ(ierr);
+  for (f = 0; f < options->numMonitorFuncs; ++f) {
+    for (func = options->functionalRegistry; func; func = func->next) {
+      PetscBool match;
+
+      ierr = PetscStrcasecmp(names[f], func->name, &match);CHKERRQ(ierr);
+      if (match) break;
+    }
+    if (!func) SETERRQ1(comm, PETSC_ERR_USER, "No known functional '%s'", names[f]);
+    options->monitorFuncs[f] = func;
+    /* Jed inserts a de-duplication of functionals here */
+    ierr = PetscFree(names[f]);CHKERRQ(ierr);
+  }
+  /* Find out the maximum index of any functional computed by a function we will be calling (even if we are not using it) */
+  options->maxMonitorFunc = -1;
+  for (func = options->functionalRegistry; func; func = func->next) {
+    for (f = 0; f < options->numMonitorFuncs; ++f) {
+      Functional call = options->monitorFuncs[f];
+
+      if (func->func == call->func && func->ctx == call->ctx) options->maxMonitorFunc = PetscMax(options->maxMonitorFunc, func->offset);
+    }
+  }
+  ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -381,7 +423,7 @@ static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscScalar 
 
   PetscFunctionBeginUser;
   ierr = ExactSolution(dm, time, x, yexact, ctx);CHKERRQ(ierr);
-  f[user->errorFunctional] = PetscAbsScalar(y[0] - yexact[0]);
+  f[user->errorFunctional] = PetscAbsScalar(y[spatialDim] - yexact[0]);
   PetscFunctionReturn(0);
 }
 
@@ -636,12 +678,15 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
   DM                 dm;
   PetscSection       s;
   Vec                cellgeom;
+  const char        *prefix;
   const PetscScalar *x, *a;
   PetscReal         *xnorms;
   PetscInt           pStart, pEnd, p, Nf, f, cEndInterior;
   PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) ts, &prefix);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(X, prefix, "-view_solution");CHKERRQ(ierr);
   ierr = VecGetDM(X, &dm);CHKERRQ(ierr);
   ierr = DMPlexTSGetGeometryFVM(dm, NULL, &cellgeom, NULL);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cEndInterior, NULL, NULL, NULL);CHKERRQ(ierr);
@@ -662,81 +707,119 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
     }
   }
   ierr = VecRestoreArrayRead(X, &x);CHKERRQ(ierr);
-  if (stepnum >= 0) {           /* No summary for final time */
-#if 0
-    Model             mod = user->model;
-    PetscInt          c,cStart,cEnd,fcount,i;
-    size_t            ftableused,ftablealloc;
-    const PetscScalar *cgeom,*x;
-    DM                dmCell;
-    PetscReal         *fmin,*fmax,*fintegral,*ftmp;
-    fcount = mod->maxComputed+1;
-    ierr   = PetscMalloc4(fcount,&fmin,fcount,&fmax,fcount,&fintegral,fcount,&ftmp);CHKERRQ(ierr);
-    for (i=0; i<fcount; i++) {
-      fmin[i]      = PETSC_MAX_REAL;
-      fmax[i]      = PETSC_MIN_REAL;
-      fintegral[i] = 0;
+  if (stepnum >= 0) { /* No summary for final time */
+    DM                 dmCell, *fdm;
+    Vec               *fv;
+    const PetscScalar *cgeom;
+    PetscScalar      **fx;
+    PetscReal         *fmin, *fmax, *fint, *ftmp, time;
+    PetscInt           cStart, cEnd, c, fcount, f, num;
+
+    size_t             ftableused,ftablealloc;
+
+    /* Functionals have indices after registering, this is an upper bound */
+    fcount = user->numMonitorFuncs;
+    ierr   = PetscMalloc4(fcount,&fmin,fcount,&fmax,fcount,&fint,fcount,&ftmp);CHKERRQ(ierr);
+    ierr   = PetscMalloc3(fcount,&fdm,fcount,&fv,fcount,&fx);CHKERRQ(ierr);
+    for (f = 0; f < fcount; ++f) {
+      PetscSection fs;
+      const char  *name = user->monitorFuncs[f]->name;
+
+      fmin[f] = PETSC_MAX_REAL;
+      fmax[f] = PETSC_MIN_REAL;
+      fint[f] = 0;
+      /* Make monitor vecs */
+      ierr = DMClone(dm, &fdm[f]);CHKERRQ(ierr);
+      ierr = DMGetOutputSequenceNumber(dm, &num, &time);CHKERRQ(ierr);
+      ierr = DMSetOutputSequenceNumber(fdm[f], num, time);CHKERRQ(ierr);
+      ierr = PetscSectionClone(s, &fs);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldName(fs, 0, NULL);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldName(fs, 1, name);CHKERRQ(ierr);
+      ierr = DMSetDefaultSection(fdm[f], fs);CHKERRQ(ierr);
+      ierr = PetscSectionDestroy(&fs);CHKERRQ(ierr);
+      ierr = DMGetGlobalVector(fdm[f], &fv[f]);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) fv[f], name);CHKERRQ(ierr);
+      ierr = VecGetArray(fv[f], &fx[f]);CHKERRQ(ierr);
     }
-    ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-    ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = VecGetDM(cellgeom, &dmCell);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
     for (c = cStart; c < cEndInterior; ++c) {
       const PetscFVCellGeom *cg;
       const PetscScalar     *cx;
-      ierr = DMPlexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
-      ierr = DMPlexPointGlobalRead(dm,c,x,&cx);CHKERRQ(ierr);
+
+      ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
+      ierr = DMPlexPointGlobalRead(dm, c, x, &cx);CHKERRQ(ierr);
       if (!cx) continue;        /* not a global cell */
-      for (i=0; i<mod->numCall; i++) {
-        FunctionalLink flink = mod->functionalCall[i];
-        ierr = (*flink->func)(mod,time,cg->centroid,cx,ftmp,flink->ctx);CHKERRQ(ierr);
+      for (f = 0;  f < user->numMonitorFuncs; ++f) {
+        Functional   func = user->monitorFuncs[f];
+        PetscScalar *fxc;
+
+        ierr = DMPlexPointGlobalFieldRef(dm, c, 1, fx[f], &fxc);CHKERRQ(ierr);
+        ierr = (*func->func)(dm, time, cg->centroid, cx, ftmp, func->ctx);CHKERRQ(ierr);
+        fxc[0] = ftmp[user->monitorFuncs[f]->offset];
       }
-      for (i=0; i<fcount; i++) {
-        fmin[i]       = PetscMin(fmin[i],ftmp[i]);
-        fmax[i]       = PetscMax(fmax[i],ftmp[i]);
-        fintegral[i] += cg->volume * ftmp[i];
+      for (f = 0; f < fcount; ++f) {
+        fmin[f]  = PetscMin(fmin[f], ftmp[f]);
+        fmax[f]  = PetscMax(fmax[f], ftmp[f]);
+        fint[f] += cg->volume * ftmp[f];
       }
     }
-    ierr = VecRestoreArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE,fmin,fcount,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE,fmax,fcount,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
-    ierr = MPI_Allreduce(MPI_IN_PLACE,fintegral,fcount,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
-
+    ierr = VecRestoreArrayRead(cellgeom, &cgeom);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(X, &x);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, fmin, fcount, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, fmax, fcount, MPIU_REAL, MPI_MAX, PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE, fint, fcount, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+    /* Output functional data */
     ftablealloc = fcount * 100;
     ftableused  = 0;
-    ierr        = PetscMalloc1(ftablealloc,&ftable);CHKERRQ(ierr);
-    for (i=0; i<mod->numMonitored; i++) {
-      size_t         countused;
-      char           buffer[256],*p;
-      FunctionalLink flink = mod->functionalMonitored[i];
-      PetscInt       id    = flink->offset;
-      if (i % 3) {
-        ierr = PetscMemcpy(buffer,"  ",2);CHKERRQ(ierr);
+    ierr = PetscCalloc1(ftablealloc, &ftable);CHKERRQ(ierr);
+    for (f = 0; f < user->numMonitorFuncs; ++f) {
+      Functional func      = user->monitorFuncs[f];
+      PetscInt   id        = func->offset;
+      char       newline[] = "\n";
+      char       buffer[256], *p, *prefix;
+      size_t     countused, len;
+
+      /* Create string with functional outputs */
+      if (f % 3) {
+        ierr = PetscMemcpy(buffer, "  ", 2);CHKERRQ(ierr);
         p    = buffer + 2;
-      } else if (i) {
-        char newline[] = "\n";
-        ierr = PetscMemcpy(buffer,newline,sizeof newline-1);CHKERRQ(ierr);
+      } else if (f) {
+        ierr = PetscMemcpy(buffer, newline, sizeof newline-1);CHKERRQ(ierr);
         p    = buffer + sizeof newline - 1;
       } else {
         p = buffer;
       }
-      ierr = PetscSNPrintfCount(p,sizeof buffer-(p-buffer),"%12s [%10.7g,%10.7g] int %10.7g",&countused,flink->name,(double)fmin[id],(double)fmax[id],(double)fintegral[id]);CHKERRQ(ierr);
+      ierr = PetscSNPrintfCount(p, sizeof buffer-(p-buffer), "%12s [%10.7g,%10.7g] int %10.7g", &countused, func->name, (double) fmin[id], (double) fmax[id], (double) fint[id]);CHKERRQ(ierr);
       countused += p - buffer;
-      if (countused > ftablealloc-ftableused-1) { /* reallocate */
+      /* reallocate */
+      if (countused > ftablealloc-ftableused-1) {
         char *ftablenew;
+
         ftablealloc = 2*ftablealloc + countused;
-        ierr = PetscMalloc(ftablealloc,&ftablenew);CHKERRQ(ierr);
-        ierr = PetscMemcpy(ftablenew,ftable,ftableused);CHKERRQ(ierr);
+        ierr = PetscMalloc1(ftablealloc, &ftablenew);CHKERRQ(ierr);
+        ierr = PetscMemcpy(ftablenew, ftable, ftableused);CHKERRQ(ierr);
         ierr = PetscFree(ftable);CHKERRQ(ierr);
         ftable = ftablenew;
       }
-      ierr = PetscMemcpy(ftable+ftableused,buffer,countused);CHKERRQ(ierr);
+      ierr = PetscMemcpy(ftable+ftableused, buffer, countused);CHKERRQ(ierr);
       ftableused += countused;
       ftable[ftableused] = 0;
+      /* Output vecs */
+      ierr = VecRestoreArray(fv[f], &fx[f]);CHKERRQ(ierr);
+      ierr = PetscStrlen(func->name, &len);CHKERRQ(ierr);
+      ierr = PetscMalloc1(len+2,&prefix);CHKERRQ(ierr);
+      ierr = PetscStrcpy(prefix, func->name);CHKERRQ(ierr);
+      ierr = PetscStrcat(prefix, "_");CHKERRQ(ierr);
+      ierr = VecViewFromOptions(fv[f], prefix, "-vec_view");CHKERRQ(ierr);
+      ierr = PetscFree(prefix);CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(fdm[f], &fv[f]);CHKERRQ(ierr);
+      ierr = DMDestroy(&fdm[f]);CHKERRQ(ierr);
     }
-    ierr = PetscFree4(fmin,fmax,fintegral,ftmp);CHKERRQ(ierr);
-#endif
+    ierr = PetscFree4(fmin, fmax, fint, ftmp);CHKERRQ(ierr);
+    ierr = PetscFree3(fdm, fv, fx);CHKERRQ(ierr);
     ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), "% 3D  time %8.4g  |x| (", stepnum, (double) time);CHKERRQ(ierr);
     for (f = 0; f < Nf; ++f) {
       if (f > 0) {ierr = PetscPrintf(PetscObjectComm((PetscObject) ts), ", ");CHKERRQ(ierr);}
@@ -770,6 +853,7 @@ int main(int argc, char **argv)
   ierr = TSSetType(ts, TSBEULER);CHKERRQ(ierr);
   ierr = CreateDM(comm, &user, &dm);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
+  ierr = ProcessMonitorOptions(comm, &user);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "solution");CHKERRQ(ierr);
@@ -815,6 +899,7 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = PetscFree(user.monitorFuncs);CHKERRQ(ierr);
   ierr = FunctionalDestroy(&user.functionalRegistry);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return(0);
