@@ -3246,13 +3246,18 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   ts->reason            = TS_CONVERGED_ITERATING;
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view_pre");CHKERRQ(ierr);
+  {
+    DM dm;
+    ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+    ierr = DMSetOutputSequenceNumber(dm, ts->steps, ts->ptime);CHKERRQ(ierr);
+  }
 
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
     ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);
     ts->solvetime = ts->ptime;
   } else {
-    /* steps the requested number of timesteps. */   
+    /* steps the requested number of timesteps. */
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     while (!ts->reason) {
