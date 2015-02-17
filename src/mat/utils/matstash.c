@@ -989,7 +989,10 @@ static PetscErrorCode MatStashScatterEnd_BTS(MatStash *stash)
 
   PetscFunctionBegin;
   ierr = MPI_Waitall(stash->nsendranks,stash->sendreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
-  if (!stash->subset_off_proc) { /* Only collect the communication contexts if it won't be reused. */
+  if (stash->subset_off_proc) { /* Reuse the communication contexts, so consolidate and reset segrecvblocks  */
+    void *dummy;
+    ierr = PetscSegBufferExtractInPlace(stash->segrecvblocks,&dummy);CHKERRQ(ierr);
+  } else {                      /* No reuse, so collect everything. */
     ierr = MatStashScatterDestroy_BTS(stash);CHKERRQ(ierr);
   }
 
