@@ -49,7 +49,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscBool      isdraw;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool      isams;
+  PetscBool      issaws;
 #endif
 
   PetscFunctionBegin;
@@ -61,7 +61,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
   ierr = PetscObjectPrintClassNamePrefixType((PetscObject)indraw,viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (isdraw) {
     PetscDraw draw;
@@ -76,7 +76,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
     bottom = y - h;
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  } else if (isams) {
+  } else if (issaws) {
     PetscMPIInt rank;
 
     ierr = PetscObjectName((PetscObject)indraw);CHKERRQ(ierr);
