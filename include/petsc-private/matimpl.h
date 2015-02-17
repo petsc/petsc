@@ -247,12 +247,11 @@ PETSC_EXTERN PetscErrorCode PetscMatStashSpaceGet(PetscInt,PetscInt,PetscMatStas
 PETSC_EXTERN PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashSpace *,PetscScalar *,PetscInt *,PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace*);
 
- typedef struct {
+typedef struct {
   PetscInt    count;
-  PetscInt    insertmode;       /* PetscInt so it can be packed in a message containing only ints */
 } MatStashHeader;
 
- typedef struct {
+typedef struct {
   void        *buffer;          /* Of type blocktype, dynamically constructed  */
   PetscInt    count;
   char        pending;
@@ -315,6 +314,7 @@ struct _MatStash {
   PetscSegBuffer segrecvblocks;
   MPI_Datatype   blocktype;
   size_t         blocktype_size;
+  InsertMode     *insertmode;   /* Pointer to check mat->insertmode and set upon message arrival in case no local values have been set. */
 };
 
 PETSC_INTERN PetscErrorCode MatStashCreate_Private(MPI_Comm,PetscInt,MatStash*);

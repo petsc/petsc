@@ -275,7 +275,6 @@ PetscErrorCode MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
   PetscInt       i,*row,*col,flg,j,rstart,ncols;
   PetscMPIInt    n;
   PetscScalar    *val;
-  InsertMode     addv=mat->insertmode;
 
   PetscFunctionBegin;
   /*  wait on receives */
@@ -291,7 +290,7 @@ PetscErrorCode MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
       if (j < n) ncols = j-i;
       else       ncols = n-i;
       /* Now assemble all these values with a single function call */
-      ierr = MatSetValues_MPIDense(mat,1,row+i,ncols,col+i,val+i,addv);CHKERRQ(ierr);
+      ierr = MatSetValues_MPIDense(mat,1,row+i,ncols,col+i,val+i,mat->insertmode);CHKERRQ(ierr);
       i    = j;
     }
   }
