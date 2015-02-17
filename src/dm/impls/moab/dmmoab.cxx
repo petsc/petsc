@@ -114,6 +114,8 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
   /* do the remaining initializations for DMMoab */
   dmmoab->bs = 1;
   dmmoab->numFields = 1;
+  ierr = PetscMalloc(dmmoab->numFields*sizeof(char*),&dmmoab->fieldNames);CHKERRQ(ierr);
+  ierr = PetscStrallocpy("DEFAULT", (char**) &dmmoab->fieldNames[0]);CHKERRQ(ierr);
   dmmoab->rw_dbglevel = 0;
   dmmoab->partition_by_rank = PETSC_FALSE;
   dmmoab->extra_read_options[0] = '\0';
@@ -919,7 +921,6 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
 
   ierr = PetscFree(dmmoab->gsindices);CHKERRQ(ierr);
   ierr = PetscFree2(dmmoab->gidmap,dmmoab->lidmap);CHKERRQ(ierr);
-  ierr = PetscFree2(dmmoab->lgmap,dmmoab->llmap);CHKERRQ(ierr);
   ierr = PetscFree(dmmoab->dfill);CHKERRQ(ierr);
   ierr = PetscFree(dmmoab->ofill);CHKERRQ(ierr);
   if (dmmoab->fieldNames) {
@@ -976,7 +977,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   Vec                     local, global;
   IS                      from,to;
   moab::Range::iterator   iter;
-  PetscInt                i,j,f,bs,gmin,lmin,lmax,vent,totsize;
+  PetscInt                i,j,f,bs,gmin,lmin,lmax,vent,totsize,vstart,*lgmap;
   DM_Moab                *dmmoab = (DM_Moab*)dm->data;
   moab::Range             adjs;
 
@@ -1047,8 +1048,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   {
     /* first get the local indices */
     merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,*dmmoab->vowned,&dmmoab->gsindices[0]);MBERRNM(merr);
-    /* next get the ghosted indices */
-    if (dmmoab->nghost) {
+    if (dmmoab->nghost) {  /* next get the ghosted indices */
       merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,*dmmoab->vghost,&dmmoab->gsindices[dmmoab->nloc]);MBERRNM(merr);
     }
 
@@ -1073,47 +1073,29 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   if(!(dmmoab->bs==dmmoab->numFields || dmmoab->bs == 1)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between block size and number of component fields. %D != 1 OR %D != %D.",dmmoab->bs,dmmoab->bs,dmmoab->numFields);
 
   {
-    i=(PetscInt)dmmoab->vlocal->back()+1;
-    //i=(PetscInt)(dmmoab->vlocal->back()-dmmoab->vlocal->front())+1;
-    j=totsize*dmmoab->numFields;
-    ierr = PetscMalloc2(i,&dmmoab->gidmap,i,&dmmoab->lidmap);CHKERRQ(ierr);
-    ierr = PetscMalloc2(j,&dmmoab->lgmap,j,&dmmoab->llmap);CHKERRQ(ierr);
+    dmmoab->seqstart=((PetscInt)dmmoab->vlocal->front());
+    dmmoab->seqend=((PetscInt)dmmoab->vlocal->back());
+
+    ierr = PetscMalloc2(dmmoab->seqend,&dmmoab->gidmap,dmmoab->seqend,&dmmoab->lidmap);CHKERRQ(ierr);
+    ierr = PetscMalloc1(totsize*dmmoab->numFields,&lgmap);CHKERRQ(ierr);
 
     i=j=0;
     /* set the owned vertex data first */
     for(moab::Range::iterator iter = dmmoab->vowned->begin(); iter != dmmoab->vowned->end(); iter++,i++) {
-      vent=(PetscInt)(*iter);
+      vent=(PetscInt)(*iter)-dmmoab->seqstart;
       dmmoab->gidmap[vent]=dmmoab->gsindices[i];
       dmmoab->lidmap[vent]=i;
-      if (bs > 1) {
-        for (f=0;f<dmmoab->numFields;f++,j++) {
-          dmmoab->lgmap[j]=dmmoab->gsindices[i]*dmmoab->numFields+f;
-          dmmoab->llmap[j]=i*dmmoab->numFields+f;
-        }
-      }
-      else {
-        for (f=0;f<dmmoab->numFields;f++,j++) {
-          dmmoab->lgmap[j]=totsize*f+dmmoab->gsindices[i];
-          dmmoab->llmap[j]=totsize*f+i;
-        }
+      for (f=0;f<dmmoab->numFields;f++,j++) {
+        lgmap[j]=(bs > 1 ? dmmoab->gsindices[i]*dmmoab->numFields+f : totsize*f+dmmoab->gsindices[i]);
       }
     }
     /* next arrange all the ghosted data information */
     for(moab::Range::iterator iter = dmmoab->vghost->begin(); iter != dmmoab->vghost->end(); iter++,i++) {
-      vent=(PetscInt)(*iter);
+      vent=(PetscInt)(*iter)-dmmoab->seqstart;
       dmmoab->gidmap[vent]=dmmoab->gsindices[i];
       dmmoab->lidmap[vent]=i;
-      if (bs > 1) {
-        for (f=0;f<dmmoab->numFields;f++,j++) {
-          dmmoab->lgmap[j]=dmmoab->gsindices[i]*dmmoab->numFields+f;
-          dmmoab->llmap[j]=i*dmmoab->numFields+f;
-        }
-      }
-      else {
-        for (f=0;f<dmmoab->numFields;f++,j++) {
-          dmmoab->lgmap[j]=totsize*f+dmmoab->gsindices[i];
-          dmmoab->llmap[j]=totsize*f+i;
-        }
+      for (f=0;f<dmmoab->numFields;f++,j++) {
+        lgmap[j]=(bs > 1 ? dmmoab->gsindices[i]*dmmoab->numFields+f : totsize*f+dmmoab->gsindices[i]);
       }
     }
 
@@ -1133,12 +1115,12 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     ierr = ISCreateStride(((PetscObject)dm)->comm,dmmoab->nloc*dmmoab->numFields,dmmoab->vstart,1,&from);CHKERRQ(ierr);
     ierr = ISSetBlockSize(from,bs);CHKERRQ(ierr);
 
-    ierr = ISCreateGeneral(((PetscObject)dm)->comm,dmmoab->nloc*dmmoab->numFields,&dmmoab->lgmap[0],PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)dm)->comm,dmmoab->nloc*dmmoab->numFields,&lgmap[0],PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
     ierr = ISSetBlockSize(to,bs);CHKERRQ(ierr);
 
     if (!dmmoab->ltog_map) {
       /* create to the local to global mapping for vectors in order to use VecSetValuesLocal */
-      ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,dmmoab->bs,totsize*dmmoab->numFields,dmmoab->lgmap,
+      ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,dmmoab->bs,totsize*dmmoab->numFields,lgmap,
                                           PETSC_COPY_VALUES,&dmmoab->ltog_map);CHKERRQ(ierr);
     }
 
@@ -1146,6 +1128,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     ierr = VecScatterCreate(local,from,global,to,&dmmoab->ltog_sendrecv);CHKERRQ(ierr);
 
     /* clean up IS, Vec */
+    ierr = PetscFree(lgmap);CHKERRQ(ierr);
     ierr = ISDestroy(&from);CHKERRQ(ierr);
     ierr = ISDestroy(&to);CHKERRQ(ierr);
     ierr = VecDestroy(&local);CHKERRQ(ierr);

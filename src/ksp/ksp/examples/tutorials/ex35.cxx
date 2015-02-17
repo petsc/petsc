@@ -9,24 +9,54 @@ Inhomogeneous Laplacian in 2D. Modeled by the partial differential equation
 
    -div \rho grad u = f,  0 < x,y < 1,
 
-with forcing function
+Problem 1: (Default)
 
-   f = e^{-((x-xr)^2+(y-yr)^2)/\nu}
+  Use the forcing function
 
-with Dirichlet boundary conditions
+     f = e^{-((x-xr)^2+(y-yr)^2)/\nu}
 
-   u = f(x,y) for x = 0, x = 1, y = 0, y = 1
+  with Dirichlet boundary conditions
 
-or pure Neumman boundary conditions
+     u = f(x,y) for x = 0, x = 1, y = 0, y = 1
+
+  or pure Neumman boundary conditions
+
+Problem 2:
+
+  Use the following exact solution with Dirichlet boundary condition
+
+    u = sin(pi*x)*sin(pi*y)
+
+  and generate an appropriate forcing function to measure convergence.
 
 Usage:
-    mpiexec -n 2 ./ex2 -bc_type dirichlet -nu .01 -rho .01 -file input/quad_2p.h5m -dmmb_rw_dbg 0 -n 50
 
+  Run with different values of \rho and \nu (problem 1) to control diffusion and gaussian source spread. This uses the internal mesh generator implemented in DMMoab.
+
+    mpiexec -n $NP ./ex35 -n 20 -nu 0.02 -rho 0.01
+    mpiexec -n $NP ./ex35 -n 40 -nu 0.01 -rho 0.005 -io -ksp_monitor
+    mpiexec -n $NP ./ex35 -n 80 -nu 0.01 -rho 0.005 -io -ksp_monitor -pc_type hypre
+    mpiexec -n $NP ./ex35 -n 160 -bc_type neumann -nu 0.005 -rho 0.01 -io
+    mpiexec -n $NP ./ex35 -n 320 -bc_type neumann -nu 0.001 -rho 1 -io
+
+  Measure convergence rate with uniform refinement with the options: "-problem 2 -error".
+
+    mpiexec -n $NP ./ex35 -problem 2 -error -n 16 
+    mpiexec -n $NP ./ex35 -problem 2 -error -n 32
+    mpiexec -n $NP ./ex35 -problem 2 -error -n 64
+    mpiexec -n $NP ./ex35 -problem 2 -error -n 128
+    mpiexec -n $NP ./ex35 -problem 2 -error -n 256
+    mpiexec -n $NP ./ex35 -problem 2 -error -n 512
+
+  Now, you could alternately load an external MOAB mesh that discretizes the unit square and use that to run the solver.
+
+    mpiexec -n $NP ./ex35 -problem 1 -file ./external_mesh.h5m 
+    mpiexec -n $NP ./ex35 -problem 2 -file ./external_mesh.h5m -error
 */
 
 static char help[] = "\
                       Solves 2D inhomogeneous Laplacian equation with a Gaussian source.\n \
-                      Usage: ./ex2 -bc_type dirichlet -nu .01 -n 10\n";
+                      Usage: ./ex35 -bc_type dirichlet -nu .01 -n 10\n";
 
 
 /* PETSc includes */
@@ -39,53 +69,66 @@ const int NQPTS1D=2;
 const int NQPTS=NQPTS1D*NQPTS1D;
 const int VPERE=4;
 
-extern PetscErrorCode ComputeMatrix_MOAB(KSP,Mat,Mat,void*);
-extern PetscErrorCode ComputeRHS_MOAB(KSP,Vec,void*);
+extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,void*);
+extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 
-extern PetscErrorCode Compute_Quad4_Basis ( PetscReal coords[3*4], int n, PetscReal pts[], PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy );
-extern PetscErrorCode ComputeQuadraturePointsPhysical(const PetscReal verts[VPERE*3], PetscReal quad[NQPTS*3], PetscReal jxw[NQPTS]);
+static PetscErrorCode Compute_Quad4_Basis ( PetscInt n, PetscReal *verts, PetscReal quad[NQPTS*3], PetscReal phypts[NQPTS*3], PetscReal jxw[NQPTS],
+                                     PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
-  PetscInt  dim,n;
+  PetscInt  dim,n,problem;
   PetscReal rho;
+  PetscReal x,y;
   PetscReal xref,yref;
   PetscReal nu;
   BCType    bcType;
   char filename[PETSC_MAX_PATH_LEN];
 } UserContext;
 
+static PetscErrorCode ComputeDiscreteL2Error(KSP ksp,Vec err,UserContext *user);
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  KSP            ksp;
-  DM             dm;
-  UserContext    user;
-  const char     *bcTypes[2] = {"dirichlet","neumann"};
-  const char     *fields[1] = {"T-Variable"};
-  PetscErrorCode ierr;
-  PetscInt       bc,np;
-  Vec            b,x;
-  PetscBool      use_extfile,io;
+  KSP             ksp;
+  DM              dm;
+  UserContext     user;
+  const char      *bcTypes[2] = {"dirichlet","neumann"};
+  const char      *fields[1] = {"T-Variable"};
+  PetscErrorCode  ierr;
+  PetscInt        bc,np;
+  Vec             b,x,err=0;
+  PetscBool       use_extfile,io,error;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&np);CHKERRQ(ierr);
 
   ierr        = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "ex35.cxx");
   user.dim    = 2;
   ierr        = PetscOptionsInt("-dim", "The dimension of the problem", "ex35.cxx", user.dim, &user.dim, NULL);CHKERRQ(ierr);
+  user.problem= 1;
+  ierr        = PetscOptionsInt("-problem", "The type of problem being solved (controls forcing function)", "ex35.cxx", user.problem, &user.problem, NULL);CHKERRQ(ierr);
   user.n      = 2;
   ierr        = PetscOptionsInt("-n", "The elements in each direction", "ex35.cxx", user.n, &user.n, NULL);CHKERRQ(ierr);
-  user.rho    = 0.5;
+  user.rho    = 0.1;
   ierr        = PetscOptionsReal("-rho", "The conductivity", "ex35.cxx", user.rho, &user.rho, NULL);CHKERRQ(ierr);
-  user.xref   = 0.5;
-  ierr        = PetscOptionsReal("-xref", "The x-coordinate of Gaussian center", "ex35.cxx", user.xref, &user.xref, NULL);CHKERRQ(ierr);
-  user.yref   = 0.5;
-  ierr        = PetscOptionsReal("-yref", "The y-coordinate of Gaussian center", "ex35.cxx", user.yref, &user.yref, NULL);CHKERRQ(ierr);
+  user.x      = 1.0;
+  ierr        = PetscOptionsReal("-x", "The domain size in x-direction", "ex35.cxx", user.x, &user.x, NULL);CHKERRQ(ierr);
+  user.y      = 1.0;
+  ierr        = PetscOptionsReal("-y", "The domain size in y-direction", "ex35.cxx", user.y, &user.y, NULL);CHKERRQ(ierr);
+  user.xref   = user.x/2;
+  ierr        = PetscOptionsReal("-xref", "The x-coordinate of Gaussian center (for -problem 1)", "ex35.cxx", user.xref, &user.xref, NULL);CHKERRQ(ierr);
+  user.yref   = user.y/2;
+  ierr        = PetscOptionsReal("-yref", "The y-coordinate of Gaussian center (for -problem 1)", "ex35.cxx", user.yref, &user.yref, NULL);CHKERRQ(ierr);
   user.nu     = 0.05;
-  ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source", "ex35.cxx", user.nu, &user.nu, NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source (for -problem 1)", "ex35.cxx", user.nu, &user.nu, NULL);CHKERRQ(ierr);
   io          = PETSC_FALSE;
   ierr        = PetscOptionsBool("-io", "Write out the solution and mesh data", "ex35.cxx", io, &io, NULL);CHKERRQ(ierr);
+  error       = PETSC_FALSE;
+  ierr        = PetscOptionsBool("-error", "Compute the discrete L_2 and L_inf errors of the solution", "ex35.cxx", error, &error, NULL);CHKERRQ(ierr);
   bc          = (PetscInt)DIRICHLET;
   ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex35.cxx",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
@@ -106,8 +149,8 @@ int main(int argc,char **argv)
   ierr = DMSetUp(dm);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetComputeRHS(ksp,ComputeRHS_MOAB,&user);CHKERRQ(ierr);
-  ierr = KSPSetComputeOperators(ksp,ComputeMatrix_MOAB,&user);CHKERRQ(ierr);
+  ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
+  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,&user);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,dm);CHKERRQ(ierr);
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -117,18 +160,24 @@ int main(int argc,char **argv)
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
 
+  if (error) {
+    ierr = DMGetGlobalVector(dm, &err);CHKERRQ(ierr);
+    ierr = ComputeDiscreteL2Error(ksp, err, &user);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dm, &err);CHKERRQ(ierr);
+  }
+
   if (io) {
     /* Write out the solution along with the mesh */
     ierr = DMMoabSetGlobalFieldVector(dm, x);CHKERRQ(ierr);
 #ifdef MOAB_HDF5_H
-    ierr = DMMoabOutput(dm, "ex35.h5m", "");CHKERRQ(ierr);
+    ierr = DMMoabOutput(dm, "ex35.h5m", NULL);CHKERRQ(ierr);
 #else
     /* MOAB does not support true parallel writers that aren't HDF5 based
        And so if you are using VTK as the output format in parallel,
        the data could be jumbled due to the order in which the processors
        write out their parts of the mesh and solution tags
     */
-    ierr = DMMoabOutput(dm, "ex35.vtk", "");CHKERRQ(ierr);
+    ierr = DMMoabOutput(dm, "ex35.vtk", NULL);CHKERRQ(ierr);
 #endif
   }
 
@@ -139,31 +188,67 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-
-PetscErrorCode ComputeRho_MOAB(PetscReal coords[3], PetscReal centerRho, PetscReal *rho)
+#undef __FUNCT__
+#define __FUNCT__ "ComputeRho"
+PetscScalar ComputeRho(PetscReal coords[3], UserContext* user)
 {
-  PetscFunctionBeginUser;
-  if ((coords[0] > 1.0/3.0) && (coords[0] < 2.0/3.0) && (coords[1] > 1.0/3.0) && (coords[1] < 2.0/3.0)) {
-    *rho = centerRho;
-  } else {
-    *rho = 1.0;
+  switch(user->problem) {
+    case 2:
+      return user->rho;
+    case 1:
+    default:
+      if ((coords[0] > user->x/3.0) && (coords[0] < 2.0*user->x/3.0) && (coords[1] > user->y/3.0) && (coords[1] < 2.0*user->y/3.0)) {
+        return user->rho;
+      } else {
+        return 1.0;
+      }
   }
-  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ExactSolution"
+PetscScalar ExactSolution(PetscReal coords[3], UserContext* user)
+{
+  switch(user->problem) {
+    case 2:
+      return sin(PI*coords[0]/user->x)*sin(PI*coords[1]/user->y);
+    case 1:
+    default:
+      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Exact solution for -problem = [%D] is not available.\n", user->problem);
+  }
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ComputeForcingFunction"
+PetscScalar ComputeForcingFunction(PetscReal coords[3], UserContext* user)
+{
+  switch(user->problem) {
+    case 2:
+      return PI*PI*ComputeRho(coords, user)*(1.0/user->x/user->x+1.0/user->y/user->y)*sin(PI*coords[0]/user->x)*sin(PI*coords[1]/user->y);
+    case 1:
+    default:
+      const PetscScalar xx=(coords[0]-user->xref)*(coords[0]-user->xref);
+      const PetscScalar yy=(coords[1]-user->yref)*(coords[1]-user->yref);
+      return PetscExpScalar(-(xx+yy)/user->nu);
+  }
 }
 
 
-PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
+#undef __FUNCT__
+#define __FUNCT__ "ComputeRHS"
+PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ptr)
 {
   UserContext*      user = (UserContext*)ptr;
   DM                dm;
   PetscInt          dof_indices[VPERE];
   PetscBool         dbdry[VPERE];
-  PetscReal         vpos[VPERE*3],quadrature[NQPTS*3],jxw[NQPTS],phi[VPERE*NQPTS];
+  PetscReal         vpos[VPERE*3],quadrature[NQPTS*3],phypts[NQPTS*3],jxw[NQPTS];
+  PetscScalar       ff;
   PetscInt          i,q,num_conn;
   const moab::EntityHandle *connect;
   const moab::Range *elocal;
   moab::Interface*  mbImpl;
-  PetscScalar       localv[VPERE];
+  PetscScalar       phi[VPERE*NQPTS],localv[VPERE];
   PetscBool         elem_on_boundary;
   PetscErrorCode    ierr;
 
@@ -197,18 +282,16 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
     ierr = DMMoabGetFieldDofs(dm, num_conn, connect, 0, dof_indices);CHKERRQ(ierr);    
 #endif
 
-    /* compute the quadrature points transformed to the physical space */
-    ierr = ComputeQuadraturePointsPhysical(vpos, quadrature, jxw);CHKERRQ(ierr);
-
     /* compute the basis functions and the derivatives wrt x and y directions */
-    ierr = Compute_Quad4_Basis(vpos, NQPTS, quadrature, phi,  0, 0);CHKERRQ(ierr);
+    /* compute the quadrature points transformed to the physical space */
+    ierr = Compute_Quad4_Basis(NQPTS, vpos, quadrature, phypts, jxw, phi, 0, 0);CHKERRQ(ierr);
 
     /* Compute function over the locally owned part of the grid */
     for (q=0; q<NQPTS; ++q) {
-      const PetscScalar xx=(quadrature[3*q]-user->xref)*(quadrature[3*q]-user->xref);
-      const PetscScalar yy=(quadrature[3*q+1]-user->yref)*(quadrature[3*q+1]-user->yref);
+      ff = ComputeForcingFunction(&phypts[3*q], user);
+
       for (i=0; i < VPERE; ++i) {
-        localv[i] += jxw[q] * phi[q*VPERE+i] * PetscExpScalar(-(xx+yy)/user->nu);
+        localv[i] += jxw[q] * phi[q*VPERE+i] * ff;
       }
     }
 
@@ -224,9 +307,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
       for (i=0; i < VPERE; ++i) {
         if (dbdry[i]) {  /* dirichlet node */
           /* think about strongly imposing dirichlet */
-          const PetscScalar xx=(vpos[3*i]-user->xref)*(vpos[3*i]-user->xref);
-          const PetscScalar yy=(vpos[3*i+1]-user->yref)*(vpos[3*i+1]-user->yref);
-          localv[i] = PetscExpScalar(-(xx+yy)/user->nu);
+          localv[i] = ComputeForcingFunction(&vpos[3*i], user);
         }
       }
     }
@@ -243,7 +324,6 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;
-
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,0,&nullspace);CHKERRQ(ierr);
     ierr = MatNullSpaceRemove(nullspace,b);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullspace);CHKERRQ(ierr);
@@ -256,21 +336,22 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 }
 
 
-PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
+#undef __FUNCT__
+#define __FUNCT__ "ComputeMatrix"
+PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,void *ctx)
 {
   UserContext       *user = (UserContext*)ctx;
   DM                dm;
   PetscInt          i,j,q,num_conn;
   PetscInt          dof_indices[VPERE];
-  PetscReal         vpos[VPERE*3],quadrature[NQPTS*3],jxw[NQPTS];
+  PetscReal         vpos[VPERE*3],quadrature[NQPTS*3],phypts[NQPTS*3],jxw[NQPTS],rho;
   PetscBool         dbdry[VPERE];
   const moab::EntityHandle *connect;
   const moab::Range *elocal;
   moab::Interface*  mbImpl;
   PetscBool         elem_on_boundary;
   PetscScalar       array[VPERE*VPERE];
-  PetscReal         phi[VPERE*NQPTS], dphidx[VPERE*NQPTS], dphidy[VPERE*NQPTS];
-  PetscReal         rho;
+  PetscScalar       phi[VPERE*NQPTS], dphidx[VPERE*NQPTS], dphidy[VPERE*NQPTS];
   PetscErrorCode    ierr;
  
   PetscFunctionBeginUser;
@@ -299,19 +380,17 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 #endif
 
     /* compute the quadrature points transformed to the physical space */
-    ierr = ComputeQuadraturePointsPhysical(vpos, quadrature, jxw);CHKERRQ(ierr);
-
     /* compute the basis functions and the derivatives wrt x and y directions */
-    ierr = Compute_Quad4_Basis(vpos, NQPTS, quadrature, phi,  dphidx, dphidy);CHKERRQ(ierr);
-
-    /* compute the inhomogeneous diffusion coefficient at the first quadrature point 
-        -- for large spatial variations, embed this property evaluation inside quadrature loop */
-    ierr  = ComputeRho_MOAB(quadrature, user->rho, &rho);CHKERRQ(ierr);
+    ierr = Compute_Quad4_Basis(NQPTS, vpos, quadrature, phypts, jxw, phi,  dphidx, dphidy);CHKERRQ(ierr);
 
     ierr = PetscMemzero(array, VPERE*VPERE*sizeof(PetscScalar));
 
     /* Compute function over the locally owned part of the grid */
     for (q=0; q<NQPTS; ++q) {
+      /* compute the inhomogeneous diffusion coefficient at the first quadrature point 
+         -- for large spatial variations, embed this property evaluation inside quadrature loop */
+      rho = ComputeRho(&phypts[q*3], user);
+
       for (i=0; i < VPERE; ++i) {
         for (j=0; j < VPERE; ++j) {
           array[i*VPERE+j] += jxw[q] * rho * ( dphidx[q*VPERE+i]*dphidx[q*VPERE+j] + 
@@ -363,19 +442,103 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "ComputeDiscreteL2Error"
+PetscErrorCode ComputeDiscreteL2Error(KSP ksp,Vec err,UserContext *user)
+{
+  DM                dm;
+  Vec               sol;
+  PetscScalar       vpos[3];
+  const PetscScalar *x;
+  PetscScalar       *e;
+  PetscReal         l2err=0.0,linferr=0.0,global_l2,global_linf;
+  PetscInt          dof_index,N;
+  const moab::Range *ownedvtx;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+
+  /* get the solution vector */
+  ierr = KSPGetSolution(ksp, &sol);CHKERRQ(ierr);
+
+  /* Get the internal reference to the vector arrays */
+  ierr = DMMoabVecGetArrayRead(dm, sol, &x);CHKERRQ(ierr);
+  ierr = VecGetSize(sol, &N);CHKERRQ(ierr);
+  if (err) {
+    /* reset the error vector */
+    ierr = VecSet(err, 0.0);CHKERRQ(ierr);
+    /* get array reference */
+    ierr = DMMoabVecGetArray(dm, err, &e);CHKERRQ(ierr);
+  }
+
+  ierr = DMMoabGetLocalVertices(dm, &ownedvtx, NULL);CHKERRQ(ierr);
+
+  /* Compute function over the locally owned part of the grid */
+  for(moab::Range::iterator iter = ownedvtx->begin(); iter != ownedvtx->end(); iter++) {
+    const moab::EntityHandle vhandle = *iter;
+    ierr = DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof_index);CHKERRQ(ierr);
+
+    /* compute the mid-point of the element and use a 1-point lumped quadrature */
+    ierr = DMMoabGetVertexCoordinates(dm,1,&vhandle,vpos);CHKERRQ(ierr);
+
+    /* compute the discrete L2 error against the exact solution */
+    const PetscScalar lerr = (ExactSolution(vpos, user) - x[dof_index]);
+    l2err += lerr*lerr;
+    if (linferr<fabs(lerr))
+      linferr=fabs(lerr);
+
+    if (err) {
+      /* set the discrete L2 error against the exact solution */
+      e[dof_index] = l2err;
+    }
+  }
+
+  ierr = MPI_Allreduce(&l2err, &global_l2, 1, MPI_DOUBLE, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&linferr, &global_linf, 1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Computed Errors: L_2 = %f, L_inf = %f\n", sqrt(global_l2/N), global_linf);CHKERRQ(ierr);
+
+  /* Restore vectors */
+  ierr = DMMoabVecRestoreArrayRead(dm, sol, &x);CHKERRQ(ierr);
+  if (err) {
+    ierr = DMMoabVecRestoreArray(dm, err, &e);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+PetscReal determinant_mat_2x2 ( PetscReal inmat[2*2] )
+{
+  return  inmat[0]*inmat[3]-inmat[1]*inmat[2];
+}
+
+PetscErrorCode invert_mat_2x2 (PetscReal *inmat, PetscReal *outmat, PetscReal *determinant)
+{
+  if (!inmat) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_POINTER,"Invalid input matrix specified for 2x2 inversion.");
+  PetscReal det = determinant_mat_2x2(inmat);
+  if (outmat) {
+    outmat[0]= inmat[3]/det;
+    outmat[1]=-inmat[1]/det;
+    outmat[2]=-inmat[2]/det;
+    outmat[3]= inmat[0]/det;
+  }
+  if (determinant) *determinant=det;
+  PetscFunctionReturn(0);
+}
+
+
 /*
-*  Purpose: BASIS_MN_Q4: all bases at N points for a Q4 element.
+*  Compute_Quad4_Basis: computes the bilinear Lagrange bases at N points for a Q4 element.
 *
 *  Discussion:
 *
 *    The routine is given the coordinates of the vertices of a quadrilateral.
-*    It works directly with these coordinates, and does not refer to a 
-*    reference element.
+*    It works with these coordinates, and evaluates the basis, derivatives,
+*    quadrature on reference, transformed physics quadrature points etc.
 *
 *    The sides of the element are presumed to lie along coordinate axes.
+*    But the implementation is general enough to tackle skewed quads.
 *
-*    The routine evaluates the basis functions associated with each corner,
-*    and their derivatives with respect to X and Y.
 *
 *  Physical Element Q4:
 *
@@ -401,103 +564,75 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 *
 *    Output, PetscScalar DPHIDX[4*N], DPHIDY[4*N], the derivatives of the
 *    bases at the evaluation points.
-*
-*  Original Author: John Burkardt (http://people.sc.fsu.edu/~jburkardt/cpp_src/fem2d_pack/fem2d_pack.cpp)
-*  Modified by Vijay Mahadevan
 */
-PetscErrorCode Compute_Quad4_Basis ( PetscReal coords[VPERE*3], PetscInt n, PetscReal *pts, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy)
+#undef __FUNCT__
+#define __FUNCT__ "Compute_Quad4_Basis"
+PetscErrorCode Compute_Quad4_Basis ( PetscInt n, PetscReal *verts, PetscReal quad[NQPTS*3], PetscReal phypts[NQPTS*3], PetscReal jxw[NQPTS],
+                                     PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy)
 {
-  PetscReal ejac;
   int i,j;
-
+  PetscReal jacobian[4];
+  PetscErrorCode    ierr;
   PetscFunctionBegin;
-  ejac = ( coords[0+2*3] - coords[0+0*3] ) * ( coords[1+2*3] - coords[1+0*3] );
-  ejac = 1.0/(ejac);
 
-  for (j=0;j<n;j++)
-  {
-    phi[0+j*4] =      ( coords[0+2*3] - pts[0+j*3]  ) * ( coords[1+2*3] - pts[1+j*3]  );
-    phi[1+j*4] =      ( pts[0+j*3]  - coords[0+0*3] ) * ( coords[1+2*3] - pts[1+j*3]  );
-    phi[2+j*4] =      ( pts[0+j*3]  - coords[0+0*3] ) * ( pts[1+j*3]  - coords[1+0*3] );
-    phi[3+j*4] =      ( coords[0+2*3] - pts[0+j*3]  ) * ( pts[1+j*3]  - coords[1+0*3] );
-
-    if (dphidx) {
-      dphidx[0+j*4] = - ( coords[1+2*3] - pts[1+j*3] );
-      dphidx[1+j*4] =   ( coords[1+2*3] - pts[1+j*3] );
-      dphidx[2+j*4] =   ( pts[1+j*3]  - coords[1+0*3] );
-      dphidx[3+j*4] = - ( pts[1+j*3]  - coords[1+0*3] );
-    }
-
-    if (dphidy) {
-      dphidy[0+j*4] = - ( coords[0+2*3] - pts[0+j*3] );
-      dphidy[1+j*4] = - ( pts[0+j*3]  - coords[0+0*3] );
-      dphidy[2+j*4] =   ( pts[0+j*3]  - coords[0+0*3] );
-      dphidy[3+j*4] =   ( coords[0+2*3] - pts[0+j*3] );
-    }
+  /* 2-D 2-point tensor product Gaussian quadrature */
+  quad[0]=-0.5773502691896257; quad[1]=-0.5773502691896257;
+  quad[3]=-0.5773502691896257; quad[4]=0.5773502691896257;
+  quad[6]=0.5773502691896257; quad[7]=-0.5773502691896257;
+  quad[9]=0.5773502691896257; quad[10]=0.5773502691896257;
+  /* transform quadrature bounds: [-1, 1] => [0, 1] */
+  for (i=0; i<VPERE*3; ++i) {
+    quad[i]=0.5*quad[i]+0.5;
   }
 
-  /*  Divide by element jacobian. */
-  for ( j = 0; j < n; j++ ) {
-    for ( i = 0; i < VPERE; i++ ) {
-      phi[i+j*4]    *= ejac;
-      if (dphidx) dphidx[i+j*4] *= ejac;
-      if (dphidy) dphidy[i+j*4] *= ejac;
+  ierr = PetscMemzero(phypts,NQPTS*3*sizeof(PetscReal));CHKERRQ(ierr);
+  for (j=0;j<n;j++)
+  {
+    const int offset=j*VPERE;
+    const double r = quad[0+j*3];
+    const double s = quad[1+j*3];
+
+    phi[0+offset] = ( 1.0 - r ) * ( 1.0 - s );
+    phi[1+offset] =         r   * ( 1.0 - s );
+    phi[2+offset] =         r   *         s;
+    phi[3+offset] = ( 1.0 - r ) *         s;
+
+    const double dNi_dxi[4]  = { -1.0 + s, 1.0 - s, s, -s };
+    const double dNi_deta[4] = { -1.0 + r, -r, r, 1.0 - r };
+
+    ierr = PetscMemzero(jacobian,4*sizeof(PetscReal));CHKERRQ(ierr);
+    for (i = 0; i < VPERE; ++i) {
+      const PetscScalar* vertices = verts+i*3;
+      jacobian[0] += dNi_dxi[i] * vertices[0];
+      jacobian[2] += dNi_dxi[i] * vertices[1];
+      jacobian[1] += dNi_deta[i] * vertices[0];
+      jacobian[3] += dNi_deta[i] * vertices[1];
+      for (int k = 0; k < 3; ++k)
+        phypts[3*j+k] += phi[i+offset] * vertices[k];
     }
+
+    const double jacobiandet = determinant_mat_2x2 (jacobian);
+    jxw[j] = jacobiandet/(NQPTS);
+
+    /*  Divide by element jacobian. */
+    for ( i = 0; i < VPERE; i++ ) {
+      if (dphidx) dphidx[i+offset] = dNi_dxi[i] / sqrt(jacobiandet);
+      if (dphidy) dphidy[i+offset] = dNi_deta[i] / sqrt(jacobiandet);
+    }
+
   }
 #if 0
   /* verify if the computed basis functions are consistent */
   for ( j = 0; j < n; j++ ) {
     PetscScalar phisum=0,dphixsum=0,dphiysum=0;
-    for ( i = 0; i < 4; i++ ) {
-      phisum += phi[i+j*4];
-      if (dphidx) dphixsum += dphidx[i+j*4];
-      if (dphidy) dphiysum += dphidy[i+j*4];
+    for ( i = 0; i < VPERE; i++ ) {
+      phisum += phi[i+j*VPERE];
+      if (dphidx) dphixsum += dphidx[i+j*VPERE];
+      if (dphidy) dphiysum += dphidy[i+j*VPERE];
     }
-    PetscPrintf(PETSC_COMM_WORLD, "Sum of basis at quadrature point %D = %G, %G, %G\n", j, phisum, dphixsum, dphiysum);
+    PetscPrintf(PETSC_COMM_WORLD, "Sum of basis at quadrature point %D = %g, %g, %g\n", j, phisum, dphixsum, dphiysum);
   }
 #endif
-  PetscFunctionReturn(0);
-}
-
-
-/*
-*  Purpose: Compute the quadrature points in the physical space with appropriate transformation for QUAD4 elements.
-*
-*  Parameters:
-*
-*    Input, PetscScalar verts[VPERE*4], the coordinates of the vertices.
-*    It is common to list these points in counter clockwise order.
-*
-*    Output, PetscScalar quad[3*NQPTS], the physical quadrature evaluation point.
-*
-*    Output, PetscScalar jxw[NQPTS], the product of Jacobian of the physical element times the weights at the quadrature points.
-*/
-PetscErrorCode ComputeQuadraturePointsPhysical(const PetscReal verts[VPERE*3], PetscReal quad[NQPTS*3], PetscReal jxw[NQPTS])
-{
-  int i,j;
-  PetscReal centroid[3];
-  const PetscReal GLG_QUAD[3] = {-0.577350269189625764509148780502, 0.577350269189625764509148780502, 1.0};
-  PetscReal dx = PetscAbsReal(verts[0+2*3] - verts[0+0*3])/2, dy = PetscAbsReal( verts[1+2*3] - verts[1+0*3] )/2;
-  PetscReal ejac = dx*dy;
-  
-  centroid[0] = centroid[1] = centroid[2] = 0.0;
-  for (i=0; i<VPERE; ++i) {
-    centroid[0] += verts[i*3+0];
-    centroid[1] += verts[i*3+1];
-    centroid[2] += verts[i*3+2];
-  }
-  centroid[0] /= 4;
-  centroid[1] /= 4;
-  centroid[2] /= 4;
-
-  for (i=0; i<NQPTS1D; ++i) {
-    for (j=0; j<NQPTS1D; ++j) {
-      quad[(i*NQPTS1D+j)*3] = centroid[0]+dx*(GLG_QUAD[i]);
-      quad[(i*NQPTS1D+j)*3+1] = centroid[1]+dy*(GLG_QUAD[j]);
-      quad[(i*NQPTS1D+j)*3+2] = centroid[2];
-      jxw[i*NQPTS1D+j] = GLG_QUAD[NQPTS1D]*ejac;
-    }
-  }
   PetscFunctionReturn(0);
 }
 

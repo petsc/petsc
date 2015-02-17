@@ -42,7 +42,8 @@ typedef struct {
   PetscInt                n,nloc,nghost;                  /* Number of global, local only and shared vertices for current partition */
   PetscInt                nele,neleloc,neleghost;         /* Number of global, local only and shared elements for current partition */
   PetscInt                *gsindices;                     /* Global ID for all local+ghosted vertices */
-  PetscInt                *gidmap,*lidmap,*llmap,*lgmap;  /* Global ID indices, Local ID indices, field-based local map, field-based global map */
+  PetscInt                *gidmap,*lidmap;                /* Global ID indices, Local ID indices, field-based local map, field-based global map */
+  PetscInt                seqstart,seqend;                /* Local start and end entity IDs for vertices */
   PetscInt                vstart,vend;                    /* Global start and end index for distributed Vec */
 
   /* store the mapping information */

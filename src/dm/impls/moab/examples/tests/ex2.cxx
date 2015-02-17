@@ -35,14 +35,14 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscStrcpy(options->output_file,"ex2.h5m");CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMMOAB");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-debug", "Enable debug messages", "ex2.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interlace", "Use interlaced arrangement for the field data", "ex2.c", options->interlace, &options->interlace, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex2.c", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex2.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-n", "The number of elements in each dimension", "ex2.c", options->nele, &options->nele, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-meshfile", "The input mesh file", "ex2.c", options->input_file, options->input_file, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-out", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex2.c", options->output_file, options->output_file, PETSC_MAX_PATH_LEN, &options->write_output);CHKERRQ(ierr);
-  ierr = PetscOptionsStringArray("-fields", "The list of names of the field variables", "ex2.c", options->fieldnames,&options->nfields, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-debug", "Enable debug messages", "ex2.cxx", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interlace", "Use interlaced arrangement for the field data", "ex2.cxx", options->interlace, &options->interlace, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex2.cxx", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex2.cxx", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-n", "The number of elements in each dimension", "ex2.cxx", options->nele, &options->nele, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-meshfile", "The input mesh file", "ex2.cxx", options->input_file, options->input_file, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex2.cxx", options->output_file, options->output_file, PETSC_MAX_PATH_LEN, &options->write_output);CHKERRQ(ierr);
+  ierr = PetscOptionsStringArray("-fields", "The list of names of the field variables", "ex2.cxx", options->fieldnames,&options->nfields, &flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   if (options->debug) PetscPrintf(comm, "Total number of fields: %D.\n",options->nfields);

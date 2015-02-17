@@ -46,7 +46,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees
   dmmoab->nhlevels=nlevels;
 
   /* Instantiate the nested refinement class */
-  dmmoab->hierarchy = new moab::NestedRefine(dynamic_cast<moab::Core*>(dmmoab->mbiface), dmmoab->fileset);
+  dmmoab->hierarchy = new moab::NestedRefine(dynamic_cast<moab::Core*>(dmmoab->mbiface), dmmoab->pcomm, dmmoab->fileset);
 
   ierr = PetscMalloc1(nlevels+1,&dmmoab->hsets);CHKERRQ(ierr);
 
@@ -155,14 +155,18 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
   PetscErrorCode  ierr;
   moab::ErrorCode merr;
   PetscInt        dim;
-  PetscBool       eonbnd,dbdry[27];
+  PetscReal       factor;
+  PetscBool       eonbnd;
   std::vector<int> bndrows;
+  std::vector<PetscBool> dbdry;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
   dmb1 = (DM_Moab*)(dm1)->data;
   dmb2 = (DM_Moab*)(dm2)->data;
+
+  PetscInfo4(dm1,"Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n",dmb1->nloc,dmb2->nloc,dmb1->hlevel,dmb2->hlevel);
 
   ierr = MatCreate(PetscObjectComm((PetscObject)dm1), interpl);CHKERRQ(ierr);
   ierr = MatSetType(*interpl, dm1->mattype);CHKERRQ(ierr);
@@ -176,14 +180,11 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
 
   /* set up internal matrix data-structures */
   ierr = MatSetUp(*interpl);CHKERRQ(ierr);
-
   ierr = MatZeroEntries(*interpl);CHKERRQ(ierr);
 
   ierr = DMGetDimension(dm1, &dim);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD, "Creating a %D DIM matrix that is %D X %D and setting diagonal to 1.0\n", dim, dmb1->nloc, dmb2->nloc);
-
-  double factor = std::pow(2.0,(dmb2->hlevel-dmb1->hlevel)*dmb1->dim*1.0);
+  factor = std::pow(2.0 /*degree_P_for_refinement*/,(dmb2->hlevel-dmb1->hlevel)*dmb1->dim*1.0);
 
   /* Loop through the remaining vertices. These vertices appear only on the current refined_level. */
   for(moab::Range::iterator iter = dmb1->elocal->begin(); iter!= dmb1->elocal->end(); iter++) {
@@ -221,31 +222,30 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
     for (unsigned i=0;i<connp.size(); i++) {
       double normsum=0.0;
       for (unsigned j=0;j<connc.size(); j++) {
-        unsigned offset=j;
-        values_phi[offset] = 0.0;
+        values_phi[j] = 0.0;
         for (unsigned k=0;k<3; k++)
-          values_phi[offset] += (pcoords[i*3+k]-ccoords[k+j*3])*(pcoords[i*3+k]-ccoords[k+j*3]);
-        if (values_phi[offset] < 1e-12) {
-          values_phi[offset] = 1e12;
+          values_phi[j] += (pcoords[i*3+k]-ccoords[k+j*3])*(pcoords[i*3+k]-ccoords[k+j*3]);
+        if (values_phi[j] < 1e-12) {
+          values_phi[j] = 1e12;
         }
         else {
-          values_phi[offset] = 1.0/(values_phi[offset]);
-          normsum += values_phi[offset];
+          values_phi[j] = 1.0/(values_phi[j]);
+          normsum += values_phi[j];
         }
       }
       for (unsigned j=0;j<connc.size(); j++) {
-        unsigned offset=j;
-        if (values_phi[offset] > 1e11)
-          values_phi[offset] = factor*0.5/connc.size();
+        if (values_phi[j] > 1e11)
+          values_phi[j] = factor*0.5/connc.size();
         else
-          values_phi[offset] = factor*values_phi[offset]*0.5/(connc.size()*normsum);
+          values_phi[j] = factor*values_phi[j]*0.5/(connc.size()*normsum);
       }
       ierr = MatSetValues(*interpl, connc.size(), &dofsc[0], 1, &dofsp[i], &values_phi[0], ADD_VALUES);CHKERRQ(ierr);
     }
 
     /* check if element is on the boundary */
     //ierr = DMMoabIsEntityOnBoundary(dm1,ehandle,&eonbnd);CHKERRQ(ierr);
-    ierr = DMMoabCheckBoundaryVertices(dm2,connc.size(),&connc[0],dbdry);CHKERRQ(ierr);
+    dbdry.resize(connc.size());
+    ierr = DMMoabCheckBoundaryVertices(dm2,connc.size(),&connc[0],dbdry.data());CHKERRQ(ierr);
     eonbnd=PETSC_FALSE;
     for (unsigned i=0; i< connc.size(); ++i)
       if (dbdry[i]) eonbnd=PETSC_TRUE;
@@ -260,7 +260,7 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
       /* get the list of nodes on boundary so that we can enforce dirichlet conditions strongly */
       //ierr = DMMoabCheckBoundaryVertices(dm2,connc.size(),&connc[0],dbdry);CHKERRQ(ierr);
       for (unsigned i=0; i < connc.size(); i++) {
-        if (dmb2->hierarchy->is_boundary_vertex(connc[i])) {  /* dirichlet node */
+        if (dbdry[i]) {  /* dirichlet node */
           /* think about strongly imposing dirichlet */
           //bndrows.push_back(dofsc[i]);
 
@@ -410,7 +410,10 @@ PetscErrorCode  DM_UMR_Moab_Private(DM dm,MPI_Comm comm,PetscBool refine,DM *dmr
   /* copy vector type information */
   ierr = DMSetMatType(dm2,dm->mattype);CHKERRQ(ierr);
   ierr = DMSetVecType(dm2,dm->vectype);CHKERRQ(ierr);
-  ierr = DMMoabSetFieldNames(dm2,dmb->numFields,dmb->fieldNames);CHKERRQ(ierr);
+  dd2->numFields = dmb->numFields;
+  if (dmb->numFields) {
+    ierr = DMMoabSetFieldNames(dm2,dmb->numFields,dmb->fieldNames);CHKERRQ(ierr);
+  }
 
   ierr = DMSetFromOptions(dm2);CHKERRQ(ierr);
 

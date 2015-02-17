@@ -187,13 +187,16 @@ PetscErrorCode  DMMoabVecGetArray(DM dm,Vec vec,void* array)
     i=0;
     for(moab::Range::iterator iter = dmmoab->vlocal->begin(); iter != dmmoab->vlocal->end(); iter++) {
       for (f=0;f<dmmoab->numFields;f++,i++)
-        (*varray)[dmmoab->lidmap[(PetscInt)*iter]*dmmoab->numFields+f]=marray[i];
+        (*varray)[dmmoab->lidmap[(PetscInt)*iter-dmmoab->seqstart]*dmmoab->numFields+f]=marray[i];
+        //(*varray)[dmmoab->llmap[dmmoab->lidmap[((PetscInt)*iter-dmmoab->seqstart)]*dmmoab->numFields+f]]=marray[i];
     }
   }
   PetscFunctionReturn(0);
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabVecRestoreArray"
 /*@C
   DMMoabVecRestoreArray - Restores the writable direct access array obtained via DMMoabVecGetArray
 
@@ -264,7 +267,8 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm,Vec vec,void* array)
     i=0;
     for(moab::Range::iterator iter = dmmoab->vlocal->begin(); iter != dmmoab->vlocal->end(); iter++) {
       for (f=0;f<dmmoab->numFields;f++,i++)
-      marray[i] = (*varray)[dmmoab->lidmap[(PetscInt)*iter]*dmmoab->numFields+f];
+        marray[i] = (*varray)[dmmoab->lidmap[(PetscInt)*iter-dmmoab->seqstart]*dmmoab->numFields+f];
+        //marray[i] = (*varray)[dmmoab->llmap[dmmoab->lidmap[((PetscInt)*iter-dmmoab->seqstart)]*dmmoab->numFields+f]];
     }
 
     /* reduce the tags correctly -> should probably let the user choose how to reduce in the future
@@ -351,7 +355,8 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm,Vec vec,void* array)
     i=0;
     for(moab::Range::iterator iter = dmmoab->vlocal->begin(); iter != dmmoab->vlocal->end(); iter++) {
       for (f=0;f<dmmoab->numFields;f++,i++)
-        (*varray)[dmmoab->lidmap[(PetscInt)*iter]*dmmoab->numFields+f]=marray[i];
+        (*varray)[dmmoab->lidmap[(PetscInt)*iter-dmmoab->seqstart]*dmmoab->numFields+f]=marray[i];
+        //(*varray)[dmmoab->llmap[dmmoab->lidmap[((PetscInt)*iter-dmmoab->seqstart)]*dmmoab->numFields+f]]=marray[i];
     }
   }
   PetscFunctionReturn(0);

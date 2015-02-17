@@ -179,22 +179,24 @@ static void DMMoab_SetElementConnectivity_Private(PetscBool useSimplex, PetscInt
 @*/
 PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSimplex, const PetscReal* bounds, PetscInt nele, PetscInt user_nghost, DM *dm)
 {
-  PetscErrorCode  ierr;
-  moab::ErrorCode merr;
-  PetscInt        i,j,k,n,nprocs;
-  DM_Moab        *dmmoab;
-  moab::Interface *mbiface;
-  moab::ParallelComm *pcomm;
-  moab::ReadUtilIface* readMeshIface;
+  PetscErrorCode       ierr;
+  moab::ErrorCode      merr;
+  PetscInt             i,j,k,n,nprocs,rank=-1,ecount=0,vcount=0;
+  DM_Moab             *dmmoab;
+  moab::Interface     *mbiface;
+  moab::ParallelComm  *pcomm;
+  moab::ReadUtilIface *readMeshIface;
 
-  moab::Tag  id_tag=NULL;
-  moab::Range         ownedvtx,ownedelms;
-  moab::EntityHandle  vfirst,efirst,regionset,faceset,edgeset,vtxset;
+  moab::Tag            id_tag=PETSC_NULL,part_tag=PETSC_NULL;
+  moab::Range          ownedvtx,ownedelms,localvtxs,localelms;
+  moab::EntityHandle   vfirst,efirst,regionset,faceset,edgeset,vtxset,partset;
   std::vector<double*> vcoords;
   moab::EntityHandle  *connectivity = 0;
-  moab::EntityType etype=moab::MBHEX;
-  PetscInt    ise[6];
-  PetscReal   xse[6],defbounds[6];
+  moab::EntityType     etype=moab::MBHEX;
+  PetscInt             ise[6];
+  std::vector<int>     vgid;
+  PetscReal            xse[6],defbounds[6];
+
   /* TODO: Fix nghost > 0 - now relying on exchange_ghost_cells */
   const PetscInt nghost=0;
 
@@ -295,9 +297,8 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   merr = readMeshIface->get_node_coords(3,locnpts+ghnpts,0,vfirst,vcoords,n);MBERRNM(merr);
 
   /* Compute the co-ordinates of vertices and global IDs */
-  std::vector<int>    vgid(locnpts+ghnpts);
-  int vcount=0;
-
+  vgid.resize(locnpts+ghnpts);
+  vcount=0;
   if (!bounds) { /* default box mesh is defined on a unit-cube */
     defbounds[0]=0.0; defbounds[1]=1.0;
     defbounds[2]=0.0; defbounds[3]=1.0;
@@ -368,8 +369,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
    /* 3. Loop over elements in 3 nested loops over i, j, k; for each (i,j,k):
          and then set the connectivity for each element appropriately */
-  int ecount=0;
-
+  ecount=0;
   /* create ghosted elements requested by user - below the current plane */
   if (ise[2*dim-2] >= nghost) {
     for (k = (dim==3?ise[4]-nghost:ise[4]); k < (dim==3?ise[4]:std::max(ise[5],1)); k++) {
@@ -467,6 +467,19 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
   /* Reassign global IDs on all entities. */
   merr = pcomm->assign_global_ids(dmmoab->fileset,dim,1,false,true,false);MBERRNM(merr);
+
+  /* filter based on parallel status */
+  merr = dmmoab->pcomm->filter_pstatus(ownedvtx,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,&localvtxs);MBERRNM(merr);
+  merr = dmmoab->pcomm->filter_pstatus(ownedelms,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,&localelms);MBERRNM(merr);
+
+  /* set the parallel partition tag data */
+  merr = mbiface->tag_get_handle("PARALLEL_PARTITION", 1, moab::MB_TYPE_INTEGER,
+                             part_tag, moab::MB_TAG_CREAT | moab::MB_TAG_SPARSE, &rank);MBERRNM(merr);
+  rank=pcomm->rank();
+  merr = mbiface->create_meshset(moab::MESHSET_SET, partset);MBERRNM(merr);
+  merr = mbiface->add_entities(partset, localvtxs);MBERRNM(merr);
+  merr = mbiface->add_entities(partset, localelms);MBERRNM(merr);
+  merr = mbiface->tag_set_data(part_tag, &partset, 1, &rank);MBERRNM(merr);
 
   /* Everything is set up, now just do a tag exchange to update tags
      on all of the ghost vertexes */
