@@ -1026,6 +1026,9 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = MatMultAdd(pc->pmat,used_vec,rhs,rhs);CHKERRQ(ierr);
     ierr = VecScale(used_vec,-1.0);CHKERRQ(ierr);
     ierr = VecCopy(used_vec,pcbddc->temp_solution);CHKERRQ(ierr);
+    if (ksp) {
+      ierr = KSPSetInitialGuessNonzero(ksp,PETSC_FALSE);CHKERRQ(ierr);
+    }
   }
   ierr = VecDestroy(&used_vec);CHKERRQ(ierr);
 
