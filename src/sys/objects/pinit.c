@@ -521,7 +521,7 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     PetscBool      flg,rootlocal = PETSC_FALSE,flg2;
     size_t         applinelen,introlen;
     PetscErrorCode ierr;
-    char           sawsurl[256];
+    /* char           sawsurl[256]; */
     
     ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -591,8 +591,8 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
     ierr = PetscFree(intro);CHKERRQ(ierr);
     ierr = PetscFree(appline);CHKERRQ(ierr);
     PetscStackCallSAWs(SAWs_Initialize,());
-    PetscStackCallSAWs(SAWs_Get_FullURL,(sizeof(sawsurl),sawsurl));
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Point your browser to %s for SAWs\n",sawsurl);CHKERRQ(ierr);
+    /* PetscStackCallSAWs(SAWs_Get_FullURL,(sizeof(sawsurl),sawsurl));
+     ierr = PetscPrintf(PETSC_COMM_WORLD,"Point your browser to %s for SAWs\n",sawsurl);CHKERRQ(ierr); */
     ierr = PetscCitationsRegister("@TechReport{ saws,\n"
                                   "  Author = {Matt Otten and Jed Brown and Barry Smith},\n"
                                   "  Title  = {Scientific Application Web Server (SAWs) Users Manual},\n"
