@@ -361,7 +361,7 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec P,PetscReal *f,Vec G,void *ctx)
   ierr = TSSolve(ts,user->x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&user->ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&user->steps);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %.16f, steps %D, ftime %g\n",(double)user->mu,user->steps,(double)user->ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %g, steps %D, ftime %g\n",(double)user->mu,user->steps,(double)user->ftime);CHKERRQ(ierr);
 
   ierr = VecGetArray(user->x,&x_ptr);CHKERRQ(ierr);
   *f   = (x_ptr[0]-user->x_ob[0])*(x_ptr[0]-user->x_ob[0])+(x_ptr[1]-user->x_ob[1])*(x_ptr[1]-user->x_ob[1]);
