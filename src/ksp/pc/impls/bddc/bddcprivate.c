@@ -4481,8 +4481,8 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   PC_IS*         pcis = (PC_IS*)pc->data;
   Mat_IS*        matis = (Mat_IS*)pc->pmat->data;
-  PetscInt       i,coarse_size;
-  PetscInt       *local_primal_indices;
+  PetscInt       i,coarse_size=0;
+  PetscInt       *local_primal_indices=NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
