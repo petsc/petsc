@@ -712,7 +712,7 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
     Vec               *fv;
     const PetscScalar *cgeom;
     PetscScalar      **fx;
-    PetscReal         *fmin, *fmax, *fint, *ftmp, time;
+    PetscReal         *fmin, *fmax, *fint, *ftmp, t;
     PetscInt           cStart, cEnd, c, fcount, f, num;
 
     size_t             ftableused,ftablealloc;
@@ -730,8 +730,8 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
       fint[f] = 0;
       /* Make monitor vecs */
       ierr = DMClone(dm, &fdm[f]);CHKERRQ(ierr);
-      ierr = DMGetOutputSequenceNumber(dm, &num, &time);CHKERRQ(ierr);
-      ierr = DMSetOutputSequenceNumber(fdm[f], num, time);CHKERRQ(ierr);
+      ierr = DMGetOutputSequenceNumber(dm, &num, &t);CHKERRQ(ierr);
+      ierr = DMSetOutputSequenceNumber(fdm[f], num, t);CHKERRQ(ierr);
       ierr = PetscSectionClone(s, &fs);CHKERRQ(ierr);
       ierr = PetscSectionSetFieldName(fs, 0, NULL);CHKERRQ(ierr);
       ierr = PetscSectionSetFieldName(fs, 1, name);CHKERRQ(ierr);
