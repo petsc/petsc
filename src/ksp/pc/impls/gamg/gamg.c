@@ -72,7 +72,8 @@ PetscErrorCode PCReset_GAMG(PC pc)
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGCreateLevel_GAMG"
 static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
-                                  Mat *a_P_inout,Mat *a_Amat_crs,PetscMPIInt *a_nactive_proc)
+                                  Mat *a_P_inout,Mat *a_Amat_crs,PetscMPIInt *a_nactive_proc,
+                                  IS * Pcolumnperm)
 {
   PetscErrorCode  ierr;
   PC_MG           *mg         = (PC_MG*)pc->data;
@@ -111,6 +112,8 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     if (new_size == 0 || ncrs_eq_glob < coarse_max) new_size = 1;
     else if (new_size >= nactive) new_size = nactive; /* no change, rare */
   }
+
+  if (Pcolumnperm) *Pcolumnperm = NULL;
 
   if (!repart && new_size==nactive) *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
   else {
@@ -372,6 +375,10 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     ierr = ISSetBlockSize(new_eq_indices, cr_bs);CHKERRQ(ierr);
     if (is_eq_num != is_eq_num_prim) {
       ierr = ISDestroy(&is_eq_num_prim);CHKERRQ(ierr); /* could be same as 'is_eq_num' */
+    }
+    if (Pcolumnperm) {
+      ierr = PetscObjectReference((PetscObject)new_eq_indices);CHKERRQ(ierr);
+      *Pcolumnperm = new_eq_indices;
     }
     ierr = ISDestroy(&is_eq_num);CHKERRQ(ierr);
 #if defined PETSC_GAMG_USE_LOG
@@ -637,7 +644,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 #endif
 
     ierr = pc_gamg->ops->createlevel(pc, Aarr[level], bs,
-                       &Parr[level1], &Aarr[level1], &nactivepe);CHKERRQ(ierr);
+                       &Parr[level1], &Aarr[level1], &nactivepe, NULL);CHKERRQ(ierr);
 
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET2],0,0,0,0);CHKERRQ(ierr);
