@@ -1284,7 +1284,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
     ierr = PetscMalloc1(pcis->n/bs,&vary);CHKERRQ(ierr);
     ierr = PetscMemzero(vary,pcis->n/bs*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0; i<n_vertices; i++) vary[pcbddc->primal_indices_local_idxs[i]/bs]++;
-    for (i=0; i<n_vertices; i++) {
+    for (i=0; i<n_vertices/bs; i++) {
       if (vary[i]!=0 && vary[i]!=bs) {
         is_blocked = PETSC_FALSE;
         break;
@@ -1402,8 +1402,11 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
 
   /* DIRICHLET PROBLEM */
   if (dirichlet) {
+    if (pcbddc->issym) {
+      ierr = MatSetOption(pcis->A_II,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    }
     /* Matrix for Dirichlet problem is pcis->A_II */
-    ierr = ISGetSize(pcis->is_I_local,&n_D);CHKERRQ(ierr);
+    n_D = pcis->n - pcis->n_B;
     if (!pcbddc->ksp_D) { /* create object if not yet build */
       ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_D);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_D,(PetscObject)pc,1);CHKERRQ(ierr);
@@ -1475,6 +1478,9 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
       ierr = MatDestroy(&newmat);CHKERRQ(ierr);
     } else {
       ierr = MatGetSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,pcbddc->is_R_local,reuse,&A_RR);CHKERRQ(ierr);
+    }
+    if (pcbddc->issym) {
+      ierr = MatSetOption(A_RR,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     }
     if (!pcbddc->ksp_R) { /* create object if not present */
       ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_R);CHKERRQ(ierr);
@@ -1604,10 +1610,14 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
   /* Coarse solution -> rhs and sol updated inside PCBDDCScattarCoarseDataBegin/End */
   /* TODO remove null space when doing multilevel */
   if (pcbddc->coarse_ksp) {
+    Vec rhs,sol;
+
+    ierr = KSPGetRhs(pcbddc->coarse_ksp,&rhs);CHKERRQ(ierr);
+    ierr = KSPGetSolution(pcbddc->coarse_ksp,&sol);CHKERRQ(ierr);
     if (applytranspose) {
-      ierr = KSPSolveTranspose(pcbddc->coarse_ksp,NULL,NULL);CHKERRQ(ierr);
+      ierr = KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
     } else {
-      ierr = KSPSolve(pcbddc->coarse_ksp,NULL,NULL);CHKERRQ(ierr);
+      ierr = KSPSolve(pcbddc->coarse_ksp,rhs,sol);CHKERRQ(ierr);
     }
   }
 
@@ -1785,8 +1795,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 #if defined(PETSC_MISSING_LAPACK_GESVD)
     PetscScalar  *temp_basis,*correlation_mat;
 #else
-    PetscBLASInt dummy_int;
-    PetscScalar  dummy_scalar;
+    PetscBLASInt dummy_int=1;
+    PetscScalar  dummy_scalar=1.;
 #endif
 
     /* Get index sets for faces, edges and vertices from graph */
