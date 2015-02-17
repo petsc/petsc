@@ -1063,6 +1063,7 @@ PetscErrorCode DMPlexRestoreCellFields(DM dm, PetscInt cStart, PetscInt cEnd, Ve
 PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscScalar **uL, PetscScalar **uR)
 {
   DM                 dmFace, dmCell, dmGrad = NULL;
+  PetscSection       section;
   PetscDS            prob;
   DMLabel            ghostLabel;
   const PetscScalar *facegeom, *cellgeom, *x, *lgrad;
@@ -1081,6 +1082,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
   PetscValidPointer(uR, 10);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
   ierr = PetscMalloc1(Nf, &isFE);CHKERRQ(ierr);
@@ -1129,7 +1131,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
       ierr = DMPlexPointLocalFieldRead(dm, cells[1], f, x, &xR);CHKERRQ(ierr);
       if (isFE[f]) {
         const PetscInt *cone;
-        PetscInt        coneSize, faceLocL, faceLocR;
+        PetscInt        coneSize, faceLocL, faceLocR, ldof, rdof, d;
 
         ierr = DMPlexGetCone(dm, cells[0], &cone);CHKERRQ(ierr);
         ierr = DMPlexGetConeSize(dm, cells[0], &coneSize);CHKERRQ(ierr);
@@ -1139,8 +1141,12 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
         ierr = DMPlexGetConeSize(dm, cells[1], &coneSize);CHKERRQ(ierr);
         for (faceLocR = 0; faceLocR < coneSize; ++faceLocR) if (cone[faceLocR] == face) break;
         if (faceLocR == coneSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find face %d in cone of cell %d", face, cells[1]);
+        /* Check that FEM field has values in the right cell (sometimes its an FV ghost cell) */
+        ierr = PetscSectionGetFieldDof(section, cells[1], f, &ldof);CHKERRQ(ierr);
+        ierr = PetscSectionGetFieldDof(section, cells[1], f, &rdof);CHKERRQ(ierr);
         ierr = EvaluateFaceFields(prob, f, faceLocL, xL, &uLl[iface*Nc+off]);CHKERRQ(ierr);
-        ierr = EvaluateFaceFields(prob, f, faceLocR, xR, &uRl[iface*Nc+off]);CHKERRQ(ierr);
+        if (rdof) {ierr = EvaluateFaceFields(prob, f, faceLocR, xR, &uRl[iface*Nc+off]);CHKERRQ(ierr);}
+        else      {for(d = 0; d < ldof; ++ldof) uRl[iface*Nc+off+d] = uLl[iface*Nc+off+d];}
       } else {
         PetscFV  fv;
         PetscInt numComp, c;
@@ -1555,7 +1561,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_ResidualFEM,dm,0,0,0);CHKERRQ(ierr);
   /* TODO The places where we have to use isFE are probably the member functions for the PetscDisc class */
-  /* TODO The FVM geometry is over-manipulated. Make the preclac functions return exactly what we need */
+  /* TODO The FVM geometry is over-manipulated. Make the precalc functions return exactly what we need */
   /* FEM+FVM */
   /* 1: Get sizes from dm and dmAux */
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
