@@ -17,9 +17,11 @@ F*/
 
 PetscInt spatialDim = 0;
 
-typedef enum {VEL_ZERO, VEL_HARMONIC} VelocityDistribution;
+typedef enum {VEL_ZERO, VEL_CONSTANT, VEL_HARMONIC} VelocityDistribution;
 
 typedef enum {ZERO, CONSTANT, GAUSSIAN, TILTED} PorosityDistribution;
+
+static void constant_u_2d(const PetscReal[], PetscScalar *, void *);
 
 /*
   FunctionalFunc - Calculates the value of a functional of the solution at a point
@@ -68,7 +70,7 @@ typedef struct {
 #define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *velocityDist[2]  = {"zero", "harmonic"};
+  const char    *velocityDist[3]  = {"zero", "constant", "harmonic"};
   const char    *porosityDist[4]  = {"zero", "constant", "gaussian", "tilted"};
   PetscInt       bd, vd, pd;
   PetscErrorCode ierr;
@@ -95,7 +97,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsString("-f", "Exodus.II filename to read", "ex18.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_fv", "Use the finite volume method for advection", "ex18.c", options->useFV, &options->useFV, NULL);CHKERRQ(ierr);
   vd   = options->velocityDist;
-  ierr = PetscOptionsEList("-velocity_dist","Velocity distribution type","ex18.c",velocityDist,2,velocityDist[options->velocityDist],&vd,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-velocity_dist","Velocity distribution type","ex18.c",velocityDist,3,velocityDist[options->velocityDist],&vd,NULL);CHKERRQ(ierr);
   options->velocityDist = (VelocityDistribution) vd;
   pd   = options->porosityDist;
   ierr = PetscOptionsEList("-porosity_dist","Initial porosity distribution type","ex18.c",porosityDist,4,porosityDist[options->porosityDist],&pd,NULL);CHKERRQ(ierr);
@@ -190,7 +192,16 @@ static void f0_zero_u(const PetscScalar u[], const PetscScalar u_t[], const Pets
   for (comp = 0; comp < spatialDim; ++comp) f0[comp] = u[comp];
 }
 
-static void f1_zero_u(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f1[])
+static void f0_constant_u(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[])
+{
+  PetscScalar wind[3];
+  PetscInt    comp;
+
+  constant_u_2d(x, wind, NULL);
+  for (comp = 0; comp < spatialDim; ++comp) f0[comp] = u[comp] - wind[comp];
+}
+
+static void f1_constant_u(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f1[])
 {
   PetscInt comp;
   for (comp = 0; comp < spatialDim*spatialDim; ++comp) f1[comp] = 0.0;
@@ -251,10 +262,25 @@ static void riemann_advection(const PetscReal *qp, const PetscReal *n, const Pet
   flux[0] = (wn > 0 ? uL[spatialDim] : uR[spatialDim]) * wn;
 }
 
-void zero_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
+static void riemann_coupled_advection(const PetscReal *qp, const PetscReal *n, const PetscScalar *uL, const PetscScalar *uR, PetscScalar *flux, void *ctx)
+{
+  PetscReal wind[3] = {0.0, 1.0, 0.0};
+  PetscReal wn = DMPlex_DotD_Internal(spatialDim, wind, n);
+
+  if (fabs(uL[0] - wind[0]) > 1.0e-7 || fabs(uL[1] - wind[1]) > 1.0e-7) PetscPrintf(PETSC_COMM_SELF, "wind (%g, %g) uL (%g, %g) uR (%g, %g)\n", wind[0], wind[1], uL[0], uL[1], uR[0], uR[1]);
+  flux[0] = (wn > 0 ? uL[spatialDim] : uR[spatialDim]) * wn;
+}
+
+static void zero_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
   u[1] = 0.0;
+}
+
+static void constant_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
+{
+  u[0] = 0.0;
+  u[1] = 1.0;
 }
 
 /*
@@ -376,6 +402,16 @@ void tilted_phi_2d(const PetscReal x[], PetscScalar *u, void *ctx)
   else           u[0] = -2.0; /* Inflow state */
 }
 
+void tilted_phi_coupled_2d(const PetscReal x[], PetscScalar *u, void *ctx)
+{
+  PetscReal       x0[3];
+  const PetscReal t = *((PetscReal *) ctx);
+
+  DMPlex_WaxpyD_Internal(2, -t, u, x, x0);
+  if (x0[1] > 0) u[0] =  1.0*x[0] + 3.0*x[1];
+  else           u[0] = -2.0; /* Inflow state */
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "advect_inflow"
 static PetscErrorCode advect_inflow(PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
@@ -403,7 +439,8 @@ static PetscErrorCode ExactSolution(DM dm, PetscReal time, const PetscReal *x, P
   PetscFunctionBeginUser;
   switch (user->porosityDist) {
   case TILTED:
-    tilted_phi_2d(x, u, (void *) &time);
+    if (user->velocityDist == VEL_ZERO) tilted_phi_2d(x, u, (void *) &time);
+    else                                tilted_phi_coupled_2d(x, u, (void *) &time);
     break;
   case GAUSSIAN:
     gaussian_phi_2d(x, u, (void *) &time);
@@ -477,12 +514,17 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
     case ZERO:     user->initialGuess[1] = zero_phi;break;
     case CONSTANT: user->initialGuess[1] = constant_phi;break;
     case GAUSSIAN: user->initialGuess[1] = gaussian_phi_2d;break;
-    case TILTED:   user->initialGuess[1] = tilted_phi_2d;break;
+    case TILTED:
+      if (user->velocityDist == VEL_ZERO) user->initialGuess[1] = tilted_phi_2d;
+      else                                user->initialGuess[1] = tilted_phi_coupled_2d;
+      break;
     }
     user->exactFuncs[1] = user->initialGuess[1];
     switch (user->velocityDist) {
     case VEL_ZERO:
       user->exactFuncs[0] = zero_u_2d; break;
+    case VEL_CONSTANT:
+      user->exactFuncs[0] = constant_u_2d; break;
     case VEL_HARMONIC:
       switch (user->xbd) {
       case DM_BOUNDARY_PERIODIC:
@@ -501,6 +543,7 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
       SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
     }
   }
+  if (user->velocityDist == VEL_CONSTANT) user->initialGuess[0] = user->exactFuncs[0];
   ierr = PetscOptionsHasName(NULL, "-dmts_check", &check);CHKERRQ(ierr);
   if (check) {
     user->initialGuess[0] = user->exactFuncs[0];
@@ -534,7 +577,10 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   switch (user->velocityDist) {
   case VEL_ZERO:
-    ierr = PetscDSSetResidual(prob, 0, f0_zero_u, f1_zero_u);CHKERRQ(ierr);
+    ierr = PetscDSSetResidual(prob, 0, f0_zero_u, f1_constant_u);CHKERRQ(ierr);
+    break;
+  case VEL_CONSTANT:
+    ierr = PetscDSSetResidual(prob, 0, f0_constant_u, f1_constant_u);CHKERRQ(ierr);
     break;
   case VEL_HARMONIC:
     switch (user->xbd) {
@@ -554,7 +600,8 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     }
   }
   ierr = PetscDSSetResidual(prob, 1, f0_advection, f1_advection);CHKERRQ(ierr);
-  ierr = PetscDSSetRiemannSolver(prob, 1, riemann_advection);CHKERRQ(ierr);
+  if (user->velocityDist == VEL_ZERO) {ierr = PetscDSSetRiemannSolver(prob, 1, riemann_advection);CHKERRQ(ierr);}
+  else                                {ierr = PetscDSSetRiemannSolver(prob, 1, riemann_coupled_advection);CHKERRQ(ierr);}
 
   ierr = FunctionalRegister(&user->functionalRegistry, "Error", &user->errorFunctional, Functional_Error, user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
