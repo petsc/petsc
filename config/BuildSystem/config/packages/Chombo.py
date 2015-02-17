@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://www.mcs.anl.gov/~sarich/sarich_3.2.tar.gz']
+    self.download     = ['http://www.mcs.anl.gov/~sarich/Chombo_3.2.tar.gz']
     self.functionsCxx = [1,'namespace Box {class Box{public: Box();};}','Box::Box *nb = new Box::Box()'] 
     self.includedir = 'include'
     self.includes     = ['CH_config.H']
