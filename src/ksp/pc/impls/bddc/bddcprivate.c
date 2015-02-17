@@ -28,15 +28,20 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   if (!sub_schurs->use_mumps) {
     SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS");
   }
-  if (!sub_schurs->is_hermitian || !sub_schurs->is_posdef) {
-    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not yet implemented");
-  }
 
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Check adaptive selection of constraints\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
+  if (pcbddc->dbg_flag) {
+    PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d cc %d (%d,%d).\n",PetscGlobalRank,sub_schurs->n_subs,sub_schurs->is_hermitian,sub_schurs->is_posdef);
+  }
+
+  if (sub_schurs->n_subs && (!sub_schurs->is_hermitian || !sub_schurs->is_posdef)) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Adaptive selection not yet implemented for general matrix pencils (herm %d, posdef %d)\n",sub_schurs->is_hermitian,sub_schurs->is_posdef);
   }
 
   /* max size of subsets */
@@ -142,10 +147,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_all,&Sarray);CHKERRQ(ierr);
     }
     ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&Starray);CHKERRQ(ierr);
-  }
-
-  if (pcbddc->dbg_flag) {
-    PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d cc %d (%d,%d).\n",PetscGlobalRank,sub_schurs->n_subs,sub_schurs->is_hermitian,sub_schurs->is_posdef);
   }
 
   for (i=0;i<sub_schurs->n_subs;i++) {
@@ -1219,6 +1220,9 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
     ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
   }
   ierr = MatSetOption(pcbddc->local_mat,MAT_SYMMETRIC,pcbddc->issym);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+  ierr = MatSetOption(pcbddc->local_mat,MAT_HERMITIAN,pcbddc->issym);CHKERRQ(ierr);
+#endif
   /*
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
   ierr = MatView(new_mat,(PetscViewer)0);CHKERRQ(ierr);
@@ -2866,11 +2870,11 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 
   /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
   if (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy) {
-    PetscInt *xadj,*adjncy;
-    PetscInt nvtxs;
+    PetscInt  *xadj,*adjncy;
+    PetscInt  nvtxs;
+    PetscBool flg_row=PETSC_FALSE;
 
     if (pcbddc->use_local_adj) {
-      PetscBool flg_row=PETSC_FALSE;
 
       ierr = MatGetRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
       if (flg_row) {
@@ -2893,10 +2897,14 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       ierr = PCBDDCGraphCreate(&graph);CHKERRQ(ierr);
       ierr = PCBDDCGraphInit(graph,l2gmap_dummy);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&l2gmap_dummy);CHKERRQ(ierr);
-      graph->xadj = xadj;
-      graph->adjncy = adjncy;
+      ierr = MatGetRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
+      if (flg_row) {
+        graph->xadj = xadj;
+        graph->adjncy = adjncy;
+      }
       ierr = PCBDDCGraphSetUp(graph,1,NULL,NULL,0,NULL,NULL);CHKERRQ(ierr);
       ierr = PCBDDCGraphComputeConnectedComponents(graph);CHKERRQ(ierr);
+      ierr = MatRestoreRowIJ(matis->A,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,(const PetscInt**)&xadj,(const PetscInt**)&adjncy,&flg_row);CHKERRQ(ierr);
 
       if (pcbddc->dbg_flag) {
         ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"[%d] Found %d subdomains\n",PetscGlobalRank,graph->ncc);CHKERRQ(ierr);
@@ -2906,14 +2914,14 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
         ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
       }
 
-      ierr = PetscBTCreate(nvtxs,&is_on_boundary);CHKERRQ(ierr);
+      ierr = PetscBTCreate(pcis->n,&is_on_boundary);CHKERRQ(ierr);
       ierr = ISGetIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
       for (i=0;i<pcis->n_B;i++) {
         ierr = PetscBTSet(is_on_boundary,idxs[i]);CHKERRQ(ierr);
       }
       ierr = ISRestoreIndices(pcis->is_B_local,&idxs);CHKERRQ(ierr);
 
-      ierr = PetscCalloc1(nvtxs+1,&cxadj);CHKERRQ(ierr);
+      ierr = PetscCalloc1(pcis->n+1,&cxadj);CHKERRQ(ierr);
       sum = 0;
       for (i=0;i<graph->ncc;i++) {
         PetscInt sizecc = 0;
@@ -2931,12 +2939,12 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       }
       ierr = PetscMalloc1(sum,&cadjncy);CHKERRQ(ierr);
       sum = 0;
-      for (i=0;i<nvtxs;i++) {
+      for (i=0;i<pcis->n;i++) {
         PetscInt temp = cxadj[i];
         cxadj[i] = sum;
         sum += temp;
       }
-      cxadj[nvtxs] = sum;
+      cxadj[pcis->n] = sum;
       for (i=0;i<graph->ncc;i++) {
         for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
           if (PetscBTLookup(is_on_boundary,graph->queue[j])) {
@@ -2950,8 +2958,8 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
           }
         }
       }
-      if (nvtxs) {
-        ierr = PCBDDCSetLocalAdjacencyGraph(pc,nvtxs,cxadj,cadjncy,PETSC_OWN_POINTER);CHKERRQ(ierr);
+      if (pcis->n) {
+        ierr = PCBDDCSetLocalAdjacencyGraph(pc,pcis->n,cxadj,cadjncy,PETSC_OWN_POINTER);CHKERRQ(ierr);
       } else {
         ierr = PetscFree(cxadj);CHKERRQ(ierr);
         ierr = PetscFree(cadjncy);CHKERRQ(ierr);

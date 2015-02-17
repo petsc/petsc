@@ -1225,6 +1225,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     pcbddc->local_mat = matis->A;
   }
 
+  /* workaround for reals */
+#if !defined(PETSC_USE_COMPLEX)
+  ierr = MatSetOption(pcbddc->local_mat,MAT_HERMITIAN,pcbddc->issym);CHKERRQ(ierr);
+#endif
+
   /* Set up all the "iterative substructuring" common block without computing solvers */
   {
     Mat temp_mat;
