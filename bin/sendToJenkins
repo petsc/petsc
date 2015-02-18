@@ -103,7 +103,7 @@ if [ "x${status}" != "x" ]; then
 fi
 
 if [ "x${results}" != "x" ]; then
-  for slave in mcs ia32 macos; do 
+  for slave in mcs  macos; do 
       echo
       echo "******** ${slave} *************"
       ssh -S jenkins-proxy login.mcs.anl.gov curl -s https://jenkins-ci.mcs.anl.gov/job/petsc-branch/slave_label=${slave}/${results}/consoleText
@@ -118,18 +118,17 @@ if [ ${address} == "default" ]; then
 fi;
 
 if [ ${architecture} == "default" ]; then
-  for arch in linux-jenkins-linux-gcc-gfortran-g++-c-no-yes-real-no-__float128 jenkins-linux-gcc-gfortran-g++-c-yes-no-real-yes-double jenkins-linux-icc-ifort-icpc-c-yes-yes-real-yes-double jenkins-osx-clang-gfortran-clang++-yes-yes-complex-no-single; do
+  for archp in linux-jenkins-linux-gcc-gfortran-g++-c-no-yes-real-no-__float128 jenkins-linux-gcc-gfortran-g++-c-yes-no-real-yes-double jenkins-linux-icc-ifort-icpc-c-yes-yes-real-yes-double jenkins-osx-clang-gfortran-clang++-yes-yes-complex-no-single; do
+    arch=${archp//+/%2B}
+    bn=`ssh -S jenkins-proxy login.mcs.anl.gov curl -s https://jenkins-ci.mcs.anl.gov/job/petsc-branch/api/json | python -c 'import sys,json; print json.load(sys.stdin)["nextBuildNumber"]'`
+    echo submitting arch ${arch}, buildnumber ${bn}
+
     command="ssh -S jenkins-proxy ${url} curl -s -X POST https://jenkins-ci.mcs.anl.gov/job/petsc-branch/buildWithParameters?branch=${branch}${mailto}\&named_test=${arch}${configoptions}"
     if [ ${silent} == "no" ]; then
 	echo "${command}"
     fi
     ${command}
-    json = `"ssh -S jenkins-proxy ${url} curl -s https://jenkins-ci.mcs.anl.gov/job/petsc-branch/api/json"`
-    prop = lastBuild.number
-    lbn = `jsonval`
-    prop= lastBuild.url
-    lburl = `jsonval`
-    echo $lbn $lburl
+    sleep 5
   done
 else
   command="ssh -S jenkins-proxy ${url} curl -s -X POST https://jenkins-ci.mcs.anl.gov/job/petsc-branch/buildWithParameters?branch='${branch}'${mailto}\&named_test=${architecture}${configoptions}"
@@ -141,7 +140,7 @@ else
 
   echo buildnumber=$bn
   ${command}
-  buildurl=`ssh -S jenkins-proxy login.mcs.anl.gov curl -s https://jenkins-ci.mcs.anl.gov/job/petsc-branch/api/json | python -c 'import sys,json; print json.load(sys.stdin)["url"]'`
+  buildurl=https://jenkins-ci.mcs.anl.gov/job/petsc-branch/
   echo buildpage=$buildurl$bn
   echo "for build status, visit above url or enter command:"
   echo $buildurl$bn/api/json?pretty=true
