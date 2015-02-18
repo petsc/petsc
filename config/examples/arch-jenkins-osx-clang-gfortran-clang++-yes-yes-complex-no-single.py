@@ -5,9 +5,9 @@ if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('config'))
   import configure
   configure_options = [
-    '--with-cc=clang',
-    '--with-fc=gfortran',
-    '--with-cxx=clang++',
+    '--with-cc=/home/petsc/soft/osx-frisbee/mpich-3.1.3/bin/mpicc',
+    '--with-fc=/home/petsc/soft/osx-frisbee/mpich-3.1.3/bin/mpif90',
+    '--with-cxx=/home/petsc/soft/osx-frisbee/mpich-3.1.3/bin/mpicxx',
     '--with-clanguage=c++',
     '--with-shared-libraries=yes',
     '--with-debugging=yes',
