@@ -3151,7 +3151,7 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
 
 #ifdef PETSC_USE_DEBUG
 #undef __FUNCT__
-#define __FUNCT__ "DMDefaultSectionCheckConsistency"
+#define __FUNCT__ "DMDefaultSectionCheckConsistency_Internal"
 /*
   DMDefaultSectionCheckConsistency - Check the consistentcy of the global and local sections.
 
