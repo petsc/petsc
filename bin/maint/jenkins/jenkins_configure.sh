@@ -39,7 +39,7 @@ else
         exit 0
       fi
    fi
-
+   export PETSC_ARCH=arch-${named_test}
    ./config/examples/arch-${named_test}.py ${configure_options}
 fi
 
