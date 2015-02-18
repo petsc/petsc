@@ -2763,9 +2763,9 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
   PetscInt       *temp_global_dofs;
   PetscScalar    globalsum;
   PetscInt       i,j,s;
-  PetscInt       nlocals,first_index,old_index,max_local;
-  PetscMPIInt    rank_prec_comm,size_prec_comm,max_global;
-  PetscMPIInt    *dof_sizes,*dof_displs;
+  PetscInt       nlocals,first_index,old_index,max_local,max_global;
+  PetscMPIInt    rank_prec_comm,size_prec_comm;
+  PetscInt       *dof_sizes,*dof_displs;
   PetscBool      first_found;
   PetscErrorCode ierr;
 
@@ -2774,8 +2774,7 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
   ierr = MPI_Comm_size(comm,&size_prec_comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank_prec_comm);CHKERRQ(ierr);
   j = ( !rank_prec_comm ? size_prec_comm : 0);
-  ierr = PetscMalloc1(j,&dof_sizes);CHKERRQ(ierr);
-  ierr = PetscMalloc1(j,&dof_displs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(j,&dof_sizes,j,&dof_displs);CHKERRQ(ierr);
   /* get maximum size of subset */
   ierr = PetscMalloc1(n_local_dofs,&temp_global_dofs);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(l2gmap,n_local_dofs,local_dofs,temp_global_dofs);CHKERRQ(ierr);
@@ -2877,8 +2876,7 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
   ierr = VecScatterDestroy(&scatter_ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&local_vec);CHKERRQ(ierr);
   ierr = VecDestroy(&global_vec);CHKERRQ(ierr);
-  ierr = PetscFree(dof_sizes);CHKERRQ(ierr);
-  ierr = PetscFree(dof_displs);CHKERRQ(ierr);
+  ierr = PetscFree2(dof_sizes,dof_displs);CHKERRQ(ierr);
   /* return pointer to global ordering of local dofs */
   *global_numbering_subset = temp_global_dofs;
   PetscFunctionReturn(0);
