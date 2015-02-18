@@ -131,8 +131,8 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
 PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, IS *FacesIS[], PetscInt *n_edges, IS *EdgesIS[], IS *VerticesIS)
 {
   IS             *ISForFaces,*ISForEdges,ISForVertices;
-  PetscInt       i,j,nfc,nec,nvc,*idx;
-  PetscBool      twodim_flag;
+  PetscInt       i,nfc,nec,nvc,*idx;
+  PetscBool      twodim,twodimr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -140,7 +140,6 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
   nfc = 0;
   nec = 0;
   nvc = 0;
-  twodim_flag = PETSC_FALSE;
   for (i=0;i<graph->ncc;i++) {
     PetscInt repdof = graph->queue[graph->cptr[i]];
     if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
@@ -153,13 +152,16 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
       nvc += graph->cptr[i+1]-graph->cptr[i];
     }
   }
-  j=0;
-  ierr = MPI_Allreduce(&nec,&j,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
-  if (!j) { /* we are in a 2D case -> no faces, only edges */
+
+  /* determine if we are in 2D or 3D */
+  twodim  = !nec;
+  twodimr = PETSC_FALSE;
+  ierr = MPI_Allreduce(&twodim,&twodimr,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
+  if (twodimr) { /* we are in a 2D case -> edge are shared by 2 subregions and faces don't exist */
     nec = nfc;
     nfc = 0;
-    twodim_flag = PETSC_TRUE;
   }
+
   /* allocate IS arrays for faces, edges. Vertices need a single index set. */
   if (FacesIS) {
     ierr = PetscMalloc1(nfc,&ISForFaces);CHKERRQ(ierr);
@@ -178,7 +180,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
     PetscInt repdof = graph->queue[graph->cptr[i]];
     if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
       if (graph->count[repdof] == 1 && graph->special_dof[repdof] != PCBDDCGRAPH_NEUMANN_MARK) {
-        if (twodim_flag) {
+        if (twodimr) {
           if (EdgesIS) {
             ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_COPY_VALUES,&ISForEdges[nec]);CHKERRQ(ierr);
           }
@@ -202,6 +204,8 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
     nvc = 0;
     for (i=0;i<graph->ncc;i++) {
       if (graph->cptr[i+1]-graph->cptr[i] <= graph->custom_minimal_size) {
+        PetscInt j;
+
         for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
           idx[nvc]=graph->queue[j];
           nvc++;
