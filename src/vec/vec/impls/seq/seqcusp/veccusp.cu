@@ -1008,8 +1008,14 @@ PetscErrorCode VecMDot_SeqCUSP(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *
   cudaError_t    cuda_ierr;
 
   PetscFunctionBegin;
-  // allocate scratchpad memory for the results of individual work groups:
   if (nv <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Number of vectors provided to VecMDot_SeqCUSP not positive.");
+  /* Handle the case of local size zero first */
+  if (!xin->map->n) {
+    for (i=0; i<nv; ++i) z[i] = 0;
+    PetscFunctionReturn(0);
+  }
+
+  // allocate scratchpad memory for the results of individual work groups:
   cuda_ierr = cudaMalloc((void**)&group_results_gpu, sizeof(PetscScalar) * MDOT_WORKGROUP_NUM * 8);
   if (cuda_ierr != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not allocate CUDA work memory. Error code: %d", (int)cuda_ierr);
 
