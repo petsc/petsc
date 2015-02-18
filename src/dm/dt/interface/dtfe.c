@@ -3213,17 +3213,20 @@ PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer viewer)
 /* Construct the change of basis from prime basis to nodal basis */
 PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
 {
-  PetscReal     *work;
+  PetscScalar   *work, *invVscalar;
   PetscBLASInt  *pivots;
-#ifndef PETSC_USE_COMPLEX
   PetscBLASInt   n, info;
-#endif
   PetscInt       pdim, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetDimension(fem->dualSpace, &pdim);CHKERRQ(ierr);
   ierr = PetscMalloc1(pdim*pdim,&fem->invV);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  ierr = PetscMalloc1(pdim*pdim,&invVscalar);CHKERRQ(ierr);
+#else
+  invVscalar = fem->invV;
+#endif
   for (j = 0; j < pdim; ++j) {
     PetscReal      *Bf;
     PetscQuadrature f;
@@ -3234,18 +3237,20 @@ PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
     ierr = PetscSpaceEvaluate(fem->basisSpace, f->numPoints, f->points, Bf, NULL, NULL);CHKERRQ(ierr);
     for (k = 0; k < pdim; ++k) {
       /* n_j \cdot \phi_k */
-      fem->invV[j*pdim+k] = 0.0;
+      invVscalar[j*pdim+k] = 0.0;
       for (q = 0; q < f->numPoints; ++q) {
-        fem->invV[j*pdim+k] += Bf[q*pdim+k]*f->weights[q];
+        invVscalar[j*pdim+k] += Bf[q*pdim+k]*f->weights[q];
       }
     }
     ierr = PetscFree(Bf);CHKERRQ(ierr);
   }
   ierr = PetscMalloc2(pdim,&pivots,pdim,&work);CHKERRQ(ierr);
-#ifndef PETSC_USE_COMPLEX
   n = pdim;
-  PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, fem->invV, &n, pivots, &info));
-  PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&n, fem->invV, &n, pivots, work, &n, &info));
+  PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, invVscalar, &n, pivots, &info));
+  PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&n, invVscalar, &n, pivots, work, &n, &info));
+#if defined(PETSC_USE_COMPLEX)
+  for (j = 0; j < pdim*pdim; j++) fem->invV[j] = PetscRealPart(invVscalar[j]);
+  ierr = PetscFree(invVscalar);CHKERRQ(ierr);
 #endif
   ierr = PetscFree2(pivots,work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5144,11 +5149,10 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
   DM                 K;
-  PetscReal         *work, *subpoint;
+  PetscReal         *subpoint;
   PetscBLASInt      *pivots;
-#ifndef PETSC_USE_COMPLEX
   PetscBLASInt       n, info;
-#endif
+  PetscScalar       *work, *invVscalar;
   PetscInt           dim, pdim, spdim, j, s;
   PetscErrorCode     ierr;
 
@@ -5186,6 +5190,11 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   /* Construct the change of basis from prime basis to nodal basis for each subelement */
   ierr = PetscMalloc1(cmp->numSubelements*spdim*spdim,&fem->invV);CHKERRQ(ierr);
   ierr = PetscMalloc2(spdim,&pivots,spdim,&work);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  ierr = PetscMalloc1(cmp->numSubelements*spdim*spdim,&invVscalar);CHKERRQ(ierr);
+#else
+  invVscalar = fem->invV;
+#endif
   for (s = 0; s < cmp->numSubelements; ++s) {
     for (j = 0; j < spdim; ++j) {
       PetscReal      *Bf;
@@ -5197,19 +5206,21 @@ PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
       ierr = PetscSpaceEvaluate(fem->basisSpace, f->numPoints, f->points, Bf, NULL, NULL);CHKERRQ(ierr);
       for (k = 0; k < spdim; ++k) {
         /* n_j \cdot \phi_k */
-        fem->invV[(s*spdim + j)*spdim+k] = 0.0;
+        invVscalar[(s*spdim + j)*spdim+k] = 0.0;
         for (q = 0; q < f->numPoints; ++q) {
-          fem->invV[(s*spdim + j)*spdim+k] += Bf[q*spdim+k]*f->weights[q];
+          invVscalar[(s*spdim + j)*spdim+k] += Bf[q*spdim+k]*f->weights[q];
         }
       }
       ierr = PetscFree(Bf);CHKERRQ(ierr);
     }
-#ifndef PETSC_USE_COMPLEX
     n = spdim;
-    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, &fem->invV[s*spdim*spdim], &n, pivots, &info));
-    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&n, &fem->invV[s*spdim*spdim], &n, pivots, work, &n, &info));
-#endif
+    PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, &invVscalar[s*spdim*spdim], &n, pivots, &info));
+    PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&n, &invVscalar[s*spdim*spdim], &n, pivots, work, &n, &info));
   }
+#if defined(PETSC_USE_COMPLEX)
+  for (s = 0; s <cmp->numSubelements*spdim*spdim; s++) fem->invV[s] = PetscRealPart(invVscalar[s]);
+  ierr = PetscFree(invVscalar);CHKERRQ(ierr);
+#endif
   ierr = PetscFree2(pivots,work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
