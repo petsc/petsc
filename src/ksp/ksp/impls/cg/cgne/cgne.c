@@ -95,7 +95,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
-  ierr     = MatMultTranspose(Amat,B,T);CHKERRQ(ierr);
+  ierr     = KSP_MatMultTranspose(ksp,Amat,B,T);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,P);CHKERRQ(ierr);
     ierr = KSP_MatMultTranspose(ksp,Amat,P,R);CHKERRQ(ierr);
@@ -151,8 +151,8 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
       ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);     /*     p <- z + b* p   */
     }
     betaold = beta;
-    ierr    = MatMult(Amat,P,T);CHKERRQ(ierr);
-    ierr    = MatMultTranspose(Amat,T,Z);CHKERRQ(ierr);
+    ierr    = KSP_MatMult(ksp,Amat,P,T);CHKERRQ(ierr);
+    ierr    = KSP_MatMultTranspose(ksp,Amat,T,Z);CHKERRQ(ierr);
     ierr    = VecXDot(P,Z,&dpi);CHKERRQ(ierr);    /*     dpi <- z'p      */
     a       = beta/dpi;                            /*     a = beta/p'z    */
     if (eigs) d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;

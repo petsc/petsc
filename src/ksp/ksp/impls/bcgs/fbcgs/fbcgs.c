@@ -57,7 +57,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
-    ierr = MatMult(pc->mat,X,S2);CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,pc->mat,X,S2);CHKERRQ(ierr);
     ierr = VecCopy(B,R);CHKERRQ(ierr);
     ierr = VecAXPY(R,-1.0,S2);CHKERRQ(ierr);
   } else {
@@ -92,16 +92,16 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     beta = (rho/rhoold) * (alpha/omegaold);
     ierr = VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V);CHKERRQ(ierr); /* p <- r - omega * beta* v + beta * p */
 
-    ierr = PCApply(pc,P,P2);CHKERRQ(ierr); /* p2 <- K p */
-    ierr = MatMult(pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
+    ierr = KSP_PCApply(ksp,P,P2);CHKERRQ(ierr); /* p2 <- K p */
+    ierr = KSP_MatMult(ksp,pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
 
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     if (d1 == 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Divide by zero");
     alpha = rho / d1; /* alpha <- rho / (v,rp) */
     ierr  = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr); /* s <- r - alpha v */
 
-    ierr = PCApply(pc,S,S2);CHKERRQ(ierr); /* s2 <- K s */
-    ierr = MatMult(pc->mat,S2,T);CHKERRQ(ierr); /* t <- A s2 */
+    ierr = KSP_PCApply(ksp,S,S2);CHKERRQ(ierr); /* s2 <- K s */
+    ierr = KSP_MatMult(ksp,pc->mat,S2,T);CHKERRQ(ierr); /* t <- A s2 */
 
     ierr = VecDotNorm2(S,T,&d1,&d2);CHKERRQ(ierr);
     if (d2 == 0.0) {
