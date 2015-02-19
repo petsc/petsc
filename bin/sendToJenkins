@@ -63,7 +63,7 @@ while getopts "h?a:b:d:m:o:qr:su:" opt; do
      username=$OPTARG+'@'
      ;;
     a)
-     architecture=$OPTARG
+     architecture=${OPTARG//+/%2B}
      ;;
     s)
      silent=yes
@@ -75,7 +75,7 @@ done
 if [ -z ${username} ]; then
   url=login.mcs.anl.gov
 else
-  url=${username}+login.mcs.anl.gov
+  url=${username}login.mcs.anl.gov
 fi;
 
 
@@ -118,9 +118,9 @@ if [ ${address} == "default" ]; then
 fi;
 
 if [ ${architecture} == "default" ]; then
-  for archp in linux-jenkins-linux-gcc-gfortran-g++-c-no-yes-real-no-__float128 jenkins-linux-gcc-gfortran-g++-c-yes-no-real-yes-double jenkins-linux-icc-ifort-icpc-c-yes-yes-real-yes-double jenkins-osx-clang-gfortran-clang++-yes-yes-complex-no-single; do
+  bn=`ssh -S jenkins-proxy login.mcs.anl.gov curl -s https://jenkins-ci.mcs.anl.gov/job/petsc-branch/api/json | python -c 'import sys,json; print json.load(sys.stdin)["nextBuildNumber"]'`
+  for archp in jenkins-linux-gcc-gfortran-g++-c-no-yes-real-no-__float128 jenkins-linux-gcc-gfortran-g++-c-yes-no-complex-yes-double jenkins-linux-icc-ifort-icpc-c-yes-yes-real-yes-double jenkins-osx-clang-gfortran-clang++-c++-yes-yes-real-no-single; do
     arch=${archp//+/%2B}
-    bn=`ssh -S jenkins-proxy login.mcs.anl.gov curl -s https://jenkins-ci.mcs.anl.gov/job/petsc-branch/api/json | python -c 'import sys,json; print json.load(sys.stdin)["nextBuildNumber"]'`
     echo submitting arch ${arch}, buildnumber ${bn}
 
     command="ssh -S jenkins-proxy ${url} curl -s -X POST https://jenkins-ci.mcs.anl.gov/job/petsc-branch/buildWithParameters?branch=${branch}${mailto}\&named_test=${arch}${configoptions}"
@@ -128,7 +128,7 @@ if [ ${architecture} == "default" ]; then
 	echo "${command}"
     fi
     ${command}
-    sleep 5
+    let "bn += 1"
   done
 else
   command="ssh -S jenkins-proxy ${url} curl -s -X POST https://jenkins-ci.mcs.anl.gov/job/petsc-branch/buildWithParameters?branch='${branch}'${mailto}\&named_test=${architecture}${configoptions}"
