@@ -11,7 +11,7 @@ if __name__ == '__main__':
     '--with-clanguage=c++',
     '--with-shared-libraries=yes',
     '--with-debugging=yes',
-    '--with-scalar-type=complex',
+    '--with-scalar-type=real',
     '--with-64-bit-indices=no',
     '--with-precision=single',
     ]
