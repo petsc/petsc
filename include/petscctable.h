@@ -58,7 +58,12 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,Pets
       case MAX_VALUES:
         ta->table[hash] = PetscMax(ta->table[hash],data);
         break;
-      default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported InsertMode");
+      case NOT_SET_VALUES:
+      case INSERT_ALL_VALUES:
+      case ADD_ALL_VALUES:
+      case INSERT_BC_VALUES:
+      case ADD_BC_VALUES:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported InsertMode");
       }
       PetscFunctionReturn(0);
     } else if (!ta->keytable[hash]) {
