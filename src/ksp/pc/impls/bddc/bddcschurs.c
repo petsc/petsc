@@ -55,11 +55,35 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
       ierr = MatDuplicate(Bd, MAT_DO_NOT_COPY_VALUES, &AinvBd);CHKERRQ(ierr);
       ierr = MatMatSolve(fact, Bd, AinvBd);CHKERRQ(ierr);
     } else {
-      Mat Ainvd;
+      PetscBool ex = PETSC_TRUE;
 
-      ierr = PCComputeExplicitOperator(pc, &Ainvd);CHKERRQ(ierr);
-      ierr = MatMatMult(Ainvd, Bd, MAT_INITIAL_MATRIX, fill, &AinvBd);CHKERRQ(ierr);
-      ierr = MatDestroy(&Ainvd);CHKERRQ(ierr);
+      if (ex) {
+        Mat Ainvd;
+
+        ierr = PCComputeExplicitOperator(pc, &Ainvd);CHKERRQ(ierr);
+        ierr = MatMatMult(Ainvd, Bd, MAT_INITIAL_MATRIX, fill, &AinvBd);CHKERRQ(ierr);
+        ierr = MatDestroy(&Ainvd);CHKERRQ(ierr);
+      } else {
+        Vec         sol,rhs;
+        PetscScalar *arrayrhs,*arraysol;
+        PetscInt    i,nrhs,n;
+
+        ierr = MatDuplicate(Bd, MAT_DO_NOT_COPY_VALUES, &AinvBd);CHKERRQ(ierr);
+        ierr = MatGetSize(Bd,&n,&nrhs);CHKERRQ(ierr);
+        ierr = MatDenseGetArray(Bd,&arrayrhs);CHKERRQ(ierr);
+        ierr = MatDenseGetArray(AinvBd,&arraysol);CHKERRQ(ierr);
+        ierr = KSPGetSolution(ksp,&sol);CHKERRQ(ierr);
+        ierr = KSPGetRhs(ksp,&rhs);CHKERRQ(ierr);
+        for (i=0;i<nrhs;i++) {
+          ierr = VecPlaceArray(rhs,arrayrhs+i*n);CHKERRQ(ierr);
+          ierr = VecPlaceArray(sol,arraysol+i*n);CHKERRQ(ierr);
+          ierr = KSPSolve(ksp,rhs,sol);CHKERRQ(ierr);
+          ierr = VecResetArray(rhs);CHKERRQ(ierr);
+          ierr = VecResetArray(sol);CHKERRQ(ierr);
+        }
+        ierr = MatDenseRestoreArray(Bd,&arrayrhs);CHKERRQ(ierr);
+        ierr = MatDenseRestoreArray(AinvBd,&arrayrhs);CHKERRQ(ierr);
+      }
     }
     if (!Bdense & !issym) {
       ierr = MatDestroy(&Bd);CHKERRQ(ierr);
