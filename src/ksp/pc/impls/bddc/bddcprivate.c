@@ -4529,13 +4529,18 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
     ierr = VecSum(pcis->vec1_global,&coarsesum);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Size of coarse problem is %d (%lf)\n",coarse_size,PetscRealPart(coarsesum));CHKERRQ(ierr);
     if (pcbddc->dbg_flag > 1 || set_error_reduced) {
+      PetscInt *gidxs;
+
+      ierr = PetscMalloc1(pcbddc->local_primal_size,&gidxs);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingApply(matis->mapping,pcbddc->local_primal_size,pcbddc->primal_indices_local_idxs,gidxs);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Distribution of local primal indices\n");CHKERRQ(ierr);
       ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d\n",PetscGlobalRank);CHKERRQ(ierr);
       for (i=0;i<pcbddc->local_primal_size;i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"local_primal_indices[%d]=%d (%d)\n",i,local_primal_indices[i],pcbddc->primal_indices_local_idxs[i]);
+        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"local_primal_indices[%d]=%d (%d,%d)\n",i,local_primal_indices[i],pcbddc->primal_indices_local_idxs[i],gidxs[i]);
       }
       ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+      ierr = PetscFree(gidxs);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     if (set_error_reduced) {
