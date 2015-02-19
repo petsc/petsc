@@ -14,6 +14,6 @@ if __name__ == '__main__':
     '--with-scalar-type=real',
     '--with-64-bit-indices=no',
     '--with-precision=__float128',
-    '--download-f2cblaslapack=1'
+    '--with-blas-lapack-lib=[/home/sarich/software/quadf2cblaslapack/libf2clapack.a,/home/sarich/software/quadf2cblaslapack/libf2cblas.a]'
     ]
   configure.petsc_configure(configure_options)
