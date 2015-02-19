@@ -15,11 +15,13 @@ echo branch=${branch}
 echo options=${configure_options}
 echo mailto=${mailto} 
 echo named_test=${named_test}
-function soft { eval `/software/common/adm/packages/softenv-1.4.2/bin/soft-dec sh $@`; }
 
-if [[ ${named_test} =~ .*icc.* || ${named_test} =~ .*ifc.* ]]; then
+if [[ ${named_test} =~ .*icc.* || ${named_test} =~ .*ifort.* ]]; then
  if [[ ${slave_label} != "macos" ]]; then
   eval `/software/common/adm/packages/softenv-1.4.2/bin/soft-dec sh add +intel`
+  export INTEL_LICENSE_FILE
+  export PATH
+  export LD_LIBRARY_PATH
  fi
 fi
 
