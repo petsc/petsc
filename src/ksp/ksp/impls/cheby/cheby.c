@@ -82,7 +82,10 @@ static PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP ksp,Petsc
     if (b >= 0) cheb->tform[1] = b;
     if (c >= 0) cheb->tform[2] = c;
     if (d >= 0) cheb->tform[3] = d;
-    cheb->estimate_current = PETSC_FALSE;
+    cheb->amatid    = 0;
+    cheb->pmatid    = 0;
+    cheb->amatstate = -1;
+    cheb->pmatstate = -1;
   } else {
     ierr = KSPDestroy(&cheb->kspest);CHKERRQ(ierr);
   }
@@ -101,17 +104,6 @@ static PetscErrorCode KSPChebyshevEstEigSetRandom_Chebyshev(KSP ksp,PetscRandom 
   ierr = PetscRandomDestroy(&cheb->random);CHKERRQ(ierr);
 
   cheb->random = random;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevSetNewMatrix_Chebyshev"
-static PetscErrorCode  KSPChebyshevSetNewMatrix_Chebyshev(KSP ksp)
-{
-  KSP_Chebyshev *cheb = (KSP_Chebyshev*)ksp->data;
-
-  PetscFunctionBegin;
-  cheb->estimate_current = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -224,32 +216,6 @@ PetscErrorCode KSPChebyshevEstEigSetRandom(KSP ksp,PetscRandom random)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevSetNewMatrix"
-/*@
-   KSPChebyshevSetNewMatrix - Indicates that the matrix has changed, causes eigenvalue estimates to be recomputed if appropriate.
-
-   Logically Collective on KSP
-
-   Input Parameter:
-.  ksp - the Krylov space context
-
-   Level: developer
-
-.keywords: KSP, Chebyshev, set, eigenvalues
-
-.seealso: KSPChebyshevSetEstimateEigenvalues()
-@*/
-PetscErrorCode KSPChebyshevSetNewMatrix(KSP ksp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscTryMethod(ksp,"KSPChebyshevSetNewMatrix_C",(KSP),(ksp));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_Chebyshev"
 PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptions *PetscOptionsObject,KSP ksp)
 {
@@ -350,31 +316,43 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  if (cheb->kspest && !cheb->estimate_current) {
-    PetscReal max=0.0,min=0.0;
-    Vec       X,B;
-    X = ksp->work[0];
-    if (cheb->random) {
-      B    = ksp->work[1];
-      ierr = VecSetRandom(B,cheb->random);CHKERRQ(ierr);
-    } else {
-      B = ksp->vec_rhs;
-    }
-    ierr = KSPSolve(cheb->kspest,B,X);CHKERRQ(ierr);
-    
-    if (ksp->guess_zero) {
-      ierr = VecZeroEntries(X);CHKERRQ(ierr);
-    }
-    ierr = KSPChebyshevComputeExtremeEigenvalues_Private(cheb->kspest,&min,&max);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
+  if (cheb->kspest) {
+    PetscObjectId    amatid,    pmatid;
+    PetscObjectState amatstate, pmatstate;
 
-    cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
-    cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;
+    ierr = PetscObjectGetId((PetscObject)Amat,&amatid);CHKERRQ(ierr);
+    ierr = PetscObjectGetId((PetscObject)Pmat,&pmatid);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)Amat,&amatstate);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)Pmat,&pmatstate);CHKERRQ(ierr);
+    if (amatid != cheb->amatid || pmatid != cheb->pmatid || amatstate != cheb->amatstate || pmatstate != cheb->pmatstate) {
+      PetscReal max=0.0,min=0.0;
+      Vec       X,B;
+      X = ksp->work[0];
+      if (cheb->random) {
+        B    = ksp->work[1];
+        ierr = VecSetRandom(B,cheb->random);CHKERRQ(ierr);
+      } else {
+        B = ksp->vec_rhs;
+      }
+      ierr = KSPSolve(cheb->kspest,B,X);CHKERRQ(ierr);
 
-    cheb->estimate_current = PETSC_TRUE;
+      if (ksp->guess_zero) {
+        ierr = VecZeroEntries(X);CHKERRQ(ierr);
+      }
+      ierr = KSPChebyshevComputeExtremeEigenvalues_Private(cheb->kspest,&min,&max);CHKERRQ(ierr);
+
+      cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
+      cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;
+
+      cheb->amatid    = amatid;
+      cheb->pmatid    = pmatid;
+      cheb->amatstate = amatstate;
+      cheb->pmatstate = pmatstate;
+    }
   }
 
   ksp->its = 0;
-  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   maxit    = ksp->max_it;
 
   /* These three point to the three active solutions, we
@@ -521,7 +499,6 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetNewMatrix_C",NULL);CHKERRQ(ierr);
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -585,6 +562,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C",KSPChebyshevSetEigenvalues_Chebyshev);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C",KSPChebyshevSetEstimateEigenvalues_Chebyshev);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C",KSPChebyshevEstEigSetRandom_Chebyshev);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetNewMatrix_C",KSPChebyshevSetNewMatrix_Chebyshev);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
