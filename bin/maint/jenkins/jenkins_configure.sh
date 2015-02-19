@@ -22,12 +22,6 @@ if [[ ${named_test} =~ .*icc.* || ${named_test} =~ .*ifort.* ]]; then
   export INTEL_LICENSE_FILE
   export PATH
   export LD_LIBRARY_PATH
-  env
-  which gfortran
-  export PATH=$PATH:/usr/local/bin
-  env
-  which gfortran
-
  fi
 fi
 export PATH=$PATH:/usr/local/bin

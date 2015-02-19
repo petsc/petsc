@@ -8,6 +8,7 @@ if [[ ${named_test} =~ .*icc.* || ${named_test} =~ .*ifort.* ]]; then
   export LD_LIBRARY_PATH
  fi
 fi
+export PATH=$PATH:/usr/local/bin
 
    if [[ ${slave_label} == "macos" ]]; then
       if [[ ! ${named_test} =~ osx.* ]]; then
