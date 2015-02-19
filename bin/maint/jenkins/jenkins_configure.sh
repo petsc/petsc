@@ -17,7 +17,7 @@ echo mailto=${mailto}
 echo named_test=${named_test}
 function soft { eval `/software/common/adm/packages/softenv-1.4.2/bin/soft-dec sh $@`; }
 
-if [[ ${named_test} =~ .*ifc.* ]]; then
+if [[ ${named_test} =~ .*icc.* || ${named_test} =~ .*ifc.* ]]; then
  if [[ ${slave_label} != "macos" ]]; then
   eval `/software/common/adm/packages/softenv-1.4.2/bin/soft-dec sh add +intel`
  fi
