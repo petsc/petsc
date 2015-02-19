@@ -1,0 +1,66 @@
+Users Manual
+
+Description:
+
+The PETSc Linear Solver Selection web interface is meant to provide users with a convenient way to customize linear solvers. The webpage suggests default preconditioners and krylov methods based on inputted matrix properties, but the defaults can be modified by the user. At any time, the user can retrieve the appropriate command line options from the bottom right hand corner.
+
+The SAWs Web Interface
+
+
+Instructions:
+
+The top three checkboxes control which displays to show.
+
+The first option, Command Options, toggles the display of the generated command line options for the current solver setup.
+
+The second option, Tree, toggles the display of the solver tree.
+
+The tree diagram shows the structure of the solver. A horizontal split indicates multigrid levels. Everything else (including fieldsplit) is represented using a vertical split. A series of alternating colors are provided for a better visual of depth.
+
+Changes to the solver and matrix properties can be made by clicking on a node and selecting the new matrix properties and solver options (pc_type, ksp_type, pc_fieldsplit_type, pc_fieldsplit_blocks, etc.). Users should input the matrix properties first and then modify the suggested default solver setup if needed.
+
+The third option, Matrix, toggles the display of the the matrix diagram which shows the logical block structure of the matrix. The colors are coordinated with the tree diagram.
+
+Towards the bottom of the page, we provide another way for the user to customize the solver: a hierarchy of dropdown menus.
+
+The first block asks for the characteristics of the entire matrix and the root solver options. The root solver options may update with the default as the matrix properties change.
+
+Each indentation indicates a deeper level in the solver (sub-solvers). Users should input matrix properties first to see what the suggested defaults are, and then modify the solver if needed.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Developers Manual
+
+Folder "js" contains all the Javascript code.
+
+Javascript is loaded into pcoptions.html at the beginning through the <script> tags.
+Other necessary libraries are also loaded. Some are retrieved from the Argonne servers or other servers, so an internet connection is required.
+
+When the page is finished loading, $(document).ready(function() {}); is called. The dollar sign is a jquery call (a javascript library). We selected the entire "document" using jquery and handle the "ready" event that is fired when all DOM elements are loaded. (basic jquery syntax: http://www.w3schools.com/jquery/jquery_syntax.asp)
+
+Javascript variables declared outside functions in the js files will be visible from any other js file. Splitting the javascript into separate files is purely for organizational purposes. It makes no difference in execution.
+
+The solver options and matrix properties are stored using an object called "matInfo" since using a tree structure to store just a few options would be overkill. Each object property is another object that has information about that specific solver. The root solver starts with an endtag (this is also used as the property name) of "0". The first child has an endtag of "0_0", the second "0_1", the third "0_2", etc. The first child of the first child would be "0_0_0". The third child of the second child would be "0_1_2", etc.
+
+In Javascript, let's say we have an object 'Car' with property 'color'.
+We could do either Car.color OR Car["color"]. These are equivalent. Since in our case the property names start with a number, we cannot use the first method. (If we tried to do Car.0 the interpreter would assume the 0 is a literal instead of a property of the object Car)
+
+To delete, we could do 'delete Car.color' OR 'delete Car["color"]'
+If we tried to access these again, it would not be a runtime error. It would simply return undefined.
+However, if we tried to do Car.color.shade when Car.color is undefined, THEN it would be a runtime error.
+
+For arrays, deleting an element works the same. So, it is important to remember that the array length remains the same size and that if you iterate over the array after element deletion, you should check for undefined.
+
+The webpage is heavily event-based. Main.js simply triggers a few elements to set the defaults and get things started.

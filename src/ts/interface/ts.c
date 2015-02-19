@@ -11,42 +11,6 @@ PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEva
 
 const char *const TSExactFinalTimeOptions[] = {"STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "TSSetTypeFromOptions_Private"
-/*
-  TSSetTypeFromOptions - Sets the type of ts from user options.
-
-  Collective on TS
-
-  Input Parameter:
-. ts - The ts
-
-  Level: intermediate
-
-.keywords: TS, set, options, database, type
-.seealso: TSSetFromOptions(), TSSetType()
-*/
-static PetscErrorCode TSSetTypeFromOptions_Private(PetscOptions *PetscOptionsObject,TS ts)
-{
-  PetscBool      opt;
-  const char     *defaultType;
-  char           typeName[256];
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
-  else defaultType = TSEULER;
-
-  ierr = TSRegisterAll();CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = TSSetType(ts, typeName);CHKERRQ(ierr);
-  } else {
-    ierr = TSSetType(ts, defaultType);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 struct _n_TSMonitorDrawCtx {
   PetscViewer   viewer;
   PetscDrawAxis axis;
@@ -111,12 +75,22 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscReal              time_step;
   TSExactFinalTimeOption eftopt;
   char                   dir[16];
+  const char             *defaultType;
+  char                   typeName[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
-  /* Handle TS type options */
-  ierr = TSSetTypeFromOptions_Private(PetscOptionsObject,ts);CHKERRQ(ierr);
+  if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
+  else defaultType = TSEULER;
+
+  ierr = TSRegisterAll();CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = TSSetType(ts, typeName);CHKERRQ(ierr);
+  } else {
+    ierr = TSSetType(ts, defaultType);CHKERRQ(ierr);
+  }
 
   /* Handle generic TS options */
   if (ts->trajectory) tflg = PETSC_TRUE;
@@ -336,21 +310,24 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetFromOptions(PetscOptionsObject,adapt);CHKERRQ(ierr);
 
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
+    /* Handle specific TS options */
+  if (ts->ops->setfromoptions) {
+    ierr = (*ts->ops->setfromoptions)(PetscOptionsObject,ts);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject)ts);CHKERRQ(ierr);
 
   if (ts->trajectory) {
     ierr = TSTrajectorySetFromOptions(ts->trajectory);CHKERRQ(ierr);
   }
 
-  /* Handle specific TS options */
-  if (ts->ops->setfromoptions) {
-    ierr = (*ts->ops->setfromoptions)(PetscOptionsObject,ts);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  if (snes) {
+    if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
+    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
-
-  /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers((PetscObject)ts);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1387,7 +1364,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   PetscBool      iascii,isstring,isundials,isbinary,isdraw;
   DMTS           sdm;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool      isams;
+  PetscBool      issaws;
 #endif
 
   PetscFunctionBegin;
@@ -1403,7 +1380,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ts,viewer);CHKERRQ(ierr);
@@ -1462,7 +1439,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     }
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  } else if (isams) {
+  } else if (issaws) {
     PetscMPIInt rank;
     const char  *name;
 

@@ -223,7 +223,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsHead(PetscOptions *,const char[]);
       See, for example, PCSetFromOptions_Composite(). This is a return(0) in it for early exit
       from the function.
 
-          This is only for use with the PETSc options GUI; which does not currently exist.
+          This is only for use with the PETSc options GUI
 
    Concepts: options database^subheading
 

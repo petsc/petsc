@@ -196,6 +196,31 @@ PetscErrorCode  KSPSetReusePreconditioner(KSP ksp,PetscBool flag)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPSetSkipPCSetFromOptions"
+/*@
+   KSPSetSkipPCSetFromOptions - prevents KSPSetFromOptions() from call PCSetFromOptions(). This is used if the same PC is shared by more than one KSP so its options are not resetable for each KSP
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp   - iterative context obtained from KSPCreate()
+-  flag - PETSC_TRUE to skip calling the PCSetFromOptions()
+
+   Level: intermediate
+
+.keywords: KSP, setup
+
+.seealso: KSPCreate(), KSPSolve(), KSPDestroy(), PCSetReusePreconditioner()
+@*/
+PetscErrorCode  KSPSetSkipPCSetFromOptions(KSP ksp,PetscBool flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ksp->skippcsetfromoptions = flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp"
 /*@
    KSPSetUp - Sets up the internal data structures for the

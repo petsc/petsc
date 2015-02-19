@@ -29,12 +29,12 @@ PetscErrorCode MyVecDump(const char fname[],PetscBool skippheader,PetscBool usem
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   if (skippheader) { ierr = PetscViewerBinarySetSkipHeader(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-  if (usempiio) { ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr); }
+  if (usempiio) { ierr = PetscViewerBinarySetUseMPIIO(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetName(viewer,fname);CHKERRQ(ierr);
 
   ierr = VecView(x,viewer);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryGetMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
   if (ismpiio) { PetscPrintf(comm,"*** PetscViewer[write] using MPI-IO ***\n"); }
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&isskip);CHKERRQ(ierr);
   if (isskip) { PetscPrintf(comm,"*** PetscViewer[write] skipping header ***\n"); }
@@ -59,14 +59,14 @@ PetscErrorCode MyVecLoad(const char fname[],PetscBool skippheader,PetscBool usem
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   if (skippheader) { ierr = PetscViewerBinarySetSkipHeader(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_READ);CHKERRQ(ierr);
-  if (usempiio) { ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr); }
+  if (usempiio) { ierr = PetscViewerBinarySetUseMPIIO(viewer,PETSC_TRUE);CHKERRQ(ierr); }
   ierr = PetscViewerFileSetName(viewer,fname);CHKERRQ(ierr);
 
   ierr = VecLoad(x,viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&isskip);CHKERRQ(ierr);
   if (isskip) { PetscPrintf(comm,"*** PetscViewer[load] skipping header ***\n"); }
-  ierr = PetscViewerBinaryGetMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
   if (ismpiio) { PetscPrintf(comm,"*** PetscViewer[load] using MPI-IO ***\n"); }
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

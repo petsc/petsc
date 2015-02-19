@@ -414,30 +414,6 @@ PetscErrorCode  PetscObjectsGetObject(const char *name,PetscObject *obj,char **c
   }
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectsGetObjectMatlab"
-char *PetscObjectsGetObjectMatlab(const char* name,PetscObject *obj)
-{
-  PetscErrorCode ierr;
-  PetscInt       i;
-  PetscObject    h;
-  PetscBool      flg;
-
-  PetscFunctionBegin;
-  *obj = NULL;
-  for (i=0; i<PetscObjectsMaxCounts; i++) {
-    if ((h = PetscObjects[i])) {
-      ierr = PetscObjectName(h);if (ierr) PetscFunctionReturn(0);
-      ierr = PetscStrcmp(h->name,name,&flg);if (ierr) PetscFunctionReturn(0);
-      if (flg) {
-        *obj = h;
-        PetscFunctionReturn(h->class_name);
-      }
-    }
-  }
-  PetscFunctionReturn(0);
-}
 #endif
 
 #undef __FUNCT__

@@ -238,7 +238,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscBool      iascii;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool      isams;
+  PetscBool      issaws;
 #endif
 
   PetscFunctionBegin;
@@ -251,7 +251,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
   PetscCheckSameComm(rnd,1,viewer,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (iascii) {
     PetscMPIInt rank;
@@ -262,7 +262,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  } else if (isams) {
+  } else if (issaws) {
     PetscMPIInt rank;
     const char  *name;
 

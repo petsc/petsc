@@ -2356,14 +2356,14 @@ PetscErrorCode  PetscOptionsCreate(void)
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsSetFromOptions"
 /*@
-   PetscOptionsSetFromOptions - Sets various SNES and KSP parameters from user options.
+   PetscOptionsSetFromOptions - Sets options related to the handling of options in PETSc
 
    Collective on PETSC_COMM_WORLD
 
    Options Database Keys:
 +  -options_monitor <optional filename> - prints the names and values of all runtime options as they are set. The monitor functionality is not
                 available for options set through a file, environment variable, or on
-                the command line. Only options set after PetscInitialize completes will
+                the command line. Only options set after PetscInitialize() completes will
                 be monitored.
 .  -options_monitor_cancel - cancel all options database monitors
 
@@ -2382,7 +2382,7 @@ PetscErrorCode  PetscOptionsSetFromOptions(void)
   PetscViewer    monviewer;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options database options","PetscOptions");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for handling options","PetscOptions");CHKERRQ(ierr);
   ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flgm);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",flgc,&flgc,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
