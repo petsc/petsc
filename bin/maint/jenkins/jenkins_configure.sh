@@ -24,7 +24,7 @@ if [[ ${named_test} =~ .*icc.* || ${named_test} =~ .*ifort.* ]]; then
   export LD_LIBRARY_PATH
  fi
 fi
-
+export PATH=$PATH:/usr/local/bin
 export PETSC_DIR=${WORKSPACE} 
 if [ ${named_test} == "none" ]; then
    ./configure ${configure_options}
