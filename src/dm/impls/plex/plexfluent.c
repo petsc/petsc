@@ -282,7 +282,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
       } else if (s.index == 13 || s.index == 2013) { /* Facets */
         if (s.zoneID == 0) {  /* Header section */
           numFaces = s.last - s.first + 1;
-          if (s.nd == 0) numFaceVertices = PETSC_DETERMINE;
+          if (s.nd == 0 || s.nd == 5) numFaceVertices = PETSC_DETERMINE;
           else numFaceVertices = s.nd;
         } else {              /* Data section */
           if (numFaceVertices != PETSC_DETERMINE && s.nd != numFaceVertices) {
