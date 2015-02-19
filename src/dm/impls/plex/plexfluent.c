@@ -365,17 +365,27 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   }
 
   if (!rank) {
-    PetscInt fi, *fverts;
+    PetscInt fi, joinSize, meetSize, *fverts, cells[2];
+    const PetscInt *join, *meet;
     ierr = PetscMalloc1(numFaceVertices, &fverts);CHKERRQ(ierr);
     /* Mark facets by finding the full join of all adjacent vertices */
     for (f = 0; f < numFaces; f++) {
-      PetscInt joinSize;
-      const PetscInt *join;
-      for (fi = 0; fi < numFaceVertices; fi++) fverts[fi] = faces[f*numFaceEntries + fi] + numCells - 1;
-      ierr = DMPlexGetFullJoin(*dm, numFaceVertices, fverts, &joinSize, &join);CHKERRQ(ierr);
-      if (joinSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %d", f);
-      ierr = DMPlexSetLabelValue(*dm, "Face Sets", join[0], faceZoneIDs[f]);CHKERRQ(ierr);
-      ierr = DMPlexRestoreJoin(*dm, numFaceVertices, fverts, &joinSize, &join);CHKERRQ(ierr);
+      const PetscInt cl = faces[f*numFaceEntries + numFaceVertices] - 1;
+      const PetscInt cr = faces[f*numFaceEntries + numFaceVertices + 1] - 1;
+      if (cl > 0 && cr > 0) {
+        /* If we know both adjoining cells we can use a single-level meet */
+        cells[0] = cl; cells[1] = cr;
+        ierr = DMPlexGetMeet(*dm, 2, cells, &meetSize, &meet);CHKERRQ(ierr);
+        if (meetSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %d", f);
+        ierr = DMPlexSetLabelValue(*dm, "Face Sets", meet[0], faceZoneIDs[f]);CHKERRQ(ierr);
+        ierr = DMPlexRestoreMeet(*dm, numFaceVertices, fverts, &meetSize, &meet);CHKERRQ(ierr);
+      } else {
+        for (fi = 0; fi < numFaceVertices; fi++) fverts[fi] = faces[f*numFaceEntries + fi] + numCells - 1;
+        ierr = DMPlexGetFullJoin(*dm, numFaceVertices, fverts, &joinSize, &join);CHKERRQ(ierr);
+        if (joinSize != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %d", f);
+        ierr = DMPlexSetLabelValue(*dm, "Face Sets", join[0], faceZoneIDs[f]);CHKERRQ(ierr);
+        ierr = DMPlexRestoreJoin(*dm, numFaceVertices, fverts, &joinSize, &join);CHKERRQ(ierr);
+      }
     }
     ierr = PetscFree(fverts);CHKERRQ(ierr);
   }
