@@ -833,6 +833,19 @@ PetscErrorCode PetscSpacePolynomialGetSymmetric(PetscSpace sp, PetscBool *sym)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpacePolynomialSetTensor"
+/*@
+  PetscSpacePolynomialSetTensor - Set whether a function space is a space of tensor polynomials (the space is spanned
+  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
+  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
+
+  Input Parameters:
++ sp     - the function space object
+- tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
+
+  Level: beginner
+
+.seealso: PetscSpacePolynomialGetTensor(), PetscSpaceSetOrder(), PetscSpacePolynomialSetNumVariables()
+@*/
 PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
@@ -845,6 +858,21 @@ PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpacePolynomialGetTensor"
+/*@
+  PetscSpacePolynomialGetTensor - Get whether a function space is a space of tensor polynomials (the space is spanned
+  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
+  spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
+
+  Input Parameters:
+. sp     - the function space object
+
+  Output Parameters:
+. tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
+
+  Level: beginner
+
+.seealso: PetscSpacePolynomialSetTensor(), PetscSpaceSetOrder(), PetscSpacePolynomialSetNumVariables()
+@*/
 PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *) sp->data;
