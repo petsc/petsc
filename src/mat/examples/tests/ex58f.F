@@ -55,6 +55,12 @@
       call MatGetRowMax(A,rowmax,PETSC_NULL_INTEGER,ierr)
       call VecView(rowmax,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
+      call MatGetRowMinAbs(A,rowmax,PETSC_NULL_INTEGER,ierr)
+      call VecView(rowmax,PETSC_VIEWER_STDOUT_WORLD,ierr)
+
+      call MatGetRowMin(A,rowmax,PETSC_NULL_INTEGER,ierr)
+      call VecView(rowmax,PETSC_VIEWER_STDOUT_WORLD,ierr)
+
       call MatDestroy(A,ierr)
       call PetscViewerDestroy(v,ierr)
       call VecDestroy(rowmax,ierr)

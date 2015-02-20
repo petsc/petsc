@@ -3,6 +3,8 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matgetrowmin_                    MATGETROWMIN
+#define matgetrowminabs_                 MATGETROWMINABS
 #define matgetrowmax_                    MATGETROWMAX
 #define matgetrowmaxabs_                 MATGETROWMAXABS
 #define matdestroymatrices_              MATDESTROYMATRICES
@@ -48,6 +50,8 @@
 #define matnullspacesetfunction_         MATNULLSPACESETFUNCTION
 #define matfindnonzerorows_              MATFINDNONZEROROWS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matgetrowmin_                    matgetrowmin
+#define matgetrowminabs_                 matgetrowminabs
 #define matgetrowmax_                    matgetrowmax
 #define matgetrowmaxabs_                 matgetrowmaxabs
 #define matdestroymatrices_              matdestroymatrices
@@ -93,6 +97,17 @@
 #define matnullspacesetfunction_         matnullspacesetfunction
 #define matfindnonzerorows_              matfindnonzerorows
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL  matgetrowmin_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
+{
+  CHKFORTRANNULLINTEGER(idx);
+  *ierr = MatGetRowMin(*mat,*v,idx);
+}
+PETSC_EXTERN void PETSC_STDCALL  matgetrowminabs_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
+{
+  CHKFORTRANNULLINTEGER(idx);
+  *ierr = MatGetRowMinAbs(*mat,*v,idx);
+}
 
 PETSC_EXTERN void PETSC_STDCALL  matgetrowmax_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
 {
