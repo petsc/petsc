@@ -789,8 +789,13 @@ static PetscErrorCode MatStashBlockTypeSetUp(MatStash *stash)
     PetscMPIInt  blocklens[2];
     MPI_Aint     displs[2];
     MPI_Datatype types[2],stype;
+    /* C++ std::complex is not my favorite datatype.  Since it is not POD, we cannot use offsetof to find the offset of
+     * vals.  But the layout is actually guaranteed by the standard, so we do a little dance here with struct
+     * DummyBlock, substituting PetscReal for PetscComplex so that we can determine the offset.
+     */
+    struct DummyBlock {PetscInt row,col; PetscReal vals;};
 
-    stash->blocktype_size = offsetof(MatStashBlock,vals) + bs2*sizeof(PetscScalar);
+    stash->blocktype_size = offsetof(struct DummyBlock,vals) + bs2*sizeof(PetscScalar);
     if (stash->blocktype_size % sizeof(PetscInt)) { /* Implies that PetscInt is larger and does not satisfy alignment without padding */
       stash->blocktype_size += sizeof(PetscInt) - stash->blocktype_size % sizeof(PetscInt);
     }
@@ -799,8 +804,8 @@ static PetscErrorCode MatStashBlockTypeSetUp(MatStash *stash)
     ierr = PetscSegBufferCreate(sizeof(MatStashFrame),1,&stash->segrecvframe);CHKERRQ(ierr);
     blocklens[0] = 2;
     blocklens[1] = bs2;
-    displs[0] = offsetof(MatStashBlock,row);
-    displs[1] = offsetof(MatStashBlock,vals);
+    displs[0] = offsetof(struct DummyBlock,row);
+    displs[1] = offsetof(struct DummyBlock,vals);
     types[0] = MPIU_INT;
     types[1] = MPIU_SCALAR;
     ierr = MPI_Type_create_struct(2,blocklens,displs,types,&stype);CHKERRQ(ierr);
