@@ -878,8 +878,8 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGOptProl_Classical_Jacobi"
-PetscErrorCode PCGAMGOptProl_Classical_Jacobi(PC pc,const Mat A,Mat *P)
+#define __FUNCT__ "PCGAMGOptProlongator_Classical_Jacobi"
+PetscErrorCode PCGAMGOptProlongator_Classical_Jacobi(PC pc,const Mat A,Mat *P)
 {
 
   PetscErrorCode    ierr;
@@ -1064,7 +1064,7 @@ PetscErrorCode  PCCreateGAMG_Classical(PC pc)
   pc_gamg->ops->graph          = PCGAMGGraph_Classical;
   pc_gamg->ops->coarsen        = PCGAMGCoarsen_Classical;
   pc_gamg->ops->prolongator    = PCGAMGProlongator_Classical;
-  pc_gamg->ops->optprol        = PCGAMGOptProl_Classical_Jacobi;
+  pc_gamg->ops->optprolongator = PCGAMGOptProlongator_Classical_Jacobi;
   pc_gamg->ops->setfromoptions = PCGAMGSetFromOptions_Classical;
 
   pc_gamg->ops->createdefaultdata = PCGAMGSetData_Classical;

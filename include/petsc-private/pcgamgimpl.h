@@ -7,7 +7,7 @@ struct _PCGAMGOps {
   PetscErrorCode (*graph)(PC, const Mat, Mat*);
   PetscErrorCode (*coarsen)(PC, Mat*, PetscCoarsenData**);
   PetscErrorCode (*prolongator)(PC, const Mat, const Mat, PetscCoarsenData*, Mat*);
-  PetscErrorCode (*optprol)(PC, const Mat, Mat*);
+  PetscErrorCode (*optprolongator)(PC, const Mat, Mat*);
   PetscErrorCode (*createlevel)(PC, Mat, PetscInt, Mat *, Mat *, PetscMPIInt *, IS *);
   PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
   PetscErrorCode (*setfromoptions)(PetscOptions*,PC);
@@ -65,13 +65,13 @@ enum tag {SET1,SET2,GRAPH,GRAPH_MAT,GRAPH_FILTER,GRAPH_SQR,SET4,SET5,SET6,FIND_V
 #if defined PETSC_GAMG_USE_LOG
 PETSC_INTERN PetscLogEvent petsc_gamg_setup_events[NUM_SET];
 #endif
-PETSC_INTERN PetscLogEvent PC_GAMGGgraph_AGG;
-PETSC_INTERN PetscLogEvent PC_GAMGGgraph_GEO;
+PETSC_INTERN PetscLogEvent PC_GAMGGraph_AGG;
+PETSC_INTERN PetscLogEvent PC_GAMGGraph_GEO;
 PETSC_INTERN PetscLogEvent PC_GAMGCoarsen_AGG;
 PETSC_INTERN PetscLogEvent PC_GAMGCoarsen_GEO;
 PETSC_INTERN PetscLogEvent PC_GAMGProlongator_AGG;
 PETSC_INTERN PetscLogEvent PC_GAMGProlongator_GEO;
-PETSC_INTERN PetscLogEvent PC_GAMGOptprol_AGG;
+PETSC_INTERN PetscLogEvent PC_GAMGOptProlongator_AGG;
 #endif
 
 typedef struct _GAMGHashTable {

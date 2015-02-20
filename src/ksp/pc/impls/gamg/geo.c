@@ -549,7 +549,7 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,const Pets
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCGAMGgraph_GEO
+   PCGAMGGraph_GEO
 
   Input Parameter:
    . pc - this
@@ -558,8 +558,8 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,const Pets
    . a_Gmat
 */
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGgraph_GEO"
-PetscErrorCode PCGAMGgraph_GEO(PC pc,const Mat Amat,Mat *a_Gmat)
+#define __FUNCT__ "PCGAMGGraph_GEO"
+PetscErrorCode PCGAMGGraph_GEO(PC pc,const Mat Amat,Mat *a_Gmat)
 {
   PetscErrorCode  ierr;
   PC_MG           *mg      = (PC_MG*)pc->data;
@@ -574,7 +574,7 @@ PetscErrorCode PCGAMGgraph_GEO(PC pc,const Mat Amat,Mat *a_Gmat)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
-  ierr = PetscLogEventBegin(PC_GAMGGgraph_GEO,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_GAMGGraph_GEO,0,0,0,0);CHKERRQ(ierr);
 #endif
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
@@ -587,14 +587,14 @@ PetscErrorCode PCGAMGgraph_GEO(PC pc,const Mat Amat,Mat *a_Gmat)
 
   *a_Gmat = Gmat;
 #if defined PETSC_USE_LOG
-  ierr = PetscLogEventEnd(PC_GAMGGgraph_GEO,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_GAMGGraph_GEO,0,0,0,0);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCGAMGcoarsen_GEO
+   PCGAMGCoarsen_GEO
 
   Input Parameter:
    . a_pc - this
@@ -603,8 +603,8 @@ PetscErrorCode PCGAMGgraph_GEO(PC pc,const Mat Amat,Mat *a_Gmat)
    . a_llist_parent - linked list from selected indices for data locality only
 */
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGcoarsen_GEO"
-PetscErrorCode PCGAMGcoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_parent)
+#define __FUNCT__ "PCGAMGCoarsen_GEO"
+PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_parent)
 {
   PetscErrorCode ierr;
   PC_MG          *mg      = (PC_MG*)a_pc->data;
@@ -873,10 +873,10 @@ PetscErrorCode  PCCreateGAMG_GEO(PC pc)
   /* reset does not do anything; setup not virtual */
 
   /* set internal function pointers */
-  pc_gamg->ops->graph       = PCGAMGgraph_GEO;
-  pc_gamg->ops->coarsen     = PCGAMGcoarsen_GEO;
-  pc_gamg->ops->prolongator = PCGAMGProlongator_GEO;
-  pc_gamg->ops->optprol     = 0;
+  pc_gamg->ops->graph             = PCGAMGGraph_GEO;
+  pc_gamg->ops->coarsen           = PCGAMGCoarsen_GEO;
+  pc_gamg->ops->prolongator       = PCGAMGProlongator_GEO;
+  pc_gamg->ops->optprolongator    = NULL;
   pc_gamg->ops->createdefaultdata = PCSetData_GEO;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_GEO);CHKERRQ(ierr);
