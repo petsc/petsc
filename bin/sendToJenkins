@@ -1,7 +1,7 @@
 #!/bin/bash
 
 OPTIND=1
-address="default"
+
 username=$JENKINS_USERNAME
 email=$JENKINS_EMAIL
 branch=`git symbolic-ref -q --short HEAD`
@@ -23,7 +23,7 @@ while getopts "h?a:b:d:m:o:qr:su:" opt; do
       echo "            eg, one of linux-gcc-real, osx-10.6, etc."
       echo "            Use 'default' for arch-jenkins-* subset:"
       echo "            Use 'none' to ignore example configurations"
-      echo "         -b <branch of PETSc to test>       -- default is 'next'"
+      echo "         -b <branch of PETSc to test>       -- default is current"
       echo "         -d <number>                        -- stop/cancel build"
       echo "         -m <address to mail to>            -- required. or environmental variable JENKINS_EMAIL"
       echo "            Use 'none' if no email desired"
@@ -75,11 +75,6 @@ else
   url=${username}@login.mcs.anl.gov
 fi;
 
-if [ "${email}x" == "x" ]; then
-  mailto=""
-else
-  mailto="\&mailto=${email}"
-fi
 
 
 # set up connection through named proxy
@@ -115,10 +110,16 @@ if [ "x${results}" != "x" ]; then
   exit 0
 fi
 
-if [ ${address} == "default" ]; then
-  echo "Error: No email address give. Use -m <email> or -m none"
+if [ "x${email}" == "x" ]; then
+  echo "Error: No email address give. Use -m <email> or -m none or set JENKINS_EMAIL"
   exit 1
 fi;
+
+if [ "${email}x" == "x" ]; then
+  mailto=""
+else
+  mailto="\&mailto=${email}"
+fi
 
 if [ ${architecture} == "default" ]; then
   bn=`ssh -S jenkins-proxy login.mcs.anl.gov curl -s https://jenkins-ci.mcs.anl.gov/job/petsc-branch/api/json | python -c 'import sys,json; print json.load(sys.stdin)["nextBuildNumber"]'`
