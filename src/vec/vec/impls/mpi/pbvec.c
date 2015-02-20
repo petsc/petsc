@@ -276,7 +276,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
     ierr = MPI_Waitsome(4*x->nrecvranks,x->recvreqs,&ndone,some_indices,x->use_status?some_statuses:MPI_STATUSES_IGNORE);CHKERRQ(ierr);
     for (ii=0; ii<ndone; ii++) {
       PetscInt i = some_indices[ii]/4,j,k;
-      InsertMode imode = x->recvhdr[i].insertmode;
+      InsertMode imode = (InsertMode)x->recvhdr[i].insertmode;
       PetscInt *recvint;
       PetscScalar *recvscalar;
       PetscBool intmsg = (PetscBool)(some_indices[ii]%2 == 0);
