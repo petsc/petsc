@@ -85,16 +85,36 @@ PETSC_STATIC_INLINE PetscInt epsilon(PetscInt i, PetscInt j, PetscInt k)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexProjectRigidBody"
+static void DMPlexProjectRigidBody(const PetscReal X[], PetscScalar *mode, void *ctx)
+{
+  PetscInt       *ctxInt = (PetscInt *)ctx;
+  PetscInt       dim     = ctxInt[0];
+  PetscInt       d       = ctxInt[1];
+  PetscInt       i, j, k = dim > 2 ? d - dim : d;
+
+  for (i = 0; i < dim; i++) mode[i] = 0.;
+  if (d < dim) {
+    mode[d] = 1.;
+  }
+  else {
+    for (i = 0; i < dim; i++) {
+      for (j = 0; j < dim; j++) {
+        mode[j] += epsilon(i, j, k)*X[i];
+      }
+    }
+  }
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateRigidBody"
 /*@C
-  DMPlexCreateRigidBody - create rigid body modes from coordinates
+  DMPlexCreateRigidBody - for the default global section, create rigid body modes from coordinates
 
   Collective on DM
 
   Input Arguments:
-+ dm - the DM
-. section - the local section associated with the rigid field, or NULL for the default section
-- globalSection - the global section associated with the rigid field, or NULL for the default section
+. dm - the DM
 
   Output Argument:
 . sp - the null space
@@ -105,13 +125,12 @@ PETSC_STATIC_INLINE PetscInt epsilon(PetscInt i, PetscInt j, PetscInt k)
 
 .seealso: MatNullSpaceCreate()
 @*/
-PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscSection section, PetscSection globalSection, MatNullSpace *sp)
+PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
 {
   MPI_Comm       comm;
-  Vec            coordinates, localMode, mode[6];
-  PetscSection   coordSection;
-  PetscScalar   *coords;
-  PetscInt       dim, vStart, vEnd, v, n, m, d, i, j;
+  Vec            mode[6];
+  PetscSection   section, globalSection;
+  PetscInt       dim, n, m, d, i, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -121,52 +140,21 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscSection section, PetscSection g
     ierr = MatNullSpaceCreate(comm, PETSC_TRUE, 0, NULL, sp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (!section)       {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
-  if (!globalSection) {ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);}
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
   ierr = PetscSectionGetConstrainedStorageSize(globalSection, &n);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   m    = (dim*(dim+1))/2;
   ierr = VecCreate(comm, &mode[0]);CHKERRQ(ierr);
   ierr = VecSetSizes(mode[0], n, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetUp(mode[0]);CHKERRQ(ierr);
   for (i = 1; i < m; ++i) {ierr = VecDuplicate(mode[0], &mode[i]);CHKERRQ(ierr);}
-  /* Assume P1 */
-  ierr = DMGetLocalVector(dm, &localMode);CHKERRQ(ierr);
-  for (d = 0; d < dim; ++d) {
-    PetscScalar values[3] = {0.0, 0.0, 0.0};
+  for (d = 0; d < m; d++) {
+    PetscInt ctx[2] = {dim, d};
+    void     *voidctx = (void *)(&ctx[0]);
+    void     (*func)(const PetscReal *,PetscScalar *,void *) = DMPlexProjectRigidBody;
 
-    values[d] = 1.0;
-    ierr      = VecSet(localMode, 0.0);CHKERRQ(ierr);
-    for (v = vStart; v < vEnd; ++v) {
-      ierr = DMPlexVecSetClosure(dm, section, localMode, v, values, INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = DMLocalToGlobalBegin(dm, localMode, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
-    ierr = DMLocalToGlobalEnd(dm, localMode, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(dm,&func,&voidctx,INSERT_VALUES,mode[d]);CHKERRQ(ierr);
   }
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  for (d = dim; d < dim*(dim+1)/2; ++d) {
-    PetscInt i, j, k = dim > 2 ? d - dim : d;
-
-    ierr = VecSet(localMode, 0.0);CHKERRQ(ierr);
-    for (v = vStart; v < vEnd; ++v) {
-      PetscScalar values[3] = {0.0, 0.0, 0.0};
-      PetscInt    off;
-
-      ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
-      for (i = 0; i < dim; ++i) {
-        for (j = 0; j < dim; ++j) {
-          values[j] += epsilon(i, j, k)*PetscRealPart(coords[off+i]);
-        }
-      }
-      ierr = DMPlexVecSetClosure(dm, section, localMode, v, values, INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = DMLocalToGlobalBegin(dm, localMode, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
-    ierr = DMLocalToGlobalEnd(dm, localMode, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
-  }
-  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localMode);CHKERRQ(ierr);
   for (i = 0; i < dim; ++i) {ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);}
   /* Orthonormalize system */
   for (i = dim; i < m; ++i) {

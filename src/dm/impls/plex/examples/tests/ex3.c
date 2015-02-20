@@ -444,7 +444,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     ierr = DMCreateMatrix(dm,&E);CHKERRQ(ierr);
     ierr = DMGetLocalVector(dm,&local);CHKERRQ(ierr);
     ierr = DMPlexSNESComputeJacobianFEM(dm,local,E,E,NULL);CHKERRQ(ierr);
-    ierr = DMPlexCreateRigidBody(dm,NULL,NULL,&sp);CHKERRQ(ierr);
+    ierr = DMPlexCreateRigidBody(dm,&sp);CHKERRQ(ierr);
     ierr = MatNullSpaceTest(sp,E,&isNullSpace);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&sp);CHKERRQ(ierr);
     ierr = MatDestroy(&E);CHKERRQ(ierr);
