@@ -227,7 +227,7 @@ PetscErrorCode KSPChebyshevEstEigSetRandom(KSP ksp,PetscRandom random)
 
   Level: intermediate
 
-.seealso: KSPChebysetSetEstimateEigenvalues()
+.seealso: KSPChebyshevSetEstimateEigenvalues()
 @*/
 PetscErrorCode KSPChebyshevGetEstEigKSP(KSP ksp, KSP *kspest)
 {
