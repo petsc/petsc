@@ -3,6 +3,8 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matgetrowmax_                    MATGETROWMAX
+#define matgetrowmaxabs_                 MATGETROWMAXABS
 #define matdestroymatrices_              MATDESTROYMATRICES
 #define matgetfactor_                    MATGETFACTOR
 #define matfactorgetsolverpackage_       MATFACTORGETSOLVERPACKAGE
@@ -46,7 +48,9 @@
 #define matnullspacesetfunction_         MATNULLSPACESETFUNCTION
 #define matfindnonzerorows_              MATFINDNONZEROROWS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matdestroymatrices_              matdestroymatrices_
+#define matgetrowmax_                    matgetrowmax
+#define matgetrowmaxabs_                 matgetrowmaxabs
+#define matdestroymatrices_              matdestroymatrices
 #define matgetfactor_                    matgetfactor
 #define matfactorgetsolverpackage_       matfactorgetsolverpackage
 #define matgetvecs_                      matgetvecs
@@ -89,6 +93,18 @@
 #define matnullspacesetfunction_         matnullspacesetfunction
 #define matfindnonzerorows_              matfindnonzerorows
 #endif
+
+PETSC_EXTERN void PETSC_STDCALL  matgetrowmax_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
+{
+  CHKFORTRANNULLINTEGER(idx);
+  *ierr = MatGetRowMax(*mat,*v,idx);
+}
+
+PETSC_EXTERN void PETSC_STDCALL  matgetrowmaxabs_(Mat *mat,Vec *v,PetscInt idx[], int *ierr )
+{
+  CHKFORTRANNULLINTEGER(idx);
+  *ierr = MatGetRowMaxAbs(*mat,*v,idx);
+}
 
 static PetscErrorCode ournullfunction(MatNullSpace sp,Vec x,void *ctx)
 {
