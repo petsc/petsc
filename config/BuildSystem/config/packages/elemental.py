@@ -33,6 +33,9 @@ class Configure(config.package.CMakePackage):
     args.append('-DBUILD_METIS=OFF')
     args.append('-DBUILD_PARMETIS=OFF')
     args.append('-DINSTALL_PYTHON_PACKAGE=FALSE')
+    if self.setCompilers.isDarwin():
+      # shared library build doesn't work on Apple
+      args.append('-DBUILD_SHARED_LIBS=off')
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
