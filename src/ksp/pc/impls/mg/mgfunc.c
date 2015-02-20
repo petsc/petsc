@@ -377,6 +377,11 @@ PetscErrorCode PCMGGetRScale(PC pc,PetscInt l,Vec *rscale)
    Ouput Parameters:
 .  ksp - the smoother
 
+   Notes:
+   Once you have called this routine, you can call KSPSetOperators(ksp,...) on the resulting ksp to provide the operators for the smoother for this level.
+   You can also modify smoother options by calling the various KSPSetXXX() options on this ksp. In addition you can call KSPGetPC(ksp,&pc)
+   and modify PC options for the smoother; for example PCSetType(pc,PCSOR); to use SOR smoothing.
+
    Level: advanced
 
 .keywords: MG, get, multigrid, level, smoother, pre-smoother, post-smoother
