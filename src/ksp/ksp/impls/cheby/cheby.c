@@ -229,7 +229,7 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptions *PetscOptionsObject,KSP 
   ierr = PetscOptionsRealArray("-ksp_chebyshev_eigenvalues","extreme eigenvalues","KSPChebyshevSetEigenvalues",eminmax,&neigarg,&flgeig);CHKERRQ(ierr);
   if (flgeig) {
     if (neigarg != 2) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"-ksp_chebyshev_eigenvalues: must specify 2 parameters, min and max eigenvalues");
-    ierr = KSPChebyshevSetEigenvalues(ksp, eminmax[0], eminmax[1]);CHKERRQ(ierr);
+    ierr = KSPChebyshevSetEigenvalues(ksp, eminmax[1], eminmax[0]);CHKERRQ(ierr);
   }
   ierr = PetscOptionsRealArray("-ksp_chebyshev_estimate_eigenvalues","estimate eigenvalues using a Krylov method, then use this transform for Chebyshev eigenvalue bounds","KSPChebyshevSetEstimateEigenvalues",tform,&nestarg,&flgest);CHKERRQ(ierr);
   if (flgest) {
