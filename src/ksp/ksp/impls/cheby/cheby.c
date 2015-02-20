@@ -213,6 +213,45 @@ PetscErrorCode KSPChebyshevEstEigSetRandom(KSP ksp,PetscRandom random)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPChebyshevGetEstEigKSP"
+/*@
+  KSPChebyshevGetEstEigKSP - Get the Krylov method context used to estimate eigenvalues for the Chebyshev method.  If
+  a Krylov method is not being used for this purpose, NULL is returned.  The reference count of the returned KSP is
+  not incremented: it should not be destroyed by the user.
+
+  Input Parameters:
+. ksp - the Krylov space context
+
+  Output Parameters:
+. kspest the eigenvalue estimation Krylov space context
+
+  Level: intermediate
+
+.seealso: KSPChebysetSetEstimateEigenvalues()
+@*/
+PetscErrorCode KSPChebyshevGetEstEigKSP(KSP ksp, KSP *kspest)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  *kspest = NULL;
+  ierr = PetscTryMethod(ksp,"KSPChebyshevGetEstEigKSP_C",(KSP,KSP*),(ksp,kspest));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPChebyshevGetEstEigKSP_Chebyshev"
+static PetscErrorCode KSPChebyshevGetEstEigKSP_Chebyshev(KSP ksp, KSP *kspest)
+{
+  KSP_Chebyshev *cheb = (KSP_Chebyshev*)ksp->data;
+
+  PetscFunctionBegin;
+  *kspest = cheb->kspest;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_Chebyshev"
 PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptions *PetscOptionsObject,KSP ksp)
 {
@@ -494,6 +533,7 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevGetEstEigKSP_C",NULL);CHKERRQ(ierr);
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -557,5 +597,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C",KSPChebyshevSetEigenvalues_Chebyshev);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C",KSPChebyshevSetEstimateEigenvalues_Chebyshev);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C",KSPChebyshevEstEigSetRandom_Chebyshev);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevGetEstEigKSP_C",KSPChebyshevGetEstEigKSP_Chebyshev);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
