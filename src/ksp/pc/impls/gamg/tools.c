@@ -240,6 +240,11 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
   Vec               diag;
 
   PetscFunctionBegin;
+  if (vfilter < 0.0 && !symm) {
+    /* Just use the provided matrix as the graph */
+    PetscFunctionReturn(0);
+  }
+
   ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat, &Istart, &Iend);CHKERRQ(ierr);
