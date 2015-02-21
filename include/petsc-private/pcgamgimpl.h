@@ -81,10 +81,33 @@ typedef struct _GAMGHashTable {
   PetscInt size;
 } GAMGHashTable;
 
-PETSC_EXTERN PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab);
+
+PETSC_EXTERN PetscErrorCode GAMGTableCreate(PetscInt, GAMGHashTable*);
 PETSC_EXTERN PetscErrorCode GAMGTableDestroy(GAMGHashTable*);
-PETSC_EXTERN PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data);
-PETSC_EXTERN PetscErrorCode GAMGTableFind(GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data);
+PETSC_EXTERN PetscErrorCode GAMGTableAdd(GAMGHashTable*,PetscInt,PetscInt);
+
+#define GAMG_HASH(key) ((((PetscInt)7)*key)%a_tab->size)
+#undef __FUNCT__
+#define __FUNCT__ "GAMGTableFind"
+PETSC_STATIC_INLINE PetscErrorCode GAMGTableFind(GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data)
+{
+  PetscInt kk,idx;
+
+  PetscFunctionBegin;
+  if (a_key<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %d.",a_key);
+  for (kk = 0, idx = GAMG_HASH(a_key); kk < a_tab->size; kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1) {
+    if (a_tab->table[idx] == a_key) {
+      *a_data = a_tab->data[idx];
+      break;
+    } else if (a_tab->table[idx] == -1) {
+      /* not here */
+      *a_data = -1;
+      break;
+    }
+  }
+  if (kk==a_tab->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"key %d not found in table",a_key);
+  PetscFunctionReturn(0);
+}
 
 #endif
 
