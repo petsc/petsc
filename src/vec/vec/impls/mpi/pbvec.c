@@ -261,7 +261,10 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   VecAssemblyFrame *frame;
 
   PetscFunctionBegin;
-  if (X->stash.donotstash) PetscFunctionReturn(0);
+  if (X->stash.donotstash) {
+    X->stash.insertmode = NOT_SET_VALUES;
+    PetscFunctionReturn(0);
+  }
 
   ierr = VecGetArray(X,&xarray);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractInPlace(x->segrecvframe,&frame);CHKERRQ(ierr);
