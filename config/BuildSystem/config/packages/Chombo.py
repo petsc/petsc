@@ -3,7 +3,9 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://www.mcs.anl.gov/~sarich/Chombo_3.2.tar.gz']
+    self.gitcommit = 'master'
+    self.giturls   = ['https://bitbucket.org/petsc/pkg-chombo-3.2.git']
+    self.download  = ['https://bitbucket.org/petsc/pkg-chombo-3.2/get/master.tar.gz']
     self.functionsCxx = [1,'namespace Box {class Box{public: Box();};}','Box::Box *nb = new Box::Box()'] 
     self.includedir = 'include'
     self.includes     = ['CH_config.H']
@@ -17,6 +19,7 @@ class Configure(config.package.Package):
     self.blasLapack = self.framework.require('config.packages.BlasLapack',self)
     self.hdf5 = self.framework.require('config.packages.hdf5',self)
     self.mpi = self.framework.require('config.packages.MPI',self)
+    self.make = self.framework.require('config.packages.make',self)
     self.deps       = [self.mpi,self.blasLapack,self.hdf5]
     return
 
@@ -25,8 +28,10 @@ class Configure(config.package.Package):
     self.getExecutable('csh',path='/bin')
     if not hasattr(self, 'csh'):
       raise RuntimeError('Cannot build Chombo. It requires /bin/csh. Please install csh and retry.\n')
-
-    self.framework.pushLanguage('Cxx')
+    if not hasattr(self.compilers, 'FC'):
+      raise RuntimeError('Cannot install '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
+    if not self.make.haveGNUMake:
+      raise RuntimeError('Cannot install '+self.name+' without GNUMake, suggest --download-make')
 
     g = open(os.path.join(self.packageDir,'lib','mk','Make.defs.local'),'w')
     g.write('\n#begin\n')
@@ -35,8 +40,13 @@ class Configure(config.package.Package):
     g.write('#OPT='+'\n')
     g.write('#PRECISION='+'\n')
     g.write('#PROFILE='+'\n')
+    self.framework.pushLanguage('Cxx')
     g.write('CXX='+self.framework.getCompiler()+'\n')
     g.write('MPICXX='+self.framework.getCompiler()+'\n')
+    self.framework.popLanguage()
+    self.framework.pushLanguage('FC')
+    g.write('FC='+self.framework.getCompiler()+'\n')
+    self.framework.popLanguage()
     g.write('#OBJMODEL='+'\n')
     g.write('#XTRACONFIG='+'\n')
     g.write('#USE_64='+'\n')
@@ -99,7 +109,7 @@ class Configure(config.package.Package):
 
 
       self.libdir = 'lib'
-      self.liblist = [['libbasetools%s.a' % config_value,'libamrelliptic%s' % config_value,'libamrtimedependent%s.a' % config_value,'libamrtools%s.a' % config_value,'libboxtools%s.a' % config_value]]
+      self.liblist = [['libbasetools%s.a' % config_value,'libamrelliptic%s.a' % config_value,'libamrtimedependent%s.a' % config_value,'libamrtools%s.a' % config_value,'libboxtools%s.a' % config_value]]
       self.postInstall(output+err,os.path.join('lib','mk','Make.defs.local'))
     return self.installDir
 
