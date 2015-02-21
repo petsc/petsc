@@ -391,6 +391,10 @@ PetscErrorCode  KSPReasonView(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_THREADSAFETY)
+#define KSPReasonViewFromOptions KSPReasonViewFromOptionsUnsafe
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPReasonViewFromOptions"
 /*@C
@@ -425,6 +429,17 @@ PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
   incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+#undef KSPReasonViewFromOptions
+PetscErrorCode KSPReasonViewFromOptions(KSP ksp)
+{
+  PetscErrorCode ierr;
+#pragma omp critical
+  ierr = KSPReasonViewFromOptionsUnsafe(ksp);
+  return ierr;
+}
+#endif
 
 #include <petscdraw.h>
 #undef __FUNCT__
