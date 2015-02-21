@@ -95,8 +95,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
   ierr = MatGetLocalSize(Cmat, &ncrs_eq, NULL);CHKERRQ(ierr);
   if (pc_gamg->data_cell_rows>0) {
     ncrs = pc_gamg->data_sz/pc_gamg->data_cell_cols/pc_gamg->data_cell_rows;
-  }
-  else {
+  } else {
     PetscInt  bs;
     ierr = MatGetBlockSize(Cmat, &bs);CHKERRQ(ierr);
     ncrs = ncrs_eq/bs;

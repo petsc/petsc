@@ -160,7 +160,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
   PetscInt             jj,tid,tt,idx,nselected_2;
   struct triangulateio in,mid;
   const PetscInt       *selected_idx_2;
-  PetscMPIInt          rank,size;
+  PetscMPIInt          rank;
   PetscInt             Istart,Iend,nFineLoc,myFine0;
   int                  kk,nPlotPts,sid;
   MPI_Comm             comm;
@@ -169,7 +169,6 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)a_Prol,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = ISGetSize(selected_2, &nselected_2);CHKERRQ(ierr);
   if (nselected_2 == 1 || nselected_2 == 2) { /* 0 happens on idle processors */
     *a_worst_best = 100.0; /* this will cause a stop, but not globalized (should not happen) */
@@ -458,13 +457,12 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
 static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,const PetscInt clid_lid_1[],const Mat Gmat1,IS *a_selected_2,Mat *a_Gmat_2,PetscInt **a_crsGID)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size;
+  PetscMPIInt    size;
   PetscInt       *crsGID, kk,my0,Iend,nloc;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Gmat1,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat1,&my0,&Iend);CHKERRQ(ierr); /* AIJ */
   nloc = Iend - my0; /* this does not change */
@@ -566,7 +564,6 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,const Mat Amat,Mat *a_Gmat)
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
   const PetscInt  verbose  = pc_gamg->verbose;
   const PetscReal vfilter  = pc_gamg->threshold;
-  PetscMPIInt     rank,size;
   MPI_Comm        comm;
   Mat             Gmat;
   PetscBool       set,flg,symm;
@@ -574,8 +571,6 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,const Mat Amat,Mat *a_Gmat)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_GAMGGraph_GEO,0,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 
   ierr = MatIsSymmetricKnown(Amat, &set, &flg);CHKERRQ(ierr);
   symm = (PetscBool)!(set && flg);
@@ -606,7 +601,6 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
   PC_MG          *mg      = (PC_MG*)a_pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscInt       Istart,Iend,nloc,kk,Ii,ncols;
-  PetscMPIInt    rank,size;
   IS             perm;
   GAMGNode       *gnodes;
   PetscInt       *permute;
@@ -617,8 +611,6 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)a_pc,&comm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(PC_GAMGCoarsen_GEO,0,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat, &Istart, &Iend);CHKERRQ(ierr);
   nloc = (Iend-Istart);
 
