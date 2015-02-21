@@ -217,7 +217,7 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCGAMGFilterGraph - filter graph and symetrize if needed
+   PCGAMGFilterGraph - filter (remove zero and possibly small values from the) graph and symetrize if needed
 
  Input Parameter:
  . vfilter - threshold paramter [0,1)
@@ -243,7 +243,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
 #endif
-  /* scale Gmat so filter works */
+  /* scale Gmat for all values between -1 and 1 */
   ierr = MatCreateVecs(Gmat, &diag, 0);CHKERRQ(ierr);
   ierr = MatGetDiagonal(Gmat, diag);CHKERRQ(ierr);
   ierr = VecReciprocal(diag);CHKERRQ(ierr);
@@ -274,7 +274,6 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
       for (jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
       ierr = MatSeqAIJRestoreArray(aij->B,&avals);CHKERRQ(ierr);
     }
-
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -291,7 +290,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
     ierr = MatTranspose(Gmat, MAT_INITIAL_MATRIX, &matTrans);CHKERRQ(ierr);
   }
 
-  /* filter - dup zeros out matrix */
+  /* Determine upper bound on nonzeros needed in new filtered matrix */
   ierr = PetscMalloc2(nloc, &d_nnz,nloc, &o_nnz);CHKERRQ(ierr);
   for (Ii = Istart, jj = 0; Ii < Iend; Ii++, jj++) {
     ierr      = MatGetRow(Gmat,Ii,&ncols,NULL,NULL);CHKERRQ(ierr);
@@ -313,7 +312,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
     ierr = MatDestroy(&matTrans);CHKERRQ(ierr);
   } else {
     /* all entries are generated locally so MatAssembly will be slightly faster for large process counts */
-    //   ierr = MatSetOption(tGmat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatSetOption(tGmat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   for (Ii = Istart, nnz0 = nnz1 = 0; Ii < Iend; Ii++) {
