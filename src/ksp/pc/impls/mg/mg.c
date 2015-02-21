@@ -475,6 +475,9 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"    Not using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
     }
+    if (mg->view){
+      ierr = (*mg->view)(pc,viewer);CHKERRQ(ierr);
+    }
     for (i=0; i<levels; i++) {
       if (!i) {
         ierr = PetscViewerASCIIPrintf(viewer,"Coarse grid solver -- level -------------------------------\n",i);CHKERRQ(ierr);

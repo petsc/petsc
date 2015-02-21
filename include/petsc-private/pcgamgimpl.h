@@ -12,6 +12,7 @@ struct _PCGAMGOps {
   PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
   PetscErrorCode (*setfromoptions)(PetscOptions*,PC);
   PetscErrorCode (*destroy)(PC);
+  PetscErrorCode (*view)(PC,PetscViewer);
 };
 
 /* Private context for the GAMG preconditioner */

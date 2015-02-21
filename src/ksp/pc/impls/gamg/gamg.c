@@ -1327,6 +1327,22 @@ static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCView_GAMG"
+static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PC_MG          *mg      = (PC_MG*)pc->data;
+  PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIPrintf(viewer,"    GAMG specific options\n");CHKERRQ(ierr);
+  if (pc_gamg->ops->view) {
+    ierr = (*pc_gamg->ops->view)(pc,viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GAMG"
 PetscErrorCode PCSetFromOptions_GAMG(PetscOptions *PetscOptionsObject,PC pc)
 {
@@ -1439,6 +1455,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc->ops->setup          = PCSetUp_GAMG;
   pc->ops->reset          = PCReset_GAMG;
   pc->ops->destroy        = PCDestroy_GAMG;
+  mg->view                = PCView_GAMG;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetProcEqLim_C",PCGAMGSetProcEqLim_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetCoarseEqLim_C",PCGAMGSetCoarseEqLim_GAMG);CHKERRQ(ierr);

@@ -48,8 +48,9 @@ typedef struct {
   PetscInt     default_smoothd;               /*  with calls to KSPSetTolerances() */
   PetscReal    rtol,abstol,dtol,ttol;         /* tolerances for when running with PCApplyRichardson_MG */
 
-  void          *innerctx;                   /* optional data for preconditioner, like PCEXOTIC that inherits off of PCMG */
+  void          *innerctx;                    /* optional data for preconditioner, like PCEXOTIC that inherits off of PCMG */
   PetscLogStage stageApply;
+  PetscErrorCode (*view)(PC,PetscViewer);     /* GAMG and other objects that use PCMG can set their own viewer here */
 } PC_MG;
 
 PETSC_INTERN PetscErrorCode PCSetUp_MG(PC);

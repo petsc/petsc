@@ -876,6 +876,21 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCView_GAMG_AGG"
+static PetscErrorCode PCView_GAMG_AGG(PC pc,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PC_MG          *mg      = (PC_MG*)pc->data;
+  PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
+  PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIPrintf(viewer,"      AGG specific options\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"        Symmetric graph %s\n",pc_gamg_agg->sym_graph ? "true" : "false");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*
    PCGAMGGraph_AGG
@@ -1333,7 +1348,8 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
   pc_gamg->ops->prolongator       = PCGAMGProlongator_AGG;
   pc_gamg->ops->optprolongator    = PCGAMGOptProlongator_AGG;
   pc_gamg->ops->createdefaultdata = PCSetData_AGG;
-
+  pc_gamg->ops->view              = PCView_GAMG_AGG;
+  
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_AGG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
