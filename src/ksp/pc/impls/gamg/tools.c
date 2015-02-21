@@ -240,16 +240,6 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
   Vec               diag;
 
   PetscFunctionBegin;
-  if (vfilter < 0.0 && !symm) {
-    /* Just use the provided matrix as the graph */
-    PetscFunctionReturn(0);
-  }
-
-  ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(Gmat, &Istart, &Iend);CHKERRQ(ierr);
-  nloc = Iend - Istart;
-  ierr = MatGetSize(Gmat, &MM, &NN);CHKERRQ(ierr);
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -260,6 +250,42 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
   ierr = VecSqrtAbs(diag);CHKERRQ(ierr);
   ierr = MatDiagonalScale(Gmat, diag, diag);CHKERRQ(ierr);
   ierr = VecDestroy(&diag);CHKERRQ(ierr);
+
+  if (vfilter < 0.0 && !symm) {
+    /* Just use the provided matrix as the graph but make all values positive */
+    Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)Gmat->data;
+    MatInfo     info;
+    PetscScalar *avals;
+    PetscMPIInt size;
+
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)Gmat),&size);CHKERRQ(ierr);
+    if (size == 1) {
+      ierr = MatGetInfo(Gmat,MAT_LOCAL,&info);CHKERRQ(ierr);
+      ierr = MatSeqAIJGetArray(Gmat,&avals);CHKERRQ(ierr);
+      for (jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
+      ierr = MatSeqAIJRestoreArray(Gmat,&avals);CHKERRQ(ierr);
+    } else {
+      ierr = MatGetInfo(aij->A,MAT_LOCAL,&info);CHKERRQ(ierr);
+      ierr = MatSeqAIJGetArray(aij->A,&avals);CHKERRQ(ierr);
+      for (jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
+      ierr = MatSeqAIJRestoreArray(aij->A,&avals);CHKERRQ(ierr);
+      ierr = MatGetInfo(aij->B,MAT_LOCAL,&info);CHKERRQ(ierr);
+      ierr = MatSeqAIJGetArray(aij->B,&avals);CHKERRQ(ierr);
+      for (jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
+      ierr = MatSeqAIJRestoreArray(aij->B,&avals);CHKERRQ(ierr);
+    }
+
+#if defined PETSC_GAMG_USE_LOG
+    ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
+#endif
+    PetscFunctionReturn(0);
+  }
+
+  ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(Gmat, &Istart, &Iend);CHKERRQ(ierr);
+  nloc = Iend - Istart;
+  ierr = MatGetSize(Gmat, &MM, &NN);CHKERRQ(ierr);
 
   if (symm) {
     ierr = MatTranspose(Gmat, MAT_INITIAL_MATRIX, &matTrans);CHKERRQ(ierr);
@@ -285,6 +311,9 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
   if (symm) {
     ierr = MatDestroy(&matTrans);CHKERRQ(ierr);
+  } else {
+    /* all entries are generated locally so MatAssembly will be slightly faster for large process counts */
+    //   ierr = MatSetOption(tGmat,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   for (Ii = Istart, nnz0 = nnz1 = 0; Ii < Iend; Ii++) {

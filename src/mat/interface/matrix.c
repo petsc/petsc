@@ -4204,6 +4204,10 @@ PetscErrorCode  MatGetFactorAvailable(Mat mat, const MatSolverPackage type,MatFa
   PetscFunctionReturn(0);
 }
 
+#include <petscdmtypes.h>
+PETSC_EXTERN PetscErrorCode MatGetDM(Mat, DM*);
+PETSC_EXTERN PetscErrorCode MatSetDM(Mat, DM);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate"
 /*@
@@ -4232,6 +4236,7 @@ PetscErrorCode  MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   PetscErrorCode ierr;
   Mat            B;
   PetscInt       i;
+  DM             dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -4257,6 +4262,10 @@ PetscErrorCode  MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   B->nooffproczerorows = mat->nooffproczerorows;
   B->nooffprocentries  = mat->nooffprocentries;
 
+  ierr = MatGetDM(mat,&dm);CHKERRQ(ierr);
+  if (dm) {
+    ierr = MatSetDM(B,dm);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
