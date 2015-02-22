@@ -13,6 +13,10 @@ class Configure(config.package.Package):
     self.downloadonWindows= 0
     return
 
+  def setupHelp(self, help):
+    import nargs
+    config.package.Package.setupHelp(self, help)
+    help.addArgument('Chombo', '-download-chombo-dimension=<1,2,3>',    nargs.ArgInt(None, 2, 'Install Chombo to work in this space dimension'))
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -33,9 +37,10 @@ class Configure(config.package.Package):
     if not self.make.haveGNUMake:
       raise RuntimeError('Cannot install '+self.name+' without GNUMake, suggest --download-make')
 
+    dim = self.framework.argDB['download-chombo-dimension']
     g = open(os.path.join(self.packageDir,'lib','mk','Make.defs.local'),'w')
     g.write('\n#begin\n')
-    g.write('#DIM='+'\n')
+    g.write('#DIM='+str(dim)+'\n')
     g.write('#DEBUG='+'\n')
     g.write('#OPT='+'\n')
     g.write('#PRECISION='+'\n')
@@ -84,7 +89,10 @@ class Configure(config.package.Package):
     g.write('syslibflags='+self.libraries.toString(self.blasLapack.lib)+'\n')
     g.write('\n#end\n')
 
-
+    # write these into petscconf.h so user code that includes PETSc doesn't need to manually set them
+    # these must be set before Chombo C++ include files are included
+    self.framework.addDefine('CH_LANG_CC',1)
+    self.framework.addDefine('CH_SPACEDIM',dim)
 
     g.close()
     if True: #self.installNeeded(os.path.join('lib','mk','Make.defs.local')):

@@ -7,8 +7,6 @@ static char help[] = "Demonstrates call PETSc and Chombo in the same program.\n\
 T*/
 
 #include <petscsys.h>
-#define CH_LANG_CC 1
-#define CH_SPACEDIM 2
 #include "Box.H"
 
 int main(int argc,char **argv)
