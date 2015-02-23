@@ -5894,7 +5894,8 @@ static PetscErrorCode DMPlexCreateConstraintMatrix_Anchors(DM dm, PetscSection s
     }
   }
   ierr = MatSeqAIJSetPreallocationCSR(*cMat,i,j,NULL);CHKERRQ(ierr);
-  ierr = PetscFree2(i,j);CHKERRQ(ierr);
+  ierr = PetscFree(i);CHKERRQ(ierr);
+  ierr = PetscFree(j);CHKERRQ(ierr);
   ierr = ISRestoreIndices(aIS,&anchors);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
