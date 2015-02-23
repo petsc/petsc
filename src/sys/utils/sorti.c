@@ -564,6 +564,82 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
   PetscFunctionReturn(0);
 }
 
+#define SWAP2IntData(a,b,c,d,t,td,siz) {t=a;a=b;b=t;memcpy(td,c,siz);memcpy(c,d,siz);memcpy(d,td,siz);}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSortIntWithDataArray_Private"
+/*
+   Modified from PetscSortIntWithArray_Private().
+*/
+static PetscErrorCode PetscSortIntWithDataArray_Private(PetscInt *v,char *V,PetscInt right,size_t size,void *work)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,vl,last,tmp;
+
+  PetscFunctionBegin;
+  if (right <= 1) {
+    if (right == 1) {
+      if (v[0] > v[1]) SWAP2IntData(v[0],v[1],V,V+size,tmp,work,size);
+    }
+    PetscFunctionReturn(0);
+  }
+  SWAP2IntData(v[0],v[right/2],V,V+size*(right/2),tmp,work,size);
+  vl   = v[0];
+  last = 0;
+  for (i=1; i<=right; i++) {
+    if (v[i] < vl) {last++; SWAP2IntData(v[last],v[i],V+size*last,V+size*i,tmp,work,size);}
+  }
+  SWAP2IntData(v[0],v[last],V,V + size*last,tmp,work,size);
+  ierr = PetscSortIntWithDataArray_Private(v,V,last-1,size,work);CHKERRQ(ierr);
+  ierr = PetscSortIntWithDataArray_Private(v+last+1,V+size*(last+1),right-(last+1),size,work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSortIntWithDataArray"
+/*@
+   PetscSortIntWithDataArray - Sorts an array of integers in place in increasing order;
+       changes a second array to match the sorted first INTEGER array.  Unlike other sort routines, the user must
+       provide workspace (the size of an element in the data array) to use when sorting.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+.  i  - array of integers
+.  Ii - second array of data
+.  size - sizeof elements in the data array in bytes
+-  work - workspace of "size" bytes used when sorting
+
+   Level: intermediate
+
+   Concepts: sorting^ints with array
+
+.seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
+@*/
+PetscErrorCode  PetscSortIntWithDataArray(PetscInt n,PetscInt i[],void *Ii,size_t size,void *work)
+{
+  char           *V = (char *) Ii;
+  PetscErrorCode ierr;
+  PetscInt       j,k,tmp,ik;
+
+  PetscFunctionBegin;
+  if (n<8) {
+    for (k=0; k<n; k++) {
+      ik = i[k];
+      for (j=k+1; j<n; j++) {
+        if (ik > i[j]) {
+          SWAP2IntData(i[k],i[j],V+size*k,V+size*j,tmp,work,size);
+          ik = i[k];
+        }
+      }
+    }
+  } else {
+    ierr = PetscSortIntWithDataArray_Private(i,V,n-1,size,work);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscMergeIntArray"
