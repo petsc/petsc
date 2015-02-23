@@ -6,8 +6,8 @@ class Configure(config.package.CMakePackage):
     self.gitcommit        = 'trilinos-release-11-14-branch'
     self.giturls          = ['https://software.sandia.gov/trilinos/repositories/publicTrilinos']
     self.download         = ['none']
-    self.liblist          = [['libelemental.a','libpmrrr.a']]
-    self.includes         = ['elemental.hpp']
+    self.includes         = ['TPI.h','Trilinos_version.h']
+    self.functions        = ['TPI_Block']   # one of the very few C routines in Trilinos
     self.cxx              = 1
     self.requirescxx11    = 1
     self.downloadonWindows= 0
@@ -60,6 +60,23 @@ class Configure(config.package.CMakePackage):
 
     return args
 
-
+  def generateLibList(self,dir):
+    import os
+    '''Gets the complete list of Trilinos libraries'''
+    fd = open('simplemake','w')
+    fd.write('include '+os.path.join(dir,'..','include','Makefile.export.Trilinos')+'\n')
+    fd.write('listlibs:\n\t-@echo ${Trilinos_LIBRARIES}')
+    fd.close()
+    try:
+      output1,err1,ret1  = config.package.Package.executeShellCommand('make -f simplemake listlibs', timeout=25, log = self.framework.log)
+      os.unlink('simplemake')
+    except RuntimeError, e:
+      raise RuntimeError('Unable to generate list of Trilinos Libraries')
+    # generateLibList() wants this ridiculus format
+    l = output1.split(' ')
+    ll = [os.path.join(dir,'lib'+l[0][2:]+'.a')]
+    for i in l[1:]:
+      ll.append('lib'+i[2:]+'.a')
+    return [ll]
 
 
