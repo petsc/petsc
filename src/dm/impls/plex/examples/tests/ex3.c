@@ -360,7 +360,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
         ierr = PetscSectionGetDof(aSec,c,&cDof);CHKERRQ(ierr);
         if (cDof) {
           PetscInt cOff, a, aDof, aOff, j;
-          if (cDof != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Found %d anchor points: should be just one",aDof);
+          if (cDof != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Found %d anchor points: should be just one",cDof);
 
           /* find the anchor point */
           ierr = PetscSectionGetOffset(aSec,c,&cOff);CHKERRQ(ierr);
