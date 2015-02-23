@@ -962,10 +962,10 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat,MatStash *stash,PetscInt 
     ierr = PetscCommBuildTwoSidedFReq(stash->comm,1,MPIU_INT,stash->nsendranks,stash->sendranks,stash->sendhdr,
                                       &stash->nrecvranks,&stash->recvranks,&stash->recvhdr,1,&stash->sendreqs,&stash->recvreqs,
                                       MatStashBTSSend_Private,MatStashBTSRecv_Private,stash);CHKERRQ(ierr);
+    ierr = PetscMalloc2(stash->nrecvranks,&stash->some_indices,stash->nrecvranks,&stash->some_statuses);CHKERRQ(ierr);
     stash->use_status = PETSC_FALSE; /* Use count from header instead of from message. */
   }
 
-  ierr = PetscMalloc2(stash->nrecvranks,&stash->some_indices,stash->nrecvranks,&stash->some_statuses);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractInPlace(stash->segrecvframe,&stash->recvframes);CHKERRQ(ierr);
   stash->recvframe_active = NULL;
   stash->recvframe_i      = 0;
