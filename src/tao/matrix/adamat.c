@@ -329,17 +329,15 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll, Mat *
 {
   PetscErrorCode    ierr;
   PetscInt          low,high;
-  PetscInt          n,nlocal,i;
-  const PetscInt    *iptr;
-  const PetscScalar *dptr;
-  PetscScalar       *ddptr,zero=0.0;
-  VecType           type_name;
   IS                ISrow;
   Vec               D1,D2;
   Mat               Atemp;
   TaoMatADACtx      ctx;
+  PetscBool         isequal;
 
   PetscFunctionBegin;
+  ierr = ISEqual(isrow,iscol,&isequal);CHKERRQ(ierr);
+  if (!isequal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for idential column and row indices");
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(ctx->A,&low,&high);CHKERRQ(ierr);
@@ -355,22 +353,12 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll, Mat *
   }
 
   if (ctx->D2){
-    ierr=ISGetSize(isrow,&n);CHKERRQ(ierr);
-    ierr=ISGetLocalSize(isrow,&nlocal);CHKERRQ(ierr);
-    ierr=VecCreate(((PetscObject)(ctx->D2))->comm,&D2);CHKERRQ(ierr);
-    ierr=VecGetType(ctx->D2,&type_name);CHKERRQ(ierr);
-    ierr=VecSetSizes(D2,nlocal,n);CHKERRQ(ierr);
-    ierr=VecSetType(D2,type_name);CHKERRQ(ierr);
-    ierr=VecSet(D2, zero);CHKERRQ(ierr);
-    ierr=VecGetArrayRead(ctx->D2, &dptr);CHKERRQ(ierr);
-    ierr=VecGetArray(D2, &ddptr);CHKERRQ(ierr);
-    ierr=ISGetIndices(isrow,&iptr);CHKERRQ(ierr);
-    for (i=0;i<nlocal;i++){
-      ddptr[i] = dptr[iptr[i]-low];
-    }
-    ierr=ISRestoreIndices(isrow,&iptr);CHKERRQ(ierr);
-    ierr=VecRestoreArray(D2, &ddptr);CHKERRQ(ierr);
-    ierr=VecRestoreArrayRead(ctx->D2, &dptr);CHKERRQ(ierr);
+    Vec D2sub;
+
+    ierr=VecGetSubVector(ctx->D2,isrow,&D2sub);CHKERRQ(ierr);
+    ierr=VecDuplicate(D2sub,&D2);CHKERRQ(ierr);
+    ierr=VecCopy(D2sub,D2);CHKERRQ(ierr);
+    ierr=VecRestoreSubVector(ctx->D2,isrow,&D2sub);CHKERRQ(ierr);
   } else {
     D2 = NULL;
   }
