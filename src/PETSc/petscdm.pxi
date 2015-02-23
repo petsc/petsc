@@ -75,6 +75,7 @@ cdef extern from * nogil:
     int DMGetDefaultSF(PetscDM,PetscSF*)
     int DMSetDefaultSF(PetscDM,PetscSF)
     int DMGetPointSF(PetscDM,PetscSF*)
+    int DMSetPointSF(PetscDM,PetscSF)
 
     int DMShellSetGlobalVector(PetscDM,PetscVec)
     int DMShellSetLocalVector(PetscDM,PetscVec)

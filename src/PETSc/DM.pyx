@@ -288,6 +288,9 @@ cdef class DM(Object):
         PetscINCREF(sf.obj)
         return sf
 
+    def setPointSF(self, SF sf not None):
+        CHKERR( DMSetPointSF(self.dm, sf.sf) )
+
     #
 
     def setShellGlobalVector(self, Vec gv not None):
