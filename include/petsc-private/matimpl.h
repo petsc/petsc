@@ -1536,6 +1536,19 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_fast(PetscInt *lnk)
   return PetscFree(lnk);
 }
 
+/* alias PetscSortIntWithScalarArray while MatScalar == PetscScalar */
+PETSC_STATIC_INLINE PetscErrorCode PetscSortIntWithMatScalarArray(PetscInt n,PetscInt *idx,PetscScalar *val)
+{
+#if !defined(PETSC_USE_REAL_MAT_SINGLE)
+  return PetscSortIntWithScalarArray(n,idx,val);
+#else
+  {
+    MatScalar mtmp;
+    return PetscSortIntWithDataArray(n,idx,val,sizeof(MatScalar),&mtmp);
+  }
+#endif
+}
+
 PETSC_EXTERN PetscLogEvent MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
 PETSC_EXTERN PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;
 PETSC_EXTERN PetscLogEvent MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
