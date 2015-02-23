@@ -18,6 +18,7 @@ struct _PetscViewerOps {
    PetscErrorCode (*restoresubcomm)(PetscViewer,MPI_Comm,PetscViewer*);
    PetscErrorCode (*read)(PetscViewer,void*,PetscInt,PetscDataType);
    PetscErrorCode (*setfromoptions)(PetscOptions*,PetscViewer);
+   PetscErrorCode (*setup)(PetscViewer);
 };
 
 /*
@@ -28,6 +29,7 @@ struct _p_PetscViewer {
   PetscViewerFormat format,formats[10];
   int               iformat;   /* number of formats that have been pushed on formats[] stack */
   void              *data;
+  PetscBool         setupcalled;
 };
 
 

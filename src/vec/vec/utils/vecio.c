@@ -80,6 +80,8 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
+  /* force binary viewer to load .info file if it has not yet done so */
+  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -374,8 +376,8 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
   if (ishdf5) {
     if (!((PetscObject)newvec)->name) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
       ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
     }
     ierr = VecLoad_HDF5(newvec, viewer);CHKERRQ(ierr);
   } else

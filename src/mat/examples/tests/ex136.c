@@ -33,8 +33,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /*
-     Open another binary file.  Note that we use FILE_MODE_WRITE to indicate
-     reading from this file.
+     Open another binary file.  Note that we use FILE_MODE_WRITE to indicate writing to the file
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"fileoutput",FILE_MODE_WRITE,&fd);CHKERRQ(ierr);
   ierr = PetscViewerBinarySetFlowControl(fd,3);CHKERRQ(ierr);

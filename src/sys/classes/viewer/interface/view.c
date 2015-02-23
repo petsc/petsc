@@ -267,8 +267,15 @@ PetscErrorCode  PetscViewerGetOptionsPrefix(PetscViewer viewer,const char *prefi
 @*/
 PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  if (viewer->setupcalled) PetscFunctionReturn(0);
+  if (viewer->ops->setup) {
+    ierr = (*viewer->ops->setup)(viewer);CHKERRQ(ierr);
+  }
+  viewer->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
