@@ -143,6 +143,21 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
       }
     }
   }
+  /* sort */
+  {
+    MatScalar *work;
+
+    ierr = PetscMalloc1(bs2,&work);CHKERRQ(ierr);
+    for (i=0; i<nrows; i++) {
+      PetscInt ilen;
+      mat_i = c->i[i];
+      mat_j = c->j + mat_i;
+      mat_a = c->a + mat_i*bs2;
+      ilen  = c->ilen[i];
+      ierr  = PetscSortIntWithDataArray(ilen,mat_j,mat_a,bs2*sizeof(MatScalar),work);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(work);CHKERRQ(ierr);
+  }
 
   /* Free work space */
   ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
