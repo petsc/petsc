@@ -1516,7 +1516,7 @@ PetscErrorCode  PCFieldSplitGetOffDiagUseAmat(PC pc,PetscBool *flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCFieldSplitSetIS"
-/*@
+/*@C
     PCFieldSplitSetIS - Sets the exact elements for field
 
     Logically Collective on PC
