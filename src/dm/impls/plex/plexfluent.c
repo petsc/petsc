@@ -128,7 +128,7 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
       PetscInt numCoords = s->last - s->first + 1;
       ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '(');CHKERRQ(ierr);
       ierr = PetscMalloc1(s->nd*numCoords, (PetscScalar**)&s->data);CHKERRQ(ierr);
-      ierr = DMPlexCreateFluent_ReadValues(viewer, s->data, s->nd*numCoords, PETSC_SCALAR, s->index==2010);CHKERRQ(ierr);
+      ierr = DMPlexCreateFluent_ReadValues(viewer, s->data, s->nd*numCoords, PETSC_SCALAR, s->index==2010 ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
       ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
     }
     ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
@@ -148,7 +148,7 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
         PetscInt numCells = s->last - s->first + 1;
         ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '(');CHKERRQ(ierr);
         ierr = PetscMalloc1(numCells, (PetscInt**)&s->data);CHKERRQ(ierr);
-        ierr = DMPlexCreateFluent_ReadValues(viewer, s->data, numCells, PETSC_INT, s->index==2012);CHKERRQ(ierr);
+        ierr = DMPlexCreateFluent_ReadValues(viewer, s->data, numCells, PETSC_INT, s->index==2012 ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
         ierr = PetscFree(s->data);CHKERRQ(ierr);
         ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
       }
@@ -182,7 +182,7 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
       for (f = 0; f < numFaces; f++) {
         if (s->nd == 0) {
           /* Determine the size of the block for "mixed" facets */
-          ierr = DMPlexCreateFluent_ReadValues(viewer, &numFaceVert, 1, PETSC_INT, s->index==2013);CHKERRQ(ierr);
+          ierr = DMPlexCreateFluent_ReadValues(viewer, &numFaceVert, 1, PETSC_INT, s->index==2013 ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
           if (numEntries == PETSC_DETERMINE) {
             numEntries = numFaceVert + 2;
             ierr = PetscMalloc1(numEntries*numFaces, (PetscInt**)&s->data);CHKERRQ(ierr);
@@ -192,7 +192,7 @@ PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection 
             }
           }
         }
-        ierr = DMPlexCreateFluent_ReadValues(viewer, &(((PetscInt*)s->data)[f*numEntries]), numEntries, PETSC_INT, s->index==2013);CHKERRQ(ierr);
+        ierr = DMPlexCreateFluent_ReadValues(viewer, &(((PetscInt*)s->data)[f*numEntries]), numEntries, PETSC_INT, s->index==2013 ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
       }
       s->nd = numEntries - 2;
       ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
