@@ -374,6 +374,12 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)dm,prefix);CHKERRQ(ierr);
+  if (dm->sf) {
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)dm->sf,prefix);CHKERRQ(ierr);
+  }
+  if (dm->defaultSF) {
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)dm->defaultSF,prefix);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -596,6 +602,12 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (dm->sf) {
+    ierr = PetscSFSetFromOptions(dm->sf);CHKERRQ(ierr);
+  }
+  if (dm->defaultSF) {
+    ierr = PetscSFSetFromOptions(dm->defaultSF);CHKERRQ(ierr);
+  }
   ierr = PetscObjectOptionsBegin((PetscObject)dm);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-dm_vec_type","Vector type used for created vectors","DMSetVecType",VecList,dm->vectype,typeName,256,&flg);CHKERRQ(ierr);
