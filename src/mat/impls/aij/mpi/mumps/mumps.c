@@ -663,12 +663,19 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
+  Mat_MUMPS      *mumps=(Mat_MUMPS*)A->spptr;
+  PetscInt       nrhs;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
   ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
+
+  ierr = MatGetSize(B,NULL,&nrhs);CHKERRQ(ierr);
+  mumps->id.ICNTL(27) = nrhs;
+  printf("mumps_icntl_27 = %d\n",mumps->id.ICNTL(27));
+
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_MUMPS() is not implemented yet");
   PetscFunctionReturn(0);
 }
@@ -721,7 +728,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   /* numerical factorization phase */
   /*-------------------------------*/
   mumps->id.job = JOB_FACTNUMERIC;
-  if (!mumps->id.ICNTL(18)) {
+  if (!mumps->id.ICNTL(18)) { /* A is centralized */
     if (!mumps->myid) {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -832,7 +839,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
   ierr = PetscOptionsInt("-mat_mumps_icntl_13","ICNTL(13): parallelism of the root node (enable ScaLAPACK) and its splitting","None",mumps->id.ICNTL(13),&mumps->id.ICNTL(13),NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsInt("-mat_mumps_icntl_14","ICNTL(14): percentage increase in the estimated working space","None",mumps->id.ICNTL(14),&mumps->id.ICNTL(14),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_19","ICNTL(19): computes the Schur complement","None",mumps->id.ICNTL(19),&mumps->id.ICNTL(19),NULL);CHKERRQ(ierr);
-  /* ierr = PetscOptionsInt("-mat_mumps_icntl_20","ICNTL(20): the format (dense or sparse) of the right-hand sides","None",mumps->id.ICNTL(20),&mumps->id.ICNTL(20),NULL);CHKERRQ(ierr); -- non-dense rhs is not supported in this interface */
+  /* ierr = PetscOptionsInt("-mat_mumps_icntl_20","ICNTL(20): the format (dense or sparse) of the right-hand sides","None",mumps->id.ICNTL(20),&mumps->id.ICNTL(20),NULL);CHKERRQ(ierr); -- sparse rhs is not supported in PETSc API */
   /* ierr = PetscOptionsInt("-mat_mumps_icntl_21","ICNTL(21): the distribution (centralized or distributed) of the solution vectors","None",mumps->id.ICNTL(21),&mumps->id.ICNTL(21),NULL);CHKERRQ(ierr); we only use distributed solution vector */
 
   ierr = PetscOptionsInt("-mat_mumps_icntl_22","ICNTL(22): in-core/out-of-core factorization and solve (0 or 1)","None",mumps->id.ICNTL(22),&mumps->id.ICNTL(22),NULL);CHKERRQ(ierr);
@@ -844,12 +851,12 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 
   ierr = PetscOptionsInt("-mat_mumps_icntl_25","ICNTL(25): compute a solution of a deficient matrix and a null space basis","None",mumps->id.ICNTL(25),&mumps->id.ICNTL(25),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_26","ICNTL(26): drives the solution phase if a Schur complement matrix","None",mumps->id.ICNTL(26),&mumps->id.ICNTL(26),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_27","ICNTL(27): the blocking size for multiple right-hand sides","None",mumps->id.ICNTL(27),&mumps->id.ICNTL(27),NULL);CHKERRQ(ierr); //work on MatSolve_MUMPS()!!!
+  /* ierr = PetscOptionsInt("-mat_mumps_icntl_27","ICNTL(27): the blocking size for multiple right-hand sides","None",mumps->id.ICNTL(27),&mumps->id.ICNTL(27),NULL);CHKERRQ(ierr); */
   ierr = PetscOptionsInt("-mat_mumps_icntl_28","ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering","None",mumps->id.ICNTL(28),&mumps->id.ICNTL(28),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_29","ICNTL(29): parallel ordering 1 = ptscotch, 2 = parmetis","None",mumps->id.ICNTL(29),&mumps->id.ICNTL(29),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_30","ICNTL(30): compute user-specified set of entries in inv(A)","None",mumps->id.ICNTL(30),&mumps->id.ICNTL(30),NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsInt("-mat_mumps_icntl_31","ICNTL(31): indicates which factors may be discarded during factorization","None",mumps->id.ICNTL(31),&mumps->id.ICNTL(31),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_mumps_icntl_32","ICNTL(32): performs the forward elemination of the right-hand sides during factorization","None",mumps->id.ICNTL(32),&mumps->id.ICNTL(32),NULL);CHKERRQ(ierr);
+  /* ierr = PetscOptionsInt("-mat_mumps_icntl_32","ICNTL(32): performs the forward elemination of the right-hand sides during factorization","None",mumps->id.ICNTL(32),&mumps->id.ICNTL(32),NULL);CHKERRQ(ierr);  -- not supported by PETSc API */
   ierr = PetscOptionsInt("-mat_mumps_icntl_33","ICNTL(33): compute determinant","None",mumps->id.ICNTL(33),&mumps->id.ICNTL(33),NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",mumps->id.CNTL(1),&mumps->id.CNTL(1),NULL);CHKERRQ(ierr);
@@ -892,6 +899,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS *mumps)
     mumps->id.ICNTL(18) = 0;   /* centralized assembled matrix input */
   } else {
     mumps->id.ICNTL(18) = 3;   /* distributed assembled matrix input */
+    mumps->id.ICNTL(20) = 0;   /* rhs is in dense format */
     mumps->id.ICNTL(21) = 1;   /* distributed solution */
   }
   PetscFunctionReturn(0);
@@ -990,7 +998,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   F->ops->lufactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve           = MatSolve_MUMPS;
   F->ops->solvetranspose  = MatSolveTranspose_MUMPS;
-  F->ops->matsolve        = 0;  /* use MatMatSolve_Basic() until mumps supports distributed rhs */
+  F->ops->matsolve        = MatMatSolve_MUMPS; 
   PetscFunctionReturn(0);
 }
 
@@ -1145,15 +1153,16 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
   F->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve                 = MatSolve_MUMPS;
   F->ops->solvetranspose        = MatSolve_MUMPS;
-  F->ops->matsolve              = 0; /* use MatMatSolve_Basic() until mumps supports distributed rhs */
-#if !defined(PETSC_USE_COMPLEX)
-  F->ops->getinertia = MatGetInertia_SBAIJMUMPS;
-#else
+  F->ops->matsolve              = MatMatSolve_MUMPS;
+#if defined(PETSC_USE_COMPLEX)
   F->ops->getinertia = NULL;
+#else
+  F->ops->getinertia = MatGetInertia_SBAIJMUMPS;
 #endif
   PetscFunctionReturn(0);
 }
 
+//update!!!
 #undef __FUNCT__
 #define __FUNCT__ "MatView_MUMPS"
 PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
@@ -1649,19 +1658,34 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
   Works with MATAIJ and MATSBAIJ matrices
 
   Options Database Keys:
-+ -mat_mumps_icntl_4 <0,...,4> - print level
-. -mat_mumps_icntl_6 <0,...,7> - matrix prescaling options (see MUMPS User's Guide)
-. -mat_mumps_icntl_7 <0,...,7> - matrix orderings (see MUMPS User's Guidec)
-. -mat_mumps_icntl_9 <1,2> - A or A^T x=b to be solved: 1 denotes A, 2 denotes A^T
-. -mat_mumps_icntl_10 <n> - maximum number of iterative refinements
-. -mat_mumps_icntl_11 <n> - error analysis, a positive value returns statistics during -ksp_view
-. -mat_mumps_icntl_12 <n> - efficiency control (see MUMPS User's Guide)
-. -mat_mumps_icntl_13 <n> - efficiency control (see MUMPS User's Guide)
-. -mat_mumps_icntl_14 <n> - efficiency control (see MUMPS User's Guide)
-. -mat_mumps_icntl_15 <n> - efficiency control (see MUMPS User's Guide)
-. -mat_mumps_cntl_1 <delta> - relative pivoting threshold
-. -mat_mumps_cntl_2 <tol> - stopping criterion for refinement
-- -mat_mumps_cntl_3 <adelta> - absolute pivoting threshold
++  -mat_mumps_icntl_1 <6>: ICNTL(1): output stream for error messages (None)
+.  -mat_mumps_icntl_2 <0>: ICNTL(2): output stream for diagnostic printing, statistics, and warning (None)
+.  -mat_mumps_icntl_3 <0>: ICNTL(3): output stream for global information, collected on the host (None)
+.  -mat_mumps_icntl_4 <0>: ICNTL(4): level of printing (0 to 4) (None)
+.  -mat_mumps_icntl_6 <7>: ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7) (None)
+.  -mat_mumps_icntl_7 <7>: ICNTL(7): computes a symmetric permutation in sequential analysis (0 to 7). 3=Scotch, 4=PORD, 5=Metis (None)
+.  -mat_mumps_icntl_8 <77>: ICNTL(8): scaling strategy (-2 to 8 or 77) (None)
+.  -mat_mumps_icntl_10 <0>: ICNTL(10): max num of refinements (None)
+.  -mat_mumps_icntl_11 <0>: ICNTL(11): statistics related to an error analysis (via -ksp_view) (None)
+.  -mat_mumps_icntl_12 <1>: ICNTL(12): an ordering strategy for symmetric matrices (0 to 3) (None)
+.  -mat_mumps_icntl_13 <0>: ICNTL(13): parallelism of the root node (enable ScaLAPACK) and its splitting (None)
+.  -mat_mumps_icntl_14 <20>: ICNTL(14): percentage increase in the estimated working space (None)
+.  -mat_mumps_icntl_19 <0>: ICNTL(19): computes the Schur complement (None)
+.  -mat_mumps_icntl_22 <0>: ICNTL(22): in-core/out-of-core factorization and solve (0 or 1) (None)
+.  -mat_mumps_icntl_23 <0>: ICNTL(23): max size of the working memory (MB) that can allocate per processor (None)
+.  -mat_mumps_icntl_24 <0>: ICNTL(24): detection of null pivot rows (0 or 1) (None)
+.  -mat_mumps_icntl_25 <0>: ICNTL(25): compute a solution of a deficient matrix and a null space basis (None)
+.  -mat_mumps_icntl_26 <0>: ICNTL(26): drives the solution phase if a Schur complement matrix (None)
+.  -mat_mumps_icntl_28 <1>: ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering (None)
+.  -mat_mumps_icntl_29 <0>: ICNTL(29): parallel ordering 1 = ptscotch, 2 = parmetis (None)
+.  -mat_mumps_icntl_30 <0>: ICNTL(30): compute user-specified set of entries in inv(A) (None)
+.  -mat_mumps_icntl_31 <0>: ICNTL(31): indicates which factors may be discarded during factorization (None)
+.  -mat_mumps_icntl_33 <0>: ICNTL(33): compute determinant (None)
+.  -mat_mumps_cntl_1 <0.01>: CNTL(1): relative pivoting threshold (None)
+.  -mat_mumps_cntl_2 <1.49012e-08>: CNTL(2): stopping criterion of refinement (None)
+.  -mat_mumps_cntl_3 <0>: CNTL(3): absolute pivoting threshold (None)
+.  -mat_mumps_cntl_4 <-1>: CNTL(4): value for static pivoting (None)
+-  -mat_mumps_cntl_5 <0>: CNTL(5): fixation for null pivots (None)
 
   Level: beginner
 
