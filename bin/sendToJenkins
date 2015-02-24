@@ -1,10 +1,10 @@
 #!/bin/bash
 
 OPTIND=1
-username=""
-branch="next"
-address="default"
-architecture="default"
+username=$JENKINS_USERNAME
+email=$JENKINS_EMAIL
+branch=`git symbolic-ref -q --short HEAD`
+architecture="linux-gcc-real"
 configoptions=""
 silent="no"
 queue="no"
@@ -30,7 +30,7 @@ while getopts "h?a:b:d:m:o:qr:su:" opt; do
       echo "         -q                             -- list current queue"
       echo "         -r <number>                    -- console results for job number"
       echo "         -s                                 -- silent"
-      echo "         -u <username on login.mcs.anl.gov> -- default is empty"
+      echo "         -u <username on login.mcs.anl.gov> -- default is empty or environmental variable JENKINS_USERNAME"
       exit 0
       ;;
     b)
@@ -40,12 +40,7 @@ while getopts "h?a:b:d:m:o:qr:su:" opt; do
      cancel=${OPTARG}
      ;;
     m)
-     address=$OPTARG
-     if [ ${address} == "none" ]; then
-       mailto=""
-     else
-       mailto="\&mailto=${address}"
-     fi
+     email=$OPTARG
      ;;
     o)
      configoptions=${OPTARG}
@@ -60,7 +55,7 @@ while getopts "h?a:b:d:m:o:qr:su:" opt; do
      results=${OPTARG}
      ;;
     u)
-     username=$OPTARG+'@'
+     username=$OPTARG
      ;;
     a)
      architecture=${OPTARG//+/%2B}
@@ -75,9 +70,14 @@ done
 if [ -z ${username} ]; then
   url=login.mcs.anl.gov
 else
-  url=${username}login.mcs.anl.gov
+  url=${username}@login.mcs.anl.gov
 fi;
 
+if [ ${email} == "" ]; then
+  mailto=""
+else
+  mailto="\&mailto=${email}"
+fi
 
 # set up connection through named proxy
 command="ssh -M -S jenkins-proxy -fnNT ${url}"
