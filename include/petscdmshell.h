@@ -20,6 +20,7 @@ PETSC_EXTERN PetscErrorCode DMShellSetCoarsen(DM,PetscErrorCode (*)(DM,MPI_Comm,
 PETSC_EXTERN PetscErrorCode DMShellSetRefine(DM,PetscErrorCode (*)(DM,MPI_Comm,DM*));
 PETSC_EXTERN PetscErrorCode DMShellSetCreateInterpolation(DM,PetscErrorCode (*)(DM,DM,Mat*,Vec*));
 PETSC_EXTERN PetscErrorCode DMShellSetCreateInjection(DM,PetscErrorCode (*)(DM,DM,Mat*));
+PETSC_EXTERN PetscErrorCode DMShellSetCreateFieldDecomposition(DM,PetscErrorCode (*)(DM,PetscInt*,char***,IS**,DM**));
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEndDefaultShell(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM,Vec,InsertMode,Vec);
