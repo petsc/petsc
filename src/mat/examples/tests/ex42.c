@@ -73,7 +73,6 @@ int main(int argc,char **args)
     }
     ierr  = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
     lsize = (PetscInt)(rand*(m/bs));
-    lsize = 5;
     /* shuffle */
     for (j=0; j<lsize; j++) {
       PetscInt k, swap, l;
