@@ -204,7 +204,6 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   for (i=0; i<ncols; i++) vary[icol[i]/bs]++;
   for (i=0; i<a->mbs; i++) {
     if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error in PETSc");
-    if (vary[i]==bs) iary[count++] = i;
   }
   count = 0;
   for (i=0; i<ncols; i++) {
