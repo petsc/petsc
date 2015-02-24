@@ -355,7 +355,8 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
   which correspond to the options database keys below.
 
   Options Database Keys:
-+ -mat_umfpack_prl                     - UMFPACK print level: Control[UMFPACK_PRL]
++ -mat_umfpack_ordering                - CHOLMOD, AMD, GIVEN, METIS, BEST, NONE
+. -mat_umfpack_prl                     - UMFPACK print level: Control[UMFPACK_PRL]
 . -mat_umfpack_strategy <AUTO>         - (choose one of) AUTO UNSYMMETRIC SYMMETRIC 2BY2
 . -mat_umfpack_dense_col <alpha_c>     - UMFPACK dense column threshold: Control[UMFPACK_DENSE_COL]
 . -mat_umfpack_dense_row <0.2>         - Control[UMFPACK_DENSE_ROW]
