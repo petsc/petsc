@@ -613,6 +613,19 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMShellSetCoarsen"
+/*@C
+   DMShellSetCoarsen - Set the routine used to coarsen the shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  coarsen - the routine that coarsens the DM
+
+   Level: advanced
+
+.seealso: DMShellSetRefine(), DMCoarsen()
+@*/
 PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*))
 {
   PetscErrorCode ierr;
@@ -628,6 +641,19 @@ PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM,MPI_Comm,DM
 
 #undef __FUNCT__
 #define __FUNCT__ "DMShellSetRefine"
+/*@C
+   DMShellSetRefine - Set the routine used to refine the shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  refine - the routine that refines the DM
+
+   Level: advanced
+
+.seealso: DMShellSetCoarsen(), DMRefine()
+@*/
 PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM,MPI_Comm,DM*))
 {
   PetscErrorCode ierr;
@@ -643,6 +669,19 @@ PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM,MPI_Comm,DM*)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMShellSetCreateInterpolation"
+/*@C
+   DMShellSetCreateInterpolation - Set the routine used to create the interpolation operator
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  interp - the routine to create the interpolation
+
+   Level: advanced
+
+.seealso: DMShellSetCreateInjection(), DMCreateInterpolation()
+@*/
 PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,DM,Mat*,Vec*))
 {
   PetscErrorCode ierr;
@@ -658,6 +697,19 @@ PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMShellSetCreateInjection"
+/*@C
+   DMShellSetCreateInjection - Set the routine used to create the injection operator
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  inject - the routine to create the injection
+
+   Level: advanced
+
+.seealso: DMShellSetCreateInterpolation(), DMCreateInjection()
+@*/
 PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,Mat*))
 {
   PetscErrorCode ierr;
@@ -673,6 +725,19 @@ PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM,DM,M
 
 #undef __FUNCT__
 #define __FUNCT__ "DMShellSetCreateFieldDecomposition"
+/*@C
+   DMShellSetCreateFieldDecomposition - Set the routine used to create a decomposition of fields for the shell DM
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  decomp - the routine to create the decomposition
+
+   Level: advanced
+
+.seealso: DMCreateFieldDecomposition()
+@*/
 PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp)(DM,PetscInt*,char***, IS**,DM**))
 {
   PetscErrorCode ierr;
