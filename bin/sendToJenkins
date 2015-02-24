@@ -1,10 +1,12 @@
 #!/bin/bash
 
 OPTIND=1
-username=$JENKINS_USERNAME
+httpsserver=https://jenkins-ci.mcs.anl.gov/   # Jenkins server URL
+sshserver=login.mcs.anl.gov                   # machine from which you can access the Jenkins server
+username=$JENKINS_USERNAME                    # your user name on the sshserver machine
 email=$JENKINS_EMAIL
 branch=`git symbolic-ref -q --short HEAD`
-architecture="linux-gcc-real"
+architecture="default"
 configoptions=""
 silent="no"
 queue="no"
@@ -21,9 +23,9 @@ while getopts "h?a:b:d:m:o:qr:su:" opt; do
       echo "            eg, one of linux-gcc-real, osx-10.6, etc."
       echo "            Use 'default' for arch-jenkins-* subset:"
       echo "            Use 'none' to ignore example configurations"
-      echo "         -b <branch of PETSc to test>       -- default is 'next'"
+      echo "         -b <branch of PETSc to test>       -- default is current branch"
       echo "         -d <number>                        -- stop/cancel build"
-      echo "         -m <address to mail to>            -- required."
+      echo "         -m <address to mail to>            -- required or environmental variable JENKINS_EMAIL"
       echo "            Use 'none' if no email desired"
       echo "         -o <configure options>             -- default is empty"
       echo '            Example: -o "--with-complex --with-precision=single"'
@@ -68,9 +70,9 @@ done
 
 
 if [ -z ${username} ]; then
-  url=login.mcs.anl.gov
+  url=${sshserver}
 else
-  url=${username}@login.mcs.anl.gov
+  url=${username}@${sshserver}
 fi;
 
 if [ ${email} == "" ]; then
@@ -89,16 +91,16 @@ else
 fi
 
 if [ "${queue}" == "yes" ]; then
-  ssh -S jenkins-proxy login.mcs.anl.gov curl -s -X POST https://jenkins-ci.mcs.anl.gov/queue/api/json?pretty=true
+  ssh -S jenkins-proxy ${sshserver} curl -s -X POST ${httpsserver}/queue/api/json?pretty=true
   exit 0
 fi
 if [ "x${cancel}" != "x" ]; then
-  ssh -S jenkins-proxy login.mcs.anl.gov curl -s -X POST https://jenkins-ci.mcs.anl.gov/job/petsc-branch/${cancel}/stop
+  ssh -S jenkins-proxy ${sshserver} curl -s -X POST ${httpsserver}/job/petsc-branch/${cancel}/stop
   exit 0
 fi
 
 if [ "x${status}" != "x" ]; then
-  ssh -S jenkins-proxy login.mcs.anl.gov curl -s https://jenkins-ci.mcs.anl.gov/job/petsc-branch/${status}/api/json?pretty=true
+  ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/${status}/api/json?pretty=true
   exit 0
 fi
 
@@ -106,24 +108,24 @@ if [ "x${results}" != "x" ]; then
   for slave in mcs  macos; do 
       echo
       echo "******** ${slave} *************"
-      ssh -S jenkins-proxy login.mcs.anl.gov curl -s https://jenkins-ci.mcs.anl.gov/job/petsc-branch/slave_label=${slave}/${results}/consoleText
+      ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/slave_label=${slave}/${results}/consoleText
       echo
   done
   exit 0
 fi
 
-if [ ${address} == "default" ]; then
+if [ "x${email}" == "default" ]; then
   echo "Error: No email address give. Use -m <email> or -m none"
   exit 1
 fi;
 
 if [ ${architecture} == "default" ]; then
-  bn=`ssh -S jenkins-proxy login.mcs.anl.gov curl -s https://jenkins-ci.mcs.anl.gov/job/petsc-branch/api/json | python -c 'import sys,json; print json.load(sys.stdin)["nextBuildNumber"]'`
+  bn=`ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/api/json | python -c 'import sys,json; print json.load(sys.stdin)["nextBuildNumber"]'`
   for archp in jenkins-linux-gcc-gfortran-g++-c-no-yes-real-no-__float128 jenkins-linux-gcc-gfortran-g++-c-yes-no-complex-yes-double jenkins-linux-icc-ifort-icpc-c-yes-yes-real-yes-double jenkins-osx-clang-gfortran-clang++-c++-yes-yes-real-no-single; do
     arch=${archp//+/%2B}
     echo submitting arch ${arch}, buildnumber ${bn}
 
-    command="ssh -S jenkins-proxy ${url} curl -s -X POST https://jenkins-ci.mcs.anl.gov/job/petsc-branch/buildWithParameters?branch=${branch}${mailto}\&named_test=${arch}${configoptions}"
+    command="ssh -S jenkins-proxy ${url} curl -s -X POST ${httpsserver}/job/petsc-branch/buildWithParameters?branch=${branch}${mailto}\&named_test=${arch}${configoptions}"
     if [ ${silent} == "no" ]; then
 	echo "${command}"
     fi
@@ -131,16 +133,16 @@ if [ ${architecture} == "default" ]; then
     let "bn += 1"
   done
 else
-  command="ssh -S jenkins-proxy ${url} curl -s -X POST https://jenkins-ci.mcs.anl.gov/job/petsc-branch/buildWithParameters?branch='${branch}'${mailto}\&named_test=${architecture}${configoptions}"
+  command="ssh -S jenkins-proxy ${url} curl -s -X POST ${httpsserver}/job/petsc-branch/buildWithParameters?branch='${branch}'${mailto}\&named_test=${architecture}${configoptions}"
   if [ ${silent} == "no" ]; then
       echo "${command}"
   fi
 
-  bn=`ssh -S jenkins-proxy login.mcs.anl.gov curl -s https://jenkins-ci.mcs.anl.gov/job/petsc-branch/api/json | python -c 'import sys,json; print json.load(sys.stdin)["nextBuildNumber"]'`
+  bn=`ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/api/json | python -c 'import sys,json; print json.load(sys.stdin)["nextBuildNumber"]'`
 
   echo buildnumber=$bn
   ${command}
-  buildurl=https://jenkins-ci.mcs.anl.gov/job/petsc-branch/
+  buildurl=${httpsserver}/job/petsc-branch/
   echo buildpage=$buildurl$bn
   echo "for build status, visit above url or enter command:"
   echo $buildurl$bn/api/json?pretty=true
