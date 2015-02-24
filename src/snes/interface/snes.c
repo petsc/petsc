@@ -481,8 +481,12 @@ static PetscErrorCode DMRestrictHook_SNESVecSol(DM dmfine,Mat Restrict,Vec Rscal
     Xfine = Xfine_named;
   }
   ierr = DMGetNamedGlobalVector(dmcoarse,"SNESVecSol",&Xcoarse);CHKERRQ(ierr);
-  ierr = MatRestrict(Restrict,Xfine,Xcoarse);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(Xcoarse,Xcoarse,Rscale);CHKERRQ(ierr);
+  if (Inject) {
+    ierr = MatRestrict(Inject,Xfine,Xcoarse);CHKERRQ(ierr);
+  } else {
+    ierr = MatRestrict(Restrict,Xfine,Xcoarse);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(Xcoarse,Xcoarse,Rscale);CHKERRQ(ierr);
+  }
   ierr = DMRestoreNamedGlobalVector(dmcoarse,"SNESVecSol",&Xcoarse);CHKERRQ(ierr);
   if (Xfine_named) {ierr = DMRestoreNamedGlobalVector(dmfine,"SNESVecSol",&Xfine_named);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

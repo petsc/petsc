@@ -78,8 +78,6 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
   PetscErrorCode  ierr;
   PC_MG           *mg         = (PC_MG*)pc->data;
   PC_GAMG         *pc_gamg    = (PC_GAMG*)mg->innerctx;
-  const PetscBool repart      = pc_gamg->repart;
-  const PetscInt  min_eq_proc = pc_gamg->min_eq_proc, coarse_max = pc_gamg->coarse_eq_limit;
   Mat             Cmat,Pold=*a_P_inout;
   MPI_Comm        comm;
   PetscMPIInt     rank,size,new_size,nactive=*a_nactive_proc;
@@ -108,14 +106,14 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
   {
     PetscInt ncrs_eq_glob;
     ierr     = MatGetSize(Cmat, &ncrs_eq_glob, NULL);CHKERRQ(ierr);
-    new_size = (PetscMPIInt)((float)ncrs_eq_glob/(float)min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
-    if (new_size == 0 || ncrs_eq_glob < coarse_max) new_size = 1;
+    new_size = (PetscMPIInt)((float)ncrs_eq_glob/(float)pc_gamg->min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
+    if (new_size == 0) new_size = 1; /* not likely, posible? */
     else if (new_size >= nactive) new_size = nactive; /* no change, rare */
   }
 
   if (Pcolumnperm) *Pcolumnperm = NULL;
 
-  if (!repart && new_size==nactive) *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
+  if (!pc_gamg->repart && new_size==nactive) *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
   else {
     PetscInt       *counts,*newproc_idx,ii,jj,kk,strideNew,*tidx,ncrs_new,ncrs_eq_new,nloc_old;
     IS             is_eq_newproc,is_eq_num,is_eq_num_prim,new_eq_indices;
@@ -127,7 +125,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
 #endif
     /* make 'is_eq_newproc' */
     ierr = PetscMalloc1(size, &counts);CHKERRQ(ierr);
-    if (repart) {
+    if (pc_gamg->repart) {
       /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates of primal part accordingly */
       Mat adj;
 
@@ -582,7 +580,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
   /* Get A_i and R_i */
   for (level=0, Aarr[0]=Pmat, nactivepe = size; /* hard wired stopping logic */
-       level < (pc_gamg->Nlevels-1) && (level==0 || M>pc_gamg->coarse_eq_limit);  /* && (size==1 || nactivepe>1); */
+       level < (pc_gamg->Nlevels-1) && (level==0 || M>pc_gamg->coarse_eq_limit);
        level++) {
     pc_gamg->firstCoarsen = (level ? PETSC_FALSE : PETSC_TRUE);
     level1 = level + 1;
@@ -637,6 +635,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       if (pc_gamg->verbose) {
         ierr =  PetscPrintf(comm,"\t[%d]%s stop gridding, level %d\n",rank,__FUNCT__,level);CHKERRQ(ierr);
       }
+#if (defined PETSC_GAMG_USE_LOG && defined GAMG_STAGES)
+      ierr = PetscLogStagePop();CHKERRQ(ierr);
+#endif
       break;
     }
 #if defined PETSC_GAMG_USE_LOG
@@ -666,16 +667,17 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
                             rank,__FUNCT__,(int)level1,M,pc_gamg->data_cell_cols,
                             (int)(info.nz_used/(PetscReal)NN), nactivepe);CHKERRQ(ierr);
     }
-
-    /* stop if one node or one proc -- could pull back for singular problems */
-    if ( (pc_gamg->data_cell_cols && M/pc_gamg->data_cell_cols < 2) || (!pc_gamg->data_cell_cols && M < 2)
-         || nactivepe==1 ) {
-      level++;
-      break;
-    }
 #if (defined PETSC_GAMG_USE_LOG && defined GAMG_STAGES)
     ierr = PetscLogStagePop();CHKERRQ(ierr);
 #endif
+    /* stop if one node or one proc -- could pull back for singular problems */
+    if ( (pc_gamg->data_cell_cols && M/pc_gamg->data_cell_cols < 2) || (!pc_gamg->data_cell_cols && M < 2) ) {
+      if (pc_gamg->verbose) {
+        ierr =  PetscPrintf(comm,"\t[%d]%s HARD stop of coarsening ?????????, level %d\n",rank,__FUNCT__,level);CHKERRQ(ierr);
+      }
+      level++;
+      break;
+    }
   } /* levels */
   pc_gamg->firstCoarsen = PETSC_FALSE;
 
