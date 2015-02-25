@@ -483,7 +483,7 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,const Pets
 
     /* scan my coarse zero gid, set 'lid_state' with coarse GID */
     kk = nselected_1;
-    MPI_Scan(&kk, &myCrs0, 1, MPIU_INT, MPIU_SUM, comm);
+    ierr = MPI_Scan(&kk, &myCrs0, 1, MPIU_INT, MPIU_SUM, comm);CHKERRQ(ierr);
     myCrs0 -= nselected_1;
 
     if (a_Gmat_2) { /* output */
