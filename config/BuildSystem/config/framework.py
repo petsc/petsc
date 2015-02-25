@@ -147,6 +147,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def getTmpDir(self):
     if not hasattr(self, '_tmpDir'):
       self._tmpDir = tempfile.mkdtemp(prefix = 'petsc-')
+      if not os.access(self._tmpDir, os.X_OK):
+        raise RuntimeError('Cannot execute things in tmp directory '+self._tmpDir+'. Consider setting TMPDIR to something else.')
       self.logPrint('All intermediate test results are stored in '+self._tmpDir)
     return self._tmpDir
   def setTmpDir(self, temp):
