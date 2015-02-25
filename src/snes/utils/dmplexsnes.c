@@ -1552,6 +1552,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
   PetscSection      section    = NULL;
   PetscBool         useFEM     = PETSC_FALSE;
   PetscBool         useFVM     = PETSC_FALSE;
+  PetscBool         isImplicit = locX_t ? PETSC_TRUE : PETSC_FALSE;
   PetscFV           fvm        = NULL;
   PetscFECellGeom  *cgeomFEM   = NULL;
   PetscFVCellGeom  *cgeomFVM   = NULL;
@@ -1583,6 +1584,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
     PetscObject  obj;
     PetscClassId id;
 
+    if (isImplicit == f) continue; /* isImplicit != prob->implicit[f] */
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {useFEM = PETSC_TRUE;}
@@ -1647,6 +1649,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
       PetscClassId id;
       PetscInt     numChunks, numBatches, batchSize, numBlocks, blockSize, Ne, Nr, offset;
 
+      if (isImplicit == f) continue; /* isImplicit != prob->implicit[f] */
       ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID) {
@@ -1722,19 +1725,35 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
           }
           ++iface;
         }
-        /* Handle time derivative */
-        if (locX_t) {
-          ierr = VecGetArray(locX_t, &x_t);CHKERRQ(ierr);
-          for (cell = cS; cell < cE; ++cell) {
-            PetscScalar *u_t, *r;
+      }
+      ierr = VecRestoreArray(locF, &fa);CHKERRQ(ierr);
+    }
+    /* Handle time derivative */
+    if (locX_t) {
+      PetscScalar *x_t, *fa;
 
-            ierr = DMPlexPointLocalFieldRead(dm, cell, f, x_t, &u_t);CHKERRQ(ierr);
-            ierr = DMPlexPointLocalFieldRef(dm, cell, f, fa, &r);CHKERRQ(ierr);
-            for (d = 0; d < pdim; ++d) r[d] -= u_t[d];
-          }
-          ierr = VecRestoreArray(locX_t, &x_t);CHKERRQ(ierr);
+      ierr = VecGetArray(locF, &fa);CHKERRQ(ierr);
+      ierr = VecGetArray(locX_t, &x_t);CHKERRQ(ierr);
+      for (f = 0; f < Nf; ++f) {
+        PetscFV      fv;
+        PetscObject  obj;
+        PetscClassId id;
+        PetscInt     pdim, d;
+
+        ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+        if (id != PETSCFV_CLASSID) continue;
+        fv   = (PetscFV) obj;
+        ierr = PetscFVGetNumComponents(fv, &pdim);CHKERRQ(ierr);
+        for (cell = cS; cell < cE; ++cell) {
+          PetscScalar *u_t, *r;
+
+          ierr = DMPlexPointLocalFieldRead(dm, cell, f, x_t, &u_t);CHKERRQ(ierr);
+          ierr = DMPlexPointLocalFieldRef(dm, cell, f, fa, &r);CHKERRQ(ierr);
+          for (d = 0; d < pdim; ++d) r[d] -= u_t[d];
         }
       }
+      ierr = VecRestoreArray(locX_t, &x_t);CHKERRQ(ierr);
       ierr = VecRestoreArray(locF, &fa);CHKERRQ(ierr);
     }
     if (useFEM) {
