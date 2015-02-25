@@ -206,6 +206,21 @@ runex3_2:
 	   if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex3_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex3_2.tmp
+runex3_nocheby:
+	-@${MPIEXEC} -n 1 ./ex3 -ksp_est_view > ex3_nocheby.tmp 2>&1; \
+	   if (${DIFF} output/ex3_nocheby.out ex3_nocheby.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex3_nocheby, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex3_nocheby.tmp
+runex3_chebynoest:
+	-@${MPIEXEC} -n 1 ./ex3 -ksp_est_view -ksp_type chebyshev -ksp_chebyshev_eigenvalues 0.1,1.0 > ex3_chebynoest.tmp 2>&1; \
+	   if (${DIFF} output/ex3_chebynoest.out ex3_chebynoest.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex3_chebynoest, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex3_chebynoest.tmp
+runex3_chebyest:
+	-@${MPIEXEC} -n 1 ./ex3 -ksp_est_view -ksp_type chebyshev -ksp_chebyshev_estimate_eigenvalues > ex3_chebyest.tmp 2>&1; \
+	   if (${DIFF} output/ex3_chebyest.out ex3_chebyest.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex3_chebyest, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex3_chebyest.tmp
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4 -ksp_monitor_short -m 5 -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always > ex4_1.tmp 2>&1;\
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
@@ -934,7 +949,7 @@ runex45:
 	   else printf "${PWD}\nPossible problem with ex45, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex45.tmp
 
-TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
+TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 runex3_nocheby runex3_chebynoest runex3_chebyest ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm \
                                  ex14.PETSc runex14 ex14.rm ex19.PETSc runex19 runex19_2 ex19.rm ex21.PETSc runex21 ex21.rm \
                                  ex22.PETSc runex22 runex22_2 ex22.rm \
