@@ -283,11 +283,15 @@ static void riemann_advection(const PetscReal *qp, const PetscReal *n, const Pet
 
 static void riemann_coupled_advection(const PetscReal *qp, const PetscReal *n, const PetscScalar *uL, const PetscScalar *uR, PetscScalar *flux, void *ctx)
 {
-  PetscReal wind[3] = {0.0, 1.0, 0.0};
-  PetscReal wn = DMPlex_DotD_Internal(spatialDim, wind, n);
+  PetscReal wn = DMPlex_DotD_Internal(spatialDim, uL, n);
 
-  if (fabs(uL[0] - wind[0]) > 1.0e-7 || fabs(uL[1] - wind[1]) > 1.0e-7) PetscPrintf(PETSC_COMM_SELF, "wind (%g, %g) uL (%g, %g) uR (%g, %g)\n", wind[0], wind[1], uL[0], uL[1], uR[0], uR[1]);
+#if 1
   flux[0] = (wn > 0 ? uL[spatialDim] : uR[spatialDim]) * wn;
+#else
+  /* if (fabs(uL[0] - wind[0]) > 1.0e-7 || fabs(uL[1] - wind[1]) > 1.0e-7) PetscPrintf(PETSC_COMM_SELF, "wind (%g, %g) uL (%g, %g) uR (%g, %g)\n", wind[0], wind[1], uL[0], uL[1], uR[0], uR[1]); */
+  /* Smear it out */
+  flux[0] = 0.5*((uL[spatialDim] + uR[spatialDim]) + (uL[spatialDim] - uR[spatialDim])*tanh(1.0e5*wn)) * wn;
+#endif
 }
 
 static void zero_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
