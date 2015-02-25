@@ -50,6 +50,7 @@ struct _n_Functional {
 
 typedef struct {
   /* Domain and mesh definition */
+  DM             dm;
   PetscInt       dim;               /* The topological mesh dimension */
   DMBoundaryType xbd, ybd;          /* The boundary type for the x- and y-boundary */
   char           filename[2048];    /* The optional ExodusII file */
@@ -310,8 +311,10 @@ static void constant_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 static void constant_x_2d(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   const PetscReal t = *((PetscReal *) ctx);
+  PetscErrorCode  ierr;
   u[0] = x[0];
   u[1] = x[1] + t;
+  ierr = DMPlexLocalizeCoordinate(globalUser->dm, u, u);CHKERRV(ierr);
 }
 
 /*
@@ -915,7 +918,7 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
       } else {
         p = buffer;
       }
-      ierr = PetscSNPrintfCount(p, sizeof buffer-(p-buffer), "%12s [%10.7g,%10.7g] int %10.7g", &countused, func->name, (double) fmin[id], (double) fmax[id], (double) fint[id]);CHKERRQ(ierr);
+      ierr = PetscSNPrintfCount(p, sizeof buffer-(p-buffer), "%12s [%12.6g,%12.6g] int %12.6g", &countused, func->name, (double) fmin[id], (double) fmax[id], (double) fint[id]);CHKERRQ(ierr);
       countused += p - buffer;
       /* reallocate */
       if (countused > ftablealloc-ftableused-1) {
@@ -983,6 +986,7 @@ int main(int argc, char **argv)
   ierr = CreateDM(comm, &user, &dm);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   ierr = ProcessMonitorOptions(comm, &user);CHKERRQ(ierr);
+  user.dm = dm;
 
   ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) u, "solution");CHKERRQ(ierr);
