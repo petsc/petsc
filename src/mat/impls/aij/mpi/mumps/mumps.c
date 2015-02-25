@@ -73,7 +73,8 @@ typedef struct {
   MPI_Comm     comm_mumps;
   VecScatter   scat_rhs, scat_sol;
   PetscBool    isAIJ,CleanUpMUMPS;
-  Vec          b_seq,x_seq;
+  Vec          b_seq,x_seq;          /* used by MatSolve() */
+  Vec          bb_mpi,bb_seq,xx_mpi; /* used by MatMatSolve() */
   PetscInt     ICNTL9_pre;   /* check if ICNTL(9) is changed from previous MatSolve */
 
   PetscErrorCode (*Destroy)(Mat);
@@ -544,6 +545,8 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
     ierr = PetscFree2(mumps->id.sol_loc,mumps->id.isol_loc);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&mumps->scat_rhs);CHKERRQ(ierr);
     ierr = VecDestroy(&mumps->b_seq);CHKERRQ(ierr);
+    ierr = VecDestroy(&mumps->bb_seq);CHKERRQ(ierr);
+    ierr = VecDestroy(&mumps->bb_mpi);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&mumps->scat_sol);CHKERRQ(ierr);
     ierr = VecDestroy(&mumps->x_seq);CHKERRQ(ierr);
     ierr = PetscFree(mumps->id.perm_in);CHKERRQ(ierr);
@@ -664,7 +667,8 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   PetscErrorCode ierr;
   PetscBool      flg;
   Mat_MUMPS      *mumps=(Mat_MUMPS*)A->spptr;
-  PetscInt       nrhs;
+  PetscInt       i,nrhs,m,M;
+  PetscScalar    *array,*bray;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
@@ -672,11 +676,59 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
   ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
 
-  ierr = MatGetSize(B,NULL,&nrhs);CHKERRQ(ierr);
-  mumps->id.ICNTL(27) = nrhs;
-  printf("mumps_icntl_27 = %d\n",mumps->id.ICNTL(27));
+  ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(B,&M,&nrhs);CHKERRQ(ierr);
 
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_MUMPS() is not implemented yet");
+  if (mumps->size == 1) {
+    /* copy B to X */
+    ierr = MatDenseGetArray(B,&bray);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(X,&array);CHKERRQ(ierr);
+    for (i=0; i<M*nrhs; i++) array[i] = bray[i];
+    ierr = MatDenseRestoreArray(B,&bray);CHKERRQ(ierr);
+
+    //if (!mumps->myid) { /* define rhs on the host */
+    mumps->id.nrhs = nrhs;
+    mumps->id.lrhs = M;
+#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_REAL_SINGLE)
+    mumps->id.rhs = (mumps_complex*)array;
+#else
+    mumps->id.rhs = (mumps_double_complex*)array;
+#endif
+#else
+    mumps->id.rhs = array;
+#endif
+      //}
+    /* solve phase */
+    /*-------------*/
+    mumps->id.job = JOB_SOLVE;
+    PetscMUMPS_c(&mumps->id);
+    if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
+
+    ierr = MatDenseRestoreArray(X,&array);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } 
+
+  /* copy rhs matrix B into vector bb_mpi */
+  if (mumps->bb_mpi) {
+    ierr = VecDestroy(&mumps->bb_mpi);CHKERRQ(ierr);
+    ierr = VecDestroy(&mumps->bb_seq);CHKERRQ(ierr);
+  }
+  ierr = MatDenseGetArray(B,&array);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)B),1,nrhs*m,nrhs*M,(const PetscScalar*)array,&mumps->bb_mpi);CHKERRQ(ierr);
+  //ierr = VecView(mumps->bb_mpi,PETSC_VIEWER_STDOUT_WORLD);
+  ierr = MatDenseRestoreArray(B,&array);CHKERRQ(ierr);
+
+  /* scatter bb_mpi to bb_seq because MUMPS only supports centralized rhs */
+  if (!mumps->myid) {
+      ierr = VecCreateSeq(PETSC_COMM_SELF,nrhs*M,&mumps->bb_seq);CHKERRQ(ierr);
+      //ierr = ISCreateStride(PETSC_COMM_SELF,A->rmap->N,0,1,&is_iden);CHKERRQ(ierr);
+    } else {
+      ierr = VecCreateSeq(PETSC_COMM_SELF,0,&mumps->bb_seq);CHKERRQ(ierr);
+      //ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_iden);CHKERRQ(ierr);
+    }
+
+  //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_MUMPS() is not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -851,7 +903,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 
   ierr = PetscOptionsInt("-mat_mumps_icntl_25","ICNTL(25): compute a solution of a deficient matrix and a null space basis","None",mumps->id.ICNTL(25),&mumps->id.ICNTL(25),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_26","ICNTL(26): drives the solution phase if a Schur complement matrix","None",mumps->id.ICNTL(26),&mumps->id.ICNTL(26),NULL);CHKERRQ(ierr);
-  /* ierr = PetscOptionsInt("-mat_mumps_icntl_27","ICNTL(27): the blocking size for multiple right-hand sides","None",mumps->id.ICNTL(27),&mumps->id.ICNTL(27),NULL);CHKERRQ(ierr); */
+  ierr = PetscOptionsInt("-mat_mumps_icntl_27","ICNTL(27): the blocking size for multiple right-hand sides","None",mumps->id.ICNTL(27),&mumps->id.ICNTL(27),NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsInt("-mat_mumps_icntl_28","ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering","None",mumps->id.ICNTL(28),&mumps->id.ICNTL(28),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_29","ICNTL(29): parallel ordering 1 = ptscotch, 2 = parmetis","None",mumps->id.ICNTL(29),&mumps->id.ICNTL(29),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_30","ICNTL(30): compute user-specified set of entries in inv(A)","None",mumps->id.ICNTL(30),&mumps->id.ICNTL(30),NULL);CHKERRQ(ierr); 
@@ -980,8 +1032,8 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
     }
     /* MUMPS only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
     if (!mumps->myid) {
-      ierr = VecCreateSeq(PETSC_COMM_SELF,A->cmap->N,&mumps->b_seq);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_SELF,A->cmap->N,0,1,&is_iden);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF,A->rmap->N,&mumps->b_seq);CHKERRQ(ierr);
+      ierr = ISCreateStride(PETSC_COMM_SELF,A->rmap->N,0,1,&is_iden);CHKERRQ(ierr);
     } else {
       ierr = VecCreateSeq(PETSC_COMM_SELF,0,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_iden);CHKERRQ(ierr);

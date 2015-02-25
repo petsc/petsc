@@ -723,10 +723,20 @@ runex10_mumps_lu_1:
 	   if (${DIFF} output/ex10_mumps.out ex10_mumps_lu_1.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_mumps_lu_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_mumps_lu_1.tmp
+runex10_mumps_lu_metis:
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type aij -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 -mat_mumps_icntl_7 5 > ex10_mumps_lu_1.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mumps.out ex10_mumps_lu_1.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_mumps_lu_metis, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_mumps_lu_1.tmp
 runex10_mumps_lu_2:
 	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type mpiaij -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 > ex10_mumps_lu_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_mumps_lu_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex10_mumps_lu_2, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex10_mumps_lu_2.tmp
+runex10_mumps_lu_parmetis:
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type mpiaij -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 -mat_mumps_icntl_28 2 -mat_mumps_icntl_29 2 > ex10_mumps_lu_2.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mumps.out ex10_mumps_lu_2.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex10_mumps_lu_parmetis, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex10_mumps_lu_2.tmp
 runex10_mumps_lu_3:
 	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqbaij -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 -matload_block_size 2 > ex10_mumps_lu_3.tmp 2>&1; \
