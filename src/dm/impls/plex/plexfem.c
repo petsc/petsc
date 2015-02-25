@@ -241,12 +241,12 @@ PetscErrorCode DMPlexGetMaxProjectionHeight(DM dm, PetscInt *height)
 #define __FUNCT__ "DMPlexProjectFunctionLabelLocal"
 PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt numIds, const PetscInt ids[], void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
 {
-  PetscFE         fe;
   PetscDualSpace *sp, *cellsp;
+  PetscInt       *numComp;
   PetscSection    section;
   PetscScalar    *values;
   PetscBool      *fieldActive;
-  PetscInt        numFields, numComp, dim, dimEmbed, spDim, totDim = 0, numValues, pStart, pEnd, cStart, cEnd, cEndInterior, f, d, v, i, comp, maxHeight, h;
+  PetscInt        numFields, dim, dimEmbed, spDim, totDim = 0, numValues, pStart, pEnd, cStart, cEnd, cEndInterior, f, d, v, i, comp, maxHeight, h;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -258,7 +258,7 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numFields,&sp);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numFields,&sp,numFields,&numComp);CHKERRQ(ierr);
   ierr = DMPlexGetMaxProjectionHeight(dm,&maxHeight);CHKERRQ(ierr);
   if (maxHeight < 0 || maxHeight > dim) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"maximum projection height %d not in [0, %d)\n", maxHeight,dim);}
   if (maxHeight > 0) {ierr = PetscMalloc1(numFields,&cellsp);CHKERRQ(ierr);}
@@ -277,7 +277,7 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
       if (id == PETSCFE_CLASSID) {
         PetscFE fe = (PetscFE) obj;
 
-        ierr = PetscFEGetNumComponents(fe, &numComp);CHKERRQ(ierr);
+        ierr = PetscFEGetNumComponents(fe, &numComp[f]);CHKERRQ(ierr);
         if (!h) {
           ierr = PetscFEGetDualSpace(fe, &cellsp[f]);CHKERRQ(ierr);
           sp[f] = cellsp[f];
@@ -290,7 +290,7 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
         PetscFV         fv = (PetscFV) obj;
         PetscQuadrature q;
 
-        ierr = PetscFVGetNumComponents(fv, &numComp);CHKERRQ(ierr);
+        ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
         ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
         ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fv), &sp[f]);CHKERRQ(ierr);
         ierr = PetscDualSpaceSetDM(sp[f], dm);CHKERRQ(ierr);
@@ -299,7 +299,7 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
         ierr = PetscDualSpaceSimpleSetFunctional(sp[f], 0, q);CHKERRQ(ierr);
       } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
-      totDim += spDim*numComp;
+      totDim += spDim*numComp[f];
     }
     ierr = DMPlexVecGetClosure(dm, section, localX, pStart, &numValues, NULL);CHKERRQ(ierr);
     if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section point closure size %d != dual space dimension %d", numValues, totDim);
@@ -327,16 +327,14 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
           void * const ctx = ctxs ? ctxs[f] : NULL;
 
           if (!sp[f]) continue;
-          ierr = DMGetField(dm, f, (PetscObject *) &fe);CHKERRQ(ierr);
-          ierr = PetscFEGetNumComponents(fe, &numComp);CHKERRQ(ierr);
           ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
           for (d = 0; d < spDim; ++d) {
             if (funcs[f]) {
-              ierr = PetscDualSpaceApply(sp[f], d, &geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+              ierr = PetscDualSpaceApply(sp[f], d, &geom, numComp[f], funcs[f], ctx, &values[v]);CHKERRQ(ierr);
             } else {
-              for (comp = 0; comp < numComp; ++comp) values[v+comp] = 0.0;
+              for (comp = 0; comp < numComp[f]; ++comp) values[v+comp] = 0.0;
             }
-            v += numComp;
+            v += numComp[f];
           }
         }
         ierr = DMPlexVecSetFieldClosure_Internal(dm, section, localX, fieldActive, point, values, mode);CHKERRQ(ierr);
@@ -351,7 +349,7 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm, numFields, PETSC_BOOL, &fieldActive);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {ierr = PetscDualSpaceDestroy(&sp[f]);CHKERRQ(ierr);}
-  ierr = PetscFree(sp);CHKERRQ(ierr);
+  ierr = PetscFree2(sp, numComp);CHKERRQ(ierr);
   if (maxHeight > 0) {
     ierr = PetscFree(cellsp);CHKERRQ(ierr);
   }
