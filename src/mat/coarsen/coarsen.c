@@ -170,31 +170,6 @@ PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen agg, PetscBool str)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatCoarsenSetVerbose"
-/*@
-   MatCoarsenSetVerbose - Print information about the coarsening process
-
-   Logically Collective on MatCoarsen
-
-   Input Parameters:
-+  agg - the coarsen context
--  str - the adjacency matrix
-
-   Level: beginner
-
-.keywords: Coarsen, adjacency
-
-.seealso: MatCoarsenCreate()
-@*/
-PetscErrorCode MatCoarsenSetVerbose(MatCoarsen agg, PetscInt vv)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(agg,MAT_COARSEN_CLASSID,1);
-  agg->verbose = vv;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenDestroy"
 /*@
    MatCoarsenDestroy - Destroys the coarsen context.

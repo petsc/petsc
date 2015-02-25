@@ -101,8 +101,6 @@ PetscErrorCode PCSetData_GEO(PC pc, Mat m)
 PetscErrorCode PCSetFromOptions_GEO(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
-  PC_MG          *mg      = (PC_MG*)pc->data;
-  PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"GAMG-GEO options");CHKERRQ(ierr);
@@ -118,10 +116,6 @@ PetscErrorCode PCSetFromOptions_GEO(PetscOptions *PetscOptionsObject,PC pc)
     /* CHKERRQ(ierr); */
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-
-  if (pc_gamg->verbose) {
-    PetscPrintf(PetscObjectComm((PetscObject)pc),"[%d]%s done\n",0,__FUNCT__);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -562,7 +556,6 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,const Mat Amat,Mat *a_Gmat)
   PetscErrorCode  ierr;
   PC_MG           *mg      = (PC_MG*)pc->data;
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
-  const PetscInt  verbose  = pc_gamg->verbose;
   const PetscReal vfilter  = pc_gamg->threshold;
   MPI_Comm        comm;
   Mat             Gmat;
@@ -576,7 +569,7 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,const Mat Amat,Mat *a_Gmat)
   symm = (PetscBool)!(set && flg);
 
   ierr = PCGAMGCreateGraph(Amat, &Gmat);CHKERRQ(ierr);
-  ierr = PCGAMGFilterGraph(&Gmat, vfilter, symm, verbose);CHKERRQ(ierr);
+  ierr = PCGAMGFilterGraph(&Gmat, vfilter, symm);CHKERRQ(ierr);
 
   *a_Gmat = Gmat;
   ierr = PetscLogEventEnd(PC_GAMGGraph_GEO,0,0,0,0);CHKERRQ(ierr);
@@ -599,7 +592,6 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
 {
   PetscErrorCode ierr;
   PC_MG          *mg      = (PC_MG*)a_pc->data;
-  PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscInt       Istart,Iend,nloc,kk,Ii,ncols;
   IS             perm;
   GAMGNode       *gnodes;
@@ -659,7 +651,6 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
   ierr = MatCoarsenSetType(crs, MATCOARSENMIS);CHKERRQ(ierr);
   ierr = MatCoarsenSetGreedyOrdering(crs, perm);CHKERRQ(ierr);
   ierr = MatCoarsenSetAdjacency(crs, Gmat);CHKERRQ(ierr);
-  ierr = MatCoarsenSetVerbose(crs, pc_gamg->verbose);CHKERRQ(ierr);
   ierr = MatCoarsenSetStrictAggs(crs, PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatCoarsenApply(crs);CHKERRQ(ierr);
   ierr = MatCoarsenGetData(crs, a_llist_parent);CHKERRQ(ierr);
@@ -689,7 +680,6 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCo
 {
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
-  const PetscInt verbose  = pc_gamg->verbose;
   const PetscInt dim      = pc_gamg->data_cell_cols, data_cols = pc_gamg->data_cell_cols;
   PetscErrorCode ierr;
   PetscInt       Istart,Iend,nloc,my0,jj,kk,ncols,nLocalSelected,bs,*clid_flid;
@@ -743,7 +733,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   /* can get all points "removed" - but not on geomg */
   ierr =  MatGetSize(Prol, &kk, &jj);CHKERRQ(ierr);
   if (jj==0) {
-    if (verbose) PetscPrintf(comm,"[%d]%s ERROE: no selected points on coarse grid\n",rank,__FUNCT__);
+    ierr = PetscInfo(pc,"ERROE: no selected points on coarse grid\n");CHKERRQ(ierr);
     ierr = PetscFree(clid_flid);CHKERRQ(ierr);
     ierr = MatDestroy(&Prol);CHKERRQ(ierr);
     *a_P_out = NULL;  /* out */
@@ -793,11 +783,10 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCo
 
       ierr = MPI_Allreduce(&metric, &tm, 1, MPIU_REAL, MPIU_MAX, comm);CHKERRQ(ierr);
       if (tm > 1.) { /* needs to be globalized - should not happen */
-        if (verbose) PetscPrintf(comm,"[%d]%s failed metric for coarse grid %e\n",rank,__FUNCT__,tm);
+        ierr = PetscInfo1(pc," failed metric for coarse grid %e\n",(double)tm);CHKERRQ(ierr);
         ierr = MatDestroy(&Prol);CHKERRQ(ierr);
-        Prol = NULL;
       } else if (metric > .0) {
-        if (verbose) PetscPrintf(comm,"[%d]%s worst metric for coarse grid = %e\n",rank,__FUNCT__,metric);
+        ierr = PetscInfo1(pc,"worst metric for coarse grid = %e\n",(double)metric);CHKERRQ(ierr);
       }
     } else SETERRQ(comm,PETSC_ERR_PLIB,"3D not implemented for 'geo' AMG");
     { /* create next coords - output */

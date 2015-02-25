@@ -227,7 +227,7 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
  */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGFilterGraph"
-PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const PetscBool symm,const PetscInt verbose)
+PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const PetscBool symm)
 {
   PetscErrorCode    ierr;
   PetscInt          Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;
@@ -339,19 +339,12 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
 #endif
 
-  if (verbose) {
-    if (verbose == 1) {
-      double t1 = (!nnz0) ? 1. : 100.*(double)nnz1/(double)nnz0, t2 = (!nloc) ? 1. : (double)nnz0/(double)nloc;
-      ierr = PetscPrintf(comm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",rank,__FUNCT__,
-                         t1,vfilter,t2,MM);CHKERRQ(ierr);
-    } else {
-      PetscInt nnz[2],out[2];
-      nnz[0] = nnz0; nnz[1] = nnz1;
-      ierr   = MPI_Allreduce(nnz, out, 2, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
-      ierr   = PetscPrintf(comm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",rank,__FUNCT__,
-                           100.*(double)out[1]/(double)out[0],vfilter,(double)out[0]/(double)MM,MM);CHKERRQ(ierr);
-    }
+#if defined(PETSC_USE_INFO)
+  {
+    double t1 = (!nnz0) ? 1. : 100.*(double)nnz1/(double)nnz0, t2 = (!nloc) ? 1. : (double)nnz0/(double)nloc;
+    ierr = PetscInfo4(*a_Gmat,"\t %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%D)\n",t1,vfilter,t2,MM);CHKERRQ(ierr);
   }
+#endif  
   ierr    = MatDestroy(&Gmat);CHKERRQ(ierr);
   *a_Gmat = tGmat;
   PetscFunctionReturn(0);
@@ -371,7 +364,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGGetDataWithGhosts"
-PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,const PetscInt data_sz,const PetscReal data_in[],PetscInt *a_stride,PetscReal **a_data_out)
+PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat,PetscInt data_sz,PetscReal data_in[],PetscInt *a_stride,PetscReal **a_data_out)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;

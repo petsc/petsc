@@ -4,10 +4,10 @@
 #include <petsc-private/pcmgimpl.h>                    /*I "petscksp.h" I*/
 
 struct _PCGAMGOps {
-  PetscErrorCode (*graph)(PC, const Mat, Mat*);
+  PetscErrorCode (*graph)(PC, Mat, Mat*);
   PetscErrorCode (*coarsen)(PC, Mat*, PetscCoarsenData**);
-  PetscErrorCode (*prolongator)(PC, const Mat, const Mat, PetscCoarsenData*, Mat*);
-  PetscErrorCode (*optprolongator)(PC, const Mat, Mat*);
+  PetscErrorCode (*prolongator)(PC, Mat, Mat, PetscCoarsenData*, Mat*);
+  PetscErrorCode (*optprolongator)(PC, Mat, Mat*);
   PetscErrorCode (*createlevel)(PC, Mat, PetscInt, Mat *, Mat *, PetscMPIInt *, IS *);
   PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
   PetscErrorCode (*setfromoptions)(PetscOptions*,PC);
@@ -26,7 +26,6 @@ typedef struct gamg_TAG {
   PetscInt  min_eq_proc;
   PetscInt  coarse_eq_limit;
   PetscReal threshold;      /* common quatity to many AMG methods so keep it up here */
-  PetscInt  verbose;
   PetscInt  emax_id;      /* stashing places */
   PetscBool firstCoarsen; /* stash construction state */
 
@@ -49,16 +48,16 @@ typedef struct gamg_TAG {
 PetscErrorCode PCReset_MG(PC);
 
 /* hooks create derivied classes */
-PetscErrorCode  PCCreateGAMG_GEO(PC pc);
-PetscErrorCode  PCCreateGAMG_AGG(PC pc);
-PetscErrorCode  PCCreateGAMG_Classical(PC pc);
+PetscErrorCode  PCCreateGAMG_GEO(PC);
+PetscErrorCode  PCCreateGAMG_AGG(PC);
+PetscErrorCode  PCCreateGAMG_Classical(PC);
 
-PetscErrorCode PCDestroy_GAMG(PC pc);
+PetscErrorCode PCDestroy_GAMG(PC);
 
 /* helper methods */
-PetscErrorCode PCGAMGCreateGraph(const Mat, Mat*);
-PetscErrorCode PCGAMGFilterGraph(Mat*, const PetscReal, const PetscBool, const PetscInt);
-PetscErrorCode PCGAMGGetDataWithGhosts(const Mat a_Gmat, const PetscInt a_data_sz, const PetscReal a_data_in[],PetscInt *a_stride, PetscReal **a_data_out);
+PetscErrorCode PCGAMGCreateGraph(Mat, Mat*);
+PetscErrorCode PCGAMGFilterGraph(Mat*, PetscReal, PetscBool);
+PetscErrorCode PCGAMGGetDataWithGhosts(Mat, PetscInt, PetscReal[],PetscInt*, PetscReal **);
 
 #if defined PETSC_USE_LOG
 #define PETSC_GAMG_USE_LOG
