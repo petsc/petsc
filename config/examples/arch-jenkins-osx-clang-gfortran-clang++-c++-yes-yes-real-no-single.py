@@ -14,5 +14,7 @@ if __name__ == '__main__':
     '--with-scalar-type=real',
     '--with-64-bit-indices=no',
     '--with-precision=single',
+    '--with-sowing=1',
+    '--with-sowing-dir=/home/petsc/soft/osx-frisbee/sowing-1.1.17-p1'
     ]
   configure.petsc_configure(configure_options)

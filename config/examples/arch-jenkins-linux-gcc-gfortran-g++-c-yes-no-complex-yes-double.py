@@ -14,5 +14,7 @@ if __name__ == '__main__':
     '--with-scalar-type=complex',
     '--with-64-bit-indices=yes',
     '--with-precision=double',
+    '--with-sowing=1',
+    '--with-sowing-dir=/home/petsc/soft/linux-Ubuntu_12.04-x86_64/sowing-1.1.17-p1'
     ]
   configure.petsc_configure(configure_options)
