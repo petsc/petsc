@@ -2458,7 +2458,58 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexLocalizeCoordinate"
+/*@
+  DMPlexLocalizeCoordinate - If a mesh is periodic (a torus with lengths L_i, some of which can be infinite), project the coordinate onto [0, L_i) in each dimension.
+
+  Input Parameters:
++ dm     - The DM
+- in     - The input coordinate point (dim numbers)
+
+  Output Parameter:
+. out - The localized coordinate point
+
+  Level: developer
+
+.seealso: DMPlexLocalizeCoordinates(), DMPlexLocalizeAddCoordinate()
+@*/
+PetscErrorCode DMPlexLocalizeCoordinate(DM dm, const PetscScalar in[], PetscScalar out[])
+{
+  PetscInt       dim, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  if (!dm->maxCell) {
+    for (d = 0; d < dim; ++d) out[d] = in[d];
+  } else {
+    for (d = 0; d < dim; ++d) {
+      out[d] = in[d] - dm->L[d]*floor(in[d]/dm->L[d]);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexLocalizeCoordinate_Internal"
+/*
+  DMPlexLocalizeCoordinate_Internal - If a mesh is periodic, and the input point is far from the anchor, pick the coordinate sheet of the torus which moves it closer.
+
+  Input Parameters:
++ dm     - The DM
+. dim    - The spatial dimension
+. anchor - The anchor point, the input point can be no more than maxCell away from it
+- in     - The input coordinate point (dim numbers)
+
+  Output Parameter:
+. out - The localized coordinate point
+
+  Level: developer
+
+  Note: This is meant to get a set of coordinates close to each other, as in a cell. The anchor is usually the one of the vertices on a containing cell
+
+.seealso: DMPlexLocalizeCoordinates(), DMPlexLocalizeAddCoordinate()
+*/
 PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[])
 {
   PetscInt d;
@@ -2480,6 +2531,25 @@ PetscErrorCode DMPlexLocalizeCoordinate_Internal(DM dm, PetscInt dim, const Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexLocalizeAddCoordinate_Internal"
+/*
+  DMPlexLocalizeAddCoordinate_Internal - If a mesh is periodic, and the input point is far from the anchor, pick the coordinate sheet of the torus which moves it closer.
+
+  Input Parameters:
++ dm     - The DM
+. dim    - The spatial dimension
+. anchor - The anchor point, the input point can be no more than maxCell away from it
+. in     - The input coordinate delta (dim numbers)
+- out    - The input coordinate point (dim numbers)
+
+  Output Parameter:
+. out    - The localized coordinate in + out
+
+  Level: developer
+
+  Note: This is meant to get a set of coordinates close to each other, as in a cell. The anchor is usually the one of the vertices on a containing cell
+
+.seealso: DMPlexLocalizeCoordinates(), DMPlexLocalizeCoordinate()
+*/
 PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[])
 {
   PetscInt d;
@@ -2501,6 +2571,16 @@ PetscErrorCode DMPlexLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexLocalizeCoordinates"
+/*@
+  DMPlexLocalizeCoordinates - If a mesh is periodic, create local coordinates for each cell
+
+  Input Parameter:
+. dm - The DM
+
+  Level: developer
+
+.seealso: DMPlexLocalizeCoordinate(), DMPlexLocalizeAddCoordinate()
+@*/
 PetscErrorCode DMPlexLocalizeCoordinates(DM dm)
 {
   PetscSection   coordSection, cSection;
