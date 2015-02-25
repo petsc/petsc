@@ -176,6 +176,43 @@ class TestDMShell(unittest.TestCase):
         self.dm.localToLocal(vec, ovec, addv=PETSc.InsertMode.INSERT_VALUES)
         self.assertTrue(np.allclose(vec.getArray(), ovec.getArray()))
 
+    def testCoarsenRefine(self):
+        cdm = PETSc.DMShell().create(comm=self.COMM)
+        def coarsen(dm, comm):
+            return cdm
+        def refine(dm, comm):
+            return self.dm
+        cdm.setRefine(refine)
+        self.dm.setCoarsen(coarsen)
+        coarsened = self.dm.coarsen()
+        self.assertEqual(coarsened, cdm)
+        refined = coarsened.refine()
+        self.assertEqual(refined, self.dm)
+
+    def testCreateInterpolation(self):
+        mat = PETSc.Mat().create()
+        mat.setSizes(((10, None), (10, None)))
+        mat.setUp()
+        vec = PETSc.Vec().create()
+        vec.setSizes((10, None))
+        vec.setUp()
+        def create_interp(dm, dmf):
+            return mat, vec
+        self.dm.setCreateInterpolation(create_interp)
+        m, v = self.dm.createInterpolation(self.dm)
+        self.assertEqual(m, mat)
+        self.assertEqual(v, vec)
+
+    def testCreateInjection(self):
+        mat = PETSc.Mat().create()
+        mat.setSizes(((10, None), (10, None)))
+        mat.setUp()
+        def create_inject(dm, dmf):
+            return mat
+        self.dm.setCreateInjection(create_inject)
+        m = self.dm.createInjection(self.dm)
+        self.assertEqual(m, mat)
+
 
 if __name__ == '__main__':
     unittest.main()
