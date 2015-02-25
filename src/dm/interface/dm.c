@@ -3149,6 +3149,77 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_USE_DEBUG
+#undef __FUNCT__
+#define __FUNCT__ "DMDefaultSectionCheckConsistency_Internal"
+/*
+  DMDefaultSectionCheckConsistency - Check the consistentcy of the global and local sections.
+
+  Input Parameters:
++ dm - The DM
+. localSection - PetscSection describing the local data layout
+- globalSection - PetscSection describing the global data layout
+
+  Level: intermediate
+
+.seealso: DMGetDefaultSF(), DMSetDefaultSF()
+*/
+static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSection localSection, PetscSection globalSection)
+{
+  MPI_Comm        comm;
+  PetscLayout     layout;
+  const PetscInt *ranges;
+  PetscInt        pStart, pEnd, p, nroots;
+  PetscMPIInt     size, rank;
+  PetscBool       valid = PETSC_TRUE, gvalid;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(globalSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetConstrainedStorageSize(globalSection, &nroots);CHKERRQ(ierr);
+  ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(layout, 1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(layout, nroots);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt       dof, cdof, off, gdof, gcdof, goff, gsize, d;
+
+    ierr = PetscSectionGetDof(localSection, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(localSection, p, &off);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(localSection, p, &cdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(globalSection, p, &gdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(globalSection, p, &gcdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(globalSection, p, &goff);CHKERRQ(ierr);
+    if (!gdof) continue; /* Censored point */
+    if ((gdof < 0 ? -(gdof+1) : gdof) != dof) {ierr = PetscSynchronizedPrintf(comm, "[%d]Global dof %d for point %d not equal to local dof %d\n", rank, gdof, p, dof);CHKERRQ(ierr); valid = PETSC_FALSE;}
+    if (gcdof && (gcdof != cdof)) {ierr = PetscSynchronizedPrintf(comm, "[%d]Global constraints %d for point %d not equal to local constraints %d\n", rank, gcdof, p, cdof);CHKERRQ(ierr); valid = PETSC_FALSE;}
+    if (gdof < 0) {
+      gsize = gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
+      for (d = 0; d < gsize; ++d) {
+        PetscInt offset = -(goff+1) + d, r;
+
+        ierr = PetscFindInt(offset,size+1,ranges,&r);CHKERRQ(ierr);
+        if (r < 0) r = -(r+2);
+        if ((r < 0) || (r >= size)) {ierr = PetscSynchronizedPrintf(comm, "[%d]Point %d mapped to invalid process %d (%d, %d)\n", rank, p, r, gdof, goff);CHKERRQ(ierr); valid = PETSC_FALSE;break;}
+      }
+    }
+  }
+  ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(comm, NULL);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&valid, &gvalid, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
+  if (!gvalid) {
+    ierr = DMView(dm, NULL);CHKERRQ(ierr);
+    SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Inconsistent local and global sections");
+  }
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "DMGetDefaultGlobalSection"
 /*@
@@ -3214,6 +3285,9 @@ PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection section)
   ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
   dm->defaultGlobalSection = section;
+#ifdef PETSC_USE_DEBUG
+  if (section) {ierr = DMDefaultSectionCheckConsistency_Internal(dm, dm->defaultSection, section);CHKERRQ(ierr);}
+#endif
   PetscFunctionReturn(0);
 }
 
