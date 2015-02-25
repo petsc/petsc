@@ -536,7 +536,7 @@ static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscScalar 
 
   PetscFunctionBeginUser;
   ierr = ExactSolution(dm, time, x, yexact, ctx);CHKERRQ(ierr);
-  f[user->errorFunctional] = PetscAbsScalar(y[spatialDim] - yexact[0]);
+  f[user->errorFunctional] = PetscAbsScalar(y[0] - yexact[0]);
   PetscFunctionReturn(0);
 }
 
@@ -620,7 +620,12 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
       SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
     }
   }
-  if (user->velocityDist == VEL_CONSTANT) user->initialGuess[0] = user->exactFuncs[0];
+  {
+    PetscBool isImplicit = PETSC_FALSE;
+
+    ierr = PetscOptionsHasName("", "-use_implicit", &isImplicit);CHKERRQ(ierr);
+    if (user->velocityDist == VEL_CONSTANT && !isImplicit) user->initialGuess[0] = user->exactFuncs[0];
+  }
   ierr = PetscOptionsHasName(NULL, "-dmts_check", &check);CHKERRQ(ierr);
   if (check) {
     user->initialGuess[0] = user->exactFuncs[0];
@@ -876,13 +881,14 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
       const PetscScalar     *cx;
 
       ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
-      ierr = DMPlexPointGlobalRead(dm, c, x, &cx);CHKERRQ(ierr);
+      ierr = DMPlexPointGlobalFieldRead(dm, c, 1, x, &cx);CHKERRQ(ierr);
       if (!cx) continue;        /* not a global cell */
       for (f = 0;  f < user->numMonitorFuncs; ++f) {
         Functional   func = user->monitorFuncs[f];
         PetscScalar *fxc;
 
         ierr = DMPlexPointGlobalFieldRef(dm, c, 1, fx[f], &fxc);CHKERRQ(ierr);
+        /* I need to make it easier to get interpolated values here */
         ierr = (*func->func)(dm, time, cg->centroid, cx, ftmp, func->ctx);CHKERRQ(ierr);
         fxc[0] = ftmp[user->monitorFuncs[f]->offset];
       }

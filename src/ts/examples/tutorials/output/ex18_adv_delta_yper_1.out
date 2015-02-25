@@ -1,4 +1,16 @@
-0  time        0  |x| (       1,        1) |x|_1 (      36,        1)         Error [           0,           0] int            0
+DM Object: 1 MPI processes
+  type: plex
+DM_0x84000000_0 in 2 dimensions:
+  0-cells: 42
+  1-cells: 78
+  2-cells: 48 (12)
+Labels:
+  ghost: 0 strata of sizes ()
+  vtk: 1 strata of sizes (36)
+  marker: 1 strata of sizes (24)
+  Face Sets: 2 strata of sizes (9, 9)
+  depth: 3 strata of sizes (42, 78, 48)
+  0  time        0  |x| (       1,        1) |x|_1 (      36,        1)         Error [           0,           0] int            0
   1  time   0.1667  |x| (       1,        1) |x|_1 (      36,        1)         Error [           0,       4e-06] int  2.22222e-07
   2  time   0.3333  |x| (       1,        1) |x|_1 (      36,        1)         Error [           0, 7.99998e-06] int  4.44444e-07
   3  time      0.5  |x| (       1,        1) |x|_1 (      36,        1)         Error [           0,     1.2e-05] int  6.66664e-07
