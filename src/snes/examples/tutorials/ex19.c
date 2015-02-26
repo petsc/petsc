@@ -7,7 +7,7 @@ The flow can be driven with the lid or with bouyancy or both:\n\
   -grashof &ltgr&gt, where &ltgr&gt = dimensionless temperature gradent\n\
   -prandtl &ltpr&gt, where &ltpr&gt = dimensionless thermal/momentum diffusity ratio\n\
  -contours : draw contour plots of solution\n\n";
-//in HTML, '&lt' = '<' and '&gt' = '>'
+/* in HTML, '&lt' = '<' and '&gt' = '>' */
 
 /*
       See src/ksp/ksp/examples/tutorials/ex45.c
