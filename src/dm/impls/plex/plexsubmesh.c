@@ -580,8 +580,9 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   /* Step 7: Periodicity */
   if (dm->maxCell) {
     const PetscReal *maxCell, *L;
-    ierr = DMGetPeriodicity(dm,  &maxCell, &L);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(gdm,  maxCell,  L);CHKERRQ(ierr);
+    const DMBoundaryType *bd;
+    ierr = DMGetPeriodicity(dm,  &maxCell, &L, &bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(gdm,  maxCell,  L,  bd);CHKERRQ(ierr);
   }
   if (numGhostCells) *numGhostCells = Ng;
   PetscFunctionReturn(0);

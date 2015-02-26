@@ -1014,6 +1014,7 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   DM               coordDM;
   Vec              coords;
   const PetscReal *maxCell, *L;
+  const DMBoundaryType *bd;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -1023,8 +1024,8 @@ static PetscErrorCode DMPlexReplace_Static(DM dm, DM dmNew)
   ierr = DMGetCoordinatesLocal(dmNew, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinateDM(dm, coordDM);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coords);CHKERRQ(ierr);
-  ierr = DMGetPeriodicity(dm, &maxCell, &L);CHKERRQ(ierr);
-  if (L) {ierr = DMSetPeriodicity(dmNew, maxCell, L);CHKERRQ(ierr);}
+  ierr = DMGetPeriodicity(dm, &maxCell, &L, &bd);CHKERRQ(ierr);
+  if (L) {ierr = DMSetPeriodicity(dmNew, maxCell, L, bd);CHKERRQ(ierr);}
   ierr = DMDestroy_Plex(dm);CHKERRQ(ierr);
   dm->data = dmNew->data;
   ((DM_Plex *) dmNew->data)->refct++;

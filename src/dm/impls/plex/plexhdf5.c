@@ -442,6 +442,7 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   PetscSection     cSection;
   PetscScalar     *coords, *ncoords;
   const PetscReal *L;
+  const DMBoundaryType *bd;
   PetscReal        lengthScale;
   PetscInt         vStart, vEnd, v, bs, coordSize, dof, off, d;
   hid_t            fileId, groupId;
@@ -454,7 +455,7 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
   ierr = VecGetBlockSize(coordinates, &bs);CHKERRQ(ierr);
   ierr = VecGetLocalSize(coordinates, &coordSize);CHKERRQ(ierr);
   if (coordSize == (vEnd - vStart)*bs) PetscFunctionReturn(0);
-  ierr = DMGetPeriodicity(dm, NULL, &L);CHKERRQ(ierr);
+  ierr = DMGetPeriodicity(dm, NULL, &L, &bd);CHKERRQ(ierr);
   ierr = DMGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject) coordinates), &newcoords);CHKERRQ(ierr);
   coordSize = 0;
@@ -474,17 +475,19 @@ static PetscErrorCode DMPlexWriteCoordinates_Vertices_HDF5_Static(DM dm, PetscVi
     ierr = PetscSectionGetDof(cSection, v, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(cSection, v, &off);CHKERRQ(ierr);
     if (L && dof == 2) {
-#if 0
-      /* X-periodic */
-      ncoords[coordSize++] = -cos(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
-      ncoords[coordSize++] = coords[off+1];
-      ncoords[coordSize++] = sin(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
-#else
-      /* Y-periodic */
-      ncoords[coordSize++] = coords[off+0];
-      ncoords[coordSize++] = sin(2.0*PETSC_PI*coords[off+1]/L[1])*(L[1]/(2.0*PETSC_PI));
-      ncoords[coordSize++] = -cos(2.0*PETSC_PI*coords[off+1]/L[1])*(L[1]/(2.0*PETSC_PI));
-#endif
+      /* Need to do torus */
+      if ((bd[0] == DM_BOUNDARY_PERIODIC) && (bd[1] == DM_BOUNDARY_PERIODIC)) {SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot embed doubly periodic domain yet");}
+      else if ((bd[0] == DM_BOUNDARY_PERIODIC)) {
+        /* X-periodic */
+        ncoords[coordSize++] = -cos(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
+        ncoords[coordSize++] = coords[off+1];
+        ncoords[coordSize++] = sin(2.0*PETSC_PI*coords[off+0]/L[0])*(L[0]/(2.0*PETSC_PI));
+      } else if ((bd[1] == DM_BOUNDARY_PERIODIC)) {
+        /* Y-periodic */
+        ncoords[coordSize++] = coords[off+0];
+        ncoords[coordSize++] = sin(2.0*PETSC_PI*coords[off+1]/L[1])*(L[1]/(2.0*PETSC_PI));
+        ncoords[coordSize++] = -cos(2.0*PETSC_PI*coords[off+1]/L[1])*(L[1]/(2.0*PETSC_PI));
+      } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot handle periodicity in this domain");
     } else {
       for (d = 0; d < dof; ++d, ++coordSize) ncoords[coordSize] = coords[off+d];
     }

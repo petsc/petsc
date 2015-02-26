@@ -55,6 +55,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->defaultConstraintMat     = NULL;
   v->L                        = NULL;
   v->maxCell                  = NULL;
+  v->bdtype                   = NULL;
   v->dimEmbed                 = PETSC_DEFAULT;
   {
     PetscInt i;
@@ -120,8 +121,9 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   }
   if (dm->maxCell) {
     const PetscReal *maxCell, *L;
-    ierr = DMGetPeriodicity(dm,     &maxCell, &L);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(*newdm,  maxCell,  L);CHKERRQ(ierr);
+    const DMBoundaryType *bd;
+    ierr = DMGetPeriodicity(dm,     &maxCell, &L, &bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(*newdm,  maxCell,  L,  bd);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -524,8 +526,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = DMDestroy(&(*dm)->coordinateDM);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&(*dm)->coordinatesLocal);CHKERRQ(ierr);
-  ierr = PetscFree((*dm)->maxCell);CHKERRQ(ierr);
-  ierr = PetscFree((*dm)->L);CHKERRQ(ierr);
+  ierr = PetscFree3((*dm)->L,(*dm)->maxCell,(*dm)->bdtype);CHKERRQ(ierr);
 
   ierr = PetscDSDestroy(&(*dm)->prob);CHKERRQ(ierr);
   ierr = DMDestroy(&(*dm)->dmBC);CHKERRQ(ierr);
@@ -4069,18 +4070,45 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGetPeriodicity"
-PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **L)
+/*@C
+  DMSetPeriodicity - Set the description of mesh periodicity
+
+  Input Parameters:
++ dm      - The DM object
+. maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
+. L       - If we assume the mesh is a torus, this is the length of each coordinate
+- bd      - This describes the type of periodicity in each topological dimension
+
+  Level: developer
+
+.seealso: DMGetPeriodicity()
+@*/
+PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **L, const DMBoundaryType **bd)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (L)       *L       = dm->L;
   if (maxCell) *maxCell = dm->maxCell;
+  if (bd)      *bd      = dm->bdtype;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetPeriodicity"
-PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal L[])
+/*@C
+  DMSetPeriodicity - Set the description of mesh periodicity
+
+  Input Parameters:
++ dm      - The DM object
+. maxCell - Over distances greater than this, we can assume a point has crossed over to another sheet, when trying to localize cell coordinates
+. L       - If we assume the mesh is a torus, this is the length of each coordinate
+- bd      - This describes the type of periodicity in each topological dimension
+
+  Level: developer
+
+.seealso: DMGetPeriodicity()
+@*/
+PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal L[], const DMBoundaryType bd[])
 {
   Vec            coordinates;
   PetscInt       dim, d;
@@ -4088,13 +4116,11 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscFree(dm->L);CHKERRQ(ierr);
-  ierr = PetscFree(dm->maxCell);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(coordinates, &dim);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dim,&dm->L);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dim,&dm->maxCell);CHKERRQ(ierr);
-  for (d = 0; d < dim; ++d) {dm->L[d] = L[d]; dm->maxCell[d] = maxCell[d];}
+  PetscValidPointer(L,3);PetscValidPointer(maxCell,2);PetscValidPointer(bd,4);
+  ierr = PetscFree3(dm->L,dm->maxCell,dm->bdtype);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim,&dm->L,dim,&dm->maxCell,dim,&dm->bdtype);CHKERRQ(ierr);
+  for (d = 0; d < dim; ++d) {dm->L[d] = L[d]; dm->maxCell[d] = maxCell[d]; dm->bdtype[d] = bd[d];}
   PetscFunctionReturn(0);
 }
 

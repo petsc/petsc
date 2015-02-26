@@ -1032,6 +1032,7 @@ PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmPara
   PetscInt         bs;
   const char      *name;
   const PetscReal *maxCell, *L;
+  const DMBoundaryType *bd;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -1053,8 +1054,8 @@ PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmPara
     ierr = VecSetBlockSize(newCoordinates, bs);CHKERRQ(ierr);
     ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
   }
-  ierr = DMGetPeriodicity(dm, &maxCell, &L);CHKERRQ(ierr);
-  if (L) {ierr = DMSetPeriodicity(dmParallel, maxCell, L);CHKERRQ(ierr);}
+  ierr = DMGetPeriodicity(dm, &maxCell, &L, &bd);CHKERRQ(ierr);
+  if (L) {ierr = DMSetPeriodicity(dmParallel, maxCell, L, bd);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

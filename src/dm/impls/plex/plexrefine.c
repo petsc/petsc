@@ -5618,8 +5618,9 @@ static PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, Pets
   ierr = PetscSectionDestroy(&coordSectionNew);CHKERRQ(ierr);
   if (dm->maxCell) {
     const PetscReal *maxCell, *L;
-    ierr = DMGetPeriodicity(dm,  &maxCell, &L);CHKERRQ(ierr);
-    ierr = DMSetPeriodicity(rdm,  maxCell,  L);CHKERRQ(ierr);
+    const DMBoundaryType *bd;
+    ierr = DMGetPeriodicity(dm,  &maxCell, &L, &bd);CHKERRQ(ierr);
+    ierr = DMSetPeriodicity(rdm,  maxCell,  L,  bd);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
