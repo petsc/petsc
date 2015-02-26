@@ -35,7 +35,7 @@ class Configure(config.package.Package):
     liblist_other         = [['libmpich.a','libpthread.a'],['libmpi++.a','libmpi.a']]
     liblist_single        = [['libmpi.a'],['libmpich.a'],['mpi.lib'],['mpich2.lib'],['mpich.lib'],
                              [os.path.join('amd64','msmpi.lib')],[os.path.join('i386','msmpi.lib')]]
-    self.liblist          = [[]] + liblist_mpich + liblist_lam + liblist_msmpi + liblist_other + liblist_single
+    self.liblist          = liblist_mpich + liblist_lam + liblist_msmpi + liblist_other + liblist_single
     # defaults to --with-mpi=yes
     self.required         = 1
     self.double           = 0
@@ -65,6 +65,11 @@ class Configure(config.package.Package):
     self.mpich   = framework.require('config.packages.MPICH', self)
     self.openmpi = framework.require('config.packages.OpenMPI', self)
     return
+
+  def generateLibList(self, directory):
+    if self.setCompilers.usedMPICompilers:
+      self.liblist = []
+    return config.package.Package.generateLibList(self,directory)
 
   # search many obscure locations for MPI
   def getSearchDirectories(self):

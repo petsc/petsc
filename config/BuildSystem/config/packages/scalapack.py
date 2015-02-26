@@ -6,7 +6,7 @@ class Configure(config.package.Package):
     self.download         = ['http://www.netlib.org/scalapack/scalapack-2.0.2.tgz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scalapack-2.0.2.tgz']
     self.includes         = []
-    self.liblist          = [[],['libscalapack.a']]
+    self.liblist          = [['libscalapack.a']]
     self.functions        = ['pssytrd']
     self.functionsFortran = 1
     self.fc               = 1

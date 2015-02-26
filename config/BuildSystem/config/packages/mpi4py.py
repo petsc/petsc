@@ -6,7 +6,6 @@ class Configure(config.package.Package):
     self.download          = ['https://mpi4py.googlecode.com/files/mpi4py-1.3.1.tar.gz']
     self.functions         = []
     self.includes          = []
-    self.liblist           = []
     return
 
   def setupDependencies(self, framework):

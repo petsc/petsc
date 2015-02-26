@@ -8,7 +8,6 @@ class Configure(config.package.Package):
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-418f86b7e1b8.tar.gz']
     self.functions         = []
     self.includes          = []
-    self.liblist           = []
     self.skippackagewithoptions = 1
     return
 

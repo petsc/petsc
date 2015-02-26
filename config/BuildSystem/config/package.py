@@ -284,7 +284,12 @@ class Package(config.base.Configure):
 
   def generateLibList(self, directory):
     '''Generates full path list of libraries from self.liblist'''
+    if [] in self.liblist: self.liblist.remove([]) # process null list later
+    if self.liblist == []: # most packages don't have a liblist - so return an empty list
+      return [[]]
     alllibs = []
+    if not directory:  # compiler default path - so also check compiler default libs.
+      alllibs.insert(0,[])
     for libSet in self.liblist:
       libs = []
       # add full path only to the first library in the list
