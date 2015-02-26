@@ -483,7 +483,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,const MatFactorInfo *fac
   A->ops->solvetransposeadd = MatSolveTransposeAdd_SeqDense;
   A->factortype             = MAT_FACTOR_CHOLESKY;
 
-  ierr = PetscLogFlops((A->cmap->n*A->cmap->n*A->cmap->n)/3.0);CHKERRQ(ierr);
+  ierr = PetscLogFlops((1.0*A->cmap->n*A->cmap->n*A->cmap->n)/3.0);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -1300,7 +1300,7 @@ PetscErrorCode MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
       for (j=0; j<n; j++) { (*v) *= x; v+= m;}
     }
     ierr = VecRestoreArrayRead(ll,&l);CHKERRQ(ierr);
-    ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
+    ierr = PetscLogFlops(1.0*n*m);CHKERRQ(ierr);
   }
   if (rr) {
     ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
@@ -1312,7 +1312,7 @@ PetscErrorCode MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
       for (j=0; j<m; j++) (*v++) *= x;
     }
     ierr = VecRestoreArrayRead(rr,&r);CHKERRQ(ierr);
-    ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
+    ierr = PetscLogFlops(1.0*n*m);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1353,7 +1353,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
       }
       if (sum > *nrm) *nrm = sum;
     }
-    ierr = PetscLogFlops(A->cmap->n*A->rmap->n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(1.0*A->cmap->n*A->rmap->n);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
     *nrm = 0.0;
     for (j=0; j<A->rmap->n; j++) {
@@ -1364,7 +1364,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
       }
       if (sum > *nrm) *nrm = sum;
     }
-    ierr = PetscLogFlops(A->cmap->n*A->rmap->n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(1.0*A->cmap->n*A->rmap->n);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No two norm");
   PetscFunctionReturn(0);
 }
