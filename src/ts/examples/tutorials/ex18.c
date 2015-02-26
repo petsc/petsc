@@ -227,6 +227,11 @@ void g0_constant_uu(const PetscScalar u[], const PetscScalar u_t[], const PetscS
   for (d = 0; d < spatialDim; ++d) g0[d*spatialDim+d] = 1.0;
 }
 
+void g0_constant_pp(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar g0[])
+{
+  g0[0] = 1.0;
+}
+
 static void f0_lap_u(const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], const PetscReal x[], PetscScalar f0[])
 {
   const PetscInt Nc = spatialDim;
@@ -664,6 +669,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   case VEL_CONSTANT:
     ierr = PetscDSSetResidual(prob, 0, f0_constant_u, f1_constant_u);CHKERRQ(ierr);
     ierr = PetscDSSetJacobian(prob, 0, 0, g0_constant_uu, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(prob, 1, 1, g0_constant_pp, NULL, NULL, NULL);CHKERRQ(ierr);
     break;
   case VEL_HARMONIC:
     switch (user->xbd) {
