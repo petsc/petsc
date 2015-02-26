@@ -313,10 +313,13 @@ class Package(config.base.Configure):
   def generateGuesses(self):
     d = self.checkDownload(1)
     if d:
-      for l in self.generateLibList(os.path.join(d, self.libdir)):
-        yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
-      for l in self.generateLibList(os.path.join(d, self.altlibdir)):
-        yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
+      for libdir in [self.libdir, self.altlibdir]:
+        libdirpath = os.path.join(d, libdir)
+        if not os.path.isdir(libdirpath):
+          self.framework.logPrint(self.PACKAGE+': Downloaded DirPath not found.. skipping: '+libdirpath)
+          continue
+        for l in self.generateLibList(libdirpath):
+          yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+d+'\n')
 
     if 'with-'+self.package+'-pkg-config' in self.framework.argDB:
@@ -345,10 +348,15 @@ class Package(config.base.Configure):
         raise RuntimeError('Bad option: '+'--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+'\n'+
                            fakeExternalPackagesDir+' is reserved for --download-package scratch space. \n'+
                            'Do not install software in this location nor use software in this directory.')
-      for l in self.generateLibList(os.path.join(d, self.libdir)):
-        yield('User specified root directory '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
-      for l in self.generateLibList(os.path.join(d, self.altlibdir)):
-        yield('User specified root directory '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
+
+      for libdir in [self.libdir, self.altlibdir]:
+        libdirpath = os.path.join(d, libdir)
+        if not os.path.isdir(libdirpath):
+          self.framework.logPrint(self.PACKAGE+': UserSpecified DirPath not found.. skipping: '+libdirpath)
+          continue
+        for l in self.generateLibList(libdirpath):
+          yield('User specified root directory '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
+
       if 'with-'+self.package+'-include' in self.framework.argDB:
         raise RuntimeError('Do not set --with-'+self.package+'-include if you set --with-'+self.package+'-dir')
       if 'with-'+self.package+'-lib' in self.framework.argDB:
@@ -384,9 +392,16 @@ class Package(config.base.Configure):
 
     for d in self.getSearchDirectories():
       if d:
+        if not os.path.isdir(d):
+          self.framework.logPrint(self.PACKAGE+': SearchDir DirPath not found.. skipping: '+d)
+          continue
         includedir = self.getIncludeDirs(d, self.includedir)
         for libdir in [self.libdir, self.altlibdir]:
-          for l in self.generateLibList(os.path.join(d, libdir)):
+          libdirpath = os.path.join(d, libdir)
+          if not os.path.isdir(libdirpath):
+            self.framework.logPrint(self.PACKAGE+': DirPath not found.. skipping: '+libdirpath)
+            continue
+          for l in self.generateLibList(libdirpath):
             yield('Package specific search directory '+self.PACKAGE, d, l, includedir)
       else:
         includedir = ''
