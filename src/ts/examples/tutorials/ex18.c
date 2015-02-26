@@ -52,7 +52,7 @@ typedef struct {
   /* Domain and mesh definition */
   DM             dm;
   PetscInt       dim;               /* The topological mesh dimension */
-  DMBoundaryType xbd, ybd;          /* The boundary type for the x- and y-boundary */
+  DMBoundaryType bd[2];             /* The boundary type for the x- and y-boundary */
   char           filename[2048];    /* The optional ExodusII file */
   /* Problem definition */
   PetscBool      useFV;             /* Use a finite volume scheme for advection */
@@ -83,8 +83,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscFunctionBeginUser;
   options->dim          = 2;
-  options->xbd          = DM_BOUNDARY_PERIODIC;
-  options->ybd          = DM_BOUNDARY_PERIODIC;
+  options->bd[0]        = DM_BOUNDARY_PERIODIC;
+  options->bd[1]        = DM_BOUNDARY_PERIODIC;
   options->filename[0]  = '\0';
   options->useFV        = PETSC_FALSE;
   options->velocityDist = VEL_HARMONIC;
@@ -98,12 +98,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBegin(comm, "", "Magma Dynamics Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex18.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   spatialDim = options->dim;
-  bd   = options->xbd;
-  ierr = PetscOptionsEList("-x_bd_type", "The x-boundary type", "ex18.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->xbd], &bd, NULL);CHKERRQ(ierr);
-  options->xbd = (DMBoundaryType) bd;
-  bd   = options->ybd;
-  ierr = PetscOptionsEList("-y_bd_type", "The y-boundary type", "ex18.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->ybd], &bd, NULL);CHKERRQ(ierr);
-  options->ybd = (DMBoundaryType) bd;
+  bd   = options->bd[0];
+  ierr = PetscOptionsEList("-x_bd_type", "The x-boundary type", "ex18.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->bd[0]], &bd, NULL);CHKERRQ(ierr);
+  options->bd[0] = (DMBoundaryType) bd;
+  bd   = options->bd[1];
+  ierr = PetscOptionsEList("-y_bd_type", "The y-boundary type", "ex18.c", DMBoundaryTypes, 5, DMBoundaryTypes[options->bd[1]], &bd, NULL);CHKERRQ(ierr);
+  options->bd[1] = (DMBoundaryType) bd;
   ierr = PetscOptionsString("-f", "Exodus.II filename to read", "ex18.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_fv", "Use the finite volume method for advection", "ex18.c", options->useFV, &options->useFV, NULL);CHKERRQ(ierr);
   vd   = options->velocityDist;
@@ -550,7 +550,7 @@ static PetscErrorCode Functional_Error(DM dm, PetscReal time, const PetscScalar 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   DM              distributedMesh = NULL;
-  PetscBool       periodic        = user->xbd == DM_BOUNDARY_PERIODIC || user->xbd == DM_BOUNDARY_TWIST || user->ybd == DM_BOUNDARY_PERIODIC || user->ybd == DM_BOUNDARY_TWIST ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool       periodic        = user->bd[0] == DM_BOUNDARY_PERIODIC || user->bd[0] == DM_BOUNDARY_TWIST || user->bd[1] == DM_BOUNDARY_PERIODIC || user->bd[1] == DM_BOUNDARY_TWIST ? PETSC_TRUE : PETSC_FALSE;
   const char     *filename        = user->filename;
   const PetscInt  cells[3]        = {3, 3, 3};
   const PetscReal L[3]            = {1.0, 1.0, 1.0};
@@ -562,12 +562,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBeginUser;
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (!len) {
-    ierr = DMPlexCreateHexBoxMesh(comm, user->dim, cells, user->xbd, user->ybd, DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
+    ierr = DMPlexCreateHexBoxMesh(comm, user->dim, cells, user->bd[0], user->bd[1], DM_BOUNDARY_NONE, dm);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   } else {
     ierr = DMPlexCreateFromFile(comm, filename, PETSC_TRUE, dm);CHKERRQ(ierr);
   }
-  if (periodic) {for (d = 0; d < 3; ++d) maxCell[d] = 1.1*(L[d]/cells[d]); ierr = DMSetPeriodicity(*dm, maxCell, L);CHKERRQ(ierr);}
+  if (periodic) {for (d = 0; d < 3; ++d) maxCell[d] = 1.1*(L[d]/cells[d]); ierr = DMSetPeriodicity(*dm, maxCell, L, user->bd);CHKERRQ(ierr);}
   /* Distribute mesh */
   ierr = DMPlexDistribute(*dm, 0, NULL, &distributedMesh);CHKERRQ(ierr);
   if (distributedMesh) {
@@ -608,9 +608,9 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
     case VEL_CONSTANT:
       user->exactFuncs[0] = constant_u_2d; break;
     case VEL_HARMONIC:
-      switch (user->xbd) {
+      switch (user->bd[0]) {
       case DM_BOUNDARY_PERIODIC:
-        switch (user->ybd) {
+        switch (user->bd[1]) {
         case DM_BOUNDARY_PERIODIC:
           user->exactFuncs[0] = doubly_periodic_u_2d; break;
         default:
@@ -672,9 +672,9 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     ierr = PetscDSSetJacobian(prob, 1, 1, g0_constant_pp, NULL, NULL, NULL);CHKERRQ(ierr);
     break;
   case VEL_HARMONIC:
-    switch (user->xbd) {
+    switch (user->bd[0]) {
     case DM_BOUNDARY_PERIODIC:
-      switch (user->ybd) {
+      switch (user->bd[1]) {
       case DM_BOUNDARY_PERIODIC:
         ierr = PetscDSSetResidual(prob, 0, f0_lap_doubly_periodic_u, f1_lap_u);CHKERRQ(ierr);
         break;
