@@ -311,6 +311,8 @@ PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
   Mat_BlockMat      *amat;
 
   PetscFunctionBegin;
+  /* force binary viewer to load .info file if it has not yet done so */
+  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&tmpA);CHKERRQ(ierr);
   ierr = MatSetType(tmpA,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatLoad_SeqAIJ(tmpA,viewer);CHKERRQ(ierr);

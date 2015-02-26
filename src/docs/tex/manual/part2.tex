@@ -3095,11 +3095,24 @@ call
   PCMGGetCoarseSolve(PC pc,KSP *ksp);
 \end{tabbing}
 and set the appropriate options in \trl{ksp}. Similarly, the
-smoothers are set by calling
+smoothers are setcontrolled by first calling
 \begin{tabbing}
   PCMGGetSmoother(PC pc,int level,KSP *ksp);
 \end{tabbing}
-and setting the various options in \trl{ksp.}
+and then setting the various options in the \trl{ksp.} For example,
+\begin{tabbing}
+  PCMGGetSmoother(pc,1,&ksp);
+  KSPSetOperators(ksp,A1,A1);
+\end{tabbing}
+sets the matrix that defines the smoother on level 1 of the multigrid. While
+\begin{tabbing}
+  PCMGGetSmoother(pc,1,&ksp);
+  KSPGetPC(ksp,&pc);
+  PCSetType(pc,PCSOR);
+\end{tabbing}
+sets SOR as the smoother to use on level 1.
+
+
 To use a different pre- and postsmoother, one should call the following
 routines instead.
 \begin{tabbing}

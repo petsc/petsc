@@ -2,9 +2,14 @@ import config.base
 import os
 import re
 
+def noCheck(command, status, output, error):
+  ''' Do no check result'''
+  return
+
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
+    self.isClone = 0
     return
 
   def setupDependencies(self, framework):
@@ -19,12 +24,22 @@ class Configure(config.base.Configure):
       if os.path.exists(os.path.join(self.petscdir.dir, '.git')):
         self.logPrint('.git directory exists')
         if hasattr(self.sourceControl,'git'):
-          VERSION_GIT = os.popen("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" describe").read()
-          if not VERSION_GIT:
-            raise RuntimeError('Your petsc source tree is broken. Use "git status" to check, or remove the entire directory and start all over again')
-          self.addDefine('VERSION_GIT','"'+VERSION_GIT.strip()+'"')
-          self.addDefine('VERSION_DATE_GIT','"'+os.popen("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" log -1 --pretty=format:%ci").read()+'"')
-          self.addDefine('VERSION_BRANCH_GIT','"'+re.compile('\* (.*)\n').search(os.popen('cd '+self.petscdir.dir+' && '+self.sourceControl.git+' branch').read()).group(1)+'"')
+          (o1, e1, s1) = self.executeShellCommand("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" describe",checkCommand = noCheck)
+          (o2, e2, s2) = self.executeShellCommand("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" log -1 --pretty=format:%H",checkCommand = noCheck)
+          (o3, e3, s3) = self.executeShellCommand("cd "+self.petscdir.dir+" && "+self.sourceControl.git+" log -1 --pretty=format:%ci",checkCommand = noCheck)
+          (o4, e4, s4) = self.executeShellCommand('cd '+self.petscdir.dir+' && '+self.sourceControl.git+' branch',checkCommand = noCheck)
+          if s2 or s3 or s4:
+            self.logPrintBox('***** WARNING: Git branch check is giving errors! Checking the repo with "git status"')
+            (o5, e5, s5) = self.executeShellCommand('cd '+self.petscdir.dir+' && '+self.sourceControl.git+' status',checkCommand = noCheck)
+            self.logPrint(e5)
+          else:
+            if not o1: o1 = o2
+            self.addDefine('VERSION_GIT','"'+o1+'"')
+            self.addDefine('VERSION_DATE_GIT','"'+o3+'"')
+            try:
+              self.addDefine('VERSION_BRANCH_GIT','"'+re.compile('\* (.*)').search(o4).group(1)+'"')
+            except:
+              self.addDefine('VERSION_BRANCH_GIT','undetermined')
         else:
           self.logPrintBox('\n*****WARNING: PETSC_DIR appears to be a Git clone - but git is not found in PATH********\n')
       else:
@@ -34,7 +49,6 @@ class Configure(config.base.Configure):
         raise RuntimeError('Your petsc source tree is broken. Use "git status" to check, or remove the entire directory and start all over again')
       else:
         self.logPrint('This is a tarball installation')
-        self.isClone = 0
     return
 
   def configure(self):

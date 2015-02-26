@@ -1160,7 +1160,7 @@ class CMakePackage(Package):
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+folder+' && make && '+self.installSudo+'make install', timeout=2500, log = self.framework.log)
+        output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+folder+' && '+self.make.make_jnp+' && '+self.installSudo+' '+self.make.make+' install', timeout=3000, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on  '+self.PACKAGE+': '+str(e))
       self.postInstall(output1+err1+output2+err2,conffile)

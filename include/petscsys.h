@@ -2681,7 +2681,7 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
 /* Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
  * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
  * possible. */
-PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void**)slot);}
+PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,(size_t)count,(void**)slot);}
 
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 #undef __FUNCT__
@@ -2709,7 +2709,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],Petsc
   PetscFunctionBegin;
   if (set && *set) PetscFunctionReturn(0);
   ierr = PetscStrlen(cit,&len);CHKERRQ(ierr);
-  ierr = PetscSegBufferGet(PetscCitationsList,(PetscInt)len,&vstring);CHKERRQ(ierr);
+  ierr = PetscSegBufferGet(PetscCitationsList,len,&vstring);CHKERRQ(ierr);
   ierr = PetscMemcpy(vstring,cit,len);CHKERRQ(ierr);
   if (set) *set = PETSC_TRUE;
   PetscFunctionReturn(0);

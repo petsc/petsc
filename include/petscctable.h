@@ -20,7 +20,7 @@ PETSC_STATIC_INLINE unsigned long PetscHash(PetscTable ta,unsigned long x)
 {
 #define PETSC_HASH_FACT 79943
   PetscFunctionBegin;
-  PetscFunctionReturn((PETSC_HASH_FACT*x)%ta->tablesize);
+  PetscFunctionReturn((PETSC_HASH_FACT*x)%(unsigned long)ta->tablesize);
 }
 
 PETSC_EXTERN PetscErrorCode PetscTableCreate(const PetscInt,PetscInt,PetscTable*);
@@ -39,7 +39,7 @@ PETSC_EXTERN PetscErrorCode PetscTableRemoveAll(PetscTable);
 PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,PetscInt data,InsertMode imode)
 {
   PetscErrorCode ierr;
-  PetscInt       i,hash = (PetscInt)PetscHash(ta,key);
+  PetscInt       i,hash = (PetscInt)PetscHash(ta,(unsigned long)key);
 
   PetscFunctionBegin;
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
@@ -58,7 +58,12 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,Pets
       case MAX_VALUES:
         ta->table[hash] = PetscMax(ta->table[hash],data);
         break;
-      default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported InsertMode");
+      case NOT_SET_VALUES:
+      case INSERT_ALL_VALUES:
+      case ADD_ALL_VALUES:
+      case INSERT_BC_VALUES:
+      case ADD_BC_VALUES:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported InsertMode");
       }
       PetscFunctionReturn(0);
     } else if (!ta->keytable[hash]) {
@@ -82,7 +87,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,Pets
 PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt key)
 {
   PetscErrorCode ierr;
-  PetscInt       i,hash = (PetscInt)PetscHash(ta,key);
+  PetscInt       i,hash = (PetscInt)PetscHash(ta,(unsigned long)key);
 
   PetscFunctionBegin;
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
@@ -125,7 +130,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableFind(PetscTable ta,PetscInt key,Pe
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Key <= 0");
   if (key > ta->maxkey) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key %D is greater than largest key allowed %D",key,ta->maxkey);
 
-  hash  = (PetscInt)PetscHash(ta,key);
+  hash  = (PetscInt)PetscHash(ta,(unsigned long)key);
   while (ii++ < ta->tablesize) {
     if (!ta->keytable[hash]) break;
     else if (ta->keytable[hash] == key) {
