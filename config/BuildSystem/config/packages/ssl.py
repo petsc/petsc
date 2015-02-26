@@ -20,9 +20,6 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.deps = []
 
-  def getSearchDirectories(self):
-    yield ''
-
   def configureLibrary(self):
     if 'with-ios' in self.framework.argDB and self.framework.argDB['with-ios']: 
       self.found = 0
