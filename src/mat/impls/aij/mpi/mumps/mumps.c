@@ -75,8 +75,6 @@ typedef struct {
   PetscInt     ICNTL9_pre;           /* check if ICNTL(9) is changed from previous MatSolve */
   VecScatter   scat_rhs, scat_sol;   /* used by MatSolve() */
   Vec          b_seq,x_seq;
-  VecScatter   scat_rhss, scat_sols; /* used by MatMatSolve() */
-  Vec          bb_mpi,bb_seq,xx_mpi; 
 
   PetscErrorCode (*Destroy)(Mat);
   PetscErrorCode (*ConvertToTriples)(Mat, int, MatReuse, int*, int**, int**, PetscScalar**);
@@ -551,15 +549,6 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
     ierr = PetscFree(mumps->id.perm_in);CHKERRQ(ierr);
     ierr = PetscFree(mumps->irn);CHKERRQ(ierr);
 
-    /* created in MatMatSolve_MUMPS() */
-    if (mumps->scat_rhss) {
-      ierr = VecScatterDestroy(&mumps->scat_rhss);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(&mumps->scat_sols);CHKERRQ(ierr);
-      ierr = VecDestroy(&mumps->bb_seq);CHKERRQ(ierr);
-      ierr = VecDestroy(&mumps->bb_mpi);CHKERRQ(ierr);
-      ierr = VecDestroy(&mumps->xx_mpi);CHKERRQ(ierr);
-    }
-
     mumps->id.job = JOB_END;
     PetscMUMPS_c(&mumps->id);
     ierr = MPI_Comm_free(&(mumps->comm_mumps));CHKERRQ(ierr);
@@ -713,18 +702,18 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 
     ierr = MatDenseRestoreArray(X,&array);CHKERRQ(ierr);
   } else {  /************** parallel case ***************/
-    PetscInt       lsol_loc,*isol_loc,*isol_loc_save,*idx,*iidx,*idxx;
-    PetscScalar    *sol_loc,*sol_loc_save;
+    PetscInt       lsol_loc,*isol_loc,*idx,*iidx,*idxx;
+    PetscScalar    *sol_loc;
     IS             is_to,is_from;
     PetscInt       k,proc,j;
     const PetscInt *rstart;
+    Vec            v_mpi,bb_seq;
+    VecScatter     scat_rhss, scat_sols;
 
     /* create x_seq to hold local solution */
     lsol_loc = nrhs*mumps->id.INFO(23); /* length of sol_loc */
 
     ierr = PetscFree2(mumps->id.sol_loc,mumps->id.isol_loc);CHKERRQ(ierr); //save it for MatSovle()!!!
-    sol_loc_save  = mumps->id.sol_loc;   /* these arrays were allocated for MatSolve_MUMPS() */
-    isol_loc_save = mumps->id.isol_loc;
 
     ierr = PetscMalloc2(lsol_loc,&sol_loc,lsol_loc,&isol_loc);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
@@ -741,24 +730,13 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     ierr = VecDestroy(&mumps->x_seq);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,lsol_loc,sol_loc,&mumps->x_seq);CHKERRQ(ierr);
 
-    /* copy rhs matrix B into vector bb_mpi */
-    if (mumps->bb_mpi) {
-      ierr = VecDestroy(&mumps->bb_mpi);CHKERRQ(ierr);
-      ierr = VecDestroy(&mumps->bb_seq);CHKERRQ(ierr);
-      ierr = VecDestroy(&mumps->xx_mpi);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(&mumps->scat_rhss);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(&mumps->scat_sols);CHKERRQ(ierr);
-    }
+    /* copy rhs matrix B into vector v_mpi */
     ierr = MatDenseGetArray(B,&bray);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)B),1,nrhs*m,nrhs*M,(const PetscScalar*)bray,&mumps->bb_mpi);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)B),1,nrhs*m,nrhs*M,(const PetscScalar*)bray,&v_mpi);CHKERRQ(ierr);
     ierr = MatDenseRestoreArray(B,&bray);CHKERRQ(ierr);
 
-    ierr = MatDenseGetArray(X,&array);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(B,&mx,NULL);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),1,nrhs*mx,nrhs*M,(const PetscScalar*)array,&mumps->xx_mpi);CHKERRQ(ierr);
-
-    /* scatter bb_mpi to bb_seq because MUMPS only supports centralized rhs */
-    /* idx: maps from k-th index of bb_mpi to (i,j)-th global entry of B;
+    /* scatter v_mpi to bb_seq because MUMPS only supports centralized rhs */
+    /* idx: maps from k-th index of v_mpi to (i,j)-th global entry of B;
       iidx: inverse of idx, will be used by scattering xx_seq -> X       */
     ierr = PetscMalloc2(nrhs*M,&idx,nrhs*M,&iidx);CHKERRQ(ierr);
     ierr = MatGetOwnershipRanges(B,&rstart);CHKERRQ(ierr);
@@ -773,22 +751,22 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     }
 
     if (!mumps->myid) {
-      ierr = VecCreateSeq(PETSC_COMM_SELF,nrhs*M,&mumps->bb_seq);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF,nrhs*M,&bb_seq);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PETSC_COMM_SELF,nrhs*M,idx,PETSC_COPY_VALUES,&is_to);CHKERRQ(ierr); 
       ierr = ISCreateStride(PETSC_COMM_SELF,nrhs*M,0,1,&is_from);CHKERRQ(ierr); 
     } else {
-      ierr = VecCreateSeq(PETSC_COMM_SELF,0,&mumps->bb_seq);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF,0,&bb_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_to);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_from);CHKERRQ(ierr);
     }
-    ierr = VecScatterCreate(mumps->bb_mpi,is_from,mumps->bb_seq,is_to,&mumps->scat_rhss);CHKERRQ(ierr);
-    ierr = VecScatterBegin(mumps->scat_rhss,mumps->bb_mpi,mumps->bb_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterCreate(v_mpi,is_from,bb_seq,is_to,&scat_rhss);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scat_rhss,v_mpi,bb_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = ISDestroy(&is_to);CHKERRQ(ierr);
     ierr = ISDestroy(&is_from);CHKERRQ(ierr);
-    ierr = VecScatterEnd(mumps->scat_rhss,mumps->bb_mpi,mumps->bb_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat_rhss,v_mpi,bb_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
     if (!mumps->myid) { /* define rhs on the host */
-      ierr = VecGetArray(mumps->bb_seq,&bray);CHKERRQ(ierr);
+      ierr = VecGetArray(bb_seq,&bray);CHKERRQ(ierr);
       mumps->id.nrhs = nrhs;
       mumps->id.lrhs = M;
 #if defined(PETSC_USE_COMPLEX)
@@ -800,7 +778,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 #else
     mumps->id.rhs = bray;
 #endif
-    ierr = VecRestoreArray(mumps->bb_seq,&bray);CHKERRQ(ierr);
+    ierr = VecRestoreArray(bb_seq,&bray);CHKERRQ(ierr);
     }
 
     /* solve phase */
@@ -810,7 +788,10 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
 
     /* put mumps distributed solution to petsc vector xx_mpi, which shares local arrays with solution matrix X */
-
+    ierr = MatDenseGetArray(X,&array);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(X,&mx,NULL);CHKERRQ(ierr);
+    ierr = VecPlaceArray(v_mpi,array);CHKERRQ(ierr);
+    
     /* create scatter scat_sols */
     ierr = PetscMalloc1(nrhs*mumps->id.lsol_loc,&idxx);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,nrhs*mumps->id.lsol_loc,0,1,&is_from);CHKERRQ(ierr); 
@@ -822,19 +803,20 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
       }
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF,nrhs*mumps->id.lsol_loc,idxx,PETSC_COPY_VALUES,&is_to);CHKERRQ(ierr);  
-    ierr = VecScatterCreate(mumps->x_seq,is_from,mumps->xx_mpi,is_to,&mumps->scat_sols);CHKERRQ(ierr);
-    ierr = VecScatterBegin(mumps->scat_sols,mumps->x_seq,mumps->xx_mpi,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterCreate(mumps->x_seq,is_from,v_mpi,is_to,&scat_sols);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scat_sols,mumps->x_seq,v_mpi,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = ISDestroy(&is_from);CHKERRQ(ierr);
     ierr = ISDestroy(&is_to);CHKERRQ(ierr);
-    ierr = VecScatterEnd(mumps->scat_sols,mumps->x_seq,mumps->xx_mpi,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat_sols,mumps->x_seq,v_mpi,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
     ierr = MatDenseRestoreArray(X,&array);CHKERRQ(ierr);
-    //ierr = PetscFree2(mumps->id.sol_loc,mumps->id.isol_loc);CHKERRQ(ierr);
-    //mumps->id.sol_loc  = sol_loc_save;
-    //mumps->id.isol_loc = isol_loc_save;
     //ierr = PetscFree2(sol_loc,isol_loc);CHKERRQ(ierr);
     ierr = PetscFree2(idx,iidx);CHKERRQ(ierr);
     ierr = PetscFree(idxx);CHKERRQ(ierr);
+    ierr = VecDestroy(&v_mpi);CHKERRQ(ierr);
+    ierr = VecDestroy(&bb_seq);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&scat_rhss);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&scat_sols);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
