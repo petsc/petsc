@@ -4304,7 +4304,7 @@ PetscErrorCode  MatGetDiagonal(Mat mat,Vec v)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetRowMin"
-/*@
+/*@C
    MatGetRowMin - Gets the minimum value (of the real part) of each
         row of the matrix
 
@@ -4348,7 +4348,7 @@ PetscErrorCode  MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetRowMinAbs"
-/*@
+/*@C
    MatGetRowMinAbs - Gets the minimum value (in absolute value) of each
         row of the matrix
 
@@ -4392,7 +4392,7 @@ PetscErrorCode  MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetRowMax"
-/*@
+/*@C
    MatGetRowMax - Gets the maximum value (of the real part) of each
         row of the matrix
 
@@ -4435,7 +4435,7 @@ PetscErrorCode  MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetRowMaxAbs"
-/*@
+/*@C
    MatGetRowMaxAbs - Gets the maximum value (in absolute value) of each
         row of the matrix
 
