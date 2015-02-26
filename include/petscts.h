@@ -325,6 +325,7 @@ PETSC_EXTERN PetscErrorCode TSComputeIFunctionLinear(TS,PetscReal,Vec,Vec,Vec,vo
 PETSC_EXTERN PetscErrorCode TSComputeIJacobianConstant(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 PETSC_EXTERN PetscErrorCode TSComputeSolutionFunction(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSComputeForcingFunction(TS,PetscReal,Vec);
+PETSC_EXTERN PetscErrorCode TSComputeIJacobianDefaultColor(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
 PETSC_EXTERN PetscErrorCode TSSetPreStep(TS, PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSSetPreStage(TS, PetscErrorCode (*)(TS,PetscReal));
