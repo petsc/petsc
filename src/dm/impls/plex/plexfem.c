@@ -149,10 +149,12 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, MatNullSpace *sp)
   ierr = VecSetUp(mode[0]);CHKERRQ(ierr);
   for (i = 1; i < m; ++i) {ierr = VecDuplicate(mode[0], &mode[i]);CHKERRQ(ierr);}
   for (d = 0; d < m; d++) {
-    PetscInt ctx[2] = {dim, d};
+    PetscInt ctx[2];
     void     *voidctx = (void *)(&ctx[0]);
     void     (*func)(const PetscReal *,PetscScalar *,void *) = DMPlexProjectRigidBody;
 
+    ctx[0] = dim;
+    ctx[1] = d;
     ierr = DMPlexProjectFunction(dm,&func,&voidctx,INSERT_VALUES,mode[d]);CHKERRQ(ierr);
   }
   for (i = 0; i < dim; ++i) {ierr = VecNormalize(mode[i], NULL);CHKERRQ(ierr);}
