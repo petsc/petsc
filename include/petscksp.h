@@ -64,7 +64,6 @@ typedef const char* KSPType;
 #define KSPLCD        "lcd"
 #define KSPPYTHON     "python"
 #define KSPGCR        "gcr"
-#define KSPSPECEST    "specest"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId KSP_CLASSID;
