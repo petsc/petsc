@@ -311,7 +311,7 @@ class Package(config.base.Configure):
     return os.path.join(prefix, includeDir)
 
   def generateGuesses(self):
-    d = self.checkDownload(1)
+    d = self.checkDownload()
     if d:
       for libdir in [self.libdir, self.altlibdir]:
         libdirpath = os.path.join(d, libdir)
@@ -408,33 +408,23 @@ class Package(config.base.Configure):
         for l in self.generateLibList(d): # d = '' i.e search compiler libraries
             yield('Compiler specific search '+self.PACKAGE, d, l, includedir)
 
-    d = self.checkDownload(requireDownload = 0)
-    if d:
-      for l in self.generateLibList(os.path.join(d, self.libdir)):
-        yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
-      for l in self.generateLibList(os.path.join(d, self.altlibdir)):
-        yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
-      raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+self.getInstallDir()+'\n')
-
     if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.framework.argDB['with-'+self.package]):
       mesg = 'Unable to find '+self.package+' in default locations!\nPerhaps you can specify with --with-'+self.package+'-dir=<directory>\nIf you do not want '+self.name+', then give --with-'+self.package+'=0'
       if self.download: mesg +='\nYou might also consider using --download-'+self.package+' instead'
       if self.alternativedownload: mesg +='\nYou might also consider using --download-'+self.alternativedownload+' instead'
       raise RuntimeError(mesg)
 
-  def checkDownload(self, requireDownload = 1):
+  def checkDownload(self):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
     downloadPackage = 0
     downloadPackageVal = self.framework.argDB['download-'+self.downloadname.lower()]
-    if requireDownload and isinstance(downloadPackageVal, str):
+    if isinstance(downloadPackageVal, str):
       self.download = [downloadPackageVal]
       self.downloadURLSetByUser = True
       downloadPackage = 1
-    elif downloadPackageVal == 1 and requireDownload:
-      downloadPackage = 1
-    elif downloadPackageVal == 2 and not requireDownload:
+    elif downloadPackageVal:
       downloadPackage = 1
 
     if downloadPackage:

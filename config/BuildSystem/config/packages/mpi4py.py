@@ -62,7 +62,7 @@ class Configure(config.package.Package):
     return self.installDir
 
   def configureLibrary(self):
-    self.checkDownload(1)
+    self.checkDownload()
     if not self.sharedLibraries.useShared:
         raise RuntimeError('mpi4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
 

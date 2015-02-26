@@ -37,7 +37,7 @@ class Configure(config.package.GNUPackage):
     return
 
   def alternateConfigureLibrary(self):
-    self.checkDownload(1)
+    self.checkDownload()
 
   def configure(self):
     '''Locate cmake and download it if requested'''

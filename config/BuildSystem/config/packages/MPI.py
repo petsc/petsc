@@ -325,7 +325,7 @@ class Configure(config.package.Package):
       self.addPrototype('#define MPI_Comm_c2f(a) (a)')
     return
 
-  def checkDownload(self, requireDownload = 1):
+  def checkDownload(self):
     '''Check if we should download MPICH or OpenMPI'''
     if 'download-mpi' in self.framework.argDB and self.framework.argDB['download-mpi']:
       raise RuntimeError('Option --download-mpi does not exist! Use --download-mpich or --download-openmpi instead.')
