@@ -288,13 +288,8 @@ cdef class DM(Object):
         PetscINCREF(sf.obj)
         return sf
 
-    #
-
-    def setShellGlobalVector(self, Vec gv not None):
-        CHKERR( DMShellSetGlobalVector(self.dm, gv.vec) )
-
-    def setShellLocalVector(self, Vec lv not None):
-        CHKERR( DMShellSetLocalVector(self.dm, lv.vec) )
+    def setPointSF(self, SF sf not None):
+        CHKERR( DMSetPointSF(self.dm, sf.sf) )
 
     # backward compatibility
     createGlobalVector = createGlobalVec
