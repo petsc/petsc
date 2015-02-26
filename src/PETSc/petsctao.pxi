@@ -142,6 +142,8 @@ cdef extern from * nogil:
     int TaoSetJacobianStateRoutine(PetscTAO,PetscMat,PetscMat,PetscMat,TaoJacobianState*,void*)
     int TaoSetJacobianDesignRoutine(PetscTAO,PetscMat,TaoJacobianDesign*,void*)
 
+    int TaoSetInitialTrustRegionRadius(PetscTAO,PetscReal)
+
     int TaoGetKSP(PetscTAO,PetscKSP*)
 
 # --------------------------------------------------------------------

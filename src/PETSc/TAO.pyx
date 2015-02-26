@@ -130,6 +130,10 @@ cdef class TAO(Object):
 
     #
 
+    def setInitialTrustRegionRadius(self, radius):
+        cdef PetscReal cradius = asReal(radius)
+        CHKERR( TaoSetInitialTrustRegionRadius(self.tao, cradius) )
+
     # --------------
 
     def setAppCtx(self, appctx):
