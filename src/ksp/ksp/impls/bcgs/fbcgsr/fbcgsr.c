@@ -69,7 +69,7 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
-    ierr = MatMult(pc->mat,X,P2);CHKERRQ(ierr); /* P2 is used as temporary storage */
+    ierr = KSP_MatMult(ksp,pc->mat,X,P2);CHKERRQ(ierr); /* P2 is used as temporary storage */
     ierr = VecCopy(B,R);CHKERRQ(ierr);
     ierr = VecAXPY(R,-1.0,P2);CHKERRQ(ierr);
   } else {
@@ -97,8 +97,8 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
   for (i=0; i<ksp->max_it; i++) {
 
     /* matmult and pc */
-    ierr = PCApply(pc,P,P2);CHKERRQ(ierr); /* p2 <- K p */
-    ierr = MatMult(pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
+    ierr = KSP_PCApply(ksp,P,P2);CHKERRQ(ierr); /* p2 <- K p */
+    ierr = KSP_MatMult(ksp,pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
 
     /* inner prodcuts */
     if (i==0) {
@@ -129,8 +129,8 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
     ierr = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);  /* s <- r - alpha v */
 
     /* matmult and pc */
-    ierr = PCApply(pc,S,S2);CHKERRQ(ierr); /* s2 <- K s */
-    ierr = MatMult(pc->mat,S2,T);CHKERRQ(ierr); /* t <- A s2 */
+    ierr = KSP_PCApply(ksp,S,S2);CHKERRQ(ierr); /* s2 <- K s */
+    ierr = KSP_MatMult(ksp,pc->mat,S2,T);CHKERRQ(ierr); /* t <- A s2 */
 
     /* inner prodcuts */
     ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
