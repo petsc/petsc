@@ -383,13 +383,15 @@ class Package(config.base.Configure):
       raise RuntimeError(msg)
 
     for d in self.getSearchDirectories():
-      for libdir in [self.libdir, self.altlibdir]:
-        for l in self.generateLibList(os.path.join(d, libdir)):
-          if not d:
-            includedir = ''
-          else:
-            includedir = self.getIncludeDirs(d, self.includedir)
-          yield('Package specific search directory '+self.PACKAGE, d, l, includedir)
+      if d:
+        includedir = self.getIncludeDirs(d, self.includedir)
+        for libdir in [self.libdir, self.altlibdir]:
+          for l in self.generateLibList(os.path.join(d, libdir)):
+            yield('Package specific search directory '+self.PACKAGE, d, l, includedir)
+      else:
+        includedir = ''
+        for l in self.generateLibList(d): # d = '' i.e search compiler libraries
+            yield('Compiler specific search '+self.PACKAGE, d, l, includedir)
 
     d = self.checkDownload(requireDownload = 0)
     if d:
