@@ -26,13 +26,11 @@ Get help:
 Use finite difference evaluation of Jacobian by coloring, instead of analytical:
   ./ex9 -obs_fd
 
-Use feasible initial guess:
-  ./ex9 -obs_feasible
+Graphical:
+  ./ex9 -snes_monitor_solution -draw_pause 1 -da_refine 2
 
 Convergence evidence:
   for M in 1 2 3 4 5; do mpiexec -n 4 ./ex9 -da_refine $M; done
-
-
 */
 
 #include <petscdm.h>
@@ -72,7 +70,7 @@ int main(int argc,char **argv)
 
   ierr = DMDACreate2d(PETSC_COMM_WORLD,
                       DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-                      DMDA_STENCIL_STAR,     /* nonlinear diffusion but diffusivity depends on soln W not grad W */
+                      DMDA_STENCIL_STAR,
                       -11,-11,               /* default to 10x10 grid but override with -da_grid_x, -da_grid_y (or -da_refine) */
                       PETSC_DECIDE,PETSC_DECIDE, /* num of procs in each dim */
                       1,                     /* dof = 1 */
@@ -106,8 +104,7 @@ int main(int argc,char **argv)
   /* report on setup */
   ierr = DMDAGetLocalInfo(da,&info); CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,
-                     "setup done: grid               Mx,My = %D,%D\n"
-                     "            spacing            dx,dy = %.3f,%.3f\n",
+                     "setup done: grid  Mx,My = %D,%D  with spacing  dx,dy = %.3f,%.3f\n",
                      info.mx,info.my,4.0/(PetscReal)(info.mx-1),4.0/(PetscReal)(info.my-1));CHKERRQ(ierr);
 
   /* solve nonlinear system */
@@ -115,7 +112,7 @@ int main(int argc,char **argv)
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,
-                     "number of Newton iterations = %D; result = %s\n",
+                     "number of Newton iterations = %D ... %s\n",
                      its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
 
   /* compare to exact */
@@ -124,7 +121,7 @@ int main(int argc,char **argv)
   error1 /= (PetscReal)info.mx * (PetscReal)info.my;
   ierr = VecNorm(u,NORM_INFINITY,&errorinf);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,
-                     "errors:    av |u-uexact|  = %.3e\n           |u-uexact|_inf = %.3e\n",
+                     "errors:    av |u-uexact|  = %.3e    |u-uexact|_inf = %.3e\n",
                      error1,errorinf);CHKERRQ(ierr);
 
   /* Free work space.  */
@@ -144,20 +141,17 @@ int main(int argc,char **argv)
 PetscErrorCode FormPsiAndExactSoln(DM da) {
   ObsCtx         *user;
   PetscErrorCode ierr;
-  PetscInt       i,j,Mx,My,xs,ys,xm,ym;
+  DMDALocalInfo  info;
+  PetscInt       i,j;
   DM             coordDA;
   Vec            coordinates;
   DMDACoor2d     **coords;
-  PetscReal      **psi, **uexact;
-  PetscReal      x, y, r;
-  PetscReal      afree = 0.69797, A = 0.68026, B = 0.47152;
+  PetscReal      **psi, **uexact, r;
+  const PetscReal afree = 0.69797, A = 0.68026, B = 0.47152;
 
   PetscFunctionBeginUser;
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
-  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da,&info); CHKERRQ(ierr);
 
   ierr = DMGetCoordinateDM(da, &coordDA);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da, &coordinates);CHKERRQ(ierr);
@@ -165,11 +159,9 @@ PetscErrorCode FormPsiAndExactSoln(DM da) {
   ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da, user->psi, &psi);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da, user->uexact, &uexact);CHKERRQ(ierr);
-  for (j=ys; j<ys+ym; j++) {
-    for (i=xs; i<xs+xm; i++) {
-      x = coords[j][i].x;
-      y = coords[j][i].y;
-      r = PetscSqrtReal(x * x + y * y);
+  for (j=info.ys; j<info.ys+info.ym; j++) {
+    for (i=info.xs; i<info.xs+info.xm; i++) {
+      r = PetscSqrtReal(pow(coords[j][i].x,2) + pow(coords[j][i].y,2));
       if (r <= 1.0) psi[j][i] = PetscSqrtReal(1.0 - r * r);
       else psi[j][i] = -1.0;
       if (r <= afree) uexact[j][i] = psi[j][i];  /* on the obstacle */
@@ -206,7 +198,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscErrorCode ierr;
   PetscInt       i,j;
   PetscReal      dx,dy,uxx,uyy;
-  PetscReal      **uexact;  /* for boundary values only */
+  PetscReal      **uexact;  /* used for boundary values only */
 
   PetscFunctionBeginUser;
   dx = 4.0 / (PetscReal)(info->mx-1);
