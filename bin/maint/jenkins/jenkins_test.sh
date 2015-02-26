@@ -1,4 +1,5 @@
 #!/bin/bash
+date
 export PETSC_DIR=${WORKSPACE}
 if [[ ${named_test} =~ .*icc.* || ${named_test} =~ .*ifort.* ]]; then
  if [[ ${slave_label} != "macos" ]]; then
@@ -24,3 +25,7 @@ export PATH=$PATH:/usr/local/bin
    fi
 
 make test
+
+make alltests
+mv ${PETSC_ARCH}/lib/petsc-conf/alltests.log alltests.log.${slave_label}.${named_test}
+date

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+date
 if [[ ${named_test} =~ .*icc.* || ${named_test} =~ .*ifort.* ]]; then
  if [[ ${slave_label} != "macos" ]]; then
   eval `/software/common/adm/packages/softenv-1.4.2/bin/soft-dec sh add +intel`
@@ -25,3 +25,4 @@ export PATH=$PATH:/usr/local/bin
 
 export PETSC_DIR=${WORKSPACE}
 make
+mv make.log make.log.${slave_label}.${named_test}
