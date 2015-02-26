@@ -127,9 +127,9 @@ PetscErrorCode PCSetFromOptions_GEO(PetscOptions *PetscOptionsObject,PC pc)
    . selected_2 - list of selected local ID, includes selected ghosts
    . data_stride -
    . coords[2*data_stride] - column vector of local coordinates w/ ghosts
-   . nselected_1 - selected IDs that go with base (1) graph
+   . nselected_1 - selected IDs that go with base (1) graph includes selected ghosts
    . clid_lid_1[nselected_1] - lids of selected (c) nodes   ???????????
-   . agg_lists_1 - list of aggregates
+   . agg_lists_1 - list of aggregates selected_1 vertices of aggregate unselected vertices
    . crsGID[selected.size()] - global index for prolongation operator
    . bs - block size
   Output Parameter:
@@ -138,16 +138,8 @@ PetscErrorCode PCSetFromOptions_GEO(PetscOptions *PetscOptionsObject,PC pc)
 */
 #undef __FUNCT__
 #define __FUNCT__ "triangulateAndFormProl"
-static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected local ID, includes selected ghosts */
-                                             const PetscInt data_stride,
-                                             const PetscReal coords[], /* column vector of local coordinates w/ ghosts */
-                                             const PetscInt nselected_1, /* list of selected local ID, includes selected ghosts */
-                                             const PetscInt clid_lid_1[],
-                                             const PetscCoarsenData *agg_lists_1, /* selected_1 vertices of aggregate unselected vertices */
-                                             const PetscInt crsGID[],
-                                             const PetscInt bs,
-                                             Mat a_Prol, /* prolongation operator (output) */
-                                             PetscReal *a_worst_best) /* measure of worst missed fine vertex, 0 is no misses */
+static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,PetscReal coords[],PetscInt nselected_1,const PetscInt clid_lid_1[],const PetscCoarsenData *agg_lists_1,
+                                             const PetscInt crsGID[],PetscInt bs,Mat a_Prol,PetscReal *a_worst_best)
 {
 #if defined(PETSC_HAVE_TRIANGLE)
   PetscErrorCode       ierr;
@@ -448,7 +440,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
 */
 #undef __FUNCT__
 #define __FUNCT__ "getGIDsOnSquareGraph"
-static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,const PetscInt clid_lid_1[],const Mat Gmat1,IS *a_selected_2,Mat *a_Gmat_2,PetscInt **a_crsGID)
+static PetscErrorCode getGIDsOnSquareGraph(PetscInt nselected_1,const PetscInt clid_lid_1[],const Mat Gmat1,IS *a_selected_2,Mat *a_Gmat_2,PetscInt **a_crsGID)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -551,7 +543,7 @@ static PetscErrorCode getGIDsOnSquareGraph(const PetscInt nselected_1,const Pets
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGGraph_GEO"
-PetscErrorCode PCGAMGGraph_GEO(PC pc,const Mat Amat,Mat *a_Gmat)
+PetscErrorCode PCGAMGGraph_GEO(PC pc,Mat Amat,Mat *a_Gmat)
 {
   PetscErrorCode  ierr;
   PC_MG           *mg      = (PC_MG*)pc->data;
@@ -591,7 +583,6 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc,const Mat Amat,Mat *a_Gmat)
 PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_parent)
 {
   PetscErrorCode ierr;
-  PC_MG          *mg      = (PC_MG*)a_pc->data;
   PetscInt       Istart,Iend,nloc,kk,Ii,ncols;
   IS             perm;
   GAMGNode       *gnodes;
@@ -676,7 +667,7 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
  */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGProlongator_GEO"
-PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCoarsenData *agg_lists,Mat *a_P_out)
+PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *agg_lists,Mat *a_P_out)
 {
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;

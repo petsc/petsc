@@ -70,7 +70,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatCollapseRows(Mat Amat,PetscInt start,Petsc
  */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGCreateGraph"
-PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
+PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 {
   PetscErrorCode ierr;
   PetscInt       Istart,Iend,Ii,i,jj,kk,ncols,nloc,NN,MM,bs;
@@ -227,7 +227,7 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
  */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGFilterGraph"
-PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const PetscBool symm)
+PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 {
   PetscErrorCode    ierr;
   PetscInt          Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;

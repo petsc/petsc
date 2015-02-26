@@ -94,7 +94,7 @@ static PetscErrorCode PCGAMGClassicalGetType_GAMG(PC pc, PCGAMGClassicalType *ty
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGGraph_Classical"
-PetscErrorCode PCGAMGGraph_Classical(PC pc,const Mat A,Mat *G)
+PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
 {
   PetscInt          s,f,n,idx,lidx,gidx;
   PetscInt          r,c,ncols;
@@ -217,7 +217,7 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGProlongator_Classical_Direct"
-PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, const Mat A, const Mat G, PetscCoarsenData *agg_lists,Mat *P)
+PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    ierr;
   PC_MG             *mg          = (PC_MG*)pc->data;
@@ -615,7 +615,7 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGProlongator_Classical_Standard"
-PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Mat G, PetscCoarsenData *agg_lists,Mat *P)
+PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    ierr;
   Mat               lA,*lAs;
@@ -879,7 +879,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, const Mat A, const Ma
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGOptProlongator_Classical_Jacobi"
-PetscErrorCode PCGAMGOptProlongator_Classical_Jacobi(PC pc,const Mat A,Mat *P)
+PetscErrorCode PCGAMGOptProlongator_Classical_Jacobi(PC pc,Mat A,Mat *P)
 {
 
   PetscErrorCode    ierr;
@@ -936,7 +936,7 @@ PetscErrorCode PCGAMGOptProlongator_Classical_Jacobi(PC pc,const Mat A,Mat *P)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGProlongator_Classical"
-PetscErrorCode PCGAMGProlongator_Classical(PC pc, const Mat A, const Mat G, PetscCoarsenData *agg_lists,Mat *P)
+PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    ierr;
   PetscErrorCode    (*f)(PC,Mat,Mat,PetscCoarsenData*,Mat*);

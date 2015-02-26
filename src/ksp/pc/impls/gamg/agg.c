@@ -290,17 +290,14 @@ static const NState REMOVED =-3;
      - AGG-MG specific: clears singletons out of 'selected_2'
 
    Input Parameter:
-   . Gmat_2 - glabal matrix of graph (data not defined)
-   . Gmat_1 - base graph to grab with
+   . Gmat_2 - glabal matrix of graph (data not defined)   base (squared) graph 
+   . Gmat_1 - base graph to grab with                 base graph
    Input/Output Parameter:
    . aggs_2 - linked list of aggs with gids)
 */
 #undef __FUNCT__
 #define __FUNCT__ "smoothAggs"
-static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
-                                 const Mat Gmat_1,  /* base graph */
-                                 /* const IS selected_2, [nselected local] selected vertices */
-                                 PetscCoarsenData *aggs_2)  /* [nselected local] global ID of aggregate */
+static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2)
 {
   PetscErrorCode ierr;
   PetscBool      isMPI;
@@ -679,11 +676,11 @@ PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
  formProl0
 
    Input Parameter:
-   . agg_llists - list of arrays with aggregates
-   . bs - block size
+   . agg_llists - list of arrays with aggregates -- list from selected vertices of aggregate unselected vertices 
+   . bs - row block size
    . nSAvec - column bs of new P
    . my0crs - global index of start of locals
-   . data_stride - bs*(nloc nodes + ghost nodes)
+   . data_stride - bs*(nloc nodes + ghost nodes) [data_stride][nSAvec]
    . data_in[data_stride*nSAvec] - local data on fine grid
    . flid_fgid[data_stride/bs] - make local to global IDs, includes ghosts in 'locals_llist'
   Output Parameter:
@@ -692,15 +689,7 @@ PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
 */
 #undef __FUNCT__
 #define __FUNCT__ "formProl0"
-static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from selected vertices of aggregate unselected vertices */
-                                const PetscInt bs,          /* (row) block size */
-                                const PetscInt nSAvec,      /* column bs */
-                                const PetscInt my0crs,      /* global index of start of locals */
-                                const PetscInt data_stride, /* (nloc+nghost)*bs */
-                                PetscReal      data_in[],   /* [data_stride][nSAvec] */
-                                const PetscInt flid_fgid[], /* [data_stride/bs] */
-                                PetscReal **a_data_out,
-                                Mat a_Prol) /* prolongation operator (output)*/
+static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscInt nSAvec,PetscInt my0crs,PetscInt data_stride,PetscReal data_in[],const PetscInt flid_fgid[],PetscReal **a_data_out,Mat a_Prol)
 {
   PetscErrorCode ierr;
   PetscInt       Istart,my0,Iend,nloc,clid,flid,aggID,kk,jj,ii,mm,ndone,nSelected,minsz,nghosts,out_data_stride;
@@ -903,7 +892,7 @@ static PetscErrorCode PCView_GAMG_AGG(PC pc,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGGraph_AGG"
-PetscErrorCode PCGAMGGraph_AGG(PC pc,const Mat Amat,Mat *a_Gmat)
+PetscErrorCode PCGAMGGraph_AGG(PC pc,Mat Amat,Mat *a_Gmat)
 {
   PetscErrorCode            ierr;
   PC_MG                     *mg          = (PC_MG*)pc->data;
@@ -1047,7 +1036,7 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
  */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGProlongator_AGG"
-PetscErrorCode PCGAMGProlongator_AGG(PC pc,const Mat Amat,const Mat Gmat,PetscCoarsenData *agg_lists,Mat *a_P_out)
+PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *agg_lists,Mat *a_P_out)
 {
   PC_MG          *mg       = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg  = (PC_GAMG*)mg->innerctx;
@@ -1191,7 +1180,7 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,const Mat Amat,const Mat Gmat,PetscCo
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGOptProlongator_AGG"
-PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,const Mat Amat,Mat *a_P)
+PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 {
   PetscErrorCode ierr;
   PC_MG          *mg          = (PC_MG*)pc->data;
