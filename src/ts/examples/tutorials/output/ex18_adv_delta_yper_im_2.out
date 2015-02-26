@@ -1,0 +1,144 @@
+DM Object: 1 MPI processes
+  type: plex
+DM_0x84000000_0 in 2 dimensions:
+  0-cells: 156
+  1-cells: 300
+  2-cells: 168 (24)
+Labels:
+  ghost: 0 strata of sizes ()
+  vtk: 1 strata of sizes (144)
+  Face Sets: 2 strata of sizes (21, 21)
+  marker: 1 strata of sizes (48)
+  depth: 3 strata of sizes (156, 300, 168)
+  0  time        0  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           0] int            0
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  1  time  0.08333  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0, 4.00001e-06] int  5.55557e-08
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 1
+  2  time   0.1667  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0, 7.99999e-06] int  1.11111e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  3  time     0.25  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0,     1.2e-05] int  1.66666e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  4  time   0.3333  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0, 1.59999e-05] int  2.22221e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  5  time   0.4167  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0, 1.99998e-05] int  2.77776e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  6  time      0.5  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0, 2.39998e-05] int   3.3333e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  7  time   0.5833  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0, 2.79997e-05] int  3.88884e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  8  time   0.6667  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0, 3.19996e-05] int  4.44438e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  9  time     0.75  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0, 3.59994e-05] int  4.99992e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 10  time   0.8333  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0, 3.99993e-05] int  5.55546e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 11  time   0.9167  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0, 4.39991e-05] int  6.11099e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 12  time        1  |x| (       1,        1) |x|_1 (     144,        1)         Error [           0,  4.7999e-05] int  6.66652e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 13  time    1.083  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 5.19988e-05] int  7.22205e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 14  time    1.167  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 5.59986e-05] int  7.77758e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 15  time     1.25  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 5.99983e-05] int   8.3331e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 16  time    1.333  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 6.39981e-05] int  8.88862e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 17  time    1.417  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 6.79978e-05] int  9.44414e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 18  time      1.5  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 7.19976e-05] int  9.99966e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 19  time    1.583  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 7.59973e-05] int  1.05552e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 20  time    1.667  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0,  7.9997e-05] int  1.11107e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 21  time     1.75  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 8.39966e-05] int  1.16662e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 22  time    1.833  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 8.79963e-05] int  1.22217e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 23  time    1.917  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0,  9.1996e-05] int  1.27772e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 24  time        2  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 9.59956e-05] int  1.33327e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 25  time    2.083  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 9.99952e-05] int  1.38882e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 26  time    2.167  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 0.000103995] int  1.44437e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 27  time     2.25  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 0.000107994] int  1.49992e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 28  time    2.333  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 0.000111994] int  1.55547e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 29  time    2.417  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 0.000115994] int  1.61102e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 30  time      2.5  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 0.000119993] int  1.66657e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 31  time    2.583  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 0.000123993] int  1.72212e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 32  time    2.667  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 0.000127992] int  1.77767e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 33  time     2.75  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 0.000131992] int  1.83322e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 34  time    2.833  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 0.000135991] int  1.88876e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 35  time    2.917  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0,  0.00013999] int  1.94431e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 36  time        3  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0,  0.00014399] int  1.99986e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 37  time    3.083  |x| (       1,   0.9999) |x|_1 (     144,        1)         Error [           0, 0.000147989] int  2.05541e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 38  time    3.167  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000151989] int  2.11096e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 39  time     3.25  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000155988] int   2.1665e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 40  time    3.333  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000159988] int  2.22205e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 41  time    3.417  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000163987] int   2.2776e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 42  time      3.5  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000167986] int  2.33314e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 43  time    3.583  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000171986] int  2.38869e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 44  time    3.667  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000175985] int  2.44423e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 45  time     3.75  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000179984] int  2.49978e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 46  time    3.833  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000183983] int  2.55533e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 47  time    3.917  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000187983] int  2.61087e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 48  time        4  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000191982] int  2.66642e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 49  time    4.083  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000195981] int  2.72196e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 50  time    4.167  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0,  0.00019998] int  2.77751e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 51  time     4.25  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0,  0.00020398] int  2.83305e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 52  time    4.333  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000207979] int  2.88859e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 53  time    4.417  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000211978] int  2.94414e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 54  time      4.5  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000215977] int  2.99968e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 55  time    4.583  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000219976] int  3.05523e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 56  time    4.667  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000223975] int  3.11077e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 57  time     4.75  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000227974] int  3.16631e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 58  time    4.833  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000231974] int  3.22186e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 59  time    4.917  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000235973] int   3.2774e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 60  time        5  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000239972] int  3.33294e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 61  time    5.083  |x| (       1,   0.9998) |x|_1 (     144,        1)         Error [           0, 0.000243971] int  3.38848e-06
+TS Object: 1 MPI processes
+  type: mimex
+  maximum steps=80
+  maximum time=5
+  total number of nonlinear solver iterations=0
+  total number of nonlinear solve failures=0
+  total number of linear solver iterations=0
+  total number of rejected steps=0
+CONVERGED_TIME at time 5.08331 after 61 steps

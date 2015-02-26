@@ -1,0 +1,54 @@
+DM Object: 1 MPI processes
+  type: plex
+DM_0x84000000_0 in 2 dimensions:
+  0-cells: 12
+  1-cells: 21
+  2-cells: 15 (6)
+Labels:
+  ghost: 0 strata of sizes ()
+  vtk: 1 strata of sizes (9)
+  Face Sets: 2 strata of sizes (3, 3)
+  marker: 1 strata of sizes (12)
+  depth: 3 strata of sizes (12, 21, 15)
+  0  time        0  |x| (       0,        1) |x|_1 (       0,        1)         Error [           0,           0] int            0
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  1  time   0.3333  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 1.00001e-06] int  2.22224e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 1
+  2  time   0.6667  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 2.00001e-06] int  4.44446e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  3  time        1  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0,       3e-06] int  6.66668e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  4  time    1.333  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0,       4e-06] int  8.88889e-07
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  5  time    1.667  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0,       5e-06] int  1.11111e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  6  time        2  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 5.99999e-06] int  1.33333e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  7  time    2.333  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 6.99999e-06] int  1.55555e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  8  time    2.667  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 7.99998e-06] int  1.77777e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+  9  time        3  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 8.99997e-06] int  1.99999e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 10  time    3.333  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 9.99996e-06] int  2.22221e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 11  time    3.667  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0,     1.1e-05] int  2.44443e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 12  time        4  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 1.19999e-05] int  2.66665e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 13  time    4.333  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 1.29999e-05] int  2.88887e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 14  time    4.667  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 1.39999e-05] int  3.11109e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 15  time        5  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 1.49999e-05] int  3.33331e-06
+  Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 0
+ 16  time    5.333  |x| (       1,        1) |x|_1 (       9,        1)         Error [           0, 1.59999e-05] int  3.55553e-06
+TS Object: 1 MPI processes
+  type: mimex
+  maximum steps=20
+  maximum time=5
+  total number of nonlinear solver iterations=0
+  total number of nonlinear solve failures=0
+  total number of linear solver iterations=0
+  total number of rejected steps=0
+CONVERGED_TIME at time 5.33333 after 16 steps
