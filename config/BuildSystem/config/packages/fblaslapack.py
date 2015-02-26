@@ -99,6 +99,6 @@ class Configure(config.package.Package):
       output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, 'lib','petsc-conf',self.name), timeout=30, log = self.framework.log)
     except RuntimeError, e:
       pass
-    return libdir
+    return self.installDir
 
 
