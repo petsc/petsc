@@ -48,6 +48,7 @@ testexamples_SUPERLU_DIST: ${TESTEXAMPLES_SUPERLU_DIST}
 testexamples_HYPRE: ${TESTEXAMPLES_HYPRE}
 testexamples_HDF5: ${TESTEXAMPLES_HDF5}
 testexamples_CHACO: ${TESTEXAMPLES_CHACO}
+testexamples_CHOMBO: ${TESTEXAMPLES_CHOMBO}
 testexamples_TRIANGLE: ${TESTEXAMPLES_TRIANGLE}
 testexamples_CTETGEN: ${TESTEXAMPLES_CTETGEN}
 testexamples_SSL: ${TESTEXAMPLES_SSL}
@@ -160,6 +161,8 @@ buildexamples_HDF5:
 	-@${OMAKE} testexamples_HDF5 TESTEXAMPLES_HDF5=`echo ${TESTEXAMPLES_HDF5} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_CHACO:
 	-@${OMAKE} testexamples_CHACO TESTEXAMPLES_CHACO=`echo ${TESTEXAMPLES_CHACO} | sed s/runex[0-9]*[a-z0-9_]*//g`
+buildexamples_CHOMBO:
+	-@${OMAKE} testexamples_CHOMBO TESTEXAMPLES_CHOMBO=`echo ${TESTEXAMPLES_CHOMBO} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_TRIANGLE:
 	-@${OMAKE} testexamples_TRIANGLE TESTEXAMPLES_TRIANGLE=`echo ${TESTEXAMPLES_TRIANGLE} | sed s/runex[0-9]*[a-z0-9_]*//g`
 

@@ -25,7 +25,7 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_MUMPS)
   PetscBool      flg_mumps,flg_mumps_ch;
 #endif
-#if defined(PETSC_HAVE_SUPERLU)
+#if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLU_DIST)
   PetscBool      flg_superlu;
 #endif
   PetscScalar    v;
@@ -196,7 +196,7 @@ int main(int argc,char **args)
           '-ksp_type preonly -pc_type ilu -pc_factor_mat_solver_package superlu -mat_superlu_ilu_droptol 1.e-8'
           are equivalent to these procedual calls
   */
-#if defined(PETSC_HAVE_SUPERLU)
+#if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLU_DIST)
   flg_ilu     = PETSC_FALSE;
   flg_superlu = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-use_superlu_lu",&flg_superlu,NULL);CHKERRQ(ierr);
@@ -210,6 +210,9 @@ int main(int argc,char **args)
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
     }
     if (size == 1) {
+#if !defined(PETSC_HAVE_SUPERLU)
+      SETERRQ(PETSC_COMM_WORLD,1,"This test requires SUPERLU");
+#endif
       ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
     } else {
 #if !defined(PETSC_HAVE_SUPERLU_DIST)
@@ -219,9 +222,11 @@ int main(int argc,char **args)
     }
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SUPERLU)
     if (size == 1) {
       ierr = MatSuperluSetILUDropTol(F,1.e-8);CHKERRQ(ierr);
     }
+#endif
   }
 #endif
 
