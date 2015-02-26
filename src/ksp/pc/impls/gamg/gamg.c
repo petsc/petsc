@@ -800,81 +800,16 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         PetscReal emax, emin;
         ierr = PetscObjectTypeCompare((PetscObject)subpc, PCJACOBI, &flag);CHKERRQ(ierr);
         ierr = PetscObjectTypeCompare((PetscObject)subpc, PCSOR, &flag2);CHKERRQ(ierr);
-        if ((flag||flag2) && emaxs[level] > 0.0) emax=emaxs[level]; /* eigen estimate only for diagnal PC but lets acccept SOR because it is close and safe (always lower) */
-        else { /* eigen estimate 'emax' -- this is done in cheby */
-          KSP eksp;
-          Mat Lmat = Aarr[level];
-          Vec bb, xx;
-
-          ierr = MatCreateVecs(Lmat, &bb, 0);CHKERRQ(ierr);
-          ierr = MatCreateVecs(Lmat, &xx, 0);CHKERRQ(ierr);
-          {
-            PetscRandom rctx;
-            ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
-            ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-            ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
-            ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
-          }
-
-          /* zeroing out BC rows -- needed for crazy matrices */
-          {
-            PetscInt    Istart,Iend,ncols,jj,Ii;
-            PetscScalar zero = 0.0;
-            ierr = MatGetOwnershipRange(Lmat, &Istart, &Iend);CHKERRQ(ierr);
-            for (Ii = Istart, jj = 0; Ii < Iend; Ii++, jj++) {
-              ierr = MatGetRow(Lmat,Ii,&ncols,0,0);CHKERRQ(ierr);
-              if (ncols <= 1) {
-                ierr = VecSetValues(bb, 1, &Ii, &zero, INSERT_VALUES);CHKERRQ(ierr);
-              }
-              ierr = MatRestoreRow(Lmat,Ii,&ncols,0,0);CHKERRQ(ierr);
-            }
-            ierr = VecAssemblyBegin(bb);CHKERRQ(ierr);
-            ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
-          }
-
-          ierr = KSPCreate(comm, &eksp);CHKERRQ(ierr);
-          ierr = KSPSetTolerances(eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 10);CHKERRQ(ierr);
-          ierr = KSPSetNormType(eksp, KSP_NORM_NONE);CHKERRQ(ierr);
-          ierr = KSPSetOptionsPrefix(eksp,((PetscObject)pc)->prefix);CHKERRQ(ierr);
-          ierr = KSPAppendOptionsPrefix(eksp, "gamg_est_");CHKERRQ(ierr);
-          ierr = KSPSetFromOptions(eksp);CHKERRQ(ierr);
-
-          ierr = KSPSetInitialGuessNonzero(eksp, PETSC_FALSE);CHKERRQ(ierr);
-          ierr = KSPSetOperators(eksp, Lmat, Lmat);CHKERRQ(ierr);
-          ierr = KSPSetComputeSingularValues(eksp,PETSC_TRUE);CHKERRQ(ierr);
-
-          /* set PC type to be same as smoother */
-          ierr = KSPSetPC(eksp, subpc);CHKERRQ(ierr);
-
-          /* solve - keep stuff out of logging */
-          ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
-          ierr = PetscLogEventDeactivate(PC_Apply);CHKERRQ(ierr);
-          ierr = KSPSolve(eksp, bb, xx);CHKERRQ(ierr);
-          ierr = PetscLogEventActivate(KSP_Solve);CHKERRQ(ierr);
-          ierr = PetscLogEventActivate(PC_Apply);CHKERRQ(ierr);
-
-          ierr = KSPComputeExtremeSingularValues(eksp, &emax, &emin);CHKERRQ(ierr);
-
-          ierr = VecDestroy(&xx);CHKERRQ(ierr);
-          ierr = VecDestroy(&bb);CHKERRQ(ierr);
-          ierr = KSPDestroy(&eksp);CHKERRQ(ierr);
-
-          if (pc_gamg->verbose > 0) {
-            PetscInt N1, tt;
-            ierr = MatGetSize(Aarr[level], &N1, &tt);CHKERRQ(ierr);
-            PetscPrintf(comm,"\t\t\t%s PC setup max eigen=%e min=%e on level %d (N=%d)\n",__FUNCT__,emax,emin,lidx,N1);
-          }
-        }
-        {
+        /* eigen estimate only for diagnal PC but lets acccept SOR because it is close and safe (always lower) */
+        if ((flag||flag2) && (emax=emaxs[level]) > 0.0) {
           PetscInt N1, N0;
+          emax=emaxs[level];
           ierr = MatGetSize(Aarr[level], &N1, NULL);CHKERRQ(ierr);
           ierr = MatGetSize(Aarr[level+1], &N0, NULL);CHKERRQ(ierr);
-          /* heuristic - is this crap? */
-          /* emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); */
           emin  = emax * pc_gamg->eigtarget[0];
           emax *= pc_gamg->eigtarget[1];
+          ierr = KSPChebyshevSetEigenvalues(smoother, emax, emin);CHKERRQ(ierr);
         }
-        ierr = KSPChebyshevSetEigenvalues(smoother, emax, emin);CHKERRQ(ierr);
       } /* setup checby flag */
     } /* non-coarse levels */
 
