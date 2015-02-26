@@ -217,7 +217,7 @@ runex3_chebynoest:
 	   else printf "${PWD}\nPossible problem with ex3_chebynoest, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex3_chebynoest.tmp
 runex3_chebyest:
-	-@${MPIEXEC} -n 1 ./ex3 -ksp_est_view -ksp_type chebyshev -ksp_chebyshev_estimate_eigenvalues > ex3_chebyest.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex3 -ksp_est_view -ksp_type chebyshev -ksp_chebyshev_esteig > ex3_chebyest.tmp 2>&1; \
 	   if (${DIFF} output/ex3_chebyest.out ex3_chebyest.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex3_chebyest, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex3_chebyest.tmp

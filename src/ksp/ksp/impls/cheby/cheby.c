@@ -4,7 +4,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPReset_Chebyshev"
-PetscErrorCode KSPReset_Chebyshev(KSP ksp)
+static PetscErrorCode KSPReset_Chebyshev(KSP ksp)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
   PetscErrorCode ierr;
@@ -16,7 +16,7 @@ PetscErrorCode KSPReset_Chebyshev(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_Chebyshev"
-PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
+static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
   PetscErrorCode ierr;
@@ -24,7 +24,7 @@ PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPSetWorkVecs(ksp,3);CHKERRQ(ierr);
   if (cheb->emin == 0. || cheb->emax == 0.) { /* We need to estimate eigenvalues */
-    ierr = KSPChebyshevSetEstimateEigenvalues(ksp,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = KSPChebyshevEstEigSet(ksp,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -42,13 +42,13 @@ static PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp,PetscReal ema
   chebyshevP->emax = emax;
   chebyshevP->emin = emin;
 
-  ierr = KSPChebyshevSetEstimateEigenvalues(ksp,0.,0.,0.,0.);CHKERRQ(ierr); /* Destroy any estimation setup */
+  ierr = KSPChebyshevEstEigSet(ksp,0.,0.,0.,0.);CHKERRQ(ierr); /* Destroy any estimation setup */
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevSetEstimateEigenvalues_Chebyshev"
-static PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
+#define __FUNCT__ "KSPChebyshevEstEigSet_Chebyshev"
+static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
   PetscErrorCode ierr;
@@ -61,7 +61,7 @@ static PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP ksp,Petsc
       ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&cheb->kspest);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)cheb->kspest,(PetscObject)ksp,1);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(cheb->kspest,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(cheb->kspest,"est_");CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(cheb->kspest,"esteig_");CHKERRQ(ierr);
       ierr = KSPSetSkipPCSetFromOptions(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
 
       ierr = KSPSetPC(cheb->kspest,ksp->pc);CHKERRQ(ierr);
@@ -139,9 +139,9 @@ PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevSetEstimateEigenvalues"
+#define __FUNCT__ "KSPChebyshevEstEigSet"
 /*@
-   KSPChebyshevSetEstimateEigenvalues - Automatically estimate the eigenvalues to use for Chebyshev
+   KSPChebyshevEstEigSet - Automatically estimate the eigenvalues to use for Chebyshev
 
    Logically Collective on KSP
 
@@ -153,7 +153,7 @@ PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
 -  d - multiple of max eigenvalue estimate to use for max Chebyshev bound (or PETSC_DECIDE)
 
   Options Database:
-.  -ksp_chebyshev_estimate_eigenvalues a,b,c,d
+.  -ksp_chebyshev_esteig a,b,c,d
 
    Notes:
    The Chebyshev bounds are estimated using
@@ -172,7 +172,7 @@ PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
 
 .keywords: KSP, Chebyshev, set, eigenvalues, PCMG
 @*/
-PetscErrorCode KSPChebyshevSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
+PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {
   PetscErrorCode ierr;
 
@@ -182,7 +182,7 @@ PetscErrorCode KSPChebyshevSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscReal 
   PetscValidLogicalCollectiveReal(ksp,b,3);
   PetscValidLogicalCollectiveReal(ksp,c,4);
   PetscValidLogicalCollectiveReal(ksp,d,5);
-  ierr = PetscTryMethod(ksp,"KSPChebyshevSetEstimateEigenvalues_C",(KSP,PetscReal,PetscReal,PetscReal,PetscReal),(ksp,a,b,c,d));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ksp,"KSPChebyshevEstEigSet_C",(KSP,PetscReal,PetscReal,PetscReal,PetscReal),(ksp,a,b,c,d));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -197,9 +197,12 @@ PetscErrorCode KSPChebyshevSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscReal 
 +  ksp - linear solver context
 -  random - random number context or NULL to disable randomized RHS
 
-   Level: intermediate
+   Options Database:
+.  -ksp_chebyshev_esteig_random
 
-.seealso: KSPChebyshevSetEstimateEigenvalues(), PetscRandomCreate()
+  Level: intermediate
+
+.seealso: KSPChebyshevEstEigSet(), PetscRandomCreate()
 @*/
 PetscErrorCode KSPChebyshevEstEigSetRandom(KSP ksp,PetscRandom random)
 {
@@ -213,9 +216,9 @@ PetscErrorCode KSPChebyshevEstEigSetRandom(KSP ksp,PetscRandom random)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevGetEstEigKSP"
+#define __FUNCT__ "KSPChebyshevEstEigGetKSP"
 /*@
-  KSPChebyshevGetEstEigKSP - Get the Krylov method context used to estimate eigenvalues for the Chebyshev method.  If
+  KSPChebyshevEstEigGetKSP - Get the Krylov method context used to estimate eigenvalues for the Chebyshev method.  If
   a Krylov method is not being used for this purpose, NULL is returned.  The reference count of the returned KSP is
   not incremented: it should not be destroyed by the user.
 
@@ -227,22 +230,22 @@ PetscErrorCode KSPChebyshevEstEigSetRandom(KSP ksp,PetscRandom random)
 
   Level: intermediate
 
-.seealso: KSPChebyshevSetEstimateEigenvalues()
+.seealso: KSPChebyshevEstEigSet()
 @*/
-PetscErrorCode KSPChebyshevGetEstEigKSP(KSP ksp, KSP *kspest)
+PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   *kspest = NULL;
-  ierr = PetscTryMethod(ksp,"KSPChebyshevGetEstEigKSP_C",(KSP,KSP*),(ksp,kspest));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ksp,"KSPChebyshevEstEigGetKSP_C",(KSP,KSP*),(ksp,kspest));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPChebyshevGetEstEigKSP_Chebyshev"
-static PetscErrorCode KSPChebyshevGetEstEigKSP_Chebyshev(KSP ksp, KSP *kspest)
+#define __FUNCT__ "KSPChebyshevEstEigGetKSP_Chebyshev"
+static PetscErrorCode KSPChebyshevEstEigGetKSP_Chebyshev(KSP ksp, KSP *kspest)
 {
   KSP_Chebyshev *cheb = (KSP_Chebyshev*)ksp->data;
 
@@ -253,7 +256,7 @@ static PetscErrorCode KSPChebyshevGetEstEigKSP_Chebyshev(KSP ksp, KSP *kspest)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_Chebyshev"
-PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptions *PetscOptionsObject,KSP ksp)
+static PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
   PetscErrorCode ierr;
@@ -264,23 +267,23 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptions *PetscOptionsObject,KSP 
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP Chebyshev Options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_chebyshev_eststeps","Number of est steps in Chebyshev","",cheb->eststeps,&cheb->eststeps,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_chebyshev_esteig_steps","Number of est steps in Chebyshev","",cheb->eststeps,&cheb->eststeps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsRealArray("-ksp_chebyshev_eigenvalues","extreme eigenvalues","KSPChebyshevSetEigenvalues",eminmax,&neigarg,&flgeig);CHKERRQ(ierr);
   if (flgeig) {
     if (neigarg != 2) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"-ksp_chebyshev_eigenvalues: must specify 2 parameters, min and max eigenvalues");
     ierr = KSPChebyshevSetEigenvalues(ksp, eminmax[1], eminmax[0]);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsRealArray("-ksp_chebyshev_estimate_eigenvalues","estimate eigenvalues using a Krylov method, then use this transform for Chebyshev eigenvalue bounds","KSPChebyshevSetEstimateEigenvalues",tform,&nestarg,&flgest);CHKERRQ(ierr);
+  ierr = PetscOptionsRealArray("-ksp_chebyshev_esteig","estimate eigenvalues using a Krylov method, then use this transform for Chebyshev eigenvalue bounds","KSPChebyshevEstEigSet",tform,&nestarg,&flgest);CHKERRQ(ierr);
   if (flgest) {
     switch (nestarg) {
     case 0:
-      ierr = KSPChebyshevSetEstimateEigenvalues(ksp,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = KSPChebyshevEstEigSet(ksp,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
       break;
     case 2:                     /* Base everything on the max eigenvalues */
-      ierr = KSPChebyshevSetEstimateEigenvalues(ksp,PETSC_DECIDE,tform[0],PETSC_DECIDE,tform[1]);CHKERRQ(ierr);
+      ierr = KSPChebyshevEstEigSet(ksp,PETSC_DECIDE,tform[0],PETSC_DECIDE,tform[1]);CHKERRQ(ierr);
       break;
     case 4:                     /* Use the full 2x2 linear transformation */
-      ierr = KSPChebyshevSetEstimateEigenvalues(ksp,tform[0],tform[1],tform[2],tform[3]);CHKERRQ(ierr);
+      ierr = KSPChebyshevEstEigSet(ksp,tform[0],tform[1],tform[2],tform[3]);CHKERRQ(ierr);
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Must specify either 0, 2, or 4 parameters for eigenvalue estimation");
     }
@@ -288,12 +291,12 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptions *PetscOptionsObject,KSP 
 
   if (cheb->kspest) {
     PetscBool estrand = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ksp_chebyshev_estimate_eigenvalues_random","Use Random right hand side for eigenvalue estimation","KSPChebyshevEstEigSetRandom",estrand,&estrand,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ksp_chebyshev_esteig_random","Use Random right hand side for eigenvalue estimation","KSPChebyshevEstEigSetRandom",estrand,&estrand,NULL);CHKERRQ(ierr);
     if (estrand) {
       PetscRandom random;
       ierr = PetscRandomCreate(PetscObjectComm((PetscObject)ksp),&random);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)random,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-      ierr = PetscObjectAppendOptionsPrefix((PetscObject)random,"ksp_chebyshev_estimate_eigenvalues_");CHKERRQ(ierr);
+      ierr = PetscObjectAppendOptionsPrefix((PetscObject)random,"ksp_chebyshev_esteig_");CHKERRQ(ierr);
       ierr = PetscRandomSetFromOptions(random);CHKERRQ(ierr);
       ierr = KSPChebyshevEstEigSetRandom(ksp,random);CHKERRQ(ierr);
       ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
@@ -336,7 +339,7 @@ static PetscErrorCode KSPChebyshevComputeExtremeEigenvalues_Private(KSP kspest,P
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_Chebyshev"
-PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
+static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
   PetscErrorCode ierr;
@@ -494,7 +497,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPView_Chebyshev"
-PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
+static  PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
   PetscErrorCode ierr;
@@ -522,7 +525,7 @@ PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_Chebyshev"
-PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
+static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
   PetscErrorCode ierr;
@@ -531,9 +534,9 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
   ierr = KSPDestroy(&cheb->kspest);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&cheb->random);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSet_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevGetEstEigKSP_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigGetKSP_C",NULL);CHKERRQ(ierr);
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -544,8 +547,10 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
    Options Database Keys:
 +   -ksp_chebyshev_eigenvalues <emin,emax> - set approximations to the smallest and largest eigenvalues
                   of the preconditioned operator. If these are accurate you will get much faster convergence.
--   -ksp_chebyshev_estimate_eigenvalues <a,b,c,d> - estimate eigenvalues using a Krylov method, then use this
-                  transform for Chebyshev eigenvalue bounds (KSPChebyshevSetEstimateEigenvalues)
+.   -ksp_chebyshev_esteig <a,b,c,d> - estimate eigenvalues using a Krylov method, then use this
+                         transform for Chebyshev eigenvalue bounds (KSPChebyshevEstEigSet())
+.   -ksp_chebyshev_esteig_steps - number of estimation steps 
++   -ksp_chebyshev_esteig_random - use random right hand side for eigenvalue estimation (KSPChebyshevEstEigSetRandom())
 
 
    Level: beginner
@@ -558,7 +563,7 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
           The user should call KSPChebyshevSetEigenvalues() if they have eigenvalue estimates.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPChebyshevSetEigenvalues(), KSPChebyshevSetEstimateEigenvalues(), KSPRICHARDSON, KSPCG, PCMG
+           KSPChebyshevSetEigenvalues(), KSPChebyshevEstEigSet(), KSPChebyshevEstEigSetRandom(), KSPRICHARDSON, KSPCG, PCMG
 
 M*/
 
@@ -595,8 +600,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   ksp->ops->reset          = KSPReset_Chebyshev;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C",KSPChebyshevSetEigenvalues_Chebyshev);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C",KSPChebyshevSetEstimateEigenvalues_Chebyshev);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSet_C",KSPChebyshevEstEigSet_Chebyshev);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C",KSPChebyshevEstEigSetRandom_Chebyshev);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevGetEstEigKSP_C",KSPChebyshevGetEstEigKSP_Chebyshev);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigGetKSP_C",KSPChebyshevEstEigGetKSP_Chebyshev);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
