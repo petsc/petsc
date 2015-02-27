@@ -246,10 +246,19 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   hsize_t        dims[4], count[4], offset[4];
   PetscInt       n, N, bs = 1, bsInd, lenInd, low, timestep;
   PetscScalar    *x;
+  hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   const char     *vecname;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_REAL_SINGLE)
+  scalartype = H5T_NATIVE_FLOAT;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#error "HDF5 output with 128 bit floats not supported."
+#else
+  scalartype = H5T_NATIVE_DOUBLE;
+#endif
+
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
   ierr = VecGetBlockSize(xin,&bs);CHKERRQ(ierr);
@@ -338,7 +347,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
 
   ierr   = VecGetArray(xin, &x);CHKERRQ(ierr);
-  PetscStackCallHDF5(H5Dread,(dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, plist_id, x));
+  PetscStackCallHDF5(H5Dread,(dset_id, scalartype, memspace, filespace, plist_id, x));
   ierr   = VecRestoreArray(xin, &x);CHKERRQ(ierr);
 
   /* Close/release resources */
