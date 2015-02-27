@@ -17,7 +17,7 @@ F*/
 
 PetscInt spatialDim = 0;
 
-typedef enum {VEL_ZERO, VEL_CONSTANT, VEL_HARMONIC} VelocityDistribution;
+typedef enum {VEL_ZERO, VEL_CONSTANT, VEL_HARMONIC, VEL_SHEAR} VelocityDistribution;
 
 typedef enum {ZERO, CONSTANT, GAUSSIAN, TILTED, DELTA} PorosityDistribution;
 
@@ -75,7 +75,7 @@ static  AppCtx *globalUser;
 #define __FUNCT__ "ProcessOptions"
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *velocityDist[3]  = {"zero", "constant", "harmonic"};
+  const char    *velocityDist[4]  = {"zero", "constant", "harmonic", "shear"};
   const char    *porosityDist[5]  = {"zero", "constant", "gaussian", "tilted", "delta"};
   PetscInt       bd, vd, pd, d;
   PetscBool      flg;
@@ -107,7 +107,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsString("-f", "Exodus.II filename to read", "ex18.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-use_fv", "Use the finite volume method for advection", "ex18.c", options->useFV, &options->useFV, NULL);CHKERRQ(ierr);
   vd   = options->velocityDist;
-  ierr = PetscOptionsEList("-velocity_dist","Velocity distribution type","ex18.c",velocityDist,3,velocityDist[options->velocityDist],&vd,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-velocity_dist","Velocity distribution type","ex18.c",velocityDist,4,velocityDist[options->velocityDist],&vd,NULL);CHKERRQ(ierr);
   options->velocityDist = (VelocityDistribution) vd;
   pd   = options->porosityDist;
   ierr = PetscOptionsEList("-porosity_dist","Initial porosity distribution type","ex18.c",porosityDist,5,porosityDist[options->porosityDist],&pd,NULL);CHKERRQ(ierr);
@@ -403,6 +403,12 @@ void doubly_periodic_u_2d(const PetscReal x[], PetscScalar *u, void *ctx)
   u[1] = -sin(2.0*PETSC_PI*x[1])*cos(2.0*PETSC_PI*x[0])/PetscSqr(2.0*PETSC_PI);
 }
 
+void shear_bc(const PetscReal x[], PetscScalar *u, void *ctx)
+{
+  u[0] = x[1] - 0.5;
+  u[1] = 0.0;
+}
+
 void initialVelocity(const PetscReal x[], PetscScalar *u, void *ctx)
 {
   PetscInt d;
@@ -621,6 +627,9 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
         user->exactFuncs[0] = quadratic_u_2d; break;
       }
       break;
+    case VEL_SHEAR:
+      user->exactFuncs[0] = shear_bc; break;
+      break;
     default:
       SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
     }
@@ -687,6 +696,10 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       ierr = PetscDSSetResidual(prob, 0, f0_lap_u, f1_lap_u);CHKERRQ(ierr);
       break;
     }
+    break;
+  case VEL_SHEAR:
+    ierr = PetscDSSetResidual(prob, 0, f0_zero_u, f1_lap_u);CHKERRQ(ierr);
+    break;
   }
   ierr = PetscDSSetResidual(prob, 1, f0_advection, f1_advection);CHKERRQ(ierr);
   if (user->velocityDist == VEL_ZERO) {ierr = PetscDSSetRiemannSolver(prob, 1, riemann_advection);CHKERRQ(ierr);}
