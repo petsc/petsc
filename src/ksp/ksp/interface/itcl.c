@@ -462,8 +462,8 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (flg) {
 #if defined(PETSC_HAVE_THREADSAFETY)
 #pragma omp critical
-    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),monfilename,&monviewer);CHKERRQ(ierr);
 #endif
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),monfilename,&monviewer);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
   /*
