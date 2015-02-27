@@ -16,7 +16,3 @@ class Configure(config.package.Package):
     self.opengl  = framework.require('config.packages.opengl',self)
     self.deps = [self.opengl]
     return
-
-  def getSearchDirectories(self):
-    yield ''
-    return

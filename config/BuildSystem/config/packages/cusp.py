@@ -9,6 +9,7 @@ class Configure(config.package.Package):
     self.giturls         = ['https://github.com/cusplibrary/cusplibrary.git']
     self.includes        = ['cusp/version.h']
     self.includedir      = ['','include']
+    self.libdir          = ''
     self.forceLanguage   = 'CUDA'
     self.cxx             = 0
     self.CUSPVersion     = '0400' # Minimal cusp version is 0.4 

@@ -284,20 +284,20 @@ class Package(config.base.Configure):
 
   def generateLibList(self, directory):
     '''Generates full path list of libraries from self.liblist'''
+    if [] in self.liblist: self.liblist.remove([]) # process null list later
+    if self.liblist == []: # most packages don't have a liblist - so return an empty list
+      return [[]]
     alllibs = []
+    if not directory:  # compiler default path - so also check compiler default libs.
+      alllibs.insert(0,[])
     for libSet in self.liblist:
       libs = []
       # add full path only to the first library in the list
       if len(libSet) > 0:
-        if not self.libdir == directory:
-          libs.append(os.path.join(directory, libSet[0]))
-        else:
-          libs.append(libSet[0])
+        libs.append(os.path.join(directory, libSet[0]))
       for library in libSet[1:]:
         # if the library name doesn't start with lib - then add the fullpath
-        if library.startswith('-l'):
-          libs.append(library)
-        elif library.startswith('lib') or self.libdir == directory:
+        if library.startswith('-l') or library.startswith('lib'):
           libs.append(library)
         else:
           libs.append(os.path.join(directory, library))
@@ -311,12 +311,15 @@ class Package(config.base.Configure):
     return os.path.join(prefix, includeDir)
 
   def generateGuesses(self):
-    d = self.checkDownload(1)
+    d = self.checkDownload()
     if d:
-      for l in self.generateLibList(os.path.join(d, self.libdir)):
-        yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
-      for l in self.generateLibList(os.path.join(d, self.altlibdir)):
-        yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
+      for libdir in [self.libdir, self.altlibdir]:
+        libdirpath = os.path.join(d, libdir)
+        if not os.path.isdir(libdirpath):
+          self.framework.logPrint(self.PACKAGE+': Downloaded DirPath not found.. skipping: '+libdirpath)
+          continue
+        for l in self.generateLibList(libdirpath):
+          yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+d+'\n')
 
     if 'with-'+self.package+'-pkg-config' in self.framework.argDB:
@@ -345,10 +348,15 @@ class Package(config.base.Configure):
         raise RuntimeError('Bad option: '+'--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+'\n'+
                            fakeExternalPackagesDir+' is reserved for --download-package scratch space. \n'+
                            'Do not install software in this location nor use software in this directory.')
-      for l in self.generateLibList(os.path.join(d, self.libdir)):
-        yield('User specified root directory '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
-      for l in self.generateLibList(os.path.join(d, self.altlibdir)):
-        yield('User specified root directory '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
+
+      for libdir in [self.libdir, self.altlibdir]:
+        libdirpath = os.path.join(d, libdir)
+        if not os.path.isdir(libdirpath):
+          self.framework.logPrint(self.PACKAGE+': UserSpecified DirPath not found.. skipping: '+libdirpath)
+          continue
+        for l in self.generateLibList(libdirpath):
+          yield('User specified root directory '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
+
       if 'with-'+self.package+'-include' in self.framework.argDB:
         raise RuntimeError('Do not set --with-'+self.package+'-include if you set --with-'+self.package+'-dir')
       if 'with-'+self.package+'-lib' in self.framework.argDB:
@@ -383,21 +391,22 @@ class Package(config.base.Configure):
       raise RuntimeError(msg)
 
     for d in self.getSearchDirectories():
-      for libdir in [self.libdir, self.altlibdir]:
-        for l in self.generateLibList(os.path.join(d, libdir)):
-          if not d:
-            includedir = ''
-          else:
-            includedir = self.getIncludeDirs(d, self.includedir)
-          yield('Package specific search directory '+self.PACKAGE, d, l, includedir)
-
-    d = self.checkDownload(requireDownload = 0)
-    if d:
-      for l in self.generateLibList(os.path.join(d, self.libdir)):
-        yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
-      for l in self.generateLibList(os.path.join(d, self.altlibdir)):
-        yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
-      raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+self.getInstallDir()+'\n')
+      if d:
+        if not os.path.isdir(d):
+          self.framework.logPrint(self.PACKAGE+': SearchDir DirPath not found.. skipping: '+d)
+          continue
+        includedir = self.getIncludeDirs(d, self.includedir)
+        for libdir in [self.libdir, self.altlibdir]:
+          libdirpath = os.path.join(d, libdir)
+          if not os.path.isdir(libdirpath):
+            self.framework.logPrint(self.PACKAGE+': DirPath not found.. skipping: '+libdirpath)
+            continue
+          for l in self.generateLibList(libdirpath):
+            yield('Package specific search directory '+self.PACKAGE, d, l, includedir)
+      else:
+        includedir = ''
+        for l in self.generateLibList(d): # d = '' i.e search compiler libraries
+            yield('Compiler specific search '+self.PACKAGE, d, l, includedir)
 
     if not self.lookforbydefault or (self.framework.clArgDB.has_key('with-'+self.package) and self.framework.argDB['with-'+self.package]):
       mesg = 'Unable to find '+self.package+' in default locations!\nPerhaps you can specify with --with-'+self.package+'-dir=<directory>\nIf you do not want '+self.name+', then give --with-'+self.package+'=0'
@@ -405,19 +414,17 @@ class Package(config.base.Configure):
       if self.alternativedownload: mesg +='\nYou might also consider using --download-'+self.alternativedownload+' instead'
       raise RuntimeError(mesg)
 
-  def checkDownload(self, requireDownload = 1):
+  def checkDownload(self):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
     if not self.download:
       return ''
     downloadPackage = 0
     downloadPackageVal = self.framework.argDB['download-'+self.downloadname.lower()]
-    if requireDownload and isinstance(downloadPackageVal, str):
+    if isinstance(downloadPackageVal, str):
       self.download = [downloadPackageVal]
       self.downloadURLSetByUser = True
       downloadPackage = 1
-    elif downloadPackageVal == 1 and requireDownload:
-      downloadPackage = 1
-    elif downloadPackageVal == 2 and not requireDownload:
+    elif downloadPackageVal:
       downloadPackage = 1
 
     if downloadPackage:

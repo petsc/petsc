@@ -40,7 +40,3 @@ class Configure(config.package.Package):
         raise RuntimeError('Error installing ViennaCL include files: '+str(e))
     return self.installDir
 
-  def getSearchDirectories(self):
-    yield ''
-    return
-
