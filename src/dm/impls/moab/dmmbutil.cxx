@@ -9,7 +9,7 @@
 
 typedef struct {
   // options
-  PetscInt  A,B,C,M,N,K,dim;
+  PetscInt  A,B,C,M,N,K,dim,nghost;
   PetscInt  blockSizeVertexXYZ[3];              // Number of element blocks per partition
   PetscInt  blockSizeElementXYZ[3];
   PetscReal xyzbounds[6]; // the physical size of the domain
@@ -295,7 +295,7 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
   /* Initialize all genCtx data */
   genCtx.dim=dim;
   genCtx.simplex=simplex;
-  genCtx.newMergeMethod=genCtx.keep_skins=genCtx.adjEnts=true;
+  genCtx.newMergeMethod=genCtx.keep_skins=genCtx.adjEnts=false;
   /* determine other global quantities for the mesh used for nodes increments */
   genCtx.q = 1;
 
@@ -430,21 +430,21 @@ PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscI
 @*/
 PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSimplex, const PetscReal* bounds, PetscInt nele, PetscInt nghost, DM *dm)
 {
-  PetscErrorCode       ierr;
-  moab::ErrorCode      merr;
-  PetscInt             a,b,c,n,global_size,global_rank=-1;
-  DM_Moab             *dmmoab;
-  moab::Interface     *mbImpl;
-  moab::ParallelComm  *pcomm;
-  moab::ReadUtilIface *readMeshIface;
-  moab::Range          verts,cells,edges,faces,adj,dim3,dim2;
-  DMMoabMeshGeneratorCtx          genCtx;
-  const PetscInt       npts=nele+1;        /* Number of points in every dimension */
+  PetscErrorCode         ierr;
+  moab::ErrorCode        merr;
+  PetscInt               a,b,c,n,global_size,global_rank=-1;
+  DM_Moab               *dmmoab;
+  moab::Interface       *mbImpl;
+  moab::ParallelComm    *pcomm;
+  moab::ReadUtilIface   *readMeshIface;
+  moab::Range            verts,cells,edges,faces,adj,dim3,dim2;
+  DMMoabMeshGeneratorCtx genCtx;
+  const PetscInt         npts=nele+1;        /* Number of points in every dimension */
 
-  moab::Tag            global_id_tag,part_tag,geom_tag;
-  moab::Range          ownedvtx,ownedelms,localvtxs,localelms;
-  moab::EntityHandle   regionset;
-  PetscInt             ml=0,nl=0,kl=0,leftover;
+  moab::Tag              global_id_tag,part_tag,geom_tag;
+  moab::Range            ownedvtx,ownedelms,localvtxs,localelms;
+  moab::EntityHandle     regionset;
+  PetscInt               ml=0,nl=0,kl=0,leftover;
 
   PetscFunctionBegin;
   if(dim < 1 || dim > 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid dimension argument for mesh: dim=[1,3].\n");
@@ -494,6 +494,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   PetscOptionsEnd();
 
   ierr = DMMBUtil_InitializeOptions(genCtx, dim, useSimplex, global_rank, global_size, bounds, nele);CHKERRQ(ierr);
+  genCtx.nghost=nghost;
 
   /* Lets check for some valid input */
   if (genCtx.dim < 1 || genCtx.dim > 3) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid topological dimension specified: %d.\n",genCtx.dim);
@@ -511,7 +512,6 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
   leftover = global_rank%(genCtx.M*genCtx.N);
   nl = leftover/genCtx.M;
   ml = leftover%genCtx.M;
-  //if (global_rank==global_size-1) cout << "m, n, k for last rank:" << m << " " << n << " " << k << "\n";
 
   /*
    * so there are a total of M * A * blockSizeElement elements in x direction (so M * A * blockSizeElement + 1 verts in x direction)
