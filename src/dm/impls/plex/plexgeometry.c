@@ -1216,8 +1216,8 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
       ierr = DMPlexPointLocalRead(dmCell, cells[1], cgeom, &cR);CHKERRQ(ierr);
       lcentroid = cells[0] >= cEndInterior ? fg->centroid : cL->centroid;
       rcentroid = cells[1] >= cEndInterior ? fg->centroid : cR->centroid;
-      ierr = DMPlexLocalizeCoordinate_Internal(dm, dim, fg->centroid, lcentroid, l);CHKERRQ(ierr);
-      ierr = DMPlexLocalizeCoordinate_Internal(dm, dim, fg->centroid, rcentroid, r);CHKERRQ(ierr);
+      ierr = DMPlexLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, lcentroid, l);CHKERRQ(ierr);
+      ierr = DMPlexLocalizeCoordinateReal_Internal(dm, dim, fg->centroid, rcentroid, r);CHKERRQ(ierr);
       DMPlex_WaxpyD_Internal(dim, -1, l, r, v);
       if (DMPlex_DotRealD_Internal(dim, fg->normal, v) < 0) {
         for (d = 0; d < dim; ++d) fg->normal[d] = -fg->normal[d];
