@@ -75,6 +75,7 @@ typedef struct {
   PetscInt     ICNTL9_pre;           /* check if ICNTL(9) is changed from previous MatSolve */
   VecScatter   scat_rhs, scat_sol;   /* used by MatSolve() */
   Vec          b_seq,x_seq;
+  PetscInt     ninfo,*info;          /* display INFO */
 
   PetscErrorCode (*Destroy)(Mat);
   PetscErrorCode (*ConvertToTriples)(Mat, int, MatReuse, int*, int**, int**, PetscScalar**);
@@ -548,6 +549,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
     ierr = VecDestroy(&mumps->x_seq);CHKERRQ(ierr);
     ierr = PetscFree(mumps->id.perm_in);CHKERRQ(ierr);
     ierr = PetscFree(mumps->irn);CHKERRQ(ierr);
+    ierr = PetscFree(mumps->info);CHKERRQ(ierr);
 
     mumps->id.job = JOB_END;
     PetscMUMPS_c(&mumps->id);
@@ -948,7 +950,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 {
   Mat_MUMPS      *mumps = (Mat_MUMPS*)F->spptr;
   PetscErrorCode ierr;
-  PetscInt       icntl;
+  PetscInt       icntl,info[40],i,ninfo=40;
   PetscBool      flg;
 
   PetscFunctionBegin;
@@ -1008,6 +1010,21 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
   ierr = PetscOptionsReal("-mat_mumps_cntl_5","CNTL(5): fixation for null pivots","None",mumps->id.CNTL(5),&mumps->id.CNTL(5),NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsString("-mat_mumps_ooc_tmpdir", "out of core directory", "None", mumps->id.ooc_tmpdir, mumps->id.ooc_tmpdir, 256, NULL);
+
+  ierr = PetscOptionsGetIntArray(NULL,"-mat_mumps_view_info",info,&ninfo,NULL);CHKERRQ(ierr); /* why does not show with '-help'??? */
+  if (ninfo) {
+    if (ninfo > 40) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"number of INFO %d must <= 40\n",ninfo);
+    ierr = PetscMalloc1(ninfo,&mumps->info);CHKERRQ(ierr);
+    mumps->ninfo = ninfo;
+    for (i=0; i<ninfo; i++) {
+      if (info[i] < 0 || info[i]>40) {
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"index of INFO %d must between 1 and 40\n",ninfo);
+      } else {
+        mumps->info[i] = info[i];
+      }
+    }
+  }
+
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -1304,7 +1321,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
   PetscFunctionReturn(0);
 }
 
-//update!!!
 #undef __FUNCT__
 #define __FUNCT__ "MatView_MUMPS"
 PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
@@ -1394,6 +1410,17 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, "  INFO(23) (num of pivots eliminated on this processor after factorization): \n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d \n",mumps->myid,mumps->id.INFO(23));CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);
+
+      if (mumps->ninfo && mumps->ninfo <= 40){
+        PetscInt i;
+        for (i=0; i<mumps->ninfo; i++){
+          ierr = PetscViewerASCIIPrintf(viewer, "  INFO(%d): \n",mumps->info[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d \n",mumps->myid,mumps->id.INFO(mumps->info[i]));CHKERRQ(ierr);
+          ierr = PetscViewerFlush(viewer);
+        }
+      }
+
+
       ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
 
       if (!mumps->myid) { /* information from the host */
