@@ -195,7 +195,7 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
 PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
 {
   hid_t          file_id, group, dset_id, filespace;
-  hsize_t        rdim, dim;
+  int            rdim, dim;
   hsize_t        dims[4];
   PetscInt       bsInd, lenInd, timestep;
   PetscErrorCode ierr;
@@ -242,7 +242,7 @@ PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], P
 PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 {
   hid_t          file_id, group, dset_id, filespace, memspace, plist_id;
-  hsize_t        rdim, dim;
+  int            rdim, dim;
   hsize_t        dims[4], count[4], offset[4];
   PetscInt       n, N, bs = 1, bsInd, lenInd, low, timestep;
   PetscScalar    *x;

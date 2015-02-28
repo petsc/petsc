@@ -330,24 +330,20 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecGetHDF5ChunkSize"
 static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension, PetscInt timestep, hsize_t *chunkDims)
 {
-  PetscMPIInt comm_size;
+  PetscMPIInt    comm_size;
   PetscErrorCode ierr;
-  hsize_t chunk_size, target_size, dim;
-  hsize_t vec_size = sizeof(PetscScalar)*da->M*da->N*da->P*da->w;
-  hsize_t avg_local_vec_size,KiB = 1024,MiB = KiB*KiB,GiB = MiB*KiB,min_size = MiB;
-  hsize_t max_chunks = 64*KiB;                                              /* HDF5 internal limitation */
-  hsize_t max_chunk_size = 4*GiB;                                           /* HDF5 internal limitation */
-  PetscInt zslices=da->p, yslices=da->n, xslices=da->m;
+  hsize_t        chunk_size, target_size, dim;
+  hsize_t        vec_size = sizeof(PetscScalar)*da->M*da->N*da->P*da->w;
+  hsize_t        avg_local_vec_size,KiB = 1024,MiB = KiB*KiB,GiB = MiB*KiB,min_size = MiB;
+  hsize_t        max_chunks = 64*KiB;                                              /* HDF5 internal limitation */
+  hsize_t        max_chunk_size = 4*GiB;                                           /* HDF5 internal limitation */
+  PetscInt       zslices=da->p, yslices=da->n, xslices=da->m;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin), &comm_size);CHKERRQ(ierr);
   avg_local_vec_size = (hsize_t) ceil(vec_size*1.0/comm_size);      /* we will attempt to use this as the chunk size */
 
-  target_size = (hsize_t) ceil(PetscMin(vec_size,
-                                        PetscMin(max_chunk_size,
-                                                 PetscMax(avg_local_vec_size,
-                                                          PetscMax(ceil(vec_size*1.0/max_chunks),
-                                                                   min_size)))));
+  target_size = (hsize_t) ceil(PetscMin(vec_size,PetscMin(max_chunk_size,PetscMax(avg_local_vec_size,PetscMax(ceil(vec_size*1.0/max_chunks),min_size)))));
   /* following line uses sizeof(PetscReal) instead of sizeof(PetscScalar) because the last dimension of chunkDims[] captures the 2* when complex numbers are being used */
   chunk_size = (hsize_t) PetscMax(1,chunkDims[0])*PetscMax(1,chunkDims[1])*PetscMax(1,chunkDims[2])*PetscMax(1,chunkDims[3])*PetscMax(1,chunkDims[4])*PetscMax(1,chunkDims[5])*sizeof(PetscReal);
 
@@ -795,7 +791,6 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   hid_t          memspace;  /* memory dataspace identifier */
   hid_t          file_id,group;
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
-  herr_t         status;
   DM_DA          *dd;
 
   PetscFunctionBegin;
@@ -806,7 +801,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 #else
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
-  
+
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
   ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   dd   = (DM_DA*)da->data;

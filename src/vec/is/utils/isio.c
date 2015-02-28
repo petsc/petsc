@@ -13,7 +13,7 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
 {
   hid_t           inttype;    /* int type (H5T_NATIVE_INT or H5T_NATIVE_LLONG) */
   hid_t           file_id, group, dset_id, filespace, memspace, plist_id;
-  hsize_t         rdim, dim;
+  int             rdim, dim;
   hsize_t         dims[3], count[3], offset[3];
   PetscInt        n, N, bs, bsInd, lenInd, low, timestep;
   const PetscInt *ind;
