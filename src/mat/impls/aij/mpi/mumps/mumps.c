@@ -42,6 +42,16 @@ EXTERN_C_END
 #endif
 #endif
 
+/* declare MumpsScalar */
+#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_REAL_SINGLE)
+#define MumpsScalar mumps_complex
+#else
+#define MumpsScalar mumps_double_complex
+#endif
+#else
+#define MumpsScalar PetscScalar
+#endif
 
 /* macros s.t. indices match MUMPS documentation */
 #define ICNTL(I) icntl[(I)-1]
@@ -602,15 +612,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
   }
   if (!mumps->myid) { /* define rhs on the host */
     mumps->id.nrhs = 1;
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-    mumps->id.rhs = (mumps_complex*)array;
-#else
-    mumps->id.rhs = (mumps_double_complex*)array;
-#endif
-#else
-    mumps->id.rhs = array;
-#endif
+    mumps->id.rhs = (MumpsScalar*)array;
   }
 
   /* solve phase */
@@ -684,17 +686,8 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     ierr = MatDenseGetArray(X,&array);CHKERRQ(ierr);
     for (i=0; i<M*nrhs; i++) array[i] = bray[i];
     ierr = MatDenseRestoreArray(B,&bray);CHKERRQ(ierr);
+    mumps->id.rhs = (MumpsScalar*)array;
 
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-    mumps->id.rhs = (mumps_complex*)array;
-#else
-    mumps->id.rhs = (mumps_double_complex*)array;
-#endif
-#else
-    mumps->id.rhs = array;
-#endif
-   
     /* solve phase */
     /*-------------*/
     mumps->id.job = JOB_SOLVE;
@@ -717,15 +710,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     lsol_loc  = mumps->id.INFO(23); 
     nlsol_loc = nrhs*lsol_loc;     /* length of sol_loc */
     ierr = PetscMalloc2(nlsol_loc,&sol_loc,nlsol_loc,&isol_loc);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-    mumps->id.sol_loc = (mumps_complex*)sol_loc;
-#else
-    mumps->id.sol_loc = (mumps_double_complex*)sol_loc;
-#endif
-#else
-    mumps->id.sol_loc = sol_loc;
-#endif
+    mumps->id.sol_loc = (MumpsScalar*)sol_loc;
     mumps->id.isol_loc = isol_loc;
 
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,nlsol_loc,sol_loc,&x_seq);CHKERRQ(ierr);
@@ -768,15 +753,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 
     if (!mumps->myid) { /* define rhs on the host */
       ierr = VecGetArray(b_seq,&bray);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-      mumps->id.rhs = (mumps_complex*)bray;
-#else
-      mumps->id.rhs = (mumps_double_complex*)bray;
-#endif
-#else
-      mumps->id.rhs = bray;
-#endif
+      mumps->id.rhs = (MumpsScalar*)bray;
       ierr = VecRestoreArray(b_seq,&bray);CHKERRQ(ierr);
     }
 
@@ -874,26 +851,10 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   mumps->id.job = JOB_FACTNUMERIC;
   if (!mumps->id.ICNTL(18)) { /* A is centralized */
     if (!mumps->myid) {
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-      mumps->id.a = (mumps_complex*)mumps->val;
-#else
-      mumps->id.a = (mumps_double_complex*)mumps->val;
-#endif
-#else
-      mumps->id.a = mumps->val;
-#endif
+      mumps->id.a = (MumpsScalar*)mumps->val;
     }
   } else {
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-    mumps->id.a_loc = (mumps_complex*)mumps->val;
-#else
-    mumps->id.a_loc = (mumps_double_complex*)mumps->val;
-#endif
-#else
-    mumps->id.a_loc = mumps->val;
-#endif
+    mumps->id.a_loc = (MumpsScalar*)mumps->val;
   }
   PetscMUMPS_c(&mumps->id);
   if (mumps->id.INFOG(1) < 0) {
@@ -929,15 +890,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     lsol_loc = mumps->id.INFO(23); /* length of sol_loc */
     ierr = PetscMalloc2(lsol_loc,&sol_loc,lsol_loc,&mumps->id.isol_loc);CHKERRQ(ierr);
     mumps->id.lsol_loc = lsol_loc;
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-    mumps->id.sol_loc = (mumps_complex*)sol_loc;
-#else
-    mumps->id.sol_loc = (mumps_double_complex*)sol_loc;
-#endif
-#else
-    mumps->id.sol_loc = sol_loc;
-#endif
+    mumps->id.sol_loc = (MumpsScalar*)sol_loc;
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,lsol_loc,sol_loc,&mumps->x_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1092,15 +1045,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
     if (!mumps->myid) {
       mumps->id.nz =mumps->nz; mumps->id.irn=mumps->irn; mumps->id.jcn=mumps->jcn;
       if (mumps->id.ICNTL(6)>1) {
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-        mumps->id.a = (mumps_complex*)mumps->val;
-#else
-        mumps->id.a = (mumps_double_complex*)mumps->val;
-#endif
-#else
-        mumps->id.a = mumps->val;
-#endif
+        mumps->id.a = (MumpsScalar*)mumps->val;
       }
       if (mumps->id.ICNTL(7) == 1) { /* use user-provide matrix ordering - assuming r = c ordering */
         /*
@@ -1127,15 +1072,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
     mumps->id.nz_loc = mumps->nz;
     mumps->id.irn_loc=mumps->irn; mumps->id.jcn_loc=mumps->jcn;
     if (mumps->id.ICNTL(6)>1) {
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-      mumps->id.a_loc = (mumps_complex*)mumps->val;
-#else
-      mumps->id.a_loc = (mumps_double_complex*)mumps->val;
-#endif
-#else
-      mumps->id.a_loc = mumps->val;
-#endif
+      mumps->id.a_loc = (MumpsScalar*)mumps->val;
     }
     /* MUMPS only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
     if (!mumps->myid) {
@@ -1189,15 +1126,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
     if (!mumps->myid) {
       mumps->id.nz =mumps->nz; mumps->id.irn=mumps->irn; mumps->id.jcn=mumps->jcn;
       if (mumps->id.ICNTL(6)>1) {
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-        mumps->id.a = (mumps_complex*)mumps->val;
-#else
-        mumps->id.a = (mumps_double_complex*)mumps->val;
-#endif
-#else
-        mumps->id.a = mumps->val;
-#endif
+        mumps->id.a = (MumpsScalar*)mumps->val;
       }
     }
     break;
@@ -1205,15 +1134,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
     mumps->id.nz_loc = mumps->nz;
     mumps->id.irn_loc=mumps->irn; mumps->id.jcn_loc=mumps->jcn;
     if (mumps->id.ICNTL(6)>1) {
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-      mumps->id.a_loc = (mumps_complex*)mumps->val;
-#else
-      mumps->id.a_loc = (mumps_double_complex*)mumps->val;
-#endif
-#else
-      mumps->id.a_loc = mumps->val;
-#endif
+      mumps->id.a_loc = (MumpsScalar*)mumps->val;
     }
     /* MUMPS only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
     if (!mumps->myid) {
@@ -1266,15 +1187,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
     if (!mumps->myid) {
       mumps->id.nz =mumps->nz; mumps->id.irn=mumps->irn; mumps->id.jcn=mumps->jcn;
       if (mumps->id.ICNTL(6)>1) {
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-        mumps->id.a = (mumps_complex*)mumps->val;
-#else
-        mumps->id.a = (mumps_double_complex*)mumps->val;
-#endif
-#else
-        mumps->id.a = mumps->val;
-#endif
+        mumps->id.a = (MumpsScalar*)mumps->val;
       }
     }
     break;
@@ -1282,15 +1195,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
     mumps->id.nz_loc = mumps->nz;
     mumps->id.irn_loc=mumps->irn; mumps->id.jcn_loc=mumps->jcn;
     if (mumps->id.ICNTL(6)>1) {
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_SINGLE)
-      mumps->id.a_loc = (mumps_complex*)mumps->val;
-#else
-      mumps->id.a_loc = (mumps_double_complex*)mumps->val;
-#endif
-#else
-      mumps->id.a_loc = mumps->val;
-#endif
+      mumps->id.a_loc = (MumpsScalar*)mumps->val;
     }
     /* MUMPS only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
     if (!mumps->myid) {
