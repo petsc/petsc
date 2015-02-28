@@ -159,24 +159,110 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
   PetscBool       eonbnd;
   std::vector<int> bndrows;
   std::vector<PetscBool> dbdry;
+  PetscInt innz, *nnz, ionz, *onz;
+  PetscInt n_nnz, n_onz, nlsiz1, nlsiz2, ngsiz1, ngsiz2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
   dmb1 = (DM_Moab*)(dm1)->data;
   dmb2 = (DM_Moab*)(dm2)->data;
+  nlsiz1 = dmb1->nloc*dmb2->numFields;
+  nlsiz2 = dmb2->nloc*dmb2->numFields;
+  ngsiz1 = dmb1->n*dmb2->numFields;
+  ngsiz2 = dmb2->n*dmb2->numFields;
 
   PetscInfo4(dm1,"Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n",dmb1->nloc,dmb2->nloc,dmb1->hlevel,dmb2->hlevel);
 
   ierr = MatCreate(PetscObjectComm((PetscObject)dm1), interpl);CHKERRQ(ierr);
   ierr = MatSetType(*interpl, dm1->mattype);CHKERRQ(ierr);
-  ierr = MatSetSizes(*interpl, dmb2->nloc, dmb1->nloc, dmb2->n, dmb1->n);CHKERRQ(ierr);
+  ierr = MatSetSizes(*interpl, nlsiz2, nlsiz1, ngsiz2, ngsiz1);CHKERRQ(ierr);
 
   /* TODO: This is a hack for the rectangular system - decipher NNZ pattern better */
   ierr = MatSetFromOptions(*interpl);CHKERRQ(ierr);
 
-  ierr = MatSeqAIJSetPreallocation(*interpl,dmb2->nloc,0);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(*interpl,dmb2->nloc,0,dmb2->nghost,0);CHKERRQ(ierr);
+  /* allocate the nnz, onz arrays based on block size and local nodes */
+  ierr = PetscCalloc2(nlsiz2,&nnz,nlsiz2,&onz);CHKERRQ(ierr);
+
+  /* Loop through the local elements and compute the relation between the current parent and the refined_level. */
+  for(moab::Range::iterator iter = dmb1->elocal->begin(); iter!= dmb1->elocal->end(); iter++) {
+
+    const moab::EntityHandle ehandle = *iter;
+    std::vector<moab::EntityHandle> children;
+    std::vector<moab::EntityHandle> connp, connc;
+
+    /* Get the relation between the current (coarse) parent and its corresponding (finer) children elements */
+    merr = dmb1->hierarchy->parent_to_child(ehandle, dmb1->hlevel, dmb2->hlevel, children);MBERRNM(merr);
+
+    /* Get connectivity and coordinates of the parent vertices */
+    merr = dmb1->hierarchy->get_connectivity(ehandle, dmb1->hlevel, connp);MBERRNM(merr);
+    for (unsigned ic=0; ic < children.size(); ic++) {
+      std::vector<moab::EntityHandle> tconnc;
+      /* Get coordinates of the parent vertices in canonical order */
+      merr = dmb2->hierarchy->get_connectivity(children[ic], dmb2->hlevel, tconnc);MBERRNM(merr);
+      for (unsigned tc=0; tc<tconnc.size(); tc++) {
+        if (std::find(connc.begin(), connc.end(), tconnc[tc]) == connc.end())
+          connc.push_back(tconnc[tc]);
+      }
+    }
+
+    std::vector<int> dofsp(connp.size()), dofsc(connc.size());
+    /* TODO: specific to scalar system - use GetDofs */
+    //ierr = DMMoabGetFieldDofs(dm1, connp.size(), &connp[0], 0, &dofsp[0]);CHKERRQ(ierr);
+    ierr = DMMoabGetFieldDofs(dm2, connc.size(), &connc[0], 0, &dofsc[0]);CHKERRQ(ierr);
+
+    for (unsigned tp=0;tp<connp.size(); tp++) {
+      // ierr = MatSetValues(*interpl, connc.size(), &dofsc[0], 1, &dofsp[i], &values_phi[0], ADD_VALUES);CHKERRQ(ierr);
+      if (dmb1->vowned->find(connp[tp]) != dmb1->vowned->end()) {
+        for (unsigned tc=0;tc<connc.size(); tc++) nnz[dofsc[tc]]++;
+      }
+      else if (dmb1->vghost->find(connp[tp]) != dmb1->vghost->end()) {
+        for (unsigned tc=0;tc<connc.size(); tc++) onz[dofsc[tc]]++;
+      }
+      else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid entity in parent level %D\n", connc[tp]);
+    }
+    /*
+    for(int tc = 0; tc < connc.size(); tc++) {
+      if (dmb2->vowned->find(connc[tc]) != dmb2->vowned->end()) nnz[dofsc[tc]]++;
+      else if (dmb2->vghost->find(connc[tc]) != dmb2->vghost->end()) onz[dofsc[tc]]++;
+      else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid entity in child level %D\n", connc[tc]);
+    }*/
+  }
+
+  int i=0;
+  std::vector<moab::EntityHandle> adjs;
+  for(moab::Range::iterator iter = dmb1->vowned->begin(); iter!= dmb1->vowned->end(); iter++, i++) {
+    merr = dmb1->hierarchy->get_adjacencies(*iter, 0, adjs);MBERRNM(merr);
+    nnz[i] -= adjs.size();
+    adjs.clear();
+  }
+  for(moab::Range::iterator iter = dmb1->vowned->begin(); iter!= dmb1->vowned->end(); iter++, i++) {
+    //merr = dmb1->hierarchy->get_adjacencies(&(*iter), 1, 0, false, adjs, moab::Interface::UNION);MBERRNM(merr);
+    merr = dmb1->hierarchy->get_adjacencies(*iter, 0, adjs);MBERRNM(merr);
+    onz[i] -= adjs.size();
+    adjs.clear();
+  }
+
+  ionz=onz[0];
+  innz=nnz[0];
+  for (int tc=0; tc < nlsiz2; tc++) {
+    //nnz[tc]+=1;
+    // check for maximum allowed sparsity = fully dense
+    nnz[tc] = std::min(nlsiz1,nnz[tc]);
+    onz[tc] = std::min(nlsiz1,onz[tc]);
+
+    innz = (innz < nnz[tc] ? nnz[tc] : innz);
+    ionz = (ionz < onz[tc] ? onz[tc] : ionz);
+
+    //PetscPrintf(PETSC_COMM_WORLD, "[%D] NNZ = %D, ONZ = %D\n", tc, nnz[tc], onz[tc]);
+  }
+  //PetscPrintf(PETSC_COMM_WORLD, "Final: INNZ = %D, IONZ = %D\n", innz, ionz);
+
+  ierr = MatSeqAIJSetPreallocation(*interpl,innz,nnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*interpl,innz,nnz,ionz,onz);CHKERRQ(ierr);
+
+  /* clean up temporary memory */
+  ierr = PetscFree2(nnz,onz);CHKERRQ(ierr);
 
   /* set up internal matrix data-structures */
   ierr = MatSetUp(*interpl);CHKERRQ(ierr);
@@ -224,12 +310,13 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
       for (unsigned j=0;j<connc.size(); j++) {
         values_phi[j] = 0.0;
         for (unsigned k=0;k<3; k++)
-          values_phi[j] += (pcoords[i*3+k]-ccoords[k+j*3])*(pcoords[i*3+k]-ccoords[k+j*3]);
+          values_phi[j] += std::pow(pcoords[i*3+k]-ccoords[k+j*3], dim);
         if (values_phi[j] < 1e-12) {
           values_phi[j] = 1e12;
         }
         else {
-          values_phi[j] = 1.0/(values_phi[j]);
+          //values_phi[j] = std::pow(values_phi[j], -1.0/dim);
+          values_phi[j] = std::pow(values_phi[j], -1.0);
           normsum += values_phi[j];
         }
       }
