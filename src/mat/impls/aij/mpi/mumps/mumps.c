@@ -696,7 +696,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     ierr = MatDenseRestoreArray(X,&array);CHKERRQ(ierr);
   } else {  /*--------- parallel case --------*/
     PetscInt       lsol_loc,nlsol_loc,*isol_loc,*idx,*iidx,*idxx,*isol_loc_save;
-    PetscScalar    *sol_loc,*sol_loc_save;
+    MumpsScalar    *sol_loc,*sol_loc_save;
     IS             is_to,is_from;
     PetscInt       k,proc,j,m;
     const PetscInt *rstart;
@@ -713,7 +713,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     mumps->id.sol_loc = (MumpsScalar*)sol_loc;
     mumps->id.isol_loc = isol_loc;
 
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,nlsol_loc,sol_loc,&x_seq);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,nlsol_loc,(PetscScalar*)sol_loc,&x_seq);CHKERRQ(ierr);
 
     /* copy rhs matrix B into vector v_mpi */
     ierr = MatGetLocalSize(B,&m,NULL);CHKERRQ(ierr);
