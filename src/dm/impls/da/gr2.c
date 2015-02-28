@@ -795,7 +795,6 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   hid_t          memspace;  /* memory dataspace identifier */
   hid_t          file_id,group;
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
-  herr_t         status;
   DM_DA          *dd;
 
   PetscFunctionBegin;
