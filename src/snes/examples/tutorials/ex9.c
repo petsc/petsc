@@ -21,10 +21,10 @@ This example was contributed by Ed Bueler.  */
 
 Get help:
   ./ex9 -help
-  ./ex9 -help |grep obs_
+
 
 Use finite difference evaluation of Jacobian by coloring, instead of analytical:
-  ./ex9 -obs_fd
+  ./ex9 -snes_fd_color
 
 Graphical:
   ./ex9 -snes_monitor_solution -draw_pause 1 -da_refine 2
@@ -60,13 +60,8 @@ int main(int argc,char **argv)
   SNESConvergedReason reason;
   DMDALocalInfo       info;
   PetscReal           error1,errorinf;
-  PetscBool           fdflg = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"obs_","options to obstacle problem","");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-fd","use coloring to compute Jacobian by finite differences",NULL,fdflg,&fdflg,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = DMDACreate2d(PETSC_COMM_WORLD,
                       DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
@@ -95,9 +90,7 @@ int main(int argc,char **argv)
   ierr = SNESVISetComputeVariableBounds(snes,&FormBounds);CHKERRQ(ierr);
 
   ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
-  if (!fdflg) {
-    ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
-  }
+  ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 

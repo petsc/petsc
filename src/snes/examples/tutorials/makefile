@@ -546,6 +546,10 @@ runex9_4:
 	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonssls  > ex9_4.tmp 2>&1; \
            ${DIFF} output/ex9_4.out ex9_4.tmp || printf  "${PWD}\nPossible problem with ex9_4, diffs above\n=========================================\n"; \
            ${RM} -f ex9_4.tmp
+runex9_5:
+	-@${MPIEXEC} -n 1 ./ex9 ./ex9  -snes_fd_color -snes_monitor_short  > ex9_5.tmp 2>&1; \
+           ${DIFF} output/ex9_5.out ex9_5.tmp || printf  "${PWD}\nPossible problem with ex9_5, diffs above\n=========================================\n"; \
+           ${RM} -f ex9_5.tmp
 runex14:
 	-@${MPIEXEC} -n 4 ./ex14 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex14_1.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
