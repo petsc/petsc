@@ -342,8 +342,15 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   PetscReal          fnorm,gnorm,xnorm=0,ynorm;
   Vec                Y,X,F;
   KSPConvergedReason kspreason;
+  KSP                ksp;
+  PC                 pc;
 
   PetscFunctionBegin;
+  /* Multigrid must use Galerkin for coarse grids with active set/reduced space methods; cannot rediscretize on coarser grids*/
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
+
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;

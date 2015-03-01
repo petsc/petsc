@@ -198,10 +198,10 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        f[j][i] = x[j][i] - uexact[j][i];
+        f[j][i] = 4.0*(x[j][i] - uexact[j][i]);
       } else {
-        uxx     = (x[j][i-1] - 2.0 * x[j][i] + x[j][i+1]) / (dx*dx);
-        uyy     = (x[j-1][i] - 2.0 * x[j][i] + x[j+1][i]) / (dy*dy);
+        uxx     = dy*(x[j][i-1] - 2.0 * x[j][i] + x[j][i+1]) / dx;
+        uyy     = dx*(x[j-1][i] - 2.0 * x[j][i] + x[j+1][i]) / dy;
         f[j][i] = -uxx - uyy;
       }
     }
@@ -226,14 +226,14 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat j
   PetscFunctionBeginUser;
   dx  = 4.0 / (PetscReal)(info->mx-1);
   dy  = 4.0 / (PetscReal)(info->my-1);
-  oxx = 1.0 / (dx * dx);
-  oyy = 1.0 / (dy * dy);
+  oxx = dy / dx;
+  oyy = dx / dy;
 
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
       row.j = j; row.i = i;
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) { /* boundary */
-        v[0] = 1.0;
+        v[0] = 4.0;
         ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
       } else { /* interior grid points */
         v[0] = -oyy;                 col[0].j = j - 1;  col[0].i = i;
