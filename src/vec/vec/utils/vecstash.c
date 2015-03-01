@@ -470,7 +470,7 @@ PetscErrorCode VecStashGetOwnerList_Private(VecStash *stash,PetscLayout map,Pets
   ierr = PetscSegBufferCreate(sizeof(PetscMPIInt),50,&seg);CHKERRQ(ierr);
   *nowners = 0;
   for (i=0,r=-1; i<stash->n; i++) {
-    if (stash->idx[i]*bs > map->range[r+1]) {
+    if (stash->idx[i]*bs >= map->range[r+1]) {
       PetscMPIInt *rank;
       ierr = PetscSegBufferGet(seg,1,&rank);CHKERRQ(ierr);
       ierr = PetscLayoutFindOwner(map,stash->idx[i]*bs,&r);CHKERRQ(ierr);
