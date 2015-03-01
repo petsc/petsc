@@ -183,6 +183,7 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
     if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   }
 #endif
+  X->bstash.insertmode = X->stash.insertmode; /* Block stash implicitly tracks InsertMode of scalar stash */
 
   ierr = VecStashSortCompress_Private(&X->stash);CHKERRQ(ierr);
   ierr = VecStashSortCompress_Private(&X->bstash);CHKERRQ(ierr);
@@ -263,6 +264,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   PetscFunctionBegin;
   if (X->stash.donotstash) {
     X->stash.insertmode = NOT_SET_VALUES;
+    X->bstash.insertmode = NOT_SET_VALUES;
     PetscFunctionReturn(0);
   }
 
@@ -338,6 +340,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   }
 
   X->stash.insertmode = NOT_SET_VALUES;
+  X->bstash.insertmode = NOT_SET_VALUES;
   ierr = VecStashScatterEnd_Private(&X->stash);CHKERRQ(ierr);
   ierr = VecStashScatterEnd_Private(&X->bstash);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -492,6 +495,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
   s->localupdate = 0;
 
   v->stash.insertmode = NOT_SET_VALUES;
+  v->bstash.insertmode = NOT_SET_VALUES;
   /* create the stashes. The block-size for bstash is set later when
      VecSetValuesBlocked is called.
   */
