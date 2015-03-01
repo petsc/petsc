@@ -403,6 +403,29 @@ cdef class PC(Object):
             cflag = PETSC_TRUE
         CHKERR( PCSetReusePreconditioner(self.pc, cflag) )
 
+    # --- COMPOSITE ---
+
+    def setCompositeType(self, ctype):
+        cdef PetscPCCompositeType cval = ctype
+        CHKERR( PCCompositeSetType(self.pc, cval) )
+
+    def getCompositePC(self, n):
+        cdef PC pc = PC()
+        cdef cn = asInt(n)
+        CHKERR( PCCompositeGetPC(self.pc, cn, &pc.pc) )
+        PetscINCREF(pc.obj)
+        return pc
+
+    def addCompositePC(self, pctype):
+        cdef PetscPCType cval = pctype
+        CHKERR( PCCompositeAddPC(self.pc, cval) )
+
+    def setUseAmat(self, flag):
+        cdef PetscBool cflag = PETSC_FALSE
+        if flag:
+            cflag = PETSC_TRUE
+        CHKERR( PCSetUseAmat(self.pc, cflag) )
+
     # --- KSP ---
 
     def getKSP(self):

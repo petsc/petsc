@@ -170,6 +170,11 @@ cdef extern from * nogil:
     int PCFieldSplitSetSchurFactType(PetscPC,PetscPCFieldSplitSchurFactType)
     #int PCFieldSplitGetSchurBlocks(PetscPC,PetscMat*,PetscMat*,PetscMat*,PetscMat*)
 
+    int PCCompositeSetType(PetscPC,PetscPCCompositeType)
+    int PCCompositeGetPC(PetscPC,PetscInt,PetscPC*)
+    int PCCompositeAddPC(PetscPC,PetscPCType)
+    int PCSetUseAmat(PetscPC,PetscBool)
+
     int PCKSPGetKSP(PetscPC,PetscKSP*)
 
     int PCSetReusePreconditioner(PetscPC,PetscBool)
