@@ -66,11 +66,11 @@ int main(int argc,char **argv)
   ierr = DMDACreate2d(PETSC_COMM_WORLD,
                       DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                       DMDA_STENCIL_STAR,
-                      -11,-11,               /* default to 10x10 grid but override with -da_grid_x, -da_grid_y (or -da_refine) */
-                      PETSC_DECIDE,PETSC_DECIDE, /* num of procs in each dim */
-                      1,                     /* dof = 1 */
-                      1,                     /* s = 1; stencil extends out one cell */
-                      NULL,NULL,             /* do not specify proc decomposition */
+                      -11,-11,                   /* default to 10x10 grid but override with -da_grid_x, -da_grid_y (or -da_refine) */
+                      PETSC_DECIDE,PETSC_DECIDE, /* number of processors in each dimension */
+                      1,                         /* dof = 1 */
+                      1,                         /* s = 1; stencil extends out one cell */
+                      NULL,NULL,                 /* do not specify processor decomposition */
                       &da);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
@@ -96,26 +96,23 @@ int main(int argc,char **argv)
 
   /* report on setup */
   ierr = DMDAGetLocalInfo(da,&info); CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,
-                     "setup done: grid  Mx,My = %D,%D  with spacing  dx,dy = %.3f,%.3f\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"setup done: grid  Mx,My = %D,%D  with spacing  dx,dy = %.3f,%.3f\n",
                      info.mx,info.my,4.0/(PetscReal)(info.mx-1),4.0/(PetscReal)(info.my-1));CHKERRQ(ierr);
 
   /* solve nonlinear system */
   ierr = SNESSolve(snes,NULL,u);CHKERRQ(ierr);
+
+  /* note the following output can also be obtained with the option -snes_converged_reason */
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,
-                     "number of Newton iterations = %D ... %s\n",
-                     its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %D ... %s\n",its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
 
   /* compare to exact */
   ierr = VecAXPY(u,-1.0,user.uexact);CHKERRQ(ierr); /* u <- u - uexact */
   ierr = VecNorm(u,NORM_1,&error1);CHKERRQ(ierr);
   error1 /= (PetscReal)info.mx * (PetscReal)info.my;
   ierr = VecNorm(u,NORM_INFINITY,&errorinf);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,
-                     "errors:    av |u-uexact|  = %.3e    |u-uexact|_inf = %.3e\n",
-                     error1,errorinf);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"errors:    av |u-uexact|  = %.3e    |u-uexact|_inf = %.3e\n",error1,errorinf);CHKERRQ(ierr);
 
   /* Free work space.  */
   ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -256,10 +253,6 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat j
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  /* Tell the matrix we will never add a new nonzero location to the
-     matrix. If we do, it will generate an error. */
-  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-
   ierr = PetscLogFlops(2.0*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
