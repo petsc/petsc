@@ -52,8 +52,8 @@ class Configure(config.base.Configure):
         dirname   = os.path.dirname(library).replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')
         if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
           return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
-        if flagSubst in self.framework.argDB:
-          return [self.framework.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
+        if flagSubst in self.argDB:
+          return [self.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
         else:
           return ['-L'+dirname,' -l'+name]
       else:
@@ -182,9 +182,9 @@ class Configure(config.base.Configure):
     if fortranMangle:
       funcs = map(self.compilers.mangleFortranFunction, funcs)
     if not funcs:
-      self.framework.logPrint('No functions to check for in library '+str(libName)+' '+str(otherLibs))
+      self.logPrint('No functions to check for in library '+str(libName)+' '+str(otherLibs))
       return True
-    self.framework.logPrint('Checking for functions ['+' '.join(funcs)+'] in library '+str(libName)+' '+str(otherLibs))
+    self.logPrint('Checking for functions ['+' '.join(funcs)+'] in library '+str(libName)+' '+str(otherLibs))
     if self.language[-1] == 'FC':
       includes = ''
     else:
@@ -329,7 +329,7 @@ extern "C" {
 
   def checkDynamic(self):
     '''Check for the header and libraries necessary for dynamic library manipulation'''
-    if 'with-dynamic-loading' in self.framework.argDB and not self.framework.argDB['with-dynamic-loading']: return
+    if 'with-dynamic-loading' in self.argDB and not self.argDB['with-dynamic-loading']: return
     self.check(['dl'], 'dlopen')
     self.headers.check('dlfcn.h')
     return
@@ -465,9 +465,9 @@ int checkInit(void) {
     if os.path.isfile(lib1Name) and self.framework.doCleanup: os.remove(lib1Name)
     if os.path.isfile(lib2Name) and self.framework.doCleanup: os.remove(lib2Name)
     if isShared:
-      self.framework.logPrint('Library was shared')
+      self.logPrint('Library was shared')
     else:
-      self.framework.logPrint('Library was not shared')
+      self.logPrint('Library was not shared')
     return isShared
 
   def isBGL(self):

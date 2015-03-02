@@ -22,7 +22,7 @@ class Configure(config.package.Package):
   def Install(self):
     import os
 
-    self.framework.log.write('Creating PTScotch '+os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc')+'\n')
+    self.log.write('Creating PTScotch '+os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc')+'\n')
 
     self.programs.getExecutable('bison',   getFullPath = 1)
     if not hasattr(self.programs, 'bison'): raise RuntimeError('PTScotch needs bison installed')
@@ -86,12 +86,12 @@ class Configure(config.package.Package):
         self.logPrintBox('Compiling PTScotch; this may take several minutes')
 #
 #    If desired one can have this build Scotch as well as PTScoth as indicated here
-#        output,err,ret  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch ptscotch', timeout=2500, log = self.framework.log)
+#        output,err,ret  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch ptscotch', timeout=2500, log = self.log)
 #
         if self.mpi.found:
-          output,err,ret  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean ptesmumps', timeout=2500, log = self.framework.log)
+          output,err,ret  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean ptesmumps', timeout=2500, log = self.log)
         else:
-          output,err,ret  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean esmumps', timeout=2500, log = self.framework.log)
+          output,err,ret  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean esmumps', timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on PTScotch: '+str(e))
 
@@ -107,12 +107,12 @@ class Configure(config.package.Package):
       includeDir = os.path.join(self.installDir, self.includedir)
       self.logPrintBox('Installing PTScotch; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage()
-      output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,includeDir)+' && '+self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.packageDir+' && '+self.installSudo+'cp -f lib/*.a '+libDir+'/. && '+self.installSudo+' cp -f include/*.h '+includeDir+'/.', timeout=2500, log = self.framework.log)
+      output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,includeDir)+' && '+self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.packageDir+' && '+self.installSudo+'cp -f lib/*.a '+libDir+'/. && '+self.installSudo+' cp -f include/*.h '+includeDir+'/.', timeout=2500, log = self.log)
       self.postInstall(output+err,os.path.join('src','Makefile.inc'))
     return self.installDir
 
 #  def consistencyChecks(self):
 #    config.package.Package.consistencyChecks(self)
-#    if self.framework.argDB['with-'+self.package]:
+#    if self.argDB['with-'+self.package]:
 #     if self.libraries.rt is None:
 #        raise RuntimeError('Scotch requires a realtime library (librt) with clock_gettime()')

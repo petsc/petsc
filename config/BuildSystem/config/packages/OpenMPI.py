@@ -27,7 +27,7 @@ class Configure(config.package.GNUPackage):
       args.append('--disable-mpi-f90')
       args.append('F77=""')
       args.append('FC=""')
-    if not self.framework.argDB['with-shared-libraries']:
+    if not self.argDB['with-shared-libraries']:
       args.append('--enable-shared=no')
       args.append('--enable-static=yes')
     args.append('--disable-vt')

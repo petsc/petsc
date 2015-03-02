@@ -21,7 +21,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    if self.framework.argDB['download-suitesparse-gpu']:
+    if self.argDB['download-suitesparse-gpu']:
       self.cuda       = framework.require('config.packages.cuda',self)
       self.deps       = [self.blasLapack,self.cuda]
     else:
@@ -30,7 +30,7 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-    self.framework.log.write('SuiteSparseDir = '+self.packageDir+' installDir '+self.installDir+'\n')
+    self.log.write('SuiteSparseDir = '+self.packageDir+' installDir '+self.installDir+'\n')
     if not self.make.haveGNUMake:
       raise RuntimeError('SuiteSparse buildtools require GNUMake. Use --with-make=gmake or --download-make')
 
@@ -60,10 +60,10 @@ class Configure(config.package.Package):
     else:
       flg = '-DBLAS_NO_UNDERSCORE'
     g.write('UMFPACK_CONFIG    = '+flg+'\n')
-    if self.framework.argDB['download-suitesparse-gpu']:
+    if self.argDB['download-suitesparse-gpu']:
       if self.defaultIndexSize == 32:
         raise RuntimeError('SuiteSparse only uses GPUs with --with-64-bit-indices')
-      if not self.framework.clArgDB.has_key('with-cuda') or not self.framework.argDB['with-cuda']:
+      if not self.framework.clArgDB.has_key('with-cuda') or not self.argDB['with-cuda']:
         raise RuntimeError('Run with --with-cuda to use allow SuiteSparse to compile using CUDA')
       # code taken from cuda.py
       self.pushLanguage('CUDA')
@@ -99,17 +99,17 @@ class Configure(config.package.Package):
         self.logPrintBox('Compiling and installing SuiteSparse; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
         # SuiteSparse install does not create missing directories, hence we need to create them first 
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+self.make.make+' && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/AMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/COLAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/BTF && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CCOLAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.framework.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+self.make.make+' && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/AMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/COLAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/BTF && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CCOLAMD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU && '+self.make.make+' library && '+self.installSudo+self.make.make+' install && '+self.make.make+' clean', timeout=2500, log=self.log)
 
         self.addDefine('HAVE_SUITESPARSE',1)
       except RuntimeError, e:

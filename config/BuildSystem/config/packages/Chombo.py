@@ -37,7 +37,7 @@ class Configure(config.package.Package):
     if not self.make.haveGNUMake:
       raise RuntimeError('Cannot install '+self.name+' without GNUMake, suggest --download-make')
 
-    dim = self.framework.argDB['download-chombo-dimension']
+    dim = self.argDB['download-chombo-dimension']
     g = open(os.path.join(self.packageDir,'lib','mk','Make.defs.local'),'w')
     g.write('\n#begin\n')
     g.write('#DIM='+str(dim)+'\n')
@@ -99,19 +99,19 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling and installing chombo; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.framework.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
 
         #run make -p to get library (config) namen
-        poutput,perr,pret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib') +' && make vars | egrep ^config', timeout=2500, log = self.framework.log)
+        poutput,perr,pret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib') +' && make vars | egrep ^config', timeout=2500, log = self.log)
         config_value=None
         ind = poutput.find('config=')
         if ind != 0:
           raise RuntimeError('Error running make on Chombo: config value not found')
         config_value=poutput.split('=')[1]
         self.logPrint('Chombo installed using config=%s\n'%config_value)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib') +' && make clean && make all', timeout=2500, log = self.framework.log)
-        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+self.installSudo+'&& cp -f lib/lib*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' &&  '+self.installSudo+'cp -f lib/include/*.H '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib') +' && make clean && make all', timeout=2500, log = self.log)
+        output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+self.installSudo+'&& cp -f lib/lib*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' &&  '+self.installSudo+'cp -f lib/include/*.H '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on Chombo: '+str(e))
 
@@ -123,6 +123,6 @@ class Configure(config.package.Package):
 
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
+    if self.argDB['with-'+self.package]:
       pass
     return

@@ -28,14 +28,14 @@ class Configure(config.base.Configure):
       try:
         import distutils.sysconfig
       except ImportError, e:
-        self.framework.logPrint('Error importing distutils.sysconfig: '+str(e))
+        self.logPrint('Error importing distutils.sysconfig: '+str(e))
         raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
 
       try:
         distutils.sysconfig.get_python_inc()
         distutils.sysconfig.get_python_inc(1)
       except distutils.sysconfig.DistutilsPlatformError, e:
-        self.framework.logPrint('Error finding Python include directories: '+str(e))
+        self.logPrint('Error finding Python include directories: '+str(e))
         raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
 
       try:
@@ -43,7 +43,7 @@ class Configure(config.base.Configure):
         distutils.sysconfig.get_config_var('LIBS')
         distutils.sysconfig.get_config_var('SYSLIBS')
       except distutils.sysconfig.DistutilsPlatformError, e:
-        self.framework.logPrint('Error finding Python libraries: '+str(e))
+        self.logPrint('Error finding Python libraries: '+str(e))
         raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
 
       try:
@@ -52,17 +52,17 @@ class Configure(config.base.Configure):
         distutils.sysconfig.get_config_var('LDLIBRARY')
         distutils.sysconfig.get_config_var('SO')
       except distutils.sysconfig.DistutilsPlatformError, e:
-        self.framework.logPrint('Error finding Python shared library: '+str(e))
+        self.logPrint('Error finding Python shared library: '+str(e))
         raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
 
       try:
         distutils.sysconfig.get_config_var('BINDIR')
         distutils.sysconfig.get_config_var('PYTHON')
       except distutils.sysconfig.DistutilsPlatformError, e:
-        self.framework.logPrint('Error finding Python executable: '+str(e))
+        self.logPrint('Error finding Python executable: '+str(e))
         raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
     except Exception, e:
-      self.framework.logPrint('I do not know what went wrong: '+str(e))
+      self.logPrint('I do not know what went wrong: '+str(e))
       raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
     return
 

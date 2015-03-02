@@ -17,7 +17,7 @@ class Configure(config.package.Package):
 
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
+    if self.argDB['with-'+self.package]:
       if not self.blasLapack.mkl:
         raise RuntimeError('MKL_CParadiso requires Intel MKL. Please rerun configure using --with-blas-lapack-dir=LOCATION_OF_INTEL_MKL')
     return

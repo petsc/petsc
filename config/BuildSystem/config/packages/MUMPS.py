@@ -27,7 +27,7 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.blasLapack   = framework.require('config.packages.BlasLapack',self)
     self.mpi          = framework.require('config.packages.MPI',self)
-    if self.framework.argDB['with-mumps-serial']:
+    if self.argDB['with-mumps-serial']:
       self.deps       = [self.blasLapack]
     else:
       self.scalapack  = framework.require('config.packages.scalapack',self)
@@ -38,7 +38,7 @@ class Configure(config.package.Package):
 
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
-    if self.framework.argDB['with-mumps-serial']:
+    if self.argDB['with-mumps-serial']:
       if not self.mpi.usingMPIUni:
         raise RuntimeError('Serial MUMPS version is only compatible with MPIUni\nReconfigure using --with-mpi=0')
       elif self.mpi.usingMPIUniFortranBinding:
@@ -52,7 +52,7 @@ class Configure(config.package.Package):
       raise RuntimeError('Cannot install '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
     if not self.compilers.FortranDefineCompilerOption:
       raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')
-    if self.framework.argDB['with-mumps-serial']:
+    if self.argDB['with-mumps-serial']:
       raise RuntimeError('Cannot automatically install the serial version of MUMPS.')
     g = open(os.path.join(self.packageDir,'Makefile.inc'),'w')
     g.write('LPORDDIR   = $(topdir)/PORD/lib/\n')
@@ -121,29 +121,29 @@ class Configure(config.package.Package):
     g.close()
     if self.installNeeded('Makefile.inc'):
       try:
-        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean', timeout=2500, log = self.framework.log)
+        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean', timeout=2500, log = self.log)
       except RuntimeError, e:
         pass
       try:
         self.logPrintBox('Compiling Mumps; this may take several minutes')
-        output2,err2,ret2 = config.package.Package.executeShellCommand('cd '+self.packageDir+' &&  make alllib',timeout=2500, log = self.framework.log)
+        output2,err2,ret2 = config.package.Package.executeShellCommand('cd '+self.packageDir+' &&  make alllib',timeout=2500, log = self.log)
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing Mumps; this may take several minutes')
         self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.packageDir+' && '+self.installSudo+'cp -f lib/*.* '+libDir+'/. && '+self.installSudo+'mkdir -p '+includeDir+' && '+self.installSudo+'cp -f include/*.* '+includeDir+'/.', timeout=2500, log = self.framework.log)
+        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,self.libdir)+' && cd '+self.packageDir+' && '+self.installSudo+'cp -f lib/*.* '+libDir+'/. && '+self.installSudo+'mkdir -p '+includeDir+' && '+self.installSudo+'cp -f include/*.* '+includeDir+'/.', timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on MUMPS: '+str(e))
       self.postInstall(output1+err1+output2+err2,'Makefile.inc')
     return self.installDir
 
   def configureLibrary(self):
-    if not self.framework.argDB['with-mumps-serial']:
+    if not self.argDB['with-mumps-serial']:
       if self.parmetis.found:
         self.deps.append(self.parmetis)
       if self.ptscotch.found:
         self.deps.append(self.ptscotch)
     config.package.Package.configureLibrary(self)
      # [parallem mumps] make sure either ptscotch or parmetis is enabled
-    if not self.framework.argDB['with-mumps-serial'] and not self.ptscotch.found and not self.parmetis.found:
+    if not self.argDB['with-mumps-serial'] and not self.ptscotch.found and not self.parmetis.found:
        raise RuntimeError('MUMPS requires either Parmetis or PTScotch. Use either --download-parmetis or --download-ptscotch')

@@ -24,14 +24,14 @@ class Configure(config.package.GNUPackage):
     self.framework.pushLanguage('C')
     # use --with-mpi-root if we know it works
     if self.mpi.directory and (os.path.realpath(self.framework.getCompiler())).find(os.path.realpath(self.mpi.directory)) >=0:
-      self.framework.log.write('Sundials configure: using --with-mpi-root='+self.mpi.directory+'\n')
+      self.log.write('Sundials configure: using --with-mpi-root='+self.mpi.directory+'\n')
       args.append('--with-mpi-root="'+self.mpi.directory+'"')
     # else provide everything!
     else:
       #print a message if the previous check failed
       if self.mpi.directory:
-        self.framework.log.write('Sundials configure: --with-mpi-dir specified - but could not use it\n')
-        self.framework.log.write(str(os.path.realpath(self.framework.getCompiler()))+' '+str(os.path.realpath(self.mpi.directory))+'\n')
+        self.log.write('Sundials configure: --with-mpi-dir specified - but could not use it\n')
+        self.log.write(str(os.path.realpath(self.framework.getCompiler()))+' '+str(os.path.realpath(self.mpi.directory))+'\n')
 
       if self.mpi.include:
         args.append('--with-mpi-incdir="'+self.mpi.include[0]+'"')
