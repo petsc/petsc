@@ -1552,7 +1552,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
   PetscSection      section    = NULL;
   PetscBool         useFEM     = PETSC_FALSE;
   PetscBool         useFVM     = PETSC_FALSE;
-  PetscBool         isImplicit = locX_t ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool         isImplicit = (locX_t || time == PETSC_MIN_REAL) ? PETSC_TRUE : PETSC_FALSE;
   PetscFV           fvm        = NULL;
   PetscFECellGeom  *cgeomFEM   = NULL;
   PetscFVCellGeom  *cgeomFVM   = NULL;
@@ -1945,7 +1945,7 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   /* The dmCh is used to check two mathematically equivalent discretizations for computational equivalence */
   ierr = PetscObjectQuery((PetscObject) dm, "dmCh", &check);CHKERRQ(ierr);
   if (check) {ierr = DMPlexComputeResidualFEM_Check_Internal(dm, X, NULL, F, user);CHKERRQ(ierr);}
-  else       {ierr = DMPlexComputeResidual_Internal(dm, 0.0, X, NULL, F, user);CHKERRQ(ierr);}
+  else       {ierr = DMPlexComputeResidual_Internal(dm, PETSC_MIN_REAL, X, NULL, F, user);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
