@@ -7,6 +7,7 @@ class Configure(config.package.GNUPackage):
     self.download  = ['http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.3.tar.gz']
     self.downloadfilename = 'openmpi'
     self.skippackagewithoptions = 1
+    self.isMPI = 1
     return
 
   def formGNUConfigureArgs(self):

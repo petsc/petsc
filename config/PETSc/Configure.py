@@ -50,7 +50,7 @@ class Configure(config.base.Configure):
     self.petscdir      = framework.require('PETSc.options.petscdir',    self.arch)
     self.installdir    = framework.require('PETSc.options.installDir',  self)
     self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
-    self.debugging     = framework.require('PETSc.options.debugging',   self.setCompilers)
+    self.debugging     = framework.require('PETSc.options.debugging',   self.compilers)
     self.indexTypes    = framework.require('PETSc.options.indexTypes',  self.compilers)
     self.compilers     = framework.require('config.compilers',          self)
     self.types         = framework.require('config.types',              self)
@@ -62,7 +62,7 @@ class Configure(config.base.Configure):
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
     self.cmake         = framework.require('config.packages.cmake',self)
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
-    self.mpi             = framework.require('config.packages.MPI',self)
+    self.mpi           = framework.require('config.packages.MPI',self)
 
     for utility in os.listdir(os.path.join('config','PETSc','options')):
       (utilityName, ext) = os.path.splitext(utility)
@@ -100,8 +100,10 @@ class Configure(config.base.Configure):
     if os.path.isdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
       for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
         (packageName, ext) = os.path.splitext(package)
+        if packageName in ['mpi4py', 'petsc4py'] : continue
         if not packageName.startswith('.') and not packageName.startswith('#') and ext == '.py' and not packageName == '__init__' and not packageName == 'PETSc':
           packageObj                    = framework.require('config.packages.'+packageName, self)
+          packageObj.headerPrefix       = self.headerPrefix
           packageObj.archProvider       = self.arch
           packageObj.languageProvider   = self.languages
           packageObj.precisionProvider  = self.scalartypes

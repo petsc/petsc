@@ -324,7 +324,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def require(self, moduleName, depChild, keywordArgs = {}):
     '''Return a child from moduleName, creating it if necessary and making sure it runs before depChild'''
     config = self.getChild(moduleName, keywordArgs)
-    self.childGraph.addEdges(depChild, [config])
+    if not config is depChild:
+      self.childGraph.addEdges(depChild, [config])
     return config
 
   ###############################################

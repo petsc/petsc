@@ -67,6 +67,8 @@ class Package(config.base.Configure):
     # Outside coupling
     self.defaultInstallDir= os.path.abspath('externalpackages')
     self.installSudo      = '' # if user does not have write access to prefix directory then this is set to sudo
+
+    self.isMPI            = 0 # Is an MPI implementation, needed to check for compiler wrappers
     return
 
   def __str__(self):
@@ -89,12 +91,12 @@ class Package(config.base.Configure):
     self.libraries     = framework.require('config.libraries', self)
     self.programs      = framework.require('config.programs', self)
     self.sourceControl = framework.require('config.sourceControl',self)
+    # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
-    # force MPICH to be the first package configured since all other packages
-    # may depend on its compilers defined here
-    self.mpich         = framework.require('config.packages.MPICH',self)
-    self.openmpi       = framework.require('config.packages.OpenMPI',self)
-
+    if not self.isMPI and not self.package == 'make':
+      # force MPI to be the first package configured since all other packages
+      # may depend on its compilers defined here
+      self.mpi         = framework.require('config.packages.MPI',self)
     return
 
   def setupHelp(self,help):
