@@ -4,24 +4,23 @@ Exact solution is known.\n";
 
 /*  Solve on a square R = {-2<x<2,-2<y<2}:
     u_{xx} + u_{yy} = 0
-on the set where membrane is above obstacle:  u(x,y) > psi(x,y).
-Constraint is  u(x,y) >= psi(x,y).
+on the set where membrane is above obstacle.  Constraint is  u(x,y) >= psi(x,y).
 Here psi is the upper hemisphere of the unit ball.  On the boundary of R
 we have nonhomogenous Dirichlet boundary conditions coming from the exact solution.
 
 Method is centered finite differences.
 
-The exact solution is known for the given psi and boundary values in
-question.  See
+This example was contributed by Ed Bueler.  The exact solution is known for the
+given psi and boundary values in question.  See
   https://github.com/bueler/fem-code-challenge/blob/master/obstacleDOC.pdf?raw=true.
 
-This example was contributed by Ed Bueler.  */
-
-/*  Example usage follows.
+Example usage follows.
 
 Get help:
   ./ex9 -help
 
+Monitor run:
+  ./ex9 -snes_converged_reason -snes_monitor -snes_vi_monitor
 
 Use finite difference evaluation of Jacobian by coloring, instead of analytical:
   ./ex9 -snes_fd_color
@@ -56,8 +55,6 @@ int main(int argc,char **argv)
   SNES                snes;
   DM                  da;
   Vec                 u;     /* solution */
-  PetscInt            its;
-  SNESConvergedReason reason;
   DMDALocalInfo       info;
   PetscReal           error1,errorinf;
 
@@ -66,7 +63,7 @@ int main(int argc,char **argv)
   ierr = DMDACreate2d(PETSC_COMM_WORLD,
                       DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
                       DMDA_STENCIL_STAR,
-                      -11,-11,                   /* default to 10x10 grid but override with -da_grid_x, -da_grid_y (or -da_refine) */
+                      -11,-11,                   /* default to 10x10 grid */
                       PETSC_DECIDE,PETSC_DECIDE, /* number of processors in each dimension */
                       1,                         /* dof = 1 */
                       1,                         /* s = 1; stencil extends out one cell */
@@ -96,23 +93,18 @@ int main(int argc,char **argv)
 
   /* report on setup */
   ierr = DMDAGetLocalInfo(da,&info); CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"setup done: grid  Mx,My = %D,%D  with spacing  dx,dy = %.3f,%.3f\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"setup done: grid  Mx,My = %D,%D  with spacing  dx,dy = %.4f,%.4f\n",
                      info.mx,info.my,4.0/(PetscReal)(info.mx-1),4.0/(PetscReal)(info.my-1));CHKERRQ(ierr);
 
   /* solve nonlinear system */
   ierr = SNESSolve(snes,NULL,u);CHKERRQ(ierr);
-
-  /* note the following output can also be obtained with the option -snes_converged_reason */
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %D ... %s\n",its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
 
   /* compare to exact */
   ierr = VecAXPY(u,-1.0,user.uexact);CHKERRQ(ierr); /* u <- u - uexact */
   ierr = VecNorm(u,NORM_1,&error1);CHKERRQ(ierr);
   error1 /= (PetscReal)info.mx * (PetscReal)info.my;
   ierr = VecNorm(u,NORM_INFINITY,&errorinf);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"errors:    av |u-uexact|  = %.3e    |u-uexact|_inf = %.3e\n",error1,errorinf);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"errors:     av |u-uexact|  = %.3e    |u-uexact|_inf = %.3e\n",error1,errorinf);CHKERRQ(ierr);
 
   /* Free work space.  */
   ierr = VecDestroy(&u);CHKERRQ(ierr);
