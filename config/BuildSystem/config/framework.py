@@ -930,16 +930,15 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return
 
   def parallelQueueEvaluation(self, depGraph):
-    import graph
+    import graph, script
     import Queue
     from threading import Thread
-    import sys
 
     # TODO Insert a cycle check
     todo = Queue.Queue()
     done = Queue.Queue()
-    numThreads  = 2
     numChildren = len(depGraph.vertices)
+    numThreads  = script.useThreads
     for child in graph.DirectedGraph.getRoots(depGraph):
       if not hasattr(child, '_configured'):
         #self.logPrint('PUSH %s to   TODO' % child.__class__.__module__)
