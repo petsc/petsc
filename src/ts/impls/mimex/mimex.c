@@ -125,7 +125,6 @@ static PetscErrorCode TSStep_Mimex(TS ts)
   for (f = 0; f < Nf; ++f) {
     PetscObject  obj;
     PetscClassId id;
-    PetscInt     pdim, d;
 
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
@@ -150,7 +149,6 @@ static PetscErrorCode TSStep_Mimex(TS ts)
   for (f = 0; f < Nf; ++f) {
     PetscObject  obj;
     PetscClassId id;
-    PetscInt     pdim, d;
 
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);

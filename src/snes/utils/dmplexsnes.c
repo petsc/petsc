@@ -1696,7 +1696,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
       }
     }
     if (useFVM) {
-      PetscScalar *x_t, *fa;
+      PetscScalar *fa;
       PetscInt     iface;
 
       ierr = VecGetArray(locF, &fa);CHKERRQ(ierr);
@@ -1704,7 +1704,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
         PetscFV      fv;
         PetscObject  obj;
         PetscClassId id;
-        PetscInt     foff, pdim, d;
+        PetscInt     foff, pdim;
 
         ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
         ierr = PetscDSGetFieldOffset(prob, f, &foff);CHKERRQ(ierr);

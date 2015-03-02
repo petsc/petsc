@@ -4110,7 +4110,6 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscRea
 @*/
 PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal L[], const DMBoundaryType bd[])
 {
-  Vec            coordinates;
   PetscInt       dim, d;
   PetscErrorCode ierr;
 
