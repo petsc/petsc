@@ -2,10 +2,10 @@
 /*
    Provides an interface to the UMFPACK sparse solver available through SuiteSparse version 4.2.1
 
-   When build with PETSC_USE_64BIT_INDICES this will use UF_Long as the
+   When build with PETSC_USE_64BIT_INDICES this will use Suitesparse_long as the
    integer type in UMFPACK, otherwise it will use int. This means
    all integers in this file as simply declared as PetscInt. Also it means
-   that UMFPACK UL_Long version MUST be built with 64 bit integers when used.
+   that one cannot use 64BIT_INDICES on 32bit machines [as Suitesparse_long is 32bit only]
 
 */
 #include <../src/mat/impls/aij/seq/aij.h>
@@ -70,11 +70,6 @@
 #define umfpack_UMF_defaults        umfpack_di_defaults
 #endif
 #endif
-
-
-#define UF_long long long
-#define UF_long_max LONG_LONG_MAX
-#define UF_long_id "%lld"
 
 EXTERN_C_BEGIN
 #include <umfpack.h>

@@ -38,11 +38,7 @@ class Configure(config.package.Package):
     g = open(os.path.join(self.packageDir, mkfile), 'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
-    if self.checkCompile('#ifdef PETSC_HAVE_LIMITS_H\n  #include <limits.h>\n#endif\n', 'long long i=LONG_MAX;\n\nif (i);\n'):
-      long_max = 'LONG_MAX'
-    else:
-      long_max = '9223372036854775807LL'
-    g.write('CF       = '+self.setCompilers.getCompilerFlags()+''' -DSuiteSparse_long="long long" -DSuiteSparse_long_max=''' + long_max + ''' -DSuiteSparse_long_id='"%lld"'\n''')
+    g.write('CF           = '+self.setCompilers.getCompilerFlags()+'\n')
     self.setCompilers.popLanguage()
     g.write('MAKE         ='+self.make.make+'\n')
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
@@ -117,3 +113,8 @@ class Configure(config.package.Package):
       self.postInstall(output+err, mkfile)
     return self.installDir
 
+  def consistencyChecks(self):
+    config.package.Package.consistencyChecks(self)
+    if self.defaultIndexSize == 64 and self.types.sizes['known-sizeof-void-p'] == 4:
+      raise RuntimeError('SuiteSparse does not support 64bit indices in 32bit (pointer) mode.')
+    return
