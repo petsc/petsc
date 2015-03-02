@@ -1583,8 +1583,10 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
   for (f = 0; f < Nf; ++f) {
     PetscObject  obj;
     PetscClassId id;
+    PetscBool    fimp;
 
-    if (isImplicit == f) continue; /* isImplicit != prob->implicit[f] */
+    ierr = PetscDSGetImplicit(prob, f, &fimp);CHKERRQ(ierr);
+    if (isImplicit != fimp) continue;
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID) {useFEM = PETSC_TRUE;}
@@ -1647,9 +1649,11 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
     for (f = 0; f < Nf; ++f) {
       PetscObject  obj;
       PetscClassId id;
+      PetscBool    fimp;
       PetscInt     numChunks, numBatches, batchSize, numBlocks, blockSize, Ne, Nr, offset;
 
-      if (isImplicit == f) continue; /* isImplicit != prob->implicit[f] */
+      ierr = PetscDSGetImplicit(prob, f, &fimp);CHKERRQ(ierr);
+      if (isImplicit != fimp) continue;
       ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID) {
