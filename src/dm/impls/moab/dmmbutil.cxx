@@ -4,161 +4,412 @@
 #include <petscdmmoab.h>
 #include <MBTagConventions.hpp>
 #include <moab/ReadUtilIface.hpp>
-#include <moab/ScdInterface.hpp>
+#include <moab/MergeMesh.hpp>
 #include <moab/CN.hpp>
 
+typedef struct {
+  // options
+  PetscInt  A,B,C,M,N,K,dim;
+  PetscInt  blockSizeVertexXYZ[3];              // Number of element blocks per partition
+  PetscInt  blockSizeElementXYZ[3];
+  PetscReal xyzbounds[6]; // the physical size of the domain
+  bool      newMergeMethod,keep_skins,simplex,adjEnts;
 
-static PetscErrorCode DMMoabComputeDomainBounds_Private(moab::ParallelComm* pcomm, PetscInt dim, PetscInt neleglob, PetscInt *ise)
+  // compute params
+  PetscReal dx,dy,dz;
+  PetscInt  NX,NY,NZ,nex,ney,nez;
+  PetscInt  q,xstride,ystride,zstride;
+  PetscBool usrxyzgrid,usrprocgrid,usrrefgrid;
+} DMMoabMeshGeneratorCtx;
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoab_SetTensorElementConnectivity_Private"
+int DMMoab_SetTensorElementConnectivity_Private(DMMoabMeshGeneratorCtx& genCtx, int offset, int corner, std::vector<int>& subent_conn, moab::EntityHandle *connectivity)
 {
-  PetscInt size,rank;
-  PetscInt fraction,remainder;
-  PetscInt starts[3],sizes[3];
-
-  PetscFunctionBegin;
-  if(dim<1 && dim>3) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The problem dimension is invalid: %D",dim);
-  
-  size=pcomm->size();
-  rank=pcomm->rank();
-  fraction=neleglob/size;    /* partition only by the largest dimension */
-  remainder=neleglob%size;   /* remainder after partition which gets evenly distributed by round-robin */
-
-  if(fraction==0) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The leading dimension size should be greater than number of processors: %D < %D",neleglob,size);
-
-  starts[0]=starts[1]=starts[2]=0;       /* default dimensional element = 1 */
-  sizes[0]=sizes[1]=sizes[2]=neleglob;   /* default dimensional element = 1 */
-
-  if(rank < remainder) { /* This process gets "fraction+1" elements */
-    sizes[dim-1] = (fraction + 1);
-    starts[dim-1] = rank * (fraction+1);
-  } else { /* This process gets "fraction" elements */
-    sizes[dim-1] = fraction;
-    starts[dim-1] = (remainder*(fraction+1) + fraction*(rank-remainder));
-  }
-
-  for(int i=dim-1; i>=0; --i) {
-    ise[2*i]=starts[i];ise[2*i+1]=starts[i]+sizes[i];
-  }
-  PetscFunctionReturn(0);
-}
-
-static void DMMoab_SetStructuredCoords_Private(PetscInt i, PetscInt j, PetscInt k, PetscReal hx, PetscReal hy, PetscReal hz, PetscInt vcount, std::vector<double*>& vcoords)
-{
-  vcoords[0][vcount] = i*hx;
-  vcoords[1][vcount] = j*hy;
-  vcoords[2][vcount] = k*hz;
-}
-
-static void DMMoab_SetTensorElementConnectivity_Private(PetscInt dim, moab::EntityType etype, PetscInt offset, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
-{
-  std::vector<int>    subent_conn(pow(2,dim));  /* only linear edge, quad, hex supported now */
-
-  moab::CN::SubEntityVertexIndices(etype, dim, 0, subent_conn.data());
-
-  switch(dim) {
+  switch(genCtx.dim) {
     case 1:
-      connectivity[offset+subent_conn[0]] = vfirst+i;
-      connectivity[offset+subent_conn[1]] = vfirst+(i+1);
+      subent_conn.resize(2);
+      moab::CN::SubEntityVertexIndices(moab::MBEDGE, 1, 0, subent_conn.data());
+      connectivity[offset+subent_conn[0]] = corner;
+      connectivity[offset+subent_conn[1]] = corner + 1;
       break;
     case 2:
-      connectivity[offset+subent_conn[0]] = vfirst+i+j*(nele+1);
-      connectivity[offset+subent_conn[1]] = vfirst+(i+1)+j*(nele+1);
-      connectivity[offset+subent_conn[2]] = vfirst+(i+1)+(j+1)*(nele+1);
-      connectivity[offset+subent_conn[3]] = vfirst+i+(j+1)*(nele+1);
+      subent_conn.resize(4);
+      moab::CN::SubEntityVertexIndices(moab::MBQUAD, 2, 0, subent_conn.data());
+      connectivity[offset+subent_conn[0]] = corner;
+      connectivity[offset+subent_conn[1]] = corner + 1;
+      connectivity[offset+subent_conn[2]] = corner + 1 + genCtx.ystride;
+      connectivity[offset+subent_conn[3]] = corner + genCtx.ystride;
       break;
     case 3:
     default:
-      connectivity[offset+subent_conn[0]] = vfirst+i+(nele+1)*(j+(nele+1)*k);
-      connectivity[offset+subent_conn[1]] = vfirst+(i+1)+(nele+1)*(j+(nele+1)*k);
-      connectivity[offset+subent_conn[2]] = vfirst+(i+1)+(nele+1)*((j+1)+(nele+1)*k);
-      connectivity[offset+subent_conn[3]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*k);
-      connectivity[offset+subent_conn[4]] = vfirst+i+(nele+1)*(j+(nele+1)*(k+1));
-      connectivity[offset+subent_conn[5]] = vfirst+(i+1)+(nele+1)*(j+(nele+1)*(k+1));
-      connectivity[offset+subent_conn[6]] = vfirst+(i+1)+(nele+1)*((j+1)+(nele+1)*(k+1));
-      connectivity[offset+subent_conn[7]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*(k+1));
+      subent_conn.resize(8);
+      moab::CN::SubEntityVertexIndices(moab::MBHEX, 3, 0, subent_conn.data());
+      connectivity[offset+subent_conn[0]] = corner;
+      connectivity[offset+subent_conn[1]] = corner + 1;
+      connectivity[offset+subent_conn[2]] = corner + 1 + genCtx.ystride;
+      connectivity[offset+subent_conn[3]] = corner + genCtx.ystride;
+      connectivity[offset+subent_conn[4]] = corner + genCtx.zstride;
+      connectivity[offset+subent_conn[5]] = corner + 1 + genCtx.zstride;
+      connectivity[offset+subent_conn[6]] = corner + 1 + genCtx.ystride + genCtx.zstride;
+      connectivity[offset+subent_conn[7]] = corner + genCtx.ystride + genCtx.zstride;
       break;
   }
+  return subent_conn.size();  
 }
 
-static void DMMoab_SetSimplexElementConnectivity_Private(PetscInt dim, PetscInt subelem, moab::EntityType etype, PetscInt offset, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoab_SetSimplexElementConnectivity_Private"
+int DMMoab_SetSimplexElementConnectivity_Private(DMMoabMeshGeneratorCtx& genCtx, int subelem, int offset, int corner, std::vector<int>& subent_conn, moab::EntityHandle *connectivity)
 {
-  std::vector<int>    subent_conn(pow(2,dim));  /* only linear edge, quad, hex supported now */
-
-  moab::CN::SubEntityVertexIndices(etype, dim, 0, subent_conn.data());
-
-  switch(dim) {
+  switch(genCtx.dim) {
     case 1:
-      connectivity[offset+subent_conn[0]] = vfirst+i;
-      connectivity[offset+subent_conn[1]] = vfirst+(i+1);
+      subent_conn.resize(2);  /* only linear EDGE supported now */
+      moab::CN::SubEntityVertexIndices(moab::MBEDGE, 1, 0, subent_conn.data());
+      connectivity[offset+subent_conn[0]] = corner;
+      connectivity[offset+subent_conn[1]] = corner+1;
       break;
     case 2:
-      if (subelem) { /* 1 2 3 of a QUAD */
-        connectivity[offset+subent_conn[0]] = vfirst+i+j*(nele+1);
-        connectivity[offset+subent_conn[1]] = vfirst+(i+1)+j*(nele+1);
-        connectivity[offset+subent_conn[2]] = vfirst+(i+1)+(j+1)*(nele+1);
+      subent_conn.resize(3);  /* only linear TRI supported */
+      moab::CN::SubEntityVertexIndices(moab::MBTRI, 2, 0, subent_conn.data());
+      if (subelem) { /* 0 1 2 of a QUAD */
+        connectivity[offset+subent_conn[0]] = corner;
+        connectivity[offset+subent_conn[1]] = corner + 1;
+        connectivity[offset+subent_conn[2]] = corner + 1 + genCtx.ystride;
       }
-      else {        /* 3 4 1 of a QUAD */
-        connectivity[offset+subent_conn[0]] = vfirst+(i+1)+(j+1)*(nele+1);
-        connectivity[offset+subent_conn[1]] = vfirst+i+(j+1)*(nele+1);
-        connectivity[offset+subent_conn[2]] = vfirst+i+j*(nele+1);
+      else {        /* 2 3 0 of a QUAD */
+        connectivity[offset+subent_conn[0]] = corner + 1 + genCtx.ystride;
+        connectivity[offset+subent_conn[1]] = corner + genCtx.ystride;
+        connectivity[offset+subent_conn[2]] = corner;
       }
       break;
     case 3:
     default:
+      subent_conn.resize(4);  /* only linear TET supported */
+      moab::CN::SubEntityVertexIndices(moab::MBTET, 3, 0, subent_conn.data());
       switch(subelem) {
         case 0: /* 0 1 2 5 of a HEX */
-          connectivity[offset+subent_conn[0]] = vfirst+i+(nele+1)*(j+(nele+1)*k);
-          connectivity[offset+subent_conn[1]] = vfirst+(i+1)+(nele+1)*(j+(nele+1)*k);
-          connectivity[offset+subent_conn[2]] = vfirst+(i+1)+(nele+1)*((j+1)+(nele+1)*k);
-          connectivity[offset+subent_conn[3]] = vfirst+(i+1)+(nele+1)*(j+(nele+1)*(k+1));
+          connectivity[offset+subent_conn[0]] = corner;
+          connectivity[offset+subent_conn[1]] = corner + 1;
+          connectivity[offset+subent_conn[2]] = corner + 1 + genCtx.ystride;
+          connectivity[offset+subent_conn[3]] = corner + 1 + genCtx.zstride;
           break;
         case 1: /* 0 2 7 5 of a HEX */
-          connectivity[offset+subent_conn[0]] = vfirst+i+(nele+1)*(j+(nele+1)*k);
-          connectivity[offset+subent_conn[1]] = vfirst+(i+1)+(nele+1)*((j+1)+(nele+1)*k);
-          connectivity[offset+subent_conn[2]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*(k+1));
-          connectivity[offset+subent_conn[3]] = vfirst+(i+1)+(nele+1)*(j+(nele+1)*(k+1));
+          connectivity[offset+subent_conn[0]] = corner;
+          connectivity[offset+subent_conn[1]] = corner + 1 + genCtx.ystride;
+          connectivity[offset+subent_conn[2]] = corner + genCtx.ystride + genCtx.zstride;
+          connectivity[offset+subent_conn[3]] = corner + 1 + genCtx.zstride;
           break;
         case 2: /* 0 2 3 7 of a HEX */
-          connectivity[offset+subent_conn[0]] = vfirst+i+(nele+1)*(j+(nele+1)*k);
-          connectivity[offset+subent_conn[1]] = vfirst+(i+1)+(nele+1)*((j+1)+(nele+1)*k);
-          connectivity[offset+subent_conn[2]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*k);
-          connectivity[offset+subent_conn[3]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*(k+1));
+          connectivity[offset+subent_conn[0]] = corner;
+          connectivity[offset+subent_conn[1]] = corner + 1 + genCtx.ystride;
+          connectivity[offset+subent_conn[2]] = corner + genCtx.ystride;
+          connectivity[offset+subent_conn[3]] = corner + genCtx.ystride + genCtx.zstride;
           break;
         case 3: /* 0 5 7 4 of a HEX */
-          connectivity[offset+subent_conn[0]] = vfirst+i+(nele+1)*(j+(nele+1)*k);
-          connectivity[offset+subent_conn[1]] = vfirst+(i+1)+(nele+1)*(j+(nele+1)*(k+1));
-          connectivity[offset+subent_conn[2]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*(k+1));
-          connectivity[offset+subent_conn[3]] = vfirst+i+(nele+1)*(j+(nele+1)*(k+1));
+          connectivity[offset+subent_conn[0]] = corner;
+          connectivity[offset+subent_conn[1]] = corner + 1 + genCtx.zstride;
+          connectivity[offset+subent_conn[2]] = corner + genCtx.ystride + genCtx.zstride;
+          connectivity[offset+subent_conn[3]] = corner + genCtx.zstride;
           break;
         case 4: /* 2 7 5 6 of a HEX */
-          connectivity[offset+subent_conn[0]] = vfirst+(i+1)+(nele+1)*((j+1)+(nele+1)*k);
-          connectivity[offset+subent_conn[1]] = vfirst+i+(nele+1)*((j+1)+(nele+1)*(k+1));
-          connectivity[offset+subent_conn[2]] = vfirst+(i+1)+(nele+1)*(j+(nele+1)*(k+1));
-          connectivity[offset+subent_conn[3]] = vfirst+(i+1)+(nele+1)*((j+1)+(nele+1)*(k+1));
+          connectivity[offset+subent_conn[0]] = corner + 1 + genCtx.ystride;
+          connectivity[offset+subent_conn[1]] = corner + genCtx.ystride + genCtx.zstride;
+          connectivity[offset+subent_conn[2]] = corner + 1 + genCtx.zstride;
+          connectivity[offset+subent_conn[3]] = corner + 1 + genCtx.ystride + genCtx.zstride;
           break;
       }
       break;
   }
+  return subent_conn.size();
 }
 
-static void DMMoab_SetElementConnectivity_Private(PetscBool useSimplex, PetscInt dim, moab::EntityType etype, PetscInt *ecount, PetscInt vpere, PetscInt nele, PetscInt i, PetscInt j, PetscInt k, PetscInt vfirst, moab::EntityHandle *connectivity)
-{
-  PetscInt m,subelem;
-  if (useSimplex) {
-    subelem=(dim==1 ? 1 : (dim==2 ? 2 : 5));
-    for (m=0; m<subelem; m++)
-      DMMoab_SetSimplexElementConnectivity_Private(dim, m, etype, (*ecount+m)*vpere, nele, i, j, k, vfirst, connectivity);
 
+#undef __FUNCT__
+#define __FUNCT__ "DMMoab_SetElementConnectivity_Private"
+std::pair<int,int> DMMoab_SetElementConnectivity_Private(DMMoabMeshGeneratorCtx& genCtx, int offset, int corner, moab::EntityHandle *connectivity)
+{
+  int vcount=0;
+  std::vector<int> subent_conn;  /* only linear edge, tri, tet supported now */
+  subent_conn.reserve(27);
+  int m,subelem;
+  if (genCtx.simplex) {
+    subelem=(genCtx.dim==1 ? 1 : (genCtx.dim==2 ? 2 : 5));
+    for (m=0; m<subelem; m++) {
+      vcount=DMMoab_SetSimplexElementConnectivity_Private(genCtx, m, offset, corner, subent_conn, connectivity);
+      offset+=vcount;
+    }
   }
   else {
     subelem=1;
-    DMMoab_SetTensorElementConnectivity_Private(dim, etype, (*ecount)*vpere, nele, i, j, k, vfirst, connectivity);
+    vcount=DMMoab_SetTensorElementConnectivity_Private(genCtx, offset, corner, subent_conn, connectivity);
   }
-  *ecount+=subelem;
+  return std::pair<int,int>(vcount*subelem,subelem);
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "DMMoab_GenerateVertices_Private"
+PetscErrorCode DMMoab_GenerateVertices_Private(moab::Interface *mbImpl, moab::ReadUtilIface *iface, DMMoabMeshGeneratorCtx& genCtx, int m, int n, int k,
+    int a, int b, int c, moab::Tag& global_id_tag, moab::EntityHandle& startv, moab::Range& uverts)
+{
+  int x,y,z,ix,nnodes;
+  int ii,jj,kk;
+  std::vector<double*> arrays;
+  std::vector<int> gids;
+  moab::ErrorCode merr;
+
+  PetscFunctionBegin;
+  /* we will generate (q*block+1)^3 vertices, and block^3 hexas; q is 1 for linear, 2 for quadratic
+   * the global id of the vertices will come from m, n, k, a, b, c
+   * x will vary from  m*A*q*block + a*q*block to m*A*q*block+(a+1)*q*block etc.
+   */
+  nnodes = genCtx.blockSizeVertexXYZ[0]*(genCtx.dim>1? genCtx.blockSizeVertexXYZ[1]*(genCtx.dim>2 ? genCtx.blockSizeVertexXYZ[2]:1) :1);
+
+  merr = iface->get_node_coords(3, nnodes, 0, startv, arrays);MBERR("Can't get node coords.", merr);
+
+  /* will start with the lower corner: */
+  x = m * genCtx.A * genCtx.q * genCtx.blockSizeElementXYZ[0] + a * genCtx.q * genCtx.blockSizeElementXYZ[0];
+  y = n * genCtx.B * genCtx.q * genCtx.blockSizeElementXYZ[1] + b * genCtx.q * genCtx.blockSizeElementXYZ[1];
+  z = k * genCtx.C * genCtx.q * genCtx.blockSizeElementXYZ[2] + c * genCtx.q * genCtx.blockSizeElementXYZ[2];
+  ix = 0;
+  gids.resize(nnodes);
+  moab::Range verts(startv, startv + nnodes - 1);
+  for (kk = 0; kk < (genCtx.dim>2?genCtx.blockSizeVertexXYZ[2]:1); kk++) {
+    for (jj = 0; jj < (genCtx.dim>1?genCtx.blockSizeVertexXYZ[1]:1); jj++) {
+      for (ii = 0; ii < genCtx.blockSizeVertexXYZ[0]; ii++,ix++) {
+        /* set coordinates for the vertices */
+        arrays[0][ix] = (x + ii)*genCtx.dx + genCtx.xyzbounds[0];
+        arrays[1][ix] = (y + jj)*genCtx.dy + genCtx.xyzbounds[2];
+        arrays[2][ix] = (z + kk)*genCtx.dz + genCtx.xyzbounds[4];
+
+        /* If we want to set some tags on the vertices -> use the following entity handle definition:
+           moab::EntityHandle v = startv + ix;
+        */
+        /* compute the global ID for vertex */
+        gids[ix] = 1 + (x + ii) + (y + jj) * genCtx.NX + (z + kk) * (genCtx.NX * genCtx.NY);
+      }
+    }
+  }
+  /* set global ID data on vertices */
+  mbImpl->tag_set_data(global_id_tag, verts, &gids[0]);
+  verts.swap(uverts);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoab_GenerateElements_Private"
+PetscErrorCode DMMoab_GenerateElements_Private(moab::Interface* mbImpl, moab::ReadUtilIface* iface, DMMoabMeshGeneratorCtx& genCtx, int m, int n, int k,
+    int a, int b, int c, moab::Tag& global_id_tag, moab::EntityHandle startv, moab::Range& cells)
+{
+  moab::ErrorCode merr;
+  PetscInt ix,ie,xe,ye,ze;
+  PetscInt ii,jj,kk,nvperelem;
+  PetscInt ntensorelems = genCtx.blockSizeElementXYZ[0]*(genCtx.dim>1? genCtx.blockSizeElementXYZ[1]*(genCtx.dim>2 ? genCtx.blockSizeElementXYZ[2]:1) :1); /*pow(genCtx.blockSizeElement,genCtx.dim);*/
+  PetscInt nelems = ntensorelems;
+  moab::EntityHandle starte; // connectivity
+  moab::EntityHandle* conn;
+
+  PetscFunctionBegin;
+  switch(genCtx.dim) {
+    case 1:
+      nvperelem = 2;
+      merr = iface->get_element_connect(nelems, 2, moab::MBEDGE, 0, starte, conn);MBERR("Can't get EDGE2 element connectivity.", merr);
+      break;
+    case 2:
+      if (genCtx.simplex) {
+        nvperelem = 3;
+        nelems = ntensorelems*2;
+        merr = iface->get_element_connect(nelems, 3, moab::MBTRI, 0, starte, conn);MBERR("Can't get TRI3 element connectivity.", merr);
+      }
+      else {
+        nvperelem = 4;
+        merr = iface->get_element_connect(nelems, 4, moab::MBQUAD, 0, starte, conn);MBERR("Can't get QUAD4 element connectivity.", merr);
+      }
+      break;
+    case 3:
+    default:
+      if (genCtx.simplex) {
+        nvperelem = 4;
+        nelems = ntensorelems*5;
+        merr = iface->get_element_connect(nelems, 4, moab::MBTET, 0, starte, conn);MBERR("Can't get TET4 element connectivity.", merr);
+      }
+      else {
+        nvperelem = 8;
+        merr = iface->get_element_connect(nelems, 8, moab::MBHEX, 0, starte, conn);MBERR("Can't get HEX8 element connectivity.", merr);
+      }
+      break;
+  }
+
+  ix = ie = 0; // index now in the elements, for global ids
+
+  /* create a temporary range to store local element handles */
+  moab::Range tmp(starte, starte + nelems - 1);
+  std::vector<int> gids(nelems);
+
+  /* identify the elements at the lower corner, for their global ids */
+  xe = m * genCtx.A * genCtx.blockSizeElementXYZ[0] + a * genCtx.blockSizeElementXYZ[0];
+  ye = (genCtx.dim > 1 ? n * genCtx.B * genCtx.blockSizeElementXYZ[1] + b * genCtx.blockSizeElementXYZ[1] : 0);
+  ze = (genCtx.dim > 2 ? k * genCtx.C * genCtx.blockSizeElementXYZ[2] + c * genCtx.blockSizeElementXYZ[2] : 0);
+
+  /* create owned elements requested by genCtx */
+  for (kk = 0; kk < (genCtx.dim>2?genCtx.blockSizeElementXYZ[2]:1); kk++) {
+    for (jj = 0; jj < (genCtx.dim>1?genCtx.blockSizeElementXYZ[1]:1); jj++) {
+      for (ii = 0; ii < genCtx.blockSizeElementXYZ[0]; ii++) {
+
+        moab::EntityHandle corner = startv + genCtx.q * ii + genCtx.q * jj * genCtx.ystride + genCtx.q * kk * genCtx.zstride;
+
+        std::pair<int,int> entoffset = DMMoab_SetElementConnectivity_Private(genCtx, ix, corner, conn);
+
+        for (int j = 0; j < entoffset.second; j++) {
+          /* The entity handle for the particular element -> if we want to set some tags is
+             moab::EntityHandle eh = starte + ie + j;
+          */
+          gids[ie+j] = 1 + ((xe + ii) + (ye + jj) * genCtx.nex + (ze + kk) * (genCtx.nex * genCtx.ney));
+          //gids[ie+j] = ie + j + ((xe + ii) + (ye + jj) * genCtx.nex + (ze + kk) * (genCtx.nex * genCtx.ney)) ;
+          //gids[ie+j] = 1 + ie;
+          ie++;
+        }
+
+        ix += entoffset.first;
+        //ie += entoffset.second;
+      }
+    }
+  }
+  if (genCtx.adjEnts) { /* we need to update adjacencies now, because some elements are new */
+    merr = iface->update_adjacencies(starte, nelems, nvperelem, conn);MBERR("Can't update adjacencies", merr);
+  }
+  tmp.swap(cells);
+  merr = mbImpl->tag_set_data(global_id_tag, cells, &gids[0]);MBERR("Can't set global ids to elements.", merr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMBUtil_InitializeOptions"
+PetscErrorCode DMMBUtil_InitializeOptions(DMMoabMeshGeneratorCtx& genCtx, PetscInt dim, PetscBool simplex, PetscInt rank, PetscInt nprocs, const PetscReal* bounds, PetscInt nele)
+{
+  PetscFunctionBegin;
+  if(nele<nprocs) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimensional discretization size should be greater or equal to number of processors: %D < %D",nele,nprocs);
+  /* Initialize all genCtx data */
+  genCtx.dim=dim;
+  genCtx.simplex=simplex;
+  genCtx.newMergeMethod=genCtx.keep_skins=genCtx.adjEnts=true;
+  /* determine other global quantities for the mesh used for nodes increments */
+  genCtx.q = 1;
+
+  if (!genCtx.usrxyzgrid) { /* not overridden by genCtx - assume nele equally and that genCtx wants a uniform cube mesh */
+    //genCtx.blockSizeElementXYZ[0]=genCtx.blockSizeElementXYZ[1]=genCtx.blockSizeElementXYZ[2]=std::pow(nlocalele,1.0/dim);
+    genCtx.blockSizeElementXYZ[0]=nele;
+    genCtx.blockSizeElementXYZ[1]=(dim>2?nele:nele/nprocs);
+    genCtx.blockSizeElementXYZ[2]=(dim>2?nele/nprocs:1);
+  }
+
+  /* partition only by the largest dimension */
+  /* Total number of local elements := genCtx.blockSizeElementXYZ[0]*(genCtx.dim>1? genCtx.blockSizeElementXYZ[1]*(genCtx.dim>2 ? genCtx.blockSizeElementXYZ[2]:1) :1); */
+  if (bounds) {
+    for (int i=0; i<6; i++)
+      genCtx.xyzbounds[i]=bounds[i];
+  }
+  else {
+    genCtx.xyzbounds[0]=genCtx.xyzbounds[2]=genCtx.xyzbounds[4]=0.0;
+    genCtx.xyzbounds[1]=genCtx.xyzbounds[3]=genCtx.xyzbounds[5]=1.0;
+  }
+
+  if (!genCtx.usrprocgrid) {
+    genCtx.M=genCtx.N=genCtx.K=std::pow(nprocs,1.0/dim);
+    switch(genCtx.dim) {
+     case 1:
+       genCtx.M=nprocs;
+       genCtx.N=genCtx.K=1;
+       break;
+     case 2:
+       genCtx.K=1;
+       genCtx.N=nprocs/(genCtx.M);
+       break;
+     default:
+       genCtx.K=nprocs/(genCtx.M*genCtx.N);
+       break;
+    }
+  }
+
+  if (!genCtx.usrrefgrid) {
+    genCtx.A=genCtx.B=genCtx.C=1;
+  }
+
+  /* more default values */
+  genCtx.nex=genCtx.ney=genCtx.nez=0;
+  genCtx.xstride=genCtx.ystride=genCtx.zstride=0;
+  genCtx.NX=genCtx.NY=genCtx.NZ=0;
+  genCtx.nex=genCtx.ney=genCtx.nez=0;
+  genCtx.blockSizeVertexXYZ[0]=genCtx.blockSizeVertexXYZ[1]=genCtx.blockSizeVertexXYZ[2]=1;
+
+  //genCtx.blockSizeElementXYZ[0]=genCtx.blockSizeElementXYZ[1]=genCtx.blockSizeElementXYZ[2]=nele;
+  //genCtx.blockSizeVertexXYZ[0]=genCtx.blockSizeVertexXYZ[1]=genCtx.blockSizeVertexXYZ[2]=nele+1;
+
+  switch(genCtx.dim) {
+   case 3:
+     //genCtx.blockSizeElementXYZ[2]=std::max(1,genCtx.blockSizeElementXYZ[2]/nprocs);
+     //genCtx.blockSizeElementXYZ[2]=std::max(1,nele/nprocs);
+     genCtx.blockSizeVertexXYZ[0] = genCtx.q*genCtx.blockSizeElementXYZ[0] + 1;
+     genCtx.blockSizeVertexXYZ[1] = genCtx.q*genCtx.blockSizeElementXYZ[1] + 1;
+     //genCtx.blockSizeElementXYZ[2]=fraction/(genCtx.blockSizeElementXYZ[0]*genCtx.blockSizeElementXYZ[1]);
+     genCtx.blockSizeVertexXYZ[2] = genCtx.q*genCtx.blockSizeElementXYZ[2] + 1;
+
+     genCtx.nex = genCtx.M * genCtx.A * genCtx.blockSizeElementXYZ[0];   /* number of elements in x direction, used for global id on element */
+     genCtx.dx = (genCtx.xyzbounds[1]-genCtx.xyzbounds[0])/(genCtx.nex*genCtx.q);  /* distance between 2 nodes in x direction */
+     genCtx.NX = (genCtx.q * genCtx.nex + 1);
+     genCtx.xstride = 1;
+     genCtx.ney = genCtx.N * genCtx.B * genCtx.blockSizeElementXYZ[1];  /* number of elements in y direction  .... */
+     genCtx.dy = (genCtx.xyzbounds[3]-genCtx.xyzbounds[2])/(genCtx.ney*genCtx.q);   /* distance between 2 nodes in y direction */
+     genCtx.NY = (genCtx.q * genCtx.ney + 1);
+     genCtx.ystride = genCtx.blockSizeVertexXYZ[0];
+     genCtx.nez = genCtx.K * genCtx.C * genCtx.blockSizeElementXYZ[2];  /* number of elements in z direction  .... */
+     genCtx.dz = (genCtx.xyzbounds[5]-genCtx.xyzbounds[4])/(genCtx.nez*genCtx.q);   /* distance between 2 nodes in z direction */
+     genCtx.NZ = (genCtx.q * genCtx.nez + 1);
+     genCtx.zstride = genCtx.blockSizeVertexXYZ[0] * genCtx.blockSizeVertexXYZ[1];
+     break;
+   case 2:
+     //genCtx.blockSizeElementXYZ[1]=genCtx.blockSizeElementXYZ[2]=std::max(1,nele/nprocs);
+     //genCtx.blockSizeElementXYZ[1]=fraction/genCtx.blockSizeElementXYZ[0];
+     genCtx.blockSizeVertexXYZ[0] = genCtx.q*genCtx.blockSizeElementXYZ[0] + 1;
+     genCtx.blockSizeVertexXYZ[1] = genCtx.q*genCtx.blockSizeElementXYZ[1] + 1;
+     genCtx.blockSizeElementXYZ[2]=0;
+
+     genCtx.nex = genCtx.M * genCtx.A * genCtx.blockSizeElementXYZ[0];   /* number of elements in x direction, used for global id on element */
+     genCtx.dx = (genCtx.xyzbounds[1]-genCtx.xyzbounds[0])/(genCtx.nex*genCtx.q);  /* distance between 2 nodes in x direction */
+     genCtx.NX = (genCtx.q * genCtx.nex + 1);
+     genCtx.xstride = 1;
+     genCtx.ney = genCtx.N * genCtx.B * genCtx.blockSizeElementXYZ[1];  /* number of elements in y direction  .... */
+     genCtx.dy = (genCtx.xyzbounds[3]-genCtx.xyzbounds[2])/(genCtx.ney*genCtx.q);   /* distance between 2 nodes in y direction */
+     genCtx.NY = (genCtx.q * genCtx.ney + 1);
+     genCtx.ystride = genCtx.blockSizeVertexXYZ[0];
+     break;
+   case 1:
+     genCtx.blockSizeElementXYZ[1]=genCtx.blockSizeElementXYZ[2]=0;
+     genCtx.blockSizeElementXYZ[0]=nele;
+     genCtx.blockSizeVertexXYZ[0] = genCtx.q*genCtx.blockSizeElementXYZ[0] + 1;
+
+     genCtx.nex = genCtx.M * genCtx.A * genCtx.blockSizeElementXYZ[0];   /* number of elements in x direction, used for global id on element */
+     genCtx.dx = (genCtx.xyzbounds[1]-genCtx.xyzbounds[0])/(genCtx.nex*genCtx.q);  /* distance between 2 nodes in x direction */
+     genCtx.NX = (genCtx.q * genCtx.nex + 1);
+     genCtx.xstride = 1;
+     break;
+  }
+
+  /*
+  PetscInfo3(NULL, "Local elements:= %d, %d, %d\n",genCtx.blockSizeElementXYZ[0],genCtx.blockSizeElementXYZ[1],genCtx.blockSizeElementXYZ[2]);
+  PetscInfo3(NULL, "Local vertices:= %d, %d, %d\n",genCtx.blockSizeVertexXYZ[0],genCtx.blockSizeVertexXYZ[1],genCtx.blockSizeVertexXYZ[2]);
+  PetscInfo3(NULL, "Local nexyz:= %d, %d, %d\n",genCtx.nex,genCtx.ney,genCtx.nez);
+  PetscInfo3(NULL, "Local delxyz:= %g, %g, %g\n",genCtx.dx,genCtx.dy,genCtx.dz);
+  PetscInfo3(NULL, "Local strides:= %d, %d, %d\n",genCtx.xstride,genCtx.ystride,genCtx.zstride);
+  */
+  PetscFunctionReturn(0);
+}
+
 /*@
-  DMMoabCreateBoxMesh - Creates a mesh on the tensor product (box) of intervals with user specified bounds.
+  DMMoabCreateBoxMesh - Creates a mesh on the tensor product (box) of intervals with genCtx specified bounds.
 
   Collective on MPI_Comm
 
@@ -177,47 +428,34 @@ static void DMMoab_SetElementConnectivity_Private(PetscBool useSimplex, PetscInt
 .keywords: DM, create
 .seealso: DMSetType(), DMCreate(), DMMoabLoadFromFile()
 @*/
-PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSimplex, const PetscReal* bounds, PetscInt nele, PetscInt user_nghost, DM *dm)
+PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSimplex, const PetscReal* bounds, PetscInt nele, PetscInt nghost, DM *dm)
 {
   PetscErrorCode       ierr;
   moab::ErrorCode      merr;
-  PetscInt             i,j,k,n,nprocs,rank=-1,ecount=0,vcount=0;
+  PetscInt             a,b,c,n,global_size,global_rank=-1;
   DM_Moab             *dmmoab;
-  moab::Interface     *mbiface;
+  moab::Interface     *mbImpl;
   moab::ParallelComm  *pcomm;
   moab::ReadUtilIface *readMeshIface;
+  moab::Range          verts,cells,edges,faces,adj,dim3,dim2;
+  DMMoabMeshGeneratorCtx          genCtx;
+  const PetscInt       npts=nele+1;        /* Number of points in every dimension */
 
-  moab::Tag            id_tag=PETSC_NULL,part_tag=PETSC_NULL;
+  moab::Tag            global_id_tag,part_tag,geom_tag;
   moab::Range          ownedvtx,ownedelms,localvtxs,localelms;
-  moab::EntityHandle   vfirst,efirst,regionset,faceset,edgeset,vtxset,partset;
-  std::vector<double*> vcoords;
-  moab::EntityHandle  *connectivity = 0;
-  moab::EntityType     etype=moab::MBHEX;
-  PetscInt             ise[6];
-  std::vector<int>     vgid;
-  PetscReal            xse[6],defbounds[6];
-
-  /* TODO: Fix nghost > 0 - now relying on exchange_ghost_cells */
-  const PetscInt nghost=0;
-
-  moab::Tag geom_tag;
-
-  moab::Range adj,dim3,dim2;
-  bool build_adjacencies=false;
-
-  const PetscInt npts=nele+1;        /* Number of points in every dimension */
-  PetscInt vpere=0,locnele=0,locnpts=0,ghnele,ghnpts;    /* Number of verts/element, vertices, elements owned by this process */
+  moab::EntityHandle   regionset;
+  PetscInt             ml=0,nl=0,kl=0,leftover;
 
   PetscFunctionBegin;
   if(dim < 1 || dim > 3) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid dimension argument for mesh: dim=[1,3].\n");
 
-  ierr = MPI_Comm_size(comm, &nprocs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &global_size);CHKERRQ(ierr);
   /* total number of vertices in all dimensions */
   n=pow(npts,dim);
 
   /* do some error checking */
   if(n < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Number of points must be >= 2.\n");
-  if(nprocs > n) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Number of processors must be less than or equal to number of elements.\n");
+  if(global_size > n) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Number of processors must be less than or equal to number of elements.\n");
   if(nghost < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Number of ghost layers cannot be negative.\n");
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
@@ -225,269 +463,181 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool useSim
 
   /* get all the necessary handles from the private DM object */
   dmmoab = (DM_Moab*)(*dm)->data;
-  mbiface = dmmoab->mbiface;
+  mbImpl = dmmoab->mbiface;
   pcomm = dmmoab->pcomm;
-  id_tag = dmmoab->ltog_tag;
-  nprocs = pcomm->size();
+  global_id_tag = dmmoab->ltog_tag;
+  global_rank = pcomm->rank();
   dmmoab->dim = dim;
 
   /* create a file set to associate all entities in current mesh */
-  merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, dmmoab->fileset);MBERR("Creating file set failed", merr);
+  merr = mbImpl->create_meshset(moab::MESHSET_SET, dmmoab->fileset);MBERR("Creating file set failed", merr);
 
   /* No errors yet; proceed with building the mesh */
-  merr = mbiface->query_interface(readMeshIface);MBERRNM(merr);
+  merr = mbImpl->query_interface(readMeshIface);MBERRNM(merr);
 
-  ierr = PetscMemzero(ise,sizeof(PetscInt)*6);CHKERRQ(ierr);  
+  //PetscObjectOptionsBegin(dm);
+  PetscOptionsBegin(comm,"","DMMoab Creation Options","DMMOAB");
+  /* Handle DMMoab spatial resolution */
+  PetscOptionsInt("-dmb_grid_x","Number of grid points in x direction","DMMoabSetSizes",genCtx.blockSizeElementXYZ[0],&genCtx.blockSizeElementXYZ[0],&genCtx.usrxyzgrid);
+  if (dim > 1) {PetscOptionsInt("-dmb_grid_y","Number of grid points in y direction","DMMoabSetSizes",genCtx.blockSizeElementXYZ[1],&genCtx.blockSizeElementXYZ[1],&genCtx.usrxyzgrid);}
+  if (dim > 2) {PetscOptionsInt("-dmb_grid_z","Number of grid points in z direction","DMMoabSetSizes",genCtx.blockSizeElementXYZ[2],&genCtx.blockSizeElementXYZ[2],&genCtx.usrxyzgrid);}
 
-  /* call the collective routine that computes the domain bounds for a structured mesh using MOAB */
-  ierr = DMMoabComputeDomainBounds_Private(pcomm, dim, nele, ise);CHKERRQ(ierr);
+  /* Handle DMMoab parallel distibution */
+  PetscOptionsInt("-dmb_processors_x","Number of processors in x direction","DMMoabSetNumProcs",genCtx.M,&genCtx.M,&genCtx.usrprocgrid);
+  if (dim > 1) {PetscOptionsInt("-dmb_processors_y","Number of processors in y direction","DMMoabSetNumProcs",genCtx.N,&genCtx.N,&genCtx.usrprocgrid);}
+  if (dim > 2) {PetscOptionsInt("-dmb_processors_z","Number of processors in z direction","DMMoabSetNumProcs",genCtx.K,&genCtx.K,&genCtx.usrprocgrid);}
 
-  /* set some variables based on dimension */
-  switch(dim) {
-   case 1:
-    vpere = 2;
-    locnele = (ise[1]-ise[0]);
-    locnpts = (ise[1]-ise[0]+1);
-    ghnele = (nghost > 0 ? (ise[0] > nghost ? 1 : 0) + (ise[1] < nele - nghost ? 1 : 0) : 0 );
-    ghnpts = (nghost > 0 ? (ise[0] > 0 ? 1 : 0) + (ise[1] < nele ? 1 : 0) : 0);
-    etype = moab::MBEDGE;
-    break;
-   case 2:
-    locnpts = (ise[1]-ise[0]+1)*(ise[3]-ise[2]+1);
-    ghnpts = (nghost > 0 ? (ise[2] > 0 ? npts : 0) + (ise[3] < nele ? npts : 0) : 0);
-    if (useSimplex) {
-      vpere = 3;
-      locnele = 2*(ise[1]-ise[0])*(ise[3]-ise[2]);
-      ghnele = 2*(nghost > 0 ? (ise[2] > 0 ? nele : 0) + (ise[3] < nele ? nele : 0) : 0);
-      etype = moab::MBTRI;
-    }
-    else {
-      vpere = 4;
-      locnele = (ise[1]-ise[0])*(ise[3]-ise[2]);
-      ghnele = (nghost > 0 ? (ise[2] > 0 ? nele : 0) + (ise[3] < nele ? nele : 0) : 0);
-      etype = moab::MBQUAD;
-    }
-    break;
-   case 3:
-   default:
-    locnpts = (ise[1]-ise[0]+1)*(ise[3]-ise[2]+1)*(ise[5]-ise[4]+1);
-    ghnpts = (nghost > 0 ? (ise[4] > 0 ? npts*npts : 0) + (ise[5] < nele ? npts*npts : 0) : 0);
-    if (useSimplex) {
-      vpere = 4;
-      locnele = 5*(ise[1]-ise[0])*(ise[3]-ise[2])*(ise[5]-ise[4]);
-      ghnele = 5*(nghost > 0 ? (ise[4] > 0 ? nele*nele : 0) + (ise[5] < nele ? nele*nele : 0) : 0);
-      etype = moab::MBTET;
-    }
-    else {
-      vpere = 8;
-      locnele = (ise[1]-ise[0])*(ise[3]-ise[2])*(ise[5]-ise[4]);
-      ghnele = (nghost > 0 ? (ise[4] > 0 ? nele*nele : 0) + (ise[5] < nele ? nele*nele : 0) : 0);
-      etype = moab::MBHEX;
-    }
-    break;
-  }
+  /* Handle DMMoab block refinement */
+  PetscOptionsInt("-dmb_refine_x","Number of refinement blocks in x direction","DMMoabSetRefinement",genCtx.A,&genCtx.A,&genCtx.usrrefgrid);
+  if (dim > 1) {PetscOptionsInt("-dmb_refine_y","Number of refinement blocks in y direction","DMMoabSetRefinement",genCtx.B,&genCtx.B,&genCtx.usrrefgrid);}
+  if (dim > 2) {PetscOptionsInt("-dmb_refine_z","Number of refinement blocks in z direction","DMMoabSetRefinement",genCtx.C,&genCtx.C,&genCtx.usrrefgrid);}
+  PetscOptionsEnd();
 
-  /* we have a domain of size [1,1,1] - now compute local co-ordinate box */
-  ierr = PetscMemzero(xse,sizeof(PetscReal)*6);CHKERRQ(ierr);  
-  for(i=0; i<6; ++i) {
-    xse[i]=(PetscReal)ise[i]/nele;
-  }
+  ierr = DMMBUtil_InitializeOptions(genCtx, dim, useSimplex, global_rank, global_size, bounds, nele);CHKERRQ(ierr);
 
-  /* Create vertexes and set the coodinate of each vertex */
-  merr = readMeshIface->get_node_coords(3,locnpts+ghnpts,0,vfirst,vcoords,n);MBERRNM(merr);
-
-  /* Compute the co-ordinates of vertices and global IDs */
-  vgid.resize(locnpts+ghnpts);
-  vcount=0;
-  if (!bounds) { /* default box mesh is defined on a unit-cube */
-    defbounds[0]=0.0; defbounds[1]=1.0;
-    defbounds[2]=0.0; defbounds[3]=1.0;
-    defbounds[4]=0.0; defbounds[5]=1.0;
-    bounds=defbounds;
-  }
-  else {
+  /* Lets check for some valid input */
+  if (genCtx.dim < 1 || genCtx.dim > 3) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid topological dimension specified: %d.\n",genCtx.dim);
+  if (genCtx.M * genCtx.N * genCtx.K != global_size) SETERRQ4(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid [m, n, k] data: %d, %d, %d. Product must be equal to global size = %d.\n",genCtx.M,genCtx.N,genCtx.K,global_size);
+  if (genCtx.xyzbounds) {
     /* validate the bounds data */
-    if(bounds[0] >= bounds[1]) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"X-dim: Left boundary cannot be greater than right. [%G >= %G]\n",bounds[0],bounds[1]);
-    if(dim > 1 && (bounds[2] >= bounds[3])) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Y-dim: Left boundary cannot be greater than right. [%G >= %G]\n",bounds[2],bounds[3]);
-    if(dim > 2 && (bounds[4] >= bounds[5])) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Z-dim: Left boundary cannot be greater than right. [%G >= %G]\n",bounds[4],bounds[5]);
+    if(genCtx.xyzbounds[0] >= genCtx.xyzbounds[1]) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"X-dim: Left boundary cannot be greater than right. [%G >= %G]\n",genCtx.xyzbounds[0],genCtx.xyzbounds[1]);
+    if(genCtx.dim > 1 && (genCtx.xyzbounds[2] >= genCtx.xyzbounds[3])) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Y-dim: Left boundary cannot be greater than right. [%G >= %G]\n",genCtx.xyzbounds[2],genCtx.xyzbounds[3]);
+    if(genCtx.dim > 2 && (genCtx.xyzbounds[4] >= genCtx.xyzbounds[5])) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Z-dim: Left boundary cannot be greater than right. [%G >= %G]\n",genCtx.xyzbounds[4],genCtx.xyzbounds[5]);
   }
+  if (genCtx.adjEnts) genCtx.keep_skins = true; /* do not delete anything - consumes more memory */
 
-  const double hx=(bounds[1]-bounds[0])/nele;
-  const double hy=(dim > 1 ? (bounds[3]-bounds[2])/nele : 0.0);
-  const double hz=(dim > 2 ? (bounds[5]-bounds[4])/nele : 0.0);
+  /* determine m, n, k for processor rank */
+  kl = (genCtx.dim>2?global_rank/(genCtx.M*genCtx.N):0);
+  leftover = global_rank%(genCtx.M*genCtx.N);
+  nl = leftover/genCtx.M;
+  ml = leftover%genCtx.M;
+  //if (global_rank==global_size-1) cout << "m, n, k for last rank:" << m << " " << n << " " << k << "\n";
 
-  /* create all the owned vertices */
-  for (k = ise[4]; k <= ise[5]; k++) {
-    for (j = ise[2]; j <= ise[3]; j++) {
-      for (i = ise[0]; i <= ise[1]; i++, vcount++) {
-        DMMoab_SetStructuredCoords_Private(i,j,k,hx,hy,hz,vcount,vcoords);
-        vgid[vcount] = (k*npts+j)*npts+i+1;
-      }
-    }
-  }
+  /*
+   * so there are a total of M * A * blockSizeElement elements in x direction (so M * A * blockSizeElement + 1 verts in x direction)
+   * so there are a total of N * B * blockSizeElement elements in y direction (so N * B * blockSizeElement + 1 verts in y direction)
+   * so there are a total of K * C * blockSizeElement elements in z direction (so K * C * blockSizeElement + 1 verts in z direction)
 
-  /* create ghosted vertices requested by user - below the current plane */
-  if (ise[2*dim-2] > 0) {
-    for (k = (dim==3?ise[4]-nghost:ise[4]); k <= (dim==3?ise[4]-1:ise[5]); k++) {
-      for (j = (dim==2?ise[2]-nghost:ise[2]); j <= (dim==2?ise[2]-1:ise[3]); j++) {
-        for (i = (dim>1?ise[0]:ise[0]-nghost); i <= (dim>1?ise[1]:ise[0]-1); i++, vcount++) {
-          DMMoab_SetStructuredCoords_Private(i,j,k,hx,hy,hz,vcount,vcoords);
-          vgid[vcount] = (k*npts+j)*npts+i+1;
-        }
-      }
-    }
-  }
+   * there are ( M * A blockSizeElement )      *  ( N * B * blockSizeElement)      * (K * C * blockSizeElement )    hexas
+   * there are ( M * A * blockSizeElement + 1) *  ( N * B * blockSizeElement + 1 ) * (K * C * blockSizeElement + 1) vertices
+   * x is the first dimension that varies
+   */
 
-  /* create ghosted vertices requested by user - above the current plane */
-  if (ise[2*dim-1] < nele) {
-    for (k = (dim==3?ise[5]+1:ise[4]); k <= (dim==3?ise[5]+nghost:ise[5]); k++) {
-      for (j = (dim==2?ise[3]+1:ise[2]); j <= (dim==2?ise[3]+nghost:ise[3]); j++) {
-        for (i = (dim>1?ise[0]:ise[1]+1); i <= (dim>1?ise[1]:ise[1]+nghost); i++, vcount++) {
-          DMMoab_SetStructuredCoords_Private(i,j,k,hx,hy,hz,vcount,vcoords);
-          vgid[vcount] = (k*npts+j)*npts+i+1;
-        }
-      }
-    }
-  }
+  /* generate the block at (a, b, c); it will represent a partition , it will get a partition tag */
+  int dum_id=-1;
+  merr = mbImpl->tag_get_handle("GLOBAL_ID", 1, moab::MB_TYPE_INTEGER, global_id_tag);MBERR("Getting Tag handle failed", merr);
 
-  if (locnpts+ghnpts != vcount) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Created the wrong number of vertices! (%D!=%D)",locnpts+ghnpts,vcount);
+  merr = mbImpl->tag_get_handle("PARALLEL_PARTITION", 1, moab::MB_TYPE_INTEGER, part_tag, moab::MB_TAG_CREAT|moab::MB_TAG_SPARSE, &dum_id);MBERR("Getting Tag handle failed", merr);
 
-  merr = mbiface->get_entities_by_type(0,moab::MBVERTEX,ownedvtx,true);MBERRNM(merr);
-
-  /* The global ID tag is applied to each owned
-     vertex. It acts as an global identifier which MOAB uses to
-     assemble the individual pieces of the mesh:
-     Set the global ID indices */
-  merr = mbiface->tag_set_data(id_tag,ownedvtx,vgid.data());MBERRNM(merr);
-  
-  /* Create elements between mesh points using the ReadUtilInterface 
-     get the reference to element connectivities for all local elements from the ReadUtilInterface */
-  merr = readMeshIface->get_element_connect (locnele+ghnele,vpere,etype,1,efirst,connectivity);MBERRNM(merr);
-
-  /* offset appropriately so that only local ID and not global ID numbers are set for connectivity array */
-  vfirst-=vgid[0]-1;
-
-   /* 3. Loop over elements in 3 nested loops over i, j, k; for each (i,j,k):
-         and then set the connectivity for each element appropriately */
-  ecount=0;
-  /* create ghosted elements requested by user - below the current plane */
-  if (ise[2*dim-2] >= nghost) {
-    for (k = (dim==3?ise[4]-nghost:ise[4]); k < (dim==3?ise[4]:std::max(ise[5],1)); k++) {
-      for (j = (dim==2?ise[2]-nghost:ise[2]); j < (dim==2?ise[2]:std::max(ise[3],1)); j++) {
-        for (i = (dim>1?ise[0]:ise[0]-nghost); i < (dim>1?std::max(ise[1],1):ise[0]); i++) {
-          DMMoab_SetElementConnectivity_Private(useSimplex, dim, etype, &ecount, vpere, nele, i, j, k, vfirst, connectivity);
-        }
-      }
-    }
-  }
-
-  /* create owned elements requested by user */
-  for (k = ise[4]; k < std::max(ise[5],1); k++) {
-    for (j = ise[2]; j < std::max(ise[3],1); j++) {
-      for (i = ise[0]; i < std::max(ise[1],1); i++) {
-        DMMoab_SetElementConnectivity_Private(useSimplex, dim, etype, &ecount, vpere, nele, i, j, k, vfirst, connectivity);
-      }
-    }
-  }
-
-  /* create ghosted elements requested by user - above the current plane */
-  if (ise[2*dim-1] <= nele-nghost) {
-    for (k = (dim==3?ise[5]:ise[4]); k < (dim==3?ise[5]+nghost:std::max(ise[5],1)); k++) {
-      for (j = (dim==2?ise[3]:ise[2]); j < (dim==2?ise[3]+nghost:std::max(ise[3],1)); j++) {
-        for (i = (dim>1?ise[0]:ise[1]); i < (dim>1?std::max(ise[1],1):ise[1]+nghost); i++) {
-          DMMoab_SetElementConnectivity_Private(useSimplex, dim, etype, &ecount, vpere, nele, i, j, k, vfirst, connectivity);
-        }
-      }
-    }
-  }
-
-  merr = readMeshIface->update_adjacencies(efirst,locnele+ghnele,vpere,connectivity);MBERRNM(merr);
-  
-  /* 2. Get the vertices and hexes from moab and check their numbers against I*J*K and (I-1)*(J-1)*(K-1), resp.
-        first '0' specifies "root set", or entire MOAB instance, second the entity dimension being requested */
-  merr = mbiface->get_entities_by_dimension(0, dim, ownedelms);MBERRNM(merr);
-
-  if (locnele+ghnele != (int) ownedelms.size()) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Created the wrong number of elements! (%D!=%D)",locnele+ghnele,ownedelms.size());
-  else if(locnpts+ghnpts != (int) ownedvtx.size()) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Created the wrong number of vertices! (%D!=%D)",locnpts+ghnpts,ownedvtx.size());    
-  else {
-    ierr = PetscInfo2(NULL, "Created %D elements and %D vertices.\n", ownedelms.size(), ownedvtx.size());CHKERRQ(ierr);
-  }
-  
   /* lets create some sets */
-  merr = mbiface->tag_get_handle(GEOM_DIMENSION_TAG_NAME, 1, moab::MB_TYPE_INTEGER, geom_tag, moab::MB_TAG_SPARSE|moab::MB_TAG_CREAT);MBERRNM(merr);
+  merr = mbImpl->tag_get_handle(GEOM_DIMENSION_TAG_NAME, 1, moab::MB_TYPE_INTEGER, geom_tag, moab::MB_TAG_CREAT|moab::MB_TAG_SPARSE, &dum_id);MBERRNM(merr);
 
-  merr = mbiface->create_meshset(moab::MESHSET_SET, regionset);MBERRNM(merr);
-  merr = mbiface->add_entities(regionset, ownedelms);MBERRNM(merr);
-  merr = mbiface->tag_set_data(geom_tag, &regionset, 1, &dmmoab->dim);MBERRNM(merr);
-  merr = mbiface->add_parent_child(dmmoab->fileset,regionset);MBERRNM(merr);
-  merr = mbiface->unite_meshset(dmmoab->fileset, regionset);MBERRNM(merr);
+  for (a=0; a<(genCtx.dim>0?genCtx.A:genCtx.A); a++) {
+    for (b=0; b<(genCtx.dim>1?genCtx.B:1); b++) {
+      for (c=0; c<(genCtx.dim>2?genCtx.C:1); c++) {
+        moab::EntityHandle startv,part_set;
+        ierr = DMMoab_GenerateVertices_Private(mbImpl, readMeshIface, genCtx, ml, nl, kl, a, b, c, global_id_tag, startv, verts);CHKERRQ(ierr);
 
-  merr = mbiface->create_meshset(moab::MESHSET_SET, vtxset);MBERRNM(merr);
-  merr = mbiface->add_entities(vtxset, ownedvtx);MBERRNM(merr);
-  merr = mbiface->add_parent_child(dmmoab->fileset,vtxset);MBERRNM(merr);
-  merr = mbiface->unite_meshset(dmmoab->fileset, vtxset);MBERRNM(merr);
+        ierr = DMMoab_GenerateElements_Private(mbImpl, readMeshIface, genCtx, ml, nl, kl, a, b, c, global_id_tag, startv, cells);CHKERRQ(ierr);
 
-  if (build_adjacencies) {
-    // generate all lower dimensional adjacencies
-    merr = mbiface->get_adjacencies( ownedelms, dim-1, true, adj, moab::Interface::UNION );MBERRNM(merr);
-    merr = dmmoab->pcomm->get_part_entities(dim2, dim-1);MBERRNM(merr);
-    adj.merge(dim2);
+        merr = mbImpl->create_meshset(moab::MESHSET_SET, part_set);MBERR("Can't create mesh set.", merr);
 
-    /* create face sets */
-    merr = mbiface->create_meshset(moab::MESHSET_SET, faceset);MBERRNM(merr);
-    merr = mbiface->add_entities(faceset, adj);MBERRNM(merr);
-    merr = mbiface->add_parent_child(dmmoab->fileset,faceset);MBERRNM(merr);
-    i=dim-1;
-    merr = mbiface->tag_set_data(geom_tag, &faceset, 1, &i);MBERRNM(merr);
-    merr = mbiface->unite_meshset(dmmoab->fileset, faceset);MBERRNM(merr);
-    PetscInfo2(NULL, "Found %d %d-Dim quantities.\n", adj.size(), dim-1);
+        merr = mbImpl->add_entities(part_set, verts);MBERR("Can't add vertices to set.", merr);
+        //merr = mbImpl->add_entities(part_set, cells);MBERR("Can't add entities to set.", merr);
 
-    if (dim > 2) {
-      dim2.clear();
-      /* create edge sets, if appropriate i.e., if dim=3 */
-      merr = mbiface->create_meshset(moab::MESHSET_SET, edgeset);MBERRNM(merr);
-      merr = mbiface->get_adjacencies(adj, dim-1, true, dim2, moab::Interface::UNION );MBERRNM(merr);
-      merr = mbiface->add_entities(edgeset, dim2);MBERRNM(merr);
-      merr = mbiface->add_parent_child(dmmoab->fileset,edgeset);MBERRNM(merr);
-      i=dim-2;
-      merr = mbiface->tag_set_data(geom_tag, &edgeset, 1, &i);MBERRNM(merr);
-      merr = mbiface->unite_meshset(dmmoab->fileset, edgeset);MBERRNM(merr);
-      PetscInfo2(NULL, "Found %d %d-Dim quantities.\n", adj.size(), dim-2);
+        merr = mbImpl->create_meshset(moab::MESHSET_SET, regionset);MBERRNM(merr);
+        merr = mbImpl->add_entities(regionset, cells);MBERR("Can't add entities to set.", merr);
+        merr = mbImpl->tag_set_data(geom_tag, &regionset, 1, &dmmoab->dim);MBERRNM(merr);
+        merr = mbImpl->add_parent_child(part_set,regionset);MBERRNM(merr);
+        merr = mbImpl->unite_meshset(part_set, regionset);MBERRNM(merr);
+
+        /* if needed, add all edges and faces */
+        if (genCtx.adjEnts)
+        {
+          if (genCtx.dim > 1) {
+            merr = mbImpl->get_adjacencies(cells, 1, true, edges, moab::Interface::UNION);MBERR("Can't get edges", merr);
+            merr = mbImpl->add_entities(part_set, edges);MBERR("Can't add edges to partition set.", merr);
+          }
+          if (genCtx.dim > 2) {
+            merr = mbImpl->get_adjacencies(cells, 2, true, faces, moab::Interface::UNION);MBERR("Can't get faces", merr);
+            merr = mbImpl->add_entities(part_set, faces);MBERR("Can't add faces to partition set.", merr);
+          }
+          edges.clear();
+          faces.clear();
+        }
+
+        int part_num=0;
+        switch(genCtx.dim) {
+          case 3:
+            part_num += (c+kl*genCtx.C)*(genCtx.M*genCtx.A * genCtx.N*genCtx.B);
+          case 2:
+            part_num += (b+nl*genCtx.B)*(genCtx.M*genCtx.A);
+          case 1:
+            part_num += (a+ml*genCtx.A);
+           break;
+        }
+
+        merr = mbImpl->tag_set_data(part_tag, &part_set, 1, &part_num);MBERR("Can't set part tag on set", merr);
+        merr = mbImpl->add_parent_child(dmmoab->fileset, part_set);MBERR("Can't add part set to file set.", merr);
+        merr = mbImpl->unite_meshset(dmmoab->fileset, part_set);MBERRNM(merr);
+
+        cells.clear();
+        verts.clear();
+      }
     }
   }
 
-  /* check the handles */
-  merr = pcomm->check_all_shared_handles();MBERRV(mbiface,merr);
+  PetscInfo2(NULL, "Generated local mesh: %D vertices and %D elements.\n", verts.size(), cells.size());
 
-  /* resolve the shared entities by exchanging information to adjacent processors */
-  merr = mbiface->get_entities_by_type(dmmoab->fileset,etype,ownedelms,true);MBERRNM(merr);
-  merr = pcomm->resolve_shared_ents(dmmoab->fileset,ownedelms,dim,dim-1,NULL,&id_tag);MBERRV(mbiface,merr);
+  /* resolving shared entities between processors */
+  if (global_size>1) {
 
-  merr = pcomm->exchange_ghost_cells(dim,0,user_nghost,dim,true,false,&dmmoab->fileset);MBERRV(mbiface,merr);
+    moab::MergeMesh mm(mbImpl);
 
-  /* Reassign global IDs on all entities. */
-  merr = pcomm->assign_global_ids(dmmoab->fileset,dim,1,false,true,false);MBERRNM(merr);
+    merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, genCtx.dim, cells);MBERR("Can't get all d-dimensional elements.", merr);
+    merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 0, verts);MBERR("Can't get all vertices.", merr);
 
-  /* filter based on parallel status */
-  merr = dmmoab->pcomm->filter_pstatus(ownedvtx,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,&localvtxs);MBERRNM(merr);
-  merr = dmmoab->pcomm->filter_pstatus(ownedelms,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,&localelms);MBERRNM(merr);
+    if (genCtx.A*genCtx.B*genCtx.C!=1) { //  merge needed
+      if (genCtx.newMergeMethod) {
+        merr = mm.merge_using_integer_tag(verts, global_id_tag);MBERR("Can't merge with GLOBAL_ID tag", merr);
+      }
+      else {
+        merr = mm.merge_entities(cells, 0.0001);MBERR("Can't merge with coordinates", merr);
+      }
+    }
 
-  /* set the parallel partition tag data */
-  merr = mbiface->tag_get_handle("PARALLEL_PARTITION", 1, moab::MB_TYPE_INTEGER,
-                             part_tag, moab::MB_TAG_CREAT | moab::MB_TAG_SPARSE, &rank);MBERRNM(merr);
-  rank=pcomm->rank();
-  merr = mbiface->create_meshset(moab::MESHSET_SET, partset);MBERRNM(merr);
-  merr = mbiface->add_entities(partset, localvtxs);MBERRNM(merr);
-  merr = mbiface->add_entities(partset, localelms);MBERRNM(merr);
-  merr = mbiface->tag_set_data(part_tag, &partset, 1, &rank);MBERRNM(merr);
+    /* check the handles */
+    merr = pcomm->check_all_shared_handles();MBERRV(mbImpl,merr);
 
-  /* Everything is set up, now just do a tag exchange to update tags
-     on all of the ghost vertexes */
-  merr = mbiface->get_entities_by_type(dmmoab->fileset,moab::MBVERTEX,ownedvtx,true);MBERRNM(merr);
-  merr = mbiface->get_entities_by_dimension(dmmoab->fileset, dim, ownedelms);MBERRNM(merr);
-  
-  merr = pcomm->exchange_tags(id_tag,ownedvtx);MBERRV(mbiface,merr);
-  merr = pcomm->exchange_tags(id_tag,ownedelms);MBERRV(mbiface,merr);
+    /* resolve the shared entities by exchanging information to adjacent processors */
+    merr = pcomm->resolve_shared_ents(dmmoab->fileset,cells,dim,dim-1,NULL,&global_id_tag);MBERRV(mbImpl,merr);
+    merr = pcomm->exchange_ghost_cells(dim,0,nghost,dim,true,false,&dmmoab->fileset);MBERRV(mbImpl,merr);
+
+    /* Reassign global IDs on all entities. */
+    merr = pcomm->assign_global_ids(dmmoab->fileset,dim,1,false,true,false);MBERRNM(merr);
+    merr = pcomm->exchange_tags(global_id_tag,verts);MBERRV(mbImpl,merr);
+    merr = pcomm->exchange_tags(global_id_tag,cells);MBERRV(mbImpl,merr);
+
+    /* now resolve the shared entities */
+    //merr = dmmoab->pcomm->resolve_shared_ents( dmmoab->fileset, cells, genCtx.dim, 0 );MBERR("Can't resolve shared entities", merr);
+    //PetscInfo(NULL, "Resolving shared entities.\n");
+
+    if (!genCtx.keep_skins) { // default is to delete the 1- and 2-dimensional entities
+      // delete all quads and edges
+      moab::Range toDelete;
+      if (genCtx.dim > 1) {
+        merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 1, toDelete);MBERR("Can't get edges", merr);
+      }
+
+      if (genCtx.dim > 2) {
+        merr = mbImpl->get_entities_by_dimension(dmmoab->fileset, 2, toDelete);MBERR("Can't get faces", merr);
+      }
+
+      merr = dmmoab->pcomm->delete_entities(toDelete) ;MBERR("Can't delete entities", merr);
+      PetscInfo(NULL, "Deleted edges and faces, and correct sharedEnts.\n");
+    }
+
+  }
   PetscFunctionReturn(0);
 }
 

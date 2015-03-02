@@ -151,16 +151,16 @@ PetscErrorCode DMCoarsenHierarchy_Moab(DM dm,PetscInt nlevels,DM dmc[])
 @*/
 PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
 {
-  DM_Moab        *dmb1, *dmb2;
-  PetscErrorCode  ierr;
-  moab::ErrorCode merr;
-  PetscInt        dim;
-  PetscReal       factor;
-  PetscBool       eonbnd;
+  DM_Moab         *dmb1, *dmb2;
+  PetscErrorCode   ierr;
+  moab::ErrorCode  merr;
+  PetscInt         dim;
+  PetscReal        factor;
+  PetscBool        eonbnd;
+  PetscInt         innz, *nnz, ionz, *onz;
+  PetscInt         nlsiz1, nlsiz2, ngsiz1, ngsiz2;
   std::vector<int> bndrows;
   std::vector<PetscBool> dbdry;
-  PetscInt innz, *nnz, ionz, *onz;
-  PetscInt n_nnz, n_onz, nlsiz1, nlsiz2, ngsiz1, ngsiz2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm1,DM_CLASSID,1);
@@ -246,17 +246,15 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
   ionz=onz[0];
   innz=nnz[0];
   for (int tc=0; tc < nlsiz2; tc++) {
-    //nnz[tc]+=1;
     // check for maximum allowed sparsity = fully dense
     nnz[tc] = std::min(nlsiz1,nnz[tc]);
     onz[tc] = std::min(nlsiz1,onz[tc]);
 
     innz = (innz < nnz[tc] ? nnz[tc] : innz);
     ionz = (ionz < onz[tc] ? onz[tc] : ionz);
-
-    //PetscPrintf(PETSC_COMM_WORLD, "[%D] NNZ = %D, ONZ = %D\n", tc, nnz[tc], onz[tc]);
+    //PetscPrintf(PETSC_COMM_SELF, "[%D] NNZ = %D, ONZ = %D\n", tc, nnz[tc], onz[tc]);
   }
-  //PetscPrintf(PETSC_COMM_WORLD, "Final: INNZ = %D, IONZ = %D\n", innz, ionz);
+  //PetscPrintf(PETSC_COMM_SELF, "Final: INNZ = %D, IONZ = %D\n", innz, ionz);
 
   ierr = MatSeqAIJSetPreallocation(*interpl,innz,nnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(*interpl,innz,nnz,ionz,onz);CHKERRQ(ierr);

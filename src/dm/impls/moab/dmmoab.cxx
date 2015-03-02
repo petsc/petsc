@@ -977,7 +977,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   Vec                     local, global;
   IS                      from,to;
   moab::Range::iterator   iter;
-  PetscInt                i,j,f,bs,gmin,lmin,lmax,vent,totsize,vstart,*lgmap;
+  PetscInt                i,j,f,bs,gmin,lmin,lmax,vent,totsize,*lgmap;
   DM_Moab                *dmmoab = (DM_Moab*)dm->data;
   moab::Range             adjs;
 
