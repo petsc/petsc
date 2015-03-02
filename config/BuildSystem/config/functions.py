@@ -20,7 +20,8 @@ class Configure(config.base.Configure):
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.compilers = self.framework.require('config.compilers', self)
-    self.headers = self.framework.require('config.headers', self)
+    self.libraries = self.framework.require('config.libraries', self) # setCompilers.LIBS is setup here
+    self.headers   = self.framework.require('config.headers', self)
     return
 
   def haveFunction(self, function):
