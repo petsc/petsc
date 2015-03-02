@@ -270,7 +270,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     PetscInt      fStart, fEnd, f, vStart, vEnd, v;
     PetscInt      edgesx = 2, vertsx;
     PetscInt      edgesy = 2, vertsy;
-    PetscInt      size;
+    PetscMPIInt   size;
     PetscInt      numConst;
     PetscSection  aSec;
     PetscInt     *anchors;
