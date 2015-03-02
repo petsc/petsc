@@ -86,17 +86,6 @@ class Configure(config.base.Configure):
         utilityObj.externalPackagesDirProvider = self.externalpackagesdir
         setattr(self, utilityName.lower(), utilityObj)
 
-    for utility in os.listdir(os.path.join('config','BuildSystem','config','packages')):
-      (utilityName, ext) = os.path.splitext(utility)
-      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
-        utilityObj                    = self.framework.require('config.packages.'+utilityName, self)
-        utilityObj.headerPrefix       = self.headerPrefix
-        utilityObj.archProvider       = self.arch
-        utilityObj.languageProvider   = self.languages
-        utilityObj.installDirProvider = self.installdir
-        utilityObj.externalPackagesDirProvider = self.externalpackagesdir
-        setattr(self, utilityName.lower(), utilityObj)
-
     if os.path.isdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
       for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
         (packageName, ext) = os.path.splitext(package)
