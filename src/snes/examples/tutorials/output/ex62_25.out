@@ -1,5 +1,5 @@
 0 SNES Function norm 6.3332 
-  1 SNES Function norm 1.417e-10 
+  1 SNES Function norm 9.480e-11 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 5 MPI processes
   type: newtonls
@@ -7,6 +7,7 @@ SNES Object: 5 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=12
   total number of function evaluations=2
+  norm schedule ALWAYS
   SNESLineSearch Object:   5 MPI processes
     type: bt
       interpolation: cubic
