@@ -964,7 +964,7 @@ PetscErrorCode PetscSetMUMPSFromOptions(Mat F, Mat A)
 
   ierr = PetscOptionsString("-mat_mumps_ooc_tmpdir", "out of core directory", "None", mumps->id.ooc_tmpdir, mumps->id.ooc_tmpdir, 256, NULL);
 
-  ierr = PetscOptionsGetIntArray(NULL,"-mat_mumps_view_info",info,&ninfo,NULL);CHKERRQ(ierr); /* why does not show with '-help'??? */
+  ierr = PetscOptionsIntArray("-mat_mumps_view_info","request INFO local to each processor","",info,&ninfo,NULL);CHKERRQ(ierr);
   if (ninfo) {
     if (ninfo > 40) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"number of INFO %d must <= 40\n",ninfo);
     ierr = PetscMalloc1(ninfo,&mumps->info);CHKERRQ(ierr);
