@@ -256,7 +256,7 @@ PetscErrorCode MatMultAdd_Shell(Mat A,Vec x,Vec y,Vec z)
   if (y == z) {
     if (!shell->right_add_work) {ierr = VecDuplicate(z,&shell->right_add_work);CHKERRQ(ierr);}
     ierr = MatMult(A,x,shell->right_add_work);CHKERRQ(ierr);
-    ierr = VecWAXPY(z,1.0,shell->right_add_work,y);CHKERRQ(ierr);
+    ierr = VecAXPY(z,1.0,shell->right_add_work);CHKERRQ(ierr);
   } else {
     ierr = MatMult(A,x,z);CHKERRQ(ierr);
     ierr = VecAXPY(z,1.0,y);CHKERRQ(ierr);
