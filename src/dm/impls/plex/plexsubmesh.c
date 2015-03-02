@@ -1527,7 +1527,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
             const PetscInt *ccone;
             PetscInt        cconeSize, cc, side;
 
-            if (abs(val) < shift) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Face %d on cell %d has an invalid label %d", cone[c], point, val);
+            if (PetscAbs(val) < shift) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Face %d on cell %d has an invalid label %d", cone[c], point, val);
             if (val > 0) side =  1;
             else         side = -1;
             ierr = DMLabelSetValue(label, point, side*(shift+dim));CHKERRQ(ierr);
