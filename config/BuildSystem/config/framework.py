@@ -929,22 +929,147 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       sys.exit(0)
     return
 
-  def configure(self, out = None):
-    '''Configure the system
-       - Must delay database initialization until children have contributed variable types
-       - Any child with the "_configured" attribute will not be configured'''
+  def parallelQueueEvaluation(self, depGraph):
+    import graph
+    import Queue
+    from threading import Thread
+    import sys
+
+    # TODO Insert a cycle check
+    todo = Queue.Queue()
+    done = Queue.Queue()
+    numThreads  = 2
+    numChildren = len(depGraph.vertices)
+    for child in graph.DirectedGraph.getRoots(depGraph):
+      if not hasattr(child, '_configured'):
+        #self.logPrint('PUSH %s to   TODO' % child.__class__.__module__)
+        todo.put(child)
+
+    def processChildren(num, q):
+      while 1:
+        child = q.get() # Might have to indicate blocking
+        ret = 1
+        child.saveLog()
+        try:
+          if not hasattr(child, '_configured'):
+            child.configure()
+          else:
+            child.no_configure()
+          ret = 0
+        except (RuntimeError, config.base.ConfigureSetupError), e:
+          emsg = str(e)
+          if not emsg.endswith('\n'): emsg = emsg+'\n'
+          msg ='*******************************************************************************\n'\
+              +'         UNABLE to CONFIGURE with GIVEN OPTIONS    (see configure.log for details):\n' \
+              +'-------------------------------------------------------------------------------\n'  \
+              +emsg+'*******************************************************************************\n'
+          se = ''
+        except (TypeError, ValueError), e:
+          emsg = str(e)
+          if not emsg.endswith('\n'): emsg = emsg+'\n'
+          msg ='*******************************************************************************\n'\
+              +'                ERROR in COMMAND LINE ARGUMENT to ./configure \n' \
+              +'-------------------------------------------------------------------------------\n'  \
+              +emsg+'*******************************************************************************\n'
+          se = ''
+        except ImportError, e :
+          emsg = str(e)
+          if not emsg.endswith('\n'): emsg = emsg+'\n'
+          msg ='*******************************************************************************\n'\
+              +'                     UNABLE to FIND MODULE for ./configure \n' \
+              +'-------------------------------------------------------------------------------\n'  \
+              +emsg+'*******************************************************************************\n'
+          se = ''
+        except OSError, e :
+          emsg = str(e)
+          if not emsg.endswith('\n'): emsg = emsg+'\n'
+          msg ='*******************************************************************************\n'\
+              +'                    UNABLE to EXECUTE BINARIES for ./configure \n' \
+              +'-------------------------------------------------------------------------------\n'  \
+              +emsg+'*******************************************************************************\n'
+          se = ''
+        except SystemExit, e:
+          if e.code is None or e.code == 0:
+            return
+          msg ='*******************************************************************************\n'\
+              +'         CONFIGURATION FAILURE  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
+              +'*******************************************************************************\n'
+          se  = str(e)
+        except Exception, e:
+          msg ='*******************************************************************************\n'\
+              +'        CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
+              +'*******************************************************************************\n'
+          se  = str(e)
+        out = child.restoreLog()
+        if ret:
+          print 'ERROR IN THREAD',msg
+          out += msg
+        # Udpate queue
+        done.put((ret, out, child))
+        q.task_done()
+      return
+
+    # Set up some threads to fetch the enclosures
+    for i in range(numThreads):
+      worker = Thread(target = processChildren, args = (i, todo,))
+      worker.setDaemon(True)
+      worker.start()
+
+    while numChildren > 0:
+      ret, msg, vertex = done.get()
+      vertex._configured = 1
+      numChildren = numChildren - 1
+      #self.logPrint('POP  %s from DONE %d LEFT' % (vertex.__class__.__module__, numChildren))
+      self.logWrite(msg)
+      if ret:
+        raise RuntimeError('Exception in configure thread')
+      for child in depGraph.outEdges[vertex]:
+        push = True
+        for v in depGraph.inEdges[child]:
+          if not hasattr(v, '_configured'):
+            #self.logPrint('DENY %s since %s is not configured' % (child.__class__.__module__, v.__class__.__module__))
+            push = False
+            break
+        if push:
+          #self.logPrint('PUSH %s to   TODO' % child.__class__.__module__)
+          todo.put(child)
+      done.task_done()
+    todo.join()
+    done.join()
+    return
+
+  def serialEvaluation(self, depGraph):
     import graph
 
-    self.setup()
-    self.outputBanner()
-    self.updateDependencies()
-    self.executeTest(self.configureExternalPackagesDir)
-    for child in graph.DirectedGraph.topologicalSort(self.childGraph):
+    for child in graph.DirectedGraph.topologicalSort(depGraph):
       if not hasattr(child, '_configured'):
         child.configure()
       else:
         child.no_configure()
       child._configured = 1
+    return
+
+  def processChildren(self):
+    useParallel = False
+    try:
+      import Queue
+      from threading import Thread
+      useParallel = True
+    except: pass
+    if useParallel:
+      self.parallelQueueEvaluation(self.childGraph)
+    else:
+      self.serialEvaluation(self.childGraph)
+
+  def configure(self, out = None):
+    '''Configure the system
+       - Must delay database initialization until children have contributed variable types
+       - Any child with the "_configured" attribute will not be configured'''
+    self.setup()
+    self.outputBanner()
+    self.updateDependencies()
+    self.executeTest(self.configureExternalPackagesDir)
+    self.processChildren()
     if self.argDB['with-batch']:
       self.configureBatch()
     self.dumpConfFiles()
