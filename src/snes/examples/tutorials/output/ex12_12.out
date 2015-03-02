@@ -69,7 +69,7 @@ Vec Object: 1 MPI processes
 Residual:
 Vec Object: 1 MPI processes
   type: seq
-8.79016e-08
+3.61917e-08
 -0.333333
 -0.333333
 -0.333333
@@ -80,7 +80,7 @@ Vec Object: 1 MPI processes
 Residual:
 Vec Object: 1 MPI processes
   type: seq
--2.93005e-08
+-1.20639e-08
 -0.333333
 -0.333333
 -0.333333
@@ -91,29 +91,7 @@ Vec Object: 1 MPI processes
 Residual:
 Vec Object: 1 MPI processes
   type: seq
--2.93005e-08
--0.333333
--0.333333
--0.333333
--0.333333
--0.333333
--0.333333
-0
-Residual:
-Vec Object: 1 MPI processes
-  type: seq
-0
--0.333333
--0.333333
--0.333333
--0.333333
--0.333333
--0.333333
--2.93005e-08
-Residual:
-Vec Object: 1 MPI processes
-  type: seq
--2.93005e-08
+-1.20639e-08
 -0.333333
 -0.333333
 -0.333333
@@ -131,7 +109,18 @@ Vec Object: 1 MPI processes
 -0.333333
 -0.333333
 -0.333333
--2.93005e-08
+-1.20639e-08
+Residual:
+Vec Object: 1 MPI processes
+  type: seq
+-1.20639e-08
+-0.333333
+-0.333333
+-0.333333
+-0.333333
+-0.333333
+-0.333333
+0
 Residual:
 Vec Object: 1 MPI processes
   type: seq
@@ -142,7 +131,7 @@ Vec Object: 1 MPI processes
 -0.333333
 -0.333333
 -0.333333
--2.93005e-08
+-1.20639e-08
 Residual:
 Vec Object: 1 MPI processes
   type: seq
@@ -153,7 +142,18 @@ Vec Object: 1 MPI processes
 -0.333333
 -0.333333
 -0.333333
-8.79016e-08
+-1.20639e-08
+Residual:
+Vec Object: 1 MPI processes
+  type: seq
+0
+-0.333333
+-0.333333
+-0.333333
+-0.333333
+-0.333333
+-0.333333
+3.61917e-08
 Residual:
 Vec Object: 1 MPI processes
   type: seq
@@ -168,12 +168,12 @@ Vec Object: 1 MPI processes
 Au - b = Au + F(0)
 Vec Object: 1 MPI processes
   type: seq
-7.216e-10
+8.41884e-10
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
 -0.333333
--2.61614e-09
+1.75638e-08
 Linear L_2 Residual: 0.816497
