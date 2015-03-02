@@ -2541,7 +2541,7 @@ PetscErrorCode DMPlexLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const 
     for (d = 0; d < dim; ++d) out[d] = in[d];
   } else {
     for (d = 0; d < dim; ++d) {
-      if (anchor[d] - in[d] > dm->maxCell[d]) {
+      if (PetscAbsReal(anchor[d] - in[d]) > dm->maxCell[d]) {
         out[d] = anchor[d] > in[d] ? dm->L[d] + in[d] : in[d] - dm->L[d];
       } else {
         out[d] = in[d];
