@@ -107,3 +107,53 @@ cdef class DMShell(DM):
             CHKERR( DMShellSetCreateMatrix(self.dm, DMSHELL_CreateMatrix) )
         else:
             CHKERR( DMShellSetCreateMatrix(self.dm, NULL) )
+
+    def setCoarsen(self, coarsen, args=None, kargs=None):
+        if coarsen is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (coarsen, args, kargs)
+            self.set_attr('__coarsen__', context)
+            CHKERR( DMShellSetCoarsen(self.dm, DMSHELL_Coarsen) )
+        else:
+            CHKERR( DMShellSetCoarsen(self.dm, NULL) )
+
+    def setRefine(self, refine, args=None, kargs=None):
+        if refine is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (refine, args, kargs)
+            self.set_attr('__refine__', context)
+            CHKERR( DMShellSetRefine(self.dm, DMSHELL_Refine) )
+        else:
+            CHKERR( DMShellSetRefine(self.dm, NULL) )
+
+    def setCreateInterpolation(self, create_interpolation, args=None, kargs=None):
+        if create_interpolation is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (create_interpolation, args, kargs)
+            self.set_attr('__create_interpolation__', context)
+            CHKERR( DMShellSetCreateInterpolation(self.dm, DMSHELL_CreateInterpolation) )
+        else:
+            CHKERR( DMShellSetCreateInterpolation(self.dm, NULL) )
+
+    def setCreateInjection(self, create_injection, args=None, kargs=None):
+        if create_injection is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (create_injection, args, kargs)
+            self.set_attr('__create_injection__', context)
+            CHKERR( DMShellSetCreateInjection(self.dm, DMSHELL_CreateInjection) )
+        else:
+            CHKERR( DMShellSetCreateInjection(self.dm, NULL) )
+
+    def setCreateFieldDecomposition(self, decomp, args=None, kargs=None):
+        if decomp is not None:
+            if args  is None: args = ()
+            if kargs is None: kargs = {}
+            context = (decomp, args, kargs)
+            self.set_attr('__create_field_decomp__', context)
+            CHKERR( DMShellSetCreateFieldDecomposition(self.dm, DMSHELL_CreateFieldDecomposition) )
+        else:
+            CHKERR( DMShellSetCreateFieldDecomposition(self.dm, NULL) )

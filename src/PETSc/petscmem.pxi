@@ -5,4 +5,5 @@ cdef extern from * nogil:
     int PetscMemmove(void*,void*,size_t)
     int PetscMemzero(void*,size_t)
     int PetscMemcmp(void*,void*,size_t,PetscBool*)
+    int PetscStrallocpy(const_char[],char*[])
 
