@@ -867,6 +867,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords = NULL;
+  PetscScalar    tmp[2];
   PetscInt       coordSize;
   PetscErrorCode ierr;
 
@@ -875,21 +876,22 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   if (dim != 2) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support 2D edges right now");
+  ierr = DMPlexLocalizeCoordinate_Internal(dm, dim, coords, &coords[dim], tmp);CHKERRQ(ierr);
   if (centroid) {
-    centroid[0] = 0.5*PetscRealPart(coords[0] + coords[dim+0]);
-    centroid[1] = 0.5*PetscRealPart(coords[1] + coords[dim+1]);
+    centroid[0] = 0.5*PetscRealPart(coords[0] + tmp[0]);
+    centroid[1] = 0.5*PetscRealPart(coords[1] + tmp[1]);
   }
   if (normal) {
     PetscReal norm;
 
-    normal[0] = -PetscRealPart(coords[1] - coords[dim+1]);
-    normal[1] =  PetscRealPart(coords[0] - coords[dim+0]);
-    norm = PetscSqrtReal(normal[0]*normal[0] + normal[1]*normal[1]);
+    normal[0]  = -PetscRealPart(coords[1] - tmp[1]);
+    normal[1]  =  PetscRealPart(coords[0] - tmp[0]);
+    norm       = PetscSqrtReal(normal[0]*normal[0] + normal[1]*normal[1]);
     normal[0] /= norm;
     normal[1] /= norm;
   }
   if (vol) {
-    *vol = PetscSqrtReal(PetscSqr(PetscRealPart(coords[0] - coords[dim+0])) + PetscSqr(PetscRealPart(coords[1] - coords[dim+1])));
+    *vol = PetscSqrtReal(PetscSqr(PetscRealPart(coords[0] - tmp[0])) + PetscSqr(PetscRealPart(coords[1] - tmp[1])));
   }
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
