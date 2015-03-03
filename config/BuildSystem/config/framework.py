@@ -929,16 +929,16 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       sys.exit(0)
     return
 
-  def parallelQueueEvaluation(self, depGraph):
-    import graph, script
+  def parallelQueueEvaluation(self, depGraph, numThreads = 1):
+    import graph
     import Queue
     from threading import Thread
 
+    if numThreads < 1: raise RuntimeError('Parallel configure must use at least one thread')
     # TODO Insert a cycle check
     todo = Queue.Queue()
     done = Queue.Queue()
     numChildren = len(depGraph.vertices)
-    numThreads  = script.useThreads
     for child in graph.DirectedGraph.getRoots(depGraph):
       if not hasattr(child, '_configured'):
         #self.logPrint('PUSH %s to   TODO' % child.__class__.__module__)
@@ -1055,16 +1055,20 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return
 
   def processChildren(self):
+    import script
+
     useParallel = False
-    try:
-      import Queue
-      from threading import Thread
-      useParallel = True
-    except: pass
+    if script.useThreads:
+      try:
+        import Queue
+        from threading import Thread
+        useParallel = True
+      except: pass
     if useParallel:
-      self.parallelQueueEvaluation(self.childGraph)
+      self.parallelQueueEvaluation(self.childGraph, script.useThreads)
     else:
       self.serialEvaluation(self.childGraph)
+    return
 
   def configure(self, out = None):
     '''Configure the system
