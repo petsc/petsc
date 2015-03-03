@@ -33,10 +33,10 @@ struct _n_TSMonitorDrawCtx {
 
    Options Database Keys:
 +  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSGL, TSSSP
-.  -ts_checkpoint - checkpoint for adjoint sensitivity analysis
-.  -ts_max_steps maxsteps - maximum number of time-steps to take
-.  -ts_final_time time - maximum time to compute to
-.  -ts_dt dt - initial time step
+.  -ts_save_tracjectories - checkpoint the solution at each time-step
+.  -ts_max_steps <maxsteps> - maximum number of time-steps to take
+.  -ts_final_time <time> - maximum time to compute to
+.  -ts_dt <dt> - initial time step
 .  -ts_exact_final_time <stepover,interpolate,matchstep> whether to stop at the exact given final time and how to compute the solution at that ti,e
 .  -ts_max_snes_failures <maxfailures> - Maximum number of nonlinear solve failures allowed
 .  -ts_max_reject <maxrejects> - Maximum number of step rejections before step fails
@@ -51,8 +51,8 @@ struct _n_TSMonitorDrawCtx {
 .  -ts_monitor_lg_ksp_iterations - Monitor number nonlinear iterations for each timestep graphically
 .  -ts_monitor_sp_eig - Monitor eigenvalues of linearized operator graphically
 .  -ts_monitor_draw_solution - Monitor solution graphically
-.  -ts_monitor_draw_solution_phase - Monitor solution graphically with phase diagram
-.  -ts_monitor_draw_error - Monitor error graphically
+.  -ts_monitor_draw_solution_phase  <xleft,yleft,xright,yright> - Monitor solution graphically with phase diagram, requires problem with exactly 2 degrees of freedom
+.  -ts_monitor_draw_error - Monitor error graphically, requires use to have provided TSSetSolutionFunction()
 .  -ts_monitor_solution_binary <filename> - Save each solution to a binary file
 -  -ts_monitor_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%%03D.vts
 
