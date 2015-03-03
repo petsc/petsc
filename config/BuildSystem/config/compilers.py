@@ -640,7 +640,7 @@ class Configure(config.base.Configure):
     for mangler in key_list:
       cfunc = self.manglerFuncs[mangler][1]
       ffunc = self.manglerFuncs[mangler][2]
-      self.log.write('Testing Fortran mangling type '+mangler+' with code '+cfunc)
+      self.logWrite('Testing Fortran mangling type '+mangler+' with code '+cfunc)
       if self.testMangling(cfunc, ffunc):
         self.fortranMangling = mangler
         break
@@ -936,7 +936,7 @@ class Configure(config.base.Configure):
             self.logPrint('Already in rpathflags so skipping: '+arg, 4, 'compilers')
           continue
         if arg.startswith('-zallextract') or arg.startswith('-zdefaultextract') or arg.startswith('-zweakextract'):
-          self.log.write( 'Found Solaris -z option: '+arg+'\n')
+          self.logWrite( 'Found Solaris -z option: '+arg+'\n')
           flibs.append(arg)
           continue
         # Check for ???
@@ -998,11 +998,11 @@ class Configure(config.base.Configure):
     # on OS X, mixing g77 3.4 with gcc-3.3 requires using -lcc_dynamic
     for l in self.flibs:
       if l.find('-L/sw/lib/gcc/powerpc-apple-darwin') >= 0:
-        self.log.write('Detected Apple Mac Fink libraries')
+        self.logWrite('Detected Apple Mac Fink libraries')
         appleLib = 'libcc_dynamic.so'
         if self.libraries.check(appleLib, 'foo'):
           self.flibs.append(self.libraries.getLibArgument(appleLib))
-          self.log.write('Adding '+self.libraries.getLibArgument(appleLib)+' so that Fortran can work with C++')
+          self.logWrite('Adding '+self.libraries.getLibArgument(appleLib)+' so that Fortran can work with C++')
         break
 
     self.logPrint('Libraries needed to link Fortran code with the C linker: '+str(self.flibs), 3, 'compilers')

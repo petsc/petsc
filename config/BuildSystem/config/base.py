@@ -108,11 +108,11 @@ class Configure(script.Script):
       exitstr = ' exit code ' + str(status)
     else:
       exitstr = ''
-    self.log.write('Possible ERROR while running %s:%s\n' % (component, exitstr))
+    self.logWrite('Possible ERROR while running %s:%s\n' % (component, exitstr))
     if output:
-      self.log.write('stdout:\n' + output)
+      self.logWrite('stdout:\n' + output)
     if error:
-      self.log.write('stderr:\n' + error)
+      self.logWrite('stderr:\n' + error)
 
   def executeTest(self, test, args = [], kargs = {}):
     import time
@@ -199,12 +199,12 @@ class Configure(script.Script):
     # also strip any \ before spaces, braces, so that we can specify paths the way we want them in makefiles.
     prog  = prog.replace('\ ',' ').replace('\(','(').replace('\)',')')
     found = 0
-    self.log.write('Checking for program '+prog+'...')
+    self.logWrite('Checking for program '+prog+'...')
     if os.path.isfile(prog) and os.access(prog, os.X_OK):
       found = 1
-      self.log.write('found\n')
+      self.logWrite('found\n')
     else:
-      self.log.write('not found\n')
+      self.logWrite('not found\n')
     return found
 
   def getExecutable(self, names, path = [], getFullPath = 0, useDefaultPath = 0, resultName = '', setMakeMacro = 1):
@@ -424,7 +424,7 @@ class Configure(script.Script):
     def report(command, status, output, error):
       if error or status:
         self.logError('preprocessor', status, output, error)
-        self.log.write('Source:\n'+self.getCode(codeStr))
+        self.logWrite('Source:\n'+self.getCode(codeStr))
 
     command = self.getPreprocessorCmd()
     if self.compilerDefines: self.framework.outputHeader(self.compilerDefines)
@@ -440,7 +440,7 @@ class Configure(script.Script):
 
   def outputPreprocess(self, codeStr):
     '''Return the contents of stdout when preprocessing "codeStr"'''
-    self.log.write('Source:\n'+self.getCode(codeStr))
+    self.logWrite('Source:\n'+self.getCode(codeStr))
     return self.preprocess(codeStr)[0]
 
   def checkPreprocess(self, codeStr, timeout = 600.0):
@@ -475,8 +475,8 @@ class Configure(script.Script):
       if error or status:
         self.logError('compiler', status, output, error)
       else:
-        self.log.write('Successful compile:\n')
-      self.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
+        self.logWrite('Successful compile:\n')
+      self.logWrite('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
 
     cleanup = cleanup and self.framework.doCleanup
     command = self.getCompilerCmd()
@@ -581,12 +581,12 @@ class Configure(script.Script):
 
   def outputRun(self, includes, body, cleanup = 1, defaultOutputArg = '', executor = None):
     if not self.checkLink(includes, body, cleanup = 0): return ('', 1)
-    self.log.write('Testing executable '+self.linkerObj+' to see if it can be run\n')
+    self.logWrite('Testing executable '+self.linkerObj+' to see if it can be run\n')
     if not os.path.isfile(self.linkerObj):
-      self.log.write('ERROR executable '+self.linkerObj+' does not exist\n')
+      self.logWrite('ERROR executable '+self.linkerObj+' does not exist\n')
       return ('', 1)
     if not os.access(self.linkerObj, os.X_OK):
-      self.log.write('ERROR while running executable: '+self.linkerObj+' is not executable\n')
+      self.logWrite('ERROR while running executable: '+self.linkerObj+' is not executable\n')
       return ('', 1)
     if self.argDB['with-batch']:
       if defaultOutputArg:
@@ -604,22 +604,22 @@ class Configure(script.Script):
     output  = ''
     error   = ''
     status  = 1
-    self.log.write('Executing: '+command+'\n')
+    self.logWrite('Executing: '+command+'\n')
     try:
       (output, error, status) = Configure.executeShellCommand(command, log = self.log)
     except RuntimeError, e:
-      self.log.write('ERROR while running executable: '+str(e)+'\n')
+      self.logWrite('ERROR while running executable: '+str(e)+'\n')
     if os.path.isfile(self.compilerObj):
       try:
         os.remove(self.compilerObj)
       except RuntimeError, e:
-        self.log.write('ERROR while removing object file: '+str(e)+'\n')
+        self.logWrite('ERROR while removing object file: '+str(e)+'\n')
     if cleanup and os.path.isfile(self.linkerObj):
       try:
         if os.path.exists('/usr/bin/cygcheck.exe'): time.sleep(1)
         os.remove(self.linkerObj)
       except RuntimeError, e:
-        self.log.write('ERROR while removing executable file: '+str(e)+'\n')
+        self.logWrite('ERROR while removing executable file: '+str(e)+'\n')
     return (output+error, status)
 
   def checkRun(self, includes = '', body = '', cleanup = 1, defaultArg = '', executor = None):
