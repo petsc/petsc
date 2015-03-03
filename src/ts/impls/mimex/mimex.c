@@ -6,8 +6,9 @@
 #include <petscdmplex.h>
 
 typedef struct {
-  Vec       Xdot, update;
+  Vec       Xdot, update, Xstar, G;
   PetscReal stage_time;
+  PetscInt  version;
 } TS_Mimex;
 
 #undef __FUNCT__
@@ -29,7 +30,6 @@ static PetscErrorCode TSMimexGetX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "TSMimexRestoreX0AndXdot"
 static PetscErrorCode TSMimexRestoreX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
@@ -39,6 +39,29 @@ static PetscErrorCode TSMimexRestoreX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
   PetscFunctionBegin;
   if (X0)   if (dm && dm != ts->dm) {ierr = DMRestoreNamedGlobalVector(dm, "TSMimex_X0", X0);CHKERRQ(ierr);}
   if (Xdot) if (dm && dm != ts->dm) {ierr = DMRestoreNamedGlobalVector(dm, "TSMimex_Xdot", Xdot);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMimexGetXstarAndG"
+static PetscErrorCode TSMimexGetXstarAndG(TS ts, DM dm, Vec *Xstar, Vec *G)
+{
+  TS_Mimex      *mimex = (TS_Mimex *) ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!mimex->Xstar) {ierr = VecDuplicate(ts->vec_sol, &mimex->Xstar);CHKERRQ(ierr);}
+  if (!mimex->G)     {ierr = VecDuplicate(ts->vec_sol, &mimex->G);CHKERRQ(ierr);}
+  *Xstar = mimex->Xstar;
+  *G     = mimex->G;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMimexRestoreXstarAndG"
+static PetscErrorCode TSMimexRestoreXstarAndG(TS ts, DM dm, Vec *Xstar, Vec *G)
+{
+  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
@@ -65,6 +88,46 @@ static PetscErrorCode SNESTSFormFunction_Mimex(SNES snes, Vec x, Vec y, TS ts)
   dmsave = ts->dm;
   ts->dm = dm;
   ierr   = TSComputeIFunction(ts, mimex->stage_time, x, Xdot, y, PETSC_TRUE);CHKERRQ(ierr);
+  if (mimex->version == 1) {
+    DM                 dm;
+    PetscDS            prob;
+    PetscSection       s;
+    Vec                Xstar, G;
+    const PetscScalar *ax;
+    PetscScalar       *axstar;
+    PetscInt           Nf, f, pStart, pEnd, p;
+
+    ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+    ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+    ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+    ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = TSMimexGetXstarAndG(ts, dm, &Xstar, &G);CHKERRQ(ierr);
+    ierr = VecCopy(X0, Xstar);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(x, &ax);CHKERRQ(ierr);
+    ierr = VecGetArray(Xstar, &axstar);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      PetscBool implicit;
+
+      ierr = PetscDSGetImplicit(prob, f, &implicit);CHKERRQ(ierr);
+      if (!implicit) continue;
+      for (p = pStart; p < pEnd; ++p) {
+        PetscScalar *a, *axs;
+        PetscInt     fdof, fcdof, d;
+
+        ierr = PetscSectionGetFieldDof(s, p, f, &fdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetFieldConstraintDof(s, p, f, &fcdof);CHKERRQ(ierr);
+        ierr = DMPlexPointGlobalFieldRead(dm, p, f, ax, &a);CHKERRQ(ierr);
+        ierr = DMPlexPointGlobalFieldRef(dm, p, f, axstar, &axs);CHKERRQ(ierr);
+        for (d = 0; d < fdof-fcdof; ++d) axs[d] = a[d];
+      }
+    }
+    ierr = VecRestoreArrayRead(x, &ax);CHKERRQ(ierr);
+    ierr = VecRestoreArray(Xstar, &axstar);CHKERRQ(ierr);
+    ierr = TSComputeRHSFunction(ts, ts->ptime, Xstar, G);CHKERRQ(ierr);
+    ierr = VecAXPY(y, -1.0, G);CHKERRQ(ierr);
+    ierr = TSMimexRestoreXstarAndG(ts, dm, &Xstar, &G);CHKERRQ(ierr);
+  }
   ts->dm = dmsave;
   ierr   = TSMimexRestoreX0AndXdot(ts, dm, &X0, &Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -95,8 +158,8 @@ static PetscErrorCode SNESTSFormJacobian_Mimex(SNES snes, Vec x, Mat A, Mat B, T
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSStep_Mimex"
-static PetscErrorCode TSStep_Mimex(TS ts)
+#define __FUNCT__ "TSStep_Mimex_Split"
+static PetscErrorCode TSStep_Mimex_Split(TS ts)
 {
   TS_Mimex          *mimex = (TS_Mimex *) ts->data;
   DM                 dm;
@@ -123,12 +186,10 @@ static PetscErrorCode TSStep_Mimex(TS ts)
   ierr = VecGetArrayRead(update, &aupdate);CHKERRQ(ierr);
   ierr = VecGetArray(sol, &asol);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    PetscObject  obj;
-    PetscClassId id;
+    PetscBool implicit;
 
-    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
-    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-    if (id == PETSCFV_CLASSID) continue;
+    ierr = PetscDSGetImplicit(prob, f, &implicit);CHKERRQ(ierr);
+    if (!implicit) continue;
     for (p = pStart; p < pEnd; ++p) {
       PetscScalar *au, *as;
       PetscInt     fdof, fcdof, d;
@@ -147,12 +208,10 @@ static PetscErrorCode TSStep_Mimex(TS ts)
   ierr = VecGetArrayRead(update, &aupdate);CHKERRQ(ierr);
   ierr = VecGetArray(sol, &asol);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
-    PetscObject  obj;
-    PetscClassId id;
+    PetscBool implicit;
 
-    ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
-    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
-    if (id != PETSCFV_CLASSID) continue;
+    ierr = PetscDSGetImplicit(prob, f, &implicit);CHKERRQ(ierr);
+    if (implicit) continue;
     for (p = pStart; p < pEnd; ++p) {
       PetscScalar *au, *as;
       PetscInt     fdof, fcdof, d;
@@ -169,6 +228,50 @@ static PetscErrorCode TSStep_Mimex(TS ts)
   ierr = TSPostStage(ts, ts->ptime, 0, &sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
   ts->steps++;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TSStep_Mimex_Implicit"
+/* Evalute F at U and G at U0 for explicit fields and U for implicit fields */
+static PetscErrorCode TSStep_Mimex_Implicit(TS ts)
+{
+  TS_Mimex      *mimex  = (TS_Mimex *) ts->data;
+  Vec            sol    = ts->vec_sol;
+  Vec            update = mimex->update;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSPreStep(ts);CHKERRQ(ierr);
+  ierr = TSPreStage(ts, ts->ptime);CHKERRQ(ierr);
+  /* Compute implicit update */
+  mimex->stage_time = ts->ptime + ts->time_step;
+  ts->ptime += ts->time_step;
+  ierr = VecCopy(sol, update);CHKERRQ(ierr);
+  ierr = SNESSolve(ts->snes, NULL, update);CHKERRQ(ierr);
+  ierr = VecCopy(update, sol);CHKERRQ(ierr);
+  ierr = TSPostStage(ts, ts->ptime, 0, &sol);CHKERRQ(ierr);
+  ts->steps++;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSStep_Mimex"
+static PetscErrorCode TSStep_Mimex(TS ts)
+{
+  TS_Mimex       *mimex = (TS_Mimex*)ts->data;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  switch(mimex->version) {
+  case 0:
+    ierr = TSStep_Mimex_Split(ts);CHKERRQ(ierr); break;
+  case 1:
+    ierr = TSStep_Mimex_Implicit(ts);CHKERRQ(ierr); break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_ARG_OUTOFRANGE, "Unknown MIMEX version %d", mimex->version);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -195,6 +298,8 @@ static PetscErrorCode TSReset_Mimex(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecDestroy(&mimex->Xstar);CHKERRQ(ierr);
+  ierr = VecDestroy(&mimex->G);CHKERRQ(ierr);
   ierr = VecDestroy(&mimex->update);CHKERRQ(ierr);
   ierr = VecDestroy(&mimex->Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -215,9 +320,17 @@ static PetscErrorCode TSDestroy_Mimex(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Mimex"
-static PetscErrorCode TSSetFromOptions_Mimex(PetscOptions *PetscOptionsObject,TS ts)
+static PetscErrorCode TSSetFromOptions_Mimex(PetscOptions *PetscOptionsObject, TS ts)
 {
+  TS_Mimex      *mimex = (TS_Mimex *) ts->data;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject, "MIMEX ODE solver options");CHKERRQ(ierr);
+  {
+    ierr = PetscOptionsInt("-ts_mimex_version", "Algorithm version", "TSMimexSetVersion", mimex->version, &mimex->version, NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
