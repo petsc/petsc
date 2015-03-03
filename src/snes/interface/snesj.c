@@ -92,7 +92,7 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
     ierr = VecCopy(x1,x2);CHKERRQ(ierr);
     if (i>= start && i<end) {
       ierr = VecGetArrayRead(x1,&xx);CHKERRQ(ierr);
-      if (use_wp) dx = 1.0 + unorm;
+      if (use_wp) dx = PetscSqrtReal(1.0 + unorm);
       else        dx = xx[i-start];
       ierr = VecRestoreArrayRead(x1,&xx);CHKERRQ(ierr);
       if (PetscAbsScalar(dx) < dx_min) dx = (PetscRealPart(dx) < 0. ? -1. : 1.) * dx_par;

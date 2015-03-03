@@ -48,7 +48,7 @@ class Configure(config.package.GNUPackage):
     return args
 
   def alternateConfigureLibrary(self):
-    self.checkDownload(1)
+    self.checkDownload()
 
   def configure(self):
     if (self.framework.clArgDB.has_key('with-sowing') and not self.framework.argDB['with-sowing']) or \

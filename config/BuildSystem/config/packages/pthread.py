@@ -16,11 +16,6 @@ class Configure(config.package.Package):
     self.deps = []
     return
 
-  def getSearchDirectories(self):
-    ''' libpthread.a is in the usual place'''
-    yield ''
-    return
-
   def configureLibrary(self):
     ''' Checks for pthread_barrier_t, cpu_set_t, and sys/sysctl.h '''
     config.package.Package.configureLibrary(self)

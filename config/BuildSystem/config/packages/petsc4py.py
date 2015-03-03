@@ -8,7 +8,6 @@ class Configure(config.package.Package):
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-418f86b7e1b8.tar.gz']
     self.functions         = []
     self.includes          = []
-    self.liblist           = []
     self.skippackagewithoptions = 1
     return
 
@@ -81,7 +80,7 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     if not self.sharedLibraries.useShared:
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
-    self.checkDownload(1)
+    self.checkDownload()
     if self.setCompilers.isDarwin():
       # The name of the Python library on Apple is Python which does not end in the expected .dylib
       # Thus see if the python library in the standard locations points to the Python version

@@ -14,7 +14,6 @@ class Configure(config.package.GNUPackage):
 
   def getSearchDirectories(self):
     yield ''
-    yield '/usr'
     yield os.path.join('/usr','local')
     yield os.path.join('/opt','local')
     return

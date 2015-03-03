@@ -6,7 +6,6 @@ class Configure(config.package.Package):
     self.download          = ['https://mpi4py.googlecode.com/files/mpi4py-1.3.1.tar.gz']
     self.functions         = []
     self.includes          = []
-    self.liblist           = []
     return
 
   def setupDependencies(self, framework):
@@ -63,7 +62,7 @@ class Configure(config.package.Package):
     return self.installDir
 
   def configureLibrary(self):
-    self.checkDownload(1)
+    self.checkDownload()
     if not self.sharedLibraries.useShared:
         raise RuntimeError('mpi4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
 
