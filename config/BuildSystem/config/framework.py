@@ -1062,7 +1062,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       try:
         import Queue
         from threading import Thread
-        useParallel = True
+        if hasattr(Queue.Queue(), 'join'): useParallel = True
       except: pass
     if useParallel:
       self.parallelQueueEvaluation(self.childGraph, script.useThreads)
