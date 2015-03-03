@@ -53,7 +53,13 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees
   /* generate the mesh hierarchy */
   merr = dmmoab->hierarchy->generate_mesh_hierarchy(pdegrees, nlevels, hsets);MBERRNM(merr);
 
-  for (i=0; i<=nlevels; i++) dmmoab->hsets[i]=hsets[i];
+  PetscInfo2(NULL, "Exchanging ghost cells (dim %d) with %d rings\n",dmmoab->dim,dmmoab->nghostrings);
+  for (i=0; i<=nlevels; i++) {
+    /* resolve the shared entities by exchanging information to adjacent processors */
+    merr = dmmoab->pcomm->exchange_ghost_cells(dmmoab->dim,0,dmmoab->nghostrings,dmmoab->dim,true,false,&hsets[i]);MBERRV(dmmoab->mbiface,merr);
+
+    dmmoab->hsets[i]=hsets[i];
+  }
 
   if (!ldegrees) {
     ierr = PetscFree(pdegrees);CHKERRQ(ierr);
@@ -158,7 +164,7 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
   PetscReal        factor;
   PetscBool        eonbnd;
   PetscInt         innz, *nnz, ionz, *onz;
-  PetscInt         nlsiz1, nlsiz2, ngsiz1, ngsiz2;
+  PetscInt         nlsiz1, nlsiz2, nlghsiz1, nlghsiz2, ngsiz1, ngsiz2;
   std::vector<int> bndrows;
   std::vector<PetscBool> dbdry;
 
@@ -167,10 +173,12 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
   PetscValidHeaderSpecific(dm2,DM_CLASSID,2);
   dmb1 = (DM_Moab*)(dm1)->data;
   dmb2 = (DM_Moab*)(dm2)->data;
-  nlsiz1 = dmb1->nloc*dmb2->numFields;
+  nlsiz1 = dmb1->nloc*dmb1->numFields;
   nlsiz2 = dmb2->nloc*dmb2->numFields;
-  ngsiz1 = dmb1->n*dmb2->numFields;
+  ngsiz1 = dmb1->n*dmb1->numFields;
   ngsiz2 = dmb2->n*dmb2->numFields;
+  nlghsiz1 = (dmb1->nloc+dmb1->nghost)*dmb1->numFields;
+  nlghsiz2 = (dmb2->nloc+dmb2->nghost)*dmb2->numFields;
 
   PetscInfo4(dm1,"Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n",dmb1->nloc,dmb2->nloc,dmb1->hlevel,dmb2->hlevel);
 
@@ -182,7 +190,7 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
   ierr = MatSetFromOptions(*interpl);CHKERRQ(ierr);
 
   /* allocate the nnz, onz arrays based on block size and local nodes */
-  ierr = PetscCalloc2(nlsiz2,&nnz,nlsiz2,&onz);CHKERRQ(ierr);
+  ierr = PetscCalloc2(nlghsiz2,&nnz,nlghsiz2,&onz);CHKERRQ(ierr);
 
   /* Loop through the local elements and compute the relation between the current parent and the refined_level. */
   for(moab::Range::iterator iter = dmb1->elocal->begin(); iter!= dmb1->elocal->end(); iter++) {
@@ -209,7 +217,7 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
     std::vector<int> dofsp(connp.size()), dofsc(connc.size());
     /* TODO: specific to scalar system - use GetDofs */
     //ierr = DMMoabGetFieldDofs(dm1, connp.size(), &connp[0], 0, &dofsp[0]);CHKERRQ(ierr);
-    ierr = DMMoabGetFieldDofs(dm2, connc.size(), &connc[0], 0, &dofsc[0]);CHKERRQ(ierr);
+    ierr = DMMoabGetFieldDofsLocal(dm2, connc.size(), &connc[0], 0, &dofsc[0]);CHKERRQ(ierr);
 
     for (unsigned tp=0;tp<connp.size(); tp++) {
       // ierr = MatSetValues(*interpl, connc.size(), &dofsc[0], 1, &dofsp[i], &values_phi[0], ADD_VALUES);CHKERRQ(ierr);
@@ -221,14 +229,14 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
       }
       else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid entity in parent level %D\n", connc[tp]);
     }
-    /*
     for(int tc = 0; tc < connc.size(); tc++) {
       if (dmb2->vowned->find(connc[tc]) != dmb2->vowned->end()) nnz[dofsc[tc]]++;
       else if (dmb2->vghost->find(connc[tc]) != dmb2->vghost->end()) onz[dofsc[tc]]++;
       else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Invalid entity in child level %D\n", connc[tc]);
-    }*/
+    }
   }
 
+  /*
   int i=0;
   std::vector<moab::EntityHandle> adjs;
   for(moab::Range::iterator iter = dmb1->vowned->begin(); iter!= dmb1->vowned->end(); iter++, i++) {
@@ -236,12 +244,13 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
     nnz[i] -= adjs.size();
     adjs.clear();
   }
-  for(moab::Range::iterator iter = dmb1->vowned->begin(); iter!= dmb1->vowned->end(); iter++, i++) {
+  for(moab::Range::iterator iter = dmb1->vghost->begin(); iter!= dmb1->vghost->end(); iter++, i++) {
     //merr = dmb1->hierarchy->get_adjacencies(&(*iter), 1, 0, false, adjs, moab::Interface::UNION);MBERRNM(merr);
     merr = dmb1->hierarchy->get_adjacencies(*iter, 0, adjs);MBERRNM(merr);
     onz[i] -= adjs.size();
     adjs.clear();
   }
+  */
 
   ionz=onz[0];
   innz=nnz[0];
@@ -269,6 +278,8 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
   ierr = DMGetDimension(dm1, &dim);CHKERRQ(ierr);
 
   factor = std::pow(2.0 /*degree_P_for_refinement*/,(dmb2->hlevel-dmb1->hlevel)*dmb1->dim*1.0);
+
+  ierr = MatSetOption(*interpl, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
 
   /* Loop through the remaining vertices. These vertices appear only on the current refined_level. */
   for(moab::Range::iterator iter = dmb1->elocal->begin(); iter!= dmb1->elocal->end(); iter++) {
@@ -298,8 +309,8 @@ PetscErrorCode DMCreateInterpolation_Moab(DM dm1,DM dm2,Mat* interpl,Vec* vec)
 
     std::vector<int> dofsp(connp.size()), dofsc(connc.size());
     /* TODO: specific to scalar system - use GetDofs */
-    ierr = DMMoabGetFieldDofs(dm1, connp.size(), &connp[0], 0, &dofsp[0]);CHKERRQ(ierr);
-    ierr = DMMoabGetFieldDofs(dm2, connc.size(), &connc[0], 0, &dofsc[0]);CHKERRQ(ierr);
+    ierr = DMMoabGetFieldDofsLocal(dm1, connp.size(), &connp[0], 0, &dofsp[0]);CHKERRQ(ierr);
+    ierr = DMMoabGetFieldDofsLocal(dm2, connc.size(), &connc[0], 0, &dofsc[0]);CHKERRQ(ierr);
 
     /* Compute the interpolation weights by determining distance of 1-ring 
        neighbor vertices from current vertex */

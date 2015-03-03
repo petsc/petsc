@@ -45,6 +45,7 @@ typedef struct {
   PetscInt                *gidmap,*lidmap;                /* Global ID indices, Local ID indices, field-based local map, field-based global map */
   PetscInt                seqstart,seqend;                /* Local start and end entity IDs for vertices */
   PetscInt                vstart,vend;                    /* Global start and end index for distributed Vec */
+  PetscInt                nghostrings;                    /* Number of ghost ring layers */
 
   /* store the mapping information */
   ISLocalToGlobalMapping  ltog_map;

@@ -48,31 +48,31 @@ typedef struct {
   PetscReal xyzref[3];
   PetscReal nu;
   BCType    bcType;
-  char filename[PETSC_MAX_PATH_LEN];
+  char      filename[PETSC_MAX_PATH_LEN];
 
   /* Discretization parameters */
   int NQPTS,VPERE;
 } UserContext;
 
+static PetscErrorCode ComputeDiscreteL2Error(KSP ksp,Vec err,UserContext *user);
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  KSP            ksp;
-  DM             dm,dmref;
-  DM            *dmhierarchy;
-
-  PC        pc;
-  PetscInt  k;
-  Mat       R;
-
+  const char    *bcTypes[2] = {"dirichlet","neumann"};
+  const char    *fields[1] = {"T-Variable"};
+  DM             dm,dmref,*dmhierarchy;
   UserContext    user;
-  const char     *bcTypes[2] = {"dirichlet","neumann"};
-  const char     *fields[1] = {"T-Variable"};
-  PetscErrorCode ierr;
-  PetscInt       bc,np;
+  PetscInt       k,bc,np;
+  KSP            ksp;
+  PC             pc;
+  Vec            errv;
+  Mat            R;
   Vec            b,x;
-  PetscBool      use_extfile,io,usesimplex,usemg;
+  PetscBool      use_extfile,io,error,usesimplex,usemg;
+  PetscErrorCode ierr;
+  moab::ErrorCode mberr;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
@@ -96,6 +96,8 @@ int main(int argc,char **argv)
   usemg       = PETSC_FALSE;
   ierr        = PetscOptionsBool("-mg", "Use multigrid preconditioner", "ex36.cxx", usemg, &usemg, NULL);CHKERRQ(ierr);
   ierr        = PetscOptionsBool("-io", "Write out the solution and mesh data", "ex36.cxx", io, &io, NULL);CHKERRQ(ierr);
+  error       = PETSC_FALSE;
+  ierr        = PetscOptionsBool("-error", "Compute the discrete L_2 and L_inf errors of the solution", "ex35.cxx", error, &error, NULL);CHKERRQ(ierr);
   bc          = (PetscInt)DIRICHLET;
   ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex36.cxx",bcTypes,2,bcTypes[0],&bc,NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
@@ -103,15 +105,14 @@ int main(int argc,char **argv)
 
   usesimplex=PETSC_FALSE;
   ierr        = PetscOptionsBool("-tet", "Use tetrahedra to discretize the unit cube domain", "ex36.cxx", usesimplex, &usesimplex, NULL);CHKERRQ(ierr);
-  user.NQPTS  = (usesimplex ? 4:8);
-  ierr        = PetscOptionsInt("-nq", "Number of quadrature points to be used in the FEM discretization", "ex36.cxx", user.NQPTS, &user.NQPTS, NULL);CHKERRQ(ierr);
   ierr        = PetscOptionsEnd();
 
-  user.VPERE=(usesimplex ? 4:8);
+  user.NQPTS  = (usesimplex ? 4:8);
+  user.VPERE  = (usesimplex ? 4:8);
 
   /* Create the DM object from either a mesh file or from in-memory structured grid */
   if (use_extfile) {
-    ierr = DMMoabLoadFromFile(PETSC_COMM_WORLD, user.dim, user.filename, (np==1 ? "" : ""), &dm);CHKERRQ(ierr);
+    ierr = DMMoabLoadFromFile(PETSC_COMM_WORLD, user.dim, 1, user.filename, (np==1 ? "" : ""), &dm);CHKERRQ(ierr);
   }
   else {
     ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, user.dim, usesimplex, NULL, user.n, 1, &dm);CHKERRQ(ierr);
@@ -119,18 +120,17 @@ int main(int argc,char **argv)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   ierr = DMMoabSetFieldNames(dm, 1, fields);CHKERRQ(ierr);
 
-  using namespace moab;
-  moab::ErrorCode error;
-  moab::Range _verts, _edges, _faces, _cells;
-
-  moab::Interface*  mb;
-  ierr = DMMoabGetInterface(dm, &mb);CHKERRQ(ierr);
-  /* Get all entities by dimension on the rootset with recursion turned on */
-  error = mb->get_entities_by_dimension( 0, 0, _verts, true);MB_CHK_ERR(error);
-  error = mb->get_entities_by_dimension( 0, 1, _edges, true);MB_CHK_ERR(error);
-  error = mb->get_entities_by_dimension( 0, 2, _faces, true);MB_CHK_ERR(error);
-  error = mb->get_entities_by_dimension( 0, 3, _cells, true);MB_CHK_ERR(error);
-  PetscPrintf(PETSC_COMM_WORLD, "%d %d %d %d\n", _verts.size(), _edges.size(), _faces.size(), _cells.size());
+  {
+    moab::Range _verts, _edges, _faces, _cells;
+    moab::Interface*  mb;
+    ierr = DMMoabGetInterface(dm, &mb);CHKERRQ(ierr);
+    /* Get all entities by dimension on the rootset with recursion turned on */
+    mberr = mb->get_entities_by_dimension( 0, 0, _verts, true);MB_CHK_ERR(mberr);
+    mberr = mb->get_entities_by_dimension( 0, 1, _edges, true);MB_CHK_ERR(mberr);
+    mberr = mb->get_entities_by_dimension( 0, 2, _faces, true);MB_CHK_ERR(mberr);
+    mberr = mb->get_entities_by_dimension( 0, 3, _cells, true);MB_CHK_ERR(mberr);
+    PetscPrintf(PETSC_COMM_WORLD, "%d %d %d %d\n", _verts.size(), _edges.size(), _faces.size(), _cells.size());
+  }
 
   /* SetUp the data structures for DMMOAB */
   ierr = DMSetUp(dm);CHKERRQ(ierr);
@@ -206,6 +206,15 @@ int main(int argc,char **argv)
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
 
+  //VecView(b,0);
+  //VecView(x,0);
+
+  if (error) {
+    ierr = DMGetGlobalVector(dmref, &errv);CHKERRQ(ierr);
+    ierr = ComputeDiscreteL2Error(ksp, errv, &user);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dmref, &errv);CHKERRQ(ierr);
+  }
+
   if (io) {
     /* Write out the solution along with the mesh */
     ierr = DMMoabSetGlobalFieldVector(dmref, x);CHKERRQ(ierr);
@@ -231,30 +240,46 @@ int main(int argc,char **argv)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "ComputeRho_MOAB"
-PetscReal ComputeRho_MOAB(PetscReal coords[3], PetscReal centerRho)
+#define __FUNCT__ "ComputeDiffusionCoefficient"
+PetscReal ComputeDiffusionCoefficient(PetscReal coords[3], UserContext* user)
 {
 #if (PROBLEM == 1)
   if ((coords[0] > 1.0/3.0) && (coords[0] < 2.0/3.0) && 
       (coords[1] > 1.0/3.0) && (coords[1] < 2.0/3.0) && 
       (coords[2] > 1.0/3.0) && (coords[2] < 2.0/3.0))
   {
-    return centerRho;
+    return user->rho;
   }
   else
-#endif
     return 1.0;
+#else
+    return 1.0;
+#endif
 }
 
-double forcing_function(PetscReal coords[3], PetscReal nu, PetscReal cdref[3])
+#undef __FUNCT__
+#define __FUNCT__ "ComputeRho_MOAB"
+double ExactSolution(PetscReal coords[3], UserContext* user)
 {
 #if (PROBLEM == 1)
-  const PetscScalar xx=(coords[0]-cdref[0])*(coords[0]-cdref[0]);
-  const PetscScalar yy=(coords[1]-cdref[1])*(coords[1]-cdref[1]);
-  const PetscScalar zz=(coords[2]-cdref[2])*(coords[2]-cdref[2]);
-  return PetscExpScalar(-(xx+yy+zz)/nu);
+  const PetscScalar xx=(coords[0]-user->xyzref[0])*(coords[0]-user->xyzref[0]);
+  const PetscScalar yy=(coords[1]-user->xyzref[1])*(coords[1]-user->xyzref[1]);
+  const PetscScalar zz=(coords[2]-user->xyzref[2])*(coords[2]-user->xyzref[2]);
+  return PetscExpScalar(-(xx+yy+zz)/user->nu);
 #else
-  return PI*PI*(sin(PI*coords[0])+sin(PI*coords[1])+sin(PI*coords[2]));
+  return sin(PI*coords[0])*sin(PI*coords[1])*sin(PI*coords[2]);
+#endif
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ComputeRho_MOAB"
+double ForcingFunction(PetscReal coords[3], UserContext* user)
+{
+  const PetscReal exact = ExactSolution(coords, user);
+#if (PROBLEM == 1)
+  return exact;
+#else
+  return 3.0*PI*PI*exact;
 #endif
 }
 
@@ -308,29 +333,29 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 
     /* Compute function over the locally owned part of the grid */
     for (q=0; q<user->NQPTS; ++q) {
-      const double ff = forcing_function(&quadrature[3*q], user->nu, user->xyzref);
+      const double ff = ForcingFunction(&quadrature[3*q], user);
       for (i=0; i < user->VPERE; ++i) {
         localv[i] += jxw[q] * phi[q*user->VPERE+i] * ff;
       }
     }
 
     /* check if element is on the boundary */
-    //ierr = DMMoabIsEntityOnBoundary(dm,ehandle,&elem_on_boundary);CHKERRQ(ierr);
-    ierr = DMMoabCheckBoundaryVertices(dm,num_conn,connect,dbdry);CHKERRQ(ierr);
-    elem_on_boundary=PETSC_FALSE;
-    for (i=0; i< user->VPERE; ++i)
-      if (dbdry[i]) elem_on_boundary=PETSC_TRUE;
+    ierr = DMMoabIsEntityOnBoundary(dm,ehandle,&elem_on_boundary);CHKERRQ(ierr);
+    //ierr = DMMoabCheckBoundaryVertices(dm,num_conn,connect,dbdry);CHKERRQ(ierr);
+    //elem_on_boundary=PETSC_FALSE;
+    //for (i=0; i< user->VPERE; ++i)
+    //  if (dbdry[i]) elem_on_boundary=PETSC_TRUE;
 
     /* apply dirichlet boundary conditions */
     if (elem_on_boundary && user->bcType == DIRICHLET) {
 
       /* get the list of nodes on boundary so that we can enforce dirichlet conditions strongly */
-      //ierr = DMMoabCheckBoundaryVertices(dm,num_conn,connect,dbdry);CHKERRQ(ierr);
+      ierr = DMMoabCheckBoundaryVertices(dm,num_conn,connect,dbdry);CHKERRQ(ierr);
 
       for (i=0; i < user->VPERE; ++i) {
         if (dbdry[i]) {  /* dirichlet node */
           /* think about strongly imposing dirichlet */
-          localv[i] = forcing_function(&vpos[3*i], user->nu, user->xyzref);
+          localv[i] = ForcingFunction(&vpos[3*i], user);
         }
       }
     }
@@ -409,13 +434,13 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,void *ctx)
 
       /* compute the inhomogeneous diffusion coefficient at the first quadrature point 
           -- for large spatial variations, embed this property evaluation inside quadrature loop */
-      rho = ComputeRho_MOAB(&phypts[q*3], user->rho);
+      rho = ComputeDiffusionCoefficient(&phypts[q*3], user);
 
       for (i=0; i < user->VPERE; ++i) {
         for (j=0; j < user->VPERE; ++j) {
           array[i*user->VPERE+j] += jxw[q] * rho * ( dphidx[q*user->VPERE+i]*dphidx[q*user->VPERE+j] + 
-                                               dphidy[q*user->VPERE+i]*dphidy[q*user->VPERE+j] +
-                                               dphidz[q*user->VPERE+i]*dphidz[q*user->VPERE+j] );
+                                                     dphidy[q*user->VPERE+i]*dphidy[q*user->VPERE+j] +
+                                                     dphidz[q*user->VPERE+i]*dphidz[q*user->VPERE+j] );
         }
       }
     }
@@ -472,6 +497,25 @@ double determinant_mat_3x3 ( PetscReal inmat[3*3] )
          + inmat[6]*(inmat[5]*inmat[1]-inmat[4]*inmat[2]);
 }
 
+PetscErrorCode invert_mat_3x3 (PetscReal *inmat, PetscReal *outmat, PetscScalar *determinant)
+{
+  if (!inmat) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_POINTER,"Invalid input matrix specified for 3x3 inversion.");
+  double det = determinant_mat_3x3(inmat);
+  if (outmat) {
+    outmat[0]= (inmat[8]*inmat[4]-inmat[7]*inmat[5])/det;
+    outmat[1]=-(inmat[8]*inmat[1]-inmat[7]*inmat[2])/det;
+    outmat[2]= (inmat[5]*inmat[1]-inmat[4]*inmat[2])/det;
+    outmat[3]=-(inmat[8]*inmat[3]-inmat[6]*inmat[5])/det;
+    outmat[4]= (inmat[8]*inmat[0]-inmat[6]*inmat[2])/det;
+    outmat[5]=-(inmat[5]*inmat[0]-inmat[3]*inmat[2])/det;
+    outmat[6]= (inmat[7]*inmat[3]-inmat[6]*inmat[4])/det;
+    outmat[7]=-(inmat[7]*inmat[0]-inmat[6]*inmat[1])/det;
+    outmat[8]= (inmat[4]*inmat[0]-inmat[3]*inmat[1])/det;
+  }
+  if (determinant) *determinant=det;
+  PetscFunctionReturn(0);
+}
+
 /*
 *  Purpose: Compute_Basis: all bases at N points for a HEX8 element.
 *
@@ -519,8 +563,9 @@ double determinant_mat_3x3 ( PetscReal inmat[3*3] )
 PetscErrorCode Compute_Basis ( int nverts, PetscReal *coords/*nverts*3*/, PetscInt npts, PetscReal *quad/*npts*3*/, PetscReal *pts/*npts*3*/, 
         PetscReal *jxw/*npts*/, PetscReal *phi/*npts*/, PetscReal *dphidx/*npts*/, PetscReal *dphidy/*npts*/, PetscReal *dphidz/*npts*/)
 {
-  PetscReal ejac;
+  PetscReal jacobiandet;
   int i,j,k;
+  double jacobian[9],ijacobian[9];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -538,11 +583,15 @@ PetscErrorCode Compute_Basis ( int nverts, PetscReal *coords/*nverts*3*/, PetscI
     quad[18]=0.5773502691896257;  quad[19]=-0.5773502691896257;  quad[20]=0.5773502691896257;
     quad[21]=0.5773502691896257;  quad[22]=0.5773502691896257;   quad[23]=0.5773502691896257;
     /* transform quadrature bounds: [-1, 1] => [0, 1] */
-    for (i=0; i<npts*3; ++i) {
-      quad[i]=0.5*quad[i]+0.5;
-      pts[i] = 0.0;
-    }
+    for (i=0; i<npts*3; ++i) quad[i]=0.5*quad[i]+0.5;
+
+    /* Reset arrays. */
     ierr = PetscMemzero(pts,npts*3*sizeof(PetscReal));CHKERRQ(ierr);
+    if (dphidx) {
+      ierr = PetscMemzero(dphidx,npts*nverts*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscMemzero(dphidy,npts*nverts*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscMemzero(dphidz,npts*nverts*sizeof(PetscReal));CHKERRQ(ierr);
+    }
 
     for (j=0;j<npts;j++)
     {
@@ -555,28 +604,28 @@ PetscErrorCode Compute_Basis ( int nverts, PetscReal *coords/*nverts*3*/, PetscI
       phi[offset+1] =         r   * ( 1.0 - s ) * ( 1.0 - t );
       phi[offset+2] =         r   *         s   * ( 1.0 - t );
       phi[offset+3] = ( 1.0 - r ) *         s   * ( 1.0 - t );
-      phi[offset+4] = ( 1.0 - r ) * ( 1.0 - s ) *         t;
-      phi[offset+5] =         r   * ( 1.0 - s ) *         t;
-      phi[offset+6] =         r   *         s   *         t;
-      phi[offset+7] = ( 1.0 - r ) *         s   *         t;
+      phi[offset+4] = ( 1.0 - r ) * ( 1.0 - s ) *         t  ;
+      phi[offset+5] =         r   * ( 1.0 - s ) *         t  ;
+      phi[offset+6] =         r   *         s   *         t  ;
+      phi[offset+7] = ( 1.0 - r ) *         s   *         t  ;
 
       const double dNi_dxi[8]  = { - ( 1.0 - s ) * ( 1.0 - t ),
                                      ( 1.0 - s ) * ( 1.0 - t ),
                                              s   * ( 1.0 - t ),
                                    -         s   * ( 1.0 - t ),
-                                   - ( 1.0 - s ) *         t,
-                                     ( 1.0 - s ) *         t,
-                                             s   *         t,
-                                   -         s   *         t };
+                                   - ( 1.0 - s ) *         t  ,
+                                     ( 1.0 - s ) *         t  ,
+                                             s   *         t  ,
+                                   -         s   *         t  };
 
       const double dNi_deta[8]  = { - ( 1.0 - r ) * ( 1.0 - t ),
                                     -         r   * ( 1.0 - t ),
                                               r   * ( 1.0 - t ),
                                       ( 1.0 - r ) * ( 1.0 - t ),
-                                    - ( 1.0 - r ) *         t,
-                                    -         r   *         t,
-                                              r   *         t,
-                                      ( 1.0 - r ) *         t};
+                                    - ( 1.0 - r ) *         t  ,
+                                    -         r   *         t  ,
+                                              r   *         t  ,
+                                      ( 1.0 - r ) *         t  };
 
       const double dNi_dzeta[8]  = { - ( 1.0 - r ) * ( 1.0 - s ),
                                      -         r   * ( 1.0 - s ),
@@ -587,18 +636,22 @@ PetscErrorCode Compute_Basis ( int nverts, PetscReal *coords/*nverts*3*/, PetscI
                                                r   *         s  ,
                                        ( 1.0 - r ) *         s  };
 
-      /* Reset arrays. */
-      for ( i = 0; i < nverts; i++ ) {
-        if (dphidx) dphidx[i+offset] = 0.0;
-        if (dphidy) dphidy[i+offset] = 0.0;
-        if (dphidz) dphidz[i+offset] = 0.0;
-      }
-
-      double jacobian[9];
-      for ( i = 0; i < 9; i++ ) jacobian[i]=0.0;
+      ierr = PetscMemzero(jacobian,9*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr = PetscMemzero(ijacobian,9*sizeof(PetscReal));CHKERRQ(ierr);
 
       for (i = 0; i < nverts; ++i) {
         const PetscScalar* vertex = coords+i*3;
+
+        // jacobian[0] += dNi_dxi[i]   * vertex[0];
+        // jacobian[3] += dNi_deta[i]   * vertex[0];
+        // jacobian[6] += dNi_dzeta[i]   * vertex[0];
+        // jacobian[1] += dNi_dxi[i]  * vertex[1];
+        // jacobian[4] += dNi_deta[i]  * vertex[1];
+        // jacobian[7] += dNi_dzeta[i]  * vertex[1];
+        // jacobian[2] += dNi_dxi[i] * vertex[2];
+        // jacobian[5] += dNi_deta[i] * vertex[2];
+        // jacobian[8] += dNi_dzeta[i] * vertex[2];
+        
         jacobian[0] += dNi_dxi[i]   * vertex[0];
         jacobian[3] += dNi_dxi[i]   * vertex[1];
         jacobian[6] += dNi_dxi[i]   * vertex[2];
@@ -608,16 +661,30 @@ PetscErrorCode Compute_Basis ( int nverts, PetscReal *coords/*nverts*3*/, PetscI
         jacobian[2] += dNi_dzeta[i] * vertex[0];
         jacobian[5] += dNi_dzeta[i] * vertex[1];
         jacobian[8] += dNi_dzeta[i] * vertex[2];
+        
         for (int k = 0; k < 3; ++k) pts[3*j+k] += phi[i+offset] * vertex[k];
       }
-      ejac = determinant_mat_3x3 (jacobian);
-      jxw[j] = ejac/(nverts);
+
+      /* invert the jacobian */
+      ierr = invert_mat_3x3(jacobian, ijacobian, &jacobiandet);CHKERRQ(ierr);
+
+      jxw[j] = jacobiandet/(nverts);
+
+      double factor = 1.0;
 
       /*  Divide by element jacobian. */
       for ( i = 0; i < nverts; i++ ) {
-        if (dphidx) dphidx[i+offset] = dNi_dxi[i] / pow(ejac,1.0/3.0);
-        if (dphidy) dphidy[i+offset] = dNi_deta[i] / pow(ejac,1.0/3.0);
-        if (dphidz) dphidz[i+offset] = dNi_dzeta[i] / pow(ejac,1.0/3.0);
+        for (int k = 0; k < 3; ++k) {
+          if (dphidx) dphidx[i+offset] += dNi_dxi[i]   * ijacobian[k*3+0] * factor;
+          if (dphidy) dphidy[i+offset] += dNi_deta[i]  * ijacobian[k*3+1] * factor;
+          if (dphidz) dphidz[i+offset] += dNi_dzeta[i] * ijacobian[k*3+2] * factor;
+          // if (dphidx) dphidx[i+offset] += dNi_dxi[i]   * ijacobian[0*3+k] * factor;
+          // if (dphidy) dphidy[i+offset] += dNi_deta[i]  * ijacobian[1*3+k] * factor;
+          // if (dphidz) dphidz[i+offset] += dNi_dzeta[i] * ijacobian[2*3+k] * factor;
+        }
+        //if (dphidx) dphidx[i+offset] = dNi_dxi[i] / pow(ejac,1.0/3.0);
+        //if (dphidy) dphidy[i+offset] = dNi_deta[i] / pow(ejac,1.0/3.0);
+        //if (dphidz) dphidz[i+offset] = dNi_dzeta[i] / pow(ejac,1.0/3.0);
       }
     }
   }
@@ -636,7 +703,7 @@ PetscErrorCode Compute_Basis ( int nverts, PetscReal *coords/*nverts*3*/, PetscI
     //           | z1 z2 z3 z4 |
     //           |  1  1  1  1 |
     //
-    ejac =
+    jacobiandet =
         -(coords[0+0*3] * (
           coords[1+1*3] * ( coords[2+2*3] - coords[2+3*3] )   
         - coords[1+2*3] * ( coords[2+1*3] - coords[2+3*3] )   
@@ -654,7 +721,7 @@ PetscErrorCode Compute_Basis ( int nverts, PetscReal *coords/*nverts*3*/, PetscI
         - coords[1+1*3] * ( coords[2+0*3] - coords[2+2*3] )   
         + coords[1+2*3] * ( coords[2+0*3] - coords[2+1*3] ) ));
 
-    if ( ejac < 1e-8 ) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Tetrahedral element has zero volume: %g. Degenerate element or invalid connectivity\n", ejac);
+    if ( jacobiandet < 1e-8 ) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Tetrahedral element has zero volume: %g. Degenerate element or invalid connectivity\n", jacobiandet);
 
     for ( j = 0; j < npts; j++ )
     {
@@ -664,7 +731,7 @@ PetscErrorCode Compute_Basis ( int nverts, PetscReal *coords/*nverts*3*/, PetscI
       phi[offset+2] = quad[offset+1];
       phi[offset+3] = quad[offset+2];
 
-      jxw[j] = ejac/(nverts)/6.0;
+      jxw[j] = jacobiandet/(nverts)/6.0;
 
       const double dNi_dxi[4]  = { -1.0, 1.0, 0.0, 0.0 } ;
       const double dNi_deta[4]  = { -1.0, 0.0, 1.0, 0.0 } ;
@@ -672,9 +739,9 @@ PetscErrorCode Compute_Basis ( int nverts, PetscReal *coords/*nverts*3*/, PetscI
 
       /*  Divide by element jacobian. */
       for ( i = 0; i < nverts; i++ ) {
-        if (dphidx) dphidx[i+offset] = dNi_dxi[i] / ejac / 24;
-        if (dphidy) dphidy[i+offset] = dNi_deta[i] / ejac / 24;
-        if (dphidz) dphidz[i+offset] = dNi_dzeta[i] / ejac / 24;
+        if (dphidx) dphidx[i+offset] = dNi_dxi[i] / jacobiandet / 24;
+        if (dphidy) dphidy[i+offset] = dNi_deta[i] / jacobiandet / 24;
+        if (dphidz) dphidz[i+offset] = dNi_dzeta[i] / jacobiandet / 24;
         const PetscScalar* vertex = coords+i*3;
         for (k = 0; k < 3; ++k) 
           pts[3*j+k] += phi[i+offset] * vertex[k];
@@ -792,10 +859,78 @@ PetscErrorCode Compute_Basis ( int nverts, PetscReal *coords/*nverts*3*/, PetscI
       if (dphidx) dphixsum += dphidx[i+offset];
       if (dphidy) dphiysum += dphidy[i+offset];
       if (dphidz) dphizsum += dphidz[i+offset];
-      if (dphidx) PetscPrintf(PETSC_COMM_WORLD, "\t Values [%d]: [phi, dphidx, dphidy, dphidz] = %g, %g, %g, %g\n", j, phi[i+offset], dphidx[i+offset], dphidy[i+offset], dphidz[i+offset]);
+      if (dphidx) PetscPrintf(PETSC_COMM_WORLD, "\t Values [%d]: [JxW] [phi, dphidx, dphidy, dphidz] = %g, %g, %g, %g, %g\n", j, jxw[j], phi[i+offset], dphidx[i+offset], dphidy[i+offset], dphidz[i+offset]);
     }
-    PetscPrintf(PETSC_COMM_WORLD, "Sum of basis at quadrature point %D = %g, %g, %g, %g\n", j, phisum, dphixsum, dphiysum, dphizsum);
+    PetscPrintf(PETSC_COMM_WORLD, "Sum of basis at quadrature point %D (%g, %g, %g) = %g, %g, %g, %g\n", j, quad[3*j+0], quad[3*j+1], quad[3*j+2], phisum, dphixsum, dphiysum, dphizsum);
+    PetscPrintf(PETSC_COMM_WORLD, "Sum of basis at quadrature point %D (%g, %g, %g) = %g, %g, %g, %g\n", j, pts[3*j+0], pts[3*j+1], pts[3*j+2], phisum, dphixsum, dphiysum, dphizsum);
   }
 #endif
   PetscFunctionReturn(0);
 }
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "ComputeDiscreteL2Error"
+PetscErrorCode ComputeDiscreteL2Error(KSP ksp,Vec err,UserContext *user)
+{
+  DM                dm;
+  Vec               sol;
+  PetscScalar       vpos[3];
+  const PetscScalar *x;
+  PetscScalar       *e;
+  PetscReal         l2err=0.0,linferr=0.0,global_l2,global_linf;
+  PetscInt          dof_index,N;
+  const moab::Range *ownedvtx;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+
+  /* get the solution vector */
+  ierr = KSPGetSolution(ksp, &sol);CHKERRQ(ierr);
+
+  /* Get the internal reference to the vector arrays */
+  ierr = DMMoabVecGetArrayRead(dm, sol, &x);CHKERRQ(ierr);
+  ierr = VecGetSize(sol, &N);CHKERRQ(ierr);
+  if (err) {
+    /* reset the error vector */
+    ierr = VecSet(err, 0.0);CHKERRQ(ierr);
+    /* get array reference */
+    ierr = DMMoabVecGetArray(dm, err, &e);CHKERRQ(ierr);
+  }
+
+  ierr = DMMoabGetLocalVertices(dm, &ownedvtx, NULL);CHKERRQ(ierr);
+
+  /* Compute function over the locally owned part of the grid */
+  for(moab::Range::iterator iter = ownedvtx->begin(); iter != ownedvtx->end(); iter++) {
+    const moab::EntityHandle vhandle = *iter;
+    ierr = DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof_index);CHKERRQ(ierr);
+
+    /* compute the mid-point of the element and use a 1-point lumped quadrature */
+    ierr = DMMoabGetVertexCoordinates(dm,1,&vhandle,vpos);CHKERRQ(ierr);
+
+    /* compute the discrete L2 error against the exact solution */
+    const PetscScalar lerr = (ExactSolution(vpos, user) - x[dof_index]);
+    l2err += lerr*lerr;
+    if (linferr<fabs(lerr))
+      linferr=fabs(lerr);
+
+    if (err) {
+      /* set the discrete L2 error against the exact solution */
+      e[dof_index] = l2err;
+    }
+  }
+
+  ierr = MPI_Allreduce(&l2err, &global_l2, 1, MPI_DOUBLE, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&linferr, &global_linf, 1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Computed Errors: L_2 = %f, L_inf = %f\n", sqrt(global_l2/N), global_linf);CHKERRQ(ierr);
+
+  /* Restore vectors */
+  ierr = DMMoabVecRestoreArrayRead(dm, sol, &x);CHKERRQ(ierr);
+  if (err) {
+    ierr = DMMoabVecRestoreArray(dm, err, &e);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+

@@ -11,6 +11,7 @@ typedef struct {
   PetscInt      nele;                           /* Elements in each dimension */
   PetscBool     simplex;                        /* Use simplex elements */
   PetscInt      nlevels;                        /* Number of levels in mesh hierarchy */
+  PetscInt      nghost;                        /* Number of ghost layers in the mesh */
   char          input_file[PETSC_MAX_PATH_LEN];   /* Import mesh from file */
   char          output_file[PETSC_MAX_PATH_LEN];   /* Output mesh file name */
   PetscBool     write_output;                        /* Write output mesh and data to file */
@@ -25,6 +26,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBegin;
   options->debug             = PETSC_FALSE;
   options->nlevels           = 1;
+  options->nghost            = 1;
   options->dim               = 2;
   options->nele              = 5;
   options->simplex           = PETSC_FALSE;
@@ -37,6 +39,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex3.cxx", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-n", "The number of elements in each dimension", "ex3.cxx", options->nele, &options->nele, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-levels", "Number of levels in the hierarchy", "ex3.cxx", options->nlevels, &options->nlevels, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ghost", "Number of ghost layers in the mesh", "ex3.cxx", options->nghost, &options->nghost, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex3.cxx", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-input", "The input mesh file", "ex3.cxx", options->input_file, options->input_file, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex3.cxx", options->output_file, options->output_file, PETSC_MAX_PATH_LEN, &options->write_output);CHKERRQ(ierr);
@@ -60,13 +63,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
   ierr = PetscStrlen(user->input_file, &len);CHKERRQ(ierr);
   if (len) {
     if (user->debug) PetscPrintf(comm, "Loading mesh from file: %s and creating the coarse level DM object.\n",user->input_file);
-    ierr = DMMoabLoadFromFile(comm, user->dim, user->input_file, "", &user->dm);CHKERRQ(ierr);
+    ierr = DMMoabLoadFromFile(comm, user->dim, user->nghost, user->input_file, "", &user->dm);CHKERRQ(ierr);
   }
   else {
     if (user->debug) {
       PetscPrintf(comm, "Creating a %D-dimensional structured %s mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,(user->simplex?"simplex":"regular"),user->nele,user->nele,user->nele);
     }
-    ierr = DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, 1, &user->dm);CHKERRQ(ierr);
+    ierr = DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, user->nghost, &user->dm);CHKERRQ(ierr);
   }
 
   ierr     = PetscObjectSetName((PetscObject)user->dm, "Coarse Mesh");CHKERRQ(ierr);

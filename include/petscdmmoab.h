@@ -88,7 +88,7 @@ PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryMarkers(DM dm,const moab::Range **b
 
 /* DM utility creation interface */
 PETSC_EXTERN PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm,PetscInt,PetscBool,const PetscReal*,PetscInt,PetscInt,DM*);
-PETSC_EXTERN PetscErrorCode DMMoabLoadFromFile(MPI_Comm,PetscInt,const char*,const char*,DM*);
+PETSC_EXTERN PetscErrorCode DMMoabLoadFromFile(MPI_Comm,PetscInt,PetscInt,const char*,const char*,DM*);
 
 /* Uniform refinement hierarchy interface */
 PETSC_EXTERN PetscErrorCode DMMoabGenerateHierarchy(DM dm,PetscInt nlevels,PetscInt *ldegrees);

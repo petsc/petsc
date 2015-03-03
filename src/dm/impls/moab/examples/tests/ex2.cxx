@@ -68,7 +68,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
   ierr = PetscStrlen(user->input_file, &len);CHKERRQ(ierr);
   if (len) {
     if (user->debug) PetscPrintf(comm, "Loading mesh from file: %s and creating a DM object.\n",user->input_file);
-    ierr = DMMoabLoadFromFile(comm, user->dim, user->input_file, "", &user->dm);CHKERRQ(ierr);
+    ierr = DMMoabLoadFromFile(comm, user->dim, 1, user->input_file, "", &user->dm);CHKERRQ(ierr);
   }
   else {
     if (user->debug) {
