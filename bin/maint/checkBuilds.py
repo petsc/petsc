@@ -25,10 +25,19 @@ class BuildChecker(script.Script):
     import nargs
 
     help = script.Script.setupHelp(self, help)
-    help.addArgument('BuildCheck', '-remoteMachine', nargs.Arg(None, 'terra.mcs.anl.gov', 'The machine on which PETSc logs are stored'))
-    help.addArgument('BuildCheck', '-logDirectory',  nargs.Arg(None, os.path.join('/mcs', 'ftp', 'pub', 'petsc','nightlylogs'), 'The directory in which PETSc logs are stored'))
-    help.addArgument('BuildCheck', '-archCompilers', nargs.Arg(None, {}, 'A mapping from architecture names to lists of compiler names'))
+    help.addArgument('BuildCheck', '-remoteMachine',    nargs.Arg(None, 'terra.mcs.anl.gov', 'The machine on which PETSc logs are stored'))
+    help.addArgument('BuildCheck', '-logDirectory',     nargs.Arg(None, os.path.join('/mcs', 'ftp', 'pub', 'petsc','nightlylogs'), 'The directory in which PETSc logs are stored'))
+    help.addArgument('BuildCheck', '-archCompilers',    nargs.Arg(None, {}, 'A mapping from architecture names to lists of compiler names'))
+    help.addArgument('BuildCheck', '-blameMail',        nargs.ArgBool(None, 0, 'Generate blame emails'))
+    help.addArgument('BuildCheck', '-ignoreDeprecated', nargs.ArgBool(None, 0, 'Ignore deprecated warnings'))
     return help
+
+  # (commit of log file, file name) -> (line numbers)
+  commitfileDict = {}
+  # (commit of log file, file name, line number) -> (warnings)
+  filelineDict = {}
+  # (author) -> (offending commit, file name:line number, warnings)
+  blameDict = {}
 
   compilers = {'aix5.1.0.0':           ['ibm'],
                'cygwin-borland':       ['win32fe', 'borland'],
@@ -131,8 +140,14 @@ class BuildChecker(script.Script):
 
   def checkFile(self, filename):
     ##logRE = r'build_(?P<arch>[\w-]*\d+\.\d+)\.(?P<bopt>[\w+]*)\.(?P<machine>[\w@.]*)\.log'
-    logRE = r'build_(?P<arch>[\w.\d-]+)_(?P<machine>[\w.\d-]+)\.log'
+    logRE = r'(build|examples)_(?P<branch>[\w.\d-]+)_(?P<arch>[\w.\d-]+)_(?P<machine>[\w.\d-]+)\.log'
+    commitRE = re.compile(r'^commit (?P<commit>[0-9a-z]{40})')
+    petscdirRE = re.compile(r'PETSC_DIR[:= ]+(?P<petscdir>\S+)')
     configureRE = re.compile(r'\*{3,5} (?P<errorMsg>[^*]+) \*{3,5}')
+    addBlameDict = self.argDB['blameMail']
+    commit = ''
+    petscdir = ''
+    filelinedict = {}
 
     print 'Checking',filename
     if self.isLocal and not os.path.exists(filename):
@@ -143,8 +158,8 @@ class BuildChecker(script.Script):
       if not m:
         raise RuntimeError('Invalid filename '+filename)
     arch    = m.group('arch')
+    branch  = m.group('branch')
     machine = m.group('machine')
-    print arch,machine
     if arch in self.compilers:
       compilers = self.compilers[arch]
     elif arch in self.argDB['archCompilers']:
@@ -166,7 +181,17 @@ class BuildChecker(script.Script):
 
       (output, error, status) = self.executeShellCommand('ssh '+self.argDB['remoteMachine']+' cat '+filename)
       lines = output.split('\n')
+    lasttuple=None
+    lastmessage=None
     for line in lines:
+      if not commit:
+        matchCommit = commitRE.match(line)
+        if matchCommit:
+          commit = matchCommit.group('commit')
+      if not petscdir:
+        matchPetscdir = petscdirRE.search(line)
+        if matchPetscdir:
+          petscdir = matchPetscdir.group('petscdir')
       m = configureRE.search(line)
       if m:
         print 'From '+filename+': configure error: '+m.group('errorMsg')
@@ -188,6 +213,36 @@ class BuildChecker(script.Script):
             type = m.group('type')
             if not type: type = 'Error'
             print 'From '+filename+': '+type+' in file '+m.group('filename')+' on line '+m.group('line')
+            if addBlameDict and commit and petscdir:
+              ''' hack to avoid C++ instantiation sequences '''
+              if re.search(r'instantiated from here',line):
+                continue
+              if self.argDB['ignoreDeprecated'] and re.search(r'deprecated',line):
+                continue
+              message = line.rstrip()
+              ''' hack to try to concatenate multiline messages '''
+              follow = re.search(r'note:',line)
+              if follow and lasttuple:
+                self.filelineDict[lasttuple].remove(lastmessage)
+                lastmessage = lastmessage + ("\n      %s" % message)
+                self.filelineDict[lasttuple].add(lastmessage)
+                continue
+              fn = m.group('filename')
+              ln = m.group('line')
+              message = re.sub(re.escape(fn),'',message,count=1)
+              message = re.sub(ln,'',message,count=1)
+              relpath = os.path.relpath(m.group('filename'),petscdir)
+              message = '['+machine+','+arch+','+branch+'] '+message
+              if (commit,relpath) not in self.commitfileDict:
+                self.commitfileDict[(commit,relpath)] = {ln}
+              else:
+                self.commitfileDict[(commit,relpath)].add(ln)
+              if (commit,relpath,ln) not in self.filelineDict:
+                self.filelineDict[(commit,relpath,ln)] = {message}
+              else:
+                self.filelineDict[(commit,relpath,ln)].add(message)
+              lasttuple = (commit,relpath,ln)
+              lastmessage = message
           except IndexError:
             # For win32fe
             print 'From '+filename+': '+m.group('type')+' for '+m.group('filename')
@@ -196,7 +251,7 @@ class BuildChecker(script.Script):
     return
 
   def getBuildFileNames(self):
-    buildRE = re.compile(r'^.*build_.*$')
+    buildRE = re.compile(r'^.*(build|examples)_.*$')
 
     if self.isLocal:
       files = os.listdir(self.argDB['logDirectory'])
@@ -210,6 +265,72 @@ class BuildChecker(script.Script):
     self.setup()
     self.isLocal = os.path.isdir(self.argDB['logDirectory'])
     map(lambda f: self.checkFile(os.path.join(self.argDB['logDirectory'], f)), self.getBuildFileNames())
+    if self.argDB['blameMail']:
+      for key in sorted(self.commitfileDict.keys()):
+        lns = sorted(self.commitfileDict[key])
+        pairs = [ln+','+ln for ln in sorted(self.commitfileDict[key])]
+        output=''
+        try:
+          (output, error, status) = self.executeShellCommand('git blame --line-porcelain --show-email -L '+' -L '.join(pairs)+' '+key[0]+' -- '+key[1])
+        except: pass
+        if output:
+          blamelines = output.split('\n')
+          current = -1
+          author = 'Unknown author'
+          email = '<unknown@author>'
+          commit = '(unknown commit)'
+          for bl in blamelines:
+            if re.match(r'^[0-9a-z]{40}',bl):
+              if current >= 0:
+                warnings = self.filelineDict[(key[0],key[1],lns[current])]
+                fullauthor = author+' '+email
+                if not fullauthor in self.blameDict:
+                  self.blameDict[fullauthor] = [(commit,key[1]+":"+lns[current],warnings)]
+                else:
+                  self.blameDict[fullauthor].append((commit,key[1]+":"+lns[current],warnings))
+              commit = bl[0:7]
+              current = current+1
+              author = ''
+              email = ''
+            m = re.match(r'^author (?P<author>.*)',bl)
+            if m:
+              author =  m.group('author')
+            m = re.match(r'^author-mail (?P<mail>.*)',bl)
+            if m:
+              email =  m.group('mail')
+            m = re.match(r'^summary (?P<summary>.*)',bl)
+            if m:
+              commit = commit + ' ' + m.group('summary')
+          warnings = self.filelineDict[(key[0],key[1],lns[current])]
+          fullauthor = author+' '+email
+          if not fullauthor in self.blameDict:
+            self.blameDict[fullauthor] = [(commit,key[1]+":"+lns[current],warnings)]
+          else:
+            self.blameDict[fullauthor].append((commit,key[1]+":"+lns[current],warnings))
+      for author in self.blameDict.keys():
+        import datetime
+
+        justaddress = re.search(r'<(?P<address>.*)>',author).group('address')
+        today = str(datetime.date.today())
+        mailname = '-'.join(['blame',today,justaddress])
+        mail = open(mailname,"w")
+        mail.write("To: %s\n" % author)
+        mail.write("Subject: PETSc nightly blame digest, %s\n\n" % today)
+        allwarnings = self.blameDict[author]
+        allwarnings = sorted(allwarnings)
+        for i in range(0,len(allwarnings)):
+          newcommit = False
+          newline = False
+          warning = allwarnings[i]
+          if i == 0 or not warning[0] == allwarnings[i-1][0]:
+            mail.write("\n---\n\nwarnings attributed to commit %s\n" % warning[0])
+            newcommit = True
+          if newcommit or not warning[1] == allwarnings[i-1][1]:
+            mail.write("\n  %s\n" % warning[1])
+          for message in warning[2]:
+            mail.write("    %s\n" % message)
+        mail.close()
+
     return
 
 if __name__ == '__main__':
