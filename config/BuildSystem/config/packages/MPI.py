@@ -334,38 +334,6 @@ class Configure(config.package.Package):
       raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration. \nUse different PETSC_ARCH if you want to be able to switch between two')
     return None
 
-  def updateCompilers(self, installDir, mpiccName, mpicxxName, mpif77Name, mpif90Name):
-    '''Check if mpicc, mpicxx etc binaries exist - and update setCompilers() database.
-    The input arguments are the names of the binaries specified by the respective pacakges MPICH/LAM.'''
-
-    # Both MPICH and MVAPICH now depend on LD_LIBRARY_PATH for sharedlibraries.
-    # So using LD_LIBRARY_PATH in configure - and -Wl,-rpath in makefiles
-    if self.argDB['with-shared-libraries']:
-      config.setCompilers.Configure.addLdPath(os.path.join(installDir,'lib'))
-    # Initialize to empty
-    mpicc=''
-    mpicxx=''
-    mpifc=''
-
-    mpicc = os.path.join(installDir,"bin",mpiccName)
-    if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
-    if hasattr(self.compilers, 'CXX'):
-      mpicxx = os.path.join(installDir,"bin",mpicxxName)
-      if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
-    if hasattr(self.compilers, 'FC'):
-      if self.compilers.fortranIsF90:
-        mpifc = os.path.join(installDir,"bin",mpif90Name)
-      else:
-        mpifc = os.path.join(installDir,"bin",mpif77Name)
-      if not os.path.isfile(mpifc): raise RuntimeError('Could not locate installed MPI compiler: '+mpifc)
-    # redo compiler detection
-    self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
-    self.compilers.__init__(self.framework)
-    self.compilers.headerPrefix = self.headerPrefix
-    self.compilers.configure()
-    self.compilerFlags.configure()
-    return
-
   def SGIMPICheck(self):
     '''Returns true if SGI MPI is used'''
     if self.libraries.check(self.lib, 'MPI_SGI_barrier') :
