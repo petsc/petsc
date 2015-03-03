@@ -51,7 +51,7 @@ PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *buffer, c
 #define __FUNCT__ "DMPlexCreateFluent_ReadValues"
 PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *data, PetscInt count, PetscDataType dtype, PetscBool binary)
 {
-  int            fdes;
+  int            fdes=0;
   FILE          *file;
   PetscInt       i;
   PetscErrorCode ierr;
