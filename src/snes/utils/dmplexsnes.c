@@ -1754,7 +1754,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscReal time, Vec locX, V
 
           ierr = DMPlexPointLocalFieldRead(dm, cell, f, x_t, &u_t);CHKERRQ(ierr);
           ierr = DMPlexPointLocalFieldRef(dm, cell, f, fa, &r);CHKERRQ(ierr);
-          for (d = 0; d < pdim; ++d) r[d] -= u_t[d];
+          for (d = 0; d < pdim; ++d) r[d] += u_t[d];
         }
       }
       ierr = VecRestoreArray(locX_t, &x_t);CHKERRQ(ierr);
