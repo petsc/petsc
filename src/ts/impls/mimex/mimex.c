@@ -394,5 +394,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Mimex(TS ts)
 
   ierr = PetscNewLog(ts,&mimex);CHKERRQ(ierr);
   ts->data = (void*)mimex;
+
+  mimex->version = 1;
   PetscFunctionReturn(0);
 }
