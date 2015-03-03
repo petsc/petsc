@@ -1001,7 +1001,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
               +'*******************************************************************************\n'
           se  = str(e)
         if ret:
-          self.logWrite(msg)
+          self.logWrite(msg+'\n'+se+'\n')
           try:
             import sys,traceback
             traceback.print_tb(sys.exc_info()[2], file = self.log)
