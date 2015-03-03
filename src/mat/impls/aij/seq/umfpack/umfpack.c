@@ -223,7 +223,9 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)(F->spptr);
   PetscErrorCode ierr;
   PetscInt       i,*ai = a->i,*aj = a->j,m=A->rmap->n,n=A->cmap->n;
+#if !defined(PETSC_USE_COMPLEX)
   PetscScalar    *av = a->a;
+#endif
   const PetscInt *ra;
   PetscInt       status;
 
