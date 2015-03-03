@@ -104,6 +104,7 @@ else
 endif
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH TESTMODE=$TESTMODE ${VALGRIND}  `date` " > examples.log
+git log -1 >>& examples.log
 if ( "${BUILDER}" == "yes" ) then
   env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR ./config/builder2.py regression >>& examples.log
 else
