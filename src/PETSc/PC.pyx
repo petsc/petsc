@@ -174,6 +174,12 @@ cdef class PC(Object):
         PetscINCREF(P.obj)
         return (A, P)
 
+    def setUseAmat(self, flag):
+        cdef PetscBool cflag = PETSC_FALSE
+        if flag:
+            cflag = PETSC_TRUE
+        CHKERR( PCSetUseAmat(self.pc, cflag) )
+
     def setUp(self):
         CHKERR( PCSetUp(self.pc) )
 
@@ -416,15 +422,10 @@ cdef class PC(Object):
         PetscINCREF(pc.obj)
         return pc
 
-    def addCompositePC(self, pctype):
-        cdef PetscPCType cval = pctype
+    def addCompositePC(self, pc_type):
+        cdef PetscPCType cval = NULL
+        pc_type = str2bytes(pc_type, &cval)
         CHKERR( PCCompositeAddPC(self.pc, cval) )
-
-    def setUseAmat(self, flag):
-        cdef PetscBool cflag = PETSC_FALSE
-        if flag:
-            cflag = PETSC_TRUE
-        CHKERR( PCSetUseAmat(self.pc, cflag) )
 
     # --- KSP ---
 

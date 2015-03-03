@@ -121,6 +121,7 @@ cdef extern from * nogil:
     int PCGetOperators(PetscPC,PetscMat*,PetscMat*)
     int PCGetOperatorsSet(PetscPC,PetscBool*,PetscBool*)
     int PCSetCoordinates(PetscPC,PetscInt,PetscInt,PetscReal[])
+    int PCSetUseAmat(PetscPC,PetscBool)
 
     int PCComputeExplicitOperator(PetscPC,PetscMat*)
 
@@ -173,7 +174,6 @@ cdef extern from * nogil:
     int PCCompositeSetType(PetscPC,PetscPCCompositeType)
     int PCCompositeGetPC(PetscPC,PetscInt,PetscPC*)
     int PCCompositeAddPC(PetscPC,PetscPCType)
-    int PCSetUseAmat(PetscPC,PetscBool)
 
     int PCKSPGetKSP(PetscPC,PetscKSP*)
 
