@@ -82,9 +82,9 @@ struct _p_TS {
 
   /* ---------------------- Sensitivity Analysis support -----------------*/
   TSTrajectory trajectory;   /* All solutions are kept here for the entire time integration process */
-  Vec       *vecs_sensi;
+  Vec       *vecs_sensi;             /* one vector for each cost function */
   Vec       *vecs_sensip;
-  PetscInt  numberadjs;
+  PetscInt  numcost;                 /* number of cost functions */
   Vec       vec_costintegral;
   PetscInt  adjointsetupcalled;
   PetscInt  adjoint_max_steps;

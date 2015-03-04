@@ -33,7 +33,7 @@ struct _n_TSMonitorDrawCtx {
 
    Options Database Keys:
 +  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSGL, TSSSP
-.  -ts_save_tracjectories - checkpoint the solution at each time-step
+.  -ts_save_trajectories - checkpoint the solution at each time-step
 .  -ts_max_steps <maxsteps> - maximum number of time-steps to take
 .  -ts_final_time <time> - maximum time to compute to
 .  -ts_dt <dt> - initial time step
@@ -1702,8 +1702,8 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 .  ts - the TS context obtained from TSCreate()
 
    Output Parameter:
-+  v - vectors containing the gradients with respect to the ODE/DAE solution variables
--  w - vectors containing the gradients with respect to the problem parameters
++  lambda - vectors containing the gradients of the cost functions with respect to the ODE/DAE solution variables
+-  mu - vectors containing the gradients of the cost functions with respect to the problem parameters
 
    Level: intermediate
 
@@ -1711,13 +1711,13 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 
 .keywords: TS, timestep, get, sensitivity
 @*/
-PetscErrorCode  TSAdjointGetCostGradients(TS ts,PetscInt *numberadjs,Vec **v,Vec **w)
+PetscErrorCode  TSAdjointGetCostGradients(TS ts,PetscInt *numcost,Vec **lambda,Vec **mu)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (numberadjs) *numberadjs = ts->numberadjs;
-  if (v)          *v          = ts->vecs_sensi;
-  if (w)          *w          = ts->vecs_sensip;
+  if (numcost) *numcost = ts->numcost;
+  if (lambda)  *lambda  = ts->vecs_sensi;
+  if (mu)      *mu      = ts->vecs_sensip;
   PetscFunctionReturn(0);
 }
 
@@ -2282,23 +2282,23 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
-.  u - gradients with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
--  w - gradients with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
+.  lambda - gradients with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
+-  mu - gradients with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
 
    Level: beginner
 
-   Notes: the entries in these vectors must be correctly initialized with the values ????
+   Notes: the entries in these vectors must be correctly initialized with the values lamda_i = df/dy|finaltime  mu_i = df/dp|finaltime
 
 .keywords: TS, timestep, set, sensitivity, initial conditions
 @*/
-PetscErrorCode  TSAdjointSetCostGradients(TS ts,PetscInt numberadjs,Vec *u,Vec *w)
+PetscErrorCode  TSAdjointSetCostGradients(TS ts,PetscInt numcost,Vec *lambda,Vec *mu)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(u,2);
-  ts->vecs_sensi  = u;
-  ts->vecs_sensip = w;
-  ts->numberadjs  = numberadjs;
+  PetscValidPointer(lambda,2);
+  ts->vecs_sensi  = lambda;
+  ts->vecs_sensip = mu;
+  ts->numcost  = numcost;
   PetscFunctionReturn(0);
 }
 
@@ -2384,7 +2384,7 @@ PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
 
     Input Parameters:
 +   ts - the TS context obtained from TSCreate()
-.   numberadjs - number of gradients to be computed, this is the number of cost functions
+.   numcost - number of gradients to be computed, this is the number of cost functions
 .   rf - routine for evaluating the integrand function
 .   drdy - array of vectors to contain the gradients of the r's with respect to y, NULL if not a function of y, each vector has the same size and parallel layout as the vector y
 .   drdyf - function that computes the gradients of the r's with respect to y,NULL if not a function y
@@ -2408,13 +2408,13 @@ $    PetscErroCode drdpf(TS ts,PetscReal t,Vec y,Vec *drdp,void *ctx);
 
     Level: intermediate
 
-    Notes: For optimization there is generally a single cost function, numberadjs = 1. For sensitivities there may be multiple cost functions
+    Notes: For optimization there is generally a single cost function, numcost = 1. For sensitivities there may be multiple cost functions
 
 .keywords: TS, sensitivity analysis, timestep, set, quadrature, function
 
 .seealso: TSAdjointSetRHSJacobian(),TSAdjointGetCostGradients(), TSAdjointSetCostGradients()
 @*/
-PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,          PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
+PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost,          PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
                                                                     Vec *drdy,PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
                                                                     Vec *drdp,PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 {
@@ -2422,10 +2422,10 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,          Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSAdjointSetCostGradients() first so that the number of cost functions can be determined.");
-  if (ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetCostGradients()");
+  if (!ts->numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSAdjointSetCostGradients() first so that the number of cost functions can be determined.");
+  if (ts->numcost && ts->numcost!=numcost) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetCostGradients()");
 
-  ierr                  = VecCreateSeq(PETSC_COMM_SELF,numberadjs,&ts->vec_costintegral);CHKERRQ(ierr);
+  ierr                  = VecCreateSeq(PETSC_COMM_SELF,numcost,&ts->vec_costintegral);CHKERRQ(ierr);
   ierr                  = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
   ts->costintegrand     = rf;
   ts->costintegrandctx  = ctx;
@@ -2479,7 +2479,7 @@ PetscErrorCode  TSAdjointGetCostIntegral(TS ts,Vec *v)
 -  y - state vector, i.e. current solution
 
    Output Parameter:
-.  q - vector of size numberadjs to hold the outputs
+.  q - vector of size numcost to hold the outputs
 
    Note:
    Most users should not need to explicitly call this routine, as it

@@ -3101,13 +3101,13 @@ smoothers are setcontrolled by first calling
 \end{tabbing}
 and then setting the various options in the \trl{ksp.} For example,
 \begin{tabbing}
-  PCMGGetSmoother(pc,1,&ksp);
+  PCMGGetSmoother(pc,1,\&ksp);
   KSPSetOperators(ksp,A1,A1);
 \end{tabbing}
 sets the matrix that defines the smoother on level 1 of the multigrid. While
 \begin{tabbing}
-  PCMGGetSmoother(pc,1,&ksp);
-  KSPGetPC(ksp,&pc);
+  PCMGGetSmoother(pc,1,\&ksp);
+  KSPGetPC(ksp,\&pc);
   PCSetType(pc,PCSOR);
 \end{tabbing}
 sets SOR as the smoother to use on level 1.
@@ -4939,15 +4939,73 @@ database with \trl{-ts_sundials_gmres_restart} \trl{restart}. \findex{-ts_sundia
 
 % ---------------------------------------------------------------
 \cleardoublepage
-\chapter{Performing sensitivity analysis with ODE and DAE solvers in PETSc}
+\chapter{Performing sensitivity analysis in PETSc}
 \label{chapter_sa}
-The TS library also provides a framework based on discrete adjoint models for sensitivity analysis for ODEs and DAEs. 
-The solution can be obtained by using either explicit or implicit solvers in TS, depending on the problem propeties. 
-We refer to this process as a forward run. 
-To perform the discrete adjoint sensivity analysis, a backward run using the same TS object is required with certain checkpointing scheme, which can pass information such as stage values and time stepping trajectory from the forward run to the backward run. 
-   
-Currently supported method types are TSRK (Runge-Kutta) explicit
+The TS library provides a framework based on discrete adjoint models
+for sensitivity analysis for ODEs and DAEs.  The ODE/DAE solution
+process (henceforth called the forward run) can be obtained by using
+either explicit or implicit solvers in TS, depending on the problem
+propeties. Currently supported method types are TSRK (Runge-Kutta) explicit
 methods and TSTHETA implicit methods, which include TSBEULER and TSCN.
+
+Consider the ODE/DAE
+\[
+    F(t,y,\dot{y},p) = 0, \quad y(t_0)=y_0 \quad t_0 \le t \le t_F
+\]
+and the cost function(s)
+\[
+   g_i(y_0,p) = f_i(y_F,p) + \int_{t_0}^{t_F} r_i(y(t),p,t)dt \quad i=1,...,numcost.
+\]
+The TSAdjoint routines of PETSc provide
+\[
+ \frac{\partial g_i}{\partial y_0} = \lambda_i
+\]
+and
+\[
+ \frac{\partial g_i}{\partial p} = \mu_i + \lambda_i (\frac{\partial y_0}{\partial p}).
+\]
+
+To perform the discrete adjoint sensivity analysis one first sets up the TS object for a regular forward run but with one extra function call
+\begin{tabbing}
+TSSetSaveTrajectory(TS ts),
+\end{tabbing}
+then calls TSSolve() in the usual manner.
+
+ One must create two arrays of $ numcost$ vectors $lambda $ and $mu$ (if there are no parameters p then one can use $NULL$ for the mu array.) The $lambda$ vectors are the same dimension and parallel layout as the solution vector for the ODE, the $mu$ vectors are of dimension p; when p is small usually all its elements are on the first MPI process, while the vectors have no entries on the other processes. $lambda_i$ and $mu_i$ should be initialized with the values $df_i/dy|_{t=t_F}$ and $df_i/dp|_{t=t_F}$ respectively. Then one calls
+\begin{tabbing}
+TSAdjointSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
+\end{tabbing}
+
+If $F()$ is a function of $p$ one needs to also provide the Jacobian $F_p$ with 
+\begin{tabbing}
+TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
+\end{tabbing}
+The arguments for the function \trl{fp()} 
+are the timestep context, current time, $y$, and the (optional) user-provided context. 
+
+If there is an integral term in the cost function, i.e. $r()$ is nonzero, one must also call
+\begin{tabbing}
+TSAdjointSetCostIntegrand(\=TS ts,PetscInt numcost,\\
+                          \>PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),\\
+                          \>Vec *drdy,PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),\\
+                          \>Vec *drdp,PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+\end{tabbing}
+
+Lastly one starts the backward run by calling
+\begin{tabbing}
+TSAdjointSolve(TS ts).
+\end{tabbing}
+
+
+
+For explicit methods where one does not need to provide the the
+Jacobian $F_u$ for the forward solve one still does need it for the
+backward solve and thus must call
+\begin{tabbing}
+ TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat,Mat,\\
+                  \>        void*),void *fP);
+\end{tabbing}
+
 
 Examples
 include:
@@ -4965,86 +5023,6 @@ methods for stiff DAEs
 methods for cost function with an integral term \trl{${PETSC_DIR}/src/ts/examples/tutorials/power_grid/ex3opt.c}.
 \end{itemize}
 \vspace{.2cm}
-
-\noindent
-
-\section{Using implicit methods}
-{\bf Simple Example:} Consider an ODE or DAE in the general form which may have nontrivial mass matrices (not necessarily nonsingular)
-\[
-    F(t,u,\dot{u}) = 0, \quad u(t_0)=u_0.
-\]
-We are interested in calculating the sensivity $d g/d p$ of a cost function $g(u,T,p)$ defined only time T. Here $p$ can be either constant system parameters or ODE/DAE initial conditions. 
-The function $g$ is assumed to be smooth enough so that $g_u$ and $g_p$ exist and are bounded. 
-
-First one solves the problem with a forward run, instructions of which can be found in Chapter \ref{chapter_ts}. 
-In the backward run, one uses 
-\begin{tabbing}
-
-\end{tabbing} 
-to switch between the reverse mode and the forward mode. 
-By default, TS object is in the forward mode. 
-$mode$ must be set to $PETSC_TRUE$ in the beginning of the backward run.  
- 
-To set up TS for the adjoint sensivity analysis, one must set the initial values for the sensivity (adjoint) variables with
-\begin{tabbing}
-TSAdjointSetSensitivity(TS ts,Vec *lambda,PetscInt np);  
-\end{tabbing}
-and 
-\begin{tabbing}
-TSAdjointSetSensitivityP(TS ts,Vec *mu,PetscInt np);  
-\end{tabbing}
-where $lambda$ and $mu$ are arrays of adjoint variables corresponding to sensitivity wrt initial conditions and parameters respectively, and $np$ is the dimension of the array which indicates the number of cost functions. Note that there are two scenarios for the sensitivity analysis here; $lambda$ is required for both and $mu$ is only needed for the case that parameters are the targets. 
-
-$lambda$ and $mu$ should be initialized as $dg/du|_{t=T}$ and $dg/dp|_{t=T}$ respectively at time T. 
-Usually the given cost function $g$ does not explicitly depend on the parameters $p$ so that $mu$ can be set to $0$\'s initially.    
-
-Besides the functions needed by the implicit solver, no additional user-provided functions are required if the sensitivity with respect to initial conditions is desired. 
-Otherwise one needs to provide Jacobian $F_p$ with 
-\begin{tabbing}
-TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Mat,void*),void *ctx)
-\end{tabbing}
-The arguments for the function \trl{fp()} 
-are the timestep context, current, input stage $u$, and the (optional) user-provided context. 
-
-In the backward run, one should use exactly the same time stepping method as in the forward run. 
-The initial time must be set to the final time of the forward run with 
-\begin{tabbing}
-TSSetTime(TS ts,double time);CHKERRQ(ierr);
-\end{tabbing}
-since the integration will start at that point and go in the reverse direction. 
-One must also set the total number of steps to be the number of steps taken by the forward run with the routine
-\begin{tabbing}
-TSSetDuration(TS ts,PetscInt nsteps,PetscReal maxtime);
-\end{tabbing}
-
-But one does not need to set the final time of the backward run because each timestep will be determined automatically according to the information checkpointed in the forward run. 
-Actually, any other options related to time step control will not take effect for this reason. 
-
-Lastly one can start the backward run by calling again
-\begin{tabbing}
-TSSolve(TS ts,Vec U);
-\end{tabbing}
-$U$ can be the same vector used in the forward run. It only serves as storage for state variables, which are loaded from checkpointed data.   
-
-Currently TSTHETA (Theta) methods support the sensivity analysis. 
-
-\section{Using explicit methods} 
-
-The sensitivity analysis procedure for explicit methods is similar to that for using implicit methods. 
-A forward run using an explicit solver must be run first, followed by a backward run advancing the sensitivity variables from one step to another. 
-One must provide Jacobian $F_u$   
-\begin{tabbing}
- TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat,Mat,\\
-                  \>        void*),void *fP);
-\end{tabbing}
-The  arguments for the function \trl{f()} are
-the timestep context, the current time, the location where the
-Jacobian is to be computed, the (approximate) Jacobian matrix, an alternative
-approximate Jacobian matrix used to construct the preconditioner, and the optional
-user-provided context, passed in as \trl{fP}. The user must provide the
-Jacobian as a matrix. 
-
-Note that the Jacobian is not needed in the forward run. In contrast, it is needed by implicit methods both in forward run and backward run.  
 
  \chapter{Solving Steady-State Problems with Pseudo-Timestepping}
 
