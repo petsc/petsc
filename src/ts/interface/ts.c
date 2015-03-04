@@ -95,7 +95,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   /* Handle generic TS options */
   if (ts->trajectory) tflg = PETSC_TRUE;
   else tflg = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ts_save_trajectories","Checkpoint for adjoint sensitivity analysis","TSSetSaveTrajectories",tflg,&tflg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_save_trajectory","Save the solution at each timestep","TSSetSaveTrajectory",tflg,&tflg,NULL);CHKERRQ(ierr);
   if (tflg) {ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
@@ -346,17 +346,17 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
 .seealso: TSGetTrajectory(), TSAdjointSolve()
 
-.keywords: TS, set, checkpoint, 
+.keywords: TS, set, checkpoint,
 @*/
 PetscErrorCode  TSSetSaveTrajectory(TS ts)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->trajectory) {
     ierr = TSTrajectoryCreate(PetscObjectComm((PetscObject)ts),&ts->trajectory);CHKERRQ(ierr);
-    /* should it set a default trajectory? */
+    ierr = TSTrajectorySetType(ts->trajectory,TSTRAJECTORYBASIC);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
