@@ -207,9 +207,10 @@ PetscErrorCode TSEventMonitor(TS ts)
   ierr = MPI_Allreduce((PetscEnum*)&status,(PetscEnum*)&event->status,1,MPIU_ENUM,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
 
   if (event->status == TSEVENT_ZERO) {
-    dt = event->tstepend-t;
-    ts->time_step = dt;
     ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,forwardsolve,event->monitorcontext);CHKERRQ(ierr);
+    dt = event->tstepend-t;
+    if(PetscAbsScalar(dt) < PETSC_SMALL) dt += event->initial_timestep;
+    ts->time_step = dt;
     PetscFunctionReturn(0);
   }
 
@@ -254,6 +255,8 @@ PetscErrorCode TSEventMonitor(TS ts)
 
   if (event->status == TSEVENT_LOCATED_INTERVAL) {
     ierr = TSRollBack(ts);CHKERRQ(ierr);
+    ts->steps--;
+    ts->total_steps--;
     event->status = TSEVENT_PROCESSING;
   } else {
     for (i = 0; i < event->nevents; i++) {
