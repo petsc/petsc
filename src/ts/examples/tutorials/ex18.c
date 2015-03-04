@@ -751,6 +751,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     /* Coordinates were never localized for coarse meshes */
     if (cdm) {ierr = DMPlexLocalizeCoordinates(cdm);CHKERRQ(ierr);}
   }
+  ierr = PetscDSViewFromOptions((PetscObject) prob, NULL, "-ds_view");CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[0]);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe[1]);CHKERRQ(ierr);
   ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
