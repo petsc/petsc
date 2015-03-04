@@ -136,6 +136,10 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
   } else {
     event->status = TSEVENT_RESET_NEXTSTEP;
   }
+  /* Reset the event residual functions as states might get changed by the postevent callback */
+  ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,event->monitorcontext);CHKERRQ(ierr);
+  event->ptime_prev  = t;
+
   PetscFunctionReturn(0);
 }
 
@@ -206,10 +210,6 @@ PetscErrorCode TSEventMonitor(TS ts)
     dt = event->tstepend-t;
     ts->time_step = dt;
     ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,forwardsolve,event->monitorcontext);CHKERRQ(ierr);
-    for (i = 0; i < event->nevents; i++) {
-      event->fvalue_prev[i] = event->fvalue[i];
-    }
-    event->ptime_prev  = t;
     PetscFunctionReturn(0);
   }
 
