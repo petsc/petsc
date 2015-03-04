@@ -1159,7 +1159,7 @@ runex54f:
         ${RM} -f ex54.tmp
 
 runex55_geo:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -mg_coarse_ksp_type preonly > ex55.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -mg_coarse_ksp_type preonly -ksp_type cg -ksp_norm_type unpreconditioned > ex55.tmp 2>&1;	  \
          ${DIFF} output/ex55_0.out ex55.tmp || printf "${PWD}\nPossible problem with ex55_geo, diffs above\n=========================================\n"; \
         ${RM} -f ex55.tmp
 
