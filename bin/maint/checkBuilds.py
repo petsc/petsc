@@ -32,11 +32,12 @@ class BuildChecker(script.Script):
     import nargs,datetime
 
     help = script.Script.setupHelp(self, help)
-    help.addArgument('BuildCheck', '-remoteMachine',    nargs.Arg(None, 'terra.mcs.anl.gov', 'The machine on which PETSc logs are stored'))
+    help.addArgument('BuildCheck', '-remoteMachine',    nargs.Arg(None, 'login.mcs.anl.gov', 'The machine on which PETSc logs are stored'))
     help.addArgument('BuildCheck', '-logDirectory',     nargs.Arg(None, os.path.join('/mcs', 'ftp', 'pub', 'petsc','nightlylogs'), 'The directory in which PETSc logs are stored'))
     help.addArgument('BuildCheck', '-archCompilers',    nargs.Arg(None, {}, 'A mapping from architecture names to lists of compiler names'))
-    help.addArgument('BuildCheck', '-blameMail',        nargs.ArgBool(None, 0, 'Generate blame emails'))
-    help.addArgument('BuildCheck', '-ignoreDeprecated', nargs.ArgBool(None, 0, 'Ignore deprecated warnings'))
+    help.addArgument('BuildCheck', '-blameMail',        nargs.ArgBool(None, 1, 'Generate blame emails'))
+    help.addArgument('BuildCheck', '-ignoreDeprecated', nargs.ArgBool(None, 1, 'Ignore deprecated warnings'))
+    help.addArgument('BuildCheck', '-ignorePragma',     nargs.ArgBool(None, 1, 'Ignore unknown pragma'))
     help.addArgument('BuildCheck', '-ignoreNote',       nargs.ArgBool(None, 0, 'Ignore note warnings'))
     help.addArgument('BuildCheck', '-blameMailDate',    nargs.Arg(None, str(datetime.date.today()), 'Date given in blame mail subject'))
     return help
@@ -174,6 +175,8 @@ class BuildChecker(script.Script):
       return
     if self.argDB['ignoreDeprecated'] and re.search(r'deprecated',line):
       return
+    if self.argDB['ignorePragma'] and re.search(r'unrecognized #pragma',line):
+      return
     message = line.rstrip()
     if self.argDB['ignoreNote'] and re.search(r'note:',line):
       return
@@ -281,6 +284,7 @@ class BuildChecker(script.Script):
       (output, error, status) = self.executeShellCommand('ssh '+self.argDB['remoteMachine']+' ls -1 '+self.argDB['logDirectory'])
       files = output.split('\n')
     print files
+    print filter(lambda fname: buildRE.match(fname), files)
     return filter(lambda fname: buildRE.match(fname), files)
 
   def blameMail(self):
