@@ -4,4 +4,4 @@ PseudoSampleSort: max_nrecv: 1495 of 1343
 [ 1] PseudoSampleSort: nrecv: 1495 of 1343
 XYZ Cut:    821 	Balance:  1.000 [1343 2686 2]
 Partitioning a graph of size 2686 serially
-Final   2-way Cut:    556 	Balance: 1.007 
+Final   2-way Cut:    570 	Balance: 1.003 
