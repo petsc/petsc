@@ -179,11 +179,19 @@ def chkusingwindowspython():
   return 0
 
 def chkcygwinpython():
-  if os.path.exists('/usr/bin/cygcheck.exe') and sys.platform == 'cygwin' :
-    sys.argv.append('--useThreads=0')
-    extraLogs.append('''\
+  if sys.platform == 'cygwin' :
+    import platform
+    import re
+    r=re.compile("([0-9]+).([0-9]+).([0-9]+)")
+    m=r.match(platform.release())
+    major=int(m.group(1))
+    minor=int(m.group(2))
+    subminor=int(m.group(3))
+    if ((major < 1) or (major == 1 and minor < 7) or (major == 1 and minor == 7 and subminor < 34)):
+      sys.argv.append('--useThreads=0')
+      extraLogs.append('''\
 ===============================================================================
-** Cygwin-python detected. Threads do not work correctly. ***
+** Cygwin version is older than 1.7.34. Python threads do not work correctly. ***
 ** Disabling thread usage for this run of ./configure *******
 ===============================================================================''')
   return 0
