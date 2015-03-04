@@ -40,6 +40,23 @@ typedef struct {
 } AppCtx;
 
 #undef __FUNCT__
+#define __FUNCT__ "PostStepFunction"
+PetscErrorCode PostStepFunction(TS ts)
+{
+  PetscErrorCode ierr;
+  PetscReal      t,dt;
+  PetscInt       step;
+
+  PetscFunctionBegin;
+  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
+  ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
+  ierr = TSGetTimeStepNumber(ts,&step);CHKERRQ(ierr);
+
+  ierr = PetscPrintf(PETSC_COMM_SELF,"At time %3.2f steps completed = %d, next time step = %13.12f\n",t,step,dt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "EventFunction"
 PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *app)
 {
@@ -337,6 +354,7 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
+  ierr = TSSetPostStep(ts,PostStepFunction);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set events
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
