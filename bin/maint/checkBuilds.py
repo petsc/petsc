@@ -39,19 +39,26 @@ class BuildChecker(script.Script):
   # (author) -> (offending commit, file name:line number, warnings)
   blameDict = {}
 
-  compilers = {'aix5.1.0.0':           ['ibm'],
-               'cygwin-borland':       ['win32fe', 'borland'],
-               'cygwin-ms':            ['win32fe', 'ms'],
-               'linux-gnu-gcc-absoft': ['gcc', 'absoftF90'],
-               'linux-gnu-gcc-ifc':    ['gcc', 'intelF90'],
-               'linux-gnu-gcc-pgf90':  ['gcc', 'pgF90'],
-               'linux-gnu-ia64-intel': ['intel', 'intelF90'],
-               'linux-rhAS3-intel81' : ['intel', 'intelF90'],
-               'macosx-ibm':           ['ibm'],
-               'osf5.0':               ['mipsUltrix'],
-               'solaris2.9':           ['solaris'],
-               'solaris2.9-lam':       ['solaris'],
-               'solaris-uni':          ['solaris'],
+  compilers = {'aix5.1.0.0':                      ['ibm'],
+               'cygwin-borland':                  ['win32fe', 'borland'],
+               'cygwin-ms':                       ['win32fe', 'ms'],
+               'arch-mswin':                      ['win32fe', 'ms'],
+               'arch-mswin-cxx-cmplx':            ['win32fe', 'ms'],
+               'linux-gnu-gcc-absoft':            ['gcc', 'absoftF90'],
+               'linux-gnu-gcc-ifc':               ['gcc', 'intelF90'],
+               'linux-gnu-gcc-pgf90':             ['gcc', 'pgF90'],
+               'linux-gnu-ia64-intel':            ['intel', 'intelF90'],
+               'linux-rhAS3-intel81' :            ['intel', 'intelF90'],
+               'macosx-ibm':                      ['ibm'],
+               'osf5.0':                          ['mipsUltrix'],
+               'solaris2.9':                      ['solaris'],
+               'solaris2.9-lam':                  ['solaris'],
+               'solaris-uni':                     ['solaris'],
+               'arch-opensolaris':                ['solaris'],
+               'arch-opensolaris-cmplx-pkgs-dbg': ['solaris'],
+               'arch-opensolaris-misc':           ['solaris'],
+               'arch-opensolaris-pkgs-opt':       ['solaris'],
+               'arch-pardiso':                    ['intel'],
                # Untested architectures
                'irix6.5':         ['sgiMipsPro'],
                't3e':             ['cray'],
@@ -227,10 +234,7 @@ class BuildChecker(script.Script):
                 lastmessage = lastmessage + ("\n      %s" % message)
                 self.filelineDict[lasttuple].add(lastmessage)
                 continue
-              fn = m.group('filename')
               ln = m.group('line')
-              message = re.sub(re.escape(fn),'',message,count=1)
-              message = re.sub(ln,'',message,count=1)
               relpath = os.path.relpath(m.group('filename'),petscdir)
               message = '['+machine+','+arch+','+branch+'] '+message
               if (commit,relpath) not in self.commitfileDict:
