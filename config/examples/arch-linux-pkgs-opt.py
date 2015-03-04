@@ -3,10 +3,11 @@
 
 configure_options = [
   '--with-debugging=0',
-  '--with-cc=mpicc.openmpi',
-  '--with-cxx=mpicxx.openmpi',
-  '--with-fc=mpif90.openmpi',
-  '--with-mpiexec=mpiexec.openmpi',
+  #'--with-cc=mpicc.openmpi',
+  #'--with-cxx=mpicxx.openmpi',
+  #'--with-fc=mpif90.openmpi',
+  #'--with-mpiexec=mpiexec.openmpi',
+  '--download-openmpi=1',
   '--download-fblaslapack=1',
   '--download-hypre=1',
   '--download-cmake=1',
