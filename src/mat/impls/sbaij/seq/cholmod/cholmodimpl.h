@@ -35,11 +35,6 @@
 #  define cholmod_X_solve           cholmod_solve
 #endif
 
-#define UF_long long long
-#define UF_long_max LONG_LONG_MAX
-#define UF_long_id "%lld"
-#undef I  /* complex.h defines I=_Complex_I, but cholmod_core.h uses I as a field member */
-
 EXTERN_C_BEGIN
 #include <cholmod.h>
 EXTERN_C_END

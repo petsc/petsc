@@ -1826,9 +1826,14 @@ runex125:
 	   else printf "${PWD}\nPossible problem with ex125, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex125.tmp
 runex125_mumps:
+	-@${MPIEXEC} -n 1 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 2 > ex125.tmp 2>&1; \
+	   if (${DIFF} output/ex125_mumps.out ex125.tmp) then true; \
+	   else printf "${PWD}\nPossible problem with ex125_mumps, diffs above\n=========================================\n"; fi; \
+	   ${RM} -f ex125.tmp
+runex125_mumps_2:
 	-@${MPIEXEC} -n 3 ./ex125 -f ${DATAFILESPATH}/matrices/small -mat_solver_package 2 > ex125.tmp 2>&1; \
 	   if (${DIFF} output/ex125_mumps.out ex125.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex125, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex125_mumps_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex125.tmp
 
 runex126f:
@@ -2277,5 +2282,6 @@ TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm 
                                  ex145.PETSc runex145 runex145_2 ex145.rm \
                                  ex174.PETSc runex174 runex174_dense runex174_elemental runex174_sbaij \
                                  runex174_2 runex174_2_dense runex174_2_elemental runex174_2_sbaij ex174.rm
+TESTEXAMPLES_MUMPS             = ex125.PETSc runex125_mumps runex125_mumps_2 ex125.rm
 
 include ${PETSC_DIR}/lib/petsc-conf/test
