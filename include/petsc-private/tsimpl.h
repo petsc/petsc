@@ -147,6 +147,7 @@ struct _p_TS {
   PetscInt  time_steps_since_decrease; /* number of timesteps since timestep was decreased due to lack of convergence */
   /* ----------------------------------------------------------------------------------------------------------------*/
 
+  PetscBool steprollback;           /* Is the current step rolled back? */
   PetscInt  steps;                  /* steps taken so far in latest call to TSSolve() */
   PetscInt  total_steps;            /* steps taken in all calls to TSSolve() since the TS was created or since TSSetUp() was called */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
