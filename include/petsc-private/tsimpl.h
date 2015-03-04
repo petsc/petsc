@@ -257,7 +257,7 @@ struct _p_TSEvent {
   PetscReal       ptime;           /* time at step end */
   PetscReal       ptime_prev;      /* time at step start */
   PetscErrorCode  (*monitor)(TS,PetscReal,Vec,PetscScalar*,void*); /* User event monitor function */
-  PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*); /* User post event function */
+  PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*); /* User post event function */
   PetscBool      *terminate;        /* 1 -> Terminate time stepping, 0 -> continue */
   PetscInt       *direction;        /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */ 
   PetscInt        nevents;          /* Number of events to handle */

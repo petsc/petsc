@@ -34,7 +34,7 @@
 .  fvalue    - function value of events at time t
                
    Calling sequence of postevent:
-   PetscErrorCode PostEvent(TS ts,PetscInt nevents_zero, PetscInt events_zero, PetscReal t,Vec U,void* ctx)
+   PetscErrorCode PostEvent(TS ts,PetscInt nevents_zero, PetscInt events_zero, PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
 
    Input Parameters:
 +  ts - the TS context
@@ -42,6 +42,7 @@
 .  events_zero  - indices of local events which have reached zero
 .  t            - current time
 .  U            - current solution
+.  forwardsolve - Flag to indicate whether TS is doing a forward solve (1) or adjoint solve (0)
 -  ctx          - the context passed with eventmonitor
 
    Level: intermediate
@@ -50,7 +51,7 @@
 
 .seealso: TSCreate(), TSSetTimeStep(), TSSetConvergedReason()
 @*/
-PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate,PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*),void *mectx)
+PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate,PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void *mectx)
 {
   PetscErrorCode ierr;
   PetscReal      t;
@@ -91,7 +92,29 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPostEvent"
-PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],PetscReal t,Vec U,void *ctx)
+/*
+   TSPostEvent - Does post event processing by calling the user-defined postevent function
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  nevents_zero - number of local events whose event function is zero
+.  events_zero  - indices of local events which have reached zero
+.  t            - current time
+.  U            - current solution
+.  forwardsolve - Flag to indicate whether TS is doing a forward solve (1) or adjoint solve (0)
+-  ctx          - the context passed with eventmonitor
+
+   Level: intermediate
+
+.keywords: TS, event, set, monitor
+
+.seealso: TSSetEventMonitor(),TSEvent
+*/
+#undef __FUNCT__
+#define __FUNCT__ "TSPostEvent"
+PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],PetscReal t,Vec U,PetscBool forwardsolve,void *ctx)
 {
   PetscErrorCode ierr;
   TSEvent        event=ts->event;
@@ -101,7 +124,7 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
 
   PetscFunctionBegin;
   if (event->postevent) {
-    ierr = (*event->postevent)(ts,nevents_zero,events_zero,t,U,ctx);CHKERRQ(ierr);
+    ierr = (*event->postevent)(ts,nevents_zero,events_zero,t,U,forwardsolve,ctx);CHKERRQ(ierr);
   }
   for(i = 0; i < nevents_zero;i++) {
     terminate = (PetscBool)(terminate || event->terminate[events_zero[i]]);
@@ -145,6 +168,7 @@ PetscErrorCode TSEventMonitor(TS ts)
   PetscReal      dt;
   TSEventStatus  status = event->status;
   PetscInt       rollback=0,in[2],out[2];
+  PetscBool      forwardsolve=PETSC_TRUE; /* Flag indicating that TS is doing a forward solve */
 
   PetscFunctionBegin;
 
@@ -181,7 +205,7 @@ PetscErrorCode TSEventMonitor(TS ts)
   if (event->status == TSEVENT_ZERO) {
     dt = event->tstepend-t;
     ts->time_step = dt;
-    ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,event->monitorcontext);CHKERRQ(ierr);
+    ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,forwardsolve,event->monitorcontext);CHKERRQ(ierr);
     for (i = 0; i < event->nevents; i++) {
       event->fvalue_prev[i] = event->fvalue[i];
     }
