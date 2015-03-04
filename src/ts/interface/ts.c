@@ -1692,9 +1692,9 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointGetGradients"
+#define __FUNCT__ "TSAdjointGetCostGradients"
 /*@
-   TSAdjointGetGradients - Returns the gradients from the TSAdjointSolve()
+   TSAdjointGetCostGradients - Returns the gradients from the TSAdjointSolve()
 
    Not Collective, but Vec returned is parallel if TS is parallel
 
@@ -1711,7 +1711,7 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 
 .keywords: TS, timestep, get, sensitivity
 @*/
-PetscErrorCode  TSAdjointGetGradients(TS ts,PetscInt *numberadjs,Vec **v,Vec **w)
+PetscErrorCode  TSAdjointGetCostGradients(TS ts,PetscInt *numberadjs,Vec **v,Vec **w)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1911,7 +1911,7 @@ PetscErrorCode  TSAdjointSetUp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->adjointsetupcalled) PetscFunctionReturn(0);
-  if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetGradients() first");
+  if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetCostGradients() first");
   if (ts->ops->adjointsetup) {
     ierr = (*ts->ops->adjointsetup)(ts);CHKERRQ(ierr);
   }
@@ -2273,28 +2273,31 @@ PetscErrorCode  TSAdjointSetSteps(TS ts,PetscInt steps)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAdjointSetGradients"
+#define __FUNCT__ "TSAdjointSetCostGradients"
 /*@
-   TSAdjointSetGradients - Sets the initial value of gradients w.r.t. initial conditions and w.r.t. the problem parameters  for use by the TS routines.
+   TSAdjointSetCostGradients - Sets the initial value of the gradients of the cost function w.r.t. initial conditions and w.r.t. the problem parameters 
+      for use by the TSAdjoint routines.
 
    Logically Collective on TS and Vec
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
-.  u - gradients with respect to the initial condition variables
--  w - gradients with respect to the parameters
+.  u - gradients with respect to the initial condition variables, the dimension and parallel layout of these vectors is the same as the ODE solution vector
+-  w - gradients with respect to the parameters, the number of entries in these vectors is the same as the number of parameters
 
    Level: beginner
 
+   Notes: the entries in these vectors must be correctly initialized with the values ????
+
 .keywords: TS, timestep, set, sensitivity, initial conditions
 @*/
-PetscErrorCode  TSAdjointSetGradients(TS ts,PetscInt numberadjs,Vec *u,Vec *w)
+PetscErrorCode  TSAdjointSetCostGradients(TS ts,PetscInt numberadjs,Vec *u,Vec *w)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(u,2);
   ts->vecs_sensi  = u;
-  ts->vecs_sensip = w;  
+  ts->vecs_sensip = w;
   ts->numberadjs  = numberadjs;
   PetscFunctionReturn(0);
 }
@@ -2302,7 +2305,7 @@ PetscErrorCode  TSAdjointSetGradients(TS ts,PetscInt numberadjs,Vec *u,Vec *w)
 #undef __FUNCT__
 #define __FUNCT__ "TSAdjointSetRHSJacobian"
 /*@C
-  TSAdjointSetRHSJacobian - Sets the function that computes the Jacobian w.r.t. parameters.
+  TSAdjointSetRHSJacobian - Sets the function that computes the Jacobian of G w.r.t. the parameters p where y_t = G(y,p,t), as well as the location to store the matrix.
 
   Logically Collective on TS
 
@@ -2311,19 +2314,21 @@ PetscErrorCode  TSAdjointSetGradients(TS ts,PetscInt numberadjs,Vec *u,Vec *w)
 - func - The function
 
   Calling sequence of func:
-$ func (TS ts,PetscReal t,Vec u,Mat A,void *ctx);
+$ func (TS ts,PetscReal t,Vec y,Mat A,void *ctx);
 +   t - current timestep
-.   u - input vector
+.   y - input vector (current ODE solution)
 .   A - output matrix
 -   ctx - [optional] user-defined function context
 
   Level: intermediate
 
-.keywords: TS, sensitivity 
-.seealso: 
+  Notes: Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
+
+.keywords: TS, sensitivity
+.seealso:
 @*/
 PetscErrorCode  TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*func)(TS,PetscReal,Vec,Mat,void*),void *ctx)
-{ 
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2335,7 +2340,6 @@ PetscErrorCode  TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*func)(TS
   if(Amat) {
     ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);
     ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
-    
     ts->Jacp = Amat;
   }
   PetscFunctionReturn(0);
@@ -2343,7 +2347,7 @@ PetscErrorCode  TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*func)(TS
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdjointComputeRHSJacobian"
-/*@
+/*@C
   TSAdjointComputeRHSJacobian - Runs the user-defined Jacobian function.
 
   Collective on TS
@@ -2359,57 +2363,58 @@ PetscErrorCode  TSAdjointSetRHSJacobian(TS ts,Mat Amat,PetscErrorCode (*func)(TS
 PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
 {
   PetscErrorCode ierr;
- 
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,3);
   PetscValidPointer(Amat,4);
-  
+
   PetscStackPush("TS user JacobianP function for sensitivity analysis");
   ierr = (*ts->rhsjacobianp)(ts,t,X,Amat,ts->rhsjacobianpctx); CHKERRQ(ierr);
   PetscStackPop;
-  
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdjointSetCostIntegrand"
 /*@C
-    TSAdjointSetCostIntegrand - Sets the routine for evaluating the integral term in a cost function
+    TSAdjointSetCostIntegrand - Sets the routine for evaluating the integral term in one or more cost functions
 
     Logically Collective on TS
 
     Input Parameters:
 +   ts - the TS context obtained from TSCreate()
-.   numberadjs - number of gradients to be computed
-.   fq - routine for evaluating the right-hand-side function
-.   drdy - array of vectors to contain the gradient of the r's with respect to y, NULL if not a function of y
+.   numberadjs - number of gradients to be computed, this is the number of cost functions
+.   rf - routine for evaluating the integrand function
+.   drdy - array of vectors to contain the gradients of the r's with respect to y, NULL if not a function of y, each vector has the same size and parallel layout as the vector y
 .   drdyf - function that computes the gradients of the r's with respect to y,NULL if not a function y
-.   drdp - array of vectors to contain the gradient of the r's with respect to p, NULL if not a function of p
+.   drdp - array of vectors to contain the gradients of the r's with respect to p, NULL if not a function of p, each vector has the same size as p.
 .   drdpf - function that computes the gradients of the r's with respect to p, NULL if not a function of p
 -   ctx - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
 
-    Calling sequence of fq:
-$     TSCostIntegrand(TS ts,PetscReal t,Vec u,PetscReal *f,void *ctx);
+    Calling sequence of rf:
+$     rf(TS ts,PetscReal t,Vec y,Vec f[],void *ctx);
 
 +   t - current timestep
-.   u - input vector
-.   f - function vector
+.   y - input vector
+.   f - function result; one vector entry for each cost function
 -   ctx - [optional] user-defined function context
 
    Calling sequence of drdyf:
-$    PetscErroCode drdyf(TS ts,PetscReal t,Vec U,Vec *drdy,void *ctx);
+$    PetscErroCode drdyf(TS ts,PetscReal t,Vec y,Vec *drdy,void *ctx);
 
    Calling sequence of drdpf:
-$    PetscErroCode drdpf(TS ts,PetscReal t,Vec U,Vec *drdp,void *ctx);
+$    PetscErroCode drdpf(TS ts,PetscReal t,Vec y,Vec *drdp,void *ctx);
 
     Level: intermediate
 
+    Notes: For optimization there is generally a single cost function, numberadjs = 1. For sensitivities there may be multiple cost functions
+
 .keywords: TS, sensitivity analysis, timestep, set, quadrature, function
 
-.seealso: TSAdjointSetRHSJacobian(),TSAdjointGetGradients(), TSAdjointSetGradients()
+.seealso: TSAdjointSetRHSJacobian(),TSAdjointGetCostGradients(), TSAdjointSetCostGradients()
 @*/
-PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,          PetscErrorCode (*fq)(TS,PetscReal,Vec,Vec,void*),
+PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,          PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
                                                                     Vec *drdy,PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
                                                                     Vec *drdp,PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 {
@@ -2417,12 +2422,12 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numberadjs,          Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSAdjointSetGradients() first so that the number of cost functions can be determined.");
-  if (ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetGradients()");
+  if (!ts->numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Call TSAdjointSetCostGradients() first so that the number of cost functions can be determined.");
+  if (ts->numberadjs && ts->numberadjs!=numberadjs) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"The number of cost functions (2rd parameter of TSAdjointSetCostIntegrand()) is inconsistent with the one set by TSAdjointSetCostGradients()");
 
   ierr                  = VecCreateSeq(PETSC_COMM_SELF,numberadjs,&ts->vec_costintegral);CHKERRQ(ierr);
   ierr                  = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
-  ts->costintegrand     = fq;
+  ts->costintegrand     = rf;
   ts->costintegrandctx  = ctx;
 
   ts->drdyfunction    = drdyf;
@@ -2471,7 +2476,7 @@ PetscErrorCode  TSAdjointGetCostIntegral(TS ts,Vec *v)
    Input Parameters:
 +  ts - the TS context
 .  t - current time
--  U - state vector
+-  y - state vector, i.e. current solution
 
    Output Parameter:
 .  q - vector of size numberadjs to hold the outputs
@@ -2486,25 +2491,25 @@ PetscErrorCode  TSAdjointGetCostIntegral(TS ts,Vec *v)
 
 .seealso: TSAdjointSetCostIntegrand()
 @*/
-PetscErrorCode TSAdjointComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q)
+PetscErrorCode TSAdjointComputeCostIntegrand(TS ts,PetscReal t,Vec y,Vec q)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   PetscValidHeaderSpecific(q,VEC_CLASSID,4);
 
-  ierr = PetscLogEventBegin(TS_FunctionEval,ts,U,q,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TS_FunctionEval,ts,y,q,0);CHKERRQ(ierr);
   if (ts->costintegrand) {
     PetscStackPush("TS user integrand in the cost function");
-    ierr = (*ts->costintegrand)(ts,t,U,q,ts->costintegrandctx);CHKERRQ(ierr);
+    ierr = (*ts->costintegrand)(ts,t,y,q,ts->costintegrandctx);CHKERRQ(ierr);
     PetscStackPop;
   } else {
     ierr = VecZeroEntries(q);CHKERRQ(ierr);
   }
 
-  ierr = PetscLogEventEnd(TS_FunctionEval,ts,U,q,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TS_FunctionEval,ts,y,q,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2527,16 +2532,16 @@ PetscErrorCode TSAdjointComputeCostIntegrand(TS ts,PetscReal t,Vec U,Vec q)
 .keywords: TS, sensitivity
 .seealso: TSAdjointComputeDRDYFunction()
 @*/
-PetscErrorCode  TSAdjointComputeDRDYFunction(TS ts,PetscReal t,Vec X,Vec *drdy)
+PetscErrorCode  TSAdjointComputeDRDYFunction(TS ts,PetscReal t,Vec y,Vec *drdy)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
 
   PetscStackPush("TS user DRDY function for sensitivity analysis");
-  ierr = (*ts->drdyfunction)(ts,t,X,drdy,ts->costintegrandctx); CHKERRQ(ierr);
+  ierr = (*ts->drdyfunction)(ts,t,y,drdy,ts->costintegrandctx); CHKERRQ(ierr);
   PetscStackPop;
   PetscFunctionReturn(0);
 }
@@ -2560,16 +2565,16 @@ PetscErrorCode  TSAdjointComputeDRDYFunction(TS ts,PetscReal t,Vec X,Vec *drdy)
 .keywords: TS, sensitivity
 .seealso: TSAdjointSetDRDPFunction()
 @*/
-PetscErrorCode  TSAdjointComputeDRDPFunction(TS ts,PetscReal t,Vec X,Vec *drdp)
+PetscErrorCode  TSAdjointComputeDRDPFunction(TS ts,PetscReal t,Vec y,Vec *drdp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(X,VEC_CLASSID,3);
+  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
 
   PetscStackPush("TS user DRDP function for sensitivity analysis");
-  ierr = (*ts->drdpfunction)(ts,t,X,drdp,ts->costintegrandctx); CHKERRQ(ierr);
+  ierr = (*ts->drdpfunction)(ts,t,y,drdp,ts->costintegrandctx); CHKERRQ(ierr);
   PetscStackPop;
   PetscFunctionReturn(0);
 }

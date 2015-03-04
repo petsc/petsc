@@ -341,7 +341,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray(lambdap[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = -1.0;
   ierr = VecRestoreArray(lambdap[0],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetGradients(ts,1,lambda,lambdap);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostGradients(ts,1,lambda,lambdap);CHKERRQ(ierr);
 
   ierr = VecDuplicate(lambda[0],&drdy[0]);CHKERRQ(ierr);
   ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
