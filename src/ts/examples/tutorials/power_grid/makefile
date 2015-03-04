@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/power_grid/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex3adj.c ex3opt.c ex3opt_fd.c ex4.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex3adj.c ex3adj_events.c ex3opt.c ex3opt_fd.c ex4.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
@@ -35,6 +35,9 @@ ex3: ex3.o  chkopts
 
 ex3adj: ex3adj.o  chkopts
 	-${CLINKER} -o ex3adj ex3adj.o  ${PETSC_TS_LIB}
+
+ex3adj_events: ex3adj_events.o  chkopts
+	-${CLINKER} -o ex3adj_events ex3adj_events.o  ${PETSC_TS_LIB}
 
 ex3opt: ex3opt.o  chkopts
 	-${CLINKER} -o ex3opt ex3opt.o  ${PETSC_LIB}
