@@ -121,6 +121,7 @@ cdef extern from * nogil:
     int PCGetOperators(PetscPC,PetscMat*,PetscMat*)
     int PCGetOperatorsSet(PetscPC,PetscBool*,PetscBool*)
     int PCSetCoordinates(PetscPC,PetscInt,PetscInt,PetscReal[])
+    int PCSetUseAmat(PetscPC,PetscBool)
 
     int PCComputeExplicitOperator(PetscPC,PetscMat*)
 
@@ -169,6 +170,10 @@ cdef extern from * nogil:
     int PCFieldSplitSetSchurPre(PetscPC,PetscPCFieldSplitSchurPreType,PetscMat)
     int PCFieldSplitSetSchurFactType(PetscPC,PetscPCFieldSplitSchurFactType)
     #int PCFieldSplitGetSchurBlocks(PetscPC,PetscMat*,PetscMat*,PetscMat*,PetscMat*)
+
+    int PCCompositeSetType(PetscPC,PetscPCCompositeType)
+    int PCCompositeGetPC(PetscPC,PetscInt,PetscPC*)
+    int PCCompositeAddPC(PetscPC,PetscPCType)
 
     int PCKSPGetKSP(PetscPC,PetscKSP*)
 
