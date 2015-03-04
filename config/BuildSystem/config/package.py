@@ -188,6 +188,13 @@ class Package(config.base.Configure):
         outflags.append(flag)
     return ' '.join(outflags)
 
+  def removeWarningFlags(self,flags):
+    outflags = []
+    for flag in flags.split():
+      if not flag in ['-Wall','-Wwrite-strings','-Wno-strict-aliasing','-Wno-unknown-pragmas','-Wno-unused-variable','-Wno-unused-dummy-argument','-fvisibility=hidden']:
+        outflags.append(flag)
+    return ' '.join(outflags)
+
   def getDefaultLanguage(self):
     '''The language in which to run tests'''
     if hasattr(self, 'forceLanguage'):
@@ -1010,14 +1017,14 @@ class GNUPackage(Package):
     self.pushLanguage('C')
     compiler = self.getCompiler()
     args.append('CC="'+self.getCompiler()+'"')
-    args.append('CFLAGS="'+self.getCompilerFlags()+'"')
+    args.append('CFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
     args.append('AR="'+self.setCompilers.AR+'"')
     args.append('ARFLAGS="'+self.setCompilers.AR_FLAGS+'"')
     self.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('Cxx')
       args.append('CXX="'+self.getCompiler()+'"')
-      args.append('CXXFLAGS="'+self.getCompilerFlags()+'"')
+      args.append('CXXFLAGS="'+self.removeWarningFlags(self.getCompilerFlags())+'"')
       self.popLanguage()
     else:
       args.append('--disable-cxx')
@@ -1035,13 +1042,13 @@ class GNUPackage(Package):
           self.framework.log.write('Using IBM f90 compiler, switching to xlf for compiling ' + self.PACKAGE + '\n')
         # now set F90
         args.append('F90="'+fc+'"')
-        args.append('F90FLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
+        args.append('F90FLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
       else:
         args.append('--disable-f90')
       args.append('F77="'+fc+'"')
-      args.append('FFLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
+      args.append('FFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
       args.append('FC="'+fc+'"')
-      args.append('FCFLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
+      args.append('FCFLAGS="'+self.removeWarningFlags(self.getCompilerFlags()).replace('-Mfree','')+'"')
       self.popLanguage()
     else:
       args.append('--disable-fortran')
@@ -1125,19 +1132,19 @@ class CMakePackage(Package):
     args.append('-DCMAKE_AR='+self.setCompilers.AR)
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
-    cflags = self.setCompilers.getCompilerFlags()
+    cflags = self.removeWarningFlags(self.setCompilers.getCompilerFlags())
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.framework.getCompilerFlags()+'"')
+      args.append('-DCMAKE_CXX_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
-      args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.framework.getCompilerFlags()+'"')
+      args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.removeWarningFlags(self.framework.getCompilerFlags())+'"')
       self.framework.popLanguage()
     return args
 
