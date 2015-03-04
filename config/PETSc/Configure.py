@@ -89,7 +89,6 @@ class Configure(config.base.Configure):
     if os.path.isdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
       for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
         (packageName, ext) = os.path.splitext(package)
-        if packageName in ['mpi4py', 'petsc4py'] : continue
         if not packageName.startswith('.') and not packageName.startswith('#') and ext == '.py' and not packageName == '__init__' and not packageName == 'PETSc':
           packageObj                    = framework.require('config.packages.'+packageName, self)
           packageObj.headerPrefix       = self.headerPrefix
@@ -139,16 +138,14 @@ class Configure(config.base.Configure):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig'))
     fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig','PETSc.pc'),'w')
     if self.framework.argDB['prefix']:
-      installdir = self.framework.argDB['prefix']
-      fd.write('prefix='+installdir+'\n')
+      fd.write('prefix='+self.installdir.dir+'\n')
       fd.write('exec_prefix=${prefix}\n')
       fd.write('includedir=${prefix}/include\n')
-      fd.write('libdir='+os.path.join(installdir,'lib')+'\n')
     else:
       fd.write('prefix='+self.petscdir.dir+'\n')
       fd.write('exec_prefix=${prefix}\n')
       fd.write('includedir=${prefix}/include\n')
-      fd.write('libdir='+os.path.join(self.petscdir.dir,self.arch.arch,'lib')+'\n')
+    fd.write('libdir='+os.path.join(self.installdir.dir,'lib')+'\n')
 
     self.setCompilers.pushLanguage('C')
     fd.write('ccompiler='+self.setCompilers.getCompiler()+'\n')
@@ -187,7 +184,7 @@ class Configure(config.base.Configure):
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules','petsc')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules','petsc'))
     if self.framework.argDB['prefix']:
-      installdir  = self.framework.argDB['prefix']
+      installdir  = self.installdir.dir
       installarch = ''
       installpath = os.path.join(installdir,'bin')
     else:
@@ -364,8 +361,7 @@ prepend-path PATH %s
       self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
     self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
     if self.framework.argDB['prefix'] and self.setCompilers.CSharedLinkerFlag not in ['-L']:
-      installdir = self.framework.argDB['prefix']
-      lib_basic = self.PETSC_EXTERNAL_LIB_BASIC.replace(self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(installdir,'lib'))
+      lib_basic = self.PETSC_EXTERNAL_LIB_BASIC.replace(self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(self.installdir.dir,'lib'))
     else:
       lib_basic = self.PETSC_EXTERNAL_LIB_BASIC
     self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',lib_basic)
@@ -378,8 +374,8 @@ prepend-path PATH %s
       else:
         self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes))
 
-    self.addMakeMacro('DESTDIR',self.installdir)
-    self.addDefine('LIB_DIR','"'+os.path.join(self.installdir,'lib')+'"')
+    self.addMakeMacro('DESTDIR',self.installdir.dir)
+    self.addDefine('LIB_DIR','"'+os.path.join(self.installdir.dir,'lib')+'"')
 
     if self.framework.argDB['with-single-library']:
       # overrides the values set in conf/variables
@@ -944,12 +940,10 @@ prepend-path PATH %s
       self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do:"',\
                                               '-@echo "'+self.installdir.installSudo+'make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"',\
                                               '-@echo "========================================="'])
-      self.installdir = self.framework.argDB['prefix']
     else:
       self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do:"',\
                                               '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} test"',\
                                               '-@echo "========================================="'])
-      self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
       return
 
   def configureGCOV(self):

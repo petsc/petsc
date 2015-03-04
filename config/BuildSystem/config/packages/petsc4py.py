@@ -13,10 +13,10 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.petscconfigure  = framework.require('PETSc.Configure',self)
     self.numpy           = framework.require('config.packages.Numpy',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
+    self.installdir      = framework.require('PETSc.options.installDir',self)
     return
 
   def Install(self):
@@ -65,7 +65,7 @@ class Configure(config.package.Package):
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\
-                          '@echo "To use petsc4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
+                          '@echo "To use petsc4py, add '+os.path.join(self.installdir.dir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
     if self.argDB['prefix']:
       self.addMakeRule('petsc4py-build','')
