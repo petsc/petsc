@@ -45,9 +45,9 @@ else
    export PETSC_ARCH=arch-${named_test}
    ./config/examples/arch-${named_test}.py ${configure_options}
 fi
-mv configure.log configure.log.${slave_label}.${named_test}
-
 if [ $? -ne 0 ]; then
   cat configure.log
   exit 1
+else
+  cat configure.log
 fi

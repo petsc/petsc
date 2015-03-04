@@ -25,7 +25,7 @@ export PATH=$PATH:/usr/local/bin
    fi
 
 make test
-
-make alltests
-mv ${PETSC_ARCH}/lib/petsc-conf/alltests.log alltests.log.${slave_label}.${named_test}
+if [[ ${testall} == "true" ]]; then
+  make alltests
+fi
 date

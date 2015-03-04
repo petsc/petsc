@@ -8,13 +8,15 @@ email=$JENKINS_EMAIL
 branch=`git symbolic-ref -q --short HEAD`
 architecture="default"
 configoptions=""
-silent="no"
+silent="yes"
 queue="no"
 status=""
 results=""
 cancel=""
+wait="false"
+testall="\&testall=false"
 
-while getopts "h?a:b:d:m:o:qr:su:" opt; do
+while getopts "h?a:b:d:m:o:qr:stu:vw" opt; do
   case "$opt" in
     h|\?)
       echo "sendToJenkins script"
@@ -31,8 +33,10 @@ while getopts "h?a:b:d:m:o:qr:su:" opt; do
       echo '            Example: -o "--with-complex --with-precision=single"'
       echo "         -q                             -- list current queue"
       echo "         -r <number>                    -- console results for job number"
-      echo "         -s                                 -- silent"
+      echo "         -t                             -- run make alltests. default is to just run make test"
       echo "         -u <username on login.mcs.anl.gov> -- default is empty or environmental variable JENKINS_USERNAME"
+      echo "         -v                                 -- verbose"
+      echo "         -w                                 -- wait until finished (only for -r)"
       exit 0
       ;;
     b)
@@ -65,6 +69,15 @@ while getopts "h?a:b:d:m:o:qr:su:" opt; do
     s)
      silent=yes
      ;;
+    t)
+     testall="\&testall=true"
+     ;;
+    v)
+     silent=no
+     ;;
+    w)
+     wait=true
+     ;;
   esac
 done
 
@@ -75,11 +88,6 @@ else
   url=${username}@${sshserver}
 fi;
 
-if [ ${email} == "" ]; then
-  mailto=""
-else
-  mailto="\&mailto=${email}"
-fi
 
 
 # set up connection through named proxy
@@ -105,8 +113,15 @@ if [ "x${status}" != "x" ]; then
   exit 0
 fi
 
+
+# Options for results:
+#   -- get os specific or all or master info
+#   -- still in queue?
+#   -- currently running
+#   -- wait until finished
+
 if [ "x${results}" != "x" ]; then
-  for slave in mcs  macos; do 
+  for slave in mcs  macos; do
       echo
       echo "******** ${slave} *************"
       ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/slave_label=${slave}/${results}/consoleText
@@ -115,12 +130,7 @@ if [ "x${results}" != "x" ]; then
   exit 0
 fi
 
-if [ "x${email}" == "xdefault" ]; then
-  echo "Error: No email address give. Use -m <email> or -m none"
-  exit 1
-fi;
-
-if [ "${email}x" == "x" ]; then
+if [ "x${email}" == "x" ]; then
   mailto=""
 else
   mailto="\&mailto=${email}"
@@ -140,7 +150,7 @@ if [ ${architecture} == "default" ]; then
     let "bn += 1"
   done
 else
-  command="ssh -S jenkins-proxy ${url} curl -s -X POST ${httpsserver}/job/petsc-branch/buildWithParameters?branch='${branch}'${mailto}\&named_test=${architecture}${configoptions}"
+  command="ssh -S jenkins-proxy ${url} curl -s -X POST ${httpsserver}/job/petsc-branch/buildWithParameters?branch='${branch}'${mailto}\&named_test=${architecture}${configoptions}${testall}"
   if [ ${silent} == "no" ]; then
       echo "${command}"
   fi
@@ -156,6 +166,7 @@ else
 fi
 
 
+
 # Close proxy connection
 command="ssh -S jenkins-proxy -O exit ${url}"
 if [ ${silent} == "no" ]; then
@@ -164,3 +175,11 @@ if [ ${silent} == "no" ]; then
 else
     ${command} 2> /dev/null
 fi
+
+if [ "x${email}" == "x" ]; then
+  echo "Note: No email address give. Use -m <email> or set JENKINS_EMAIL"
+else
+  echo "Jenkins will email results to ${mailto}"
+fi
+
+echo "Results can be viewed using ./sendToJenkins -r <buildnumber>"

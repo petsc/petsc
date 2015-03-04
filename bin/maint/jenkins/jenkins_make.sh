@@ -25,4 +25,4 @@ export PATH=$PATH:/usr/local/bin
 
 export PETSC_DIR=${WORKSPACE}
 make
-mv make.log make.log.${slave_label}.${named_test}
+
