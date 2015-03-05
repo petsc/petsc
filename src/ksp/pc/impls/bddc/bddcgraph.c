@@ -154,7 +154,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
   }
 
   /* determine if we are in 2D or 3D */
-  twodim  = !nec;
+  twodim  = (PetscBool)!nec;
   twodimr = PETSC_FALSE;
   ierr = MPI_Allreduce(&twodim,&twodimr,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)graph->l2gmap));CHKERRQ(ierr);
   if (twodimr) { /* we are in a 2D case -> edge are shared by 2 subregions and faces don't exist */
