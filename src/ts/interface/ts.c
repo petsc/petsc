@@ -1912,6 +1912,12 @@ PetscErrorCode  TSAdjointSetUp(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->adjointsetupcalled) PetscFunctionReturn(0);
   if (!ts->vecs_sensi) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSAdjointSetCostGradients() first");
+
+  ierr = VecDuplicateVecs(ts->vecs_sensi[0],ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
+  if (ts->vecs_sensip){
+    ierr = VecDuplicateVecs(ts->vecs_sensip[0],ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+  }
+
   if (ts->ops->adjointsetup) {
     ierr = (*ts->ops->adjointsetup)(ts);CHKERRQ(ierr);
   }
@@ -1954,8 +1960,12 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
-  ts->vecs_sensi = 0;
-  ts->vecs_sensip = 0;
+  ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
+  if (ts->vecs_drdp){
+    ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
+  }
+  ts->vecs_sensi  = NULL;
+  ts->vecs_sensip = NULL;
   ierr = MatDestroy(&ts->Jacp);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costintegral);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_costintegrand);CHKERRQ(ierr);
@@ -2386,9 +2396,7 @@ PetscErrorCode  TSAdjointComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat)
 +   ts - the TS context obtained from TSCreate()
 .   numcost - number of gradients to be computed, this is the number of cost functions
 .   rf - routine for evaluating the integrand function
-.   drdy - array of vectors to contain the gradients of the r's with respect to y, NULL if not a function of y, each vector has the same size and parallel layout as the vector y
 .   drdyf - function that computes the gradients of the r's with respect to y,NULL if not a function y
-.   drdp - array of vectors to contain the gradients of the r's with respect to p, NULL if not a function of p, each vector has the same size as p.
 .   drdpf - function that computes the gradients of the r's with respect to p, NULL if not a function of p
 -   ctx - [optional] user-defined context for private data for the function evaluation routine (may be NULL)
 
@@ -2414,9 +2422,9 @@ $    PetscErroCode drdpf(TS ts,PetscReal t,Vec y,Vec *drdp,void *ctx);
 
 .seealso: TSAdjointSetRHSJacobian(),TSAdjointGetCostGradients(), TSAdjointSetCostGradients()
 @*/
-PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost,          PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
-                                                                    Vec *drdy,PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
-                                                                    Vec *drdp,PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost, PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),
+                                                                  PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),
+                                                                  PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -2429,13 +2437,8 @@ PetscErrorCode  TSAdjointSetCostIntegrand(TS ts,PetscInt numcost,          Petsc
   ierr                  = VecDuplicate(ts->vec_costintegral,&ts->vec_costintegrand);CHKERRQ(ierr);
   ts->costintegrand     = rf;
   ts->costintegrandctx  = ctx;
-
   ts->drdyfunction    = drdyf;
-  ts->vecs_drdy       = drdy;
-
   ts->drdpfunction    = drdpf;
-  ts->vecs_drdp       = drdp;
-
   PetscFunctionReturn(0);
 }
 

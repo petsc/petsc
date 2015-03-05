@@ -4987,8 +4987,8 @@ If there is an integral term in the cost function, i.e. $r()$ is nonzero, one mu
 \begin{tabbing}
 TSAdjointSetCostIntegrand(\=TS ts,PetscInt numcost,\\
                           \>PetscErrorCode (*rf)(TS,PetscReal,Vec,Vec,void*),\\
-                          \>Vec *drdy,PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),\\
-                          \>Vec *drdp,PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
+                          \>PetscErrorCode (*drdyf)(TS,PetscReal,Vec,Vec*,void*),\\
+                          \>PetscErrorCode (*drdpf)(TS,PetscReal,Vec,Vec*,void*),void *ctx)
 \end{tabbing}
 
 Lastly one starts the backward run by calling
