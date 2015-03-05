@@ -4,7 +4,7 @@
 #include <petscsf.h>
 
 typedef struct {
-  PetscReal dummy;
+  PetscBool symmetric;
 } MC_Greedy;
 
 #undef __FUNCT__
@@ -198,12 +198,13 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring m
 #define __FUNCT__ "GreedyColoringLocalDistanceTwo_Private"
 PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,PetscReal *wts,PetscInt *lperm,ISColoringValue *colors)
 {
+  MC_Greedy       *gr = (MC_Greedy *) mc->data;
   PetscInt        i,j,k,l,s,e,n,nd,nd_global,n_global,idx,ncols,maxcolors,mcol,mcol_global,nd1cols,*mask,masksize,*d1cols,*bad,*badnext,nbad,badsize,ccol,no,cbad;
-  PetscErrorCode  ierr;
-  Mat             m=mc->mat;
+  Mat             m = mc->mat, mt;
   Mat_MPIAIJ      *aij = (Mat_MPIAIJ*)m->data;
   Mat             md=NULL,mo=NULL;
   const PetscInt  *md_i,*mo_i,*md_j,*mo_j;
+  const PetscInt  *rmd_i,*rmo_i,*rmd_j,*rmo_j;
   PetscBool       isMPIAIJ,isSEQAIJ;
   PetscInt        pcol,*dcolors,*ocolors;
   ISColoringValue *badidx;
@@ -212,6 +213,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
   PetscInt        *oconf,*conf;
   PetscSF         sf;
   PetscLayout     layout;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = MatGetSize(m,&n_global,NULL);CHKERRQ(ierr);
@@ -232,6 +234,10 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     md_j = dseq->j;
     mo_i = oseq->i;
     mo_j = oseq->j;
+    rmd_i = dseq->i;
+    rmd_j = dseq->j;
+    rmo_i = oseq->i;
+    rmo_j = oseq->j;
   } else if (isSEQAIJ) {
     Mat_SeqAIJ *dseq;
     /* no off-processor nodes */
@@ -241,8 +247,22 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
     md_j = dseq->j;
     mo_i = NULL;
     mo_j = NULL;
+    rmd_i = dseq->i;
+    rmd_j = dseq->j;
+    rmo_i = NULL;
+    rmo_j = NULL;
   } else {
     SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
+  }
+  if (!gr->symmetric) {
+    ierr = MatTranspose(m, MAT_INITIAL_MATRIX, &mt);CHKERRQ(ierr);
+    if (isSEQAIJ) {
+      Mat_SeqAIJ *dseq = (Mat_SeqAIJ*) mt->data;
+      rmd_i = dseq->i;
+      rmd_j = dseq->j;
+      rmo_i = NULL;
+      rmo_j = NULL;
+    } else SETERRQ(PetscObjectComm((PetscObject) mc), PETSC_ERR_SUP, "Nonsymmetric greedy coloring only works in serial");
   }
   /* create the vectors and communication structures if necessary */
   no=0;
@@ -312,8 +332,8 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
         }
         /* diagonal distance-one rows */
         nd1cols=0;
-        ncols = md_i[idx+1]-md_i[idx];
-        cidx = &(md_j[md_i[idx]]);
+        ncols = rmd_i[idx+1]-rmd_i[idx];
+        cidx = &(rmd_j[rmd_i[idx]]);
         for (j=0;j<ncols;j++) {
           d1cols[nd1cols] = cidx[j];
           nd1cols++;
@@ -337,8 +357,8 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
         }
         /* off-diagonal distance-one rows */
         if (mo) {
-          ncols = mo_i[idx+1]-mo_i[idx];
-          cidx = &(mo_j[mo_i[idx]]);
+          ncols = rmo_i[idx+1]-rmo_i[idx];
+          cidx = &(rmo_j[rmo_i[idx]]);
           for (j=0;j<ncols;j++) {
             ccol=ocolors[cidx[j]];
             if (ccol != maxcolors) {
@@ -536,6 +556,7 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
   ierr = PetscFree(mask);CHKERRQ(ierr);
   ierr = PetscFree4(d1cols,dcolors,conf,bad);CHKERRQ(ierr);
   ierr = PetscFree2(badidx,badnext);CHKERRQ(ierr);
+  if (!gr->symmetric) {ierr = MatDestroy(&mt);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -543,7 +564,6 @@ PETSC_EXTERN PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring m
 #define __FUNCT__ "MatColoringApply_Greedy"
 PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *iscoloring)
 {
-  /* MC_Greedy       *gr=(MC_Greedy*)mc->data; */
   PetscErrorCode  ierr;
   PetscInt        finalcolor,finalcolor_global;
   ISColoringValue *colors;
@@ -585,6 +605,20 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *i
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatColoringSetFromOptions_Greedy"
+PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptions *PetscOptionsObject, MatColoring mc)
+{
+  MC_Greedy     *gr = (MC_Greedy *) mc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead(PetscOptionsObject, "Greedy options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_coloring_greedy_symmetric", "Flag for assuming a symmetric matrix", "", gr->symmetric, &gr->symmetric, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatColoringCreate_Greedy"
 /*MC
   MATCOLORINGGREEDY - Greedy-with-conflict correction based Matrix Coloring for distance 1 and 2.
@@ -621,6 +655,8 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_Greedy(MatColoring mc)
   mc->ops->apply          = MatColoringApply_Greedy;
   mc->ops->view           = NULL;
   mc->ops->destroy        = MatColoringDestroy_Greedy;
-  mc->ops->setfromoptions = NULL;
+  mc->ops->setfromoptions = MatColoringSetFromOptions_Greedy;
+
+  gr->symmetric = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
