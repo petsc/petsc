@@ -65,6 +65,9 @@ class Configure(config.package.GNUPackage):
     else:
       raise RuntimeError('Error: ML requires C++ compiler. None specified')
 
+    if self.defaultIndexSize == 64:
+      args.append('--with-ml-64bit-integer')
+
     # ML does not have --with-mpi-include - so specify includes with cflags,fflags,cxxflags,CPPFLAGS
     args.append('--enable-mpi')
     args.append('--with-mpi-libs="'+self.libraries.toString(self.mpi.lib)+'"')
