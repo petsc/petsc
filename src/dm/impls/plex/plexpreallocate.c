@@ -676,7 +676,7 @@ PetscErrorCode DMPlexFillMatrix_Static(PetscLayout rLayout, PetscInt bs, PetscSe
       rS   = goff + (lfoff - loff);
       rE   = rS + fdof - fcdof;
       for (r = rS; r < rE; ++r) {
-        PetscInt numCols, cStart, c;
+        PetscInt numCols, cStart;
 
         ierr = PetscSectionGetDof(sectionAdj, r, &numCols);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(sectionAdj, r, &cStart);CHKERRQ(ierr);
@@ -708,7 +708,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   PetscSection   sectionAdj[4] = {NULL, NULL, NULL, NULL};
   PetscInt      *cols[4]       = {NULL, NULL, NULL, NULL};
   PetscBool      useCone, useClosure;
-  PetscInt       Nf, f, idx, locRows, r;
+  PetscInt       Nf, f, idx, locRows;
   PetscLayout    rLayout;
   PetscBool      isSymBlock, isSymSeqBlock, isSymMPIBlock, debug = PETSC_FALSE;
   PetscErrorCode ierr;

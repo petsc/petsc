@@ -92,7 +92,7 @@ static PetscErrorCode SNESTSFormFunction_Mimex(SNES snes, Vec x, Vec y, TS ts)
     DM                 dm;
     PetscDS            prob;
     PetscSection       s;
-    Vec                Xstar, G;
+    Vec                Xstar = NULL, G = NULL;
     const PetscScalar *ax;
     PetscScalar       *axstar;
     PetscInt           Nf, f, pStart, pEnd, p;
