@@ -3238,14 +3238,15 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     /* steps the requested number of timesteps. */   
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
+    ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     while (!ts->reason) {
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-      ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
       if (ts->event) {
 	ierr = TSEventMonitor(ts);CHKERRQ(ierr);
       }
       if(!ts->steprollback) {
+	ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 	ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
     }
@@ -3258,7 +3259,6 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ts->solvetime = ts->ptime;
       solution = ts->vec_sol;
     }
-    ierr = TSTrajectorySet(ts->trajectory,ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
     ierr = VecViewFromOptions(solution, ((PetscObject) ts)->prefix, "-ts_view_solution");CHKERRQ(ierr);
   }
