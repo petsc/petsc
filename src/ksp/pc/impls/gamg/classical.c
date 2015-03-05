@@ -345,7 +345,6 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
   ierr = MatCreate(PetscObjectComm((PetscObject)A),P); CHKERRQ(ierr);
   ierr = MatGetType(G,&mtype);CHKERRQ(ierr);
   ierr = MatSetType(*P,mtype);CHKERRQ(ierr);
-
   ierr = MatSetSizes(*P,fn,cn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(*P,0,lsparse,0,gsparse);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*P,0,lsparse);CHKERRQ(ierr);
@@ -508,6 +507,7 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
   PC_MG             *mg          = (PC_MG*)pc->data;
   PC_GAMG           *pc_gamg     = (PC_GAMG*)mg->innerctx;
   PC_GAMG_Classical *cls         = (PC_GAMG_Classical*)pc_gamg->subctx;
+  MatType           mtype;
 
   PetscFunctionBegin;
   /* trim and rescale with reallocation */
@@ -550,8 +550,9 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
   ierr = PetscMalloc1(cmax,&pnval);CHKERRQ(ierr);
   ierr = PetscMalloc1(cmax,&pncol);CHKERRQ(ierr);
 
+  ierr = MatGetType(*P,&mtype);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)*P),&Pnew);CHKERRQ(ierr);
-  ierr = MatSetType(Pnew, MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(Pnew, mtype);CHKERRQ(ierr);
   ierr = MatSetSizes(Pnew,pn,pcn,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Pnew,0,lsparse);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Pnew,0,lsparse,0,gsparse);CHKERRQ(ierr);

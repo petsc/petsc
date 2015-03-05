@@ -679,6 +679,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
   MPI_Comm       comm;
   IS             selected_2,selected_1;
   const PetscInt *selected_idx;
+  MatType        mtype;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
@@ -706,20 +707,14 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
   ierr = ISRestoreIndices(selected_1, &selected_idx);CHKERRQ(ierr);
   ierr = ISDestroy(&selected_1);CHKERRQ(ierr); /* this is selected_1 in serial */
 
-  /* create prolongator, create P matrix */
+  /* create prolongator  matrix */
+  ierr = MatGetType(Amat,&mtype);CHKERRQ(ierr);
   ierr = MatCreate(comm, &Prol);CHKERRQ(ierr);
   ierr = MatSetSizes(Prol,nloc*bs,nLocalSelected*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(Prol, bs, bs);CHKERRQ(ierr);
-  ierr = MatSetType(Prol, MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(Prol, mtype);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Prol,3*data_cols,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Prol,3*data_cols,NULL,3*data_cols,NULL);CHKERRQ(ierr);
-  /* ierr = MatCreateAIJ(comm,  */
-  /*                      nloc*bs, nLocalSelected*bs, */
-  /*                      PETSC_DETERMINE, PETSC_DETERMINE, */
-  /*                      3*data_cols, NULL,  */
-  /*                      3*data_cols, NULL, */
-  /*                      &Prol); */
-  /* CHKERRQ(ierr); */
 
   /* can get all points "removed" - but not on geomg */
   ierr =  MatGetSize(Prol, &kk, &jj);CHKERRQ(ierr);

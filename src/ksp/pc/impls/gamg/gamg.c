@@ -137,6 +137,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         const PetscInt    *idx;
         PetscInt          *d_nnz, *o_nnz, M, N;
         static PetscInt   llev = 0;
+        MatType           mtype;
 
         ierr = PetscMalloc1(ncrs, &d_nnz);CHKERRQ(ierr);
         ierr = PetscMalloc1(ncrs, &o_nnz);CHKERRQ(ierr);
@@ -151,9 +152,10 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
           if (o_nnz[jj] > (M/cr_bs-ncrs)) o_nnz[jj] = M/cr_bs-ncrs;
         }
 
+        ierr = MatGetType(Amat_fine,&mtype);CHKERRQ(ierr);
         ierr = MatCreate(comm, &tMat);CHKERRQ(ierr);
         ierr = MatSetSizes(tMat, ncrs, ncrs,PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-        ierr = MatSetType(tMat,MATAIJ);CHKERRQ(ierr);
+        ierr = MatSetType(tMat,mtype);CHKERRQ(ierr);
         ierr = MatSeqAIJSetPreallocation(tMat,0,d_nnz);CHKERRQ(ierr);
         ierr = MatMPIAIJSetPreallocation(tMat,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
         ierr = PetscFree(d_nnz);CHKERRQ(ierr);
