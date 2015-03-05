@@ -363,7 +363,7 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals
   if (stash->nprocessed == stash->nrecvs) PetscFunctionReturn(0);
 
   flg_v = stash->nprocs;
-  /* If a matching pair of receieves are found, process them, and return the data to
+  /* If a matching pair of receives are found, process them, and return the data to
      the calling function. Until then keep receiving messages */
   while (!match_found) {
     ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRQ(ierr);
