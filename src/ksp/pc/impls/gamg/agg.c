@@ -356,8 +356,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     if (!(matB_2==0 || matB_2->compressedrow.use)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"!(matB_2==0 || matB_2->compressedrow.use)");
   }
   /* get state of locals and selected gid for deleted */
-  ierr = PetscMalloc1(nloc, &lid_state);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nloc, &lid_parent_gid);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nloc, &lid_state,nloc, &lid_parent_gid);CHKERRQ(ierr);
   for (lid = 0; lid < nloc; lid++) {
     lid_parent_gid[lid] = -1.0;
     lid_state[lid]      = DELETED;
@@ -403,7 +402,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     ierr = VecAssemblyBegin(tempVec);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(tempVec);CHKERRQ(ierr);
     ierr = VecScatterBegin(mpimat_1->Mvctx,tempVec, mpimat_1->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr =   VecScatterEnd(mpimat_1->Mvctx,tempVec, mpimat_1->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(mpimat_1->Mvctx,tempVec, mpimat_1->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArray(mpimat_1->lvec, &cpcol_1_state);CHKERRQ(ierr);
     /* get 'cpcol_2_state' */
     ierr = VecScatterBegin(mpimat_2->Mvctx,tempVec, mpimat_2->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -418,7 +417,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     ierr = VecAssemblyEnd(tempVec);CHKERRQ(ierr);
     ierr = VecDuplicate(mpimat_2->lvec, &ghost_par_orig2);CHKERRQ(ierr);
     ierr = VecScatterBegin(mpimat_2->Mvctx,tempVec, ghost_par_orig2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr =   VecScatterEnd(mpimat_2->Mvctx,tempVec, ghost_par_orig2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(mpimat_2->Mvctx,tempVec, ghost_par_orig2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArray(ghost_par_orig2, &cpcol_2_par_orig);CHKERRQ(ierr);
 
     ierr = VecDestroy(&tempVec);CHKERRQ(ierr);
@@ -536,7 +535,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     ierr = VecAssemblyEnd(tempVec);CHKERRQ(ierr);
     ierr = VecDuplicate(mpimat_2->lvec, &ghostgids2);CHKERRQ(ierr);
     ierr = VecScatterBegin(mpimat_2->Mvctx,tempVec, ghostgids2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr =   VecScatterEnd(mpimat_2->Mvctx,tempVec, ghostgids2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(mpimat_2->Mvctx,tempVec, ghostgids2,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArray(ghostgids2, &cpcol_2_gid);CHKERRQ(ierr);
 
     ierr = VecDestroy(&tempVec);CHKERRQ(ierr);
@@ -614,8 +613,7 @@ static PetscErrorCode smoothAggs(Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *aggs_2
     ierr = VecDestroy(&ghost_par_orig2);CHKERRQ(ierr);
   }
 
-  ierr = PetscFree(lid_parent_gid);CHKERRQ(ierr);
-  ierr = PetscFree(lid_state);CHKERRQ(ierr);
+  ierr = PetscFree2(lid_state,lid_parent_gid);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -758,11 +756,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
       if (asz<minsz) minsz = asz;
 
       /* get block */
-      ierr = PetscMalloc1(Mdata*N, &qqc);CHKERRQ(ierr);
-      ierr = PetscMalloc1(M*N, &qqr);CHKERRQ(ierr);
-      ierr = PetscMalloc1(N, &TAU);CHKERRQ(ierr);
-      ierr = PetscMalloc1(LWORK, &WORK);CHKERRQ(ierr);
-      ierr = PetscMalloc1(M, &fids);CHKERRQ(ierr);
+      ierr = PetscMalloc5(Mdata*N, &qqc,M*N, &qqr,N, &TAU,LWORK, &WORK,M, &fids);CHKERRQ(ierr);
 
       aggID = 0;
       ierr  = PetscCDGetHeadPos(agg_llists,lid,&pos);CHKERRQ(ierr);
@@ -842,11 +836,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscIn
       }
       ierr = MatSetValues(a_Prol,M,fids,N,cids,qqr,INSERT_VALUES);CHKERRQ(ierr);
 
-      ierr = PetscFree(qqc);CHKERRQ(ierr);
-      ierr = PetscFree(qqr);CHKERRQ(ierr);
-      ierr = PetscFree(TAU);CHKERRQ(ierr);
-      ierr = PetscFree(WORK);CHKERRQ(ierr);
-      ierr = PetscFree(fids);CHKERRQ(ierr);
+      ierr = PetscFree5(qqc,qqr,TAU,WORK,fids);CHKERRQ(ierr);
       clid++;
     } /* coarse agg */
   } /* for all fine nodes */

@@ -139,8 +139,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         static PetscInt   llev = 0;
         MatType           mtype;
 
-        ierr = PetscMalloc1(ncrs, &d_nnz);CHKERRQ(ierr);
-        ierr = PetscMalloc1(ncrs, &o_nnz);CHKERRQ(ierr);
+        ierr = PetscMalloc2(ncrs, &d_nnz,ncrs, &o_nnz);CHKERRQ(ierr);
         ierr = MatGetOwnershipRange(Cmat, &Istart_crs, &Iend_crs);CHKERRQ(ierr);
         ierr = MatGetSize(Cmat, &M, &N);CHKERRQ(ierr);
         for (Ii = Istart_crs, jj = 0; Ii < Iend_crs; Ii += cr_bs, jj++) {
@@ -158,8 +157,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
         ierr = MatSetType(tMat,mtype);CHKERRQ(ierr);
         ierr = MatSeqAIJSetPreallocation(tMat,0,d_nnz);CHKERRQ(ierr);
         ierr = MatMPIAIJSetPreallocation(tMat,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
-        ierr = PetscFree(d_nnz);CHKERRQ(ierr);
-        ierr = PetscFree(o_nnz);CHKERRQ(ierr);
+        ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
 
         for (ii = Istart_crs; ii < Iend_crs; ii++) {
           PetscInt dest_row = ii/cr_bs;

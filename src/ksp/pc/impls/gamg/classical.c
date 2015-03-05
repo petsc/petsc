@@ -117,9 +117,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
 
   ierr = MatGetOwnershipRange(A,&s,&f);CHKERRQ(ierr);
   n=f-s;
-  ierr = PetscMalloc1(n,&lsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&gsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&Amax);CHKERRQ(ierr);
+  ierr = PetscMalloc3(n,&lsparse,n,&gsparse,n,&Amax);CHKERRQ(ierr);
 
   for (r = 0;r < n;r++) {
     lsparse[r] = 0;
@@ -153,8 +151,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
     lsparse[r-s] = lidx;
     gsparse[r-s] = gidx;
   }
-  ierr = PetscMalloc1(cmax,&gval);CHKERRQ(ierr);
-  ierr = PetscMalloc1(cmax,&gcol);CHKERRQ(ierr);
+  ierr = PetscMalloc2(cmax,&gval,cmax,&gcol);CHKERRQ(ierr);
 
   ierr = MatCreate(PetscObjectComm((PetscObject)A),G); CHKERRQ(ierr);
   ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
@@ -179,11 +176,8 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
   ierr = MatAssemblyBegin(*G, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscFree(gval);CHKERRQ(ierr);
-  ierr = PetscFree(gcol);CHKERRQ(ierr);
-  ierr = PetscFree(lsparse);CHKERRQ(ierr);
-  ierr = PetscFree(gsparse);CHKERRQ(ierr);
-  ierr = PetscFree(Amax);CHKERRQ(ierr);
+  ierr = PetscFree2(gval,gcol);CHKERRQ(ierr);
+  ierr = PetscFree3(lsparse,gsparse,Amax);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -257,11 +251,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
   } else {
     lA = A;
   }
-  ierr = PetscMalloc1(fn,&lsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc1(fn,&gsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc1(fn,&lcid);CHKERRQ(ierr);
-  ierr = PetscMalloc1(fn,&Amax_pos);CHKERRQ(ierr);
-  ierr = PetscMalloc1(fn,&Amax_neg);CHKERRQ(ierr);
+  ierr = PetscMalloc5(fn,&lsparse,fn,&gsparse,fn,&lcid,fn,&Amax_pos,fn,&Amax_neg);CHKERRQ(ierr);
 
   /* count the number of coarse unknowns */
   cn = 0;
@@ -306,8 +296,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
     if (ncols > cmax) cmax = ncols;
     ierr = MatRestoreRow(A,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc1(cmax,&pcols);CHKERRQ(ierr);
-  ierr = PetscMalloc1(cmax,&pvals);CHKERRQ(ierr);
+  ierr = PetscMalloc2(cmax,&pcols,cmax,&pvals);CHKERRQ(ierr);
   ierr = VecDestroy(&C);CHKERRQ(ierr);
 
   /* count the on and off processor sparsity patterns for the prolongator */
@@ -475,13 +464,9 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
   ierr = MatAssemblyBegin(*P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscFree(lsparse);CHKERRQ(ierr);
-  ierr = PetscFree(gsparse);CHKERRQ(ierr);
-  ierr = PetscFree(pcols);CHKERRQ(ierr);
-  ierr = PetscFree(pvals);CHKERRQ(ierr);
-  ierr = PetscFree(Amax_pos);CHKERRQ(ierr);
-  ierr = PetscFree(Amax_neg);CHKERRQ(ierr);
-  ierr = PetscFree(lcid);CHKERRQ(ierr);
+  ierr = PetscFree5(lsparse,gsparse,lcid,Amax_pos,Amax_neg);CHKERRQ(ierr);
+
+  ierr = PetscFree2(pcols,pvals);CHKERRQ(ierr);
   if (gA) {
     ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
     ierr = PetscFree(gcid);CHKERRQ(ierr);
@@ -515,8 +500,7 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
   ierr = MatGetOwnershipRangeColumn(*P,&pcs,&pcf);CHKERRQ(ierr);
   pn = pf-ps;
   pcn = pcf-pcs;
-  ierr = PetscMalloc1(pn,&lsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pn,&gsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc2(pn,&lsparse,pn,&gsparse);CHKERRQ(ierr);
   /* allocate */
   cmax = 0;
   for (i=ps;i<pf;i++) {
@@ -547,8 +531,7 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
     ierr = MatRestoreRow(*P,i,&ncols,&pcol,&pval);CHKERRQ(ierr);
   }
 
-  ierr = PetscMalloc1(cmax,&pnval);CHKERRQ(ierr);
-  ierr = PetscMalloc1(cmax,&pncol);CHKERRQ(ierr);
+  ierr = PetscMalloc2(cmax,&pnval,cmax,&pncol);CHKERRQ(ierr);
 
   ierr = MatGetType(*P,&mtype);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)*P),&Pnew);CHKERRQ(ierr);
@@ -607,10 +590,8 @@ PetscErrorCode PCGAMGTruncateProlongator_Private(PC pc,Mat *P)
   ierr = MatDestroy(P);CHKERRQ(ierr);
 
   *P = Pnew;
-  ierr = PetscFree(lsparse);CHKERRQ(ierr);
-  ierr = PetscFree(gsparse);CHKERRQ(ierr);
-  ierr = PetscFree(pncol);CHKERRQ(ierr);
-  ierr = PetscFree(pnval);CHKERRQ(ierr);
+  ierr = PetscFree2(lsparse,gsparse);CHKERRQ(ierr);
+  ierr = PetscFree2(pnval,pncol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -660,9 +641,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
     nl = fn;
   }
   /* create a communication structure for the overlapped portion and transmit coarse indices */
-  ierr = PetscMalloc1(fn,&lsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc1(fn,&gsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nl,&pcontrib);CHKERRQ(ierr);
+  ierr = PetscMalloc3(fn,&lsparse,fn,&gsparse,nl,&pcontrib);CHKERRQ(ierr);
   /* create coarse vector */
   cn = 0;
   for (i=0;i<fn;i++) {
@@ -755,8 +734,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
     }
     ierr = MatRestoreRow(lA,i,&ncols,&icol,&vcol);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc1(maxcols,&picol);CHKERRQ(ierr);
-  ierr = PetscMalloc1(maxcols,&pvcol);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxcols,&picol,maxcols,&pvcol);CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),P);CHKERRQ(ierr);
   ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
   ierr = MatSetType(*P,mtype);CHKERRQ(ierr);
@@ -860,11 +838,8 @@ PetscErrorCode PCGAMGProlongator_Classical_Standard(PC pc, Mat A, Mat G, PetscCo
     }
   }
   ierr = ISRestoreIndices(lis,&gidx);CHKERRQ(ierr);
-  ierr = PetscFree(pcontrib);CHKERRQ(ierr);
-  ierr = PetscFree(picol);CHKERRQ(ierr);
-  ierr = PetscFree(pvcol);CHKERRQ(ierr);
-  ierr = PetscFree(lsparse);CHKERRQ(ierr);
-  ierr = PetscFree(gsparse);CHKERRQ(ierr);
+  ierr = PetscFree2(picol,pvcol);CHKERRQ(ierr);
+  ierr = PetscFree3(lsparse,gsparse,pcontrib);CHKERRQ(ierr);
   ierr = ISDestroy(&lis);CHKERRQ(ierr);
   ierr = PetscFree(gcid);CHKERRQ(ierr);
   if (size > 1) {

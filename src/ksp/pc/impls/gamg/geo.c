@@ -172,7 +172,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
   in.numberofpoints          = nselected_2;
   in.numberofpointattributes = 0;
   /* get nselected points */
-  ierr = PetscMalloc1(2*(nselected_2), &in.pointlist);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*nselected_2, &in.pointlist);CHKERRQ(ierr);
   ierr = ISGetIndices(selected_2, &selected_idx_2);CHKERRQ(ierr);
 
   for (kk=0,sid=0; kk<nselected_2; kk++,sid += 2) {
@@ -286,8 +286,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
   { /* form P - setup some maps */
     PetscInt clid,mm,*nTri,*node_tri;
 
-    ierr = PetscMalloc1(nselected_2, &node_tri);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nselected_2, &nTri);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nselected_2, &node_tri,nselected_2, &nTri);CHKERRQ(ierr);
 
     /* need list of triangles on node */
     for (kk=0; kk<nselected_2; kk++) nTri[kk] = 0;
@@ -411,8 +410,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
     ierr = MatAssemblyBegin(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-    ierr = PetscFree(node_tri);CHKERRQ(ierr);
-    ierr = PetscFree(nTri);CHKERRQ(ierr);
+    ierr = PetscFree2(node_tri,nTri);CHKERRQ(ierr);
   }
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[FIND_V],0,0,0,0);CHKERRQ(ierr);
