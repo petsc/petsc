@@ -252,6 +252,9 @@ PETSC_EXTERN PetscErrorCode DMTSLoad(DMTS,PetscViewer);
 
 typedef enum {TSEVENT_NONE,TSEVENT_LOCATED_INTERVAL,TSEVENT_PROCESSING,TSEVENT_ZERO,TSEVENT_RESET_NEXTSTEP} TSEventStatus;
 
+/* Maximum number of event times that can be recorded */
+#define MAXEVENTRECORDERS 24
+
 struct _p_TSEvent {
   PetscScalar    *fvalue;          /* value of event function at the end of the step*/
   PetscScalar    *fvalue_prev;     /* value of event function at start of the step */
@@ -269,6 +272,13 @@ struct _p_TSEvent {
   TSEventStatus   status;           /* Event status */
   PetscReal       tstepend;         /* End time of step */
   PetscReal       initial_timestep; /* Initial time step */
+  /* Struct to record the events */
+  struct {
+    PetscInt  ctr;                          /* recorder counter */
+    PetscReal time[MAXEVENTRECORDERS];      /* Event times */
+    PetscInt  nevents[MAXEVENTRECORDERS];   /* Number of events occuring at the event times */
+    PetscInt  *eventidx[MAXEVENTRECORDERS]; /* Local indices of the events in the event list */
+  } recorder;
 };
 
 PETSC_EXTERN PetscErrorCode TSEventMonitor(TS);

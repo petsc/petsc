@@ -75,6 +75,12 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
   event->monitorcontext = (void*)mectx;
   event->nevents = nevents;
 
+  /* Initialize the event recorder */
+  event->recorder.ctr = 0;
+  for(i=0; i < MAXEVENTRECORDERS; i++) {
+    ierr = PetscMalloc1(nevents,&event->recorder.eventidx[i]);CHKERRQ(ierr);
+  }
+
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetTimeStep(ts,&event->initial_timestep);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
@@ -119,7 +125,7 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
   PetscErrorCode ierr;
   TSEvent        event=ts->event;
   PetscBool      terminate=PETSC_FALSE;
-  PetscInt       i;
+  PetscInt       i,ctr;
   PetscBool      ts_terminate;
 
   PetscFunctionBegin;
@@ -136,6 +142,17 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
   } else {
     event->status = TSEVENT_RESET_NEXTSTEP;
   }
+
+  /* Record the events in the event recorder */
+  ctr = event->recorder.ctr;
+  if (ctr == MAXEVENTRECORDERS) {
+    SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Exceeded limit (=%d) for number of events recorded",MAXEVENTRECORDERS);
+  }
+  event->recorder.time[ctr] = t;
+  event->recorder.nevents[ctr] = nevents_zero;
+  for(i=0; i < nevents_zero; i++) event->recorder.eventidx[ctr][i] = events_zero[i];
+  event->recorder.ctr++;
+
   /* Reset the event residual functions as states might get changed by the postevent callback */
   ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,event->monitorcontext);CHKERRQ(ierr);
   event->ptime_prev  = t;
@@ -148,6 +165,7 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
 PetscErrorCode TSEventMonitorDestroy(TSEvent *event)
 {
   PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
   ierr = PetscFree((*event)->fvalue);CHKERRQ(ierr);
@@ -155,6 +173,9 @@ PetscErrorCode TSEventMonitorDestroy(TSEvent *event)
   ierr = PetscFree((*event)->direction);CHKERRQ(ierr);
   ierr = PetscFree((*event)->terminate);CHKERRQ(ierr);
   ierr = PetscFree((*event)->events_zero);CHKERRQ(ierr);
+  for(i=0; i < MAXEVENTRECORDERS; i++) {
+    ierr = PetscFree((*event)->recorder.eventidx[i]);
+  }
   ierr = PetscFree(*event);CHKERRQ(ierr);
   *event = NULL;
   PetscFunctionReturn(0);
