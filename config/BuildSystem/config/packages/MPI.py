@@ -42,7 +42,6 @@ class Configure(config.package.Package):
     self.complex          = 1
     self.isPOE            = 0
     self.usingMPIUni      = 0
-    self.requires32bitint = 0
     self.shared           = 0
     # local state
     self.commf2c          = 0
