@@ -49,7 +49,6 @@ static PetscErrorCode PCBDDCComputeExplicitSchur(Mat M, PetscBool issym, MatReus
 
     if (isLU || isILU || isCHOL) {
       Mat fact;
-
       ierr = KSPSetUp(ksp);CHKERRQ(ierr);
       ierr = PCFactorGetMatrix(pc, &fact);CHKERRQ(ierr);
       ierr = MatDuplicate(Bd, MAT_DO_NOT_COPY_VALUES, &AinvBd);CHKERRQ(ierr);
@@ -142,7 +141,8 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
 {
   Mat                    A_II,A_IB,A_BI,A_BB;
   Mat                    AE_II,*AE_IE,*AE_EI,*AE_EE;
-  Mat                    S_all,global_schur_subsets,work_mat;
+  Mat                    S_all,S_all_inv;
+  Mat                    global_schur_subsets,work_mat;
   Mat                    S_Ej_tilda_all,S_Ej_inv_all;
   ISLocalToGlobalMapping l2gmap_subsets;
   IS                     is_I,*is_subset_B,temp_is;
@@ -294,6 +294,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   }
 
   S_all = NULL;
+  S_all_inv = NULL;
+  S_Ej_tilda_all = NULL;
+  S_Ej_inv_all = NULL;
   sub_schurs->is_hermitian = PETSC_FALSE;
   sub_schurs->is_posdef = PETSC_FALSE;
   if (sub_schurs->A) {
@@ -312,6 +315,29 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       ierr = VecDestroy(&vec2);CHKERRQ(ierr);
     }
   }
+  Bwork = NULL;
+  pivots = NULL;
+  if (sub_schurs->n_subs && deluxe && compute_Stilda && !sub_schurs->is_hermitian) { /* workspace needed only for GETRI */
+    PetscScalar lwork;
+
+    B_lwork = -1;
+    ierr = PetscBLASIntCast(local_size,&B_N);CHKERRQ(ierr);
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+    PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,Bwork,&B_N,pivots,&lwork,&B_lwork,&B_ierr));
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
+    if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
+    ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork);CHKERRQ(ierr);
+    ierr = PetscMalloc2(B_lwork,&Bwork,B_N,&pivots);CHKERRQ(ierr);
+  }
+
+  /* prepare parallel matrices for summing up properly schurs on subsets */
+  ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)sub_schurs->l2gmap),sub_schurs->l2gmap,local_size,all_local_idx_N+extra,PETSC_NULL,&global_size,&all_local_idx_G);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)sub_schurs->l2gmap),1,local_size,all_local_idx_G,PETSC_COPY_VALUES,&l2gmap_subsets);CHKERRQ(ierr);
+  ierr = MatCreateIS(PetscObjectComm((PetscObject)sub_schurs->l2gmap),1,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size,l2gmap_subsets,&work_mat);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&l2gmap_subsets);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)work_mat),&global_schur_subsets);CHKERRQ(ierr);
+  ierr = MatSetSizes(global_schur_subsets,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size);CHKERRQ(ierr);
+  ierr = MatSetType(global_schur_subsets,MATMPIAIJ);CHKERRQ(ierr);
 
   if (sub_schurs->n_subs) {
     if (!sub_schurs->use_mumps) {
@@ -430,10 +456,14 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     }
   } else {
     ierr = PetscFree(nnz);CHKERRQ(ierr);
-    ierr = PetscFree(all_local_idx_N);CHKERRQ(ierr);
   }
 
-  if (!sub_schurs->n_subs_seq_g) {
+  if (!sub_schurs->n_subs_seq_g) { /* need to get rid of the old parallel deluxe */
+    ierr = PetscFree(all_local_idx_G);CHKERRQ(ierr);
+    ierr = PetscFree(all_local_idx_N);CHKERRQ(ierr);
+    ierr = PetscFree2(Bwork,pivots);CHKERRQ(ierr);
+    ierr = MatDestroy(&global_schur_subsets);CHKERRQ(ierr);
+    ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -448,8 +478,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF,local_size,all_local_idx_B,PETSC_OWN_POINTER,&sub_schurs->is_Ej_all);CHKERRQ(ierr);
   }
+  ierr = PetscFree(all_local_idx_N);CHKERRQ(ierr);
 
-  /* Local matrix of all local Schur on subsets transposed */
+  /* Local matrix of all local Schur on subsets (transposed) */
   if (!sub_schurs->S_Ej_all) {
     ierr = MatCreate(PETSC_COMM_SELF,&sub_schurs->S_Ej_all);CHKERRQ(ierr);
     ierr = MatSetSizes(sub_schurs->S_Ej_all,PETSC_DECIDE,PETSC_DECIDE,local_size,local_size);CHKERRQ(ierr);
@@ -457,23 +488,6 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
     ierr = MatSeqAIJSetPreallocation(sub_schurs->S_Ej_all,0,nnz);CHKERRQ(ierr);
   } else {
     ierr = MatZeroEntries(sub_schurs->S_Ej_all);CHKERRQ(ierr);
-  }
-
-  S_Ej_tilda_all = 0;
-  S_Ej_inv_all = 0;
-  Bwork = NULL;
-  pivots = NULL;
-  if (sub_schurs->n_subs && deluxe && compute_Stilda && !sub_schurs->is_hermitian) { /* workspace needed only for GETRI */
-    PetscScalar lwork;
-
-    B_lwork = -1;
-    ierr = PetscBLASIntCast(max_subset_size_seq,&B_N);CHKERRQ(ierr);
-    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-    PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,Bwork,&B_N,pivots,&lwork,&B_lwork,&B_ierr));
-    ierr = PetscFPTrapPop();CHKERRQ(ierr);
-    if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
-    ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork);CHKERRQ(ierr);
-    ierr = PetscMalloc2(B_lwork,&Bwork,max_subset_size_seq,&pivots);CHKERRQ(ierr);
   }
 
   ierr = PetscBTMemzero(sub_schurs->n_subs,sub_schurs->computed_Stilda_subs);CHKERRQ(ierr);
@@ -541,6 +555,32 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       ierr = PetscMalloc2(max_subset_size_seq,&dummy_idx,0,&work);CHKERRQ(ierr);
     }
 
+    if (compute_Stilda) {
+      PetscScalar *vals;
+      ierr = PetscBLASIntCast(n_all,&B_N);CHKERRQ(ierr);
+      ierr = MatDuplicate(S_all,MAT_COPY_VALUES,&S_all_inv);CHKERRQ(ierr);
+      ierr = MatDenseGetArray(S_all_inv,&vals);CHKERRQ(ierr);
+      if (!sub_schurs->is_hermitian) {
+        PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,vals,&B_N,pivots,&B_ierr));
+        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
+        PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,vals,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
+        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+      } else {
+        PetscInt j,k;
+
+        PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,vals,&B_N,&B_ierr));
+        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
+        PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,vals,&B_N,&B_ierr));
+        if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
+        for (j=0;j<B_N;j++) {
+          for (k=j+1;k<B_N;k++) {
+            vals[k*B_N+j] = vals[j*B_N+k];
+          }
+        }
+      }
+      ierr = MatDenseRestoreArray(S_all_inv,&vals);CHKERRQ(ierr);
+    }
+
     for (i=0;i<sub_schurs->n_subs;i++) {
       IS  is_E;
       PetscScalar *vals;
@@ -560,97 +600,18 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       ierr = MatSetValues(sub_schurs->S_Ej_all,subset_size,dummy_idx,subset_size,dummy_idx,vals,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatDenseRestoreArray(sub_schurs->S_Ej[i],&vals);CHKERRQ(ierr);
 
-      if (compute_Stilda && ((PetscBTLookup(sub_schurs->is_edge,i) && use_edges) || use_faces)) {
+      if (compute_Stilda && ((PetscBTLookup(sub_schurs->is_edge,i) && use_edges) || (!PetscBTLookup(sub_schurs->is_edge,i) && use_faces))) {
         Mat Stilda;
 
         ierr = PetscBTSet(sub_schurs->computed_Stilda_subs,i);CHKERRQ(ierr);
-        if (sub_schurs->n_subs == 1) {
-          ierr = PetscObjectReference((PetscObject)sub_schurs->S_Ej[i]);CHKERRQ(ierr);
-          Stilda = sub_schurs->S_Ej[i];
-        } else {
-          KSP         ksp;
-          PC          pc;
-          Mat         S_EF,S_FE,S_FF,Stilda_impl;
-          IS          is_F;
-          PetscInt    nc,cum;
-          PetscBool   chop=PETSC_FALSE;
-
-          ierr = ISComplement(is_E,0,n_all,&is_F);CHKERRQ(ierr);
-          nc   = n_all - subset_size;
-          cum  = 0;
-          ierr = MatCreateSeqDense(PETSC_COMM_SELF,nc,nc,work+cum,&S_FF);CHKERRQ(ierr);
-          cum += nc*nc;
-          ierr = MatCreateSeqDense(PETSC_COMM_SELF,nc,subset_size,work+cum,&S_FE);CHKERRQ(ierr);
-          cum += nc*subset_size;
-          ierr = MatGetSubMatrix(S_all,is_F,is_F,MAT_REUSE_MATRIX,&S_FF);CHKERRQ(ierr);
-          ierr = MatGetSubMatrix(S_all,is_F,is_E,MAT_REUSE_MATRIX,&S_FE);CHKERRQ(ierr);
-          if (sub_schurs->is_hermitian) { /* just need a placeholder for S_EF */
-            ierr = MatCreateTranspose(S_FE,&S_EF);CHKERRQ(ierr);
-          } else {
-            ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,nc,work+cum,&S_EF);CHKERRQ(ierr);
-            cum += nc*subset_size;
-            ierr = MatGetSubMatrix(S_all,is_E,is_F,MAT_REUSE_MATRIX,&S_EF);CHKERRQ(ierr);
-          }
-          ierr = ISDestroy(&is_F);CHKERRQ(ierr);
-          if (chop) {
-            PetscReal eps=1.e-8;
-            ierr = MatChop(S_FF,eps);CHKERRQ(ierr);
-            ierr = MatConvert(S_FF,MATAIJ,MAT_REUSE_MATRIX,&S_FF);CHKERRQ(ierr);
-          }
-          ierr = MatCreateSchurComplement(S_FF,S_FF,S_FE,S_EF,sub_schurs->S_Ej[i],&Stilda_impl);CHKERRQ(ierr);
-          ierr = MatDestroy(&S_FF);CHKERRQ(ierr);
-          ierr = MatDestroy(&S_FE);CHKERRQ(ierr);
-          ierr = MatDestroy(&S_EF);CHKERRQ(ierr);
-          ierr = MatSchurComplementGetKSP(Stilda_impl,&ksp);CHKERRQ(ierr);
-          ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-          ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-          if (sub_schurs->is_hermitian && sub_schurs->is_posdef) {
-            ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
-          } else {
-            ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-          }
-          if (!chop) {
-            ierr = PCFactorSetUseInPlace(pc,PETSC_TRUE);CHKERRQ(ierr);
-          } else {
-            ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
-          }
-          ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-          ierr = MatCreateSeqDense(PETSC_COMM_SELF,subset_size,subset_size,work+cum,&Stilda);CHKERRQ(ierr);
-          ierr = PCBDDCComputeExplicitSchur(Stilda_impl,sub_schurs->is_hermitian,MAT_REUSE_MATRIX,&Stilda);CHKERRQ(ierr);
-          ierr = MatDestroy(&Stilda_impl);CHKERRQ(ierr);
-        }
-/*
-        PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_MATLAB);
-        ierr = MatView(Stilda,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        PetscViewerPopFormat(PETSC_VIEWER_STDOUT_SELF);
-*/
+        ierr = MatGetSubMatrix(S_all_inv,is_E,is_E,MAT_INITIAL_MATRIX,&Stilda);CHKERRQ(ierr);
         ierr = MatDenseGetArray(Stilda,&vals);CHKERRQ(ierr);
         if (deluxe) { /* when using deluxe scaling, we need (S_1^-1+S_2^-1)^-1 */
           PetscScalar *vals2;
 
-          ierr = MatDenseGetArray(sub_schurs->S_Ej[i],&vals2);CHKERRQ(ierr);
           ierr = PetscBLASIntCast(subset_size,&B_N);CHKERRQ(ierr);
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-          if (invert_Stildas) { /* Stildas can be singular */
-            if (!sub_schurs->is_hermitian) {
-              PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,vals,&B_N,pivots,&B_ierr));
-              if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
-              PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,vals,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-              if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
-            } else {
-              PetscInt j,k;
-
-              PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("L",&B_N,vals,&B_N,&B_ierr));
-              if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRF Lapack routine %d",(int)B_ierr);
-              PetscStackCallBLAS("LAPACKpotri",LAPACKpotri_("L",&B_N,vals,&B_N,&B_ierr));
-              if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in POTRI Lapack routine %d",(int)B_ierr);
-              for (j=0;j<B_N;j++) {
-                for (k=j+1;k<B_N;k++) {
-                  vals[k*B_N+j] = vals[j*B_N+k];
-                }
-              }
-            }
-          }
+          ierr = MatDenseGetArray(sub_schurs->S_Ej[i],&vals2);CHKERRQ(ierr);
           if (!sub_schurs->is_hermitian) {
             PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,vals2,&B_N,pivots,&B_ierr));
             if (B_ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
@@ -684,6 +645,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   }
   ierr = PetscFree(nnz);CHKERRQ(ierr);
   ierr = MatDestroy(&S_all);CHKERRQ(ierr);
+  ierr = MatDestroy(&S_all_inv);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(sub_schurs->S_Ej_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (S_Ej_tilda_all) {
@@ -696,18 +658,10 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
   }
 
   /* Global matrix of all assembled Schur on subsets */
-  ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)sub_schurs->l2gmap),sub_schurs->l2gmap,local_size,all_local_idx_N+extra,PETSC_NULL,&global_size,&all_local_idx_G);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)sub_schurs->l2gmap),1,local_size,all_local_idx_G,PETSC_COPY_VALUES,&l2gmap_subsets);CHKERRQ(ierr);
-  ierr = MatCreateIS(PetscObjectComm((PetscObject)sub_schurs->l2gmap),1,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size,l2gmap_subsets,&work_mat);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&l2gmap_subsets);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(work_mat,sub_schurs->S_Ej_all);CHKERRQ(ierr);
-  ierr = MatCreate(PetscObjectComm((PetscObject)work_mat),&global_schur_subsets);CHKERRQ(ierr);
-  ierr = MatSetSizes(global_schur_subsets,PETSC_DECIDE,PETSC_DECIDE,global_size,global_size);CHKERRQ(ierr);
-  ierr = MatSetType(global_schur_subsets,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatISSetMPIXAIJPreallocation_Private(work_mat,global_schur_subsets,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatISGetMPIXAIJ(work_mat,MAT_REUSE_MATRIX,&global_schur_subsets);CHKERRQ(ierr);
   /* Get local part of (\sum_j S_Ej) */
-  ierr = PetscFree(all_local_idx_N);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)sub_schurs->l2gmap),local_size,all_local_idx_G,PETSC_OWN_POINTER,&temp_is);CHKERRQ(ierr);
   ierr = MatDestroy(&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
   ierr = MatGetSubMatrixUnsorted(global_schur_subsets,temp_is,temp_is,&sub_schurs->sum_S_Ej_all);CHKERRQ(ierr);
