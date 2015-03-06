@@ -5419,7 +5419,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
       ierr = PetscMemzero(displaynames,(dim+1)*sizeof(char*));CHKERRQ(ierr);
       ierr = PetscOptionsGetStringArray(((PetscObject)ts)->prefix,"-ts_lg_monitor_solution_variables",displaynames,&dim,&flg);CHKERRQ(ierr);
       if (flg) {
-        ierr = TSMonitorLGSetDisplayVariables(ts,(const char *const *)displaynames);CHKERRQ(ierr);
+        ierr = TSMonitorLGCtxSetDisplayVariables(ctx,(const char *const *)displaynames);CHKERRQ(ierr);
       }
       ierr = PetscStrArrayDestroy(&displaynames);CHKERRQ(ierr);
     }
@@ -5486,7 +5486,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
 
 .keywords: TS,  vector, monitor, view
 
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables()
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables(), TSMonitorLGCtxSetVariableNames()
 @*/
 PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
 {
@@ -5496,9 +5496,7 @@ PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
   PetscFunctionBegin;
   for (i=0; i<ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
-      TSMonitorLGCtx  ctx = ts->monitorcontext[i];
-      ierr = PetscStrArrayDestroy(&ctx->names);CHKERRQ(ierr);
-      ierr = PetscStrArrayallocpy(names,&ctx->names);CHKERRQ(ierr);
+      ierr = TSMonitorLGSetVariableNames(ts->monitorcontext[i],names);CHKERRQ(ierr);
       break;
     }
   }
@@ -5520,7 +5518,7 @@ PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
 
 .keywords: TS,  vector, monitor, view
 
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables()
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables(), TSMonitorLGSetVariableNames()
 @*/
 PetscErrorCode  TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx,const char * const *names)
 {
@@ -5568,6 +5566,54 @@ PetscErrorCode  TSMonitorLGGetVariableNames(TS ts,const char *const **names)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSMonitorLGCtxSetDisplayVariables"
+/*@C
+   TSMonitorLGCtxSetDisplayVariables - Sets the variables that are to be display in the monitor
+
+   Collective on TS
+
+   Input Parameters:
++  ctx - the TSMonitorLG context
+.  displaynames - the names of the components, final string must be NULL
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames()
+@*/
+PetscErrorCode  TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx,const char * const *displaynames)
+{
+  PetscInt          j = 0,k;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (!ctx->names) PetscFunctionReturn(0);
+  ierr = PetscStrArrayDestroy(&ctx->displaynames);CHKERRQ(ierr);
+  ierr = PetscStrArrayallocpy(displaynames,&ctx->displaynames);CHKERRQ(ierr);
+  while (displaynames[j]) j++;
+  ctx->ndisplayvariables = j;
+  ierr = PetscMalloc1(ctx->ndisplayvariables,&ctx->displayvariables);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->ndisplayvariables,&ctx->displayvalues);CHKERRQ(ierr);
+  j = 0;
+  while (displaynames[j]) {
+    k = 0;
+    while (ctx->names[k]) {
+      PetscBool flg;
+      ierr = PetscStrcmp(displaynames[j],ctx->names[k],&flg);CHKERRQ(ierr);
+      if (flg) {
+        ctx->displayvariables[j] = k;
+        break;
+      }
+      k++;
+    }
+    j++;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGSetDisplayVariables"
 /*@C
    TSMonitorLGSetDisplayVariables - Sets the variables that are to be display in the monitor
@@ -5586,35 +5632,13 @@ PetscErrorCode  TSMonitorLGGetVariableNames(TS ts,const char *const **names)
 @*/
 PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *displaynames)
 {
-  PetscInt          i,j = 0,k;
+  PetscInt          i;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   for (i=0; i<ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
-      TSMonitorLGCtx  ctx = ts->monitorcontext[i];
-
-      if (!ctx->names) PetscFunctionReturn(0);
-      ierr = PetscStrArrayDestroy(&ctx->displaynames);CHKERRQ(ierr);
-      ierr = PetscStrArrayallocpy(displaynames,&ctx->displaynames);CHKERRQ(ierr);
-      while (displaynames[j]) j++;
-      ctx->ndisplayvariables = j;
-      ierr = PetscMalloc(ctx->ndisplayvariables*sizeof(PetscInt),&ctx->displayvariables);CHKERRQ(ierr);
-      ierr = PetscMalloc(ctx->ndisplayvariables*sizeof(PetscReal),&ctx->displayvalues);CHKERRQ(ierr);
-      j = 0; 
-      while (displaynames[j]) {
-        k = 0;
-        while (ctx->names[k]) {
-          PetscBool flg;
-          ierr = PetscStrcmp(displaynames[j],ctx->names[k],&flg);CHKERRQ(ierr);
-          if (flg) {
-            ctx->displayvariables[j] = k;
-            break;
-          }
-          k++;
-        }
-        j++;
-      }
+      ierr = TSMonitorLGCtxSetDisplayVariables(ts->monitorcontext[i],displaynames);CHKERRQ(ierr);
       break;
     }
   }
@@ -5638,19 +5662,17 @@ PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *display
 
 .keywords: TS,  vector, monitor, view
 
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames()
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames(), TSMonitorLGCtxSetTransform()
 @*/
 PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,Vec,Vec*),PetscErrorCode (*destroy)(void*),void *tctx)
 {
   PetscInt          i;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   for (i=0; i<ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
-      TSMonitorLGCtx  ctx = ts->monitorcontext[i];
-      ctx->transform        = transform;
-      ctx->transformdestroy = destroy;
-      ctx->transformctx     = tctx;
+      ierr = TSMonitorLGCtxSetTransform(ts->monitorcontext[i],transform,destroy,tctx);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -5673,7 +5695,7 @@ PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,
 
 .keywords: TS,  vector, monitor, view
 
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames()
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames(), TSMonitorLGSetTransform()
 @*/
 PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*transform)(void*,Vec,Vec*),PetscErrorCode (*destroy)(void*),void *tctx)
 {

@@ -287,7 +287,7 @@ struct _n_TSMonitorLGCtx {
   char           **names;
   char           **displaynames;
   PetscInt       ndisplayvariables;
-  PetscBool      *displayvariables;
+  PetscInt       *displayvariables;
   PetscReal      *displayvalues;
   PetscErrorCode (*transform)(void*,Vec,Vec*);
   PetscErrorCode (*transformdestroy)(void*);
