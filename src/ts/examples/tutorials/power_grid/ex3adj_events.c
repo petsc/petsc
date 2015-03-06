@@ -369,7 +369,9 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
+#if 0
   ierr = TSSetPostStep(ts,PostStepFunction);CHKERRQ(ierr);
+#endif
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set events
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
