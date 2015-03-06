@@ -1,64 +1,12 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petsc-private/isimpl.h>
+#include <petsc-private/vecimpl.h>
 #include <petscviewerhdf5.h>
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__
-#define __FUNCT__ "GetField_Static"
-static PetscErrorCode GetField_Static(DM dm, PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
-{
-  PetscInt      *subIndices;
-  PetscInt       Nc, subSize = 0, subOff = 0, p;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscSectionGetFieldComponents(section, field, &Nc);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt gdof, fdof = 0;
-
-    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
-    if (gdof > 0) {ierr = PetscSectionGetFieldDof(section, p, field, &fdof);CHKERRQ(ierr);}
-    subSize += fdof;
-  }
-  ierr = PetscMalloc1(subSize, &subIndices);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt gdof, goff;
-
-    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
-    if (gdof > 0) {
-      PetscInt fdof, fc, f2, poff = 0;
-
-      ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
-      /* Can get rid of this loop by storing field information in the global section */
-      for (f2 = 0; f2 < field; ++f2) {
-        ierr  = PetscSectionGetFieldDof(section, p, f2, &fdof);CHKERRQ(ierr);
-        poff += fdof;
-      }
-      ierr = PetscSectionGetFieldDof(section, p, field, &fdof);CHKERRQ(ierr);
-      for (fc = 0; fc < fdof; ++fc, ++subOff) subIndices[subOff] = goff+poff+fc;
-    }
-  }
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
-  ierr = VecGetSubVector(v, *is, subv);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(*subv, Nc);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "RestoreField_Static"
-static PetscErrorCode RestoreField_Static(DM dm, PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecRestoreSubVector(v, *is, subv);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "DMSequenceView_HDF5"
 static PetscErrorCode DMSequenceView_HDF5(DM dm, const char *seqname, PetscInt seqnum, PetscScalar value, PetscViewer viewer)
@@ -176,11 +124,11 @@ PetscErrorCode VecView_Plex_Local_HDF5(Vec v, PetscViewer viewer)
       ierr = PetscSectionGetFieldName(section, f, &fname);CHKERRQ(ierr);
       if (!fname) continue;
       ierr = PetscViewerHDF5PushGroup(viewer, fgroup);CHKERRQ(ierr);
-      ierr = GetField_Static(dmBC, section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      ierr = PetscSectionGetField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) subv, fname);CHKERRQ(ierr);
       if (isseq) {ierr = VecView_Seq(subv, viewer);CHKERRQ(ierr);}
       else       {ierr = VecView_MPI(subv, viewer);CHKERRQ(ierr);}
-      ierr = RestoreField_Static(dmBC, section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      ierr = PetscSectionRestoreField_Internal(section, sectionGlobal, gv, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
       ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
       ierr = PetscSNPrintf(group, PETSC_MAX_PATH_LEN, "%s/%s", fgroup, fname);CHKERRQ(ierr);
       ierr = PetscViewerHDF5HasAttribute(viewer, group, "vector_field_type", &flag);CHKERRQ(ierr);

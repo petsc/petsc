@@ -223,3 +223,100 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   ierr = VecRestoreArray(v, &baseArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetField_Internal"
+PetscErrorCode PetscSectionGetField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
+{
+  PetscInt      *subIndices;
+  PetscInt       Nc, subSize = 0, subOff = 0, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetFieldComponents(section, field, &Nc);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt gdof, fdof = 0;
+
+    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+    if (gdof > 0) {ierr = PetscSectionGetFieldDof(section, p, field, &fdof);CHKERRQ(ierr);}
+    subSize += fdof;
+  }
+  ierr = PetscMalloc1(subSize, &subIndices);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt gdof, goff;
+
+    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+    if (gdof > 0) {
+      PetscInt fdof, fc, f2, poff = 0;
+
+      ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
+      /* Can get rid of this loop by storing field information in the global section */
+      for (f2 = 0; f2 < field; ++f2) {
+        ierr  = PetscSectionGetFieldDof(section, p, f2, &fdof);CHKERRQ(ierr);
+        poff += fdof;
+      }
+      ierr = PetscSectionGetFieldDof(section, p, field, &fdof);CHKERRQ(ierr);
+      for (fc = 0; fc < fdof; ++fc, ++subOff) subIndices[subOff] = goff+poff+fc;
+    }
+  }
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) v), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
+  ierr = VecGetSubVector(v, *is, subv);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*subv, Nc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionRestoreField_Internal"
+PetscErrorCode PetscSectionRestoreField_Internal(PetscSection section, PetscSection sectionGlobal, Vec v, PetscInt field, PetscInt pStart, PetscInt pEnd, IS *is, Vec *subv)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreSubVector(v, *is, subv);CHKERRQ(ierr);
+  ierr = ISDestroy(is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionVecNorm"
+/*@C
+  PetscSectionVecNorm - Computes the vector norm, separated into field components.
+
+  Input Parameters:
++ s    - the local Section
+. gs   - the global section
+. x    - the vector
+- type - one of NORM_1, NORM_2, NORM_INFINITY.
+
+  Output Parameter:
+. val  - the array of norms
+
+  Level: intermediate
+
+.seealso: VecNorm(), PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionVecNorm(PetscSection s, PetscSection gs, Vec x, NormType type, PetscReal val[])
+{
+  PetscInt       Nf, f, pStart, pEnd;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscValidHeaderSpecific(gs, PETSC_SECTION_CLASSID, 2);
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
+  PetscValidPointer(val, 5);
+  ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
+  if (Nf < 2) {ierr = VecNorm(x, type, val);CHKERRQ(ierr);}
+  else {
+    ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      Vec subv;
+      IS  is;
+
+      ierr = PetscSectionGetField_Internal(s, gs, x, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+      ierr = VecNorm(subv, type, &val[f]);CHKERRQ(ierr);
+      ierr = PetscSectionRestoreField_Internal(s, gs, x, f, pStart, pEnd, &is, &subv);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
