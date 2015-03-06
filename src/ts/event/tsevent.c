@@ -2,6 +2,32 @@
 #include <petsc-private/tsimpl.h> /*I  "petscts.h" I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "TSEventMonitorInitialize"
+/*
+  TSEventMonitorInitialize - Initializes TSEvent for TSSolve
+*/
+PetscErrorCode TSEventMonitorInitialize(TS ts)
+{
+  PetscErrorCode ierr;
+  PetscReal      t;
+  Vec            U;
+  TSEvent        event=ts->event;
+
+  PetscFunctionBegin;
+
+  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
+  ierr = TSGetTimeStep(ts,&event->initial_timestep);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+  event->ptime_prev = t;
+  ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,event->monitorcontext);CHKERRQ(ierr);
+
+  /* Initialize the event recorder */
+  event->recorder.ctr = 0;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSSetEventMonitor"
 /*@C
    TSSetEventMonitor - Sets a monitoring function used for detecting events
@@ -54,8 +80,6 @@
 PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate,PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void *mectx)
 {
   PetscErrorCode ierr;
-  PetscReal      t;
-  Vec            U;
   TSEvent        event;
   PetscInt       i;
 
@@ -75,17 +99,10 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,Pets
   event->monitorcontext = (void*)mectx;
   event->nevents = nevents;
 
-  /* Initialize the event recorder */
-  event->recorder.ctr = 0;
   for(i=0; i < MAXEVENTRECORDERS; i++) {
     ierr = PetscMalloc1(nevents,&event->recorder.eventidx[i]);CHKERRQ(ierr);
   }
 
-  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
-  ierr = TSGetTimeStep(ts,&event->initial_timestep);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
-  event->ptime_prev = t;
-  ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,mectx);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS Event options","");CHKERRQ(ierr);
   {
     event->tol = 1.0e-6;

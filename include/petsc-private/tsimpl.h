@@ -285,6 +285,7 @@ struct _p_TSEvent {
 PETSC_EXTERN PetscErrorCode TSEventMonitor(TS);
 PETSC_EXTERN PetscErrorCode TSEventMonitorDestroy(TSEvent*);
 PETSC_EXTERN PetscErrorCode TSAdjointEventMonitor(TS);
+PETSC_EXTERN PetscErrorCode TSEventMonitorInitialize(TS);
 
 PETSC_EXTERN PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
