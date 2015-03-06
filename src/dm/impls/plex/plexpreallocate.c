@@ -6,16 +6,17 @@
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeAnchorAdjacencies"
 /* get adjacencies due to point-to-point constraints that can't be found with DMPlexGetAdjacency() */
-static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscSection section, PetscSection sectionGlobal, PetscBool useCone, PetscBool useClosure, PetscSection *anchorSectionAdj, PetscInt *anchorAdj[])
+static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscBool useCone, PetscBool useClosure, PetscSection *anchorSectionAdj, PetscInt *anchorAdj[])
 {
   PetscInt       pStart, pEnd;
-  PetscSection   adjSec, aSec;
+  PetscSection   section, sectionGlobal, adjSec, aSec;
   IS             aIS;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)section),&adjSec);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) section), &adjSec);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(adjSec,pStart,pEnd);CHKERRQ(ierr);
 
@@ -158,13 +159,13 @@ static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscSection section
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateAdjacencySection_Static"
-PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, PetscSF sfDof, PetscSection section, PetscSection sectionGlobal, PetscBool useCone, PetscBool useClosure, PetscBool useAnchors, PetscSection *sA, PetscInt **colIdx)
+PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, PetscSF sfDof, PetscBool useCone, PetscBool useClosure, PetscBool useAnchors, PetscSection *sA, PetscInt **colIdx)
 {
   MPI_Comm           comm;
   PetscMPIInt        size;
   PetscBool          doCommLocal, doComm, debug = PETSC_FALSE;
   PetscSF            sf, sfAdj;
-  PetscSection       leafSectionAdj, rootSectionAdj, sectionAdj, anchorSectionAdj;
+  PetscSection       section, sectionGlobal, leafSectionAdj, rootSectionAdj, sectionAdj, anchorSectionAdj;
   PetscInt           nroots, nleaves, l, p, r;
   const PetscInt    *leaves;
   const PetscSFNode *remotes;
@@ -179,6 +180,8 @@ PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, PetscSF s
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   doCommLocal = (size > 1) && (nroots >= 0) ? PETSC_TRUE : PETSC_FALSE;
   ierr = MPI_Allreduce(&doCommLocal, &doComm, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRQ(ierr);
@@ -218,7 +221,7 @@ PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, PetscSF s
     6. Visit all owned points in the subdomain, insert dof adjacencies into cols
    ** Knowing all the column adjacencies, check ownership and sum into dnz and onz
   */
-  ierr = DMPlexComputeAnchorAdjacencies(dm, section, sectionGlobal, useCone, useClosure, &anchorSectionAdj, &anchorAdj);CHKERRQ(ierr);
+  ierr = DMPlexComputeAnchorAdjacencies(dm, useCone, useClosure, &anchorSectionAdj, &anchorAdj);CHKERRQ(ierr);
   for (l = 0; l < nleaves; ++l) {
     PetscInt dof, off, d, q, anDof;
     PetscInt p = leaves[l], numAdj = PETSC_DETERMINE;
@@ -583,8 +586,9 @@ PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, PetscSF s
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexUpdateAllocation_Static"
-PetscErrorCode DMPlexUpdateAllocation_Static(PetscLayout rLayout, PetscInt bs, PetscSection section, PetscSection sectionGlobal, PetscInt f, PetscSection sectionAdj, const PetscInt cols[], PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[])
+PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, PetscInt bs, PetscInt f, PetscSection sectionAdj, const PetscInt cols[], PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[])
 {
+  PetscSection   section;
   PetscInt       rStart, rEnd, r, pStart, pEnd, p;
   PetscErrorCode ierr;
 
@@ -593,6 +597,7 @@ PetscErrorCode DMPlexUpdateAllocation_Static(PetscLayout rLayout, PetscInt bs, P
   ierr = PetscLayoutGetRange(rLayout, &rStart, &rEnd);CHKERRQ(ierr);
   if (rStart%bs || rEnd%bs) SETERRQ3(PetscObjectComm((PetscObject) rLayout), PETSC_ERR_ARG_WRONG, "Invalid layout [%d, %d) for matrix, must be divisible by block size %d", rStart, rEnd, bs);
   if (f >= 0 && bs == 1) {
+    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt goff, loff, lfoff, fdof, fcdof, rS, rE;
@@ -650,8 +655,9 @@ PetscErrorCode DMPlexUpdateAllocation_Static(PetscLayout rLayout, PetscInt bs, P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexFillMatrix_Static"
-PetscErrorCode DMPlexFillMatrix_Static(PetscLayout rLayout, PetscInt bs, PetscSection section, PetscSection sectionGlobal, PetscInt f, PetscSection sectionAdj, const PetscInt cols[], Mat A)
+PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscInt bs, PetscInt f, PetscSection sectionAdj, const PetscInt cols[], Mat A)
 {
+  PetscSection   section;
   PetscScalar   *values;
   PetscInt       rStart, rEnd, r, pStart, pEnd, p, len, maxRowLen = 0;
   PetscErrorCode ierr;
@@ -664,6 +670,7 @@ PetscErrorCode DMPlexFillMatrix_Static(PetscLayout rLayout, PetscInt bs, PetscSe
   }
   ierr = PetscCalloc1(maxRowLen, &values);CHKERRQ(ierr);
   if (f >=0 && bs == 1) {
+    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt goff, loff, lfoff, fdof, fcdof, rS, rE;
@@ -698,12 +705,13 @@ PetscErrorCode DMPlexFillMatrix_Static(PetscLayout rLayout, PetscInt bs, PetscSe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexPreallocateOperator"
-PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscSection sectionGlobal, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
+PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {
   MPI_Comm       comm;
   PetscDS        prob;
   MatType        mtype;
   PetscSF        sf, sfDof;
+  PetscSection   section;
   PetscInt      *remoteOffsets;
   PetscSection   sectionAdj[4] = {NULL, NULL, NULL, NULL};
   PetscInt      *cols[4]       = {NULL, NULL, NULL, NULL};
@@ -715,21 +723,23 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 3);
-  PetscValidHeaderSpecific(sectionGlobal, PETSC_SECTION_CLASSID, 4);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 9);
   if (dnz)  PetscValidPointer(dnz,5);  if (onz)  PetscValidPointer(onz,6);
   if (dnzu) PetscValidPointer(dnzu,7); if (onzu) PetscValidPointer(onzu,8);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL, "-dm_view_preallocation", &debug, NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DMPLEX_Preallocate,dm,0,0,0);CHKERRQ(ierr);
   /* Create dof SF based on point SF */
   if (debug) {
-    PetscSF sf;
+    PetscSection section, sectionGlobal;
+    PetscSF      sf;
 
     ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Input Section for Preallocation:\n");CHKERRQ(ierr);
     ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Input Global Section for Preallocation:\n");CHKERRQ(ierr);
@@ -755,14 +765,14 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
     ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
     idx  = (useCone ? 1 : 0) + (useClosure ? 2 : 0);
-    ierr = DMPlexCreateAdjacencySection_Static(dm, bs, sfDof, section, sectionGlobal, useCone, useClosure, PETSC_TRUE, &sectionAdj[idx], &cols[idx]);CHKERRQ(ierr);
-    ierr = DMPlexUpdateAllocation_Static(rLayout, bs, section, sectionGlobal, -1, sectionAdj[idx], cols[idx], dnz, onz, dnzu, onzu);CHKERRQ(ierr);
+    ierr = DMPlexCreateAdjacencySection_Static(dm, bs, sfDof, useCone, useClosure, PETSC_TRUE, &sectionAdj[idx], &cols[idx]);CHKERRQ(ierr);
+    ierr = DMPlexUpdateAllocation_Static(dm, rLayout, bs, -1, sectionAdj[idx], cols[idx], dnz, onz, dnzu, onzu);CHKERRQ(ierr);
   } else {
     for (f = 0; f < Nf; ++f) {
       ierr = PetscDSGetAdjacency(prob, f, &useCone, &useClosure);CHKERRQ(ierr);
       idx  = (useCone ? 1 : 0) + (useClosure ? 2 : 0);
-      if (!sectionAdj[idx]) {ierr = DMPlexCreateAdjacencySection_Static(dm, bs, sfDof, section, sectionGlobal, useCone, useClosure, PETSC_TRUE, &sectionAdj[idx], &cols[idx]);CHKERRQ(ierr);}
-      ierr = DMPlexUpdateAllocation_Static(rLayout, bs, section, sectionGlobal, f, sectionAdj[idx], cols[idx], dnz, onz, dnzu, onzu);CHKERRQ(ierr);
+      if (!sectionAdj[idx]) {ierr = DMPlexCreateAdjacencySection_Static(dm, bs, sfDof, useCone, useClosure, PETSC_TRUE, &sectionAdj[idx], &cols[idx]);CHKERRQ(ierr);}
+      ierr = DMPlexUpdateAllocation_Static(dm, rLayout, bs, f, sectionAdj[idx], cols[idx], dnz, onz, dnzu, onzu);CHKERRQ(ierr);
     }
   }
   ierr = PetscSFDestroy(&sfDof);CHKERRQ(ierr);
@@ -781,12 +791,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
       ierr = DMPlexGetAdjacencyUseCone(dm, &useCone);CHKERRQ(ierr);
       ierr = DMPlexGetAdjacencyUseClosure(dm, &useClosure);CHKERRQ(ierr);
       idx  = (useCone ? 1 : 0) + (useClosure ? 2 : 0);
-      ierr = DMPlexFillMatrix_Static(rLayout, bs, section, sectionGlobal, -1, sectionAdj[idx], cols[idx], A);CHKERRQ(ierr);
+      ierr = DMPlexFillMatrix_Static(dm, rLayout, bs, -1, sectionAdj[idx], cols[idx], A);CHKERRQ(ierr);
     } else {
       for (f = 0; f < Nf; ++f) {
         ierr = PetscDSGetAdjacency(prob, f, &useCone, &useClosure);CHKERRQ(ierr);
         idx  = (useCone ? 1 : 0) + (useClosure ? 2 : 0);
-        ierr = DMPlexFillMatrix_Static(rLayout, bs, section, sectionGlobal, f, sectionAdj[idx], cols[idx], A);CHKERRQ(ierr);
+        ierr = DMPlexFillMatrix_Static(dm, rLayout, bs, f, sectionAdj[idx], cols[idx], A);CHKERRQ(ierr);
       }
     }
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
