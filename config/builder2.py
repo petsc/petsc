@@ -93,7 +93,7 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
       validTestnum = args.testnum[1:-1].split(',')
     elif args.testnum[0] == '@':
       import re
-      validTestnum = [key for key in map(lambda p: p.get('num', ''), params) if re.match(args.testnum[1:], key)]
+      validTestnum = [str(num) if key is None else key for num,key in enumerate(map(lambda p: p.get('num', None), params)) if re.match(args.testnum[1:], str(num) if key is None else key)]
     else:
       validTestnum = [args.testnum]
     numtests = len(validTestnum)
