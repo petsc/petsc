@@ -3475,6 +3475,9 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if ((*ctx)->transformdestroy) {
+    ierr = ((*ctx)->transformdestroy)((*ctx)->transformctx);CHKERRQ(ierr);
+  }
   ierr = PetscDrawLGGetDraw((*ctx)->lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(&(*ctx)->lg);CHKERRQ(ierr);
@@ -5628,6 +5631,7 @@ PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *display
    Input Parameters:
 +  ts - the TS context
 .  transform - the transform function
+.  destroy - function to destroy the optional context
 -  ctx - optional context used by transform function
 
    Level: intermediate
@@ -5636,7 +5640,7 @@ PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *display
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames()
 @*/
-PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,Vec,Vec*),void *tctx)
+PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,Vec,Vec*),PetscErrorCode (*destroy)(void*),void *tctx)
 {
   PetscInt          i;
 
@@ -5644,8 +5648,9 @@ PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,
   for (i=0; i<ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
       TSMonitorLGCtx  ctx = ts->monitorcontext[i];
-      ctx->transform    = transform;
-      ctx->transformctx = tctx;
+      ctx->transform        = transform;
+      ctx->transformdestroy = destroy;
+      ctx->transformctx     = tctx;
     }
   }
   PetscFunctionReturn(0);
@@ -5661,6 +5666,7 @@ PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,
    Input Parameters:
 +  ts - the TS context
 .  transform - the transform function
+.  destroy - function to destroy the optional context
 -  ctx - optional context used by transform function
 
    Level: intermediate
@@ -5669,10 +5675,11 @@ PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames()
 @*/
-PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*transform)(void*,Vec,Vec*),void *tctx)
+PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*transform)(void*,Vec,Vec*),PetscErrorCode (*destroy)(void*),void *tctx)
 {
   PetscFunctionBegin;
   ctx->transform    = transform;
+  ctx->transformdestroy = destroy;
   ctx->transformctx = tctx;
   PetscFunctionReturn(0);
 }

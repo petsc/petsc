@@ -134,7 +134,7 @@ int main(int argc,char **argv)
   ierr = TSMonitorLGSetVariableNames(ts,(const char * const *)snames);CHKERRQ(ierr);
   ierr = PetscFree(snames);CHKERRQ(ierr);
   ierr = PetscFree(names);CHKERRQ(ierr);
-  ierr = TSMonitorLGSetTransform(ts,(PetscErrorCode (*)(void*,Vec,Vec*))FormMoleFraction,&user);CHKERRQ(ierr);
+  ierr = TSMonitorLGSetTransform(ts,(PetscErrorCode (*)(void*,Vec,Vec*))FormMoleFraction,NULL,&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE

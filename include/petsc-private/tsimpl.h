@@ -290,6 +290,7 @@ struct _n_TSMonitorLGCtx {
   PetscBool      *displayvariables;
   PetscReal      *displayvalues;
   PetscErrorCode (*transform)(void*,Vec,Vec*);
+  PetscErrorCode (*transformdestroy)(void*);
   void           *transformctx;
 };
 

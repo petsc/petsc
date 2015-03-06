@@ -51,7 +51,7 @@ struct _User {
   PetscInt  *rows;
 };
 
-
+static PetscErrorCode MonitorCell(TS,User,PetscInt);
 static PetscErrorCode FormMoleFraction(User,Vec,Vec*);
 static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
 static PetscErrorCode FormRHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
@@ -73,8 +73,6 @@ int main(int argc,char **argv)
   char              chemfile[PETSC_MAX_PATH_LEN] = "chem.inp",thermofile[PETSC_MAX_PATH_LEN] = "therm.dat";
   struct _User      user;
   TSConvergedReason reason;
-  char              **snames,*names;
-  PetscInt          i;
   PetscScalar       temp = 1500;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -130,19 +128,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Pass information to graphical monitoring routine
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  TSMonitorLGCtx ctx;
-  ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx);CHKERRQ(ierr);
-  ierr = PetscMalloc1((user.Nspec+1)*LENGTHOFSPECNAME,&names);CHKERRQ(ierr);
-  ierr = PetscStrcpy(names,"Temp");CHKERRQ(ierr);
-  TC_getSnames(user.Nspec,names+LENGTHOFSPECNAME);CHKERRQ(ierr);
-  ierr = PetscMalloc1((user.Nspec+2),&snames);CHKERRQ(ierr);
-  for (i=0; i<user.Nspec+1; i++) snames[i] = names+i*LENGTHOFSPECNAME;
-  snames[user.Nspec+1] = NULL;
-  ierr = TSMonitorLGCtxSetVariableNames(ctx,(const char * const *)snames);CHKERRQ(ierr);
-  ierr = PetscFree(snames);CHKERRQ(ierr);
-  ierr = PetscFree(names);CHKERRQ(ierr);
-  ierr = TSMonitorLGCtxSetTransform(ctx,(PetscErrorCode (*)(void*,Vec,Vec*))FormMoleFraction,&user);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+  ierr = MonitorCell(ts,&user,0);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE
@@ -283,7 +269,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormMoleFraction"
-PetscErrorCode FormMoleFraction(User user,Vec massf,Vec *molef)
+static PetscErrorCode FormMoleFraction(User user,Vec massf,Vec *molef)
 {
   PetscErrorCode    ierr;
   PetscReal         *M,tM=0;
@@ -305,5 +291,33 @@ PetscErrorCode FormMoleFraction(User user,Vec massf,Vec *molef)
   ierr = DMDAVecRestoreArrayDOFRead(user->dm,massf,&maf);CHKERRQ(ierr);
   ierr = VecRestoreArray(*molef,&mof);CHKERRQ(ierr);
   ierr = PetscFree(M);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MonitorCell"
+/*
+   Use TSMonitorLG to monitor the reactions in a particular cell
+*/
+static PetscErrorCode MonitorCell(TS ts,User user,PetscInt cell)
+{
+  PetscErrorCode ierr;
+  TSMonitorLGCtx ctx;
+  char           **snames,*names;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx);CHKERRQ(ierr);
+  ierr = PetscMalloc1((user->Nspec+1)*LENGTHOFSPECNAME,&names);CHKERRQ(ierr);
+  ierr = PetscStrcpy(names,"Temp");CHKERRQ(ierr);
+  TC_getSnames(user->Nspec,names+LENGTHOFSPECNAME);CHKERRQ(ierr);
+  ierr = PetscMalloc1((user->Nspec+2),&snames);CHKERRQ(ierr);
+  for (i=0; i<user->Nspec+1; i++) snames[i] = names+i*LENGTHOFSPECNAME;
+  snames[user->Nspec+1] = NULL;
+  ierr = TSMonitorLGCtxSetVariableNames(ctx,(const char * const *)snames);CHKERRQ(ierr);
+  ierr = PetscFree(snames);CHKERRQ(ierr);
+  ierr = PetscFree(names);CHKERRQ(ierr);
+  ierr = TSMonitorLGCtxSetTransform(ctx,(PetscErrorCode (*)(void*,Vec,Vec*))FormMoleFraction,NULL,user);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
