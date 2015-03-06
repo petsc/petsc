@@ -34,7 +34,8 @@ typedef struct {
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
   PetscErrorCode     ierr;
-  PetscScalar        *u,*udot,*f,r;
+  PetscScalar        *f,r;
+  const PetscScalar  *u,*udot;
   static PetscScalar R = .4;
 
   PetscFunctionBegin;
@@ -43,14 +44,14 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   if (r < .1) R = .4;
   R = .4;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = 2.0*ctx->H*udot[0]/ctx->omega_s + ctx->E*ctx->V*PetscSinScalar(u[1])/ctx->X - R;
   f[1] = udot[1] - u[0] + ctx->omega_s;
 
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -60,28 +61,28 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,AppCtx *ctx)
+static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,AppCtx *ctx)
 {
-  PetscErrorCode ierr;
-  PetscInt       rowcol[] = {0,1};
-  PetscScalar    *u,*udot,J[2][2];
+  PetscErrorCode    ierr;
+  PetscInt          rowcol[] = {0,1};
+  PetscScalar       J[2][2];
+  const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
-  ierr    = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr    = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   J[0][0] = 2.0*ctx->H*a/ctx->omega_s;   J[0][1] = -ctx->E*ctx->V*PetscCosScalar(u[1])/ctx->X;
   J[1][0] = -1.0;                        J[1][1] = a;
-  ierr    = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
+  ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -113,7 +114,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&U,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
@@ -135,7 +136,7 @@ int main(int argc,char **argv)
     u[0] = 1;
     u[1] = .7;
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscOptionsVec("-initial","Initial values","",U,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetVec(NULL,"-initial",U,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

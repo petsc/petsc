@@ -26,7 +26,6 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   PetscReal      dp;
   Vec            X,B,Zl,Zr,Rl,Rr,Pl,Pr;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -41,7 +40,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   Zr = ksp->work[4];
   Pr = ksp->work[5];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,Rr);CHKERRQ(ierr);      /*   r <- b - Ax       */
@@ -156,8 +155,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp)
 
   PetscFunctionBegin;
   ksp->data = (void*)0;
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_BiCG;
   ksp->ops->solve          = KSPSolve_BiCG;

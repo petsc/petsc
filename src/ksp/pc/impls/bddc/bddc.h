@@ -2,9 +2,9 @@
 #define __pcbddc_h
 
 #include <../src/ksp/pc/impls/is/pcis.h>
-#include "bddcstructs.h"
+#include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
-//typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType;
+/* typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType; */
 
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
@@ -19,6 +19,8 @@ typedef struct {
   Mat           coarse_psi_B;
   Mat           coarse_psi_D;
   PetscInt      local_primal_size;
+  PetscInt      coarse_size;
+  PetscInt*     global_primal_indices;
   VecScatter    coarse_loc_to_glob;
   /* Local stuffs needed by BDDC application in KSP */
   Vec           vec1_P;
@@ -32,41 +34,68 @@ typedef struct {
   VecScatter    R_to_D;
   KSP           ksp_R;
   KSP           ksp_D;
-  Vec           vec4_D;
+  PetscBool     issym;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
+  ISLocalToGlobalMapping BtoNmap;
   PetscInt      n_constraints;
   PetscInt      n_vertices;
+  PetscInt      n_actual_vertices;
   Mat           ConstraintMatrix;
+  PetscBool     new_primal_space;
+  PetscBool     new_primal_space_local;
+  PetscInt      *primal_indices_local_idxs;
   PetscBool     use_change_of_basis;
   PetscBool     use_change_on_faces;
   Mat           ChangeOfBasisMatrix;
+  Mat           user_ChangeOfBasisMatrix;
+  Mat           new_global_mat;
   Vec           original_rhs;
   Vec           temp_solution;
   Mat           local_mat;
   PetscBool     use_exact_dirichlet_trick;
+  PetscBool     ksp_guess_nonzero;
+  PetscBool     rhs_change;
   /* Some defaults on selecting vertices and constraints*/
+  PetscBool     use_local_adj;
   PetscBool     use_vertices;
   PetscBool     use_faces;
   PetscBool     use_edges;
   /* Some customization is possible */
+  PetscBool                  recompute_topography;
   PCBDDCGraph                mat_graph;
+  MatNullSpace               onearnullspace;
+  PetscObjectState           *onearnullvecs_state;
   MatNullSpace               NullSpace;
   IS                         user_primal_vertices;
   PetscBool                  use_nnsp_true;
+  PetscBool                  use_qr_single;
   PetscBool                  user_provided_isfordofs;
   PetscInt                   n_ISForDofs;
+  PetscInt                   n_ISForDofsLocal;
   IS                         *ISForDofs;
+  IS                         *ISForDofsLocal;
   IS                         NeumannBoundaries;
+  IS                         NeumannBoundariesLocal;
   IS                         DirichletBoundaries;
+  IS                         DirichletBoundariesLocal;
   PetscBool                  switch_static;
   PetscInt                   coarsening_ratio;
   PetscInt                   current_level;
   PetscInt                   max_levels;
+  PetscInt                   redistribute_coarse;
+  IS                         coarse_subassembling;
+  IS                         coarse_subassembling_init;
+  PetscBool                  use_coarse_estimates;
   /* scaling */
   Vec                        work_scaling;
   PetscBool                  use_deluxe_scaling;
   PCBDDCDeluxeScaling        deluxe_ctx;
+  PetscInt                   deluxe_threshold;
+  PetscBool                  deluxe_rebuild;
+  PetscInt                   deluxe_layers;
+  PetscBool                  deluxe_compute_rowadj;
+  PetscBool                  deluxe_use_useradj;
   /* For verbose output of some bddc data structures */
   PetscInt                   dbg_flag;
   PetscViewer                dbg_viewer;

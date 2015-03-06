@@ -9,7 +9,7 @@ PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Anderson"
-PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
+PetscErrorCode SNESSetFromOptions_Anderson(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscErrorCode ierr;
@@ -17,7 +17,7 @@ PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES NGMRES options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES NGMRES options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_anderson_m",            "Number of directions","SNES",ngmres->msize,&ngmres->msize,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_anderson_beta",        "Mixing parameter","SNES",ngmres->andersonBeta,&ngmres->andersonBeta,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_anderson_monitor",     "Monitor steps of Anderson Mixing","SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&debug,NULL);CHKERRQ(ierr);
@@ -41,26 +41,24 @@ PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
 #define __FUNCT__ "SNESSolve_Anderson"
 PetscErrorCode SNESSolve_Anderson(SNES snes)
 {
-  SNES_NGMRES *ngmres = (SNES_NGMRES*) snes->data;
+  SNES_NGMRES         *ngmres = (SNES_NGMRES*) snes->data;
   /* present solution, residual, and preconditioned residual */
-  Vec X,F,B,D;
-
+  Vec                 X,F,B,D;
   /* candidate linear combination answers */
-  Vec XA,FA,XM,FM;
+  Vec                 XA,FA,XM,FM;
 
   /* coefficients and RHS to the minimization problem */
-  PetscReal fnorm,fMnorm,fAnorm;
-  PetscReal  xnorm,ynorm;
-  PetscReal dnorm,dminnorm=0.0,fminnorm;
-  PetscInt  restart_count=0;
-  PetscInt  k,k_restart,l,ivec;
-
-  PetscBool selectRestart;
-
+  PetscReal           fnorm,fMnorm,fAnorm;
+  PetscReal           xnorm,ynorm;
+  PetscReal           dnorm,dminnorm=0.0,fminnorm;
+  PetscInt            restart_count=0;
+  PetscInt            k,k_restart,l,ivec;
+  PetscBool           selectRestart;
   SNESConvergedReason reason;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   /* variable initialization */
   snes->reason = SNES_CONVERGED_ITERATING;
   X            = snes->vec_sol;
@@ -84,7 +82,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
   /* r = F(x) */
 
   if (snes->pc && snes->pcside == PC_LEFT) {
-    ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
@@ -134,7 +132,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = SNESGetPCFunction(snes,FM,&fMnorm);CHKERRQ(ierr);
+      ierr = SNESGetNPCFunction(snes,FM,&fMnorm);CHKERRQ(ierr);
       if (ngmres->andersonBeta != 1.0) {
         VecAXPBY(XM,(1.0 - ngmres->andersonBeta),ngmres->andersonBeta,X);CHKERRQ(ierr);
       }
@@ -241,7 +239,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
   snes->usesksp = PETSC_FALSE;
   snes->pcside  = PC_RIGHT;
 
-  ierr          = PetscNewLog(snes,SNES_NGMRES,&ngmres);CHKERRQ(ierr);
+  ierr          = PetscNewLog(snes,&ngmres);CHKERRQ(ierr);
   snes->data    = (void*) ngmres;
   ngmres->msize = 30;
 

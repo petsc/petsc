@@ -53,6 +53,8 @@ PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char f
 {
 #if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(PETSC_HAVE_MEMALIGN))
   int shift;
+
+  if (!ptr) PetscFunctionReturn(0);
   /*
        Previous int tells us how many ints the pointer has been shifted from
     the original address provided by the system malloc().
@@ -146,5 +148,23 @@ PetscErrorCode  PetscMallocClear(void)
   PetscTrMalloc         = PetscMallocAlign;
   PetscTrFree           = PetscFreeAlign;
   petscsetmallocvisited = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscMemoryTrace"
+PetscErrorCode PetscMemoryTrace(const char label[])
+{
+  PetscErrorCode        ierr;
+  PetscLogDouble        mem,mal;
+  static PetscLogDouble oldmem = 0,oldmal = 0;
+
+  PetscFunctionBegin;
+  ierr = PetscMemoryGetCurrentUsage(&mem);CHKERRQ(ierr);
+  ierr = PetscMallocGetCurrentUsage(&mal);CHKERRQ(ierr);
+
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s High water  %8.3f MB increase %8.3f MB Current %8.3f MB increase %8.3f MB\n",label,mem*1e-6,(mem - oldmem)*1e-6,mal*1e-6,(mal - oldmal)*1e-6);CHKERRQ(ierr);
+  oldmem = mem;
+  oldmal = mal;
   PetscFunctionReturn(0);
 }

@@ -4,7 +4,7 @@
 
 #if !defined(__PetscLog_H)
 #define __PetscLog_H
-#include "petscsys.h"
+#include <petscsys.h>
 
 /*MC
     PetscLogEvent - id used to identify PETSc or user events which timed portions (blocks of executable)
@@ -236,8 +236,7 @@ PETSC_EXTERN PetscErrorCode PetscLogSet(PetscErrorCode (*)(int, int, PetscObject
 PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject, const char[], ...);
 /* Output functions */
 PETSC_EXTERN PetscErrorCode PetscLogView(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscLogViewPython(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscLogPrintDetailed(MPI_Comm, const char[]);
+PETSC_EXTERN PetscErrorCode PetscLogViewFromOptions(void);
 PETSC_EXTERN PetscErrorCode PetscLogDump(const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscGetFlops(PetscLogDouble *);
@@ -257,7 +256,8 @@ PETSC_EXTERN PetscErrorCode PetscLogEventDeactivate(PetscLogEvent);
 PETSC_EXTERN PetscErrorCode PetscLogEventSetActiveAll(PetscLogEvent, PetscBool );
 PETSC_EXTERN PetscErrorCode PetscLogEventActivateClass(PetscClassId);
 PETSC_EXTERN PetscErrorCode PetscLogEventDeactivateClass(PetscClassId);
-
+PETSC_EXTERN PetscErrorCode PetscLogEventGetId(const char[],PetscLogEvent*);
+PETSC_EXTERN PetscErrorCode PetscLogEventGetPerfInfo(int, PetscLogEvent, PetscEventPerfInfo *);
 
 /* Global counters */
 PETSC_EXTERN PetscLogDouble petsc_irecv_ct;
@@ -298,7 +298,7 @@ PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
      These are used internally in the PETSc routines to keep a count of MPI messages and
    their sizes.
 
-     This does not work for MPI-Uni because our include/mpiuni/mpi.h file
+     This does not work for MPI-Uni because our include/petsc-mpiuni/mpi.h file
    uses macros to defined the MPI operations.
 
      It does not work correctly from HP-UX because it processes the
@@ -313,7 +313,9 @@ PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
 */
 PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSize(PetscLogDouble *buff,PetscMPIInt count,MPI_Datatype type)
 {
-  PetscMPIInt mysize; return  (MPI_Type_size(type,&mysize) || ((*buff += (PetscLogDouble) (count*mysize)),0));
+  PetscMPIInt mysize; 
+  if (type == MPI_DATATYPE_NULL) return 0;
+  else return  (MPI_Type_size(type,&mysize) || ((*buff += (PetscLogDouble) (count*mysize)),0));
 }
 
 PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogDouble *buff,PetscMPIInt *counts,MPI_Datatype type)
@@ -321,12 +323,21 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
   PetscMPIInt mysize, commsize, p;
   PetscErrorCode _myierr;
 
+  if (type == MPI_DATATYPE_NULL) return 0;
   _myierr = MPI_Comm_size(comm,&commsize);CHKERRQ(_myierr);
   _myierr = MPI_Type_size(type,&mysize);CHKERRQ(_myierr);
   for (p = 0; p < commsize; ++p) {
     *buff += (PetscLogDouble) (counts[p]*mysize);
   }
   return 0;
+}
+
+/*
+    Returns 1 if the communicator is parallel else zero 
+*/
+PETSC_STATIC_INLINE int PetscMPIParallelComm(MPI_Comm comm)
+{
+  PetscMPIInt size; MPI_Comm_size(comm,&size); return size > 1;
 }
 
 #define MPI_Irecv(buf,count,datatype,source,tag,comm,request) \
@@ -360,19 +371,19 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
  ((petsc_wait_all_ct++,petsc_sum_of_waits_ct += (PetscLogDouble) (count),0) || MPI_Waitall(count,array_of_requests,array_of_statuses))
 
 #define MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm) \
- ((petsc_allreduce_ct++,0) || MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm))
+  ((petsc_allreduce_ct += PetscMPIParallelComm(comm),0) || MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm))
 
 #define MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm) \
- ((petsc_allreduce_ct++,0) || PetscMPITypeSize(&petsc_send_len,sendcount,sendtype) || MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))
+ ((petsc_allreduce_ct += PetscMPIParallelComm(comm),0) || PetscMPITypeSize(&petsc_send_len,sendcount,sendtype) || MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))
 
 #define MPI_Alltoallv(sendbuf,sendcnts,sdispls,sendtype,recvbuf,recvcnts,rdispls,recvtype,comm) \
- ((petsc_allreduce_ct++,0) || PetscMPITypeSizeComm(comm,&petsc_send_len,sendcnts,sendtype) || MPI_Alltoallv(sendbuf,sendcnts,sdispls,sendtype,recvbuf,recvcnts,rdispls,recvtype,comm))
+ ((petsc_allreduce_ct += PetscMPIParallelComm(comm),0) || PetscMPITypeSizeComm(comm,&petsc_send_len,sendcnts,sendtype) || MPI_Alltoallv(sendbuf,sendcnts,sdispls,sendtype,recvbuf,recvcnts,rdispls,recvtype,comm))
 
 #define MPI_Allgather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm) \
- ((petsc_gather_ct++,0) || MPI_Allgather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))
+ ((petsc_gather_ct += PetscMPIParallelComm(comm),0) || MPI_Allgather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))
 
 #define MPI_Allgatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,comm) \
- ((petsc_gather_ct++,0) || MPI_Allgatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,comm))
+ ((petsc_gather_ct += PetscMPIParallelComm(comm),0) || MPI_Allgatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,comm))
 
 #define MPI_Gather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm) \
  ((petsc_gather_ct++,0) || PetscMPITypeSize(&petsc_send_len,sendcount,sendtype) || MPI_Gather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm))
@@ -428,8 +439,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
 #define PetscLogStageRegister(a,b)          0
 #define PetscLogStagePrint(a,flg)           0
 #define PetscLogView(viewer)                0
-#define PetscLogViewPython(viewer)          0
-#define PetscLogPrintDetailed(comm,file)    0
+#define PetscLogViewFromOptions()           0
 #define PetscLogBegin()                     0
 #define PetscLogTraceBegin(file)            0
 #define PetscLogSet(lb,le)                  0

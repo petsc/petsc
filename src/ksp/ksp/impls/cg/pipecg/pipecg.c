@@ -36,7 +36,6 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
   PetscReal      dp    = 0.0;
   Vec            X,B,Z,P,W,Q,U,M,N,R,S;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
@@ -55,7 +54,7 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
   R = ksp->work[7];
   S = ksp->work[8];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
@@ -175,12 +174,12 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 /*MC
    KSPPIPECG - Pipelined conjugate gradient method.
 
-   There method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.  The
+   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.  The
    non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
 
    See also KSPPIPECR, where the reduction is only overlapped with the matrix-vector product.
 
-   Level: beginner
+   Level: intermediate
 
    Notes:
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
@@ -202,10 +201,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_PIPECG;
   ksp->ops->solve          = KSPSolve_PIPECG;

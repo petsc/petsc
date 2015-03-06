@@ -17,7 +17,7 @@
      These are the generic error codes. These error codes are used
      many different places in the PETSc source code. The string versions are
      at src/sys/error/err.c any changes here must also be made there
-     These are also define in include/finclude/petscerror.h any CHANGES here
+     These are also define in include/petsc-finclude/petscerror.h any CHANGES here
      must be also made there.
 
 */
@@ -60,11 +60,12 @@
 #define PETSC_ERR_MAT_LU_ZRPVT     71   /* detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT     81   /* detected a zero pivot during Cholesky factorization */
 
-#define PETSC_ERR_INT_OVERFLOW     84   /* should always be one less then the smallest value */
+#define PETSC_ERR_INT_OVERFLOW     84
 
 #define PETSC_ERR_FLOP_COUNT       90
 #define PETSC_ERR_NOT_CONVERGED    91  /* solver did not converge */
-#define PETSC_ERR_MAX_VALUE        92  /* this is always the one more than the largest error code */
+#define PETSC_ERR_MISSING_FACTOR   92  /* MatGetFactor() failed */
+#define PETSC_ERR_MAX_VALUE        93  /* this is always the one more than the largest error code */
 
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
@@ -72,10 +73,10 @@
 #if defined(PETSC_USE_ERRORCHECKING)
 
 /*MC
-   SETERRQ - Macro that is called when an error has been detected,
+   SETERRQ - Macro to be called when an error has been detected,
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    PetscErrorCode SETERRQ(MPI_Comm comm,PetscErrorCode errorcode,char *message)
 
    Not Collective
@@ -105,7 +106,7 @@ M*/
    SETERRQ1 - Macro that is called when an error has been detected,
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    PetscErrorCode SETERRQ1(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg)
 
    Not Collective
@@ -132,7 +133,7 @@ M*/
    SETERRQ2 - Macro that is called when an error has been detected,
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    PetscErrorCode SETERRQ2(PetscErrorCode errorcode,char *formatmessage,arg1,arg2)
 
    Not Collective
@@ -160,7 +161,7 @@ M*/
    SETERRQ3 - Macro that is called when an error has been detected,
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    PetscErrorCode SETERRQ3(PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
 
    Not Collective
@@ -198,7 +199,7 @@ M*/
    CHKERRQ - Checks error code, if non-zero it calls the error handler and then returns
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    PetscErrorCode CHKERRQ(PetscErrorCode errorcode)
 
    Not Collective
@@ -242,7 +243,7 @@ M*/
    CHKERRXX - Checks error code, if non-zero it calls the C++ error handler which throws an exception
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    void CHKERRXX(PetscErrorCode errorcode)
 
    Not Collective
@@ -270,7 +271,7 @@ M*/
    CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    CHKMEMQ;
 
    Not Collective
@@ -278,6 +279,9 @@ M*/
   Level: beginner
 
    Notes:
+    We highly recommend using valgrind http://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind for finding memory problems. This is useful
+    on systems that do not have valgrind, but much much less useful.
+
     Must run with the option -malloc_debug to enable this option
 
     Once the error handler is called the calling function is then returned from with the given error code.
@@ -330,7 +334,7 @@ M*/
 
   PETSC_ERROR_IN_CXX indicates the error was detected in C++ and an exception should be generated
 
-  Developer Notes: This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandling()
+  Developer Notes: This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandler()
 
 .seealso: PetscError(), SETERRXX()
 E*/
@@ -357,7 +361,7 @@ PETSC_EXTERN PetscErrorCode PetscCheckPointerSetIntensity(PetscInt);
     PetscErrorPrintf - Prints error messages.
 
    Synopsis:
-    #include "petscsys.h"
+    #include <petscsys.h>
      PetscErrorCode (*PetscErrorPrintf)(const char format[],...);
 
     Not Collective
@@ -366,16 +370,13 @@ PETSC_EXTERN PetscErrorCode PetscCheckPointerSetIntensity(PetscInt);
 .   format - the usual printf() format string
 
    Options Database Keys:
-+    -error_output_stdout - cause error messages to be printed to stdout instead of the
-         (default) stderr
--    -error_output_none to turn off all printing of error messages (does not change the way the
-          error is handled.)
++    -error_output_stdout - cause error messages to be printed to stdout instead of the  (default) stderr
+-    -error_output_none - to turn off all printing of error messages (does not change the way the error is handled.)
 
    Notes: Use
 $     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the
 $                        error is handled.) and
-$     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on
-$        of you can use your own function
+$     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on or you can use your own function
 
           Use
      PETSC_STDERR = FILE* obtained from a file open etc. to have stderr printed to the file.
@@ -547,11 +548,11 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
   } while (0)
 
 /*MC
-   PetscFunctionBegin - First executable line of each PETSc function
-        used for error handling.
+   PetscFunctionBegin - First executable line of each PETSc function,  used for error handling. Final
+      line of PETSc functions should be PetscFunctionReturn(0);
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    void PetscFunctionBegin;
 
    Not Collective
@@ -564,11 +565,13 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
 .ve
 
    Notes:
+     Use PetscFunctionBeginUser for application codes.
+
      Not available in Fortran
 
    Level: developer
 
-.seealso: PetscFunctionReturn()
+.seealso: PetscFunctionReturn(), PetscFunctionBeginHot(), PetscFunctionBeginUser()
 
 .keywords: traceback, error handling
 M*/
@@ -583,7 +586,7 @@ M*/
    performance-critical circumstances.  Use of this function allows for lighter profiling by default.
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    void PetscFunctionBeginHot;
 
    Not Collective
@@ -614,7 +617,7 @@ M*/
    PetscFunctionBeginUser - First executable line of user provided PETSc routine
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    void PetscFunctionBeginUser;
 
    Not Collective
@@ -627,7 +630,9 @@ M*/
 .ve
 
    Notes:
-     Not available in Fortran
+      Final line of PETSc functions should be PetscFunctionReturn(0) except for main().
+
+      Not available in Fortran
 
    Level: intermediate
 
@@ -685,7 +690,7 @@ M*/
         used for error handling. Replaces return()
 
    Synopsis:
-   #include "petscsys.h"
+   #include <petscsys.h>
    void PetscFunctionReturn(0);
 
    Not Collective

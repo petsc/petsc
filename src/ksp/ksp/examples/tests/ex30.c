@@ -160,8 +160,7 @@ int main(int argc,char **args)
     PetscScalar       *zeros;
     row  = 0;
     ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscScalar)*(ncols+1),&zeros);
-    ierr = PetscMemzero(zeros,(ncols+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscCalloc1(ncols+1,&zeros);
     flg1 = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL, "-set_row_zero", &flg1,NULL);CHKERRQ(ierr);
     if (flg1) {   /* set entire row as zero */
@@ -242,7 +241,7 @@ int main(int argc,char **args)
     Mat             BB;
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-    ierr = PetscMalloc(size*sizeof(PetscInt),&count);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&count);CHKERRQ(ierr);
     ierr = MatPartitioningCreate(PETSC_COMM_WORLD, &mpart);CHKERRQ(ierr);
     ierr = MatPartitioningSetAdjacency(mpart, A);CHKERRQ(ierr);
     /* ierr = MatPartitioningSetVertexWeights(mpart, weight);CHKERRQ(ierr); */
@@ -273,7 +272,7 @@ int main(int argc,char **args)
   ierr       = PetscOptionsGetInt(NULL,"-num_numfac",&num_numfac,NULL);CHKERRQ(ierr);
   while (num_numfac--) {
 
-    ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
     /*
@@ -336,13 +335,13 @@ int main(int argc,char **args)
         ierr = VecAXPY(b2,-1.0,b);CHKERRQ(ierr);
         ierr = VecNorm(b2,NORM_2,&rnorm);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3D\n",its);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %G\n",rnorm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %g\n",(double)rnorm);CHKERRQ(ierr);
       }
       if (ckerror && !trans) {    /* Check error for each rhs */
         /* ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
         ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);
         ierr = VecNorm(u,NORM_2,&enorm);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %G\n",enorm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %g\n",(double)enorm);CHKERRQ(ierr);
       }
 
     }   /* while (num_rhs--) */
@@ -382,7 +381,7 @@ int main(int argc,char **args)
       ierr = VecLoad(xstar,viewer);CHKERRQ(ierr);
       ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
       ierr = VecNorm(xstar, NORM_2, &enorm);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %G\n", enorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %g\n", (double)enorm);CHKERRQ(ierr);
       ierr = VecDestroy(&xstar);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }

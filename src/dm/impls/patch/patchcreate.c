@@ -3,14 +3,14 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Patch"
-PetscErrorCode DMSetFromOptions_Patch(DM dm)
+PetscErrorCode DMSetFromOptions_Patch(PetscOptions *PetscOptionsObject,DM dm)
 {
   /* DM_Patch      *mesh = (DM_Patch*) dm->data; */
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscOptionsHead("DMPatch Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMPatch Options");CHKERRQ(ierr);
   /* Handle associated vectors */
   /* Handle viewing */
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -36,7 +36,6 @@ PetscErrorCode DMInitialize_Patch(DM dm)
   dm->ops->createglobalvector              = DMCreateGlobalVector_Patch;
   dm->ops->createlocalvector               = DMCreateLocalVector_Patch;
   dm->ops->getlocaltoglobalmapping         = NULL;
-  dm->ops->getlocaltoglobalmappingblock    = NULL;
   dm->ops->createfieldis                   = NULL;
   dm->ops->getcoloring                     = 0;
   dm->ops->creatematrix                    = 0;
@@ -65,7 +64,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr     = PetscNewLog(dm, DM_Patch, &mesh);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm,&mesh);CHKERRQ(ierr);
   dm->data = mesh;
 
   mesh->refct       = 1;
@@ -129,9 +128,9 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
   }
   ierr = DMCreate(comm, &da);
   ierr = DMSetType(da, DMDA);
-  ierr = DMDASetDim(da, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(da, dim);CHKERRQ(ierr);
   ierr = DMDASetSizes(da, gridSize.i, gridSize.j, gridSize.k);CHKERRQ(ierr);
-  ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(da, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilType(da, DMDA_STENCIL_BOX);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, width);CHKERRQ(ierr);

@@ -73,9 +73,6 @@ typedef struct {
   /* used by MatMatMatMult() */
   Mat_MatMatMatMult *matmatmatmult;
 
-  /* used by MatGetRedundantMatrix() */
-  Mat_Redundant *redundant;
-
   /* Used by MPICUSP and MPICUSPARSE classes */
   void * spptr;
 
@@ -106,6 +103,7 @@ PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatMatMatMult_MPIAIJ_MPIAIJ_MPIAIJ(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat,Mat,Mat,PetscReal,Mat*);
@@ -134,8 +132,6 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(
 PETSC_INTERN PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
-
-PETSC_INTERN PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat,Mat*);
 
 extern PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
@@ -145,6 +141,8 @@ PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,const MatFa
 #endif
 PETSC_INTERN PetscErrorCode MatSolve_MPIAIJ(Mat,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatILUFactor_MPIAIJ(Mat,IS,IS,const MatFactorInfo*);
+
+PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_MPIX_private(PetscInt,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*);
 
 extern PetscErrorCode MatGetDiagonalBlock_MPIAIJ(Mat,Mat*);
 extern PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);

@@ -2,6 +2,7 @@
 #if !defined(__MPIBAIJ_H)
 #define __MPIBAIJ_H
 #include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscctable.h>
 
 #if defined(PETSC_USE_CTABLE)
@@ -60,7 +61,7 @@
   PetscInt  setvalueslen;       /* only used for single precision computations */              \
   MatScalar *setvaluescopy;     /* area double precision values in MatSetValuesXXX() are copied*/ \
                                 /* before calling MatSetValuesXXX_MPIBAIJ_MatScalar() */       \
-  PetscBool ijonly              /* used in  MatGetSubMatrices_MPIBAIJ_local() for getting ij structure only */
+  PetscBool ijonly             /* used in  MatGetSubMatrices_MPIBAIJ_local() for getting ij structure only */
 
 typedef struct {
   MPIBAIJHEADER;
@@ -76,5 +77,7 @@ PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat,PetscInt,IS[],PetscIn
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat,PetscInt,IS*);
 PETSC_INTERN PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat,ISColoring,MatFDColoring);
 PETSC_INTERN PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat,ISColoring,MatFDColoring);
-PETSC_INTERN PetscErrorCode MatFDColoringApply_BAIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
+PETSC_INTERN PetscErrorCode MatFDColoringApply_BAIJ(Mat,MatFDColoring,Vec,void*);
+
+PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_MPIBAIJ(Mat,const PetscInt *,Mat,const PetscInt*,PetscInt*);
 #endif

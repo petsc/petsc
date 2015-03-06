@@ -222,7 +222,7 @@ class Script(logger.Logger):
     def logOutput(log, output):
       import re
       # get rid of multiple blank lines
-      output = re.sub('\n[\n]*','\n', output).strip()
+      output = re.sub('\n+','\n', output).strip()
       if output:
         if lineLimit:
           output = '\n'.join(output.split('\n')[:lineLimit])

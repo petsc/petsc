@@ -53,6 +53,7 @@ static const char help[] = "Steady-state 2D subduction flow, pressure and temper
   ------------------------------------------------------------------------F*/
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #define VISC_CONST   0
@@ -91,7 +92,7 @@ typedef struct { /* physical and miscelaneous parameters */
 } Parameter;
 
 typedef struct { /* grid parameters */
-  DMDABoundaryType bx,by;
+  DMBoundaryType   bx,by;
   DMDAStencilType  stencil;
   PetscInt         corner,ni,nj,jlid,jfault,inose;
   PetscInt         dof,stencil_width,mglevels;
@@ -166,7 +167,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr        = PetscMalloc(sizeof(AppCtx),&user);CHKERRQ(ierr);
+  ierr        = PetscNew(&user);CHKERRQ(ierr);
   user->param = &param;
   user->grid  = &grid;
   ierr        = DMSetApplicationContext(da,user);CHKERRQ(ierr);
@@ -254,7 +255,7 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
 
     /* continuation method on viscosity cutoff */
     for (param->continuation=0.0;; param->continuation+=cont_incr) {
-      if (!q) PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %G\n", param->continuation);
+      if (!q) PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %g\n", (double)param->continuation);
 
       /* solve the non-linear system */
       ierr   = VecCopy(user->Xguess,user->x);CHKERRQ(ierr);
@@ -507,11 +508,11 @@ PETSC_STATIC_INLINE PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscIn
   z_scale = param->z_scale;
 
   if (param->ivisc==VISC_DIFN || param->ivisc>=VISC_DISL) { /* viscosity is T-dependent */
-    TS = param->potentialT * TInterp(x,i,j-1) * exp((j-1.0)*dz*z_scale);
+    TS = param->potentialT * TInterp(x,i,j-1) * PetscExpScalar((j-1.0)*dz*z_scale);
     if (j==jlim) TN = TS;
-    else         TN = param->potentialT * TInterp(x,i,j) * exp(j*dz*z_scale);
-    TW = param->potentialT * x[j][i].T        * exp((j-0.5)*dz*z_scale);
-    TE = param->potentialT * x[j][i+1].T      * exp((j-0.5)*dz*z_scale);
+    else         TN = param->potentialT * TInterp(x,i,j) * PetscExpScalar(j*dz*z_scale);
+    TW = param->potentialT * x[j][i].T        * PetscExpScalar((j-0.5)*dz*z_scale);
+    TE = param->potentialT * x[j][i+1].T      * PetscExpScalar((j-0.5)*dz*z_scale);
     if (param->ivisc>=VISC_DISL) { /* olivine dislocation creep */
       epsN = CalcSecInv(x,i,j,  CELL_CORNER,user);
       epsS = CalcSecInv(x,i,j-1,CELL_CORNER,user);
@@ -565,11 +566,11 @@ PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscIn
 
   /* viscosity */
   if (param->ivisc==VISC_DIFN || param->ivisc>=VISC_DISL) { /* viscosity is T-dependent */
-    TN = param->potentialT * x[j+1][i].T      * exp((j+0.5)*dz*z_scale);
-    TS = param->potentialT * x[j][i].T        * exp((j-0.5)*dz*z_scale);
-    TW = param->potentialT * TInterp(x,i-1,j) * exp(j*dz*z_scale);
+    TN = param->potentialT * x[j+1][i].T      * PetscExpScalar((j+0.5)*dz*z_scale);
+    TS = param->potentialT * x[j][i].T        * PetscExpScalar((j-0.5)*dz*z_scale);
+    TW = param->potentialT * TInterp(x,i-1,j) * PetscExpScalar(j*dz*z_scale);
     if (i==ilim) TE = TW;
-    else         TE = param->potentialT * TInterp(x,i,j) * exp(j*dz*z_scale);
+    else         TE = param->potentialT * TInterp(x,i,j) * PetscExpScalar(j*dz*z_scale);
     if (param->ivisc>=VISC_DISL) { /* olivine dislocation creep */
       epsN = CalcSecInv(x,i,j+1,CELL_CENTER,user);
       epsS = CalcSecInv(x,i,j,  CELL_CENTER,user);
@@ -737,7 +738,7 @@ PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j,
 
   if (ipos==CELL_CENTER) { /* on cell center */
 
-    TC = param->potentialT * x[j][i].T * exp((j-0.5)*dz*z_scale);
+    TC = param->potentialT * x[j][i].T * PetscExpScalar((j-0.5)*dz*z_scale);
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CENTER,user);
     etaC = Viscosity(TC,epsC,dz*j,param);
 
@@ -747,7 +748,7 @@ PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j,
   } else { /* on cell corner */
     if (i==ilim || j==jlim) return EPS_ZERO;
 
-    TC = param->potentialT * TInterp(x,i,j) * exp(j*dz*z_scale);
+    TC = param->potentialT * TInterp(x,i,j) * PetscExpScalar(j*dz*z_scale);
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CORNER,user);
     etaC = Viscosity(TC,epsC,dz*(j+0.5),param);
 
@@ -778,7 +779,7 @@ PETSC_STATIC_INLINE PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j,
 
   if (ipos==CELL_CENTER) { /* on cell center */
 
-    TC = param->potentialT * x[j][i].T * exp((j-0.5)*dz*z_scale);
+    TC = param->potentialT * x[j][i].T * PetscExpScalar((j-0.5)*dz*z_scale);
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CENTER,user);
     etaC = Viscosity(TC,epsC,dz*j,param);
     wN   = x[j][i].w; wS = x[j-1][i].w; pC = x[j][i].p;
@@ -786,7 +787,7 @@ PETSC_STATIC_INLINE PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j,
   } else { /* on cell corner */
     if ((i==ilim) || (j==jlim)) return EPS_ZERO;
 
-    TC = param->potentialT * TInterp(x,i,j) * exp(j*dz*z_scale);
+    TC = param->potentialT * TInterp(x,i,j) * PetscExpScalar(j*dz*z_scale);
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CORNER,user);
     etaC = Viscosity(TC,epsC,dz*(j+0.5),param);
     if (i==j) wN = param->sb;
@@ -813,7 +814,6 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 {
   PetscErrorCode ierr, ierr_out=0;
   PetscReal      SEC_PER_YR                    = 3600.00*24.00*365.2500;
-  PetscReal      PI                            = 3.14159265358979323846;
   PetscReal      alpha_g_on_cp_units_inverse_km=4.0e-5*9.8;
 
   /* domain geometry */
@@ -829,21 +829,21 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   ierr = PetscOptionsGetReal(NULL,"-lid_depth",&(param->lid_depth),NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-fault_depth",&(param->fault_depth),NULL);CHKERRQ(ierr);
 
-  param->slab_dip = param->slab_dip*PI/180.0;                    /* radians */
+  param->slab_dip = param->slab_dip*PETSC_PI/180.0;                    /* radians */
 
   /* grid information */
   ierr     = PetscOptionsGetInt(NULL, "-jfault",&(grid->jfault),NULL);CHKERRQ(ierr);
   grid->ni = 82;
   ierr     = PetscOptionsGetInt(NULL, "-ni",&(grid->ni),NULL);CHKERRQ(ierr);
 
-  grid->dx            = param->width/((double)(grid->ni-2));               /* km */
+  grid->dx            = param->width/((PetscReal)(grid->ni-2));               /* km */
   grid->dz            = grid->dx*tan(param->slab_dip);                     /* km */
   grid->nj            = (PetscInt)(param->depth/grid->dz + 3.0);         /* gridpoints*/
   param->depth        = grid->dz*(grid->nj-2);                             /* km */
   grid->inose         = 0;                                          /* gridpoints*/
   ierr                = PetscOptionsGetInt(NULL,"-inose",&(grid->inose),NULL);CHKERRQ(ierr);
-  grid->bx            = DMDA_BOUNDARY_NONE;
-  grid->by            = DMDA_BOUNDARY_NONE;
+  grid->bx            = DM_BOUNDARY_NONE;
+  grid->by            = DM_BOUNDARY_NONE;
   grid->stencil       = DMDA_STENCIL_BOX;
   grid->dof           = 4;
   grid->stencil_width = 2;
@@ -913,8 +913,8 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->toggle_kspmon = PETSC_FALSE;
 
   /* derived parameters for slab angle */
-  param->sb = sin(param->slab_dip);
-  param->cb = cos(param->slab_dip);
+  param->sb = PetscSinReal(param->slab_dip);
+  param->cb = PetscCosReal(param->slab_dip);
   param->c  =  param->slab_dip*param->sb/(param->slab_dip*param->slab_dip-param->sb*param->sb);
   param->d  = (param->slab_dip*param->cb-param->sb)/(param->slab_dip*param->slab_dip-param->sb*param->sb);
 
@@ -953,7 +953,6 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 {
   PetscErrorCode ierr, ierr_out=0;
   char           date[30];
-  PetscReal      PI = 3.14159265358979323846;
 
   ierr = PetscGetDate(date,30);CHKERRQ(ierr);
 
@@ -962,14 +961,14 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
     /* PetscPrintf(PETSC_COMM_WORLD,"                   %s\n",&(date[0]));*/
 
     PetscPrintf(PETSC_COMM_WORLD,"Domain: \n");
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Width = %G km,         Depth = %G km\n",param->width,param->depth);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Slab dip = %G degrees,  Slab velocity = %G cm/yr\n",param->slab_dip*180.0/PI,param->slab_velocity);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Width = %g km,         Depth = %g km\n",(double)param->width,(double)param->depth);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Slab dip = %g degrees,  Slab velocity = %g cm/yr\n",(double)(param->slab_dip*180.0/PETSC_PI),(double)param->slab_velocity);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Lid depth = %5.2f km,   Fault depth = %5.2f km\n",param->lid_depth*param->L,param->fault_depth*param->L);CHKERRQ(ierr);
 
     PetscPrintf(PETSC_COMM_WORLD,"\nGrid: \n");
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %G, %G km\n",grid->ni,grid->nj,grid->dx*param->L,grid->dz*param->L);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %g, %g km\n",grid->ni,grid->nj,(double)grid->dx*param->L,(double)(grid->dz*param->L));CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  jlid = %3D              jfault = %3D \n",grid->jlid,grid->jfault);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Pe = %G\n",param->peclet);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Pe = %g\n",(double)param->peclet);CHKERRQ(ierr);
 
     PetscPrintf(PETSC_COMM_WORLD,"\nRheology:");
     if (param->ivisc==VISC_CONST) {
@@ -979,13 +978,13 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
       }
     } else if (param->ivisc==VISC_DIFN) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Diffusion Creep (T-Dependent Newtonian) \n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %G--%G Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",(double)param->eta0,(double)(param->visc_cutoff*param->eta0));CHKERRQ(ierr);
     } else if (param->ivisc==VISC_DISL) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Dislocation Creep (T-Dependent Non-Newtonian) \n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %G--%G Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",(double)param->eta0,(double)(param->visc_cutoff*param->eta0));CHKERRQ(ierr);
     } else if (param->ivisc==VISC_FULL) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Full Rheology \n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %G--%G Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",(double)param->eta0,(double)(param->visc_cutoff*param->eta0));CHKERRQ(ierr);
     } else {
       ierr     = PetscPrintf(PETSC_COMM_WORLD,"                 Invalid! \n");CHKERRQ(ierr);
       ierr_out = 1;
@@ -1196,9 +1195,9 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
   ierr = DMDAGetCorners(da,&is,&js,NULL,&im,&jm,NULL);CHKERRQ(ierr);
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
-      T = PetscRealPart(param->potentialT * x[j][i].T * exp((j-0.5)*dz*param->z_scale));
+      T = PetscRealPart(param->potentialT * x[j][i].T * PetscExpScalar((j-0.5)*dz*param->z_scale));
       if (i<ilim && j<jlim) {
-        TC = PetscRealPart(param->potentialT * TInterp(x,i,j) * exp(j*dz*param->z_scale));
+        TC = PetscRealPart(param->potentialT * TInterp(x,i,j) * PetscExpScalar(j*dz*param->z_scale));
       } else {
         TC = T;
       }

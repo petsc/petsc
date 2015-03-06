@@ -22,11 +22,11 @@
 !     petscmat.h - matrices
 !     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscksp.h>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -46,7 +46,7 @@
       PC               pc
       KSP              ksp
       PetscScalar      v,one,neg_one
-      double precision norm,tol
+      PetscReal norm,tol
       PetscInt i,j,II,JJ,Istart
       PetscInt Iend,m,n,its,ione
       PetscMPIInt rank
@@ -167,7 +167,7 @@
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,ierr)
 
 !  Set linear solver defaults for this problem (optional).
 !   - By extracting the KSP and PC contexts from the KSP context,
@@ -176,8 +176,8 @@
 
       call KSPGetPC(ksp,pc,ierr)
       tol = 1.e-7
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,     &
-     &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                           &
+     &     PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
 
 !
 !  Set a user-defined shell preconditioner
@@ -274,9 +274,9 @@
 
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
 
       PC      pc
       Vec     x
@@ -288,18 +288,15 @@
       PC jacobi,sor
       Vec work
 
-      call PCGetOperators(pc,PETSC_NULL_OBJECT,pmat,PETSC_NULL_INTEGER,  &
-     &                     ierr)
+      call PCGetOperators(pc,PETSC_NULL_OBJECT,pmat,ierr)
       call PCCreate(PETSC_COMM_WORLD,jacobi,ierr)
       call PCSetType(jacobi,PCJACOBI,ierr)
-      call PCSetOperators(jacobi,pmat,pmat,DIFFERENT_NONZERO_PATTERN,    &
-     &                     ierr)
+      call PCSetOperators(jacobi,pmat,pmat,ierr)
       call PCSetUp(jacobi,ierr)
 
       call PCCreate(PETSC_COMM_WORLD,sor,ierr)
       call PCSetType(sor,PCSOR,ierr)
-      call PCSetOperators(sor,pmat,pmat,DIFFERENT_NONZERO_PATTERN,       &
-     &                     ierr)
+      call PCSetOperators(sor,pmat,pmat,ierr)
 !      call PCSORSetSymmetric(sor,SOR_LOCAL_SYMMETRIC_SWEEP,ierr)
       call PCSetUp(sor,ierr)
 
@@ -331,9 +328,9 @@
 
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscpc.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscpc.h>
 
       PC      pc
       Vec     x,y

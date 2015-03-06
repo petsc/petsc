@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# This script makes a Apple Mac OS X installer for PETSc, it uses arch-osx-release.py, arch-osx-debug.py, makeframework, makedocs, makedmg
+#
+# Run from the root PETSc directory
+#
+# See ./makeframework on how to use the framework:
+#
+#
+export PETSC_ARCH=arch-osx-debug
+rm -rf arch-osx-debug
+./systems/Apple/osx/bin/arch-osx-debug.py
+make all test
+./systems/Apple/osx/bin/makeframework debug
+
+export PETSC_ARCH=arch-osx-release
+rm -rf arch-osx-release
+./systems/Apple/osx/bin/arch-osx-release.py
+make all test
+./systems/Apple/osx/bin/makeframework release
+
+export LOC=$PETSC_DIR
+make alldoc
+make allman
+./systems/Apple/osx/bin/makedocs
+
+./systems/Apple/osx/bin/makedmg
+
+echo "To use the PETSc.framework in examples either run the installer ${PETSC_DIR}/PETSc-OSX.dmg"
+echo "  or sudo cp -r ${PETSC_DIR}/arch-osx-release/PETSc-OSX  /Library/Frameworks"
+echo "  and sudo cp -r ${PETSC_DIR}/arch-osx-debug/PETSc-OSX  /Library/Frameworks"
+
+
+
+

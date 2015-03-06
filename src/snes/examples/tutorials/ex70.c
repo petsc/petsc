@@ -16,35 +16,39 @@ static char help[] = "Poiseuille flow problem. Viscous, laminar flow in a 2D cha
 /* Discretized with the cell-centered finite-volume method on a                */
 /* Cartesian grid with co-located variables. Variables ordered as              */
 /* [u1...uN v1...vN p1...pN]^T. Matrix [A00 A01; A10, A11] solved with         */
-/* PCFIELDSPLIT.                                                               */
+/* PCFIELDSPLIT. Lower factorization is used to mimick the Semi-Implicit       */
+/* Method for Pressure Linked Equations (SIMPLE) used as preconditioner        */
+/* instead of solver.                                                          */
 /*                                                                             */
 /* Disclaimer: does not contain the pressure-weighed interpolation             */
 /* method needed to suppress spurious pressure modes in real-life              */
 /* problems.                                                                   */
 /*                                                                             */
-/* usage:                                                                      */
+/* Usage:                                                                      */
 /*                                                                             */
-/* mpiexec -n 2 ./stokes -nx 32 -ny 48                                         */
+/* mpiexec -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -fieldsplit_1_pc_type none */
 /*                                                                             */
-/*   Runs with PETSc defaults on 32x48 grid, no PC for the Schur               */
-/*   complement because A11 is zero.                                           */
+/*   Runs with PCFIELDSPLIT on 32x48 grid, no PC for the Schur                 */
+/*   complement because A11 is zero. FGMRES is needed because                  */
+/*   PCFIELDSPLIT is a variable preconditioner.                                */
 /*                                                                             */
-/* mpiexec -n 2 ./stokes -nx 32 -ny 48 -fieldsplit_1_user_pc                   */
+/* mpiexec -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -user_pc */
 /*                                                                             */
 /*   Same as above but with user defined PC for the true Schur                 */
 /*   complement. PC based on the SIMPLE-type approximation (inverse of         */
 /*   A00 approximated by inverse of its diagonal).                             */
 /*                                                                             */
-/* mpiexec -n 2 ./stokes -nx 32 -ny 48 -fieldsplit_1_user_ksp                  */
+/* mpiexec -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -user_ksp */
 /*                                                                             */
 /*   Replace the true Schur complement with a user defined Schur               */
 /*   complement based on the SIMPLE-type approximation. Same matrix is         */
 /*   used as PC.                                                               */
 /*                                                                             */
-/* mpiexec -n 2 ./stokes -nx 32 -ny 48 -fieldsplit_1_user_ksp -fieldsplit_1_ksp_rtol 0.01 -fieldsplit_0_ksp_rtol 0.01 */
+/* mpiexec -n 2 ./ex70 -nx 32 -ny 48 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -fieldsplit_0_ksp_type gmres -fieldsplit_0_pc_type bjacobi -fieldsplit_1_pc_type jacobi -fieldsplit_1_inner_ksp_type preonly -fieldsplit_1_inner_pc_type jacobi -fieldsplit_1_upper_ksp_type preonly -fieldsplit_1_upper_pc_type jacobi */
 /*                                                                             */
-/*   SIMPLE-type approximations are crude, there's no benefit in               */
-/*   solving the subsystems in the preconditioner very accurately.             */
+/*   Out-of-the-box SIMPLE-type preconditioning. The major advantage           */
+/*   is that the user neither needs to provide the approximation of            */
+/*   the Schur complement, nor the corresponding preconditioner.               */
 /*                                                                             */
 /*---------------------------------------------------------------------------- */
 
@@ -61,26 +65,26 @@ typedef struct {
   IS        isg[2];  /* index sets of split "0" and "1" */
 } Stokes;
 
-PetscErrorCode StokesSetupMatBlock00(Stokes *s);  /* setup the block Q */
-PetscErrorCode StokesSetupMatBlock01(Stokes *s);  /* setup the block G */
-PetscErrorCode StokesSetupMatBlock10(Stokes *s);  /* setup the block D (equal to the transpose of G) */
-PetscErrorCode StokesSetupMatBlock11(Stokes *s);  /* setup the block C (equal to zero) */
+PetscErrorCode StokesSetupMatBlock00(Stokes*);  /* setup the block Q */
+PetscErrorCode StokesSetupMatBlock01(Stokes*);  /* setup the block G */
+PetscErrorCode StokesSetupMatBlock10(Stokes*);  /* setup the block D (equal to the transpose of G) */
+PetscErrorCode StokesSetupMatBlock11(Stokes*);  /* setup the block C (equal to zero) */
 
-PetscErrorCode StokesGetPosition(Stokes *s, PetscInt row, PetscInt *i, PetscInt *j); /* row number j*nx+i corresponds to position (i,j) in grid */
+PetscErrorCode StokesGetPosition(Stokes*, PetscInt, PetscInt*, PetscInt*); /* row number j*nx+i corresponds to position (i,j) in grid */
 
-PetscErrorCode StokesStencilLaplacian(Stokes *s, PetscInt i, PetscInt j, PetscInt *size, PetscInt *cols, PetscScalar *vals);  /* stencil of the Laplacian operator */
-PetscErrorCode StokesStencilGradientX(Stokes *s, PetscInt i, PetscInt j, PetscInt *size, PetscInt *cols, PetscScalar *vals);  /* stencil of the Gradient operator (x-component) */
-PetscErrorCode StokesStencilGradientY(Stokes *s, PetscInt i, PetscInt j, PetscInt *size, PetscInt *cols, PetscScalar *vals);  /* stencil of the Gradient operator (y-component) */
+PetscErrorCode StokesStencilLaplacian(Stokes*, PetscInt, PetscInt, PetscInt*, PetscInt*, PetscScalar*);  /* stencil of the Laplacian operator */
+PetscErrorCode StokesStencilGradientX(Stokes*, PetscInt, PetscInt, PetscInt*, PetscInt*, PetscScalar*);  /* stencil of the Gradient operator (x-component) */
+PetscErrorCode StokesStencilGradientY(Stokes*, PetscInt, PetscInt, PetscInt*, PetscInt*, PetscScalar*);  /* stencil of the Gradient operator (y-component) */
 
-PetscErrorCode StokesRhs(Stokes *s);                                               /* rhs vector */
-PetscErrorCode StokesRhsMomX(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val);   /* right hand side of velocity (x-component) */
-PetscErrorCode StokesRhsMomY(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val);   /* right hand side of velocity (y-component) */
-PetscErrorCode StokesRhsMass(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val);   /* right hand side of pressure */
+PetscErrorCode StokesRhs(Stokes*);                                               /* rhs vector */
+PetscErrorCode StokesRhsMomX(Stokes*, PetscInt, PetscInt, PetscScalar*);   /* right hand side of velocity (x-component) */
+PetscErrorCode StokesRhsMomY(Stokes*, PetscInt, PetscInt, PetscScalar*);   /* right hand side of velocity (y-component) */
+PetscErrorCode StokesRhsMass(Stokes*, PetscInt, PetscInt, PetscScalar*);   /* right hand side of pressure */
 
-PetscErrorCode StokesSetupApproxSchur(Stokes *s);  /* approximation of the Schur complement */
+PetscErrorCode StokesSetupApproxSchur(Stokes*);  /* approximation of the Schur complement */
 
-PetscErrorCode StokesExactSolution(Stokes *s); /* exact solution vector */
-PetscErrorCode StokesWriteSolution(Stokes *s); /* write solution to file */
+PetscErrorCode StokesExactSolution(Stokes*); /* exact solution vector */
+PetscErrorCode StokesWriteSolution(Stokes*); /* write solution to file */
 
 /* exact solution for the velocity (x-component, y-component is zero) */
 PetscScalar StokesExactVelocityX(const PetscScalar y)
@@ -106,12 +110,12 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
   ierr = PCFieldSplitSetIS(pc, "0", s->isg[0]);CHKERRQ(ierr);
   ierr = PCFieldSplitSetIS(pc, "1", s->isg[1]);CHKERRQ(ierr);
   if (s->userPC) {
-    ierr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
+    ierr = PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
   }
   if (s->userKSP) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
     ierr = PCFieldSplitGetSubKSP(pc, &n, &subksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(subksp[1], s->myS, s->myS, SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = KSPSetOperators(subksp[1], s->myS, s->myS);CHKERRQ(ierr);
     ierr = PetscFree(subksp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -119,10 +123,10 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
 
 PetscErrorCode StokesWriteSolution(Stokes *s)
 {
-  PetscMPIInt    size;
-  PetscInt       n,i,j;
-  PetscScalar    *array;
-  PetscErrorCode ierr;
+  PetscMPIInt       size;
+  PetscInt          n,i,j;
+  const PetscScalar *array;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   /* write data (*warning* only works sequential) */
@@ -130,16 +134,16 @@ PetscErrorCode StokesWriteSolution(Stokes *s)
   /*ierr = PetscPrintf(PETSC_COMM_WORLD," number of processors = %D\n",size);CHKERRQ(ierr);*/
   if (size == 1) {
     PetscViewer viewer;
-    ierr = VecGetArray(s->x, &array);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(s->x, &array);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "solution.dat", &viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "# x, y, u, v, p\n");CHKERRQ(ierr);
     for (j = 0; j < s->ny; j++) {
       for (i = 0; i < s->nx; i++) {
         n    = j*s->nx+i;
-        ierr = PetscViewerASCIIPrintf(viewer, "%.12g %.12g %.12g %.12g %.12g\n", i*s->hx+s->hx/2, j*s->hy+s->hy/2, array[n], array[n+s->nx*s->ny], array[n+2*s->nx*s->ny]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "%.12g %.12g %.12g %.12g %.12g\n", (double)(i*s->hx+s->hx/2),(double)(j*s->hy+s->hy/2), (double)PetscRealPart(array[n]), (double)PetscRealPart(array[n+s->nx*s->ny]),(double)PetscRealPart(array[n+2*s->nx*s->ny]));CHKERRQ(ierr);
       }
     }
-    ierr = VecRestoreArray(s->x, &array);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(s->x, &array);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -208,7 +212,7 @@ PetscErrorCode StokesExactSolution(Stokes *s)
     ierr = StokesGetPosition(s, row,&i,&j);CHKERRQ(ierr);
     if (row < s->nx*s->ny) {
       val = StokesExactVelocityX(j*s->hy+s->hy/2);
-    } else if (row < 2*s->nx*s->ny) {
+    } else {
       val = 0;
     }
     ierr = VecSetValue(y0, row, val, INSERT_VALUES);CHKERRQ(ierr);
@@ -614,24 +618,25 @@ PetscErrorCode StokesCalcResidual(Stokes *s)
   /* residual velocity */
   ierr = VecGetSubVector(s->b, s->isg[0], &b0);CHKERRQ(ierr);
   ierr = VecNorm(b0, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," residual u = %G\n",val);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," residual u = %g\n",(double)val);CHKERRQ(ierr);
   ierr = VecRestoreSubVector(s->b, s->isg[0], &b0);CHKERRQ(ierr);
 
   /* residual pressure */
   ierr = VecGetSubVector(s->b, s->isg[1], &b1);CHKERRQ(ierr);
   ierr = VecNorm(b1, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," residual p = %G\n",val);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," residual p = %g\n",(double)val);CHKERRQ(ierr);
   ierr = VecRestoreSubVector(s->b, s->isg[1], &b1);CHKERRQ(ierr);
 
   /* total residual */
   ierr = VecNorm(s->b, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," residual [u,p] = %G\n", val);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," residual [u,p] = %g\n", (double)val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode StokesCalcError(Stokes *s)
 {
-  PetscScalar    val, scale = PetscSqrtScalar(s->nx*s->ny);
+  PetscScalar    scale = PetscSqrtScalar(s->nx*s->ny);
+  PetscReal      val;
   Vec            y0, y1;
   PetscErrorCode ierr;
 
@@ -643,18 +648,18 @@ PetscErrorCode StokesCalcError(Stokes *s)
   /* error in velocity */
   ierr = VecGetSubVector(s->y, s->isg[0], &y0);CHKERRQ(ierr);
   ierr = VecNorm(y0, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error u = %G\n",val/scale);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error u = %g\n",(double)(PetscRealPart(val/scale)));CHKERRQ(ierr);
   ierr = VecRestoreSubVector(s->y, s->isg[0], &y0);CHKERRQ(ierr);
 
   /* error in pressure */
   ierr = VecGetSubVector(s->y, s->isg[1], &y1);CHKERRQ(ierr);
   ierr = VecNorm(y1, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error p = %G\n",val/scale);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error p = %g\n",(double)(PetscRealPart(val/scale)));CHKERRQ(ierr);
   ierr = VecRestoreSubVector(s->y, s->isg[1], &y1);CHKERRQ(ierr);
 
   /* total error */
   ierr = VecNorm(s->y, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error [u,p] = %G\n", val/scale);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error [u,p] = %g\n", (double)PetscRealPart((val/scale)));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -680,7 +685,7 @@ int main(int argc, char **argv)
   ierr = StokesSetupVectors(&s);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp, s.A, s.A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, s.A, s.A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = StokesSetupPC(&s, ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, s.b, s.x);CHKERRQ(ierr);

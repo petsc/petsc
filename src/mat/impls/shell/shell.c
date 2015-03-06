@@ -580,7 +580,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
   PetscFunctionBegin;
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
-  ierr    = PetscNewLog(A,Mat_Shell,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
   A->data = (void*)b;
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
@@ -750,7 +750,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
     MatShellGetContext() to obtain the user-defined context that was
     set by MatCreateShell().
 
-    Fortran Notes: For MatGetVecs() the user code should check if the input left or right matrix is -1 and in that case not
+    Fortran Notes: For MatCreateVecs() the user code should check if the input left or right matrix is -1 and in that case not
        generate a matrix. See src/mat/examples/tests/ex120f.F
 
 .keywords: matrix, shell, set, operation

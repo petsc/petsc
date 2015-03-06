@@ -1,53 +1,53 @@
 
-static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input parameters: density, viscosity A, viscosity B */
-                           double _x_c, int _n,                        /* Input parameters: viscosity jump location, wavenumber in z */
-                           double vel[], double *presssure,double total_stress[], double strain_rate[])
+static void evaluate_solCx(PetscReal pos[],PetscReal _eta_A,PetscReal _eta_B,   /* Input parameters: density, viscosity A, viscosity B */
+                           PetscReal _x_c, int _n,                        /* Input parameters: viscosity jump location, wavenumber in z */
+                           PetscReal vel[], PetscReal *presssure,PetscReal total_stress[], PetscReal strain_rate[])
 {
-  double Z,u1,u2,u3,u4,u5,u6,ZA,ZB;
-  double sum1,sum2,sum3,sum4,sum5,sum6,mag,x,z,xc;
-  double _C1A,_C2A,_C3A,_C4A,_C1B,_C2B,_C3B,_C4B,_C1,_C2,_C3,_C4;
+  PetscReal Z,u1,u2,u3,u4,u5,u6,ZA,ZB;
+  PetscReal sum1,sum2,sum3,sum4,sum5,sum6,mag,x,z,xc;
+  PetscReal _C1A,_C2A,_C3A,_C4A,_C1B,_C2B,_C3B,_C4B,_C1,_C2,_C3,_C4;
   int    n,nx;
 
-  double t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,t27,t28,t29,t30,t31,t32,t33,t34,t35,t36,t37,t38,t39,t40;
-  double t41,t42,t43,t44,t45,t46,t47,t48,t49,t50,t51,t52,t53,t54,t55,t56,t57,t58,t59,t60,t61,t62,t63,t64,t65,t66,t67,t68,t69,t70,t71,t72,t73,t74,t75,t76,t77,t78,t79,t80;
-  double t81,t82,t83,t84,t85,t86,t87,t88,t89,t90,t91,t92,t93,t94,t95,t96,t97,t98,t99,t100,t101,t102,t103,t104,t105,t106,t107,t108,t109,t110,t111,t112,t113,t115,t116,t117,t118,t119,t120;
-  double t121,t122,t123,t124,t125,t126,t127,t128,t129,t130,t131,t132,t133,t134,t135,t136,t137,t138,t139,t140,t141,t142,t143,t144,t145,t146,t147,t148,t149,t150,t151,t152,t153,t154,t155,t156,t157,t158,t159,t160;
-  double t161,t162,t163,t164,t165,t166,t167,t168,t169,t170,t171,t172,t173,t174,t175,t176,t177,t178,t179,t180,t181,t182,t183,t184,t186,t187,t188,t189,t190,t191,t192,t193,t194,t195,t196,t197,t198,t199;
-  double t201,t202,t203,t204,t206,t207,t208,t209,t210,t211,t212,t213,t215,t216,t217,t218,t219,t220,t221,t222,t223,t224,t225,t226,t227,t228,t229,t230,t231,t232,t233,t234,t235,t236,t237,t238,t239,t240;
-  double t241,t242,t243,t244,t245,t246,t247,t248,t249,t250,t251,t252,t253,t254,t255,t256,t257,t258,t259,t260,t261,t262,t263,t264,t265,t267,t268,t269,t270,t272,t273,t274,t275,t276,t277,t278,t279,t280;
-  double t281,t282,t283,t284,t285,t286,t288,t289,t290,t291,t292,t295,t296,t297,t298,t299,t300,t301,t303,t304,t305,t307,t308,t310,t311,t312,t313,t314,t315,t316,t317,t318,t319,t320;
-  double t321,t322,t323,t324,t325,t326,t327,t328,t329,t330,t331,t332,t334,t335,t336,t337,t338,t339,t340,t341,t342,t344,t345,t346,t347,t348,t349,t350,t351,t352,t353,t354,t355,t356,t358,t359,t360;
-  double t361,t362,t363,t364,t365,t366,t367,t368,t369,t370,t371,t372,t373,t374,t375,t376,t377,t378,t379,t380,t381,t382,t383,t384,t385,t386,t387,t389,t390,t391,t393,t394,t395,t396,t397,t398;
-  double t401,t402,t403,t404,t405,t406,t407,t408,t409,t410,t411,t412,t413,t414,t415,t416,t417,t418,t419,t421,t422,t423,t424,t425,t426,t427,t428,t429,t430,t431,t432,t433,t434,t436,t437,t438,t439,t440;
-  double t441,t442,t443,t444,t445,t446,t447,t448,t450,t451,t453,t454,t455,t456,t457,t458,t459,t461,t462,t463,t464,t465,t466,t468,t469,t470,t471,t474,t475,t478,t480;
-  double t482,t483,t484,t485,t488,t489,t490,t492,t493,t495,t497,t498,t499,t501,t502,t503,t504,t505,t507,t508,t509,t510,t511,t512,t513,t515,t518,t520;
-  double t522,t525,t527,t528,t529,t530,t532,t533,t534,t535,t536,t538,t539,t541,t542,t544,t545,t546,t547,t548,t549,t550,t551,t552,t553,t554,t555,t556,t557,t560;
-  double t561,t562,t563,t564,t567,t568,t571,t573,t575,t576,t578,t579,t583,t590,t591,t594,t595,t596,t597,t598,t600;
-  double t601,t602,t604,t606,t607,t608,t611,t613,t615,t616,t617,t619,t621,t623,t624,t625,t626,t627,t629,t630,t632,t633,t634,t638,t639,t640;
-  double t641,t642,t643,t644,t645,t647,t648,t649,t650,t651,t652,t653,t654,t655,t656,t657,t658,t659,t660,t662,t663,t665,t666,t667,t668,t670,t671,t672,t673,t674,t675,t676,t679,t680;
-  double t682,t683,t684,t685,t686,t688,t689,t690,t691,t693,t694,t695,t696,t697,t698,t699,t700,t701,t702,t704,t705,t708,t709,t711,t712,t713,t714,t717,t718,t719;
-  double t721,t722,t723,t726,t727,t728,t730,t733,t734,t735,t736,t737,t738,t739,t740,t741,t744,t745,t746,t749,t750,t752,t753,t754,t755,t757,t758,t759,t760;
-  double t761,t762,t763,t764,t766,t767,t768,t770,t771,t772,t773,t774,t775,t776,t777,t778,t780,t781,t782,t785,t786,t789,t790,t791,t792,t793,t794,t795,t796,t797,t798,t800;
-  double t801,t806,t807,t808,t809,t811,t812,t817,t818,t819,t821,t822,t824,t827,t828,t830,t834,t835,t837,t840;
-  double t842,t843,t844,t845,t846,t849,t850,t853,t854,t855,t857,t858,t859,t860,t863,t864,t867,t868,t869,t873,t874,t877,t878,t879,t880;
-  double t884,t888,t891,t894,t900,t901,t903,t904,t907,t908,t909,t911,t914,t915,t916,t919,t920;
-  double t923,t924,t925,t926,t927,t929,t932,t935,t937,t939,t942,t943,t944,t945,t947,t948,t949,t950,t952,t953,t954,t955,t956,t957;
-  double t961,t964,t965,t966,t967,t968,t969,t971,t972,t974,t977,t978,t981,t983,t987,t988,t992,t993,t994,t997,t998;
-  double t1001,t1003,t1005,t1006,t1009,t1010,t1012,t1013,t1015,t1016,t1017,t1018,t1020,t1021,t1029,t1031,t1032,t1033,t1040;
-  double t1041,t1042,t1044,t1047,t1050,t1054,t1055,t1057,t1058,t1063,t1068,t1069,t1070,t1079,t1080;
-  double t1088,t1089,t1091,t1092,t1094,t1096,t1101,t1102,t1103,t1104,t1105,t1108,t1112,t1113,t1118,t1119,t1120;
-  double t1121,t1122,t1123,t1124,t1125,t1126,t1127,t1128,t1129,t1130,t1132,t1133,t1134,t1135,t1138,t1139,t1140,t1141,t1142,t1145,t1146,t1148,t1149,t1150,t1153,t1154,t1156,t1157,t1158,t1159;
-  double t1161,t1162,t1165,t1166,t1170,t1171,t1172,t1173,t1175,t1176,t1178,t1180,t1181,t1182,t1185,t1189,t1192,t1193,t1195,t1196,t1199;
-  double t1201,t1203,t1209,t1210,t1211,t1213,t1214,t1218,t1221,t1224,t1225,t1226,t1228,t1233,t1234,t1235,t1236,t1237,t1240;
-  double t1241,t1242,t1243,t1244,t1245,t1248,t1251,t1252,t1257,t1258,t1259,t1260,t1263,t1268,t1269,t1272,t1280;
-  double t1282,t1283,t1284,t1285,t1287,t1288,t1289,t1292,t1293,t1296,t1297,t1300,t1304,t1307,t1310,t1311,t1312,t1316,t1317,t1320;
-  double t1321,t1323,t1328,t1330,t1331,t1332,t1333,t1336,t1338,t1343,t1344,t1346,t1349,t1350,t1354;
-  double t1366,t1369,t1370,t1371,t1376,t1378,t1380,t1383,t1386,t1387,t1388,t1391,t1393,t1399;
-  double t1411,t1412,t1420,t1427;
-  double t1450,t1456,t1468,t1472,t1474,t1478;
-  double t1504,t1511;
-  double t1545;
-  double t1564,t1583;
+  PetscReal t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,t27,t28,t29,t30,t31,t32,t33,t34,t35,t36,t37,t38,t39,t40;
+  PetscReal t41,t42,t43,t44,t45,t46,t47,t48,t49,t50,t51,t52,t53,t54,t55,t56,t57,t58,t59,t60,t61,t62,t63,t64,t65,t66,t67,t68,t69,t70,t71,t72,t73,t74,t75,t76,t77,t78,t79,t80;
+  PetscReal t81,t82,t83,t84,t85,t86,t87,t88,t89,t90,t91,t92,t93,t94,t95,t96,t97,t98,t99,t100,t101,t102,t103,t104,t105,t106,t107,t108,t109,t110,t111,t112,t113,t115,t116,t117,t118,t119,t120;
+  PetscReal t121,t122,t123,t124,t125,t126,t127,t128,t129,t130,t131,t132,t133,t134,t135,t136,t137,t138,t139,t140,t141,t142,t143,t144,t145,t146,t147,t148,t149,t150,t151,t152,t153,t154,t155,t156,t157,t158,t159,t160;
+  PetscReal t161,t162,t163,t164,t165,t166,t167,t168,t169,t170,t171,t172,t173,t174,t175,t176,t177,t178,t179,t180,t181,t182,t183,t184,t186,t187,t188,t189,t190,t191,t192,t193,t194,t195,t196,t197,t198,t199;
+  PetscReal t201,t202,t203,t204,t206,t207,t208,t209,t210,t211,t212,t213,t215,t216,t217,t218,t219,t220,t221,t222,t223,t224,t225,t226,t227,t228,t229,t230,t231,t232,t233,t234,t235,t236,t237,t238,t239,t240;
+  PetscReal t241,t242,t243,t244,t245,t246,t247,t248,t249,t250,t251,t252,t253,t254,t255,t256,t257,t258,t259,t260,t261,t262,t263,t264,t265,t267,t268,t269,t270,t272,t273,t274,t275,t276,t277,t278,t279,t280;
+  PetscReal t281,t282,t283,t284,t285,t286,t288,t289,t290,t291,t292,t295,t296,t297,t298,t299,t300,t301,t303,t304,t305,t307,t308,t310,t311,t312,t313,t314,t315,t316,t317,t318,t319,t320;
+  PetscReal t321,t322,t323,t324,t325,t326,t327,t328,t329,t330,t331,t332,t334,t335,t336,t337,t338,t339,t340,t341,t342,t344,t345,t346,t347,t348,t349,t350,t351,t352,t353,t354,t355,t356,t358,t359,t360;
+  PetscReal t361,t362,t363,t364,t365,t366,t367,t368,t369,t370,t371,t372,t373,t374,t375,t376,t377,t378,t379,t380,t381,t382,t383,t384,t385,t386,t387,t389,t390,t391,t393,t394,t395,t396,t397,t398;
+  PetscReal t401,t402,t403,t404,t405,t406,t407,t408,t409,t410,t411,t412,t413,t414,t415,t416,t417,t418,t419,t421,t422,t423,t424,t425,t426,t427,t428,t429,t430,t431,t432,t433,t434,t436,t437,t438,t439,t440;
+  PetscReal t441,t442,t443,t444,t445,t446,t447,t448,t450,t451,t453,t454,t455,t456,t457,t458,t459,t461,t462,t463,t464,t465,t466,t468,t469,t470,t471,t474,t475,t478,t480;
+  PetscReal t482,t483,t484,t485,t488,t489,t490,t492,t493,t495,t497,t498,t499,t501,t502,t503,t504,t505,t507,t508,t509,t510,t511,t512,t513,t515,t518,t520;
+  PetscReal t522,t525,t527,t528,t529,t530,t532,t533,t534,t535,t536,t538,t539,t541,t542,t544,t545,t546,t547,t548,t549,t550,t551,t552,t553,t554,t555,t556,t557,t560;
+  PetscReal t561,t562,t563,t564,t567,t568,t571,t573,t575,t576,t578,t579,t583,t590,t591,t594,t595,t596,t597,t598,t600;
+  PetscReal t601,t602,t604,t606,t607,t608,t611,t613,t615,t616,t617,t619,t621,t623,t624,t625,t626,t627,t629,t630,t632,t633,t634,t638,t639,t640;
+  PetscReal t641,t642,t643,t644,t645,t647,t648,t649,t650,t651,t652,t653,t654,t655,t656,t657,t658,t659,t660,t662,t663,t665,t666,t667,t668,t670,t671,t672,t673,t674,t675,t676,t679,t680;
+  PetscReal t682,t683,t684,t685,t686,t688,t689,t690,t691,t693,t694,t695,t696,t697,t698,t699,t700,t701,t702,t704,t705,t708,t709,t711,t712,t713,t714,t717,t718,t719;
+  PetscReal t721,t722,t723,t726,t727,t728,t730,t733,t734,t735,t736,t737,t738,t739,t740,t741,t744,t745,t746,t749,t750,t752,t753,t754,t755,t757,t758,t759,t760;
+  PetscReal t761,t762,t763,t764,t766,t767,t768,t770,t771,t772,t773,t774,t775,t776,t777,t778,t780,t781,t782,t785,t786,t789,t790,t791,t792,t793,t794,t795,t796,t797,t798,t800;
+  PetscReal t801,t806,t807,t808,t809,t811,t812,t817,t818,t819,t821,t822,t824,t827,t828,t830,t834,t835,t837,t840;
+  PetscReal t842,t843,t844,t845,t846,t849,t850,t853,t854,t855,t857,t858,t859,t860,t863,t864,t867,t868,t869,t873,t874,t877,t878,t879,t880;
+  PetscReal t884,t888,t891,t894,t900,t901,t903,t904,t907,t908,t909,t911,t914,t915,t916,t919,t920;
+  PetscReal t923,t924,t925,t926,t927,t929,t932,t935,t937,t939,t942,t943,t944,t945,t947,t948,t949,t950,t952,t953,t954,t955,t956,t957;
+  PetscReal t961,t964,t965,t966,t967,t968,t969,t971,t972,t974,t977,t978,t981,t983,t987,t988,t992,t993,t994,t997,t998;
+  PetscReal t1001,t1003,t1005,t1006,t1009,t1010,t1012,t1013,t1015,t1016,t1017,t1018,t1020,t1021,t1029,t1031,t1032,t1033,t1040;
+  PetscReal t1041,t1042,t1044,t1047,t1050,t1054,t1055,t1057,t1058,t1063,t1068,t1069,t1070,t1079,t1080;
+  PetscReal t1088,t1089,t1091,t1092,t1094,t1096,t1101,t1102,t1103,t1104,t1105,t1108,t1112,t1113,t1118,t1119,t1120;
+  PetscReal t1121,t1122,t1123,t1124,t1125,t1126,t1127,t1128,t1129,t1130,t1132,t1133,t1134,t1135,t1138,t1139,t1140,t1141,t1142,t1145,t1146,t1148,t1149,t1150,t1153,t1154,t1156,t1157,t1158,t1159;
+  PetscReal t1161,t1162,t1165,t1166,t1170,t1171,t1172,t1173,t1175,t1176,t1178,t1180,t1181,t1182,t1185,t1189,t1192,t1193,t1195,t1196,t1199;
+  PetscReal t1201,t1203,t1209,t1210,t1211,t1213,t1214,t1218,t1221,t1224,t1225,t1226,t1228,t1233,t1234,t1235,t1236,t1237,t1240;
+  PetscReal t1241,t1242,t1243,t1244,t1245,t1248,t1251,t1252,t1257,t1258,t1259,t1260,t1263,t1268,t1269,t1272,t1280;
+  PetscReal t1282,t1283,t1284,t1285,t1287,t1288,t1289,t1292,t1293,t1296,t1297,t1300,t1304,t1307,t1310,t1311,t1312,t1316,t1317,t1320;
+  PetscReal t1321,t1323,t1328,t1330,t1331,t1332,t1333,t1336,t1338,t1343,t1344,t1346,t1349,t1350,t1354;
+  PetscReal t1366,t1369,t1370,t1371,t1376,t1378,t1380,t1383,t1386,t1387,t1388,t1391,t1393,t1399;
+  PetscReal t1411,t1412,t1420,t1427;
+  PetscReal t1450,t1456,t1468,t1472,t1474,t1478;
+  PetscReal t1504,t1511;
+  PetscReal t1545;
+  PetscReal t1564,t1583;
 
 
   /* del_rho = sin(n*Pi*z)*cos(nx*Pi*x)  n=nx gives only non-zero terms*/
@@ -73,17 +73,17 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   _C1A = 0;
   /****************************************************************************************/
   t1    = nx * 0.3141592654e1;
-  t2    = sin(t1);
+  t2    = PetscSinReal(t1);
   t3    = nx * t2;
   t4    = n * n;
   t5    = t4 * t4;
   t6    = 0.3141592654e1 * 0.3141592654e1;
   t8    = t3 * t5 * t6;
   t9    = ZA * xc;
-  t12   = exp(xc * n * 0.3141592654e1);
+  t12   = PetscExpReal(xc * n * 0.3141592654e1);
   t13   = t12 * t12;
   t15   = n * 0.3141592654e1;
-  t16   = exp(t15);
+  t16   = PetscExpReal(t15);
   t17   = t16 * t16;
   t18   = t17 * t16;
   t19   = ZB * t13 * t18;
@@ -96,7 +96,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t29   = t28 * t13;
   t33   = nx * ZB;
   t34   = t1 * xc;
-  t35   = sin(t34);
+  t35   = PetscSinReal(t34);
   t36   = t4 * n;
   t37   = t35 * t36;
   t38   = t33 * t37;
@@ -111,7 +111,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t53   = xc * xc;
   t54   = t36 * t53;
   t56   = t54 * t6 * t45;
-  t57   = cos(t34);
+  t57   = PetscCosReal(t34);
   t58   = t57 * t24;
   t59   = t28 * t12;
   t60   = t17 * t59;
@@ -331,23 +331,23 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t3   = t2 * 0.3141592654e1;
   t4   = t3 * xc;
   t5   = ZB * ZB;
-  t7   = exp(n * 0.3141592654e1);
+  t7   = PetscExpReal(n * 0.3141592654e1);
   t8   = t7 * t7;
   t9   = t5 * t8;
-  t12  = exp(xc * n * 0.3141592654e1);
+  t12  = PetscExpReal(xc * n * 0.3141592654e1);
   t13  = t12 * t12;
   t14  = t13 * t13;
   t15  = t14 * t13;
   t19  = nx * nx;
   t21  = nx * 0.3141592654e1;
-  t22  = sin(t21);
+  t22  = PetscSinReal(t21);
   t23  = t19 * nx * t22;
   t24  = t23 * 0.3141592654e1;
   t25  = ZA * ZB;
   t26  = t7 * t15;
   t27  = t25 * t26;
   t30  = t21 * xc;
-  t31  = sin(t30);
+  t31  = PetscSinReal(t30);
   t32  = t31 * nx;
   t33  = t32 * n;
   t34  = ZA * ZA;
@@ -382,7 +382,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t81  = t80 * t34;
   t83  = t61 * t14;
   t87  = t1 * t19;
-  t88  = cos(t30);
+  t88  = PetscCosReal(t30);
   t90  = t87 * t88 * t61;
   t91  = t5 * t64;
   t92  = t13 * t12;
@@ -579,22 +579,22 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   /****************************************************************************************/
   t1    = nx * 0.3141592654e1;
   t2    = t1 * xc;
-  t3    = cos(t2);
+  t3    = PetscCosReal(t2);
   t4    = nx * nx;
   t6    = n * 0.3141592654e1;
   t7    = t3 * t4 * t6;
   t8    = ZA * ZB;
-  t9    = exp(t6);
+  t9    = PetscExpReal(t6);
   t10   = t9 * t9;
   t11   = xc * n;
-  t13   = exp(t11 * 0.3141592654e1);
+  t13   = PetscExpReal(t11 * 0.3141592654e1);
   t14   = t13 * t13;
   t15   = t14 * t13;
   t16   = t14 * t14;
   t17   = t16 * t15;
   t18   = t10 * t17;
   t19   = t8 * t18;
-  t22   = sin(t2);
+  t22   = PetscSinReal(t2);
   t23   = nx * t22;
   t24   = t23 * n;
   t25   = ZB * ZB;
@@ -608,7 +608,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t38   = t16 * t13;
   t39   = t10 * t38;
   t40   = t37 * t39;
-  t43   = sin(t1);
+  t43   = PetscSinReal(t1);
   t44   = nx * t43;
   t45   = t30 * 0.3141592654e1;
   t46   = t44 * t45;
@@ -903,12 +903,12 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t5    = t3 * t4;
   t6    = nx * 0.3141592654e1;
   t7    = t6 * xc;
-  t8    = sin(t7);
+  t8    = PetscSinReal(t7);
   t9    = t8 * ZB;
   t10   = n * 0.3141592654e1;
-  t11   = exp(t10);
+  t11   = PetscExpReal(t10);
   t12   = t11 * t11;
-  t15   = exp(xc * n * 0.3141592654e1);
+  t15   = PetscExpReal(xc * n * 0.3141592654e1);
   t16   = t15 * t15;
   t17   = t16 * t16;
   t18   = t17 * t15;
@@ -923,7 +923,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t34   = t1 * xc;
   t35   = 0.3141592654e1 * ZB;
   t36   = t34 * t35;
-  t37   = cos(t7);
+  t37   = PetscCosReal(t7);
   t38   = ZA * t37;
   t39   = nx * nx;
   t40   = t39 * t12;
@@ -932,7 +932,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t46   = t25 * n;
   t47   = t46 * 0.3141592654e1;
   t48   = t39 * nx;
-  t49   = sin(t6);
+  t49   = PetscSinReal(t6);
   t50   = t48 * t49;
   t51   = t12 * t11;
   t52   = t51 * t17;
@@ -1310,17 +1310,17 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t3    = t2 * nx;
   t4    = nx * 0.3141592654e1;
   t5    = t4 * xc;
-  t6    = sin(t5);
+  t6    = PetscSinReal(t5);
   t7    = 0.3141592654e1 * 0.3141592654e1;
   t9    = t3 * t6 * t7;
   t10   = xc * xc;
   t11   = ZA * ZA;
   t12   = t10 * t11;
   t13   = n * 0.3141592654e1;
-  t14   = exp(t13);
+  t14   = PetscExpReal(t13);
   t15   = t14 * t14;
   t16   = xc * n;
-  t18   = exp(t16 * 0.3141592654e1);
+  t18   = PetscExpReal(t16 * 0.3141592654e1);
   t19   = t18 * t18;
   t20   = t19 * t18;
   t21   = t15 * t20;
@@ -1345,7 +1345,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t49   = t7 * xc;
   t50   = t35 * t15;
   t51   = t49 * t50;
-  t55   = sin(t4);
+  t55   = PetscSinReal(t4);
   t56   = t46 * nx * t55;
   t58   = t56 * n * t7;
   t59   = ZB * ZB;
@@ -1356,7 +1356,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t66   = t19 * t14;
   t67   = t60 * t66;
   t70   = t28 * t42;
-  t73   = cos(t5);
+  t73   = PetscCosReal(t5);
   t74   = t47 * t73;
   t75   = t7 * t11;
   t77   = t75 * t10 * t36;
@@ -1676,13 +1676,13 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t5    = t2 * 0.3141592654e1 * t3;
   t6    = nx * 0.3141592654e1;
   t7    = t6 * xc;
-  t8    = cos(t7);
+  t8    = PetscCosReal(t7);
   t9    = nx * nx;
   t10   = t8 * t9;
   t11   = n * 0.3141592654e1;
-  t12   = exp(t11);
+  t12   = PetscExpReal(t11);
   t13   = t12 * t12;
-  t16   = exp(xc * n * 0.3141592654e1);
+  t16   = PetscExpReal(xc * n * 0.3141592654e1);
   t17   = t16 * t16;
   t18   = t17 * t16;
   t19   = t17 * t17;
@@ -1698,7 +1698,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t31   = t29 * t30;
   t35   = t9 * nx;
   t36   = t3 * t35;
-  t37   = sin(t6);
+  t37   = PetscSinReal(t6);
   t38   = t13 * t12;
   t39   = t37 * t38;
   t40   = t39 * t19;
@@ -1729,7 +1729,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t80   = t77 * t79;
   t82   = t3 * t38;
   t84   = t54 * t37;
-  t87   = sin(t7);
+  t87   = PetscSinReal(t7);
   t88   = t29 * t87;
   t89   = t47 * t44;
   t93   = nx * t25;
@@ -2059,7 +2059,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t13  = nx * nx;
   t14  = t13 * t13;
   t15  = t12 * t14;
-  t19  = exp(t12 * 0.3141592654e1);
+  t19  = PetscExpReal(t12 * 0.3141592654e1);
   t20  = t19 * t19;
   t21  = t4 * t20;
   t24  = _C1 * t5;
@@ -2084,7 +2084,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t90  = -0.4e1 * t11 * t33 - 0.4e1 * t58 * t59 * t13 - 0.4e1 * t58 * t51 * t63 - 0.2e1 * t67 * t51 * t68 + 0.4e1 * t32 * t45 * t13 - 0.2e1 * t67 * t59 * t14 - 0.2e1 * t30 * t21 + t1 + 0.2e1 * t24 * t25 * t2 + 0.2e1 * t12 * t45 * t14 + 0.4e1 * t24 * Z * t87;
   t106 = _C3 * t5;
   t120 = -0.4e1 * t30 * t32 * t63 + t63 + 0.4e1 * t24 * Z * t1 * t13 + 0.2e1 * t29 * Z * x * t3 - 0.4e1 * t58 * t51 * t13 - 0.2e1 * t106 * t2 + t32 * 0.3141592654e1 - 0.2e1 * t106 * t14 - 0.2e1 * t30 * t12 * t68 - 0.2e1 * t67 * t51 * t14 + 0.4e1 * t106 * t87;
-  t129 = sin(nx * 0.3141592654e1 * x);
+  t129 = PetscSinReal(nx * 0.3141592654e1 * x);
   t155 = 0.2e1 * t30 * t15 + x * 0.3141592654e1 * t41 * t13 - 0.4e1 * t19 * nx * t129 * n + t32 * 0.3141592654e1 * t20 + 0.2e1 * t106 * t68 + 0.2e1 * t106 * t20 * t2 - 0.4e1 * t106 * t1 * t13 - 0.2e1 * t11 * t4 + 0.2e1 * t4 * t45 + 0.2e1 * t24 * Z * t2 + 0.2e1 * t24 * Z * t14 + t12 * 0.3141592654e1 * t13;
   t158 = t5 * Z;
 
@@ -2104,7 +2104,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t14  = x * t13;
   t15  = t5 * _C4;
   t16  = x * n;
-  t18  = exp(t16 * 0.3141592654e1);
+  t18  = PetscExpReal(t16 * 0.3141592654e1);
   t19  = t18 * t18;
   t23  = t16 * t5;
   t24  = t8 * t8;
@@ -2125,7 +2125,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t91  = 0.4e1 * t58 * t60 + 0.2e1 * t33 * t16 * t63 + 0.4e1 * t33 * t67 + 0.2e1 * t33 * t29 - x * 0.3141592654e1 * t73 * t8 - 0.2e1 * t53 + 0.2e1 * t32 * Z * x * t13 - 0.2e1 * t58 * t12 - 0.2e1 * t58 * t24 + t3 * 0.3141592654e1 + 0.4e1 * t86 * t2 * t19 * t8;
   t94  = Z * t12;
   t121 = -0.2e1 * t8 + 0.2e1 * t45 * t94 * t19 + 0.2e1 * t14 * t5 * t7 * t19 + 0.4e1 * t6 * t7 * t53 + 0.2e1 * t23 * t7 * t63 - 0.4e1 * t28 * t67 + 0.2e1 * t45 * t94 + 0.2e1 * t58 * t12 * t19 + t16 * 0.3141592654e1 * t8 + 0.2e1 * t14 * t15 - 0.2e1 * t28 * t14;
-  t146 = cos(nx * 0.3141592654e1 * x);
+  t146 = PetscCosReal(nx * 0.3141592654e1 * x);
   t156 = -t3 * 0.3141592654e1 * t19 + 0.2e1 * t58 * t63 - 0.4e1 * t58 * t1 * t8 + 0.4e1 * t45 * Z * t1 * t8 - 0.2e1 * t28 * t34 + 0.2e1 * t86 * t73 * t24 + 0.4e1 * t3 * t15 * t8 + 0.4e1 * t45 * Z * t60 + 0.4e1 * t18 * t146 * t8 + 0.2e1 * t45 * Z * t24 + 0.2e1 * t16 * t15 * t24;
   t159 = t4 * Z;
 
@@ -2141,7 +2141,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t7   = t6 * n;
   t8   = x * t7;
   t9   = x * n;
-  t11  = exp(t9 * 0.3141592654e1);
+  t11  = PetscExpReal(t9 * 0.3141592654e1);
   t12  = t11 * t11;
   t13  = t8 * t12;
   t16  = t5 * n;
@@ -2166,7 +2166,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t78  = _C1 * t1;
   t90  = Z * t12;
   t94  = 0.2e1 * t28 * t58 + 0.2e1 * t61 * t62 + 0.2e1 * t61 * t12 * t6 - 0.4e1 * t4 * t17 * t48 + 0.2e1 * t28 * t8 + 0.4e1 * t61 * t73 - 0.2e1 * t8 * t24 - 0.2e1 * t78 * Z * t6 - 0.2e1 * t44 * t40 * t62 - 0.2e1 * t78 * Z * t31 - t9 * 0.3141592654e1 * t20 + 0.2e1 * t78 * t90 * t6;
-  t101 = cos(nx * 0.3141592654e1 * x);
+  t101 = PetscCosReal(nx * 0.3141592654e1 * x);
   t102 = t11 * t101;
   t109 = t12 * t5;
   t110 = t109 * t20;
@@ -2186,7 +2186,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t8   = t3 * t6 * x;
   t11  = x * t4;
   t12  = t11 * t3;
-  t15  = exp(x * n * 0.3141592654e1);
+  t15  = PetscExpReal(x * n * 0.3141592654e1);
   t16  = t15 * t15;
   t17  = _C3 * t16;
   t18  = nx * nx;
@@ -2199,7 +2199,7 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   t33  = _C4 * t3;
   t34  = t5 * x;
   t35  = t34 * t18;
-  t41  = sin(nx * 0.3141592654e1 * x);
+  t41  = PetscSinReal(nx * 0.3141592654e1 * x);
   t47  = t11 * t19;
   t54  = t3 * _C3;
   t57  = 0.2e1 * t1 * t8 + 0.2e1 * t12 * t17 * t19 + 0.2e1 * t1 * t24 * t16 + 0.2e1 * t28 * t30 - 0.4e1 * t33 * t35 + 0.2e1 * t15 * nx * t41 * t4 + 0.4e1 * t28 * t35 - 0.2e1 * t33 * t47 - 0.2e1 * t1 * t24 - 0.2e1 * t33 * t29 + 0.2e1 * t29 * t54;
@@ -2228,25 +2228,25 @@ static void evaluate_solCx(double pos[],double _eta_A,double _eta_B,   /* Input 
   /****************************************************************************************/
 
 
-  u5 = (double)(-2*Z*n*PETSC_PI*u2-u3*2*n*PETSC_PI)*cos(n*PETSC_PI*z); /* pressure */
+  u5 = (PetscReal)(-2*Z*n*PETSC_PI*u2-u3*2*n*PETSC_PI)*PetscCosReal(n*PETSC_PI*z); /* pressure */
 
-  u6    = (double)(u3*2*n*PETSC_PI + 4*Z*n*PETSC_PI*u2)*cos(n*PETSC_PI*z); /* zz stress */
+  u6    = (PetscReal)(u3*2*n*PETSC_PI + 4*Z*n*PETSC_PI*u2)*PetscCosReal(n*PETSC_PI*z); /* zz stress */
   sum5 +=u5;
   sum6 +=u6;
 
-  u1   *= cos(n*PETSC_PI*z); /* x velocity */
+  u1   *= PetscCosReal(n*PETSC_PI*z); /* x velocity */
   sum1 += u1;
-  u2   *= sin(n*PETSC_PI*z); /* z velocity */
+  u2   *= PetscSinReal(n*PETSC_PI*z); /* z velocity */
   sum2 += u2;
-  u3   *= 2*n*PETSC_PI*cos(n*PETSC_PI *z); /* xx stress */
+  u3   *= 2*n*PETSC_PI*PetscCosReal(n*PETSC_PI *z); /* xx stress */
   sum3 += u3;
-  u4   *= 2*n*PETSC_PI*sin(n*PETSC_PI *z); /* zx stress */
+  u4   *= 2*n*PETSC_PI*PetscSinReal(n*PETSC_PI *z); /* zx stress */
   sum4 += u4;
 
 
   if (0) {
-    mag=sqrt(sum1*sum1+sum2*sum2);
-    printf("%0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f\n",x,z,sum1,sum2,sum3,sum4,sum5,sum6,mag);
+    mag=PetscSqrtReal(sum1*sum1+sum2*sum2);
+    printf("%0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f %0.7f\n",(double)x,(double)z,(double)sum1,(double)sum2,(double)sum3,(double)sum4,(double)sum5,(double)sum6,(double)mag);
   }
 
   /* Output */

@@ -3,8 +3,9 @@
 configure_options = [
   'CC=gcc',
   'FC=pgf90',
+  '--with-hwloc=0', # ubuntu -lhwloc requires -lnuma - which conflicts with -lnuma from pgf90
   '--download-mpich=1',
-  '--download-f-blas-lapack=1'
+  '--download-fblaslapack=1'
   ]
 
 if __name__ == '__main__':

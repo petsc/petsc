@@ -20,7 +20,7 @@ static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm,Mat *J)
   ierr = DMCompositeGetGlobalISs(dm,&isg);CHKERRQ(ierr);
 
   /* Get submatrices */
-  ierr = PetscMalloc(n*n*sizeof(Mat),&submats);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n*n,&submats);CHKERRQ(ierr);
   for (i=0,rlink=com->next; rlink; i++,rlink=rlink->next) {
     for (j=0,clink=com->next; clink; j++,clink=clink->next) {
       Mat sub = NULL;
@@ -77,7 +77,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,Mat *J)
     ierr = MatSeqAIJSetPreallocation(*J,mA,NULL);CHKERRQ(ierr);
 
     ierr = MatGetOwnershipRange(*J,&rstart,&rend);CHKERRQ(ierr);
-    ierr = PetscMalloc2(mA,PetscScalar,&values,mA,PetscInt,&indices);CHKERRQ(ierr);
+    ierr = PetscMalloc2(mA,&values,mA,&indices);CHKERRQ(ierr);
     ierr = PetscMemzero(values,mA*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=0; i<mA; i++) indices[i] = i;
     for (i=rstart; i<rend; i++) {
@@ -109,7 +109,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,Mat *J)
       ierr  = MatRestoreRow(Atmp,rstart+i,NULL,NULL,NULL);CHKERRQ(ierr);
       maxnc = PetscMax(nc,maxnc);
     }
-    ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
+    ierr = PetscMalloc1(maxnc,&ccols);CHKERRQ(ierr);
     for (i=0; i<mA; i++) {
       ierr = MatGetRow(Atmp,rstart+i,&nc,&cols,NULL);CHKERRQ(ierr);
       /* remap the columns taking into how much they are shifted on each process */
@@ -151,7 +151,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,Mat *J)
       maxnc = PetscMax(nc,maxnc);
       ierr  = MatRestoreRow(Atmp,rstart+i,&nc,NULL,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
+    ierr = PetscMalloc1(maxnc,&ccols);CHKERRQ(ierr);
     for (i=0; i<mA; i++) {
       ierr = MatGetRow(Atmp,rstart+i,&nc,(const PetscInt**)&cols,&values);CHKERRQ(ierr);
       for (j=0; j<nc; j++) {
@@ -183,7 +183,7 @@ PetscErrorCode DMCreateMatrix_Composite(DM dm,Mat *J)
 {
   PetscErrorCode         ierr;
   PetscBool              usenest;
-  ISLocalToGlobalMapping ltogmap,ltogmapb;
+  ISLocalToGlobalMapping ltogmap;
 
   PetscFunctionBegin;
   ierr = DMSetUp(dm);CHKERRQ(ierr);
@@ -195,8 +195,6 @@ PetscErrorCode DMCreateMatrix_Composite(DM dm,Mat *J)
   }
 
   ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMappingBlock(dm,&ltogmapb);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*J,ltogmap,ltogmap);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMappingBlock(*J,ltogmapb,ltogmapb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

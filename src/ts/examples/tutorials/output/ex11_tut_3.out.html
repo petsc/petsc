@@ -1,0 +1,101 @@
+<pre>
+Parameter file `User_Params' not found; using default parameters.
+
+
+           Input and Parameter Values
+
+# vertices = 184, # edges = 337
+Global method: Multilevel-KL
+Number of vertices to coarsen down to: 200
+Eigen tolerance: 0.001
+Local method: Kernighan-Lin
+Partitioning target: 1-dimensional mesh of size 16
+Partitioning mode: Bisection
+Random seed: 123636512
+Active Parameters:
+  CHECK_INPUT = True
+  LANCZOS_TYPE:  Selective orthogonalization
+  EIGEN_TOLERANCE = 0.001
+  SRESTOL = -1 ... autoset to square of eigen tolerance
+  LANCZOS_MAXITNS = -1 ... autoset to twice # vertices
+  LANCZOS_SO_PRECISION = 2 ... double precision
+  LANCZOS_SO_INTERVAL = 10
+  LANCZOS_CONVERGENCE_MODE = 0 ... residual tolerance
+  BISECTION_SAFETY = 10
+  LANCZOS_TIME = 0 ... no detailed timing
+  WARNING_EVECS = 2
+  MAPPING_TYPE = 1 ... min-cost assignment
+  MAKE_CONNECTED = True
+  PERTURB = False
+  COARSEN_RATIO_MIN = 0.7
+  COARSE_NLEVEL_KL = 2
+  MATCH_TYPE = 1
+  HEAVY_MATCH = False
+  COARSE_KL_BOTTOM = True
+  COARSEN_VWGTS = True
+  COARSEN_EWGTS = True
+  KL_ONLY_BNDY = True
+  KL_RANDOM = True
+  KL_METRIC = Hops
+  KL_NTRIES_BAD = 1
+  KL_BAD_MOVES = 20
+  KL_UNDO_LIST = True
+  KL_IMBALANCE = 0
+  TERM_PROP = False
+  OUTPUT_METRICS = 2
+  MAKE_VWGTS = False
+  REFINE_MAP = False
+  REFINE_PARTITION = 0
+  INTERNAL_VERTICES = False
+  DEBUG_PARAMS = 2
+
+
+
+Starting to partition ...
+
+
+
+                     Partitioning Results
+
+After full partitioning  (nsets = 16)
+
+                            Total      Max/Set      Min/Set
+                            -----      -------      -------
+Set Size:                     184           12           11
+Edge Cuts:                     87           14            7
+Mesh Hops:                    205           54           10
+Boundary Vertices:            155           14            6
+Boundary Vertex Hops:         372           54            9
+Adjacent Sets:                 54            6            2
+Internal Vertices:             59            6            2
+
+
+Total time: 0.038816 sec.
+  reformatting 2.3e-05
+  checking input 7.9e-05
+  partitioning 0.015651
+  evaluation 0.005117
+  other 0.017946
+
+KL time: 0.00288 sec.
+  initialization 0.000107
+  nway refinement 0.002666
+    bucket sorting 0.001018
+
+Lanczos time: 0.011907 sec.
+  0  time        0  |x|    8.704  
+  1  time   0.1656  |x|    8.199  
+  2  time   0.3312  |x|    7.691  
+  3  time   0.4968  |x|    7.185  
+  4  time   0.6624  |x|    6.678  
+  5  time    0.828  |x|    6.142  
+  6  time   0.9936  |x|    5.522  
+  7  time    1.159  |x|    4.769  
+  8  time    1.325  |x|    3.877  
+  9  time     1.49  |x|    2.905  
+ 10  time    1.656  |x|    2.061  
+ 11  time    1.822  |x|        2  
+ 12  time    1.987  |x|        2  
+ 13  time    2.153  |x|        2  
+CONVERGED_TIME at time 2.15278 after 13 steps
+</pre>

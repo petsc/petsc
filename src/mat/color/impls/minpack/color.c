@@ -4,6 +4,7 @@
 */
 
 #include <petsc-private/matimpl.h>
+#include <petsc-private/isimpl.h>
 #include <../src/mat/color/impls/minpack/color.h>
 
 /*
@@ -18,8 +19,8 @@ PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m,const PetscInt *cj
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(m*sizeof(PetscInt),&work);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt),seq);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,seq);CHKERRQ(ierr);
 
   MINPACKdegr(&m,cja,cia,rja,ria,*seq,work);
 
@@ -84,11 +85,11 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscol
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(n,PetscInt,&list,4*n,PetscInt,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&list,4*n,&work);CHKERRQ(ierr);
 
   MINPACKslo(&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
-  ierr = PetscMalloc(n*sizeof(PetscInt),&coloring);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&coloring);CHKERRQ(ierr);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
   ierr = PetscFree2(list,work);CHKERRQ(ierr);
@@ -116,13 +117,13 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscol
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N_loc+1,&colors_loc);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
     nc   = iscoloring_seq->n;
-    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -182,12 +183,12 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscol
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(n,PetscInt,&list,4*n,PetscInt,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&list,4*n,&work);CHKERRQ(ierr);
 
   n1   = n - 1;
   none = -1;
   MINPACKnumsrt(&n,&n1,seq,&none,list,work+2*n,work+n);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&coloring);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&coloring);CHKERRQ(ierr);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
   ierr = PetscFree2(list,work);CHKERRQ(ierr);
@@ -214,12 +215,12 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscol
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N_loc+1,&colors_loc);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) colors_loc[i-rstart] = iscoloring_seq->colors[i];
 
     /* create a parallel iscoloring */
     nc   = iscoloring_seq->n;
-    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -232,7 +233,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc)
     PetscFunctionBegin;
     mc->dist                = 2;
     mc->data                = NULL;
-    mc->ops->apply          = MatColoringApply_SL;
+    mc->ops->apply          = MatColoringApply_LF;
     mc->ops->view           = NULL;
     mc->ops->destroy        = NULL;
     mc->ops->setfromoptions = NULL;
@@ -258,7 +259,7 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscol
   PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
-  if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"LF may only do distance 2 coloring");
+  if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IDO may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
@@ -279,11 +280,11 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscol
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(n,PetscInt,&list,4*n,PetscInt,&work);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&list,4*n,&work);CHKERRQ(ierr);
 
   MINPACKido(&n,&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
-  ierr = PetscMalloc(n*sizeof(PetscInt),&coloring);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&coloring);CHKERRQ(ierr);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
   ierr = PetscFree2(list,work);CHKERRQ(ierr);
@@ -312,13 +313,13 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscol
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N_loc+1,&colors_loc);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
     nc   = iscoloring_seq->n;
-    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -9,15 +9,17 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESNEWTONLSCheckLocalMin_Private"
-PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal fnorm,PetscBool  *ismin)
+static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,PetscReal fnorm,PetscBool  *ismin)
 {
   PetscReal      a1;
   PetscErrorCode ierr;
   PetscBool      hastranspose;
+  Vec            W;
 
   PetscFunctionBegin;
   *ismin = PETSC_FALSE;
   ierr   = MatHasOperation(A,MATOP_MULT_TRANSPOSE,&hastranspose);CHKERRQ(ierr);
+  ierr   = VecDuplicate(F,&W);CHKERRQ(ierr);
   if (hastranspose) {
     /* Compute || J^T F|| */
     ierr = MatMultTranspose(A,F,W);CHKERRQ(ierr);
@@ -39,6 +41,7 @@ PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,Pet
     ierr = PetscInfo1(snes,"(F^T J random)/(|| F ||*||random|| %14.12e near zero implies found a local minimum\n",(double)a1);CHKERRQ(ierr);
     if (a1 < 1.e-4) *ismin = PETSC_TRUE;
   }
+  ierr = VecDestroy(&W);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -47,7 +50,7 @@ PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,Pet
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESNEWTONLSCheckResidual_Private"
-PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Vec W2)
+static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X)
 {
   PetscReal      a1,a2;
   PetscErrorCode ierr;
@@ -56,6 +59,10 @@ PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec
   PetscFunctionBegin;
   ierr = MatHasOperation(A,MATOP_MULT_TRANSPOSE,&hastranspose);CHKERRQ(ierr);
   if (hastranspose) {
+    Vec   W1,W2;
+
+    ierr = VecDuplicate(F,&W1);CHKERRQ(ierr);
+    ierr = VecDuplicate(F,&W2);CHKERRQ(ierr);
     ierr = MatMult(A,X,W1);CHKERRQ(ierr);
     ierr = VecAXPY(W1,-1.0,F);CHKERRQ(ierr);
 
@@ -66,6 +73,8 @@ PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec
     if (a1 != 0.0) {
       ierr = PetscInfo1(snes,"||J^T(F-Ax)||/||F-AX|| %14.12e near zero implies inconsistent rhs\n",(double)(a2/a1));CHKERRQ(ierr);
     }
+    ierr = VecDestroy(&W1);CHKERRQ(ierr);    
+    ierr = VecDestroy(&W2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -133,9 +142,8 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   PetscErrorCode      ierr;
   PetscInt            maxits,i,lits;
   PetscBool           lssucceed;
-  MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal           fnorm,gnorm,xnorm,ynorm;
-  Vec                 Y,X,F,G,W;
+  Vec                 Y,X,F;
   KSPConvergedReason  kspreason;
   PetscBool           domainerror;
   SNESLineSearch      linesearch;
@@ -150,8 +158,6 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   X      = snes->vec_sol;               /* solution vector */
   F      = snes->vec_func;              /* residual vector */
   Y      = snes->vec_sol_update;        /* newton step */
-  G      = snes->work[0];
-  W      = snes->work[1];
 
   ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -161,7 +167,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
 
   /* compute the preconditioned function first in the case of left preconditioning with preconditioned function */
   if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-    ierr = SNESApplyPC(snes,X,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyNPC(snes,X,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
@@ -216,9 +222,9 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
           snes->reason = SNES_DIVERGED_INNER;
           PetscFunctionReturn(0);
         }
-        ierr = SNESGetPCFunction(snes,F,&fnorm);CHKERRQ(ierr);
+        ierr = SNESGetNPCFunction(snes,F,&fnorm);CHKERRQ(ierr);
       } else if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
-        ierr = SNESApplyPC(snes,X,F,&fnorm,F);CHKERRQ(ierr);
+        ierr = SNESApplyNPC(snes,X,F,F);CHKERRQ(ierr);
         ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
         if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
           snes->reason = SNES_DIVERGED_INNER;
@@ -228,8 +234,8 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     }
 
     /* Solve J Y = F, where J is Jacobian matrix */
-    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
-    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
@@ -244,7 +250,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     ierr              = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
 
     if (PetscLogPrintInfo) {
-      ierr = SNESNEWTONLSCheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
+      ierr = SNESNEWTONLSCheckResidual_Private(snes,snes->jacobian,F,Y);CHKERRQ(ierr);
     }
 
     /* Compute a (scaled) negative update in the line search routine:
@@ -270,7 +276,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        ierr         = SNESNEWTONLSCheckLocalMin_Private(snes,snes->jacobian,F,W,fnorm,&ismin);CHKERRQ(ierr);
+        ierr         = SNESNEWTONLSCheckLocalMin_Private(snes,snes->jacobian,F,fnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
       }
@@ -315,7 +321,6 @@ PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESSetWorkVecs(snes,2);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_PRECONDITIONED;
   PetscFunctionReturn(0);
@@ -386,15 +391,12 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_NEWTONLS"
-static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes)
+static PetscErrorCode SNESSetFromOptions_NEWTONLS(PetscOptions *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNESNEWTONLS options");CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
-  /* set the default line search type */
   if (!snes->linesearch) {
     ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
@@ -442,7 +444,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
   snes->pcside  = PC_RIGHT;
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_TRUE;
-  ierr          = PetscNewLog(snes,SNES_NEWTONLS,&neP);CHKERRQ(ierr);
+  ierr          = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data    = (void*)neP;
   PetscFunctionReturn(0);
 }

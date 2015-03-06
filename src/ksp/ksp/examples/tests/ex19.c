@@ -21,6 +21,7 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
 */
 
 #include <petscksp.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /* User-defined application contexts */
@@ -82,7 +83,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
                       user.fine.my,Nx,Ny,1,1,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.fine.da,&user.fine.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRQ(ierr);
@@ -93,7 +94,7 @@ int main(int argc,char **argv)
   ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,NULL,3,NULL,&user.fine.J);CHKERRQ(ierr);
 
   /* Set up distributed array for coarse grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
                       user.coarse.my,Nx,Ny,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRQ(ierr);
   ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRQ(ierr);
@@ -118,7 +119,7 @@ int main(int argc,char **argv)
   ierr = PCMGGetCoarseSolve(pc,&user.ksp_coarse);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(user.ksp_coarse,"coarse_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user.ksp_coarse);CHKERRQ(ierr);
-  ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J);CHKERRQ(ierr);
   ierr = PCMGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr);
   ierr = PCMGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr);
 
@@ -126,7 +127,7 @@ int main(int argc,char **argv)
   ierr = PCMGGetSmoother(pc,FINE_LEVEL,&ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp_fine,"fine_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp_fine);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp_fine,user.fine.J,user.fine.J);CHKERRQ(ierr);
   ierr = PCMGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
@@ -134,7 +135,7 @@ int main(int argc,char **argv)
   ierr = PCMGSetInterpolation(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
   ierr = PCMGSetRestriction(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
 
-  ierr = KSPSetOperators(ksp,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,user.fine.J,user.fine.J);CHKERRQ(ierr);
 
   ierr = VecSet(user.fine.b,one);CHKERRQ(ierr);
   {
@@ -179,11 +180,13 @@ int main(int argc,char **argv)
 #define __FUNCT__ "FormJacobian_Grid"
 int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
 {
-  Mat            jac = *J;
-  PetscErrorCode ierr;
-  PetscInt       i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
-  PetscInt       nloc,*ltog,grow;
-  PetscScalar    two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
+  Mat                    jac = *J;
+  PetscErrorCode         ierr;
+  PetscInt               i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
+  PetscInt               grow;
+  const PetscInt         *ltog;
+  PetscScalar            two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
+  ISLocalToGlobalMapping ltogm;
 
   mx    = grid->mx;               my = grid->my;
   hx    = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -192,7 +195,8 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
   /* Get ghost points */
   ierr = DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(grid->da,&ltogm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltogm,&ltog);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
@@ -216,6 +220,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
       }
     }
   }
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

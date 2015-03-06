@@ -5,6 +5,10 @@
 #include <petscksp.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool KSPRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
+PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);
+
 typedef struct _KSPOps *KSPOps;
 
 struct _KSPOps {
@@ -16,7 +20,7 @@ struct _KSPOps {
                                                           user-provided area.  */
   PetscErrorCode (*solve)(KSP);                        /* actual solver */
   PetscErrorCode (*setup)(KSP);
-  PetscErrorCode (*setfromoptions)(KSP);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,KSP);
   PetscErrorCode (*publishoptions)(KSP);
   PetscErrorCode (*computeextremesingularvalues)(KSP,PetscReal*,PetscReal*);
   PetscErrorCode (*computeeigenvalues)(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
@@ -57,7 +61,6 @@ struct _p_KSP {
   PetscReal       rnorm0;                   /* initial residual norm (used for divergence testing) */
   PetscReal       rnorm;                    /* current residual norm */
   KSPConvergedReason reason;
-  PetscBool          printreason;     /* prints converged reason after solve */
   PetscBool          errorifnotconverged;    /* create an error if the KSPSolve() does not converge */
 
   Vec vec_sol,vec_rhs;            /* pointer to where user has stashed
@@ -102,6 +105,9 @@ struct _p_KSP {
 
   KSPNormType    normtype;          /* type of norm used for convergence tests */
 
+  PCSide         pc_side_set;   /* PC type set explicitly by user */
+  KSPNormType    normtype_set;  /* Norm type set explicitly by user */
+
   /*   Allow diagonally scaling the matrix before computing the preconditioner or using
        the Krylov method. Note this is NOT just Jacobi preconditioning */
 
@@ -112,6 +118,8 @@ struct _p_KSP {
   Vec          truediagonal;
 
   MatNullSpace nullsp;      /* Null space of the operator, removed from Krylov space */
+
+  PetscBool    skippcsetfromoptions; /* if set then KSPSetFromOptions() does not call PCSetFromOptions() */
 
   PetscViewer  eigviewer;   /* Viewer where computed eigenvalues are displayed */
 
@@ -153,7 +161,7 @@ PETSC_INTERN PetscErrorCode KSPPlotEigenContours_Private(KSP,PetscInt,const Pets
 typedef struct _p_DMKSP *DMKSP;
 typedef struct _DMKSPOps *DMKSPOps;
 struct _DMKSPOps {
-  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,MatStructure*,void*);
+  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,void*);
   PetscErrorCode (*computerhs)(KSP,Vec,void*);
   PetscErrorCode (*computeinitialguess)(KSP,Vec,void*);
   PetscErrorCode (*destroy)(DMKSP*);
@@ -279,6 +287,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec 
 
 PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
-PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
 
 #endif

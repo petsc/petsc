@@ -12,8 +12,8 @@
 
 PETSC_EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScalar*,PetscScalar*,PetscInt,size_t*);
 PETSC_EXTERN PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,size_t,PetscInt,PetscScalar **);
-PETSC_EXTERN size_t         PetscIntAddressToFortran(PetscInt*,PetscInt*);
-PETSC_EXTERN PetscInt        *PetscIntAddressFromFortran(PetscInt*,size_t);
+PETSC_EXTERN size_t         PetscIntAddressToFortran(const PetscInt*,const PetscInt*);
+PETSC_EXTERN PetscInt        *PetscIntAddressFromFortran(const PetscInt*,size_t);
 PETSC_EXTERN char   *PETSC_NULL_CHARACTER_Fortran;
 PETSC_EXTERN void    *PETSC_NULL_INTEGER_Fortran;
 PETSC_EXTERN void    *PETSC_NULL_SCALAR_Fortran;
@@ -61,9 +61,8 @@ PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
     while((n > 0) && (a[n-1] == ' ')) n--; \
     *ierr = PetscMalloc((n+1)*sizeof(char),&b); \
     if (*ierr) return; \
-    *ierr = PetscStrncpy(b,a,n); \
+    *ierr = PetscStrncpy(b,a,n+1); \
     if (*ierr) return; \
-    b[n] = 0; \
   } \
 }
 
@@ -78,7 +77,7 @@ if (flg) {                                   \
 
 /*
     The cast through PETSC_UINTPTR_T is so that compilers that warn about casting to/from void * to void(*)(void)
-    will not complain about these comparisons. It is now know if this works for all compilers
+    will not complain about these comparisons. It is not know if this works for all compilers
 */
 #define FORTRANNULLINTEGER(a)  (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_INTEGER_Fortran)
 #define FORTRANNULLSCALAR(a)   (((void*)(PETSC_UINTPTR_T)a) == PETSC_NULL_SCALAR_Fortran)
@@ -138,13 +137,13 @@ PETSC_EXTERN void  *PETSCNULLPOINTERADDRESS;
 /*
     Variable type where we stash PETSc object pointers in Fortran.
 */
-typedef size_t PetscFortranAddr;
+typedef PETSC_UINTPTR_T PetscFortranAddr;
 
 /*
     These are used to support the default viewers that are
   created at run time, in C using the , trick.
 
-    The numbers here must match the numbers in include/finclude/petscsys.h
+    The numbers here must match the numbers in include/petsc-finclude/petscsys.h
 */
 #define PETSC_VIEWER_DRAW_WORLD_FORTRAN     4
 #define PETSC_VIEWER_DRAW_SELF_FORTRAN      5

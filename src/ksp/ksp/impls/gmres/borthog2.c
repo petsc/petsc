@@ -45,7 +45,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   if (!gmres->orthogwork) {
-    ierr = PetscMalloc((gmres->max_k + 2)*sizeof(PetscScalar),&gmres->orthogwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(gmres->max_k + 2,&gmres->orthogwork);CHKERRQ(ierr);
   }
   lhh = gmres->orthogwork;
 
@@ -89,7 +89,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
     ierr = VecNorm(VEC_VV(it+1),NORM_2, &wnrm);CHKERRQ(ierr);
     if (wnrm < 1.0286 * hnrm) {
       refine = PETSC_TRUE;
-      ierr   = PetscInfo2(ksp,"Performing iterative refinement wnorm %G hnorm %G\n",wnrm,hnrm);CHKERRQ(ierr);
+      ierr   = PetscInfo2(ksp,"Performing iterative refinement wnorm %g hnorm %g\n",(double)wnrm,(double)hnrm);CHKERRQ(ierr);
     }
   }
 

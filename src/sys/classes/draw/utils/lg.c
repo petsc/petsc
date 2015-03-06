@@ -31,7 +31,7 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    ierr     = PetscMalloc2(lg->len+lg->dim*CHUNCKSIZE,PetscReal,&tmpx,lg->len+lg->dim*CHUNCKSIZE,PetscReal,&tmpy);CHKERRQ(ierr);
+    ierr     = PetscMalloc2(lg->len+lg->dim*CHUNCKSIZE,&tmpx,lg->len+lg->dim*CHUNCKSIZE,&tmpy);CHKERRQ(ierr);
     ierr     = PetscLogObjectMemory((PetscObject)lg,2*lg->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
     ierr     = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr     = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
@@ -63,7 +63,7 @@ PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const
 
    Input Parameters:
 +  lg - the LineGraph data structure
--  x, y - the points to two vectors containing the new x and y
+-  x, y - the points to two arrays containing the new x and y
           point for each curve.
 
    Level: intermediate
@@ -76,6 +76,7 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
 {
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscReal      xx;
 
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
@@ -83,7 +84,7 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    ierr     = PetscMalloc2(lg->len+lg->dim*CHUNCKSIZE,PetscReal,&tmpx,lg->len+lg->dim*CHUNCKSIZE,PetscReal,&tmpy);CHKERRQ(ierr);
+    ierr     = PetscMalloc2(lg->len+lg->dim*CHUNCKSIZE,&tmpx,lg->len+lg->dim*CHUNCKSIZE,&tmpy);CHKERRQ(ierr);
     ierr     = PetscLogObjectMemory((PetscObject)lg,2*lg->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
     ierr     = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr     = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
@@ -93,12 +94,17 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
     lg->len += lg->dim*CHUNCKSIZE;
   }
   for (i=0; i<lg->dim; i++) {
-    if (x[i] > lg->xmax) lg->xmax = x[i];
-    if (x[i] < lg->xmin) lg->xmin = x[i];
+    if (!x) {
+      xx = lg->nopts;
+    } else {
+      xx = x[i];
+    }
+    if (xx > lg->xmax) lg->xmax = xx;
+    if (xx < lg->xmin) lg->xmin = xx;
     if (y[i] > lg->ymax) lg->ymax = y[i];
     if (y[i] < lg->ymin) lg->ymin = y[i];
 
-    lg->x[lg->loc]   = x[i];
+    lg->x[lg->loc]   = xx;
     lg->y[lg->loc++] = y[i];
   }
   lg->nopts++;
@@ -140,7 +146,7 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,Pe
     PetscInt  chunk = CHUNCKSIZE;
 
     if (n > chunk) chunk = n;
-    ierr     = PetscMalloc2(lg->len+lg->dim*chunk,PetscReal,&tmpx,lg->len+lg->dim*chunk,PetscReal,&tmpy);CHKERRQ(ierr);
+    ierr     = PetscMalloc2(lg->len+lg->dim*chunk,&tmpx,lg->len+lg->dim*chunk,&tmpy);CHKERRQ(ierr);
     ierr     = PetscLogObjectMemory((PetscObject)lg,2*lg->dim*chunk*sizeof(PetscReal));CHKERRQ(ierr);
     ierr     = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr     = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(PetscReal));CHKERRQ(ierr);

@@ -3,13 +3,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = localcolor.c bipartite.c valid.c
+SOURCEC  = bipartite.c valid.c weights.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = MatOrderings
 LOCDIR   = src/mat/color/utils/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test

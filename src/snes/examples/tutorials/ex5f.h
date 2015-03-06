@@ -3,7 +3,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
-!  PETSc include files in the directory petsc/include/finclude.  This
+!  PETSc include files in the directory petsc/include/petsc-finclude.  This
 !  convention enables use of the CPP preprocessor, which allows the use
 !  of the #include statements that define PETSc objects and variables.
 !
@@ -27,16 +27,18 @@
 !     petscpc.h     - preconditioners
 !     petscsnes.h   - SNES interface
 !  In addition, we need the following for use of distributed arrays
+!     petscdm.h       - boundary specification for DM
 !     petscdmda.h     - distributed arrays (DMDAs)
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscdmda.h>
-#include <finclude/petscis.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
+#include <petsc-finclude/petscis.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
 !  Common blocks:
 !  In this example we use common blocks to store data needed by the

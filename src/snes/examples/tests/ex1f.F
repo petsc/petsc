@@ -53,14 +53,14 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscis.h>
-#include <finclude/petscdraw.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscis.h>
+#include <petsc-finclude/petscdraw.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -87,7 +87,6 @@
       PetscReal   lambda_max,lambda_min,lambda
       MatFDColoring      fdcoloring
       ISColoring         iscoloring
-      MatStructure       str
 
       PetscScalar        lx_v(0:1)
       PetscOffset        lx_i
@@ -186,7 +185,7 @@
 !      because clearly if we had a routine to compute the Jacobian we won't need
 !      to use finite differences.
 !
-        call FormJacobian(snes,x,J,J,str,0,ierr)
+        call FormJacobian(snes,x,J,J,0,ierr)
 !
 !       Color the matrix, i.e. determine groups of columns that share no common
 !      rows. These columns in the Jacobian can all be computed simulataneously.
@@ -264,10 +263,10 @@
      &     'Solution',300,0,300,300,draw,ierr)
       call PetscDrawSetFromOptions(draw,ierr)
 
-      call VecGetArray(x,lx_v,lx_i,ierr)
-      call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_DOUBLE,              &
-     &     PETSC_NULL_DOUBLE,lx_v(lx_i+1),ierr)
-      call VecRestoreArray(x,lx_v,lx_i,ierr)
+      call VecGetArrayRead(x,lx_v,lx_i,ierr)
+      call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_REAL,              &
+     &     PETSC_NULL_REAL,lx_v(lx_i+1),ierr)
+      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they
@@ -306,10 +305,10 @@
       subroutine FormInitialGuess(X,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
 
 !  Input/output variables:
       Vec           X
@@ -422,9 +421,9 @@
       subroutine FormFunction(snes,X,F,dummy,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES              snes
@@ -449,7 +448,7 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the Fortran chapter of the users manual for details.
 
-      call VecGetArray(X,lx_v,lx_i,ierr)
+      call VecGetArrayRead(X,lx_v,lx_i,ierr)
       call VecGetArray(F,lf_v,lf_i,ierr)
 
 !  Compute function
@@ -458,7 +457,7 @@
 
 !  Restore vectors
 
-      call VecRestoreArray(X,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(X,lx_v,lx_i,ierr)
       call VecRestoreArray(F,lf_v,lf_i,ierr)
 
       call PetscLogFlops(11.0d0*mx*my,ierr)
@@ -552,20 +551,19 @@
 !  This routine merely accesses the local vector data via
 !  VecGetArray() and VecRestoreArray().
 !
-      subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy,ierr)
+      subroutine FormJacobian(snes,X,jac,jac_prec,dummy,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES          snes
       Vec           X
       Mat           jac,jac_prec
-      MatStructure  flag
       PetscErrorCode      ierr
       integer dummy
 
@@ -580,7 +578,7 @@
 
 !  Get a pointer to vector data
 
-      call VecGetArray(X,lx_v,lx_i,ierr)
+      call VecGetArrayRead(X,lx_v,lx_i,ierr)
 
 !  Compute Jacobian entries
 
@@ -588,30 +586,13 @@
 
 !  Restore vector
 
-      call VecRestoreArray(X,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(X,lx_v,lx_i,ierr)
 
 !  Assemble matrix
 
       call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
 
-!  Set flag to indicate that the Jacobian matrix retains an identical
-!  nonzero structure throughout all nonlinear iterations (although the
-!  values of the entries change). Thus, we can save some work in setting
-!  up the preconditioner (e.g., no need to redo symbolic factorization for
-!  ILU/ICC preconditioners).
-!   - If the nonzero structure of the matrix is different during
-!     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-!     must be used instead.  If you are unsure whether the matrix
-!     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-!   - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-!     believes your assertion and does not check the structure
-!     of the matrix.  If you erroneously claim that the structure
-!     is the same when it actually is not, the new preconditioner
-!     will not function correctly.  Thus, use this optimization
-!     feature with caution!
-
-      flag = SAME_NONZERO_PATTERN
 
       return
       end
@@ -635,11 +616,11 @@
       subroutine ApplicationJacobian(x,jac,jac_prec,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
 !  Common blocks:
       PetscReal    lambda

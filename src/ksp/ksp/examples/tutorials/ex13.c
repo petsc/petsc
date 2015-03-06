@@ -69,14 +69,14 @@ int main(int argc,char **args)
      the context of a larger application these would be provided by
      other (non-PETSc) parts of the application code.
   */
-  ierr = PetscMalloc(N*sizeof(PetscScalar),&userx);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(PetscScalar),&userb);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(PetscScalar),&solution);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&userx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&userb);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&solution);CHKERRQ(ierr);
 
   /*
       Allocate an array to hold the coefficients in the elliptic operator
   */
-  ierr = PetscMalloc(N*sizeof(PetscScalar),&rho);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&rho);CHKERRQ(ierr);
 
   /*
      Fill up the array rho[] with the function rho(x,y) = x; fill the
@@ -118,7 +118,7 @@ int main(int argc,char **args)
     enorm = 0.0;
     for (i=0; i<N; i++) enorm += PetscRealPart(PetscConj(solution[i]-userx[i])*(solution[i]-userx[i]));
     enorm *= PetscRealPart(hx*hy);
-    ierr   = PetscPrintf(PETSC_COMM_WORLD,"m %D n %D error norm %G\n",m,n,enorm);CHKERRQ(ierr);
+    ierr   = PetscPrintf(PETSC_COMM_WORLD,"m %D n %D error norm %g\n",m,n,(double)enorm);CHKERRQ(ierr);
   }
 
   /*
@@ -247,7 +247,7 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar 
      will have the same nonzero pattern here, we indicate this so the
      linear solvers can take advantage of this.
   */
-  ierr = KSPSetOperators(userctx->ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(userctx->ksp,A,A);CHKERRQ(ierr);
 
   /*
      Set linear solver defaults for this problem (optional).

@@ -6,6 +6,8 @@
 #include <petscdm.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool DMRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode DMRegisterAll(void);
 typedef PetscErrorCode (*NullSpaceFunc)(DM dm, PetscInt field, MatNullSpace *nullSpace);
 
 typedef struct _DMOps *DMOps;
@@ -13,12 +15,13 @@ struct _DMOps {
   PetscErrorCode (*view)(DM,PetscViewer);
   PetscErrorCode (*load)(DM,PetscViewer);
   PetscErrorCode (*clone)(DM,DM*);
-  PetscErrorCode (*setfromoptions)(DM);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,DM);
   PetscErrorCode (*setup)(DM);
+  PetscErrorCode (*createdefaultsection)(DM);
+  PetscErrorCode (*createdefaultconstraints)(DM);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   PetscErrorCode (*createlocalvector)(DM,Vec*);
   PetscErrorCode (*getlocaltoglobalmapping)(DM);
-  PetscErrorCode (*getlocaltoglobalmappingblock)(DM);
   PetscErrorCode (*createfieldis)(DM,PetscInt*,char***,IS**);
   PetscErrorCode (*createcoordinatedm)(DM,DM*);
 
@@ -26,7 +29,7 @@ struct _DMOps {
   PetscErrorCode (*creatematrix)(DM, Mat*);
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
-  PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
+  PetscErrorCode (*getinjection)(DM,DM,Mat*);
 
   PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
   PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*);
@@ -49,6 +52,7 @@ struct _DMOps {
   PetscErrorCode (*createdomaindecomposition)(DM,PetscInt*,char***,IS**,IS**,DM**);
   PetscErrorCode (*createddscatters)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
 
+  PetscErrorCode (*getdimpoints)(DM,PetscInt,PetscInt*,PetscInt*);
   PetscErrorCode (*locatepoints)(DM,Vec,IS*);
 };
 
@@ -84,6 +88,14 @@ struct _DMGlobalToLocalHookLink {
   DMGlobalToLocalHookLink next;
 };
 
+typedef struct _DMLocalToGlobalHookLink *DMLocalToGlobalHookLink;
+struct _DMLocalToGlobalHookLink {
+  PetscErrorCode (*beginhook)(DM,Vec,InsertMode,Vec,void*);
+  PetscErrorCode (*endhook)(DM,Vec,InsertMode,Vec,void*);
+  void *ctx;
+  DMLocalToGlobalHookLink next;
+};
+
 typedef enum {DMVEC_STATUS_IN,DMVEC_STATUS_OUT} DMVecStatus;
 typedef struct _DMNamedVecLink *DMNamedVecLink;
 struct _DMNamedVecLink {
@@ -117,7 +129,7 @@ struct _p_DM {
   VecType                 vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
   MatType                 mattype;  /* type of matrix created with DMCreateMatrix() */
   PetscInt                bs;
-  ISLocalToGlobalMapping  ltogmap,ltogmapb;
+  ISLocalToGlobalMapping  ltogmap;
   PetscBool               prealloc_only; /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
   PetscInt                levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
   PetscBool               setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
@@ -126,6 +138,9 @@ struct _p_DM {
   DMRefineHookLink        refinehook;
   DMSubDomainHookLink     subdomainhook;
   DMGlobalToLocalHookLink gtolhook;
+  DMLocalToGlobalHookLink ltoghook;
+  /* Topology */
+  PetscInt                dim;                  /* The topological dimension */
   /* Flexible communication */
   PetscSF                 sf;                   /* SF for parallel point overlap */
   PetscSF                 defaultSF;            /* SF for parallel dof overlap using default section */
@@ -133,16 +148,24 @@ struct _p_DM {
   PetscSection            defaultSection;       /* Layout for local vectors */
   PetscSection            defaultGlobalSection; /* Layout for global vectors */
   PetscLayout             map;
+  /* Constraints */
+  PetscSection            defaultConstraintSection;
+  Mat                     defaultConstraintMat;
   /* Coordinates */
+  PetscInt                dimEmbed;             /* The dimension of the embedding space */
   DM                      coordinateDM;         /* Layout for coordinates (default section) */
   Vec                     coordinates;          /* Coordinate values in global vector */
   Vec                     coordinatesLocal;     /* Coordinate values in local  vector */
+  PetscReal              *L, *maxCell;          /* Size of periodic box and max cell size for determining periodicity */
   /* Null spaces -- of course I should make this have a variable number of fields */
   /*   I now believe this might not be the right way: see below */
   NullSpaceFunc           nullspaceConstructors[10];
   /* Fields are represented by objects */
-  PetscInt                numFields;
-  PetscObject             *fields;
+  PetscDS                 prob;
+  /* Output structures */
+  DM                      dmBC;                 /* The DM with boundary conditions in the global DM */
+  PetscInt                outputSequenceNum;    /* The current sequence number for output */
+  PetscReal               outputSequenceVal;    /* The current sequence value for output */
 
   PetscObject             dmksp,dmsnes,dmts;
 };
@@ -218,5 +241,9 @@ PETSC_EXTERN PetscErrorCode DMCreateSubDM_Section_Private(DM,PetscInt,PetscInt[]
 ?????   individual global vectors   ????
 
 */
+
+#if defined(PETSC_HAVE_HDF5)
+PETSC_EXTERN PetscErrorCode DMSequenceLoad_HDF5(DM, const char *, PetscInt, PetscScalar *, PetscViewer);
+#endif
 
 #endif

@@ -64,7 +64,7 @@ int main(int argc,char **args)
   ierr  = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr  = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr  = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
-  ierr  = MatMPIAIJSetPreallocation(A,9,NULL,5,NULL);CHKERRQ(ierr); /* More than necessary */
+  ierr  = MatMPIAIJSetPreallocation(A,9,NULL,8,NULL);CHKERRQ(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 
@@ -114,7 +114,7 @@ int main(int argc,char **args)
   /*
      Modify matrix and right-hand-side for Dirichlet boundary conditions
   */
-  ierr = PetscMalloc(4*m*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(4*m,&rows);CHKERRQ(ierr);
   for (i=0; i<m+1; i++) {
     rows[i] = i; /* bottom */
     rows[3*m - 1 +i] = m*(m+1) + i; /* top */
@@ -142,7 +142,7 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -168,7 +168,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(u,-1.0,ustar);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G Iterations %D\n",norm*h,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its);CHKERRQ(ierr);
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

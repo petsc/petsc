@@ -1,4 +1,5 @@
 #include <petsc-private/matimpl.h>      /*I "petscmat.h"  I*/
+#include <petsc-private/isimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringApply_Natural"
@@ -32,18 +33,17 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *
   }
 
   ierr = MatGetSize(mat_seq,&n,NULL);CHKERRQ(ierr);
-  ierr = MatView(mat_seq,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat_seq,&start,&end);CHKERRQ(ierr);
   n    = n/bs;
   if (n > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
 
   start = start/bs;
   end   = end/bs;
-  ierr  = PetscMalloc((end-start+1)*sizeof(PetscInt),&colors);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(end-start+1,&colors);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
     colors[i-start] = (ISColoringValue)i;
   }
-  ierr = ISColoringCreate(comm,n,end-start,colors,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(comm,n,end-start,colors,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
 
   if (size > 1) {
     ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
@@ -55,13 +55,13 @@ PETSC_EXTERN PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *
     N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
-    ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
+    ierr = PetscMalloc1(N_loc+1,&colors_loc);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
     /* create a parallel iscoloring */
     nc   = iscoloring_seq->n;
-    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

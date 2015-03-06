@@ -24,12 +24,11 @@ class CompilerOptions(config.base.Configure):
       elif bopt == 'g':
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
-        if self.framework.argDB['with-cuda']:
+        if 'with-cuda' in self.framework.argDB and self.framework.argDB['with-cuda']:
           flags.append('-g') #cuda 4.1 with sm_20 is buggy with -g3
         else:
           flags.append('-g3')
-        flags.append('-fno-inline')
-        flags.append('-O0')
+        flags.append('-O0') # MPICH puts CFLAGS into wrappers, so ensure that we do not use optimization
       elif bopt == 'O':
         flags.append('-O')
     else:
@@ -96,6 +95,7 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         # -g3 causes an as SEGV on OSX
         flags.append('-g')
+        flags.append('-O0') # MPICH puts CXXFLAGS into wrappers, so ensure that we do not use optimization
       elif bopt in ['O']:
         if os.environ.has_key('USER'):
           flags.append('-O')
@@ -157,7 +157,7 @@ class CompilerOptions(config.base.Configure):
     flags = []
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
-        flags.extend(['-Wall', '-Wno-unused-variable'])
+        flags.extend(['-Wall', '-Wno-unused-variable', '-ffree-line-length-0'])
         if config.setCompilers.Configure.isGfortran46plus(compiler):
           flags.extend(['-Wno-unused-dummy-argument']) # Silence warning because dummy parameters are sometimes necessary
         if config.setCompilers.Configure.isGfortran45x(compiler):
@@ -167,6 +167,7 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         # g77 3.2.3 preprocesses the file into nothing if we give -g3
         flags.append('-g')
+        flags.append('-O0') # MPICH puts FFLAGS into wrappers, so ensure that we do not use optimization
       elif bopt == 'O':
         flags.extend(['-O'])
     else:

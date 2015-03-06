@@ -12,6 +12,7 @@
 static char help[] = "This example is for testing different MatSolve routines :MatSolve(), MatSolveAdd(), MatSolveTranspose(), MatSolveTransposeAdd(), and MatMatSolve().\n\
 Example usage: ./ex129 -mat_type aij -dof 2\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 extern PetscErrorCode ComputeMatrix(DM,Mat);
@@ -41,8 +42,8 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(NULL,"-M",&M,NULL);CHKERRQ(ierr);
 
   ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
-  ierr = DMDASetDim(da,3);CHKERRQ(ierr);
-  ierr = DMDASetBoundaryType(da,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+  ierr = DMSetDimension(da,3);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(da,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetStencilType(da,DMDA_STENCIL_STAR);CHKERRQ(ierr);
   ierr = DMDASetSizes(da,M,M,M);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -107,7 +108,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve              : Error of norm %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolve              : Error of norm %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* MatSolveTranspose */
@@ -116,7 +117,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTranspose     : Error of norm %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTranspose     : Error of norm %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* MatSolveAdd */
@@ -127,7 +128,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveAdd           : Error of norm %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveAdd           : Error of norm %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* MatSolveTransposeAdd */
@@ -138,7 +139,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTransposeAdd  : Error of norm %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatSolveTransposeAdd  : Error of norm %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* MatMatSolve */
@@ -147,7 +148,7 @@ int main(int argc,char **args)
   ierr = MatAXPY(C1,-1.0,RHS,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C1,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatSolve           : Error of norm %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatSolve           : Error of norm %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -244,7 +245,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
 
-  ierr       = PetscMalloc((2*dof*dof+1)*sizeof(PetscScalar),&v);CHKERRQ(ierr);
+  ierr       = PetscMalloc1(2*dof*dof+1,&v);CHKERRQ(ierr);
   v_neighbor = v + dof*dof;
   ierr       = PetscMemzero(v,(2*dof*dof+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   k3         = 0;

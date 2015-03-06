@@ -91,7 +91,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     /* switch directions if we stepped out of bounds */
     if (lambda_update < steptol) lambda_update = lambda + PetscRealPart(fty / s);
 
-    if (PetscIsInfOrNanScalar(lambda_update)) break;
+    if (PetscIsInfOrNanReal(lambda_update)) break;
     if (lambda_update > maxstep) break;
 
     /* compute the new state of the line search */
@@ -146,11 +146,14 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
    to find roots of dot(F, Y) via a secant method.
 
    Options Database Keys:
-+  -snes_linesearch_minlambda - the minimum acceptable lambda
-.  -snes_linesearch_damping - initial trial step length
--  -snes_linesearch_max_it  - the maximum number of secant steps performed.
++  -snes_linesearch_minlambda <minlambda> - the minimum acceptable lambda
+.  -snes_linesearch_maxstep <length> - the algorithm insures that a step length is never longer than this value
+.  -snes_linesearch_damping <damping> - initial trial step length is scaled by this factor, default is 1.0
+-  -snes_linesearch_max_it <max_it> - the maximum number of secant steps performed.
 
    Notes:
+   This method does NOT use the objective function if it is provided with SNESSetObjective().
+
    This method is the preferred line search for SNESQN and SNESNCG.
 
    Level: advanced

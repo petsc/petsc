@@ -12,8 +12,7 @@ static PetscMPIInt Petsc_Viewer_SAWs_keyval = MPI_KEYVAL_INVALID;
 #undef __FUNCT__
 #define __FUNCT__ "PETSC_VIEWER_SAWS_"
 /*@C
-     PETSC_VIEWER_SAWS_ - Creates an SAWs memory snooper PetscViewer shared by all processors
-                   in a communicator.
+     PETSC_VIEWER_SAWS_ - Creates an SAWs PetscViewer shared by all processors in a communicator.
 
      Collective on MPI_Comm
 
@@ -24,7 +23,7 @@ static PetscMPIInt Petsc_Viewer_SAWs_keyval = MPI_KEYVAL_INVALID;
 
      Notes:
      Unlike almost all other PETSc routines, PETSC_VIEWER_SAWS_() does not return
-     an error code.  The window PetscViewer is usually used in the form
+     an error code.  The resulting PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_SAWS_(comm));
 
 .seealso: PETSC_VIEWER_SAWS_WORLD, PETSC_VIEWER_SAWS_SELF

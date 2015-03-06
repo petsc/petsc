@@ -1,6 +1,6 @@
       program DMPlexTestField
       implicit none
-#include "finclude/petsc.h90"
+#include "petsc-finclude/petsc.h90"
       DM :: dm
       DMLabel :: label
       Vec :: u
@@ -74,8 +74,8 @@
       pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
       call DMPlexCreateSection(dm, dim, numFields, pNumComp,
-     $     pNumDof, numBC, pBcField, pBcPointIS, section,
-     $     ierr)
+     $     pNumDof, numBC, pBcField, pBcPointIS, PETSC_NULL_OBJECT,
+     $     section, ierr)
       CHKERRQ(ierr)
       call ISDestroy(bcPointIS(1), ierr)
       CHKERRQ(ierr)

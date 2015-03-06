@@ -6,8 +6,8 @@
   what malloc is being used until it has already processed the input.
 */
 
-#define PETSC_DESIRE_COMPLEX
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <petscvalgrind.h>
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
@@ -42,17 +42,13 @@ MPI_Datatype MPIU_C_COMPLEX;
    PETSC_i - the imaginary number i
 
    Synopsis:
-   #define PETSC_DESIRE_COMPLEX
    #include <petscsys.h>
    PetscComplex PETSC_i;
 
    Level: beginner
 
    Note:
-   Complex numbers are automatically available if PETSc was configured --with-scalar-type=complex (in which case
-   PetscComplex will match PetscScalar), otherwise the macro PETSC_DESIRE_COMPLEX must be defined before including any
-   PETSc headers. If the compiler supports complex numbers, PetscComplex and associated variables and functions will be
-   defined and PETSC_HAVE_COMPLEX will be set.
+   Complex numbers are automatically available if PETSc located a working complex implementation
 
 .seealso: PetscRealPart(), PetscImaginaryPart(), PetscRealPartComplex(), PetscImaginaryPartComplex()
 M*/
@@ -258,17 +254,22 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flag;
   PetscErrorCode ierr;
-  PetscReal      si,logthreshold;
+  PetscReal      si;
   PetscInt       intensity;
   int            i;
   PetscMPIInt    rank;
   char           version[256];
+#if !defined(PETSC_HAVE_THREADSAFETY)
+  PetscReal      logthreshold;
+  PetscBool      flg4 = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
+#if !defined(PETSC_HAVE_THREADSAFETY)
   /*
       Setup the memory management; support for tracing malloc() usage
   */
@@ -317,6 +318,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg1) {
     ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
   }
+#endif
 
   /*
       Set the display variable for graphics
@@ -429,7 +431,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       }
     }
     /* check if this processor node should be in debugger */
-    ierr  = PetscMalloc(size*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(size,&nodes);CHKERRQ(ierr);
     lsize = size;
     ierr  = PetscOptionsGetIntArray(NULL,"-debugger_nodes",nodes,&lsize,&flag);CHKERRQ(ierr);
     if (flag) {
@@ -489,7 +491,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetBool(NULL,"-log_all",&flg1,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-log",&flg2,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-log_summary",&flg3);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-log_summary_python",&flg4);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-log_view",&flg4);CHKERRQ(ierr);
   if (flg1)                      { ierr = PetscLogAllBegin();CHKERRQ(ierr); }
   else if (flg2 || flg3 || flg4) { ierr = PetscLogBegin();CHKERRQ(ierr);}
 
@@ -656,19 +658,18 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_CUSP)
+#if defined(PETSC_HAVE_CUSP) || defined(PETSC_HAVE_VIENNACL)
   ierr = PetscOptionsHasName(NULL,"-log_summary",&flg3);CHKERRQ(ierr);
-  if (flg3) flg1 = PETSC_TRUE;
-  else flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-cusp_synchronize",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) PetscCUSPSynchronize = PETSC_TRUE;
+  if (!flg3) {
+  ierr = PetscOptionsHasName(NULL,"-log_view",&flg3);CHKERRQ(ierr);
+  }
 #endif
-#if defined(PETSC_HAVE_VIENNACL)
-  ierr = PetscOptionsHasName(NULL,"-log_summary",&flg3);CHKERRQ(ierr);
-  if (flg3) flg1 = PETSC_TRUE;
-  else flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-viennacl_synchronize",&flg1,NULL);CHKERRQ(ierr);
-  if (flg1) PetscViennaCLSynchronize = PETSC_TRUE;
+#if defined(PETSC_HAVE_CUSP)
+  ierr = PetscOptionsGetBool(NULL,"-cusp_synchronize",&flg3,NULL);CHKERRQ(ierr);
+  PetscCUSPSynchronize = flg3;
+#elif defined(PETSC_HAVE_VIENNACL)
+  ierr = PetscOptionsGetBool(NULL,"-viennacl_synchronize",&flg3,NULL);CHKERRQ(ierr);
+  PetscViennaCLSynchronize = flg3;
 #endif
   PetscFunctionReturn(0);
 }

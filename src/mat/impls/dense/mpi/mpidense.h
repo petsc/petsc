@@ -32,4 +32,3 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscRe
 PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
-PETSC_INTERN PetscErrorCode MatGetFactor_mpidense_petsc(Mat,MatFactorType,Mat*);

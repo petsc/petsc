@@ -5,7 +5,7 @@
 # sources, and encoding the rules through CMake conditionals. When CMake
 # runs, it will use the conditionals written to
 #
-#     $PETSC_DIR/$PETSC_ARCH/conf/PETScConfig.cmake
+#     $PETSC_DIR/$PETSC_ARCH/lib/petsc-conf/PETScConfig.cmake
 #
 # by BuildSystem after a successful configure.
 #
@@ -170,9 +170,10 @@ def pkgsources(pkg, mistakes):
       return os.path.join(root,filename)
     sourcecu = makevars.get('SOURCECU','').split()
     sourcec = makevars.get('SOURCEC','').split()
+    sourcecxx = makevars.get('SOURCECXX','').split()
     sourcef = makevars.get('SOURCEF','').split()
-    mistakes.compareSourceLists(root,sourcec+sourcef+sourcecu, files) # Diagnostic output about unused source files
-    sources[repr(sorted(conditions))].extend(relpath(f) for f in sourcec + sourcef + sourcecu)
+    mistakes.compareSourceLists(root,sourcec+sourcecxx+sourcef+sourcecu, files) # Diagnostic output about unused source files
+    sources[repr(sorted(conditions))].extend(relpath(f) for f in sourcec + sourcecxx + sourcef + sourcecu)
     allconditions[root] = conditions
   return sources
 
@@ -180,7 +181,7 @@ def writeRoot(f):
   f.write(r'''cmake_minimum_required (VERSION 2.6.2)
 project (PETSc C)
 
-include (${PETSC_CMAKE_ARCH}/conf/PETScConfig.cmake)
+include (${PETSC_CMAKE_ARCH}/lib/petsc-conf/PETScConfig.cmake)
 
 if (PETSC_HAVE_FORTRAN)
   enable_language (Fortran)
@@ -255,7 +256,8 @@ def main(petscdir, log=StdoutLogger(), verbose=False):
                ('dm'             , 'mat vec sys'),
                ('ksp'            , 'dm mat vec sys'),
                ('snes'           , 'ksp dm mat vec sys'),
-               ('ts'             , 'snes ksp dm mat vec sys')]
+               ('ts'             , 'snes ksp dm mat vec sys'),
+               ('tao'            , 'snes ksp dm mat vec sys')]
     for pkg,deps in pkglist:
       writePackage(f,pkg,deps.split(),mistakes)
     f.write ('''

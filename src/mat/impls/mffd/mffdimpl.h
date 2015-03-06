@@ -23,7 +23,7 @@ struct _MFOps {
   PetscErrorCode (*compute)(MatMFFD,Vec,Vec,PetscScalar*,PetscBool * zeroa);
   PetscErrorCode (*view)(MatMFFD,PetscViewer);
   PetscErrorCode (*destroy)(MatMFFD);
-  PetscErrorCode (*setfromoptions)(MatMFFD);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,MatMFFD);
 };
 
 struct _p_MatMFFD {    /* context for default matrix-free SNES */
@@ -52,9 +52,11 @@ struct _p_MatMFFD {    /* context for default matrix-free SNES */
 
   PetscScalar vscale,vshift;                   /* diagonal scale and shift by scalars */
   Vec         dlscale,drscale,dshift;                   /* diagonal scale and shift by vectors */
+  void        *ctx;   /* this is used by MatCreateSNESMF() to store the SNES object */
 };
 
 PETSC_EXTERN PetscFunctionList MatMFFDList;
 PETSC_EXTERN PetscBool         MatMFFDRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode    MatMFFDRegisterAll(void);
 
 #endif

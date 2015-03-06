@@ -51,6 +51,20 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
   if (faces) {ierr = DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), PETSC_INT, &facesTmp);CHKERRQ(ierr);}
   switch (dim) {
+  case 1:
+    switch (coneSize) {
+    case 2:
+      if (faces) {
+        facesTmp[0] = cone[0]; facesTmp[1] = cone[1];
+        *faces = facesTmp;
+      }
+      if (numFaces) *numFaces         = 2;
+      if (faceSize) *faceSize         = 1;
+      break;
+    default:
+      SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
+    }
+    break;
   case 2:
     switch (coneSize) {
     case 3:
@@ -105,12 +119,12 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
       break;
     case 8:
       if (faces) {
-        facesTmp[0]  = cone[0]; facesTmp[1]  = cone[1]; facesTmp[2]  = cone[2]; facesTmp[3]  = cone[3];
-        facesTmp[4]  = cone[4]; facesTmp[5]  = cone[5]; facesTmp[6]  = cone[6]; facesTmp[7]  = cone[7];
-        facesTmp[8]  = cone[0]; facesTmp[9]  = cone[3]; facesTmp[10] = cone[5]; facesTmp[11] = cone[4];
-        facesTmp[12] = cone[2]; facesTmp[13] = cone[1]; facesTmp[14] = cone[7]; facesTmp[15] = cone[6];
-        facesTmp[16] = cone[3]; facesTmp[17] = cone[2]; facesTmp[18] = cone[6]; facesTmp[19] = cone[5];
-        facesTmp[20] = cone[0]; facesTmp[21] = cone[4]; facesTmp[22] = cone[7]; facesTmp[23] = cone[1];
+        facesTmp[0]  = cone[0]; facesTmp[1]  = cone[1]; facesTmp[2]  = cone[2]; facesTmp[3]  = cone[3]; /* Bottom */
+        facesTmp[4]  = cone[4]; facesTmp[5]  = cone[5]; facesTmp[6]  = cone[6]; facesTmp[7]  = cone[7]; /* Top */
+        facesTmp[8]  = cone[0]; facesTmp[9]  = cone[3]; facesTmp[10] = cone[5]; facesTmp[11] = cone[4]; /* Front */
+        facesTmp[12] = cone[2]; facesTmp[13] = cone[1]; facesTmp[14] = cone[7]; facesTmp[15] = cone[6]; /* Back */
+        facesTmp[16] = cone[3]; facesTmp[17] = cone[2]; facesTmp[18] = cone[6]; facesTmp[19] = cone[5]; /* Right */
+        facesTmp[20] = cone[0]; facesTmp[21] = cone[4]; facesTmp[22] = cone[7]; facesTmp[23] = cone[1]; /* Left */
         *faces = facesTmp;
       }
       if (numFaces) *numFaces         = 6;
@@ -138,7 +152,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &cellDim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &cellDim);CHKERRQ(ierr);
   /* HACK: I need a better way to determine face dimension, or an alternative to GetFaces() */
   ierr = DMPlexGetSubpointMap(dm, &subpointMap);CHKERRQ(ierr);
   if (subpointMap) ++cellDim;
@@ -146,7 +160,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   ++depth;
   ++cellDepth;
   cellDim -= depth - cellDepth;
-  ierr = PetscMalloc2(depth+1,PetscInt,&pStart,depth+1,PetscInt,&pEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc2(depth+1,&pStart,depth+1,&pEnd);CHKERRQ(ierr);
   for (d = depth-1; d >= faceDepth; --d) {
     ierr = DMPlexGetDepthStratum(dm, d, &pStart[d+1], &pEnd[d+1]);CHKERRQ(ierr);
   }
@@ -293,13 +307,14 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexInterpolate"
-/*@
+/*@C
   DMPlexInterpolate - Take in a cell-vertex mesh and return one with all intermediate faces, edges, etc.
 
   Collective on DM
 
-  Input Parameter:
-. dm - The DMPlex object with only cells and vertices
+  Input Parameters:
++ dm - The DMPlex object with only cells and vertices
+- dmInt - If NULL a new DM is created, otherwise the interpolated DM is put into the given DM
 
   Output Parameter:
 . dmInt - The complete DMPlex object
@@ -318,16 +333,17 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(DMPLEX_Interpolate,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dim <= 1) {
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
     idm  = dm;
   }
   for (d = 1; d < dim; ++d) {
     /* Create interpolated mesh */
-    ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);
+    if ((d == dim-1) && *dmInt) {idm  = *dmInt;}
+    else                        {ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);}
     ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMPlexSetDimension(idm, dim);CHKERRQ(ierr);
+    ierr = DMSetDimension(idm, dim);CHKERRQ(ierr);
     if (depth > 0) {ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);}
     if (odm != dm) {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
     odm  = idm;
@@ -355,7 +371,7 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   Note: This is typically used when adding pieces other than vertices to a mesh
 
 .keywords: mesh
-.seealso: DMCopyLabels(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMPlexGetCoordinateSection()
+.seealso: DMCopyLabels(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
 @*/
 PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 {
@@ -370,8 +386,8 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = DMPlexGetDepthStratum(dmA, 0, &vStartA, &vEndA);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmB, 0, &vStartB, &vEndB);CHKERRQ(ierr);
   if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
-  ierr = DMPlexGetCoordinateSection(dmA, &coordSectionA);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dmB, &coordSectionB);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dmA, &coordSectionA);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dmB, &coordSectionB);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSectionB, 1);CHKERRQ(ierr);
   ierr = PetscSectionGetFieldComponents(coordSectionA, 0, &spaceDim);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSectionB, 0, spaceDim);CHKERRQ(ierr);
@@ -419,7 +435,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   Note: This is typically used when interpolating or otherwise adding to a mesh
 
 .keywords: mesh
-.seealso: DMCopyCoordinates(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMPlexGetCoordinateSection()
+.seealso: DMCopyCoordinates(), DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMGetCoordinateSection()
 @*/
 PetscErrorCode DMPlexCopyLabels(DM dmA, DM dmB)
 {
@@ -469,7 +485,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dim <= 1) {
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
     *dmUnint = dm;
@@ -479,7 +495,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), &udm);CHKERRQ(ierr);
   ierr = DMSetType(udm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(udm, dim);CHKERRQ(ierr);
+  ierr = DMSetDimension(udm, dim);CHKERRQ(ierr);
   ierr = DMPlexSetChart(udm, cStart, vEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
@@ -495,7 +511,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
     maxConeSize = PetscMax(maxConeSize, coneSize);
   }
   ierr = DMSetUp(udm);CHKERRQ(ierr);
-  ierr = PetscMalloc(maxConeSize * sizeof(PetscInt), &cone);CHKERRQ(ierr);
+  ierr = PetscMalloc1(maxConeSize, &cone);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
 

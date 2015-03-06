@@ -26,6 +26,7 @@ PetscErrorCode  PetscDrawFinalizePackage(void)
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&PetscDrawList);CHKERRQ(ierr);
   PetscDrawPackageInitialized = PETSC_FALSE;
+  PetscDrawRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -228,7 +229,7 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
     ierr = PetscStrlen(title,&len1);CHKERRQ(ierr);
     ierr = PetscStrlen(draw->title,&len2);CHKERRQ(ierr);
     len  = len1 + len2;
-    ierr = PetscMalloc((len + 1)*sizeof(char*),&newtitle);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len + 1,&newtitle);CHKERRQ(ierr);
     ierr = PetscStrcpy(newtitle,draw->title);CHKERRQ(ierr);
     ierr = PetscStrcat(newtitle,title);CHKERRQ(ierr);
     ierr = PetscFree(draw->title);CHKERRQ(ierr);
@@ -316,8 +317,8 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
     ierr = (*draw->ops->getpopup)(draw,popup);CHKERRQ(ierr);
     if (*popup) {
       ierr = PetscObjectSetOptionsPrefix((PetscObject)*popup,"popup_");CHKERRQ(ierr);
+      ierr = PetscDrawSetFromOptions(*popup);CHKERRQ(ierr);
     }
-    ierr = PetscDrawSetFromOptions(*popup);CHKERRQ(ierr);
   } else *popup = NULL;
   PetscFunctionReturn(0);
 }

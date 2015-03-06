@@ -1,3 +1,5 @@
+DM Object:Mesh 1 MPI processes
+  type: plex
 Mesh in 3 dimensions:
   0-cells: 8
   3-cells: 6
@@ -16,7 +18,7 @@ Vec Object: 1 MPI processes
 2
 3
 Initial guess
-Vec Object: 1 MPI processes
+Vec Object:potential 1 MPI processes
   type: seq
 L_2 Error: 0.625
 Residual:

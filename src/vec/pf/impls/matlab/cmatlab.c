@@ -58,7 +58,7 @@ PetscErrorCode PFApply_Matlab(void *value,PetscInt n,const PetscScalar *in,Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "PFSetFromOptions_Matlab"
-PetscErrorCode PFSetFromOptions_Matlab(PF pf)
+PetscErrorCode PFSetFromOptions_Matlab(PetscOptions *PetscOptionsObject,PF pf)
 {
   PetscErrorCode ierr;
   PetscBool      flag;
@@ -66,7 +66,7 @@ PetscErrorCode PFSetFromOptions_Matlab(PF pf)
   PF_Matlab      *matlab = (PF_Matlab*)pf->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Matlab function options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Matlab function options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-pf_matlab","Matlab function","None","",value,256,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = PetscStrallocpy((char*)value,&matlab->string);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF pf,void *value)
   PF_Matlab      *matlab;
 
   PetscFunctionBegin;
-  ierr           = PetscNewLog(pf,PF_Matlab,&matlab);CHKERRQ(ierr);
+  ierr           = PetscNewLog(pf,&matlab);CHKERRQ(ierr);
   matlab->dimin  = pf->dimin;
   matlab->dimout = pf->dimout;
 

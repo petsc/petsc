@@ -40,6 +40,7 @@ T*/
 */
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /* User-defined application context */
@@ -53,7 +54,7 @@ typedef struct {
 
 extern PetscErrorCode FormInitialGuess(SNES,Vec,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -81,7 +82,7 @@ int main(int argc,char **argv)
   /*
       Set the DMDA (grid structure) for the grids.
   */
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-5,-5,-5,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-5,-5,-5,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
   /*
@@ -100,7 +101,7 @@ int main(int argc,char **argv)
   litspit = ((PetscReal)lits)/((PetscReal)its);
   ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
   ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %D\n",lits);CHKERRQ(ierr);
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",litspit);CHKERRQ(ierr);
+  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",(double)litspit);CHKERRQ(ierr);
 
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -456,7 +457,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
@@ -468,7 +469,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   PetscScalar    ***x,bn,bs,be,bw,bu,bd,gn,gs,ge,gw,gu,gd;
   Vec            localX;
   MatStencil     c[7],row;
-  Mat            jac = *B;
   DM             da;
 
   PetscFunctionBeginUser;
@@ -1394,9 +1394,9 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (jac != *J) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (jac != J) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);

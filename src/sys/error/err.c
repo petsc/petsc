@@ -98,8 +98,8 @@ PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *
 $    int handler(MPI_Comm comm,int line,char *func,char *file,PetscErrorCode n,int p,char *mess,void *ctx);
 
 +  comm - communicator over which error occured
-.  func - the function where the error occured (indicated by __FUNCT__)
 .  line - the line number of the error (indicated by __LINE__)
+.  func - the function where the error occured (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  n - the generic error number (see list defined in include/petscerror.h)
 .  p - PETSC_ERROR_INITIAL if error just detected, otherwise PETSC_ERROR_REPEAT
@@ -127,7 +127,7 @@ PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,in
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _EH,&neweh);CHKERRQ(ierr);
+  ierr = PetscNew(&neweh);CHKERRQ(ierr);
   if (eh) neweh->previous = eh;
   else    neweh->previous = 0;
   neweh->handler = handler;
@@ -224,36 +224,36 @@ static const char *PetscErrorStrings[] = {
           "Argument aliasing not permitted",
           "Invalid argument",
   /*63 */ "Argument out of range",
-          "Corrupt argument:\nsee http://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind",
+          "Corrupt argument: http://www.mcs.anl.gov/petsc/documentation/faq.html#valgrind",
           "Unable to open file",
           "Read from file failed",
           "Write to file failed",
           "Invalid pointer",
   /*69 */ "Arguments must have same type",
   /*70 */ "Attempt to use a pointer that does not point to a valid accessible location",
-  /*71 */ "Detected zero pivot in LU factorization:\nsee http://www.mcs.anl.gov/petsc/documentation/faq.html#ZeroPivot",
+  /*71 */ "Zero pivot in LU factorization: http://www.mcs.anl.gov/petsc/documentation/faq.html#ZeroPivot",
   /*72 */ "Floating point exception",
   /*73 */ "Object is in wrong state",
           "Corrupted Petsc object",
           "Arguments are incompatible",
           "Error in external library",
   /*77 */ "Petsc has generated inconsistent data",
-          "Memory corruption",
+          "Memory corruption: http://www.mcs.anl.gov/petsc/documentation/installation.html#valgrind",
           "Unexpected data in file",
   /*80 */ "Arguments must have same communicators",
-  /*81 */ "Detected zero pivot in Cholesky factorization:\nsee http://www.mcs.anl.gov/petsc/documentation/faq.html#ZeroPivot",
+  /*81 */ "Zero pivot in Cholesky factorization: http://www.mcs.anl.gov/petsc/documentation/faq.html#ZeroPivot",
           "  ",
           "  ",
-          "Overflow in integer operation:\nsee http://www.mcs.anl.gov/petsc/documentation/faq.html#64-bit-indices",
+          "Overflow in integer operation: http://www.mcs.anl.gov/petsc/documentation/faq.html#64-bit-indices",
   /*85 */ "Null argument, when expecting valid pointer",
-  /*86 */ "Unknown type. Check for miss-spelling or missing external package needed for type:\nsee http://www.mcs.anl.gov/petsc/documentation/installation.html#external",
+  /*86 */ "Unknown type. Check for miss-spelling or missing package: http://www.mcs.anl.gov/petsc/documentation/installation.html#external",
   /*87 */ "Not used",
   /*88 */ "Error in system call",
-  /*89 */ "Object Type not set:\nsee http://www.mcs.anl.gov/petsc/documentation/faq.html#objecttypenotset"
+  /*89 */ "Object Type not set: http://www.mcs.anl.gov/petsc/documentation/faq.html#objecttypenotset"
   /*90 */ "  ",
   /*   */ "  ",
-  /*   */ "  ",
-  /*   */ "  ",
+  /*92 */ " ",
+  /*   */ "See http://www.mcs.anl.gov/petsc/documentation/linearsolvertable.html for possible LU and Cholesky solvers",
   /*   */ "  ",
   /*95 */ "  ",
 };
@@ -297,7 +297,13 @@ PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
  *
  * in "C++ Coding Standards" by Sutter and Alexandrescu. (This accounts for part of the ongoing C++ binary interface
  * instability.) Having PETSc raise errors as C++ exceptions was probably misguided and should eventually be removed.
+ *
+ * Here is the problem: You have a C++ function call a PETSc function, and you would like to maintain the error message
+ * and stack information from the PETSc error. You could make everyone write exactly this code in their C++, but that
+ * seems crazy to me.
  */
+#include <sstream>
+#include <stdexcept>
 static void PetscCxxErrorThrow() {
   const char *str;
   if (eh && eh->ctx) {
@@ -306,7 +312,7 @@ static void PetscCxxErrorThrow() {
     str = msg->str().c_str();
   } else str = "Error detected in C PETSc";
 
-  throw PETSc::Exception(str);
+  throw std::runtime_error(str);
 }
 #endif
 
@@ -454,16 +460,16 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
         ierr = MPI_Gather(&NN,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
         ierr = MPI_Gatherv((void*)idx,NN,MPIU_INT,0,0,0,MPIU_INT,0,comm);CHKERRQ(ierr);
       } else {
-        ierr      = PetscMalloc(size*sizeof(PetscMPIInt),&sizes);CHKERRQ(ierr);
+        ierr      = PetscMalloc1(size,&sizes);CHKERRQ(ierr);
         ierr      = MPI_Gather(&NN,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
         Ntotal    = sizes[0];
-        ierr      = PetscMalloc(size*sizeof(PetscMPIInt),&displs);CHKERRQ(ierr);
+        ierr      = PetscMalloc1(size,&displs);CHKERRQ(ierr);
         displs[0] = 0;
         for (i=1; i<size; i++) {
           Ntotal   += sizes[i];
           displs[i] =  displs[i-1] + sizes[i-1];
         }
-        ierr = PetscMalloc(Ntotal*sizeof(PetscInt),&array);CHKERRQ(ierr);
+        ierr = PetscMalloc1(Ntotal,&array);CHKERRQ(ierr);
         ierr = MPI_Gatherv((void*)idx,NN,MPIU_INT,array,sizes,displs,MPIU_INT,0,comm);CHKERRQ(ierr);
         ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
@@ -489,8 +495,8 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
     Collective on PetscViewer
 
     Input Parameters:
-+   N - number of doubles in array
-.   idx - array of doubles
++   N - number of PetscReal in array
+.   idx - array of PetscReal
 -   viewer - location to print array,  PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF or 0
 
   Level: intermediate
@@ -517,15 +523,15 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
   if (iascii) {
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",5*i);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",(int)5*i);CHKERRQ(ierr);
       for (j=0; j<5; j++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[i*5+j]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",(double)idx[i*5+j]);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     if (p) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",5*n);CHKERRQ(ierr);
-      for (i=0; i<p; i++) { PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[5*n+i]);CHKERRQ(ierr);}
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",(int)5*n);CHKERRQ(ierr);
+      for (i=0; i<p; i++) { PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",(double)idx[5*n+i]);CHKERRQ(ierr);}
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -543,16 +549,16 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
         ierr = MPI_Gather(&NN,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
         ierr = MPI_Gatherv((PetscReal*)idx,NN,MPIU_REAL,0,0,0,MPIU_REAL,0,comm);CHKERRQ(ierr);
       } else {
-        ierr      = PetscMalloc(size*sizeof(PetscMPIInt),&sizes);CHKERRQ(ierr);
+        ierr      = PetscMalloc1(size,&sizes);CHKERRQ(ierr);
         ierr      = MPI_Gather(&NN,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
         Ntotal    = sizes[0];
-        ierr      = PetscMalloc(size*sizeof(PetscMPIInt),&displs);CHKERRQ(ierr);
+        ierr      = PetscMalloc1(size,&displs);CHKERRQ(ierr);
         displs[0] = 0;
         for (i=1; i<size; i++) {
           Ntotal   += sizes[i];
           displs[i] =  displs[i-1] + sizes[i-1];
         }
-        ierr = PetscMalloc(Ntotal*sizeof(PetscReal),&array);CHKERRQ(ierr);
+        ierr = PetscMalloc1(Ntotal,&array);CHKERRQ(ierr);
         ierr = MPI_Gatherv((PetscReal*)idx,NN,MPIU_REAL,array,sizes,displs,MPIU_REAL,0,comm);CHKERRQ(ierr);
         ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_REAL,PETSC_TRUE);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
@@ -609,9 +615,9 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",3*i);CHKERRQ(ierr);
       for (j=0; j<3; j++) {
 #if defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)", PetscRealPart(idx[i*3+j]),PetscImaginaryPart(idx[i*3+j]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)", (double)PetscRealPart(idx[i*3+j]),(double)PetscImaginaryPart(idx[i*3+j]));CHKERRQ(ierr);
 #else
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[i*3+j]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",(double)idx[i*3+j]);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -620,9 +626,9 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",3*n);CHKERRQ(ierr);
       for (i=0; i<p; i++) {
 #if defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)", PetscRealPart(idx[n*3+i]),PetscImaginaryPart(idx[n*3+i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)", (double)PetscRealPart(idx[n*3+i]),(double)PetscImaginaryPart(idx[n*3+i]));CHKERRQ(ierr);
 #else
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[3*n+i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",(double)idx[3*n+i]);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -642,16 +648,16 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
         ierr = MPI_Gather(&NN,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
         ierr = MPI_Gatherv((void*)idx,NN,MPIU_SCALAR,0,0,0,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
       } else {
-        ierr      = PetscMalloc(size*sizeof(PetscMPIInt),&sizes);CHKERRQ(ierr);
+        ierr      = PetscMalloc1(size,&sizes);CHKERRQ(ierr);
         ierr      = MPI_Gather(&NN,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
         Ntotal    = sizes[0];
-        ierr      = PetscMalloc(size*sizeof(PetscMPIInt),&displs);CHKERRQ(ierr);
+        ierr      = PetscMalloc1(size,&displs);CHKERRQ(ierr);
         displs[0] = 0;
         for (i=1; i<size; i++) {
           Ntotal   += sizes[i];
           displs[i] =  displs[i-1] + sizes[i-1];
         }
-        ierr = PetscMalloc(Ntotal*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+        ierr = PetscMalloc1(Ntotal,&array);CHKERRQ(ierr);
         ierr = MPI_Gatherv((void*)idx,NN,MPIU_SCALAR,array,sizes,displs,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
         ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);

@@ -1,16 +1,12 @@
-
 #include <petsc-private/matimpl.h>    /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petscsf.h>
 
-
-/* typedef enum { NOT_DONE=-2, DELETED=-1, REMOVED=-3 } NState; */
-/* use int instead of enum to facilitate passing them via Scatters */
-typedef PetscInt NState;
-static const NState NOT_DONE=-2;
-static const NState DELETED =-1;
-static const NState REMOVED =-3;
-#define IS_SELECTED(s) (s!=DELETED && s!=NOT_DONE && s!=REMOVED)
+#define MIS_NOT_DONE -2
+#define MIS_DELETED  -1
+#define MIS_REMOVED  -3
+#define MIS_IS_SELECTED(s) (s!=MIS_DELETED && s!=MIS_NOT_DONE && s!=MIS_REMOVED)
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -30,22 +26,19 @@ static const NState REMOVED =-3;
 PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verbose,PetscCoarsenData **a_locals_llist)
 {
   PetscErrorCode   ierr;
-  PetscBool        isMPI;
-  Mat_SeqAIJ       *matA, *matB = 0;
+  Mat_SeqAIJ       *matA,*matB=NULL;
+  Mat_MPIAIJ       *mpimat=NULL;
   MPI_Comm         comm;
-  Vec              locState, ghostState;
-  PetscInt         num_fine_ghosts,kk,n,ix,j,*idx,*ii,iter,Iend,my0,nremoved;
-  Mat_MPIAIJ       *mpimat = 0;
-  PetscScalar      *cpcol_gid,*cpcol_state;
+  PetscInt         num_fine_ghosts,kk,n,ix,j,*idx,*ii,iter,Iend,my0,nremoved,gid,lid,cpid,lidj,sgid,t1,t2,slid,nDone,nselected=0,state,statej;
+  PetscInt         *cpcol_gid,*cpcol_state,*lid_cprowID,*lid_gid,*cpcol_sel_gid,*icpcol_gid,*lid_state,*lid_parent_gid=NULL;
+  PetscBool        *lid_removed;
+  PetscBool        isMPI,isAIJ,isOK;
   PetscMPIInt      mype,npe;
   const PetscInt   *perm_ix;
-  PetscInt         nDone, nselected = 0;
   const PetscInt   nloc = Gmat->rmap->n;
-  PetscInt         *lid_cprowID, *lid_gid;
-  PetscBool        *lid_removed;
-  PetscScalar      *lid_parent_gid = NULL; /* only used for strict aggs */
-  PetscScalar      *lid_state;
   PetscCoarsenData *agg_lists;
+  PetscLayout      layout;
+  PetscSF          sf;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
@@ -53,7 +46,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
   ierr = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);
 
   /* get submatrices */
-  ierr = PetscObjectTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPI);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)Gmat,MATMPIAIJ,&isMPI);CHKERRQ(ierr);
   if (isMPI) {
     mpimat = (Mat_MPIAIJ*)Gmat->data;
     matA   = (Mat_SeqAIJ*)mpimat->A->data;
@@ -61,38 +54,34 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
     /* force compressed storage of B */
     ierr   = MatCheckCompressedRow(mpimat->B,matB->nonzerorowcnt,&matB->compressedrow,matB->i,Gmat->rmap->n,-1.0);CHKERRQ(ierr);
   } else {
-    PetscBool isAIJ;
-    ierr = PetscObjectTypeCompare((PetscObject)Gmat, MATSEQAIJ, &isAIJ);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
     matA = (Mat_SeqAIJ*)Gmat->data;
   }
-  /* get vector */
-  ierr = MatGetVecs(Gmat, &locState, 0);CHKERRQ(ierr);
-
   ierr = MatGetOwnershipRange(Gmat,&my0,&Iend);CHKERRQ(ierr);
-
+  ierr = PetscMalloc1(nloc,&lid_gid);CHKERRQ(ierr); /* explicit array needed */
   if (mpimat) {
-    PetscInt gid;
     for (kk=0,gid=my0; kk<nloc; kk++,gid++) {
-      PetscScalar v = (PetscScalar)(gid);
-      ierr = VecSetValues(locState, 1, &gid, &v, INSERT_VALUES);CHKERRQ(ierr); /* set with GID */
+      lid_gid[kk] = gid;
     }
-    ierr = VecAssemblyBegin(locState);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(locState);CHKERRQ(ierr);
-    ierr = VecScatterBegin(mpimat->Mvctx,locState,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr =   VecScatterEnd(mpimat->Mvctx,locState,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray(mpimat->lvec, &cpcol_gid);CHKERRQ(ierr); /* get proc ID in 'cpcol_gid' */
-    ierr = VecDuplicate(mpimat->lvec, &ghostState);CHKERRQ(ierr); /* need 2nd compressed col. of off proc data */
     ierr = VecGetLocalSize(mpimat->lvec, &num_fine_ghosts);CHKERRQ(ierr);
-    ierr = VecSet(ghostState, (PetscScalar)((PetscReal)NOT_DONE));CHKERRQ(ierr); /* set with UNKNOWN state */
+    ierr = PetscMalloc1(num_fine_ghosts,&cpcol_gid);CHKERRQ(ierr);
+    ierr = PetscMalloc1(num_fine_ghosts,&cpcol_state);CHKERRQ(ierr);
+    ierr = PetscSFCreate(PetscObjectComm((PetscObject)Gmat),&sf);CHKERRQ(ierr);
+    ierr = MatGetLayouts(Gmat,&layout,NULL);CHKERRQ(ierr);
+    ierr = PetscSFSetGraphLayout(sf,layout,num_fine_ghosts,NULL,PETSC_COPY_VALUES,mpimat->garray);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf,MPIU_INT,lid_gid,cpcol_gid);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPIU_INT,lid_gid,cpcol_gid);CHKERRQ(ierr);
+    for (kk=0;kk<num_fine_ghosts;kk++) {
+      cpcol_state[kk]=MIS_NOT_DONE;
+    }
   } else num_fine_ghosts = 0;
 
-  ierr = PetscMalloc(nloc*sizeof(PetscInt), &lid_cprowID);CHKERRQ(ierr);
-  ierr = PetscMalloc((nloc+1)*sizeof(PetscInt), &lid_gid);CHKERRQ(ierr); /* explicit array needed */
-  ierr = PetscMalloc(nloc*sizeof(PetscBool), &lid_removed);CHKERRQ(ierr); /* explicit array needed */
+  ierr = PetscMalloc1(nloc, &lid_cprowID);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc, &lid_removed);CHKERRQ(ierr); /* explicit array needed */
   if (strict_aggs) {
-    ierr = PetscMalloc((nloc+1)*sizeof(PetscScalar), &lid_parent_gid);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nloc,&lid_parent_gid);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc((nloc+1)*sizeof(PetscScalar), &lid_state);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nloc,&lid_state);CHKERRQ(ierr);
 
   /* has ghost nodes for !strict and uses local indexing (yuck) */
   ierr = PetscCDCreate(strict_aggs ? nloc : num_fine_ghosts+nloc, &agg_lists);CHKERRQ(ierr);
@@ -104,13 +93,12 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
     if (strict_aggs) {
       lid_parent_gid[kk] = -1.0;
     }
-    lid_gid[kk]   = kk + my0;
-    lid_state[kk] = (PetscScalar)((PetscReal)NOT_DONE);
+    lid_state[kk] = MIS_NOT_DONE;
   }
   /* set index into cmpressed row 'lid_cprowID' */
   if (matB) {
     for (ix=0; ix<matB->compressedrow.nrows; ix++) {
-      PetscInt lid = matB->compressedrow.rindex[ix];
+      lid = matB->compressedrow.rindex[ix];
       lid_cprowID[lid] = ix;
     }
   }
@@ -119,25 +107,22 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
   ierr = ISGetIndices(perm, &perm_ix);CHKERRQ(ierr);
   while (nDone < nloc || PETSC_TRUE) { /* asyncronous not implemented */
     iter++;
-    if (mpimat) {
-      ierr = VecGetArray(ghostState, &cpcol_state);CHKERRQ(ierr);
-    }
     /* check all vertices */
     for (kk=0; kk<nloc; kk++) {
-      PetscInt lid   = perm_ix[kk];
-      NState   state = (NState)PetscRealPart(lid_state[lid]);
+      lid   = perm_ix[kk];
+      state = lid_state[lid];
       if (lid_removed[lid]) continue;
-      if (state == NOT_DONE) {
+      if (state == MIS_NOT_DONE) {
         /* parallel test, delete if selected ghost */
-        PetscBool isOK = PETSC_TRUE;
+        isOK = PETSC_TRUE;
         if ((ix=lid_cprowID[lid]) != -1) { /* if I have any ghost neighbors */
           ii  = matB->compressedrow.i; n = ii[ix+1] - ii[ix];
           idx = matB->j + ii[ix];
           for (j=0; j<n; j++) {
-            PetscInt cpid   = idx[j]; /* compressed row ID in B mat */
-            PetscInt gid    = (PetscInt)PetscRealPart(cpcol_gid[cpid]);
-            NState   statej = (NState)PetscRealPart(cpcol_state[cpid]);
-            if (statej == NOT_DONE && gid >= Iend) { /* should be (pe>mype), use gid as pe proxy */
+            cpid   = idx[j]; /* compressed row ID in B mat */
+            gid    = cpcol_gid[cpid];
+            statej = cpcol_state[cpid];
+            if (statej == MIS_NOT_DONE && gid >= Iend) { /* should be (pe>mype), use gid as pe proxy */
               isOK = PETSC_FALSE; /* can not delete */
               break;
             }
@@ -154,12 +139,11 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
               nremoved++;
               lid_removed[lid] = PETSC_TRUE;
               /* should select this because it is technically in the MIS but lets not */
-              /* lid_state[lid] = (PetscScalar)(lid+my0); */
               continue; /* one local adj (me) and no ghost - singleton */
             }
           }
           /* SELECTED state encoded with global index */
-          lid_state[lid] = (PetscScalar)(lid+my0); /* needed???? */
+          lid_state[lid] = lid+my0; /* needed???? */
           nselected++;
           if (strict_aggs) {
             ierr = PetscCDAppendID(agg_lists, lid, lid+my0);CHKERRQ(ierr);
@@ -169,31 +153,27 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
           /* delete local adj */
           idx = matA->j + ii[lid];
           for (j=0; j<n; j++) {
-            PetscInt lidj   = idx[j];
-            NState   statej = (NState)PetscRealPart(lid_state[lidj]);
-            if (statej == NOT_DONE) {
+            lidj   = idx[j];
+            statej = lid_state[lidj];
+            if (statej == MIS_NOT_DONE) {
               nDone++;
-              /* id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; */ /* insert 'lidj' into head of llist */
               if (strict_aggs) {
                 ierr = PetscCDAppendID(agg_lists, lid, lidj+my0);CHKERRQ(ierr);
               } else {
                 ierr = PetscCDAppendID(agg_lists, lid, lidj);CHKERRQ(ierr);
               }
-              lid_state[lidj] = (PetscScalar)(PetscReal)DELETED;  /* delete this */
+              lid_state[lidj] = MIS_DELETED;  /* delete this */
             }
           }
-
           /* delete ghost adj of lid - deleted ghost done later for strict_aggs */
           if (!strict_aggs) {
             if ((ix=lid_cprowID[lid]) != -1) { /* if I have any ghost neighbors */
               ii  = matB->compressedrow.i; n = ii[ix+1] - ii[ix];
               idx = matB->j + ii[ix];
               for (j=0; j<n; j++) {
-                PetscInt cpid   = idx[j]; /* compressed row ID in B mat */
-                NState   statej = (NState)PetscRealPart(cpcol_state[cpid]);
-                if (statej == NOT_DONE) {
-                  /* cpcol_state[cpid] = (PetscScalar)DELETED; this should happen later ... */
-                  /* id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; */ /* insert 'lidj' into head of llist */
+                cpid   = idx[j]; /* compressed row ID in B mat */
+                statej = cpcol_state[cpid];
+                if (statej == MIS_NOT_DONE) {
                   ierr = PetscCDAppendID(agg_lists, lid, nloc+cpid);CHKERRQ(ierr);
                 }
               }
@@ -205,52 +185,39 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
 
     /* update ghost states and count todos */
     if (mpimat) {
-      ierr = VecRestoreArray(ghostState, &cpcol_state);CHKERRQ(ierr);
-      /* put lid state in 'locState' */
-      ierr = VecSetValues(locState, nloc, lid_gid, lid_state, INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecAssemblyBegin(locState);CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(locState);CHKERRQ(ierr);
       /* scatter states, check for done */
-      ierr = VecScatterBegin(mpimat->Mvctx,locState,ghostState,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr =   VecScatterEnd(mpimat->Mvctx,locState,ghostState,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      /* delete locals from selected ghosts */
-      ierr = VecGetArray(ghostState, &cpcol_state);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sf,MPIU_INT,lid_state,cpcol_state);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf,MPIU_INT,lid_state,cpcol_state);CHKERRQ(ierr);
       ii   = matB->compressedrow.i;
       for (ix=0; ix<matB->compressedrow.nrows; ix++) {
-        PetscInt lid   = matB->compressedrow.rindex[ix]; /* local boundary node */
-        NState   state = (NState)PetscRealPart(lid_state[lid]);
-        if (state == NOT_DONE) {
+        lid   = matB->compressedrow.rindex[ix]; /* local boundary node */
+        state = lid_state[lid];
+        if (state == MIS_NOT_DONE) {
           /* look at ghosts */
           n   = ii[ix+1] - ii[ix];
           idx = matB->j + ii[ix];
           for (j=0; j<n; j++) {
-            PetscInt cpid   = idx[j]; /* compressed row ID in B mat */
-            NState   statej = (NState)PetscRealPart(cpcol_state[cpid]);
-            if (IS_SELECTED(statej)) { /* lid is now deleted, do it */
+            cpid   = idx[j]; /* compressed row ID in B mat */
+            statej = cpcol_state[cpid];
+            if (MIS_IS_SELECTED(statej)) { /* lid is now deleted, do it */
               nDone++;
-              lid_state[lid] = (PetscScalar)(PetscReal)DELETED; /* delete this */
+              lid_state[lid] = MIS_DELETED; /* delete this */
               if (!strict_aggs) {
-                PetscInt lidj = nloc + cpid;
-                /* id_llist[lid] = id_llist[lidj]; id_llist[lidj] = lid; */ /* insert 'lid' into head of ghost llist */
+                lidj = nloc + cpid;
                 ierr = PetscCDAppendID(agg_lists, lidj, lid);CHKERRQ(ierr);
               } else {
-                PetscInt sgid = (PetscInt)PetscRealPart(cpcol_gid[cpid]);
-                lid_parent_gid[lid] = (PetscScalar)sgid; /* keep track of proc that I belong to */
+                sgid = cpcol_gid[cpid];
+                lid_parent_gid[lid] = sgid; /* keep track of proc that I belong to */
               }
               break;
             }
           }
         }
       }
-      ierr = VecRestoreArray(ghostState, &cpcol_state);CHKERRQ(ierr);
-
       /* all done? */
-      {
-        PetscInt t1, t2;
-        t1   = nloc - nDone;
-        ierr = MPI_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr); /* synchronous version */
-        if (t2 == 0) break;
-      }
+      t1   = nloc - nDone;
+      ierr = MPI_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr); /* synchronous version */
+      if (t2 == 0) break;
     } else break; /* all done */
   } /* outer parallel MIS loop */
   ierr = ISRestoreIndices(perm,&perm_ix);CHKERRQ(ierr);
@@ -268,41 +235,30 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
 
   /* tell adj who my lid_parent_gid vertices belong to - fill in agg_lists selected ghost lists */
   if (strict_aggs && matB) {
-    PetscScalar *cpcol_sel_gid;
-    PetscInt    cpid,*icpcol_gid;
-
     /* need to copy this to free buffer -- should do this globaly */
-    ierr = PetscMalloc(num_fine_ghosts*sizeof(PetscInt), &icpcol_gid);CHKERRQ(ierr);
-    for (cpid=0; cpid<num_fine_ghosts; cpid++) icpcol_gid[cpid] = (PetscInt)PetscRealPart(cpcol_gid[cpid]);
+    ierr = PetscMalloc1(num_fine_ghosts, &cpcol_sel_gid);CHKERRQ(ierr);
+    ierr = PetscMalloc1(num_fine_ghosts, &icpcol_gid);CHKERRQ(ierr);
+    for (cpid=0; cpid<num_fine_ghosts; cpid++) icpcol_gid[cpid] = cpcol_gid[cpid];
 
     /* get proc of deleted ghost */
-    ierr = VecSetValues(locState, nloc, lid_gid, lid_parent_gid, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(locState);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(locState);CHKERRQ(ierr);
-    ierr = VecScatterBegin(mpimat->Mvctx,locState,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr =   VecScatterEnd(mpimat->Mvctx,locState,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray(mpimat->lvec, &cpcol_sel_gid);CHKERRQ(ierr); /* has pe that owns ghost */
+    ierr = PetscSFBcastBegin(sf,MPIU_INT,lid_parent_gid,cpcol_sel_gid);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf,MPIU_INT,lid_parent_gid,cpcol_sel_gid);CHKERRQ(ierr);
     for (cpid=0; cpid<num_fine_ghosts; cpid++) {
-      PetscInt sgid = (PetscInt)PetscRealPart(cpcol_sel_gid[cpid]);
-      PetscInt gid  = icpcol_gid[cpid];
+      sgid = cpcol_sel_gid[cpid];
+      gid  = icpcol_gid[cpid];
       if (sgid >= my0 && sgid < Iend) { /* I own this deleted */
-        PetscInt slid = sgid - my0;
-        /* id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; */ /* insert 'lidj' into head of llist */
+        slid = sgid - my0;
         ierr = PetscCDAppendID(agg_lists, slid, gid);CHKERRQ(ierr);
       }
     }
-    ierr = VecRestoreArray(mpimat->lvec, &cpcol_sel_gid);CHKERRQ(ierr);
     ierr = PetscFree(icpcol_gid);CHKERRQ(ierr);
-  } else if (matB) {
-    ierr = VecRestoreArray(mpimat->lvec, &cpcol_gid);CHKERRQ(ierr);
+    ierr = PetscFree(cpcol_sel_gid);CHKERRQ(ierr);
   }
-
-  /* cache IS of removed nodes, use 'lid_gid' */
-  /* for (kk=n=0,ix=my0;kk<nloc;kk++,ix++) { */
-  /*   if (lid_removed[kk]) lid_gid[n++] = ix; */
-  /* } */
-  /* ierr = PetscCDSetRemovedIS(agg_lists, comm, n, lid_gid);CHKERRQ(ierr); */
-
+  if (mpimat) {
+    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+    ierr = PetscFree(cpcol_gid);CHKERRQ(ierr);
+    ierr = PetscFree(cpcol_state);CHKERRQ(ierr);
+  }
   ierr = PetscFree(lid_cprowID);CHKERRQ(ierr);
   ierr = PetscFree(lid_gid);CHKERRQ(ierr);
   ierr = PetscFree(lid_removed);CHKERRQ(ierr);
@@ -310,11 +266,6 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
     ierr = PetscFree(lid_parent_gid);CHKERRQ(ierr);
   }
   ierr = PetscFree(lid_state);CHKERRQ(ierr);
-
-  if (mpimat) {
-    ierr = VecDestroy(&ghostState);CHKERRQ(ierr);
-  }
-  ierr = VecDestroy(&locState);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -410,7 +361,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse)
   MatCoarsen_MIS *MIS;
 
   PetscFunctionBegin;
-  ierr           = PetscNewLog(coarse, MatCoarsen_MIS, &MIS);CHKERRQ(ierr);
+  ierr           = PetscNewLog(coarse,&MIS);CHKERRQ(ierr);
   coarse->subctx = (void*)MIS;
 
   coarse->ops->apply   = MatCoarsenApply_MIS;

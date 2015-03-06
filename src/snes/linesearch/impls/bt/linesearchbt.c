@@ -174,7 +174,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
 
   if (PetscIsInfOrNanReal(g)) {
     ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscInfo(monitor,"Aborted due to Nan or Inf in function evaluation\n");CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"Aborted due to Nan or Inf in function evaluation\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (!objective) {
@@ -193,8 +193,13 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   } else {
     /* Since the full step didn't work and the step is tiny, quit */
     if (stol*xnorm > ynorm) {
+      ierr = SNESLineSearchSetNorms(linesearch,xnorm,fnorm,ynorm);CHKERRQ(ierr);
       ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PetscInfo2(monitor,"Aborted due to ynorm < stol*xnorm (%14.12e < %14.12e) and inadequate full step.\n",ynorm,stol*xnorm);CHKERRQ(ierr);
+      if (monitor) {
+        ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Aborted due to ynorm < stol*xnorm (%14.12e < %14.12e) and inadequate full step.\n",(double)ynorm,(double)stol*xnorm);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
+      }
       PetscFunctionReturn(0);
     }
     /* Fit points with quadratic */
@@ -232,7 +237,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     }
     if (PetscIsInfOrNanReal(g)) {
       ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PetscInfo(monitor,"Aborted due to Nan or Inf in function evaluation\n");CHKERRQ(ierr);
+      ierr = PetscInfo(snes,"Aborted due to Nan or Inf in function evaluation\n");CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     if (monitor) {
@@ -322,7 +327,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
         }
         if (PetscIsInfOrNanReal(gnorm)) {
           ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
-          ierr = PetscInfo(monitor,"Aborted due to Nan or Inf in function evaluation\n");CHKERRQ(ierr);
+          ierr = PetscInfo(snes,"Aborted due to Nan or Inf in function evaluation\n");CHKERRQ(ierr);
           PetscFunctionReturn(0);
         }
         if (.5*g < .5*f + lambda*alpha*initslope) { /* is reduction enough? */
@@ -391,7 +396,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(gnorm)) {
       ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PetscInfo(monitor,"Aborted due to Nan or Inf in function evaluation\n");CHKERRQ(ierr);
+      ierr = PetscInfo(snes,"Aborted due to Nan or Inf in function evaluation\n");CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
   }
@@ -422,7 +427,7 @@ PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer view
     } else if (linesearch->order == SNES_LINESEARCH_ORDER_QUADRATIC) {
       ierr = PetscViewerASCIIPrintf(viewer, "  interpolation: quadratic\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, "  alpha=%e\n", bt->alpha);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  alpha=%e\n", (double)bt->alpha);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -442,18 +447,15 @@ static PetscErrorCode SNESLineSearchDestroy_BT(SNESLineSearch linesearch)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetFromOptions_BT"
-static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
+static PetscErrorCode SNESLineSearchSetFromOptions_BT(PetscOptions *PetscOptionsObject,SNESLineSearch linesearch)
 {
 
   PetscErrorCode    ierr;
-  SNESLineSearch_BT *bt;
+  SNESLineSearch_BT *bt = (SNESLineSearch_BT*)linesearch->data;
 
   PetscFunctionBegin;
-  bt = (SNESLineSearch_BT*)linesearch->data;
-
-  ierr = PetscOptionsHead("SNESLineSearch BT options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNESLineSearch BT options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_linesearch_alpha",   "Descent tolerance",        "SNESLineSearchBT", bt->alpha, &bt->alpha, NULL);CHKERRQ(ierr);
-
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -465,12 +467,14 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
    SNESLINESEARCHBT - Backtracking line search.
 
    This line search finds the minimum of a polynomial fitting of the L2 norm of the
-   function. If this fit does not satisfy the conditions for progress, the interval shrinks
+   function or the objective function if it is provided with SNESSetObjective(). If this fit does not satisfy the conditions for progress, the interval shrinks
    and the fit is reattempted at most max_it times or until lambda is below minlambda.
 
    Options Database Keys:
 +  -snes_linesearch_alpha<1e-4> - slope descent parameter
 .  -snes_linesearch_damping<1.0> - initial step length
+.  -snes_linesearch_maxstep <length> - if the length the initial step is larger than this then the
+                                       step is scaled back to be of this length at the beginning of the line search
 .  -snes_linesearch_max_it<40> - maximum number of shrinking step
 .  -snes_linesearch_minlambda<1e-12> - minimum step length allowed
 -  -snes_linesearch_order<cubic,quadratic> - order of the approximation
@@ -499,7 +503,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)
   linesearch->ops->view           = SNESLineSearchView_BT;
   linesearch->ops->setup          = NULL;
 
-  ierr = PetscNewLog(linesearch, SNESLineSearch_BT, &bt);CHKERRQ(ierr);
+  ierr = PetscNewLog(linesearch,&bt);CHKERRQ(ierr);
 
   linesearch->data    = (void*)bt;
   linesearch->max_its = 40;

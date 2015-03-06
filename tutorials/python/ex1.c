@@ -26,7 +26,7 @@ PetscErrorCode RunTest(void)
   ierr = MatPythonSetType(A,"example1.py:Laplace1D");CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&x,&b);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
   ierr = VecSet(b,1);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
@@ -37,7 +37,7 @@ PetscErrorCode RunTest(void)
   ierr = PCSetType(pc,PCPYTHON);CHKERRQ(ierr);
   ierr = PCPythonSetType(pc,"example1.py:Jacobi");CHKERRQ(ierr);
 
-  ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 

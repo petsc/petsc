@@ -1,0 +1,119 @@
+
+ sensitivity wrt parameter pm: -1.000000 
+
+ sensitivity wrt parameter pm: -1.000000 
+
+ sensitivity wrt parameter pm: -1.000000 
+iter =   0, Function value: -0.4,  Residual: 1 
+
+ sensitivity wrt parameter pm: 83.680260 
+
+ sensitivity wrt parameter pm: 83.680260 
+
+ sensitivity wrt parameter pm: 83.680308 
+
+ sensitivity wrt parameter pm: -1.000000 
+
+ sensitivity wrt parameter pm: -1.000000 
+
+ sensitivity wrt parameter pm: -1.000000 
+
+ sensitivity wrt parameter pm: -1.000000 
+
+ sensitivity wrt parameter pm: -1.000000 
+
+ sensitivity wrt parameter pm: -1.000000 
+
+ sensitivity wrt parameter pm: 83.680260 
+
+ sensitivity wrt parameter pm: 83.680260 
+
+ sensitivity wrt parameter pm: 83.680308 
+
+ sensitivity wrt parameter pm: 15.468664 
+
+ sensitivity wrt parameter pm: 15.468664 
+
+ sensitivity wrt parameter pm: 15.468687 
+
+ sensitivity wrt parameter pm: -1.000000 
+
+ sensitivity wrt parameter pm: -1.000000 
+
+ sensitivity wrt parameter pm: -1.000000 
+
+ sensitivity wrt parameter pm: -0.558361 
+
+ sensitivity wrt parameter pm: -0.558361 
+
+ sensitivity wrt parameter pm: -0.558353 
+iter =   1, Function value: -1.06032,  Residual: 0.55686 
+
+ sensitivity wrt parameter pm: 83.680260 
+
+ sensitivity wrt parameter pm: 83.680260 
+
+ sensitivity wrt parameter pm: 83.680308 
+
+ sensitivity wrt parameter pm: 83.680260 
+
+ sensitivity wrt parameter pm: 83.680260 
+
+ sensitivity wrt parameter pm: 83.680308 
+
+ sensitivity wrt parameter pm: 83.680260 
+
+ sensitivity wrt parameter pm: 83.680260 
+
+ sensitivity wrt parameter pm: 83.680308 
+
+ sensitivity wrt parameter pm: 11.806779 
+
+ sensitivity wrt parameter pm: 11.806779 
+
+ sensitivity wrt parameter pm: 11.806802 
+
+ sensitivity wrt parameter pm: -0.197976 
+
+ sensitivity wrt parameter pm: -0.197976 
+
+ sensitivity wrt parameter pm: -0.197968 
+iter =   2, Function value: -1.06058,  Residual: 0.19527 
+
+ sensitivity wrt parameter pm: -0.003189 
+
+ sensitivity wrt parameter pm: -0.003189 
+
+ sensitivity wrt parameter pm: -0.003182 
+iter =   3, Function value: -1.06062,  Residual: 0.00016731 
+
+ sensitivity wrt parameter pm: -0.003356 
+
+ sensitivity wrt parameter pm: -0.003356 
+
+ sensitivity wrt parameter pm: -0.003349 
+iter =   4, Function value: -1.06062,  Residual: 1.63913e-06 
+
+ sensitivity wrt parameter pm: -0.003358 
+
+ sensitivity wrt parameter pm: -0.003358 
+
+ sensitivity wrt parameter pm: -0.003350 
+iter =   5, Function value: -1.06062,  Residual: 2.98023e-08 
+Tao Object: 1 MPI processes
+  type: blmvm
+      Gradient steps: 0
+  TaoLineSearch Object:   1 MPI processes
+    type: more-thuente
+  Active Set subset type: subvec
+  convergence tolerances: fatol=1e-15,   frtol=1e-15
+  convergence tolerances: gatol=1e-15,   steptol=0,   gttol=1e-15
+  Residual in Function/Gradient:=2.98023e-08
+  Objective value=-1.06062
+  total number of iterations=5,                          (max: 2000)
+  total number of function evaluations=48,                  max: 4000
+  total number of gradient evaluations=16,                  max: 4000
+  Solution converged:   estimated f(x)-f(X*) <= fatol
+Vec Object: 1 MPI processes
+  type: seq
+1.0616

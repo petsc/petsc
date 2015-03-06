@@ -147,6 +147,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def getTmpDir(self):
     if not hasattr(self, '_tmpDir'):
       self._tmpDir = tempfile.mkdtemp(prefix = 'petsc-')
+      if not os.access(self._tmpDir, os.X_OK):
+        raise RuntimeError('Cannot execute things in tmp directory '+self._tmpDir+'. Consider setting TMPDIR to something else.')
       self.logPrint('All intermediate test results are stored in '+self._tmpDir)
     return self._tmpDir
   def setTmpDir(self, temp):
@@ -236,7 +238,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.outputMakeRuleHeader(self.makeRuleHeader)
       self.log.write('**** ' + self.makeRuleHeader + ' ****\n')
       self.outputMakeRuleHeader(self.log)
-      self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeMacroHeader)
+      self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeRuleHeader)
     if self.header:
       self.outputHeader(self.header)
       self.log.write('**** ' + self.header + ' ****\n')
@@ -280,7 +282,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if isinstance(child, type):
         config = child
         break
-    if config is None and not self.configureParent is None:
+    if config is None and hasattr(self, 'configureParent') and not self.configureParent is None:
       for child in self.configureParent.childGraph.vertices:
         if isinstance(child, type):
           config = child
@@ -393,10 +395,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   # Filtering Mechanisms
 
   def filterPreprocessOutput(self,output):
+    self.log.write("Preprocess stderr before filtering:"+output+":\n")
     # Another PGI license warning, multiline so have to discard all
     if output.find('your evaluation license will expire') > -1 and output.lower().find('error') == -1:
       output = ''
     lines = output.splitlines()
+    # Intel
+    lines = filter(lambda s: s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0, lines)
     # IBM:
     lines = filter(lambda s: not s.startswith('cc_r:'), lines)
     # PGI: Ignore warning about temporary license
@@ -407,6 +412,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # Lahey/Fujitsu
     lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
     output = reduce(lambda s, t: s+t, lines, '')
+    self.log.write("Preprocess stderr after filtering:"+output+":\n")
     return output
 
   def filterCompileOutput(self, output):
@@ -431,6 +437,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = filter(lambda s: s.find('warning: conflicting types for built-in function') < 0, lines)
       # GCC: Ignore stupid warning about unused variables
       lines = filter(lambda s: s.find('warning: unused variable') < 0, lines)
+      # Intel
+      lines = filter(lambda s: s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0, lines)
       # PGI: Ignore warning about temporary license
       lines = filter(lambda s: s.find('license.dat') < 0, lines)
       # Cray XT3
@@ -884,7 +892,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       body.extend(self.batchCleanup)
       # pretty print repr(args.values())
       for itm in args:
-        if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=PETSc.compilerOptions'):
+        if (itm != '--configModules=PETSc.Configure') and (itm != '--optionsModule=config.compilerOptions'):
           body.append('fprintf(output,"  \''+str(itm)+'\',\\n");')
       body.append('fprintf(output,"]");')
       driver = ['fprintf(output, "\\nif __name__ == \'__main__\':',

@@ -271,7 +271,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"Matrix-free approximation:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"err=%G (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"err=%g (relative error in function evaluation)\n",(double)ctx->error_rel);CHKERRQ(ierr);
     if (!((PetscObject)ctx)->type_name) {
       ierr = PetscViewerASCIIPrintf(viewer,"The compute h routine has not yet been set\n");CHKERRQ(ierr);
     } else {
@@ -370,7 +370,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   /* keep a record of the current differencing parameter h */
   ctx->currenth = h;
 #if defined(PETSC_USE_COMPLEX)
-  ierr = PetscInfo2(mat,"Current differencing parameter: %G + %G i\n",PetscRealPart(h),PetscImaginaryPart(h));CHKERRQ(ierr);
+  ierr = PetscInfo2(mat,"Current differencing parameter: %g + %g i\n",(double)PetscRealPart(h),(double)PetscImaginaryPart(h));CHKERRQ(ierr);
 #else
   ierr = PetscInfo1(mat,"Current differencing parameter: %15.12e\n",h);CHKERRQ(ierr);
 #endif
@@ -546,7 +546,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
     ctx->current_f           = F;
     ctx->current_f_allocated = PETSC_FALSE;
   } else if (!ctx->current_f_allocated) {
-    ierr = VecDuplicate(ctx->current_u, &ctx->current_f);CHKERRQ(ierr);
+    ierr = MatCreateVecs(J,NULL,&ctx->current_f);CHKERRQ(ierr);
 
     ctx->current_f_allocated = PETSC_TRUE;
   }
@@ -608,7 +608,7 @@ PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MFFD"
-PetscErrorCode  MatSetFromOptions_MFFD(Mat mat)
+PetscErrorCode  MatSetFromOptions_MFFD(PetscOptions *PetscOptionsObject,Mat mat)
 {
   MatMFFD        mfctx = (MatMFFD)mat->data;
   PetscErrorCode ierr;
@@ -633,7 +633,7 @@ PetscErrorCode  MatSetFromOptions_MFFD(Mat mat)
     ierr = MatMFFDSetCheckh(mat,MatMFFDCheckPositivity,0);CHKERRQ(ierr);
   }
   if (mfctx->ops->setfromoptions) {
-    ierr = (*mfctx->ops->setfromoptions)(mfctx);CHKERRQ(ierr);
+    ierr = (*mfctx->ops->setfromoptions)(PetscOptionsObject,mfctx);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -806,7 +806,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
    preconditioner matrix
 
    The user can set the error_rel via MatMFFDSetFunctionError() and
-   umin via MatMFFDDSSetUmin(); see the <A href="../../docs/manual.pdf#nameddest=ch_snes">SNES chapter of the users manual</A> for details.
+   umin via MatMFFDDSSetUmin(); see Users-Manual: ch_snes for details.
 
    The user should call MatDestroy() when finished with the matrix-free
    matrix context.
@@ -878,9 +878,16 @@ PetscErrorCode  MatMFFDGetH(Mat mat,PetscScalar *h)
    Logically Collective on Mat
 
    Input Parameters:
-+  mat - the matrix free matrix created via MatCreateSNESMF()
++  mat - the matrix free matrix created via MatCreateSNESMF() or MatCreateMFFD()
 .  func - the function to use
 -  funcctx - optional function context passed to function
+
+   Calling Sequence of func:
+$     func (void *funcctx, Vec x, Vec f)
+
++  funcctx - user provided context
+.  x - input vector
+-  f - computed output function
 
    Level: advanced
 
@@ -1260,7 +1267,7 @@ PetscErrorCode  MatMFFDCheckPositivity(void *dummy,Vec U,Vec a,PetscScalar *h)
   ierr = VecRestoreArray(a,&a_vec);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&minval,&val,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
   if (val <= PetscAbsScalar(*h)) {
-    ierr = PetscInfo2(U,"Scaling back h from %G to %G\n",PetscRealPart(*h),.99*val);CHKERRQ(ierr);
+    ierr = PetscInfo2(U,"Scaling back h from %g to %g\n",(double)PetscRealPart(*h),(double)(.99*val));CHKERRQ(ierr);
     if (PetscRealPart(*h) > 0.0) *h =  0.99*val;
     else                         *h = -0.99*val;
   }

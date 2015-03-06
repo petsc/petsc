@@ -1,7 +1,7 @@
 #include <petsc-private/isimpl.h>
 #include <petsc-private/vecimpl.h>             /*I "petscvec.h" I*/
 
-PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesCreate_PtoP(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscCUSPIndices*);
+PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesCreate_PtoP(PetscInt,PetscInt*,PetscInt,PetscInt*,PetscCUSPIndices*);
 
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterInitializeForGPU"
@@ -31,8 +31,14 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
   VecScatter_MPI_General *to,*from;
   PetscErrorCode         ierr;
   PetscInt               i,*indices,*sstartsSends,*sstartsRecvs,nrecvs,nsends,bs;
+  PetscBool              isSeq1,isSeq2;
 
   PetscFunctionBegin;
+  ierr = VecScatterIsSequential_Private((VecScatter_Common*)inctx->fromdata,&isSeq1);CHKERRQ(ierr);
+  ierr = VecScatterIsSequential_Private((VecScatter_Common*)inctx->todata,&isSeq2);CHKERRQ(ierr);
+  if (isSeq1 || isSeq2) {
+    PetscFunctionReturn(0);
+  }
   if (mode & SCATTER_REVERSE) {
     to     = (VecScatter_MPI_General*)inctx->fromdata;
     from   = (VecScatter_MPI_General*)inctx->todata;
@@ -51,8 +57,8 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       PetscInt k,*tindicesSends,*sindicesSends,*tindicesRecvs,*sindicesRecvs;
       PetscInt ns = sstartsSends[nsends],nr = sstartsRecvs[nrecvs];
       /* Here we create indices for both the senders and receivers. */
-      ierr = PetscMalloc(ns*sizeof(PetscInt),&tindicesSends);CHKERRQ(ierr);
-      ierr = PetscMalloc(nr*sizeof(PetscInt),&tindicesRecvs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(ns,&tindicesSends);CHKERRQ(ierr);
+      ierr = PetscMalloc1(nr,&tindicesRecvs);CHKERRQ(ierr);
 
       ierr = PetscMemcpy(tindicesSends,indices,ns*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscMemcpy(tindicesRecvs,from->indices,nr*sizeof(PetscInt));CHKERRQ(ierr);
@@ -60,8 +66,8 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       ierr = PetscSortRemoveDupsInt(&ns,tindicesSends);CHKERRQ(ierr);
       ierr = PetscSortRemoveDupsInt(&nr,tindicesRecvs);CHKERRQ(ierr);
 
-      ierr = PetscMalloc(bs*ns*sizeof(PetscInt),&sindicesSends);CHKERRQ(ierr);
-      ierr = PetscMalloc(from->bs*nr*sizeof(PetscInt),&sindicesRecvs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(bs*ns,&sindicesSends);CHKERRQ(ierr);
+      ierr = PetscMalloc1(from->bs*nr,&sindicesRecvs);CHKERRQ(ierr);
 
       /* sender indices */
       for (i=0; i<ns; i++) {

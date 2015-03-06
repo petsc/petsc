@@ -77,10 +77,10 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     }
 #endif
 
-    ierr = PetscMalloc(amat->rmap->n*sizeof(PetscInt),&locals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(amat->rmap->n,&locals);CHKERRQ(ierr);
 
     if (PetscLogPrintInfo) {itmp = pmetis->printout; pmetis->printout = 127;}
-    ierr = PetscMalloc(ncon*nparts*sizeof(real_t),&tpwgts);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ncon*nparts,&tpwgts);CHKERRQ(ierr);
     for (i=0; i<ncon; i++) {
       for (j=0; j<nparts; j++) {
         if (part->part_weights) {
@@ -90,7 +90,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
         }
       }
     }
-    ierr = PetscMalloc(ncon*sizeof(real_t),&ubvec);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ncon,&ubvec);CHKERRQ(ierr);
     for (i=0; i<ncon; i++) {
       ubvec[i] = 1.05;
     }
@@ -111,7 +111,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
 
   if (bs > 1) {
     PetscInt i,j,*newlocals;
-    ierr = PetscMalloc(bs*amat->rmap->n*sizeof(PetscInt),&newlocals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(bs*amat->rmap->n,&newlocals);CHKERRQ(ierr);
     for (i=0; i<amat->rmap->n; i++) {
       for (j=0; j<bs; j++) {
         newlocals[bs*i + j] = locals[i];
@@ -203,13 +203,13 @@ PetscErrorCode  MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Parmetis"
-PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Parmetis(PetscOptions *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode ierr;
   PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Set ParMeTiS partitioning options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Set ParMeTiS partitioning options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_partitioning_parmetis_coarse_sequential","Use sequential coarse partitioner","MatPartitioningParmetisSetCoarseSequential",flag,&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
@@ -261,7 +261,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
   MatPartitioning_Parmetis *pmetis;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(part,MatPartitioning_Parmetis,&pmetis);CHKERRQ(ierr);
+  ierr       = PetscNewLog(part,&pmetis);CHKERRQ(ierr);
   part->data = (void*)pmetis;
 
   pmetis->cuts       = 0;   /* output variable */

@@ -24,7 +24,7 @@ int main(int argc,char **args)
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPGetOperators(ksp,&A,NULL,NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
 
   ierr = MatSetSizes(A,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
@@ -39,7 +39,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&x,&b);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
 
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = VecSet(b,1.0);CHKERRQ(ierr);

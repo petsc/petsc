@@ -35,7 +35,7 @@
 /*
   An example:
 
-#include "khash.h"
+#include <khash.h>
 KHASH_MAP_INIT_INT(32, char)
 int main()
 {
@@ -553,20 +553,28 @@ typedef khiter_t PetscHashIIter;
  _11_hi = kh_put(HASHI,(ht),(i),&_11_hr);                               \
  kh_val((ht),_11_hi) = (ii);                                            \
 }
+
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIDelKey(PetscHashI ht, PetscInt key)
+{
+  khiter_t hi = kh_get(HASHI, ht, key);
+  if (hi != kh_end(ht)) kh_del(HASHI, ht, hi);
+  return 0;
+}
+
 /*
   arr is the integer array to put the indices to, n is the offset into arr to start putting the indices at.
   n is updated as the indices are put into arr, so n must be an lvalue.
  */
-#define PetscHashIGetKeys(ht,n,arr)                                     \
-{                                                                       \
-  PetscHashIIter _12_hi;                                                \
-  PetscInt _12_i;                                                       \
-  PetscHashIIterBegin((ht),_12_hi);                                     \
-  while (!PetscHashIIterAtEnd((ht),_12_hi)) {                            \
-    PetscHashIIterGetKey((ht),_12_hi,_12_i);                            \
-    (arr)[(n)++] = _12_i;                                               \
-    PetscHashIIterNext((ht),_12_hi);                                    \
-  }                                                                     \
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIGetKeys(PetscHashI ht, PetscInt *n, PetscInt arr[])
+{
+  PetscHashIIter hi;
+  PetscInt       off = *n;
+
+  for (hi = kh_begin(ht); hi != kh_end(ht); ++hi) {
+    if (kh_exist(ht, hi) && !__ac_isdel(ht->flags, hi)) arr[off++] = kh_key(ht, hi);
+  }
+  *n = off;
+  return 0;
 }
 
 #define PetscHashIGetVals(ht,n,arr)                                     \
@@ -688,7 +696,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJCreate(PetscHashIJ *h)
 
   PetscFunctionBegin;
   PetscValidPointer(h,1);
-  _15_ierr          = PetscNew(struct _PetscHashIJ, (h));CHKERRQ(_15_ierr);
+  _15_ierr          = PetscNew((h));CHKERRQ(_15_ierr);
   (*h)->ht          = kh_init(HASHIJ);
   (*h)->multivalued = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -837,7 +845,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJAdd(PetscHashIJ h,PetscHashIJKey i
   }
   if (!_11_r && !(h)->multivalued) _11_ijval->head->k = (ii);
   else {
-    ierr          = PetscNew(IJNode, &_11_ijnode);CHKERRQ(ierr);
+    ierr          = PetscNew(&_11_ijnode);CHKERRQ(ierr);
     _11_ijnode->k = (ii);
     _11_ijval     = &(kh_val((h)->ht,_11_hi));
     if (!_11_ijval->tail) {
@@ -990,6 +998,173 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDestroy(PetscHashIJ *h)
   PetscFunctionReturn(0);
 }
 
+/* HASHJK */
+/* Linked list of values in a bucket. */
+struct _JKNode {
+  PetscInt        k;
+  struct _JKNode *next;
+};
+typedef struct _JKNode JKNode;
+
+/* Value (holds a linked list of nodes) in the bucket. */
+struct _JKVal {
+  PetscInt n;
+  JKNode  *head, *tail;
+};
+typedef struct _JKVal JKVal;
+
+/* Key (a quartet of integers). */
+struct _PetscHashJKKey {
+  PetscInt j, k;
+};
+typedef struct _PetscHashJKKey PetscHashJKKey;
+
+/* Hash function: mix two integers into one.
+   Shift by a quarter the number of bits in PetscInt to the left and then XOR.  If the indices fit into the lowest quarter part of PetscInt, this is a bijection.
+   We should shift by (8/4)*sizeof(PetscInt): sizeof(PetscInt) is the number of bytes in PetscInt, with 8 bits per byte.
+ */
+#define JKKeyHash(key) ( (((key).j) << (4*sizeof(PetscInt)))^((key).k) )
+
+/* Compare two keys (integer pairs). */
+#define JKKeyEqual(k1,k2) (((k1).j==(k2).j) ? ((k1).k==(k2).k) : 0)
+
+KHASH_INIT(HASHJK,PetscHashJKKey,JKVal,1,JKKeyHash,JKKeyEqual)
+
+struct _PetscHashJK {
+  khash_t(HASHJK) *ht;
+};
+
+typedef struct _PetscHashJK *PetscHashJK;
+
+typedef khiter_t             PetscHashJKIter;
+
+typedef JKNode              *PetscHashJKValIter;
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashJKCreate"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashJKCreate(PetscHashJK *h)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(h, 1);
+  ierr = PetscNew((h));CHKERRQ(ierr);
+  (*h)->ht = kh_init(HASHJK);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashJKResize"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashJKResize(PetscHashJK h, PetscInt n)
+{
+  PetscFunctionBegin;
+  (kh_resize(HASHJK, (h)->ht, (n)));
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashJKKeySize"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashJKKeySize(PetscHashJK h, PetscInt *n)
+{
+  PetscFunctionBegin;
+  ((*n) = kh_size((h)->ht));
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashJKPut"
+/*
+  PetscHashJKPut - Insert key in the hash table
+
+  Input Parameters:
++ h - The hash table
+- key - The key to insert
+
+  Output Parameter:
++ missing - 0 if the key is present in the hash table, 1 if the bucket is empty (never used), 2 if the element in the bucket has been deleted
+- iter - Iterator into table
+
+  Level: developer
+
+.seealso: PetscHashJKCreate(), PetscHashJKSet()
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscHashJKPut(PetscHashJK h, PetscHashJKKey key, PetscHashJKIter *missing, PetscHashJKIter *iter)
+{
+  PetscFunctionBeginHot;
+  *iter = kh_put(HASHJK, (h)->ht, (key), missing);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashJKSet"
+/*
+  PetscHashJKSet - Set the value for an iterator in the hash table
+
+  Input Parameters:
++ h - The hash table
+. iter - An iterator into the table
+- value - The value to set
+
+  Level: developer
+
+.seealso: PetscHashJKCreate(), PetscHashJKPut(), PetscHashJKGet()
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscHashJKSet(PetscHashJK h, PetscHashJKIter iter, PetscInt value)
+{
+  PetscFunctionBeginHot;
+  kh_val((h)->ht, iter).n = value;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashJKGet"
+/*
+  PetscHashJKGet - Get the value for an iterator in the hash table
+
+  Input Parameters:
++ h - The hash table
+. iter - An iterator into the table
+
+  Output Parameters:
+. value - The value to get
+
+  Level: developer
+
+.seealso: PetscHashJKCreate(), PetscHashJKPut(), PetscHashJKSet()
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscHashJKGet(PetscHashJK h, PetscHashJKIter iter, PetscInt *value)
+{
+  PetscFunctionBeginHot;
+  *value = kh_val((h)->ht, iter).n;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashJKClear"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashJKClear(PetscHashJK h)
+{
+  PetscFunctionBegin;
+  kh_clear(HASHJK, (h)->ht);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashJKDestroy"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashJKDestroy(PetscHashJK *h)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(h, 1);
+  if ((*h)) {
+    PetscErrorCode ierr;
+
+    if ((*h)->ht) {
+      kh_destroy(HASHJK, (*h)->ht);
+      (*h)->ht = NULL;
+    }
+    ierr = PetscFree((*h));CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 /* HASHIJKL */
 /* Linked list of values in a bucket. */
@@ -1041,7 +1216,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLCreate(PetscHashIJKL *h)
 
   PetscFunctionBegin;
   PetscValidPointer(h, 1);
-  ierr = PetscNew(struct _PetscHashIJKL, (h));CHKERRQ(ierr);
+  ierr = PetscNew((h));CHKERRQ(ierr);
   (*h)->ht = kh_init(HASHIJKL);
   PetscFunctionReturn(0);
 }

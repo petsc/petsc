@@ -39,20 +39,36 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
 
    Input Parameters:
 +     obj - the PETSc object
--     viewer - ASCII viewer where the information is printed
+-     viewer - ASCII viewer where the information is printed, function does nothing if the viewer is not PETSCVIEWERASCII type
 
    Level: developer
+
+   Notes: If the viewer format is PETSC_VIEWER_ASCII_MATLAB then the information is printed after a % symbol
+          so that MATLAB will treat it as a comment.
+
+          If the viewer format is PETSC_VIEWER_ASCII_VTK*, PETSC_VIEWER_ASCII_LATEX, or
+          PETSC_VIEWER_ASCII_MATRIXMARKET then don't print header information
+          as these formats can't process it.
 
 .seealso: PetscObjectSetName(), PetscObjectName()
 
 @*/
 PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscMPIInt    size;
+  PetscErrorCode    ierr;
+  MPI_Comm          comm;
+  PetscMPIInt       size;
+  PetscViewerFormat format;
+  PetscBool         flg;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&flg);CHKERRQ(ierr);
+  if (!flg) PetscFunctionReturn(0);
+
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL || format == PETSC_VIEWER_ASCII_VTK_COORDS || format == PETSC_VIEWER_ASCII_MATRIXMARKET || format == PETSC_VIEWER_ASCII_LATEX) PetscFunctionReturn(0);
+
+  if (format == PETSC_VIEWER_ASCII_MATLAB) {ierr = PetscViewerASCIIPrintf(viewer,"%%");CHKERRQ(ierr);}
   ierr = PetscViewerASCIIPrintf(viewer,"%s Object:",obj->class_name);CHKERRQ(ierr);
   if (obj->name) {
     ierr = PetscViewerASCIIPrintf(viewer,"%s",obj->name);CHKERRQ(ierr);
@@ -63,6 +79,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
   ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer," %d MPI processes\n",size);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_MATLAB) {ierr = PetscViewerASCIIPrintf(viewer,"%%");CHKERRQ(ierr);}
   if (obj->type_name) {
     ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",obj->type_name);CHKERRQ(ierr);
   } else {

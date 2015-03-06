@@ -16,7 +16,7 @@ PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
   char           AMD[13]  ="AuthenticAMD";
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(13*sizeof(char),&vendor);CHKERRQ(ierr);
+  ierr = PetscMalloc1(13,&vendor);CHKERRQ(ierr);
   strcpy(vendor,"************");
   CPUID_GET_VENDOR(vendor);
   if (!strcmp(vendor,Intel) || !strcmp(vendor,AMD)) {
@@ -138,9 +138,7 @@ PetscErrorCode  PetscSSEIsEnabled(MPI_Comm comm,PetscBool  *lflag,PetscBool  *gf
   if (petsc_sse_local_is_untested && petsc_sse_global_is_untested) {
     disabled_option = PETSC_FALSE;
 
-    ierr = PetscOptionsBool("-disable_sse",
-                            "Disable use of hand tuned Intel SSE implementations <true,false>.",
-                            "PetscSSEIsEnabled",disabled_option,&disabled_option,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-disable_sse",&disabled_option,NULL);CHKERRQ(ierr);
     if (disabled_option) {
       petsc_sse_local_is_untested  = PETSC_FALSE;
       petsc_sse_enabled_local      = PETSC_FALSE;

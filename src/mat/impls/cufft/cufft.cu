@@ -156,9 +156,9 @@ PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt d
   ierr = MatSetSizes(*A, m, m, m, m);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*A, MATSEQCUFFT);CHKERRQ(ierr);
 
-  ierr       = PetscNewLog(*A, Mat_CUFFT, &cufft);CHKERRQ(ierr);
+  ierr       = PetscNewLog(*A,&cufft);CHKERRQ(ierr);
   (*A)->data = (void*) cufft;
-  ierr       = PetscMalloc((ndim+1)*sizeof(PetscInt), &cufft->dim);CHKERRQ(ierr);
+  ierr       = PetscMalloc1(ndim+1, &cufft->dim);CHKERRQ(ierr);
   ierr       = PetscMemcpy(cufft->dim, dim, ndim*sizeof(PetscInt));CHKERRQ(ierr);
 
   cufft->ndim       = ndim;

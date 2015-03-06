@@ -1,4 +1,5 @@
 #include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
+#include <petscds.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector_Section_Private"
@@ -22,8 +23,9 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
       break;
     }
   }
-  if (blockSize < 0) blockSize = 1;
+  if (blockSize < 0) blockSize = PETSC_MAX_INT;
   ierr = MPI_Allreduce(&blockSize, &bs, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  if (blockSize == PETSC_MAX_INT) blockSize = 1; /* Everyone was empty */
   ierr = PetscSectionGetConstrainedStorageSize(gSection, &localSize);CHKERRQ(ierr);
   if (localSize%blockSize) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mismatch between blocksize %d and local storage size %d", blockSize, localSize);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), vec);CHKERRQ(ierr);
@@ -32,7 +34,6 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
   ierr = VecSetType(*vec,dm->vectype);CHKERRQ(ierr);
   ierr = VecSetDM(*vec, dm);CHKERRQ(ierr);
   /* ierr = VecSetLocalToGlobalMapping(*vec, dm->ltogmap);CHKERRQ(ierr); */
-  /* ierr = VecSetLocalToGlobalMappingBlock(*vec, dm->ltogmapb);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 
@@ -100,7 +101,7 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
         }
       }
     }
-    ierr = PetscMalloc(subSize * sizeof(PetscInt), &subIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(subSize, &subIndices);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof, goff;
 
@@ -141,29 +142,35 @@ PetscErrorCode DMCreateSubDM_Section_Private(DM dm, PetscInt numFields, PetscInt
         nf       = f;
       }
     }
-    if (haveNull) {
+    if (haveNull && is) {
       MatNullSpace nullSpace;
 
       ierr = (*(*subdm)->nullspaceConstructors[nf])(*subdm, nf, &nullSpace);CHKERRQ(ierr);
       ierr = PetscObjectCompose((PetscObject) *is, "nullspace", (PetscObject) nullSpace);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
     }
-    if (dm->fields) {
-      if (nF != dm->numFields) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "The number of DM fields %d does not match the number of Section fields %d", dm->numFields, nF);
+    if (dm->prob) {
+      PetscInt Nf;
+
+      ierr = PetscDSGetNumFields(dm->prob, &Nf);CHKERRQ(ierr);
+      if (nF != Nf) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "The number of DM fields %d does not match the number of Section fields %d", Nf, nF);
       ierr = DMSetNumFields(*subdm, numFields);CHKERRQ(ierr);
       for (f = 0; f < numFields; ++f) {
-        ierr = PetscObjectListDuplicate(dm->fields[fields[f]]->olist, &(*subdm)->fields[f]->olist);CHKERRQ(ierr);
-      }
-      if (numFields == 1) {
-        MatNullSpace space;
-        Mat          pmat;
+        PetscObject disc;
 
-        ierr = PetscObjectQuery((*subdm)->fields[0], "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
-        if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nullspace", (PetscObject) space);CHKERRQ(ierr);}
-        ierr = PetscObjectQuery((*subdm)->fields[0], "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
-        if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nearnullspace", (PetscObject) space);CHKERRQ(ierr);}
-        ierr = PetscObjectQuery((*subdm)->fields[0], "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
-        if (pmat) {ierr = PetscObjectCompose((PetscObject) *is, "pmat", (PetscObject) pmat);CHKERRQ(ierr);}
+        ierr = DMGetField(dm, fields[f], &disc);CHKERRQ(ierr);
+        ierr = DMSetField(*subdm, f, disc);CHKERRQ(ierr);
+      }
+      if (numFields == 1 && is) {
+        PetscObject disc, space, pmat;
+
+        ierr = DMGetField(*subdm, 0, &disc);CHKERRQ(ierr);
+        ierr = PetscObjectQuery(disc, "nullspace", &space);CHKERRQ(ierr);
+        if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nullspace", space);CHKERRQ(ierr);}
+        ierr = PetscObjectQuery(disc, "nearnullspace", &space);CHKERRQ(ierr);
+        if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nearnullspace", space);CHKERRQ(ierr);}
+        ierr = PetscObjectQuery(disc, "pmat", &pmat);CHKERRQ(ierr);
+        if (pmat) {ierr = PetscObjectCompose((PetscObject) *is, "pmat", pmat);CHKERRQ(ierr);}
       }
     }
   }

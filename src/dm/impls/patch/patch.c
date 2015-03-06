@@ -69,10 +69,10 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
 
   if (commz != MPI_COMM_NULL) {
     ierr = DMDACreate(commz, dmz);CHKERRQ(ierr);
-    ierr = DMDASetDim(*dmz, dim);CHKERRQ(ierr);
+    ierr = DMSetDimension(*dmz, dim);CHKERRQ(ierr);
     ierr = DMDASetSizes(*dmz, rM, rN, rP);CHKERRQ(ierr);
     ierr = DMDASetNumProcs(*dmz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = DMDASetBoundaryType(*dmz, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+    ierr = DMDASetBoundaryType(*dmz, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE);CHKERRQ(ierr);
     ierr = DMDASetDof(*dmz, dof);CHKERRQ(ierr);
     ierr = DMDASetStencilType(*dmz, st);CHKERRQ(ierr);
     ierr = DMDASetStencilWidth(*dmz, 0);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
     exr  = PetscMin(sxb+mxb, upper.i - blower.i);
     eyr  = PetscMin(syb+myb, upper.j - blower.j);
     ezr  = PetscMin(szb+mzb, upper.k - blower.k);
-    ierr = PetscMalloc2(rM*rN*rP,PetscInt,&localPoints,rM*rN*rP,PetscSFNode,&remotePoints);CHKERRQ(ierr);
+    ierr = PetscMalloc2(rM*rN*rP,&localPoints,rM*rN*rP,&remotePoints);CHKERRQ(ierr);
   } else {
     sxr = syr = szr = exr = eyr = ezr = sxb = syb = szb = mxb = myb = mzb = 0;
   }

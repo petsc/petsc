@@ -11,7 +11,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES);
-PETSC_EXTERN PetscErrorCode SNESCreate_GS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES);
@@ -57,6 +57,7 @@ PetscErrorCode  SNESRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (SNESRegisterAllCalled) PetscFunctionReturn(0);
   SNESRegisterAllCalled = PETSC_TRUE;
 
   ierr = SNESRegister(SNESNEWTONLS,     SNESCreate_NEWTONLS);CHKERRQ(ierr);
@@ -69,7 +70,7 @@ PetscErrorCode  SNESRegisterAll(void)
   ierr = SNESRegister(SNESNGMRES,       SNESCreate_NGMRES);CHKERRQ(ierr);
   ierr = SNESRegister(SNESQN,           SNESCreate_QN);CHKERRQ(ierr);
   ierr = SNESRegister(SNESSHELL,        SNESCreate_Shell);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESGS,           SNESCreate_GS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESNGS,          SNESCreate_NGS);CHKERRQ(ierr);
   ierr = SNESRegister(SNESNCG,          SNESCreate_NCG);CHKERRQ(ierr);
   ierr = SNESRegister(SNESFAS,          SNESCreate_FAS);CHKERRQ(ierr);
   ierr = SNESRegister(SNESMS,           SNESCreate_MS);CHKERRQ(ierr);

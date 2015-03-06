@@ -8,7 +8,7 @@ configure_options = [
   '--with-clanguage=cxx',
   '--with-debugging=0',
 
-  #'-download-f-blas-lapack=1',
+  #'-download-fblaslapack=1',
   '--download-mpich=1',
   '--download-cmake=1',
   '--download-metis=1',
@@ -19,14 +19,16 @@ configure_options = [
   '--download-superlu_dist=1',
   '--download-scalapack=1',
   '--download-mumps=1',
-  '--download-elemental=1',
+  '--download-parms=1',
+  # no with-cxx-dialect=C++11 support '--download-elemental=1',
   #'--download-hdf5',
   '--download-sundials=1',
   '--download-hypre=1',
-  '--download-umfpack=1',
+  '--download-suitesparse=1',
   '--download-chaco=1',
   '--download-spai=1',
   '--download-moab=1',
+  '--download-saws',
   ]
 
 if __name__ == '__main__':

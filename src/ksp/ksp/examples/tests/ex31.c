@@ -74,7 +74,7 @@ int main(int argc,char **args)
       ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }
 
-    ierr = PetscMalloc(size*sizeof(PetscInt),&count);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size,&count);CHKERRQ(ierr);
     ierr = MatPartitioningCreate(PETSC_COMM_WORLD, &mpart);CHKERRQ(ierr);
     ierr = MatPartitioningSetAdjacency(mpart, A);CHKERRQ(ierr);
     /* ierr = MatPartitioningSetVertexWeights(mpart, weight);CHKERRQ(ierr); */
@@ -124,7 +124,7 @@ int main(int argc,char **args)
 
   /* Create linear solver; set operators; set runtime options.*/
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - -
@@ -138,7 +138,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL, "-ksp_reason", &flg,NULL);CHKERRQ(ierr);
   if (flg) {

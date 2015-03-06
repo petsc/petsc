@@ -32,6 +32,8 @@
 #if !defined(TV_DATA_DISPLAY_H_INCLUDED)
 #define TV_DATA_DISPLAY_H_INCLUDED 1
 
+#include <petscsys.h>
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -47,7 +49,7 @@ enum TV_format_result
 #define TV_ascii_string_type "$string"
 #define TV_int_type "$int"
 
-extern int TV_add_row(const char *field_name,const char *type_name,const void *value);
+PETSC_EXTERN int TV_add_row(const char*,const char*,const void*);
 
 /*
        0: Success

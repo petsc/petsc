@@ -31,17 +31,17 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   if (enorm > 1.) {
     if (!*accept) safety *= basic->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
-      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %G, accepting because step size %G is at minimum\n",enorm,h);CHKERRQ(ierr);
+      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting because step size %g is at minimum\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else if (basic->always_accept) {
-      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %G, accepting step of size %G because always_accept is set\n",enorm,h);CHKERRQ(ierr);
+      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g because always_accept is set\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_TRUE;
     } else {
-      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %G, rejecting step of size %G\n",enorm,h);CHKERRQ(ierr);
+      ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, rejecting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
       *accept = PETSC_FALSE;
     }
   } else {
-    ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %G, accepting step of size %G\n",enorm,h);CHKERRQ(ierr);
+    ierr    = PetscInfo2(adapt,"Estimated scaled local truncation error %g, accepting step of size %g\n",(double)enorm,(double)h);CHKERRQ(ierr);
     *accept = PETSC_TRUE;
   }
 
@@ -70,7 +70,7 @@ static PetscErrorCode TSAdaptDestroy_Basic(TSAdapt adapt)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptSetFromOptions_Basic"
-static PetscErrorCode TSAdaptSetFromOptions_Basic(TSAdapt adapt)
+static PetscErrorCode TSAdaptSetFromOptions_Basic(PetscOptions *PetscOptionsObject,TSAdapt adapt)
 {
   TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
   PetscErrorCode ierr;
@@ -78,7 +78,7 @@ static PetscErrorCode TSAdaptSetFromOptions_Basic(TSAdapt adapt)
   PetscBool      set;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Basic adaptive controller options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Basic adaptive controller options");CHKERRQ(ierr);
   two  = 2;
   ierr = PetscOptionsRealArray("-ts_adapt_basic_clip","Admissible decrease/increase in step size","",basic->clip,&two,&set);CHKERRQ(ierr);
   if (set && (two != 2 || basic->clip[0] > basic->clip[1])) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Must give exactly two values to -ts_adapt_basic_clip");
@@ -101,8 +101,8 @@ static PetscErrorCode TSAdaptView_Basic(TSAdapt adapt,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (basic->always_accept) {ierr = PetscViewerASCIIPrintf(viewer,"  Basic: always accepting steps\n");CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPrintf(viewer,"  Basic: clip fastest decrease %G, fastest increase %G\n",basic->clip[0],basic->clip[1]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Basic: safety factor %G, extra factor after step rejection %G\n",basic->safety,basic->reject_safety);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Basic: clip fastest decrease %g, fastest increase %g\n",(double)basic->clip[0],(double)basic->clip[1]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Basic: safety factor %g, extra factor after step rejection %g\n",(double)basic->safety,(double)basic->reject_safety);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -122,7 +122,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
   TSAdapt_Basic  *a;
 
   PetscFunctionBegin;
-  ierr                       = PetscNewLog(adapt,TSAdapt_Basic,&a);CHKERRQ(ierr);
+  ierr                       = PetscNewLog(adapt,&a);CHKERRQ(ierr);
   adapt->data                = (void*)a;
   adapt->ops->choose         = TSAdaptChoose_Basic;
   adapt->ops->setfromoptions = TSAdaptSetFromOptions_Basic;

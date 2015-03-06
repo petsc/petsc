@@ -1,0 +1,162 @@
+#!/bin/sh
+#
+# This script makes a Apple Mac OS X docset for PETSc see ./makeall
+#
+#
+cd ${PETSC_DIR}
+rm -rf PETSc.docset
+mkdir PETSc.docset
+mkdir PETSc.docset/Contents
+mkdir PETSc.docset/Contents/Resources
+mkdir PETSc.docset/Contents/Resources/Documents
+cat <<EOF > PETSc.docset/Contents/Info.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>CFBundleName</key>
+        <string>PETSc Documentation</string>
+	<key>CFBundleIdentifier</key>
+	<string>gov.anl.mcs.PETSc.docset</string>
+        <key>DocSetPublisherIdentifier</key>
+        <string>gov.anl.mcs.PETSc.documentation</string>
+        <key>DocSetPublisherName</key>
+        <string>PETSc</string>
+</dict>
+</plist>
+EOF
+
+cat <<EOF > PETSc.docset/Contents/Resources/Nodes.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<DocSetNodes version="1.0">
+    <TOC>
+        <Node type="file">
+            <Name>All PETSc manual pages</Name>
+            <Path>manualpages</Path>
+            <File>singleindex.html</File>
+            <Subnodes>
+                <Node  type="folder">
+                   <Name>ODE Integrators -- TS</Name>
+                   <Path>manualpages/TS</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Nonlinear solvers -- SNES</Name>
+                   <Path>manualpages/SNES</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Krylov solvers -- KSP</Name>
+                   <Path>manualpages/KSP</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Preconditioners -- PC</Name>
+                   <Path>manualpages/PC</Path>
+                   <File>index.html</File>
+                </Node>
+               <Node  type="folder">
+                   <Name>Semi-Lagrange solver</Name>
+                   <Path>manualpages/SemiLagrange</Path>
+                   <File>index.html</File>
+                </Node>
+               <Node  type="folder">
+                   <Name>Mesh management -- DM</Name>
+                   <Path>manualpages/DM</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Matrices -- Mat</Name>
+                   <Path>manualpages/Mat</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Matrix-free operators -- MatFD</Name>
+                   <Path>manualpages/MatFD</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Matrix orderings -- MatOrdering</Name>
+                   <Path>manualpages/MatOrderings</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Vectors -- Vec</Name>
+                   <Path>manualpages/Vec</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Indexing -- IS</Name>
+                   <Path>manualpages/IS</Path>
+                   <File>index.html</File>
+                </Node>
+               <Node  type="folder">
+                   <Name>Numbering/Reordering -- AO</Name>
+                   <Path>manualpages/AO</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Viewers -- PetscViewer</Name>
+                   <Path>manualpages/Viewer</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Profiling -- PetscLog</Name>
+                   <Path>manualpages/Profiling</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Utilities -- Sys</Name>
+                   <Path>manualpages/Sys</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Thread parallelism -- PetscThreadComm</Name>
+                   <Path>manualpages/PetscThreadComm</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Low-level communication -- PetscSF</Name>
+                   <Path>manualpages/PetscSF</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>Graphics -- PetscDraw</Name>
+                   <Path>manualpages/Draw</Path>
+                   <File>index.html</File>
+                </Node>
+                <Node  type="folder">
+                   <Name>PF</Name>
+                   <Path>manualpages/PF</Path>
+                   <File>index.html</File>
+                </Node>
+            </Subnodes>
+        </Node>
+    </TOC>
+</DocSetNodes>
+EOF
+
+cat <<EOF > PETSc.docset/Contents/Resources/Tokens.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Tokens version="1.0">
+EOF
+
+cd ${LOC}/docs
+for i in manualpages/*/*.html; do 
+  symbol=`echo $i | sed s?manualpages/[A-Za-z]*/??g | sed s?.html??g`
+  if [ ${symbol} != "index" ]; then
+    echo \<Token\> \<TokenIdentifier\>//apple_ref/c/func/${symbol}\</TokenIdentifier\>\<Path\>${i}\</Path\>\</Token\> >> ${PETSC_DIR}/PETSc.docset/Contents/Resources/Tokens.xml
+  fi;
+done
+
+cd ${PETSC_DIR}
+
+cat <<EOF >> PETSc.docset/Contents/Resources/Tokens.xml
+</Tokens>
+EOF
+
+cp -r ${LOC}/docs/manualpages PETSc.docset/Contents/Resources/Documents
+
+/Applications/Xcode.app/Contents/Developer/usr/bin/docsetutil index -debug -verbose   PETSc.docset
+
+

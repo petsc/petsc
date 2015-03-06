@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   if (rank < size-1) m = n + 2;
   else m = n;
 
-  ierr = PetscMalloc((m)*sizeof(PetscInt),&blks);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&blks);CHKERRQ(ierr);
   blks[0] = n*rank;
   for (i=1; i<m; i++) blks[i] = blks[i-1] + 1;
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,m,blks,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
@@ -57,11 +57,12 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
+  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"----\n");CHKERRQ(ierr);
   ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
   ierr = VecView(y,sviewer);CHKERRQ(ierr); fflush(stdout);
   ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
 

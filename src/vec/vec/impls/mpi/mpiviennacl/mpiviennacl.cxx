@@ -96,7 +96,7 @@ PetscErrorCode VecMDot_MPIViennaCL(Vec xin,PetscInt nv,const Vec y[],PetscScalar
 
   PetscFunctionBegin;
   if (nv > 128) {
-    ierr = PetscMalloc(nv*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(nv,&work);CHKERRQ(ierr);
   }
   ierr = VecMDot_SeqViennaCL(xin,nv,y,work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
@@ -156,7 +156,7 @@ PetscErrorCode VecDuplicate_MPIViennaCL(Vec win,Vec *v)
 
   ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
   ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
-  (*v)->map->bs   = win->map->bs;
+  (*v)->map->bs   = PetscAbs(win->map->bs);
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(0);
 }

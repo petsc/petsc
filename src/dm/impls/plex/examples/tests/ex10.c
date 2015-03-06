@@ -40,12 +40,12 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsInt("-num_fields", "The number of section fields", "ex10.c", options->numFields, &options->numFields, NULL);CHKERRQ(ierr);
   if (options->numFields) {
     len  = options->numFields;
-    ierr = PetscMalloc(len * sizeof(PetscInt), &options->numComponents);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len, &options->numComponents);CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-num_components", "The number of components per field", "ex10.c", options->numComponents, &len, &flg);CHKERRQ(ierr);
     if (flg && (len != options->numFields)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %d should be %d", len, options->numFields);
   }
   len  = (options->dim+1) * PetscMax(1, options->numFields);
-  ierr = PetscMalloc(len * sizeof(PetscInt), &options->numDof);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len, &options->numDof);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex10.c", options->numDof, &len, &flg);CHKERRQ(ierr);
   if (flg && (len != (options->dim+1) * PetscMax(1, options->numFields))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %d should be %d", len, (options->dim+1) * PetscMax(1, options->numFields));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(&user);CHKERRQ(ierr);
   ierr = DMPlexCreateDoublet(PETSC_COMM_WORLD, user.dim, user.cellSimplex, user.interpolate, user.refinementUniform, user.refinementLimit, &dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMPlexCreateSection(dm, user.dim, user.numFields, user.numComponents, user.numDof, 0, NULL, NULL, &s);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, user.dim, user.numFields, user.numComponents, user.numDof, 0, NULL, NULL, NULL, &s);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, s);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
   ierr = TestReordering(dm, &user);CHKERRQ(ierr);

@@ -123,7 +123,8 @@ class Configure(config.base.Configure):
     libs = newlibs
     newlibs = []
     for j in libs:
-      # do not remove duplicate -l, because there is a tiny chance that order may matter
+      # do not remove duplicate non-consecutive -l, because there is a tiny chance that order may matter
+      if newlibs and j == newlibs[-1]: continue
       if j in newlibs and not ( j.startswith('-l') or j == '-framework') : continue
       newlibs.append(j)
     return ' '.join(newlibs)
@@ -468,6 +469,18 @@ int checkInit(void) {
     else:
       self.framework.logPrint('Library was not shared')
     return isShared
+
+  def isBGL(self):
+    '''Returns true if compiler is IBM cross compiler for BGL'''
+    if not hasattr(self, '_isBGL'):
+      self.logPrint('**********Checking if running on BGL/IBM detected')
+      if (self.check('', 'bgl_perfctr_void') or self.check('','ADIOI_BGL_Open')) and self.check('', '_xlqadd'):
+        self.logPrint('*********BGL/IBM detected')
+        self._isBGL = 1
+      else:
+        self.logPrint('*********BGL/IBM test failure')
+        self._isBGL = 0
+    return self._isBGL
 
   def configure(self):
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)

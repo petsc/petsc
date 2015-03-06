@@ -7,8 +7,8 @@ LOCDIR          = src/vec/is/is/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
 EXAMPLESF       = ex1f.F ex2f.F
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_VEC_LIB}
@@ -61,7 +61,7 @@ runex5:
 
 runex6_3:
 	-@${MPIEXEC} -n 3 ./ex6 > ex6_3.tmp 2>&1;                                                 \
-	  ${DIFF} output/ex6_3.out ex6_3.tmp || echo  ${PWD} "\nPossible problems with ex6_3, diffs above \n========================================="; \
+	  ${DIFF} output/ex6_3.out ex6_3.tmp || printf "${PWD}\nPossible problems with ex6_3, diffs above\n=========================================\n"; \
 	  ${RM} -f ex6_3.tmp
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6_3 ex6.rm
@@ -71,4 +71,4 @@ TESTEXAMPLES_FORTRAN_MPIUNI =
 TESTEXAMPLES_C_X_MPIUNI   =
 TESTEXAMPLES_13		    = ex3.PETSc ex3.rm ex4.PETSc ex4.rm
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/test

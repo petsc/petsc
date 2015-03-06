@@ -1,5 +1,5 @@
       program main   !   Solves the linear system  J x = f
-#include <finclude/petscdef.h>
+#include <petsc-finclude/petscdef.h>
       use petscksp; use petscdm
       Vec x,f
       Mat J
@@ -8,7 +8,7 @@
       PetscErrorCode ierr
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call DMDACreate1d(MPI_COMM_WORLD,DMDA_BOUNDARY_NONE,8,1,1,        &
+      call DMDACreate1d(MPI_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,        &
      &  PETSC_NULL_INTEGER,da,ierr)
       call DMCreateGlobalVector(da,x,ierr)
       call VecDuplicate(x,f,ierr)
@@ -19,7 +19,7 @@
       call ComputeMatrix(da,J,ierr)
 
       call KSPCreate(MPI_COMM_WORLD,ksp,ierr)
-      call KSPSetOperators(ksp,J,J,SAME_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,J,J,ierr)
       call KSPSetFromOptions(ksp,ierr)
       call KSPSolve(ksp,f,x,ierr)
 
@@ -31,7 +31,7 @@
       call PetscFinalize(ierr)
       end
       subroutine  ComputeRHS(da,x,ierr)
-#include <finclude/petscdef.h>
+#include <petsc-finclude/petscdef.h>
       use petscdm
       DM da
       Vec x
@@ -55,7 +55,7 @@
       return
       end
       subroutine ComputeMatrix(da,J,ierr)
-#include <finclude/petscdef.h>
+#include <petsc-finclude/petscdef.h>
       use petscdm
       Mat J
       DM da

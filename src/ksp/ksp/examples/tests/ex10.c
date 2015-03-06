@@ -59,7 +59,7 @@ int main(int argc,char **args)
 
   /* Solve linear system */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,mat,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,mat,mat);CHKERRQ(ierr);
   ierr = KSPGMRESSetRestart(ksp,2*m);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
@@ -70,7 +70,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,neg1,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G Number of iterations %D\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Number of iterations %D\n",(double)norm,its);CHKERRQ(ierr);
 
   /* Free work space */
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -104,9 +104,9 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,NULL,&mat);CHKERRQ(ierr);
 
   /* Form stiffness for element */
-  ierr = PetscMalloc(81*sizeof(PetscReal*),&K);CHKERRQ(ierr);
+  ierr = PetscMalloc1(81,&K);CHKERRQ(ierr);
   for (i=0; i<81; i++) {
-    ierr = PetscMalloc(81*sizeof(PetscReal),&K[i]);CHKERRQ(ierr);
+    ierr = PetscMalloc1(81,&K[i]);CHKERRQ(ierr);
   }
   ierr = Elastic20Stiff(K);CHKERRQ(ierr);
 
@@ -150,7 +150,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
   ict    = 0;
-  ierr   = PetscMalloc((N-nstart)*sizeof(PetscInt),&rowkeep);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(N-nstart,&rowkeep);CHKERRQ(ierr);
   for (i=nstart; i<N; i++) {
     ierr = MatGetRow(mat,i,&nz,0,0);CHKERRQ(ierr);
     if (nz) rowkeep[ict++] = i;
@@ -173,7 +173,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = MatView(*newmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatNorm(*newmat,NORM_1,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %g\n",(double)norm);CHKERRQ(ierr);
 
   return 0;
 }

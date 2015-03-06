@@ -5,7 +5,7 @@
  * References : [1] Bai, Zhaojun and  Hu, D. and Reichel, L. A Newton basis GMRES implementation. IMA J. Numer. Anal. 14 (1994), no. 4, 563-581.
  *
  */
-#include "agmresimpl.h"
+#include <agmresimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPAGMRESLejafmaxarray"
@@ -62,8 +62,8 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
   PetscInt       i, pos, j;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(m*sizeof(PetscScalar), &n_cmpl);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt), &spos);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m, &n_cmpl);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m, &spos);CHKERRQ(ierr);
   /* Check the proper order of complex conjugate pairs */
   j = 0;
   while (j  < m) {

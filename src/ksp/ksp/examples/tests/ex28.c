@@ -83,7 +83,7 @@ int main(int argc,char **args)
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
   /*
      Set linear solver defaults for this problem (optional).
@@ -114,7 +114,7 @@ int main(int argc,char **args)
     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
     ierr = PCRedundantGetKSP(pc,&innerksp);CHKERRQ(ierr);
     ierr = KSPGetPC(innerksp,&innerpc);CHKERRQ(ierr);
-    ierr = PCGetOperators(innerpc,NULL,&A_redundant,NULL);CHKERRQ(ierr);
+    ierr = PCGetOperators(innerpc,NULL,&A_redundant);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)A_redundant,&subcomm);CHKERRQ(ierr); 
     ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
     if (subsize==1 && !rank) {
@@ -133,7 +133,7 @@ int main(int argc,char **args)
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   if (norm > 1.e-14) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
   }
 
   /* Free work space. */

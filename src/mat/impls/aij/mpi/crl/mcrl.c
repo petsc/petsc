@@ -62,7 +62,7 @@ PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
   aijcrl->rmax = rmax;
 
   ierr  = PetscFree2(aijcrl->acols,aijcrl->icols);CHKERRQ(ierr);
-  ierr  = PetscMalloc2(rmax*m,PetscScalar,&aijcrl->acols,rmax*m,PetscInt,&aijcrl->icols);CHKERRQ(ierr);
+  ierr  = PetscMalloc2(rmax*m,&aijcrl->acols,rmax*m,&aijcrl->icols);CHKERRQ(ierr);
   acols = aijcrl->acols;
   icols = aijcrl->icols;
   for (i=0; i<m; i++) {
@@ -82,7 +82,7 @@ PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
   ierr = PetscInfo1(A,"Percentage of 0's introduced for vectorized multiply %g\n",1.0-((double)(aijcrl->nz))/((double)(rmax*m)));CHKERRQ(ierr);
 
   ierr = PetscFree(aijcrl->array);CHKERRQ(ierr);
-  ierr = PetscMalloc((a->B->cmap->n+nd)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+  ierr = PetscMalloc1(a->B->cmap->n+nd,&array);CHKERRQ(ierr);
   /* xwork array is actually B->n+nd long, but we define xwork this length so can copy into it */
   ierr = VecDestroy(&aijcrl->xwork);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)A),1,nd,PETSC_DECIDE,array,&aijcrl->xwork);CHKERRQ(ierr);
@@ -137,7 +137,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatRe
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr     = PetscNewLog(B,Mat_AIJCRL,&aijcrl);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&aijcrl);CHKERRQ(ierr);
   B->spptr = (void*) aijcrl;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */

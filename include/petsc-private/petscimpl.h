@@ -144,9 +144,9 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscOb
 
 @*/
 #define PetscHeaderCreate(h,tp,pops,classid,class_name,descr,mansec,com,des,vie) \
-  (PetscNew(struct tp,&(h)) ||                                                  \
-   PetscNew(PetscOps,&(((PetscObject)(h))->bops)) ||                            \
-   PetscNew(pops,&((h)->ops)) ||                                                \
+  (PetscNew(&(h)) ||                                                  \
+   PetscNew(&(((PetscObject)(h))->bops)) ||                            \
+   PetscNew(&((h)->ops)) ||                                                \
    PetscHeaderCreate_Private((PetscObject)h,classid,class_name,descr,mansec,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
    PetscLogObjectCreate(h) ||                                                   \
    PetscLogObjectMemory((PetscObject)h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
@@ -193,6 +193,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #define PetscValidIntPointer(h,arg) do {} while (0)
 #define PetscValidScalarPointer(h,arg) do {} while (0)
 #define PetscValidRealPointer(h,arg) do {} while (0)
+#define PetscValidFunction(h,arg) do {} while (0)
 
 #else
 
@@ -242,6 +243,11 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
   do {                                                                  \
     if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg); \
     if (!PetscCheckPointer(h,PETSC_REAL)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscReal: Parameter # %d",arg); \
+  } while (0)
+
+#define PetscValidFunction(f,arg)                                       \
+  do {                                                                  \
+    if (!f) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Function Pointer: Parameter # %d",arg); \
   } while (0)
 
 #endif
@@ -364,8 +370,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
   }
 
 /*MC
-   PetscObjectStateIncrease - Increases the state of any PetscObject,
-   regardless of the type.
+   PetscObjectStateIncrease - Increases the state of any PetscObject
 
    Synopsis:
    #include "petsc-private/petscimpl.h"
@@ -379,7 +384,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
          PetscObjectStateIncrease((PetscObject)mat);
 
    Notes: object state is an integer which gets increased every time
-   the object is changed. By saving and later querying the object state
+   the object is changed internally. By saving and later querying the object state
    one can determine whether information about the object is still current.
    Currently, state is maintained for Vec and Mat objects.
 
@@ -424,8 +429,7 @@ PETSC_EXTERN PetscInt         PetscObjectComposedDataMax;
 -  data - the data to  be attached
 
    Notes
-   The data identifier can best be determined through a call to
-   PetscObjectComposedDataRegister()
+   The data identifier can best be created through a call to  PetscObjectComposedDataRegister()
 
    Level: developer
 M*/
@@ -767,5 +771,29 @@ typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BO
 E*/
 typedef enum {PETSC_VIENNACL_UNALLOCATED,PETSC_VIENNACL_GPU,PETSC_VIENNACL_CPU,PETSC_VIENNACL_BOTH} PetscViennaCLFlag;
 #endif
+
+typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
+
+#define REDUCE_SUM  0
+#define REDUCE_MAX  1
+#define REDUCE_MIN  2
+
+typedef struct {
+  MPI_Comm    comm;
+  MPI_Request request;
+  PetscBool   async;
+  PetscScalar *lvalues;     /* this are the reduced values before call to MPI_Allreduce() */
+  PetscScalar *gvalues;     /* values after call to MPI_Allreduce() */
+  void        **invecs;     /* for debugging only, vector/memory used with each op */
+  PetscInt    *reducetype;  /* is particular value to be summed or maxed? */
+  SRState     state;        /* are we calling xxxBegin() or xxxEnd()? */
+  PetscInt    maxops;       /* total amount of space we have for requests */
+  PetscInt    numopsbegin;  /* number of requests that have been queued in */
+  PetscInt    numopsend;    /* number of requests that have been gotten by user */
+} PetscSplitReduction;
+
+PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm,PetscSplitReduction**);
+PETSC_EXTERN PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction*);
+PETSC_EXTERN PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction*);
 
 #endif /* _PETSCHEAD_H */

@@ -52,7 +52,6 @@ int main(int argc,char **args)
   ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&LU);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(LU,C,perm,iperm,&luinfo);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(LU,C,&luinfo);CHKERRQ(ierr);
-  ierr = MatView(LU,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u);CHKERRQ(ierr);
   ierr = VecSet(u,one);CHKERRQ(ierr);
@@ -67,7 +66,7 @@ int main(int argc,char **args)
 
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",(double)norm);CHKERRQ(ierr);
 
   ierr = MatGetInfo(C,MAT_LOCAL,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"original matrix nonzeros = %D\n",(PetscInt)info.nz_used);CHKERRQ(ierr);

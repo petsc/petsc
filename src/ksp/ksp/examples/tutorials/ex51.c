@@ -16,14 +16,14 @@ static PetscReal      src(PetscReal,PetscReal);
 static PetscReal      ubdy(PetscReal,PetscReal);
 static PetscReal      polyBasisFunc(PetscInt,PetscInt,PetscReal*,PetscReal);
 static PetscReal      derivPolyBasisFunc(PetscInt,PetscInt,PetscReal*,PetscReal);
-static PetscErrorCode Form1DElementMass(PetscReal,PetscInt,double*,double*,PetscScalar*);
-static PetscErrorCode Form1DElementStiffness(PetscReal,PetscInt,double*,double*,PetscScalar*);
+static PetscErrorCode Form1DElementMass(PetscReal,PetscInt,PetscReal*,PetscReal*,PetscScalar*);
+static PetscErrorCode Form1DElementStiffness(PetscReal,PetscInt,PetscReal*,PetscReal*,PetscScalar*);
 static PetscErrorCode Form2DElementMass(PetscInt,PetscScalar*,PetscScalar*);
 static PetscErrorCode Form2DElementStiffness(PetscInt,PetscScalar*,PetscScalar*,PetscScalar*);
-static PetscErrorCode FormNodalRhs(PetscInt,PetscReal,PetscReal,PetscReal,double*,PetscScalar*);
-static PetscErrorCode FormNodalSoln(PetscInt,PetscReal,PetscReal,PetscReal,double*,PetscScalar*);
-static void leggaulob(double, double, double [], double [], int);
-static void qAndLEvaluation(int, double, double*, double*, double*);
+static PetscErrorCode FormNodalRhs(PetscInt,PetscReal,PetscReal,PetscReal,PetscReal*,PetscScalar*);
+static PetscErrorCode FormNodalSoln(PetscInt,PetscReal,PetscReal,PetscReal,PetscReal*,PetscScalar*);
+static void leggaulob(PetscReal, PetscReal, PetscReal [], PetscReal [], int);
+static void qAndLEvaluation(int, PetscReal, PetscReal*, PetscReal*, PetscReal*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -73,17 +73,17 @@ int main(int argc,char **args)
   num1Dnodes = (p+1);
   num2Dnodes = num1Dnodes*num1Dnodes;
 
-  ierr = PetscMalloc((num1Dnodes*num1Dnodes)*sizeof(PetscScalar),&Me1D);CHKERRQ(ierr);
-  ierr = PetscMalloc((num1Dnodes*num1Dnodes)*sizeof(PetscScalar),&Ke1D);CHKERRQ(ierr);
-  ierr = PetscMalloc((num2Dnodes*num2Dnodes)*sizeof(PetscScalar),&Me2D);CHKERRQ(ierr);
-  ierr = PetscMalloc((num2Dnodes*num2Dnodes)*sizeof(PetscScalar),&Ke2D);CHKERRQ(ierr);
-  ierr = PetscMalloc(num2Dnodes*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  ierr = PetscMalloc(num2Dnodes*sizeof(PetscScalar),&r);CHKERRQ(ierr);
-  ierr = PetscMalloc(num2Dnodes*sizeof(PetscScalar),&ue);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num1Dnodes*num1Dnodes,&Me1D);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num1Dnodes*num1Dnodes,&Ke1D);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num2Dnodes*num2Dnodes,&Me2D);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num2Dnodes*num2Dnodes,&Ke2D);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num2Dnodes,&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num2Dnodes,&r);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num2Dnodes,&ue);CHKERRQ(ierr);
 
   /* Allocate quadrature and create stiffness matrices */
-  ierr = PetscMalloc((p+1)*sizeof(PetscReal),&gllNode);CHKERRQ(ierr);
-  ierr = PetscMalloc((p+1)*sizeof(PetscReal),&gllWgts);CHKERRQ(ierr);
+  ierr = PetscMalloc1(p+1,&gllNode);CHKERRQ(ierr);
+  ierr = PetscMalloc1(p+1,&gllWgts);CHKERRQ(ierr);
   leggaulob(0.0,1.0,gllNode,gllWgts,p); /* Get GLL nodes and weights */
   ierr = Form1DElementMass(h,p,gllNode,gllWgts,Me1D);CHKERRQ(ierr);
   ierr = Form1DElementStiffness(h,p,gllNode,gllWgts,Ke1D);CHKERRQ(ierr);
@@ -153,9 +153,9 @@ int main(int argc,char **args)
   ierr = MatMult(Mass,q,b);CHKERRQ(ierr);
 
   /* Modify matrix and right-hand-side for Dirichlet boundary conditions */
-  ierr = PetscMalloc(4*p*m*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(4*p*m*sizeof(PetscReal),&rowsx);CHKERRQ(ierr);
-  ierr = PetscMalloc(4*p*m*sizeof(PetscReal),&rowsy);CHKERRQ(ierr);
+  ierr = PetscMalloc1(4*p*m,&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(4*p*m,&rowsx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(4*p*m,&rowsy);CHKERRQ(ierr);
   for (i=0; i<p*m+1; i++) {
     rows[i]          = i; /* bottom */
     rowsx[i]         = (i/p)*h+gllNode[i%p]*h;
@@ -199,7 +199,7 @@ int main(int argc,char **args)
 
   /* Solve linear system */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
@@ -208,7 +208,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(u,-1.0,ustar);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G Iterations %D\n",norm*h,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its);CHKERRQ(ierr);
 
   ierr = PetscFree(gllNode);CHKERRQ(ierr);
   ierr = PetscFree(gllWgts);CHKERRQ(ierr);
@@ -230,10 +230,10 @@ int main(int argc,char **args)
 #undef __FUNCT__
 #define __FUNCT__ "Form1DElementMass"
 /* 1d element stiffness mass matrix  */
-static PetscErrorCode Form1DElementMass(PetscReal H,PetscInt P,double *gqn,double *gqw,PetscScalar *Me1D)
+static PetscErrorCode Form1DElementMass(PetscReal H,PetscInt P,PetscReal *gqn,PetscReal *gqw,PetscScalar *Me1D)
 {
-  int i,j,k;
-  int indx;
+  PetscInt i,j,k;
+  PetscInt indx;
 
   PetscFunctionBeginUser;
   for (j=0; j<(P+1); ++j) {
@@ -253,10 +253,10 @@ static PetscErrorCode Form1DElementMass(PetscReal H,PetscInt P,double *gqn,doubl
 #undef __FUNCT__
 #define __FUNCT__ "Form1DElementStiffness"
 /* 1d element stiffness matrix for derivative */
-static PetscErrorCode Form1DElementStiffness(PetscReal H,PetscInt P,double *gqn,double *gqw,PetscScalar *Ke1D)
+static PetscErrorCode Form1DElementStiffness(PetscReal H,PetscInt P,PetscReal *gqn,PetscReal *gqw,PetscScalar *Ke1D)
 {
-  int i,j,k;
-  int indx;
+  PetscInt i,j,k;
+  PetscInt indx;
 
   PetscFunctionBeginUser;
   for (j=0;j<(P+1);++j) {
@@ -278,8 +278,8 @@ static PetscErrorCode Form1DElementStiffness(PetscReal H,PetscInt P,double *gqn,
    /* element mass matrix */
 static PetscErrorCode Form2DElementMass(PetscInt P,PetscScalar *Me1D,PetscScalar *Me2D)
 {
-  int i1,j1,i2,j2;
-  int indx1,indx2,indx3;
+  PetscInt i1,j1,i2,j2;
+  PetscInt indx1,indx2,indx3;
 
   PetscFunctionBeginUser;;
   for (j2=0;j2<(P+1);++j2) {
@@ -304,8 +304,8 @@ static PetscErrorCode Form2DElementMass(PetscInt P,PetscScalar *Me1D,PetscScalar
 /* element stiffness for Laplacian */
 static PetscErrorCode Form2DElementStiffness(PetscInt P,PetscScalar *Ke1D,PetscScalar *Me1D,PetscScalar *Ke2D)
 {
-  int i1,j1,i2,j2;
-  int indx1,indx2,indx3;
+  PetscInt i1,j1,i2,j2;
+  PetscInt indx1,indx2,indx3;
 
   PetscFunctionBeginUser;
   for (j2=0;j2<(P+1);++j2) {
@@ -327,9 +327,9 @@ static PetscErrorCode Form2DElementStiffness(PetscInt P,PetscScalar *Ke1D,PetscS
 
 #undef __FUNCT__
 #define __FUNCT__ "FormNodalRhs"
-static PetscErrorCode FormNodalRhs(PetscInt P,PetscReal x,PetscReal y,PetscReal H,double* nds,PetscScalar *r)
+static PetscErrorCode FormNodalRhs(PetscInt P,PetscReal x,PetscReal y,PetscReal H,PetscReal* nds,PetscScalar *r)
 {
-  int i,j,indx;
+  PetscInt i,j,indx;
 
   PetscFunctionBeginUser;
   indx=0;
@@ -346,9 +346,9 @@ static PetscErrorCode FormNodalRhs(PetscInt P,PetscReal x,PetscReal y,PetscReal 
 
 #undef __FUNCT__
 #define __FUNCT__ "FormNodalSoln"
-static PetscErrorCode FormNodalSoln(PetscInt P,PetscReal x,PetscReal y,PetscReal H,double* nds,PetscScalar *u)
+static PetscErrorCode FormNodalSoln(PetscInt P,PetscReal x,PetscReal y,PetscReal H,PetscReal* nds,PetscScalar *u)
 {
-  int i,j,indx;
+  PetscInt i,j,indx;
 
   PetscFunctionBeginUser;
   indx=0;
@@ -422,16 +422,15 @@ static PetscReal src(PetscReal x,PetscReal y)
 }
 /* --------------------------------------------------------------------- */
 
-static void leggaulob(double x1, double x2, double x[], double w[], int n)
+static void leggaulob(PetscReal x1, PetscReal x2, PetscReal x[], PetscReal w[], int n)
 /*******************************************************************************
 Given the lower and upper limits of integration x1 and x2, and given n, this
 routine returns arrays x[0..n-1] and w[0..n-1] of length n, containing the abscissas
 and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
 *******************************************************************************/
 {
-  int    j,m;
-  double z1,z,xm,xl,q,qp,Ln,scale;
-  double pi=3.1415926535897932385;
+  PetscInt    j,m;
+  PetscReal z1,z,xm,xl,q,qp,Ln,scale;
   if (n==1) {
     x[0] = x1;   /* Scale the root to the desired interval, */
     x[1] = x2;   /* and put in its symmetric counterpart.   */
@@ -446,7 +445,7 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
     xm   = 0.5*(x2+x1);
     xl   = 0.5*(x2-x1);
     for (j=1; j<=(m-1); j++) { /* Loop over the desired roots. */
-      z=-1.0*cos((pi*(j+0.25)/(n))-(3.0/(8.0*n*pi))*(1.0/(j+0.25)));
+      z=-1.0*PetscCosReal((PETSC_PI*(j+0.25)/(n))-(3.0/(8.0*n*PETSC_PI))*(1.0/(j+0.25)));
       /* Starting with the above approximation to the ith root, we enter */
       /* the main loop of refinement by Newton's method.                 */
       do {
@@ -473,7 +472,7 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
 
 
 /******************************************************************************/
-static void qAndLEvaluation(int n, double x, double *q, double *qp, double *Ln)
+static void qAndLEvaluation(PetscInt n, PetscReal x, PetscReal *q, PetscReal *qp, PetscReal *Ln)
 /*******************************************************************************
 Compute the polynomial qn(x) = L_{N+1}(x) - L_{n-1}(x) and its derivative in
 addition to L_N(x) as these are needed for the GLL points.  See the book titled
@@ -481,12 +480,12 @@ addition to L_N(x) as these are needed for the GLL points.  See the book titled
 for Scientists and Engineers" by David A. Kopriva.
 *******************************************************************************/
 {
-  int k;
+  PetscInt k;
 
-  double Lnp;
-  double Lnp1, Lnp1p;
-  double Lnm1, Lnm1p;
-  double Lnm2, Lnm2p;
+  PetscReal Lnp;
+  PetscReal Lnp1, Lnp1p;
+  PetscReal Lnm1, Lnm1p;
+  PetscReal Lnm2, Lnm2p;
 
   Lnm1  = 1.0;
   *Ln   = x;

@@ -148,7 +148,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
       ierr = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
       ierr = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
-      ierr = PetscMalloc(sizeof(PetscCommCounter),&counter);CHKERRQ(ierr);
+      ierr = PetscNew(&counter);CHKERRQ(ierr);
 
       counter->tag       = *maxval;
       counter->refcount  = 0;

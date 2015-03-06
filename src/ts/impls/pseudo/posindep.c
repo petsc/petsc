@@ -286,14 +286,14 @@ static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes,Vec X,Vec Y,TS ts)
 
        J = I/dt - J_{Frhs}   where J_{Frhs} is the given Jacobian of Frhs.
 */
-static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes,Vec X,Mat *AA,Mat *BB,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes,Vec X,Mat AA,Mat BB,TS ts)
 {
   Vec            Xdot;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = TSPseudoGetXdot(ts,X,&Xdot);CHKERRQ(ierr);
-  ierr = TSComputeIJacobian(ts,ts->ptime+ts->time_step,X,Xdot,1./ts->time_step,AA,BB,str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,ts->ptime+ts->time_step,X,Xdot,1./ts->time_step,AA,BB,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -331,14 +331,14 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
     ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"TS %D dt %G time %G fnorm %G\n",step,ts->time_step,ptime,pseudo->fnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"TS %D dt %g time %g fnorm %g\n",step,(double)ts->time_step,(double)ptime,(double)pseudo->fnorm);CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Pseudo"
-static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
+static PetscErrorCode TSSetFromOptions_Pseudo(PetscOptions *PetscOptionsObject,TS ts)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -346,7 +346,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
   PetscViewer    viewer;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Pseudo-timestepping options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_monitor_pseudo","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts),"stdout",&viewer);CHKERRQ(ierr);
@@ -357,8 +357,8 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
   if (flg) {
     ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_pseudo_max_dt","Maximum value for dt","TSPseudoSetMaxTimeStep",pseudo->dt_max,&pseudo->dt_max,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_pseudo_max_dt","Maximum value for dt","TSPseudoSetMaxTimeStep",pseudo->dt_max,&pseudo->dt_max,NULL);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -432,7 +432,7 @@ PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void
 -   inc - the scaling factor >= 1.0
 
     Options Database Key:
-$    -ts_pseudo_increment <increment>
+.    -ts_pseudo_increment <increment>
 
     Level: advanced
 
@@ -464,7 +464,7 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
 -   maxdt - the maximum time step, use a non-positive value to deactivate
 
     Options Database Key:
-$    -ts_pseudo_max_dt <increment>
+.    -ts_pseudo_max_dt <increment>
 
     Level: advanced
 
@@ -498,7 +498,7 @@ $         dt = current_dt*previous_fnorm/current_fnorm.
 .   ts - the timestep context
 
     Options Database Key:
-$    -ts_pseudo_increment_dt_from_initial_dt
+.    -ts_pseudo_increment_dt_from_initial_dt
 
     Level: advanced
 
@@ -688,7 +688,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
   ierr = SNESGetType(snes,&stype);CHKERRQ(ierr);
   if (!stype) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
 
-  ierr = PetscNewLog(ts,TS_Pseudo,&pseudo);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&pseudo);CHKERRQ(ierr);
   ts->data = (void*)pseudo;
 
   pseudo->dt_increment                 = 1.1;

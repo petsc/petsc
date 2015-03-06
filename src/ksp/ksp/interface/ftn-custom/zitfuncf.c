@@ -85,12 +85,12 @@ PETSC_EXTERN void  kspmonitorsingularvalue_(KSP *ksp,PetscInt *it,PetscReal *nor
   *ierr = KSPMonitorSingularValue(*ksp,*it,*norm,ctx);
 }
 
-PETSC_EXTERN void  kspmonitorlgresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void  kspmonitorlgresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,PetscObject *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPMonitorLGResidualNorm(*ksp,*it,*norm,ctx);
 }
 
-PETSC_EXTERN void  kspmonitorlgtrueresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void  kspmonitorlgtrueresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,PetscObject *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPMonitorLGTrueResidualNorm(*ksp,*it,*norm,ctx);
 }
@@ -117,7 +117,6 @@ static struct {
 static PetscErrorCode ourmonitor(KSP ksp,PetscInt i,PetscReal d,void *ctx)
 {
   PetscObjectUseFortranCallback(ksp,_cb.monitor,(KSP*,PetscInt*,PetscReal*,void*,PetscErrorCode*),(&ksp,&i,&d,_ctx,&ierr));
-  return 0;
 }
 
 #undef __FUNCT__
@@ -126,7 +125,6 @@ static PetscErrorCode ourdestroy(void **ctx)
 {
   KSP ksp = (KSP)*ctx;
   PetscObjectUseFortranCallback(ksp,_cb.monitordestroy,(void*,PetscErrorCode*),(_ctx,&ierr));
-  return 0;
 }
 
 /* These are not extern C because they are passed into non-extern C user level functions */
@@ -135,7 +133,6 @@ static PetscErrorCode ourdestroy(void **ctx)
 static PetscErrorCode ourtest(KSP ksp,PetscInt i,PetscReal d,KSPConvergedReason *reason,void *ctx)
 {
   PetscObjectUseFortranCallback(ksp,_cb.test,(KSP*,PetscInt*,PetscReal*,KSPConvergedReason*,void*,PetscErrorCode*),(&ksp,&i,&d,reason,_ctx,&ierr));
-  return 0;
 }
 
 #undef __FUNCT__
@@ -144,7 +141,6 @@ static PetscErrorCode ourtestdestroy(void *ctx)
 {
   KSP ksp = (KSP)ctx;
   PetscObjectUseFortranCallback(ksp,_cb.testdestroy,(void*,PetscErrorCode*),(_ctx,&ierr));
-  return 0;
 }
 
 PETSC_EXTERN void PETSC_STDCALL kspmonitorset_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,PetscInt*,PetscReal*,void*,PetscErrorCode*),
@@ -156,9 +152,9 @@ PETSC_EXTERN void PETSC_STDCALL kspmonitorset_(KSP *ksp,void (PETSC_STDCALL *mon
   if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitordefault_) {
     *ierr = KSPMonitorSet(*ksp,KSPMonitorDefault,0,0);
   } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitorlgresidualnorm_) {
-    *ierr = KSPMonitorSet(*ksp,KSPMonitorLGResidualNorm,0,0);
+    *ierr = KSPMonitorSet(*ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorLGResidualNorm,0,0);
   } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitorlgtrueresidualnorm_) {
-    *ierr = KSPMonitorSet(*ksp,KSPMonitorLGTrueResidualNorm,0,0);
+    *ierr = KSPMonitorSet(*ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorLGTrueResidualNorm,0,0);
   } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitorsolution_) {
     *ierr = KSPMonitorSet(*ksp,KSPMonitorSolution,0,0);
   } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitortrueresidualnorm_) {

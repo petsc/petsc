@@ -1,5 +1,5 @@
 /*
-  Interface to the PETSc graphics (currently only support for X-windows
+  Interface to the PETSc graphics
 */
 #if !defined(__PETSCDRAW_H)
 #define __PETSCDRAW_H
@@ -8,23 +8,7 @@
 
 PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 
-/*J
-    PetscDrawType - String with the name of a PetscDraw
-
-   Level: beginner
-
-.seealso: PetscDrawSetType(), PetscDraw, PetscViewer, PetscDrawCreate()
-J*/
-typedef const char* PetscDrawType;
-#define PETSC_DRAW_X          "x"
-#define PETSC_DRAW_GLUT       "glut"
-#define PETSC_DRAW_OPENGLES   "opengles"
-#define PETSC_DRAW_NULL       "null"
-#define PETSC_DRAW_WIN32      "win32"
-#define PETSC_DRAW_TIKZ       "tikz"
-
 PETSC_EXTERN PetscFunctionList PetscDrawList;
-PETSC_EXTERN PetscErrorCode PetscDrawRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscDrawInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscDrawRegister(const char[],PetscErrorCode(*)(PetscDraw));
 
@@ -35,6 +19,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetFromOptions(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawSetSave(PetscDraw,const char*,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw,const char*);
 PETSC_EXTERN PetscErrorCode PetscDrawView(PetscDraw,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode PetscDrawViewFromOptions(PetscDraw A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 /*
    Number of basic colors in the draw routines, the others are used

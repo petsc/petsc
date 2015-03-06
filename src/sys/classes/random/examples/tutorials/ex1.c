@@ -36,7 +36,7 @@ int main(int argc,char **argv)
 #endif
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(n*sizeof(PetscInt),&values);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
     if (view_rank == (PetscInt)rank) {

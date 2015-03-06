@@ -34,7 +34,6 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
   PetscReal      dp = 0.0;
   Vec            x,b,r,p,s,S,z,Z;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
@@ -50,7 +49,7 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
   z = ksp->work[4];
   Z = ksp->work[5];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
@@ -151,12 +150,12 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
 /*MC
    KSPGROPPCG - A pipelined conjugate gradient method from Bill Gropp
 
-   There method has two reductions, one of which is overlapped with the matrix-vector product and one of which is
+   This method has two reductions, one of which is overlapped with the matrix-vector product and one of which is
    overlapped with the preconditioner.
 
    See also KSPPIPECG, which has only a single reduction that overlaps both the matrix-vector product and the preconditioner.
 
-   Level: beginner
+   Level: intermediate
 
    Notes:
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
@@ -178,10 +177,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_GROPPCG;
   ksp->ops->solve          = KSPSolve_GROPPCG;

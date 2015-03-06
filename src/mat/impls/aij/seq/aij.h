@@ -21,8 +21,6 @@
   PetscInt          rmax;             /* max nonzeros in any row */ \
   PetscBool         keepnonzeropattern;   /* keeps matrix structure same in calls to MatZeroRows()*/ \
   PetscBool         ignorezeroentries; \
-  PetscInt          *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */ \
-  Mat               XtoY;             /* used by MatAXPY() */ \
   PetscBool         free_ij;          /* free the column indices j and row offsets i when the matrix is destroyed */ \
   PetscBool         free_a;           /* free the numerical values when matrix is destroy */ \
   Mat_CompressedRow compressedrow;    /* use compressed row format */                      \
@@ -73,17 +71,6 @@ typedef struct {
   PetscErrorCode (*destroy)(Mat);
 } Mat_MatMatMatMult;
 
-typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
-  PetscInt     nzlocal,nsends,nrecvs;
-  PetscMPIInt  *send_rank,*recv_rank;
-  PetscInt     *sbuf_nz,*rbuf_nz,*sbuf_j,**rbuf_j;
-  PetscScalar  *sbuf_a,**rbuf_a;
-  PetscSubcomm psubcomm;
-  IS           isrow,iscol;
-  Mat          *matseq;
-  PetscErrorCode (*Destroy)(Mat);
-} Mat_Redundant;
-
 /*
   MATSEQAIJ format - Compressed row storage (also called Yale sparse matrix
   format) or compressed sparse row (CSR).  The i[] and j[] arrays start at 0. For example,
@@ -133,7 +120,6 @@ typedef struct {
   Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
   Mat_RARt          *rart;               /* used by MatRARt() */
   Mat_MatMatTransMult *abt;              /* used by MatMatTransposeMult() */
-  Mat_Redundant       *redundant;        /* used by MatGetRedundantMatrix() */
 } Mat_SeqAIJ;
 
 /*
@@ -165,9 +151,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
     PetscInt CHUNKSIZE = 15,new_nz = AI[AM] + CHUNKSIZE,len,*new_i=0,*new_j=0; \
     datatype *new_a; \
  \
-    if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc",ROW,COL); \
+    if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
     /* malloc new storage space */ \
-    ierr = PetscMalloc3(BS2*new_nz,datatype,&new_a,new_nz,PetscInt,&new_j,AM+1,PetscInt,&new_i);CHKERRQ(ierr); \
+    ierr = PetscMalloc3(BS2*new_nz,&new_a,new_nz,&new_j,AM+1,&new_i);CHKERRQ(ierr); \
  \
     /* copy over old data into new slots */ \
     for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
@@ -250,7 +236,7 @@ PETSC_INTERN PetscErrorCode MatEqual_SeqAIJ(Mat,Mat,PetscBool*);
 PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat,ISColoring,MatFDColoring);
 PETSC_INTERN PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat,ISColoring,MatFDColoring);
 PETSC_INTERN PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat,MatFDColoring,PetscInt);
-PETSC_INTERN PetscErrorCode MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
+PETSC_INTERN PetscErrorCode MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,void*);
 PETSC_INTERN PetscErrorCode MatLoad_SeqAIJ(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
 
@@ -326,6 +312,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
 
+PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqX_private(PetscInt,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*);
+PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
 /*
     PetscSparseDenseMinusDot - The inner kernel of triangular solves and Gauss-Siedel smoothing. \sum_i xv[i] * r[xi[i]] for CSR storage

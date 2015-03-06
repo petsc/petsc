@@ -28,6 +28,9 @@ PetscInt main(PetscInt argc,char **args)
 
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
+#endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 
@@ -103,8 +106,8 @@ PetscInt main(PetscInt argc,char **args)
 
   ierr = VecGetOwnershipRange(fin,&low,NULL);
   printf("The local index is %d from %d\n",low,rank);
-  ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1*N2,&indx3);
-  ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1*N2,&indx4);
+  ierr = PetscMalloc1(local_n0*N1*N2,&indx3);
+  ierr = PetscMalloc1(local_n0*N1*N2,&indx4);
   for (i=0; i<local_n0; i++) {
     for (j=0;j<N1;j++) {
       for (k=0;k<N2;k++) {

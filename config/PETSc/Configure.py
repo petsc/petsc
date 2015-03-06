@@ -28,14 +28,13 @@ class Configure(config.base.Configure):
       build_type = 'legacy build'
     desc.append(' Configure stage complete. Now build PETSc libraries with (%s):' % build_type)
     desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
-    desc.append(' or (experimental with python):')
-    desc.append('   PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' ./config/builder.py')
     desc.append('xxx=========================================================================xxx')
     return '\n'.join(desc)+'\n'
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc',  '-prefix=<dir>',                  nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
+    help.addArgument('PETSc',  '-prefix=<dir>',                   nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
+    help.addArgument('PETSc',  '-with-prefetch=<bool>',           nargs.ArgBool(None, 1,'Enable checking for prefetch instructions'))
     help.addArgument('Windows','-with-windows-graphics=<bool>',   nargs.ArgBool(None, 1,'Enable check for Windows Graphics'))
     help.addArgument('PETSc', '-with-default-arch=<bool>',        nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
@@ -44,13 +43,15 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
+    self.programs      = framework.require('config.programs',           self)
     self.setCompilers  = framework.require('config.setCompilers',       self)
-    self.arch          = framework.require('PETSc.utilities.arch',      self.setCompilers)
-    self.petscdir      = framework.require('PETSc.utilities.petscdir',  self.setCompilers)
-    self.installdir    = framework.require('PETSc.utilities.installDir',self)
-    self.languages     = framework.require('PETSc.utilities.languages', self.setCompilers)
-    self.debugging     = framework.require('PETSc.utilities.debugging', self.setCompilers)
-    self.CHUD          = framework.require('PETSc.utilities.CHUD',      self)
+    self.compilers     = framework.require('config.compilers',          self)
+    self.arch          = framework.require('PETSc.options.arch',        self.setCompilers)
+    self.petscdir      = framework.require('PETSc.options.petscdir',    self.arch)
+    self.installdir    = framework.require('PETSc.options.installDir',  self)
+    self.languages     = framework.require('PETSc.options.languages',   self.setCompilers)
+    self.debugging     = framework.require('PETSc.options.debugging',   self.setCompilers)
+    self.indexTypes    = framework.require('PETSc.options.indexTypes',  self.compilers)
     self.compilers     = framework.require('config.compilers',          self)
     self.types         = framework.require('config.types',              self)
     self.headers       = framework.require('config.headers',            self)
@@ -59,35 +60,63 @@ class Configure(config.base.Configure):
     self.atomics       = framework.require('config.atomics',            self)
     self.make          = framework.require('config.packages.make',      self)
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
-    self.externalpackagesdir = framework.require('PETSc.utilities.externalpackagesdir',self)
+    self.cmake         = framework.require('config.packages.cmake',self)
+    self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
+    self.mpi             = framework.require('config.packages.MPI',self)
 
-    if os.path.isdir(os.path.join('config', 'PETSc')):
-      for d in ['utilities', 'packages']:
-        for utility in os.listdir(os.path.join('config', 'PETSc', d)):
-          (utilityName, ext) = os.path.splitext(utility)
-          if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
-            utilityObj                    = self.framework.require('PETSc.'+d+'.'+utilityName, self)
-            utilityObj.headerPrefix       = self.headerPrefix
-            utilityObj.archProvider       = self.arch
-            utilityObj.languageProvider   = self.languages
-            utilityObj.installDirProvider = self.installdir
-            utilityObj.externalPackagesDirProvider = self.externalpackagesdir
-            setattr(self, utilityName.lower(), utilityObj)
+    for utility in os.listdir(os.path.join('config','PETSc','options')):
+      (utilityName, ext) = os.path.splitext(utility)
+      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
+        utilityObj                    = self.framework.require('PETSc.options.'+utilityName, self)
+        utilityObj.headerPrefix       = self.headerPrefix
+        utilityObj.archProvider       = self.arch
+        utilityObj.languageProvider   = self.languages
+        utilityObj.installDirProvider = self.installdir
+        utilityObj.externalPackagesDirProvider = self.externalpackagesdir
+        setattr(self, utilityName.lower(), utilityObj)
 
-    for package in config.packages.all:
-      if not package == 'PETSc':
-        packageObj                    = framework.require('config.packages.'+package, self)
-        packageObj.archProvider       = self.arch
-        packageObj.languageProvider   = self.languages
-        packageObj.installDirProvider = self.installdir
-        packageObj.externalPackagesDirProvider = self.externalpackagesdir
-        setattr(self, package.lower(), packageObj)
-    # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
-    framework.require('PETSc.utilities.scalarTypes', self.f2cblaslapack)
-    self.f2cblaslapack.precisionProvider = self.scalartypes
-    framework.require('PETSc.utilities.scalarTypes', self.blaslapack)
-    self.blaslapack.precisionProvider = self.scalartypes
+    for utility in os.listdir(os.path.join('config','BuildSystem','config','utilities')):
+      (utilityName, ext) = os.path.splitext(utility)
+      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
+        utilityObj                    = self.framework.require('config.utilities.'+utilityName, self)
+        utilityObj.headerPrefix       = self.headerPrefix
+        utilityObj.archProvider       = self.arch
+        utilityObj.languageProvider   = self.languages
+        utilityObj.installDirProvider = self.installdir
+        utilityObj.externalPackagesDirProvider = self.externalpackagesdir
+        setattr(self, utilityName.lower(), utilityObj)
 
+    for utility in os.listdir(os.path.join('config','BuildSystem','config','packages')):
+      (utilityName, ext) = os.path.splitext(utility)
+      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
+        utilityObj                    = self.framework.require('config.packages.'+utilityName, self)
+        utilityObj.headerPrefix       = self.headerPrefix
+        utilityObj.archProvider       = self.arch
+        utilityObj.languageProvider   = self.languages
+        utilityObj.installDirProvider = self.installdir
+        utilityObj.externalPackagesDirProvider = self.externalpackagesdir
+        setattr(self, utilityName.lower(), utilityObj)
+
+    if os.path.isdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
+      for package in os.listdir(os.path.join('config', 'BuildSystem', 'config', 'packages')):
+        (packageName, ext) = os.path.splitext(package)
+        if not packageName.startswith('.') and not packageName.startswith('#') and ext == '.py' and not packageName == '__init__' and not packageName == 'PETSc':
+          packageObj                    = framework.require('config.packages.'+packageName, self)
+          packageObj.archProvider       = self.arch
+          packageObj.languageProvider   = self.languages
+          packageObj.precisionProvider  = self.scalartypes
+          packageObj.indexProvider      = self.indexTypes
+          packageObj.installDirProvider = self.installdir
+          packageObj.externalPackagesDirProvider = self.externalpackagesdir
+          setattr(self, packageName.lower(), packageObj)
+    # Force blaslapack and opencl to depend on scalarType so precision is set before BlasLapack is built
+    framework.require('PETSc.options.scalarTypes', self.f2cblaslapack)
+    framework.require('PETSc.options.scalarTypes', self.fblaslapack)
+    framework.require('PETSc.options.scalarTypes', self.blaslapack)
+    framework.require('PETSc.options.scalarTypes', self.opencl)
+    framework.require('PETSc.Regression', self)
+
+    self.programs.headerPrefix   = self.headerPrefix
     self.compilers.headerPrefix  = self.headerPrefix
     self.types.headerPrefix      = self.headerPrefix
     self.headers.headerPrefix    = self.headerPrefix
@@ -97,7 +126,7 @@ class Configure(config.base.Configure):
     self.mpi.headerPrefix        = self.headerPrefix
     headersC = map(lambda name: name+'.h', ['setjmp','dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
-                                            'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
+                                            'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
                                             'WindowsX', 'cxxabi','float','ieeefp','stdint','sched','pthread','mathimf'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
@@ -105,7 +134,7 @@ class Configure(config.base.Configure):
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
                  'times', 'gethostbyname', 'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror','get_nprocs','sysctlbyname',
-                 '_intel_fast_memcpy','_intel_fast_memset']
+                 '_set_output_format']
     libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
@@ -155,25 +184,26 @@ class Configure(config.base.Configure):
       fd.write('Libs: '+plibs.replace(os.path.join(self.petscdir.dir,self.arch.arch),self.framework.argDB['prefix'])+'\n')
     else:
       fd.write('Libs: '+plibs+'\n')
-    fd.write('Libs.private: '+' '.join(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
+    fd.write('Libs.private: '+' '.join(self.packagelibs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS)
 
     fd.close()
     return
 
   def DumpModule(self):
     ''' Create a module file '''
-    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules')):
-      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules'))
+    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules')):
+      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules'))
+    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules','petsc')):
+      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules','petsc'))
     if self.framework.argDB['prefix']:
       installdir  = self.framework.argDB['prefix']
       installarch = ''
       installpath = os.path.join(installdir,'bin')
-      fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules',self.petscdir.version),'w')
     else:
       installdir  = self.petscdir.dir
       installarch = self.arch.arch
       installpath = os.path.join(installdir,installarch,'bin')+':'+os.path.join(installdir,'bin')
-      fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','modules',self.petscdir.version+'-'+self.arch.arch),'w')
+    fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','modules','petsc',self.petscdir.version),'w')
     fd.write('''\
 #%%Module
 
@@ -197,6 +227,11 @@ prepend-path PATH %s
   def Dump(self):
     ''' Actually put the values into the configuration files '''
     # eventually everything between -- should be gone
+    if self.mpi.usingMPIUni:
+      #
+      # Remove any MPI/MPICH include files that may have been put here by previous runs of ./configure
+      self.executeShellCommand('rm -rf  '+os.path.join(self.petscdir.dir,self.arch.arch,'include','mpi*')+' '+os.path.join(self.petscdir.dir,self.arch.arch,'include','opa*'))
+
 #-----------------------------------------------------------------------------------------------------
 
     # Sometimes we need C compiler, even if built with C++
@@ -204,8 +239,14 @@ prepend-path PATH %s
     self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())
     self.setCompilers.popLanguage()
 
+    # And sometimes we need a C++ compiler even when PETSc is built with C
+    if hasattr(self.compilers, 'CXX'):
+      self.setCompilers.pushLanguage('Cxx')
+      self.addMakeMacro('CXX_FLAGS',self.setCompilers.getCompilerFlags())
+      self.setCompilers.popLanguage()
+
     # C preprocessor values
-    self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS+self.CHUD.CPPFLAGS)
+    self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS)
 
     # compiler values
     self.setCompilers.pushLanguage(self.languages.clanguage)
@@ -326,12 +367,17 @@ prepend-path PATH %s
         self.addMakeMacro(i.PACKAGE.replace('-','_')+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     self.packagelibs = libs
     if self.framework.argDB['with-single-library']:
-      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
+      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
       self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
     else:
-      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
-    self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS)
-    self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
+      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
+    self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs)+' '+self.compilers.LIBS
+    if self.framework.argDB['prefix'] and self.setCompilers.CSharedLinkerFlag not in ['-L']:
+      installdir = self.framework.argDB['prefix']
+      lib_basic = self.PETSC_EXTERNAL_LIB_BASIC.replace(self.setCompilers.CSharedLinkerFlag+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),self.setCompilers.CSharedLinkerFlag+os.path.join(installdir,'lib'))
+    else:
+      lib_basic = self.PETSC_EXTERNAL_LIB_BASIC
+    self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',lib_basic)
     self.allincludes = self.headers.toStringNoDupes(includes)
     self.addMakeMacro('PETSC_CC_INCLUDES',self.allincludes)
     self.PETSC_CC_INCLUDES = self.allincludes
@@ -351,6 +397,7 @@ prepend-path PATH %s
       self.addMakeMacro('PETSC_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_KSP_LIB_BASIC','-lpetsc')
       self.addMakeMacro('PETSC_TS_LIB_BASIC','-lpetsc')
+      self.addMakeMacro('PETSC_TAO_LIB_BASIC','-lpetsc')
       self.addDefine('USE_SINGLE_LIBRARY', '1')
       if self.sharedlibraries.useShared:
         self.addMakeMacro('PETSC_SYS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
@@ -360,6 +407,7 @@ prepend-path PATH %s
         self.addMakeMacro('PETSC_KSP_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_SNES_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_TS_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
+        self.addMakeMacro('PETSC_TAO_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CHARACTERISTIC_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_LIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CONTRIB','${C_SH_LIB_PATH} ${PETSC_WITH_EXTERNAL_LIB}')
@@ -371,6 +419,7 @@ prepend-path PATH %s
         self.addMakeMacro('PETSC_KSP_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_SNES_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_TS_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+        self.addMakeMacro('PETSC_TAO_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CHARACTERISTIC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
         self.addMakeMacro('PETSC_CONTRIB','${PETSC_WITH_EXTERNAL_LIB}')
@@ -385,7 +434,6 @@ prepend-path PATH %s
   def dumpConfigInfo(self):
     import time
     fd = file(os.path.join(self.arch.arch,'include','petscconfiginfo.h'),'w')
-    fd.write('static const char *petscconfigureruntime = "'+time.ctime(time.time())+'";\n')
     fd.write('static const char *petscconfigureoptions = "'+self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"')+'";\n')
     fd.close()
     return
@@ -435,7 +483,7 @@ prepend-path PATH %s
 
   def dumpCMakeConfig(self):
     '''
-    Writes configuration-specific values to ${PETSC_ARCH}/conf/PETScConfig.cmake.
+    Writes configuration-specific values to ${PETSC_ARCH}/lib/petsc-conf/PETScConfig.cmake.
     This file is private to PETSc and should not be included by third parties
     (a suitable file can be produced later by CMake, but this is not it).
     '''
@@ -545,7 +593,7 @@ prepend-path PATH %s
       fd.write('set (PETSC_PACKAGE_LIBS ' + ' '.join(map(cmakeexpand,libvars)) + ')\n')
       includes = filter(notstandardinclude,includes)
       fd.write('set (PETSC_PACKAGE_INCLUDES ' + ' '.join(map(lambda i: '"'+i+'"',includes)) + ')\n')
-    fd = open(os.path.join(self.arch.arch,'conf','PETScConfig.cmake'), 'w')
+    fd = open(os.path.join(self.arch.arch,'lib','petsc-conf','PETScConfig.cmake'), 'w')
     writeMacroDefinitions(fd)
     writeBuildFlags(fd)
     fd.close()
@@ -587,7 +635,7 @@ prepend-path PATH %s
 
   def configurePrefetch(self):
     '''Sees if there are any prefetch functions supported'''
-    if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-ios']:
+    if config.setCompilers.Configure.isSolaris() or self.framework.argDB['with-ios'] or not self.framework.argDB['with-prefetch']:
       self.addDefine('Prefetch(a,b,c)', ' ')
       return
     self.pushLanguage(self.languages.clanguage)
@@ -641,15 +689,6 @@ prepend-path PATH %s
       self.addDefine('Prefetch(a,b,c)', ' ')
     self.popLanguage()
 
-  def configureFeatureTestMacros(self):
-    '''Checks if certain feature test macros are support'''
-    if self.checkCompile('#define _POSIX_C_SOURCE 200112L\n#include <sysctl.h>',''):
-       self.addDefine('_POSIX_C_SOURCE_200112L', '1')
-    if self.checkCompile('#define _BSD_SOURCE\n#include<stdlib.h>',''):
-       self.addDefine('_BSD_SOURCE', '1')
-    if self.checkCompile('#define _GNU_SOURCE\n#include <sched.h>','cpu_set_t mset;\nCPU_ZERO(&mset);'):
-       self.addDefine('_GNU_SOURCE', '1')
-
   def configureAtoll(self):
     '''Checks if atoll exists'''
     if self.checkLink('#define _POSIX_C_SOURCE 200112L\n#include <stdlib.h>','long v = atoll("25")') or self.checkLink ('#include <stdlib.h>','long v = atoll("25")'):
@@ -667,6 +706,12 @@ prepend-path PATH %s
       self.addDefine('UNUSED', ' ')
     self.popLanguage()
 
+  def configureIsatty(self):
+    '''Check if the Unix C function isatty() works correctly
+       Actually just assumes it does not work correctly on batch systems'''
+    if not self.framework.argDB['with-batch']:
+      self.addDefine('USE_ISATTY',1)
+
   def configureDeprecated(self):
     '''Check if __attribute((deprecated)) is supported'''
     self.pushLanguage(self.languages.clanguage)
@@ -674,7 +719,7 @@ prepend-path PATH %s
     ## Intel has conspired to make a supremely environment-sensitive compiler.  The Intel compiler looks at the gcc
     ## executable in the environment to determine the language compatibility that it should attempt to emulate.  Some
     ## important Cray installations have built PETSc using the Intel compiler, but with a newer gcc module loaded (e.g.,
-    ## 4.7).  Thus at PETSc configure time, the Intel compiler decides to support the string argument, but the the gcc
+    ## 4.7).  Thus at PETSc configure time, the Intel compiler decides to support the string argument, but the gcc
     ## found in the default user environment is older and does not support the argument.  If GCC and Intel were cool
     ## like Clang and supported __has_attribute, we could avoid configure tests entirely, but they don't.  And that is
     ## why we can't have nice things.
@@ -821,10 +866,13 @@ prepend-path PATH %s
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')
       self.addDefine('CANNOT_START_DEBUGGER',1)
+      (petscdir,error,status) = self.executeShellCommand('cygpath -w '+self.petscdir.dir)
+      self.addDefine('DIR','"'+petscdir.replace('\\','\\\\')+'"')
     else:
       self.addDefine('PATH_SEPARATOR','\':\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('DIR_SEPARATOR','\'/\'')
+      self.addDefine('DIR', '"'+self.petscdir.dir+'"')
 
     return
 
@@ -846,12 +894,12 @@ prepend-path PATH %s
 
 #-----------------------------------------------------------------------------------------------------
   def configureDefaultArch(self):
-    conffile = os.path.join('conf', 'petscvariables')
+    conffile = os.path.join('lib','petsc-conf', 'petscvariables')
     if self.framework.argDB['with-default-arch']:
       fd = file(conffile, 'w')
       fd.write('PETSC_ARCH='+self.arch.arch+'\n')
       fd.write('PETSC_DIR='+self.petscdir.dir+'\n')
-      fd.write('include '+os.path.join(self.petscdir.dir,self.arch.arch,'conf','petscvariables')+'\n')
+      fd.write('include '+os.path.join(self.petscdir.dir,self.arch.arch,'lib','petsc-conf','petscvariables')+'\n')
       fd.close()
       self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in '+conffile)
     elif os.path.isfile(conffile):
@@ -866,7 +914,7 @@ prepend-path PATH %s
     '''Output a script in the conf directory which will reproduce the configuration'''
     import nargs
     import sys
-    scriptName = os.path.join(self.arch.arch,'conf', 'reconfigure-'+self.arch.arch+'.py')
+    scriptName = os.path.join(self.arch.arch,'lib','petsc-conf', 'reconfigure-'+self.arch.arch+'.py')
     args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
     if 'with-clean' in args:
       del args['with-clean']
@@ -874,7 +922,7 @@ prepend-path PATH %s
       if nargs.Arg.parseArgument(args['configModules'])[1] == 'PETSc.Configure':
         del args['configModules']
     if 'optionsModule' in args:
-      if nargs.Arg.parseArgument(args['optionsModule'])[1] == 'PETSc.compilerOptions':
+      if nargs.Arg.parseArgument(args['optionsModule'])[1] == 'config.compilerOptions':
         del args['optionsModule']
     if not 'PETSC_ARCH' in args:
       args['PETSC_ARCH'] = 'PETSC_ARCH='+str(self.arch.arch)
@@ -902,15 +950,15 @@ prepend-path PATH %s
   def configureInstall(self):
     '''Setup the directories for installation'''
     if self.framework.argDB['prefix']:
-      self.installdir = self.framework.argDB['prefix']
       self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do:"',\
-                                              '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"',\
+                                              '-@echo "'+self.installdir.installSudo+'make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} install"',\
                                               '-@echo "========================================="'])
+      self.installdir = self.framework.argDB['prefix']
     else:
-      self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
       self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do:"',\
                                               '-@echo "make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} test"',\
                                               '-@echo "========================================="'])
+      self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
       return
 
   def configureGCOV(self):
@@ -944,8 +992,8 @@ prepend-path PATH %s
       raise RuntimeError('Incorrect option --prefix='+self.framework.argDB['prefix']+' specified. It cannot be same as PETSC_DIR/PETSC_ARCH!')
     self.framework.header          = os.path.join(self.arch.arch,'include','petscconf.h')
     self.framework.cHeader         = os.path.join(self.arch.arch,'include','petscfix.h')
-    self.framework.makeMacroHeader = os.path.join(self.arch.arch,'conf','petscvariables')
-    self.framework.makeRuleHeader  = os.path.join(self.arch.arch,'conf','petscrules')
+    self.framework.makeMacroHeader = os.path.join(self.arch.arch,'lib','petsc-conf','petscvariables')
+    self.framework.makeRuleHeader  = os.path.join(self.arch.arch,'lib','petsc-conf','petscrules')
     if self.libraries.math is None:
       raise RuntimeError('PETSc requires a functional math library. Please send configure.log to petsc-maint@mcs.anl.gov.')
     if self.languages.clanguage == 'Cxx' and not hasattr(self.compilers, 'CXX'):
@@ -954,6 +1002,7 @@ prepend-path PATH %s
     self.executeTest(self.configurePrefetch)
     self.executeTest(self.configureUnused)
     self.executeTest(self.configureDeprecated)
+    self.executeTest(self.configureIsatty)
     self.executeTest(self.configureExpect);
     self.executeTest(self.configureFunctionName);
     self.executeTest(self.configureIntptrt);
@@ -966,7 +1015,6 @@ prepend-path PATH %s
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)
     self.executeTest(self.configureFortranFlush)
-    self.executeTest(self.configureFeatureTestMacros)
     self.executeTest(self.configureAtoll)
     # dummy rules, always needed except for remote builds
     self.addMakeRule('remote','')

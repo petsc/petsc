@@ -142,7 +142,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFDestroy"
-/*@C
+/*@
    PetscSFDestroy - destroy star forest
 
    Collective
@@ -205,7 +205,8 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 .  sf - star forest
 
    Options Database Keys:
-.  -sf_synchronization - synchronization type used by PetscSF
++  -sf_type - implementation type, see PetscSFSetType()
+-  -sf_rank_order - sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise
 
    Level: intermediate
 
@@ -227,7 +228,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
   ierr = PetscOptionsFList("-sf_type","PetscSF implementation type","PetscSFSetType",PetscSFList,deft,type,256,&flg);CHKERRQ(ierr);
   ierr = PetscSFSetType(sf,flg ? type : deft);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sf_rank_order","sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise","PetscSFSetRankOrder",sf->rankorder,&sf->rankorder,NULL);CHKERRQ(ierr);
-  if (sf->ops->SetFromOptions) {ierr = (*sf->ops->SetFromOptions)(sf);CHKERRQ(ierr);}
+  if (sf->ops->SetFromOptions) {ierr = (*sf->ops->SetFromOptions)(PetscOptionsObject,sf);CHKERRQ(ierr);}
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -299,7 +300,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   if (ilocal) {
     switch (localmode) {
     case PETSC_COPY_VALUES:
-      ierr        = PetscMalloc(nleaves*sizeof(*sf->mine),&sf->mine_alloc);CHKERRQ(ierr);
+      ierr        = PetscMalloc1(nleaves,&sf->mine_alloc);CHKERRQ(ierr);
       sf->mine    = sf->mine_alloc;
       ierr        = PetscMemcpy(sf->mine,ilocal,nleaves*sizeof(*sf->mine));CHKERRQ(ierr);
       sf->minleaf = PETSC_MAX_INT;
@@ -325,7 +326,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
   }
   switch (remotemode) {
   case PETSC_COPY_VALUES:
-    ierr       = PetscMalloc(nleaves*sizeof(*sf->remote),&sf->remote_alloc);CHKERRQ(ierr);
+    ierr       = PetscMalloc1(nleaves,&sf->remote_alloc);CHKERRQ(ierr);
     sf->remote = sf->remote_alloc;
     ierr       = PetscMemcpy(sf->remote,iremote,nleaves*sizeof(*sf->remote));CHKERRQ(ierr);
     break;
@@ -346,8 +347,8 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
     ierr = PetscTableAdd(table,iremote[i].rank+1,1,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscTableGetCount(table,&sf->nranks);CHKERRQ(ierr);
-  ierr = PetscMalloc4(sf->nranks,PetscInt,&sf->ranks,sf->nranks+1,PetscInt,&sf->roffset,nleaves,PetscInt,&sf->rmine,nleaves,PetscInt,&sf->rremote);CHKERRQ(ierr);
-  ierr = PetscMalloc2(sf->nranks,PetscInt,&rcount,sf->nranks,PetscInt,&ranks);CHKERRQ(ierr);
+  ierr = PetscMalloc4(sf->nranks,&sf->ranks,sf->nranks+1,&sf->roffset,nleaves,&sf->rmine,nleaves,&sf->rremote);CHKERRQ(ierr);
+  ierr = PetscMalloc2(sf->nranks,&rcount,sf->nranks,&ranks);CHKERRQ(ierr);
   ierr = PetscTableGetHeadPosition(table,&pos);CHKERRQ(ierr);
   for (i=0; i<sf->nranks; i++) {
     ierr = PetscTableGetNext(table,&pos,&ranks[i],&rcount[i]);CHKERRQ(ierr);
@@ -383,7 +384,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
     PetscInt *numRankLeaves, *leafOff, *leafIndices, *numRankRoots, *rootOff, *rootIndices, maxRoots = 0;
 
     /* All to all to determine number of leaf indices from each (you can do this using Scan and asynch messages) */
-    ierr = PetscMalloc4(size,PetscInt,&numRankLeaves,size+1,PetscInt,&leafOff,size,PetscInt,&numRankRoots,size+1,PetscInt,&rootOff);CHKERRQ(ierr);
+    ierr = PetscMalloc4(size,&numRankLeaves,size+1,&leafOff,size,&numRankRoots,size+1,&rootOff);CHKERRQ(ierr);
     ierr = PetscMemzero(numRankLeaves, size * sizeof(PetscInt));CHKERRQ(ierr);
     for (i = 0; i < nleaves; ++i) ++numRankLeaves[iremote[i].rank];
     ierr = MPI_Alltoall(numRankLeaves, 1, MPIU_INT, numRankRoots, 1, MPIU_INT, PetscObjectComm((PetscObject)sf));CHKERRQ(ierr);
@@ -391,7 +392,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
     for (i = 0; i < size; ++i) maxRoots += numRankRoots[i];
 
     /* Gather all indices */
-    ierr = PetscMalloc2(nleaves,PetscInt,&leafIndices,maxRoots,PetscInt,&rootIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nleaves,&leafIndices,maxRoots,&rootIndices);CHKERRQ(ierr);
     leafOff[0] = 0;
     for (i = 0; i < size; ++i) leafOff[i+1] = leafOff[i] + numRankLeaves[i];
     for (i = 0; i < nleaves; ++i) leafIndices[leafOff[iremote[i].rank]++] = iremote[i].index;
@@ -447,7 +448,7 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,NULL);CHKERRQ(ierr);
   for (i=0,maxlocal=0; i<nleaves; i++) maxlocal = PetscMax(maxlocal,(ilocal ? ilocal[i] : i)+1);
-  ierr = PetscMalloc2(nroots,PetscSFNode,&roots,nleaves,PetscSFNode,&leaves);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nroots,&roots,nleaves,&leaves);CHKERRQ(ierr);
   for (i=0; i<nleaves; i++) {
     leaves[i].rank  = rank;
     leaves[i].index = i;
@@ -463,7 +464,7 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
   for (i=0,count=0; i<nroots; i++) if (roots[i].rank >= 0) count++;
   if (count == nroots) newilocal = NULL;
   else {                        /* Index for sparse leaves and compact "roots" array (which is to become our leaves). */
-    ierr = PetscMalloc(count*sizeof(PetscInt),&newilocal);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,&newilocal);CHKERRQ(ierr);
     for (i=0,count=0; i<nroots; i++) {
       if (roots[i].rank >= 0) {
         newilocal[count]   = i;
@@ -623,7 +624,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);
       for (i=0; i<sf->nranks; i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
         for (j=sf->roffset[i]; j<sf->roffset[i+1]; j++) {
           ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]    %D <- %D\n",rank,sf->rmine[j],sf->rremote[j]);CHKERRQ(ierr);
         }
@@ -702,7 +703,7 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
     PetscSF        bgcount;
 
     /* Compute the number of incoming ranks */
-    ierr = PetscMalloc(sf->nranks*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
+    ierr = PetscMalloc1(sf->nranks,&remote);CHKERRQ(ierr);
     for (i=0; i<sf->nranks; i++) {
       remote[i].rank  = sf->ranks[i];
       remote[i].index = 0;
@@ -713,7 +714,7 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf,MPI_Group *incoming,MPI_Group *outgoi
     ierr = PetscSFComputeDegreeEnd(bgcount,&indegree);CHKERRQ(ierr);
 
     /* Enumerate the incoming ranks */
-    ierr = PetscMalloc2(indegree[0],PetscMPIInt,&inranks,sf->nranks,PetscMPIInt,&outranks);CHKERRQ(ierr);
+    ierr = PetscMalloc2(indegree[0],&inranks,sf->nranks,&outranks);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
     for (i=0; i<sf->nranks; i++) outranks[i] = rank;
     ierr = PetscSFGatherBegin(bgcount,MPI_INT,outranks,inranks);CHKERRQ(ierr);
@@ -772,18 +773,15 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
   }
   if (!sf->multi) {
     const PetscInt *indegree;
-    PetscInt       i,*inoffset,*outones,*outoffset;
+    PetscInt       i,*inoffset,*outones,*outoffset,maxlocal;
     PetscSFNode    *remote;
     ierr        = PetscSFComputeDegreeBegin(sf,&indegree);CHKERRQ(ierr);
     ierr        = PetscSFComputeDegreeEnd(sf,&indegree);CHKERRQ(ierr);
-    ierr        = PetscMalloc3(sf->nroots+1,PetscInt,&inoffset,sf->nleaves,PetscInt,&outones,sf->nleaves,PetscInt,&outoffset);CHKERRQ(ierr);
+    for (i=0,maxlocal=0; i<sf->nleaves; i++) maxlocal = PetscMax(maxlocal,(sf->mine ? sf->mine[i] : i)+1);
+    ierr        = PetscMalloc3(sf->nroots+1,&inoffset,maxlocal,&outones,maxlocal,&outoffset);CHKERRQ(ierr);
     inoffset[0] = 0;
-#if 1
-    for (i=0; i<sf->nroots; i++) inoffset[i+1] = PetscMax(i+1, inoffset[i] + indegree[i]);
-#else
     for (i=0; i<sf->nroots; i++) inoffset[i+1] = inoffset[i] + indegree[i];
-#endif
-    for (i=0; i<sf->nleaves; i++) outones[i] = 1;
+    for (i=0; i<maxlocal; i++) outones[i] = 1;
     ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
     ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,inoffset,outones,outoffset,MPIU_SUM);CHKERRQ(ierr);
     for (i=0; i<sf->nroots; i++) inoffset[i] -= indegree[i]; /* Undo the increment */
@@ -794,10 +792,10 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
     }
 #endif
 #endif
-    ierr = PetscMalloc(sf->nleaves*sizeof(*remote),&remote);CHKERRQ(ierr);
+    ierr = PetscMalloc1(sf->nleaves,&remote);CHKERRQ(ierr);
     for (i=0; i<sf->nleaves; i++) {
       remote[i].rank  = sf->remote[i].rank;
-      remote[i].index = outoffset[i];
+      remote[i].index = outoffset[sf->mine ? sf->mine[i] : i];
     }
     ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,&sf->multi);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(sf->multi,inoffset[sf->nroots],sf->nleaves,NULL,PETSC_COPY_VALUES,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
@@ -807,8 +805,8 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
       PetscSFNode *newremote;
       ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
       for (i=0,maxdegree=0; i<sf->nroots; i++) maxdegree = PetscMax(maxdegree,indegree[i]);
-      ierr = PetscMalloc5(sf->multi->nroots,PetscInt,&inranks,sf->multi->nroots,PetscInt,&newoffset,sf->nleaves,PetscInt,&outranks,sf->nleaves,PetscInt,&newoutoffset,maxdegree,PetscInt,&tmpoffset);CHKERRQ(ierr);
-      for (i=0; i<sf->nleaves; i++) outranks[i] = rank;
+      ierr = PetscMalloc5(sf->multi->nroots,&inranks,sf->multi->nroots,&newoffset,maxlocal,&outranks,maxlocal,&newoutoffset,maxdegree,&tmpoffset);CHKERRQ(ierr);
+      for (i=0; i<maxlocal; i++) outranks[i] = rank;
       ierr = PetscSFReduceBegin(sf->multi,MPIU_INT,outranks,inranks,MPIU_REPLACE);CHKERRQ(ierr);
       ierr = PetscSFReduceEnd(sf->multi,MPIU_INT,outranks,inranks,MPIU_REPLACE);CHKERRQ(ierr);
       /* Sort the incoming ranks at each vertex, build the inverse map */
@@ -820,7 +818,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
       }
       ierr = PetscSFBcastBegin(sf->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
       ierr = PetscSFBcastEnd(sf->multi,MPIU_INT,newoffset,newoutoffset);CHKERRQ(ierr);
-      ierr = PetscMalloc(sf->nleaves*sizeof(*newremote),&newremote);CHKERRQ(ierr);
+      ierr = PetscMalloc1(sf->nleaves,&newremote);CHKERRQ(ierr);
       for (i=0; i<sf->nleaves; i++) {
         newremote[i].rank  = sf->remote[i].rank;
         newremote[i].index = newoutoffset[i];
@@ -861,7 +859,7 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
 {
   PetscInt      *rootdata, *leafdata, *ilocal;
   PetscSFNode   *iremote;
-  PetscInt       leafsize = 0, nleaves = 0, i;
+  PetscInt       leafsize = 0, nleaves = 0, n, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -870,26 +868,25 @@ PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nroots,const PetscInt
   PetscValidPointer(newsf,4);
   if (sf->mine) for (i = 0; i < sf->nleaves; ++i) {leafsize = PetscMax(leafsize, sf->mine[i]+1);}
   else leafsize = sf->nleaves;
-  ierr = PetscMalloc2(sf->nroots,PetscInt,&rootdata,leafsize,PetscInt,&leafdata);CHKERRQ(ierr);
-  ierr = PetscMemzero(rootdata,sf->nroots*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(leafdata,leafsize*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc2(sf->nroots,&rootdata,leafsize,&leafdata);CHKERRQ(ierr);
   for (i=0; i<nroots; ++i) rootdata[selected[i]] = 1;
   ierr = PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata);CHKERRQ(ierr);
 
   for (i = 0; i < leafsize; ++i) nleaves += leafdata[i];
-  ierr = PetscMalloc(nleaves*sizeof(PetscInt),&ilocal);CHKERRQ(ierr);
-  ierr = PetscMalloc(nleaves*sizeof(PetscSFNode),&iremote);CHKERRQ(ierr);
-  for (i = 0, nleaves = 0; i < sf->nleaves; ++i) {
+  ierr = PetscMalloc1(nleaves,&ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&iremote);CHKERRQ(ierr);
+  for (i = 0, n = 0; i < sf->nleaves; ++i) {
     const PetscInt lidx = sf->mine ? sf->mine[i] : i;
 
     if (leafdata[lidx]) {
-      ilocal[nleaves]        = lidx;
-      iremote[nleaves].rank  = sf->remote[i].rank;
-      iremote[nleaves].index = sf->remote[i].index;
-      ++nleaves;
+      ilocal[n]        = lidx;
+      iremote[n].rank  = sf->remote[i].rank;
+      iremote[n].index = sf->remote[i].index;
+      ++n;
     }
   }
+  if (n != nleaves) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "There is a size mismatch in the SF embedding, %d != %d", n, nleaves);
   ierr = PetscSFDuplicate(sf,PETSCSF_DUPLICATE_RANKS,newsf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*newsf,sf->nroots,nleaves,ilocal,PETSC_OWN_POINTER,iremote,PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
@@ -1055,12 +1052,14 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscSFCheckGraphSet(sf,1);
   PetscValidPointer(degree,2);
-  if (!sf->degree) {
-    PetscInt i;
-    ierr = PetscMalloc(sf->nroots*sizeof(PetscInt),&sf->degree);CHKERRQ(ierr);
-    ierr = PetscMalloc(sf->nleaves*sizeof(PetscInt),&sf->degreetmp);CHKERRQ(ierr);
+  if (!sf->degreeknown) {
+    PetscInt i,maxlocal;
+    if (sf->degree) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Calls to PetscSFComputeDegreeBegin() cannot be nested.");
+    for (i=0,maxlocal=0; i<sf->nleaves; i++) maxlocal = PetscMax(maxlocal,(sf->mine ? sf->mine[i] : i)+1);
+    ierr = PetscMalloc1(sf->nroots,&sf->degree);CHKERRQ(ierr);
+    ierr = PetscMalloc1(maxlocal,&sf->degreetmp);CHKERRQ(ierr);
     for (i=0; i<sf->nroots; i++) sf->degree[i] = 0;
-    for (i=0; i<sf->nleaves; i++) sf->degreetmp[i] = 1;
+    for (i=0; i<maxlocal; i++) sf->degreetmp[i] = 1;
     ierr = PetscSFReduceBegin(sf,MPIU_INT,sf->degreetmp,sf->degree,MPIU_SUM);CHKERRQ(ierr);
   }
   *degree = NULL;

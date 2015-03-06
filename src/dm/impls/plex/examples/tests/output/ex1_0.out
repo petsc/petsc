@@ -228,7 +228,9 @@
 [0] TetGenMeshOutputNodes(): Writing nodes.
 [0] TetGenMeshOutputElements(): Writing elements.
 [0] TetGenMeshOutputSubfaces(): Writing faces.
-Mesh 'Simplical Mesh':
+DM Object:Simplicial Mesh 1 MPI processes
+  type: plex
+Mesh 'Simplicial Mesh':
 Max sizes cone: 4 support: 6
 orientation is missing
 cap --> base:

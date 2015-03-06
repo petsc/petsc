@@ -34,6 +34,7 @@
               <a href="index.html">Changes</a>
               <ul>
                 <li><span class="current">dev</span></li>
+                <li><a href="35.html">3.5</a></li>
                 <li><a href="34.html">3.4</a></li>
                 <li><a href="33.html">3.3</a></li>
                 <li><a href="32.html">3.2</a></li>
@@ -64,7 +65,7 @@
             <li><a href="../bugreporting.html">Bug Reporting</a></li>
             <li><a href="../codemanagement.html">Code Management</a></li>
             <li><a href="../faq.html">FAQ</a></li>
-            <li><a href="../copyright.html">License</a></li>
+            <li><a href="../license.html">License</a></li>
             <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
           </ul>
         </li>
@@ -96,74 +97,60 @@
 
       <h4>General:</h4>
       <ul>
-        <li>PetscObjectStateQuery() is now corrected with PetscObjectStateGet()</li>
-        <li>A new PetscObjectState typedef is used by interface; 64-bit int to prevent overflow.</li>
-        <li>
-          The configure option <tt>--with-dynamic-loading</tt> has been
-          removed since this functionality is automatically available on
-          systems that support it.  Use the runtime
-          option <tt>-dynamic_library_preload</tt> for similar functionality.
-        </li>
-        <li>
-          Default location of externalpackages is moved from <tt>PETSC_DIR/externalpackages</tt> to
-          <tt>PETSC_DIR/PETSC_ARCH/externalpackages</tt>
-        </li>
-        <li>
-          Added <tt>--with-clean</tt> option to delete the build files in <tt>PETSC_DIR/PETSC_ARCH</tt>
-          at the begining of the build
-        </li>
-        <li>
-          The <tt>__SDIR__</tt> macro (and <tt>__INSDIR__</tt>) is no longer used.
-          We recommend passing full paths or paths from the project root to the compiler so that error messages contain enough context.
-        </li>
+        <li>  PetscOptionsBool() no longer sets the value of the boolean based on the value passed in</li>
+        <li>  Python scripts such as PetscBinaryIO.py are now in bin/petsc-pythonscripts. This is to
+          support proper namespacing for --prefix installs of PETSc</li>
+        <li>  Script for running MPIUni jobs is now bin/petsc-mpiexec.uni </li>
+      </ul>
+      <h4>Configure/Build:</h4>
+      <ul>
+        <li>Add toplevel makefile targets <em>clean</em> and <em>distclean</em>. Target <em>clean</em>
+          deletes petsc libraries built by makefile target <em>all</em>. Target <em>distclean</em> deletes
+          all build files created by <em>configure</em> and [<em>make all</em>]. Target <em>clean</em> in
+          example directories continues to work as before [deletes object files and executables]</li>
       </ul>
       <h4>IS:</h4>
       <h4>PF:</h4>
       <h4>Vec:</h4>
       <h4>VecScatter:</h4>
       <h4>PetscSection:</h4>
-      <ul>
-        <li>Now only the F90 binding for VecSetValuesSection() is present</li>
-      </ul>
       <h4>Mat:</h4>
       <ul>
-        <li>Removed third argument to MatNullSpaceRemove().  Use
-      VecDuplicate() and VecCopy() if the original Vec must be kept.</li>
-        <li>MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm
-      subcomm,PetscInt mlocal_red,MatReuse reuse,Mat *matredundant) is
-      replaced by MatRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant).</li>
-        <li>MatGetColoring() has been removed and replaced by the MatColoring object.</li>
+         <li>MatGetVecs() replaced with MatCreateVecs() because it actually does create the Vecs that need to be destroyed</li>
+         <li>MatCreateMPIAIJConcatenateSeqAIJ and MatCreateMPIBAIJConcatenateSeqBAIJ replaced with MatCreateMPIMatConcatenateSeqMat</li>
+         <li>MatGetRedundantMatrix() replaced with MatCreateRedundantMatrix()</li>
       </ul>
       <h4>PC:</h4>
-      <ul>
-        <li>The documented, but semi-private function <tt>PCMGResidual_Default()</tt> is now public and named <tt>PCMGResidualDefault()</tt>.</li>
-        <li>PCGAMG default smoother changed from PCJACOBI to PCSOR.</li>
-      </ul>
+         Removed -pc_hypre_type euclid due to bit-rot
+         Upgraded to SuiteSparse 4.4.1; Cholmod supports using GPUs --with-cuda --download-suitesparse-gpu --with-64-bit-indices -mat_cholmod_useGPU 1 or 0; 1 by default when configured for it
+         Added PCBDDCSetChangeOfBasisMat for user defined change of basis
+         PCJacobiSetUseAbs() now takes a PetscBool argument allowing toggling the option
+         PCJacobiSetUseRowMax() and PCJacobiSetUseRowSum() have been merged into PCJacobiSetType()
+         PCFactorSetUseInplace() now takes a PetscBool argument. Added PCFactorGetUseInplace()
+         PCFactorSetAllowDiagonalFill() now takes a PetscBool argument. Added PCFactorGetAllowDiagonalFill()
+         PCEisenstatNoDiagonalScaling() changed to PCEisenstatSetNoDiagonalScaling() and takes a boolean
       <h4>KSP:</h4>
-      <ul>
-        <li><tt>KSPSkipConverged()</tt> renamed to <tt>KSPConvergedSkip()</tt>.</li>
-        <li><tt>KSPDefaultConverged()</tt>, <tt>KSPDefaultConvergedDestroy()</tt>, <tt>KSPDefaultConvergedCreate()</tt>, <tt>KSPDefaultConvergedSetUIRNorm()</tt>, and <tt>KSPDefaultConvergedSetUMIRNorm()</tt> are now <tt>KSPConvergedDefault()</tt>, <tt>KSPConvergedDefaultDestroy()</tt>, <tt>KSPConvergedDefaultCreate()</tt>, <tt>KSPConvergedDefaultSetUIRNorm()</tt>, and <tt>KSPConvergedDefaultSetUMIRNorm()</tt>. for consistency.</li>
-      </ul>
+         KSPGetVecs() replaced with KSPCreateVecs() because it actually does create the Vecs that need to be destroyed
       <h4>SNES:</h4>
-      <ul>
-        <li><tt>SNESSetInitialFunctionNorm()</tt> is removed as it's not necessary given that the norm is cached on the Vec.  Use only <tt>SNESSetInitialFunction()</tt>.</li>
-        <li><tt>SNESSkipConverged()</tt> renamed to <tt>SNESConvergedSkip()</tt>.</li>
-      </ul>
+         Added KSPMonitorSNES() with command line option -ksp_monitor_snes and -ksp_monitor_snes_lg to monitor SNES residual norm at each linear iteration
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <h4>DM/DA:</h4>
       <ul>
+        <li>DMCreateInjection() now returns a Mat, rather than a VecScatter</li>
         <li>The MatType argument is removed from DMCreateMatrix(), you can use DMSetMatType() to indicate the type you want used with a DM, defaults to MATAIJ</li>
+        <li>You can now use DMDASetAOType() to indicate the type of AO you want used with a DMDA (defaults to AOBASIC)</li>
       </ul>
-      <h4>DMComplex/DMPlex:</h4>
-      <h4>DMMesh:</h4>
-      <h4>DMMG:</h4>
+      </ul>
+      <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
-      <h4>ExternalPackages:</h4>
+     <ul>
+        <li>Fortran include files are now in include/petsc-finclude instead of include/finclude. Thus replace uses of #include "finclude/xxx.h" with #include "petsc-finclude/xxx.h". Reason for change: to namespace the finclude directory with PETSc for --prefix installs of PETSc and for packaging systems</li>
+      </ul>
     </div>
 
     <!--end-->

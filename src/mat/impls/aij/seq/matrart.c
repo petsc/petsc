@@ -51,13 +51,12 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fil
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,R->cmap->n,R->rmap->n,rti,rtj,NULL,&P);CHKERRQ(ierr);
 
   /* get symbolic C=Pt*A*P */
-  ierr           = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A,P,fill,C);CHKERRQ(ierr);
-  (*C)->rmap->bs = R->rmap->bs;
-  (*C)->cmap->bs = R->rmap->bs;
+  ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A,P,fill,C);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(*C,PetscAbs(R->rmap->bs),PetscAbs(R->rmap->bs));CHKERRQ(ierr);
   (*C)->ops->rartnumeric = MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart;
 
   /* create a supporting struct */
-  ierr    = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
+  ierr    = PetscNew(&rart);CHKERRQ(ierr);
   c       = (Mat_SeqAIJ*)(*C)->data;
   c->rart = rart;
 
@@ -95,7 +94,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fil
   rart->RARt = RARt_dense;
 
   /* Allocate work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
-  ierr = PetscMalloc(A->rmap->n*4*sizeof(PetscScalar),&rart->work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(A->rmap->n*4,&rart->work);CHKERRQ(ierr);
 
   rart->destroy      = (*C)->ops->destroy;
   (*C)->ops->destroy = MatDestroy_SeqAIJ_RARt;
@@ -273,7 +272,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(Mat A,Mat R,Pet
   *C                     = RARt;
   RARt->ops->rartnumeric = MatRARtNumeric_SeqAIJ_SeqAIJ_matmattransposemult;
 
-  ierr = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
+  ierr = PetscNew(&rart);CHKERRQ(ierr);
   c         = (Mat_SeqAIJ*)(*C)->data;
   c->rart   = rart;
   rart->ARt = ARt;
@@ -313,7 +312,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   ierr = MatTranspose_SeqAIJ(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
   ierr = MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(R,A,Rt,fill,C);CHKERRQ(ierr);
 
-  ierr = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
+  ierr = PetscNew(&rart);CHKERRQ(ierr);
   rart->Rt = Rt;
   c        = (Mat_SeqAIJ*)(*C)->data;
   c->rart  = rart;

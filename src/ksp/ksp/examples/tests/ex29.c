@@ -26,6 +26,7 @@ static char help[] ="Tests ML interface. Modified from ~src/ksp/ksp/examples/tes
 */
 
 #include <petscksp.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /* User-defined application contexts */
@@ -69,7 +70,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
 
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,
                       fine_ctx.my,Nx,Ny,1,1,NULL,NULL,&fine_ctx.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
   ierr = VecDuplicate(fine_ctx.x,&fine_ctx.b);CHKERRQ(ierr);
@@ -88,15 +89,15 @@ int main(int argc,char **argv)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr); /* calls PCSetFromOptions_MG/ML */
 
   for (i=0; i<3; i++) {
-    if (i<2) { /* test DIFFERENT_NONZERO_PATTERN */
+    if (i<2) { 
       /* set values for rhs vector */
       ierr = VecSet(fine_ctx.b,i+1.0);CHKERRQ(ierr);
       /* modify A */
       ierr = MatShift(A,1.0);CHKERRQ(ierr);
       ierr = MatScale(A,2.0);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     } else {  /* test SAME_NONZERO_PATTERN */
-      ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
     }
     ierr = KSPSolve(ksp,fine_ctx.b,fine_ctx.x);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -119,11 +120,13 @@ int main(int argc,char **argv)
 #define __FUNCT__ "FormJacobian_Grid"
 int FormJacobian_Grid(GridCtx *grid,Mat *J)
 {
-  Mat            jac = *J;
-  PetscErrorCode ierr;
-  PetscInt       i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
-  PetscInt       nloc,*ltog,grow;
-  PetscScalar    two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
+  Mat                    jac = *J;
+  PetscErrorCode         ierr;
+  PetscInt               i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
+  PetscInt               grow;
+  const PetscInt         *ltog;
+  PetscScalar            two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
+  ISLocalToGlobalMapping ltogm;
 
   mx    = grid->mx;               my = grid->my;
   hx    = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -132,7 +135,8 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
   /* Get ghost points */
   ierr = DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DMDAGetGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(grid->da,&ltogm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltogm,&ltog);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
@@ -156,6 +160,7 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
       }
     }
   }
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   return 0;

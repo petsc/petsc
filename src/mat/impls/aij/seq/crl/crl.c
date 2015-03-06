@@ -54,7 +54,7 @@ PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
   aijcrl->rmax = rmax;
 
   ierr  = PetscFree2(aijcrl->acols,aijcrl->icols);CHKERRQ(ierr);
-  ierr  = PetscMalloc2(rmax*m,PetscScalar,&aijcrl->acols,rmax*m,PetscInt,&aijcrl->icols);CHKERRQ(ierr);
+  ierr  = PetscMalloc2(rmax*m,&aijcrl->acols,rmax*m,&aijcrl->icols);CHKERRQ(ierr);
   acols = aijcrl->acols;
   icols = aijcrl->icols;
   for (i=0; i<m; i++) {
@@ -102,16 +102,16 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
 */
 PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
 {
-  Mat_AIJCRL     *aijcrl = (Mat_AIJCRL*) A->spptr;
-  PetscInt       m       = aijcrl->m; /* Number of rows in the matrix. */
-  PetscInt       rmax    = aijcrl->rmax,*icols = aijcrl->icols;
-  PetscScalar    *acols  = aijcrl->acols;
-  PetscErrorCode ierr;
-  PetscScalar    *x,*y;
+  Mat_AIJCRL        *aijcrl = (Mat_AIJCRL*) A->spptr;
+  PetscInt          m       = aijcrl->m; /* Number of rows in the matrix. */
+  PetscInt          rmax    = aijcrl->rmax,*icols = aijcrl->icols;
+  PetscScalar       *acols  = aijcrl->acols;
+  PetscErrorCode    ierr;
+  PetscScalar       *y;
+  const PetscScalar *x;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTCRL)
-  PetscInt i,j,ii;
+  PetscInt          i,j,ii;
 #endif
-
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*aa)
@@ -126,7 +126,7 @@ PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
     xx   = aijcrl->xwork;
   }
 
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTCRL)
@@ -153,7 +153,7 @@ PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
 
 #endif
   ierr = PetscLogFlops(2.0*aijcrl->nz - m);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -176,7 +176,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatRe
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr     = PetscNewLog(B,Mat_AIJCRL,&aijcrl);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&aijcrl);CHKERRQ(ierr);
   B->spptr = (void*) aijcrl;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */

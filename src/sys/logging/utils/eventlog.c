@@ -31,10 +31,10 @@ PetscErrorCode EventRegLogCreate(PetscEventRegLog *eventLog)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(struct _n_PetscEventRegLog, &l);CHKERRQ(ierr);
+  ierr         = PetscNew(&l);CHKERRQ(ierr);
   l->numEvents = 0;
   l->maxEvents = 100;
-  ierr         = PetscMalloc(l->maxEvents * sizeof(PetscEventRegInfo), &l->eventInfo);CHKERRQ(ierr);
+  ierr         = PetscMalloc1(l->maxEvents, &l->eventInfo);CHKERRQ(ierr);
   *eventLog    = l;
   PetscFunctionReturn(0);
 }
@@ -89,10 +89,10 @@ PetscErrorCode EventPerfLogCreate(PetscEventPerfLog *eventLog)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(struct _n_PetscEventPerfLog, &l);CHKERRQ(ierr);
+  ierr         = PetscNew(&l);CHKERRQ(ierr);
   l->numEvents = 0;
   l->maxEvents = 100;
-  ierr         = PetscMalloc(l->maxEvents * sizeof(PetscEventPerfInfo), &l->eventInfo);CHKERRQ(ierr);
+  ierr         = PetscMalloc1(l->maxEvents, &l->eventInfo);CHKERRQ(ierr);
   *eventLog    = l;
   PetscFunctionReturn(0);
 }
@@ -208,7 +208,7 @@ PetscErrorCode EventPerfLogEnsureSize(PetscEventPerfLog eventLog, int size)
 
   PetscFunctionBegin;
   while (size > eventLog->maxEvents) {
-    ierr = PetscMalloc(eventLog->maxEvents*2 * sizeof(PetscEventPerfInfo), &eventInfo);CHKERRQ(ierr);
+    ierr = PetscMalloc1(eventLog->maxEvents*2, &eventInfo);CHKERRQ(ierr);
     ierr = PetscMemcpy(eventInfo, eventLog->eventInfo, eventLog->maxEvents * sizeof(PetscEventPerfInfo));CHKERRQ(ierr);
     ierr = PetscFree(eventLog->eventInfo);CHKERRQ(ierr);
 
@@ -222,7 +222,7 @@ PetscErrorCode EventPerfLogEnsureSize(PetscEventPerfLog eventLog, int size)
 }
 
 #if defined(PETSC_HAVE_MPE)
-#include "mpe.h"
+#include <mpe.h>
 PETSC_INTERN PetscErrorCode PetscLogMPEGetRGBColor(const char*[]);
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogEventBeginMPE"
@@ -307,7 +307,7 @@ PetscErrorCode EventRegLogRegister(PetscEventRegLog eventLog, const char ename[]
   /* Should check classid I think */
   e = eventLog->numEvents++;
   if (eventLog->numEvents > eventLog->maxEvents) {
-    ierr = PetscMalloc(eventLog->maxEvents*2 * sizeof(PetscEventRegInfo), &eventInfo);CHKERRQ(ierr);
+    ierr = PetscMalloc1(eventLog->maxEvents*2, &eventInfo);CHKERRQ(ierr);
     ierr = PetscMemcpy(eventInfo, eventLog->eventInfo, eventLog->maxEvents * sizeof(PetscEventRegInfo));CHKERRQ(ierr);
     ierr = PetscFree(eventLog->eventInfo);CHKERRQ(ierr);
 
@@ -481,7 +481,7 @@ PetscErrorCode EventPerfLogDeactivateClass(PetscEventPerfLog eventLog, PetscEven
 - name     - The stage name
 
   Output Parameter:
-. event    - The event id
+. event    - The event id, or -1 if not found
 
   Level: developer
 
@@ -500,10 +500,11 @@ PetscErrorCode  EventRegLogGetEvent(PetscEventRegLog eventLog, const char name[]
   *event = -1;
   for (e = 0; e < eventLog->numEvents; e++) {
     ierr = PetscStrcasecmp(eventLog->eventInfo[e].name, name, &match);CHKERRQ(ierr);
-    if (match) break;
+    if (match) {
+      *event = e;
+      break;
+    }
   }
-  if (e == eventLog->numEvents) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "No event named %s", name);
-  *event = e;
   PetscFunctionReturn(0);
 }
 
@@ -565,6 +566,37 @@ PetscErrorCode EventPerfLogGetVisible(PetscEventPerfLog eventLog, PetscLogEvent 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscLogEventGetPerfInfo"
+/*@C
+  PetscLogEventGetPerfInfo - Return the performance information about the given event in the given stage
+
+  Input Parameters:
++ stage - The stage number or PETSC_DETERMINE for the current stage
+- event - The event number
+
+  Output Parameters:
+. info - This structure is filled with the performance information
+
+  Level: Intermediate
+
+.seealso: PetscLogEventGetFlops()
+@*/
+PetscErrorCode PetscLogEventGetPerfInfo(int stage, PetscLogEvent event, PetscEventPerfInfo *info)
+{
+  PetscStageLog     stageLog;
+  PetscEventPerfLog eventLog = NULL;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(info, 3);
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  if (stage < 0) {ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);}
+  ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+  *info = eventLog->eventInfo[event];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscLogEventGetFlops"
 PetscErrorCode PetscLogEventGetFlops(PetscLogEvent event, PetscLogDouble *flops)
 {
@@ -601,9 +633,6 @@ PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent event)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_CHUD)
-#include <CHUD/CHUD.h>
-#endif
 #if defined(PETSC_HAVE_PAPI)
 #include <papi.h>
 extern int PAPIEventSet;
@@ -630,9 +659,7 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject
   eventLog->eventInfo[event].timeTmp = 0.0;
   PetscTimeSubtract(&eventLog->eventInfo[event].timeTmp);
   eventLog->eventInfo[event].flopsTmp = 0.0;
-#if defined(PETSC_HAVE_CHUD)
-  eventLog->eventInfo[event].flopsTmp -= chudGetPMCEventCount(chudCPU1Dev,PMC_1);
-#elif defined(PETSC_HAVE_PAPI)
+#if defined(PETSC_HAVE_PAPI)
   { long_long values[2];
     ierr = PAPI_read(PAPIEventSet,values);CHKERRQ(ierr);
 
@@ -669,9 +696,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o
   PetscTimeAdd(&eventLog->eventInfo[event].timeTmp);
   eventLog->eventInfo[event].time  += eventLog->eventInfo[event].timeTmp;
   eventLog->eventInfo[event].time2 += eventLog->eventInfo[event].timeTmp*eventLog->eventInfo[event].timeTmp;
-#if defined(PETSC_HAVE_CHUD)
-  eventLog->eventInfo[event].flopsTmp += chudGetPMCEventCount(chudCPU1Dev,PMC_1);
-#elif defined(PETSC_HAVE_PAPI)
+#if defined(PETSC_HAVE_PAPI)
   { long_long values[2];
     ierr = PAPI_read(PAPIEventSet,values);CHKERRQ(ierr);
 
@@ -706,7 +731,7 @@ PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent event, int t, PetscObjec
   /* Dynamically enlarge logging structures */
   if (petsc_numActions >= petsc_maxActions) {
     PetscTime(&start);
-    ierr = PetscMalloc(petsc_maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
+    ierr = PetscMalloc1(petsc_maxActions*2, &tmpAction);CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpAction, petsc_actions, petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 
@@ -768,7 +793,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event, int t, PetscObject 
   /* Dynamically enlarge logging structures */
   if (petsc_numActions >= petsc_maxActions) {
     PetscTime(&start);
-    ierr = PetscMalloc(petsc_maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
+    ierr = PetscMalloc1(petsc_maxActions*2, &tmpAction);CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpAction, petsc_actions, petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 

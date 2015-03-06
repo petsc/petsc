@@ -663,7 +663,7 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
   ierr = PetscObjectChangeTypeName((PetscObject)*sdraw,PETSC_DRAW_X);CHKERRQ(ierr);
   ierr = PetscMemcpy((*sdraw)->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
-  (*sdraw)->ops->destroy = 0;
+  (*sdraw)->ops->destroy = NULL;
 
   (*sdraw)->pause   = draw->pause;
   (*sdraw)->coor_xl = draw->coor_xl;
@@ -677,7 +677,7 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
   (*sdraw)->popup   = draw->popup;
 
   /* actually create and open the window */
-  ierr = PetscNew(PetscDraw_X,&sXwin);CHKERRQ(ierr);
+  ierr = PetscNew(&sXwin);CHKERRQ(ierr);
   ierr = PetscDrawXiQuickWindowFromWindow(sXwin,draw->display,Xwin->win);CHKERRQ(ierr);
 
   sXwin->x       = Xwin->x;
@@ -759,7 +759,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 
   PetscFunctionBegin;
   if (!draw->display) {
-    ierr = PetscMalloc(256*sizeof(char),&draw->display);CHKERRQ(ierr);
+    ierr = PetscMalloc1(256,&draw->display);CHKERRQ(ierr);
     ierr = PetscGetDisplay(draw->display,256);CHKERRQ(ierr);
   }
 
@@ -854,7 +854,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
   /* actually create and open the window */
-  ierr = PetscNew(PetscDraw_X,&Xwin);CHKERRQ(ierr);
+  ierr = PetscNew(&Xwin);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_X));CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
 

@@ -30,11 +30,11 @@ PetscErrorCode PadMatrix(Mat A,Vec v,PetscScalar c,Mat *B)
 
   PetscFunctionBegin;
   ierr = VecGetArray(v,&vv);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&indices);CHKERRQ(ierr);
   for (i=0; i<n; i++) indices[i] = i;
 
   /* determine number of nonzeros per row in the new matrix */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&cnt);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&cnt);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     cnt[i] = aij->i[i+1] - aij->i[i] + (vv[i] != 0.0);
   }

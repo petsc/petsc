@@ -172,9 +172,9 @@ PetscErrorCode  PetscDataTypeFromString(const char*name, PetscDataType *ptype,Pe
   PetscFunctionBegin;
   ierr = PetscEnumFind(PetscDataTypes,name,(PetscEnum*)ptype,found);CHKERRQ(ierr);
   if (!*found) {
-    char formatted[7];
+    char formatted[16];
 
-    ierr = PetscStrncpy(formatted,name,7);CHKERRQ(ierr);
+    ierr = PetscStrncpy(formatted,name,16);CHKERRQ(ierr);
     ierr = PetscStrtolower(formatted);CHKERRQ(ierr);
     ierr = PetscStrcmp(formatted,"scalar",found);CHKERRQ(ierr);
     if (*found) {

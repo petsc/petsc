@@ -86,14 +86,14 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes,Vec X,Vec B,Ve
     ierr = SNESGetFunction(next->snes,&FSub,NULL,NULL);CHKERRQ(ierr);
     ierr = VecCopy(FSub,F);CHKERRQ(ierr);
     if (fnorm) {
-      ierr = SNESGetFunctionNorm(next->snes,fnorm);CHKERRQ(ierr);
+      ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);
       if (PetscIsInfOrNanReal(*fnorm)) {
         snes->reason = SNES_DIVERGED_FNORM_NAN;
         PetscFunctionReturn(0);
       }
     }
   } else if (snes->normschedule == SNES_NORM_ALWAYS) {
-    SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
@@ -269,7 +269,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   total = 0.;
   for (i=0; i<jac->n; i++) {
     if (PetscIsInfOrNanScalar(jac->beta[i])) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
-    ierr = PetscInfo2(snes,"%d: %f\n",i,PetscRealPart(jac->beta[i]));CHKERRQ(ierr);
+    ierr = PetscInfo2(snes,"%D: %g\n",i,(double)PetscRealPart(jac->beta[i]));CHKERRQ(ierr);
     tot += jac->beta[i];
     total += PetscAbsScalar(jac->beta[i]);
   }
@@ -320,8 +320,8 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
   ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);
   if (jac->type == SNES_COMPOSITE_ADDITIVEOPTIMAL) {
     ierr = VecDuplicateVecs(F,jac->nsnes,&jac->Xes);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(Vec)*n,&jac->Fes);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscReal)*n,&jac->fnorms);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&jac->Fes);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&jac->fnorms);CHKERRQ(ierr);
     next = jac->head;
     i = 0;
     while (next) {
@@ -337,15 +337,15 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
     jac->ldb   = jac->nsnes;
     jac->n     = jac->nsnes;
 
-    ierr = PetscMalloc(jac->n*jac->n*sizeof(PetscScalar),&jac->h);CHKERRQ(ierr);
-    ierr = PetscMalloc(jac->n*sizeof(PetscScalar),&jac->beta);CHKERRQ(ierr);
-    ierr = PetscMalloc(jac->n*sizeof(PetscScalar),&jac->s);CHKERRQ(ierr);
-    ierr = PetscMalloc(jac->n*sizeof(PetscScalar),&jac->g);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n*jac->n,&jac->h);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n,&jac->beta);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n,&jac->s);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->n,&jac->g);CHKERRQ(ierr);
     jac->lwork = 12*jac->n;
 #if PETSC_USE_COMPLEX
-    ierr = PetscMalloc(sizeof(PetscReal)*jac->lwork,&jac->rwork);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->lwork,&jac->rwork);CHKERRQ(ierr);
 #endif
-    ierr = PetscMalloc(sizeof(PetscScalar)*jac->lwork,&jac->work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(jac->lwork,&jac->work);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -374,7 +374,6 @@ static PetscErrorCode SNESReset_Composite(SNES snes)
   ierr = PetscFree(jac->beta);CHKERRQ(ierr);
   ierr = PetscFree(jac->work);CHKERRQ(ierr);
   ierr = PetscFree(jac->rwork);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -400,7 +399,7 @@ static PetscErrorCode SNESDestroy_Composite(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Composite"
-static PetscErrorCode SNESSetFromOptions_Composite(SNES snes)
+static PetscErrorCode SNESSetFromOptions_Composite(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_Composite     *jac = (SNES_Composite*)snes->data;
   PetscErrorCode     ierr;
@@ -411,7 +410,7 @@ static PetscErrorCode SNESSetFromOptions_Composite(SNES snes)
   PetscBool          flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Composite preconditioner options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Composite preconditioner options");CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_composite_type","Type of composition","SNESCompositeSetType",SNESCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESCompositeSetType(snes,jac->type);CHKERRQ(ierr);
@@ -497,7 +496,7 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   DM               dm;
 
   PetscFunctionBegin;
-  ierr        = PetscNewLog(snes,struct _SNES_CompositeLink,&ilink);CHKERRQ(ierr);
+  ierr        = PetscNewLog(snes,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr        = SNESCreate(PetscObjectComm((PetscObject)snes),&ilink->snes);CHKERRQ(ierr);
   ierr        = PetscLogObjectParent((PetscObject)snes,(PetscObject)ilink->snes);CHKERRQ(ierr);
@@ -631,6 +630,40 @@ PetscErrorCode  SNESCompositeGetSNES(SNES snes,PetscInt n,SNES *subsnes)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(subsnes,3);
   ierr = PetscUseMethod(snes,"SNESCompositeGetSNES_C",(SNES,PetscInt,SNES*),(snes,n,subsnes));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESCompositeGetNumber"
+/*@
+   SNESCompositeGetNumber - Get the number of subsolvers in the composite SNES.
+
+   Logically Collective on SNES
+
+   Input Parameter:
+   snes - the preconditioner context
+
+   Output Parameter:
+   n - the number of subsolvers
+
+   Level: Developer
+
+.keywords: SNES, composite preconditioner
+@*/
+PetscErrorCode  SNESCompositeGetNumber(SNES snes,PetscInt *n)
+{
+  SNES_Composite     *jac;
+  SNES_CompositeLink next;
+
+  PetscFunctionBegin;
+  jac  = (SNES_Composite*)snes->data;
+  next = jac->head;
+
+  *n = 0;
+  while (next) {
+    *n = *n + 1;
+    next = next->next;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -813,7 +846,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   SNES_Composite   *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(snes,SNES_Composite,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,&jac);CHKERRQ(ierr);
 
   snes->ops->solve           = SNESSolve_Composite;
   snes->ops->setup           = SNESSetUp_Composite;

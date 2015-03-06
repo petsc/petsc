@@ -1,4 +1,4 @@
-#include "../src/snes/impls/fas/fasimpls.h" /*I  "petscsnesfas.h"  I*/
+#include <../src/snes/impls/fas/fasimpls.h> /*I  "petscsnes.h"  I*/
 
 
 extern PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES, SNES*);
@@ -280,6 +280,53 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
 
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESFASSetContinuation"
+/*@
+   SNESFASSetContinuation - Sets the FAS cycle to default to exact Newton solves on the upsweep
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the multigrid context
+-  n    - the number of smoothing steps
+
+   Options Database Key:
+.  -snes_fas_continuation - sets continuation to true
+
+   Level: advanced
+
+   Notes: This sets the prefix on the upsweep smoothers to -fas_continuation
+
+.keywords: FAS, MG, smoother, continuation
+
+.seealso: SNESFAS
+@*/
+PetscErrorCode SNESFASSetContinuation(SNES snes,PetscBool continuation)
+{
+  const char     *optionsprefix;
+  char           tprefix[128];
+  SNES_FAS       *fas =  (SNES_FAS*)snes->data;
+  PetscErrorCode ierr = 0;
+
+  PetscFunctionBegin;
+  ierr = SNESGetOptionsPrefix(fas->fine, &optionsprefix);CHKERRQ(ierr);
+  if (!fas->smoothu) {
+    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu);CHKERRQ(ierr);
+  }
+  sprintf(tprefix,"fas_levels_continuation_");
+  ierr = SNESSetOptionsPrefix(fas->smoothu, optionsprefix);CHKERRQ(ierr);
+  ierr = SNESAppendOptionsPrefix(fas->smoothu, tprefix);CHKERRQ(ierr);
+  ierr = SNESSetType(fas->smoothu,SNESNEWTONLS);CHKERRQ(ierr);
+  ierr = SNESSetTolerances(fas->smoothu,fas->fine->abstol,fas->fine->rtol,fas->fine->stol,50,100);CHKERRQ(ierr);
+  fas->continuation = continuation;
+  if (fas->next) {
+    ierr = SNESFASSetContinuation(fas->next,continuation);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESFASSetCycles"
 /*@
    SNESFASSetCycles - Sets the number of FAS multigrid cycles to use each time a grid is visited.  Use SNESFASSetCyclesOnLevel() for more
@@ -292,7 +339,7 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
 -  cycles - the number of cycles -- 1 for V-cycle, 2 for W-cycle
 
    Options Database Key:
-$  -snes_fas_cycles 1 or 2
+.  -snes_fas_cycles 1 or 2
 
    Level: advanced
 
@@ -1058,7 +1105,7 @@ PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
   ierr = SNESFASGetCycleSNES(snes, level, &levelsnes);CHKERRQ(ierr);
   fas  = (SNES_FAS*)levelsnes->data;
   if (!fas->smoothd) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
+    ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothd);CHKERRQ(ierr);
   }
   *smooth = fas->smoothd;
   PetscFunctionReturn(0);
@@ -1093,10 +1140,10 @@ PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
   fas  = (SNES_FAS*)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */
   if (!fas->smoothd) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
+    ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothd);CHKERRQ(ierr);
   }
   if (!fas->smoothu) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu);CHKERRQ(ierr);
+    ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothu);CHKERRQ(ierr);
   }
   *smooth = fas->smoothd;
   PetscFunctionReturn(0);
@@ -1131,10 +1178,10 @@ PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
   fas  = (SNES_FAS*)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */
   if (!fas->smoothd) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
+    ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothd);CHKERRQ(ierr);
   }
   if (!fas->smoothu) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu);CHKERRQ(ierr);
+    ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothu);CHKERRQ(ierr);
   }
   *smooth = fas->smoothu;
   PetscFunctionReturn(0);
@@ -1168,7 +1215,7 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *smooth)
   fas  = (SNES_FAS*)levelsnes->data;
   /* if the user chooses to differentiate smoothers, create them both at this point */
   if (!fas->smoothd) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
+    ierr = SNESFASCycleCreateSmoother_Private(levelsnes, &fas->smoothd);CHKERRQ(ierr);
   }
   *smooth = fas->smoothd;
   PetscFunctionReturn(0);

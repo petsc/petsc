@@ -2,13 +2,13 @@
       program main
        implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscviewer.h>
-#include <finclude/petscis.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscviewer.h>
+#include <petsc-finclude/petscis.h>
 !
 !  This example is a modified Fortran version of ex6.c.  It tests the use of
 !  options prefixes in PETSc. Two linear problems are solved in this program.
@@ -69,7 +69,7 @@
       call KSPCreate(PETSC_COMM_WORLD,ksp1,ierr)
       call KSPSetOptionsPrefix(ksp1,'a',ierr)
       call KSPAppendOptionsPrefix(ksp1,'_',ierr)
-      call KSPSetOperators(ksp1,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp1,A,A,ierr)
       call KSPSetFromOptions(ksp1,ierr)
       call KSPSolve(ksp1,b,x,ierr)
 
@@ -92,7 +92,7 @@
       call KSPCreate(PETSC_COMM_WORLD,ksp2,ierr)
       call KSPSetOptionsPrefix(ksp2,'b',ierr)
       call KSPAppendOptionsPrefix(ksp2,'_',ierr)
-      call KSPSetOperators(ksp2,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp2,A,A,ierr)
       call KSPSetFromOptions(ksp2,ierr)
       call KSPSolve(ksp2,b,x,ierr)
 

@@ -287,14 +287,14 @@ PetscErrorCode PCAINVCUSPUseScaling(PC pc, PetscBool scaled)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_AINVCUSP"
-static PetscErrorCode PCSetFromOptions_AINVCUSP(PC pc)
+static PetscErrorCode PCSetFromOptions_AINVCUSP(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_AINVCUSP    *ainv = (PC_AINVCUSP*)pc->data;
   PetscBool      flag  = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("AINVCUSP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"AINVCUSP options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_ainvcusp_droptol","drop tolerance for AINVCUSP preconditioner","PCAINVCUSPSetDropTolerance",ainv->droptolerance,&ainv->droptolerance,&flag);
   if (flag) {
     ainv->nonzeros = -1;
@@ -347,7 +347,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
    */
-  ierr                = PetscNewLog(pc,PC_AINVCUSP,&ainv);CHKERRQ(ierr);
+  ierr                = PetscNewLog(pc,&ainv);CHKERRQ(ierr);
   pc->data            = (void*)ainv;
   ainv->AINVCUSP      = 0;
   ainv->droptolerance = 0.1;

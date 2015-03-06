@@ -34,7 +34,7 @@ typedef struct {
 
   PetscInt *aug_order;               /*keeps track of order to use aug. vectors*/
 
-  PetscInt approx_constant;        /* = 1 then the approx space at each restart will
+  PetscBool approx_constant;        /* = 1 then the approx space at each restart will
                                   be  size max_k .  Therefore, more than (max_k - aug_dim)
                                   krylov vectors may be used if less than aug_dim error
                                   approximations are available (in the first few restarts,

@@ -5,6 +5,9 @@
 #include <petscsnes.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool SNESRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode SNESRegisterAll(void);
+
 typedef struct _SNESOps *SNESOps;
 
 struct _SNESOps {
@@ -16,14 +19,14 @@ struct _SNESOps {
   PetscErrorCode (*setup)(SNES);                                /* routine to set up the nonlinear solver */
   PetscErrorCode (*solve)(SNES);                                /* actual nonlinear solver */
   PetscErrorCode (*view)(SNES,PetscViewer);
-  PetscErrorCode (*setfromoptions)(SNES);                       /* sets options from database */
+  PetscErrorCode (*setfromoptions)(PetscOptions*,SNES);                       /* sets options from database */
   PetscErrorCode (*destroy)(SNES);
   PetscErrorCode (*reset)(SNES);
   PetscErrorCode (*usercompute)(SNES,void**);
   PetscErrorCode (*userdestroy)(void**);
   PetscErrorCode (*computevariablebounds)(SNES,Vec,Vec);        /* user provided routine to set box constrained variable bounds */
   PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat,Mat,void*);
   PetscErrorCode (*load)(SNES,PetscViewer);
 };
 
@@ -92,7 +95,6 @@ struct _p_SNES {
   PetscReal   abstol;             /* absolute tolerance */
   PetscReal   stol;               /* step length tolerance*/
   PetscReal   deltatol;           /* trust region convergence tolerance */
-  PetscBool   printreason;        /* print reason for convergence/divergence after each solve */
   PetscInt    lagpreconditioner;  /* SNESSetLagPreconditioner() */
   PetscInt    lagjacobian;        /* SNESSetLagJacobian() */
   PetscInt    jac_iter;           /* The present iteration of the Jacobian lagging */
@@ -157,14 +159,14 @@ typedef struct _p_DMSNES *DMSNES;
 typedef struct _DMSNESOps *DMSNESOps;
 struct _DMSNESOps {
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computejacobian)(SNES,Vec,Mat,Mat,void*);
 
   /* objective */
   PetscErrorCode (*computeobjective)(SNES,Vec,PetscReal*,void*);
 
   /* Picard iteration functions */
   PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat,Mat,void*);
 
   /* User-defined smoother */
   PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
@@ -236,7 +238,7 @@ PETSC_INTERN PetscErrorCode SNESVICheckLocalMin_Private(SNES,Mat,Vec,Vec,PetscRe
 PETSC_INTERN PetscErrorCode SNESReset_VI(SNES);
 PETSC_INTERN PetscErrorCode SNESDestroy_VI(SNES);
 PETSC_INTERN PetscErrorCode SNESView_VI(SNES,PetscViewer);
-PETSC_INTERN PetscErrorCode SNESSetFromOptions_VI(SNES);
+PETSC_INTERN PetscErrorCode SNESSetFromOptions_VI(PetscOptions*,SNES);
 PETSC_INTERN PetscErrorCode SNESSetUp_VI(SNES);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESVIComputeVariableBoundsFunction)(SNES,Vec,Vec);
 PETSC_INTERN PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVIComputeVariableBoundsFunction);
@@ -245,6 +247,9 @@ PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES,PetscInt,PetscReal,Pets
 
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
-PETSC_EXTERN PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval, SNES_NPCSolve;
+PETSC_EXTERN PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve;
+
+extern PetscBool SNEScite;
+extern const char SNESCitation[];
 
 #endif

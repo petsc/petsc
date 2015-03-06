@@ -9,7 +9,7 @@
    Level: intermediate
 
        Note: Currently can only save PETSc vectors to .mat files, not matrices (use the PETSCVIEWERBINARY and
-             ${PETSC_DIR}/bin/matlab/PetscBinaryRead.m to read matrices into matlab).
+             ${PETSC_DIR}/share/petsc/matlab/PetscBinaryRead.m to read matrices into MATLAB).
 
              For parallel vectors obtained with DMCreateGlobalVector() or DMGetGlobalVector() the vectors are saved to
              the .mat file in natural ordering. You can use DMView() to save the DMDA information to the .mat file
@@ -184,7 +184,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
   PetscViewer_Matlab *e;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(viewer,PetscViewer_Matlab,&e);CHKERRQ(ierr);
+  ierr         = PetscNewLog(viewer,&e);CHKERRQ(ierr);
   ierr         = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&e->rank);CHKERRQ(ierr);
   e->btype     = (PetscFileMode)-1;
   viewer->data = (void*) e;
@@ -257,10 +257,10 @@ static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
      Level: intermediate
 
    Options Database Keys:
-$    -viewer_matlab_filename <name>
+.    -viewer_matlab_filename <name>
 
    Environmental variables:
--   PETSC_VIEWER_MATLAB_FILENAME
+.   PETSC_VIEWER_MATLAB_FILENAME
 
      Notes:
      Unlike almost all other PETSc routines, PETSC_VIEWER_MATLAB_ does not return

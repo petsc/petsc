@@ -1,0 +1,92 @@
+#!/bin/sh
+#
+# This script makes a Apple Mac iOS framework for PETSc  see ./makeall
+#
+# To use the framework:
+#
+#    1) replace all #include <petscXXX.h> in application with #import <PETSc/petscXXX.h>
+#    2a) either run the installer or sudo -r mv ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS /Library/Framework
+#    2) use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework located at /Library/Framework/PETSc-iOS/simulator
+#
+#
+rm -rf ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS
+
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1/PETSc.framework
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1/PETSc.framework/Versions
+mkdir ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1/PETSc.framework/Versions/A
+cd ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1/PETSc.framework/Versions/
+ln -s A Current
+
+cd A 
+mkdir Headers
+cp  ${PETSC_DIR}/include/*.h Headers
+cp  ${PETSC_DIR}/${PETSC_ARCH}/include/*.h Headers
+cp -r  ${PETSC_DIR}/include/petsc-private Headers
+cp -r  ${PETSC_DIR}/include/mpiuni Headers
+
+cd Headers
+sed -i "" "s?#include [ ]*<petsc-private?#import <PETSc/petsc-private?g" *.h petsc-private/*.h
+sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h petsc-private/*.h
+sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h mpiuni/*.h
+sed -i "" "s?#include [ ]*<mpi?#import <PETSc/mpiuni/mpi?g" *.h petsc-private/*.h
+cd ..
+
+echo "framework module PETSc [system] { header \"petsc.h\"  export *}" > module.map
+
+cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/PETSc PETSc
+install_name_tool -id /Library/Frameworks/PETSc-iOS/simulator/PETSc.framework/PETSc PETSc
+mkdir Resources
+cd Resources
+cat <<EOF > Info.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BuildMachineOSBuild</key>
+	<string>12A269</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>PETSc</string>
+	<key>CFBundleIdentifier</key>
+	<string>gov.anl.mcs.PETSc</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>PETSc</string>
+	<key>CFBundlePackageType</key>
+	<string>FMWK</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>DTCompiler</key>
+	<string></string>
+	<key>DTPlatformBuild</key>
+	<string>4F250</string>
+	<key>DTPlatformVersion</key>
+	<string>GM</string>
+	<key>DTSDKBuild</key>
+	<string>12A264</string>
+	<key>DTSDKName</key>
+	<string>macosx10.8</string>
+	<key>DTXcode</key>
+	<string>0440</string>
+	<key>DTXcodeBuild</key>
+	<string>4F250</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2012 Argonne National Laboratory. All rights reserved.</string>
+</dict>
+</plist>
+EOF
+
+cd  ${PETSC_DIR}/${PETSC_ARCH}/PETSc-iOS/$1/PETSc.framework
+ln -s Versions/Current/Headers Headers
+ln -s Versions/Current/PETSc PETSc
+ln -s Versions/Current/Resources Resources
+ln -s Versions/Current/module.map module.map
+

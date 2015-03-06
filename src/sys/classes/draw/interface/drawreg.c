@@ -49,7 +49,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscBool      isdraw;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool      isams;
+  PetscBool      issaws;
 #endif
 
   PetscFunctionBegin;
@@ -58,9 +58,10 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(indraw,1,viewer,2);
 
+  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)indraw,viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&issaws);CHKERRQ(ierr);
 #endif
   if (isdraw) {
     PetscDraw draw;
@@ -75,7 +76,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
     bottom = y - h;
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
-  } else if (isams) {
+  } else if (issaws) {
     PetscMPIInt rank;
 
     ierr = PetscObjectName((PetscObject)indraw);CHKERRQ(ierr);
@@ -223,17 +224,12 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 #endif
   if (flg) type = PETSC_DRAW_NULL;
 
-  if (draw->data) {
-    /* destroy the old private PetscDraw context */
-    ierr               = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
-    draw->ops->destroy = NULL;
-    draw->data         = 0;
-  }
-
   ierr =  PetscFunctionListFind(PetscDrawList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);
+  if (draw->data) {ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);}
+  draw->ops->destroy = NULL;
+  draw->data         = NULL;
   ierr       = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
-  draw->data = 0;
   ierr       = (*r)(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -345,8 +341,6 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 #if !defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X)
   PetscBool         warn;
 #endif
-  PetscViewer       v2;
-  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -402,12 +396,8 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)draw);CHKERRQ(ierr);
-  ierr = PetscOptionsViewer("-draw_view","Display Draw with the viewer","PetscDrawView",&v2,&format,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerPushFormat(v2,format);CHKERRQ(ierr);
-    ierr = PetscDrawView(draw,v2);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(v2);CHKERRQ(ierr);
-  }
+
+  ierr = PetscDrawViewFromOptions(draw,NULL,"-draw_view");CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

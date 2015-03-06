@@ -21,6 +21,7 @@ static char help[] = "Chemo-taxis Problems from Mathematical Biology.\n";
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -70,7 +71,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,-8,2,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,-8,2,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"rho");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"c");CHKERRQ(ierr);
 
@@ -163,8 +164,8 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Udot,&udot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localU,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,Udot,&udot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /*
@@ -208,8 +209,8 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,localU,&u);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,Udot,&udot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localU,&u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,Udot,&udot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -247,7 +248,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
     x = i*hx;
     if (x < 1.0) u[i].rho = 0.0;
     else         u[i].rho = 1.0;
-    u[i].c = PetscCosScalar(.5*PETSC_PI*x);
+    u[i].c = PetscCosReal(.5*PETSC_PI*x);
   }
 
   /*

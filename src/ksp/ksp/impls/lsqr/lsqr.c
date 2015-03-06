@@ -42,11 +42,11 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   if (lsqr->vwork_n) {
     ierr = VecDestroyVecs(lsqr->nwork_n,&lsqr->vwork_n);CHKERRQ(ierr);
   }
-  ierr = KSPGetVecs(ksp,lsqr->nwork_n,&lsqr->vwork_n,lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
+  ierr = KSPCreateVecs(ksp,lsqr->nwork_n,&lsqr->vwork_n,lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
   if (lsqr->se_flg && !lsqr->se) {
     /* lsqr->se is not set by user, get it from pmat */
     Vec *se;
-    ierr     = KSPGetVecs(ksp,1,&se,0,NULL);CHKERRQ(ierr);
+    ierr     = KSPCreateVecs(ksp,1,&se,0,NULL);CHKERRQ(ierr);
     lsqr->se = *se;
     ierr     = PetscFree(se);CHKERRQ(ierr);
   }
@@ -63,7 +63,6 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   PetscReal      beta,alpha,rnorm;
   Vec            X,B,V,V1,U,U1,TMP,W,W2,SE,Z = NULL;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscBool      diagonalscale,nopreconditioner;
 
@@ -71,7 +70,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
 
   /*  nopreconditioner =PETSC_FALSE; */
@@ -157,11 +156,9 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     }
     ierr = VecAXPY(U1,-alpha,U);CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
-    if (beta == 0.0) {
-      ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      break;
+    if (beta > 0.0) {
+      ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr); /* beta*U1 = Amat*V - alpha*U */
     }
-    ierr = VecScale(U1,1.0/beta);CHKERRQ(ierr);
 
     ierr = KSP_MatMultTranspose(ksp,Amat,U1,V1);CHKERRQ(ierr);
     ierr = VecAXPY(V1,-beta,V);CHKERRQ(ierr);
@@ -177,7 +174,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
       alpha = PetscSqrtReal(alpha);
       ierr  = VecScale(Z,1.0/alpha);CHKERRQ(ierr);
     }
-    ierr   = VecScale(V1,1.0/alpha);CHKERRQ(ierr);
+    ierr   = VecScale(V1,1.0/alpha);CHKERRQ(ierr); /* alpha*V1 = Amat^T*U1 - beta*V */
     rho    = PetscSqrtScalar(rhobar*rhobar + beta*beta);
     c      = rhobar / rho;
     s      = beta / rho;
@@ -292,7 +289,7 @@ PetscErrorCode  KSPLSQRGetArnorm(KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm,
       PC  pc;
       Mat Amat;
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = PCGetOperators(pc,&Amat,NULL,NULL);CHKERRQ(ierr);
+      ierr = PCGetOperators(pc,&Amat,NULL);CHKERRQ(ierr);
       ierr = MatNorm(Amat,NORM_FROBENIUS,&lsqr->anorm);CHKERRQ(ierr);
     }
     *anorm = lsqr->anorm;
@@ -342,7 +339,7 @@ PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *d
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_LSQR"
-PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
+PetscErrorCode KSPSetFromOptions_LSQR(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
@@ -351,7 +348,7 @@ PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP LSQR Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP LSQR Options");CHKERRQ(ierr);
   ierr = PetscOptionsName("-ksp_lsqr_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",&lsqr->se_flg);CHKERRQ(ierr);
   ierr = PetscOptionsString("-ksp_lsqr_monitor","Monitor residual norm and norm of residual of normal equations","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -377,7 +374,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
       PetscReal rnorm;
       ierr = KSPLSQRGetStandardErrorVec(ksp,&lsqr->se);CHKERRQ(ierr);
       ierr = VecNorm(lsqr->se,NORM_2,&rnorm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Norm of Standard Error %G, Iterations %D\n",rnorm,ksp->its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Norm of Standard Error %g, Iterations %D\n",(double)rnorm,ksp->its);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -441,7 +438,7 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
      This varient, when applied with no preconditioning is identical to the original algorithm in exact arithematic; however, in practice, with no preconditioning
      due to inexact arithematic, it can converge differently. Hence when no preconditioner is used (PCType PCNONE) it automatically reverts to the original algorithm.
 
-     With the PETSc built-in preconditioners, such as ICC, one should call KSPSetOperators(ksp,A,A'*A,...) since the preconditioner needs to work
+     With the PETSc built-in preconditioners, such as ICC, one should call KSPSetOperators(ksp,A,A'*A)) since the preconditioner needs to work
      for the normal equations A'*A.
 
      Supports only left preconditioning.
@@ -468,12 +465,12 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(ksp,KSP_LSQR,&lsqr);CHKERRQ(ierr);
+  ierr         = PetscNewLog(ksp,&lsqr);CHKERRQ(ierr);
   lsqr->se     = NULL;
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;
   ksp->data    = (void*)lsqr;
-  ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr         = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_LSQR;
   ksp->ops->solve          = KSPSolve_LSQR;

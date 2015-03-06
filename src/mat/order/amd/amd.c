@@ -1,9 +1,6 @@
 
 #include <petscmat.h>
 #include <petsc-private/matorderimpl.h>
-#define UF_long long long
-#define UF_long_max LONG_LONG_MAX
-#define UF_long_id "%lld"
 #include <amd.h>
 
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -46,17 +43,15 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *
   */
   val  = (PetscReal)Control[AMD_DENSE];
   ierr = PetscOptionsReal("-mat_ordering_amd_dense","threshold for \"dense\" rows/columns","None",val,&val,NULL);CHKERRQ(ierr);
-
   Control[AMD_DENSE] = (double)val;
 
   tval = (PetscBool)Control[AMD_AGGRESSIVE];
   ierr = PetscOptionsBool("-mat_ordering_amd_aggressive","use aggressive absorption","None",tval,&tval,NULL);CHKERRQ(ierr);
-
   Control[AMD_AGGRESSIVE] = (double)tval;
 
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr   = PetscMalloc(nrow*sizeof(PetscInt),&perm);CHKERRQ(ierr);
+  ierr   = PetscMalloc1(nrow,&perm);CHKERRQ(ierr);
   status = amd_AMD_order(nrow,ia,ja,perm,Control,Info);
   switch (status) {
   case AMD_OK: break;

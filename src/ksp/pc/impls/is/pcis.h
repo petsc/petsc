@@ -38,6 +38,7 @@ typedef struct {
       vec1_D,
       vec2_D,
       vec3_D,
+      vec4_D,
       vec1_B,
       vec2_B,
       vec3_B,
@@ -52,7 +53,7 @@ typedef struct {
   PetscScalar scaling_factor;
   PetscBool   use_stiffness_scaling;
 
-  PetscBool ISLocalToGlobalMappingGetInfoWasCalled;
+  ISLocalToGlobalMapping mapping;
   PetscInt  n_neigh;     /* number of neighbours this subdomain has (by now, INCLUDING OR NOT the subdomain itself). */
                          /* Once this is definitively decided, the code can be simplifies and some if's eliminated.  */
   PetscInt *neigh;       /* list of neighbouring subdomains                                                          */

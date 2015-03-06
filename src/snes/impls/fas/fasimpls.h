@@ -4,7 +4,6 @@
 #include <petsc-private/snesimpl.h>
 #include <petsc-private/linesearchimpl.h>
 #include <petsc-private/dmimpl.h>
-#include <petscsnesfas.h>
 
 typedef struct {
 
@@ -34,6 +33,7 @@ typedef struct {
   PetscInt    max_down_it;                     /* number of post-smooth cycles */
   PetscBool   usedmfornumberoflevels;          /* uses a DM to generate a number of the levels */
   PetscBool   full_downsweep;                  /* smooth on the initial full downsweep */
+  PetscBool   continuation;                    /* sets the setup to default to continuation */
   PetscInt    full_stage;                      /* stage of the full cycle -- 0 is the upswing, 1 is the downsweep and final V-cycle */
 
   /* Galerkin FAS state */

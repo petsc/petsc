@@ -182,19 +182,19 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx redctx,void
     break;
   case THREADCOMM_PROD:
     if (redctx->type == PETSC_REAL) {
-      PetscReal red_prod=0.0;
+      PetscReal red_prod=1.0;
       for (i=0; i < redctx->tcomm->nworkThreads; i++) red_prod *= ((PetscReal*)redctx->local_red)[i];
       PetscMemcpy(outdata,&red_prod,sizeof(PetscReal));
       break;
     }
     if (redctx->type == PETSC_SCALAR) {
-      PetscScalar red_prod=0.0;
+      PetscScalar red_prod=1.0;
       for (i=0; i < redctx->tcomm->nworkThreads; i++) red_prod *= ((PetscScalar*)redctx->local_red)[i];
       PetscMemcpy(outdata,&red_prod,sizeof(PetscScalar));
       break;
     }
     if (redctx->type == PETSC_INT) {
-      PetscInt red_prod=0.0;
+      PetscInt red_prod=1.0;
       for (i=0; i < redctx->tcomm->nworkThreads; i++) red_prod *= ((PetscInt*)redctx->local_red)[i];
       PetscMemcpy(outdata,&red_prod,sizeof(PetscInt));
     }
@@ -429,15 +429,15 @@ PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm tcomm,PetscThreadC
   PetscInt                 i,j;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(struct _p_PetscThreadCommReduction,&redout);CHKERRQ(ierr);
+  ierr         = PetscNew(&redout);CHKERRQ(ierr);
   redout->nreds=0;
   redout->ctr  = 0;
-  ierr         = PetscMalloc(PETSC_REDUCTIONS_MAX*sizeof(struct _p_PetscThreadCommRedCtx),&redout->redctx);CHKERRQ(ierr);
-  ierr         = PetscMalloc(PETSC_REDUCTIONS_MAX*tcomm->nworkThreads*sizeof(PetscInt),&redout->redctx[0].thread_status);CHKERRQ(ierr);
+  ierr         = PetscMalloc1(PETSC_REDUCTIONS_MAX,(struct _p_PetscThreadCommRedCtx**)&redout->redctx);CHKERRQ(ierr);
+  ierr         = PetscMalloc1(PETSC_REDUCTIONS_MAX*tcomm->nworkThreads,&redout->redctx[0].thread_status);CHKERRQ(ierr);
   /* Note that the size of local_red is twice the number of threads. The first half holds the local reductions
      from each thread while the second half is used only for maxloc and minloc operations to hold the local max and min locations
   */
-  ierr = PetscMalloc(PETSC_REDUCTIONS_MAX*2*tcomm->nworkThreads*sizeof(PetscScalar),&redout->redctx[0].local_red);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PETSC_REDUCTIONS_MAX*2*tcomm->nworkThreads,(PetscScalar**)&redout->redctx[0].local_red);CHKERRQ(ierr);
   for (i=0; i < PETSC_REDUCTIONS_MAX; i++) {
     redctx                = &redout->redctx[i];
     redctx->thread_status = redout->redctx[0].thread_status + i*tcomm->nworkThreads;
@@ -445,7 +445,7 @@ PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm tcomm,PetscThreadC
     redctx->local_red  = (char*)redout->redctx[0].local_red + i*2*tcomm->nworkThreads*sizeof(PetscScalar);
     redctx->red_status = THREADCOMM_REDUCTION_NONE;
   }
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&redout->thread_ctr);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tcomm->nworkThreads,&redout->thread_ctr);CHKERRQ(ierr);
   for (j=0; j<tcomm->nworkThreads; j++) redout->thread_ctr[j] = 0;
   *newred = redout;
   PetscFunctionReturn(0);

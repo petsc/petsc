@@ -60,7 +60,7 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_SELF,1,"C is non-symmetric");
 
   /* Create vectors for error checking */
-  ierr = MatGetVecs(C,&x,&b);CHKERRQ(ierr);
+  ierr = MatCreateVecs(C,&x,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&ytmp);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
@@ -106,15 +106,6 @@ int main(int argc,char **args)
   }
   ierr = MatLUFactorNumeric(A,C,&info);CHKERRQ(ierr);
 
-  if (MATDSPL) {
-    printf("factored matrix:\n");
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = MatView(A,viewer2);CHKERRQ(ierr);
-  }
-
   /* Solve A*y = b, then check the error */
   ierr = MatSolve(A,b,y);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
@@ -132,7 +123,7 @@ int main(int argc,char **args)
     ierr = MatSolve(A,b,y);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2_inplace);CHKERRQ(ierr);
-    if (PetscAbs(norm2 - norm2_inplace) > 1.e-14) SETERRQ2(PETSC_COMM_SELF,1,"ILU(0) %G and in-place ILU(0) %G give different residuals",norm2,norm2_inplace);
+    if (PetscAbs(norm2 - norm2_inplace) > 1.e-14) SETERRQ2(PETSC_COMM_SELF,1,"ILU(0) %g and in-place ILU(0) %g give different residuals",(double)norm2,(double)norm2_inplace);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
 
@@ -166,7 +157,7 @@ int main(int argc,char **args)
       ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
       if (norm2 > 1.e-14) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G\n",norm2);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%g\n",(double)norm2);CHKERRQ(ierr);
       }
     }
   }
@@ -190,7 +181,7 @@ int main(int argc,char **args)
     ierr = MatSolve(A,b,y);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2_inplace);CHKERRQ(ierr);
-    if (PetscAbs(norm2 - norm2_inplace) > 1.e-14) SETERRQ2(PETSC_COMM_SELF,1,"ICC(0) %G and in-place ICC(0) %G give different residuals",norm2,norm2_inplace);
+    if (PetscAbs(norm2 - norm2_inplace) > 1.e-14) SETERRQ2(PETSC_COMM_SELF,1,"ICC(0) %g and in-place ICC(0) %g give different residuals",(double)norm2,(double)norm2_inplace);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
 

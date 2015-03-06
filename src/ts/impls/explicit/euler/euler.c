@@ -66,7 +66,7 @@ static PetscErrorCode TSDestroy_Euler(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Euler"
-static PetscErrorCode TSSetFromOptions_Euler(TS ts)
+static PetscErrorCode TSSetFromOptions_Euler(PetscOptions *PetscOptionsObject,TS ts)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -128,7 +128,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)
   ts->ops->interpolate     = TSInterpolate_Euler;
   ts->ops->linearstability = TSComputeLinearStability_Euler;
 
-  ierr = PetscNewLog(ts,TS_Euler,&euler);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,&euler);CHKERRQ(ierr);
   ts->data = (void*)euler;
   PetscFunctionReturn(0);
 }
