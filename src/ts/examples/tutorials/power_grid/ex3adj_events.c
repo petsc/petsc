@@ -236,7 +236,7 @@ static PetscErrorCode DRDPFunction(TS ts,PetscReal t,Vec U,Vec *drdp,AppCtx *ctx
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeSensiP"
-PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,AppCtx *ctx)
+PetscErrorCode ComputeSensiP(Vec lambda,Vec mu,AppCtx *ctx)
 { 
   PetscErrorCode    ierr;
   PetscScalar       sensip;
@@ -244,11 +244,11 @@ PetscErrorCode ComputeSensiP(Vec lambda,Vec lambdap,AppCtx *ctx)
   
   PetscFunctionBegin;
   ierr = VecGetArrayRead(lambda,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(lambdap,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(mu,&y);CHKERRQ(ierr);
   sensip = 1./PetscSqrtScalar(1.-(ctx->Pm/ctx->Pmax)*(ctx->Pm/ctx->Pmax))/ctx->Pmax*x[0]+y[0];  
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt parameter pm: %.7f \n",(double)sensip);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(lambda,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(lambdap,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(mu,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -270,7 +270,7 @@ int main(int argc,char **argv)
   PetscReal      ftime;
   PetscInt       steps;
   PetscScalar    *x_ptr,*y_ptr;
-  Vec            lambda[1],q,drdy[1],lambdap[1],drdp[1];
+  Vec            lambda[1],q,mu[1];
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -410,33 +410,30 @@ int main(int argc,char **argv)
   y_ptr[0] = 0.0; y_ptr[1] = 0.0;
   ierr = VecRestoreArray(lambda[0],&y_ptr);CHKERRQ(ierr);
 
-  ierr = MatCreateVecs(Jacp,&lambdap[0],NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(lambdap[0],&x_ptr);CHKERRQ(ierr);
+  ierr = MatCreateVecs(Jacp,&mu[0],NULL);CHKERRQ(ierr);
+  ierr = VecGetArray(mu[0],&x_ptr);CHKERRQ(ierr);
   x_ptr[0] = -1.0;
-  ierr = VecRestoreArray(lambdap[0],&x_ptr);CHKERRQ(ierr);
-  ierr = TSAdjointSetCostGradients(ts,1,lambda,lambdap);CHKERRQ(ierr);
-
-  ierr = VecDuplicate(lambda[0],&drdy[0]);CHKERRQ(ierr);
-  ierr = VecDuplicate(lambdap[0],&drdp[0]);CHKERRQ(ierr);
+  ierr = VecRestoreArray(mu[0],&x_ptr);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostGradients(ts,1,lambda,mu);CHKERRQ(ierr);
 
   /*   Set RHS JacobianP */
   ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
 
-  ierr = TSAdjointSetCostIntegrand(ts,1,     (PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
-                                        drdy,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
-                                        drdp,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostIntegrand(ts,1,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
+				        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
+                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,&ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt initial conditions: d[Psi(tf)]/d[phi0]  d[Psi(tf)]/d[omega0]\n");CHKERRQ(ierr);
   ierr = VecView(lambda[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(lambdap[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(mu[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = TSAdjointGetCostIntegral(ts,&q);CHKERRQ(ierr);
   ierr = VecView(q,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetArray(q,&x_ptr);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n cost function=%g\n",(double)(x_ptr[0]-ctx.Pm));CHKERRQ(ierr);
  
-  ierr = ComputeSensiP(lambda[0],lambdap[0],&ctx);CHKERRQ(ierr);
+  ierr = ComputeSensiP(lambda[0],mu[0],&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
@@ -445,9 +442,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&Jacp);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = VecDestroy(&lambda[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&drdy[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&drdp[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&lambdap[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&mu[0]);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return(0);
