@@ -600,15 +600,9 @@ PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, PetscIn
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
-      PetscInt goff, loff, lfoff, fdof, fcdof, rS, rE;
+      PetscInt rS, rE;
 
-      ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(section, p, &loff);CHKERRQ(ierr);
-      ierr = PetscSectionGetFieldOffset(section, p, f, &lfoff);CHKERRQ(ierr);
-      ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
-      ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
-      rS   = goff + (lfoff - loff);
-      rE   = rS + fdof - fcdof;
+      ierr = DMPlexGetGlobalFieldOffset_Private(dm, p, f, &rS, &rE);CHKERRQ(ierr);
       for (r = rS; r < rE; ++r) {
         PetscInt numCols, cStart, c;
 
@@ -673,15 +667,9 @@ PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscInt bs, 
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
-      PetscInt goff, loff, lfoff, fdof, fcdof, rS, rE;
+      PetscInt rS, rE;
 
-      ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(section, p, &loff);CHKERRQ(ierr);
-      ierr = PetscSectionGetFieldOffset(section, p, f, &lfoff);CHKERRQ(ierr);
-      ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
-      ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
-      rS   = goff + (lfoff - loff);
-      rE   = rS + fdof - fcdof;
+      ierr = DMPlexGetGlobalFieldOffset_Private(dm, p, f, &rS, &rE);CHKERRQ(ierr);
       for (r = rS; r < rE; ++r) {
         PetscInt numCols, cStart;
 
