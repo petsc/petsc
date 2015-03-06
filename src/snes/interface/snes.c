@@ -774,6 +774,12 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = SNESMonitorSet(snes,SNESMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
+  ierr = PetscOptionsString("-snes_monitor_field","Monitor norm of function (split into fields)","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)snes),monfilename,&monviewer);CHKERRQ(ierr);
+    ierr = SNESMonitorSet(snes,SNESMonitorDefaultField,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  }
+
   ierr = PetscOptionsString("-snes_monitor_python","Use Python function","SNESMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {ierr = PetscPythonMonitorSet((PetscObject)snes,monfilename);CHKERRQ(ierr);}
 

@@ -112,6 +112,7 @@ PETSC_EXTERN PetscErrorCode SNESMonitorSolution(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorResidual(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorSolutionUpdate(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorDefaultShort(SNES,PetscInt,PetscReal,void *);
+PETSC_EXTERN PetscErrorCode SNESMonitorDefaultField(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorFields(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorSNES(KSP,PetscInt,PetscReal,void*);
