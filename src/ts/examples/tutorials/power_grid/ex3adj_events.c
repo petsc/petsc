@@ -44,15 +44,17 @@ typedef struct {
 PetscErrorCode PostStepFunction(TS ts)
 {
   PetscErrorCode ierr;
-  PetscReal      t,dt;
-  PetscInt       step;
+  Vec            U;
+  PetscReal      t;
+  const PetscScalar    *u;
 
   PetscFunctionBegin;
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
-  ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&step);CHKERRQ(ierr);
-
-  ierr = PetscPrintf(PETSC_COMM_SELF,"At time %3.2f steps completed = %d, next time step = %13.12f\n",t,step,dt);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"delta(%3.2f) = %8.7f\n",t,u[0]);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
 
@@ -78,15 +80,28 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   AppCtx         *ctx=(AppCtx*)app;
 
   PetscFunctionBegin;
-  if (event_list[0] == 0) { /* Fault-on */
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Applying fault at time = %3.2f\n",t);CHKERRQ(ierr);
-    /* Set Pmax to 0 */
-    ctx->Pmax = 0.0;
-  } else if (event_list[0] == 1) { /* Fault-off */
-    /* Set Pmax to initial value */
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Removing fault at time = %3.2f\n",t);CHKERRQ(ierr);
-    ctx->Pmax = ctx->E*ctx->V/ctx->X;
+  if(forwardsolve) {
+    if (event_list[0] == 0) { /* Fault-on */
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Applying fault at time = %3.2f\n",t);CHKERRQ(ierr);
+      /* Set Pmax to 0 */
+      ctx->Pmax = 0.0;
+    } else if (event_list[0] == 1) { /* Fault-off */
+      /* Set Pmax to initial value */
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Removing fault at time = %3.2f\n",t);CHKERRQ(ierr);
+      ctx->Pmax = ctx->E*ctx->V/ctx->X;
+    } 
+  } else { /* Reverse the events for the adjoint solve */
+    if (event_list[0] == 1) { /* Fault-on */
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Adjoint solve:Applying fault at time = %3.2f\n",t);CHKERRQ(ierr);
+      /* Set Pmax to 0 */
+      ctx->Pmax = 0.0;
+    } else if (event_list[0] == 0) { /* Fault-off */
+      /* Set Pmax to initial value */
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Adjoint solve:Removing fault at time = %3.2f\n",t);CHKERRQ(ierr);
+      ctx->Pmax = ctx->E*ctx->V/ctx->X;
+    }
   }
+      
   PetscFunctionReturn(0);
 }
 
@@ -383,7 +398,6 @@ int main(int argc,char **argv)
     ierr = TSSolve(ts,U);CHKERRQ(ierr);
   }
 
-  exit(1);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
 

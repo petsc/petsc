@@ -276,6 +276,7 @@ struct _p_TSEvent {
   struct {
     PetscInt  ctr;                          /* recorder counter */
     PetscReal time[MAXEVENTRECORDERS];      /* Event times */
+    PetscInt  stepnum[MAXEVENTRECORDERS];   /* Step numbers */
     PetscInt  nevents[MAXEVENTRECORDERS];   /* Number of events occuring at the event times */
     PetscInt  *eventidx[MAXEVENTRECORDERS]; /* Local indices of the events in the event list */
   } recorder;
@@ -283,6 +284,7 @@ struct _p_TSEvent {
 
 PETSC_EXTERN PetscErrorCode TSEventMonitor(TS);
 PETSC_EXTERN PetscErrorCode TSEventMonitorDestroy(TSEvent*);
+PETSC_EXTERN PetscErrorCode TSAdjointEventMonitor(TS);
 
 PETSC_EXTERN PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 

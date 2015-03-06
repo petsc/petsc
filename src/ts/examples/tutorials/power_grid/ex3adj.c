@@ -40,6 +40,25 @@ typedef struct {
 } AppCtx;
 
 #undef __FUNCT__
+#define __FUNCT__ "PostStepFunction"
+PetscErrorCode PostStepFunction(TS ts)
+{
+  PetscErrorCode ierr;
+  Vec            U;
+  PetscReal      t;
+  const PetscScalar    *u;
+
+  PetscFunctionBegin;
+  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"delta(%3.2f) = %8.7f\n",t,u[0]);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "IFunction"
 /*
      Defines the ODE passed to the ODE solver
@@ -55,7 +74,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  if ((t > ctx->tf+1e-10) && (t < ctx->tcl+1e-10)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else Pmax = ctx->Pmax;
   
   f[0] = udot[0] - ctx->omega_b*(u[1] - ctx->omega_s);
@@ -82,7 +101,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionBegin;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  if ((t > ctx->tf+1e-10) && (t < ctx->tcl+1e-10)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else Pmax = ctx->Pmax;
 
   J[0][0] = a;                       J[0][1] = -ctx->omega_b;
@@ -307,6 +326,7 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
+  ierr = TSSetPostStep(ts,PostStepFunction);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

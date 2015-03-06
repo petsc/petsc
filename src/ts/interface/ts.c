@@ -3312,13 +3312,17 @@ PetscErrorCode TSAdjointSolve(TS ts)
     ierr = TSMonitor(ts,ts->adjoint_max_steps-ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     ierr = TSAdjointStep(ts);CHKERRQ(ierr);
     if (ts->event) {
-      ierr = TSEventMonitor(ts);CHKERRQ(ierr);
+      ierr = TSAdjointEventMonitor(ts);CHKERRQ(ierr);
+    }
+
+#if 0 /* I don't think PostStep is needed in AdjointSolve */
       if (ts->event->status != TSEVENT_PROCESSING) {
         ierr = TSPostStep(ts);CHKERRQ(ierr);
       }
     } else {
       ierr = TSPostStep(ts);CHKERRQ(ierr);
     }
+#endif
   }
   ts->solvetime = ts->ptime;
   PetscFunctionReturn(0);

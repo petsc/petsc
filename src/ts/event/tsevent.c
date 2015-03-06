@@ -125,7 +125,7 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
   PetscErrorCode ierr;
   TSEvent        event=ts->event;
   PetscBool      terminate=PETSC_FALSE;
-  PetscInt       i,ctr;
+  PetscInt       i,ctr,stepnum;
   PetscBool      ts_terminate;
 
   PetscFunctionBegin;
@@ -143,12 +143,14 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
     event->status = TSEVENT_RESET_NEXTSTEP;
   }
 
-  /* Record the events in the event recorder */
+  /* Record the event in the event recorder */
+  ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
   ctr = event->recorder.ctr;
   if (ctr == MAXEVENTRECORDERS) {
     SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Exceeded limit (=%d) for number of events recorded",MAXEVENTRECORDERS);
   }
   event->recorder.time[ctr] = t;
+  event->recorder.stepnum[ctr] = stepnum;
   event->recorder.nevents[ctr] = nevents_zero;
   for(i=0; i < nevents_zero; i++) event->recorder.eventidx[ctr][i] = events_zero[i];
   event->recorder.ctr++;
@@ -291,4 +293,35 @@ PetscErrorCode TSEventMonitor(TS ts)
   ierr = MPI_Allreduce(&dt,&(ts->time_step),1,MPIU_REAL,MPI_MIN,((PetscObject)ts)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "TSAdjointEventMonitor"
+PetscErrorCode TSAdjointEventMonitor(TS ts)
+{
+  PetscErrorCode ierr;
+  TSEvent        event=ts->event;
+  PetscReal      t;
+  Vec            U;
+  PetscInt       ctr;
+  PetscBool      forwardsolve=PETSC_FALSE; /* Flag indicating that TS is doing an adjoint solve */
+
+  PetscFunctionBegin;
+
+  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+
+  ctr = event->recorder.ctr-1;
+  if(ctr >= 0 && PetscAbsScalar(t - event->recorder.time[ctr]) < PETSC_SMALL) {
+    /* Call the user postevent function */
+    if(event->postevent) {
+      ierr = (*event->postevent)(ts,event->recorder.nevents[ctr],event->recorder.eventidx[ctr],t,U,forwardsolve,event->monitorcontext);CHKERRQ(ierr);
+      event->recorder.ctr--;
+    }
+  }
+
+  PetscBarrier((PetscObject)ts);
+  PetscFunctionReturn(0);
+}
+
+
 
