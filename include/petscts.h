@@ -436,7 +436,9 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGSolution(TS,PetscInt,PetscReal,Vec,void *
 PETSC_EXTERN PetscErrorCode TSMonitorLGSetVariableNames(TS,const char * const*);
 PETSC_EXTERN PetscErrorCode TSMonitorLGGetVariableNames(TS,const char *const **);
 PETSC_EXTERN PetscErrorCode TSMonitorLGSetDisplayVariables(TS,const char * const*);
-PETSC_EXTERN PetscErrorCode TSMonitorLGSetTransform(TS,PetscErrorCode (*)(void*,Vec,Vec),void*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx,const char * const *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGSetTransform(TS,PetscErrorCode (*)(void*,Vec,Vec*),void*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxSetTransform(TSMonitorLGCtx,PetscErrorCode (*)(void*,Vec,Vec*),void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGError(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGSNESIterations(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGKSPIterations(TS,PetscInt,PetscReal,Vec,void *);

@@ -203,6 +203,10 @@ extchem: extchem.o chkopts
 	-${CLINKER} -o extchem extchem.o ${PETSC_TS_LIB}
 	${RM} extchem.o
 
+extchemfield: extchemfield.o chkopts
+	-${CLINKER} -o extchemfield extchemfield.o ${PETSC_TS_LIB}
+	${RM} extchemfield.o
+
 ex40: ex40.o chkopts
 	-${CLINKER} -o ex40 ex40.o ${PETSC_TS_LIB}
 	${RM} ex40.o

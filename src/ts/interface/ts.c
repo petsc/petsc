@@ -5431,8 +5431,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
   }
   if (ctx->transform) {
-    ierr = VecDuplicate(u,&v);CHKERRQ(ierr);
-    ierr = (*ctx->transform)(ctx->transformctx,u,v);CHKERRQ(ierr);
+    ierr = (*ctx->transform)(ctx->transformctx,u,&v);CHKERRQ(ierr);
   } else {
     v = u;
   }
@@ -5500,6 +5499,33 @@ PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
       break;
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorLGCtxSetVariableNames"
+/*@C
+   TSMonitorLGCtxSetVariableNames - Sets the name of each component in the solution vector so that it may be displayed in the plot
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+-  names - the names of the components, final string must be NULL
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetDisplayVariables()
+@*/
+PetscErrorCode  TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx,const char * const *names)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrArrayDestroy(&ctx->names);CHKERRQ(ierr);
+  ierr = PetscStrArrayallocpy(names,&ctx->names);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5610,7 +5636,7 @@ PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *display
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames()
 @*/
-PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,Vec,Vec),void *tctx)
+PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,Vec,Vec*),void *tctx)
 {
   PetscInt          i;
 
@@ -5622,6 +5648,32 @@ PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,
       ctx->transformctx = tctx;
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorLGCtxSetTransform"
+/*@C
+   TSMonitorLGCtxSetTransform - Solution vector will be transformed by provided function before being displayed
+
+   Collective on TSLGCtx
+
+   Input Parameters:
++  ts - the TS context
+.  transform - the transform function
+-  ctx - optional context used by transform function
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorLGSetVariableNames()
+@*/
+PetscErrorCode  TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx,PetscErrorCode (*transform)(void*,Vec,Vec*),void *tctx)
+{
+  PetscFunctionBegin;
+  ctx->transform    = transform;
+  ctx->transformctx = tctx;
   PetscFunctionReturn(0);
 }
 
