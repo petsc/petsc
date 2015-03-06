@@ -4,7 +4,7 @@ static char help[] = "Hybrid Finite Element-Finite Volume Example.\n";
 a forcing function $f$:
 \begin{align}
   -\Delta \mathbf{u} + f &= 0 \\
-  \frac{\partial\phi}{\partial t} - \nabla\cdot \phi \mathbf{u} &= 0
+  \frac{\partial\phi}{\partial t} + \nabla\cdot \phi \mathbf{u} &= 0
 \end{align}
 F*/
 #include <petscdmplex.h>
