@@ -10,6 +10,7 @@ class Configure(config.package.GNUPackage):
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.1.tar.gz']
     self.downloadfilename = 'mpich'
     self.skippackagewithoptions = 1
+    self.isMPI = 1
     return
 
   def setupHelp(self, help):

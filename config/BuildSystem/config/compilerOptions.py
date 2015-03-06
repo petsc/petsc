@@ -19,12 +19,12 @@ class CompilerOptions(config.base.Configure):
     if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
       if bopt == '':
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
-        if self.framework.argDB['with-visibility']:
+        if self.argDB['with-visibility']:
           flags.extend(['-fvisibility=hidden'])
       elif bopt == 'g':
-        if self.framework.argDB['with-gcov']:
+        if self.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
-        if 'with-cuda' in self.framework.argDB and self.framework.argDB['with-cuda']:
+        if 'with-cuda' in self.argDB and self.argDB['with-cuda']:
           flags.append('-g') #cuda 4.1 with sm_20 is buggy with -g3
         else:
           flags.append('-g3')
@@ -88,10 +88,10 @@ class CompilerOptions(config.base.Configure):
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
         # The option below would prevent warnings about compiling C as C++ being deprecated, but it causes Clang to SEGV, http://llvm.org/bugs/show_bug.cgi?id=12924
         # flags.extend([('-x','c++')])
-        if self.framework.argDB['with-visibility']:
+        if self.argDB['with-visibility']:
           flags.extend(['-fvisibility=hidden'])
       elif bopt in ['g']:
-        if self.framework.argDB['with-gcov']:
+        if self.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         # -g3 causes an as SEGV on OSX
         flags.append('-g')
@@ -163,7 +163,7 @@ class CompilerOptions(config.base.Configure):
         if config.setCompilers.Configure.isGfortran45x(compiler):
           flags.extend(['-Wno-line-truncation']) # Work around bug in this series, fixed in 4.6: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=42852
       elif bopt == 'g':
-        if self.framework.argDB['with-gcov']:
+        if self.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         # g77 3.2.3 preprocesses the file into nothing if we give -g3
         flags.append('-g')
@@ -237,7 +237,7 @@ class CompilerOptions(config.base.Configure):
           flags = "lslpp -L xlfcmp | grep xlfcmp | awk '{print $2}'"
         else:
           flags = compiler+' --version'
-      (output, error, status) = config.base.Configure.executeShellCommand(flags, log = self.framework.log)
+      (output, error, status) = config.base.Configure.executeShellCommand(flags, log = self.log)
       if not status:
         if compiler.find('win32fe') > -1:
           version = '\\n'.join(output.split('\n')[0:2])
@@ -249,6 +249,6 @@ class CompilerOptions(config.base.Configure):
             version = output.split('\n')[0]
 
     except RuntimeError, e:
-      self.framework.log.write('Could not determine compiler version: '+str(e))
-    self.framework.log.write('getCompilerVersion: '+str(compiler)+' '+str(version)+'\n')
+      self.logWrite('Could not determine compiler version: '+str(e))
+    self.logWrite('getCompilerVersion: '+str(compiler)+' '+str(version)+'\n')
     return version

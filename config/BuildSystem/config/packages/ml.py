@@ -73,12 +73,12 @@ class Configure(config.package.GNUPackage):
 
   def consistencyChecks(self):
     config.package.GNUPackage.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
+    if self.argDB['with-'+self.package]:
       # ML requires LAPACK routine dgels() ?
       if not self.blasLapack.checkForRoutine('dgels'):
         raise RuntimeError('ML requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
       if not self.blasLapack.checkForRoutine('dsteqr'):
         raise RuntimeError('ML requires the LAPACK routine dsteqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
-      self.framework.log.write('Found dsteqr() in Lapack library as needed by ML\n')
-      self.framework.log.write('Found dgels() in Lapack library as needed by ML\n')
+      self.log.write('Found dsteqr() in Lapack library as needed by ML\n')
+      self.log.write('Found dgels() in Lapack library as needed by ML\n')
 

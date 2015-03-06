@@ -1,9 +1,6 @@
 
 #include <petscmat.h>
 #include <petsc-private/matorderimpl.h>
-#define UF_long long long
-#define UF_long_max LONG_LONG_MAX
-#define UF_long_id "%lld"
 #include <amd.h>
 
 #if defined(PETSC_USE_64BIT_INDICES)

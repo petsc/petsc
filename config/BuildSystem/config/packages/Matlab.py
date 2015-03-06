@@ -18,9 +18,9 @@ class Configure(config.package.Package):
 
   def generateGuesses(self):
     '''Generate list of possible locations of Matlab'''
-    if 'with-matlab-dir' in self.framework.argDB:
-      yield self.framework.argDB['with-matlab-dir']
-      raise RuntimeError('You set a value for --with-matlab-dir, but '+self.framework.argDB['with-matlab-dir']+' cannot be used\n')
+    if 'with-matlab-dir' in self.argDB:
+      yield self.argDB['with-matlab-dir']
+      raise RuntimeError('You set a value for --with-matlab-dir, but '+self.argDB['with-matlab-dir']+' cannot be used\n')
     if self.getExecutable('matlab', getFullPath = 1):
       # follow any symbolic link of this path
       self.matlab = os.path.realpath(self.matlab)
@@ -33,7 +33,7 @@ class Configure(config.package.Package):
     return
 
   def alternateConfigureLibrary(self):
-    if self.framework.argDB['with-matlab-engine']:
+    if self.argDB['with-matlab-engine']:
       raise RuntimeError('--with-matlab-engine flag also requires --with-matlab flag\n')
 
   def configureLibrary(self):
@@ -42,42 +42,42 @@ class Configure(config.package.Package):
 
     versionPattern = re.compile('Version ([0-9]*.[0-9]*)')
     for matlab in self.generateGuesses():
-      self.framework.log.write('Testing Matlab at '+matlab+'\n')
+      self.log.write('Testing Matlab at '+matlab+'\n')
       interpreter = os.path.join(matlab,'bin','matlab')
-      if 'with-matlab-arch' in self.framework.argDB:
-        interpreter = interpreter+' -'+self.framework.argDB['with-matlab-arch']
+      if 'with-matlab-arch' in self.argDB:
+        interpreter = interpreter+' -'+self.argDB['with-matlab-arch']
 
       output      = ''
       try:
-        output,err,ret = config.package.Package.executeShellCommand(interpreter+' -nojvm -nodisplay -r "display([\'Version \' version]); exit"', log = self.framework.log)
+        output,err,ret = config.package.Package.executeShellCommand(interpreter+' -nojvm -nodisplay -r "display([\'Version \' version]); exit"', log = self.log)
       except:
-        self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
+        self.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
         continue
 
       match  = versionPattern.search(output)
       r = float(match.group(1))
       if r < 6.0:
-        self.framework.log.write('WARNING: Matlab version must be at least 6; yours is '+str(r))
+        self.log.write('WARNING: Matlab version must be at least 6; yours is '+str(r))
         continue
       # make sure this is true root of Matlab
       if not os.path.isdir(os.path.join(matlab,'extern','lib')):
-        self.framework.log.write('WARNING:'+matlab+' is not the root directory for Matlab\n')
-        self.framework.log.write('        Run with --with-matlab-dir=Matlabrootdir if you know where it is\n')
+        self.log.write('WARNING:'+matlab+' is not the root directory for Matlab\n')
+        self.log.write('        Run with --with-matlab-dir=Matlabrootdir if you know where it is\n')
       else:
         self.matlab      = matlab
         ls = os.listdir(os.path.join(matlab,'extern','lib'))
         if ls:
-          if 'with-matlab-arch' in self.framework.argDB:
-            self.matlab_arch = self.framework.argDB['with-matlab-arch']
+          if 'with-matlab-arch' in self.argDB:
+            self.matlab_arch = self.argDB['with-matlab-arch']
             if not self.matlab_arch in ls:
-              self.framework.log.write('WARNING: You indicated --with-matlab-arch='+self.matlab_arch+' but that arch does not exist;\n possibilities are '+str(ls))
+              self.log.write('WARNING: You indicated --with-matlab-arch='+self.matlab_arch+' but that arch does not exist;\n possibilities are '+str(ls))
               continue
           else:
             self.matlab_arch = ls[0]
-          self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+' Matlab arch '+self.matlab_arch+'\n')
+          self.log.write('Configuring PETSc to use the Matlab at '+matlab+' Matlab arch '+self.matlab_arch+'\n')
           self.mex = os.path.join(matlab,'bin','mex')
-          if 'with-matlab-arch' in self.framework.argDB:
-            self.mex = self.mex+' -'+self.framework.argDB['with-matlab-arch']
+          if 'with-matlab-arch' in self.argDB:
+            self.mex = self.mex+' -'+self.argDB['with-matlab-arch']
 
           self.command = os.path.join(matlab,'bin','matlab -'+self.matlab_arch)
           self.include = [os.path.join(matlab,'extern','include')]
@@ -88,6 +88,6 @@ class Configure(config.package.Package):
           self.found = 1
           return
         else:
-          self.framework.log.write('WARNING:Unable to use Matlab because cannot locate Matlab external libraries at '+os.path.join(matlab,'extern','lib')+'\n')
+          self.log.write('WARNING:Unable to use Matlab because cannot locate Matlab external libraries at '+os.path.join(matlab,'extern','lib')+'\n')
     raise RuntimeError('Could not find a functional Matlab\nRun with --with-matlab-dir=Matlabrootdir if you know where it is\n')
     return

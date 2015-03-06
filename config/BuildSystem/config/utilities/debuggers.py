@@ -22,10 +22,10 @@ class Configure(config.base.Configure):
   def configureDebuggers(self):
     '''Find a default debugger and determine its arguments'''
     # We use the framework in order to remove the PETSC_ namespace
-    if 'with-debugger' in self.framework.argDB:
-      self.getExecutable(self.framework.argDB['with-debugger'], getFullPath = 1)
-      if not hasattr(self,self.framework.argDB['with-debugger']):
-        raise RuntimeError('Cannot locate debugger indicated using --with-debugger='+self.framework.argDB['with-debugger'])
+    if 'with-debugger' in self.argDB:
+      self.getExecutable(self.argDB['with-debugger'], getFullPath = 1)
+      if not hasattr(self,self.argDB['with-debugger']):
+        raise RuntimeError('Cannot locate debugger indicated using --with-debugger='+self.argDB['with-debugger'])
     else:
       self.getExecutable('gdb', getFullPath = 1)
       self.getExecutable('dbx', getFullPath = 1)
@@ -41,7 +41,7 @@ class Configure(config.base.Configure):
       self.addDefine('USE_GDB_DEBUGGER', 1)
     elif hasattr(self, 'dbx'):
       import re
-      if self.framework.argDB['with-batch']: return
+      if self.argDB['with-batch']: return
       self.addDefine('USE_DBX_DEBUGGER', 1)
       f = file('conftest', 'w')
       f.write('quit\n')
@@ -55,7 +55,7 @@ class Configure(config.base.Configure):
           time.sleep(15)
           sys.exit()
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -p '+str(pid), log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -p '+str(pid), log = self.log)
           if not status:
             for line in output:
               if re.match(r'Process '+str(pid), line):
@@ -65,7 +65,7 @@ class Configure(config.base.Configure):
         except RuntimeError: pass
       if not foundOption:
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -a '+str(pid), log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -a '+str(pid), log = self.log)
           if not status:
             for line in output:
               if re.match(r'Process '+str(pid), line):
@@ -75,7 +75,7 @@ class Configure(config.base.Configure):
         except RuntimeError: pass
       if not foundOption:
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -pid '+str(pid), log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -pid '+str(pid), log = self.log)
           if not status:
             for line in output:
               if re.match(r'Process '+str(pid), line):

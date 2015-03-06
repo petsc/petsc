@@ -34,12 +34,12 @@ class Configure(config.package.GNUPackage):
     try:
       self.logPrintBox('Compiling Ctetgen; this may take several minutes')
       # uses the regular PETSc library builder and then moves result 
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' PETSC_DIR='+self.petscdir.dir+' clean lib',timeout=1000, log = self.framework.log)
-      self.framework.log.write(output+err)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' PETSC_DIR='+self.petscdir.dir+' clean lib',timeout=1000, log = self.log)
+      self.log.write(output+err)
       self.logPrintBox('Installing Ctetgen; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage(1)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+self.make.make+' PETSC_DIR='+self.petscdir.dir+' install-ctetgen',timeout=1000, log = self.framework.log)
-      self.framework.log.write(output+err)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+self.installDirProvider.installSudo+self.make.make+' PETSC_DIR='+self.petscdir.dir+' install-ctetgen',timeout=1000, log = self.log)
+      self.log.write(output+err)
     except RuntimeError, e:
       raise RuntimeError('Error running make on Ctetgen: '+str(e))
 

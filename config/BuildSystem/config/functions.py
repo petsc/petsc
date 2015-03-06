@@ -20,7 +20,8 @@ class Configure(config.base.Configure):
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.compilers = self.framework.require('config.compilers', self)
-    self.headers = self.framework.require('config.headers', self)
+    self.libraries = self.framework.require('config.libraries', self) # setCompilers.LIBS is setup here
+    self.headers   = self.framework.require('config.headers', self)
     return
 
   def haveFunction(self, function):
@@ -30,7 +31,7 @@ class Configure(config.base.Configure):
     '''Checks for the function "funcName", and if found defines HAVE_"funcName"'''
     if isinstance(funcs, set): funcs = list(funcs)
     if isinstance(funcs, str): funcs = [funcs]
-    self.framework.log.write('Checking for functions ['+' '.join(funcs)+']\n')
+    self.log.write('Checking for functions ['+' '.join(funcs)+']\n')
     def genIncludes(funcName):
       return 'char %s();\n' % funcName
     def genBody(funcName):
@@ -108,12 +109,13 @@ builtin and then its argument prototype would still apply. */
 
   def checkMemcmp(self):
     '''Check for 8-bit clean memcmp'''
-    if 'known-memcmp-ok' in self.framework.argDB:
-      if self.framework.argDB['known-memcmp-ok'] == 0:
-        raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed')
+    if 'known-memcmp-ok' in self.argDB:
+      if self.argDB['known-memcmp-ok'] == 0:
+        raise RuntimeError('No 8-bit clean memcmp() exists. Cannot proceed')
       else:
         return
-    if not self.framework.argDB['with-batch']:
+    if not self.argDB['with-batch']:
+      self.logPrint('Making executable to test memcmp()')
       if not self.checkRun('#include <string.h>\nvoid exit(int);\n\n', 'char c0 = 0x40;\nchar c1 = (char) 0x80;\nchar c2 = (char) 0x81;\nexit(memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1);\n'):
         raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed.')
     else:
