@@ -24,7 +24,7 @@ static const char help[] = "Integrate chemistry using TChem.\n";
     Run with
    ./extchem -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_monitor_lg_solution -ts_final_time .005 -draw_pause -2 -lg_indicate_data_points false -ts_lg_monitor_solution_variables H2,O2,H2O,CH4,CO,CO2,C2H2,N2  -ts_monitor_envelope
 
-    The solution for component i = 0 is the tempature.
+    The solution for component i = 0 is the temperature.
 
     The solution, i > 0, is the mass fraction, massf[i], of species i, i.e. mass of species i/ total mass of all species
 
@@ -42,7 +42,7 @@ struct _User {
   int       Nreac;
   PetscReal Tini;
   double    *tchemwork;
-  double    *Jdense;
+  double    *Jdense;        /* Dense array workspace where Tchem computes the Jacobian */ 
   PetscInt  *rows;
 };
 
@@ -137,7 +137,7 @@ int main(int argc,char **argv)
   ierr = TSMonitorLGSetTransform(ts,(PetscErrorCode (*)(void*,Vec,Vec))FormMoleFraction,&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Solve nonlinear system
+     Solve ODE
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
@@ -210,15 +210,18 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
   PetscFunctionBeginUser;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = PetscMemcpy(user->tchemwork,x,(user->Nspec+1)*sizeof(x[0]));CHKERRQ(ierr);
-  user->tchemwork[0] *= user->Tini;
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  user->tchemwork[0] *= user->Tini;  /* Dimensionalize temperature (first row) because that is what Tchem wants */
   ierr = TC_getJacTYN(user->tchemwork,user->Nspec,user->Jdense,1);CHKERRQ(ierr);
 
   for (i=0; i<M; i++) user->Jdense[i + 0*M] /= user->Tini; /* Non-dimensionalize first column */
   for (i=0; i<M; i++) user->Jdense[0 + i*M] /= user->Tini; /* Non-dimensionalize first row */
   for (i=0; i<M; i++) user->rows[i] = i;
-  for (i=0; i<M; i++) {
-    ierr = MatSetValues(Pmat,M,user->rows,1,&i,&user->Jdense[0+i*M],INSERT_VALUES);CHKERRQ(ierr);
-  }
+  ierr = MatSetOption(Pmat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSetOption(Pmat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatZeroEntries(Pmat);CHKERRQ(ierr);
+  ierr = MatSetValues(Pmat,M,user->rows,M,user->rows,user->Jdense,INSERT_VALUES);CHKERRQ(ierr);
+
   ierr = MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (Amat != Pmat) {
