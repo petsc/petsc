@@ -364,7 +364,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
   PetscInt       *numComp;
   PetscSection    section;
   PetscScalar    *values;
-  PetscInt        numFields, dim, dimEmbed, spDim, totDim = 0, numValues, pStart, pEnd, p, cStart, cEnd, cEndInterior, f, d, v, comp, h, maxHeight;
+  PetscInt        Nf, dim, dimEmbed, spDim, totDim = 0, numValues, pStart, pEnd, p, cStart, cEnd, cEndInterior, f, d, v, comp, h, maxHeight;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -373,14 +373,14 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
   cEnd = cEndInterior < 0 ? cEnd : cEndInterior;
   if (cEnd <= cStart) PetscFunctionReturn(0);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr = PetscMalloc2(numFields, &sp, numFields, &numComp);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Nf, &sp, Nf, &numComp);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
   ierr = DMPlexGetMaxProjectionHeight(dm,&maxHeight);CHKERRQ(ierr);
   if (maxHeight < 0 || maxHeight > dim) {SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"maximum projection height %d not in [0, %d)\n", maxHeight,dim);}
   if (maxHeight > 0) {
-    ierr = PetscMalloc1(numFields,&cellsp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(Nf,&cellsp);CHKERRQ(ierr);
   }
   else {
     cellsp = sp;
@@ -390,7 +390,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
     if (!h) {pStart = cStart; pEnd = cEnd;}
     if (pEnd <= pStart) continue;
     totDim = 0;
-    for (f = 0; f < numFields; ++f) {
+    for (f = 0; f < Nf; ++f) {
       PetscObject  obj;
       PetscClassId id;
 
@@ -437,7 +437,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
       ierr          = DMPlexComputeCellGeometryFEM(dm, p, NULL, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
       geom.dim      = dim - h;
       geom.dimEmbed = dimEmbed;
-      for (f = 0, v = 0; f < numFields; ++f) {
+      for (f = 0, v = 0; f < Nf; ++f) {
         void * const ctx = ctxs ? ctxs[f] : NULL;
 
         if (!sp[f]) continue;
@@ -455,12 +455,12 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
     }
     ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
     if (h || !maxHeight) {
-      for (f = 0; f < numFields; f++) {ierr = PetscDualSpaceDestroy(&sp[f]);CHKERRQ(ierr);}
+      for (f = 0; f < Nf; f++) {ierr = PetscDualSpaceDestroy(&sp[f]);CHKERRQ(ierr);}
     }
   }
   ierr = PetscFree2(sp, numComp);CHKERRQ(ierr);
   if (maxHeight > 0) {
-    for (f = 0; f < numFields; f++) {ierr = PetscDualSpaceDestroy(&cellsp[f]);CHKERRQ(ierr);}
+    for (f = 0; f < Nf; f++) {ierr = PetscDualSpaceDestroy(&cellsp[f]);CHKERRQ(ierr);}
     ierr = PetscFree(cellsp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -507,19 +507,21 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
   PetscDS           prob, probAux = NULL;
   Vec               A;
   PetscSection      section, sectionAux = NULL;
+  PetscDualSpace   *sp;
+  PetscInt         *Ncf;
   PetscScalar      *values, *u, *u_x, *a, *a_x;
   PetscReal        *x, *v0, *J, *invJ, detJ;
   PetscInt          Nf, dim, spDim, totDim, numValues, cStart, cEnd, cEndInterior, c, f, d, v, comp, maxHeight;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  /* TODO: Move out dual space extraction so that we do not create one for every cell (see ProjectFunctionLocal) */
   ierr = DMPlexGetMaxProjectionHeight(dm,&maxHeight);CHKERRQ(ierr);
   if (maxHeight > 0) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Field projection for height > 0 not supported yet");}
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Nf, &sp, Nf, &Ncf);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscDSGetEvaluationArrays(prob, &u, NULL, &u_x);CHKERRQ(ierr);
@@ -545,38 +547,37 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
     ierr = DMPlexVecGetClosure(dm, section, localU, c, NULL, &coefficients);CHKERRQ(ierr);
     if (dmAux) {ierr = DMPlexVecGetClosure(dmAux, sectionAux, A, c, NULL, &coefficientsAux);CHKERRQ(ierr);}
     for (f = 0, v = 0; f < Nf; ++f) {
-      PetscObject    obj;
-      PetscClassId   id;
-      PetscDualSpace sp;
-      PetscInt       Ncf;
+      PetscObject  obj;
+      PetscClassId id;
 
       ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
       if (id == PETSCFE_CLASSID) {
         PetscFE fe = (PetscFE) obj;
 
-        ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
-        ierr = PetscFEGetNumComponents(fe, &Ncf);CHKERRQ(ierr);
+        ierr = PetscFEGetDualSpace(fe, &sp[f]);CHKERRQ(ierr);
+        ierr  = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
+        ierr = PetscFEGetNumComponents(fe, &Ncf[f]);CHKERRQ(ierr);
       } else if (id == PETSCFV_CLASSID) {
         PetscFV         fv = (PetscFV) obj;
         PetscQuadrature q;
 
         ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
-        ierr = PetscFVGetNumComponents(fv, &Ncf);CHKERRQ(ierr);
-        ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fv), &sp);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSetDM(sp, dm);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSetType(sp, PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSimpleSetDimension(sp, 1);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSimpleSetFunctional(sp, 0, q);CHKERRQ(ierr);
+        ierr = PetscFVGetNumComponents(fv, &Ncf[f]);CHKERRQ(ierr);
+        ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fv), &sp[f]);CHKERRQ(ierr);
+        ierr = PetscDualSpaceSetDM(sp[f], dm);CHKERRQ(ierr);
+        ierr = PetscDualSpaceSetType(sp[f], PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
+        ierr = PetscDualSpaceSimpleSetDimension(sp[f], 1);CHKERRQ(ierr);
+        ierr = PetscDualSpaceSimpleSetFunctional(sp[f], 0, q);CHKERRQ(ierr);
       }
-      ierr = PetscDualSpaceGetDimension(sp, &spDim);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
         PetscQuadrature  quad;
         const PetscReal *points, *weights;
         PetscInt         numPoints, q;
 
         if (funcs[f]) {
-          ierr = PetscDualSpaceGetFunctional(sp, d, &quad);CHKERRQ(ierr);
+          ierr = PetscDualSpaceGetFunctional(sp[f], d, &quad);CHKERRQ(ierr);
           ierr = PetscQuadratureGetData(quad, NULL, &numPoints, &points, &weights);CHKERRQ(ierr);
           for (q = 0; q < numPoints; ++q) {
             CoordinatesRefToReal(dim, dim, v0, J, &points[q*dim], x);
@@ -585,11 +586,10 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
             (*funcs[f])(u, NULL, u_x, a, NULL, a_x, x, &values[v]);
           }
         } else {
-          for (comp = 0; comp < Ncf; ++comp) values[v+comp] = 0.0;
+          for (comp = 0; comp < Ncf[f]; ++comp) values[v+comp] = 0.0;
         }
-        v += Ncf;
+        v += Ncf[f];
       }
-      if (id == PETSCFV_CLASSID) {ierr = PetscDualSpaceDestroy(&sp);CHKERRQ(ierr);}
     }
     ierr = DMPlexVecRestoreClosure(dm, section, localU, c, NULL, &coefficients);CHKERRQ(ierr);
     if (dmAux) {ierr = DMPlexVecRestoreClosure(dmAux, sectionAux, A, c, NULL, &coefficientsAux);CHKERRQ(ierr);}
@@ -597,6 +597,8 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
   }
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
   ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
+  for (f = 0; f < Nf; f++) {ierr = PetscDualSpaceDestroy(&sp[f]);CHKERRQ(ierr);}
+  ierr = PetscFree2(sp, Ncf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
