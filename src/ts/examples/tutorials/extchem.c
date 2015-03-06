@@ -3,6 +3,12 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 #include <petscts.h>
 
 #if defined(PETSC_HAVE_TCHEM)
+#if defined(MAX)
+#undef MAX
+#endif
+#if defined(MIN)
+#undef MIN
+#endif
 #  include <TC_params.h>
 #  include <TC_interface.h>
 #else
@@ -11,9 +17,9 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 /*
     Obtain the three files into this directory
 
-       curl http://www.me.berkeley.edu/gri_mech/version30/files30/grimech30.dat chem.inp
-       curl http://www.me.berkeley.edu/gri_mech/version30/files30/thermo30.dat therm.dat
-       cp $PETSC_DIR/externallibaries/tchem/data/periodictable.dat .
+       curl http://combustion.berkeley.edu/gri_mech/version30/files30/grimech30.dat > chem.inp
+       curl http://combustion.berkeley.edu/gri_mech/version30/files30/thermo30.dat > therm.dat
+       cp $PETSC_DIR/$PETSC_ARCH/externalpackages/tchem/data/periodictable.dat .
 
     Run with
    ./extchem -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_monitor_lg_solution -ts_final_time .005 -draw_pause -2 -lg_indicate_data_points false -ts_lg_monitor_solution_variables H2,O2,H2O,CH4,CO,CO2,C2H2,N2  -ts_monitor_envelope
@@ -43,7 +49,7 @@ struct _User {
 
 static PetscErrorCode FormMoleFraction(User,Vec,Vec);
 static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
-static PetscErrorCode FormRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+static PetscErrorCode FormRHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 
 #define TCCHKERRQ(ierr) do {if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
@@ -79,7 +85,7 @@ int main(int argc,char **argv)
   user.Nspec = TC_getNspec();
   user.Nreac = TC_getNreac();
 
-  ierr = PetscMalloc3(user.Nspec+1,double,&user.tchemwork,PetscSqr(user.Nspec+1),double,&user.Jdense,user.Nspec+1,PetscInt,&user.rows);CHKERRQ(ierr);
+  ierr = PetscMalloc3(user.Nspec+1,&user.tchemwork,PetscSqr(user.Nspec+1),&user.Jdense,user.Nspec+1,&user.rows);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.Nspec+1,&X);CHKERRQ(ierr);
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user.Nspec+1,user.Nspec+1,PETSC_DECIDE,NULL,&J);CHKERRQ(ierr);
@@ -119,10 +125,10 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Pass information to graphical monitoring routine
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscMalloc((user.Nspec+1)*LENGTHOFSPECNAME*sizeof(char),&names);CHKERRQ(ierr);
+  ierr = PetscMalloc1((user.Nspec+1)*LENGTHOFSPECNAME,&names);CHKERRQ(ierr);
   ierr = PetscStrcpy(names,"Temp");CHKERRQ(ierr);
   TC_getSnames(user.Nspec,names+LENGTHOFSPECNAME);CHKERRQ(ierr);
-  ierr = PetscMalloc((user.Nspec+2)*sizeof(char*),&snames);CHKERRQ(ierr);
+  ierr = PetscMalloc1((user.Nspec+2),&snames);CHKERRQ(ierr);
   for (i=0; i<user.Nspec+1; i++) snames[i] = names+i*LENGTHOFSPECNAME;
   snames[user.Nspec+1] = NULL;
   ierr = TSMonitorLGSetVariableNames(ts,(const char * const *)snames);CHKERRQ(ierr);
@@ -137,7 +143,7 @@ int main(int argc,char **argv)
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps);CHKERRQ(ierr);
 
   {
     Vec                max;
@@ -194,7 +200,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormRHSJacobian"
-static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat *Amat,Mat *Pmat,MatStructure *flag,void *ptr)
+static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,void *ptr)
 {
   User              user = (User)ptr;
   PetscErrorCode    ierr;
@@ -211,15 +217,14 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat *Amat,Mat *Pma
   for (i=0; i<M; i++) user->Jdense[0 + i*M] /= user->Tini; /* Non-dimensionalize first row */
   for (i=0; i<M; i++) user->rows[i] = i;
   for (i=0; i<M; i++) {
-    ierr = MatSetValues(*Pmat,M,user->rows,1,&i,&user->Jdense[0+i*M],INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(Pmat,M,user->rows,1,&i,&user->Jdense[0+i*M],INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*Amat != *Pmat) {
-    ierr = MatAssemblyBegin(*Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (Amat != Pmat) {
+    ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -256,22 +261,23 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 #define __FUNCT__ "FormMoleFraction"
 PetscErrorCode FormMoleFraction(User user,Vec massf,Vec molef)
 {
-  PetscErrorCode ierr;
-  PetscReal      *M,tM=0;
-  PetscInt       i,n = user->Nspec+1;
-  PetscScalar    *maf,*mof;
+  PetscErrorCode    ierr;
+  PetscReal         *M,tM=0;
+  PetscInt          i,n = user->Nspec+1;
+  PetscScalar       *mof;
+  const PetscScalar *maf;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(user->Nspec*sizeof(PetscReal),&M);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user->Nspec,&M);CHKERRQ(ierr);
   TC_getSmass(user->Nspec, M);
-  ierr = VecGetArray(massf,&maf);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(massf,&maf);CHKERRQ(ierr);
   ierr = VecGetArray(molef,&mof);CHKERRQ(ierr);
   mof[0] = maf[0]; /* copy over temptature */
   for (i=1; i<n; i++) tM += maf[i]/M[i-1];
   for (i=1; i<n; i++) {
     mof[i] = maf[i]/(M[i-1]*tM);
   }
-  ierr = VecRestoreArray(massf,&maf);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(massf,&maf);CHKERRQ(ierr);
   ierr = VecRestoreArray(molef,&mof);CHKERRQ(ierr);
   ierr = PetscFree(M);CHKERRQ(ierr);
   PetscFunctionReturn(0);

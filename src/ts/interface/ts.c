@@ -3230,7 +3230,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   } else if (u) {
     ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   }
-  ierr = TSSetUp(ts);CHKERRQ(ierr); /*compute adj coefficients if the reverse mode is on*/
+  ierr = TSSetUp(ts);CHKERRQ(ierr);
   /* reset time step and iteration counters */
   ts->steps             = 0;
   ts->ksp_its           = 0;
@@ -3246,7 +3246,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);
     ts->solvetime = ts->ptime;
   } else {
-    /* steps the requested number of timesteps. */   
+    /* steps the requested number of timesteps. */
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     while (!ts->reason) {
@@ -5810,7 +5810,7 @@ PetscErrorCode  TSMonitorEnvelopeCtxCreate(TS ts,TSMonitorEnvelopeCtx *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_TSMonitorEnvelopeCtx,ctx);CHKERRQ(ierr);
+  ierr = PetscNew(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
