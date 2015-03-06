@@ -13,7 +13,7 @@ class Configure(config.package.Package):
     self.numpy           = framework.require('config.packages.Numpy',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
-    self.petscconfigure  = framework.require('PETSc.Configure',self)
+    self.installdir      = framework.require('PETSc.options.installDir',self)
     return
 
   def Install(self):
@@ -50,7 +50,7 @@ class Configure(config.package.Package):
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\
-                          '@echo "To use mpi4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
+                          '@echo "To use mpi4py, add '+os.path.join(self.installdir.dir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
     if self.framework.argDB['prefix']:
       self.addMakeRule('mpi4py-build','mpi4pybuild')

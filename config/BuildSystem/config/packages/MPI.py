@@ -81,7 +81,7 @@ class Configure(config.package.Package):
     yield ''
     # Try configure package directories
     dirExp = re.compile(r'mpi(ch)?(-.*)?')
-    for packageDir in self.framework.argDB['package-dirs']:
+    for packageDir in self.argDB['package-dirs']:
       packageDir = os.path.abspath(packageDir)
       if not os.path.isdir(packageDir):
         raise RuntimeError('Invalid package directory: '+packageDir)
@@ -134,32 +134,32 @@ class Configure(config.package.Package):
     try:
       self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared-libraries', executor = self.mpiexec)
     except RuntimeError, e:
-      if self.framework.argDB['with-shared-libraries']:
+      if self.argDB['with-shared-libraries']:
         raise RuntimeError('Shared libraries cannot be built using MPI provided.\nEither rebuild with --with-shared-libraries=0 or rebuild MPI with shared library support')
-      self.framework.logPrint('MPI libraries cannot be used with shared libraries')
+      self.logPrint('MPI libraries cannot be used with shared libraries')
       self.shared = 0
     return
 
   def configureMPIEXEC(self):
     '''Checking for mpiexec'''
-    if 'with-mpiexec' in self.framework.argDB:
-      self.framework.argDB['with-mpiexec'] = os.path.expanduser(self.framework.argDB['with-mpiexec'])
-      if not self.getExecutable(self.framework.argDB['with-mpiexec'], resultName = 'mpiexec'):
-        raise RuntimeError('Invalid mpiexec specified: '+str(self.framework.argDB['with-mpiexec']))
+    if 'with-mpiexec' in self.argDB:
+      self.argDB['with-mpiexec'] = os.path.expanduser(self.argDB['with-mpiexec'])
+      if not self.getExecutable(self.argDB['with-mpiexec'], resultName = 'mpiexec'):
+        raise RuntimeError('Invalid mpiexec specified: '+str(self.argDB['with-mpiexec']))
       return
     if self.isPOE:
       self.mpiexec = os.path.abspath(os.path.join('bin', 'mpiexec.poe'))
       return
-    if self.framework.argDB['with-batch']:
+    if self.argDB['with-batch']:
       self.mpiexec = 'Not_appropriate_for_batch_systems_You_must_use_your_batch_system_to_submit_MPI_jobs_speak_with_your_local_sys_admin'
       self.addMakeMacro('MPIEXEC',self.mpiexec)
       return
     mpiexecs = ['mpiexec -n 1', 'mpirun -n 1', 'mprun -n 1', 'mpiexec', 'mpirun', 'mprun']
     path    = []
-    if 'with-mpi-dir' in self.framework.argDB:
-      path.append(os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'bin'))
+    if 'with-mpi-dir' in self.argDB:
+      path.append(os.path.join(os.path.abspath(self.argDB['with-mpi-dir']), 'bin'))
       # MPICH-NT-1.2.5 installs MPIRun.exe in mpich/mpd/bin
-      path.append(os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'mpd','bin'))
+      path.append(os.path.join(os.path.abspath(self.argDB['with-mpi-dir']), 'mpd','bin'))
     for inc in self.include:
       path.append(os.path.join(os.path.dirname(inc), 'bin'))
       # MPICH-NT-1.2.5 installs MPIRun.exe in mpich/SDK/include/../../mpd/bin
@@ -327,44 +327,12 @@ class Configure(config.package.Package):
 
   def checkDownload(self):
     '''Check if we should download MPICH or OpenMPI'''
-    if 'download-mpi' in self.framework.argDB and self.framework.argDB['download-mpi']:
+    if 'download-mpi' in self.argDB and self.argDB['download-mpi']:
       raise RuntimeError('Option --download-mpi does not exist! Use --download-mpich or --download-openmpi instead.')
 
-    if self.framework.argDB['download-mpich'] and self.framework.argDB['download-openmpi']:
+    if self.argDB['download-mpich'] and self.argDB['download-openmpi']:
       raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration. \nUse different PETSC_ARCH if you want to be able to switch between two')
     return None
-
-  def updateCompilers(self, installDir, mpiccName, mpicxxName, mpif77Name, mpif90Name):
-    '''Check if mpicc, mpicxx etc binaries exist - and update setCompilers() database.
-    The input arguments are the names of the binaries specified by the respective pacakges MPICH/LAM.'''
-
-    # Both MPICH and MVAPICH now depend on LD_LIBRARY_PATH for sharedlibraries.
-    # So using LD_LIBRARY_PATH in configure - and -Wl,-rpath in makefiles
-    if self.framework.argDB['with-shared-libraries']:
-      config.setCompilers.Configure.addLdPath(os.path.join(installDir,'lib'))
-    # Initialize to empty
-    mpicc=''
-    mpicxx=''
-    mpifc=''
-
-    mpicc = os.path.join(installDir,"bin",mpiccName)
-    if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
-    if hasattr(self.compilers, 'CXX'):
-      mpicxx = os.path.join(installDir,"bin",mpicxxName)
-      if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
-    if hasattr(self.compilers, 'FC'):
-      if self.compilers.fortranIsF90:
-        mpifc = os.path.join(installDir,"bin",mpif90Name)
-      else:
-        mpifc = os.path.join(installDir,"bin",mpif77Name)
-      if not os.path.isfile(mpifc): raise RuntimeError('Could not locate installed MPI compiler: '+mpifc)
-    # redo compiler detection
-    self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
-    self.compilers.__init__(self.framework)
-    self.compilers.headerPrefix = self.headerPrefix
-    self.compilers.configure()
-    self.compilerFlags.configure()
-    return
 
   def SGIMPICheck(self):
     '''Returns true if SGI MPI is used'''
@@ -383,11 +351,11 @@ class Configure(config.package.Package):
     self.libraries.pushLanguage('Cxx')
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
-    self.framework.log.write('Checking for header mpi.h\n')
+    self.log.write('Checking for header mpi.h\n')
     if not self.libraries.checkCompile(includes = '#include <mpi.h>\n'):
       raise RuntimeError('C++ error! mpi.h could not be located at: '+str(self.include))
     # check if MPI_Finalize from c++ exists
-    self.framework.log.write('Checking for C++ MPI_Finalize()\n')
+    self.log.write('Checking for C++ MPI_Finalize()\n')
     if not self.libraries.check(self.lib, 'MPI_Finalize', prototype = '#include <mpi.h>', call = 'int ierr;\nierr = MPI_Finalize();', cxxMangle = 1):
       raise RuntimeError('C++ error! MPI_Finalize() could not be located!')
     self.compilers.CPPFLAGS = oldFlags
@@ -402,16 +370,16 @@ class Configure(config.package.Package):
     self.libraries.pushLanguage('FC')
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
-    self.framework.log.write('Checking for header mpif.h\n')
+    self.log.write('Checking for header mpif.h\n')
     if not self.libraries.checkCompile(body = '#include "mpif.h"'):
       raise RuntimeError('Fortran error! mpif.h could not be located at: '+str(self.include))
     # check if mpi_init form fortran works
-    self.framework.log.write('Checking for fortran mpi_init()\n')
+    self.log.write('Checking for fortran mpi_init()\n')
     if not self.libraries.check(self.lib,'', call = '#include "mpif.h"\n       integer ierr\n       call mpi_init(ierr)'):
       raise RuntimeError('Fortran error! mpi_init() could not be located!')
     # check if mpi.mod exists
     if self.compilers.fortranIsF90:
-      self.framework.log.write('Checking for mpi.mod\n')
+      self.log.write('Checking for mpi.mod\n')
       if self.libraries.check(self.lib,'', call = '       use mpi\n       integer ierr,rank\n       call mpi_init(ierr)\n       call mpi_comm_rank(MPI_COMM_WORLD,rank,ierr)\n'):
         self.havef90module = 1
         self.addDefine('HAVE_MPI_F90MODULE', 1)
@@ -500,8 +468,8 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
-    if 'with-'+self.package+'-shared' in self.framework.argDB:
-      self.framework.argDB['with-'+self.package] = 1
+    if 'with-'+self.package+'-shared' in self.argDB:
+      self.argDB['with-'+self.package] = 1
     config.package.Package.configureLibrary(self)
     self.executeTest(self.configureConversion)
     self.executeTest(self.configureMPI2)

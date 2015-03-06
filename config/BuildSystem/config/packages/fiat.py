@@ -26,7 +26,7 @@ class Configure(config.package.Package):
     if self.installSudo:
       self.installDirProvider.printSudoPasswordMessage()
       try:
-        output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+installLoc+' && '+self.installSudo+'rm -rf '+packageDir+'  && '+self.installSudo+'cp -rf '+os.path.join(self.packageDir, 'FIAT')+' '+packageDir, timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand(self.installSudo+'mkdir -p '+installLoc+' && '+self.installSudo+'rm -rf '+packageDir+'  && '+self.installSudo+'cp -rf '+os.path.join(self.packageDir, 'FIAT')+' '+packageDir, timeout=6000, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error copying FIAT files from '+os.path.join(self.packageDir, 'FIAT')+' to '+packageDir)
     else:
@@ -41,15 +41,15 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     '''Find an installation ando check if it can work with PETSc'''
     import sys
-    self.framework.log.write('==================================================================================\n')
-    self.framework.log.write('Checking for a functional '+self.name+'\n')
+    self.log.write('==================================================================================\n')
+    self.log.write('Checking for a functional '+self.name+'\n')
 
     self.checkDependencies()
     for location, rootDir, lib, incDir in self.generateGuesses():
       try:
         libDir = os.path.dirname(lib[0])
-        self.framework.logPrint('Checking location '+location)
-        self.framework.logPrint('Added directory '+libDir+' to Python path')
+        self.logPrint('Checking location '+location)
+        self.logPrint('Added directory '+libDir+' to Python path')
         sys.path.insert(0, libDir)
         import FIAT
         from FIAT import ufc_simplex
@@ -61,5 +61,5 @@ class Configure(config.package.Package):
         self.framework.packages.append(self)
         return
       except ImportError, e:
-        self.framework.logPrint('ERROR: Could not import FIAT: '+str(e))
+        self.logPrint('ERROR: Could not import FIAT: '+str(e))
     raise RuntimeError('Could not find a functional '+self.name+'\n')

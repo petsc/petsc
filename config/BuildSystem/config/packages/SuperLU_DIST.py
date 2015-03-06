@@ -89,7 +89,7 @@ class Configure(config.package.Package):
 
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
-        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean && '+self.make.make+' lib LAAUX="" && '+self.installSudo+'cp -f *.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
+        output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make.make+' clean && '+self.make.make+' lib LAAUX="" && '+self.installSudo+'cp -f *.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && '+self.installSudo+'cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
       self.postInstall(output+err,'make.inc')
@@ -97,14 +97,14 @@ class Configure(config.package.Package):
 
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
+    if self.argDB['with-'+self.package]:
       if not self.blasLapack.checkForRoutine('slamch'):
         raise RuntimeError('SuperLU_DIST requires the BLAS routine slamch()')
-      self.framework.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
+      self.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
       if not self.blasLapack.checkForRoutine('dlamch'):
         raise RuntimeError('SuperLU_DIST requires the BLAS routine dlamch()')
-      self.framework.log.write('Found dlamch() in BLAS library as needed by SuperLU_DIST\n')
+      self.log.write('Found dlamch() in BLAS library as needed by SuperLU_DIST\n')
       if not self.blasLapack.checkForRoutine('xerbla'):
         raise RuntimeError('SuperLU_DIST requires the BLAS routine xerbla()')
-      self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU_DIST\n')
+      self.log.write('Found xerbla() in BLAS library as needed by SuperLU_DIST\n')
     return

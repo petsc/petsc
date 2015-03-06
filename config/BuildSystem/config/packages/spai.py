@@ -37,11 +37,11 @@ class Configure(config.package.Package):
     if self.installNeeded('Makefile.in'):
       self.logPrintBox('Configuring, compiling and installing Spai; this may take several minutes')
       self.installDirProvider.printSudoPasswordMessage()
-      output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.framework.log)
-      output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && make clean && make && '+self.installSudo+' cp -f libspai.a '+os.path.join(self.installDir,'lib','libspai.a'),timeout=250, log = self.framework.log)
-      output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && '+self.installSudo+' cp -f *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)
+      output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+      output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && make clean && make && '+self.installSudo+' cp -f libspai.a '+os.path.join(self.installDir,'lib','libspai.a'),timeout=250, log = self.log)
+      output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && '+self.installSudo+' cp -f *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.log)
       try:
-        output3,err3,ret3  = config.package.Package.executeShellCommand(self.installSudo+self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libspai.a', timeout=250, log = self.framework.log)
+        output3,err3,ret3  = config.package.Package.executeShellCommand(self.installSudo+self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libspai.a', timeout=250, log = self.log)
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on SPAI libraries: '+str(e))
       self.postInstall(output1+err1+output2+err2+output3+err3,'Makefile.in')
@@ -49,9 +49,9 @@ class Configure(config.package.Package):
 
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
+    if self.argDB['with-'+self.package]:
       # SPAI requires dormqr() LAPACK routine
       if not self.blasLapack.checkForRoutine('dormqr'):
         raise RuntimeError('SPAI requires the LAPACK routine dormqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-fblaslapack=1 option \nIf you are using the IBM ESSL library, it does not contain this function.')
-      self.framework.log.write('Found dormqr() in Lapack library as needed by SPAI\n')
+      self.log.write('Found dormqr() in Lapack library as needed by SPAI\n')
     return

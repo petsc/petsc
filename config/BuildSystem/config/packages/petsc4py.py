@@ -13,10 +13,10 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.petscconfigure  = framework.require('PETSc.Configure',self)
     self.numpy           = framework.require('config.packages.Numpy',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
+    self.installdir      = framework.require('PETSc.options.installDir',self)
     return
 
   def Install(self):
@@ -36,8 +36,8 @@ class Configure(config.package.Package):
         archflags = "ARCHFLAGS=\'-arch x86_64\' "
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
-    if self.framework.argDB['prefix']:
-       newdir = 'PETSC_DIR='+self.framework.argDB['prefix']+' '+'PETSC_ARCH= MPICC=${PCC} '
+    if self.argDB['prefix']:
+       newdir = 'PETSC_DIR='+self.argDB['prefix']+' '+'PETSC_ARCH= MPICC=${PCC} '
     else:
        newdir = 'MPICC=${PCC} '
 
@@ -65,9 +65,9 @@ class Configure(config.package.Package):
              echo "********************************************************************" && \\\n\
              exit 1)',\
                           '@echo "====================================="',\
-                          '@echo "To use petsc4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
+                          '@echo "To use petsc4py, add '+os.path.join(self.installdir.dir,'lib')+' to PYTHONPATH"',\
                           '@echo "====================================="'])
-    if self.framework.argDB['prefix']:
+    if self.argDB['prefix']:
       self.addMakeRule('petsc4py-build','')
       # the build must be done at install time because PETSc shared libraries must be in final location before building petsc4py
       self.addMakeRule('petsc4py-install','petsc4pybuild petsc4pyinstall')

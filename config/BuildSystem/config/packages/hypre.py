@@ -87,8 +87,8 @@ class Configure(config.package.GNUPackage):
 
   def consistencyChecks(self):
     config.package.GNUPackage.consistencyChecks(self)
-    if self.framework.argDB['with-'+self.package]:
+    if self.argDB['with-'+self.package]:
       if not self.blasLapack.checkForRoutine('dgels'):
         raise RuntimeError('hypre requires the LAPACK routine dgels(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it')
-      self.framework.log.write('Found dgels() in Lapack library as needed by hypre\n')
+      self.log.write('Found dgels() in Lapack library as needed by hypre\n')
     return

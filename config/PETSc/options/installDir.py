@@ -21,7 +21,8 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.arch = framework.require('PETSc.options.arch', self)
+    self.petscdir = framework.require('PETSc.options.petscdir', self)
+    self.arch     = framework.require('PETSc.options.arch', self)
     return
 
   def printSudoPasswordMessage(self,needsudo = 1):
@@ -44,12 +45,12 @@ class Configure(config.base.Configure):
         self.installSudoMessage = 'You do not have write permissions to the --prefix directory '+self.dir+'\nYou will be prompted for the sudo password for any external package installs'
         self.installSudo = 'sudo '
     else:
-      self.dir = os.path.abspath(os.path.join(self.arch.arch))
-    self.confDir = os.path.abspath(os.path.join(self.arch.arch))
+      self.dir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
+    self.confDir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
 
   def configureInstallDir(self):
     '''Makes  installDir subdirectories if it does not exist for both prefix install location and PETSc work install location'''
-    dir = os.path.abspath(os.path.join(self.arch.arch))
+    dir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))
     if not os.path.exists(dir):
       os.makedirs(dir)
     for i in ['include','lib','bin',os.path.join('lib','petsc-conf')]:
