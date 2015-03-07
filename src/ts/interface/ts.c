@@ -5496,7 +5496,7 @@ PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
   PetscFunctionBegin;
   for (i=0; i<ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
-      ierr = TSMonitorLGSetVariableNames(ts->monitorcontext[i],names);CHKERRQ(ierr);
+      ierr = TSMonitorLGCtxSetVariableNames(ts->monitorcontext[i],names);CHKERRQ(ierr);
       break;
     }
   }

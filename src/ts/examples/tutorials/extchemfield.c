@@ -159,12 +159,14 @@ int main(int argc,char **argv)
     ierr = TSMonitorEnvelopeGetBounds(ts,&max,NULL);CHKERRQ(ierr);
     if (max) {
       ierr = TSMonitorLGGetVariableNames(ts,&names);CHKERRQ(ierr);
-      ierr = VecGetArrayRead(max,&bmax);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Species - maximum mass fraction\n");CHKERRQ(ierr);
-      for (i=1; i<user.Nspec; i++) {
-        if (bmax[i] > .01) {ierr = PetscPrintf(PETSC_COMM_SELF,"%s %g\n",names[i],bmax[i]);CHKERRQ(ierr);}
+      if (names) {
+        ierr = VecGetArrayRead(max,&bmax);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Species - maximum mass fraction\n");CHKERRQ(ierr);
+        for (i=1; i<user.Nspec; i++) {
+          if (bmax[i] > .01) {ierr = PetscPrintf(PETSC_COMM_SELF,"%s %g\n",names[i],bmax[i]);CHKERRQ(ierr);}
+        }
+        ierr = VecRestoreArrayRead(max,&bmax);CHKERRQ(ierr);
       }
-      ierr = VecRestoreArrayRead(max,&bmax);CHKERRQ(ierr);
     }
   }
 
@@ -271,7 +273,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   ierr = DMDAGetCoordinateArray(dm,&xc);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(dm,X,&x);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
-    x[i][0] = 1.0 + 0*.0005*PetscSinScalar(2.*PETSC_PI*xc[i]);  /* Non-dimensionalized by user->Tini */
+    x[i][0] = 1.0 + .05*PetscSinScalar(2.*PETSC_PI*xc[i]);  /* Non-dimensionalized by user->Tini */
     for (j=0; j<sizeof(initial)/sizeof(initial[0]); j++) {
       int ispec = TC_getSpos(initial[j].name, strlen(initial[j].name));
       if (ispec < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",initial[j].name);
@@ -349,7 +351,7 @@ static PetscErrorCode MonitorCell(TS ts,User user,PetscInt cell)
 
   PetscFunctionBegin;
   ierr = DMDAGetCoordinateArray(user->dm,&xc);CHKERRQ(ierr);
-  temp = 1.0 + .0005*PetscSinScalar(2.*PETSC_PI*xc[cell]);  /* Non-dimensionalized by user->Tini */
+  temp = 1.0 + .05*PetscSinScalar(2.*PETSC_PI*xc[cell]);  /* Non-dimensionalized by user->Tini */
   ierr = DMDARestoreCoordinateArray(user->dm,&xc);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscSNPrintf(label,sizeof(label),"Initial Temperature %g Cell %d Rank %d",(double)user->Tini*temp,(int)cell,rank);CHKERRQ(ierr);
