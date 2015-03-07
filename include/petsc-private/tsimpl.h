@@ -16,7 +16,7 @@
 /*
      Maximum number of monitors you can run with a single TS
 */
-#define MAXTSMONITORS 5
+#define MAXTSMONITORS 10
 
 PETSC_EXTERN PetscBool TSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TSRegisterAll(void);

@@ -66,12 +66,14 @@ int main(int argc,char **argv)
   TSAdapt           adapt;
   Vec               X;          /* solution vector */
   Mat               J;          /* Jacobian matrix */
-  PetscInt          steps,maxsteps;
+  PetscInt          steps,maxsteps,ncells,xs,xm,i;
   PetscErrorCode    ierr;
   PetscReal         ftime,dt;
   char              chemfile[PETSC_MAX_PATH_LEN] = "chem.inp",thermofile[PETSC_MAX_PATH_LEN] = "therm.dat";
   struct _User      user;
   TSConvergedReason reason;
+  PetscReal         dx;
+  PetscBool         showsolutions = PETSC_TRUE;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
@@ -79,14 +81,19 @@ int main(int argc,char **argv)
   ierr = PetscOptionsString("-thermo","NASA thermo input file","",thermofile,thermofile,sizeof(thermofile),NULL);CHKERRQ(ierr);
   user.pressure = 1.01325e5;    /* Pascal */
   ierr = PetscOptionsReal("-pressure","Pressure of reaction [Pa]","",user.pressure,&user.pressure,NULL);CHKERRQ(ierr);
-  user.Tini = 1500;
+  user.Tini = 1550;
+  ierr = PetscOptionsReal("-Tini","Initial temperature [K]","",user.Tini,&user.Tini,NULL);CHKERRQ(ierr);  
+  ierr = PetscOptionsBool("-draw_solution","Plot the solution for each cell","",showsolutions,&showsolutions,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = TC_initChem(chemfile, thermofile, 0, 1.0);TCCHKERRQ(ierr);
   user.Nspec = TC_getNspec();
   user.Nreac = TC_getNreac();
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,-2,user.Nspec+1,1,NULL,&user.dm);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,-1,user.Nspec+1,1,NULL,&user.dm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user.dm,NULL,&ncells,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  dx   = 1.0/ncells;
+  ierr = DMDASetUniformCoordinates(user.dm,.5*dx,1.0-.5*dx,0.0,1.0-.5*dx,0.0,1.0-.5*dx);CHKERRQ(ierr);
   ierr = DMCreateMatrix(user.dm,&J);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.dm,&X);CHKERRQ(ierr);
 
@@ -122,8 +129,12 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Pass information to graphical monitoring routine
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MonitorCell(ts,&user,0);CHKERRQ(ierr);
-  ierr = MonitorCell(ts,&user,1);CHKERRQ(ierr);
+  if (showsolutions) {
+    ierr = DMDAGetCorners(user.dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+    for (i=xs;i<xs+xm;i++) {
+      ierr = MonitorCell(ts,&user,i);CHKERRQ(ierr);
+    }
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
@@ -242,7 +253,7 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
 #define __FUNCT__ "FormInitialSolution"
 PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 {
-  PetscScalar    **x;
+  PetscScalar    **x,*xc;
   PetscErrorCode ierr;
   struct {const char *name; PetscReal massfrac;} initial[] = {
     {"CH4", 0.0948178320887},
@@ -256,11 +267,12 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   PetscFunctionBeginUser;
   ierr = VecZeroEntries(X);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOF(dm,X,&x);CHKERRQ(ierr);
   ierr = DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
+  ierr = DMDAGetCoordinateArray(dm,&xc);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOF(dm,X,&x);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
-    x[i][0] = 1.0 + i;  /* Non-dimensionalized by user->Tini */
+    x[i][0] = 1.0 + 0*.0005*PetscSinScalar(2.*PETSC_PI*xc[i]);  /* Non-dimensionalized by user->Tini */
     for (j=0; j<sizeof(initial)/sizeof(initial[0]); j++) {
       int ispec = TC_getSpos(initial[j].name, strlen(initial[j].name));
       if (ispec < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",initial[j].name);
@@ -269,6 +281,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
     }
   }
   ierr = DMDAVecRestoreArrayDOF(dm,X,&x);CHKERRQ(ierr);
+  ierr = DMDARestoreCoordinateArray(dm,&xc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -331,9 +344,17 @@ static PetscErrorCode MonitorCell(TS ts,User user,PetscInt cell)
   char           **snames,*names;
   PetscInt       i;
   UserLGCtx      *uctx;
+  char           label[128];
+  PetscReal      temp,*xc;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateArray(user->dm,&xc);CHKERRQ(ierr);
+  temp = 1.0 + .0005*PetscSinScalar(2.*PETSC_PI*xc[cell]);  /* Non-dimensionalized by user->Tini */
+  ierr = DMDARestoreCoordinateArray(user->dm,&xc);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(label,sizeof(label),"Initial Temperature %g Cell %d Rank %d",(double)user->Tini*temp,(int)cell,rank);CHKERRQ(ierr);
+  ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,NULL,label,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx);CHKERRQ(ierr);
   ierr = PetscMalloc1((user->Nspec+1)*LENGTHOFSPECNAME,&names);CHKERRQ(ierr);
   ierr = PetscStrcpy(names,"Temp");CHKERRQ(ierr);
   TC_getSnames(user->Nspec,names+LENGTHOFSPECNAME);CHKERRQ(ierr);

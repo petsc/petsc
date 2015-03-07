@@ -359,3 +359,66 @@ PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetCoordinateArray"
+/*@C
+   DMDAGetCoordinateArray - Gets an array containing the coordinates of the DMDA
+
+   Not Collective
+
+   Input Parameter:
+.  dm - the DM
+
+   Output Parameter:
+.  xc - the coordinates
+
+  Level: intermediate
+
+.keywords: distributed array, get, component name
+
+.seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMDARestoreCoordinateArray()
+@*/
+PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
+{
+  PetscErrorCode ierr;
+  DM             cdm;
+  Vec            x;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetCoordinates(dm,&x);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(cdm,x,xc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDARestoreCoordinateArray"
+/*@C
+   DMDARestoreCoordinateArray - Sets an array containing the coordinates of the DMDA
+
+   Not Collective
+
+   Input Parameter:
++  dm - the DM
+-  xc - the coordinates
+
+  Level: intermediate
+
+.keywords: distributed array, get, component name
+
+.seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName(), DMDAGetCoordinateArray()
+@*/
+PetscErrorCode DMDARestoreCoordinateArray(DM dm,void *xc)
+{
+  PetscErrorCode ierr;
+  DM             cdm;
+  Vec            x;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetCoordinates(dm,&x);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(cdm,x,xc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
