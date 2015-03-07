@@ -5387,7 +5387,7 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 -  lg - a line graph object
 
    Options Database:
-.   -ts_lg_monitor_solution_variables
+.   -ts_monitor_lg_solution_variables
 
    Level: intermediate
 
@@ -5417,7 +5417,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
       ierr = VecGetLocalSize(u,&dim);CHKERRQ(ierr);
       ierr = PetscMalloc((dim+1)*sizeof(char*),&displaynames);CHKERRQ(ierr);
       ierr = PetscMemzero(displaynames,(dim+1)*sizeof(char*));CHKERRQ(ierr);
-      ierr = PetscOptionsGetStringArray(((PetscObject)ts)->prefix,"-ts_lg_monitor_solution_variables",displaynames,&dim,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsGetStringArray(((PetscObject)ts)->prefix,"-ts_monitor_lg_solution_variables",displaynames,&dim,&flg);CHKERRQ(ierr);
       if (flg) {
         ierr = TSMonitorLGCtxSetDisplayVariables(ctx,(const char *const *)displaynames);CHKERRQ(ierr);
       }

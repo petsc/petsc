@@ -26,7 +26,18 @@ static const char help[] = "Integrate chemistry using TChem.\n";
        cp $PETSC_DIR/$PETSC_ARCH/externalpackages/tchem/data/periodictable.dat .
 
     Run with
-     ./extchemfield  -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_final_time .005 -draw_pause -2 -lg_indicate_data_points false -ts_lg_monitor_solution_variables H2,O2,H2O,CH4,CO,CO2,C2H2,N2
+     ./extchemfield  -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_final_time .005
+
+     Options for visualizing the solution:
+        Watch certain variables in each cell evolve with time
+        -draw_solution 1 -ts_monitor_lg_solution_variables Temp,H2,O2,H2O,CH4,CO,CO2,C2H2,N2 -lg_indicate_data_points false  -draw_pause -2
+
+        Watch certain variables in all cells evolve with time
+        -da_refine 4 -ts_monitor_draw_solution -draw_fields_by_name Temp,H2,O2,H2O,CH4,CO,CO2,C2H2,N2 -draw_vec_mark_points  -draw_pause -2
+
+        Keep the initial temperature distribution as one monitors the current temperature distribution
+        -ts_monitor_draw_solution_initial -draw_bounds .9,1.7
+
 
     The solution for component i = 0 is the temperature.
 
@@ -73,7 +84,7 @@ int main(int argc,char **argv)
   struct _User      user;
   TSConvergedReason reason;
   PetscReal         dx;
-  PetscBool         showsolutions = PETSC_TRUE;
+  PetscBool         showsolutions = PETSC_FALSE;
   char              **snames,*names;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -83,7 +94,7 @@ int main(int argc,char **argv)
   user.pressure = 1.01325e5;    /* Pascal */
   ierr = PetscOptionsReal("-pressure","Pressure of reaction [Pa]","",user.pressure,&user.pressure,NULL);CHKERRQ(ierr);
   user.Tini = 1550;
-  ierr = PetscOptionsReal("-Tini","Initial temperature [K]","",user.Tini,&user.Tini,NULL);CHKERRQ(ierr);  
+  ierr = PetscOptionsReal("-Tini","Initial temperature [K]","",user.Tini,&user.Tini,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-draw_solution","Plot the solution for each cell","",showsolutions,&showsolutions,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -94,7 +105,7 @@ int main(int argc,char **argv)
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,-1,user.Nspec+1,1,NULL,&user.dm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user.dm,NULL,&ncells,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   dx   = 1.0/ncells;  /* Set the coordinates of the cell centers */
-  ierr = DMDASetUniformCoordinates(user.dm,.5*dx,1.0-.5*dx,0.0,1.0-.5*dx,0.0,1.0-.5*dx);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(user.dm,0.0,1.0,0.0,1.0-.5*dx,0.0,1.0-.5*dx);CHKERRQ(ierr);
 
   /* set the names of each field in the DMDA based on the species name */
   ierr = PetscMalloc1((user.Nspec+1)*LENGTHOFSPECNAME,&names);CHKERRQ(ierr);
@@ -107,7 +118,7 @@ int main(int argc,char **argv)
   ierr = PetscFree(snames);CHKERRQ(ierr);
   ierr = PetscFree(names);CHKERRQ(ierr);
 
-  
+
   ierr = DMCreateMatrix(user.dm,&J);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.dm,&X);CHKERRQ(ierr);
 

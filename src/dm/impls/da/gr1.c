@@ -171,6 +171,9 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDASelectFields"
+/*
+    Allows a user to select a subset of the fields to be drawn by VecView() when the vector comes from a DMDA
+*/
 PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
 {
   PetscErrorCode ierr;
