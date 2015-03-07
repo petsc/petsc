@@ -33,7 +33,7 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 
 .keywords: distributed array, get, component name
 
-.seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName()
+.seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMDASetFieldNames()
 @*/
 PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 {
@@ -45,6 +45,62 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
   if (nf < 0 || nf >= dd->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
   ierr = PetscFree(dd->fieldname[nf]);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&dd->fieldname[nf]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetFieldNames"
+/*@C
+   DMDAGetFieldNames - Gets the name of each component in the vector associated with the DMDA
+
+   Collective on TS
+
+   Input Parameter:
+.  dm - the DMDA object
+
+   Output Parameter:
+.  names - the names of the components, final string is NULL, will have the same number of entries as the dof used in creating the DMDA
+
+   Level: intermediate
+
+.keywords: distributed array, get, component name
+
+.seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMDASetFieldName(), DMDASetFieldNames()
+@*/
+PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
+{
+  DM_DA             *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  *names = (const char * const *) dd->fieldname;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetFieldNames"
+/*@C
+   DMDASetFieldNames - Sets the name of each component in the vector associated with the DMDA
+
+   Collective on TS
+
+   Input Parameters:
++  dm - the DMDA object
+-  names - the names of the components, final string must be NULL, must have the same number of entries as the dof used in creating the DMDA
+
+   Level: intermediate
+
+.keywords: distributed array, get, component name
+
+.seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName(), DMDASetFieldName()
+@*/
+PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
+{
+  PetscErrorCode    ierr;
+  DM_DA             *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  ierr = PetscStrArrayDestroy(&dd->fieldname);CHKERRQ(ierr);
+  ierr = PetscStrArrayallocpy(names,&dd->fieldname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

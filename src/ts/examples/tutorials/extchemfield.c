@@ -74,6 +74,7 @@ int main(int argc,char **argv)
   TSConvergedReason reason;
   PetscReal         dx;
   PetscBool         showsolutions = PETSC_TRUE;
+  char              **snames,*names;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
@@ -92,8 +93,21 @@ int main(int argc,char **argv)
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,-1,user.Nspec+1,1,NULL,&user.dm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user.dm,NULL,&ncells,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  dx   = 1.0/ncells;
+  dx   = 1.0/ncells;  /* Set the coordinates of the cell centers */
   ierr = DMDASetUniformCoordinates(user.dm,.5*dx,1.0-.5*dx,0.0,1.0-.5*dx,0.0,1.0-.5*dx);CHKERRQ(ierr);
+
+  /* set the names of each field in the DMDA based on the species name */
+  ierr = PetscMalloc1((user.Nspec+1)*LENGTHOFSPECNAME,&names);CHKERRQ(ierr);
+  ierr = PetscStrcpy(names,"Temp");CHKERRQ(ierr);
+  TC_getSnames(user.Nspec,names+LENGTHOFSPECNAME);CHKERRQ(ierr);
+  ierr = PetscMalloc1((user.Nspec+2),&snames);CHKERRQ(ierr);
+  for (i=0; i<user.Nspec+1; i++) snames[i] = names+i*LENGTHOFSPECNAME;
+  snames[user.Nspec+1] = NULL;
+  ierr = DMDASetFieldNames(user.dm,(const char * const *)snames);CHKERRQ(ierr);
+  ierr = PetscFree(snames);CHKERRQ(ierr);
+  ierr = PetscFree(names);CHKERRQ(ierr);
+
+  
   ierr = DMCreateMatrix(user.dm,&J);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.dm,&X);CHKERRQ(ierr);
 
@@ -342,8 +356,7 @@ static PetscErrorCode MonitorCell(TS ts,User user,PetscInt cell)
 {
   PetscErrorCode ierr;
   TSMonitorLGCtx ctx;
-  char           **snames,*names;
-  PetscInt       i;
+  char           **snames;
   UserLGCtx      *uctx;
   char           label[128];
   PetscReal      temp,*xc;
@@ -356,15 +369,8 @@ static PetscErrorCode MonitorCell(TS ts,User user,PetscInt cell)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscSNPrintf(label,sizeof(label),"Initial Temperature %g Cell %d Rank %d",(double)user->Tini*temp,(int)cell,rank);CHKERRQ(ierr);
   ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,NULL,label,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx);CHKERRQ(ierr);
-  ierr = PetscMalloc1((user->Nspec+1)*LENGTHOFSPECNAME,&names);CHKERRQ(ierr);
-  ierr = PetscStrcpy(names,"Temp");CHKERRQ(ierr);
-  TC_getSnames(user->Nspec,names+LENGTHOFSPECNAME);CHKERRQ(ierr);
-  ierr = PetscMalloc1((user->Nspec+2),&snames);CHKERRQ(ierr);
-  for (i=0; i<user->Nspec+1; i++) snames[i] = names+i*LENGTHOFSPECNAME;
-  snames[user->Nspec+1] = NULL;
+  ierr = DMDAGetFieldNames(user->dm,(const char * const **)&snames);CHKERRQ(ierr);  
   ierr = TSMonitorLGCtxSetVariableNames(ctx,(const char * const *)snames);CHKERRQ(ierr);
-  ierr = PetscFree(snames);CHKERRQ(ierr);
-  ierr = PetscFree(names);CHKERRQ(ierr);
   ierr = PetscNew(&uctx);CHKERRQ(ierr);
   uctx->cell = cell;
   uctx->user = user;

@@ -82,6 +82,8 @@ PETSC_EXTERN PetscErrorCode DMDAGetReducedDMDA(DM,PetscInt,DM*);
 
 PETSC_EXTERN PetscErrorCode DMDASetFieldName(DM,PetscInt,const char[]);
 PETSC_EXTERN PetscErrorCode DMDAGetFieldName(DM,PetscInt,const char**);
+PETSC_EXTERN PetscErrorCode DMDASetFieldNames(DM,const char * const *);
+PETSC_EXTERN PetscErrorCode DMDAGetFieldNames(DM,const char * const **);
 PETSC_EXTERN PetscErrorCode DMDASetCoordinateName(DM,PetscInt,const char[]);
 PETSC_EXTERN PetscErrorCode DMDAGetCoordinateName(DM,PetscInt,const char**);
 
