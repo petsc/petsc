@@ -555,7 +555,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, PetscInt xadj[],
       ierr = PetscMalloc2(max_subset_size_seq,&dummy_idx,0,&work);CHKERRQ(ierr);
     }
 
-    if (compute_Stilda) {
+    if (compute_Stilda && S_all) {
       PetscScalar *vals;
       ierr = PetscBLASIntCast(n_all,&B_N);CHKERRQ(ierr);
       ierr = MatDuplicate(S_all,MAT_COPY_VALUES,&S_all_inv);CHKERRQ(ierr);
