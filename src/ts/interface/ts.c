@@ -33,7 +33,7 @@ struct _n_TSMonitorDrawCtx {
 
    Options Database Keys:
 +  -ts_type <type> - TSEULER, TSBEULER, TSSUNDIALS, TSPSEUDO, TSCN, TSRK, TSTHETA, TSGL, TSSSP
-.  -ts_save_trajectories - checkpoint the solution at each time-step
+.  -ts_save_trajectory - checkpoint the solution at each time-step
 .  -ts_max_steps <maxsteps> - maximum number of time-steps to take
 .  -ts_final_time <time> - maximum time to compute to
 .  -ts_dt <dt> - initial time step
@@ -43,6 +43,7 @@ struct _n_TSMonitorDrawCtx {
 .  -ts_error_if_step_fails <true,false> - Error if no step succeeds
 .  -ts_rtol <rtol> - relative tolerance for local truncation error
 .  -ts_atol <atol> Absolute tolerance for local truncation error
+.  -ts_adjoint_solve <yes,no> After solving the ODE/DAE solve the adjoint problem (requires -ts_save_trajectory)
 .  -ts_monitor - print information at each timestep
 .  -ts_monitor_lg_timestep - Monitor timestep size graphically
 .  -ts_monitor_lg_solution - Monitor solution graphically
@@ -98,6 +99,14 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   else tflg = PETSC_FALSE;
   ierr = PetscOptionsBool("-ts_save_trajectory","Save the solution at each timestep","TSSetSaveTrajectory",tflg,&tflg,NULL);CHKERRQ(ierr);
   if (tflg) {ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);}
+  if (ts->adjoint_solve) tflg = PETSC_TRUE;
+  else tflg = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ts_adjoint_solve","Solve the adjoint problem immediately after solving the forward problem","",tflg,&tflg,&flg);CHKERRQ(ierr);
+  if (flg) {
+    if (!ts->trajectory) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"Must also set -ts_save_trajectory when setting -ts_adjoint_solve");
+    ts->adjoint_solve = tflg;
+    ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,NULL);CHKERRQ(ierr);
@@ -3278,6 +3287,9 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
   ierr = TSViewFromOptions(ts,NULL,"-ts_view");CHKERRQ(ierr);
   ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
+  if (ts->adjoint_solve) {
+    ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

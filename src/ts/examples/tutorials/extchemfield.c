@@ -41,6 +41,9 @@ static const char help[] = "Integrate chemistry using TChem.\n";
         Save the images in a .gif (movie) file
         -draw_save -draw_save_single_file
 
+        Compute the sensitivies of the solution of the first tempature on the initial conditions
+        -ts_adjoint_solve -ts_save_trajectory -ts_dt 1.e-5 -ts_type cn
+
 
     The solution for component i = 0 is the temperature.
 
@@ -61,6 +64,7 @@ struct _User {
   PetscReal Tini,dx;
   PetscReal diffus;
   DM        dm;
+  PetscBool diffusion,reactions;
   double    *tchemwork;
   double    *Jdense;        /* Dense array workspace where Tchem computes the Jacobian */ 
   PetscInt  *rows;
@@ -89,6 +93,7 @@ int main(int argc,char **argv)
   TSConvergedReason reason;
   PetscBool         showsolutions = PETSC_FALSE;
   char              **snames,*names;
+  Vec               lambda;     /* used with TSAdjoint for sensitivities */
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
@@ -101,6 +106,10 @@ int main(int argc,char **argv)
   user.diffus = 100;
   ierr = PetscOptionsReal("-diffus","Diffusion constant","",user.diffus,&user.diffus,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-draw_solution","Plot the solution for each cell","",showsolutions,&showsolutions,NULL);CHKERRQ(ierr);
+  user.diffusion = PETSC_TRUE;
+  ierr = PetscOptionsBool("-diffusion","Have diffusion","",user.diffusion,&user.diffusion,NULL);CHKERRQ(ierr);
+  user.reactions = PETSC_TRUE;
+  ierr = PetscOptionsBool("-reactions","Have reactions","",user.reactions,&user.reactions,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = TC_initChem(chemfile, thermofile, 0, 1.0);TCCHKERRQ(ierr);
@@ -172,6 +181,15 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set final conditions for sensitivities
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = DMCreateGlobalVector(user.dm,&lambda);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostGradients(ts,1,&lambda,NULL);CHKERRQ(ierr);
+  ierr = VecSetValue(lambda,0,1.0,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(lambda);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(lambda);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
@@ -200,6 +218,10 @@ int main(int argc,char **argv)
     }
   }
 
+  //ierr = VecAbs(lambda);CHKERRQ(ierr);
+  //  ierr = VecLog(lambda);CHKERRQ(ierr);
+  ierr = VecView(lambda,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -207,6 +229,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&lambda);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFree3(user.tchemwork,user.Jdense,user.rows);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -300,21 +323,27 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   PetscInt          i,xs,xm;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOFRead(dm,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOF(dm,F,&f);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+  if (user->reactions) {
+    ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+    ierr = DMDAVecGetArrayDOFRead(dm,X,&x);CHKERRQ(ierr);
+    ierr = DMDAVecGetArrayDOF(dm,F,&f);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
-  for (i=xs; i<xs+xm; i++) {
-    ierr = PetscMemcpy(user->tchemwork,x[i],(user->Nspec+1)*sizeof(x[xs][0]));CHKERRQ(ierr);
-    user->tchemwork[0] *= user->Tini; /* Dimensionalize */
-    ierr = TC_getSrc(user->tchemwork,user->Nspec+1,f[i]);TCCHKERRQ(ierr);
-    f[i][0] /= user->Tini;           /* Non-dimensionalize */
+    for (i=xs; i<xs+xm; i++) {
+      ierr = PetscMemcpy(user->tchemwork,x[i],(user->Nspec+1)*sizeof(x[xs][0]));CHKERRQ(ierr);
+      user->tchemwork[0] *= user->Tini; /* Dimensionalize */
+      ierr = TC_getSrc(user->tchemwork,user->Nspec+1,f[i]);TCCHKERRQ(ierr);
+      f[i][0] /= user->Tini;           /* Non-dimensionalize */
+    }
+
+    ierr = DMDAVecRestoreArrayDOFRead(dm,X,&x);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArrayDOF(dm,F,&f);CHKERRQ(ierr);
+  } else {
+    ierr = VecZeroEntries(F);CHKERRQ(ierr);
   }
-
-  ierr = DMDAVecRestoreArrayDOFRead(dm,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayDOF(dm,F,&f);CHKERRQ(ierr);
-  ierr = FormDiffusionFunction(ts,t,X,F,ptr);CHKERRQ(ierr);
+  if (user->diffusion) {
+    ierr = FormDiffusionFunction(ts,t,X,F,ptr);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -329,27 +358,33 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
   DM                dm;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = MatZeroEntries(Pmat);CHKERRQ(ierr);
-  ierr = MatSetOption(Pmat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatSetOption(Pmat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOFRead(dm,X,&x);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+  if (user->reactions) {
+    ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+    ierr = MatZeroEntries(Pmat);CHKERRQ(ierr);
+    ierr = MatSetOption(Pmat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatSetOption(Pmat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMDAVecGetArrayDOFRead(dm,X,&x);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
-  for (i=xs; i<xs+xm; i++) {
-    ierr = PetscMemcpy(user->tchemwork,x[i],(user->Nspec+1)*sizeof(x[xs][0]));CHKERRQ(ierr);
-    user->tchemwork[0] *= user->Tini;  /* Dimensionalize temperature (first row) because that is what Tchem wants */
-    ierr = TC_getJacTYN(user->tchemwork,user->Nspec,user->Jdense,1);CHKERRQ(ierr);
+    for (i=xs; i<xs+xm; i++) {
+      ierr = PetscMemcpy(user->tchemwork,x[i],(user->Nspec+1)*sizeof(x[xs][0]));CHKERRQ(ierr);
+      user->tchemwork[0] *= user->Tini;  /* Dimensionalize temperature (first row) because that is what Tchem wants */
+      ierr = TC_getJacTYN(user->tchemwork,user->Nspec,user->Jdense,1);CHKERRQ(ierr);
 
-    for (j=0; j<M; j++) user->Jdense[j + 0*M] /= user->Tini; /* Non-dimensionalize first column */
-    for (j=0; j<M; j++) user->Jdense[0 + j*M] /= user->Tini; /* Non-dimensionalize first row */
-    for (j=0; j<M; j++) user->rows[j] = i*M+j;
-    ierr = MatSetValues(Pmat,M,user->rows,M,user->rows,user->Jdense,INSERT_VALUES);CHKERRQ(ierr);
+      for (j=0; j<M; j++) user->Jdense[j + 0*M] /= user->Tini; /* Non-dimensionalize first column */
+      for (j=0; j<M; j++) user->Jdense[0 + j*M] /= user->Tini; /* Non-dimensionalize first row */
+      for (j=0; j<M; j++) user->rows[j] = i*M+j;
+      ierr = MatSetValues(Pmat,M,user->rows,M,user->rows,user->Jdense,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = DMDAVecRestoreArrayDOFRead(dm,X,&x);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  } else {
+    ierr = MatZeroEntries(Pmat);CHKERRQ(ierr);
   }
-  ierr = DMDAVecRestoreArrayDOFRead(dm,X,&x);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = FormDiffusionJacobian(ts,t,X,Amat,Pmat,ptr);CHKERRQ(ierr);
+  if (user->diffusion) {
+    ierr = FormDiffusionJacobian(ts,t,X,Amat,Pmat,ptr);CHKERRQ(ierr);
+  }
   if (Amat != Pmat) {
     ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

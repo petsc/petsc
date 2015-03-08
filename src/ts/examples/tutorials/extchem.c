@@ -24,6 +24,9 @@ static const char help[] = "Integrate chemistry using TChem.\n";
     Run with
    ./extchem -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_monitor_lg_solution -ts_final_time .005 -draw_pause -2 -lg_indicate_data_points false -ts_monitor_lg_solution_variables H2,O2,H2O,CH4,CO,CO2,C2H2,N2  -ts_monitor_envelope
 
+    Determine sensitivity of final tempature on each variables initial conditions
+    -ts_dt 1.e-5 -ts_type cn -ts_save_trajectory -ts_adjoint_solve
+
     The solution for component i = 0 is the temperature.
 
     The solution, i > 0, is the mass fraction, massf[i], of species i, i.e. mass of species i/ total mass of all species
@@ -60,7 +63,7 @@ int main(int argc,char **argv)
 {
   TS                ts;         /* time integrator */
   TSAdapt           adapt;
-  Vec               X;          /* solution vector */
+  Vec               X,lambda;          /* solution vector */
   Mat               J;          /* Jacobian matrix */
   PetscInt          steps,maxsteps;
   PetscErrorCode    ierr;
@@ -123,6 +126,15 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set final conditions for sensitivities
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = VecDuplicate(X,&lambda);CHKERRQ(ierr);
+  ierr = TSAdjointSetCostGradients(ts,1,&lambda,NULL);CHKERRQ(ierr);
+  ierr = VecSetValue(lambda,0,1.0,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(lambda);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(lambda);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Pass information to graphical monitoring routine
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscMalloc1((user.Nspec+1)*LENGTHOFSPECNAME,&names);CHKERRQ(ierr);
@@ -163,12 +175,15 @@ int main(int argc,char **argv)
     }
   }
 
+  ierr = VecView(lambda,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   TC_reset();
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&lambda);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFree3(user.tchemwork,user.Jdense,user.rows);CHKERRQ(ierr);
   ierr = PetscFinalize();

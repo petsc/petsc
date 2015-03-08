@@ -88,6 +88,7 @@ struct _p_TS {
   Vec       vec_costintegral;
   PetscInt  adjointsetupcalled;
   PetscInt  adjoint_max_steps;
+  PetscBool adjoint_solve;          /* immediately call TSAdjointSolve() after TSSolve() is complete */
   /* workspace for Adjoint computations */
   Vec       vec_costintegrand;
   Mat       Jacp;
