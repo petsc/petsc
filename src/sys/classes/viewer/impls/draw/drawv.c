@@ -651,7 +651,7 @@ PetscErrorCode  PetscViewerDrawSetHold(PetscViewer viewer,PetscBool hold)
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerDrawGetHold"
 /*@
-    PetscViewerDrawGetHold - Holds previous image when drawing new image
+    PetscViewerDrawGetHold - Checks if holds previous image when drawing new image
 
     Not Collective
 
