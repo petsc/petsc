@@ -24,8 +24,7 @@ PetscFunctionList PetscDrawList = 0;
 +  indraw - the PetscDraw context
 -  viewer - visualization context
 
-   Options Database Keys:
-.  -draw_view - print the ksp data structure at the end of a PetscDrawSetFromOptions() call
+   See PetscDrawSetFromOptions() for options database keys
 
    Note:
    The available visualization contexts include
@@ -175,8 +174,9 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
 -  type      - for example, PETSC_DRAW_X
 
    Options Database Command:
-.  -draw_type  <type> - Sets the type; use -help for a list
-    of available methods (for instance, x)
+.  -draw_type  <type> - Sets the type; use -help for a list of available methods (for instance, x)
+
+   See PetscDrawSetFromOptions for additional options database keys
 
    Level: intermediate
 
@@ -416,7 +416,10 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 
    Options Database Command:
 +  -draw_save  <filename>
--  -draw_save_movie
+.  -draw_save_movie
+.  -draw_save_final_image [optional filename] - (X windows only) saves the final image displayed in a window
+.  -draw_save_on_flush - saves an image on each flush in addition to each clear
+-  -draw_save_single_file - saves each new image in the same file, normally each new image is saved in a new file with filename_%d
 
    Level: intermediate
 
