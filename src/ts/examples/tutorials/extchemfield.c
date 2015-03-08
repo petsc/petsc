@@ -33,16 +33,22 @@ static const char help[] = "Integrate chemistry using TChem.\n";
         -draw_solution 1 -ts_monitor_lg_solution_variables Temp,H2,O2,H2O,CH4,CO,CO2,C2H2,N2 -lg_indicate_data_points false  -draw_pause -2
 
         Watch certain variables in all cells evolve with time
-        -da_refine 4 -ts_monitor_draw_solution -draw_fields_by_name Temp,H2,O2,H2O,CH4,CO,CO2,C2H2,N2 -draw_vec_mark_points  -draw_pause -2
+        -da_refine 4 -ts_monitor_draw_solution -draw_fields_by_name Temp,H2 -draw_vec_mark_points  -draw_pause -2
 
         Keep the initial temperature distribution as one monitors the current temperature distribution
-        -ts_monitor_draw_solution_initial -draw_bounds .9,1.7
+        -ts_monitor_draw_solution_initial -draw_bounds .9,1.7 -draw_fields_by_name Temp
 
         Save the images in a .gif (movie) file
         -draw_save -draw_save_single_file
 
         Compute the sensitivies of the solution of the first tempature on the initial conditions
-        -ts_adjoint_solve -ts_save_trajectory -ts_dt 1.e-5 -ts_type cn
+        -ts_adjoint_solve  -ts_dt 1.e-5 -ts_type cn -ts_adjoint_view_solution draw
+
+        Turn off diffusion
+        -diffusion no
+
+        Turn off reactions
+        -reactions no
 
 
     The solution for component i = 0 is the temperature.
@@ -217,10 +223,6 @@ int main(int argc,char **argv)
       }
     }
   }
-
-  //ierr = VecAbs(lambda);CHKERRQ(ierr);
-  //  ierr = VecLog(lambda);CHKERRQ(ierr);
-  ierr = VecView(lambda,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.

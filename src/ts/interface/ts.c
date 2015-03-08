@@ -103,9 +103,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   else tflg = PETSC_FALSE;
   ierr = PetscOptionsBool("-ts_adjoint_solve","Solve the adjoint problem immediately after solving the forward problem","",tflg,&tflg,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (!ts->trajectory) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONGSTATE,"Must also set -ts_save_trajectory when setting -ts_adjoint_solve");
-    ts->adjoint_solve = tflg;
     ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
+    ts->adjoint_solve = tflg;
   }
   ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,NULL);CHKERRQ(ierr);
@@ -3303,6 +3302,9 @@ PetscErrorCode TSSolve(TS ts,Vec u)
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
+   Options Database:
+. -ts_adjoint_view_solution <viewerinfo> - views the first gradient with respect to the initial conditions
+
    Level: intermediate
 
    Notes:
@@ -3346,6 +3348,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
     }
   }
   ts->solvetime = ts->ptime;
+  ierr = VecViewFromOptions(ts->vecs_sensi[0], ((PetscObject) ts)->prefix, "-ts_adjoint_view_solution");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
