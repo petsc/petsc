@@ -38,6 +38,9 @@ static const char help[] = "Integrate chemistry using TChem.\n";
         Keep the initial temperature distribution as one monitors the current temperature distribution
         -ts_monitor_draw_solution_initial -draw_bounds .9,1.7
 
+        Save the images in a .gif (movie) file
+        -draw_save -draw_save_single_file
+
 
     The solution for component i = 0 is the temperature.
 
@@ -55,7 +58,8 @@ struct _User {
   PetscReal pressure;
   int       Nspec;
   int       Nreac;
-  PetscReal Tini;
+  PetscReal Tini,dx;
+  PetscReal diffus;
   DM        dm;
   double    *tchemwork;
   double    *Jdense;        /* Dense array workspace where Tchem computes the Jacobian */ 
@@ -83,7 +87,6 @@ int main(int argc,char **argv)
   char              chemfile[PETSC_MAX_PATH_LEN] = "chem.inp",thermofile[PETSC_MAX_PATH_LEN] = "therm.dat";
   struct _User      user;
   TSConvergedReason reason;
-  PetscReal         dx;
   PetscBool         showsolutions = PETSC_FALSE;
   char              **snames,*names;
 
@@ -93,8 +96,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsString("-thermo","NASA thermo input file","",thermofile,thermofile,sizeof(thermofile),NULL);CHKERRQ(ierr);
   user.pressure = 1.01325e5;    /* Pascal */
   ierr = PetscOptionsReal("-pressure","Pressure of reaction [Pa]","",user.pressure,&user.pressure,NULL);CHKERRQ(ierr);
-  user.Tini = 1550;
+  user.Tini   = 1550;
   ierr = PetscOptionsReal("-Tini","Initial temperature [K]","",user.Tini,&user.Tini,NULL);CHKERRQ(ierr);
+  user.diffus = 100;
+  ierr = PetscOptionsReal("-diffus","Diffusion constant","",user.diffus,&user.diffus,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-draw_solution","Plot the solution for each cell","",showsolutions,&showsolutions,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -102,10 +107,10 @@ int main(int argc,char **argv)
   user.Nspec = TC_getNspec();
   user.Nreac = TC_getNreac();
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,-1,user.Nspec+1,1,NULL,&user.dm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user.dm,NULL,&ncells,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  dx   = 1.0/ncells;  /* Set the coordinates of the cell centers */
-  ierr = DMDASetUniformCoordinates(user.dm,0.0,1.0,0.0,1.0-.5*dx,0.0,1.0-.5*dx);CHKERRQ(ierr);
+  ierr    = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,-1,user.Nspec+1,1,NULL,&user.dm);CHKERRQ(ierr);
+  ierr    = DMDAGetInfo(user.dm,NULL,&ncells,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  user.dx = 1.0/ncells;  /* Set the coordinates of the cell centers; note final ghost cell is at x coordinate 1.0 */
+  ierr    = DMDASetUniformCoordinates(user.dm,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
 
   /* set the names of each field in the DMDA based on the species name */
   ierr = PetscMalloc1((user.Nspec+1)*LENGTHOFSPECNAME,&names);CHKERRQ(ierr);
@@ -209,6 +214,81 @@ int main(int argc,char **argv)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "FormDiffusionFunction"
+/*
+   Applies the second order centered difference diffusion operator on a one dimensional periodic domain
+*/
+static PetscErrorCode FormDiffusionFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
+{
+  User              user = (User)ptr;
+  PetscErrorCode    ierr;
+  PetscScalar       **f;
+  const PetscScalar **x;
+  DM                dm;
+  PetscInt          i,xs,xm,j,dof;
+  Vec               Xlocal;
+  PetscReal         idx;
+
+  PetscFunctionBeginUser;
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dm,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm,&Xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xlocal);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xlocal);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOFRead(dm,Xlocal,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOF(dm,F,&f);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+
+  idx = 1.0*user->diffus/user->dx;
+  for (i=xs; i<xs+xm; i++) {
+    for (j=0; j<dof; j++) {
+      f[i][j] += idx*(x[i+1][j] - 2.0*x[i][j] + x[i-1][j]);
+    }
+  }
+  ierr = DMDAVecRestoreArrayDOFRead(dm,Xlocal,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayDOF(dm,F,&f);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm,&Xlocal);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FormDiffusionJacobian"
+/*
+   Produces the second order centered difference diffusion operator on a one dimensional periodic domain
+*/
+static PetscErrorCode FormDiffusionJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,void *ptr)
+{
+  User              user = (User)ptr;
+  PetscErrorCode    ierr;
+  DM                dm;
+  PetscInt          i,xs,xm,j,dof;
+  PetscReal         idx,values[3];
+  MatStencil        row,col[3];
+
+  PetscFunctionBeginUser;
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dm,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+
+  idx = 1.0*user->diffus/user->dx;
+  values[0] = idx;
+  values[1] = -2.0*idx;
+  values[2] = idx;
+  for (i=xs; i<xs+xm; i++) {
+    for (j=0; j<dof; j++) {
+      row.i = i;      row.c = j;
+      col[0].i = i-1; col[0].c = j;
+      col[1].i = i;   col[1].c = j;
+      col[2].i = i+1; col[2].c = j;
+      ierr = MatSetValuesStencil(Pmat,1,&row,3,col,values,ADD_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "FormRHSFunction"
 static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 {
@@ -234,6 +314,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 
   ierr = DMDAVecRestoreArrayDOFRead(dm,X,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayDOF(dm,F,&f);CHKERRQ(ierr);
+  ierr = FormDiffusionFunction(ts,t,X,F,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -268,6 +349,7 @@ static PetscErrorCode FormRHSJacobian(TS ts,PetscReal t,Vec X,Mat Amat,Mat Pmat,
   ierr = DMDAVecRestoreArrayDOFRead(dm,X,&x);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = FormDiffusionJacobian(ts,t,X,Amat,Pmat,ptr);CHKERRQ(ierr);
   if (Amat != Pmat) {
     ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
