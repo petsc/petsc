@@ -4249,6 +4249,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = KSPSetNormType(pcbddc->coarse_ksp,KSP_NORM_NONE);CHKERRQ(ierr);
       ierr = KSPGetPC(pcbddc->coarse_ksp,&pc_temp);CHKERRQ(ierr);
       ierr = PCSetType(pc_temp,coarse_pc_type);CHKERRQ(ierr);
+      ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
       /* prefix */
       ierr = PetscStrcpy(prefix,"");CHKERRQ(ierr);
       ierr = PetscStrcpy(str_level,"");CHKERRQ(ierr);
@@ -4264,9 +4265,23 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = PetscStrcat(prefix,str_level);CHKERRQ(ierr);
       }
       ierr = KSPSetOptionsPrefix(pcbddc->coarse_ksp,prefix);CHKERRQ(ierr);
+      /* propagate BDDC info to the next level (these are dummy calls if pc_temp is not of type PCBDDC) */
+      ierr = PCBDDCSetLevel(pc_temp,pcbddc->current_level+1);CHKERRQ(ierr);
+      ierr = PCBDDCSetCoarseningRatio(pc_temp,pcbddc->coarsening_ratio);CHKERRQ(ierr);
+      ierr = PCBDDCSetLevels(pc_temp,pcbddc->max_levels);CHKERRQ(ierr);
       /* allow user customization */
       ierr = KSPSetFromOptions(pcbddc->coarse_ksp);CHKERRQ(ierr);
-      ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
+    }
+    /* propagate BDDC info to the next level (these are dummy calls if pc_temp is not of type PCBDDC) */
+    if (nisdofs) {
+      ierr = PCBDDCSetDofsSplitting(pc_temp,nisdofs,isarray);CHKERRQ(ierr);
+      for (i=0;i<nisdofs;i++) {
+        ierr = ISDestroy(&isarray[i]);CHKERRQ(ierr);
+      }
+    }
+    if (nisneu) {
+      ierr = PCBDDCSetNeumannBoundaries(pc_temp,isarray[nisdofs]);CHKERRQ(ierr);
+      ierr = ISDestroy(&isarray[nisdofs]);CHKERRQ(ierr);
     }
 
     /* get some info after set from options */
@@ -4284,21 +4299,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
       ierr = PCRedundantGetKSP(pc_temp,&inner_ksp);CHKERRQ(ierr);
       ierr = KSPGetPC(inner_ksp,&inner_pc);CHKERRQ(ierr);
       ierr = PCFactorSetReuseFill(inner_pc,PETSC_TRUE);CHKERRQ(ierr);
-    }
-
-    /* propagate BDDC info to the next level (these are dummy calls if pc_temp is not of type PCBDDC) */
-    ierr = PCBDDCSetLevel(pc_temp,pcbddc->current_level+1);CHKERRQ(ierr);
-    ierr = PCBDDCSetCoarseningRatio(pc_temp,pcbddc->coarsening_ratio);CHKERRQ(ierr);
-    ierr = PCBDDCSetLevels(pc_temp,pcbddc->max_levels);CHKERRQ(ierr);
-    if (nisdofs) {
-      ierr = PCBDDCSetDofsSplitting(pc_temp,nisdofs,isarray);CHKERRQ(ierr);
-      for (i=0;i<nisdofs;i++) {
-        ierr = ISDestroy(&isarray[i]);CHKERRQ(ierr);
-      }
-    }
-    if (nisneu) {
-      ierr = PCBDDCSetNeumannBoundaries(pc_temp,isarray[nisdofs]);CHKERRQ(ierr);
-      ierr = ISDestroy(&isarray[nisdofs]);CHKERRQ(ierr);
     }
 
     /* assemble coarse matrix */
