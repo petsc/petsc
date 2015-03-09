@@ -1193,17 +1193,18 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
       ierr = PetscFEIntegrate(fe, prob, f, Ne, cgeom, u, probAux, a, lintegral);CHKERRQ(ierr);
       ierr = PetscFEIntegrate(fe, prob, f, Nr, &cgeom[offset], &u[offset*totDim], probAux, &a[offset*totDimAux], lintegral);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
-      PetscInt foff;
-      void   (*obj_func)(const PetscScalar u[], const PetscScalar u_x[], const PetscScalar u_t[], const PetscScalar a[], const PetscScalar a_x[], const PetscScalar a_t[], const PetscReal x[], PetscScalar obj[]);
       /* PetscFV  fv = (PetscFV) obj; */
+      PetscInt    foff;
+      void      (*obj_func)(const PetscScalar u[], const PetscScalar u_x[], const PetscScalar u_t[], const PetscScalar a[], const PetscScalar a_x[], const PetscScalar a_t[], const PetscReal x[], PetscScalar obj[]);
+      PetscScalar lint;
 
       ierr = PetscDSGetObjective(prob, f, &obj_func);CHKERRQ(ierr);
       ierr = PetscDSGetFieldOffset(prob, f, &foff);CHKERRQ(ierr);
       if (obj_func) {
         for (c = 0; c < numCells; ++c) {
           /* TODO: Need full pointwise interpolation and get centroid for x argument */
-          obj_func(&u[totDim*c+foff], NULL, NULL, NULL, NULL, NULL, NULL, &lintegral[f]);
-          lintegral[f] *= vol[c];
+          obj_func(&u[totDim*c+foff], NULL, NULL, NULL, NULL, NULL, NULL, &lint);
+          lintegral[f] = PetscRealPart(lint)*vol[c];
         }
       }
     } else SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
