@@ -1118,7 +1118,6 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
   DM                dmAux;
   Vec               localX, A;
   PetscDS           prob, probAux = NULL;
-  PetscQuadrature   q;
   PetscSection      section, sectionAux;
   PetscFECellGeom  *cgeom;
   PetscScalar      *u, *a = NULL;
@@ -1194,9 +1193,9 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscReal *integral, void 
       ierr = PetscFEIntegrate(fe, prob, f, Ne, cgeom, u, probAux, a, lintegral);CHKERRQ(ierr);
       ierr = PetscFEIntegrate(fe, prob, f, Nr, &cgeom[offset], &u[offset*totDim], probAux, &a[offset*totDimAux], lintegral);CHKERRQ(ierr);
     } else if (id == PETSCFV_CLASSID) {
-      PetscFV  fv = (PetscFV) obj;
       PetscInt foff;
       void   (*obj_func)(const PetscScalar u[], const PetscScalar u_x[], const PetscScalar u_t[], const PetscScalar a[], const PetscScalar a_x[], const PetscScalar a_t[], const PetscReal x[], PetscScalar obj[]);
+      /* PetscFV  fv = (PetscFV) obj; */
 
       ierr = PetscDSGetObjective(prob, f, &obj_func);CHKERRQ(ierr);
       ierr = PetscDSGetFieldOffset(prob, f, &foff);CHKERRQ(ierr);
