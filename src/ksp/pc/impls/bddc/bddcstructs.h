@@ -45,10 +45,6 @@ struct _PCBDDCSubSchurs {
   IS  is_B;
   /* whether Schur complements are computed with MUMPS or not */
   PetscBool use_mumps;
-  /* local Schur complements on subsets (principal minors) */
-  Mat *S_Ej;
-  PetscBT is_edge;
-  PetscBT computed_Stilda_subs;
   /* matrices cointained explicit schur complements cat together */
   /* note that AIJ format is used but the values are inserted as in column major ordering */
   Mat S_Ej_all;
@@ -64,21 +60,10 @@ struct _PCBDDCSubSchurs {
   ISLocalToGlobalMapping BtoNmap;
   /* number of local subproblems */
   PetscInt n_subs;
-  /* number of local sequential subproblems */
-  PetscInt n_subs_seq;
-  /* number of local parallel subproblems */
-  PetscInt n_subs_par;
-  /* number of global sequential subproblems */
-  PetscInt n_subs_seq_g;
-  /* number of global parallel subproblems */
-  PetscInt n_subs_par_g;
   /* connected components */
   IS*      is_subs;
-  /* some workspace */
-  PetscInt *index_sequential;
-  PetscInt *index_parallel;
-  PetscInt *auxglobal_sequential;
-  PetscInt *auxglobal_parallel;
+  PetscBT  is_edge;
+  PetscBT  computed_Stilda_subs;
   /* mat flags */
   PetscBool is_hermitian;
   PetscBool is_posdef;
@@ -95,16 +80,6 @@ struct _PCBDDCDeluxeScaling {
   Vec             seq_work1;
   Vec             seq_work2;
   Mat             seq_mat;
-  KSP             seq_ksp;
-  /* parallel problems */
-  PetscInt        par_colors;
-  VecScatter*     par_scctx_s;
-  VecScatter*     par_scctx_p;
-  Vec*            par_vec;
-  Vec*            par_work1;
-  Vec*            par_work2;
-  KSP*            par_ksp;
-  PetscInt*       par_col2sub;
 };
 typedef struct _PCBDDCDeluxeScaling *PCBDDCDeluxeScaling;
 

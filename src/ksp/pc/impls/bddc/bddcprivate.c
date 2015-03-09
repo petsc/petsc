@@ -137,11 +137,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   }
 
   if (mss) { /* multilevel */
-    if (pcbddc->use_deluxe_scaling) {
-      ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_inv_all,&Sarray);CHKERRQ(ierr);
-    } else {
-      ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_all,&Sarray);CHKERRQ(ierr);
-    }
+    ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_inv_all,&Sarray);CHKERRQ(ierr);
     ierr = MatSeqAIJGetArray(sub_schurs->sum_S_Ej_tilda_all,&Starray);CHKERRQ(ierr);
   }
 
@@ -316,11 +312,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   ierr = PetscFree2(Smult,Seigv);CHKERRQ(ierr);
 
   if (mss) {
-    if (pcbddc->use_deluxe_scaling) {
-      ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_inv_all,&Sarray);CHKERRQ(ierr);
-    } else {
-      ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_all,&Sarray);CHKERRQ(ierr);
-    }
+    ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_inv_all,&Sarray);CHKERRQ(ierr);
     ierr = MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_tilda_all,&Starray);CHKERRQ(ierr);
   }
   ierr = PetscFree7(S,St,eigv,eigs,work,B_iwork,B_ifail);CHKERRQ(ierr);
@@ -2760,9 +2752,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* adapt sub_schurs computed (if any) */
     if (pcbddc->use_deluxe_scaling) {
       PCBDDCSubSchurs sub_schurs=pcbddc->sub_schurs;
-      if (sub_schurs->n_subs_par_g) {
-        SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Change of basis with deluxe scaling and parallel problems still needs to be implemented");
-      }
       if (sub_schurs->S_Ej_all) {
         Mat S_1,S_2,tmat;
         IS is_all_N;
@@ -4694,7 +4683,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       ierr = MatRestoreRowIJ(pcbddc->local_mat,0,PETSC_TRUE,PETSC_FALSE,&nvtxs,&xadj,&adjncy,&flg_row);CHKERRQ(ierr);
     }
   }
-  ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->adaptive_selection,pcbddc->use_deluxe_scaling,pcbddc->adaptive_invert_Stildas,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursSetUp(sub_schurs,used_xadj,used_adjncy,pcbddc->sub_schurs_layers,pcbddc->adaptive_selection,pcbddc->adaptive_invert_Stildas,pcbddc->use_edges,pcbddc->use_faces);CHKERRQ(ierr);
 
   /* free adjacency */
   if (free_used_adj) {
@@ -4739,7 +4728,7 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
   ierr = MatSchurComplementSetKSP(S_j,pcbddc->ksp_D);CHKERRQ(ierr);
 
   /* sub_schurs init */
-  ierr = PCBDDCSubSchursInit(sub_schurs,pcbddc->local_mat,S_j,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap,pcbddc->sub_schurs_threshold);CHKERRQ(ierr);
+  ierr = PCBDDCSubSchursInit(sub_schurs,pcbddc->local_mat,S_j,pcis->is_I_local,pcis->is_B_local,graph,pcis->BtoNmap);CHKERRQ(ierr);
   ierr = MatDestroy(&S_j);CHKERRQ(ierr);
   /* free graph struct */
   if (pcbddc->sub_schurs_rebuild) {

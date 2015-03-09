@@ -72,7 +72,6 @@ PetscErrorCode PCSetFromOptions_BDDC(PetscOptions *PetscOptionsObject,PC pc)
   ierr = PetscOptionsInt("-pc_bddc_levels","Set maximum number of levels for multilevel","none",pcbddc->max_levels,&pcbddc->max_levels,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_coarse_estimates","Use estimated eigenvalues for coarse problem","none",pcbddc->use_coarse_estimates,&pcbddc->use_coarse_estimates,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_deluxe_scaling","Use deluxe scaling for BDDC","none",pcbddc->use_deluxe_scaling,&pcbddc->use_deluxe_scaling,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_bddc_schur_threshold","Schur principal minors smaller than this value are explicilty computed (-1 computes all)","none",pcbddc->sub_schurs_threshold,&pcbddc->sub_schurs_threshold,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_schur_rebuild","Whether or not the interface graph for Schur principal minors has to be rebuilt (i.e. define the interface without any adjacency)","none",pcbddc->sub_schurs_rebuild,&pcbddc->sub_schurs_rebuild,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_schur_layers","Number of dofs' layers for the computation of principal minors (i.e. -1 uses all dofs)","none",pcbddc->sub_schurs_layers,&pcbddc->sub_schurs_layers,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_schur_use_useradj","Whether or not the CSR graph specified by the user should be used for computing successive layers (default is to use adj of local mat)","none",pcbddc->sub_schurs_use_useradj,&pcbddc->sub_schurs_use_useradj,NULL);CHKERRQ(ierr);
@@ -1200,8 +1199,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     computetopography = PETSC_TRUE;
   }
   computeconstraintsmatrix = PETSC_FALSE;
-  pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0);
-  computesubschurs = (PetscBool)(pcbddc->use_deluxe_scaling || pcbddc->adaptive_selection);
+  if (pcbddc->adaptive_threshold > 0.0 && !pcbddc->use_deluxe_scaling) {
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot compute adaptive constraints without deluxe scaling. Rerun with -pc_bddc_use_deluxe_scaling");
+  }
+  pcbddc->adaptive_selection = (PetscBool)(pcbddc->adaptive_threshold > 0.0 && pcbddc->use_deluxe_scaling);
+  computesubschurs = (PetscBool)(pcbddc->adaptive_selection || pcbddc->use_deluxe_scaling);
 
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag) {
@@ -2002,7 +2004,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
   /* create sub schurs structure */
   ierr = PCBDDCSubSchursCreate(&pcbddc->sub_schurs);CHKERRQ(ierr);
-  pcbddc->sub_schurs_threshold   = -1;
   pcbddc->sub_schurs_rebuild     = PETSC_FALSE;
   pcbddc->sub_schurs_layers      = -1;
   pcbddc->sub_schurs_use_useradj = PETSC_FALSE;
