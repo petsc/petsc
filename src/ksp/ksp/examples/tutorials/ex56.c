@@ -135,7 +135,16 @@ int main(int argc,char **args)
     /* generate element matrices */
     {
       FILE *file;
-      char fname[] = "data/elem_3d_elast_v_25.txt";
+      char fname[256];
+      char sp[1];
+      const char* petsc_dir  = getenv("PETSC_DIR");
+      sp[0] = PETSC_DIR_SEPARATOR;
+      if (!petsc_dir) {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"'PETSC_DIR' not set.");
+      }
+      snprintf (fname,sizeof(fname), "%s%ssrc%sksp%sksp%sexamples%stutorials%sdata%selem_3d_elast_v_25.txt",
+                petsc_dir,sp,sp,sp,sp,sp,sp,sp);
+
       file = fopen(fname, "r");
       if (file == 0) {
         PetscPrintf(PETSC_COMM_WORLD,"\t%s failed to open input file '%s'\n",__FUNCT__,fname);
