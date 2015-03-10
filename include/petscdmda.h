@@ -70,6 +70,8 @@ PETSC_EXTERN PetscErrorCode DMDAGetNeighbors(DM,const PetscMPIInt**);
 PETSC_EXTERN PetscErrorCode DMDASetAOType(DM,AOType);
 PETSC_EXTERN PetscErrorCode DMDAGetAO(DM,AO*);
 PETSC_EXTERN PetscErrorCode DMDASetUniformCoordinates(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode DMDAGetCoordinateArray(DM,void*);
+PETSC_EXTERN PetscErrorCode DMDARestoreCoordinateArray(DM,void*);
 PETSC_EXTERN PetscErrorCode DMDAGetBoundingBox(DM,PetscReal[],PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMDAGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMDAGetLogicalCoordinate(DM,PetscScalar,PetscScalar,PetscScalar,PetscInt*,PetscInt*,PetscInt*,PetscScalar*,PetscScalar*,PetscScalar*);
@@ -80,6 +82,8 @@ PETSC_EXTERN PetscErrorCode DMDAGetReducedDMDA(DM,PetscInt,DM*);
 
 PETSC_EXTERN PetscErrorCode DMDASetFieldName(DM,PetscInt,const char[]);
 PETSC_EXTERN PetscErrorCode DMDAGetFieldName(DM,PetscInt,const char**);
+PETSC_EXTERN PetscErrorCode DMDASetFieldNames(DM,const char * const *);
+PETSC_EXTERN PetscErrorCode DMDAGetFieldNames(DM,const char * const **);
 PETSC_EXTERN PetscErrorCode DMDASetCoordinateName(DM,PetscInt,const char[]);
 PETSC_EXTERN PetscErrorCode DMDAGetCoordinateName(DM,PetscInt,const char**);
 

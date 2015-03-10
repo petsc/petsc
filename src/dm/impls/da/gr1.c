@@ -38,9 +38,9 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   ierr = DMDAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
-  if (xmax <= xmin) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %g %g",(double)xmin,(double)xmax);
-  if ((ymax <= ymin) && (dim > 1)) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %g %g",(double)ymin,(double)ymax);
-  if ((zmax <= zmin) && (dim > 2)) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %g %g",(double)zmin,(double)zmax);
+  if (xmax < xmin) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %g %g",(double)xmin,(double)xmax);
+  if ((ymax < ymin) && (dim > 1)) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %g %g",(double)ymin,(double)ymax);
+  if ((zmax < zmin) && (dim > 2)) SETERRQ2(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %g %g",(double)zmin,(double)zmax);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(da,&section);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
@@ -171,6 +171,9 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDASelectFields"
+/*
+    Allows a user to select a subset of the fields to be drawn by VecView() when the vector comes from a DMDA
+*/
 PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
 {
   PetscErrorCode ierr;

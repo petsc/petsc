@@ -16,7 +16,7 @@
 /*
      Maximum number of monitors you can run with a single TS
 */
-#define MAXTSMONITORS 5
+#define MAXTSMONITORS 10
 
 PETSC_EXTERN PetscBool TSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
@@ -59,6 +59,7 @@ struct _TSTrajectoryOps {
 
 struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
+  void *data;
 };
 
 struct _p_TS {
@@ -88,6 +89,7 @@ struct _p_TS {
   Vec       vec_costintegral;
   PetscInt  adjointsetupcalled;
   PetscInt  adjoint_max_steps;
+  PetscBool adjoint_solve;          /* immediately call TSAdjointSolve() after TSSolve() is complete */
   /* workspace for Adjoint computations */
   Vec       vec_costintegrand;
   Mat       Jacp;
@@ -295,9 +297,21 @@ typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of s
 } TSStepStatus;
 
 struct _n_TSMonitorLGCtx {
-  PetscDrawLG lg;
-  PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
-  PetscInt    ksp_its,snes_its;
+  PetscDrawLG    lg;
+  PetscInt       howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscInt       ksp_its,snes_its;
+  char           **names;
+  char           **displaynames;
+  PetscInt       ndisplayvariables;
+  PetscInt       *displayvariables;
+  PetscReal      *displayvalues;
+  PetscErrorCode (*transform)(void*,Vec,Vec*);
+  PetscErrorCode (*transformdestroy)(void*);
+  void           *transformctx;
+};
+
+struct _n_TSMonitorEnvelopeCtx {
+  Vec max,min;
 };
 
 

@@ -196,6 +196,7 @@ PetscErrorCode  TSTrajectorySetType(TSTrajectory ts,const TSTrajectoryType type)
 }
 
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory);
+PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Singlefile(TSTrajectory);
 
 #undef __FUNCT__
 #define __FUNCT__ "TSTrajectoryRegisterAll"
@@ -217,6 +218,7 @@ PetscErrorCode  TSTrajectoryRegisterAll(void)
   TSTrajectoryRegisterAllCalled = PETSC_TRUE;
 
   ierr = TSTrajectoryRegister(TSTRAJECTORYBASIC,TSTrajectoryCreate_Basic);CHKERRQ(ierr);
+  ierr = TSTrajectoryRegister(TSTRAJECTORYSINGLEFILE,TSTrajectoryCreate_Singlefile);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
