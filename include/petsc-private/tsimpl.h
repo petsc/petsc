@@ -147,6 +147,7 @@ struct _p_TS {
   PetscInt  time_steps_since_decrease; /* number of timesteps since timestep was decreased due to lack of convergence */
   /* ----------------------------------------------------------------------------------------------------------------*/
 
+  PetscBool steprollback;           /* Is the current step rolled back? */
   PetscInt  steps;                  /* steps taken so far in latest call to TSSolve() */
   PetscInt  total_steps;            /* steps taken in all calls to TSSolve() since the TS was created or since TSSetUp() was called */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
@@ -251,13 +252,16 @@ PETSC_EXTERN PetscErrorCode DMTSLoad(DMTS,PetscViewer);
 
 typedef enum {TSEVENT_NONE,TSEVENT_LOCATED_INTERVAL,TSEVENT_PROCESSING,TSEVENT_ZERO,TSEVENT_RESET_NEXTSTEP} TSEventStatus;
 
+/* Maximum number of event times that can be recorded */
+#define MAXEVENTRECORDERS 24
+
 struct _p_TSEvent {
   PetscScalar    *fvalue;          /* value of event function at the end of the step*/
   PetscScalar    *fvalue_prev;     /* value of event function at start of the step */
   PetscReal       ptime;           /* time at step end */
   PetscReal       ptime_prev;      /* time at step start */
   PetscErrorCode  (*monitor)(TS,PetscReal,Vec,PetscScalar*,void*); /* User event monitor function */
-  PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*); /* User post event function */
+  PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*); /* User post event function */
   PetscBool      *terminate;        /* 1 -> Terminate time stepping, 0 -> continue */
   PetscInt       *direction;        /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */ 
   PetscInt        nevents;          /* Number of events to handle */
@@ -268,10 +272,20 @@ struct _p_TSEvent {
   TSEventStatus   status;           /* Event status */
   PetscReal       tstepend;         /* End time of step */
   PetscReal       initial_timestep; /* Initial time step */
+  /* Struct to record the events */
+  struct {
+    PetscInt  ctr;                          /* recorder counter */
+    PetscReal time[MAXEVENTRECORDERS];      /* Event times */
+    PetscInt  stepnum[MAXEVENTRECORDERS];   /* Step numbers */
+    PetscInt  nevents[MAXEVENTRECORDERS];   /* Number of events occuring at the event times */
+    PetscInt  *eventidx[MAXEVENTRECORDERS]; /* Local indices of the events in the event list */
+  } recorder;
 };
 
 PETSC_EXTERN PetscErrorCode TSEventMonitor(TS);
 PETSC_EXTERN PetscErrorCode TSEventMonitorDestroy(TSEvent*);
+PETSC_EXTERN PetscErrorCode TSAdjointEventMonitor(TS);
+PETSC_EXTERN PetscErrorCode TSEventMonitorInitialize(TS);
 
 PETSC_EXTERN PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 

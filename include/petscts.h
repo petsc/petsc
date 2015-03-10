@@ -442,7 +442,7 @@ PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxCreate(MPI_Comm,const char[],const 
 PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSPEig(TS,PetscInt,PetscReal,Vec,void *);
 
-PETSC_EXTERN PetscErrorCode TSSetEventMonitor(TS,PetscInt,PetscInt*,PetscBool*,PetscErrorCode (*)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode TSSetEventMonitor(TS,PetscInt,PetscInt*,PetscBool*,PetscErrorCode (*)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void*),void*);
 /*J
    TSSSPType - string with the name of TSSSP scheme.
 

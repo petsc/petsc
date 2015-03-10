@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/power_grid/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex3adj.c ex3opt.c ex3opt_fd.c ex4.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex3adj.c ex3adj_events.c ex3opt.c ex3opt_fd.c ex4.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
@@ -35,6 +35,9 @@ ex3: ex3.o  chkopts
 
 ex3adj: ex3adj.o  chkopts
 	-${CLINKER} -o ex3adj ex3adj.o  ${PETSC_TS_LIB}
+
+ex3adj_events: ex3adj_events.o  chkopts
+	-${CLINKER} -o ex3adj_events ex3adj_events.o  ${PETSC_TS_LIB}
 
 ex3opt: ex3opt.o  chkopts
 	-${CLINKER} -o ex3opt ex3opt.o  ${PETSC_LIB}
@@ -185,6 +188,12 @@ runex3adj:
 	-@${MPIEXEC} -n 1 ./ex3adj -viewer_binary_skip_info -ts_theta_theta 0.5 -ts_theta_endpoint > ex3adj_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3adj_1.out ex3adj_1.tmp || printf "${PWD}\nPossible problem with ex3adj_1, diffs above\n=========================================\n"; \
 	   ${RM} -f ex3adj_1.tmp
+
+runex3adj_events:
+	-@${MPIEXEC} -n 1 ./ex3adj_events -viewer_binary_skip_info -ts_theta_theta 0.5 -ts_theta_endpoint > ex3adj_events_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex3adj_events_1.out ex3adj_events_1.tmp || printf "${PWD}\nPossible problem with ex3adj_events_1, diffs above\n=========================================\n"; \
+	   ${RM} -f ex3adj_events_1.tmp
+
 
 runex3opt:
 	-@${MPIEXEC} -n 1 ./ex3opt -viewer_binary_skip_info -ts_theta_theta 0.5 -ts_theta_endpoint -tao_monitor -tao_view > ex3opt_1.tmp 2>&1;	  \
@@ -396,6 +405,7 @@ clean_files:
 
 TESTEXAMPLES_C_NOCOMPLEX   = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex3adj.PETSc runex3adj ex3adj.rm \
+			    ex3adj_events.PETSc runex3adj_events ex3adj_events.rm \
                             ex3opt.PETSc runex3opt ex3opt.rm \
                             ex3opt_fd.PETSc runex3opt_fd ex3opt_fd.rm \
                             ex5.PETSc ex5.rm \

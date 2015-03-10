@@ -38,7 +38,7 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *c
 
 #undef __FUNCT__
 #define __FUNCT__ "PostEventFunction"
-PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec U,void* ctx)
+PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
 {
   AppCtx         *app=(AppCtx*)ctx;
   PetscErrorCode ierr;

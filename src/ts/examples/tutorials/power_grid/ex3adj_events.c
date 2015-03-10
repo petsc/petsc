@@ -1,5 +1,5 @@
 
-static char help[] = "Basic equation for generator stability analysis.\n";
+static char help[] = "This is a version of ex3adj.c that also uses event monitor (TSEvent).\n";
 
 /*F
 
@@ -59,6 +59,53 @@ PetscErrorCode PostStepFunction(TS ts)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "EventFunction"
+PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *app)
+{
+  AppCtx            *ctx=(AppCtx*)app;
+
+  PetscFunctionBegin;
+  /* Event for fault-on time */
+  fvalue[0] = t - ctx->tf;
+  /* Event for fault-off time */
+  fvalue[1] = t - ctx->tcl;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PostEventFunction"
+PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec U,PetscBool forwardsolve,void* app)
+{
+  PetscErrorCode ierr;
+  AppCtx         *ctx=(AppCtx*)app;
+
+  PetscFunctionBegin;
+  if(forwardsolve) {
+    if (event_list[0] == 0) { /* Fault-on */
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Applying fault at time = %3.2f\n",t);CHKERRQ(ierr);
+      /* Set Pmax to 0 */
+      ctx->Pmax = 0.0;
+    } else if (event_list[0] == 1) { /* Fault-off */
+      /* Set Pmax to initial value */
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Removing fault at time = %3.2f\n",t);CHKERRQ(ierr);
+      ctx->Pmax = ctx->E*ctx->V/ctx->X;
+    } 
+  } else { /* Reverse the events for the adjoint solve */
+    if (event_list[0] == 1) { /* Fault-on */
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Adjoint solve:Applying fault at time = %3.2f\n",t);CHKERRQ(ierr);
+      /* Set Pmax to 0 */
+      ctx->Pmax = 0.0;
+    } else if (event_list[0] == 0) { /* Fault-off */
+      /* Set Pmax to initial value */
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Adjoint solve:Removing fault at time = %3.2f\n",t);CHKERRQ(ierr);
+      ctx->Pmax = ctx->E*ctx->V/ctx->X;
+    }
+  }
+      
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "IFunction"
 /*
      Defines the ODE passed to the ODE solver
@@ -66,7 +113,7 @@ PetscErrorCode PostStepFunction(TS ts)
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
   PetscErrorCode    ierr;
-  PetscScalar       *f,Pmax;
+  PetscScalar       *f;
   const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
@@ -74,11 +121,9 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  if ((t > ctx->tf+1e-10) && (t < ctx->tcl+1e-10)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
-  else Pmax = ctx->Pmax;
   
   f[0] = udot[0] - ctx->omega_b*(u[1] - ctx->omega_s);
-  f[1] = 2.0*ctx->H/ctx->omega_s*udot[1] +  Pmax*PetscSinScalar(u[0]) + ctx->D*(u[1] - ctx->omega_s)- ctx->Pm;
+  f[1] = 2.0*ctx->H/ctx->omega_s*udot[1] +  ctx->Pmax*PetscSinScalar(u[0]) + ctx->D*(u[1] - ctx->omega_s)- ctx->Pm;
 
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
@@ -95,17 +140,15 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
 {
   PetscErrorCode    ierr;
   PetscInt          rowcol[] = {0,1};
-  PetscScalar       J[2][2],Pmax;
+  PetscScalar       J[2][2];
   const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  if ((t > ctx->tf+1e-10) && (t < ctx->tcl+1e-10)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
-  else Pmax = ctx->Pmax;
 
   J[0][0] = a;                       J[0][1] = -ctx->omega_b;
-  J[1][1] = 2.0*ctx->H/ctx->omega_s*a + ctx->D;   J[1][0] = Pmax*PetscCosScalar(u[0]);
+  J[1][1] = 2.0*ctx->H/ctx->omega_s*a + ctx->D;   J[1][0] = ctx->Pmax*PetscCosScalar(u[0]);
 
   ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
@@ -330,6 +373,16 @@ int main(int argc,char **argv)
   ierr = TSSetPostStep(ts,PostStepFunction);CHKERRQ(ierr);
 #endif
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set events
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscInt direction[2];
+  PetscBool terminate[2];
+  direction[0] = direction[1] = 1;
+  terminate[0] = terminate[1] = PETSC_FALSE;
+  
+  ierr = TSSetEventMonitor(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)&ctx);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (ensemble) {
@@ -369,7 +422,7 @@ int main(int argc,char **argv)
   ierr = TSAdjointSetRHSJacobian(ts,Jacp,RHSJacobianP,&ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSetCostIntegrand(ts,1,(PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*))CostIntegrand,
-                                        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
+				        (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDYFunction,
                                         (PetscErrorCode (*)(TS,PetscReal,Vec,Vec*,void*))DRDPFunction,&ctx);CHKERRQ(ierr);
 
   ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
