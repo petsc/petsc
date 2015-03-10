@@ -690,7 +690,7 @@ PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
 static PetscErrorCode formProl0(PetscCoarsenData *agg_llists,PetscInt bs,PetscInt nSAvec,PetscInt my0crs,PetscInt data_stride,PetscReal data_in[],const PetscInt flid_fgid[],PetscReal **a_data_out,Mat a_Prol)
 {
   PetscErrorCode ierr;
-  PetscInt       Istart,my0,Iend,nloc,clid,flid,aggID,kk,jj,ii,mm,ndone,nSelected,minsz,nghosts,out_data_stride;
+  PetscInt       Istart,my0,Iend,nloc,clid,flid = 0,aggID,kk,jj,ii,mm,ndone,nSelected,minsz,nghosts,out_data_stride;
   MPI_Comm       comm;
   PetscMPIInt    rank;
   PetscReal      *out_data;
