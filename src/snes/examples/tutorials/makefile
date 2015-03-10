@@ -13,11 +13,11 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c  ex5.c ex5s.c ex7.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                 ex25.c ex28.c ex30.c ex33.c \
                 ex35.c ex42.c ex46.c ex48.c \
-                ex53.c ex54.c  ex58.c ex59.c ex60.c \
+                ex58.c ex59.c ex60.c \
                 ex61.c ex61gen.c ex61view.c ex62.c ex63.c ex633d_db.c ex64.c ex65.c ex70.c \
                 ex47cu.cu
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5f90t.F ex5fs.F ex40f90.F90 ex74f.F90
-EXAMPLESCH	 = 
+EXAMPLESCH	 =
 EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m  ex61genm.m ex61m.m
 DIRS		 = ex10d network
@@ -531,21 +531,29 @@ runex7:
            ${RM} -f ex7_1.tmp
 
 runex9:
-	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonrsls -feasible 1 > ex9_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonrsls  > ex9_1.tmp 2>&1; \
            ${DIFF} output/ex9_1.out ex9_1.tmp || printf  "${PWD}\nPossible problem with ex9_1, diffs above\n=========================================\n"; \
            ${RM} -f ex9_1.tmp
 runex9_2:
-	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonssls -feasible 1 > ex9_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonssls  > ex9_2.tmp 2>&1; \
            ${DIFF} output/ex9_2.out ex9_2.tmp || printf  "${PWD}\nPossible problem with ex9_2, diffs above\n=========================================\n"; \
            ${RM} -f ex9_2.tmp
 runex9_3:
-	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonrsls -feasible 0 > ex9_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonrsls  > ex9_3.tmp 2>&1; \
            ${DIFF} output/ex9_3.out ex9_3.tmp || printf  "${PWD}\nPossible problem with ex9_3, diffs above\n=========================================\n"; \
            ${RM} -f ex9_3.tmp
 runex9_4:
-	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonssls -feasible 0 > ex9_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonssls  > ex9_4.tmp 2>&1; \
            ${DIFF} output/ex9_4.out ex9_4.tmp || printf  "${PWD}\nPossible problem with ex9_4, diffs above\n=========================================\n"; \
            ${RM} -f ex9_4.tmp
+runex9_5:
+	-@${MPIEXEC} -n 1 ./ex9 -snes_fd_color -snes_monitor_short  > ex9_5.tmp 2>&1; \
+           ${DIFF} output/ex9_5.out ex9_5.tmp || printf  "${PWD}\nPossible problem with ex9_5, diffs above\n=========================================\n"; \
+           ${RM} -f ex9_5.tmp
+runex9_6:
+	-@${MPIEXEC} -n 1 ./ex9 -da_refine 5 -pc_type mg -snes_monitor_short -ksp_monitor_short > ex9_6.tmp 2>&1; \
+           ${DIFF} output/ex9_6.out ex9_6.tmp || printf  "${PWD}\nPossible problem with ex9_6, diffs above\n=========================================\n"; \
+           ${RM} -f ex9_6.tmp
 runex14:
 	-@${MPIEXEC} -n 4 ./ex14 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex14_1.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
@@ -1136,12 +1144,12 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  ex35.PETSc runex35 runex35_2 runex35_3 runex35_4 runex35_5 runex35_6 runex35_7 runex35_8 ex35.rm \
                                  ex42.PETSc runex42 ex42.rm \
                                  ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 ex46.rm \
-                                 ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm ex54.PETSc ex54.rm \
+                                 ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm ex70.PETSc ex70.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw runex19_18 ex19.rm
 TESTEXAMPLES_F90_DATATYPES     = ex5f90t.PETSc runex5f90t ex5f90t.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm
-TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm  ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 ex9.rm
+TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm  ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 runex9_5 runex9_6 ex9.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex5f.PETSc runex5f runex5f_3 ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_X_MPIUNI        = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm  ex14.PETSc ex14.rm
