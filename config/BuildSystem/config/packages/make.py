@@ -7,7 +7,6 @@ class Configure(config.package.GNUPackage):
     self.download          = ['http://ftp.gnu.org/gnu/make/make-3.82.tar.gz','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/make-3.82.tar.gz']
     self.complex           = 1
     self.double            = 0
-    self.requires32bitint  = 0
     self.downloadonWindows = 1
     self.useddirectly      = 0
 
