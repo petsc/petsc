@@ -517,6 +517,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
           }
           ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),nslots*nfields,ii,PETSC_OWN_POINTER,&ilink->is);CHKERRQ(ierr);
           ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),nslots*nfields,jj,PETSC_OWN_POINTER,&ilink->is_col);CHKERRQ(ierr);
+          ierr = ISSetBlockSize(ilink->is, nfields);CHKERRQ(ierr);
+          ierr = ISSetBlockSize(ilink->is_col, nfields);CHKERRQ(ierr);
         } else {
           ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),nslots,rstart+ilink->fields[0],bs,&ilink->is);CHKERRQ(ierr);
           ierr = ISCreateStride(PetscObjectComm((PetscObject)pc),nslots,rstart+ilink->fields_col[0],bs,&ilink->is_col);CHKERRQ(ierr);
