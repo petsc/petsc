@@ -59,6 +59,7 @@ struct _TSTrajectoryOps {
 
 struct _p_TSTrajectory {
   PETSCHEADER(struct _TSTrajectoryOps);
+  void *data;
 };
 
 struct _p_TS {

@@ -107,7 +107,7 @@ PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory jac,TS ts,PetscInt step,PetscR
 }
 
 /*MC
-      TSTRAJECTPRYBASIC - Stores each solution of the ODE/ADE in a file
+      TSTRAJECTORYBASIC - Stores each solution of the ODE/ADE in a file
 
   Level: intermediate
 

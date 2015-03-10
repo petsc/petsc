@@ -223,6 +223,7 @@ typedef struct _p_TSTrajectory* TSTrajectory;
 J*/
 typedef const char* TSTrajectoryType;
 #define TSTRAJECTORYBASIC      "basic"
+#define TSTRAJECTORYSINGLEFILE "singlefile"
 
 PETSC_EXTERN PetscFunctionList TSTrajectoryList;
 PETSC_EXTERN PetscClassId      TSTRAJECTORY_CLASSID;
