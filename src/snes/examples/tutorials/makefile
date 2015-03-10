@@ -309,12 +309,12 @@ runex3_4:
 	   else  printf "${PWD}\nPossible problem with ex3_4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex3_4.tmp
 runex5:
-	-@${MPIEXEC} -n 1 ./ex5 -pc_type mg -ksp_monitor_short  -snes_view -pc_mg_levels 3 -pc_mg_galerkin -da_grid_x 17 -da_grid_y 17 -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -snes_monitor_short -mg_levels_ksp_chebyshev_estimate_eigenvalues 0.5,1.1 -mg_levels_pc_type sor -pc_mg_type full > ex5_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -pc_type mg -ksp_monitor_short  -snes_view -pc_mg_levels 3 -pc_mg_galerkin -da_grid_x 17 -da_grid_y 17 -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -snes_monitor_short -mg_levels_ksp_chebyshev_esteig 0.5,1.1 -mg_levels_pc_type sor -pc_mg_type full > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex5, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_1.tmp
 runex5_2:
-	-@${MPIEXEC} -n 1 ./ex5 -pc_type mg -ksp_converged_reason -snes_view -pc_mg_galerkin -snes_grid_sequence 3 -mg_levels_ksp_norm_type unpreconditioned -snes_monitor_short -mg_levels_ksp_chebyshev_estimate_eigenvalues 0.5,1.1 -mg_levels_pc_type sor -pc_mg_type full > ex5_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -pc_type mg -ksp_converged_reason -snes_view -pc_mg_galerkin -snes_grid_sequence 3 -mg_levels_ksp_norm_type unpreconditioned -snes_monitor_short -mg_levels_ksp_chebyshev_esteig 0.5,1.1 -mg_levels_pc_type sor -pc_mg_type full > ex5_2.tmp 2>&1; \
 	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
 	   else  printf "${PWD}\nPossible problem with ex5_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex5_2.tmp
@@ -435,7 +435,7 @@ runex5_5_ngmres_fas:
 	   ${RM} -f ex5_5_ngmres_fas.tmp
 
 runex5_6:
-	-@${MPIEXEC} -n 4 ./ex5 -snes_converged_reason -ksp_converged_reason -da_grid_x 129 -da_grid_y 129  -pc_type mg -pc_mg_levels 8 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.5,0,1.1 -mg_levels_ksp_max_it 2 > ex5_6.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex5 -snes_converged_reason -ksp_converged_reason -da_grid_x 129 -da_grid_y 129  -pc_type mg -pc_mg_levels 8 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.5,0,1.1 -mg_levels_ksp_max_it 2 > ex5_6.tmp 2>&1; \
 	   ${DIFF} output/ex5_6.out ex5_6.tmp || printf "${PWD}\nPossible problem with ex5_6, diffs above\n=========================================\n"; \
 	   ${RM} -f ex5_6.tmp
 
@@ -1054,7 +1054,7 @@ runex42:
 	   ${RM} -f ex42_1.tmp
 
 runex46:
-	-@${MPIEXEC} -n 1 ./ex46 -snes_view -snes_monitor_short -da_refine 1 -pc_type mg -ksp_type fgmres -pc_mg_type full -mg_levels_ksp_chebyshev_estimate_eigenvalues 0.5,1.1  > ex46.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex46 -snes_view -snes_monitor_short -da_refine 1 -pc_type mg -ksp_type fgmres -pc_mg_type full -mg_levels_ksp_chebyshev_esteig 0.5,1.1  > ex46.tmp 2>&1; \
 	   if (${DIFF} output/ex46_1.out ex46.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex46, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex46.tmp

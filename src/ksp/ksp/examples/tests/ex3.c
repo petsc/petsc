@@ -139,7 +139,7 @@ int main(int argc,char **args)
   if (viewkspest) {
     KSP kspest;
 
-    ierr = KSPChebyshevGetEstEigKSP(ksp,&kspest);CHKERRQ(ierr);
+    ierr = KSPChebyshevEstEigGetKSP(ksp,&kspest);CHKERRQ(ierr);
     if (kspest) {ierr = KSPView(kspest,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   }
 

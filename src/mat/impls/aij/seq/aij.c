@@ -4180,7 +4180,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
     c->compressedrow.i      = NULL;
     c->compressedrow.rindex = NULL;
   }
-  C->nonzerostate = A->nonzerostate;
+  c->nonzerorowcnt = a->nonzerorowcnt;
+  C->nonzerostate  = A->nonzerostate;
 
   ierr = MatDuplicate_SeqAIJ_Inode(A,cpvalues,&C);CHKERRQ(ierr);
   ierr = PetscFunctionListDuplicate(((PetscObject)A)->qlist,&((PetscObject)C)->qlist);CHKERRQ(ierr);

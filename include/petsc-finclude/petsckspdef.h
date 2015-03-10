@@ -53,5 +53,4 @@
 #define KSPLCD 'lcd'
 #define KSPPYTHON 'python'
 #define KSPGCR 'gcr'
-#define KSPSPECEST 'specest'
 #endif

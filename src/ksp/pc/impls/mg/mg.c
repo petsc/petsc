@@ -475,6 +475,9 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"    Not using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
     }
+    if (mg->view){
+      ierr = (*mg->view)(pc,viewer);CHKERRQ(ierr);
+    }
     for (i=0; i<levels; i++) {
       if (!i) {
         ierr = PetscViewerASCIIPrintf(viewer,"Coarse grid solver -- level -------------------------------\n",i);CHKERRQ(ierr);
@@ -1006,9 +1009,12 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 -  use - PETSC_TRUE to use the Galerkin process to compute coarse-level operators
 
    Options Database Key:
-.  -pc_mg_galerkin
+.  -pc_mg_galerkin <true,false>
 
    Level: intermediate
+
+   Notes: Some codes that use PCMG such as PCGAMG use Galerkin internally while constructing the hierarchy and thus do not
+     use the PCMG construction of the coarser grids.
 
 .keywords: MG, set, Galerkin
 

@@ -393,13 +393,12 @@ struct _MatCoarsenOps {
 
 struct _p_MatCoarsen {
   PETSCHEADER(struct _MatCoarsenOps);
-  Mat         graph;
-  PetscInt    verbose;
-  PetscInt    setupcalled;
-  void        *subctx;
+  Mat              graph;
+  PetscInt         setupcalled;
+  void             *subctx;
   /* */
-  PetscBool strict_aggs;
-  IS perm;
+  PetscBool        strict_aggs;
+  IS               perm;
   PetscCoarsenData *agg_lists;
 };
 
