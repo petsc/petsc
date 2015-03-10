@@ -5511,7 +5511,7 @@ PetscErrorCode  TSMonitorLGSetVariableNames(TS ts,const char * const *names)
   PetscFunctionBegin;
   for (i=0; i<ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
-      ierr = TSMonitorLGCtxSetVariableNames(ts->monitorcontext[i],names);CHKERRQ(ierr);
+      ierr = TSMonitorLGCtxSetVariableNames((TSMonitorLGCtx)ts->monitorcontext[i],names);CHKERRQ(ierr);
       break;
     }
   }
@@ -5572,7 +5572,7 @@ PetscErrorCode  TSMonitorLGGetVariableNames(TS ts,const char *const **names)
   *names = NULL;
   for (i=0; i<ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
-      TSMonitorLGCtx  ctx = ts->monitorcontext[i];
+      TSMonitorLGCtx  ctx = (TSMonitorLGCtx) ts->monitorcontext[i];
       *names = (const char *const *)ctx->names;
       break;
     }
@@ -5653,7 +5653,7 @@ PetscErrorCode  TSMonitorLGSetDisplayVariables(TS ts,const char * const *display
   PetscFunctionBegin;
   for (i=0; i<ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
-      ierr = TSMonitorLGCtxSetDisplayVariables(ts->monitorcontext[i],displaynames);CHKERRQ(ierr);
+      ierr = TSMonitorLGCtxSetDisplayVariables((TSMonitorLGCtx)ts->monitorcontext[i],displaynames);CHKERRQ(ierr);
       break;
     }
   }
@@ -5687,7 +5687,7 @@ PetscErrorCode  TSMonitorLGSetTransform(TS ts,PetscErrorCode (*transform)(void*,
   PetscFunctionBegin;
   for (i=0; i<ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorLGSolution) {
-      ierr = TSMonitorLGCtxSetTransform(ts->monitorcontext[i],transform,destroy,tctx);CHKERRQ(ierr);
+      ierr = TSMonitorLGCtxSetTransform((TSMonitorLGCtx)ts->monitorcontext[i],transform,destroy,tctx);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -5982,7 +5982,7 @@ PetscErrorCode  TSMonitorEnvelopeGetBounds(TS ts,Vec *max,Vec *min)
   if (min) *min = NULL;
   for (i=0; i<ts->numbermonitors; i++) {
     if (ts->monitor[i] == TSMonitorEnvelope) {
-      TSMonitorEnvelopeCtx  ctx = ts->monitorcontext[i];
+      TSMonitorEnvelopeCtx  ctx = (TSMonitorEnvelopeCtx) ts->monitorcontext[i];
       if (max) *max = ctx->max;
       if (min) *min = ctx->min;
       break;
