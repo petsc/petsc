@@ -249,7 +249,7 @@ PetscErrorCode TSEventMonitor(TS ts)
   if (event->status == TSEVENT_ZERO) {
     ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,forwardsolve,event->monitorcontext);CHKERRQ(ierr);
     dt = event->tstepend-t;
-    if(PetscAbsScalar(dt) < PETSC_SMALL) dt += event->initial_timestep;
+    if(PetscAbsReal(dt) < PETSC_SMALL) dt += event->initial_timestep;
     ts->time_step = dt;
     PetscFunctionReturn(0);
   }
@@ -328,7 +328,7 @@ PetscErrorCode TSAdjointEventMonitor(TS ts)
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
 
   ctr = event->recorder.ctr-1;
-  if(ctr >= 0 && PetscAbsScalar(t - event->recorder.time[ctr]) < PETSC_SMALL) {
+  if(ctr >= 0 && PetscAbsReal(t - event->recorder.time[ctr]) < PETSC_SMALL) {
     /* Call the user postevent function */
     if(event->postevent) {
       ierr = (*event->postevent)(ts,event->recorder.nevents[ctr],event->recorder.eventidx[ctr],t,U,forwardsolve,event->monitorcontext);CHKERRQ(ierr);
