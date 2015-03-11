@@ -1214,10 +1214,13 @@ PetscErrorCode  SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
    Output Parameter:
 .  nfails - number of failed solves
 
+   Level: intermediate
+
+   Options Database Keys:
+. -snes_max_linear_solve_fail <num> - The number of failures before the solve is terminated
+
    Notes:
    This counter is reset to zero for each successive call to SNESSolve().
-
-   Level: intermediate
 
 .keywords: SNES, nonlinear, get, number, unsuccessful, steps
 
@@ -1245,6 +1248,9 @@ PetscErrorCode  SNESGetLinearSolveFailures(SNES snes,PetscInt *nfails)
 -  maxFails - maximum allowed linear solve failures
 
    Level: intermediate
+
+   Options Database Keys:
+. -snes_max_linear_solve_fail <num> - The number of failures before the solve is terminated
 
    Notes: By default this is 0; that is SNES returns on the first failed linear solve
 
