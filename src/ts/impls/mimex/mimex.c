@@ -6,7 +6,7 @@
 #include <petscdmplex.h>
 
 typedef struct {
-  Vec       Xdot, update, Xstar, G;
+  Vec       Xdot, update;
   PetscReal stage_time;
   PetscInt  version;
 } TS_Mimex;
@@ -46,14 +46,11 @@ static PetscErrorCode TSMimexRestoreX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
 #define __FUNCT__ "TSMimexGetXstarAndG"
 static PetscErrorCode TSMimexGetXstarAndG(TS ts, DM dm, Vec *Xstar, Vec *G)
 {
-  TS_Mimex      *mimex = (TS_Mimex *) ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!mimex->Xstar) {ierr = VecDuplicate(ts->vec_sol, &mimex->Xstar);CHKERRQ(ierr);}
-  if (!mimex->G)     {ierr = VecDuplicate(ts->vec_sol, &mimex->G);CHKERRQ(ierr);}
-  *Xstar = mimex->Xstar;
-  *G     = mimex->G;
+  ierr = DMGetNamedGlobalVector(dm, "TSMimex_Xstar", Xstar);CHKERRQ(ierr);
+  ierr = DMGetNamedGlobalVector(dm, "TSMimex_G", G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -61,7 +58,11 @@ static PetscErrorCode TSMimexGetXstarAndG(TS ts, DM dm, Vec *Xstar, Vec *G)
 #define __FUNCT__ "TSMimexRestoreXstarAndG"
 static PetscErrorCode TSMimexRestoreXstarAndG(TS ts, DM dm, Vec *Xstar, Vec *G)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = DMRestoreNamedGlobalVector(dm, "TSMimex_Xstar", Xstar);CHKERRQ(ierr);
+  ierr = DMRestoreNamedGlobalVector(dm, "TSMimex_G", G);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -298,8 +299,6 @@ static PetscErrorCode TSReset_Mimex(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(&mimex->Xstar);CHKERRQ(ierr);
-  ierr = VecDestroy(&mimex->G);CHKERRQ(ierr);
   ierr = VecDestroy(&mimex->update);CHKERRQ(ierr);
   ierr = VecDestroy(&mimex->Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
