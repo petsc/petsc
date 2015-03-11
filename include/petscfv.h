@@ -82,6 +82,8 @@ PETSC_EXTERN PetscErrorCode PetscFVGetQuadrature(PetscFV, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscFVSetDualSpace(PetscFV, PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscFVGetDualSpace(PetscFV, PetscDualSpace *);
 
+PETSC_EXTERN PetscErrorCode PetscFVRefine(PetscFV, PetscFV *);
+
 PETSC_EXTERN PetscErrorCode PetscFVGetDefaultTabulation(PetscFV, PetscReal **, PetscReal **, PetscReal **);
 PETSC_EXTERN PetscErrorCode PetscFVGetTabulation(PetscFV, PetscInt, const PetscReal[], PetscReal **, PetscReal **, PetscReal **);
 PETSC_EXTERN PetscErrorCode PetscFVRestoreTabulation(PetscFV, PetscInt, const PetscReal[], PetscReal **, PetscReal **, PetscReal **);

@@ -1,5 +1,5 @@
 #include <petsc-private/petscfvimpl.h> /*I "petscfv.h" I*/
-#include <petscdmplex.h>
+#include <petsc-private/dmpleximpl.h> /* For CellRefiner */
 #include <petscds.h>
 
 PetscClassId PETSCLIMITER_CLASSID = 0;
@@ -1832,6 +1832,78 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   if (fvm->ops->integraterhsfunction) {ierr = (*fvm->ops->integraterhsfunction)(fvm, prob, field, Nf, fgeom, neighborVol, uL, uR, fluxL, fluxR);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVRefine"
+/*@
+  PetscFVRefine - Create a "refined" PetscFV object that refines the reference cell into smaller copies. This is typically used
+  to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
+  sparsity). It is also used to create an interpolation between regularly refined meshes.
+
+  Input Parameter:
+. fv - The initial PetscFV
+
+  Output Parameter:
+. fvRef - The refined PetscFV
+
+  Level: developer
+
+.seealso: PetscFVType, PetscFVCreate(), PetscFVSetType()
+@*/
+PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
+{
+  PetscDualSpace   Q, Qref;
+  DM               K, Kref;
+  PetscQuadrature  q, qref;
+  CellRefiner      cellRefiner;
+  PetscReal       *v0;
+  PetscReal       *jac, *invjac;
+  PetscInt         numComp, numSubelements, s;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFVGetDualSpace(fv, &Q);CHKERRQ(ierr);
+  ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDM(Q, &K);CHKERRQ(ierr);
+  /* Create dual space */
+  ierr = PetscDualSpaceDuplicate(Q, &Qref);CHKERRQ(ierr);
+  ierr = DMRefine(K, PetscObjectComm((PetscObject) fv), &Kref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetDM(Qref, Kref);CHKERRQ(ierr);
+  ierr = DMDestroy(&Kref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetUp(Qref);CHKERRQ(ierr);
+  /* Create volume */
+  ierr = PetscFVCreate(PetscObjectComm((PetscObject) fv), fvRef);CHKERRQ(ierr);
+  ierr = PetscFVSetDualSpace(*fvRef, Qref);CHKERRQ(ierr);
+  ierr = PetscFVGetNumComponents(fv,    &numComp);CHKERRQ(ierr);
+  ierr = PetscFVSetNumComponents(*fvRef, numComp);CHKERRQ(ierr);
+  ierr = PetscFVSetUp(*fvRef);CHKERRQ(ierr);
+  /* Create quadrature */
+  ierr = DMPlexGetCellRefiner_Internal(K, &cellRefiner);CHKERRQ(ierr);
+  ierr = CellRefinerGetAffineTransforms_Internal(cellRefiner, &numSubelements, &v0, &jac, &invjac);CHKERRQ(ierr);
+  ierr = PetscQuadratureExpandComposite(q, numSubelements, v0, jac, &qref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSimpleSetDimension(Qref, numSubelements);CHKERRQ(ierr);
+  for (s = 0; s < numSubelements; ++s) {
+    PetscQuadrature  qs;
+    const PetscReal *points, *weights;
+    PetscReal       *p, *w;
+    PetscInt         dim, npoints, np;
+
+    ierr = PetscQuadratureCreate(PETSC_COMM_SELF, &qs);CHKERRQ(ierr);
+    ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
+    np   = npoints/numSubelements;
+    ierr = PetscMalloc1(np*dim,&p);ierr = PetscMalloc1(np,&w);
+    ierr = PetscMemcpy(p, &points[s*np*dim], np*dim * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscMemcpy(w, &weights[s*np],    np     * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscQuadratureSetData(qs, dim, np, p, w);
+    ierr = PetscDualSpaceSimpleSetFunctional(Qref, s, qs);CHKERRQ(ierr);
+    ierr = PetscQuadratureDestroy(&qs);CHKERRQ(ierr);
+  }
+  ierr = CellRefinerRestoreAffineTransforms_Internal(cellRefiner, &numSubelements, &v0, &jac, &invjac);CHKERRQ(ierr);
+  ierr = PetscFVSetQuadrature(*fvRef, qref);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&qref);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&Qref);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
