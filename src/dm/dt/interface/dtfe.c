@@ -36,7 +36,7 @@ We will have three objects:
 */
 #include <petsc-private/petscfeimpl.h> /*I "petscfe.h" I*/
 #include <petsc-private/dtimpl.h>
-#include <petsc-private/dmpleximpl.h>
+#include <petsc-private/dmpleximpl.h> /* For CellRefiner */
 #include <petscdmshell.h>
 #include <petscdmplex.h>
 #include <petscblaslapack.h>
@@ -5370,39 +5370,35 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFECompositeExpandQuadrature"
-PetscErrorCode PetscFECompositeExpandQuadrature(PetscFE fem, PetscQuadrature q, PetscQuadrature *qref)
+#define __FUNCT__ "PetscFECompositeGetMapping"
+/*@
+  PetscFECompositeGetMapping - Returns the mappings from the reference element to each subelement
+
+  Not collective
+
+  Input Parameter:
+. fem - The PetscFE object
+
+  Output Parameters:
++ blockSize - The number of elements in a block
+. numBlocks - The number of blocks in a batch
+. batchSize - The number of elements in a batch
+- numBatches - The number of batches in a chunk
+
+  Level: intermediate
+
+.seealso: PetscFECreate()
+@*/
+PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements, const PetscReal *v0[], const PetscReal *jac[], const PetscReal *invjac[])
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *) fem->data;
-  const PetscReal   *points,    *weights;
-  PetscReal         *pointsRef, *weightsRef;
-  PetscInt           dim, order, npoints, npointsRef, c, p, d, e;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 2);
-  PetscValidPointer(qref, 3);
-  ierr = PetscQuadratureCreate(PETSC_COMM_SELF, qref);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
-  npointsRef = npoints*cmp->numSubelements;
-  ierr = PetscMalloc1(npointsRef*dim,&pointsRef);CHKERRQ(ierr);
-  ierr = PetscMalloc1(npointsRef,&weightsRef);CHKERRQ(ierr);
-  for (c = 0; c < cmp->numSubelements; ++c) {
-    for (p = 0; p < npoints; ++p) {
-      for (d = 0; d < dim; ++d) {
-        pointsRef[(c*npoints + p)*dim+d] = cmp->v0[c*dim+d];
-        for (e = 0; e < dim; ++e) {
-          pointsRef[(c*npoints + p)*dim+d] += cmp->jac[(c*dim + d)*dim+e]*(points[p*dim+e] + 1.0);
-        }
-      }
-      /* Could also use detJ here */
-      weightsRef[c*npoints+p] = weights[p]/cmp->numSubelements;
-    }
-  }
-  ierr = PetscQuadratureSetOrder(*qref, order);CHKERRQ(ierr);
-  ierr = PetscQuadratureSetData(*qref, dim, npointsRef, pointsRef, weightsRef);CHKERRQ(ierr);
+  if (numSubelements) {PetscValidPointer(numSubelements, 2); *numSubelements = cmp->numSubelements;}
+  if (v0)             {PetscValidPointer(v0, 3);             *v0             = cmp->v0;}
+  if (jac)            {PetscValidPointer(jac, 4);            *jac            = cmp->jac;}
+  if (invjac)         {PetscValidPointer(invjac, 5);         *invjac         = cmp->invjac;}
   PetscFunctionReturn(0);
 }
 
@@ -5727,7 +5723,7 @@ PetscErrorCode PetscFEIntegrateBdJacobian(PetscFE fem, PetscDS prob, PetscInt fi
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFERefine"
-/*@C
+/*@
   PetscFERefine - Create a "refined" PetscFE object that refines the reference cell into smaller copies. This is typically used
   to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
   sparsity). It is also used to create an interpolation between regularly refined meshes.
@@ -5748,7 +5744,8 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   PetscDualSpace   Q, Qref;
   DM               K, Kref;
   PetscQuadrature  q, qref;
-  PetscInt         numComp;
+  const PetscReal *v0, *jac;
+  PetscInt         numComp, numSubelements;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -5776,7 +5773,8 @@ PetscErrorCode PetscFERefine(PetscFE fe, PetscFE *feRef)
   ierr = PetscSpaceDestroy(&Pref);CHKERRQ(ierr);
   ierr = PetscDualSpaceDestroy(&Qref);CHKERRQ(ierr);
   /* Create quadrature */
-  ierr = PetscFECompositeExpandQuadrature(*feRef, q, &qref);CHKERRQ(ierr);
+  ierr = PetscFECompositeGetMapping(*feRef, &numSubelements, &v0, &jac, NULL);CHKERRQ(ierr);
+  ierr = PetscQuadratureExpandComposite(q, numSubelements, v0, jac, &qref);CHKERRQ(ierr);
   ierr = PetscFESetQuadrature(*feRef, qref);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&qref);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -294,6 +294,63 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscQuadratureExpandComposite"
+/*@C
+  PetscQuadratureExpandComposite - Return a quadrature over the composite element, which has the original quadrature in each subelement
+
+  Not collective
+
+  Input Parameter:
++ q - The original PetscQuadrature
+. numSubelements - The number of subelements the original element is divided into
+. v0 - An array of the initial points for each subelement
+- jac - An array of the Jacobian mappings from the reference to each subelement
+
+  Output Parameters:
+. dim - The dimension
+
+  Note: Together v0 and jac define an affine mapping from the original reference element to each subelement
+
+  Level: intermediate
+
+.seealso: PetscFECreate(), PetscSpaceGetDimension(), PetscDualSpaceGetDimension()
+@*/
+PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSubelements, const PetscReal v0[], const PetscReal jac[], PetscQuadrature *qref)
+{
+  const PetscReal *points,    *weights;
+  PetscReal       *pointsRef, *weightsRef;
+  PetscInt         dim, order, npoints, npointsRef, c, p, d, e;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(q, PETSC_OBJECT_CLASSID, 1);
+  PetscValidPointer(v0, 3);
+  PetscValidPointer(jac, 4);
+  PetscValidPointer(qref, 5);
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF, qref);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetOrder(q, &order);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, &dim, &npoints, &points, &weights);CHKERRQ(ierr);
+  npointsRef = npoints*numSubelements;
+  ierr = PetscMalloc1(npointsRef*dim,&pointsRef);CHKERRQ(ierr);
+  ierr = PetscMalloc1(npointsRef,&weightsRef);CHKERRQ(ierr);
+  for (c = 0; c < numSubelements; ++c) {
+    for (p = 0; p < npoints; ++p) {
+      for (d = 0; d < dim; ++d) {
+        pointsRef[(c*npoints + p)*dim+d] = v0[c*dim+d];
+        for (e = 0; e < dim; ++e) {
+          pointsRef[(c*npoints + p)*dim+d] += jac[(c*dim + d)*dim+e]*(points[p*dim+e] + 1.0);
+        }
+      }
+      /* Could also use detJ here */
+      weightsRef[c*npoints+p] = weights[p]/numSubelements;
+    }
+  }
+  ierr = PetscQuadratureSetOrder(*qref, order);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetData(*qref, dim, npointsRef, pointsRef, weightsRef);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDTLegendreEval"
 /*@
    PetscDTLegendreEval - evaluate Legendre polynomial at points
