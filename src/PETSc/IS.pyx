@@ -145,6 +145,10 @@ cdef class IS(Object):
         CHKERR( ISGetBlockSize(self.iset, &bs) )
         return toInt(bs)
 
+    def setBlockSize(self, bs):
+        cdef PetscInt cbs = asInt(bs)
+        CHKERR( ISSetBlockSize(self.iset, cbs) )
+
     def sort(self):
         CHKERR( ISSort(self.iset) )
         return self

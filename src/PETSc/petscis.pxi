@@ -26,6 +26,7 @@ cdef extern from * nogil:
     int ISGetSize(PetscIS,PetscInt*)
     int ISGetLocalSize(PetscIS,PetscInt*)
     int ISGetBlockSize(PetscIS,PetscInt*)
+    int ISSetBlockSize(PetscIS,PetscInt)
     int ISGetIndices(PetscIS,const_PetscInt*[])
     int ISRestoreIndices(PetscIS,const_PetscInt*[])
 
