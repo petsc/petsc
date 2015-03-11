@@ -287,16 +287,11 @@ PetscErrorCode DMPlexProjectFunctionLabelLocal(DM dm, DMLabel label, PetscInt nu
           if (!sp[f]) continue;
         }
       } else if (id == PETSCFV_CLASSID) {
-        PetscFV         fv = (PetscFV) obj;
-        PetscQuadrature q;
+        PetscFV fv = (PetscFV) obj;
 
         ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
-        ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
-        ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fv), &sp[f]);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSetDM(sp[f], dm);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSetType(sp[f], PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSimpleSetDimension(sp[f], 1);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSimpleSetFunctional(sp[f], 0, q);CHKERRQ(ierr);
+        ierr = PetscFVGetDualSpace(fv, &sp[f]);
+        ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
       } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       totDim += spDim*numComp[f];
@@ -412,17 +407,12 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal 
           }
         }
       } else if (id == PETSCFV_CLASSID) {
-        PetscFV         fv = (PetscFV) obj;
-        PetscQuadrature q;
+        PetscFV fv = (PetscFV) obj;
 
         if (h) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP, "Projection height > 0 not supported for finite volume");
         ierr = PetscFVGetNumComponents(fv, &numComp[f]);CHKERRQ(ierr);
-        ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
-        ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fv), &sp[f]);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSetDM(sp[f], dm);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSetType(sp[f], PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSimpleSetDimension(sp[f], 1);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSimpleSetFunctional(sp[f], 0, q);CHKERRQ(ierr);
+        ierr = PetscFVGetDualSpace(fv, &sp[f]);
+        ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
       } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", f);
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       totDim += spDim*numComp[f];
@@ -559,16 +549,11 @@ PetscErrorCode DMPlexProjectFieldLocal(DM dm, Vec localU, void (**funcs)(const P
         ierr  = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
         ierr = PetscFEGetNumComponents(fe, &Ncf[f]);CHKERRQ(ierr);
       } else if (id == PETSCFV_CLASSID) {
-        PetscFV         fv = (PetscFV) obj;
-        PetscQuadrature q;
+        PetscFV fv = (PetscFV) obj;
 
-        ierr = PetscFVGetQuadrature(fv, &q);CHKERRQ(ierr);
         ierr = PetscFVGetNumComponents(fv, &Ncf[f]);CHKERRQ(ierr);
-        ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fv), &sp[f]);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSetDM(sp[f], dm);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSetType(sp[f], PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSimpleSetDimension(sp[f], 1);CHKERRQ(ierr);
-        ierr = PetscDualSpaceSimpleSetFunctional(sp[f], 0, q);CHKERRQ(ierr);
+        ierr = PetscFVGetDualSpace(fv, &sp[f]);
+        ierr = PetscObjectReference((PetscObject) sp[f]);CHKERRQ(ierr);
       }
       ierr = PetscDualSpaceGetDimension(sp[f], &spDim);CHKERRQ(ierr);
       for (d = 0; d < spDim; ++d) {
