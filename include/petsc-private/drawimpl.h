@@ -65,6 +65,7 @@ struct _p_PetscDraw {
   PetscDraw       popup;
   int             x,y,h,w;
   char            *savefilename;
+  char            *savefilenameext;
   PetscInt        savefilecount;
   PetscBool       savefilemovie;
   PetscBool       saveonflush;       /* save a new image for every PetscDrawFlush() called */

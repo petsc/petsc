@@ -283,6 +283,7 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
   ierr = PetscFree((*draw)->title);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->display);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->savefilename);CHKERRQ(ierr);
+  ierr = PetscFree((*draw)->savefilenameext);CHKERRQ(ierr);
   ierr = PetscFree((*draw)->savefinalfilename);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);

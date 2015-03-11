@@ -301,58 +301,120 @@ PetscErrorCode  PetscDrawSetSave_X(PetscDraw draw,const char *filename)
 #if defined(PETSC_HAVE_AFTERIMAGE)
 #include <afterimage.h>
 
-#if defined(PETSC_HAVE_SAWS)
-#include <petscviewersaws.h>
-typedef struct _P_PetscGif *PetscGif;
-struct _P_PetscGif {
-  PetscGif next;
-  char     *filename;
-} ;
-
-static PetscGif gifs = 0;
+/* String names of possible Afterimage formats */
+const char *PetscAfterImageFormats[] = {
+        ".Xpm",
+	".Xpm.Z",
+	".Xpm.gz",
+	".Png",
+	".Jpeg",
+	".Xcf",
+	".Ppm",
+	".Pnm",
+	".Bmp",
+	".Ico",
+	".Cur",
+	".Gif",
+	".Tiff",
+	"XMLScript",
+	".SVG",
+	"Reserved",
+	".Xbm",
+	"Targa",
+	"Targa?",
+	".Pcx",
+	".HTML",
+	"XML",
+	"Unknown"
+};
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscGifDestroy"
-static PetscErrorCode PetscGifDestroy(void)
+#define __FUNCT__ "PetscAfterimageStringToFormat"
+static PetscErrorCode PetscAfterimageStringToFormat(const char *ext,ASImageFileTypes *format)
 {
+  PetscInt       i;
   PetscErrorCode ierr;
-  PetscGif       gif,ogif = gifs;
+  PetscBool      flg;
 
   PetscFunctionBegin;
-  while (ogif) {
-    gif = ogif->next;
-    ierr = PetscFree(ogif->filename);CHKERRQ(ierr);
-    ierr = PetscFree(ogif);CHKERRQ(ierr);
-    ogif = gif;
+  for (i=0; i<sizeof(PetscAfterImageFormats)/sizeof(char**); i++) {
+    ierr = PetscStrcasecmp(PetscAfterImageFormats[i],ext,&flg);CHKERRQ(ierr);
+    if (flg) {
+      *format = (ASImageFileTypes)i;
+      PetscFunctionReturn(0);
+    }
+  }
+  *format = ASIT_Unknown;
+  PetscFunctionReturn(0);
+}
+
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
+/*
+  The PetscAfterimage object and functions are used to maintain a list of file images created by Afterimage that can
+  be displayed by the SAWs webserver.
+*/
+typedef struct _P_PetscAfterimage *PetscAfterimage;
+struct _P_PetscAfterimage {
+  PetscAfterimage next;
+  char            *filename;
+  char            *ext;
+  PetscInt        cnt;
+} ;
+
+static PetscAfterimage afterimages = 0;
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscAfterimageDestroy"
+static PetscErrorCode PetscAfterimageDestroy(void)
+{
+  PetscErrorCode ierr;
+  PetscAfterimage       afterimage,oafterimage = afterimages;
+
+  PetscFunctionBegin;
+  while (oafterimage) {
+    afterimage = oafterimage->next;
+    ierr = PetscFree(oafterimage->filename);CHKERRQ(ierr);
+    ierr = PetscFree(oafterimage->ext);CHKERRQ(ierr);
+    ierr = PetscFree(oafterimage);CHKERRQ(ierr);
+    oafterimage = afterimage;
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscGifAdd"
-static PetscErrorCode PetscGifAdd(const char *filename)
+#define __FUNCT__ "PetscAfterimageAdd"
+static PetscErrorCode PetscAfterimageAdd(const char *filename,const char *ext,PetscInt cnt)
 {
-  PetscErrorCode ierr;
-  PetscGif       gif,ogif = gifs;
-  PetscBool      flg;
+  PetscErrorCode   ierr;
+  PetscAfterimage  afterimage,oafterimage = afterimages;
+  PetscBool        flg;
 
   PetscFunctionBegin;
-  if (ogif){
-    ierr = PetscStrcmp(filename,ogif->filename,&flg);CHKERRQ(ierr);
-    if (flg) PetscFunctionReturn(0);
-    while (ogif->next) {
-      ogif = ogif->next;
-      ierr = PetscStrcmp(filename,ogif->filename,&flg);CHKERRQ(ierr);
-      if (flg) PetscFunctionReturn(0);
+  if (oafterimage){
+    ierr = PetscStrcmp(filename,oafterimage->filename,&flg);CHKERRQ(ierr);
+    if (flg) {
+      oafterimage->cnt = cnt;
+      PetscFunctionReturn(0);
     }
-    ierr = PetscNew(&gif);CHKERRQ(ierr);
-    ogif->next = gif;
+    while (oafterimage->next) {
+      oafterimage = oafterimage->next;
+      ierr = PetscStrcmp(filename,oafterimage->filename,&flg);CHKERRQ(ierr);
+      if (flg) {
+        oafterimage->cnt = cnt;
+        PetscFunctionReturn(0);
+      }
+    }
+    ierr = PetscNew(&afterimage);CHKERRQ(ierr);
+    oafterimage->next = afterimage;
   } else {
-    ierr = PetscNew(&gif);CHKERRQ(ierr);
-    gifs = gif;
+    ierr = PetscNew(&afterimage);CHKERRQ(ierr);
+    afterimages = afterimage;
   }
-  ierr = PetscStrallocpy(filename,&gif->filename);CHKERRQ(ierr);
-  ierr = PetscRegisterFinalize(PetscGifDestroy);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(filename,&afterimage->filename);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ext,&afterimage->ext);CHKERRQ(ierr);
+  afterimage->cnt = cnt;
+  ierr = PetscRegisterFinalize(PetscAfterimageDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -370,6 +432,7 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
   PetscErrorCode   ierr;
   PetscMPIInt      rank;
   int              depth;
+  ASImageFileTypes format;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
@@ -385,26 +448,31 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
   asv   = create_asvisual(drawx->disp, drawx->screen, depth, NULL);if (!asv) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot create AfterImage ASVisual");
 
   image   = XGetImage(drawx->disp, drawx->drw ? drawx->drw : drawx->win, 0, 0, drawx->w, drawx->h, AllPlanes, ZPixmap);
-  if (!image) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot XGetImage()");\
+  if (!image) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot XGetImage()");
   asimage = picture_ximage2asimage (asv,image,0,0);if (!asimage) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot create AfterImage ASImage");
   if (draw->savesinglefile) {
-    ierr    = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s.Gif",draw->savefilename,draw->savefilename);CHKERRQ(ierr);
+    ierr    = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s%s",draw->savefilename,draw->savefilename,draw->savefilenameext);CHKERRQ(ierr);
   } else {
-    ierr    = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s_%d.Gif",draw->savefilename,draw->savefilename,draw->savefilecount++);CHKERRQ(ierr);
+    ierr    = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s_%d%s",draw->savefilename,draw->savefilename,draw->savefilecount++,draw->savefilenameext);CHKERRQ(ierr);
   }
-  ASImage2file(asimage, 0, filename,ASIT_Gif,0);
+  ierr = PetscAfterimageStringToFormat(draw->savefilenameext,&format);CHKERRQ(ierr);
+  ASImage2file(asimage, 0, filename,format,0);
 #if defined(PETSC_HAVE_SAWS)
   {
     char     body[4096];
-    PetscGif gif;
+    PetscAfterimage afterimage;
     size_t   len = 0;
 
-    ierr = PetscGifAdd(draw->savefilename);CHKERRQ(ierr);
-    gif  = gifs;
-    while (gif) {
-      ierr = PetscSNPrintf(body+len,4086-len,"<img src=\"%s/%s.Gif\" alt=\"None\">",gif->filename,gif->filename);CHKERRQ(ierr);
+    ierr = PetscAfterimageAdd(draw->savefilename,draw->savefilenameext,draw->savefilecount-1);CHKERRQ(ierr);
+    afterimage  = afterimages;
+    while (afterimage) {
+      if (draw->savesinglefile) {
+        ierr = PetscSNPrintf(body+len,4086-len,"<img src=\"%s/%s%s\" alt=\"None\">",afterimage->filename,afterimage->filename,afterimage->ext);CHKERRQ(ierr);
+      } else {
+        ierr = PetscSNPrintf(body+len,4086-len,"<img src=\"%s/%s_%d%s\" alt=\"None\">",afterimage->filename,afterimage->filename,afterimage->cnt,afterimage->ext);CHKERRQ(ierr);
+      }
       ierr = PetscStrlen(body,&len);CHKERRQ(ierr);
-      gif  = gif->next;
+      afterimage  = afterimage->next;
     }
     ierr = PetscStrcat(body,"<br>\n");CHKERRQ(ierr);
     if (draw->savefilecount > 0) PetscStackCallSAWs(SAWs_Pop_Body,("index.html",1));
