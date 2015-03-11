@@ -69,6 +69,7 @@ struct _p_PetscFV {
   PETSCHEADER(struct _PetscFVOps);
   void           *data;             /* Implementation object */
   PetscLimiter    limiter;          /* The slope limiter */
+  PetscDualSpace  dualSpace;        /* The dual space P', usually simple */
   PetscInt        numComponents;    /* The number of field components */
   PetscInt        dim;              /* The spatial dimension */
   PetscBool       computeGradients; /* Flag for gradient computation */

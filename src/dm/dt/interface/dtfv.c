@@ -1324,6 +1324,7 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm)
   ((PetscObject) (*fvm))->refct = 0;
 
   ierr = PetscLimiterDestroy(&(*fvm)->limiter);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&(*fvm)->dualSpace);CHKERRQ(ierr);
   ierr = PetscFree((*fvm)->fluxWork);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&(*fvm)->quadrature);CHKERRQ(ierr);
   ierr = PetscFVRestoreTabulation((*fvm), 0, NULL, &(*fvm)->B, &(*fvm)->D, NULL /*&(*fvm)->H*/);CHKERRQ(ierr);
@@ -1639,6 +1640,80 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
     ierr = PetscQuadratureSetData(fvm->quadrature, fvm->dim, 1, points, weights);CHKERRQ(ierr);
   }
   *q = fvm->quadrature;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVGetDualSpace"
+/*@
+  PetscFVGetDualSpace - Returns the PetscDualSpace used to define the inner product
+
+  Not collective
+
+  Input Parameter:
+. fvm - The PetscFV object
+
+  Output Parameter:
+. sp - The PetscDualSpace object
+
+  Note: A simple dual space is provided automatically, and the user typically will not need to override it.
+
+  Level: developer
+
+.seealso: PetscFVCreate()
+@*/
+PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  PetscValidPointer(sp, 2);
+  if (!fvm->dualSpace) {
+    DM              K;
+    PetscQuadrature q;
+    PetscInt        dim;
+    PetscErrorCode  ierr;
+
+    ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
+    ierr = PetscFVGetQuadrature(fvm, &q);CHKERRQ(ierr);
+    ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) fvm), &fvm->dualSpace);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSetType(fvm->dualSpace, PETSCDUALSPACESIMPLE);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSimpleSetDimension(fvm->dualSpace, 1);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSimpleSetFunctional(fvm->dualSpace, 0, q);CHKERRQ(ierr);
+    ierr = PetscDualSpaceCreateReferenceCell(fvm->dualSpace, dim, PETSC_FALSE, &K);CHKERRQ(ierr); /* TODO: The reference cell type should be held by the discretization object */
+    ierr = PetscDualSpaceSetDM(fvm->dualSpace, K);CHKERRQ(ierr);
+    ierr = DMDestroy(&K);CHKERRQ(ierr);
+  }
+  *sp = fvm->dualSpace;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFVSetDualSpace"
+/*@
+  PetscFVSetDualSpace - Sets the PetscDualSpace used to define the inner product
+
+  Not collective
+
+  Input Parameters:
++ fvm - The PetscFV object
+- sp  - The PetscDualSpace object
+
+  Level: intermediate
+
+  Note: A simple dual space is provided automatically, and the user typically will not need to override it.
+
+.seealso: PetscFVCreate()
+@*/
+PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 2);
+  ierr = PetscDualSpaceDestroy(&fvm->dualSpace);CHKERRQ(ierr);
+  fvm->dualSpace = sp;
+  ierr = PetscObjectReference((PetscObject) fvm->dualSpace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
