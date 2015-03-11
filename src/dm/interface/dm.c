@@ -2095,7 +2095,7 @@ PetscErrorCode  DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 .seealso DMRefine(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
 
 @*/
-PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
+PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 {
   PetscErrorCode    ierr;
   DMCoarsenHookLink link;
@@ -2103,6 +2103,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr                      = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
+  if (!(*dmc)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "NULL coarse mesh produced");
   (*dmc)->ops->creatematrix = dm->ops->creatematrix;
   ierr                      = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmc);CHKERRQ(ierr);
   (*dmc)->ctx               = dm->ctx;
