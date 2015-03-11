@@ -6854,7 +6854,7 @@ PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   if (cEnd <= cStart) {*cellRefiner = REFINER_NOOP; PetscFunctionReturn(0);}
   ierr = DMPlexGetConeSize(dm, cStart, &coneSize);CHKERRQ(ierr);
-  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, NULL, NULL);CHKERRQ(ierr);
   switch (dim) {
   case 1:
     switch (coneSize) {
@@ -6872,7 +6872,7 @@ PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
       else *cellRefiner = REFINER_SIMPLEX_2D;
       break;
     case 4:
-      if (cMax >= 0) *cellRefiner = REFINER_HYBRID_HEX_2D;
+      if (cMax >= 0 && fMax >= 0) *cellRefiner = REFINER_HYBRID_HEX_2D;
       else *cellRefiner = REFINER_HEX_2D;
       break;
     default:
