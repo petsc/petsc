@@ -3,7 +3,7 @@
 !     Test for PetscFOpen() from Fortran
 !
        program main
-#include <finclude/petscsys.h>
+#include <petsc-finclude/petscsys.h>
 
       PetscErrorCode ierr
       PetscMPIInt rank
@@ -18,11 +18,11 @@
       call PetscFPrintf(PETSC_COMM_WORLD,file,'Hi once \n',ierr)
       call PetscSynchronizedFPrintf(PETSC_COMM_WORLD,file,'Hi twice \n',     &
      &                              ierr)
-      call PetscSynchronizedFlush(PETSC_COMM_WORLD,ierr)
+      call PetscSynchronizedFlush(PETSC_COMM_WORLD,file,ierr)
 
       write (FMT=*,UNIT=joe) 'greetings from ',rank,'\n'
       call PetscSynchronizedFPrintf(PETSC_COMM_WORLD,file,joe,ierr)
-      call PetscSynchronizedFlush(PETSC_COMM_WORLD,ierr)
+      call PetscSynchronizedFlush(PETSC_COMM_WORLD,file,ierr)
 
       call PetscFClose(PETSC_COMM_WORLD,file,ierr)
 

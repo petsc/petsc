@@ -51,7 +51,7 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
 PETSC_INTERN PetscErrorCode KSPSetUp_GMRES(KSP);
-PETSC_INTERN PetscErrorCode KSPSetFromOptions_GMRES(KSP);
+PETSC_INTERN PetscErrorCode KSPSetFromOptions_GMRES(PetscOptions *PetscOptionsObject,KSP);
 PETSC_INTERN PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal*,PetscReal*);
 PETSC_INTERN PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
 PETSC_INTERN PetscErrorCode KSPReset_GMRES(KSP);

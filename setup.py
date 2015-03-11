@@ -10,26 +10,29 @@ solution of scientific applications modeled by partial differential
 equations. It employs the Message Passing Interface (MPI) standard for
 all message-passing communication.
 
+.. note::
+
+   To install ``PETSc`` and ``petsc4py`` (``mpi4py`` is optional
+   but highly recommended) use::
+
+     $ pip install numpy mpi4py
+     $ pip install petsc petsc4py
+
 .. tip::
 
-  You can also install `petsc-dev`_ with::
+  You can also install the in-development versions with::
 
-    $ pip install petsc==dev
+    $ pip install Cython numpy mpi4py
+    $ pip install --no-deps https://bitbucket.org/petsc/petsc/get/master.tar.gz
+    $ pip install --no-deps https://bitbucket.org/petsc/petsc4py/get/master.tar.gz
 
-  .. _petsc-dev: https://bitbucket.org/petsc/
-                 petsc/get/master.tar.gz#egg=petsc-dev
 """
 
 import sys, os
-from distutils.core import setup
+from setuptools import setup
+from setuptools.command.install import install as _install
 from distutils.util import get_platform, split_quoted
 from distutils.spawn import find_executable
-from distutils.command.build import build as _build
-if 'setuptools' in sys.modules:
-    from setuptools.command.install import install as _install
-else:
-    from distutils.command.install import install as _install
-from distutils.command.sdist import sdist as _sdist
 from distutils import log
 
 init_py = """\
@@ -48,82 +51,100 @@ def get_config():
 
 metadata = {
     'provides' : ['petsc'],
-    'requires' : [],
+    'zip_safe' : False,
 }
+
+CONFIGURE_OPTIONS = []
 
 def bootstrap():
     # Set PETSC_DIR and PETSC_ARCH
     PETSC_DIR  = os.path.abspath(os.getcwd())
-    PETSC_ARCH = get_platform() + '-python'
+    PETSC_ARCH = 'arch-python-' + get_platform()
     os.environ['PETSC_DIR']  = PETSC_DIR
     os.environ['PETSC_ARCH'] = PETSC_ARCH
     sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
+    sys.path.insert(0, os.path.join(PETSC_DIR, 'lib','petsc-conf'))
     # Generate package __init__.py file
     from distutils.dir_util import mkpath
     pkgdir = os.path.join('config', 'pypi')
     if not os.path.exists(pkgdir): mkpath(pkgdir)
     pkgfile = os.path.join(pkgdir, '__init__.py')
-    fh = open(pkgfile, 'wt')
+    fh = open(pkgfile, 'w')
     fh.write(init_py)
     fh.close()
-    # Simple-minded lookup for MPI and mpi4py
-    mpi4py = mpicc = None
-    try:
-        import mpi4py
-        conf = mpi4py.get_config()
-        mpicc = conf.get('mpicc')
-    except ImportError: # mpi4py is not installed
-        mpi4py = None
-        mpicc = os.environ.get('MPICC') or find_executable('mpicc')
-    except AttributeError: # mpi4py is too old
-        pass
-    if ('setuptools' in sys.modules):
-        metadata['zip_safe'] = False
+    # Configure options
+    options = os.environ.get('PETSC_CONFIGURE_OPTIONS', '')
+    CONFIGURE_OPTIONS.extend(split_quoted(options))
+    if '--with-mpi=0' not in CONFIGURE_OPTIONS:
+        # Simple-minded lookup for MPI and mpi4py
+        mpi4py = mpicc = None
+        try:
+            import mpi4py
+            conf = mpi4py.get_config()
+            mpicc = conf.get('mpicc')
+        except ImportError: # mpi4py is not installed
+            mpi4py = None
+            mpicc = (os.environ.get('MPICC') or
+                     find_executable('mpicc'))
+        except AttributeError: # mpi4py is too old
+            pass
         if not mpi4py and mpicc:
-            metadata['install_requires']= ['mpi4py>=1.2.2']
+            metadata['install_requires'] = ['mpi4py>=1.2.2']
 
-def config(dry_run=False):
+def config(prefix, dry_run=False):
     log.info('PETSc: configure')
     options = [
+        '--prefix=' + prefix,
         'PETSC_ARCH='+os.environ['PETSC_ARCH'],
         '--with-shared-libraries=1',
         '--with-debugging=0',
         '--with-c2html=0', # not needed
-        #'--with-sowing=0',
-        #'--with-cmake=0',
         ]
-    # MPI
-    try:
-        import mpi4py
-        conf = mpi4py.get_config()
-        mpicc  = conf.get('mpicc')
-        mpicxx = conf.get('mpicxx')
-        mpif90 = conf.get('mpif90')
-    except (ImportError, AttributeError):
-        mpicc  = os.environ.get('MPICC')  or find_executable('mpicc')
-        mpicxx = os.environ.get('MPICXX') or find_executable('mpicxx')
-        mpif90 = os.environ.get('MPIF90') or find_executable('mpif90')
-    if mpicc:
-        options.append('--with-cc='+mpicc)
-        if mpicxx:
-            options.append('--with-cxx='+mpicxx)
-        if mpif90:
-            options.append('--with-fc='+mpif90)
-    else:
-        options.append('--with-mpi=0')
-    # Extra configure options
-    config_opts = os.environ.get('PETSC_CONFIGURE_OPTIONS', '')
-    config_opts = split_quoted(config_opts)
-    options.extend(config_opts)
+    if '--with-fc=0' in CONFIGURE_OPTIONS:
+        options.append('--with-sowing=0')
+    if '--with-mpi=0' not in CONFIGURE_OPTIONS:
+        try:
+            import mpi4py
+            conf = mpi4py.get_config()
+            mpicc  = conf.get('mpicc')
+            mpicxx = conf.get('mpicxx')
+            mpif90 = conf.get('mpif90')
+        except (ImportError, AttributeError):
+            mpicc  = os.environ.get('MPICC')  or find_executable('mpicc')
+            mpicxx = os.environ.get('MPICXX') or find_executable('mpicxx')
+            mpif90 = os.environ.get('MPIF90') or find_executable('mpif90')
+        if mpicc:
+            options.append('--with-cc='+mpicc)
+            if '--with-cxx=0' not in CONFIGURE_OPTIONS:
+                if mpicxx:
+                    options.append('--with-cxx='+mpicxx)
+                else:
+                    options.append('--with-cxx=0')
+            if '--with-fc=0' not in CONFIGURE_OPTIONS:
+                if mpif90:
+                    options.append('--with-fc='+mpif90)
+                else:
+                    options.append('--with-fc=0')
+                    options.append('--with-sowing=0')
+        else:
+            options.append('--with-mpi=0')
+    options.extend(CONFIGURE_OPTIONS)
+    #
     log.info('configure options:')
     for opt in options:
         log.info(' '*4 + opt)
     # Run PETSc configure
     if dry_run: return
-    import configure
-    configure.petsc_configure(options)
-    import logger
-    logger.Logger.defaultLog = None
+    use_config_py = True
+    if use_config_py:
+        import configure
+        configure.petsc_configure(options)
+        import logger
+        logger.Logger.defaultLog = None
+    else:
+        command = ['./configure'] + options
+        status = os.system(" ".join(command))
+        if status != 0: raise RuntimeError(status)
 
 def build(dry_run=False):
     log.info('PETSc: build')
@@ -137,18 +158,14 @@ def build(dry_run=False):
         logger.Logger.defaultLog = None
     else:
         make = find_executable('make')
-        status = os.system(" ".join(
-                [make, 'all']
-                ))
+        command = [make, 'all']
+        status = os.system(" ".join(command))
         if status != 0: raise RuntimeError(status)
 
-def install(dest_dir, prefix=None, dry_run=False):
+def install(dest_dir, dry_run=False):
     log.info('PETSc: install')
-    if prefix is None:
-        prefix = dest_dir
     options = [
         '--destDir=' + dest_dir,
-        '--prefix='  + prefix,
         ]
     log.info('install options:')
     for opt in options:
@@ -163,12 +180,11 @@ def install(dest_dir, prefix=None, dry_run=False):
         logger.Logger.defaultLog = None
     else:
         make = find_executable('make')
-        status = os.system(" ".join(
-                [make, 'install', 'DESTDIR='+dest_dir]
-                ))
+        command = [make, 'install', 'DESTDIR='+dest_dir]
+        status = os.system(" ".join(command))
         if status != 0: raise RuntimeError(status)
 
-class context:
+class context(object):
     def __init__(self):
         self.sys_argv = sys.argv[:]
         self.wdir = os.getcwd()
@@ -181,53 +197,40 @@ class context:
         sys.argv[:] = self.sys_argv
         os.chdir(self.wdir)
 
-class cmd_build(_build):
-
-    def initialize_options(self):
-        _build.initialize_options(self)
-        PETSC_ARCH = os.environ.get('PETSC_ARCH', '')
-        self.build_base = os.path.join(PETSC_ARCH, 'build-python')
-
-    def run(self):
-        _build.run(self)
-        ctx = context().enter()
-        try:
-            config(self.dry_run)
-            build(self.dry_run)
-        finally:
-            ctx.exit()
-
 class cmd_install(_install):
 
     def initialize_options(self):
         _install.initialize_options(self)
         self.optimize = 1
 
+    def finalize_options(self):
+        _install.finalize_options(self)
+        self.install_lib = self.install_platlib
+        self.install_libbase = self.install_lib
+
     def run(self):
-        root_dir = self.install_platlib
-        dest_dir = os.path.join(root_dir, 'petsc')
-        bdist_base = self.get_finalized_command('bdist').bdist_base
-        if dest_dir.startswith(bdist_base):
-            prefix = dest_dir[len(bdist_base)+1:]
-            prefix = prefix[prefix.index(os.path.sep):]
-        else:
-            prefix = dest_dir
-        dest_dir = os.path.abspath(dest_dir)
-        prefix   = os.path.abspath(prefix)
+        root_dir = os.path.abspath(self.install_lib)
+        dest_dir = prefix = os.path.join(root_dir, 'petsc')
         #
-        _install.run(self)
         ctx = context().enter()
         try:
-            install(dest_dir, prefix, self.dry_run)
+            config(prefix, self.dry_run)
+            build(self.dry_run)
+            install(dest_dir, self.dry_run)
         finally:
             ctx.exit()
+        #
+        self.outputs = []
+        for dirpath, _, filenames in os.walk(dest_dir):
+            for fn in filenames:
+                self.outputs.append(os.path.join(dirpath, fn))
+        #
+        _install.run(self)
 
-class cmd_sdist(_sdist):
-
-    def initialize_options(self):
-        _sdist.initialize_options(self)
-        self.force_manifest = 1
-        self.template = os.path.join('config', 'manifest.in')
+    def get_outputs(self):
+        outputs = getattr(self, 'outputs', [])
+        outputs += _install.get_outputs(self)
+        return outputs
 
 def version():
     import re
@@ -239,7 +242,7 @@ def version():
         'release': re.compile(r"#define\s+PETSC_VERSION_RELEASE\s+(\d+)"),
         }
     petscversion_h = os.path.join('include','petscversion.h')
-    data = open(petscversion_h, 'rt').read()
+    data = open(petscversion_h, 'r').read()
     major = int(version_re['major'].search(data).groups()[0])
     minor = int(version_re['minor'].search(data).groups()[0])
     micro = int(version_re['micro'].search(data).groups()[0])
@@ -249,8 +252,8 @@ def version():
         v = "%d.%d" % (major, minor)
         if micro > 0:
             v += ".%d" % micro
-        if patch > 0:
-            v += ".%d" % patch
+        #if patch > 0:
+        #    v += ".post%d" % patch
     else:
         v = "%d.%d.dev%d" % (major, minor+1, 0)
     return v
@@ -261,16 +264,17 @@ def tarball():
         return None
     bits = VERSION.split('.')
     if len(bits) == 2: bits.append('0')
-    PETSC_VERSION = '.'.join(bits[:-1]) + '-p' + bits[-1]
+    PETSC_VERSION = '.'.join(bits[:3])
     return ('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/'
             'petsc-lite-%s.tar.gz#egg=petsc-%s' % (PETSC_VERSION, VERSION))
 
 description = __doc__.split('\n')[1:-1]; del description[1:3]
 classifiers = """
-License :: Public Domain
-Operating System :: POSIX
+Development Status :: 5 - Production/Stable
 Intended Audience :: Developers
 Intended Audience :: Science/Research
+License :: OSI Approved :: BSD License
+Operating System :: POSIX
 Programming Language :: C
 Programming Language :: C++
 Programming Language :: Fortran
@@ -299,9 +303,5 @@ setup(name='petsc',
 
       packages = ['petsc'],
       package_dir = {'petsc': 'config/pypi'},
-      cmdclass={
-        'build': cmd_build,
-        'install': cmd_install,
-        'sdist': cmd_sdist,
-        },
+      cmdclass={'install': cmd_install},
       **metadata)

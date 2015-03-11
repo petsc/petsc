@@ -70,14 +70,14 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   sp->xmax    = -1.e20;
   sp->ymax    = -1.e20;
 
-  ierr = PetscMalloc2(dim*CHUNCKSIZE,PetscReal,&sp->x,dim*CHUNCKSIZE,PetscReal,&sp->y);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMalloc2(dim*CHUNCKSIZE,&sp->x,dim*CHUNCKSIZE,&sp->y);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
 
   sp->len     = dim*CHUNCKSIZE;
   sp->loc     = 0;
 
   ierr = PetscDrawAxisCreate(draw,&sp->axis);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(sp,sp->axis);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)sp,(PetscObject)sp->axis);CHKERRQ(ierr);
 
   *drawsp = sp;
   PetscFunctionReturn(0);
@@ -110,8 +110,8 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 
   ierr    = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
   sp->dim = dim;
-  ierr    = PetscMalloc2(dim*CHUNCKSIZE,PetscReal,&sp->x,dim*CHUNCKSIZE,PetscReal,&sp->y);CHKERRQ(ierr);
-  ierr    = PetscLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr    = PetscMalloc2(dim*CHUNCKSIZE,&sp->x,dim*CHUNCKSIZE,&sp->y);CHKERRQ(ierr);
+  ierr    = PetscLogObjectMemory((PetscObject)sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
   sp->len = dim*CHUNCKSIZE;
   PetscFunctionReturn(0);
 }
@@ -207,8 +207,8 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    ierr     = PetscMalloc2(sp->len+sp->dim*CHUNCKSIZE,PetscReal,&tmpx,sp->len+sp->dim*CHUNCKSIZE,PetscReal,&tmpy);CHKERRQ(ierr);
-    ierr     = PetscLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr     = PetscMalloc2(sp->len+sp->dim*CHUNCKSIZE,&tmpx,sp->len+sp->dim*CHUNCKSIZE,&tmpy);CHKERRQ(ierr);
+    ierr     = PetscLogObjectMemory((PetscObject)sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
     ierr     = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr     = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr     = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
@@ -263,8 +263,8 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
     PetscReal *tmpx,*tmpy;
     PetscInt  chunk = CHUNCKSIZE;
     if (n > chunk) chunk = n;
-    ierr = PetscMalloc2(sp->len+sp->dim*chunk,PetscReal,&tmpx,sp->len+sp->dim*chunk,PetscReal,&tmpy);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscMalloc2(sp->len+sp->dim*chunk,&tmpx,sp->len+sp->dim*chunk,&tmpy);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);

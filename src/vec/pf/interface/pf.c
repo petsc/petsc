@@ -59,22 +59,15 @@ PetscErrorCode  PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscSc
 PetscErrorCode  PFDestroy(PF *pf)
 {
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (!*pf) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*pf),PF_CLASSID,1);
   if (--((PetscObject)(*pf))->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsGetBool(((PetscObject)(*pf))->prefix,"-pf_view",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)(*pf))->comm,&viewer);CHKERRQ(ierr);
-    ierr = PFView((*pf),viewer);CHKERRQ(ierr);
-  }
-
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*pf);CHKERRQ(ierr);
+  ierr = PFViewFromOptions(*pf,NULL,"-pf_view");CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*pf);CHKERRQ(ierr);
 
   if ((*pf)->ops->destroy) {ierr =  (*(*pf)->ops->destroy)((*pf)->data);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(pf);CHKERRQ(ierr);
@@ -110,9 +103,7 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
   PetscFunctionBegin;
   PetscValidPointer(pf,1);
   *pf = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PFInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_CLASSID,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView);CHKERRQ(ierr);
   newpf->data          = 0;
@@ -287,7 +278,7 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pf,viewer,"PF Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pf,viewer);CHKERRQ(ierr);
     if (pf->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*pf->ops->view)(pf->data,viewer);CHKERRQ(ierr);
@@ -457,12 +448,12 @@ PetscErrorCode  PFSetFromOptions(PF pf)
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)pf);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PFSetType(pf,type,NULL);CHKERRQ(ierr);
   }
   if (pf->ops->setfromoptions) {
-    ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
+    ierr = (*pf->ops->setfromoptions)(PetscOptionsObject,pf);CHKERRQ(ierr);
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

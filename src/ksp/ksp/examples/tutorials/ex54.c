@@ -11,7 +11,7 @@ int main(int argc,char **args)
 {
   Mat            Amat,Pmat;
   PetscErrorCode ierr;
-  PetscInt       i,m,M,its,Istart,Iend,j,Ii,bs,ix,ne=4;
+  PetscInt       i,m,M,its,Istart,Iend,j,Ii,ix,ne=4;
   PetscReal      x,y,h;
   Vec            xx,bb;
   KSP            ksp;
@@ -45,7 +45,6 @@ int main(int argc,char **args)
                       18,NULL,6,NULL,&Pmat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
   m    = Iend-Istart;
-  bs   = 1;
   /* Generate vectors */
   ierr = VecCreate(comm,&xx);CHKERRQ(ierr);
   ierr = VecSetSizes(xx,m,M);CHKERRQ(ierr);
@@ -77,7 +76,9 @@ int main(int argc,char **args)
     } else {
       for (i=0;i<4;i++) {
         for (j=0;j<4;j++) {
-          ierr = fscanf(file, "%le", &DD1[i][j]);
+          double dtmp;
+          ierr = fscanf(file, "%le", &dtmp);
+          DD1[i][j] = dtmp;
         }
       }
     }
@@ -92,7 +93,8 @@ int main(int argc,char **args)
     }
   }
   {
-    PetscReal coords[2*m];
+    PetscReal *coords;
+    ierr = PetscMalloc1(2*m,&coords);CHKERRQ(ierr);
     /* forms the element stiffness for the Laplacian and coordinates */
     for (Ii=Istart,ix=0; Ii<Iend; Ii++,ix++) {
       j = Ii/(ne+1); i = Ii%(ne+1);
@@ -100,10 +102,12 @@ int main(int argc,char **args)
       x            = h*(Ii % (ne+1)); y = h*(Ii/(ne+1));
       coords[2*ix] = x; coords[2*ix+1] = y;
       if (i<ne && j<ne) {
-        PetscInt jj,ii,idx[4] = {Ii, Ii+1, Ii + (ne+1) + 1, Ii + (ne+1)};
+        PetscInt jj,ii,idx[4];
         /* radius */
         PetscReal radius = PetscSqrtScalar((x-.5+h/2)*(x-.5+h/2) + (y-.5+h/2)*(y-.5+h/2));
         PetscReal alpha  = 1.0;
+
+        idx[0] = Ii; idx[1] = Ii+1; idx[2] = Ii + (ne+1) + 1; idx[3] =  Ii + (ne+1);
         if (radius < 0.25) alpha = soft_alpha;
 
 
@@ -144,8 +148,9 @@ int main(int argc,char **args)
     /* ierr = PCGAMGSetType(pc,"agg");CHKERRQ(ierr); */
 
     /* finish KSP/PC setup */
-    ierr = KSPSetOperators(ksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
     ierr = PCSetCoordinates(pc, 2, m, coords);CHKERRQ(ierr);
+    ierr = PetscFree(coords);CHKERRQ(ierr);
   }
 
   if (!PETSC_TRUE) {
@@ -162,6 +167,8 @@ int main(int argc,char **args)
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
 #endif
   ierr = VecSet(xx,.0);CHKERRQ(ierr);
+
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
   ierr = KSPSolve(ksp,bb,xx);CHKERRQ(ierr);
 

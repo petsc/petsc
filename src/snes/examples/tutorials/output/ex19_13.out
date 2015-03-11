@@ -75,11 +75,10 @@ SNES Object: 3 MPI processes
             ILU: out-of-place factorization
             0 levels of fill
             tolerance for zero pivot 2.22045e-14
-            using diagonal shift to prevent zero pivot
             matrix ordering: natural
             factor fill ratio given 1, needed 1
               Factored matrix follows:
-                Matrix Object:                 1 MPI processes
+                Mat Object:                 1 MPI processes
                   type: seqaij
                   rows=21, cols=21
                   package used to perform factorization: petsc
@@ -87,14 +86,14 @@ SNES Object: 3 MPI processes
                   total number of mallocs used during MatSetValues calls =0
                     not using I-node routines
           linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
+          Mat Object:           1 MPI processes
             type: seqaij
             rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
             total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:         3 MPI processes
+        Mat Object:         3 MPI processes
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
@@ -122,11 +121,10 @@ SNES Object: 3 MPI processes
             ILU: out-of-place factorization
             0 levels of fill
             tolerance for zero pivot 2.22045e-14
-            using diagonal shift to prevent zero pivot
             matrix ordering: natural
             factor fill ratio given 1, needed 1
               Factored matrix follows:
-                Matrix Object:                 1 MPI processes
+                Mat Object:                 1 MPI processes
                   type: seqaij
                   rows=21, cols=21
                   package used to perform factorization: petsc
@@ -134,14 +132,14 @@ SNES Object: 3 MPI processes
                   total number of mallocs used during MatSetValues calls =0
                     not using I-node routines
           linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
+          Mat Object:           1 MPI processes
             type: seqaij
             rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
             total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:         3 MPI processes
+        Mat Object:         3 MPI processes
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
@@ -169,11 +167,10 @@ SNES Object: 3 MPI processes
             ILU: out-of-place factorization
             0 levels of fill
             tolerance for zero pivot 2.22045e-14
-            using diagonal shift to prevent zero pivot
             matrix ordering: natural
             factor fill ratio given 1, needed 1
               Factored matrix follows:
-                Matrix Object:                 1 MPI processes
+                Mat Object:                 1 MPI processes
                   type: seqaij
                   rows=21, cols=21
                   package used to perform factorization: petsc
@@ -181,14 +178,14 @@ SNES Object: 3 MPI processes
                   total number of mallocs used during MatSetValues calls =0
                     not using I-node routines
           linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
+          Mat Object:           1 MPI processes
             type: seqaij
             rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
             total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:         3 MPI processes
+        Mat Object:         3 MPI processes
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
@@ -216,11 +213,10 @@ SNES Object: 3 MPI processes
             ILU: out-of-place factorization
             0 levels of fill
             tolerance for zero pivot 2.22045e-14
-            using diagonal shift to prevent zero pivot
             matrix ordering: natural
             factor fill ratio given 1, needed 1
               Factored matrix follows:
-                Matrix Object:                 1 MPI processes
+                Mat Object:                 1 MPI processes
                   type: seqaij
                   rows=21, cols=21
                   package used to perform factorization: petsc
@@ -228,28 +224,28 @@ SNES Object: 3 MPI processes
                   total number of mallocs used during MatSetValues calls =0
                     not using I-node routines
           linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
+          Mat Object:           1 MPI processes
             type: seqaij
             rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
             total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:         3 MPI processes
+        Mat Object:         3 MPI processes
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
           total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
     linear system matrix followed by preconditioner matrix:
-    Matrix Object:     3 MPI processes
+    Mat Object:     3 MPI processes
       type: mffd
       rows=196, cols=196
         Matrix-free approximation:
           err=1.49012e-08 (relative error in function evaluation)
           Using wp compute h routine
               Does not compute normU
-    Matrix Object:     3 MPI processes
+    Mat Object:     3 MPI processes
       type: mpiaij
       rows=196, cols=196, bs=4
       total: nonzeros=3472, allocated nonzeros=3472

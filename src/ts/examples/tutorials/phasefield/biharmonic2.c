@@ -24,6 +24,7 @@ Evolve the Cahn-Hillard equations:
 
 
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 #include <petscdraw.h>
@@ -66,7 +67,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr);
   ctx.energy = 1;
   /*ierr = PetscOptionsGetInt(NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr);*/
-  ierr        = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic)","",ctx.energy,&ctx.energy,NULL);CHKERRQ(ierr);
+  ierr        = PetscOptionsGetInt(NULL,"-energy",&ctx.energy,NULL);CHKERRQ(ierr);
   ctx.tol     = 1.0e-8;
   ierr        = PetscOptionsGetReal(NULL,"-tol",&ctx.tol,NULL);CHKERRQ(ierr);
   ctx.theta   = .001;
@@ -77,7 +78,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -10,2,2,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, -10,2,2,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Biharmonic heat equation: w = -kappa*u_xx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"Biharmonic heat equation: u");CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -113,20 +114,22 @@ int main(int argc,char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+  ierr = MatFDColoringSetUp(J,iscoloring,matfdcoloring);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
 
   {
     ierr = VecDuplicate(x,&ul);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&uh);CHKERRQ(ierr);
-    ierr = VecStrideSet(ul,0,SNES_VI_NINF);CHKERRQ(ierr);
+    ierr = VecStrideSet(ul,0,PETSC_NINFINITY);CHKERRQ(ierr);
     ierr = VecStrideSet(ul,1,-1.0);CHKERRQ(ierr);
-    ierr = VecStrideSet(uh,0,SNES_VI_INF);CHKERRQ(ierr);
+    ierr = VecStrideSet(uh,0,PETSC_INFINITY);CHKERRQ(ierr);
     ierr = VecStrideSet(uh,1,1.0);CHKERRQ(ierr);
     ierr = TSVISetVariableBounds(ts,ul,uh);CHKERRQ(ierr);
   }
@@ -226,8 +229,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,localXdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayRead(da,localXdot,&xdot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /*
@@ -249,9 +252,9 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
         f[i].w += x[i].u;
         break;
       case 3: /* logarithmic */
-        if (PetscRealPart(x[i].u) < -1.0 + 2.0*ctx->tol)     f[i].w += .5*ctx->theta*(-log(ctx->tol) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
-        else if (PetscRealPart(x[i].u) > 1.0 - 2.0*ctx->tol) f[i].w += .5*ctx->theta*(-log((1.0+x[i].u)/2.0) + log(ctx->tol)) + ctx->theta_c*x[i].u;
-        else                                                 f[i].w += .5*ctx->theta*(-log((1.0+x[i].u)/2.0) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
+        if (PetscRealPart(x[i].u) < -1.0 + 2.0*ctx->tol)     f[i].w += .5*ctx->theta*(-PetscLogReal(ctx->tol) + PetscLogScalar((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
+        else if (PetscRealPart(x[i].u) > 1.0 - 2.0*ctx->tol) f[i].w += .5*ctx->theta*(-PetscLogScalar((1.0+x[i].u)/2.0) + PetscLogReal(ctx->tol)) + ctx->theta_c*x[i].u;
+        else                                                 f[i].w += .5*ctx->theta*(-PetscLogScalar((1.0+x[i].u)/2.0) + PetscLogScalar((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
         break;
       }
     }
@@ -261,8 +264,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,localXdot,&xdot);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localXdot,&xdot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayRead(da,localX,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localXdot);CHKERRQ(ierr);
@@ -301,7 +304,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec X,PetscReal kappa)
   */
   for (i=xs; i<xs+xm; i++) {
     xx = i*hx;
-    r = PetscSqrtScalar((xx-.5)*(xx-.5));
+    r = PetscSqrtReal((xx-.5)*(xx-.5));
     if (r < .125) x[i].u = 1.0;
     else          x[i].u = -.50;
     /*  u[i] = PetscPowScalar(x - .5,4.0); */

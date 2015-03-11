@@ -1,10 +1,10 @@
-#include "../src/sys/classes/viewer/impls/vtk/vtkvimpl.h" /*I "petscviewer.h" I*/
+#include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h> /*I "petscviewer.h" I*/
 
 /*MC
     PetscViewerVTKWriteFunction - functional form used to provide writer to the PetscViewerVTK
 
      Synopsis:
-     #include "petscviewer.h"
+     #include <petscviewer.h>
      PetscViewerVTKWriteFunction(PetscObject object,PetscViewer viewer)
 
      Input Parameters:
@@ -92,7 +92,7 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
   PetscErrorCode  ierr;
-  PetscBool       isvtk,isvts,isvtu;
+  PetscBool       isvtk,isvts,isvtu,isvtr;
   size_t          len;
 
   PetscFunctionBegin;
@@ -102,6 +102,7 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
   ierr = PetscStrcasecmp(name+len-4,".vtk",&isvtk);CHKERRQ(ierr);
   ierr = PetscStrcasecmp(name+len-4,".vts",&isvts);CHKERRQ(ierr);
   ierr = PetscStrcasecmp(name+len-4,".vtu",&isvtu);CHKERRQ(ierr);
+  ierr = PetscStrcasecmp(name+len-4,".vtr",&isvtr);CHKERRQ(ierr);
   if (isvtk) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);}
     if (viewer->format != PETSC_VIEWER_ASCII_VTK) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtk' extension",name,PetscViewerFormats[viewer->format]);
@@ -110,7 +111,10 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
     if (viewer->format != PETSC_VIEWER_VTK_VTS) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
   } else if (isvtu) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);}
-    if (viewer->format != PETSC_VIEWER_VTK_VTU) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
+    if (viewer->format != PETSC_VIEWER_VTK_VTU) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtu' extension",name,PetscViewerFormats[viewer->format]);
+  } else if (isvtr) {
+    if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTR);CHKERRQ(ierr);}
+    if (viewer->format != PETSC_VIEWER_VTK_VTR) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtr' extension",name,PetscViewerFormats[viewer->format]);
   } else SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_UNKNOWN_TYPE,"File '%s' has unrecognized extension",name);
   ierr = PetscStrallocpy(name,&vtk->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -162,7 +166,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(v,PetscViewer_VTK,&vtk);CHKERRQ(ierr);
+  ierr = PetscNewLog(v,&vtk);CHKERRQ(ierr);
 
   v->data         = (void*)vtk;
   v->ops->destroy = PetscViewerDestroy_VTK;
@@ -234,6 +238,8 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm,const char name[],PetscFileMode 
 
    Level: developer
 
+   Notes: If PetscScalar is __float128 then the binary files are written in double precision
+
    Concepts: VTK files
    Concepts: PetscViewer^creating
 
@@ -243,6 +249,11 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
+#if defined(PETSC_USE_REAL___FLOAT128)
+  PetscInt       i;
+  double         *tmp = NULL;
+  PetscReal      *ttmp = (PetscReal*)data;
+#endif
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
@@ -259,6 +270,14 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
     case PETSC_FLOAT:
       size = sizeof(float);
       break;
+#if defined(PETSC_USE_REAL___FLOAT128)
+    case PETSC___FLOAT128:
+      size = sizeof(double);
+      ierr = PetscMalloc1(n,&tmp);CHKERRQ(ierr);
+      for (i=0; i<n; i++) tmp[i] = ttmp[i];
+      data = (void*) tmp;
+      break;
+#endif
     case PETSC_INT:
       size = sizeof(PetscInt);
       break;
@@ -276,6 +295,9 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
     if (count != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing byte count");
     count = fwrite(data,size,(size_t)n,fp);
     if ((PetscInt)count != n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %D/%D array members of size %D",(PetscInt)count,n,(PetscInt)size);
+#if defined(PETSC_USE_REAL___FLOAT128)
+    ierr = PetscFree(tmp);CHKERRQ(ierr);
+#endif
   }
   PetscFunctionReturn(0);
 }

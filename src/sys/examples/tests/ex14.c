@@ -12,7 +12,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsGetScalar(NULL,"-a",&a,NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Scalar a = %G + %Gi\n",PetscRealPart(a),PetscImaginaryPart(a));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Scalar a = %g + %gi\n",(double)PetscRealPart(a),(double)PetscImaginaryPart(a));CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

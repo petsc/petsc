@@ -63,24 +63,25 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void *functx
   PetscErrorCode    ierr;
   SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS*)snes->data;
   Vec               Xl  = snes->xl,Xu = snes->xu,F = snes->vec_func;
-  PetscScalar       *phi_arr,*x_arr,*f_arr,*l,*u;
+  PetscScalar       *phi_arr,*f_arr,*l,*u;
+  const PetscScalar *x_arr;
   PetscInt          i,nlocal;
 
   PetscFunctionBegin;
   ierr = (*vi->computeuserfunction)(snes,X,F,functx);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x_arr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x_arr);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f_arr);CHKERRQ(ierr);
   ierr = VecGetArray(Xl,&l);CHKERRQ(ierr);
   ierr = VecGetArray(Xu,&u);CHKERRQ(ierr);
   ierr = VecGetArray(phi,&phi_arr);CHKERRQ(ierr);
 
   for (i=0; i < nlocal; i++) {
-    if ((PetscRealPart(l[i]) <= SNES_VI_NINF) && (PetscRealPart(u[i]) >= SNES_VI_INF)) { /* no constraints on variable */
+    if ((PetscRealPart(l[i]) <= PETSC_NINFINITY) && (PetscRealPart(u[i]) >= PETSC_INFINITY)) { /* no constraints on variable */
       phi_arr[i] = f_arr[i];
-    } else if (PetscRealPart(l[i]) <= SNES_VI_NINF) {                      /* upper bound on variable only */
+    } else if (PetscRealPart(l[i]) <= PETSC_NINFINITY) {                      /* upper bound on variable only */
       phi_arr[i] = -Phi(u[i] - x_arr[i],-f_arr[i]);
-    } else if (PetscRealPart(u[i]) >= SNES_VI_INF) {                       /* lower bound on variable only */
+    } else if (PetscRealPart(u[i]) >= PETSC_INFINITY) {                       /* lower bound on variable only */
       phi_arr[i] = Phi(x_arr[i] - l[i],f_arr[i]);
     } else if (l[i] == u[i]) {
       phi_arr[i] = l[i] - x_arr[i];
@@ -89,7 +90,7 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void *functx
     }
   }
 
-  ierr = VecRestoreArray(X,&x_arr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xl,&l);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xu,&u);CHKERRQ(ierr);
@@ -119,13 +120,13 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
   ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
 
   for (i=0; i< nlocal; i++) {
-    if ((PetscRealPart(l[i]) <= SNES_VI_NINF) && (PetscRealPart(u[i]) >= SNES_VI_INF)) { /* no constraints on variable */
+    if ((PetscRealPart(l[i]) <= PETSC_NINFINITY) && (PetscRealPart(u[i]) >= PETSC_INFINITY)) { /* no constraints on variable */
       da[i] = 0;
       db[i] = 1;
-    } else if (PetscRealPart(l[i]) <= SNES_VI_NINF) {                     /* upper bound on variable only */
+    } else if (PetscRealPart(l[i]) <= PETSC_NINFINITY) {                     /* upper bound on variable only */
       da[i] = DPhi(u[i] - x[i], -f[i]);
       db[i] = DPhi(-f[i],u[i] - x[i]);
-    } else if (PetscRealPart(u[i]) >= SNES_VI_INF) {                      /* lower bound on variable only */
+    } else if (PetscRealPart(u[i]) >= PETSC_INFINITY) {                      /* lower bound on variable only */
       da[i] = DPhi(x[i] - l[i], f[i]);
       db[i] = DPhi(f[i],x[i] - l[i]);
     } else if (l[i] == u[i]) {                              /* fixed variable */
@@ -239,7 +240,6 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   PetscErrorCode     ierr;
   PetscInt           maxits,i,lits;
   PetscBool          lssucceed;
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal          gnorm,xnorm=0,ynorm;
   Vec                Y,X,F;
   KSPConvergedReason kspreason;
@@ -262,10 +262,10 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   F      = snes->vec_func;              /* residual vector */
   Y      = snes->work[0];               /* work vectors */
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.0;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   ierr = SNESVIProjectOntoBounds(snes,X);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,vi->phi);CHKERRQ(ierr);
@@ -281,14 +281,12 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(vi->merit)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = vi->phinorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESLogConvergenceHistory(snes,vi->phinorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,vi->phinorm);CHKERRQ(ierr);
 
-  /* set parameter for default relative tolerance convergence test */
-  snes->ttol = vi->phinorm*snes->rtol;
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,vi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) {
@@ -307,7 +305,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 
     /* Get the jacobian -- note that the function must be the original function for snes_fd and snes_fd_color to work for this*/
     sdm->ops->computefunction = vi->computeuserfunction;
-    ierr                      = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr                      = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
     sdm->ops->computefunction = SNESVIComputeFunction;
 
     /* Get the diagonal shift and row scaling vectors */
@@ -316,7 +314,7 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     ierr = SNESVIComputeJacobian(snes->jacobian,snes->jacobian_pre,vi->Da,vi->Db);CHKERRQ(ierr);
     /* Compute the merit function gradient */
     ierr = SNESVIComputeMeritFunctionGradient(snes->jacobian,vi->phi,vi->dpsi);CHKERRQ(ierr);
-    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
     ierr = KSPSolve(snes->ksp,vi->phi,Y);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
 
@@ -346,8 +344,8 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     */
     ierr  = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = vi->phinorm;
-    /* ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,vi->phi,Y,vi->phinorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr); */
     ierr = SNESLineSearchApply(snes->linesearch, X, vi->phi, &gnorm, Y);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)vi->phinorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
@@ -356,7 +354,6 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
       sdm->ops->computefunction = vi->computeuserfunction;
       PetscFunctionReturn(0);
     }
-    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool ismin;
@@ -370,14 +367,14 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     vi->phinorm = gnorm;
     vi->merit   = 0.5*vi->phinorm*vi->phinorm;
     /* Monitor convergence */
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = vi->phinorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence, xnorm = || X || */
-    if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
+    if (snes->ops->converged != SNESConvergedSkip) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,vi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
   }
@@ -452,18 +449,18 @@ PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_VINEWTONSSLS"
-static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes)
+static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(PetscOptions *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;
-  ierr = SNESSetFromOptions_VI(snes);CHKERRQ(ierr);
-  ierr = PetscOptionsHead("SNES semismooth method options");CHKERRQ(ierr);
+  ierr = SNESSetFromOptions_VI(PetscOptionsObject,snes);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES semismooth method options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* set up the default line search */
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
     ierr = SNESLineSearchBTSetAlpha(linesearch, 0.0);CHKERRQ(ierr);
   }
@@ -508,7 +505,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;
 
-  ierr       = PetscNewLog(snes,SNES_VINEWTONSSLS,&vi);CHKERRQ(ierr);
+  ierr       = PetscNewLog(snes,&vi);CHKERRQ(ierr);
   snes->data = (void*)vi;
 
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetVariableBounds_C",SNESVISetVariableBounds_VI);CHKERRQ(ierr);

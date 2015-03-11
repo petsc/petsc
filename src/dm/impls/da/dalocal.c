@@ -4,7 +4,10 @@
 */
 
 #include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petscbt.h>
 #include <petscsf.h>
+#include <petscds.h>
+#include <petscfe.h>
 
 /*
    This allows the DMDA vectors to properly tell MATLAB their dimensions
@@ -63,7 +66,7 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
     ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
     ierr = VecSetDM(*g, da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-    if (dd->w == 1  && dd->dim == 2) {
+    if (dd->w == 1  && da->dim == 2) {
       ierr = PetscObjectComposeFunction((PetscObject)*g,"PetscMatlabEnginePut_C",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
     }
 #endif
@@ -73,18 +76,80 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetNumCells"
-PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCells)
+/*@
+  DMDAGetNumCells - Get the number of cells in the local piece of the DMDA. This includes ghost cells.
+
+  Input Parameter:
+. dm - The DM object
+
+  Output Parameters:
++ numCellsX - The number of local cells in the x-direction
+. numCellsY - The number of local cells in the y-direction
+. numCellsZ - The number of local cells in the z-direction
+- numCells - The number of local cells
+
+  Level: developer
+
+.seealso: DMDAGetCellPoint()
+@*/
+PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, PetscInt *numCellsZ, PetscInt *numCells)
 {
-  DM_DA          *da = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  DM_DA         *da  = (DM_DA*) dm->data;
+  const PetscInt dim = dm->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
   const PetscInt nC  = (mx)*(dim > 1 ? (my)*(dim > 2 ? (mz) : 1) : 1);
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (numCellsX) {
+    PetscValidIntPointer(numCellsX,2);
+    *numCellsX = mx;
+  }
+  if (numCellsY) {
+    PetscValidIntPointer(numCellsX,3);
+    *numCellsY = my;
+  }
+  if (numCellsZ) {
+    PetscValidIntPointer(numCellsX,4);
+    *numCellsZ = mz;
+  }
   if (numCells) {
-    PetscValidIntPointer(numCells,2);
+    PetscValidIntPointer(numCells,5);
     *numCells = nC;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetCellPoint"
+/*@
+  DMDAGetCellPoint - Get the DM point corresponding to the tuple (i, j, k) in the DMDA
+
+  Input Parameters:
++ dm - The DM object
+- i,j,k - The global indices for the cell
+
+  Output Parameters:
+. point - The local DM point
+
+  Level: developer
+
+.seealso: DMDAGetNumCells()
+@*/
+PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, PetscInt *point)
+{
+  const PetscInt dim = dm->dim;
+  DMDALocalInfo  info;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(point,5);
+  ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
+  if (dim > 0) {if ((i < info.gxs) || (i >= info.gxs+info.gxm)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "X index %d not in [%d, %d)", i, info.gxs, info.gxs+info.gxm);}
+  if (dim > 1) {if ((i < info.gys) || (i >= info.gys+info.gym)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Y index %d not in [%d, %d)", i, info.gys, info.gys+info.gym);}
+  if (dim > 2) {if ((i < info.gzs) || (i >= info.gzs+info.gzm)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Z index %d not in [%d, %d)", i, info.gzs, info.gzs+info.gzm);}
+  *point = i + (dim > 1 ? (j + (dim > 2 ? k*info.gym : 0))*info.gxm : 0);
   PetscFunctionReturn(0);
 }
 
@@ -93,7 +158,7 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCells)
 PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVerticesY, PetscInt *numVerticesZ, PetscInt *numVertices)
 {
   DM_DA          *da = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  const PetscInt dim = dm->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
   const PetscInt nVx = mx+1;
   const PetscInt nVy = dim > 1 ? (my+1) : 1;
@@ -125,7 +190,7 @@ PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVe
 PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces, PetscInt *numYFacesY, PetscInt *numYFaces, PetscInt *numZFacesZ, PetscInt *numZFaces)
 {
   DM_DA          *da = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  const PetscInt dim = dm->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
   const PetscInt nxF = (dim > 1 ? (my)*(dim > 2 ? (mz) : 1) : 1);
   const PetscInt nXF = (mx+1)*nxF;
@@ -166,15 +231,14 @@ PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces,
 #define __FUNCT__ "DMDAGetHeightStratum"
 PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, PetscInt *pEnd)
 {
-  DM_DA          *da = (DM_DA*) dm->data;
-  const PetscInt dim = da->dim;
+  const PetscInt dim = dm->dim;
   PetscInt       nC, nV, nXF, nYF, nZF;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (pStart) PetscValidIntPointer(pStart,3);
   if (pEnd)   PetscValidIntPointer(pEnd,4);
-  ierr = DMDAGetNumCells(dm, &nC);CHKERRQ(ierr);
+  ierr = DMDAGetNumCells(dm, NULL, NULL, NULL, &nC);CHKERRQ(ierr);
   ierr = DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV);CHKERRQ(ierr);
   ierr = DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF);CHKERRQ(ierr);
   if (height == 0) {
@@ -198,6 +262,131 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDAGetDepthStratum"
+PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, PetscInt *pEnd)
+{
+  const PetscInt dim = dm->dim;
+  PetscInt       nC, nV, nXF, nYF, nZF;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (pStart) PetscValidIntPointer(pStart,3);
+  if (pEnd)   PetscValidIntPointer(pEnd,4);
+  ierr = DMDAGetNumCells(dm, NULL, NULL, NULL, &nC);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV);CHKERRQ(ierr);
+  ierr = DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF);CHKERRQ(ierr);
+  if (depth == dim) {
+    /* Cells */
+    if (pStart) *pStart = 0;
+    if (pEnd)   *pEnd   = nC;
+  } else if (depth == dim-1) {
+    /* Faces */
+    if (pStart) *pStart = nC+nV;
+    if (pEnd)   *pEnd   = nC+nV+nXF+nYF+nZF;
+  } else if (depth == 0) {
+    /* Vertices */
+    if (pStart) *pStart = nC;
+    if (pEnd)   *pEnd   = nC+nV;
+  } else if (depth < 0) {
+    /* All points */
+    if (pStart) *pStart = 0;
+    if (pEnd)   *pEnd   = nC+nV+nXF+nYF+nZF;
+  } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No points of depth %d in the DA", depth);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetConeSize"
+PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize)
+{
+  const PetscInt dim = dm->dim;
+  PetscInt       nC, nV, nXF, nYF, nZF;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *coneSize = 0;
+  ierr = DMDAGetNumCells(dm, NULL, NULL, NULL, &nC);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, NULL, NULL, NULL, &nV);CHKERRQ(ierr);
+  ierr = DMDAGetNumFaces(dm, NULL, &nXF, NULL, &nYF, NULL, &nZF);CHKERRQ(ierr);
+  switch (dim) {
+  case 2:
+    if (p >= 0) {
+      if (p < nC) {
+        *coneSize = 4;
+      } else if (p < nC+nV) {
+        *coneSize = 0;
+      } else if (p < nC+nV+nXF+nYF+nZF) {
+        *coneSize = 2;
+      } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d should be in [0, %d)", p, nC+nV+nXF+nYF+nZF);
+    } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative point %d is invalid", p);
+    break;
+  case 3:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetCone"
+PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
+{
+  const PetscInt dim = dm->dim;
+  PetscInt       nCx, nCy, nCz, nC, nVx, nVy, nVz, nV, nxF, nyF, nzF, nXF, nYF, nZF;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!cone) {ierr = DMGetWorkArray(dm, 6, PETSC_INT, cone);CHKERRQ(ierr);}
+  ierr = DMDAGetNumCells(dm, &nCx, &nCy, &nCz, &nC);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV);CHKERRQ(ierr);
+  ierr = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
+  switch (dim) {
+  case 2:
+    if (p >= 0) {
+      if (p < nC) {
+        const PetscInt cy = p / nCx;
+        const PetscInt cx = p % nCx;
+
+        (*cone)[0] = cy*nxF + cx + nC+nV;
+        (*cone)[1] = cx*nyF + cy + nyF + nC+nV+nXF;
+        (*cone)[2] = cy*nxF + cx + nxF + nC+nV;
+        (*cone)[3] = cx*nyF + cy + nC+nV+nXF;
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do cell cones");
+      } else if (p < nC+nV) {
+      } else if (p < nC+nV+nXF) {
+        const PetscInt fy = (p - nC+nV) / nxF;
+        const PetscInt fx = (p - nC+nV) % nxF;
+
+        (*cone)[0] = fy*nVx + fx + nC;
+        (*cone)[1] = fy*nVx + fx + 1 + nC;
+      } else if (p < nC+nV+nXF+nYF) {
+        const PetscInt fx = (p - nC+nV+nXF) / nyF;
+        const PetscInt fy = (p - nC+nV+nXF) % nyF;
+
+        (*cone)[0] = fy*nVx + fx + nC;
+        (*cone)[1] = fy*nVx + fx + nVx + nC;
+      } else SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %d should be in [0, %d)", p, nC+nV+nXF+nYF+nZF);
+    } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative point %d is invalid", p);
+    break;
+  case 3:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDARestoreCone"
+PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetWorkArray(dm, 6, PETSC_INT, cone);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDACreateSection"
 /*@C
   DMDACreateSection - Create a PetscSection inside the DMDA that describes data layout. This allows multiple fields with
@@ -206,10 +395,9 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
   Input Parameters:
 + dm- The DMDA
 . numFields - The number of fields
-. numComp - The number of components in each field, or NULL for 1
-. numVertexDof - The number of dofs per vertex for each field, or NULL
+. numComp - The number of components in each field
+. numDof - The number of dofs per dimension for each field
 . numFaceDof - The number of dofs per face for each field and direction, or NULL
-- numCellDof - The number of dofs per cell for each field, or NULL
 
   Level: developer
 
@@ -224,11 +412,12 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
 
   We interpret the default DMDA partition as a cell partition, and the data assignment as a cell assignment.
 @*/
-PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDof[], PetscInt numFaceDof[], PetscInt numCellDof[])
+PetscErrorCode DMDACreateSection(DM dm, const PetscInt numComp[], const PetscInt numDof[], const PetscInt numFaceDof[], PetscSection *s)
 {
-  DM_DA             *da = (DM_DA*) dm->data;
-  const PetscInt    dim = da->dim;
+  PetscSection      section;
+  const PetscInt    dim = dm->dim;
   PetscInt          numFields, numVertexTotDof = 0, numCellTotDof = 0, numFaceTotDof[3] = {0, 0, 0};
+  PetscBT           isLeaf;
   PetscSF           sf;
   PetscMPIInt       rank;
   const PetscMPIInt *neighbors;
@@ -242,8 +431,9 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(s, 4);
   ierr    = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
-  ierr    = DMDAGetNumCells(dm, &nC);CHKERRQ(ierr);
+  ierr    = DMDAGetNumCells(dm, NULL, NULL, NULL, &nC);CHKERRQ(ierr);
   ierr    = DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV);CHKERRQ(ierr);
   ierr    = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
   ierr    = DMDAGetHeightStratum(dm, -1,  &pStart, &pEnd);CHKERRQ(ierr);
@@ -257,89 +447,60 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   /* Create local section */
   ierr = DMDAGetInfo(dm, 0,0,0,0,0,0,0, &numFields, 0,0,0,0,0);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
-    if (numVertexDof) numVertexTotDof  += numVertexDof[f];
-    if (numCellDof)   numCellTotDof    += numCellDof[f];
-    if (numFaceDof) {
-      numFaceTotDof[0] += numFaceDof[f*dim+0];
-      numFaceTotDof[1] += dim > 1 ? numFaceDof[f*dim+1] : 0;
-      numFaceTotDof[2] += dim > 2 ? numFaceDof[f*dim+2] : 0;
-    }
+    numVertexTotDof  += numDof[f*(dim+1)+0];
+    numCellTotDof    += numDof[f*(dim+1)+dim];
+    numFaceTotDof[0] += dim > 0 ? (numFaceDof ? numFaceDof[f*dim+0] : numDof[f*(dim+1)+dim-1]) : 0;
+    numFaceTotDof[1] += dim > 1 ? (numFaceDof ? numFaceDof[f*dim+1] : numDof[f*(dim+1)+dim-1]) : 0;
+    numFaceTotDof[2] += dim > 2 ? (numFaceDof ? numFaceDof[f*dim+2] : numDof[f*(dim+1)+dim-1]) : 0;
   }
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &dm->defaultSection);CHKERRQ(ierr);
-  if (numFields > 1) {
-    ierr = PetscSectionSetNumFields(dm->defaultSection, numFields);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section);CHKERRQ(ierr);
+  if (numFields > 0) {
+    ierr = PetscSectionSetNumFields(section, numFields);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       const char *name;
 
       ierr = DMDAGetFieldName(dm, f, &name);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldName(dm->defaultSection, f, name);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldName(section, f, name ? name : "Field");CHKERRQ(ierr);
       if (numComp) {
-        ierr = PetscSectionSetFieldComponents(dm->defaultSection, f, numComp[f]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldComponents(section, f, numComp[f]);CHKERRQ(ierr);
       }
-    }
-  } else {
-    numFields = 0;
-  }
-  ierr = PetscSectionSetChart(dm->defaultSection, pStart, pEnd);CHKERRQ(ierr);
-  if (numVertexDof) {
-    for (v = vStart; v < vEnd; ++v) {
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(dm->defaultSection, v, f, numVertexDof[f]);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetDof(dm->defaultSection, v, numVertexTotDof);CHKERRQ(ierr);
     }
   }
-  if (numFaceDof) {
-    for (xf = xfStart; xf < xfEnd; ++xf) {
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(dm->defaultSection, xf, f, numFaceDof[f*dim+0]);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetDof(dm->defaultSection, xf, numFaceTotDof[0]);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
+  for (v = vStart; v < vEnd; ++v) {
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldDof(section, v, f, numDof[f*(dim+1)+0]);CHKERRQ(ierr);
     }
-    for (yf = yfStart; yf < yfEnd; ++yf) {
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(dm->defaultSection, yf, f, numFaceDof[f*dim+1]);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetDof(dm->defaultSection, yf, numFaceTotDof[1]);CHKERRQ(ierr);
-    }
-    for (zf = zfStart; zf < zfEnd; ++zf) {
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(dm->defaultSection, zf, f, numFaceDof[f*dim+2]);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetDof(dm->defaultSection, zf, numFaceTotDof[2]);CHKERRQ(ierr);
-    }
+    ierr = PetscSectionSetDof(section, v, numVertexTotDof);CHKERRQ(ierr);
   }
-  if (numCellDof) {
-    for (c = cStart; c < cEnd; ++c) {
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(dm->defaultSection, c, f, numCellDof[f]);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetDof(dm->defaultSection, c, numCellTotDof);CHKERRQ(ierr);
+  for (xf = xfStart; xf < xfEnd; ++xf) {
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldDof(section, xf, f, numFaceDof ? numFaceDof[f*dim+0] : numDof[f*(dim+1)+dim-1]);CHKERRQ(ierr);
     }
+    ierr = PetscSectionSetDof(section, xf, numFaceTotDof[0]);CHKERRQ(ierr);
   }
-  ierr = PetscSectionSetUp(dm->defaultSection);CHKERRQ(ierr);
+  for (yf = yfStart; yf < yfEnd; ++yf) {
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldDof(section, yf, f, numFaceDof ? numFaceDof[f*dim+1] : numDof[f*(dim+1)+dim-1]);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetDof(section, yf, numFaceTotDof[1]);CHKERRQ(ierr);
+  }
+  for (zf = zfStart; zf < zfEnd; ++zf) {
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldDof(section, zf, f, numFaceDof ? numFaceDof[f*dim+2] : numDof[f*(dim+1)+dim-1]);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetDof(section, zf, numFaceTotDof[2]);CHKERRQ(ierr);
+  }
+  for (c = cStart; c < cEnd; ++c) {
+    for (f = 0; f < numFields; ++f) {
+      ierr = PetscSectionSetFieldDof(section, c, f, numDof[f*(dim+1)+dim]);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetDof(section, c, numCellTotDof);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   /* Create mesh point SF */
+  ierr = PetscBTCreate(pEnd-pStart, &isLeaf);CHKERRQ(ierr);
   ierr = DMDAGetNeighbors(dm, &neighbors);CHKERRQ(ierr);
-  for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
-    for (yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
-      for (xn = 0; xn < 3; ++xn) {
-        const PetscInt xp       = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
-        const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
-
-        if (neighbor >= 0 && neighbor < rank) {
-          nleaves += (!xp ? nVx : 1) * (!yp ? nVy : 1) * (!zp ? nVz : 1); /* vertices */
-          if (xp && !yp && !zp) {
-            nleaves += nxF; /* x faces */
-          } else if (yp && !zp && !xp) {
-            nleaves += nyF; /* y faces */
-          } else if (zp && !xp && !yp) {
-            nleaves += nzF; /* z faces */
-          }
-        }
-      }
-    }
-  }
-  ierr = PetscMalloc2(nleaves,PetscInt,&localPoints,nleaves,PetscSFNode,&remotePoints);CHKERRQ(ierr);
   for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
     for (yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
       for (xn = 0; xn < 3; ++xn) {
@@ -351,349 +512,193 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
           if (xp < 0) { /* left */
             if (yp < 0) { /* bottom */
               if (zp < 0) { /* back */
-                const PetscInt localVertex  = (      0*nVy +     0)*nVx +     0 + nC;
-                const PetscInt remoteVertex = ((nVz-1)*nVy + nVy-1)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
-                nleavesCheck += 1; /* left bottom back vertex */
-
-                localPoints[nL]        = localVertex;
-                remotePoints[nL].rank  = neighbor;
-                remotePoints[nL].index = remoteVertex;
-                ++nL;
+                const PetscInt localVertex  = (      0*nVy +     0)*nVx +     0 + nC; /* left bottom back vertex */
+                if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
               } else if (zp > 0) { /* front */
-                const PetscInt localVertex  = ((nVz-1)*nVy +     0)*nVx +     0 + nC;
-                const PetscInt remoteVertex = (      0*nVy + nVy-1)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
-                nleavesCheck += 1; /* left bottom front vertex */
-
-                localPoints[nL]        = localVertex;
-                remotePoints[nL].rank  = neighbor;
-                remotePoints[nL].index = remoteVertex;
-                ++nL;
+                const PetscInt localVertex  = ((nVz-1)*nVy +     0)*nVx +     0 + nC; /* left bottom front vertex */
+                if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
               } else {
-                nleavesCheck += nVz; /* left bottom vertices */
-                for (zv = 0; zv < nVz; ++zv, ++nL) {
-                  const PetscInt localVertex  = (zv*nVy +     0)*nVx +     0 + nC;
-                  const PetscInt remoteVertex = (zv*nVy + nVy-1)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
-
-                  localPoints[nL]        = localVertex;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteVertex;
+                for (zv = 0; zv < nVz; ++zv) {
+                  const PetscInt localVertex  = (zv*nVy +     0)*nVx +     0 + nC; /* left bottom vertices */
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                 }
               }
             } else if (yp > 0) { /* top */
               if (zp < 0) { /* back */
-                const PetscInt localVertex  = (      0*nVy + nVy-1)*nVx +     0 + nC;
-                const PetscInt remoteVertex = ((nVz-1)*nVy +     0)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
-                nleavesCheck += 1; /* left top back vertex */
-
-                localPoints[nL]        = localVertex;
-                remotePoints[nL].rank  = neighbor;
-                remotePoints[nL].index = remoteVertex;
-                ++nL;
+                const PetscInt localVertex  = (      0*nVy + nVy-1)*nVx +     0 + nC; /* left top back vertex */
+                if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
               } else if (zp > 0) { /* front */
-                const PetscInt localVertex  = ((nVz-1)*nVy + nVy-1)*nVx +     0 + nC;
-                const PetscInt remoteVertex = (      0*nVy +     0)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
-                nleavesCheck += 1; /* left top front vertex */
-
-                localPoints[nL]        = localVertex;
-                remotePoints[nL].rank  = neighbor;
-                remotePoints[nL].index = remoteVertex;
-                ++nL;
+                const PetscInt localVertex  = ((nVz-1)*nVy + nVy-1)*nVx +     0 + nC; /* left top front vertex */
+                if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
               } else {
-                nleavesCheck += nVz; /* left top vertices */
-                for (zv = 0; zv < nVz; ++zv, ++nL) {
-                  const PetscInt localVertex  = (zv*nVy + nVy-1)*nVx +     0 + nC;
-                  const PetscInt remoteVertex = (zv*nVy +     0)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
-
-                  localPoints[nL]        = localVertex;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteVertex;
+                for (zv = 0; zv < nVz; ++zv) {
+                  const PetscInt localVertex  = (zv*nVy + nVy-1)*nVx +     0 + nC; /* left top vertices */
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                 }
               }
             } else {
               if (zp < 0) { /* back */
-                nleavesCheck += nVy; /* left back vertices */
-                for (yv = 0; yv < nVy; ++yv, ++nL) {
-                  const PetscInt localVertex  = (      0*nVy + yv)*nVx +     0 + nC;
-                  const PetscInt remoteVertex = ((nVz-1)*nVy + yv)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
-
-                  localPoints[nL]        = localVertex;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteVertex;
+                for (yv = 0; yv < nVy; ++yv) {
+                  const PetscInt localVertex  = (      0*nVy + yv)*nVx +     0 + nC; /* left back vertices */
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                 }
               } else if (zp > 0) { /* front */
-                nleavesCheck += nVy; /* left front vertices */
-                for (yv = 0; yv < nVy; ++yv, ++nL) {
-                  const PetscInt localVertex  = ((nVz-1)*nVy + yv)*nVx +     0 + nC;
-                  const PetscInt remoteVertex = (      0*nVy + yv)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
-
-                  localPoints[nL]        = localVertex;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteVertex;
+                for (yv = 0; yv < nVy; ++yv) {
+                  const PetscInt localVertex  = ((nVz-1)*nVy + yv)*nVx +     0 + nC; /* left front vertices */
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                 }
               } else {
-                nleavesCheck += nVy*nVz; /* left vertices */
                 for (zv = 0; zv < nVz; ++zv) {
-                  for (yv = 0; yv < nVy; ++yv, ++nL) {
-                    const PetscInt localVertex  = (zv*nVy + yv)*nVx +     0 + nC;
-                    const PetscInt remoteVertex = (zv*nVy + yv)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
-
-                    localPoints[nL]        = localVertex;
-                    remotePoints[nL].rank  = neighbor;
-                    remotePoints[nL].index = remoteVertex;
+                  for (yv = 0; yv < nVy; ++yv) {
+                    const PetscInt localVertex  = (zv*nVy + yv)*nVx +     0 + nC; /* left vertices */
+                    if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                   }
                 }
-                nleavesCheck += nxF;     /* left faces */
-                for (xf = 0; xf < nxF; ++xf, ++nL) {
+#if 0
+                for (xf = 0; xf < nxF; ++xf) {
                   /* THIS IS WRONG */
-                  const PetscInt localFace  = 0 + nC+nV;
-                  const PetscInt remoteFace = 0 + nC+nV;
-
-                  localPoints[nL]        = localFace;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteFace;
+                  const PetscInt localFace  = 0 + nC+nV; /* left faces */
+                  if (!PetscBTLookupSet(isLeaf, localFace)) ++nleaves;
                 }
+#endif
               }
             }
           } else if (xp > 0) { /* right */
             if (yp < 0) { /* bottom */
               if (zp < 0) { /* back */
-                const PetscInt localVertex  = (      0*nVy +     0)*nVx + nVx-1 + nC;
-                const PetscInt remoteVertex = ((nVz-1)*nVy + nVy-1)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
-                nleavesCheck += 1; /* right bottom back vertex */
-
-                localPoints[nL]        = localVertex;
-                remotePoints[nL].rank  = neighbor;
-                remotePoints[nL].index = remoteVertex;
-                ++nL;
+                const PetscInt localVertex  = (      0*nVy +     0)*nVx + nVx-1 + nC; /* right bottom back vertex */
+                if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
               } else if (zp > 0) { /* front */
-                const PetscInt localVertex  = ((nVz-1)*nVy +     0)*nVx + nVx-1 + nC;
-                const PetscInt remoteVertex = (      0*nVy + nVy-1)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
-                nleavesCheck += 1; /* right bottom front vertex */
-
-                localPoints[nL]        = localVertex;
-                remotePoints[nL].rank  = neighbor;
-                remotePoints[nL].index = remoteVertex;
-                ++nL;
+                const PetscInt localVertex  = ((nVz-1)*nVy +     0)*nVx + nVx-1 + nC; /* right bottom front vertex */
+                if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
               } else {
-                nleavesCheck += nVz; /* right bottom vertices */
-                for (zv = 0; zv < nVz; ++zv, ++nL) {
-                  const PetscInt localVertex  = (zv*nVy +     0)*nVx + nVx-1 + nC;
-                  const PetscInt remoteVertex = (zv*nVy + nVy-1)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
-
-                  localPoints[nL]        = localVertex;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteVertex;
+                for (zv = 0; zv < nVz; ++zv) {
+                  const PetscInt localVertex  = (zv*nVy +     0)*nVx + nVx-1 + nC; /* right bottom vertices */
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                 }
               }
             } else if (yp > 0) { /* top */
               if (zp < 0) { /* back */
-                const PetscInt localVertex  = (      0*nVy + nVy-1)*nVx + nVx-1 + nC;
-                const PetscInt remoteVertex = ((nVz-1)*nVy +     0)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
-                nleavesCheck += 1; /* right top back vertex */
-
-                localPoints[nL]        = localVertex;
-                remotePoints[nL].rank  = neighbor;
-                remotePoints[nL].index = remoteVertex;
-                ++nL;
+                const PetscInt localVertex  = (      0*nVy + nVy-1)*nVx + nVx-1 + nC; /* right top back vertex */
+                if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
               } else if (zp > 0) { /* front */
-                const PetscInt localVertex  = ((nVz-1)*nVy + nVy-1)*nVx + nVx-1 + nC;
-                const PetscInt remoteVertex = (      0*nVy +     0)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
-                nleavesCheck += 1; /* right top front vertex */
-
-                localPoints[nL]        = localVertex;
-                remotePoints[nL].rank  = neighbor;
-                remotePoints[nL].index = remoteVertex;
-                ++nL;
+                const PetscInt localVertex  = ((nVz-1)*nVy + nVy-1)*nVx + nVx-1 + nC; /* right top front vertex */
+                if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
               } else {
-                nleavesCheck += nVz; /* right top vertices */
-                for (zv = 0; zv < nVz; ++zv, ++nL) {
-                  const PetscInt localVertex  = (zv*nVy + nVy-1)*nVx + nVx-1 + nC;
-                  const PetscInt remoteVertex = (zv*nVy +     0)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
-
-                  localPoints[nL]        = localVertex;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteVertex;
+                for (zv = 0; zv < nVz; ++zv) {
+                  const PetscInt localVertex  = (zv*nVy + nVy-1)*nVx + nVx-1 + nC; /* right top vertices */
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                 }
               }
             } else {
               if (zp < 0) { /* back */
-                nleavesCheck += nVy; /* right back vertices */
-                for (yv = 0; yv < nVy; ++yv, ++nL) {
-                  const PetscInt localVertex  = (      0*nVy + yv)*nVx + nVx-1 + nC;
-                  const PetscInt remoteVertex = ((nVz-1)*nVy + yv)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
-
-                  localPoints[nL]        = localVertex;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteVertex;
+                for (yv = 0; yv < nVy; ++yv) {
+                  const PetscInt localVertex  = (      0*nVy + yv)*nVx + nVx-1 + nC; /* right back vertices */
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                 }
               } else if (zp > 0) { /* front */
-                nleavesCheck += nVy; /* right front vertices */
-                for (yv = 0; yv < nVy; ++yv, ++nL) {
-                  const PetscInt localVertex  = ((nVz-1)*nVy + yv)*nVx + nVx-1 + nC;
-                  const PetscInt remoteVertex = (      0*nVy + yv)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
-
-                  localPoints[nL]        = localVertex;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteVertex;
+                for (yv = 0; yv < nVy; ++yv) {
+                  const PetscInt localVertex  = ((nVz-1)*nVy + yv)*nVx + nVx-1 + nC; /* right front vertices */
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                 }
               } else {
-                nleavesCheck += nVy*nVz; /* right vertices */
                 for (zv = 0; zv < nVz; ++zv) {
-                  for (yv = 0; yv < nVy; ++yv, ++nL) {
-                    const PetscInt localVertex  = (zv*nVy + yv)*nVx + nVx-1 + nC;
-                    const PetscInt remoteVertex = (zv*nVy + yv)*nVx + 0     + nC; /* TODO: Correct this for neighbor sizes */
-
-                    localPoints[nL]        = localVertex;
-                    remotePoints[nL].rank  = neighbor;
-                    remotePoints[nL].index = remoteVertex;
+                  for (yv = 0; yv < nVy; ++yv) {
+                    const PetscInt localVertex  = (zv*nVy + yv)*nVx + nVx-1 + nC; /* right vertices */
+                    if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                   }
                 }
-                nleavesCheck += nxF;     /* right faces */
-                for (xf = 0; xf < nxF; ++xf, ++nL) {
+#if 0
+                for (xf = 0; xf < nxF; ++xf) {
                   /* THIS IS WRONG */
-                  const PetscInt localFace  = 0 + nC+nV;
-                  const PetscInt remoteFace = 0 + nC+nV;
-
-                  localPoints[nL]        = localFace;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteFace;
+                  const PetscInt localFace  = 0 + nC+nV; /* right faces */
+                  if (!PetscBTLookupSet(isLeaf, localFace)) ++nleaves;
                 }
+#endif
               }
             }
           } else {
             if (yp < 0) { /* bottom */
               if (zp < 0) { /* back */
-                nleavesCheck += nVx; /* bottom back vertices */
-                for (xv = 0; xv < nVx; ++xv, ++nL) {
-                  const PetscInt localVertex  = (      0*nVy +     0)*nVx + xv + nC;
-                  const PetscInt remoteVertex = ((nVz-1)*nVy + nVy-1)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
-
-                  localPoints[nL]        = localVertex;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteVertex;
+                for (xv = 0; xv < nVx; ++xv) {
+                  const PetscInt localVertex  = (      0*nVy +     0)*nVx + xv + nC; /* bottom back vertices */
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                 }
               } else if (zp > 0) { /* front */
-                nleavesCheck += nVx; /* bottom front vertices */
-                for (xv = 0; xv < nVx; ++xv, ++nL) {
-                  const PetscInt localVertex  = ((nVz-1)*nVy +     0)*nVx + xv + nC;
-                  const PetscInt remoteVertex = (      0*nVy + nVy-1)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
-
-                  localPoints[nL]        = localVertex;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteVertex;
+                for (xv = 0; xv < nVx; ++xv) {
+                  const PetscInt localVertex  = ((nVz-1)*nVy +     0)*nVx + xv + nC; /* bottom front vertices */
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                 }
               } else {
-                nleavesCheck += nVx*nVz; /* bottom vertices */
                 for (zv = 0; zv < nVz; ++zv) {
-                  for (xv = 0; xv < nVx; ++xv, ++nL) {
-                    const PetscInt localVertex  = (zv*nVy +     0)*nVx + xv + nC;
-                    const PetscInt remoteVertex = (zv*nVy + nVy-1)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
-
-                    localPoints[nL]        = localVertex;
-                    remotePoints[nL].rank  = neighbor;
-                    remotePoints[nL].index = remoteVertex;
+                  for (xv = 0; xv < nVx; ++xv) {
+                    const PetscInt localVertex  = (zv*nVy +     0)*nVx + xv + nC; /* bottom vertices */
+                    if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                   }
                 }
-                nleavesCheck += nyF;     /* bottom faces */
-                for (yf = 0; yf < nyF; ++yf, ++nL) {
+#if 0
+                for (yf = 0; yf < nyF; ++yf) {
                   /* THIS IS WRONG */
-                  const PetscInt localFace  = 0 + nC+nV;
-                  const PetscInt remoteFace = 0 + nC+nV;
-
-                  localPoints[nL]        = localFace;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteFace;
+                  const PetscInt localFace  = 0 + nC+nV; /* bottom faces */
+                  if (!PetscBTLookupSet(isLeaf, localVFace)) ++nleaves;
                 }
+#endif
               }
             } else if (yp > 0) { /* top */
               if (zp < 0) { /* back */
-                nleavesCheck += nVx; /* top back vertices */
-                for (xv = 0; xv < nVx; ++xv, ++nL) {
-                  const PetscInt localVertex  = (      0*nVy + nVy-1)*nVx + xv + nC;
-                  const PetscInt remoteVertex = ((nVz-1)*nVy +     0)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
-
-                  localPoints[nL]        = localVertex;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteVertex;
+                for (xv = 0; xv < nVx; ++xv) {
+                  const PetscInt localVertex  = (      0*nVy + nVy-1)*nVx + xv + nC; /* top back vertices */
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                 }
               } else if (zp > 0) { /* front */
-                nleavesCheck += nVx; /* top front vertices */
-                for (xv = 0; xv < nVx; ++xv, ++nL) {
-                  const PetscInt localVertex  = ((nVz-1)*nVy + nVy-1)*nVx + xv + nC;
-                  const PetscInt remoteVertex = (      0*nVy +     0)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
-
-                  localPoints[nL]        = localVertex;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteVertex;
+                for (xv = 0; xv < nVx; ++xv) {
+                  const PetscInt localVertex  = ((nVz-1)*nVy + nVy-1)*nVx + xv + nC; /* top front vertices */
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                 }
               } else {
-                nleavesCheck += nVx*nVz; /* top vertices */
                 for (zv = 0; zv < nVz; ++zv) {
-                  for (xv = 0; xv < nVx; ++xv, ++nL) {
-                    const PetscInt localVertex  = (zv*nVy + nVy-1)*nVx + xv + nC;
-                    const PetscInt remoteVertex = (zv*nVy +     0)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
-
-                    localPoints[nL]        = localVertex;
-                    remotePoints[nL].rank  = neighbor;
-                    remotePoints[nL].index = remoteVertex;
+                  for (xv = 0; xv < nVx; ++xv) {
+                    const PetscInt localVertex  = (zv*nVy + nVy-1)*nVx + xv + nC; /* top vertices */
+                    if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                   }
                 }
-                nleavesCheck += nyF;     /* top faces */
-                for (yf = 0; yf < nyF; ++yf, ++nL) {
+#if 0
+                for (yf = 0; yf < nyF; ++yf) {
                   /* THIS IS WRONG */
-                  const PetscInt localFace  = 0 + nC+nV;
-                  const PetscInt remoteFace = 0 + nC+nV;
-
-                  localPoints[nL]        = localFace;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteFace;
+                  const PetscInt localFace  = 0 + nC+nV; /* top faces */
+                  if (!PetscBTLookupSet(isLeaf, localVFace)) ++nleaves;
                 }
+#endif
               }
             } else {
               if (zp < 0) { /* back */
-                nleavesCheck += nVx*nVy; /* back vertices */
                 for (yv = 0; yv < nVy; ++yv) {
-                  for (xv = 0; xv < nVx; ++xv, ++nL) {
-                    const PetscInt localVertex  = (      0*nVy + yv)*nVx + xv + nC;
-                    const PetscInt remoteVertex = ((nVz-1)*nVy + yv)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
-
-                    localPoints[nL]        = localVertex;
-                    remotePoints[nL].rank  = neighbor;
-                    remotePoints[nL].index = remoteVertex;
+                  for (xv = 0; xv < nVx; ++xv) {
+                    const PetscInt localVertex  = (      0*nVy + yv)*nVx + xv + nC; /* back vertices */
+                    if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                   }
                 }
-                nleavesCheck += nzF;     /* back faces */
-                for (zf = 0; zf < nzF; ++zf, ++nL) {
+#if 0
+                for (zf = 0; zf < nzF; ++zf) {
                   /* THIS IS WRONG */
-                  const PetscInt localFace  = 0 + nC+nV;
-                  const PetscInt remoteFace = 0 + nC+nV;
-
-                  localPoints[nL]        = localFace;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteFace;
+                  const PetscInt localFace  = 0 + nC+nV; /* back faces */
+                  if (!PetscBTLookupSet(isLeaf, localFace)) ++nleaves;
                 }
+#endif
               } else if (zp > 0) { /* front */
-                nleavesCheck += nVx*nVy; /* front vertices */
                 for (yv = 0; yv < nVy; ++yv) {
-                  for (xv = 0; xv < nVx; ++xv, ++nL) {
-                    const PetscInt localVertex  = ((nVz-1)*nVy + yv)*nVx + xv + nC;
-                    const PetscInt remoteVertex = (      0*nVy + yv)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
-
-                    localPoints[nL]        = localVertex;
-                    remotePoints[nL].rank  = neighbor;
-                    remotePoints[nL].index = remoteVertex;
+                  for (xv = 0; xv < nVx; ++xv) {
+                    const PetscInt localVertex  = ((nVz-1)*nVy + yv)*nVx + xv + nC; /* front vertices */
+                    if (!PetscBTLookupSet(isLeaf, localVertex)) ++nleaves;
                   }
                 }
-                nleavesCheck += nzF;     /* front faces */
-                for (zf = 0; zf < nzF; ++zf, ++nL) {
+#if 0
+                for (zf = 0; zf < nzF; ++zf) {
                   /* THIS IS WRONG */
-                  const PetscInt localFace  = 0 + nC+nV;
-                  const PetscInt remoteFace = 0 + nC+nV;
-
-                  localPoints[nL]        = localFace;
-                  remotePoints[nL].rank  = neighbor;
-                  remotePoints[nL].index = remoteFace;
+                  const PetscInt localFace  = 0 + nC+nV; /* front faces */
+                  if (!PetscBTLookupSet(isLeaf, localFace)) ++nleaves;
                 }
+#endif
               } else {
                 /* Nothing is shared from the interior */
               }
@@ -703,15 +708,805 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
       }
     }
   }
-  /* TODO: Remove duplication in leaf determination */
-  if (nleaves != nleavesCheck) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "The number of leaves %d did not match the number of remote leaves %d", nleaves, nleavesCheck);
+  ierr = PetscBTMemzero(pEnd-pStart, isLeaf);CHKERRQ(ierr);
+  ierr = PetscMalloc2(nleaves,&localPoints,nleaves,&remotePoints);CHKERRQ(ierr);
+  for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
+    for (yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
+      for (xn = 0; xn < 3; ++xn) {
+        const PetscInt xp       = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
+        const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
+        PetscInt       xv, yv, zv;
+
+        if (neighbor >= 0 && neighbor < rank) {
+          if (xp < 0) { /* left */
+            if (yp < 0) { /* bottom */
+              if (zp < 0) { /* back */
+                const PetscInt localVertex  = (      0*nVy +     0)*nVx +     0 + nC; /* left bottom back vertex */
+                const PetscInt remoteVertex = ((nVz-1)*nVy + nVy-1)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+
+                if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                  localPoints[nL]        = localVertex;
+                  remotePoints[nL].rank  = neighbor;
+                  remotePoints[nL].index = remoteVertex;
+                  ++nL;
+                }
+              } else if (zp > 0) { /* front */
+                const PetscInt localVertex  = ((nVz-1)*nVy +     0)*nVx +     0 + nC; /* left bottom front vertex */
+                const PetscInt remoteVertex = (      0*nVy + nVy-1)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+
+                if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                  localPoints[nL]        = localVertex;
+                  remotePoints[nL].rank  = neighbor;
+                  remotePoints[nL].index = remoteVertex;
+                  ++nL;
+                }
+              } else {
+                for (zv = 0; zv < nVz; ++zv) {
+                  const PetscInt localVertex  = (zv*nVy +     0)*nVx +     0 + nC; /* left bottom vertices */
+                  const PetscInt remoteVertex = (zv*nVy + nVy-1)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                    localPoints[nL]        = localVertex;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteVertex;
+                    ++nL;
+                  }
+                }
+              }
+            } else if (yp > 0) { /* top */
+              if (zp < 0) { /* back */
+                const PetscInt localVertex  = (      0*nVy + nVy-1)*nVx +     0 + nC; /* left top back vertex */
+                const PetscInt remoteVertex = ((nVz-1)*nVy +     0)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+
+                if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                  localPoints[nL]        = localVertex;
+                  remotePoints[nL].rank  = neighbor;
+                  remotePoints[nL].index = remoteVertex;
+                  ++nL;
+                }
+              } else if (zp > 0) { /* front */
+                const PetscInt localVertex  = ((nVz-1)*nVy + nVy-1)*nVx +     0 + nC; /* left top front vertex */
+                const PetscInt remoteVertex = (      0*nVy +     0)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+
+                if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                  localPoints[nL]        = localVertex;
+                  remotePoints[nL].rank  = neighbor;
+                  remotePoints[nL].index = remoteVertex;
+                  ++nL;
+                }
+              } else {
+                for (zv = 0; zv < nVz; ++zv) {
+                  const PetscInt localVertex  = (zv*nVy + nVy-1)*nVx +     0 + nC; /* left top vertices */
+                  const PetscInt remoteVertex = (zv*nVy +     0)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                    localPoints[nL]        = localVertex;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteVertex;
+                    ++nL;
+                  }
+                }
+              }
+            } else {
+              if (zp < 0) { /* back */
+                for (yv = 0; yv < nVy; ++yv) {
+                  const PetscInt localVertex  = (      0*nVy + yv)*nVx +     0 + nC; /* left back vertices */
+                  const PetscInt remoteVertex = ((nVz-1)*nVy + yv)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                    localPoints[nL]        = localVertex;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteVertex;
+                    ++nL;
+                  }
+                }
+              } else if (zp > 0) { /* front */
+                for (yv = 0; yv < nVy; ++yv) {
+                  const PetscInt localVertex  = ((nVz-1)*nVy + yv)*nVx +     0 + nC; /* left front vertices */
+                  const PetscInt remoteVertex = (      0*nVy + yv)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                    localPoints[nL]        = localVertex;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteVertex;
+                    ++nL;
+                  }
+                }
+              } else {
+                for (zv = 0; zv < nVz; ++zv) {
+                  for (yv = 0; yv < nVy; ++yv) {
+                    const PetscInt localVertex  = (zv*nVy + yv)*nVx +     0 + nC; /* left vertices */
+                    const PetscInt remoteVertex = (zv*nVy + yv)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+
+                    if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                      localPoints[nL]        = localVertex;
+                      remotePoints[nL].rank  = neighbor;
+                      remotePoints[nL].index = remoteVertex;
+                      ++nL;
+                    }
+                  }
+                }
+#if 0
+                for (xf = 0; xf < nxF; ++xf) {
+                  /* THIS IS WRONG */
+                  const PetscInt localFace  = 0 + nC+nV; /* left faces */
+                  const PetscInt remoteFace = 0 + nC+nV;
+
+                  if (!PetscBTLookupSet(isLeaf, localFace)) {
+                    localPoints[nL]        = localFace;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteFace;
+                  }
+                }
+#endif
+              }
+            }
+          } else if (xp > 0) { /* right */
+            if (yp < 0) { /* bottom */
+              if (zp < 0) { /* back */
+                const PetscInt localVertex  = (      0*nVy +     0)*nVx + nVx-1 + nC; /* right bottom back vertex */
+                const PetscInt remoteVertex = ((nVz-1)*nVy + nVy-1)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
+
+                if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                  localPoints[nL]        = localVertex;
+                  remotePoints[nL].rank  = neighbor;
+                  remotePoints[nL].index = remoteVertex;
+                  ++nL;
+                }
+              } else if (zp > 0) { /* front */
+                const PetscInt localVertex  = ((nVz-1)*nVy +     0)*nVx + nVx-1 + nC; /* right bottom front vertex */
+                const PetscInt remoteVertex = (      0*nVy + nVy-1)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
+
+                if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                  localPoints[nL]        = localVertex;
+                  remotePoints[nL].rank  = neighbor;
+                  remotePoints[nL].index = remoteVertex;
+                  ++nL;
+                }
+              } else {
+                nleavesCheck += nVz;
+                for (zv = 0; zv < nVz; ++zv) {
+                  const PetscInt localVertex  = (zv*nVy +     0)*nVx + nVx-1 + nC; /* right bottom vertices */
+                  const PetscInt remoteVertex = (zv*nVy + nVy-1)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
+
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                    localPoints[nL]        = localVertex;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteVertex;
+                    ++nL;
+                  }
+                }
+              }
+            } else if (yp > 0) { /* top */
+              if (zp < 0) { /* back */
+                const PetscInt localVertex  = (      0*nVy + nVy-1)*nVx + nVx-1 + nC; /* right top back vertex */
+                const PetscInt remoteVertex = ((nVz-1)*nVy +     0)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
+
+                if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                  localPoints[nL]        = localVertex;
+                  remotePoints[nL].rank  = neighbor;
+                  remotePoints[nL].index = remoteVertex;
+                  ++nL;
+                }
+              } else if (zp > 0) { /* front */
+                const PetscInt localVertex  = ((nVz-1)*nVy + nVy-1)*nVx + nVx-1 + nC; /* right top front vertex */
+                const PetscInt remoteVertex = (      0*nVy +     0)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
+
+                if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                  localPoints[nL]        = localVertex;
+                  remotePoints[nL].rank  = neighbor;
+                  remotePoints[nL].index = remoteVertex;
+                  ++nL;
+                }
+              } else {
+                for (zv = 0; zv < nVz; ++zv) {
+                  const PetscInt localVertex  = (zv*nVy + nVy-1)*nVx + nVx-1 + nC; /* right top vertices */
+                  const PetscInt remoteVertex = (zv*nVy +     0)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
+
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                    localPoints[nL]        = localVertex;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteVertex;
+                    ++nL;
+                  }
+                }
+              }
+            } else {
+              if (zp < 0) { /* back */
+                for (yv = 0; yv < nVy; ++yv) {
+                  const PetscInt localVertex  = (      0*nVy + yv)*nVx + nVx-1 + nC; /* right back vertices */
+                  const PetscInt remoteVertex = ((nVz-1)*nVy + yv)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
+
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                    localPoints[nL]        = localVertex;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteVertex;
+                    ++nL;
+                  }
+                }
+              } else if (zp > 0) { /* front */
+                for (yv = 0; yv < nVy; ++yv) {
+                  const PetscInt localVertex  = ((nVz-1)*nVy + yv)*nVx + nVx-1 + nC; /* right front vertices */
+                  const PetscInt remoteVertex = (      0*nVy + yv)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
+
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                    localPoints[nL]        = localVertex;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteVertex;
+                    ++nL;
+                  }
+                }
+              } else {
+                for (zv = 0; zv < nVz; ++zv) {
+                  for (yv = 0; yv < nVy; ++yv) {
+                    const PetscInt localVertex  = (zv*nVy + yv)*nVx + nVx-1 + nC; /* right vertices */
+                    const PetscInt remoteVertex = (zv*nVy + yv)*nVx + 0     + nC; /* TODO: Correct this for neighbor sizes */
+
+                    if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                      localPoints[nL]        = localVertex;
+                      remotePoints[nL].rank  = neighbor;
+                      remotePoints[nL].index = remoteVertex;
+                      ++nL;
+                    }
+                  }
+                }
+#if 0
+                for (xf = 0; xf < nxF; ++xf) {
+                  /* THIS IS WRONG */
+                  const PetscInt localFace  = 0 + nC+nV; /* right faces */
+                  const PetscInt remoteFace = 0 + nC+nV;
+
+                  if (!PetscBTLookupSet(isLeaf, localFace)) {
+                    localPoints[nL]        = localFace;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteFace;
+                    ++nL;
+                  }
+                }
+#endif
+              }
+            }
+          } else {
+            if (yp < 0) { /* bottom */
+              if (zp < 0) { /* back */
+                for (xv = 0; xv < nVx; ++xv) {
+                  const PetscInt localVertex  = (      0*nVy +     0)*nVx + xv + nC; /* bottom back vertices */
+                  const PetscInt remoteVertex = ((nVz-1)*nVy + nVy-1)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
+
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                    localPoints[nL]        = localVertex;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteVertex;
+                    ++nL;
+                  }
+                }
+              } else if (zp > 0) { /* front */
+                for (xv = 0; xv < nVx; ++xv) {
+                  const PetscInt localVertex  = ((nVz-1)*nVy +     0)*nVx + xv + nC; /* bottom front vertices */
+                  const PetscInt remoteVertex = (      0*nVy + nVy-1)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
+
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                    localPoints[nL]        = localVertex;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteVertex;
+                    ++nL;
+                  }
+                }
+              } else {
+                for (zv = 0; zv < nVz; ++zv) {
+                  for (xv = 0; xv < nVx; ++xv) {
+                    const PetscInt localVertex  = (zv*nVy +     0)*nVx + xv + nC; /* bottom vertices */
+                    const PetscInt remoteVertex = (zv*nVy + nVy-1)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
+
+                    if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                      localPoints[nL]        = localVertex;
+                      remotePoints[nL].rank  = neighbor;
+                      remotePoints[nL].index = remoteVertex;
+                      ++nL;
+                    }
+                  }
+                }
+#if 0
+                for (yf = 0; yf < nyF; ++yf) {
+                  /* THIS IS WRONG */
+                  const PetscInt localFace  = 0 + nC+nV; /* bottom faces */
+                  const PetscInt remoteFace = 0 + nC+nV;
+
+                  if (!PetscBTLookupSet(isLeaf, localFace)) {
+                    localPoints[nL]        = localFace;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteFace;
+                    ++nL;
+                  }
+                }
+#endif
+              }
+            } else if (yp > 0) { /* top */
+              if (zp < 0) { /* back */
+                for (xv = 0; xv < nVx; ++xv) {
+                  const PetscInt localVertex  = (      0*nVy + nVy-1)*nVx + xv + nC; /* top back vertices */
+                  const PetscInt remoteVertex = ((nVz-1)*nVy +     0)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
+
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                    localPoints[nL]        = localVertex;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteVertex;
+                    ++nL;
+                  }
+                }
+              } else if (zp > 0) { /* front */
+                for (xv = 0; xv < nVx; ++xv) {
+                  const PetscInt localVertex  = ((nVz-1)*nVy + nVy-1)*nVx + xv + nC; /* top front vertices */
+                  const PetscInt remoteVertex = (      0*nVy +     0)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
+
+                  if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                    localPoints[nL]        = localVertex;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteVertex;
+                    ++nL;
+                  }
+                }
+              } else {
+                for (zv = 0; zv < nVz; ++zv) {
+                  for (xv = 0; xv < nVx; ++xv) {
+                    const PetscInt localVertex  = (zv*nVy + nVy-1)*nVx + xv + nC; /* top vertices */
+                    const PetscInt remoteVertex = (zv*nVy +     0)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
+
+                    if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                      localPoints[nL]        = localVertex;
+                      remotePoints[nL].rank  = neighbor;
+                      remotePoints[nL].index = remoteVertex;
+                      ++nL;
+                    }
+                  }
+                }
+#if 0
+                for (yf = 0; yf < nyF; ++yf) {
+                  /* THIS IS WRONG */
+                  const PetscInt localFace  = 0 + nC+nV; /* top faces */
+                  const PetscInt remoteFace = 0 + nC+nV;
+
+                  if (!PetscBTLookupSet(isLeaf, localFace)) {
+                    localPoints[nL]        = localFace;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteFace;
+                    ++nL;
+                  }
+                }
+#endif
+              }
+            } else {
+              if (zp < 0) { /* back */
+                for (yv = 0; yv < nVy; ++yv) {
+                  for (xv = 0; xv < nVx; ++xv) {
+                    const PetscInt localVertex  = (      0*nVy + yv)*nVx + xv + nC; /* back vertices */
+                    const PetscInt remoteVertex = ((nVz-1)*nVy + yv)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
+
+                    if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                      localPoints[nL]        = localVertex;
+                      remotePoints[nL].rank  = neighbor;
+                      remotePoints[nL].index = remoteVertex;
+                      ++nL;
+                    }
+                  }
+                }
+#if 0
+                for (zf = 0; zf < nzF; ++zf) {
+                  /* THIS IS WRONG */
+                  const PetscInt localFace  = 0 + nC+nV; /* back faces */
+                  const PetscInt remoteFace = 0 + nC+nV;
+
+                  if (!PetscBTLookupSet(isLeaf, localFace)) {
+                    localPoints[nL]        = localFace;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteFace;
+                    ++nL;
+                  }
+                }
+#endif
+              } else if (zp > 0) { /* front */
+                for (yv = 0; yv < nVy; ++yv) {
+                  for (xv = 0; xv < nVx; ++xv) {
+                    const PetscInt localVertex  = ((nVz-1)*nVy + yv)*nVx + xv + nC; /* front vertices */
+                    const PetscInt remoteVertex = (      0*nVy + yv)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
+
+                    if (!PetscBTLookupSet(isLeaf, localVertex)) {
+                      localPoints[nL]        = localVertex;
+                      remotePoints[nL].rank  = neighbor;
+                      remotePoints[nL].index = remoteVertex;
+                      ++nL;
+                    }
+                  }
+                }
+#if 0
+                for (zf = 0; zf < nzF; ++zf) {
+                  /* THIS IS WRONG */
+                  const PetscInt localFace  = 0 + nC+nV; /* front faces */
+                  const PetscInt remoteFace = 0 + nC+nV;
+
+                  if (!PetscBTLookupSet(isLeaf, localFace)) {
+                    localPoints[nL]        = localFace;
+                    remotePoints[nL].rank  = neighbor;
+                    remotePoints[nL].index = remoteFace;
+                    ++nL;
+                  }
+                }
+#endif
+              } else {
+                /* Nothing is shared from the interior */
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  ierr = PetscBTDestroy(&isLeaf);CHKERRQ(ierr);
+  /* Remove duplication in leaf determination */
+  if (nleaves != nL) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "The number of leaves %d did not match the number of remote leaves %d", nleaves, nleavesCheck);
   ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), &sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf, pEnd, nleaves, localPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  /* Create global section */
-  ierr = PetscSectionCreateGlobalSection(dm->defaultSection, sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
+  ierr = DMSetPointSF(dm, sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  /* Create default SF */
-  ierr = DMCreateDefaultSF(dm, dm->defaultSection, dm->defaultGlobalSection);CHKERRQ(ierr);
+  *s = section;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetVertexCoordinates"
+PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, PetscReal yl, PetscReal yu, PetscReal zl, PetscReal zu)
+{
+  DM_DA         *da = (DM_DA *) dm->data;
+  Vec            coordinates;
+  PetscSection   section;
+  PetscScalar   *coords;
+  PetscReal      h[3];
+  PetscInt       dim, size, M, N, P, nVx, nVy, nVz, nV, vStart, vEnd, v, i, j, k;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMDAGetInfo(dm, &dim, &M, &N, &P, 0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  h[0] = (xu - xl)/M;
+  h[1] = (yu - yl)/N;
+  h[2] = (zu - zl)/P;
+  ierr = DMDAGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(section, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(section, 0, dim);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(section, vStart, vEnd);CHKERRQ(ierr);
+  for (v = vStart; v < vEnd; ++v) {
+    ierr = PetscSectionSetDof(section, v, dim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF, size, &coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  for (k = 0; k < nVz; ++k) {
+    PetscInt ind[3], d, off;
+
+    ind[0] = 0;
+    ind[1] = 0;
+    ind[2] = k + da->zs;
+    for (j = 0; j < nVy; ++j) {
+      ind[1] = j + da->ys;
+      for (i = 0; i < nVx; ++i) {
+        const PetscInt vertex = (k*nVy + j)*nVx + i + vStart;
+
+        ierr = PetscSectionGetOffset(section, vertex, &off);CHKERRQ(ierr);
+        ind[0] = i + da->xs;
+        for (d = 0; d < dim; ++d) {
+          coords[off+d] = h[d]*ind[d];
+        }
+      }
+    }
+  }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinateSection(dm, PETSC_DETERMINE, section);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAProjectFunctionLocal"
+PetscErrorCode DMDAProjectFunctionLocal(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec localX)
+{
+  PetscDS    prob;
+  PetscFE         fe;
+  PetscDualSpace  sp;
+  PetscQuadrature q;
+  PetscSection    section;
+  PetscScalar    *values;
+  PetscInt        numFields, numComp, numPoints, dim, dimEmbed, spDim, totDim, numValues, cStart, cEnd, f, c, v, d;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(prob, 0, (PetscObject *) &fe);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dm, &dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dimEmbed);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMDAVecGetClosure(dm, section, localX, cStart, &numValues, NULL);CHKERRQ(ierr);
+  if (numValues != totDim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The section cell closure size %d != dual space dimension %d", numValues, totDim);
+  ierr = DMGetWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q, NULL, &numPoints, NULL, NULL);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscFECellGeom geom;
+
+    ierr          = DMDAComputeCellGeometryFEM(dm, c, q, geom.v0, geom.J, NULL, &geom.detJ);CHKERRQ(ierr);
+    geom.dim      = dim;
+    geom.dimEmbed = dimEmbed;
+    for (f = 0, v = 0; f < numFields; ++f) {
+      void * const ctx = ctxs ? ctxs[f] : NULL;
+
+      ierr = PetscDSGetDiscretization(prob, f, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &numComp);CHKERRQ(ierr);
+      ierr = PetscFEGetDualSpace(fe, &sp);CHKERRQ(ierr);
+      ierr = PetscDualSpaceGetDimension(sp, &spDim);CHKERRQ(ierr);
+      for (d = 0; d < spDim; ++d) {
+        ierr = PetscDualSpaceApply(sp, d, &geom, numComp, funcs[f], ctx, &values[v]);CHKERRQ(ierr);
+        v += numComp;
+      }
+    }
+    ierr = DMDAVecSetClosure(dm, section, localX, c, values, mode);CHKERRQ(ierr);
+  }
+  ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAProjectFunction"
+/*@C
+  DMDAProjectFunction - This projects the given function into the function space provided.
+
+  Input Parameters:
++ dm      - The DM
+. funcs   - The coordinate functions to evaluate
+. ctxs    - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. X - vector
+
+  Level: developer
+
+.seealso: DMDAComputeL2Diff()
+@*/
+PetscErrorCode DMDAProjectFunction(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, InsertMode mode, Vec X)
+{
+  Vec            localX;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMDAProjectFunctionLocal(dm, funcs, ctxs, mode, localX);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAComputeL2Diff"
+/*@C
+  DMDAComputeL2Diff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
+
+  Input Parameters:
++ dm    - The DM
+. funcs - The functions to evaluate for each field component
+. ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
+- X     - The coefficient vector u_h
+
+  Output Parameter:
+. diff - The diff ||u - u_h||_2
+
+  Level: developer
+
+.seealso: DMDAProjectFunction(), DMDAComputeL2GradientDiff()
+@*/
+PetscErrorCode DMDAComputeL2Diff(DM dm, void (**funcs)(const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, PetscReal *diff)
+{
+  const PetscInt  debug = 0;
+  PetscDS    prob;
+  PetscFE         fe;
+  PetscQuadrature quad;
+  PetscSection    section;
+  Vec             localX;
+  PetscScalar    *funcVal;
+  PetscReal      *coords, *v0, *J, *invJ, detJ;
+  PetscReal       localDiff = 0.0;
+  PetscInt        dim, numFields, Nc, cStart, cEnd, c, field, fieldOffset, comp;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMDAGetInfo(dm, &dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(prob, 0, (PetscObject *) &fe);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  /* There are no BC values in DAs right now: ierr = DMDAProjectFunctionLocal(dm, fe, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr); */
+  ierr = PetscMalloc5(Nc,&funcVal,dim,&coords,dim,&v0,dim*dim,&J,dim*dim,&invJ);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *x = NULL;
+    PetscReal    elemDiff = 0.0;
+
+    ierr = DMDAComputeCellGeometryFEM(dm, c, quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
+    ierr = DMDAVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
+
+    for (field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
+      void * const ctx = ctxs ? ctxs[field] : NULL;
+      const PetscReal *quadPoints, *quadWeights;
+      PetscReal       *basis;
+      PetscInt         numQuadPoints, numBasisFuncs, numBasisComps, q, d, e, fc, f;
+
+      ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(quad, NULL, &numQuadPoints, &quadPoints, &quadWeights);CHKERRQ(ierr);
+      ierr = PetscFEGetDimension(fe, &numBasisFuncs);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &numBasisComps);CHKERRQ(ierr);
+      ierr = PetscFEGetDefaultTabulation(fe, &basis, NULL, NULL);CHKERRQ(ierr);
+      if (debug) {
+        char title[1024];
+        ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
+        ierr = DMPrintCellVector(c, title, numBasisFuncs*numBasisComps, &x[fieldOffset]);CHKERRQ(ierr);
+      }
+      for (q = 0; q < numQuadPoints; ++q) {
+        for (d = 0; d < dim; d++) {
+          coords[d] = v0[d];
+          for (e = 0; e < dim; e++) {
+            coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
+          }
+        }
+        (*funcs[field])(coords, funcVal, ctx);
+        for (fc = 0; fc < numBasisComps; ++fc) {
+          PetscScalar interpolant = 0.0;
+
+          for (f = 0; f < numBasisFuncs; ++f) {
+            const PetscInt fidx = f*numBasisComps+fc;
+            interpolant += x[fieldOffset+fidx]*basis[q*numBasisFuncs*numBasisComps+fidx];
+          }
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ);CHKERRQ(ierr);}
+          elemDiff += PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ;
+        }
+      }
+      comp        += numBasisComps;
+      fieldOffset += numBasisFuncs*numBasisComps;
+    }
+    ierr = DMDAVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
+    if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d diff %g\n", c, elemDiff);CHKERRQ(ierr);}
+    localDiff += elemDiff;
+  }
+  ierr  = PetscFree5(funcVal,coords,v0,J,invJ);CHKERRQ(ierr);
+  ierr  = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr  = MPI_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  *diff = PetscSqrtReal(*diff);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAComputeL2GradientDiff"
+/*@C
+  DMDAComputeL2GradientDiff - This function computes the L_2 difference between the gradient of a function u and an FEM interpolant solution grad u_h.
+
+  Input Parameters:
++ dm    - The DM
+. funcs - The gradient functions to evaluate for each field component
+. ctxs  - Optional array of contexts to pass to each coordinate function.  ctxs itself may be null.
+. X     - The coefficient vector u_h
+- n     - The vector to project along
+
+  Output Parameter:
+. diff - The diff ||(grad u - grad u_h) . n||_2
+
+  Level: developer
+
+.seealso: DMDAProjectFunction(), DMPlexComputeL2Diff()
+@*/
+PetscErrorCode DMDAComputeL2GradientDiff(DM dm, void (**funcs)(const PetscReal [], const PetscReal [], PetscScalar *, void *), void **ctxs, Vec X, const PetscReal n[], PetscReal *diff)
+{
+  const PetscInt  debug = 0;
+  PetscDS    prob;
+  PetscFE         fe;
+  PetscQuadrature quad;
+  PetscSection    section;
+  Vec             localX;
+  PetscScalar    *funcVal, *interpolantVec;
+  PetscReal      *coords, *realSpaceDer, *v0, *J, *invJ, detJ;
+  PetscReal       localDiff = 0.0;
+  PetscInt        dim, numFields, Nc, cStart, cEnd, c, field, fieldOffset, comp;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMDAGetInfo(dm, &dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalComponents(prob, &Nc);CHKERRQ(ierr);
+  ierr = PetscDSGetDiscretization(prob, 0, (PetscObject *) &fe);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  /* There are no BC values in DAs right now: ierr = DMDAProjectFunctionLocal(dm, fe, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr); */
+  ierr = PetscMalloc7(Nc,&funcVal,dim,&coords,dim,&realSpaceDer,dim,&v0,dim*dim,&J,dim*dim,&invJ,dim,&interpolantVec);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *x = NULL;
+    PetscReal    elemDiff = 0.0;
+
+    ierr = DMDAComputeCellGeometryFEM(dm, c, quad, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
+    ierr = DMDAVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
+
+    for (field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
+      void * const ctx = ctxs ? ctxs[field] : NULL;
+      const PetscReal *quadPoints, *quadWeights;
+      PetscReal       *basisDer;
+      PetscInt         Nq, Nb, Nc, q, d, e, fc, f, g;
+
+      ierr = PetscDSGetDiscretization(prob, field, (PetscObject *) &fe);CHKERRQ(ierr);
+      ierr = PetscQuadratureGetData(quad, NULL, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+      ierr = PetscFEGetDimension(fe, &Nb);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
+      ierr = PetscFEGetDefaultTabulation(fe, NULL, &basisDer, NULL);CHKERRQ(ierr);
+      if (debug) {
+        char title[1024];
+        ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
+        ierr = DMPrintCellVector(c, title, Nb*Nc, &x[fieldOffset]);CHKERRQ(ierr);
+      }
+      for (q = 0; q < Nq; ++q) {
+        for (d = 0; d < dim; d++) {
+          coords[d] = v0[d];
+          for (e = 0; e < dim; e++) {
+            coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
+          }
+        }
+        (*funcs[field])(coords, n, funcVal, ctx);
+        for (fc = 0; fc < Nc; ++fc) {
+          PetscScalar interpolant = 0.0;
+
+          for (d = 0; d < dim; ++d) interpolantVec[d] = 0.0;
+          for (f = 0; f < Nb; ++f) {
+            const PetscInt fidx = f*Nc+fc;
+
+            for (d = 0; d < dim; ++d) {
+              realSpaceDer[d] = 0.0;
+              for (g = 0; g < dim; ++g) {
+                realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Nc+fidx)*dim+g];
+              }
+              interpolantVec[d] += x[fieldOffset+fidx]*realSpaceDer[d];
+            }
+          }
+          for (d = 0; d < dim; ++d) interpolant += interpolantVec[d]*n[d];
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d fieldDer %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ);CHKERRQ(ierr);}
+          elemDiff += PetscSqr(PetscRealPart(interpolant - funcVal[fc]))*quadWeights[q]*detJ;
+        }
+      }
+      comp        += Nc;
+      fieldOffset += Nb*Nc;
+    }
+    ierr = DMDAVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
+    if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d diff %g\n", c, elemDiff);CHKERRQ(ierr);}
+    localDiff += elemDiff;
+  }
+  ierr  = PetscFree7(funcVal,coords,realSpaceDer,v0,J,invJ,interpolantVec);CHKERRQ(ierr);
+  ierr  = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr  = MPI_Allreduce(&localDiff, diff, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  *diff = PetscSqrtReal(*diff);
   PetscFunctionReturn(0);
 }
 
@@ -783,7 +1578,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
     zm = dd->ze-dd->zs;
   }
 
-  switch (dd->dim) {
+  switch (da->dim) {
   case 1: {
     void *ptr;
 
@@ -820,7 +1615,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
     break;
   }
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
+    SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
   }
 
 done:

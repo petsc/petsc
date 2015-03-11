@@ -220,6 +220,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   size_t            m = (size_t) n,maxblock = 65536;
   char              *pp = (char*)p;
 #if defined(PETSC_USE_REAL___FLOAT128)
+  PetscBool         readdouble = PETSC_FALSE;
   double            *ppp;
 #endif
 #if !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_REAL___FLOAT128)
@@ -257,10 +258,11 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
 #if defined(PETSC_USE_REAL___FLOAT128)
+  ierr = PetscOptionsGetBool(NULL,"-binary_read_double",&readdouble,NULL);CHKERRQ(ierr);
   /* If using __float128 precision we still read in doubles from file */
-  if (type == PETSC_SCALAR) {
+  if (type == PETSC_SCALAR && readdouble) {
     m    = m/2;
-    ierr = PetscMalloc(n*sizeof(double),&ppp);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&ppp);CHKERRQ(ierr);
     pp   = (char*)ppp;
   }
 #endif
@@ -276,7 +278,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   }
 
 #if defined(PETSC_USE_REAL___FLOAT128)
-  if (type == PETSC_SCALAR) {
+  if (type == PETSC_SCALAR && readdouble) {
     PetscScalar *pv = (PetscScalar*) p;
     PetscInt    i;
 #if !defined(PETSC_WORDS_BIGENDIAN)
@@ -364,7 +366,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
     const char *fnametmp;
 
     if (n > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only binary view a single function at a time");
-    ierr = PetscFPTFind(p,&fnametmp);CHKERRQ(ierr);
+    ierr = PetscFPTFind(*(void**)p,&fnametmp);CHKERRQ(ierr);
     ierr = PetscStrncpy(fname,fnametmp,64);CHKERRQ(ierr);
 #else
     ierr = PetscStrncpy(fname,"",64);CHKERRQ(ierr);
@@ -396,7 +398,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
     wsize = (m < maxblock) ? m : maxblock;
     err   = write(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
-    if (err != wsize) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing to file.");
+    if (err != wsize) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing to file total size %d err %d wsize %d",(int)n,(int)err,(int)wsize);
     m  -= wsize;
     pp += wsize;
   }

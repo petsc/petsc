@@ -1,8 +1,8 @@
-#include <petscsys.h>
+#include <stdio.h>
 /*
         Prints the size of various C data types
 */
-int main(int argc,char *args)
+int main(int argc,char **args)
 {
   fprintf(stdout,"long double : %lu\n",(unsigned long)sizeof(long double));
   fprintf(stdout,"double      : %lu\n",(unsigned long)sizeof(double));

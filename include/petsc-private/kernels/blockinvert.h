@@ -137,7 +137,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscErrorCode _ierr;                        \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(ierr); \
     _ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(_ierr); \
-    PetscStackCall("BLASgemm",BLASgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_one,(W),&(_bbs),(B),&(_bbs),&_zero,(A),&(_bbs))); \
+    PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_one,(W),&(_bbs),(B),&(_bbs),&_zero,(A),&(_bbs))); \
   }
 
 /*
@@ -152,7 +152,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscBLASInt   _bbs;                                 \
     PetscErrorCode _ierr;                                \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(_ierr);   \
-    PetscStackCall("BLASgemm",BLASgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_mone,(B),&(_bbs),(C),&(_bbs),&_one,(A),&(_bbs))); \
+    PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_mone,(B),&(_bbs),(C),&(_bbs),&_one,(A),&(_bbs))); \
   }
 
 /*
@@ -167,7 +167,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscBLASInt   _bbs;                                         \
     PetscErrorCode _ierr;                                        \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(_ierr);           \
-    PetscStackCall("BLASgemm",BLASgemm_("T","N",&(_bbs),&(_bbs),&(_bbs),&_one,(B),&(_bbs),(C),&(_bbs),&_one,(A),&(_bbs))); \
+    PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&(_bbs),&(_bbs),&(_bbs),&_one,(B),&(_bbs),(C),&(_bbs),&_one,(A),&(_bbs))); \
   }
 
 /*
@@ -183,7 +183,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscBLASInt   _ione = 1, _bbs;                               \
     PetscErrorCode _ierr;                                         \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(_ierr);            \
-    PetscStackCall("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
+    PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
   }
 
 /*
@@ -199,7 +199,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscBLASInt   _ione = 1,_bbs;                         \
     PetscErrorCode _ierr;                                         \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(_ierr);            \
-    PetscStackCall("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_mone,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
+    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_mone,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
   }
 
 /*
@@ -215,7 +215,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscBLASInt   _ione = 1,_bbs;                              \
     PetscErrorCode _ierr;                                      \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(_ierr);         \
-    PetscStackCall("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_mone,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
+    PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_mone,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
   }
 
 /*
@@ -231,7 +231,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscBLASInt   _ione = 1,_bbs;                         \
     PetscErrorCode _ierr;                                      \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(_ierr);         \
-    PetscStackCall("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
+    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione)); \
   }
 
 /*
@@ -248,7 +248,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscErrorCode _ierr;                                      \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(_ierr);          \
     _ierr = PetscBLASIntCast(ncols,&_bncols);CHKERRQ(_ierr);    \
-    PetscStackCall("BLASgemv",BLASgemv_("N",&(_bbs),&(_bncols),&_one,A,&(_bbs),v,&_ione,&_one,w,&_ione)); \
+    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bncols),&_one,A,&(_bbs),v,&_ione,&_one,w,&_ione)); \
   }
 
 /*
@@ -265,7 +265,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscErrorCode _ierr;                                      \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(_ierr);          \
     _ierr = PetscBLASIntCast(ncols,&_bncols);CHKERRQ(_ierr);    \
-    PetscStackCall("BLASgemv",BLASgemv_("N",&(_bbs),&(_bncols),&_mone,A,&(_bbs),v,&_ione,&_one,w,&_ione)); \
+    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bncols),&_mone,A,&(_bbs),v,&_ione,&_one,w,&_ione)); \
   }
 
 /*
@@ -281,7 +281,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscBLASInt   _ione = 1,_bbs;                 \
     PetscErrorCode _ierr;                          \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(_ierr);                         \
-    PetscStackCall("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione)); \
+    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione)); \
   }
 
 /*
@@ -297,7 +297,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscBLASInt   _ione = 1,_bbs;                        \
     PetscErrorCode _ierr;                          \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(_ierr); \
-    PetscStackCall("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione)); \
+    PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione)); \
   }
 
 /*
@@ -310,7 +310,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscErrorCode _ierr; \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(_ierr); \
     _ierr = PetscBLASIntCast(ncols,&_bncols);CHKERRQ(_ierr); \
-    PetscStackCall("BLASgemv",BLASgemv_("N",&(_bbs),&_bncols,&_one,A,&(_bbs),x,&_ione,&_zero,z,&_ione)); \
+    PetscStackCallBLAS("BLASgemv",BLASgemv_("N",&(_bbs),&_bncols,&_one,A,&(_bbs),x,&_ione,&_zero,z,&_ione)); \
   }
 
 /*
@@ -323,7 +323,7 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
     PetscErrorCode _ierr; \
     _ierr = PetscBLASIntCast(bs,&_bbs);CHKERRQ(_ierr); \
     _ierr = PetscBLASIntCast(ncols,&_bncols);CHKERRQ(_ierr); \
-    PetscStackCall("BLASgemv",BLASgemv_("T",&_bbs,&_bncols,&_one,A,&_bbs,x,&_ione,&_one,z,&_ione)); \
+    PetscStackCallBLAS("BLASgemv",BLASgemv_("T",&_bbs,&_bncols,&_one,A,&_bbs,x,&_ione,&_one,z,&_ione)); \
   }
 
 #else

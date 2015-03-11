@@ -160,6 +160,33 @@ PetscErrorCode  PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,Pets
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCFactorGetLevels"
+/*@
+   PCFactorGetLevels - Gets the number of levels of fill to use.
+
+   Logically Collective on PC
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  levels - number of levels of fill
+
+   Level: intermediate
+
+.keywords: PC, levels, fill, factorization, incomplete, ILU
+@*/
+PetscErrorCode  PCFactorGetLevels(PC pc,PetscInt *levels)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCFactorGetLevels_C",(PC,PetscInt*),(pc,levels));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetLevels"
 /*@
    PCFactorSetLevels - Sets the number of levels of fill to use.
@@ -199,6 +226,7 @@ PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
 
    Input Parameters:
 +  pc - the preconditioner context
+-  flg - PETSC_TRUE to turn on, PETSC_FALSE to turn off
 
    Options Database Key:
 .  -pc_factor_diagonal_fill
@@ -209,14 +237,54 @@ PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
    Level: intermediate
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
+
+.seealso: PCFactorGetAllowDiagonalFill()
+
 @*/
-PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc)
+PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetAllowDiagonalFill_C",(PC),(pc));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCFactorSetAllowDiagonalFill_C",(PC,PetscBool),(pc,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorGetAllowDiagonalFill"
+/*@
+   PCFactorGetAllowDiagonalFill - Determines if all diagonal matrix entries are
+       treated as level 0 fill even if there is no non-zero location.
+
+   Logically Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.   flg - PETSC_TRUE to turn on, PETSC_FALSE to turn off
+
+   Options Database Key:
+.  -pc_factor_diagonal_fill
+
+   Notes:
+   Does not apply with 0 fill.
+
+   Level: intermediate
+
+.keywords: PC, levels, fill, factorization, incomplete, ILU
+
+.seealso: PCFactorSetAllowDiagonalFill()
+
+@*/
+PetscErrorCode  PCFactorGetAllowDiagonalFill(PC pc,PetscBool *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCFactorGetAllowDiagonalFill_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -232,7 +300,7 @@ PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc)
 -  tol - diagonal entries smaller than this in absolute value are considered zero
 
    Options Database Key:
-.  -pc_factor_nonzeros_along_diagonal
+.  -pc_factor_nonzeros_along_diagonal <tol>
 
    Level: intermediate
 
@@ -375,10 +443,11 @@ PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
    Logically Collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
++  pc - the preconditioner context
+-  flg - PETSC_TRUE to enable, PETSC_FALSE to disable
 
    Options Database Key:
-.  -pc_factor_in_place - Activates in-place factorization
+.  -pc_factor_in_place <true,false>- Activate/deactivate in-place factorization
 
    Notes:
    PCFactorSetUseInplace() can only be used with the KSP method KSPPREONLY or when
@@ -392,15 +461,44 @@ PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
 
 .keywords: PC, set, factorization, direct, inplace, in-place, LU
 
-.seealso: PCILUSetUseInPlace()
+.seealso: PCFactorGetUseInPlace()
 @*/
-PetscErrorCode  PCFactorSetUseInPlace(PC pc)
+PetscErrorCode  PCFactorSetUseInPlace(PC pc,PetscBool flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetUseInPlace_C",(PC),(pc));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCFactorSetUseInPlace_C",(PC,PetscBool),(pc,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorGetUseInPlace"
+/*@
+   PCFactorGetUseInPlace - Determines if an in-place factorization is being used.
+
+   Logically Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  flg - PETSC_TRUE to enable, PETSC_FALSE to disable
+
+   Level: intermediate
+
+.keywords: PC, set, factorization, direct, inplace, in-place, LU
+
+.seealso: PCFactorSetUseInPlace()
+@*/
+PetscErrorCode  PCFactorGetUseInPlace(PC pc,PetscBool *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCFactorGetUseInPlace_C",(PC,PetscBool*),(pc,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

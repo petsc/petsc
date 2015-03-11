@@ -11,6 +11,7 @@ static char help[] ="Tests sequential and parallel MatMatMatMult() and MatPtAP()
     Example of usage: mpiexec -n 3 ./ex41 -Mx 10 -My 10 -Mz 10
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
@@ -79,16 +80,17 @@ int main(int argc,char **argv)
 
   /* Set up distributed array for fine grid */
   if (!Test_3D) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
                         user.fine.my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                         user.fine.mx,user.fine.my,user.fine.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
                         1,1,NULL,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   }
 
   /* Create and set A at fine grids */
-  ierr = DMCreateMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.fine.da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.fine.da,&A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
 
@@ -118,10 +120,10 @@ int main(int argc,char **argv)
 
   /* Set up distributed array for coarse grid */
   if (!Test_3D) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
                         user.coarse.my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                         user.coarse.mx,user.coarse.my,user.coarse.mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
                         1,1,NULL,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   }

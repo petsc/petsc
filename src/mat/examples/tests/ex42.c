@@ -6,7 +6,7 @@ Input arguments are:\n\
   -nd <size>      : > 0  no of domains per processor \n\
   -ov <overlap>   : >=0  amount of overlap between domains\n\n";
 
-#include <petscksp.h>
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -53,9 +53,9 @@ int main(int argc,char **args)
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
 
   /* Create the IS corresponding to subdomains */
-  ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRQ(ierr);
-  ierr = PetscMalloc(nd*sizeof(IS **),&is2);CHKERRQ(ierr);
-  ierr = PetscMalloc(m *sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nd,&is2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m ,&idx);CHKERRQ(ierr);
 
   /* Create the random Index Sets */
   for (i=0; i<nd; i++) {

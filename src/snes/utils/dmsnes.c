@@ -54,9 +54,14 @@ PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
   } else if (isbinary) {
     struct {
       PetscErrorCode (*func)(SNES,Vec,Vec,void*);
-      PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-    } funcstruct = {kdm->ops->computefunction,kdm->ops->computejacobian};
-    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,2,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    } funcstruct;
+    struct {
+      PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*);
+    } jacstruct;
+    funcstruct.func = kdm->ops->computefunction;
+    jacstruct.jac   = kdm->ops->computejacobian;
+    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&jacstruct,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -68,9 +73,7 @@ static PetscErrorCode DMSNESCreate(MPI_Comm comm,DMSNES *kdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = SNESInitializePackage();CHKERRQ(ierr);
-#endif
   ierr = PetscHeaderCreate(*kdm, _p_DMSNES, struct _DMSNESOps, DMSNES_CLASSID,  "DMSNES", "DMSNES", "DMSNES", comm, DMSNESDestroy, DMSNESView);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMSNESOps));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -298,11 +301,8 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc,DM dmdest)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
   PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
-  ierr = DMSNESDestroy((DMSNES*)&dmdest->dmsnes);CHKERRQ(ierr);
-
-  dmdest->dmsnes = dmsrc->dmsnes;
-
-  ierr = PetscObjectReference(dmdest->dmsnes);CHKERRQ(ierr);
+  if (!dmdest->dmsnes) {ierr = DMSNESCreate(PetscObjectComm((PetscObject) dmdest), (DMSNES *) &dmdest->dmsnes);CHKERRQ(ierr);}
+  ierr = DMSNESCopy((DMSNES) dmsrc->dmsnes, (DMSNES) dmdest->dmsnes);CHKERRQ(ierr);
   ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMSNES,NULL,NULL);CHKERRQ(ierr);
   ierr = DMRefineHookAdd(dmdest,DMRefineHook_DMSNES,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,NULL);CHKERRQ(ierr);
@@ -318,7 +318,7 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc,DM dmdest)
 
    Input Arguments:
 +  dm - DM to be used with SNES
-.  SNESFunction - residual evaluation function
+.  f - residual evaluation function; see SNESFunction for details
 -  ctx - context for residual evaluation
 
    Level: advanced
@@ -330,17 +330,17 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc,DM dmdest)
 
 .seealso: DMSNESSetContext(), SNESSetFunction(), DMSNESSetJacobian(), SNESFunction
 @*/
-PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*),void *ctx)
+PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (SNESFunction || ctx) {
+  if (f || ctx) {
     ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   }
-  if (SNESFunction) sdm->ops->computefunction = SNESFunction;
+  if (f) sdm->ops->computefunction = f;
   if (ctx) sdm->functionctx = ctx;
   PetscFunctionReturn(0);
 }
@@ -356,7 +356,7 @@ PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*SNESFunction)(SNES,Vec,V
 .  dm - DM to be used with SNES
 
    Output Arguments:
-+  SNESFunction - residual evaluation function
++  f - residual evaluation function; see SNESFunction for details
 -  ctx - context for residual evaluation
 
    Level: advanced
@@ -367,7 +367,7 @@ PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*SNESFunction)(SNES,Vec,V
 
 .seealso: DMSNESSetContext(), DMSNESSetFunction(), SNESSetFunction(), SNESFunction
 @*/
-PetscErrorCode DMSNESGetFunction(DM dm,PetscErrorCode (**SNESFunction)(SNES,Vec,Vec,void*),void **ctx)
+PetscErrorCode DMSNESGetFunction(DM dm,PetscErrorCode (**f)(SNES,Vec,Vec,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
@@ -375,7 +375,7 @@ PetscErrorCode DMSNESGetFunction(DM dm,PetscErrorCode (**SNESFunction)(SNES,Vec,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (SNESFunction) *SNESFunction = sdm->ops->computefunction;
+  if (f) *f = sdm->ops->computefunction;
   if (ctx) *ctx = sdm->functionctx;
   PetscFunctionReturn(0);
 }
@@ -389,24 +389,24 @@ PetscErrorCode DMSNESGetFunction(DM dm,PetscErrorCode (**SNESFunction)(SNES,Vec,
 
    Input Arguments:
 +  dm - DM to be used with SNES
-.  SNESObjectiveFunction - residual evaluation function
+.  obj - objective evaluation function; see SNESObjectiveFunction for details
 -  ctx - context for residual evaluation
 
    Level: advanced
 
 .seealso: DMSNESSetContext(), SNESGetObjective(), DMSNESSetFunction()
 @*/
-PetscErrorCode DMSNESSetObjective(DM dm,PetscErrorCode (*SNESObjectiveFunction)(SNES,Vec,PetscReal*,void*),void *ctx)
+PetscErrorCode DMSNESSetObjective(DM dm,PetscErrorCode (*obj)(SNES,Vec,PetscReal*,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (SNESObjectiveFunction || ctx) {
+  if (obj || ctx) {
     ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   }
-  if (SNESObjectiveFunction) sdm->ops->computeobjective = SNESObjectiveFunction;
+  if (obj) sdm->ops->computeobjective = obj;
   if (ctx) sdm->objectivectx = ctx;
   PetscFunctionReturn(0);
 }
@@ -422,7 +422,7 @@ PetscErrorCode DMSNESSetObjective(DM dm,PetscErrorCode (*SNESObjectiveFunction)(
 .  dm - DM to be used with SNES
 
    Output Arguments:
-+  SNESObjectiveFunction- residual evaluation function
++  obj- residual evaluation function; see SNESObjectiveFunction for details
 -  ctx - context for residual evaluation
 
    Level: advanced
@@ -433,7 +433,7 @@ PetscErrorCode DMSNESSetObjective(DM dm,PetscErrorCode (*SNESObjectiveFunction)(
 
 .seealso: DMSNESSetContext(), DMSNESSetObjective(), SNESSetFunction()
 @*/
-PetscErrorCode DMSNESGetObjective(DM dm,PetscErrorCode (**SNESObjectiveFunction)(SNES,Vec,PetscReal*,void*),void **ctx)
+PetscErrorCode DMSNESGetObjective(DM dm,PetscErrorCode (**obj)(SNES,Vec,PetscReal*,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
@@ -441,51 +441,51 @@ PetscErrorCode DMSNESGetObjective(DM dm,PetscErrorCode (**SNESObjectiveFunction)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (SNESObjectiveFunction) *SNESObjectiveFunction = sdm->ops->computeobjective;
+  if (obj) *obj = sdm->ops->computeobjective;
   if (ctx) *ctx = sdm->objectivectx;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSNESSetGS"
+#define __FUNCT__ "DMSNESSetNGS"
 /*@C
-   DMSNESSetGS - set SNES Gauss-Seidel relaxation function
+   DMSNESSetNGS - set SNES Gauss-Seidel relaxation function
 
    Not Collective
 
    Input Argument:
 +  dm - DM to be used with SNES
-.  SNESGSFunction - relaxation function
+.  f  - relaxation function, see SNESGSFunction
 -  ctx - context for residual evaluation
 
    Level: advanced
 
    Note:
-   SNESSetGS() is normally used, but it calls this function internally because the user context is actually
+   SNESSetNGS() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
 
 .seealso: DMSNESSetContext(), SNESSetFunction(), DMSNESSetJacobian(), DMSNESSetFunction(), SNESGSFunction
 @*/
-PetscErrorCode DMSNESSetGS(DM dm,PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec,void*),void *ctx)
+PetscErrorCode DMSNESSetNGS(DM dm,PetscErrorCode (*f)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (SNESGSFunction || ctx) {
+  if (f || ctx) {
     ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   }
-  if (SNESGSFunction) sdm->ops->computegs = SNESGSFunction;
+  if (f) sdm->ops->computegs = f;
   if (ctx) sdm->gsctx = ctx;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSNESGetGS"
+#define __FUNCT__ "DMSNESGetNGS"
 /*@C
-   DMSNESGetGS - get SNES Gauss-Seidel relaxation function
+   DMSNESGetNGS - get SNES Gauss-Seidel relaxation function
 
    Not Collective
 
@@ -493,19 +493,19 @@ PetscErrorCode DMSNESSetGS(DM dm,PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec,v
 .  dm - DM to be used with SNES
 
    Output Arguments:
-+  SNESGSFunction - relaxation function which performs Gauss-Seidel sweeps
++  f - relaxation function which performs Gauss-Seidel sweeps, see SNESGSFunction 
 -  ctx - context for residual evaluation
 
    Level: advanced
 
    Note:
-   SNESGetGS() is normally used, but it calls this function internally because the user context is actually
+   SNESGetNGS() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
 
-.seealso: DMSNESSetContext(), SNESGetGS(), DMSNESGetJacobian(), DMSNESGetFunction(), SNESGSFunction
+.seealso: DMSNESSetContext(), SNESGetNGS(), DMSNESGetJacobian(), DMSNESGetFunction(), SNESNGSFunction
 @*/
-PetscErrorCode DMSNESGetGS(DM dm,PetscErrorCode (**SNESGSFunction)(SNES,Vec,Vec,void*),void **ctx)
+PetscErrorCode DMSNESGetNGS(DM dm,PetscErrorCode (**f)(SNES,Vec,Vec,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
@@ -513,7 +513,7 @@ PetscErrorCode DMSNESGetGS(DM dm,PetscErrorCode (**SNESGSFunction)(SNES,Vec,Vec,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (SNESGSFunction) *SNESGSFunction = sdm->ops->computegs;
+  if (f) *f = sdm->ops->computegs;
   if (ctx) *ctx = sdm->gsctx;
   PetscFunctionReturn(0);
 }
@@ -527,7 +527,7 @@ PetscErrorCode DMSNESGetGS(DM dm,PetscErrorCode (**SNESGSFunction)(SNES,Vec,Vec,
 
    Input Argument:
 +  dm - DM to be used with SNES
-.  SNESJacobianFunction - Jacobian evaluation function
+.  J - Jacobian evaluation function
 -  ctx - context for residual evaluation
 
    Level: advanced
@@ -539,17 +539,17 @@ PetscErrorCode DMSNESGetGS(DM dm,PetscErrorCode (**SNESGSFunction)(SNES,Vec,Vec,
 
 .seealso: DMSNESSetContext(), SNESSetFunction(), DMSNESGetJacobian(), SNESSetJacobian(), SNESJacobianFunction
 @*/
-PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (SNESJacobianFunction || ctx) {
+  if (J || ctx) {
     ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   }
-  if (SNESJacobianFunction) sdm->ops->computejacobian = SNESJacobianFunction;
+  if (J) sdm->ops->computejacobian = J;
   if (ctx) sdm->jacobianctx = ctx;
   PetscFunctionReturn(0);
 }
@@ -565,7 +565,7 @@ PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*SNESJacobianFunction)(SN
 .  dm - DM to be used with SNES
 
    Output Arguments:
-+  SNESJacobianFunction - Jacobian evaluation function
++  J - Jacobian evaluation function; see SNESJacobianFunction for all calling sequence
 -  ctx - context for residual evaluation
 
    Level: advanced
@@ -577,7 +577,7 @@ PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*SNESJacobianFunction)(SN
 
 .seealso: DMSNESSetContext(), SNESSetFunction(), DMSNESSetJacobian(), SNESJacobianFunction
 @*/
-PetscErrorCode DMSNESGetJacobian(DM dm,PetscErrorCode (**SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
+PetscErrorCode DMSNESGetJacobian(DM dm,PetscErrorCode (**J)(SNES,Vec,Mat,Mat,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
@@ -585,7 +585,7 @@ PetscErrorCode DMSNESGetJacobian(DM dm,PetscErrorCode (**SNESJacobianFunction)(S
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (SNESJacobianFunction) *SNESJacobianFunction = sdm->ops->computejacobian;
+  if (J) *J = sdm->ops->computejacobian;
   if (ctx) *ctx = sdm->jacobianctx;
   PetscFunctionReturn(0);
 }
@@ -599,15 +599,15 @@ PetscErrorCode DMSNESGetJacobian(DM dm,PetscErrorCode (**SNESJacobianFunction)(S
 
    Input Argument:
 +  dm - DM to be used with SNES
-.  SNESFunction - RHS evaluation function
-.  SNESJacobianFunction - Picard matrix evaluation function
+.  b - RHS evaluation function
+.  J - Picard matrix evaluation function
 -  ctx - context for residual evaluation
 
    Level: advanced
 
 .seealso: SNESSetPicard(), DMSNESSetFunction(), DMSNESSetJacobian()
 @*/
-PetscErrorCode DMSNESSetPicard(DM dm,PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*),PetscErrorCode (*SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode DMSNESSetPicard(DM dm,PetscErrorCode (*b)(SNES,Vec,Vec,void*),PetscErrorCode (*J)(SNES,Vec,Mat,Mat,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
@@ -615,8 +615,8 @@ PetscErrorCode DMSNESSetPicard(DM dm,PetscErrorCode (*SNESFunction)(SNES,Vec,Vec
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (SNESFunction) sdm->ops->computepfunction = SNESFunction;
-  if (SNESJacobianFunction) sdm->ops->computepjacobian = SNESJacobianFunction;
+  if (b) sdm->ops->computepfunction = b;
+  if (J) sdm->ops->computepjacobian = J;
   if (ctx) sdm->pctx = ctx;
   PetscFunctionReturn(0);
 }
@@ -632,15 +632,15 @@ PetscErrorCode DMSNESSetPicard(DM dm,PetscErrorCode (*SNESFunction)(SNES,Vec,Vec
 .  dm - DM to be used with SNES
 
    Output Arguments:
-+  SNESFunction - Jacobian evaluation function;
-.  SNESJacobianFunction  - RHS evaluation function;
++  b - RHS evaluation function; see SNESFunction for details
+.  J  - RHS evaluation function; see SNESJacobianFunction for detailsa
 -  ctx - context for residual evaluation
 
    Level: advanced
 
 .seealso: DMSNESSetContext(), SNESSetFunction(), DMSNESSetJacobian()
 @*/
-PetscErrorCode DMSNESGetPicard(DM dm,PetscErrorCode (**SNESFunction)(SNES,Vec,Vec,void*),PetscErrorCode (**SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
+PetscErrorCode DMSNESGetPicard(DM dm,PetscErrorCode (**b)(SNES,Vec,Vec,void*),PetscErrorCode (**J)(SNES,Vec,Mat,Mat,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DMSNES         sdm;
@@ -648,8 +648,8 @@ PetscErrorCode DMSNESGetPicard(DM dm,PetscErrorCode (**SNESFunction)(SNES,Vec,Ve
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (SNESFunction) *SNESFunction = sdm->ops->computepfunction;
-  if (SNESJacobianFunction) *SNESJacobianFunction = sdm->ops->computepjacobian;
+  if (b) *b = sdm->ops->computepfunction;
+  if (J) *J = sdm->ops->computepjacobian;
   if (ctx) *ctx = sdm->pctx;
   PetscFunctionReturn(0);
 }

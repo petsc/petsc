@@ -71,7 +71,7 @@ class Configure(config.base.Configure):
     for (name, (petscDir, petscArch)) in self.getLocations():
       petscPythonDir = os.path.join(petscDir, 'config')
       sys.path.append(petscPythonDir)
-      confPath = os.path.join(petscDir, petscArch,'conf')
+      confPath = os.path.join(petscDir, petscArch,'lib','petsc-conf')
       petscConf = framework.loadFramework(confPath)
       if petscConf:
         self.logPrint('Loaded PETSc-AS configuration ('+name+') from '+confPath)
@@ -90,12 +90,12 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.languages  = framework.require('PETSc.utilities.languages', self)
+    self.languages  = framework.require('PETSc.options.languages', self)
     self.compilers  = framework.require('config.compilers', self)
     self.headers    = framework.require('config.headers', self)
     self.libraries  = framework.require('config.libraries', self)
-    self.blaslapack = framework.require('PETSc.packages.BlasLapack', self)
-    self.mpi        = framework.require('PETSc.packages.MPI', self)
+    self.blaslapack = framework.require('config.packages.BlasLapack', self)
+    self.mpi        = framework.require('config.packages.MPI', self)
     return
 
   def getPETScArch(self, petscDir):

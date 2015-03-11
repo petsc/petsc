@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
-#include "../src/mat/impls/baij/mpi/mpibaij.h"
-#include "../src/mat/impls/baij/seq/bstream/bstream.h"
+#include <../src/mat/impls/baij/mpi/mpibaij.h>
+#include <../src/mat/impls/baij/seq/bstream/bstream.h>
 
 extern PetscErrorCode MatMult_SeqBSTRM_4(Mat,Vec,Vec);
 extern PetscErrorCode MatMult_SeqBSTRM_5(Mat,Vec,Vec);
@@ -35,13 +35,13 @@ PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
   blen = ai[MROW]-ai[0];
   slen = blen*bs;
 
-  ierr        = PetscNewLog(a->A,Mat_SeqBSTRM,&bstrmA);CHKERRQ(ierr);
+  ierr        = PetscNewLog(a->A,&bstrmA);CHKERRQ(ierr);
   a->A->spptr = (void*) bstrmA;
   bstrmA      = (Mat_SeqBSTRM*) a->A->spptr;
   bstrmA->rbs = bstrmA->cbs = bs;
-  ierr        = PetscMalloc(bs2*blen*sizeof(PetscScalar), &bstrmA->as);CHKERRQ(ierr);
+  ierr        = PetscMalloc1(bs2*blen, &bstrmA->as);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(rbs*sizeof(PetscScalar*), &asp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rbs, &asp);CHKERRQ(ierr);
 
   for (i=0; i<rbs; i++) asp[i] = bstrmA->as + i*slen;
 
@@ -68,14 +68,14 @@ PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
 /*.....*/
   blen = bi[MROW]-bi[0];
   slen = blen*bs;
-  ierr = PetscNewLog(a->B,Mat_SeqBSTRM,&bstrmB);CHKERRQ(ierr);
+  ierr = PetscNewLog(a->B,&bstrmB);CHKERRQ(ierr);
 
   a->B->spptr = (void*) bstrmB;
   bstrmB      = (Mat_SeqBSTRM*) a->B->spptr;
   bstrmB->rbs = bstrmB->cbs = bs;
 
-  ierr = PetscMalloc(bs2*blen*sizeof(PetscScalar), &bstrmB->as);CHKERRQ(ierr);
-  ierr = PetscMalloc(rbs*sizeof(PetscScalar*), &bsp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs2*blen, &bstrmB->as);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rbs, &bsp);CHKERRQ(ierr);
 
   for (i=0; i<rbs; i++) bsp[i] = bstrmB->as + i*slen;
 
@@ -143,7 +143,7 @@ PetscErrorCode MatCreateMPIBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
 }
 
 PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBSTRM(Mat,MatType,MatReuse,Mat*);
-extern PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJ(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+extern PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJ(Mat,PetscInt,PetscInt,const PetscInt *,PetscInt,const PetscInt *);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJSetPreallocation_MPIBSTRM"
@@ -169,7 +169,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat A,MatType type,MatRe
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr     = PetscNewLog(B,   Mat_SeqBSTRM,&bstrm);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&bstrm);CHKERRQ(ierr);
   B->spptr = (void*) bstrm;
 
   /* Set function pointers for methods that we inherit from AIJ but override.

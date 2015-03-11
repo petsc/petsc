@@ -104,19 +104,20 @@ PetscErrorCode IFunctionLoad(AppCtx **ctx,PetscViewer v)
 */
 PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *u,*udot,*f;
+  PetscErrorCode    ierr;
+  PetscScalar       *f;
+  const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = udot[0] + ctx->k*u[0]*u[1];
   f[1] = udot[1] + ctx->k*u[0]*u[1];
   f[2] = udot[2] - ctx->k*u[0]*u[1];
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -126,29 +127,29 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,AppCtx *ctx)
+PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,AppCtx *ctx)
 {
-  PetscErrorCode ierr;
-  PetscInt       rowcol[] = {0,1,2};
-  PetscScalar    *u,*udot,J[3][3];
+  PetscErrorCode    ierr;
+  PetscInt          rowcol[] = {0,1,2};
+  PetscScalar       J[3][3];
+  const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
-  ierr    = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr    = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   J[0][0] = a + ctx->k*u[1];   J[0][1] = ctx->k*u[0];       J[0][2] = 0.0;
   J[1][0] = ctx->k*u[1];       J[1][1] = a + ctx->k*u[0];   J[1][2] = 0.0;
   J[2][0] = -ctx->k*u[1];      J[2][1] = -ctx->k*u[0];      J[2][2] = a;
-  ierr    = MatSetValues(*B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
+  ierr    = MatSetValues(B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -189,6 +190,7 @@ int main(int argc,char **argv)
   PetscInt       n = 3;
   AppCtx         ctx;
   PetscScalar    *u;
+  const char     * const names[] = {"U1","U2","U3",NULL};
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -205,24 +207,20 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&U,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Reaction options","");CHKERRQ(ierr);
-  {
-    ctx.k = .9;
-    ierr  = PetscOptionsScalar("-k","Reaction coefficient","",ctx.k,&ctx.k,NULL);CHKERRQ(ierr);
-    ierr  = VecDuplicate(U,&ctx.initialsolution);CHKERRQ(ierr);
-    ierr  = VecGetArray(ctx.initialsolution,&u);CHKERRQ(ierr);
-    u[0]  = 1;
-    u[1]  = .7;
-    u[2]  = 0;
-    ierr  = VecRestoreArray(ctx.initialsolution,&u);CHKERRQ(ierr);
-    ierr  = PetscOptionsVec("-initial","Initial values","",ctx.initialsolution,NULL);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ctx.k = .9;
+  ierr  = PetscOptionsGetScalar(NULL,"-k",&ctx.k,NULL);CHKERRQ(ierr);
+  ierr  = VecDuplicate(U,&ctx.initialsolution);CHKERRQ(ierr);
+  ierr  = VecGetArray(ctx.initialsolution,&u);CHKERRQ(ierr);
+  u[0]  = 1;
+  u[1]  = .7;
+  u[2]  = 0;
+  ierr  = VecRestoreArray(ctx.initialsolution,&u);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetVec(NULL,"-initial",ctx.initialsolution,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -256,6 +254,7 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,1000,20.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  ierr = TSMonitorLGSetVariableNames(ts,names);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system

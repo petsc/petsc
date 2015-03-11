@@ -1,12 +1,12 @@
 /* This program illustrates use of parallel real FFT */
-static char help[]="This program illustrates the use of parallel real 2D fft using fftw (without PETSc interface)";
+static char help[]="This program illustrates the use of parallel real 2D fft using fftw without PETSc interface";
 #include <petscmat.h>
 #include <fftw3.h>
 #include <fftw3-mpi.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   const ptrdiff_t N0=2056,N1=2056;
   fftw_plan       bplan,fplan;
@@ -14,8 +14,9 @@ PetscInt main(PetscInt argc,char **args)
   double          *in1,*in2;
   ptrdiff_t       alloc_local,local_n0,local_0_start;
   ptrdiff_t       local_n1,local_1_start;
-  PetscInt        i,j,n1;
-  PetscInt        size,rank,n,N,N_factor,NM;
+  PetscInt        i,j;
+  PetscMPIInt     size,rank;
+  int             n,N,N_factor,NM;
   PetscScalar     one=2.0,zero=0.5;
   PetscScalar     two=4.0,three=8.0,four=16.0;
   PetscScalar     a,*x_arr,*y_arr,*z_arr,enorm;
@@ -46,8 +47,9 @@ PetscInt main(PetscInt argc,char **args)
   in2=(double*)fftw_malloc(sizeof(double)*alloc_local*2);
   out=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
 
-  N=2*N0*(N1/2+1);N_factor=N0*N1;
-  n=2*local_n0*(N1/2+1);n1=local_n1*N0*2;
+  N        = 2*N0*(N1/2+1);
+  N_factor = N0*N1;
+  n        = 2*local_n0*(N1/2+1); 
 
 /*    printf("The value N is  %d from process %d\n",N,rank);  */
 /*    printf("The value n is  %d from process %d\n",n,rank);  */
@@ -110,8 +112,8 @@ PetscInt main(PetscInt argc,char **args)
   /*printf("The Value of NM is %d",NM); */
   ierr = VecGetOwnershipRange(fin,&low,NULL);
   /*printf("The local index is %d from %d\n",low,rank); */
-  ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1,&indx3);
-  ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1,&indx4);
+  ierr = PetscMalloc1(local_n0*N1,&indx3);
+  ierr = PetscMalloc1(local_n0*N1,&indx4);
   for (i=0;i<local_n0;i++) {
     for (j=0;j<N1;j++) {
       tempindx  = i*N1 + j;
@@ -124,8 +126,10 @@ PetscInt main(PetscInt argc,char **args)
     }
   }
 
-  ierr = VecGetValues(fin,local_n0*N1,indx4,x_arr);CHKERRQ(ierr);
+  ierr = PetscMalloc2(local_n0*N1,&x_arr,local_n0*N1,&y_arr);CHKERRQ(ierr); /* arr must be allocated for VecGetValues() */
+  ierr = VecGetValues(fin,local_n0*N1,indx4,(PetscScalar*)x_arr);CHKERRQ(ierr); 
   ierr = VecSetValues(ini,local_n0*N1,indx3,x_arr,INSERT_VALUES);CHKERRQ(ierr);
+
   ierr = VecAssemblyBegin(ini);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(ini);CHKERRQ(ierr);
 
@@ -133,6 +137,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecSetValues(final,local_n0*N1,indx3,y_arr,INSERT_VALUES);
   ierr = VecAssemblyBegin(final);
   ierr = VecAssemblyEnd(final);
+  ierr = PetscFree2(x_arr,y_arr);CHKERRQ(ierr);
 
 /*
     VecScatter      vecscat;

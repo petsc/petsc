@@ -25,6 +25,7 @@ int main(int argc,char **args)
   PetscBool      flg,preload = PETSC_TRUE;
   PetscScalar    *a,rval,alpha,none = -1.0;
   PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatMatTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_MatRARt=PETSC_TRUE,Test_MatMatMatMult=PETSC_TRUE;
+  PetscBool      Test_MatAXPY=PETSC_FALSE;
   PetscInt       pm,pn,pM,pN;
   MatInfo        info;
 
@@ -50,11 +51,13 @@ int main(int argc,char **args)
   PetscPreLoadBegin(preload,"Load system");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PetscPreLoadIt],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A_save);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A_save);CHKERRQ(ierr);
   ierr = MatLoad(A_save,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PetscPreLoadIt+1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatLoad(B,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
@@ -73,6 +76,31 @@ int main(int argc,char **args)
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-fill",&fill,NULL);CHKERRQ(ierr);
+
+  /* Test MatAXPY()    */
+  /*-------------------*/
+  ierr = PetscOptionsHasName(NULL,"-test_MatAXPY",&Test_MatAXPY);CHKERRQ(ierr);
+  if (Test_MatAXPY) {
+    Mat Btmp;
+    /* if (!rank) printf(" Loading matrices is done...\n"); */
+    ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
+    ierr = MatDuplicate(B,MAT_COPY_VALUES,&Btmp);CHKERRQ(ierr);
+    ierr = MatAXPY(A,-1.0,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A = -B + A_save */
+
+    /* if (!rank) printf(" Test_MatAXPY is done, now checking accuracy ...\n"); */
+    ierr = MatScale(A,-1.0);CHKERRQ(ierr); /* A = -A = B - A_save */
+    ierr = MatAXPY(Btmp,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* Btmp = -A + B = A_save */
+    ierr = MatMultEqual(A_save,Btmp,10,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,0,"MatAXPY() is incorrect\n");
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = MatDestroy(&Btmp);CHKERRQ(ierr);
+
+    Test_MatMatMult    = PETSC_FALSE;
+    Test_MatMatTr      = PETSC_FALSE;
+    Test_MatPtAP       = PETSC_FALSE;
+    Test_MatRARt       = PETSC_FALSE;
+    Test_MatMatMatMult = PETSC_FALSE;
+  }
 
   /* Test MatMatMult() */
   /*-------------------*/
@@ -111,7 +139,7 @@ int main(int argc,char **args)
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|: %G\n",norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|: %g\n",(double)norm);CHKERRQ(ierr);
     }
 
     ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -309,7 +337,7 @@ int main(int argc,char **args)
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v1 - v2|: %G\n",norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v1 - v2|: %g\n",(double)norm);CHKERRQ(ierr);
     }
 
     ierr = MatDestroy(&A);CHKERRQ(ierr);

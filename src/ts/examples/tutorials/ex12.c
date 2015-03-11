@@ -20,6 +20,7 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -51,7 +52,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-8,-8,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-8,-8,PETSC_DECIDE,PETSC_DECIDE,
                       2,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"v");CHKERRQ(ierr);
@@ -228,9 +229,9 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
     y = j*hy;
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
-      r = PetscSqrtScalar((x-.5)*(x-.5) + (y-.5)*(y-.5));
+      r = PetscSqrtReal((x-.5)*(x-.5) + (y-.5)*(y-.5));
       if (r < .125) {
-        u[j][i][0] = PetscExpScalar(-30.0*r*r*r);
+        u[j][i][0] = PetscExpReal(-30.0*r*r*r);
         u[j][i][1] = 0.0;
       } else {
         u[j][i][0] = 0.0;
@@ -257,7 +258,7 @@ PetscErrorCode MyTSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
   PetscFunctionBeginUser;
   ierr = VecNorm(v,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"timestep %D time %G norm %G\n",step,ptime,norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"timestep %D time %g norm %g\n",step,(double)ptime,(double)norm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

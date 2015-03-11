@@ -27,20 +27,6 @@ typedef const char *PetscSFType;
 #define PETSCSFBASIC  "basic"
 #define PETSCSFWINDOW "window"
 
-/*S
-   PetscSFNode - specifier of owner and index
-
-   Level: beginner
-
-  Concepts: indexing, stride, distribution
-
-.seealso: PetscSFSetGraph()
-S*/
-typedef struct {
-  PetscInt rank;                /* Rank of owner */
-  PetscInt index;               /* Index of node on rank */
-} PetscSFNode;
-
 /*E
     PetscSFWindowSyncType - Type of synchronization for PETSCSFWINDOW
 
@@ -70,7 +56,6 @@ typedef enum {PETSCSF_DUPLICATE_CONFONLY,PETSCSF_DUPLICATE_RANKS,PETSCSF_DUPLICA
 PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
 
 PETSC_EXTERN PetscFunctionList PetscSFList;
-PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],PetscErrorCode (*)(PetscSF));
 
 PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(void);
@@ -123,5 +108,15 @@ PETSC_EXTERN PetscErrorCode PetscSFScatterBegin(PetscSF,MPI_Datatype,const void 
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF,MPI_Datatype,const void *multirootdata,void *leafdata)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+
+#if defined(MPI_REPLACE)
+#  define MPIU_REPLACE MPI_REPLACE
+#else
+/* When using an old MPI such that MPI_REPLACE is not defined, we do not pass MPI_REPLACE to MPI at all.  Instead, we
+ * use it as a flag for our own reducer in the PETSCSFBASIC implementation.  This could be any unique value unlikely to
+ * collide with another MPI_Op so we'll just use the value that has been used by every version of MPICH since
+ * MPICH2-1.0.6. */
+#  define MPIU_REPLACE (MPI_Op)(0x5800000d)
+#endif
 
 #endif

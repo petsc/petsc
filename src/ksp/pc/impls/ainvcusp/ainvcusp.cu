@@ -55,7 +55,6 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
   // protect these in order to avoid compiler warnings. This preconditioner does
   // not work for complex types.
   Mat_SeqAIJCUSP *gpustruct;
-  CUSPMATRIX     * mat;
 #endif
   PetscErrorCode ierr;
 
@@ -76,14 +75,20 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
     ainv->AINVCUSP =  0;CHKERRQ(1); /* TODO */
 #else
     gpustruct = (Mat_SeqAIJCUSP*)(pc->pmat->spptr);
-#if defined(PETSC_HAVE_TXPETSCGPU)
-    ierr = gpustruct->mat->getCsrMatrix(&mat);CHKERRCUSP(ierr);
-#else
-    mat = (CUSPMATRIX*)gpustruct->mat;
-#endif
 
-    if (ainv->scaled) ainv->AINVCUSP = new cuspainvprecondscaled(*mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);
-    else ainv->AINVCUSP = new cuspainvprecond(*mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);
+   if (gpustruct->format==MAT_CUSP_ELL) {
+      CUSPMATRIXELL *mat = (CUSPMATRIXELL*)gpustruct->mat;
+      if (ainv->scaled) ainv->AINVCUSP = new cuspainvprecondscaled(*mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);
+      else ainv->AINVCUSP = new cuspainvprecond(*mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);
+    } else if (gpustruct->format==MAT_CUSP_DIA) {
+      CUSPMATRIXDIA *mat = (CUSPMATRIXDIA*)gpustruct->mat;
+      if (ainv->scaled) ainv->AINVCUSP = new cuspainvprecondscaled(*mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);
+      else ainv->AINVCUSP = new cuspainvprecond(*mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);
+    } else {
+      CUSPMATRIX *mat = (CUSPMATRIX*)gpustruct->mat;
+      if (ainv->scaled) ainv->AINVCUSP = new cuspainvprecondscaled(*mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);
+      else ainv->AINVCUSP = new cuspainvprecond(*mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);
+    }
 #endif
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s",ex);
@@ -282,14 +287,14 @@ PetscErrorCode PCAINVCUSPUseScaling(PC pc, PetscBool scaled)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_AINVCUSP"
-static PetscErrorCode PCSetFromOptions_AINVCUSP(PC pc)
+static PetscErrorCode PCSetFromOptions_AINVCUSP(PetscOptions *PetscOptionsObject,PC pc)
 {
   PC_AINVCUSP    *ainv = (PC_AINVCUSP*)pc->data;
   PetscBool      flag  = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("AINVCUSP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"AINVCUSP options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_ainvcusp_droptol","drop tolerance for AINVCUSP preconditioner","PCAINVCUSPSetDropTolerance",ainv->droptolerance,&ainv->droptolerance,&flag);
   if (flag) {
     ainv->nonzeros = -1;
@@ -342,7 +347,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
    */
-  ierr                = PetscNewLog(pc,PC_AINVCUSP,&ainv);CHKERRQ(ierr);
+  ierr                = PetscNewLog(pc,&ainv);CHKERRQ(ierr);
   pc->data            = (void*)ainv;
   ainv->AINVCUSP      = 0;
   ainv->droptolerance = 0.1;

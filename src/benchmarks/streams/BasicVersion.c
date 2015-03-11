@@ -4,8 +4,8 @@
 
 double second()
 {
-/* struct timeval { long  tv_sec;
-                    long  tv_usec; };
+/* struct timeval { long tv_sec;
+                    long tv_usec; };
 
 struct timezone { int tz_minuteswest;
                   int tz_dsttime; }; */
@@ -42,9 +42,9 @@ struct timezone { int tz_minuteswest;
 *          that should be good to about 5% precision.
 */
 
-# define N      2000000
-# define NTIMES 50
-# define OFFSET 0
+# define N      200000
+# define NTIMES     50
+# define OFFSET      0
 
 /*
 *      3) Compile the code with full optimization.  Many compilers
@@ -60,9 +60,9 @@ struct timezone { int tz_minuteswest;
 *
 *      4) Mail the results to mccalpin@cs.virginia.edu
 *         Be sure to include:
-*              a) computer hardware model number and software revision
-*              b) the compiler flags
-*              c) all of the output from the test case.
+*                a) computer hardware model number and software revision
+*                b) the compiler flags
+*                c) all of the output from the test case.
 * Thanks!
 *
 */
@@ -94,89 +94,48 @@ static double bytes[4] = {
 
 extern double second();
 
-#include <mpi.h>
 
 int main(int argc,char **args)
 {
-  int          quantum, checktick();
+  int           checktick(void);
   register int j, k;
-  double       scalar, t, times[4][NTIMES],irate[4],rate[4];
-  int          rank,size;
-
-  MPI_Init(&argc,&args);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
-  if (!rank) printf("Number of MPI processes %d\n",size);
+  double       scalar, t, times[4][NTIMES],irate[4];
 
   /* --- SETUP --- determine precision and check timing --- */
 
-  if (!rank) {
-    /*printf(HLINE);
-    printf("Array size = %d, Offset = %d\n" , N, OFFSET);
-    printf("Total memory required = %.1f MB.\n", (3 * N * BytesPerWord) / 1048576.0);
-    printf("Each test is run %d times, but only\n", NTIMES);
-    printf("the *best* time for each is used.\n");
-    printf(HLINE); */
-  }
-
-  /* Get initial value for system clock. */
-
-  /*  a = malloc(N*sizeof(double));
-  b = malloc(N*sizeof(double));
-  c = malloc(N*sizeof(double));*/
   for (j=0; j<N; j++) {
     a[j] = 1.0;
     b[j] = 2.0;
     c[j] = 0.0;
   }
 
-  if (!rank) {
-    if  ((quantum = checktick()) >= 1) ; /* printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum); */
-    else ; /* printf("Your clock granularity appears to be less than one microsecond.\n");*/
-  }
-
   t = second();
   for (j = 0; j < N; j++) a[j] = 2.0E0 * a[j];
   t = 1.0E6 * (second() - t);
-
-  if (!rank) {
-    /*  printf("Each test below will take on the order of %d microseconds.\n", (int) t);
-    printf("   (= %d clock ticks)\n", (int) (t/quantum));
-    printf("Increase the size of the arrays if this shows that\n");
-    printf("you are not getting at least 20 clock ticks per test.\n");
-    printf(HLINE);*/
-  }
-
 
   /*   --- MAIN LOOP --- repeat test cases NTIMES times --- */
 
   scalar = 3.0;
   for (k=0; k<NTIMES; k++)
   {
-    MPI_Barrier(MPI_COMM_WORLD);
+
     times[0][k] = second();
-    /* should all these barriers be pulled outside of the time call? */
-    MPI_Barrier(MPI_COMM_WORLD);
+/* should all these barriers be pulled outside of the time call? */
+
     for (j=0; j<N; j++) c[j] = a[j];
-    MPI_Barrier(MPI_COMM_WORLD);
     times[0][k] = second() - times[0][k];
 
     times[1][k] = second();
-    MPI_Barrier(MPI_COMM_WORLD);
+
     for (j=0; j<N; j++) b[j] = scalar*c[j];
-    MPI_Barrier(MPI_COMM_WORLD);
     times[1][k] = second() - times[1][k];
 
     times[2][k] = second();
-    MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) c[j] = a[j]+b[j];
-    MPI_Barrier(MPI_COMM_WORLD);
     times[2][k] = second() - times[2][k];
 
     times[3][k] = second();
-    MPI_Barrier(MPI_COMM_WORLD);
     for (j=0; j<N; j++) a[j] = b[j]+scalar*c[j];
-    MPI_Barrier(MPI_COMM_WORLD);
     times[3][k] = second() - times[3][k];
   }
 
@@ -186,19 +145,15 @@ int main(int argc,char **args)
     for (j=0; j<4; j++) mintime[j] = MIN(mintime[j], times[j][k]);
 
   for (j=0; j<4; j++) irate[j] = 1.0E-06 * bytes[j]/mintime[j];
-  MPI_Reduce(irate,rate,4,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
 
-  if (!rank) {
-    printf("Function      Rate (MB/s) \n");
-    for (j=0; j<4; j++) printf("%s%11.4f\n", label[j],rate[j]);
-  }
-  MPI_Finalize();
+  printf("Function      Rate (MB/s) \n");
+  for (j=0; j<4; j++) printf("%s%11.4f\n", label[j],irate[j]);
   return 0;
 }
 
 # define        M        20
 
-int checktick()
+int checktick(void)
 {
   int    i, minDelta, Delta;
   double t1, t2, timesfound[M];

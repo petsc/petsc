@@ -2,12 +2,12 @@
       program main
        implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscviewer.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscviewer.h>
 !
 !      Solves a linear system matrix free
 !
@@ -34,7 +34,7 @@
       call VecDuplicate(x,y,ierr)
       call VecSet(x,one,ierr)
 
-      call KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,ierr)
       call KSPSetFromOptions(ksp,ierr)
 
       call KSPSolve(ksp,x,y,ierr)

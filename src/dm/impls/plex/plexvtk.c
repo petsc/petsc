@@ -74,14 +74,14 @@ PetscErrorCode DMPlexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, Petsc
 PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 {
   MPI_Comm       comm;
-  IS             globalVertexNumbers;
+  DMLabel        label;
+  IS             globalVertexNumbers = NULL;
   const PetscInt *gvertex;
   PetscInt       dim;
   PetscInt       numCorners = 0, totCorners = 0, maxCorners, *corners;
   PetscInt       numCells   = 0, totCells   = 0, maxCells, cellHeight;
-  PetscInt       numLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
+  PetscInt       numLabelCells, maxLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
   PetscMPIInt    numProcs, rank, proc, tag;
-  PetscBool      hasLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -89,23 +89,22 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   ierr = PetscCommGetNewTag(comm, &tag);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
+  ierr = DMPlexGetLabel(dm, "vtk", &label);CHKERRQ(ierr);
   ierr = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
-
-  hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
+  ierr = MPI_Allreduce(&numLabelCells, &maxLabelCells, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
+  if (!maxLabelCells) label = NULL;
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL;
-    PetscInt closureSize;
+    PetscInt closureSize, value;
 
-    if (hasLabel) {
-      PetscInt value;
-
-      ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+    if (label) {
+      ierr = DMLabelGetValue(label, c, &value);CHKERRQ(ierr);
       if (value != 1) continue;
     }
     ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
@@ -122,37 +121,38 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   ierr     = MPI_Reduce(&numCorners, &maxCorners, 1, MPIU_INT, MPI_MAX, 0, comm);CHKERRQ(ierr);
   ierr     = DMPlexGetVertexNumbering(dm, &globalVertexNumbers);CHKERRQ(ierr);
   ierr     = ISGetIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);
-  ierr     = PetscMalloc(maxCells * sizeof(PetscInt), &corners);CHKERRQ(ierr);
+  ierr     = PetscMalloc1(maxCells, &corners);CHKERRQ(ierr);
   ierr     = PetscFPrintf(comm, fp, "CELLS %d %d\n", totCells, totCorners+totCells);CHKERRQ(ierr);
   if (!rank) {
     PetscInt *remoteVertices;
+    int      *vertices;
 
+    ierr = PetscMalloc1(maxCorners, &vertices);CHKERRQ(ierr);
     for (c = cStart, numCells = 0; c < cEnd; ++c) {
       PetscInt *closure = NULL;
-      PetscInt closureSize, nC = 0;
+      PetscInt closureSize, value, nC = 0;
 
-      if (hasLabel) {
-        PetscInt value;
-
-        ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+      if (label) {
+        ierr = DMLabelGetValue(label, c, &value);CHKERRQ(ierr);
         if (value != 1) continue;
       }
       ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (v = 0; v < closureSize*2; v += 2) {
         if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
           const PetscInt gv = gvertex[closure[v] - vStart];
-          closure[nC++] = gv < 0 ? -(gv+1) : gv;
+          vertices[nC++] = gv < 0 ? -(gv+1) : gv;
         }
       }
+      ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       corners[numCells++] = nC;
       ierr = PetscFPrintf(comm, fp, "%d ", nC);CHKERRQ(ierr);
+      ierr = DMPlexInvertCell(dim, nC, vertices);CHKERRQ(ierr);
       for (v = 0; v < nC; ++v) {
-        ierr = PetscFPrintf(comm, fp, " %d", closure[v]);CHKERRQ(ierr);
+        ierr = PetscFPrintf(comm, fp, " %d", vertices[v]);CHKERRQ(ierr);
       }
       ierr = PetscFPrintf(comm, fp, "\n");CHKERRQ(ierr);
-      ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
-    if (numProcs > 1) {ierr = PetscMalloc((maxCorners+maxCells) * sizeof(PetscInt), &remoteVertices);CHKERRQ(ierr);}
+    if (numProcs > 1) {ierr = PetscMalloc1(maxCorners+maxCells, &remoteVertices);CHKERRQ(ierr);}
     for (proc = 1; proc < numProcs; ++proc) {
       MPI_Status status;
 
@@ -161,26 +161,29 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
       for (c = 0; c < numCorners;) {
         PetscInt nC = remoteVertices[c++];
 
-        ierr = PetscFPrintf(comm, fp, "%d ", nC);CHKERRQ(ierr);
         for (v = 0; v < nC; ++v, ++c) {
-          ierr = PetscFPrintf(comm, fp, " %d", remoteVertices[c]);CHKERRQ(ierr);
+          vertices[v] = remoteVertices[c];
+        }
+        ierr = DMPlexInvertCell(dim, nC, vertices);CHKERRQ(ierr);
+        ierr = PetscFPrintf(comm, fp, "%d ", nC);CHKERRQ(ierr);
+        for (v = 0; v < nC; ++v) {
+          ierr = PetscFPrintf(comm, fp, " %d", vertices[v]);CHKERRQ(ierr);
         }
         ierr = PetscFPrintf(comm, fp, "\n");CHKERRQ(ierr);
       }
     }
     if (numProcs > 1) {ierr = PetscFree(remoteVertices);CHKERRQ(ierr);}
+    ierr = PetscFree(vertices);CHKERRQ(ierr);
   } else {
     PetscInt *localVertices, numSend = numCells+numCorners, k = 0;
 
-    ierr = PetscMalloc(numSend * sizeof(PetscInt), &localVertices);CHKERRQ(ierr);
+    ierr = PetscMalloc1(numSend, &localVertices);CHKERRQ(ierr);
     for (c = cStart, numCells = 0; c < cEnd; ++c) {
       PetscInt *closure = NULL;
-      PetscInt closureSize, nC = 0;
+      PetscInt closureSize, value, nC = 0;
 
-      if (hasLabel) {
-        PetscInt value;
-
-        ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+      if (label) {
+        ierr = DMLabelGetValue(label, c, &value);CHKERRQ(ierr);
         if (value != 1) continue;
       }
       ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
@@ -227,6 +230,51 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   }
   ierr        = PetscFree(corners);CHKERRQ(ierr);
   *totalCells = totCells;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexVTKWritePartition_ASCII"
+PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
+{
+  MPI_Comm       comm;
+  PetscInt       numCells = 0, cellHeight;
+  PetscInt       numLabelCells, cMax, cStart, cEnd, c;
+  PetscMPIInt    numProcs, rank, proc, tag;
+  PetscBool      hasLabel;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = PetscCommGetNewTag(comm, &tag);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
+  if (cMax >= 0) cEnd = PetscMin(cEnd, cMax);
+  ierr = DMPlexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
+  hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
+  for (c = cStart; c < cEnd; ++c) {
+    if (hasLabel) {
+      PetscInt value;
+
+      ierr = DMPlexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+      if (value != 1) continue;
+    }
+    ++numCells;
+  }
+  if (!rank) {
+    for (c = 0; c < numCells; ++c) {ierr = PetscFPrintf(comm, fp, "%d\n", rank);CHKERRQ(ierr);}
+    for (proc = 1; proc < numProcs; ++proc) {
+      MPI_Status status;
+
+      ierr = MPI_Recv(&numCells, 1, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
+      for (c = 0; c < numCells; ++c) {ierr = PetscFPrintf(comm, fp, "%d\n", proc);CHKERRQ(ierr);}
+    }
+  } else {
+    ierr = MPI_Send(&numCells, 1, MPIU_INT, 0, tag, comm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -319,11 +367,11 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
     }
     for (proc = 1; proc < numProcs; ++proc) {
       PetscScalar *remoteValues;
-      PetscInt    size, d;
+      PetscInt    size = 0, d;
       MPI_Status  status;
 
       ierr = MPI_Recv(&size, 1, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
-      ierr = PetscMalloc(size * sizeof(PetscScalar), &remoteValues);CHKERRQ(ierr);
+      ierr = PetscMalloc1(size, &remoteValues);CHKERRQ(ierr);
       ierr = MPI_Recv(remoteValues, size, mpiType, proc, tag, comm, &status);CHKERRQ(ierr);
       for (p = 0; p < size/maxDof; ++p) {
         for (d = 0; d < maxDof; ++d) {
@@ -344,7 +392,7 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
     PetscInt    size, k = 0;
 
     ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
-    ierr = PetscMalloc(size * sizeof(PetscScalar), &localValues);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size, &localValues);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, goff, d;
 
@@ -418,7 +466,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   Vec                      coordinates;
   PetscReal                lengthScale;
   PetscInt                 vMax, totVertices, totCells;
-  PetscBool                hasPoint = PETSC_FALSE, hasCell = PETSC_FALSE;
+  PetscBool                hasPoint = PETSC_FALSE, hasCell = PETSC_FALSE, writePartition = PETSC_FALSE;
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
@@ -430,7 +478,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   ierr = PetscFPrintf(comm, fp, "DATASET UNSTRUCTURED_GRID\n");CHKERRQ(ierr);
   /* Vertices */
   ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionCreateGlobalSection(coordSection, dm->sf, PETSC_FALSE, &globalCoordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, NULL, NULL, NULL, &vMax);CHKERRQ(ierr);
@@ -481,22 +529,23 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
 
         ierr = DMGetDefaultSection(dmX, &section);CHKERRQ(ierr);
         /* Here is where we check whether dmX is a submesh of dm */
-        ierr = DMPlexGetDimension(dm,  &dim);CHKERRQ(ierr);
-        ierr = DMPlexGetDimension(dmX, &dimX);CHKERRQ(ierr);
+        ierr = DMGetDimension(dm,  &dim);CHKERRQ(ierr);
+        ierr = DMGetDimension(dmX, &dimX);CHKERRQ(ierr);
         ierr = DMPlexGetChart(dm,  &pStart, &pEnd);CHKERRQ(ierr);
         ierr = DMPlexGetChart(dmX, &qStart, &qEnd);CHKERRQ(ierr);
         ierr = DMPlexGetSubpointMap(dm,  &subpointMap);CHKERRQ(ierr);
         ierr = DMPlexGetSubpointMap(dmX, &subpointMapX);CHKERRQ(ierr);
         if (((dim != dimX) || ((pEnd-pStart) < (qEnd-qStart))) && subpointMap && !subpointMapX) {
-          const PetscInt *ind;
+          const PetscInt *ind = NULL;
           IS              subpointIS;
-          PetscInt        n, q;
+          PetscInt        n = 0, q;
 
-          ierr = PetscPrintf(PETSC_COMM_SELF, "Making translation PetscSection\n");CHKERRQ(ierr);
           ierr = PetscSectionGetChart(section, &qStart, &qEnd);CHKERRQ(ierr);
           ierr = DMPlexCreateSubpointIS(dm, &subpointIS);CHKERRQ(ierr);
-          ierr = ISGetLocalSize(subpointIS, &n);CHKERRQ(ierr);
-          ierr = ISGetIndices(subpointIS, &ind);CHKERRQ(ierr);
+          if (subpointIS) {
+            ierr = ISGetLocalSize(subpointIS, &n);CHKERRQ(ierr);
+            ierr = ISGetIndices(subpointIS, &ind);CHKERRQ(ierr);
+          }
           ierr = PetscSectionCreate(comm, &newSection);CHKERRQ(ierr);
           ierr = PetscSectionSetChart(newSection, pStart, pEnd);CHKERRQ(ierr);
           for (q = qStart; q < qEnd; ++q) {
@@ -512,8 +561,10 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
               }
             }
           }
-          ierr = ISRestoreIndices(subpointIS, &ind);CHKERRQ(ierr);
-          ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+          if (subpointIS) {
+            ierr = ISRestoreIndices(subpointIS, &ind);CHKERRQ(ierr);
+            ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+          }
           /* No need to setup section */
           section = newSection;
         }
@@ -529,7 +580,8 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
     }
   }
   /* Cell Fields */
-  if (hasCell) {
+  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_view_partition", &writePartition, NULL);CHKERRQ(ierr);
+  if (hasCell || writePartition) {
     ierr = PetscFPrintf(comm, fp, "CELL_DATA %d\n", totCells);CHKERRQ(ierr);
     for (link = vtk->link; link; link = link->next) {
       Vec          X = (Vec) link->vec;
@@ -555,6 +607,11 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
       ierr = DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
+    }
+    if (writePartition) {
+      ierr = PetscFPrintf(comm, fp, "SCALARS partition int 1\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fp, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
+      ierr = DMPlexVTKWritePartition_ASCII(dm, fp);CHKERRQ(ierr);
     }
   }
   /* Cleanup */

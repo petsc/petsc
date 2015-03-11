@@ -20,9 +20,9 @@
 
 #ifdef MF_EX22F_MF
   module PETScShiftMod
-#include <finclude/petscsys.h>
-#include <finclude/petscts.h>
-#include <finclude/petscmat.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscmat.h>
     PetscScalar::PETSC_SHIFT
     TS::tscontext
     Mat::Jmat
@@ -35,12 +35,13 @@ program main
   use PETScShiftMod, only :  tscontext,Jmat
 #endif
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
   !
   !     Create an application context to contain data needed by the
   !     application-provided call-back routines, FormJacobian() and
@@ -90,7 +91,7 @@ program main
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Create distributed array (DMDA) to manage parallel grid and vectors
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,im11,i2,i2, &
+  call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,im11,i2,i2, &
        PETSC_NULL_INTEGER,da,ierr)
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -149,7 +150,8 @@ program main
 #endif
 
   call TSSetIFunction(ts,PETSC_NULL_OBJECT,FormIFunction,user,ierr)
-  call DMCreateMatrix(da,MATAIJ,J,ierr)
+  call DMSetMatType(da,MATAIJ,ierr)
+  call DMCreateMatrix(da,J,ierr)
 
 #ifdef MF_EX22F_MF
   Jmat=J
@@ -206,8 +208,9 @@ end program main
 ! Small helper to extract the layout, result uses 1-based indexing.
 subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
   DM da
   PetscInt mx,xs,xe,gxs,gxe
   PetscErrorCode ierr
@@ -247,12 +250,13 @@ end subroutine FormIFunctionLocal
 
 subroutine FormIFunction(ts,t,X,Xdot,F,user,ierr)
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
   TS ts
   PetscReal t
   Vec X,Xdot,F
@@ -344,12 +348,13 @@ end subroutine FormRHSFunctionLocal
 
 subroutine FormRHSFunction(ts,t,X,F,user,ierr)
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
   TS ts
   PetscReal t
   Vec X,F
@@ -392,19 +397,19 @@ end subroutine FormRHSFunction
 !
 !  IJacobian - Compute IJacobian = dF/dU + shift*dF/dUdot
 !
-subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
+subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
   TS ts
   PetscReal t,shift
   Vec X,Xdot
   Mat J,Jpre
-  MatStructure mstr
   PetscReal user(6)
   PetscErrorCode ierr
   integer user_a,user_k,user_s
@@ -438,7 +443,6 @@ subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
      call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr)
      call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr)
   end if
-  mstr = SAME_NONZERO_PATTERN
 end subroutine FormIJacobian
 #endif
 
@@ -467,12 +471,13 @@ end subroutine FormInitialSolutionLocal
 
 subroutine FormInitialSolution(ts,X,user,ierr)
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
   TS ts
   PetscReal t
   Vec X
@@ -504,20 +509,20 @@ end subroutine FormInitialSolution
 !
 !  IJacobian - Compute IJacobian = dF/dU + shift*dF/dUdot
 !
-subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
+subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
   use PETScShiftMod, only :  PETSC_SHIFT,MFuser
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
   TS ts
   PetscReal t,shift
   Vec X,Xdot
   Mat J,Jpre
-  MatStructure mstr
   PetscReal user(6)
   PetscErrorCode ierr
 
@@ -525,7 +530,6 @@ subroutine FormIJacobianMF(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
   PETSC_SHIFT=shift
   MFuser=user
 
-  mstr = SAME_NONZERO_PATTERN
 end subroutine FormIJacobianMF
 
 ! -------------------------------------------------------------------
@@ -542,12 +546,12 @@ subroutine  MyMult(A,X,F,ierr)
   use PETScShiftMod, only :  PETSC_SHIFT,tscontext,Jmat,MFuser
   implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscts.h>
-#include <finclude/petscvec.h90>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscvec.h90>
 
   Mat     A
   Vec     X,F
@@ -607,12 +611,13 @@ end subroutine MyMult
 !
 subroutine SaveSolutionToDisk(da,X,gdof,xs,xe)
   implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
 
   Vec X,Xloc
   DM             da

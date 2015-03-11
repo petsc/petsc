@@ -103,7 +103,6 @@ int establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME+1];
   int                s;
-  PetscErrorCode     ierr;
   struct sockaddr_in sa;
   struct hostent     *hp;
 #if defined(PETSC_HAVE_UNAME)
@@ -134,11 +133,12 @@ int establish(u_short portnum)
 
   {
   int optval = 1; /* Turn on the option */
-  ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char*)&optval,sizeof(optval));
+  (void) setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char*)&optval,sizeof(optval));
   }
 
   while (bind(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
 #if defined(PETSC_HAVE_WSAGETLASTERROR)
+    PetscErrorCode     ierr;
     ierr = WSAGetLastError();
     if (ierr != WSAEADDRINUSE) {
 #else

@@ -77,10 +77,10 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     }
 #endif
 
-    ierr = PetscMalloc(amat->rmap->n*sizeof(PetscInt),&locals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(amat->rmap->n,&locals);CHKERRQ(ierr);
 
     if (PetscLogPrintInfo) {itmp = pmetis->printout; pmetis->printout = 127;}
-    ierr = PetscMalloc(ncon*nparts*sizeof(real_t),&tpwgts);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ncon*nparts,&tpwgts);CHKERRQ(ierr);
     for (i=0; i<ncon; i++) {
       for (j=0; j<nparts; j++) {
         if (part->part_weights) {
@@ -90,7 +90,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
         }
       }
     }
-    ierr = PetscMalloc(ncon*sizeof(real_t),&ubvec);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ncon,&ubvec);CHKERRQ(ierr);
     for (i=0; i<ncon; i++) {
       ubvec[i] = 1.05;
     }
@@ -101,7 +101,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     }
     /* Duplicate the communicator to be sure that ParMETIS attribute caching does not interfere with PETSc. */
     ierr   = MPI_Comm_dup(pcomm,&comm);CHKERRQ(ierr);
-    PetscStackCallParmetis(ParMETIS_V3_PartKway,(vtxdist,xadj,adjncy,part->vertex_weights,adj->values,&wgtflag,&numflag,&ncon,&nparts,tpwgts,ubvec,options,&pmetis->cuts,locals,&comm));
+    PetscStackCallParmetis(ParMETIS_V3_PartKway,((idx_t*)vtxdist,(idx_t*)xadj,(idx_t*)adjncy,(idx_t*)part->vertex_weights,(idx_t*)adj->values,(idx_t*)&wgtflag,(idx_t*)&numflag,(idx_t*)&ncon,(idx_t*)&nparts,tpwgts,ubvec,(idx_t*)options,(idx_t*)&pmetis->cuts,(idx_t*)locals,&comm));
     ierr   = MPI_Comm_free(&comm);CHKERRQ(ierr);
 
     ierr = PetscFree(tpwgts);CHKERRQ(ierr);
@@ -111,7 +111,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
 
   if (bs > 1) {
     PetscInt i,j,*newlocals;
-    ierr = PetscMalloc(bs*amat->rmap->n*sizeof(PetscInt),&newlocals);CHKERRQ(ierr);
+    ierr = PetscMalloc1(bs*amat->rmap->n,&newlocals);CHKERRQ(ierr);
     for (i=0; i<amat->rmap->n; i++) {
       for (j=0; j<bs; j++) {
         newlocals[bs*i + j] = locals[i];
@@ -203,13 +203,13 @@ PetscErrorCode  MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Parmetis"
-PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Parmetis(PetscOptions *PetscOptionsObject,MatPartitioning part)
 {
   PetscErrorCode ierr;
   PetscBool      flag = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Set ParMeTiS partitioning options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Set ParMeTiS partitioning options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-mat_partitioning_parmetis_coarse_sequential","Use sequential coarse partitioner","MatPartitioningParmetisSetCoarseSequential",flag,&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
@@ -261,7 +261,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
   MatPartitioning_Parmetis *pmetis;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(part,MatPartitioning_Parmetis,&pmetis);CHKERRQ(ierr);
+  ierr       = PetscNewLog(part,&pmetis);CHKERRQ(ierr);
   part->data = (void*)pmetis;
 
   pmetis->cuts       = 0;   /* output variable */
@@ -358,7 +358,7 @@ PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use MPIAdj matrix type");
   
   ierr = PetscObjectGetComm((PetscObject)mesh,&comm);CHKERRQ(ierr);
-  PetscStackCallParmetis(ParMETIS_V3_Mesh2Dual,(mesh->rmap->range,adj->i,adj->j,&numflag,&ncommonnodes,&newxadj,&newadjncy,&comm));
+  PetscStackCallParmetis(ParMETIS_V3_Mesh2Dual,((idx_t*)mesh->rmap->range,(idx_t*)adj->i,(idx_t*)adj->j,(idx_t*)&numflag,(idx_t*)&ncommonnodes,(idx_t**)&newxadj,(idx_t**)&newadjncy,&comm));
   ierr   = MatCreateMPIAdj(PetscObjectComm((PetscObject)mesh),mesh->rmap->n,mesh->rmap->N,newxadj,newadjncy,NULL,dual);CHKERRQ(ierr);
   newadj = (Mat_MPIAdj*)(*dual)->data;
 

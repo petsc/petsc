@@ -25,11 +25,12 @@
       program main
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscdmda.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
 
       PetscFortranAddr ctx(6)
       PetscMPIInt rank,size
@@ -58,7 +59,7 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
 ! Set up data structures
-      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,N,i1,i1,            &
+      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,N,i1,i1,            &
      &     PETSC_NULL_INTEGER,ctx(1),ierr)
 
       call DMCreateGlobalVector(ctx(1),x,ierr)
@@ -138,11 +139,12 @@
       PetscErrorCode ierr
       PetscOffset      ixx,iff,iF2
       PetscScalar      h,d,vf2(1),vxx(1),vff(1)
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscdmda.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
 
 
       call MPI_Comm_rank(ctx(4),rank,ierr)
@@ -161,7 +163,7 @@
 ! This sets the index ixx so that vxx(ixx+1) is the first local
 ! element in the vector indicated by ctx(3).
 !
-      call VecGetArray(ctx(3),vxx,ixx,ierr)
+      call VecGetArrayRead(ctx(3),vxx,ixx,ierr)
       call VecGetArray(f,vff,iff,ierr)
       call VecGetArray(ctx(2),vF2,iF2,ierr)
 
@@ -201,7 +203,7 @@
       endif
 
       call VecRestoreArray(f,vff,iff,ierr)
-      call VecRestoreArray(ctx(3),vxx,ixx,ierr)
+      call VecRestoreArrayRead(ctx(3),vxx,ixx,ierr)
       call VecRestoreArray(ctx(2),vF2,iF2,ierr)
       return
       end
@@ -210,9 +212,9 @@
 
       subroutine FormInitialGuess(snes,x,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscsnes.h>
       PetscErrorCode   ierr
       Vec              x
       SNES             snes
@@ -225,18 +227,18 @@
 
 ! --------------------  Evaluate Jacobian --------------------
 
-      subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
+      subroutine FormJacobian(snes,x,jac,B,ctx,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscdmda.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
       SNES             snes
       Vec              x
       Mat              jac,B
       PetscFortranAddr ctx(*)
-      PetscBool        flag
       PetscInt  ii,istart,iend
       PetscInt  i,j,n,end,start,i1
       PetscErrorCode ierr
@@ -250,7 +252,7 @@
       call MPI_Comm_rank(ctx(4),rank,ierr)
       call MPI_Comm_size(ctx(4),size,ierr)
 
-      call VecGetArray(x,vxx,ixx,ierr)
+      call VecGetArrayRead(x,vxx,ixx,ierr)
       call VecGetOwnershipRange(x,start,end,ierr)
       n = end - start
 
@@ -278,7 +280,7 @@
         A = -2.0*d + 2.0*xx(i+1)
         call MatSetValues(jac,i1,ii,i1,ii,A,INSERT_VALUES,ierr)
  10   continue
-      call VecRestoreArray(x,vxx,ixx,ierr)
+      call VecRestoreArrayRead(x,vxx,ixx,ierr)
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       return

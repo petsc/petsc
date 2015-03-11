@@ -2,24 +2,34 @@
 #
 # This script builds the PETSc tar file distribution
 #
-# Usage: builddist petscrepo branch
-# example usage: builddist /sandbox/petsc/petsc.clone
+# Usage: builddist petscrepo [branch] [name]
+# example usages:
+#   builddist /sandbox/petsc/petsc.clone balay/foo [petsc-balay-foo.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone master [petsc-master.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone maint [petsc-3.4.1.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone maint release-snapshot [petsc-release-snapshot.tar.bz]
+#
 # Notes: version info is automatically obtained from include/petscversion.h
 #
 #echo "------- Have you done ALL of the following?? -----------------------------"
 #echo "(0) Excluded any directories not for public release"
-#echo "(1) Set the version number in manual.tex, and intro.tex, website/index.html?"
+#echo "(1) Set the version number in manual.tex (several places), and intro.tex, website/index.html?"
 #echo "(2) Set the version number and release date in petscversion.h?"
 #echo "(3) Made sure Fortran include files match C ones?"
 #echo "(4) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on login.mcs"
 #echo "(5) Update update-docs.py with additional docs on the petsc web page (for eg new changes file)"
 #echo "(6) Update version info on all petsc web pages"
 #echo "(7) tag the new release with 'hg' and make a new clone for the release"
+#echo "(8) got the users manual CLEARED by ANL publications for release"
 
 # If version specified on the commandline, set the version
 echo "Starting date: `date`"
 
-if [ $# = 2 ]; then
+if [ $# = 3 ]; then
+  petscrepo=$1
+  branch=$2
+  version=-$3
+elif [ $# = 2 ]; then
   petscrepo=$1
   branch=$2
 elif [ $# = 1 ]; then
@@ -47,13 +57,13 @@ PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
 
 # Clean and Update the git repository and check for branch
 cd $PETSC_DIR
-git checkout -f $branch
+git clean -q -f -d -x
+git fetch -q origin
+git checkout -f origin/$branch
 if [ "$?" != "0" ]; then
   echo 'Error: branch: $branch does not exist in $PETSC_DIR'
   exit
 fi
-git clean -q -f -d -x
-git pull -q
 
 pdir=`basename $PETSC_DIR`
 
@@ -76,30 +86,28 @@ fi
 version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 version_major=`grep '^#define PETSC_VERSION_MAJOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 version_minor=`grep '^#define PETSC_VERSION_MINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
-version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 
 #generated a couple of more values
-version_patch_date=`date`
-version_git=`git log -1 --pretty=format:%H`
+version_date=`date +"%b, %d, %Y"`
+version_git=`git describe`
 version_date_git=`git log -1 --pretty=format:%ci`
-if  [ ${version_release} = 0 ]; then
-  if [ "$branch" = "master" ]; then
-    version=-dev
+if [ ${version}foo = foo ]; then
+  if  [ ${version_release} = 0 ]; then
+    version=-`echo ${branch} | sed s~/~-~g`
+  elif [ ${version_release} = 1 ]; then
+    version=-${version_major}.${version_minor}.${version_subminor}
   else
-    version=-$branch
+    echo "Unknown PETSC_VERSION_RELEASE: ${version_release}"
+    exit
   fi
-elif [ ${version_release} = 1 ]; then
-  version=-${version_major}.${version_minor}-p${version_patch}
-else
-  echo "Unknown PETSC_VERSION_RELEASE: ${version_release}"
-  exit
 fi
 echo "Building ~/petsc$version.tar.gz and ~/petsc-lite$version.tar.gz"
 
 # create fortran stubdocs and cleanup
 cd $PETSC_DIR
 # we should have an option of running configure - without compilers/mpi/blas etc..
-./config/configure.py --with-mpi=0 --with-matlab=1
+./config/configure.py --with-mpi=0 --with-matlab=1 --download-c2html=1 --download-sowing=1
 make allfortranstubs
 make alldoc LOC=${PETSC_DIR}
 #
@@ -125,23 +133,24 @@ cd $tmpdir/petsc$version
 /bin/grep -v 'chmod' makefile.bak > makefile
 /bin/rm -f makefile.bak
 
-/bin/mv conf/rules conf/rules.bak
-/bin/grep -v 'chmod' conf/rules.bak > conf/rules
-/bin/rm -f  conf/rules.bak
+/bin/mv lib/petsc-conf/rules lib/petsc-conf/rules.bak
+/bin/grep -v 'chmod' lib/petsc-conf/rules.bak > lib/petsc-conf/rules
+/bin/rm -f  lib/petsc-conf/rules.bak
 
-#add in PETSC_VERSION_PATCH_DATE and PETSC_VERSION_GIT
-echo Using PETSC_VERSION_PATCH_DATE: ${version_patch_date}
+#add in PETSC_VERSION_DATE, PETSC_VERSION_GIT, PETSC_VERSION_DATE_GIT
+echo Using PETSC_VERSION_DATE: ${version_date}
 echo Using PETSC_VERSION_GIT: ${version_git}
+echo Using PETSC_VERSION_DATE_GIT: ${version_date_git}
 /bin/mv include/petscversion.h include/petscversion.h.bak
 cat include/petscversion.h.bak | \
-  sed -e "s/#define PETSC_VERSION_PATCH_DATE.*/#define PETSC_VERSION_PATCH_DATE \"${version_patch_date}\"/" | \
-  sed -e "s/#define PETSC_VERSION_GIT.*/#define PETSC_VERSION_GIT         \"${version_git}\"/" | \
-  sed -e "s/#define PETSC_VERSION_DATE_GIT.*/#define PETSC_VERSION_DATE_GIT         \"${version_date_git}\"/" \
+  sed -e "s/#define PETSC_VERSION_DATE\ .*/#define PETSC_VERSION_DATE       \"${version_date}\"/" | \
+  sed -e "s/#define PETSC_VERSION_GIT\ .*/#define PETSC_VERSION_GIT        \"${version_git}\"/" | \
+  sed -e "s/#define PETSC_VERSION_DATE_GIT\ .*/#define PETSC_VERSION_DATE_GIT   \"${version_date_git}\"/" \
   > include/petscversion.h
 /bin/rm -f include/petscversion.h.bak
 
 # just to be sure
-/bin/rm -rf configure.log* RDict.* lib RESYNC PENDING
+/bin/rm -rf configure.log* RDict.* RESYNC PENDING
 # eliminate .html files in src/contrib
 /usr/bin/find src/contrib -type f -name "*.html" -exec /bin/rm -f {} \;
 # eliminate .pyc files if any

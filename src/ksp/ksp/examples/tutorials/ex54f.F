@@ -19,13 +19,13 @@
 ! -----------------------------------------------------------------------
       program main
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscviewer.h>
-#include <finclude/petscviewer.h90>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscviewer.h>
+#include <petsc-finclude/petscviewer.h90>
       Vec              xvec,bvec,uvec
       Mat              Amat
       KSP              ksp
@@ -102,7 +102,7 @@
       call MatGetOwnershipRange( Amat, Istart, Iend, ierr )
 !  Create vectors.  Note that we form 1 vector from scratch and
 !  then duplicate as needed.
-      call MatGetVecs( Amat, PETSC_NULL_OBJECT, xvec, ierr )
+      call MatCreateVecs( Amat, PETSC_NULL_OBJECT, xvec, ierr )
       call VecSetFromOptions( xvec, ierr )
       call VecDuplicate( xvec, bvec, ierr )
       call VecDuplicate( xvec, uvec, ierr )
@@ -186,7 +186,7 @@ c     Compute tangent
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call KSPSetOperators(ksp,Amat,Amat,DIFFERENT_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,Amat,Amat,ierr)
 
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>

@@ -65,7 +65,7 @@ PetscErrorCode  PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *
   */
   ierr = PetscStrlen(libname,&len);CHKERRQ(ierr);
   len  = PetscMax(4*len,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscMalloc(len*sizeof(char),&buf);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len,&buf);CHKERRQ(ierr);
   par2 = buf;
   ierr = PetscStrreplace(comm,libname,par2,len);CHKERRQ(ierr);
 
@@ -180,6 +180,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
   else {
     ierr = PetscInfo1(0,"Dynamic library %s does not have lib prefix\n",libname);CHKERRQ(ierr);
   }
+  for (s=basename; *s; s++) if (*s == '-') *s = '_';
   ierr = PetscStrlen(basename,&len);CHKERRQ(ierr);
   ierr = PetscStrcpy(registername,"PetscDLLibraryRegister_");CHKERRQ(ierr);
   ierr = PetscStrncat(registername,basename,len);CHKERRQ(ierr);
@@ -191,7 +192,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
     ierr = PetscInfo2(0,"Dynamic library %s does not have symbol %s\n",libname,registername);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(struct _n_PetscDLLibrary,entry);CHKERRQ(ierr);
+  ierr = PetscNew(entry);CHKERRQ(ierr);
   (*entry)->next   = 0;
   (*entry)->handle = handle;
   ierr = PetscStrcpy((*entry)->libname,libname);CHKERRQ(ierr);

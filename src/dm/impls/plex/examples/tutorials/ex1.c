@@ -6,8 +6,10 @@ static char help[] = "Define a simple field over the mesh\n\n";
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  DM             dm;
+  DM             dm, dmDist = NULL;
+  Vec            u;
   PetscSection   section;
+  PetscViewer    viewer;
   PetscInt       dim = 2, numFields, numBC, i;
   PetscInt       numComp[3];
   PetscInt       numDof[12];
@@ -20,6 +22,9 @@ int main(int argc, char **argv)
   ierr = PetscOptionsGetInt(NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
   /* Create a mesh */
   ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, interpolate, &dm);CHKERRQ(ierr);
+  /* Distribute mesh over processes */
+  ierr = DMPlexDistribute(dm, 0, NULL, &dmDist);CHKERRQ(ierr);
+  if (dmDist) {ierr = DMDestroy(&dm);CHKERRQ(ierr); dm = dmDist;}
   /* Create a scalar field u, a vector field v, and a surface vector field w */
   numFields  = 3;
   numComp[0] = 1;
@@ -39,7 +44,8 @@ int main(int argc, char **argv)
   bcField[0] = 0;
   ierr = DMPlexGetStratumIS(dm, "marker", 1, &bcPointIS[0]);CHKERRQ(ierr);
   /* Create a PetscSection with this data layout */
-  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcField, bcPointIS, &section);CHKERRQ(ierr);
+  ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcField, bcPointIS, NULL, &section);CHKERRQ(ierr);
+  ierr = ISDestroy(&bcPointIS[0]);CHKERRQ(ierr);
   /* Name the Field variables */
   ierr = PetscSectionSetFieldName(section, 0, "u");CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 1, "v");CHKERRQ(ierr);
@@ -47,6 +53,15 @@ int main(int argc, char **argv)
   ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Tell the DM to use this data layout */
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
+  /* Create a Vec with this layout and view it */
+  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, "sol.vtk");CHKERRQ(ierr);
+  ierr = VecView(u, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
   /* Cleanup */
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);

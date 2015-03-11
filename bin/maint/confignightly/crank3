@@ -2,5 +2,5 @@
 
 set MACH=crank
 set USR=petsc
-set LOC=/sandbox/petsc/${RNAME}
+set LOC=/sandbox/petsc/${RNAME}-3
 set CONF=arch-linux-pkgs-dbg-ftn-interfaces

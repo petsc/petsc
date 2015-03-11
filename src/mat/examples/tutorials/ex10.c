@@ -55,7 +55,7 @@ int main(int argc,char **args)
 
   ierr = MatGetSize(A,NULL,&n);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(A,&cstart,&cend);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscReal),&norms);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&norms);CHKERRQ(ierr);
   ierr = MatGetColumnNorms(A,NORM_2,norms);CHKERRQ(ierr);
   ierr = PetscRealView(cend-cstart,norms+cstart,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscFree(norms);CHKERRQ(ierr);

@@ -1,6 +1,14 @@
 
 static char help[] = "Writes an array to a file, then reads an array from a file, then forms a vector.\n\n";
 
+/*
+    This uses the low level PetscBinaryWrite() and PetscBinaryRead() to access a binary file. It will not work in parallel!
+
+    We HIGHLY recommend using instead VecView() and VecLoad() to read and write Vectors in binary format (which also work in parallel). Then you can use
+    share/petsc/matlab/PetscBinaryRead() and share/petsc/matlab/PetscBinaryWrite() to read (or write) the vector into MATLAB.
+
+    Note this also works for matrices with MatView() and MatLoad().
+*/
 #include <petscvec.h>
 
 #undef __FUNCT__
@@ -26,7 +34,7 @@ int main(int argc,char **args)
   /* ---------------------------------------------------------------------- */
 
   /* Allocate array and set values */
-  ierr = PetscMalloc(m*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&array);CHKERRQ(ierr);
   for (i=0; i<m; i++) array[i] = i*10.0;
 
   /* Open viewer for binary output */

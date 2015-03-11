@@ -71,7 +71,7 @@ int main(int argc,char **argv)
    * with ILU(0) preconditioning
    */
   ierr = KSPCreate(comm,&solver);CHKERRQ(ierr);
-  ierr = KSPSetOperators(solver,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(solver,A,A);CHKERRQ(ierr);
 
   ierr = KSPSetType(solver,KSPCG);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(solver,PETSC_TRUE);CHKERRQ(ierr);

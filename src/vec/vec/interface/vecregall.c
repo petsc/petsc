@@ -1,5 +1,6 @@
 
 #include <petscvec.h>
+#include <petsc-private/vecimpl.h>
 PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec);
@@ -9,10 +10,10 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqCUSP(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_MPICUSP(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_CUSP(Vec);
 #endif
-#if 0
-#if defined(PETSC_HAVE_SIEVE)
-PETSC_EXTERN PetscErrorCode VecCreate_Sieve(Vec);
-#endif
+#if defined(PETSC_HAVE_VIENNACL)
+PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec);
 #endif
 
 #undef __FUNCT__
@@ -32,6 +33,7 @@ PetscErrorCode  VecRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (VecRegisterAllCalled) PetscFunctionReturn(0);
   VecRegisterAllCalled = PETSC_TRUE;
 
   ierr = VecRegister(VECSEQ,        VecCreate_Seq);CHKERRQ(ierr);
@@ -43,10 +45,10 @@ PetscErrorCode  VecRegisterAll(void)
   ierr = VecRegister(VECMPICUSP,    VecCreate_MPICUSP);CHKERRQ(ierr);
   ierr = VecRegister(VECCUSP,       VecCreate_CUSP);CHKERRQ(ierr);
 #endif
-#if 0
-#if defined(PETSC_HAVE_SIEVE)
-  ierr = VecRegister(VECSIEVE,      VecCreate_Sieve);CHKERRQ(ierr);
-#endif
+#if defined PETSC_HAVE_VIENNACL
+  ierr = VecRegister(VECSEQVIENNACL,    VecCreate_SeqViennaCL);CHKERRQ(ierr);
+  ierr = VecRegister(VECMPIVIENNACL,    VecCreate_MPIViennaCL);CHKERRQ(ierr);
+  ierr = VecRegister(VECVIENNACL,       VecCreate_ViennaCL);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

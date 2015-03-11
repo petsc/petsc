@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if  [ "$1" = "-hosts" ]; then
+    shift 2
+fi
+if [ "$1" = "-np" -o "$1" = "-n" ]; then
+    if [ "$2" = 1 ]; then
+        shift 2
+    else
+        echo "Uniprocessor version of MPI can only use one processor"
+        exit 1
+    fi
+fi
+
+# Execute the program with options
+exec "$@"

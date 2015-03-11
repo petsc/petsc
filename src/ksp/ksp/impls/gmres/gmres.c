@@ -50,35 +50,30 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   rs    = (max_k + 2);
   cc    = (max_k + 1);
 
-  ierr = PetscMalloc5(hh,PetscScalar,&gmres->hh_origin,hes,PetscScalar,&gmres->hes_origin,rs,PetscScalar,&gmres->rs_origin,cc,PetscScalar,&gmres->cc_origin,cc,PetscScalar,&gmres->ss_origin);CHKERRQ(ierr);
-  ierr = PetscMemzero(gmres->hh_origin,hh*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(gmres->hes_origin,hes*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(gmres->rs_origin,rs*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(gmres->cc_origin,cc*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(gmres->ss_origin,cc*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,(hh + hes + rs + 2*cc)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc5(hh,&gmres->hh_origin,hes,&gmres->hes_origin,rs,&gmres->rs_origin,cc,&gmres->cc_origin,cc,&gmres->ss_origin);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,(hh + hes + rs + 2*cc)*sizeof(PetscScalar));CHKERRQ(ierr);
 
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by lapack */
-    ierr = PetscMalloc((max_k + 3)*(max_k + 9)*sizeof(PetscScalar),&gmres->Rsvd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,(max_k + 3)*(max_k + 9)*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscMalloc(6*(max_k+2)*sizeof(PetscReal),&gmres->Dsvd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,6*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscMalloc1((max_k + 3)*(max_k + 9),&gmres->Rsvd);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,(max_k + 3)*(max_k + 9)*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMalloc1(6*(max_k+2),&gmres->Dsvd);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,6*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
   gmres->vecs_allocated = VEC_OFFSET + 2 + max_k + gmres->nextra_vecs;
 
-  ierr = PetscMalloc((gmres->vecs_allocated)*sizeof(Vec),&gmres->vecs);CHKERRQ(ierr);
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(Vec*),&gmres->user_work);CHKERRQ(ierr);
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(PetscInt),&gmres->mwork_alloc);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(sizeof(Vec*)+sizeof(PetscInt)) + gmres->vecs_allocated*sizeof(Vec));CHKERRQ(ierr);
+  ierr = PetscMalloc1(gmres->vecs_allocated,&gmres->vecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(VEC_OFFSET+2+max_k,&gmres->user_work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(VEC_OFFSET+2+max_k,&gmres->mwork_alloc);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,(VEC_OFFSET+2+max_k)*(sizeof(Vec*)+sizeof(PetscInt)) + gmres->vecs_allocated*sizeof(Vec));CHKERRQ(ierr);
 
   if (gmres->q_preallocate) {
     gmres->vv_allocated = VEC_OFFSET + 2 + max_k;
 
-    ierr = KSPGetVecs(ksp,gmres->vv_allocated,&gmres->user_work[0],0,NULL);CHKERRQ(ierr);
+    ierr = KSPCreateVecs(ksp,gmres->vv_allocated,&gmres->user_work[0],0,NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(ksp,gmres->vv_allocated,gmres->user_work[0]);CHKERRQ(ierr);
 
     gmres->mwork_alloc[0] = gmres->vv_allocated;
@@ -89,7 +84,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   } else {
     gmres->vv_allocated = 5;
 
-    ierr = KSPGetVecs(ksp,5,&gmres->user_work[0],0,NULL);CHKERRQ(ierr);
+    ierr = KSPCreateVecs(ksp,5,&gmres->user_work[0],0,NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(ksp,5,gmres->user_work[0]);CHKERRQ(ierr);
 
     gmres->mwork_alloc[0] = 5;
@@ -134,9 +129,9 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
   *GRS(0) = res_norm;
 
   /* check for the convergence */
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->rnorm = res;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   gmres->it  = (it - 1);
   ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
@@ -189,7 +184,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
+        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",(double)res);
         else {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           break;
@@ -229,9 +224,9 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   PetscFunctionBegin;
   if (ksp->calc_sings && !gmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
 
-  ierr     = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  ierr     = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   itcount     = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
@@ -337,7 +332,7 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP ks
   } else {
     ksp->reason = KSP_DIVERGED_BREAKDOWN;
 
-    ierr = PetscInfo2(ksp,"Likely your matrix or preconditioner is singular. HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));CHKERRQ(ierr);
+    ierr = PetscInfo2(ksp,"Likely your matrix or preconditioner is singular. HH(it,it) is identically zero; it = %D GRS(it) = %g\n",it,(double)PetscAbsScalar(*GRS(it)));CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   for (ii=1; ii<=it; ii++) {
@@ -347,7 +342,7 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs,Vec vs,Vec vdest,KSP ks
     if (*HH(k,k) == 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
 
-      ierr = PetscInfo1(ksp,"Likely your matrix or preconditioner is singular. HH(k,k) is identically zero; k = %D",k);CHKERRQ(ierr);
+      ierr = PetscInfo1(ksp,"Likely your matrix or preconditioner is singular. HH(k,k) is identically zero; k = %D\n",k);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     nrs[k] = tt / *HH(k,k);
@@ -442,7 +437,7 @@ PetscErrorCode KSPGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   gmres->vv_allocated += nalloc;
 
-  ierr = KSPGetVecs(ksp,nalloc,&gmres->user_work[nwork],0,NULL);CHKERRQ(ierr);
+  ierr = KSPCreateVecs(ksp,nalloc,&gmres->user_work[nwork],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,gmres->user_work[nwork]);CHKERRQ(ierr);
 
   gmres->mwork_alloc[nwork] = nalloc;
@@ -464,14 +459,14 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp,Vec ptr,Vec *result)
   if (!ptr) {
     if (!gmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&gmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(ksp,gmres->sol_temp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)gmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = gmres->sol_temp;
   }
   if (!gmres->nrs) {
     /* allocate the work area */
-    ierr = PetscMalloc(gmres->max_k*sizeof(PetscScalar),&gmres->nrs);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,gmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMalloc1(gmres->max_k,&gmres->nrs);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,gmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   ierr = KSPGMRESBuildSoln(gmres->nrs,ksp->vec_sol,ptr,ksp,gmres->it);CHKERRQ(ierr);
@@ -512,7 +507,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
   }
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: restart=%D, using %s\n",gmres->max_k,cstr);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %G\n",gmres->haptol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %g\n",(double)gmres->haptol);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,gmres->max_k);CHKERRQ(ierr);
   }
@@ -522,8 +517,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "KSPGMRESMonitorKrylov"
 /*@C
-   KSPGMRESMonitorKrylov - Calls VecView() for each direction in the
-   GMRES accumulated Krylov space.
+   KSPGMRESMonitorKrylov - Calls VecView() for each new direction in the GMRES accumulated Krylov space.
 
    Collective on KSP
 
@@ -531,13 +525,17 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 +  ksp - the KSP context
 .  its - iteration number
 .  fgnorm - 2-norm of residual (or gradient)
--  a viewers object created with PetscViewersCreate()
+-  dummy - an collection of viewers created with KSPViewerCreate()
 
+   Options Database Keys:
+.   -ksp_gmres_kyrlov_monitor
+
+   Notes: A new PETSCVIEWERDRAW is created for each Krylov vector so they can all be simultaneously viewed
    Level: intermediate
 
 .keywords: KSP, nonlinear, vector, monitor, view, Krylov space
 
-.seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView(), PetscViewersCreate(), PetscViewersDestroy()
+.seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView(), KSPViewersCreate(), KSPViewersDestroy()
 @*/
 PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
 {
@@ -555,7 +553,6 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
     ierr = PetscViewerSetType(viewer,PETSCVIEWERDRAW);CHKERRQ(ierr);
     ierr = PetscViewerDrawSetInfo(viewer,NULL,"Krylov GMRES Monitor",PETSC_DECIDE,PETSC_DECIDE,300,300);CHKERRQ(ierr);
   }
-
   x    = VEC_VV(gmres->it+1);
   ierr = VecView(x,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -563,7 +560,7 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GMRES"
-PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
+PetscErrorCode KSPSetFromOptions_GMRES(PetscOptions *PetscOptionsObject,KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       restart;
@@ -572,7 +569,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP GMRES Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"KSP GMRES Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_gmres_restart","Number of Krylov search directions","KSPGMRESSetRestart",gmres->max_k,&restart,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
   ierr = PetscOptionsReal("-ksp_gmres_haptol","Tolerance for exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);
@@ -899,11 +896,11 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(ksp,KSP_GMRES,&gmres);CHKERRQ(ierr);
+  ierr      = PetscNewLog(ksp,&gmres);CHKERRQ(ierr);
   ksp->data = (void*)gmres;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
 
   ksp->ops->buildsolution                = KSPBuildSolution_GMRES;
   ksp->ops->setup                        = KSPSetUp_GMRES;

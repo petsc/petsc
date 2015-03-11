@@ -42,7 +42,7 @@ int main(int argc,char **args)
     ierr = MatGetRow(C,i,&nz,&idx,&values);CHKERRQ(ierr);
     if (!rank) {
       for (j=0; j<nz; j++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"%D %G ",idx[j],PetscRealPart(values[j]));CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"%D %g ",idx[j],(double)PetscRealPart(values[j]));CHKERRQ(ierr);
       }
       ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
     }

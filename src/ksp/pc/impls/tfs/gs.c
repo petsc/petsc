@@ -975,8 +975,8 @@ PetscErrorCode PCTFS_gs_gop_vec(PCTFS_gs_id *gs,  PetscScalar *vals,  const char
     PCTFS_gs_gop_vec_plus(gs,vals,step);
     break;
   default:
-    ierr = PetscInfo1(0,"PCTFS_gs_gop_vec() :: %c is not a valid op",op[0]);CHKERRQ(ierr);
-    ierr = PetscInfo(0,"PCTFS_gs_gop_vec() :: default :: plus");CHKERRQ(ierr);
+    ierr = PetscInfo1(0,"PCTFS_gs_gop_vec() :: %c is not a valid op\n",op[0]);CHKERRQ(ierr);
+    ierr = PetscInfo(0,"PCTFS_gs_gop_vec() :: default :: plus\n");CHKERRQ(ierr);
     PCTFS_gs_gop_vec_plus(gs,vals,step);
     break;
   }
@@ -1190,7 +1190,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_pairwise_plus(PCTFS_gs_id *gs,  PetscScal
     ids_in++;
     while (*iptr >= 0) {
       ierr = PetscBLASIntCast(step,&dstep);CHKERRQ(ierr);
-      PetscStackCall("BLASaxpy",BLASaxpy_(&dstep,&d1,in2,&i1,dptr1 + *iptr*step,&i1));
+      PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dstep,&d1,in2,&i1,dptr1 + *iptr*step,&i1));
       in2+=step;
       iptr++;
     }
@@ -1240,7 +1240,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_tree_plus(PCTFS_gs_id *gs,  PetscScalar *
   /* copy over my contributions */
   while (*in >= 0) {
     ierr = PetscBLASIntCast(step,&dstep);CHKERRQ(ierr);
-    PetscStackCall("BLAScopy",BLAScopy_(&dstep,vals + *in++ * step,&i1,buf + *out++ * step,&i1));
+    PetscStackCallBLAS("BLAScopy",BLAScopy_(&dstep,vals + *in++ * step,&i1,buf + *out++ * step,&i1));
   }
 
   /* perform fan in/out on full buffer */
@@ -1254,7 +1254,7 @@ static PetscErrorCode PCTFS_gs_gop_vec_tree_plus(PCTFS_gs_id *gs,  PetscScalar *
   /* get the portion of the results I need */
   while (*in >= 0) {
     ierr = PetscBLASIntCast(step,&dstep);CHKERRQ(ierr);
-    PetscStackCall("BLAScopy",BLAScopy_(&dstep,buf + *out++ * step,&i1,vals + *in++ * step,&i1));
+    PetscStackCallBLAS("BLAScopy",BLAScopy_(&dstep,buf + *out++ * step,&i1,vals + *in++ * step,&i1));
   }
   PetscFunctionReturn(0);
 }
@@ -1270,7 +1270,7 @@ PetscErrorCode PCTFS_gs_gop_hc(PCTFS_gs_id *gs,  PetscScalar *vals,  const char 
     PCTFS_gs_gop_plus_hc(gs,vals,dim);
     break;
   default:
-    ierr = PetscInfo1(0,"PCTFS_gs_gop_hc() :: %c is not a valid op",op[0]);CHKERRQ(ierr);
+    ierr = PetscInfo1(0,"PCTFS_gs_gop_hc() :: %c is not a valid op\n",op[0]);CHKERRQ(ierr);
     ierr = PetscInfo(0,"PCTFS_gs_gop_hc() :: default :: plus\n");CHKERRQ(ierr);
     PCTFS_gs_gop_plus_hc(gs,vals,dim);
     break;

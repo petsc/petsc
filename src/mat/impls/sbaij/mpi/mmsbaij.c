@@ -28,8 +28,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in sbaij->B */
-  ierr = PetscMalloc(Nbs*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  ierr = PetscMemzero(indices,Nbs*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(Nbs,&indices);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       if (!indices[aj[B->i[i] + j]]) ec++;
@@ -38,8 +37,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   }
 
   /* form arrays of columns we need */
-  ierr = PetscMalloc(ec*sizeof(PetscInt),&garray);CHKERRQ(ierr);
-  ierr = PetscMalloc2(2*ec,PetscInt,&sgarray,ec,PetscInt,&ec_owner);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec,&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc2(2*ec,&sgarray,ec,&ec_owner);CHKERRQ(ierr);
 
   ec = 0;
   for (j=0; j<size; j++) {
@@ -70,7 +69,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&sbaij->lvec);CHKERRQ(ierr);
 
   /* create two temporary index sets for building scatter-gather */
-  ierr = PetscMalloc(2*ec*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*ec,&stmp);CHKERRQ(ierr);
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   for (i=0; i<ec; i++) stmp[i] = i;
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
@@ -83,10 +82,10 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   sbaij->garray = garray;
 
-  ierr = PetscLogObjectParent(mat,sbaij->Mvctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,sbaij->lvec);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,from);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sbaij->Mvctx);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sbaij->lvec);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)to);CHKERRQ(ierr);
 
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
@@ -132,16 +131,16 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = PetscFree(stmp);CHKERRQ(ierr);
   ierr = MPI_Barrier(PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
 
-  ierr = PetscLogObjectParent(mat,sbaij->sMvctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,sbaij->slvec0);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,sbaij->slvec1);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,sbaij->slvec0b);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,sbaij->slvec1a);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,sbaij->slvec1b);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,from);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sbaij->sMvctx);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sbaij->slvec0);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sbaij->slvec1);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sbaij->slvec0b);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sbaij->slvec1a);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sbaij->slvec1b);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)to);CHKERRQ(ierr);
 
-  ierr = PetscLogObjectMemory(mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = PetscFree2(sgarray,ec_owner);CHKERRQ(ierr);
@@ -182,7 +181,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
     }
   }
   /* form array of columns we need */
-  ierr = PetscMalloc(ec*sizeof(PetscInt),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec,&garray);CHKERRQ(ierr);
   ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
   while (tpos) {
     ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr);
@@ -212,8 +211,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
 #else
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in baij->B */
-  ierr = PetscMalloc(Nbs*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  ierr = PetscMemzero(indices,Nbs*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc1(Nbs,&indices);CHKERRQ(ierr);
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       if (!indices[aj[B->i[i] + j]]) ec++;
@@ -222,7 +220,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   }
 
   /* form array of columns we need */
-  ierr = PetscMalloc(ec*sizeof(PetscInt),&garray);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec,&garray);CHKERRQ(ierr);
   ec = 0;
   for (i=0; i<Nbs; i++) {
     if (indices[i]) {
@@ -252,7 +250,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   /* create two temporary index sets for building scatter-gather */
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(ec*sizeof(PetscInt),&stmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ec,&stmp);CHKERRQ(ierr);
   for (i=0; i<ec; i++) stmp[i] = i;
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_OWN_POINTER,&to);CHKERRQ(ierr);
 
@@ -261,14 +259,14 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);
 
-  ierr = PetscLogObjectParent(mat,baij->Mvctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,baij->lvec);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,from);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->Mvctx);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->lvec);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)to);CHKERRQ(ierr);
 
   baij->garray = garray;
 
-  ierr = PetscLogObjectMemory(mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -301,7 +299,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_REAL_MAT_SINGLE)
-  ierr = PetscMalloc(A->rmap->bs*sizeof(PetscScalar),&atmp);
+  ierr = PetscMalloc1(A->rmap->bs,&atmp);
 #endif
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(baij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */
@@ -319,7 +317,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
     ierr = PetscTableDestroy(&baij->colmap);CHKERRQ(ierr);
 #else
     ierr = PetscFree(baij->colmap);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(A,-Bbaij->nbs*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,-Bbaij->nbs*sizeof(PetscInt));CHKERRQ(ierr);
 #endif
   }
 
@@ -328,7 +326,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* invent new B and copy stuff over */
-  ierr = PetscMalloc(mbs*sizeof(PetscInt),&nz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(mbs,&nz);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     nz[i] = Bbaij->i[i+1]-Bbaij->i[i];
   }
@@ -341,7 +339,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
 
   ierr = PetscFree(nz);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(bs*sizeof(PetscInt),&rvals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs,&rvals);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     rvals[0] = bs*i;
     for (j=1; j<bs; j++) rvals[j] = rvals[j-1] + 1;
@@ -366,9 +364,9 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
   baij->garray = 0;
 
   ierr = PetscFree(rvals);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,-ec*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)A,-ec*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(A,Bnew);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)Bnew);CHKERRQ(ierr);
 
   baij->B = Bnew;
 

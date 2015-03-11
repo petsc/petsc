@@ -9,11 +9,16 @@
 #include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <cusp/monitor.h>
+#include <cusp/version.h>
+#if CUSP_VERSION >= 400
+#include <cusp/precond/aggregation/smoothed_aggregation.h>
+#define cuspsaprecond cusp::precond::aggregation::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
+#else
 #include <cusp/precond/smoothed_aggregation.h>
+#define cuspsaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
+#endif
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
-
-#define cuspsaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
 
 /*
    Private context (data structure) for the SACUSP preconditioner.
@@ -60,7 +65,6 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
   // protect these in order to avoid compiler warnings. This preconditioner does
   // not work for complex types.
   Mat_SeqAIJCUSP *gpustruct;
-  CUSPMATRIX     *mat;
 #endif
 
   PetscFunctionBegin;
@@ -79,12 +83,17 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
 #else
     ierr      = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct = (Mat_SeqAIJCUSP*)(pc->pmat->spptr);
-#if defined(PETSC_HAVE_TXPETSCGPU)
-    ierr = gpustruct->mat->getCsrMatrix(&mat);CHKERRCUSP(ierr);
-#else
-    mat = (CUSPMATRIX*)gpustruct->mat;
-#endif
-    sa->SACUSP = new cuspsaprecond(*mat);
+    
+    if (gpustruct->format==MAT_CUSP_ELL) {
+      CUSPMATRIXELL *mat = (CUSPMATRIXELL*)gpustruct->mat;
+      sa->SACUSP = new cuspsaprecond(*mat);
+    } else if (gpustruct->format==MAT_CUSP_DIA) {
+      CUSPMATRIXDIA *mat = (CUSPMATRIXDIA*)gpustruct->mat;
+      sa->SACUSP = new cuspsaprecond(*mat);
+    } else {
+      CUSPMATRIX *mat = (CUSPMATRIX*)gpustruct->mat;
+      sa->SACUSP = new cuspsaprecond(*mat);
+    }
 #endif
 
   } catch(char *ex) {
@@ -210,12 +219,12 @@ static PetscErrorCode PCDestroy_SACUSP(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SACUSP"
-static PetscErrorCode PCSetFromOptions_SACUSP(PC pc)
+static PetscErrorCode PCSetFromOptions_SACUSP(PetscOptions *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SACUSP options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SACUSP options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -247,7 +256,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SACUSP(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr     = PetscNewLog(pc,PC_SACUSP,&sac);CHKERRQ(ierr);
+  ierr     = PetscNewLog(pc,&sac);CHKERRQ(ierr);
   pc->data = (void*)sac;
 
   /*

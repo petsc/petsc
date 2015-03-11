@@ -12,6 +12,7 @@ static char help[] ="Tests sequential and parallel DMCreateMatrix(), MatMatMult(
     Example of usage: mpiexec -n 3 ./ex96 -Mx 10 -My 10 -Mz 10
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
@@ -80,18 +81,20 @@ int main(int argc,char **argv)
 
   /* Set up distributed array for fine grid */
   if (!Test_3D) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.fine.mx,
                         user.fine.my,Npx,Npy,1,1,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                         user.fine.mx,user.fine.my,user.fine.mz,Npx,Npy,Npz,
                         1,1,NULL,NULL,NULL,&user.fine.da);CHKERRQ(ierr);
   }
 
   /* Test DMCreateMatrix()                                         */
   /*------------------------------------------------------------*/
-  ierr = DMCreateMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(user.fine.da,MATBAIJ,&C);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.fine.da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.fine.da,&A);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.fine.da,MATBAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.fine.da,&C);CHKERRQ(ierr);
 
   ierr = MatConvert(C,MATAIJ,MAT_INITIAL_MATRIX,&A_tmp);CHKERRQ(ierr); /* not work for mpisbaij matrix! */
   ierr = MatEqual(A,A_tmp,&flg);CHKERRQ(ierr);
@@ -126,10 +129,10 @@ int main(int argc,char **argv)
 
   /* Set up distributed array for coarse grid */
   if (!Test_3D) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.coarse.mx,
                         user.coarse.my,Npx,Npy,1,1,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                         user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,
                         1,1,NULL,NULL,NULL,&user.coarse.da);CHKERRQ(ierr);
   }
@@ -189,7 +192,7 @@ int main(int argc,char **argv)
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol && !rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|/|v2|: %G\n",norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|/|v2|: %g\n",(double)norm);CHKERRQ(ierr);
     }
 
     ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -245,7 +248,7 @@ int main(int argc,char **argv)
       if (norm_tmp > norm) norm = norm_tmp;
     }
     if (norm >= tol && !rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v3 - v4|/|v3|: %G\n",norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v3 - v4|/|v3|: %g\n",(double)norm);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&C);CHKERRQ(ierr);
     ierr = VecDestroy(&v3);CHKERRQ(ierr);

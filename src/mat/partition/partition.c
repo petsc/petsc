@@ -40,15 +40,15 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)part),&size);CHKERRQ(ierr);
   if (part->n != size) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Currently only supports one domain per processor");
-  p = (PetscInt)sqrt((double)part->n);
+  p = (PetscInt)PetscSqrtReal((PetscReal)part->n);
   if (p*p != part->n) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
 
   ierr = MatGetSize(part->adj,&N,NULL);CHKERRQ(ierr);
-  n    = (PetscInt)sqrt((double)N);
+  n    = (PetscInt)PetscSqrtReal((PetscReal)N);
   if (n*n != N) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Square partitioning requires square domain");
   if (n%p != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Square partitioning requires p to divide n");
   ierr = MatGetOwnershipRange(part->adj,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&color);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rend-rstart,&color);CHKERRQ(ierr);
   /* for (int cell=rstart; cell<rend; cell++) { color[cell-rstart] = ((cell%n) < (n/2)) + 2 * ((cell/n) < (n/2)); } */
   for (cell=rstart; cell<rend; cell++) {
     color[cell-rstart] = ((cell%n) / (n/p)) + p * ((cell/n) / (n/p));
@@ -399,9 +399,7 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   PetscFunctionBegin;
   *newp = 0;
 
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
   ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_CLASSID,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView);CHKERRQ(ierr);
   part->vertex_weights = NULL;
   part->part_weights   = NULL;
@@ -456,7 +454,7 @@ PetscErrorCode  MatPartitioningView(MatPartitioning part,PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)part,viewer,"MatPartitioning Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)part,viewer);CHKERRQ(ierr);
     if (part->vertex_weights) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Using vertex weights\n");CHKERRQ(ierr);
     }
@@ -563,7 +561,7 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
   } else {
     def = ((PetscObject)part)->type_name;
   }
-  ierr = PetscOptionsList("-mat_partitioning_type","Type of partitioner","MatPartitioningSetType",MatPartitioningList,def,type,256,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-mat_partitioning_type","Type of partitioner","MatPartitioningSetType",MatPartitioningList,def,type,256,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
   }
@@ -575,7 +573,7 @@ PetscErrorCode  MatPartitioningSetFromOptions(MatPartitioning part)
   }
 
   if (part->ops->setfromoptions) {
-    ierr = (*part->ops->setfromoptions)(part);CHKERRQ(ierr);
+    ierr = (*part->ops->setfromoptions)(PetscOptionsObject,part);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,0 +1,38 @@
+import config.package
+
+class Configure(config.package.CMakePackage):
+  def __init__(self, framework):
+    config.package.CMakePackage.__init__(self, framework)
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/parmetis-4.0.3-p1.tar.gz']
+    self.functions         = ['ParMETIS_V3_PartKway']
+    self.includes          = ['parmetis.h']
+    self.liblist           = [['libparmetis.a']]
+    self.needsMath         = 1
+
+  def setupDependencies(self, framework):
+    config.package.CMakePackage.setupDependencies(self, framework)
+    self.compilerFlags   = framework.require('config.compilerFlags', self)
+    self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
+    self.scalartypes    = framework.require('PETSc.options.scalarTypes',self)
+    self.indexTypes     = framework.require('PETSc.options.indexTypes', self)
+    self.mpi             = framework.require('config.packages.MPI',self)
+    self.metis           = framework.require('config.packages.metis', self)
+    self.deps            = [self.mpi, self.metis]
+
+  def formCMakeConfigureArgs(self):
+    '''Requires the same CMake options as Metis'''
+    args = config.package.CMakePackage.formCMakeConfigureArgs(self)
+    args.append('-DGKLIB_PATH=../headers')
+    if self.mpi.include:
+      args.append('-DMPI_INCLUDE_PATH='+self.mpi.include[0])
+    if self.sharedLibraries.useShared:
+      args.append('-DSHARED=1')
+    if self.compilerFlags.debugging:
+      args.append('-DDEBUG=1')
+    if self.indexTypes.integerSize == 64:
+      args.append('-DMETIS_USE_LONGINDEX=1')
+    if self.scalartypes.precision == 'double':
+      args.append('-DMETIS_USE_DOUBLEPRECISION=1')
+    elif self.scalartypes.precision == 'quad':
+      raise RuntimeError('METIS cannot be built with quad precision')
+    return args

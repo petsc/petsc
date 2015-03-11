@@ -205,7 +205,7 @@ PetscErrorCode PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal *Ba
     base = PetscAbsReal(vmin);
     if (base < 1.0) base = 1.0;
   }
-  ftemp = log10((1.0 + EPS) * base);
+  ftemp = PetscLog10Real((1.0 + EPS) * base);
   if (ftemp < 0.0) ftemp -= 1.0;
   *power = (int)ftemp;
   ierr   = PetscExp10((double)-*power,&e10);CHKERRQ(ierr);

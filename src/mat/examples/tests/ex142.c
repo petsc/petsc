@@ -1,4 +1,4 @@
-static char help[] = "Test sequential r2c/c2r FFTW interface \n\n";
+static char help[] = "Test sequential r2c/c2r FFTW without PETSc interface \n\n"; 
 
 /*
   Compiling the code:
@@ -7,40 +7,36 @@ static char help[] = "Test sequential r2c/c2r FFTW interface \n\n";
 
 #include <petscmat.h>
 #include <fftw3.h>
-#include <fftw3-mpi.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;
   const char      *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
   PetscMPIInt     size;
-  PetscInt        n = 10,N,Ny,ndim=4,dim[4],DIM,i;
+  int             n = 10,N,Ny,ndim=4,i,dim[4],DIM;
   Vec             x,y,z;
   PetscScalar     s;
   PetscRandom     rdm;
   PetscReal       enorm;
-  PetscInt        func     =RANDOM;
+  PetscInt        func     = RANDOM;
   FuncType        function = RANDOM;
   PetscBool       view     = PETSC_FALSE;
   PetscErrorCode  ierr;
   PetscScalar     *x_array,*y_array,*z_array;
   fftw_plan       fplan,bplan;
-  const ptrdiff_t N0 = 20, N1 = 20;
 
-  ptrdiff_t alloc_local, local_n0, local_0_start;
   ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
-  ierr       = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
-  alloc_local=fftw_mpi_local_size_2d(N0, N1, PETSC_COMM_WORLD,&local_n0, &local_0_start);
 
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
   ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex142");CHKERRQ(ierr);
   ierr     = PetscOptionsEList("-function", "Function type", "ex142", funcNames, NUM_FUNCS, funcNames[function], &func, NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsBool("-vec_view draw", "View the functions", "ex112", view, &view, NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsBool("-vec_view draw", "View the functions", "ex142", view, &view, NULL);CHKERRQ(ierr);
   function = (FuncType) func;
   ierr     = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -71,7 +67,6 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecDuplicate(x,&z);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
 
-
     /* Set fftw plan                    */
     /*----------------------------------*/
     ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
@@ -81,7 +76,7 @@ PetscInt main(PetscInt argc,char **args)
     unsigned int flags = FFTW_ESTIMATE; /*or FFTW_MEASURE */
     /* The data in the in/out arrays is overwritten during FFTW_MEASURE planning, so such planning
      should be done before the input is initialized by the user. */
-    printf("DIM: %d, N %d, Ny %d\n",DIM,N,Ny);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"DIM: %d, N %d, Ny %d\n",DIM,N,Ny);CHKERRQ(ierr);
 
     switch (DIM) {
     case 1:
@@ -97,8 +92,8 @@ PetscInt main(PetscInt argc,char **args)
       bplan = fftw_plan_dft_c2r_3d(dim[0],dim[1],dim[2],(fftw_complex*)y_array,(double*)z_array,flags);
       break;
     default:
-      fplan = fftw_plan_dft_r2c(DIM,dim,(double*)x_array, (fftw_complex*)y_array,flags);
-      bplan = fftw_plan_dft_c2r(DIM,dim,(fftw_complex*)y_array,(double*)z_array,flags);
+      fplan = fftw_plan_dft_r2c(DIM,(int*)dim,(double*)x_array, (fftw_complex*)y_array,flags);
+      bplan = fftw_plan_dft_c2r(DIM,(int*)dim,(fftw_complex*)y_array,(double*)z_array,flags);
       break;
     }
 
@@ -130,13 +125,10 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
     ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
     ierr = VecGetArray(z,&z_array);CHKERRQ(ierr);
-    for (i=0; i<3; i++) {
+    for (i=0; i<4; i++) {
       /* FFTW_FORWARD */
       fftw_execute(fplan);
-      /*printf("\n fout:\n");*/
-      /*fftw_complex* fout = (fftw_complex*)y_array;*/
-      /*for (i=0; i<N/2+1; i++) printf("%d (%g %g)\n",i,fout[i][0],fout[i][1]);*/
-
+      
       /* FFTW_BACKWARD: destroys its input array 'y_array' even for out-of-place transforms! */
       fftw_execute(bplan);
     }
@@ -153,7 +145,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
     if (enorm > 1.e-11) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %G\n",enorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %g\n",(double)enorm);CHKERRQ(ierr);
     }
 
     /* free spaces */

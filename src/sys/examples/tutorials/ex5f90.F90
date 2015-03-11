@@ -1,7 +1,7 @@
 #define PETSC_USE_FORTRAN_MODULES 1
-#include <finclude/petscsysdef.h>
-#include <finclude/petscbagdef.h>
-#include <finclude/petscviewerdef.h>
+#include <petsc-finclude/petscsysdef.h>
+#include <petsc-finclude/petscbagdef.h>
+#include <petsc-finclude/petscviewerdef.h>
 
       module Bag_data_module
 !     Data structure used to contain information about the problem
@@ -17,6 +17,7 @@
          PetscInt  :: nxc
          PetscReal :: rarray(3)
          PetscBool  :: t
+         PetscBool  :: tarray(3)
          PetscEnum :: enum
          character*(80) :: c
          type(tuple) :: pos
@@ -47,10 +48,11 @@
       type(bag_data_type)          :: dummydata
       character(len=1),pointer     :: dummychar(:)
       PetscViewer viewer
-      PetscSizeT sizeofbag,sizeofint
-      PetscSizeT sizeofscalar,sizeoftruth
-      PetscSizeT sizeofchar,sizeofreal
+      PetscSizeT sizeofbag
       Character(len=99) list(6)
+      PetscInt three,int56
+      PetscReal value
+      PetscScalar svalue
 
       Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       list(1) = 'a123'
@@ -59,22 +61,12 @@
       list(4) = 'list'
       list(5) = 'prefix_'
       list(6) = ''
+!     cannot just pass a 3 to PetscBagRegisterXXXArray() because it is expecting a PetscInt
+      three   = 3
 
 !   compute size of the data
-!      call PetscDataTypeGetSize(PETSC_INT,sizeofint,ierr)
-!      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
-!      call PetscDataTypeGetSize(PETSC_BOOL,sizeoftruth,ierr)
-       call PetscDataTypeGetSize(PETSC_CHAR,sizeofchar,ierr)
-!      call PetscDataTypeGetSize(PETSC_REAL,sizeofreal,ierr)
-
-!     really need a sizeof(data) operator here. There could be padding inside the
-!     structure due to alignment issues - so, this computed value cold be wrong.
-!      sizeofbag = sizeofint + sizeofscalar + sizeoftruth + sizeofchar*80 &
-!     &       + 3*sizeofreal+3*sizeofreal
-!     That is correct... unless the sequence keyword is used in the derived
-!     types, this length will be wrong because of padding
-!     this is a situation where the transfer function is very helpful...
-      sizeofbag = size(transfer(dummydata,dummychar))*sizeofchar
+!
+      sizeofbag = size(transfer(dummydata,dummychar))
 
 
 ! create the bag
@@ -85,21 +77,30 @@
       call PetscBagSetOptionsPrefix(bag, 'pbag_', ierr)
 
 ! register the data within the bag, grabbing values from the options database
-      call PetscBagRegisterInt(bag,data%nxc ,56,'nxc',                   &
+!     Need to put the value into a variable for 64 bit indices
+      int56 = 56
+      call PetscBagRegisterInt(bag,data%nxc ,int56,'nxc',                   &
      &      'nxc_variable help message',ierr)
-      call PetscBagRegisterRealArray(bag,data%rarray ,3,'rarray',        &
+      call PetscBagRegisterRealArray(bag,data%rarray,three,'rarray',         &
      &      'rarray help message',ierr)
-      call PetscBagRegisterScalar(bag,data%x ,103.2d0,'x',               &
+!     Need to put the value into a variable to pass correctly for 128 bit quad precision numbers
+      svalue = 103.2d0
+      call PetscBagRegisterScalar(bag,data%x ,svalue,'x',                &
      &      'x variable help message',ierr)
       call PetscBagRegisterBool(bag,data%t ,PETSC_TRUE,'t',              &
      &      't boolean help message',ierr)
+      call PetscBagRegisterBoolArray(bag,data%tarray,three,'tarray',         &
+     &      'tarray help message',ierr)
       call PetscBagRegisterString(bag,data%c,'hello','c',                &
      &      'string help message',ierr)
-      call PetscBagRegisterReal(bag,data%y ,-11.0d0,'y',                 &
+      value = -11.0d0
+      call PetscBagRegisterReal(bag,data%y ,value,'y',                   &
      &       'y variable help message',ierr)
-      call PetscBagRegisterReal(bag,data%pos%x1 ,1.0d0,'pos_x1',         &
+      value = 1.0d0
+      call PetscBagRegisterReal(bag,data%pos%x1 ,value,'pos_x1',         &
      &      'tuple value 1 help message',ierr)
-      call PetscBagRegisterReal(bag,data%pos%x2 ,2.0d0,'pos_x2',         &
+      value = 2.0d0
+      call PetscBagRegisterReal(bag,data%pos%x2 ,value,'pos_x2',         &
      &      'tuple value 2 help message',ierr)
       call PetscBagRegisterEnum(bag,data%enum ,list,1,'enum',            &
      &      'tuple value 2 help message',ierr)
@@ -112,6 +113,7 @@
       data%x   = 155.4
       data%c   = 'a whole new string'
       data%t   = PETSC_TRUE
+      data%tarray   = (/PETSC_TRUE,PETSC_FALSE,PETSC_TRUE/)
       call PetscBagView(bag,PETSC_VIEWER_BINARY_WORLD,ierr)
 
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'binaryoutput',        &

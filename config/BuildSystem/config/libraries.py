@@ -52,8 +52,8 @@ class Configure(config.base.Configure):
         dirname   = os.path.dirname(library).replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')
         if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
           return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
-        if flagSubst in self.framework.argDB:
-          return [self.framework.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
+        if flagSubst in self.argDB:
+          return [self.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
         else:
           return ['-L'+dirname,' -l'+name]
       else:
@@ -123,7 +123,8 @@ class Configure(config.base.Configure):
     libs = newlibs
     newlibs = []
     for j in libs:
-      # do not remove duplicate -l, because there is a tiny chance that order may matter
+      # do not remove duplicate non-consecutive -l, because there is a tiny chance that order may matter
+      if newlibs and j == newlibs[-1]: continue
       if j in newlibs and not ( j.startswith('-l') or j == '-framework') : continue
       newlibs.append(j)
     return ' '.join(newlibs)
@@ -142,45 +143,30 @@ class Configure(config.base.Configure):
     # no match - assuming the given name is already in short notation
     return lib
 
-  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0, cxxLink = 0):
+  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0, cxxLink = 0, examineOutput=lambda ret,out,err:None):
     '''Checks that the library "libName" contains "funcs", and if it does defines HAVE_LIB"libName"
        - libDir may be a list of directories
        - libName may be a list of library names'''
     if not isinstance(funcs,list): funcs = [funcs]
     if not isinstance(libName, list): libName = [libName]
-    for f, funcName in enumerate(funcs):
-      # Handle Fortran mangling
-      if fortranMangle:
-        funcName = self.compilers.mangleFortranFunction(funcName)
-      self.framework.logPrint('Checking for function '+str(funcName)+' in library '+str(libName)+' '+str(otherLibs))
-      if self.language[-1] == 'FC':
-        includes = ''
-      else:
-        includes = '/* Override any gcc2 internal prototype to avoid an error. */\n'
-      # Handle C++ mangling
-      if self.language[-1] == 'Cxx' and not cxxMangle:
-        includes += '''
-#ifdef __cplusplus
-extern "C" {
-#endif
-'''
+    def genPreamble(f, funcName):
       # Construct prototype
-      if not self.language[-1] == 'FC':
-        if prototype:
-          if isinstance(prototype, str):
-            includes += prototype
-          else:
-            includes += prototype[f]
+      if self.language[-1] == 'FC':
+        return ''
+      if prototype:
+        if isinstance(prototype, str):
+          pre = prototype
         else:
-          # We use char because int might match the return type of a gcc2 builtin and its argument prototype would still apply.
-          includes += 'char '+funcName+'();\n'
-      # Handle C++ mangling
-      if self.language[-1] == 'Cxx' and not cxxMangle:
-        includes += '''
-#ifdef __cplusplus
-}
-#endif
-'''
+          pre = prototype[f]
+      else:
+        # We use char because int might match the return type of a gcc2 builtin and its argument prototype would still apply.
+        pre = 'char '+funcName+'();'
+      # Capture the function call in a static function so that any local variables are isolated from
+      # calls to other library functions.
+      return pre + '\nstatic void _check_%s() { %s }' % (funcName, genCall(f, funcName, pre=True))
+    def genCall(f, funcName, pre=False):
+      if self.language[-1] != 'FC' and not pre:
+        return '_check_' + fname + '();'
       # Construct function call
       if call:
         if isinstance(call, str):
@@ -188,38 +174,79 @@ extern "C" {
         else:
           body = call[f]
       else:
-        body = funcName+'()\n'
-      # Setup link line
-      oldLibs = self.setCompilers.LIBS
-      if libDir:
-        if not isinstance(libDir, list): libDir = [libDir]
-        for dir in libDir:
-          self.setCompilers.LIBS += ' -L'+dir
-      # new libs may/will depend on system libs so list new libs first!
-      # Matt, do not change this without talking to me
-      if libName and otherLibs:
-        self.setCompilers.LIBS = ' '+self.toString(libName+otherLibs) +' '+ self.setCompilers.LIBS
-      elif otherLibs:
-        self.setCompilers.LIBS = ' '+self.toString(otherLibs) +' '+ self.setCompilers.LIBS
-      elif libName:
-        self.setCompilers.LIBS = ' '+self.toString(libName) +' '+ self.setCompilers.LIBS
-      if cxxMangle: compileLang = 'Cxx'
-      else:         compileLang = self.language[-1]
-      if cxxLink: linklang = 'Cxx'
-      else: linklang = self.language[-1]
-      self.pushLanguage(compileLang)
-      found = 0
-      if self.checkLink(includes, body, linkLanguage=linklang):
-        found = 1
-        # add to list of found libraries
-        if libName:
-          for lib in libName:
-            shortlib = self.getShortLibName(lib)
-            if shortlib: self.addDefine(self.getDefineName(shortlib), 1)
-      self.setCompilers.LIBS = oldLibs
-      self.popLanguage()
-      if not found: return 0
-    return 1
+        body = funcName+'()'
+      if self.language[-1] != 'FC':
+        body += ';'
+      return body
+    # Handle Fortran mangling
+    if fortranMangle:
+      funcs = map(self.compilers.mangleFortranFunction, funcs)
+    if not funcs:
+      self.logPrint('No functions to check for in library '+str(libName)+' '+str(otherLibs))
+      return True
+    self.logPrint('Checking for functions ['+' '.join(funcs)+'] in library '+str(libName)+' '+str(otherLibs))
+    if self.language[-1] == 'FC':
+      includes = ''
+    else:
+      includes = '/* Override any gcc2 internal prototype to avoid an error. */\n'
+    # Handle C++ mangling
+    if self.language[-1] == 'Cxx' and not cxxMangle:
+      includes += '''
+#ifdef __cplusplus
+extern "C" {
+#endif
+'''
+    includes += '\n'.join([genPreamble(f, fname) for f, fname in enumerate(funcs)])
+    # Handle C++ mangling
+    if self.language[-1] == 'Cxx' and not cxxMangle:
+      includes += '''
+#ifdef __cplusplus
+}
+#endif
+'''
+    body = '\n'.join([genCall(f, fname) for f, fname in enumerate(funcs)])
+    # Setup link line
+    oldLibs = self.setCompilers.LIBS
+    if libDir:
+      if not isinstance(libDir, list): libDir = [libDir]
+      for dir in libDir:
+        self.setCompilers.LIBS += ' -L'+dir
+    # new libs may/will depend on system libs so list new libs first!
+    # Matt, do not change this without talking to me
+    if libName and otherLibs:
+      self.setCompilers.LIBS = ' '+self.toString(libName+otherLibs) +' '+ self.setCompilers.LIBS
+    elif otherLibs:
+      self.setCompilers.LIBS = ' '+self.toString(otherLibs) +' '+ self.setCompilers.LIBS
+    elif libName:
+      self.setCompilers.LIBS = ' '+self.toString(libName) +' '+ self.setCompilers.LIBS
+    if cxxMangle: compileLang = 'Cxx'
+    else:         compileLang = self.language[-1]
+    if cxxLink: linklang = 'Cxx'
+    else: linklang = self.language[-1]
+    self.pushLanguage(compileLang)
+    found = 0
+    if self.checkLink(includes, body, linkLanguage=linklang, examineOutput=examineOutput):
+      found = 1
+      # add to list of found libraries
+      if libName:
+        for lib in libName:
+          shortlib = self.getShortLibName(lib)
+          if shortlib: self.addDefine(self.getDefineName(shortlib), 1)
+    self.setCompilers.LIBS = oldLibs
+    self.popLanguage()
+    return found
+
+  def checkClassify(self, libName, funcs, libDir=None, otherLibs=[], prototype='', call='', fortranMangle=0, cxxMangle=0, cxxLink=0):
+    '''Recursive decompose to rapidly classify functions as found or missing'''
+    import config
+    def functional(funcs):
+      named = config.NamedInStderr(funcs)
+      if self.check(libName, funcs, libDir, otherLibs, prototype, call, fortranMangle, cxxMangle, cxxLink):
+        return True
+      else:
+        return named.named
+    found, missing = config.classify(funcs, functional)
+    return found, missing
 
   def checkMath(self):
     '''Check for sin() in libm, the math library'''
@@ -244,6 +271,23 @@ extern "C" {
       self.addDefine('HAVE_ERF', 1)
     else:
       self.logPrint('Warning: erf() not found')
+    return
+
+  def checkMathTgamma(self):
+    '''Check for tgama() in libm, the math library'''
+    if not self.math is None and self.check(self.math, ['tgamma'], prototype = ['double tgamma(double);'], call = ['double x = 0,y; y = tgamma(x);\n']):
+      self.logPrint('tgamma() found')
+      self.addDefine('HAVE_TGAMMA', 1)
+    else:
+      self.logPrint('Warning: tgamma() not found')
+    return
+
+  def checkMathFenv(self):
+    '''Checks if <fenv.h> can be used with FE_DFL_ENV'''
+    if not self.math is None and self.check(self.math, ['fesetenv'], prototype = ['#include <fenv.h>'], call = ['fesetenv(FE_DFL_ENV);']):
+      self.addDefine('HAVE_FENV_H', 1)
+    else:
+      self.logPrint('Warning: <fenv.h> with FE_DFL_ENV not found')
     return
 
   def checkCompression(self):
@@ -285,7 +329,7 @@ extern "C" {
 
   def checkDynamic(self):
     '''Check for the header and libraries necessary for dynamic library manipulation'''
-    if 'with-dynamic-loading' in self.framework.argDB and not self.framework.argDB['with-dynamic-loading']: return
+    if 'with-dynamic-loading' in self.argDB and not self.argDB['with-dynamic-loading']: return
     self.check(['dl'], 'dlopen')
     self.headers.check('dlfcn.h')
     return
@@ -421,15 +465,29 @@ int checkInit(void) {
     if os.path.isfile(lib1Name) and self.framework.doCleanup: os.remove(lib1Name)
     if os.path.isfile(lib2Name) and self.framework.doCleanup: os.remove(lib2Name)
     if isShared:
-      self.framework.logPrint('Library was shared')
+      self.logPrint('Library was shared')
     else:
-      self.framework.logPrint('Library was not shared')
+      self.logPrint('Library was not shared')
     return isShared
+
+  def isBGL(self):
+    '''Returns true if compiler is IBM cross compiler for BGL'''
+    if not hasattr(self, '_isBGL'):
+      self.logPrint('**********Checking if running on BGL/IBM detected')
+      if (self.check('', 'bgl_perfctr_void') or self.check('','ADIOI_BGL_Open')) and self.check('', '_xlqadd'):
+        self.logPrint('*********BGL/IBM detected')
+        self._isBGL = 1
+      else:
+        self.logPrint('*********BGL/IBM test failure')
+        self._isBGL = 0
+    return self._isBGL
 
   def configure(self):
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
     self.executeTest(self.checkMath)
     self.executeTest(self.checkMathErf)
+    self.executeTest(self.checkMathTgamma)
+    self.executeTest(self.checkMathFenv)
     self.executeTest(self.checkCompression)
     self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)

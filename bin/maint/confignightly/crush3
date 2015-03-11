@@ -3,4 +3,4 @@
 set MACH=crush
 set USR=petsc
 set LOC=/sandbox/petsc/${RNAME}-3
-set CONF=arch-linux-cxx-sieve-gcov
+set CONF=arch-linux-cxx-gcov

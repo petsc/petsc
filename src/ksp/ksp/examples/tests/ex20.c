@@ -43,6 +43,7 @@ int main(int argc,char **args)
   ierr  = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr  = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr  = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr  = MatSetUp(C);CHKERRQ(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 
@@ -72,7 +73,7 @@ int main(int argc,char **args)
 
   /* Solve linear system */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -81,7 +82,7 @@ int main(int argc,char **args)
   if (flg) {
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,NULL,&nullsp);CHKERRQ(ierr);
     ierr = KSPSetNullSpace(ksp,nullsp);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&&nullsp);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
   }
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
 

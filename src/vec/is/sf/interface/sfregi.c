@@ -25,6 +25,7 @@ PetscErrorCode  PetscSFRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscSFRegisterAllCalled) PetscFunctionReturn(0);
   PetscSFRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
   ierr = PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window);CHKERRQ(ierr);

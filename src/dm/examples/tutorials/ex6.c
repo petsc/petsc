@@ -1,6 +1,7 @@
 
 static char help[] = "Demonstrates using 3 DMDA's to manage a slightly non-trivial grid";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
 
@@ -58,7 +59,7 @@ PetscErrorCode FAGetLocalArray(FA fa,Vec v,PetscInt j,Field ***f)
   PetscFunctionBeginUser;
   if (fa->comm[j]) {
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
-    ierr = PetscMalloc(fa->nl[j]*sizeof(Field*),&a);CHKERRQ(ierr);
+    ierr = PetscMalloc1(fa->nl[j],&a);CHKERRQ(ierr);
     for (i=0; i<fa->nl[j]; i++) (a)[i] = (Field*) (va + 2*fa->offl[j] + i*2*fa->ml[j] - 2*fa->xl[j]);
     *f   = a - fa->yl[j];
     ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
@@ -91,7 +92,7 @@ PetscErrorCode FAGetGlobalArray(FA fa,Vec v,PetscInt j,Field ***f)
   PetscFunctionBeginUser;
   if (fa->comm[j]) {
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
-    ierr = PetscMalloc(fa->ng[j]*sizeof(Field*),&a);CHKERRQ(ierr);
+    ierr = PetscMalloc1(fa->ng[j],&a);CHKERRQ(ierr);
     for (i=0; i<fa->ng[j]; i++) (a)[i] = (Field*) (va + 2*fa->offg[j] + i*2*fa->mg[j] - 2*fa->xg[j]);
     *f   = a - fa->yg[j];
     ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
@@ -187,7 +188,7 @@ PetscErrorCode FACreate(FA *infa)
   VecScatter  vscat;
   PetscScalar *globalarray,*localarray,*toarray;
 
-  ierr = PetscNew(struct _p_FA,&fa);CHKERRQ(ierr);
+  ierr = PetscNew(&fa);CHKERRQ(ierr);
   /*
       fa->sw is the stencil width
 
@@ -232,17 +233,17 @@ PetscErrorCode FACreate(FA *infa)
   if (!((fa->p2 - fa->p1) % 2)) SETERRQ(PETSC_COMM_SELF,1,"width of region 3 must NOT be divisible by 2");
 
   if (fa->comm[1]) {
-    ierr = DMDACreate2d(fa->comm[1],DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da2);CHKERRQ(ierr);
+    ierr = DMDACreate2d(fa->comm[1],DM_BOUNDARY_PERIODIC,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da2);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da2,&vl2);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da2,&vg2);CHKERRQ(ierr);
   }
   if (fa->comm[2]) {
-    ierr = DMDACreate2d(fa->comm[2],DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p1-fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da3);CHKERRQ(ierr);
+    ierr = DMDACreate2d(fa->comm[2],DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p1-fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da3);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da3,&vl3);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da3,&vg3);CHKERRQ(ierr);
   }
   if (fa->comm[0]) {
-    ierr = DMDACreate2d(fa->comm[0],DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p1,fa->r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da1);CHKERRQ(ierr);
+    ierr = DMDACreate2d(fa->comm[0],DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p1,fa->r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da1);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da1,&vl1);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da1,&vg1);CHKERRQ(ierr);
   }
@@ -263,10 +264,10 @@ PetscErrorCode FACreate(FA *infa)
     tonglobal += nx*ny;
   }
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,tonglobal);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Get tonatural number for each node */
-  ierr      = PetscMalloc((tonglobal+1)*sizeof(PetscInt),&tonatural);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(tonglobal+1,&tonatural);CHKERRQ(ierr);
   tonglobal = 0;
   if (fa->comm[1]) {
     ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -330,10 +331,10 @@ PetscErrorCode FACreate(FA *infa)
   ierr          = MPI_Scan(&fromnglobal,&globalrstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   globalrstart -= fromnglobal;
   ierr          = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,fromnglobal);CHKERRQ(ierr);
-  ierr          = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr          = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Get fromnatural number for each node */
-  ierr        = PetscMalloc((fromnglobal+1)*sizeof(PetscInt),&fromnatural);CHKERRQ(ierr);
+  ierr        = PetscMalloc1(fromnglobal+1,&fromnatural);CHKERRQ(ierr);
   fromnglobal = 0;
   if (fa->comm[1]) {
     ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -377,8 +378,8 @@ PetscErrorCode FACreate(FA *infa)
   /* ---------------------------------------------------*/
   /* Create the scatter that updates 1 from 2 and 3 and 3 and 2 from 1 */
   /* currently handles stencil width of 1 ONLY */
-  ierr  = PetscMalloc(tonglobal*sizeof(PetscInt),&to);CHKERRQ(ierr);
-  ierr  = PetscMalloc(tonglobal*sizeof(PetscInt),&from);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(tonglobal,&to);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(tonglobal,&from);CHKERRQ(ierr);
   nscat = 0;
   if (fa->comm[1]) {
     ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -487,7 +488,7 @@ PetscErrorCode FACreate(FA *infa)
 
   /* Create final scatter that goes directly from globalvec to localvec */
   /* this is the one to be used in the application code */
-  ierr = PetscMalloc(nlocal*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nlocal,&indices);CHKERRQ(ierr);
   ierr = VecGetArray(localvec,&localarray);CHKERRQ(ierr);
   for (i=0; i<nlocal; i++) {
     indices[i] = (PetscInt) (localarray[i]);
@@ -564,7 +565,6 @@ PetscErrorCode DrawFA(FA fa,Vec v)
   PetscErrorCode ierr;
   PetscScalar    *va;
   ZoomCtx        zctx;
-  PetscDraw      draw;
   PetscReal      xmint = 10000.0,xmaxt = -10000.0,ymint = 100000.0,ymaxt = -10000.0;
   PetscReal      xmin,xmax,ymin,ymax;
   PetscInt       i,vn,ln,j;
@@ -599,12 +599,16 @@ PetscErrorCode DrawFA(FA fa,Vec v)
   ymin = ymint - .2*(ymaxt - ymint);
   ymax = ymaxt + .2*(ymaxt - ymint);
 #if defined(PETSC_HAVE_X) || defined(PETSC_HAVE_OPENGL)
-  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,PETSC_DECIDE,700,700,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
-  ierr = PetscDrawZoom(draw,DrawPatch,&zctx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  {
+    PetscDraw      draw;
+
+    ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,PETSC_DECIDE,700,700,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = PetscDrawZoom(draw,DrawPatch,&zctx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
+    ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -732,12 +736,12 @@ PetscErrorCode FATest(FA fa)
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n[%d] Local array for region %d \n",rank,p+1);CHKERRQ(ierr);
       for (k=y+n-1; k>=y; k--) { /* print in reverse order to match diagram in paper */
         for (i=x; i<x+m; i++) {
-          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"(%G,%G) ",la[k][i].X,la[k][i].Y);CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"(%g,%g) ",(double)la[k][i].X,(double)la[k][i].Y);CHKERRQ(ierr);
         }
         ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
       }
       ierr = FARestoreLocalArray(fa,l,p,&la);CHKERRQ(ierr);
-      ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
     }
   }
   ierr = VecDestroy(&g);CHKERRQ(ierr);

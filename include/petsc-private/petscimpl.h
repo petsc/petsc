@@ -67,8 +67,8 @@ typedef struct _p_PetscObject {
   PetscOps             *bops;
   MPI_Comm             comm;
   PetscInt             type;
-  PetscLogDouble       flops,time,mem;
-  PetscInt             id;
+  PetscLogDouble       flops,time,mem,memchildren;
+  PetscObjectId        id;
   PetscInt             refct;
   PetscMPIInt          tag;
   PetscFunctionList    qlist;
@@ -78,20 +78,20 @@ typedef struct _p_PetscObject {
   char                 *mansec;
   char                 *type_name;     /*  this is the subclass, for example VECSEQ which equals "seq" */
   PetscObject          parent;
-  PetscInt             parentid;
+  PetscObjectId        parentid;
   char*                name;
   char                 *prefix;
   PetscInt             tablevel;
   void                 *cpp;
-  PetscInt             state;
+  PetscObjectState     state;
   PetscInt             int_idmax,        intstar_idmax;
-  PetscInt             *intcomposedstate,*intstarcomposedstate;
+  PetscObjectState     *intcomposedstate,*intstarcomposedstate;
   PetscInt             *intcomposeddata, **intstarcomposeddata;
   PetscInt             real_idmax,        realstar_idmax;
-  PetscInt             *realcomposedstate,*realstarcomposedstate;
+  PetscObjectState     *realcomposedstate,*realstarcomposedstate;
   PetscReal            *realcomposeddata, **realstarcomposeddata;
   PetscInt             scalar_idmax,        scalarstar_idmax;
-  PetscInt             *scalarcomposedstate,*scalarstarcomposedstate;
+  PetscObjectState     *scalarcomposedstate,*scalarstarcomposedstate;
   PetscScalar          *scalarcomposeddata, **scalarstarcomposeddata;
   void                 (**fortran_func_pointers)(void);                  /* used by Fortran interface functions to stash user provided Fortran functions */
   PetscInt             num_fortran_func_pointers;                        /* number of Fortran function pointers allocated */
@@ -106,10 +106,9 @@ typedef struct _p_PetscObject {
   void                 *optionctx[PETSC_MAX_OPTIONS_HANDLER];
   PetscPrecision       precision;
   PetscBool            optionsprinted;
-#if defined(PETSC_HAVE_AMS)
-  PetscInt             amsmem;
-  PetscBool            amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectAMSBlock() */
-  PetscBool            amsblock;
+#if defined(PETSC_HAVE_SAWS)
+  PetscBool            amsmem;          /* if PETSC_TRUE then this object is registered with SAWs and visible to clients */
+  PetscBool            amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectSAWsBlock() */
 #endif
 } _p_PetscObject;
 
@@ -145,12 +144,12 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscOb
 
 @*/
 #define PetscHeaderCreate(h,tp,pops,classid,class_name,descr,mansec,com,des,vie) \
-  (PetscNew(struct tp,&(h)) ||                                                  \
-   PetscNew(PetscOps,&(((PetscObject)(h))->bops)) ||                            \
-   PetscNew(pops,&((h)->ops)) ||                                                \
+  (PetscNew(&(h)) ||                                                  \
+   PetscNew(&(((PetscObject)(h))->bops)) ||                            \
+   PetscNew(&((h)->ops)) ||                                                \
    PetscHeaderCreate_Private((PetscObject)h,classid,class_name,descr,mansec,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
    PetscLogObjectCreate(h) ||                                                   \
-   PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
+   PetscLogObjectMemory((PetscObject)h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,const char[],const char[],const char[],MPI_Comm,PetscErrorCode (*)(PetscObject*),PetscErrorCode (*)(PetscObject,PetscViewer));
@@ -177,6 +176,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,P
 PETSC_EXTERN PetscErrorCode PetscObjectSetFortranCallback(PetscObject,PetscFortranCallbackType,PetscFortranCallbackId*,void(*)(void),void *ctx);
 PETSC_EXTERN PetscErrorCode PetscObjectGetFortranCallback(PetscObject,PetscFortranCallbackType,PetscFortranCallbackId,void(**)(void),void **ctx);
 
+PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
 PETSC_INTERN PetscErrorCode PetscOptionsFindPair_Private(const char[],const char[],char**,PetscBool*);
 
 PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
@@ -193,6 +193,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 #define PetscValidIntPointer(h,arg) do {} while (0)
 #define PetscValidScalarPointer(h,arg) do {} while (0)
 #define PetscValidRealPointer(h,arg) do {} while (0)
+#define PetscValidFunction(h,arg) do {} while (0)
 
 #else
 
@@ -242,6 +243,11 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
   do {                                                                  \
     if (!h) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg); \
     if (!PetscCheckPointer(h,PETSC_REAL)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscReal: Parameter # %d",arg); \
+  } while (0)
+
+#define PetscValidFunction(f,arg)                                       \
+  do {                                                                  \
+    if (!f) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Function Pointer: Parameter # %d",arg); \
   } while (0)
 
 #endif
@@ -364,14 +370,13 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
   }
 
 /*MC
-   PetscObjectStateIncrease - Increases the state of any PetscObject,
-   regardless of the type.
+   PetscObjectStateIncrease - Increases the state of any PetscObject
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectStateIncrease(PetscObject obj)
 
-   Not Collective
+   Logically Collective
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
@@ -379,7 +384,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
          PetscObjectStateIncrease((PetscObject)mat);
 
    Notes: object state is an integer which gets increased every time
-   the object is changed. By saving and later querying the object state
+   the object is changed internally. By saving and later querying the object state
    one can determine whether information about the object is still current.
    Currently, state is maintained for Vec and Mat objects.
 
@@ -388,46 +393,19 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
    as VecSet() or MatScale() already call this routine. It is also called, as a
    precaution, in VecRestoreArray(), MatRestoreRow(), MatDenseRestoreArray().
 
+   This routine is logically collective because state equality comparison needs to be possible without communication.
+
    Level: developer
 
-   seealso: PetscObjectStateQuery(), PetscObjectStateDecrease()
+   seealso: PetscObjectStateGet()
 
    Concepts: state
 
 M*/
 #define PetscObjectStateIncrease(obj) ((obj)->state++,0)
 
-/*MC
-   PetscObjectStateDecrease - Decreases the state of any PetscObject,
-   regardless of the type.
-
-   Synopsis:
-   #include "petscsys.h"
-   PetscErrorCode PetscObjectStateDecrease(PetscObject obj)
-
-   Not Collective
-
-   Input Parameter:
-.  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
-         cast with a (PetscObject), for example,
-         PetscObjectStateIncrease((PetscObject)mat);
-
-   Notes: object state is an integer which gets increased every time
-   the object is changed. By saving and later querying the object state
-   one can determine whether information about the object is still current.
-   Currently, state is maintained for Vec and Mat objects.
-
-   Level: developer
-
-   seealso: PetscObjectStateQuery(), PetscObjectStateIncrease()
-
-   Concepts: state
-
-M*/
-#define PetscObjectStateDecrease(obj) ((obj)->state--,0)
-
-PETSC_EXTERN PetscErrorCode PetscObjectStateQuery(PetscObject,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscObjectSetState(PetscObject,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscObjectStateGet(PetscObject,PetscObjectState*);
+PETSC_EXTERN PetscErrorCode PetscObjectStateSet(PetscObject,PetscObjectState);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataRegister(PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject);
@@ -440,7 +418,7 @@ PETSC_EXTERN PetscInt         PetscObjectComposedDataMax;
    PetscObjectComposedDataSetInt - attach integer data to a PetscObject
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataSetInt(PetscObject obj,int id,int data)
 
    Not collective
@@ -451,8 +429,7 @@ PETSC_EXTERN PetscInt         PetscObjectComposedDataMax;
 -  data - the data to  be attached
 
    Notes
-   The data identifier can best be determined through a call to
-   PetscObjectComposedDataRegister()
+   The data identifier can best be created through a call to  PetscObjectComposedDataRegister()
 
    Level: developer
 M*/
@@ -464,7 +441,7 @@ M*/
    PetscObjectComposedDataGetInt - retrieve integer data attached to an object
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataGetInt(PetscObject obj,int id,int data,PetscBool  flag)
 
    Not collective
@@ -489,7 +466,7 @@ M*/
    PetscObjectComposedDataSetIntstar - attach integer array data to a PetscObject
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataSetIntstar(PetscObject obj,int id,int *data)
 
    Not collective
@@ -514,7 +491,7 @@ M*/
    attached to an object
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataGetIntstar(PetscObject obj,int id,int *data,PetscBool  flag)
 
    Not collective
@@ -539,7 +516,7 @@ M*/
    PetscObjectComposedDataSetReal - attach real data to a PetscObject
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataSetReal(PetscObject obj,int id,PetscReal data)
 
    Not collective
@@ -563,7 +540,7 @@ M*/
    PetscObjectComposedDataGetReal - retrieve real data attached to an object
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataGetReal(PetscObject obj,int id,PetscReal data,PetscBool  flag)
 
    Not collective
@@ -588,7 +565,7 @@ M*/
    PetscObjectComposedDataSetRealstar - attach real array data to a PetscObject
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataSetRealstar(PetscObject obj,int id,PetscReal *data)
 
    Not collective
@@ -613,7 +590,7 @@ M*/
    attached to an object
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataGetRealstar(PetscObject obj,int id,PetscReal *data,PetscBool  flag)
 
    Not collective
@@ -638,7 +615,7 @@ M*/
    PetscObjectComposedDataSetScalar - attach scalar data to a PetscObject
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataSetScalar(PetscObject obj,int id,PetscScalar data)
 
    Not collective
@@ -666,7 +643,7 @@ M*/
    PetscObjectComposedDataGetScalar - retrieve scalar data attached to an object
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataGetScalar(PetscObject obj,int id,PetscScalar data,PetscBool  flag)
 
    Not collective
@@ -696,7 +673,7 @@ M*/
    PetscObjectComposedDataSetScalarstar - attach scalar array data to a PetscObject
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataSetScalarstar(PetscObject obj,int id,PetscScalar *data)
 
    Not collective
@@ -725,7 +702,7 @@ M*/
    attached to an object
 
    Synopsis:
-   #include "petscsys.h"
+   #include "petsc-private/petscimpl.h"
    PetscErrorCode PetscObjectComposedDataGetScalarstar(PetscObject obj,int id,PetscScalar *data,PetscBool  flag)
 
    Not collective
@@ -750,6 +727,8 @@ M*/
 #define PetscObjectComposedDataGetScalarstar(obj,id,data,flag)         \
         PetscObjectComposedDataGetRealstar(obj,id,data,flag)
 #endif
+
+PETSC_EXTERN PetscErrorCode PetscObjectGetId(PetscObject,PetscObjectId*);
 
 PETSC_EXTERN PetscMPIInt Petsc_Counter_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_InnerComm_keyval;
@@ -778,5 +757,43 @@ typedef struct {
 E*/
 typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BOTH} PetscCUSPFlag;
 #endif
+
+#if defined(PETSC_HAVE_VIENNACL)
+/*E
+    PetscViennaCLFlag - indicates which memory (CPU, GPU, or none contains valid vector
+
+   PETSC_VIENNACL_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
+   PETSC_VIENNACL_GPU - GPU has valid vector/matrix entries
+   PETSC_VIENNACL_CPU - CPU has valid vector/matrix entries
+   PETSC_VIENNACL_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
+
+   Level: developer
+E*/
+typedef enum {PETSC_VIENNACL_UNALLOCATED,PETSC_VIENNACL_GPU,PETSC_VIENNACL_CPU,PETSC_VIENNACL_BOTH} PetscViennaCLFlag;
+#endif
+
+typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
+
+#define REDUCE_SUM  0
+#define REDUCE_MAX  1
+#define REDUCE_MIN  2
+
+typedef struct {
+  MPI_Comm    comm;
+  MPI_Request request;
+  PetscBool   async;
+  PetscScalar *lvalues;     /* this are the reduced values before call to MPI_Allreduce() */
+  PetscScalar *gvalues;     /* values after call to MPI_Allreduce() */
+  void        **invecs;     /* for debugging only, vector/memory used with each op */
+  PetscInt    *reducetype;  /* is particular value to be summed or maxed? */
+  SRState     state;        /* are we calling xxxBegin() or xxxEnd()? */
+  PetscInt    maxops;       /* total amount of space we have for requests */
+  PetscInt    numopsbegin;  /* number of requests that have been queued in */
+  PetscInt    numopsend;    /* number of requests that have been gotten by user */
+} PetscSplitReduction;
+
+PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm,PetscSplitReduction**);
+PETSC_EXTERN PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction*);
+PETSC_EXTERN PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction*);
 
 #endif /* _PETSCHEAD_H */

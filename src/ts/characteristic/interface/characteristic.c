@@ -83,9 +83,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   PetscFunctionBegin;
   PetscValidPointer(c, 2);
   *c = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = CharacteristicInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(newC, _p_Characteristic, struct _CharacteristicOps, CHARACTERISTIC_CLASSID, "Characteristic", "Characteristic", "SemiLagrange", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
   ierr = PetscLogObjectCreate(newC);CHKERRQ(ierr);
@@ -376,10 +374,10 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   is   = info.xs;          ie   = info.xs+info.xm;
   js   = info.ys;          je   = info.ys+info.ym;
   /* Allocation */
-  ierr = PetscMalloc(dim*sizeof(PetscScalar),                &interpIndices);CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numVelocityComp*sizeof(PetscScalar), &velocityValues);CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numVelocityComp*sizeof(PetscScalar), &velocityValuesOld);CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numFieldComp*sizeof(PetscScalar),    &fieldValues);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dim,                &interpIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numVelocityComp, &velocityValues);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numVelocityComp, &velocityValuesOld);CHKERRQ(ierr);
+  ierr = PetscMalloc1(c->numFieldComp,    &fieldValues);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(CHARACTERISTIC_Solve,0,0,0,0);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------------------
@@ -586,7 +584,7 @@ PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbor
   PetscFunctionBegin;
   c->numNeighbors = numNeighbors;
   ierr = PetscFree(c->neighbors);CHKERRQ(ierr);
-  ierr = PetscMalloc(numNeighbors * sizeof(PetscMPIInt), &c->neighbors);CHKERRQ(ierr);
+  ierr = PetscMalloc1(numNeighbors, &c->neighbors);CHKERRQ(ierr);
   ierr = PetscMemcpy(c->neighbors, neighbors, numNeighbors * sizeof(PetscMPIInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -779,7 +777,7 @@ PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt ro
 /* [center, left, top-left, top, top-right, right, bottom-right, bottom, bottom-left] */
 PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 {
-  DMDABoundaryType bx, by;
+  DMBoundaryType   bx, by;
   PetscBool        IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
   MPI_Comm         comm;
   PetscMPIInt      rank;
@@ -791,14 +789,14 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, 0, 0, 0, &PI,&PJ, 0, 0, 0, &bx, &by,0, 0);CHKERRQ(ierr);
 
-  if (bx == DMDA_BOUNDARY_PERIODIC) IPeriodic = PETSC_TRUE;
-  if (by == DMDA_BOUNDARY_PERIODIC) JPeriodic = PETSC_TRUE;
+  if (bx == DM_BOUNDARY_PERIODIC) IPeriodic = PETSC_TRUE;
+  if (by == DM_BOUNDARY_PERIODIC) JPeriodic = PETSC_TRUE;
 
   neighbors[0] = rank;
   rank = 0;
-  ierr = PetscMalloc(sizeof(PetscInt*)*PJ,&procs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PJ,&procs);CHKERRQ(ierr);
   for (pj=0; pj<PJ; pj++) {
-    ierr = PetscMalloc(sizeof(PetscInt)*PI,&(procs[pj]));CHKERRQ(ierr);
+    ierr = PetscMalloc1(PI,&(procs[pj]));CHKERRQ(ierr);
     for (pi=0; pi<PI; pi++) {
       procs[pj][pi] = rank;
       rank++;

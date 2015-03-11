@@ -68,6 +68,7 @@ T*/
      petscksp.h   - linear solvers         petscsnes.h - nonlinear solvers
 */
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 
 /*
@@ -104,7 +105,7 @@ int main(int argc,char **argv)
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
 
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
   ierr = TSSetDM(ts,(DM)da);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -145,7 +146,7 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,user.cfl_initial/(user.lidvelocity*mx));CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%Dx%D grid, lid velocity = %G, prandtl # = %G, grashof # = %G\n",mx,my,user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%Dx%D grid, lid velocity = %g, prandtl # = %g, grashof # = %g\n",mx,my,(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -160,7 +161,7 @@ int main(int argc,char **argv)
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %g after %D steps\n",TSConvergedReasons[reason],(double)ftime,steps);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

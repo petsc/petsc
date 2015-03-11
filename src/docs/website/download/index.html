@@ -29,12 +29,12 @@
             <li><a href="../documentation/referencing.html">Citing PETSc</a></li>
             <li><a href="../documentation/tutorials/index.html">Tutorials</a></li>
             <li><a href="../documentation/installation.html">Installation</a></li>
-            <li><a href="../documentation/ams.html">AMS</a></li>
+            <li><a href="../documentation/saws.html">SAWs</a></li>
             <li><a href="../documentation/changes/index.html">Changes</a></li>
             <li><a href="../documentation/bugreporting.html">BugReporting</a></li>
             <li><a href="../documentation/codemanagement.html">CodeManagement</a></li>
             <li><a href="../documentation/faq.html">FAQ</a></li>
-            <li><a href="../documentation/copyright.html">License</a></li>
+            <li><a href="../documentation/license.html">License</a></li>
           </ul>
         </li>
         <li><a href="../publications/index.html">Applications/Publications</a></li>
@@ -47,34 +47,40 @@
     <div id="main">
 
       <p>
-        Please join the petsc-announce, petsc-users <a href="../miscellaneous/mailing-lists.html"> mailing lists</a>.
+        Please join the petsc-announce and petsc-users <a href="../miscellaneous/mailing-lists.html"> mailing lists</a>.
       </p>
 
-      <h3>PETSc Release Version 3.3</h3>
+      <h3>PETSc Release Version 3.5</h3>
       <ul>
         <li>
-          <a href="http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.3-p6.tar.gz">petsc-3.3-p6.tar.gz</a>
+          <a href="http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.5.3.tar.gz">petsc-3.5.3.tar.gz</a>
           - full distribution (including all current patches) with documentation
         </li>
 
         <li>
-          <a href="http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.3-p6.tar.gz">petsc-lite-3.3-p6.tar.gz</a>
+          <a href="http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.5.3.tar.gz">petsc-lite-3.5.3.tar.gz</a>
           - smaller version with no documentation (all documentation may be accessed on line)
         </li>
 
-        <li>
-          The latest stable version can also be downloaded using <a href="http://git-scm.com">Git</a> with the following command:
-          <pre>
-git clone -b maint https://bitbucket.org/petsc/petsc petsc
-          </pre>
+        <li> The release can also be downloaded using <a href="http://git-scm.com">Git</a> with:
+          <li style="list-style-type:none"> &nbsp; &nbsp; <tt> git clone -b maint https://bitbucket.org/petsc/petsc petsc</tt></li>
+          <li style="list-style-type:none">Use</li>
+          <li style="list-style-type:none">&nbsp; &nbsp; <tt> git pull</tt></li>
+          <li style="list-style-type:none">in the petsc directory anytime to obtain new patches that have been added since your "git clone" or last "git pull"</li>
         </li>
+
+        <li>
+          For use in the Apple Xcode GUI (Yosemite with Xcode 6.1 ONLY) <a href="http://ftp.mcs.anl.gov/pub/petsc/PETSc-3.5.2-OSX.dmg">PETSc-3.5.2-OSX.dmg</a> and
+                                 <a href="http://ftp.mcs.anl.gov/pub/petsc/PETSc-3.5.2-iOS.dmg">PETSc-3.5.2-iOS.dmg</a> <a href="http://ftp.mcs.anl.gov/pub/petsc/Installing-PETSc-OSX-3.5.dmg.mov">Movie</a> showing how to install and use PETSc-3.5.2-OSX.dmg   If you plan to use PETSc from the Unix command line DO NOT install this package.
+        </li>
+
       </ul>
 
       There are no separate patch files, the current fixes are included in the tar file. Patches are documented at:
 
       <ul>
-        <li><a href="https://bitbucket.org/petsc/petsc/commits/branch/maint">PETSc-3.3 Changelog</a></li>
-        <li><a href="../documentation/changes/33.html">Summary of PETSc-3.3 changes</a></li>
+        <li><a href="https://bitbucket.org/petsc/petsc/commits/branch/maint">PETSc-3.5 Changelog</a></li>
+        <li><a href="../documentation/changes/35.html">Summary of PETSc-3.5 changes</a></li>
       </ul>
 
       Older patchlevel <a href="http://ftp.mcs.anl.gov/pub/petsc/release-snapshots">tarballs</a> are also available
@@ -82,6 +88,8 @@ git clone -b maint https://bitbucket.org/petsc/petsc petsc
       <h3>Previous PETSc Releases</h3>
 
       <ul>
+        <li><a href="http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.4.5.tar.gz">petsc-3.4.5.tar.gz</a></li>
+        <li><a href="http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.3-p7.tar.gz">petsc-3.3-p7.tar.gz</a></li>
         <li><a href="http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.2-p7.tar.gz">petsc-3.2-p7.tar.gz</a></li>
         <li><a href="http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.1-p8.tar.gz">petsc-3.1-p8.tar.gz</a></li>
         <li><a href="http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.0.0-p12.tar.gz">petsc-3.0.0-p12.tar.gz</a></li>

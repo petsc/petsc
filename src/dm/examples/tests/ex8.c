@@ -51,7 +51,7 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
     on each processor. Just list them in the global natural ordering.
 
   */
-  ierr = PetscMalloc((nslice+1)*sizeof(PetscInt),&sliceindices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nslice+1,&sliceindices);CHKERRQ(ierr);
   count = 0;
   if (rank < P) {
     for (j=0; j<N; j++) {
@@ -89,7 +89,7 @@ int main(int argc,char **argv)
   DM               da;
   Vec              local,global,vslice;
   PetscScalar      value;
-  DMDABoundaryType wrap         = DMDA_XYPERIODIC;
+  DMBoundaryType   wrap         = DM_XYPERIODIC;
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   VecScatter       scatter;
 

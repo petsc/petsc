@@ -45,14 +45,14 @@ cd $nPETSC_DIR
 rm -f build.log
 echo "Build on $MACH $ARCH $nPETSC_DIR `date` " > build.log
 
+# Note: we are using detatched heads - so 'git fetch/pull' is not done here.
 # Note use 'git clean' intead of manually deleting seleted old files.
-# This also requires 'clean' extension enabled on all nightly build machines.
-
-echo "Cleaning throughly and updating git clone at $nPETSC_DIR" >>& build.log
-(git reset --hard; git clean -q -f -d -x -e build.log;git pull -q) >>& build.log
+echo "Cleaning throughly at $nPETSC_DIR" >>& build.log
+(git reset --hard; git clean -q -f -d -x -e build.log) >>& build.log
+# externalpackages can be a git repo - so one has to explicitly remove them
+rm -rf ./${ARCH}
 echo "Currently building git branch:" `git describe --contains --all HEAD` >>& build.log
-# if externalpackage tarball also packs a git repo - one has to explicitly remove it
-rm -rf ./externalpackages
+git log -1 >>& build.log
 
 setenv PETSC_DIR $nPETSC_DIR
 set PETSC_ARCH=${ARCH}
@@ -73,10 +73,10 @@ if ( $? ) then
 else
   set BUILDER="yes"
 endif
+set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
 
-if ( "${BUILDER}" == "yes" ) then
-  env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR ./config/builder2.py clean >>& build.log
-  env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR ./config/builder2.py build >>& build.log
+if ( "${GCOV}" != "" ) then
+  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all-legacy test >>& build.log
 else
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all test >>& build.log
 endif
@@ -86,7 +86,7 @@ tar rf buildoutput.tar build.log
 #
 # Run examples
 #
-grep PETSC_WITH_BATCH ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables > /dev/null
+grep PETSC_WITH_BATCH ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc-conf/petscvariables > /dev/null
 if ( $? ) then
   set TESTMODE='testexamples'
 else
@@ -100,6 +100,7 @@ if ( $? ) then
   set VALGRIND='DUMMYARGUMENT=foobar'
 else
   set VALGRIND=`echo MPIEXEC="${PETSC_DIR}/bin/petscmpiexec -valgrind"`
+  setenv PETSCVALGRIND_OPTIONS "--suppressions=${PETSC_DIR}/bin/maint/petsc-val.supp"
 endif
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH TESTMODE=$TESTMODE ${VALGRIND}  `date` " > examples.log
@@ -110,7 +111,6 @@ else
 endif
 echo '******************************************************' >>& $nPETSC_DIR/examples.log
 
-set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
 if ( "${GCOV}" != "" ) then
   make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR gcov  >>& examples.log
 endif

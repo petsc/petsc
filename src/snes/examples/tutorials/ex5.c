@@ -47,6 +47,7 @@ T*/
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
 */
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 #include <petscmatlab.h>
@@ -65,7 +66,7 @@ typedef struct {
 */
 extern PetscErrorCode FormInitialGuess(DM,AppCtx*,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
-extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,MatStructure*,AppCtx*);
+extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,AppCtx*);
 extern PetscErrorCode FormObjectiveLocal(DMDALocalInfo*,PetscScalar**,PetscReal*,AppCtx*);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void*);
@@ -107,12 +108,12 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESSetGS(snes, NonlinearGS, NULL);CHKERRQ(ierr);
+  ierr = SNESSetNGS(snes, NonlinearGS, NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
@@ -228,7 +229,7 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *user,Vec X)
         /* boundary conditions are all zero Dirichlet */
         x[j][i] = 0.0;
       } else {
-        x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+        x[j][i] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
       }
     }
   }
@@ -353,7 +354,7 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
 /*
    FormJacobianLocal - Evaluates Jacobian matrix on local process patch
 */
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,Mat jac,MatStructure *flg,AppCtx *user)
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,Mat jac,AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k;
@@ -501,8 +502,8 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
 
   PetscFunctionBeginUser;
   tot_its = 0;
-  ierr    = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
-  ierr    = SNESGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
+  ierr    = SNESNGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
+  ierr    = SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
   ierr    = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr    = DMGetApplicationContext(da,(void**)&user);CHKERRQ(ierr);
 

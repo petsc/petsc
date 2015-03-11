@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
   ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrows*ncols*sizeof(*v),&v);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows*ncols,&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
       ierr         = PetscRandomGetValue(r,&rval);CHKERRQ(ierr);
@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   ierr = PetscObjectTypeCompare((PetscObject)A,MATELEMENTAL,&iselemental);CHKERRQ(ierr);
   if (!iselemental) {
     ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A^T*A */
-    ierr = MatEqual(C,D,&equal);CHKERRQ(ierr);
+    ierr = MatMultEqual(C,D,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
     ierr = MatDestroy(&D);CHKERRQ(ierr);
   }

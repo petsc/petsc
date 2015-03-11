@@ -1,0 +1,55 @@
+
+  See https://bitbucket.org/saws/saws/wiki/Home for a short introduction to SAWs.
+
+
+  Configure PETSc with the additional options --download-saws
+
+  Example usage: after starting each example below go to localhost:8080 in browser
+
+
+cd src/snes/examples/tutorials
+make ex19
+
+bjacobi
+-----------
+./ex19 -saws_options
+
+./ex19 -saws_options -pc_type bjacobi -pc_bjacobi_blocks 2
+
+hierarchical Krylov methods
+--------------------------
+./ex19 -saws_options -ksp_type fgmres -pc_type bjacobi -sub_ksp_type gmres -sub_pc_type bjacobi -sub_pc_bjacobi_blocks 2 -pc_bjacobi_blocks 3
+
+./ex19 -saws_options -ksp_type fgmres -pc_type bjacobi -sub_ksp_type gmres -sub_pc_type bjacobi -sub_pc_bjacobi_blocks 3 -pc_bjacobi_blocks 2 -sub_sub_pc_type bjacobi -sub_sub_ksp_type preonly -sub_sub_pc_bjacobi_blocks 2
+
+mg
+--------
+./ex19  -saws_options -da_refine 2 -pc_type mg -ksp_type fgmres -mg_coarse_pc_type redundant
+
+ksp (nested Krylov methods)
+--------------------------
+./ex19 -saws_options -ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_pc_type ksp -ksp_ksp_ksp_type chebyshev -ksp_ksp_pc_type ilu
+
+./ex19 -saws_options -ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_pc_type ksp -ksp_ksp_ksp_type chebyshev -ksp_ksp_pc_type bjacobi -ksp_ksp_pc_bjacobi_blocks 2
+
+nested & hierarchical Krylov methods
+------------------------------------
+./ex19 -saws_options -ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_pc_type ksp -ksp_ksp_ksp_type chebyshev -ksp_ksp_pc_type bjacobi -ksp_ksp_pc_bjacobi_blocks 2 -ksp_ksp_sub_ksp_type gmres -ksp_ksp_sub_pc_type bjacobi -ksp_ksp_sub_pc_bjacobi_blocks 3
+
+fieldsplit
+----------
+./ex19 -saws_options -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 2 -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 0,1 -pc_fieldsplit_type multiplicative -fieldsplit_pc_type lu -da_refine 1
+
+./ex19 -saws_options -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_block_size 2 -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 0 -fieldsplit_0_ksp_type gmres -fieldsplit_0_pc_type bjacobi -fieldsplit_1_ksp_type cg -fieldsplit_1_pc_type mg
+
+./ex19 -saws_options -pc_type fieldsplit -ksp_type fgmres -da_refine 1 -pc_fieldsplit_block_size 4
+
+other
+-------------
+./ex19 -saws_options -da_refine 6 -snes_saws_block -ksp_monitor_saws -ksp_saws_block
+
+cd src/ts/examples/tutorials/advection-diffusion-reaction
+make ex5
+./ex5 -ts_view_pre saws  -stack_view saws
+
+

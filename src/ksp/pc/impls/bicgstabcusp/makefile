@@ -1,4 +1,4 @@
-#requiresdefine 'PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION'
+#requiresdefine 'PETSC_HAVE_CUSP'
 ALL: lib
 
 CFLAGS   =
@@ -11,6 +11,6 @@ DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/bicgstabcusp/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test

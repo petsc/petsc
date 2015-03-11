@@ -1,4 +1,4 @@
-#requirespackage 'PETSC_HAVE_TXPETSCGPU'
+#requirespackage 'PETSC_HAVE_CUSP'
 ALL: lib
 
 CFLAGS   =
@@ -11,6 +11,6 @@ DIRS	 =
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/aij/mpi/mpicusparse/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test

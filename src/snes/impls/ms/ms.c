@@ -220,15 +220,14 @@ PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregiste
   PetscValidPointer(delta,5);
   PetscValidPointer(betasub,6);
 
-  ierr          = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
-  ierr          = PetscMemzero(link,sizeof(*link));CHKERRQ(ierr);
+  ierr          = PetscNew(&link);CHKERRQ(ierr);
   t             = &link->tab;
   ierr          = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->nstages    = nstages;
   t->nregisters = nregisters;
   t->stability  = stability;
 
-  ierr = PetscMalloc3(nstages*nregisters,PetscReal,&t->gamma,nstages,PetscReal,&t->delta,nstages,PetscReal,&t->betasub);CHKERRQ(ierr);
+  ierr = PetscMalloc3(nstages*nregisters,&t->gamma,nstages,&t->delta,nstages,&t->betasub);CHKERRQ(ierr);
   ierr = PetscMemcpy(t->gamma,gamma,nstages*nregisters*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->delta,delta,nstages*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->betasub,betasub,nstages*sizeof(PetscReal));CHKERRQ(ierr);
@@ -293,16 +292,16 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   SNES_MS        *ms = (SNES_MS*)snes->data;
   Vec            X   = snes->vec_sol,F = snes->vec_func;
   PetscReal      fnorm;
-  MatStructure   mstruct;
   PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
-  ierr         = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr         = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter   = 0;
   snes->norm   = 0.;
-  ierr         = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr         = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
@@ -312,30 +311,22 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   } else snes->vec_func_init_set = PETSC_FALSE;
 
   if (snes->jacobian) {         /* This method does not require a Jacobian, but it is usually preconditioned by PBJacobi */
-    ierr = SNESComputeJacobian(snes,snes->vec_sol,&snes->jacobian,&snes->jacobian_pre,&mstruct);CHKERRQ(ierr);
-    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,mstruct);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,snes->vec_sol,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
   }
   if (ms->norms) {
-    if (!snes->norm_init_set) {
-      ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-      if (PetscIsInfOrNanReal(fnorm)) {
-        snes->reason = SNES_DIVERGED_FNORM_NAN;
-        PetscFunctionReturn(0);
-      }
-    } else {
-      fnorm               = snes->norm_init;
-      snes->norm_init_set = PETSC_FALSE;
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+    if (PetscIsInfOrNanReal(fnorm)) {
+      snes->reason = SNES_DIVERGED_FNORM_NAN;
+      PetscFunctionReturn(0);
     }
     /* Monitor convergence */
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = 0;
     snes->norm = fnorm;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
 
-    /* set parameter for default relative tolerance convergence test */
-    snes->ttol = fnorm*snes->rtol;
     /* Test for convergence */
     ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
@@ -364,10 +355,10 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
       }
 
       /* Monitor convergence */
-      ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+      ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
       snes->iter = i+1;
       snes->norm = fnorm;
-      ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+      ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
       ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
       ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
 
@@ -439,13 +430,13 @@ static PetscErrorCode SNESView_MS(SNES snes,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_MS"
-static PetscErrorCode SNESSetFromOptions_MS(SNES snes)
+static PetscErrorCode SNESSetFromOptions_MS(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_MS        *ms = (SNES_MS*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES MS options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES MS options");CHKERRQ(ierr);
   {
     SNESMSTableauLink link;
     PetscInt          count,choice;
@@ -455,7 +446,7 @@ static PetscErrorCode SNESSetFromOptions_MS(SNES snes)
 
     ierr = PetscStrncpy(mstype,SNESMSDefault,sizeof(mstype));CHKERRQ(ierr);
     for (link=SNESMSTableauList,count=0; link; link=link->next,count++) ;
-    ierr = PetscMalloc(count*sizeof(char*),&namelist);CHKERRQ(ierr);
+    ierr = PetscMalloc1(count,&namelist);CHKERRQ(ierr);
     for (link=SNESMSTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
     ierr = PetscOptionsEList("-snes_ms_type","Multistage smoother type","SNESMSSetType",(const char*const*)namelist,count,mstype,&choice,&flg);CHKERRQ(ierr);
     ierr = SNESMSSetType(snes,flg ? namelist[choice] : mstype);CHKERRQ(ierr);
@@ -556,9 +547,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
   SNES_MS        *ms;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = SNESMSInitializePackage();CHKERRQ(ierr);
-#endif
 
   snes->ops->setup          = SNESSetUp_MS;
   snes->ops->solve          = SNESSolve_MS;
@@ -570,7 +559,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
   snes->usespc  = PETSC_FALSE;
   snes->usesksp = PETSC_TRUE;
 
-  ierr        = PetscNewLog(snes,SNES_MS,&ms);CHKERRQ(ierr);
+  ierr        = PetscNewLog(snes,&ms);CHKERRQ(ierr);
   snes->data  = (void*)ms;
   ms->damping = 0.9;
   ms->norms   = PETSC_FALSE;

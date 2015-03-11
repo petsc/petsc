@@ -39,13 +39,14 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
       ierr = DMView_DA_VTK(da,viewer);CHKERRQ(ierr);
     }
   } else if (isdraw) {
-    PetscDraw draw;
-    double    ymin = -1*dd->s-1,ymax = dd->N+dd->s;
-    double    xmin = -1*dd->s-1,xmax = dd->M+dd->s;
-    double    x,y;
-    PetscInt  base,*idx;
-    char      node[10];
-    PetscBool isnull;
+    PetscDraw      draw;
+    double         ymin = -1*dd->s-1,ymax = dd->N+dd->s;
+    double         xmin = -1*dd->s-1,xmax = dd->M+dd->s;
+    double         x,y;
+    PetscInt       base;
+    const PetscInt *idx;
+    char           node[10];
+    PetscBool      isnull;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
@@ -90,17 +91,19 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
     /* overlay ghost numbers, useful for error checking */
     /* put in numbers */
 
-    base = 0; idx = dd->idx;
+    base = 0;
+    ierr = ISLocalToGlobalMappingGetBlockIndices(da->ltogmap,&idx);CHKERRQ(ierr);
     ymin = dd->Ys; ymax = dd->Ye; xmin = dd->Xs; xmax = dd->Xe;
     for (y=ymin; y<ymax; y++) {
       for (x=xmin; x<xmax; x++) {
         if ((base % dd->w) == 0) {
-          sprintf(node,"%d",(int)(idx[base]/dd->w));
+          sprintf(node,"%d",(int)(idx[base/dd->w]));
           ierr = PetscDrawString(draw,x/dd->w,y,PETSC_DRAW_BLUE,node);CHKERRQ(ierr);
         }
         base++;
       }
     }
+    ierr = ISLocalToGlobalMappingRestoreBlockIndices(da->ltogmap,&idx);
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   } else if (isbinary) {
@@ -152,7 +155,7 @@ PetscErrorCode  DMDASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,
     PetscMPIInt i,*groupies;
 
     ierr = MPI_Comm_group(comm,&entire_group);CHKERRQ(ierr);
-    ierr = PetscMalloc(csize*sizeof(PetscInt),&groupies);CHKERRQ(ierr);
+    ierr = PetscMalloc1(csize,&groupies);CHKERRQ(ierr);
     for (i=0; i<csize; i++) {
       groupies[i] = (rank/csize)*csize + i;
     }
@@ -226,26 +229,25 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   PetscInt         n            = dd->n;
   const PetscInt   dof          = dd->w;
   const PetscInt   s            = dd->s;
-  DMDABoundaryType bx           = dd->bx;
-  DMDABoundaryType by           = dd->by;
+  DMBoundaryType   bx           = dd->bx;
+  DMBoundaryType   by           = dd->by;
   DMDAStencilType  stencil_type = dd->stencil_type;
   PetscInt         *lx          = dd->lx;
   PetscInt         *ly          = dd->ly;
   MPI_Comm         comm;
   PetscMPIInt      rank,size;
-  PetscInt         xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end,IXs,IXe,IYs,IYe;
-  PetscInt         up,down,left,right,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn,*idx_cpy;
-  const PetscInt   *idx_full;
+  PetscInt         xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,IXs,IXe,IYs,IYe;
+  PetscInt         up,down,left,right,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
   PetscInt         xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
   PetscInt         s_x,s_y; /* s proportionalized to w */
   PetscInt         sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
   Vec              local,global;
-  VecScatter       ltog,gtol;
-  IS               to,from,ltogis;
+  VecScatter       gtol;
+  IS               to,from;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (stencil_type == DMDA_STENCIL_BOX && (bx == DMDA_BOUNDARY_MIRROR || by == DMDA_BOUNDARY_MIRROR)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
+  if (stencil_type == DMDA_STENCIL_BOX && (bx == DM_BOUNDARY_MIRROR || by == DM_BOUNDARY_MIRROR)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 #if !defined(PETSC_USE_64BIT_INDICES)
   if (((Petsc64bitInt) M)*((Petsc64bitInt) N)*((Petsc64bitInt) dof) > (Petsc64bitInt) PETSC_MPI_INT_MAX) SETERRQ3(comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D (dof) is too large for 32 bit indices",M,N,dof);
@@ -257,6 +259,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
+  dd->p = 1;
   if (m != PETSC_DECIDE) {
     if (m < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
     else if (m > size) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);
@@ -293,7 +296,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      xs is the first local node number, x is the number of local nodes
   */
   if (!lx) {
-    ierr = PetscMalloc(m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m, &dd->lx);CHKERRQ(ierr);
     lx   = dd->lx;
     for (i=0; i<m; i++) {
       lx[i] = M/m + ((M % m) > i);
@@ -317,7 +320,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      ys is the first local node number, y is the number of local nodes
   */
   if (!ly) {
-    ierr = PetscMalloc(n*sizeof(PetscInt), &dd->ly);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n, &dd->ly);CHKERRQ(ierr);
     ly   = dd->ly;
     for (i=0; i<n; i++) {
       ly[i] = N/n + ((N % n) > i);
@@ -340,8 +343,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
    check if the scatter requires more than one process neighbor or wraps around
    the domain more than once
   */
-  if ((x < s) && ((m > 1) || (bx == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
-  if ((y < s) && ((n > 1) || (by == DMDA_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
+  if ((x < s) && ((m > 1) || (bx == DM_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
+  if ((y < s) && ((n > 1) || (by == DM_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
   xe = xs + x;
   ye = ys + y;
 
@@ -367,7 +370,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     IXe = M;
   }
 
-  if (bx == DMDA_BOUNDARY_PERIODIC || bx == DMDA_BOUNDARY_MIRROR) {
+  if (bx == DM_BOUNDARY_PERIODIC || bx == DM_BOUNDARY_MIRROR) {
     IXs = xs - s;
     IXe = xe + s;
     Xs  = xs - s;
@@ -395,7 +398,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     IYe = N;
   }
 
-  if (by == DMDA_BOUNDARY_PERIODIC || by == DMDA_BOUNDARY_MIRROR) {
+  if (by == DM_BOUNDARY_PERIODIC || by == DM_BOUNDARY_MIRROR) {
     IYs = ys - s;
     IYe = ye + s;
     Ys  = ys - s;
@@ -408,7 +411,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   /* determine starting point of each processor */
   nn       = x*y;
-  ierr     = PetscMalloc2(size+1,PetscInt,&bases,size,PetscInt,&ldims);CHKERRQ(ierr);
+  ierr     = PetscMalloc2(size+1,&bases,size,&ldims);CHKERRQ(ierr);
   ierr     = MPI_Allgather(&nn,1,MPIU_INT,ldims,1,MPIU_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
   for (i=1; i<=size; i++) {
@@ -421,16 +424,13 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   /* allocate the base parallel and sequential vectors */
   dd->Nlocal = x*y*dof;
-  ierr       = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
+  ierr       = VecCreateMPIWithArray(comm,dof,dd->Nlocal,PETSC_DECIDE,NULL,&global);CHKERRQ(ierr);
   dd->nlocal = (Xe-Xs)*(Ye-Ys)*dof;
-  ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,0,&local);CHKERRQ(ierr);
+  ierr       = VecCreateSeqWithArray(PETSC_COMM_SELF,dof,dd->nlocal,NULL,&local);CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
-  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
-  ierr = ISCreateStride(comm,x*y*dof,start,1,&to);CHKERRQ(ierr);
-
-  ierr  = PetscMalloc(x*y*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr  = PetscMalloc1((IXe-IXs)*(IYe-IYs),&idx);CHKERRQ(ierr);
   left  = xs - Xs; right = left + x;
   down  = ys - Ys; up = down + y;
   count = 0;
@@ -440,18 +440,9 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     }
   }
 
-  ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
-  ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(dd,ltog);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
-
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
   if (stencil_type == DMDA_STENCIL_BOX) {
-    count = (IXe-IXs)*(IYe-IYs);
-    ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-
     left  = IXs - Xs; right = left + (IXe-IXs);
     down  = IYs - Ys; up = down + (IYe-IYs);
     count = 0;
@@ -473,9 +464,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
             | bottom  |
             -----------
          Xs xs        xe Xe */
-    count = (ys-IYs)*x + y*(IXe-IXs) + (IYe-ye)*x;
-    ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-
     left  = xs - Xs; right = left + x;
     down  = ys - Ys; up = down + y;
     count = 0;
@@ -528,7 +516,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   }
   n7 = rank + m; if (n7 >= m*n) n7 = -1;
 
-  if (bx == DMDA_BOUNDARY_PERIODIC && by == DMDA_BOUNDARY_PERIODIC) {
+  if (bx == DM_BOUNDARY_PERIODIC && by == DM_BOUNDARY_PERIODIC) {
     /* Modify for Periodic Cases */
     /* Handle all four corners */
     if ((n6 < 0) && (n7 < 0) && (n3 < 0)) n6 = m-1;
@@ -551,14 +539,14 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
     if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
     if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
-  } else if (by == DMDA_BOUNDARY_PERIODIC) {  /* Handle Top and Bottom Sides */
+  } else if (by == DM_BOUNDARY_PERIODIC) {  /* Handle Top and Bottom Sides */
     if (n1 < 0) n1 = rank + m * (n-1);
     if (n7 < 0) n7 = rank - m * (n-1);
     if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
     if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
     if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
     if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
-  } else if (bx == DMDA_BOUNDARY_PERIODIC) { /* Handle Left and Right Sides */
+  } else if (bx == DM_BOUNDARY_PERIODIC) { /* Handle Left and Right Sides */
     if (n3 < 0) n3 = rank + (m-1);
     if (n5 < 0) n5 = rank - (m-1);
     if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
@@ -567,7 +555,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
   }
 
-  ierr = PetscMalloc(9*sizeof(PetscInt),&dd->neighbors);CHKERRQ(ierr);
+  ierr = PetscMalloc1(9,&dd->neighbors);CHKERRQ(ierr);
 
   dd->neighbors[0] = n0;
   dd->neighbors[1] = n1;
@@ -585,8 +573,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     n0  = n2 = n6 = n8 = -1;
   }
 
-  ierr = PetscMalloc((Xe-Xs)*(Ye-Ys)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(da,(Xe-Xs)*(Ye-Ys)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc1((Xe-Xs)*(Ye-Ys),&idx);CHKERRQ(ierr);
 
   nn = 0;
   xbase = bases[rank];
@@ -603,7 +590,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       y_t = ly[(n1/m)];
       s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
       for (j=0; j<x_t; j++) idx[nn++] = s_t++;
-    } else if (by == DMDA_BOUNDARY_MIRROR) {
+    } else if (by == DM_BOUNDARY_MIRROR) {
       for (j=0; j<x; j++) idx[nn++] = bases[rank] + x*(s_y - i + 1)  + j;
     }
 
@@ -621,7 +608,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       /* y_t = y; */
       s_t = bases[n3] + (i+1)*x_t - s_x;
       for (j=0; j<s_x; j++) idx[nn++] = s_t++;
-    } else if (bx == DMDA_BOUNDARY_MIRROR) {
+    } else if (bx == DM_BOUNDARY_MIRROR) {
       for (j=0; j<s_x; j++) idx[nn++] = bases[rank] + x*i + s_x - j;
     }
 
@@ -632,7 +619,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       /* y_t = y; */
       s_t = bases[n5] + (i)*x_t;
       for (j=0; j<s_x; j++) idx[nn++] = s_t++;
-    } else if (bx == DMDA_BOUNDARY_MIRROR) {
+    } else if (bx == DM_BOUNDARY_MIRROR) {
       for (j=0; j<s_x; j++) idx[nn++] = bases[rank] + x*(i + 1) - 2 - j;
     }
   }
@@ -650,7 +637,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       /* y_t = ly[(n7/m)]; */
       s_t = bases[n7] + (i-1)*x_t;
       for (j=0; j<x_t; j++) idx[nn++] = s_t++;
-    } else if (by == DMDA_BOUNDARY_MIRROR) {
+    } else if (by == DM_BOUNDARY_MIRROR) {
       for (j=0; j<x; j++) idx[nn++] = bases[rank] + x*(y - i - 1)  + j;
     }
 
@@ -662,9 +649,9 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     }
   }
 
-  ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
+  ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,gtol);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)gtol);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
 
@@ -673,8 +660,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   }
 
   if (((stencil_type == DMDA_STENCIL_STAR)  ||
-       (bx && bx != DMDA_BOUNDARY_PERIODIC) ||
-       (by && by != DMDA_BOUNDARY_PERIODIC))) {
+       (bx && bx != DM_BOUNDARY_PERIODIC) ||
+       (by && by != DM_BOUNDARY_PERIODIC))) {
     /*
         Recompute the local to global mappings, this time keeping the
       information about the cross corner processor numbers and any ghosted
@@ -697,7 +684,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
         s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
         for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       } else if (ys-Ys > 0) {
-        if (by == DMDA_BOUNDARY_MIRROR) {
+        if (by == DM_BOUNDARY_MIRROR) {
           for (j=0; j<x; j++) idx[nn++] = bases[rank] + x*(s_y - i + 1)  + j;
         } else {
           for (j=0; j<x; j++) idx[nn++] = -1;
@@ -720,7 +707,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
         s_t = bases[n3] + (i+1)*x_t - s_x;
         for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       } else if (xs-Xs > 0) {
-        if (bx == DMDA_BOUNDARY_MIRROR) {
+        if (bx == DM_BOUNDARY_MIRROR) {
           for (j=0; j<s_x; j++) idx[nn++] = bases[rank] + x*i + s_x - j;
         } else {
           for (j=0; j<s_x; j++) idx[nn++] = -1;
@@ -735,7 +722,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
         s_t = bases[n5] + (i)*x_t;
         for (j=0; j<s_x; j++) idx[nn++] = s_t++;
       } else if (Xe-xe > 0) {
-        if (bx == DMDA_BOUNDARY_MIRROR) {
+        if (bx == DM_BOUNDARY_MIRROR) {
           for (j=0; j<s_x; j++) idx[nn++] = bases[rank] + x*(i + 1) - 2 - j;
         } else {
           for (j=0; j<s_x; j++) idx[nn++] = -1;
@@ -758,7 +745,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
         s_t = bases[n7] + (i-1)*x_t;
         for (j=0; j<x_t; j++) idx[nn++] = s_t++;
       } else if (Ye-ye > 0) {
-        if (by == DMDA_BOUNDARY_MIRROR) {
+        if (by == DM_BOUNDARY_MIRROR) {
           for (j=0; j<x; j++) idx[nn++] = bases[rank] + x*(y - i - 1)  + j;
         } else {
           for (j=0; j<x; j++) idx[nn++] = -1;
@@ -778,17 +765,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
-  ierr = PetscMalloc(nn*dof*sizeof(PetscInt),&idx_cpy);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(da,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = ISGetIndices(ltogis, &idx_full);CHKERRQ(ierr);
-  ierr = PetscMemcpy(idx_cpy,idx_full,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = ISRestoreIndices(ltogis, &idx_full);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
-  ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,dof,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
 
   ierr  = PetscFree2(bases,ldims);CHKERRQ(ierr);
   dd->m = m;  dd->n  = n;
@@ -800,9 +778,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = VecDestroy(&global);CHKERRQ(ierr);
 
   dd->gtol      = gtol;
-  dd->ltog      = ltog;
-  dd->idx       = idx_cpy;
-  dd->Nl        = nn*dof;
   dd->base      = base;
   da->ops->view = DMView_DA_2d;
   dd->ltol      = NULL;
@@ -821,7 +796,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
    Input Parameters:
 +  comm - MPI communicator
 .  bx,by - type of ghost nodes the array have.
-         Use one of DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_PERIODIC.
+         Use one of DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_PERIODIC.
 .  stencil_type - stencil type.  Use either DMDA_STENCIL_BOX or DMDA_STENCIL_STAR.
 .  M,N - global dimension in each direction of the array (use -M and or -N to indicate that it may be set to a different value
             from the command line with -da_grid_x <M> -da_grid_y <N>)
@@ -863,22 +838,22 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 .keywords: distributed array, create, two-dimensional
 
 .seealso: DMDestroy(), DMView(), DMDACreate1d(), DMDACreate3d(), DMGlobalToLocalBegin(), DMDAGetRefinementFactor(),
-          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMDALocalToLocalBegin(), DMDALocalToLocalEnd(), DMDASetRefinementFactor(),
+          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToLocalBegin(), DMLocalToLocalEnd(), DMDASetRefinementFactor(),
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMLoad(), DMDAGetOwnershipRanges()
 
 @*/
 
-PetscErrorCode  DMDACreate2d(MPI_Comm comm,DMDABoundaryType bx,DMDABoundaryType by,DMDAStencilType stencil_type,
+PetscErrorCode  DMDACreate2d(MPI_Comm comm,DMBoundaryType bx,DMBoundaryType by,DMDAStencilType stencil_type,
                           PetscInt M,PetscInt N,PetscInt m,PetscInt n,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],DM *da)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMDACreate(comm, da);CHKERRQ(ierr);
-  ierr = DMDASetDim(*da, 2);CHKERRQ(ierr);
+  ierr = DMSetDimension(*da, 2);CHKERRQ(ierr);
   ierr = DMDASetSizes(*da, M, N, 1);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, m, n, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DMDASetBoundaryType(*da, bx, by, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(*da, bx, by, DM_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilType(*da, stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);
@@ -886,6 +861,5 @@ PetscErrorCode  DMDACreate2d(MPI_Comm comm,DMDABoundaryType bx,DMDABoundaryType 
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*da,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

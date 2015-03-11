@@ -29,20 +29,19 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   /* precheck */
   ierr       = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
   lambda_old = 0.0;
-  ierr       = VecDot(F, Y, &fty_old);CHKERRQ(ierr);
-  fty_init   = fty_old;
+
+  ierr = VecDot(F,Y,&fty_old);CHKERRQ(ierr);
+  fty_init = fty_old;
 
   for (i = 0; i < max_its; i++) {
-
     /* compute the norm at lambda */
     ierr = VecCopy(X, W);CHKERRQ(ierr);
     ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
     if (linesearch->ops->viproject) {
       ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
     }
-    ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-
-    ierr = VecDot(F, Y, &fty);CHKERRQ(ierr);
+    ierr = (*linesearch->ops->snesfunc)(snes,W,F);CHKERRQ(ierr);
+    ierr = VecDot(F,Y,&fty);CHKERRQ(ierr);
 
     delLambda = lambda - lambda_old;
 
@@ -65,7 +64,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
       if (linesearch->ops->viproject) {
         ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
       }
-      ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->snesfunc)(snes,W,F);CHKERRQ(ierr);
       ierr = VecDot(F, Y, &fty_mid1);CHKERRQ(ierr);
       s    = (3.*fty - 4.*fty_mid1 + fty_old) / delLambda;
     } else {
@@ -74,14 +73,14 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
       if (linesearch->ops->viproject) {
         ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
       }
-      ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->snesfunc)(snes,W,F);CHKERRQ(ierr);
       ierr = VecDot(F, Y, &fty_mid1);CHKERRQ(ierr);
       ierr = VecCopy(X, W);CHKERRQ(ierr);
       ierr = VecAXPY(W, -(lambda + 0.5*(lambda - lambda_old)), Y);CHKERRQ(ierr);
       if (linesearch->ops->viproject) {
         ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
       }
-      ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
       ierr = VecDot(F, Y, &fty_mid2);CHKERRQ(ierr);
       s    = (2.*fty_mid2 + 3.*fty - 6.*fty_mid1 + fty_old) / (3.*delLambda);
     }
@@ -92,7 +91,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     /* switch directions if we stepped out of bounds */
     if (lambda_update < steptol) lambda_update = lambda + PetscRealPart(fty / s);
 
-    if (PetscIsInfOrNanScalar(lambda_update)) break;
+    if (PetscIsInfOrNanReal(lambda_update)) break;
     if (lambda_update > maxstep) break;
 
     /* compute the new state of the line search */
@@ -116,7 +115,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   } else {
     ierr = VecCopy(W, X);CHKERRQ(ierr);
   }
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+  ierr = (*linesearch->ops->snesfunc)(snes,X,F);CHKERRQ(ierr);
   ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
   if (domainerror) {
     ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
@@ -147,11 +146,14 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
    to find roots of dot(F, Y) via a secant method.
 
    Options Database Keys:
-+  -snes_linesearch_minlambda - the minimum acceptable lambda
-.  -snes_linesearch_damping - initial trial step length
--  -snes_linesearch_max_it  - the maximum number of secant steps performed.
++  -snes_linesearch_minlambda <minlambda> - the minimum acceptable lambda
+.  -snes_linesearch_maxstep <length> - the algorithm insures that a step length is never longer than this value
+.  -snes_linesearch_damping <damping> - initial trial step length is scaled by this factor, default is 1.0
+-  -snes_linesearch_max_it <max_it> - the maximum number of secant steps performed.
 
    Notes:
+   This method does NOT use the objective function if it is provided with SNESSetObjective().
+
    This method is the preferred line search for SNESQN and SNESNCG.
 
    Level: advanced

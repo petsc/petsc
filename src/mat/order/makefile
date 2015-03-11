@@ -14,15 +14,15 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = sp1wd.c spnd.c spqmd.c sprcm.c sorder.c sregis.c\
+SOURCEC  = sp1wd.c spnd.c spqmd.c sprcm.c sorder.c spectral.c sregis.c\
            degree.c  fnroot.c genqmd.c qmdqt.c rcm.c fn1wd.c gen1wd.c \
-           genrcm.c qmdrch.c rootls.c fndsep.c gennd.c qmdmrg.c qmdupd.c
-SOURCEH  = order.h
+           genrcm.c qmdrch.c rootls.c fndsep.c gennd.c qmdmrg.c qmdupd.c wbm.c
+SOURCEH  = ../../../include/petsc-private/matorderimpl.h
 LIBBASE  = libpetscmat
 DIRS     = amd
 LOCDIR   = src/mat/order/
 MANSEC   = MatOrderings
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test

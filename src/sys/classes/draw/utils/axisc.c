@@ -36,7 +36,7 @@ PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
     PetscFunctionReturn(0);
   }
   ierr = PetscHeaderCreate(ad,_p_PetscDrawAxis,int,PETSC_DRAWAXIS_CLASSID,"PetscDrawAxis","Draw Axis","Draw",PetscObjectComm((PetscObject)obj),PetscDrawAxisDestroy,0);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(draw,ad);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)ad);CHKERRQ(ierr);
 
   ad->xticks    = PetscADefTicks;
   ad->yticks    = PetscADefTicks;

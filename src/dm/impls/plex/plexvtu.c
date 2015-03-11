@@ -58,9 +58,9 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKIn
   PetscInt       dim,vStart,vEnd,cStart,cEnd,pStart,pEnd,cellHeight,cMax,numLabelCells,hasLabel,c,v,countcell,countconn;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc3(piece->nconn,PetscVTKInt,&conn,piece->ncells,PetscVTKInt,&offsets,piece->ncells,PetscVTKType,&types);CHKERRQ(ierr);
+  ierr = PetscMalloc3(piece->nconn,&conn,piece->ncells,&offsets,piece->ncells,&types);CHKERRQ(ierr);
 
-  ierr = DMPlexGetDimension(dm,&dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKIn
   countconn = 0;
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL;
-    PetscInt  closureSize,nverts,celltype,startoffset;
+    PetscInt  closureSize,nverts,celltype,startoffset,nC=0;
 
     if (hasLabel) {
       PetscInt value;
@@ -87,9 +87,11 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKIn
     for (v = 0; v < closureSize*2; v += 2) {
       if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
         conn[countconn++] = closure[v] - vStart;
+        ++nC;
       }
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexInvertCell(dim, nC, &conn[countconn-nC]);CHKERRQ(ierr);
 
     offsets[countcell] = countconn;
 
@@ -143,7 +145,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 #endif
   ierr = PetscFPrintf(comm,fp,"  <UnstructuredGrid>\n");CHKERRQ(ierr);
 
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -172,7 +174,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
     ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     piece.ncells++;
   }
-  if (!rank) {ierr = PetscMalloc(size*sizeof(piece),&gpiece);CHKERRQ(ierr);}
+  if (!rank) {ierr = PetscMalloc1(size,&gpiece);CHKERRQ(ierr);}
   ierr = MPI_Gather((PetscInt*)&piece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,(PetscInt*)gpiece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,0,comm);CHKERRQ(ierr);
 
   /*
@@ -207,24 +209,33 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       /* all the vectors */
       for (link=vtk->link; link; link=link->next) {
         Vec        X = (Vec)link->vec;
-        PetscInt   bs;
+        PetscInt   bs,nfields,field;
         const char *vecname = "";
         if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
         if (((PetscObject)X)->name || link != vtk->link) { /* If the object is already named, use it. If it is past the first link, name it to disambiguate. */
           ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
         }
         ierr = PetscSectionGetDof(dm->defaultSection,cStart,&bs);CHKERRQ(ierr);
-        for (i=0; i<bs; i++) {
-          char       buf[256];
+        ierr = PetscSectionGetNumFields(dm->defaultSection,&nfields);CHKERRQ(ierr);
+        for (field=0,i=0; field<(nfields?nfields:1); field++) {
+          PetscInt   fbs,j;
           const char *fieldname = NULL;
-          /* ierr = DMDAGetFieldName(da,i,&fieldname);CHKERRQ(ierr); */
+          char       buf[256];
+          if (nfields) {        /* We have user-defined fields/components */
+            ierr = PetscSectionGetFieldDof(dm->defaultSection,cStart,field,&fbs);CHKERRQ(ierr);
+            ierr = PetscSectionGetFieldName(dm->defaultSection,field,&fieldname);CHKERRQ(ierr);
+          } else fbs = bs;      /* Say we have one field with 'bs' components */
           if (!fieldname) {
-            ierr      = PetscSNPrintf(buf,sizeof(buf),"Unnamed%D",i);CHKERRQ(ierr);
+            ierr = PetscSNPrintf(buf,sizeof(buf),"CellField%D",field);CHKERRQ(ierr);
             fieldname = buf;
           }
-          ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
-          boffset += gpiece[r].ncells*sizeof(PetscScalar) + sizeof(int);
+          for (j=0; j<fbs; j++) {
+            ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s.%D\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,j,boffset);CHKERRQ(ierr);
+            boffset += gpiece[r].ncells*sizeof(PetscScalar) + sizeof(int);
+            i++;
+          }
         }
+        if (i != bs) SETERRQ2(comm,PETSC_ERR_PLIB,"Total number of field components %D != block size %D",i,bs);
       }
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      </CellData>\n");CHKERRQ(ierr);
 
@@ -234,18 +245,30 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      <PointData>\n");CHKERRQ(ierr);
       for (link=vtk->link; link; link=link->next) {
         Vec        X = (Vec)link->vec;
-        PetscInt   bs;
+        PetscInt   bs,nfields,field;
         const char *vecname = "";
         if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
         if (((PetscObject)X)->name || link != vtk->link) { /* If the object is already named, use it. If it is past the first link, name it to disambiguate. */
           ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
         }
         ierr = PetscSectionGetDof(dm->defaultSection,vStart,&bs);CHKERRQ(ierr);
-        for (i=0; i<bs; i++) {
-          char fieldname[256];
-          ierr     = PetscSNPrintf(fieldname,sizeof(fieldname),"Point%D",i);CHKERRQ(ierr);
-          ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
-          boffset += gpiece[r].nvertices*sizeof(PetscScalar) + sizeof(int);
+        ierr = PetscSectionGetNumFields(dm->defaultSection,&nfields);CHKERRQ(ierr);
+        for (field=0,i=0; field<(nfields?nfields:1); field++) {
+          PetscInt   fbs,j;
+          const char *fieldname = NULL;
+          char       buf[256];
+          if (nfields) {        /* We have user-defined fields/components */
+            ierr = PetscSectionGetFieldDof(dm->defaultSection,vStart,field,&fbs);CHKERRQ(ierr);
+            ierr = PetscSectionGetFieldName(dm->defaultSection,field,&fieldname);CHKERRQ(ierr);
+          } else fbs = bs;      /* Say we have one field with 'bs' components */
+          if (!fieldname) {
+            ierr = PetscSNPrintf(buf,sizeof(buf),"PointField%D",field);CHKERRQ(ierr);
+            fieldname = buf;
+          }
+          for (j=0; j<fbs; j++) {
+            ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s.%D\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,j,boffset);CHKERRQ(ierr);
+            boffset += gpiece[r].nvertices*sizeof(PetscScalar) + sizeof(int);
+          }
         }
       }
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      </PointData>\n");CHKERRQ(ierr);
@@ -278,7 +301,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         ierr  = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
         ierr  = VecGetArrayRead(coords,&x);CHKERRQ(ierr);
         if (dim != 3) {
-          ierr = PetscMalloc(piece.nvertices*3*sizeof(PetscScalar),&y);CHKERRQ(ierr);
+          ierr = PetscMalloc1(piece.nvertices*3,&y);CHKERRQ(ierr);
           for (i=0; i<piece.nvertices; i++) {
             y[i*3+0] = x[i*dim+0];
             y[i*3+1] = (dim > 1) ? x[i*dim+1] : 0;
@@ -290,8 +313,8 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         ierr = VecRestoreArrayRead(coords,&x);CHKERRQ(ierr);
       }
       {                           /* Connectivity, offsets, types */
-        PetscVTKInt  *connectivity = NULL,*offsets;
-        PetscVTKType *types;
+        PetscVTKInt  *connectivity = NULL, *offsets = NULL;
+        PetscVTKType *types = NULL;
         ierr = DMPlexGetVTKConnectivity(dm,&piece,&connectivity,&offsets,&types);CHKERRQ(ierr);
         ierr = TransferWrite(viewer,fp,r,0,connectivity,buffer,piece.nconn,PETSC_INT32,tag);CHKERRQ(ierr);
         ierr = TransferWrite(viewer,fp,r,0,offsets,buffer,piece.ncells,PETSC_INT32,tag);CHKERRQ(ierr);
@@ -300,7 +323,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       }
       {                         /* Owners (cell data) */
         PetscVTKInt *owners;
-        ierr = PetscMalloc(piece.ncells*sizeof(PetscVTKInt),&owners);CHKERRQ(ierr);
+        ierr = PetscMalloc1(piece.ncells,&owners);CHKERRQ(ierr);
         for (i=0; i<piece.ncells; i++) owners[i] = rank;
         ierr = TransferWrite(viewer,fp,r,0,owners,buffer,piece.ncells,PETSC_INT32,tag);CHKERRQ(ierr);
         ierr = PetscFree(owners);CHKERRQ(ierr);
@@ -314,7 +337,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
         ierr = PetscSectionGetDof(dm->defaultSection,cStart,&bs);CHKERRQ(ierr);
         ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-        ierr = PetscMalloc(piece.ncells*sizeof(PetscScalar),&y);CHKERRQ(ierr);
+        ierr = PetscMalloc1(piece.ncells,&y);CHKERRQ(ierr);
         for (i=0; i<bs; i++) {
           PetscInt cnt;
           for (c=cStart,cnt=0; c<cEnd; c++) {
@@ -342,7 +365,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
         ierr = PetscSectionGetDof(dm->defaultSection,vStart,&bs);CHKERRQ(ierr);
         ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-        ierr = PetscMalloc(piece.nvertices*sizeof(PetscScalar),&y);CHKERRQ(ierr);
+        ierr = PetscMalloc1(piece.nvertices,&y);CHKERRQ(ierr);
         for (i=0; i<bs; i++) {
           PetscInt cnt;
           for (v=vStart,cnt=0; v<vEnd; v++) {
@@ -366,7 +389,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       for (link=vtk->link; link; link=link->next) {
         PetscInt bs;
         if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
-        ierr = PetscSectionGetDof(dm->defaultSection,vStart,&bs);CHKERRQ(ierr);
+        ierr = PetscSectionGetDof(dm->defaultSection,cStart,&bs);CHKERRQ(ierr);
         for (i=0; i<bs; i++) {
           ierr = TransferWrite(viewer,fp,r,0,NULL,buffer,gpiece[r].ncells,PETSC_SCALAR,tag);CHKERRQ(ierr);
         }

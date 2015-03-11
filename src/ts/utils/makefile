@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dmts.c dmdats.c
+SOURCEC  = dmts.c dmlocalts.c dmdats.c dmplexts.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscts
@@ -12,7 +12,7 @@ DIRS     =
 EDIRS    =
 LOCDIR   = src/ts/utils/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test
 

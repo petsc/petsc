@@ -6,7 +6,7 @@
 #define _DAIMPL_H
 
 #include <petscdmda.h>
-#include "petsc-private/dmimpl.h"
+#include <petsc-private/dmimpl.h>
 
 typedef struct {
   PetscInt              M,N,P;                 /* array dimensions */
@@ -16,12 +16,10 @@ typedef struct {
   PetscInt              xs,xe,ys,ye,zs,ze;     /* range of local values */
   PetscInt              Xs,Xe,Ys,Ye,Zs,Ze;     /* range including ghost values
                                                    values above already scaled by w */
-  PetscInt              *idx,Nl;               /* local to global map */
   PetscInt              base;                  /* global number of 1st local node, includes the * w term */
-  DMDABoundaryType      bx,by,bz;              /* indicates type of ghost nodes at boundary */
-  VecScatter            gtol,ltog,ltol;        /* scatters, see below for details */
+  DMBoundaryType        bx,by,bz;              /* indicates type of ghost nodes at boundary */
+  VecScatter            gtol,ltol;        /* scatters, see below for details */
   DMDAStencilType       stencil_type;          /* stencil, either box or star */
-  PetscInt              dim;                   /* DMDA dimension (1,2, or 3) */
   DMDAInterpolationType interptype;
 
   PetscInt              nlocal,Nlocal;         /* local size of local vector and global vector, includes the * w term */
@@ -29,8 +27,12 @@ typedef struct {
   PetscInt              xol,yol,zol;           /* overlap of local subdomains */
   PetscInt              xo,yo,zo;              /* offsets for the indices in x y and z */
   PetscInt              Mo,No,Po;              /* the size of the problem the offset is in to */
+  PetscInt              Nsub;                  /* number of local subdomains to decompose into */
+  PetscInt              nonxs,nonys,nonzs;     /* the nonoverlapping starts in the case of a subdomain da */
+  PetscInt              nonxm,nonym,nonzm;     /* the nonoverlapping sizes in the case of a subdomain da */
 
   AO                    ao;                    /* application ordering context */
+  AOType                aotype;                /* type of application ordering */
 
   char                  **fieldname;           /* names of individual components in vectors */
   char                  **coordinatename;      /* names of coordinate directions, for example, x, y, z */
@@ -50,6 +52,8 @@ typedef struct {
   PetscInt              refine_x,refine_y,refine_z;    /* ratio used in refining */
   PetscInt              coarsen_x,coarsen_y,coarsen_z; /* ratio used for coarsening */
 
+  PetscBool             negativeMNP; /* used in DMSetFromOptions_DA() to check if the initial values provided in code can be changed with options database */
+
 #define DMDA_MAX_WORK_ARRAYS 2 /* work arrays for holding work via DMDAGetArray() */
   void                  *arrayin[DMDA_MAX_WORK_ARRAYS],*arrayout[DMDA_MAX_WORK_ARRAYS];
   void                  *arrayghostedin[DMDA_MAX_WORK_ARRAYS],*arrayghostedout[DMDA_MAX_WORK_ARRAYS];
@@ -65,6 +69,7 @@ typedef struct {
 
   /* used by DMDASetMatPreallocateOnly() */
   PetscBool             prealloc_only;
+  PetscInt              preallocCenterDim; /* Dimension of the points which connect adjacent points for preallocation */
 } DM_DA;
 
 /*

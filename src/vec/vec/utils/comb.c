@@ -39,25 +39,6 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIIn
   PetscFunctionReturn(0);
 }
 
-typedef enum {STATE_BEGIN, STATE_PENDING, STATE_END} SRState;
-
-#define REDUCE_SUM  0
-#define REDUCE_MAX  1
-#define REDUCE_MIN  2
-
-typedef struct {
-  MPI_Comm    comm;
-  MPI_Request request;
-  PetscBool   async;
-  PetscScalar *lvalues;     /* this are the reduced values before call to MPI_Allreduce() */
-  PetscScalar *gvalues;     /* values after call to MPI_Allreduce() */
-  void        **invecs;     /* for debugging only, vector/memory used with each op */
-  PetscInt    *reducetype;  /* is particular value to be summed or maxed? */
-  SRState     state;        /* are we calling xxxBegin() or xxxEnd()? */
-  PetscInt    maxops;       /* total amount of space we have for requests */
-  PetscInt    numopsbegin;  /* number of requests that have been queued in */
-  PetscInt    numopsend;    /* number of requests that have been gotten by user */
-} PetscSplitReduction;
 /*
    Note: the lvalues and gvalues are twice as long as maxops, this is to allow the second half of
 the entries to have a flag indicating if they are REDUCE_SUM, REDUCE_MAX, or REDUCE_MIN these are used by
@@ -65,7 +46,6 @@ the custom reduction operation that replaces MPI_SUM, MPI_MAX, or MPI_MIN in the
 some of each.
 */
 
-static PetscErrorCode PetscSplitReductionGet(MPI_Comm,PetscSplitReduction**);
 static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction*);
 
 #undef __FUNCT__
@@ -78,17 +58,17 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr               = PetscNew(PetscSplitReduction,sr);CHKERRQ(ierr);
+  ierr               = PetscNew(sr);CHKERRQ(ierr);
   (*sr)->numopsbegin = 0;
   (*sr)->numopsend   = 0;
   (*sr)->state       = STATE_BEGIN;
   (*sr)->maxops      = 32;
-  ierr               = PetscMalloc(2*32*sizeof(PetscScalar),&(*sr)->lvalues);CHKERRQ(ierr);
-  ierr               = PetscMalloc(2*32*sizeof(PetscScalar),&(*sr)->gvalues);CHKERRQ(ierr);
-  ierr               = PetscMalloc(32*sizeof(void*),&(*sr)->invecs);CHKERRQ(ierr);
+  ierr               = PetscMalloc1(2*32,&(*sr)->lvalues);CHKERRQ(ierr);
+  ierr               = PetscMalloc1(2*32,&(*sr)->gvalues);CHKERRQ(ierr);
+  ierr               = PetscMalloc1(32,&(*sr)->invecs);CHKERRQ(ierr);
   (*sr)->comm        = comm;
   (*sr)->request     = MPI_REQUEST_NULL;
-  ierr               = PetscMalloc(32*sizeof(PetscInt),&(*sr)->reducetype);CHKERRQ(ierr);
+  ierr               = PetscMalloc1(32,&(*sr)->reducetype);CHKERRQ(ierr);
   (*sr)->async       = PETSC_FALSE;
 #if defined(PETSC_HAVE_MPI_IALLREDUCE) || defined(PETSC_HAVE_MPIX_IALLREDUCE)
   (*sr)->async = PETSC_TRUE;    /* Enable by default */
@@ -202,7 +182,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSplitReductionEnd"
-static PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr)
+PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr)
 {
   PetscErrorCode ierr;
 
@@ -288,10 +268,10 @@ PetscErrorCode  PetscSplitReductionExtend(PetscSplitReduction *sr)
 
   PetscFunctionBegin;
   sr->maxops     = 2*maxops;
-  ierr = PetscMalloc(2*2*maxops*sizeof(PetscScalar),&sr->lvalues);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*2*maxops*sizeof(PetscScalar),&sr->gvalues);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*maxops*sizeof(PetscInt),&sr->reducetype);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*maxops*sizeof(void*),&sr->invecs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*2*maxops,&sr->lvalues);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*2*maxops,&sr->gvalues);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*maxops,&sr->reducetype);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2*maxops,&sr->invecs);CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->lvalues,lvalues,maxops*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->gvalues,gvalues,maxops*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->reducetype,reducetype,maxops*sizeof(PetscInt));CHKERRQ(ierr);
@@ -346,7 +326,7 @@ PETSC_EXTERN int MPIAPI Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_v
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscSplitReductionGet"
-static PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
+PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 {
   PetscErrorCode ierr;
   PetscMPIInt    flag;

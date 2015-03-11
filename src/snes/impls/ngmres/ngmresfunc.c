@@ -8,9 +8,6 @@ PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes,PetscInt ivec,PetscInt
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   Vec            *Fdot   = ngmres->Fdot;
   Vec            *Xdot   = ngmres->Xdot;
-  PetscScalar    *xi     = ngmres->xi;
-  PetscInt       i;
-  PetscReal      nu;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -19,22 +16,12 @@ PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes,PetscInt ivec,PetscInt
   ierr = VecCopy(X,Xdot[ivec]);CHKERRQ(ierr);
 
   ngmres->fnorms[ivec] = fnorm;
-  if (l > 0) {
-    ierr = VecMDot(F,l,Fdot,xi);CHKERRQ(ierr);
-    for (i = 0; i < l; i++) {
-      Q(i,ivec) = xi[i];
-      Q(ivec,i) = xi[i];
-    }
-  } else {
-    nu     = fnorm*fnorm;
-    Q(0,0) = nu;
-  }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNGMRESFormCombinedSolution_Private"
-PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt l,Vec XM,Vec FM,PetscReal fMnorm,Vec X,Vec XA,Vec FA)
+PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt ivec,PetscInt l,Vec XM,Vec FM,PetscReal fMnorm,Vec X,Vec XA,Vec FA)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscInt       i,j;
@@ -52,7 +39,19 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt l,Vec X
   nu = fMnorm*fMnorm;
 
   /* construct the right hand side and xi factors */
-  ierr = VecMDot(FM,l,Fdot,xi);CHKERRQ(ierr);
+  if (l > 0) {
+    ierr = VecMDotBegin(FM,l,Fdot,xi);CHKERRQ(ierr);
+    ierr = VecMDotBegin(Fdot[ivec],l,Fdot,beta);CHKERRQ(ierr);
+    ierr = VecMDotEnd(FM,l,Fdot,xi);CHKERRQ(ierr);
+    ierr = VecMDotEnd(Fdot[ivec],l,Fdot,beta);CHKERRQ(ierr);
+    for (i = 0; i < l; i++) {
+      Q(i,ivec) = beta[i];
+      Q(ivec,i) = beta[i];
+    }
+  } else {
+    Q(0,0) = ngmres->fnorms[ivec]*ngmres->fnorms[ivec];
+  }
+
   for (i = 0; i < l; i++) beta[i] = nu - xi[i];
 
   /* construct h */
@@ -75,9 +74,9 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt l,Vec X
     ngmres->rcond = -1.;
     ierr          = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    PetscStackCall("LAPACKgelss",LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,&ngmres->rank,ngmres->work,&ngmres->lwork,ngmres->rwork,&ngmres->info));
+    PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,&ngmres->rank,ngmres->work,&ngmres->lwork,ngmres->rwork,&ngmres->info));
 #else
-    PetscStackCall("LAPACKgelss",LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,&ngmres->rank,ngmres->work,&ngmres->lwork,&ngmres->info));
+    PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,&ngmres->rank,ngmres->work,&ngmres->lwork,&ngmres->info));
 #endif
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (ngmres->info < 0) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"Bad argument to GELSS");
@@ -97,7 +96,13 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt l,Vec X
   ierr = VecCopy(XA,Y);CHKERRQ(ierr);
   ierr = VecAXPY(Y,-1.0,X);CHKERRQ(ierr);
   ierr = SNESLineSearchPostCheck(snes->linesearch,X,Y,XA,&changed_y,&changed_w);CHKERRQ(ierr);
-  if (!ngmres->approxfunc) {ierr = SNESComputeFunction(snes,XA,FA);CHKERRQ(ierr);}
+  if (!ngmres->approxfunc) {
+    if (snes->pc && snes->pcside == PC_LEFT) {
+      ierr = SNESApplyNPC(snes,XA,NULL,FA);CHKERRQ(ierr);
+    } else {
+      ierr =SNESComputeFunction(snes,XA,FA);CHKERRQ(ierr);
+    }
+  }
   else {
     ierr = VecCopy(FM,FA);CHKERRQ(ierr);
     ierr = VecScale(FA,1.-alph_total);CHKERRQ(ierr);
@@ -107,77 +112,71 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt l,Vec X
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESNGMRESCalculateDifferences_Private"
-PetscErrorCode SNESNGMRESCalculateDifferences_Private(SNES snes,PetscInt l,Vec X,Vec F,Vec XM,Vec FM,Vec XA,Vec FA,Vec D,PetscReal *dnorm,PetscReal *dminnorm,PetscReal *fAnorm)
+#define __FUNCT__ "SNESNGMRESNorms_Private"
+PetscErrorCode SNESNGMRESNorms_Private(SNES snes,PetscInt l,Vec X,Vec F,Vec XM,Vec FM,Vec XA,Vec FA,Vec D,PetscReal *dnorm,PetscReal *dminnorm,PetscReal *xMnorm,PetscReal *fMnorm,PetscReal *yMnorm, PetscReal *xAnorm,PetscReal *fAnorm,PetscReal *yAnorm)
 {
   PetscErrorCode ierr;
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
-  PetscReal      dcurnorm;
+  PetscReal      dcurnorm,dmin = -1.0;
   Vec            *Xdot = ngmres->Xdot;
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (ngmres->singlereduction) {
-    *dminnorm = -1.0;
-    if (fAnorm) {
-      ierr = VecNormBegin(FA,NORM_2,fAnorm);CHKERRQ(ierr);
+  if (xMnorm) {
+    ierr = VecNormBegin(XM,NORM_2,xMnorm);CHKERRQ(ierr);
+  }
+  if (fMnorm) {
+    ierr = VecNormBegin(FM,NORM_2,fMnorm);CHKERRQ(ierr);
+  }
+  if (yMnorm) {
+    ierr = VecCopy(X,D);CHKERRQ(ierr);
+    ierr = VecAXPY(D,-1.0,XM);CHKERRQ(ierr);
+    ierr = VecNormBegin(D,NORM_2,yMnorm);CHKERRQ(ierr);
+  }
+  if (xAnorm) {
+    ierr = VecNormBegin(XA,NORM_2,xAnorm);CHKERRQ(ierr);
+  }
+  if (fAnorm) {
+    ierr = VecNormBegin(FA,NORM_2,fAnorm);CHKERRQ(ierr);
+  }
+  if (yAnorm) {
+    ierr = VecCopy(X,D);CHKERRQ(ierr);
+    ierr = VecAXPY(D,-1.0,XA);CHKERRQ(ierr);
+    ierr = VecNormBegin(D,NORM_2,yAnorm);CHKERRQ(ierr);
+  }
+  if (dnorm) {
+    ierr = VecCopy(XA,D);CHKERRQ(ierr);
+    ierr = VecAXPY(D,-1.0,XM);CHKERRQ(ierr);
+    ierr = VecNormBegin(D,NORM_2,dnorm);CHKERRQ(ierr);
+  }
+  if (dminnorm) {
+    for (i=0; i<l; i++) {
+      ierr = VecCopy(Xdot[i],D);CHKERRQ(ierr);
+      ierr = VecAXPY(D,-1.0,XA);CHKERRQ(ierr);
+      ierr = VecNormBegin(D,NORM_2,&ngmres->xnorms[i]);CHKERRQ(ierr);
     }
-    if (dnorm) {
-      ierr = VecCopy(XA,D);CHKERRQ(ierr);
-      ierr = VecAXPY(D,-1.0,XM);CHKERRQ(ierr);
-      ierr = VecNormBegin(D,NORM_2,dnorm);CHKERRQ(ierr);
+  }
+  if (xMnorm) {ierr = VecNormEnd(XM,NORM_2,xMnorm);CHKERRQ(ierr);}
+  if (fMnorm) {ierr = VecNormEnd(FM,NORM_2,fMnorm);CHKERRQ(ierr);}
+  if (yMnorm) {ierr = VecNormEnd(D,NORM_2,yMnorm);CHKERRQ(ierr);}
+  if (xAnorm) {ierr = VecNormEnd(XA,NORM_2,xAnorm);CHKERRQ(ierr);}
+  if (fAnorm) {ierr = VecNormEnd(FA,NORM_2,fAnorm);CHKERRQ(ierr);}
+  if (yAnorm) {ierr = VecNormEnd(D,NORM_2,yAnorm);CHKERRQ(ierr);}
+  if (dnorm) {ierr = VecNormEnd(D,NORM_2,dnorm);CHKERRQ(ierr);}
+  if (dminnorm) {
+    for (i=0; i<l; i++) {
+      ierr = VecNormEnd(D,NORM_2,&ngmres->xnorms[i]);CHKERRQ(ierr);
+      dcurnorm = ngmres->xnorms[i];
+      if ((dcurnorm < dmin) || (dmin < 0.0)) dmin = dcurnorm;
     }
-    if (dminnorm) {
-      for (i=0; i<l; i++) {
-        ierr=VecAXPY(Xdot[i],-1.0,XA);CHKERRQ(ierr);
-      }
-      for (i=0; i<l; i++) {
-        ierr = VecNormBegin(Xdot[i],NORM_2,&ngmres->xnorms[i]);CHKERRQ(ierr);
-      }
-    }
-    if (fAnorm) {ierr = VecNormEnd(FA,NORM_2,fAnorm);CHKERRQ(ierr);}
-    if (dnorm) {ierr = VecNormEnd(D,NORM_2,dnorm);CHKERRQ(ierr);}
-    if (dminnorm) {
-      for (i=0; i<l; i++) {
-        ierr = VecNormEnd(Xdot[i],NORM_2,&ngmres->xnorms[i]);CHKERRQ(ierr);
-      }
-      for (i=0; i<l; i++) {
-        dcurnorm = ngmres->xnorms[i];
-        if ((dcurnorm < *dminnorm) || (*dminnorm < 0.0)) *dminnorm = dcurnorm;
-        ierr=VecAXPY(Xdot[i],1.0,XA);CHKERRQ(ierr);
-      }
-    }
-  } else {
-    if (dnorm) {
-      ierr=VecCopy(XA,D);CHKERRQ(ierr);
-      ierr=VecAXPY(D,-1.0,XM);CHKERRQ(ierr);
-      ierr=VecNormBegin(D,NORM_2,dnorm);CHKERRQ(ierr);
-    }
-    if (fAnorm) {
-      ierr=VecNormBegin(FA,NORM_2,fAnorm);CHKERRQ(ierr);
-    }
-    if (dnorm) {
-      ierr=VecNormEnd(D,NORM_2,dnorm);CHKERRQ(ierr);
-    }
-    if (fAnorm) {
-      ierr=VecNormEnd(FA,NORM_2,fAnorm);CHKERRQ(ierr);
-    }
-    if (dminnorm) {
-      *dminnorm = -1.0;
-      for (i=0; i<l; i++) {
-        ierr=VecCopy(XA,D);CHKERRQ(ierr);
-        ierr=VecAXPY(D,-1.0,Xdot[i]);CHKERRQ(ierr);
-        ierr=VecNorm(D,NORM_2,&dcurnorm);CHKERRQ(ierr);
-        if ((dcurnorm < *dminnorm) || (*dminnorm < 0.0)) *dminnorm = dcurnorm;
-      }
-    }
+    *dminnorm = dmin;
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNGMRESSelect_Private"
-PetscErrorCode SNESNGMRESSelect_Private(SNES snes,PetscInt k_restart,Vec XM,Vec FM,PetscReal fMnorm,Vec XA,Vec FA,PetscReal fAnorm,PetscReal dnorm,PetscReal fminnorm,PetscReal dminnorm,Vec X,Vec F,Vec Y,PetscReal *fnorm)
+PetscErrorCode SNESNGMRESSelect_Private(SNES snes,PetscInt k_restart,Vec XM,Vec FM,PetscReal xMnorm,PetscReal fMnorm,PetscReal yMnorm,Vec XA,Vec FA,PetscReal xAnorm,PetscReal fAnorm,PetscReal yAnorm,PetscReal dnorm,PetscReal fminnorm,PetscReal dminnorm,Vec X,Vec F,Vec Y,PetscReal *xnorm,PetscReal *fnorm,PetscReal *ynorm)
 {
   SNES_NGMRES    *ngmres = (SNES_NGMRES*) snes->data;
   PetscErrorCode ierr;
@@ -202,6 +201,7 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes,PetscInt k_restart,Vec XM,Vec 
         PetscFunctionReturn(0);
       }
     }
+    ierr    = SNESLineSearchGetNorms(ngmres->additive_linesearch,xnorm,fnorm,ynorm);CHKERRQ(ierr);
     if (ngmres->monitor) {
       ierr = PetscViewerASCIIPrintf(ngmres->monitor,"Additive solution: ||F||_2 = %e\n",*fnorm);CHKERRQ(ierr);
     }
@@ -220,21 +220,27 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes,PetscInt k_restart,Vec XM,Vec 
         ierr = PetscViewerASCIIPrintf(ngmres->monitor,"picked X_A, ||F_A||_2 = %e, ||F_M||_2 = %e\n",fAnorm,fMnorm);CHKERRQ(ierr);
       }
       /* copy it over */
+      *xnorm = xAnorm;
       *fnorm = fAnorm;
+      *ynorm = yAnorm;
       ierr   = VecCopy(FA,F);CHKERRQ(ierr);
       ierr   = VecCopy(XA,X);CHKERRQ(ierr);
     } else {
       if (ngmres->monitor) {
         ierr = PetscViewerASCIIPrintf(ngmres->monitor,"picked X_M, ||F_A||_2 = %e, ||F_M||_2 = %e\n",fAnorm,fMnorm);CHKERRQ(ierr);
       }
+      *xnorm = xMnorm;
       *fnorm = fMnorm;
+      *ynorm = yMnorm;
       ierr   = VecCopy(XM,Y);CHKERRQ(ierr);
       ierr   = VecAXPY(Y,-1.0,X);CHKERRQ(ierr);
       ierr   = VecCopy(FM,F);CHKERRQ(ierr);
       ierr   = VecCopy(XM,X);CHKERRQ(ierr);
     }
   } else { /* none */
+    *xnorm = xAnorm;
     *fnorm = fAnorm;
+    *ynorm = yAnorm;
     ierr   = VecCopy(FA,F);CHKERRQ(ierr);
     ierr   = VecCopy(XA,X);CHKERRQ(ierr);
   }

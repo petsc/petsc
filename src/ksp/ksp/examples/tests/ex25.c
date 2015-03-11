@@ -1,7 +1,5 @@
-/*$Id: ex25.c,v 1.3 2000/11/15 22:56:05 balay Exp $*/
-
 static char help[] = "Tests CG, MINRES and SYMMLQ on the symmetric indefinite matrices: afiro and golan\n\
-Runtime options: ex25 -fload ~petsc/matrices/indefinite/afiro -pc_type jacobi -pc_jacobi_rowmax\n\
+Runtime options: ex25 -fload ~petsc/matrices/indefinite/afiro -pc_type jacobi -pc_jacobi_type rowmax\n\
 See ~petsc/matrices/indefinite/readme \n\n";
 
 #include <petscksp.h>
@@ -11,11 +9,10 @@ See ~petsc/matrices/indefinite/readme \n\n";
 int main(int argc,char **args)
 {
   Mat         C;
-  PetscScalar v,none = -1.0;
-  int         i,j,ierr,Istart,Iend,N,rank,size,its,k;
+  PetscScalar none = -1.0;
+  int         ierr,rank,size,its,k;
   double      err_norm,res_norm;
   Vec         x,b,u,u_tmp;
-  PetscRandom r;
   PC          pc;
   KSP         ksp;
   PetscViewer view;
@@ -47,7 +44,7 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,u_tmp);CHKERRQ(ierr);
   ierr = VecAXPY(u_tmp,none,b);CHKERRQ(ierr);
   ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Accuracy of the loading data: | b - A*u |_2 : %G \n",res_norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Accuracy of the loading data: | b - A*u |_2 : %g \n",(double)res_norm);CHKERRQ(ierr);
   */
 
   /* Setup and solve for system */
@@ -56,16 +53,16 @@ int main(int argc,char **args)
     if (k == 0) {                              /* CG  */
       ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n CG: \n");CHKERRQ(ierr);
     } else if (k == 1) {                       /* MINRES */
       ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPMINRES);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MINRES: \n");CHKERRQ(ierr);
     } else {                                 /* SYMMLQ */
       ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPSYMMLQ);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n SYMMLQ: \n");CHKERRQ(ierr);
     }
@@ -78,7 +75,7 @@ int main(int argc,char **args)
     /*
     Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
-                         -pc_type jacobi -pc_jacobi_rowmax
+                         -pc_type jacobi -pc_jacobi_type rowmax
     These options will override those specified above as long as
     KSPSetFromOptions() is called _after_ any other customization routines.
     */
@@ -97,8 +94,8 @@ int main(int argc,char **args)
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm: %G;",res_norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm: %G.\n",err_norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm: %g;",(double)res_norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm: %g.\n",(double)err_norm);CHKERRQ(ierr);
 
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   }

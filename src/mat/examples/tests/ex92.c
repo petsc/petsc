@@ -46,10 +46,10 @@ int main(int argc,char **args)
   ierr = MatGetSize(A,&M,&N);
   Mbs  = M/bs;
 
-  ierr = PetscMalloc(bs*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*bs*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-  ierr = PetscMalloc(M*sizeof(PetscScalar),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs,&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs,&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs*bs,&vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(M,&idx);CHKERRQ(ierr);
 
   /* Now set blocks of values */
   for (j=0; j<bs*bs; j++) vals[j] = 0.0;
@@ -107,8 +107,8 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in MatConvert(): A != sA");
 
   /* Test MatIncreaseOverlap() */
-  ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRQ(ierr);
-  ierr = PetscMalloc(nd*sizeof(IS **),&is2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nd,&is2);CHKERRQ(ierr);
 
   for (i=0; i<nd; i++) {
     if (!TestAllcols) {
@@ -134,7 +134,7 @@ int main(int argc,char **args)
       if (rank == vid) {
         PetscBool colflag;
         ierr = ISIdentity(is2[i],&colflag);CHKERRQ(ierr);
-        printf("[%d] is2[%d], colflag %d\n",rank,i,colflag);
+        printf("[%d] is2[%d], colflag %d\n",rank,(int)i,(int)colflag);
         ierr = ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
     }

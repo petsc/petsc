@@ -39,9 +39,9 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
   /* compute Singular Values */
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  PetscStackCall("LAPACKgesvd",LAPACKgesvd_("N","N",&bn,&bn,R,&bN,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr));
+  PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&bn,&bn,R,&bN,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr));
 #else
-  PetscStackCall("LAPACKgesvd",LAPACKgesvd_("N","N",&bn,&bn,R,&bN,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,realpart+N,&lierr));
+  PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&bn,&bn,R,&bN,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,realpart+N,&lierr));
 #endif
   if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SVD Lapack routine %d",(int)lierr);
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -86,15 +86,15 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   /* for ESSL version need really cwork of length N (complex), 2N
      (real); already at least 5N of space has been allocated */
 
-  ierr = PetscMalloc(lwork*sizeof(PetscReal),&work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  PetscStackCall("LAPACKgeev",LAPACKgeev_(&zero,R,&bN,cwork,&sdummy,&idummy,&idummy,&bn,work,&lwork));
+  PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_(&zero,R,&bN,cwork,&sdummy,&idummy,&idummy,&bn,work,&lwork));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   ierr = PetscFree(work);CHKERRQ(ierr);
 
   /* For now we stick with the convention of storing the real and imaginary
      components of evalues separately.  But is this what we really want? */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&perm);CHKERRQ(ierr);
 
 #if !defined(PETSC_USE_COMPLEX)
   for (i=0; i<n; i++) {
@@ -144,10 +144,10 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
 
   /* compute eigenvalues */
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  PetscStackCall("LAPACKgeev",LAPACKgeev_("N","N",&bn,R,&bN,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr));
+  PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&bn,R,&bN,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr));
   if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) perm[i] = i;
   ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -177,10 +177,10 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
 
   /* compute eigenvalues */
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  PetscStackCall("LAPACKgeev",LAPACKgeev_("N","N",&bn,R,&bN,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&lierr));
+  PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&bn,R,&bN,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&lierr));
   if (lierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine");
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) perm[i] = i;
   for (i=0; i<n; i++) r[i] = PetscRealPart(eigs[i]);
   ierr = PetscSortRealWithPermutation(n,r,perm);CHKERRQ(ierr);

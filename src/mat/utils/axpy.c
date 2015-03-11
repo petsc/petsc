@@ -21,7 +21,7 @@
 
 .seealso: MatAYPX()
  @*/
-PetscErrorCode  MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
+PetscErrorCode MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
   PetscInt       m1,m2,n1,n2;
@@ -44,6 +44,11 @@ PetscErrorCode  MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
 #if defined(PETSC_HAVE_CUSP)
   if (Y->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     Y->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (Y->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    Y->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -69,7 +74,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMalloc((n+1)*sizeof(PetscScalar),&val);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n+1,&val);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
       ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       for (j=0; j<ncols; j++) {
@@ -109,7 +114,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMalloc((n+1)*sizeof(PetscScalar),&val);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n+1,&val);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
       ierr = MatGetRow(Y,i,&ncols,&row,&vals);CHKERRQ(ierr);
       ierr = MatSetValues(B,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
@@ -173,6 +178,11 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
     Y->valid_GPU_matrix = PETSC_CUSP_CPU;
   }
 #endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (Y->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    Y->valid_GPU_matrix = PETSC_VIENNACL_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -181,13 +191,11 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
 PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode ierr;
-  PetscInt       i,start,end,vstart,vend;
+  PetscInt       i,start,end;
   PetscScalar    *v;
 
   PetscFunctionBegin;
-  ierr = VecGetOwnershipRange(D,&vstart,&vend);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
-  if (vstart != start || vend != end) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vector ownership range not compatible with matrix: %D %D vec %D %D mat",vstart,vend,start,end);
   ierr = VecGetArray(D,&v);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
     ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,is);CHKERRQ(ierr);
@@ -221,10 +229,14 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode ierr;
+  PetscInt       matlocal,veclocal;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
   PetscValidHeaderSpecific(D,VEC_CLASSID,2);
+  ierr = MatGetLocalSize(Y,&matlocal,NULL);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(D,&veclocal);CHKERRQ(ierr);
+  if (matlocal != veclocal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number local rows of matrix %D does not match that of vector for diagonal %D",matlocal,veclocal);
   if (Y->ops->diagonalset) {
     ierr = (*Y->ops->diagonalset)(Y,D,is);CHKERRQ(ierr);
   } else {
@@ -314,10 +326,10 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
 
   ierr = MatGetLocalSize(inmat,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(inmat,&M,&N);CHKERRQ(ierr);
-  ierr = MatGetVecs(inmat,&in,&out);CHKERRQ(ierr);
+  ierr = MatCreateVecs(inmat,&in,&out);CHKERRQ(ierr);
   ierr = VecSetOption(in,VEC_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(out,&start,&end);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m,&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) rows[i] = start + i;
 
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
@@ -349,45 +361,6 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
   ierr = VecDestroy(&in);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* Get the map xtoy which is used by MatAXPY() in the case of SUBSET_NONZERO_PATTERN */
-#undef __FUNCT__
-#define __FUNCT__ "MatAXPYGetxtoy_Private"
-PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,PetscInt *xgarray, PetscInt *yi,PetscInt *yj,PetscInt *ygarray, PetscInt **xtoy)
-{
-  PetscErrorCode ierr;
-  PetscInt       row,i,nz,xcol,ycol,jx,jy,*x2y;
-
-  PetscFunctionBegin;
-  ierr = PetscMalloc(xi[m]*sizeof(PetscInt),&x2y);CHKERRQ(ierr);
-  i    = 0;
-  for (row=0; row<m; row++) {
-    nz = xi[1] - xi[0];
-    jy = 0;
-    for (jx=0; jx<nz; jx++,jy++) {
-      if (xgarray && ygarray) {
-        xcol = xgarray[xj[*xi + jx]];
-        ycol = ygarray[yj[*yi + jy]];
-      } else {
-        xcol = xj[*xi + jx];
-        ycol = yj[*yi + jy];  /* col index for y */
-      }
-      while (ycol < xcol) {
-        jy++;
-        if (ygarray) {
-          ycol = ygarray[yj[*yi + jy]];
-        } else {
-          ycol = yj[*yi + jy];
-        }
-      }
-      if (xcol != ycol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"X matrix entry (%D,%D) is not in Y matrix",row,ycol);
-      x2y[i++] = *yi + jy;
-    }
-    xi++; yi++;
-  }
-  *xtoy = x2y;
   PetscFunctionReturn(0);
 }
 
@@ -424,12 +397,12 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     ierr   = MatRestoreRow(A, r, &ncols, NULL, NULL);CHKERRQ(ierr);
   }
   numRows = rEnd - rStart;
-  ierr    = MPI_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr    = PetscMalloc2(colMax,PetscInt,&newCols,colMax,PetscScalar,&newVals);CHKERRQ(ierr);
+  ierr    = MPI_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  ierr    = PetscMalloc2(colMax,&newCols,colMax,&newVals);CHKERRQ(ierr);
   for (r = rStart; r < rStart+maxRows; ++r) {
     const PetscScalar *vals;
     const PetscInt    *cols;
-    PetscInt          ncols, c;
+    PetscInt           ncols, newcols, c;
 
     if (r < rEnd) {
       ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
@@ -437,8 +410,9 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
         newCols[c] = cols[c];
         newVals[c] = PetscAbsScalar(vals[c]) < tol ? 0.0 : vals[c];
       }
+      newcols = ncols;
       ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
-      ierr = MatSetValues(A, 1, &r, ncols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(A, 1, &r, newcols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

@@ -167,11 +167,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer v)
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscViewerMathematicaInitializePackage();CHKERRQ(ierr);
-#endif
 
-  ierr            = PetscNewLog(v,PetscViewer_Mathematica, &vmath);CHKERRQ(ierr);
+  ierr            = PetscNewLog(v,&vmath);CHKERRQ(ierr);
   v->data         = (void*) vmath;
   v->ops->destroy = PetscViewerDestroy_Mathematica;
   v->ops->flush   = 0;
@@ -236,7 +234,7 @@ PetscErrorCode  PetscViewerMathematicaSetFromOptions(PetscViewer v)
   }
   /* Get link port */
   numPorts = size;
-  ierr     = PetscMalloc(size*sizeof(int), &ports);CHKERRQ(ierr);
+  ierr     = PetscMalloc1(size, &ports);CHKERRQ(ierr);
   ierr     = PetscOptionsGetIntArray("viewer_", "-math_linkport", ports, &numPorts, &opt);CHKERRQ(ierr);
   if (opt) {
     if (numPorts > rank) snprintf(linkname, 255, "%6d", ports[rank]);
@@ -246,7 +244,7 @@ PetscErrorCode  PetscViewerMathematicaSetFromOptions(PetscViewer v)
   ierr = PetscFree(ports);CHKERRQ(ierr);
   /* Get link host */
   numHosts = size;
-  ierr     = PetscMalloc(size*sizeof(char*), &hosts);CHKERRQ(ierr);
+  ierr     = PetscMalloc1(size, &hosts);CHKERRQ(ierr);
   ierr     = PetscOptionsGetStringArray("viewer_", "-math_linkhost", hosts, &numHosts, &opt);CHKERRQ(ierr);
   if (opt) {
     if (numHosts > rank) {
@@ -381,12 +379,12 @@ $    PetscViewerMathematicaOpen(MPI_Comm comm, int port, char *machine, char *mo
 $    VecView(Vec vector, PetscViewer viewer)
 
    Options Database Keys:
-$    -viewer_math_linkhost <machine> - The host machine for the kernel
-$    -viewer_math_linkname <name>    - The full link name for the connection
-$    -viewer_math_linkport <port>    - The port for the connection
-$    -viewer_math_mode <mode>        - The mode, e.g. Launch, Connect
-$    -viewer_math_type <type>        - The plot type, e.g. Triangulation, Vector
-$    -viewer_math_graphics <output>  - The output type, e.g. Motif, PS, PSFile
++    -viewer_math_linkhost <machine> - The host machine for the kernel
+.    -viewer_math_linkname <name>    - The full link name for the connection
+.    -viewer_math_linkport <port>    - The port for the connection
+.    -viewer_math_mode <mode>        - The mode, e.g. Launch, Connect
+.    -viewer_math_type <type>        - The plot type, e.g. Triangulation, Vector
+-    -viewer_math_graphics <output>  - The output type, e.g. Motif, PS, PSFile
 
 .keywords: PetscViewer, Mathematica, open
 

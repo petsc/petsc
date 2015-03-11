@@ -1,5 +1,6 @@
-Created DMMoab using DMMoabCreateDMAndInstance.
-Created structured 2x2x2 mesh.
+Created DMMoab using DMMoabCreateMoab.
+Created structured 5x5x5 mesh.
+Creating tag with name: petsc_tag;
 Created VecMoab from existing tag.
 Destroyed VecMoab.
 Destroyed DMMoab.

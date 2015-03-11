@@ -113,7 +113,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Z);CHKERRQ(ierr);
 
-  ierr    = PetscNew(struct _n_User,&user);CHKERRQ(ierr);
+  ierr    = PetscNew(&user);CHKERRQ(ierr);
   user->B = A;
 
   ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S);CHKERRQ(ierr);

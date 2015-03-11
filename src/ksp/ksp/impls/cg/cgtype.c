@@ -61,7 +61,9 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 
      It requires two extra work vectors than the conventional implementation in PETSc.
 
-.keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
+     See also KSPPIPECG, KSPPIPECR, and KSPGROPPCG that use non-blocking reductions.
+
+.keywords: CG, conjugate gradient, Hermitian, symmetric, set, type, KSPPGMRES
 @*/
 PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
 {

@@ -8,6 +8,7 @@ static char help[] = "Test sequential USFFT interface on a uniform DMDA and comp
 */
 
 #include <petscmat.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -47,7 +48,7 @@ PetscInt main(PetscInt argc,char **args)
 
 
 
-  ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
+  ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,
                       dim[0], dim[1], dim[2],
                       PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
                       dof, stencil,

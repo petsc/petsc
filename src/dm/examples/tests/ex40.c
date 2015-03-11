@@ -1,6 +1,7 @@
 
 static char help[] = "Tests mirror boundary conditions in 2-d.\n\n";
 
+#include <petscdm.h>
 #include <petscdmda.h>
 
 #undef __FUNCT__
@@ -19,7 +20,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(0,"-stencil_width",&stencil_width,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
 
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_MIRROR,DMDA_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xstart,&ystart,0,&m,&n,0);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);

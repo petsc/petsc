@@ -24,8 +24,8 @@
 !     petscvec.h    - vectors
 !
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
 
       PetscMPIInt size,rank
       PetscInt nlocal,nghost,ifrom(2)

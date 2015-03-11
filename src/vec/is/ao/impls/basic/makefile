@@ -6,12 +6,12 @@ FFLAGS   =
 SOURCEC  = aobasic.c
 SOURCEF  =
 SOURCEH  =
-LIBBASE  = libpetscdm
+LIBBASE  = libpetscvec
 DIRS     =
 MANSEC   = AO
 LOCDIR   = src/vec/is/ao/impls/basic/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test
 

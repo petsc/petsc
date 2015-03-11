@@ -69,12 +69,12 @@ PetscErrorCode SNESSetUp_Shell(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Shell"
-PetscErrorCode SNESSetFromOptions_Shell(SNES snes)
+PetscErrorCode SNESSetFromOptions_Shell(PetscOptions *PetscOptionsObject,SNES snes)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES Shell options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"SNES Shell options");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -205,7 +205,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes)
   snes->usesksp = PETSC_FALSE;
   snes->usespc  = PETSC_FALSE;
 
-  ierr       = PetscNewLog(snes, SNES_Shell, &shell);CHKERRQ(ierr);
+  ierr       = PetscNewLog(snes,&shell);CHKERRQ(ierr);
   snes->data = (void*) shell;
   ierr       = PetscObjectComposeFunction((PetscObject)snes,"SNESShellSetSolve_C",SNESShellSetSolve_Shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);

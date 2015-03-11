@@ -3,13 +3,13 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ziscoloringf.c zisltogf.c
+SOURCEC  = ziscoloringf.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE	 = libpetscvec
 LOCDIR	 = src/vec/is/is/utils/ftn-custom/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test

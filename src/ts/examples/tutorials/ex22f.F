@@ -16,12 +16,13 @@
 
       program main
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
 !
 !  Create an application context to contain data needed by the
 !  application-provided call-back routines, FormJacobian() and
@@ -59,7 +60,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create distributed array (DMDA) to manage parallel grid and vectors
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,im11,i2,i2, &
+      call DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,im11,i2,i2,   &
      &     PETSC_NULL_INTEGER,da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,11 +98,12 @@
       call TSSetRHSFunction(ts,PETSC_NULL_OBJECT,FormRHSFunction,       &
      &     user,ierr)
       call TSSetIFunction(ts,PETSC_NULL_OBJECT,FormIFunction,user,ierr)
-      call DMCreateMatrix(da,MATAIJ,J,ierr)
+      call DMSetMatType(da,MATAIJ,ierr)
+      call DMCreateMatrix(da,J,ierr)
       call TSSetIJacobian(ts,J,J,FormIJacobian,user,ierr)
 
       call TSGetSNES(ts,snes,ierr)
-      call SNESGetSNESLineSearch(snes,linesearch,ierr)
+      call SNESGetLineSearch(snes,linesearch,ierr)
       call SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC,ierr)
 
       ftime = 1.0
@@ -141,8 +143,9 @@
 ! Small helper to extract the layout, result uses 1-based indexing.
       subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
       DM da
       PetscInt mx,xs,xe,gxs,gxe
       PetscErrorCode ierr
@@ -152,7 +155,7 @@
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,    &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                       &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,    &
-     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+     &     PETSC_NULL_INTEGER,ierr)
       call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,  &
      &     xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       call DMDAGetGhostCorners(da,                                      &
@@ -182,12 +185,13 @@
 
       subroutine FormIFunction(ts,t,X,Xdot,F,user,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
       TS ts
       PetscReal t
       Vec X,Xdot,F
@@ -205,16 +209,16 @@
       call GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
 
 ! Get access to vector data
-      call VecGetArray(X,xx,ixx,ierr)
-      call VecGetArray(Xdot,xxdot,ixxdot,ierr)
+      call VecGetArrayRead(X,xx,ixx,ierr)
+      call VecGetArrayRead(Xdot,xxdot,ixxdot,ierr)
       call VecGetArray(F,ff,iff,ierr)
 
       call FormIFunctionLocal(mx,xs,xe,gxs,gxe,                         &
      &     xx(ixx),xxdot(ixxdot),ff(iff),                               &
      &     user(user_a),user(user_k),user(user_s),ierr)
 
-      call VecRestoreArray(X,xx,ixx,ierr)
-      call VecRestoreArray(Xdot,xxdot,ixxdot,ierr)
+      call VecRestoreArrayRead(X,xx,ixx,ierr)
+      call VecRestoreArrayRead(Xdot,xxdot,ixxdot,ierr)
       call VecRestoreArray(F,ff,iff,ierr)
       end subroutine
 
@@ -270,12 +274,13 @@
 
       subroutine FormRHSFunction(ts,t,X,F,user,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
       TS ts
       PetscReal t
       Vec X,F
@@ -301,14 +306,14 @@
       call DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc,ierr)
 
 ! Get access to vector data
-      call VecGetArray(Xloc,xx,ixx,ierr)
+      call VecGetArrayRead(Xloc,xx,ixx,ierr)
       call VecGetArray(F,ff,iff,ierr)
 
       call FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,                       &
      &     t,xx(ixx),ff(iff),                                           &
      &     user(user_a),user(user_k),user(user_s),ierr)
 
-      call VecRestoreArray(Xloc,xx,ixx,ierr)
+      call VecRestoreArrayRead(Xloc,xx,ixx,ierr)
       call VecRestoreArray(F,ff,iff,ierr)
       call DMRestoreLocalVector(da,Xloc,ierr)
       end subroutine
@@ -317,19 +322,19 @@
 !
 !  IJacobian - Compute IJacobian = dF/dU + shift*dF/dUdot
 !
-      subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,mstr,user,ierr)
+      subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
       TS ts
       PetscReal t,shift
       Vec X,Xdot
       Mat J,Jpre
-      MatStructure mstr
       PetscReal user(6)
       PetscErrorCode ierr
       integer user_a,user_k,user_s
@@ -363,7 +368,6 @@
          call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr)
          call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr)
       end if
-      mstr = SAME_NONZERO_PATTERN
       end subroutine
 
       subroutine FormInitialSolutionLocal(mx,xs,xe,gxs,gxe,x,a,k,s,ierr)
@@ -391,12 +395,13 @@
 
       subroutine FormInitialSolution(ts,X,user,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscts.h>
-#include <finclude/petscdmda.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscts.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
       TS ts
       Vec X
       PetscReal user(6)

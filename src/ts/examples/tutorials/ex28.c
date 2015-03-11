@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,NULL,help);
   ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,"advection-diffusion-reaction/ex1");CHKERRQ(ierr);
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"binaryoutput",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"advection-diffusion-reaction/binaryoutput",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = TSLoad(ts,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   /* ierr = PetscFPTView(0);CHKERRQ(ierr); */

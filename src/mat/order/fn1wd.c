@@ -1,7 +1,7 @@
 
 /* fn1wd.f -- translated by f2c (version 19931217).*/
 
-#include <../src/mat/order/order.h>
+#include <petsc-private/matorderimpl.h>
 
 /*****************************************************************/
 /********     FN1WD ..... FIND ONE-WAY DISSECTORS        *********/

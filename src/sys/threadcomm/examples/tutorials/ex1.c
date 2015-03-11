@@ -38,8 +38,8 @@ int main(int argc,char **argv)
   ierr = PetscThreadCommView(PETSC_COMM_WORLD,0);CHKERRQ(ierr);
   ierr = PetscThreadCommGetNThreads(PETSC_COMM_WORLD,&nthreads);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(nthreads*sizeof(PetscInt),&ranks);CHKERRQ(ierr);
-  ierr = PetscMalloc(nthreads*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nthreads,&ranks);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nthreads,&values);CHKERRQ(ierr);
 
   for (i=0; i < nthreads; i++) {
     ranks[i] = i; values[i] = i;

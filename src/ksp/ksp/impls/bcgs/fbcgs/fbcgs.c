@@ -57,7 +57,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
-    ierr = MatMult(pc->mat,X,S2);CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,pc->mat,X,S2);CHKERRQ(ierr);
     ierr = VecCopy(B,R);CHKERRQ(ierr);
     ierr = VecAXPY(R,-1.0,S2);CHKERRQ(ierr);
   } else {
@@ -68,10 +68,10 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   if (ksp->normtype != KSP_NORM_NONE) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   }
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = dp;
-  ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -92,16 +92,16 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     beta = (rho/rhoold) * (alpha/omegaold);
     ierr = VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V);CHKERRQ(ierr); /* p <- r - omega * beta* v + beta * p */
 
-    ierr = PCApply(pc,P,P2);CHKERRQ(ierr); /* p2 <- K p */
-    ierr = MatMult(pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
+    ierr = KSP_PCApply(ksp,P,P2);CHKERRQ(ierr); /* p2 <- K p */
+    ierr = KSP_MatMult(ksp,pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
 
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     if (d1 == 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Divide by zero");
     alpha = rho / d1; /* alpha <- rho / (v,rp) */
     ierr  = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr); /* s <- r - alpha v */
 
-    ierr = PCApply(pc,S,S2);CHKERRQ(ierr); /* s2 <- K s */
-    ierr = MatMult(pc->mat,S2,T);CHKERRQ(ierr); /* t <- A s2 */
+    ierr = KSP_PCApply(ksp,S,S2);CHKERRQ(ierr); /* s2 <- K s */
+    ierr = KSP_MatMult(ksp,pc->mat,S2,T);CHKERRQ(ierr); /* t <- A s2 */
 
     ierr = VecDotNorm2(S,T,&d1,&d2);CHKERRQ(ierr);
     if (d2 == 0.0) {
@@ -112,11 +112,11 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
         break;
       }
       ierr = VecAXPY(X,alpha,P2);CHKERRQ(ierr);   /* x <- x + alpha p2 */
-      ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+      ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->its++;
       ksp->rnorm  = 0.0;
       ksp->reason = KSP_CONVERGED_RTOL;
-      ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+      ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
       ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i+1,0.0);CHKERRQ(ierr);
       break;
@@ -132,10 +132,10 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     rhoold   = rho;
     omegaold = omega;
 
-    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = dp;
-    ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -171,7 +171,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp)
   KSP_BCGS       *bcgs;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_BCGS,&bcgs);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&bcgs);CHKERRQ(ierr);
 
   ksp->data                = bcgs;
   ksp->ops->setup          = KSPSetUp_FBCGS;
@@ -182,7 +182,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp)
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
   ksp->pc_side             = PC_RIGHT;  /* set default PC side */
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

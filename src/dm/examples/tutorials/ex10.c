@@ -9,6 +9,7 @@
    The file storage of the vector is independent of the number of processes used.
  */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsys.h>
 #include <petscviewerhdf5.h>
@@ -35,7 +36,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /* Build of the DMDA */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,Nx,Ny,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da2D);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,Nx,Ny,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da2D);CHKERRQ(ierr);
 
   /* Set the coordinates */
   DMDASetUniformCoordinates(da2D, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0);
@@ -54,7 +55,7 @@ int main(int argc,char **argv)
   ierr = DMDAVecGetArray(da2D,gauss,&gauss_ptr);CHKERRQ(ierr);
   for (j=iys; j<iys+iym; j++) {
     for (i=ixs; i<ixs+ixm; i++) {
-      gauss_ptr[j][i]=exp(-(xm+i*dx)*(xm+i*dx)-(ym+j*dy)*(ym+j*dy));
+      gauss_ptr[j][i]=PetscExpScalar(-(xm+i*dx)*(xm+i*dx)-(ym+j*dy)*(ym+j*dy));
     }
   }
   ierr = DMDAVecRestoreArray(da2D,gauss,&gauss_ptr);CHKERRQ(ierr);

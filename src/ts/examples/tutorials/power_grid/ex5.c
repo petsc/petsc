@@ -76,12 +76,13 @@ PetscReal         tmax = 20.0;
 #define __FUNCT__ "SaveSolution"
 PetscErrorCode SaveSolution(TS ts)
 {
-  PetscErrorCode ierr;
-  AppCtx         *user;
-  Vec            X;
-  PetscScalar    *x,*mat;
-  PetscInt       idx;
-  PetscReal      t;
+  PetscErrorCode    ierr;
+  AppCtx            *user;
+  Vec               X;
+  PetscScalar       *mat;
+  const PetscScalar *x;
+  PetscInt          idx;
+  PetscReal         t;
 
   PetscFunctionBegin;
   ierr     = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
@@ -89,11 +90,11 @@ PetscErrorCode SaveSolution(TS ts)
   ierr     = TSGetSolution(ts,&X);CHKERRQ(ierr);
   idx      =  3*user->stepnum;
   ierr     = MatDenseGetArray(user->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr     = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   mat[idx] = t;
   ierr     = PetscMemcpy(mat+idx+1,x,2*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr     = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr     = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   user->stepnum++;
   PetscFunctionReturn(0);
 }
@@ -200,15 +201,16 @@ PetscErrorCode GetWindPower(PetscScalar wm,PetscScalar vw,PetscScalar *Pw,AppCtx
 */
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *user)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *u,*udot,*f,wm,Pw,*wd;
-  PetscInt       stepnum;
+  PetscErrorCode    ierr;
+  PetscScalar       *f,wm,Pw,*wd;
+  const PetscScalar *u,*udot;
+  PetscInt          stepnum;
 
   PetscFunctionBegin;
   ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
   /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = VecGetArray(user->wind_data,&wd);CHKERRQ(ierr);
 
@@ -218,8 +220,8 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *u
   f[1] = 2.0*(user->Ht+user->Hm)*udot[1] - Pw/wm + user->Te;
 
   ierr = VecRestoreArray(user->wind_data,&wd);CHKERRQ(ierr);
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -252,7 +254,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  ierr = MatGetVecs(A,&U,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
 
   /* Create wind speed data using Weibull distribution */
   ierr = WindSpeeds(&user);CHKERRQ(ierr);
@@ -289,17 +291,18 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
   /* Save initial solution */
-  PetscScalar *x,*mat;
+  PetscScalar       *mat;
+  const PetscScalar *x;
   PetscInt    idx=3*user.stepnum;
 
   ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr = VecGetArray(U,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&x);CHKERRQ(ierr);
 
   mat[idx] = 0.0;
 
   ierr = PetscMemcpy(mat+idx+1,x,2*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr = VecRestoreArray(U,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(U,&x);CHKERRQ(ierr);
   user.stepnum++;
 
 

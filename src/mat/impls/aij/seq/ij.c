@@ -36,10 +36,10 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
 
   PetscFunctionBegin;
   /* allocate space for row pointers */
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1,&ia);CHKERRQ(ierr);
   *iia = ia;
   ierr = PetscMemzero(ia,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&work);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1,&work);CHKERRQ(ierr);
 
   /* determine the number of columns in each row */
   ia[0] = shiftout;
@@ -63,7 +63,7 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
 
   /* allocate space for column pointers */
   nz   = ia[m] + (!shiftin);
-  ierr = PetscMalloc(nz*sizeof(PetscInt),&ja);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nz,&ja);CHKERRQ(ierr);
   *jja = ja;
 
   /* loop over lower triangular part putting into ja */

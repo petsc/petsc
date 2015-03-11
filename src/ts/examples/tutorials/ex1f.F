@@ -28,18 +28,18 @@
 !23456789012345678901234567890123456789012345678901234567890123456789012
       program main
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscts.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscts.h>
 !
 !  Create an application context to contain data needed by the
 !  application-provided call-back routines, FormJacobian() and
 !  FormFunction(). We use a double precision array with three
 !  entries indexed by param, lmx, lmy.
 !
-      double precision user(3)
+      PetscReal user(3)
       PetscInt          param,lmx,lmy,i5
       parameter (param = 1,lmx = 2,lmy = 3)
 !
@@ -55,8 +55,9 @@
       PetscInt           its,N,i1000
       PetscBool  flg
       PetscErrorCode      ierr
-      double precision  param_max,param_min,dt,tmax,zero
-      double precision  ftime
+      PetscReal  param_max,param_min,dt
+      PetscReal  tmax,zero
+      PetscReal  ftime
       TSConvergedReason reason
 
       i5 = 5
@@ -166,7 +167,7 @@
 !
 !      Set any additional options from the options database. This
 !     includes all options for the nonlinear and linear solvers used
-!     internally the the timestepping routines.
+!     internally the timestepping routines.
 !
 
       call TSSetFromOptions(ts,ierr)
@@ -201,18 +202,18 @@
 !
       subroutine FormInitialGuess(X,user,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscts.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscts.h>
       Vec              X
-      double precision user(3)
+      PetscReal user(3)
       PetscInt  i,j,row,mx,my
       PetscErrorCode ierr
       PetscOffset      xidx
-      double precision one,lambda
-      double precision temp1,temp,hx,hy
+      PetscReal one,lambda
+      PetscReal temp1,temp,hx,hy
       PetscScalar      xx(1)
       PetscInt          param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
@@ -229,7 +230,7 @@
       call VecGetArray(X,xx,xidx,ierr)
       temp1 = lambda/(lambda + one)
       do 10, j=1,my
-        temp = dble(min(j-1,my-j))*hy
+        temp = min(j-1,my-j)*hy
         do 20 i=1,mx
           row = i + (j-1)*mx
           if (i .eq. 1 .or. j .eq. 1 .or.                               &
@@ -237,7 +238,7 @@
             xx(row+xidx) = 0.0
           else
             xx(row+xidx) =                                              &
-     &        temp1*sqrt(min(dble(min(i-1,mx-i))*hx,temp))
+     &        temp1*sqrt(min(min(i-1,mx-i)*hx,temp))
           endif
  20     continue
  10   continue
@@ -249,20 +250,20 @@
 !
       subroutine FormFunction(ts,t,X,F,user,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscts.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscts.h>
       TS       ts
-      double precision  t
+      PetscReal  t
       Vec               X,F
-      double precision  user(3)
+      PetscReal  user(3)
       PetscErrorCode     ierr
       PetscInt         i,j,row,mx,my
       PetscOffset       xidx,fidx
-      double precision  two,lambda
-      double precision  hx,hy,hxdhy,hydhx
+      PetscReal  two,lambda
+      PetscReal  hx,hy,hxdhy,hydhx
       PetscScalar  ut,ub,ul,ur,u
       PetscScalar  uxx,uyy,sc
       PetscScalar  xx(1),ff(1)
@@ -275,13 +276,13 @@
       my     = int(user(lmy))
       lambda = user(param)
 
-      hx    = 1.0 / dble(mx-1)
-      hy    = 1.0 / dble(my-1)
+      hx    = 1.0 / (mx-1)
+      hy    = 1.0 / (my-1)
       sc    = hx*hy
       hxdhy = hx/hy
       hydhx = hy/hx
 
-      call VecGetArray(X,xx,xidx,ierr)
+      call VecGetArrayRead(X,xx,xidx,ierr)
       call VecGetArray(F,ff,fidx,ierr)
       do 10 j=1,my
         do 20 i=1,mx
@@ -303,25 +304,24 @@
  20   continue
  10   continue
 
-      call VecRestoreArray(X,xx,xidx,ierr)
+      call VecRestoreArrayRead(X,xx,xidx,ierr)
       call VecRestoreArray(F,ff,fidx,ierr)
       return
       end
 !
 !  --------------------  Evaluate Jacobian of F(x) --------------------
 !
-      subroutine FormJacobian(ts,ctime,X,JJ,B,flag,user,ierr)
+      subroutine FormJacobian(ts,ctime,X,JJ,B,user,ierr)
       implicit none
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscts.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscts.h>
       TS               ts
       Vec              X
       Mat              JJ,B
-      MatStructure     flag
-      double precision user(3),ctime
+      PetscReal user(3),ctime
       PetscErrorCode   ierr
       Mat              jac
       PetscOffset xidx
@@ -329,7 +329,7 @@
       PetscInt    col(5),i1,i5
       PetscScalar two,one,lambda
       PetscScalar v(5),sc,xx(1)
-      double precision hx,hy,hxdhy,hydhx
+      PetscReal hx,hy,hxdhy,hydhx
 
       PetscInt  param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
@@ -344,13 +344,13 @@
       my     = int(user(lmy))
       lambda = user(param)
 
-      hx    = 1.0 / dble(mx-1)
-      hy    = 1.0 / dble(my-1)
+      hx    = 1.0 / (mx-1)
+      hy    = 1.0 / (my-1)
       sc    = hx*hy
       hxdhy = hx/hy
       hydhx = hy/hx
 
-      call VecGetArray(X,xx,xidx,ierr)
+      call VecGetArrayRead(X,xx,xidx,ierr)
       do 10 j=1,my
         do 20 i=1,mx
 !
@@ -378,7 +378,6 @@
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       call VecRestoreArray(X,xx,xidx,ierr)
-      flag = SAME_NONZERO_PATTERN
       return
       end
 

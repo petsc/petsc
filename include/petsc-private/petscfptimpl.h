@@ -1,4 +1,7 @@
 
+#if !defined(_PETSCFPIMPL_H)
+#define _PETSCFPIMPL_H
+#include <petscviewertypes.h>
 #include <petscsys.h>
 /*
     Function pointer table that maps from function pointers to their string representation
@@ -115,9 +118,11 @@ PETSC_STATIC_INLINE PetscErrorCode PetscFPTAdd(void* key,const char* data)
 */
 PETSC_STATIC_INLINE PetscErrorCode  PetscFPTFind(void* key,char const **data)
 {
-  PetscInt hash = PetscHashPointer(key),ii = 0;
+  PetscInt hash,ii = 0;
 
   *data = 0;
+  if (!PetscFPTData) return(0);
+  hash  = PetscHashPointer(key);
   while (ii++ < PetscFPTData->tablesize) {
     if (!PetscFPTData->functionpointer[hash]) break;
     else if (PetscFPTData->functionpointer[hash] == key) {
@@ -129,3 +134,4 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscFPTFind(void* key,char const **data)
   return(0);
 }
 
+#endif

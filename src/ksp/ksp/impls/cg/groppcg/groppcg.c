@@ -1,14 +1,3 @@
-/*
- author: Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
-
- This file implements a CG method due to B. Gropp that can overlap one reduction
- with application of the preconditioner and the other reduction can be
- overlapped with the matrix-vector product.
-
- see:
- http://www.cs.uiuc.edu/~wgropp/bib/talks/tdata/2012/icerm.pdf
- */
-
 #include <petsc-private/kspimpl.h>
 
 /*
@@ -45,7 +34,6 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
   PetscReal      dp = 0.0;
   Vec            x,b,r,p,s,S,z,Z;
   Mat            Amat,Pmat;
-  MatStructure   pflag;
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
@@ -61,7 +49,7 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
   z = ksp->work[4];
   Z = ksp->work[5];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
@@ -159,6 +147,29 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   KSPGROPPCG - A pipelined conjugate gradient method from Bill Gropp
+
+   This method has two reductions, one of which is overlapped with the matrix-vector product and one of which is
+   overlapped with the preconditioner.
+
+   See also KSPPIPECG, which has only a single reduction that overlaps both the matrix-vector product and the preconditioner.
+
+   Level: intermediate
+
+   Notes:
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See the FAQ on the PETSc website for details.
+
+   Contributed by:
+   Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
+
+   Reference:
+   http://www.cs.uiuc.edu/~wgropp/bib/talks/tdata/2012/icerm.pdf
+
+.seealso: KSPCreate(), KSPSetType(), KSPPIPECG, KSPPIPECR, KSPPGMRES, KSPCG, KSPCGUseSingleReduction()
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_GROPPCG"
 PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
@@ -166,10 +177,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_GROPPCG;
   ksp->ops->solve          = KSPSolve_GROPPCG;

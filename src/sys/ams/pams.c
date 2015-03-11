@@ -1,12 +1,12 @@
 
 #include <petsc-private/petscimpl.h>        /*I    "petscsys.h"   I*/
-#include <petscviewerams.h>
+#include <petscviewersaws.h>
 #include <petscsys.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscObjectAMSTakeAccess"
+#define __FUNCT__ "PetscObjectSAWsTakeAccess"
 /*@C
-   PetscObjectAMSTakeAccess - Take access of the data fields that have been published to AMS so they may be changed locally
+   PetscObjectSAWsTakeAccess - Take access of the data fields that have been published to SAWs so they may be changed locally
 
    Collective on PetscObject
 
@@ -19,50 +19,82 @@
 
    Concepts: publishing object
 
-.seealso: PetscObjectSetName(), PetscObjectAMSViewOff(), PetscObjectAMSGrantAccess()
+.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsGrantAccess()
 
 @*/
-PetscErrorCode  PetscObjectAMSTakeAccess(PetscObject obj)
+PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
 {
-  PetscFunctionBegin;
-  if (obj->amsmem != -1) {
-    PetscStackCallAMS(AMS_Memory_take_access,(obj->amsmem));
+  if (obj->amsmem) {
+    /* cannot wrap with PetscPushStack() because that also deals with the locks */
+    SAWs_Lock();
   }
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectSAWsGrantAccess"
+/*@C
+   PetscObjectSAWsGrantAccess - Grants access of the data fields that have been published to SAWs to the memory snooper to change
+
+   Collective on PetscObject
+
+   Input Parameters:
+.  obj - the Petsc variable
+         Thus must be cast with a (PetscObject), for example,
+         PetscObjectSetName((PetscObject)mat,name);
+
+   Level: advanced
+
+   Concepts: publishing object
+
+.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
+
+@*/
+PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
+{
+  if (obj->amsmem) {
+    /* cannot wrap with PetscPushStack() because that also deals with the locks */
+    SAWs_Unlock();
+  }
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSAWsBlock"
+/*@C
+   PetscSAWsBlock - Blocks on SAWs until a client unblocks
+
+   Not Collective 
+
+   Level: advanced
+
+.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsSetBlock(), PetscObjectSAWsBlock()
+
+@*/
+PetscErrorCode  PetscSAWsBlock(void)
+{
+  PetscErrorCode     ierr;
+  volatile PetscBool block = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  PetscStackCallSAWs(SAWs_Register,("__Block",(PetscBool*)&block,1,SAWs_WRITE,SAWs_BOOLEAN));
+  SAWs_Lock();
+  while (block) {
+    SAWs_Unlock();
+    ierr = PetscInfo(NULL,"Blocking on SAWs\n");
+    ierr = PetscSleep(.3);CHKERRQ(ierr);
+    SAWs_Lock();
+  }
+  SAWs_Unlock();
+  PetscStackCallSAWs(SAWs_Delete,("__Block"));
+  ierr = PetscInfo(NULL,"Out of SAWs block\n");
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscObjectAMSGrantAccess"
+#define __FUNCT__ "PetscObjectSAWsBlock"
 /*@C
-   PetscObjectAMSGrantAccess - Grants access of the data fields that have been published to AMS to the memory snooper to change
-
-   Collective on PetscObject
-
-   Input Parameters:
-.  obj - the Petsc variable
-         Thus must be cast with a (PetscObject), for example,
-         PetscObjectSetName((PetscObject)mat,name);
-
-   Level: advanced
-
-   Concepts: publishing object
-
-.seealso: PetscObjectSetName(), PetscObjectAMSViewOff(), PetscObjectAMSTakeAccess()
-
-@*/
-PetscErrorCode  PetscObjectAMSGrantAccess(PetscObject obj)
-{
-  PetscFunctionBegin;
-  if (obj->amsmem != -1) {
-    PetscStackCallAMS(AMS_Memory_grant_access,(obj->amsmem));
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectAMSBlock"
-/*@C
-   PetscObjectAMSBlock - Blocks the object if PetscObjectAMSSetBlock() has been called
+   PetscObjectSAWsBlock - Blocks the object if PetscObjectSAWsSetBlock() has been called
 
    Collective on PetscObject
 
@@ -76,34 +108,25 @@ PetscErrorCode  PetscObjectAMSGrantAccess(PetscObject obj)
 
    Concepts: publishing object
 
-.seealso: PetscObjectSetName(), PetscObjectAMSViewOff(), PetscObjectAMSSetBlock()
+.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsSetBlock()
 
 @*/
-PetscErrorCode  PetscObjectAMSBlock(PetscObject obj)
+PetscErrorCode  PetscObjectSAWsBlock(PetscObject obj)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
 
-  if (!obj->amspublishblock) PetscFunctionReturn(0);
-  ierr = PetscObjectAMSTakeAccess(obj);CHKERRQ(ierr);
-  while (obj->amsblock) {
-    ierr = PetscInfo(NULL,"Blocking on AMS\n");
-    ierr = PetscObjectAMSGrantAccess(obj);CHKERRQ(ierr);
-    ierr = PetscSleep(2.0);CHKERRQ(ierr);
-    ierr = PetscObjectAMSTakeAccess(obj);CHKERRQ(ierr);
-  }
-  ierr = PetscInfo(NULL,"Out of AMS block\n");
-  obj->amsblock = PETSC_TRUE;
-  ierr = PetscObjectAMSGrantAccess(obj);CHKERRQ(ierr);
+  if (!obj->amspublishblock || !obj->amsmem) PetscFunctionReturn(0);
+  ierr = PetscSAWsBlock();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscObjectAMSSetBlock"
+#define __FUNCT__ "PetscObjectSAWsSetBlock"
 /*@C
-   PetscObjectAMSSetBlock - Sets whether an object will block at PetscObjectAMSBlock()
+   PetscObjectSAWsSetBlock - Sets whether an object will block at PetscObjectSAWsBlock()
 
    Collective on PetscObject
 
@@ -117,29 +140,29 @@ PetscErrorCode  PetscObjectAMSBlock(PetscObject obj)
 
    Concepts: publishing object
 
-.seealso: PetscObjectSetName(), PetscObjectAMSViewOff(), PetscObjectAMSBlock()
+.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsBlock()
 
 @*/
-PetscErrorCode  PetscObjectAMSSetBlock(PetscObject obj,PetscBool flg)
+PetscErrorCode  PetscObjectSAWsSetBlock(PetscObject obj,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   obj->amspublishblock = flg;
-  obj->amsblock        = flg;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscObjectAMSViewOff"
-PetscErrorCode PetscObjectAMSViewOff(PetscObject obj)
+#define __FUNCT__ "PetscObjectSAWsViewOff"
+PetscErrorCode PetscObjectSAWsViewOff(PetscObject obj)
 {
+  char           dir[1024];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (obj->classid == PETSC_VIEWER_CLASSID) PetscFunctionReturn(0);
-  if (obj->amsmem == -1) PetscFunctionReturn(0);
-  ierr        = AMS_Memory_destroy(obj->amsmem);CHKERRQ(ierr);
-  obj->amsmem = -1;
+  if (!obj->amsmem) PetscFunctionReturn(0);
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s",obj->name);CHKERRQ(ierr);
+  PetscStackCallSAWs(SAWs_Delete,(dir));
   PetscFunctionReturn(0);
 }
 

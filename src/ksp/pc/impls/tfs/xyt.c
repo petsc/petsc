@@ -185,8 +185,8 @@ PetscInt XYT_stats(xyt_ADT xyt_handle)
     PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_nnz=%D\n",PCTFS_my_id,vals[1]);
     PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_nnz=%g\n",PCTFS_my_id,1.0*vals[2]/PCTFS_num_nodes);
     PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xyt_nnz=%D\n",PCTFS_my_id,vals[2]);
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(2d)  =%g\n",PCTFS_my_id,vals[2]/(pow(1.0*vals[5],1.5)));
-    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(3d)  =%g\n",PCTFS_my_id,vals[2]/(pow(1.0*vals[5],1.6667)));
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(2d)  =%g\n",PCTFS_my_id,vals[2]/(PetscPowReal(1.0*vals[5],1.5)));
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(3d)  =%g\n",PCTFS_my_id,vals[2]/(PetscPowReal(1.0*vals[5],1.6667)));
     PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_n  =%D\n",PCTFS_my_id,vals[3]);
     PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_n  =%D\n",PCTFS_my_id,vals[4]);
     PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_n  =%g\n",PCTFS_my_id,1.0*vals[5]/PCTFS_num_nodes);
@@ -373,7 +373,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
       off   = *iptr++;
       len   = *iptr++;
       ierr  = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
-      PetscStackCall("BLASdot",uu[k] = BLASdot_(&dlen,u+off,&i1,y_ptr,&i1));
+      PetscStackCallBLAS("BLASdot",uu[k] = BLASdot_(&dlen,u+off,&i1,y_ptr,&i1));
       y_ptr+=len;
     }
 
@@ -388,14 +388,14 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
       off  = *iptr++;
       len  = *iptr++;
       ierr = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
-      PetscStackCall("BLASaxpy",BLASaxpy_(&dlen,&uu[k],x_ptr,&i1,z+off,&i1));
+      PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dlen,&uu[k],x_ptr,&i1,z+off,&i1));
       x_ptr+=len;
     }
 
     /* compute v_l = v_l - z */
     PCTFS_rvec_zero(v+a_n,a_m-a_n);
     ierr = PetscBLASIntCast(n,&dlen);CHKERRQ(ierr);
-    PetscStackCall("BLASaxpy",BLASaxpy_(&dlen,&dm1,z,&i1,v,&i1));
+    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dlen,&dm1,z,&i1,v,&i1));
 
     /* compute u_l = A.v_l */
     if (a_n!=a_m) PCTFS_gs_gop_hc(PCTFS_gs_handle,v,"+\0",dim);
@@ -404,7 +404,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 
     /* compute sqrt(alpha) = sqrt(u_l^T.u_l) - local portion */
     ierr  = PetscBLASIntCast(n,&dlen);CHKERRQ(ierr);
-    PetscStackCall("BLASdot",alpha = BLASdot_(&dlen,u,&i1,u,&i1));
+    PetscStackCallBLAS("BLASdot",alpha = BLASdot_(&dlen,u,&i1,u,&i1));
     /* compute sqrt(alpha) = sqrt(u_l^T.u_l) - comm portion */
     PCTFS_grop_hc(&alpha, &alpha_w, 1, op, dim);
 
@@ -412,7 +412,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 
     /* check for small alpha                             */
     /* LATER use this to detect and determine null space */
-    if (fabs(alpha)<1.0e-14) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g\n",alpha);
+    if (PetscAbsScalar(alpha)<1.0e-14) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bad alpha! %g\n",alpha);
 
     /* compute v_l = v_l/sqrt(alpha) */
     PCTFS_rvec_scale(v,1.0/alpha,n);
@@ -571,7 +571,7 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
     off       =*iptr++;
     len       =*iptr++;
     ierr      = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
-    PetscStackCall("BLASdot",*uu_ptr++ = BLASdot_(&dlen,uc+off,&i1,y_ptr,&i1));
+    PetscStackCallBLAS("BLASdot",*uu_ptr++ = BLASdot_(&dlen,uc+off,&i1,y_ptr,&i1));
   }
 
   /* comunication of beta */
@@ -584,7 +584,7 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
     off  =*iptr++;
     len  =*iptr++;
     ierr = PetscBLASIntCast(len,&dlen);CHKERRQ(ierr);
-    PetscStackCall("BLASaxpy",BLASaxpy_(&dlen,uu_ptr++,x_ptr,&i1,uc+off,&i1));
+    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&dlen,uu_ptr++,x_ptr,&i1,uc+off,&i1));
   }
   PetscFunctionReturn(0);
 }
@@ -665,96 +665,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
     /* and pick up the responses on the other sub-hc from the     */
     /* initial separator set obtained from the symm. shared case  */
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"shared dof separator determination not ready ... see hmt!!!\n");
-    for (iptr=fo+n,id=PCTFS_my_id,mask=PCTFS_num_nodes>>1,edge=level; edge>0; edge--,mask>>=1) {
-
-      /* set rsh of hc, fire, and collect lhs responses */
-      (id<mask) ? PCTFS_rvec_zero(lhs,m) : PCTFS_rvec_set(lhs,1.0,m);
-      PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge);
-
-      /* set lsh of hc, fire, and collect rhs responses */
-      (id<mask) ? PCTFS_rvec_set(rhs,1.0,m) : PCTFS_rvec_zero(rhs,m);
-      PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge);
-
-      for (i=0; i<n; i++) {
-        if (id< mask) {
-          if (lhs[i]!=0.0) lhs[i]=1.0;
-        }
-        if (id>=mask) {
-          if (rhs[i]!=0.0) rhs[i]=1.0;
-        }
-      }
-
-      if (id< mask) PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge-1);
-      else PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge-1);
-
-      /* count number of dofs I own that have signal and not in sep set */
-      PCTFS_rvec_zero(rsum,4);
-      for (PCTFS_ivec_zero(sum,4),ct=i=0;i<n;i++) {
-        if (!used[i]) {
-          /* number of unmarked dofs on node */
-          ct++;
-          /* number of dofs to be marked on lhs hc */
-          if (id< mask) {                
-            if (lhs[i]!=0.0) { sum[0]++; rsum[0]+=1.0/lhs[i]; }
-          }
-          /* number of dofs to be marked on rhs hc */
-          if (id>=mask) {                
-            if (rhs[i]!=0.0) { sum[1]++; rsum[1]+=1.0/rhs[i]; }
-          }
-        }
-      }
-
-      /* go for load balance - choose half with most unmarked dofs, bias LHS */
-      (id<mask) ? (sum[2]=ct) : (sum[3]=ct);
-      (id<mask) ? (rsum[2]=ct) : (rsum[3]=ct);
-      PCTFS_giop_hc(sum,w,4,op,edge);
-      PCTFS_grop_hc(rsum,rw,4,op,edge);
-      rsum[0]+=0.1; rsum[1]+=0.1; rsum[2]+=0.1; rsum[3]+=0.1;
-
-      if (id<mask) {
-        /* mark dofs I own that have signal and not in sep set */
-        for (ct=i=0;i<n;i++) {
-          if ((!used[i])&&(lhs[i]!=0.0)) {
-            ct++; nfo++;
-
-            if (nfo>n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");
-
-            *--iptr = local2global[i];
-            used[i]=edge;
-          }
-        }
-        if (ct>1) PCTFS_ivec_sort(iptr,ct);
-
-        lnsep[edge]=ct;
-        nsep[edge] =(PetscInt) rsum[0];
-        dir [edge] =LEFT;
-      }
-
-      if (id>=mask) {
-        /* mark dofs I own that have signal and not in sep set */
-        for (ct=i=0;i<n;i++) {
-          if ((!used[i])&&(rhs[i]!=0.0)) {
-            ct++; nfo++;
-
-            if (nfo>n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nfo about to exceed n\n");
-
-            *--iptr = local2global[i];
-            used[i] =edge;
-          }
-        }
-        if (ct>1) PCTFS_ivec_sort(iptr,ct);
-
-        lnsep[edge] = ct;
-        nsep[edge]  = (PetscInt) rsum[1];
-        dir [edge]  = RIGHT;
-      }
-
-      /* LATER or we can recur on these to order seps at this level */
-      /* do we need full set of separators for this?                */
-
-      /* fold rhs hc into lower */
-      if (id>=mask) id-=mask;
-    }
+    /* [dead code deleted since it is unlikely to be completed] */
   } else {
     for (iptr=fo+n,id=PCTFS_my_id,mask=PCTFS_num_nodes>>1,edge=level;edge>0;edge--,mask>>=1) {
       /* set rsh of hc, fire, and collect lhs responses */

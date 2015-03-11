@@ -1,3 +1,5 @@
+IS Object: 3 MPI processes
+  type: general
 [0] Number of indices in set 9
 [0] 0 0
 [0] 1 1
@@ -28,6 +30,8 @@
 [2] 6 40
 [2] 7 41
 [2] 8 42
+IS Object: 3 MPI processes
+  type: general
 [0] Number of indices in set 6
 [0] 0 3
 [0] 1 4

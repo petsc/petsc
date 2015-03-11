@@ -14,9 +14,9 @@ lid velocity = 0.0204082, prandtl # = 1, grashof # = 1
    11 KSP Residual norm 5.43836e-07 
   1 SNES Function norm 2.50119e-05 
     0 KSP Residual norm 2.50119e-05 
-    1 KSP Residual norm 5.42804e-06 
+    1 KSP Residual norm 5.42803e-06 
     2 KSP Residual norm 1.19801e-06 
-    3 KSP Residual norm 7.1992e-07 
+    3 KSP Residual norm 7.19919e-07 
     4 KSP Residual norm 3.23248e-07 
     5 KSP Residual norm 8.65301e-08 
     6 KSP Residual norm 3.40266e-08 
@@ -62,11 +62,10 @@ SNES Object: 1 MPI processes
           ILU: out-of-place factorization
           0 levels of fill
           tolerance for zero pivot 2.22045e-14
-          using diagonal shift on blocks to prevent zero pivot
           matrix ordering: natural
           factor fill ratio given 1, needed 1
             Factored matrix follows:
-              Matrix Object:               1 MPI processes
+              Mat Object:               1 MPI processes
                 type: seqaij
                 rows=49, cols=49
                 package used to perform factorization: petsc
@@ -74,7 +73,7 @@ SNES Object: 1 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:        (fieldsplit_x_velocity_)         1 MPI processes
           type: seqaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
@@ -92,11 +91,10 @@ SNES Object: 1 MPI processes
           ILU: out-of-place factorization
           0 levels of fill
           tolerance for zero pivot 2.22045e-14
-          using diagonal shift on blocks to prevent zero pivot
           matrix ordering: natural
           factor fill ratio given 1, needed 1
             Factored matrix follows:
-              Matrix Object:               1 MPI processes
+              Mat Object:               1 MPI processes
                 type: seqaij
                 rows=49, cols=49
                 package used to perform factorization: petsc
@@ -104,7 +102,7 @@ SNES Object: 1 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:        (fieldsplit_y_velocity_)         1 MPI processes
           type: seqaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
@@ -122,11 +120,10 @@ SNES Object: 1 MPI processes
           ILU: out-of-place factorization
           0 levels of fill
           tolerance for zero pivot 2.22045e-14
-          using diagonal shift on blocks to prevent zero pivot
           matrix ordering: natural
           factor fill ratio given 1, needed 1
             Factored matrix follows:
-              Matrix Object:               1 MPI processes
+              Mat Object:               1 MPI processes
                 type: seqaij
                 rows=49, cols=49
                 package used to perform factorization: petsc
@@ -134,7 +131,7 @@ SNES Object: 1 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:        (fieldsplit_Omega_)         1 MPI processes
           type: seqaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
@@ -152,11 +149,10 @@ SNES Object: 1 MPI processes
           ILU: out-of-place factorization
           0 levels of fill
           tolerance for zero pivot 2.22045e-14
-          using diagonal shift on blocks to prevent zero pivot
           matrix ordering: natural
           factor fill ratio given 1, needed 1
             Factored matrix follows:
-              Matrix Object:               1 MPI processes
+              Mat Object:               1 MPI processes
                 type: seqaij
                 rows=49, cols=49
                 package used to perform factorization: petsc
@@ -164,14 +160,14 @@ SNES Object: 1 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
+        Mat Object:        (fieldsplit_temperature_)         1 MPI processes
           type: seqaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
     linear system matrix = precond matrix:
-    Matrix Object:     1 MPI processes
+    Mat Object:     1 MPI processes
       type: seqaij
       rows=196, cols=196, bs=4
       total: nonzeros=3472, allocated nonzeros=3472

@@ -20,7 +20,6 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i = 0;
-  MatStructure   pflag;
   PetscReal      dp;
   PetscScalar    ai, bi;
   PetscScalar    apq,btop, bbot;
@@ -38,7 +37,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
   Q   = ksp->work[5];
 
   /* R is the true residual norm, RT is the preconditioned residual norm */
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);     /*   R <- A*X           */
     ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);            /*   R <- B-R == B-A*X  */
@@ -71,9 +70,9 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
 
   ksp->its   = 0;
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->rnorm = dp;
-  ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
@@ -118,10 +117,10 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
       break;
     }
 
-    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = dp;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
     ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
@@ -147,7 +146,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
    Level: beginner
 
    Notes: The operator and the preconditioner must be symmetric for this method. The
-          preconditioner must be POSITIVE-DEFINITE and the operator POSITIVE-SEMIDEFINITE
+          preconditioner must be POSITIVE-DEFINITE and the operator POSITIVE-SEMIDEFINITE.
           Support only for left preconditioning.
 
    References:
@@ -165,9 +164,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_CR;
   ksp->ops->solve          = KSPSolve_CR;

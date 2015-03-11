@@ -1,8 +1,8 @@
   0 KSP Residual norm 1.00731 
-  1 KSP Residual norm 0.0422914 
-  2 KSP Residual norm 0.00290556 
-  3 KSP Residual norm 9.48719e-05 
-  4 KSP Residual norm 4.05385e-06 
+  1 KSP Residual norm 0.0404646 
+  2 KSP Residual norm 0.00265097 
+  3 KSP Residual norm 8.88854e-05 
+  4 KSP Residual norm 3.67094e-06 
 KSP Object: 1 MPI processes
   type: fgmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -28,11 +28,11 @@ PC Object: 1 MPI processes
       type: lu
         LU: out-of-place factorization
         tolerance for zero pivot 2.22045e-14
-        using diagonal shift to prevent zero pivot
+        using diagonal shift to prevent zero pivot [NONZERO]
         matrix ordering: nd
         factor fill ratio given 5, needed 2.21481
           Factored matrix follows:
-            Matrix Object:             1 MPI processes
+            Mat Object:             1 MPI processes
               type: seqaij
               rows=27, cols=27
               package used to perform factorization: petsc
@@ -40,17 +40,18 @@ PC Object: 1 MPI processes
               total number of mallocs used during MatSetValues calls =0
                 not using I-node routines
       linear system matrix = precond matrix:
-      Matrix Object:       1 MPI processes
+      Mat Object:       1 MPI processes
         type: seqaij
         rows=27, cols=27
         total: nonzeros=135, allocated nonzeros=135
         total number of mallocs used during MatSetValues calls =0
+          has attached null space
           not using I-node routines
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object:    (mg_levels_1_)     1 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.10017, max = 1.10187
-        Chebyshev: estimated using:  [0 0.1; 0 1.1]
+        Chebyshev: eigenvalue estimates:  min = 0.0999029, max = 1.09893
+        Chebyshev: eigenvalues estimated using gmres with translations  [0 0.1; 0 1.1]
         KSP Object:        (mg_levels_1_est_)         1 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -60,16 +61,6 @@ PC Object: 1 MPI processes
           left preconditioning
           using nonzero initial guess
           using NONE norm type for convergence test
-        PC Object:        (mg_levels_1_)         1 MPI processes
-          type: sor
-            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-          linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
-            type: seqaij
-            rows=216, cols=216
-            total: nonzeros=1296, allocated nonzeros=1296
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
       maximum iterations=2
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning
@@ -80,18 +71,19 @@ PC Object: 1 MPI processes
       type: sor
         SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
       linear system matrix = precond matrix:
-      Matrix Object:       1 MPI processes
+      Mat Object:       1 MPI processes
         type: seqaij
         rows=216, cols=216
         total: nonzeros=1296, allocated nonzeros=1296
         total number of mallocs used during MatSetValues calls =0
+          has attached null space
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object:    (mg_levels_2_)     1 MPI processes
       type: chebyshev
-        Chebyshev: eigenvalue estimates:  min = 0.100602, max = 1.10662
-        Chebyshev: estimated using:  [0 0.1; 0 1.1]
+        Chebyshev: eigenvalue estimates:  min = 0.0998794, max = 1.09867
+        Chebyshev: eigenvalues estimated using gmres with translations  [0 0.1; 0 1.1]
         KSP Object:        (mg_levels_2_est_)         1 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -101,16 +93,6 @@ PC Object: 1 MPI processes
           left preconditioning
           using nonzero initial guess
           using NONE norm type for convergence test
-        PC Object:        (mg_levels_2_)         1 MPI processes
-          type: sor
-            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-          linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
-            type: seqaij
-            rows=1728, cols=1728
-            total: nonzeros=11232, allocated nonzeros=11232
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
       maximum iterations=2
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning
@@ -121,21 +103,23 @@ PC Object: 1 MPI processes
       type: sor
         SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
       linear system matrix = precond matrix:
-      Matrix Object:       1 MPI processes
+      Mat Object:       1 MPI processes
         type: seqaij
         rows=1728, cols=1728
         total: nonzeros=11232, allocated nonzeros=11232
         total number of mallocs used during MatSetValues calls =0
+          has attached null space
           not using I-node routines
   Up solver (post-smoother) same as down solver (pre-smoother)
   linear system matrix = precond matrix:
-  Matrix Object:   1 MPI processes
+  Mat Object:   1 MPI processes
     type: seqaij
     rows=1728, cols=1728
     total: nonzeros=11232, allocated nonzeros=11232
     total number of mallocs used during MatSetValues calls =0
+      has attached null space
       not using I-node routines
-Residual norm 4.05385e-06
-Error norm 0.0208756
-Error norm 0.00618519
+Residual norm 3.67094e-06
+Error norm 0.0208755
+Error norm 0.00618518
 Error norm 0.000197005

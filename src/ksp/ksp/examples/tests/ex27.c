@@ -92,7 +92,7 @@ int main(int argc,char **args)
 
   /* Compute X=inv(A) by MatMatSolve() */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
 
   /* Free work space.  */
   ierr = MatDestroy(&X);CHKERRQ(ierr);
@@ -127,6 +127,8 @@ int main(int argc,char **args)
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCShellApply_Matinv"
 PetscErrorCode PCShellApply_Matinv(PC pc,Vec xin,Vec xout)
 {
   PetscErrorCode ierr;

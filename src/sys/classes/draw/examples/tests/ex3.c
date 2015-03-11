@@ -1,8 +1,13 @@
 
 static char help[] = "Plots a simple line graph.\n";
 
+#if defined(PETSC_APPLE_FRAMEWORK)
+#import <PETSc/petscsys.h>
+#import <PETSc/petscdraw.h>
+#else
 #include <petscsys.h>
 #include <petscdraw.h>
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -43,7 +48,7 @@ int main(int argc,char **argv)
     xd   = (PetscReal)(i - 5); yd = xd*xd;
     ierr = PetscDrawLGAddPoint(lg,&xd,&yd);CHKERRQ(ierr);
   }
-  ierr = PetscDrawLGIndicateDataPoints(lg);CHKERRQ(ierr);
+  ierr = PetscDrawLGIndicateDataPoints(lg,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   ierr = PetscDrawString(draw,-3.,150.0,PETSC_DRAW_BLUE,"A legend");CHKERRQ(ierr);
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);

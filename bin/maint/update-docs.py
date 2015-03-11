@@ -97,7 +97,9 @@ def main():
         'copyright.html',
         'faq.html',
         'index.html',
+        'license.html',
         'linearsolvertable.html',
+        'nonlinearsolvertable.html',
         'changes/2015.html',
         'changes/2016.html',
         'changes/2017.html',
@@ -122,6 +124,8 @@ def main():
         'changes/31.html',
         'changes/32.html',
         'changes/33.html',
+        'changes/34.html',
+        'changes/35.html',
         'changes/dev.html',
         'changes/index.html',
         'installation.html']

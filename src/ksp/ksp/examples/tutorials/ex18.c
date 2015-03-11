@@ -54,7 +54,7 @@ int main(int argc,char **args)
     view_exact_sol   = PETSC_FALSE;
     ierr             = PetscOptionsBool("-view_exact_sol","View exact solution","",view_exact_sol,&view_exact_sol,NULL);CHKERRQ(ierr);
     permute          = PETSC_FALSE;
-    ierr             = PetscOptionsList("-permute","Permute matrix and vector to solving in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute);CHKERRQ(ierr);
+    ierr             = PetscOptionsFList("-permute","Permute matrix and vector to solving in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -187,7 +187,7 @@ int main(int argc,char **args)
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 
   /*
      Set linear solver defaults for this problem (optional).
@@ -235,8 +235,7 @@ int main(int argc,char **args)
      print statement from all processes that share a communicator.
      An alternative is PetscFPrintf(), which prints to a file.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G iterations %D\n",
-                     norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its);CHKERRQ(ierr);
 
   /*
      Free work space.  All PETSc objects should be destroyed when they

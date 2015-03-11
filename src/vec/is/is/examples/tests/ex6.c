@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   n      = 3*size;              /* Number of local indices, same on each process. */
   rstart = 3*(size+2)*rank;     /* start of local range */
   rend   = 3*(size+2)*(rank+1); /* end of local range */
-  ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&indices);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
     for (j=0; j<size; j++) indices[cnt++] = rstart+i*(size+2)+j;
   }

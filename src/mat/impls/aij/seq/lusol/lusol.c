@@ -210,14 +210,15 @@ PetscErrorCode MatDestroy_LUSOL(Mat A)
 PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
 {
   Mat_LUSOL      *lusol=(Mat_LUSOL*)A->spptr;
-  double         *bb,*xx;
+  double         *xx;
+  const double   *bb;
   int            mode=5;
   PetscErrorCode ierr;
   int            i,m,n,nnz,status;
 
   PetscFunctionBegin;
   ierr = VecGetArray(x, &xx);CHKERRQ(ierr);
-  ierr = VecGetArray(b, &bb);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(b, &bb);CHKERRQ(ierr);
 
   m   = n = lusol->n;
   nnz = lusol->nnz;
@@ -232,7 +233,7 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
   if (status) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"solve failed, error code %d",status);
 
   ierr = VecRestoreArray(x, &xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(b, &bb);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(b, &bb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -273,7 +274,7 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
 
     if (nnz > lusol->nnz) {
       ierr       = PetscFree3(lusol->data,lusol->indc,lusol->indr);CHKERRQ(ierr);
-      ierr       = PetscMalloc3(nnz,double,&lusol->data,nnz,PetscInt,&lusol->indc,nnz,PetscInt,&lusol->indr);CHKERRQ(ierr);
+      ierr       = PetscMalloc3(nnz,&lusol->data,nnz,&lusol->indc,nnz,&lusol->indr);CHKERRQ(ierr);
       lusol->nnz = nnz;
     }
 
@@ -414,7 +415,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   ierr = PetscMalloc(sizeof(double)*n,&lusol->mnsw);
   ierr = PetscMalloc(sizeof(double)*n,&lusol->mnsv);
 
-  ierr = PetscMalloc3(nnz,double,&lusol->data,nnz,PetscInt,&lusol->indc,nnz,PetscInt,&lusol->indr);CHKERRQ(ierr);
+  ierr = PetscMalloc3(nnz,&lusol->data,nnz,&lusol->indc,nnz,&lusol->indr);CHKERRQ(ierr);
 
   lusol->CleanUpLUSOL     = PETSC_TRUE;
   F->ops->lufactornumeric = MatLUFactorNumeric_LUSOL;
@@ -446,7 +447,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,NULL);CHKERRQ(ierr);
 
-  ierr     = PetscNewLog(B,Mat_LUSOL,&lusol);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&lusol);CHKERRQ(ierr);
   B->spptr = lusol;
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_LUSOL;
@@ -455,6 +456,17 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_lusol);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_LU;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_Lusol"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Lusol(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERLUSOL,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_lusol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

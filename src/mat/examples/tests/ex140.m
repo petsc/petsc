@@ -1,7 +1,8 @@
 %
 %  Tests the results from ex140.c
 %
-path(path,[getenv('PETSC_DIR') '/bin/matlab'])
+path(path,[getenv('PETSC_DIR') '/share/petsc/matlab'])
+path(path,[getenv('PETSC_DIR') '/' getenv('PETSC_ARCH') '/lib/petsc/matlab'])
 d = 2;
 [b1,A1,x,is,b2,A2 ] = PetscBinaryRead('binaryoutput');
 b1 = b1 - A1*x;

@@ -198,9 +198,13 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   PetscInt           nlnk,*lnk,k,**bi_ptr;
   PetscFreeSpaceList free_space=NULL,current_space=NULL;
   PetscBT            lnkbt;
+  PetscBool          missing;
 
   PetscFunctionBegin;
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
+  ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
+
   if (bs>1) {  /* check shifttype */
     if (info->shifttype == MAT_SHIFT_NONZERO || info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only MAT_SHIFT_NONE and MAT_SHIFT_INBLOCKS are supported for BAIJ matrix");
   }
@@ -210,15 +214,15 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* get new row and diagonal pointers, must be allocated separately because they will be given to the Mat_SeqAIJ and freed separately */
-  ierr  = PetscMalloc((n+1)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
-  ierr  = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(n+1,&bi);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(n+1,&bdiag);CHKERRQ(ierr);
   bi[0] = bdiag[0] = 0;
 
   /* linked list for storing column indices of the active row */
   nlnk = n + 1;
   ierr = PetscLLCreate(n,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(n+1,PetscInt**,&bi_ptr,n+1,PetscInt,&im);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n+1,&bi_ptr,n+1,&im);CHKERRQ(ierr);
 
   /* initial FreeSpace size is f*(ai[n]+1) */
   f    = info->fill;
@@ -230,7 +234,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
     /* copy previous fill into linked list */
     nzi = 0;
     nnz = ai[r[i]+1] - ai[r[i]];
-    if (!nnz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     ajtmp = aj + ai[r[i]];
     ierr  = PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     nzi  += nlnk;
@@ -277,21 +280,21 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* copy free_space into bj and free free_space; set bi, bj, bdiag in new datastructure; */
-  ierr = PetscMalloc((bi[n]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bi[n]+1,&bj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous_LU(&free_space,bj,n,bi,bdiag);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
   ierr = PetscFree2(bi_ptr,im);CHKERRQ(ierr);
 
   /* put together the new matrix */
   ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(B,isicol);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)isicol);CHKERRQ(ierr);
   b    = (Mat_SeqBAIJ*)(B)->data;
 
   b->free_a       = PETSC_TRUE;
   b->free_ij      = PETSC_TRUE;
   b->singlemalloc = PETSC_FALSE;
 
-  ierr             = PetscMalloc((bdiag[0]+1)*sizeof(MatScalar)*bs2,&b->a);CHKERRQ(ierr);
+  ierr             = PetscMalloc1((bdiag[0]+1)*bs2,&b->a);CHKERRQ(ierr);
   b->j             = bj;
   b->i             = bi;
   b->diag          = bdiag;
@@ -305,8 +308,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   ierr    = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
   ierr    = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol = isicol;
-  ierr    = PetscMalloc((bs*n+bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  ierr    = PetscLogObjectMemory(B,(bdiag[0]+1)*(sizeof(PetscInt)+sizeof(PetscScalar)*bs2));CHKERRQ(ierr);
+  ierr    = PetscMalloc1(bs*n+bs,&b->solve_work);CHKERRQ(ierr);
+  ierr    = PetscLogObjectMemory((PetscObject)B,(bdiag[0]+1)*(sizeof(PetscInt)+sizeof(PetscScalar)*bs2));CHKERRQ(ierr);
 
   b->maxnz = b->nz = bdiag[0]+1;
 
@@ -322,9 +325,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
 #if defined(PETSC_USE_INFO)
   if (ai[n] != 0) {
     PetscReal af = B->info.fill_ratio_needed;
-    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,f,af);CHKERRQ(ierr);
-    ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
-    ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G);\n",af);CHKERRQ(ierr);
+    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %g needed %g\n",reallocs,(double)f,(double)af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Run with -pc_factor_fill %g or use \n",(double)af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g);\n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo(A,"for best performance.\n");CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(A,"Empty matrix\n");CHKERRQ(ierr);
@@ -357,16 +360,20 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   PetscInt           nlnk,*lnk,k,**bi_ptr;
   PetscFreeSpaceList free_space=NULL,current_space=NULL;
   PetscBT            lnkbt;
+  PetscBool          missing;
 
   PetscFunctionBegin;
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
+  ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
+  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
+
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* get new row and diagonal pointers, must be allocated separately because they will be given to the Mat_SeqAIJ and freed separately */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bi);CHKERRQ(ierr);
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&bi);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n+1,&bdiag);CHKERRQ(ierr);
 
   bi[0] = bdiag[0] = 0;
 
@@ -374,7 +381,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   nlnk = n + 1;
   ierr = PetscLLCreate(n,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(n+1,PetscInt**,&bi_ptr,n+1,PetscInt,&im);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n+1,&bi_ptr,n+1,&im);CHKERRQ(ierr);
 
   /* initial FreeSpace size is f*(ai[n]+1) */
   f             = info->fill;
@@ -385,7 +392,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
     /* copy previous fill into linked list */
     nzi = 0;
     nnz = ai[r[i]+1] - ai[r[i]];
-    if (!nnz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     ajtmp = aj + ai[r[i]];
     ierr  = PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     nzi  += nlnk;
@@ -430,9 +436,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
 #if defined(PETSC_USE_INFO)
   if (ai[n] != 0) {
     PetscReal af = ((PetscReal)bi[n])/((PetscReal)ai[n]);
-    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,f,af);CHKERRQ(ierr);
-    ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
-    ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G);\n",af);CHKERRQ(ierr);
+    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %g needed %g\n",reallocs,(double)f,(double)af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Run with -pc_factor_fill %g or use \n",(double)af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"PCFactorSetFill(pc,%g);\n",(double)af);CHKERRQ(ierr);
     ierr = PetscInfo(A,"for best performance.\n");CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(A,"Empty matrix\n");CHKERRQ(ierr);
@@ -443,21 +449,21 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc((bi[n]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bi[n]+1,&bj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
   ierr = PetscFree2(bi_ptr,im);CHKERRQ(ierr);
 
   /* put together the new matrix */
   ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(B,isicol);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)isicol);CHKERRQ(ierr);
   b    = (Mat_SeqBAIJ*)(B)->data;
 
   b->free_a       = PETSC_TRUE;
   b->free_ij      = PETSC_TRUE;
   b->singlemalloc = PETSC_FALSE;
 
-  ierr             = PetscMalloc((bi[n]+1)*sizeof(MatScalar)*bs2,&b->a);CHKERRQ(ierr);
+  ierr             = PetscMalloc1((bi[n]+1)*bs2,&b->a);CHKERRQ(ierr);
   b->j             = bj;
   b->i             = bi;
   b->diag          = bdiag;
@@ -472,8 +478,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   ierr    = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol = isicol;
 
-  ierr = PetscMalloc((bs*n+bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(B,(bi[n]-n)*(sizeof(PetscInt)+sizeof(PetscScalar)*bs2));CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs*n+bs,&b->solve_work);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)B,(bi[n]-n)*(sizeof(PetscInt)+sizeof(PetscScalar)*bs2));CHKERRQ(ierr);
 
   b->maxnz = b->nz = bi[n];
 

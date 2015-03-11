@@ -34,7 +34,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_Natural(Mat mat,MatOrderingType type,
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,NULL,NULL,NULL,&done);CHKERRQ(ierr);
   if (done) { /* matrix may be "compressed" in symbolic factorization, due to i-nodes or block storage */
     /*
       We actually create general index sets because this avoids mallocs to
@@ -42,7 +42,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_Natural(Mat mat,MatOrderingType type,
       ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,irow);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,icol);CHKERRQ(ierr);
     */
-    ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[i] = i;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_COPY_VALUES,irow);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_OWN_POINTER,icol);CHKERRQ(ierr);
@@ -76,12 +76,12 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType typ
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  ierr = PetscMalloc2(n,PetscInt,&lens,n,PetscInt,&permr);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n,&lens,n,&permr);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     lens[i]  = ia[i+1] - ia[i];
     permr[i] = i;
   }
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);
 
   ierr = PetscSortIntWithPermutation(n,lens,permr);CHKERRQ(ierr);
 
@@ -184,8 +184,8 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidPointer(rperm,2);
-  PetscValidPointer(cperm,3);
+  PetscValidPointer(rperm,3);
+  PetscValidPointer(cperm,4);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
@@ -203,7 +203,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
     /* Remap row index set to global space */
     ierr = ISGetIndices(lrowperm,&lidx);CHKERRQ(ierr);
-    ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rend-rstart,&idx);CHKERRQ(ierr);
     for (i=0; i+rstart<rend; i++) idx[i] = rstart + lidx[i];
     ierr = ISRestoreIndices(lrowperm,&lidx);CHKERRQ(ierr);
     ierr = ISDestroy(&lrowperm);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
     /* Remap column index set to global space */
     ierr = ISGetIndices(lcolperm,&lidx);CHKERRQ(ierr);
-    ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr = PetscMalloc1(rend-rstart,&idx);CHKERRQ(ierr);
     for (i=0; i+rstart<rend; i++) idx[i] = rstart + lidx[i];
     ierr = ISRestoreIndices(lcolperm,&lidx);CHKERRQ(ierr);
     ierr = ISDestroy(&lcolperm);CHKERRQ(ierr);
@@ -238,8 +238,6 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,rperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*cperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*rperm);CHKERRQ(ierr);
-    ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
-    ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -248,15 +246,13 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,rperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*cperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*rperm);CHKERRQ(ierr);
-    ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
-    ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
   ierr = MatGetLocalSize(mat,&mmat,&nmat);CHKERRQ(ierr);
   if (mmat != nmat) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
 
-  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll();CHKERRQ(ierr);}
+  ierr = MatOrderingRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(MatOrderingList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
@@ -274,7 +270,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   if (flg) {
     Mat tmat;
     ierr = MatPermute(mat,*rperm,*cperm,&tmat);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(tmat,"-mat_view_ordering");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(tmat,((PetscObject)mat)->prefix,"-mat_view_ordering");CHKERRQ(ierr);
     ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

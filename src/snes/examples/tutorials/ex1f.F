@@ -29,12 +29,12 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -59,7 +59,7 @@
       PetscInt its,i2,i20
       PetscMPIInt size,rank
       PetscScalar   pfive
-      double precision   tol
+      PetscReal   tol
       PetscBool   setls
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
@@ -138,8 +138,8 @@
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCNONE,ierr)
       tol = 1.e-4
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,     &
-     &                      PETSC_DEFAULT_DOUBLE_PRECISION,i20,ierr)
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,                  &
+     &                      PETSC_DEFAULT_REAL,i20,ierr)
 
 !  Set SNES/KSP/KSP/PC runtime options, e.g.,
 !      -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
@@ -153,7 +153,7 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-setls',setls,ierr)
 
       if (setls) then
-        call SNESGetSNESLineSearch(snes, linesearch, ierr)
+        call SNESGetLineSearch(snes, linesearch, ierr)
         call SNESLineSearchSetType(linesearch, "shell", ierr)
         call SNESLineSearchShellSetUserFunc(linesearch, MyLineSearch,   &
      &PETSC_NULL_OBJECT, ierr)
@@ -204,9 +204,9 @@
       subroutine FormFunction(snes,x,f,dummy,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscsnes.h>
 
       SNES     snes
       Vec      x,f
@@ -226,7 +226,7 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the Fortran chapter of the users manual for details.
 
-      call VecGetArray(x,lx_v,lx_i,ierr)
+      call VecGetArrayRead(x,lx_v,lx_i,ierr)
       call VecGetArray(f,lf_v,lf_i,ierr)
 
 !  Compute function
@@ -238,7 +238,7 @@
 
 !  Restore vectors
 
-      call VecRestoreArray(x,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
       call VecRestoreArray(f,lf_v,lf_i,ierr)
 
       return
@@ -258,19 +258,18 @@
 !  B - optionally different preconditioning matrix
 !  flag - flag indicating matrix structure
 !
-      subroutine FormJacobian(snes,X,jac,B,flag,dummy,ierr)
+      subroutine FormJacobian(snes,X,jac,B,dummy,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
       SNES         snes
       Vec          X
       Mat          jac,B
-      MatStructure flag
       PetscScalar  A(4)
       PetscErrorCode ierr
       PetscInt idx(2),i2
@@ -284,7 +283,7 @@
 !  Get pointer to vector data
 
       i2 = 2
-      call VecGetArray(x,lx_v,lx_i,ierr)
+      call VecGetArrayRead(x,lx_v,lx_i,ierr)
 
 !  Compute Jacobian entries and insert into matrix.
 !   - Since this is such a small problem, we set all entries for
@@ -299,11 +298,10 @@
       A(3) = lx_a(2)
       A(4) = lx_a(1) + 2.0*lx_a(2)
       call MatSetValues(jac,i2,idx,i2,idx,A,INSERT_VALUES,ierr)
-      flag = SAME_NONZERO_PATTERN
 
 !  Restore vector
 
-      call VecRestoreArray(x,lx_v,lx_i,ierr)
+      call VecRestoreArrayRead(x,lx_v,lx_i,ierr)
 
 !  Assemble matrix
 
@@ -315,12 +313,12 @@
 
 
       subroutine MyLineSearch(linesearch, lctx, ierr)
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
       SNES              snes
       integer           lctx

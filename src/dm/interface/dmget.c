@@ -100,6 +100,7 @@ PetscErrorCode  DMRestoreLocalVector(DM dm,Vec *g)
   }
   ierr = VecDestroy(g);CHKERRQ(ierr);
 alldone:
+  *g = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -191,8 +192,11 @@ PetscErrorCode  DMClearGlobalVectors(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    Vec g;
     if (dm->globalout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of global vectors that has a global vector obtained with DMGetGlobalVector()");
-    ierr = VecDestroy(&dm->globalin[i]);CHKERRQ(ierr);
+    g = dm->globalin[i];
+    dm->globalin[i] = NULL;
+    ierr = VecDestroy(&g);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -239,6 +243,7 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec *g)
   }
   ierr = VecDestroy(g);CHKERRQ(ierr);
 alldone:
+  *g = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -281,7 +286,7 @@ PetscErrorCode DMGetNamedGlobalVector(DM dm,const char *name,Vec *X)
   }
 
   /* Create the Vec */
-  ierr            = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr            = PetscNew(&link);CHKERRQ(ierr);
   ierr            = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   ierr            = DMCreateGlobalVector(dm,&link->X);CHKERRQ(ierr);
   link->next      = dm->namedglobal;
@@ -375,7 +380,7 @@ PetscErrorCode DMGetNamedLocalVector(DM dm,const char *name,Vec *X)
   }
 
   /* Create the Vec */
-  ierr           = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr           = PetscNew(&link);CHKERRQ(ierr);
   ierr           = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   ierr           = DMCreateLocalVector(dm,&link->X);CHKERRQ(ierr);
   link->next     = dm->namedlocal;

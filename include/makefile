@@ -5,10 +5,10 @@ SOURCEC  =
 SOURCEF  =
 SOURCEH  = petscsys.h
 LIBBASE  = libpetscvec
-DIRS     = finclude petsc-private sieve
+DIRS     = petsc-finclude petsc-private
 LOCDIR   = include/
 MANSEC   = Sys
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test

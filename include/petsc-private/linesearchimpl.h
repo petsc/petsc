@@ -4,6 +4,9 @@
 #include <petscsnes.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool SNESLineSearchRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterAll(void);
+
 typedef struct _LineSearchOps *LineSearchOps;
 
 struct _LineSearchOps {
@@ -13,16 +16,17 @@ struct _LineSearchOps {
   SNESLineSearchVIProjectFunc    viproject;
   SNESLineSearchVINormFunc       vinorm;
   PetscErrorCode (*postcheck)(SNESLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *,void*);
-  PetscErrorCode (*setfromoptions)(SNESLineSearch);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,SNESLineSearch);
   PetscErrorCode (*reset)(SNESLineSearch);
   PetscErrorCode (*destroy)(SNESLineSearch);
   PetscErrorCode (*setup)(SNESLineSearch);
+  PetscErrorCode (*snesfunc)(SNES,Vec,Vec);
 };
 
 struct _p_LineSearch {
   PETSCHEADER(struct _LineSearchOps);
 
-  SNES                snes;     /* temporary -- so we can pull out the function evaluation */
+  SNES                snes;
 
   void                *data;
 

@@ -21,8 +21,6 @@
   PetscInt          rmax;             /* max nonzeros in any row */ \
   PetscBool         keepnonzeropattern;   /* keeps matrix structure same in calls to MatZeroRows()*/ \
   PetscBool         ignorezeroentries; \
-  PetscInt          *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */ \
-  Mat               XtoY;             /* used by MatAXPY() */ \
   PetscBool         free_ij;          /* free the column indices j and row offsets i when the matrix is destroyed */ \
   PetscBool         free_a;           /* free the numerical values when matrix is destroy */ \
   Mat_CompressedRow compressedrow;    /* use compressed row format */                      \
@@ -30,6 +28,7 @@
   PetscInt          *i;               /* pointer to beginning of each row */               \
   PetscInt          *j;               /* column values: j + i[k] - 1 is start of row k */  \
   PetscInt          *diag;            /* pointers to diagonal elements */                  \
+  PetscInt          nonzerorowcnt;    /* how many rows have nonzero entries */             \
   PetscBool         free_diag;         \
   datatype          *a;               /* nonzero elements */                               \
   PetscScalar       *solve_work;      /* work space used in MatSolve */                    \
@@ -46,6 +45,12 @@ typedef struct {
   PetscErrorCode (*destroy)(Mat);
 } Mat_MatMatTransMult;
 
+typedef struct { /* for MatTransposeMatMult_SeqAIJ_SeqDense() */
+  Mat          mA;           /* maij matrix of A */
+  Vec          bt,ct;        /* vectors to hold locally transposed arrays of B and C */
+  PetscErrorCode (*destroy)(Mat);
+} Mat_MatTransMatMult;
+
 typedef struct {
   PetscInt    *api,*apj;       /* symbolic structure of A*P */
   PetscScalar *apa;            /* temporary array for storing one row of A*P */
@@ -54,8 +59,9 @@ typedef struct {
 
 typedef struct {
   MatTransposeColoring matcoloring;
-  Mat                  Rt;    /* dense matrix of R^T */
+  Mat                  Rt;    /* sparse or dense matrix of R^T */
   Mat                  RARt;  /* dense matrix of R*A*R^T */
+  Mat                  ARt;   /* A*R^T used for the case -matrart_color_art */
   MatScalar            *work; /* work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
   PetscErrorCode (*destroy)(Mat);
 } Mat_RARt;
@@ -112,6 +118,8 @@ typedef struct {
   PetscScalar       *matmult_abdense;    /* used by MatMatMult() */
   Mat_PtAP          *ptap;               /* used by MatPtAP() */
   Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
+  Mat_RARt          *rart;               /* used by MatRARt() */
+  Mat_MatMatTransMult *abt;              /* used by MatMatTransposeMult() */
 } Mat_SeqAIJ;
 
 /*
@@ -143,9 +151,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
     PetscInt CHUNKSIZE = 15,new_nz = AI[AM] + CHUNKSIZE,len,*new_i=0,*new_j=0; \
     datatype *new_a; \
  \
-    if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc",ROW,COL); \
+    if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
     /* malloc new storage space */ \
-    ierr = PetscMalloc3(BS2*new_nz,datatype,&new_a,new_nz,PetscInt,&new_j,AM+1,PetscInt,&new_i);CHKERRQ(ierr); \
+    ierr = PetscMalloc3(BS2*new_nz,&new_a,new_nz,&new_j,AM+1,&new_i);CHKERRQ(ierr); \
  \
     /* copy over old data into new slots */ \
     for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
@@ -201,6 +209,7 @@ PETSC_INTERN PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],Pets
 PETSC_INTERN PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat,PetscInt,PetscInt,PetscInt *[],PetscInt *[]);
 PETSC_INTERN PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],PetscInt *[]);
 PETSC_INTERN PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat,Mat*);
+PETSC_INTERN PetscErrorCode MatTranspose_SeqAIJ(Mat,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt**,PetscInt**);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
@@ -223,8 +232,11 @@ PETSC_INTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ_inplace(Mat,Vec,Vec,Vec)
 PETSC_INTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 PETSC_INTERN PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatMatSolve_SeqAIJ(Mat,Mat,Mat);
-PETSC_INTERN PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscBool * flg);
-PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
+PETSC_INTERN PetscErrorCode MatEqual_SeqAIJ(Mat,Mat,PetscBool*);
+PETSC_INTERN PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat,ISColoring,MatFDColoring);
+PETSC_INTERN PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat,ISColoring,MatFDColoring);
+PETSC_INTERN PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat,MatFDColoring,PetscInt);
+PETSC_INTERN PetscErrorCode MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,void*);
 PETSC_INTERN PetscErrorCode MatLoad_SeqAIJ(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
 
@@ -238,17 +250,26 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
-PETSC_INTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_DenseAxpy(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_matmattransposemult(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+
+PETSC_INTERN PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqDense(Mat,Mat,Mat);
+
 PETSC_INTERN PetscErrorCode MatMatTransposeMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
@@ -268,6 +289,8 @@ PETSC_INTERN PetscErrorCode MatGetRowIJ_SeqAIJ(Mat,PetscInt,PetscBool,PetscBool,
 PETSC_INTERN PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool*);
 PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool*);
 PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscBool*);
+PETSC_INTERN PetscErrorCode MatGetColumnIJ_SeqAIJ_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
+PETSC_INTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ_Color(Mat,PetscInt,PetscBool,PetscBool,PetscInt*,const PetscInt *[],const PetscInt *[],PetscInt *[],PetscBool*);
 PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatSetUp_SeqAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
@@ -275,7 +298,7 @@ PETSC_INTERN PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat);
 PETSC_INTERN PetscErrorCode MatSeqAIJInvalidateDiagonal_Inode(Mat);
 PETSC_INTERN PetscErrorCode Mat_CheckInode(Mat,PetscBool);
-PETSC_INTERN PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool);
+PETSC_INTERN PetscErrorCode Mat_CheckInode_FactorLU(Mat);
 
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat,Mat,PetscInt*);
 
@@ -289,6 +312,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
 
+PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_SeqX_private(PetscInt,const PetscInt*,const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*);
+PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
 /*
     PetscSparseDenseMinusDot - The inner kernel of triangular solves and Gauss-Siedel smoothing. \sum_i xv[i] * r[xi[i]] for CSR storage
@@ -381,5 +407,25 @@ PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
     PetscInt __i; \
     for (__i=0; __i<nnz; __i++) sum += xv[__i] * r[xi[__i]];}
 #endif
+
+
+/*
+    PetscSparseDenseMaxDot - The inner kernel of a modified matrix-vector product \max_i xv[i] * r[xi[i]] for CSR storage
+
+  Input Parameters:
++  nnz - the number of entries
+.  r - the array of vector values
+.  xv - the matrix values for the row
+-  xi - the column indices of the nonzeros in the row
+
+  Output Parameter:
+.  max - the max of results
+
+.seealso: PetscSparseDensePlusDot(), PetscSparseDenseMinusDot()
+
+*/
+#define PetscSparseDenseMaxDot(max,r,xv,xi,nnz) { \
+    PetscInt __i; \
+    for (__i=0; __i<nnz; __i++) max = PetscMax(PetscRealPart(max), PetscRealPart(xv[__i] * r[xi[__i]]));}
 
 #endif

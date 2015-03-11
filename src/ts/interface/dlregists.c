@@ -19,6 +19,7 @@ PetscErrorCode  TSFinalizePackage(void)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&TSList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&TSTrajectoryList);CHKERRQ(ierr);
   TSPackageInitialized = PETSC_FALSE;
   TSRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -48,6 +49,7 @@ PetscErrorCode  TSInitializePackage(void)
   TSPackageInitialized = PETSC_TRUE;
   /* Inialize subpackages */
   ierr = TSGLInitializePackage();CHKERRQ(ierr);
+  ierr = TSRKInitializePackage();CHKERRQ(ierr);
   ierr = TSARKIMEXInitializePackage();CHKERRQ(ierr);
   ierr = TSRosWInitializePackage();CHKERRQ(ierr);
   ierr = TSSSPInitializePackage();CHKERRQ(ierr);
@@ -56,8 +58,10 @@ PetscErrorCode  TSInitializePackage(void)
   /* Register Classes */
   ierr = PetscClassIdRegister("TS",&TS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("DMTS",&DMTS_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("TSTrajectory",&TSTRAJECTORY_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = TSRegisterAll();CHKERRQ(ierr);
+  ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("TSStep",           TS_CLASSID,&TS_Step);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TSPseudoCmptTStp", TS_CLASSID,&TS_PseudoComputeTimeStep);CHKERRQ(ierr);
@@ -83,7 +87,7 @@ PetscErrorCode  TSInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscts"
 /*
@@ -102,4 +106,4 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void)
 }
 
 
-#endif /* PETSC_USE_DYNAMIC_LIBRARIES */
+#endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

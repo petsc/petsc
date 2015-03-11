@@ -57,6 +57,9 @@ int main(int argc,char **args)
   printf("Dnnz %d %d\n",Dnnz,Onnz);
   ierr = MatSeqAIJSetPreallocation(Asp,Dnnz,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Asp,Dnnz,NULL,Onnz,NULL);CHKERRQ(ierr);
+  /* The allocation above is approximate so we must set this option to be permissive.
+   * Real code should preallocate exactly. */
+  ierr = MatSetOption(Asp,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Check zero rows */
   ierr  = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
@@ -88,12 +91,18 @@ int main(int argc,char **args)
   PetscBool Asp_coloring = PETSC_FALSE;
   ierr = PetscOptionsHasName(NULL,"-Asp_color",&Asp_coloring);CHKERRQ(ierr);
   if (Asp_coloring) {
+    MatColoring   mc;
     ISColoring    iscoloring;
     MatFDColoring matfdcoloring;
     ierr = PetscPrintf(PETSC_COMM_WORLD," Create coloring of Asp...\n");
-    ierr = MatGetColoring(Asp,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringCreate(Asp,&mc);CHKERRQ(ierr);
+    ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
+    ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+    ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(Asp,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetUp(Asp,iscoloring,matfdcoloring);CHKERRQ(ierr);
     /*ierr = MatFDColoringView(matfdcoloring,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);

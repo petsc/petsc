@@ -29,11 +29,13 @@
             <li><a href="../referencing.html">Citing PETSc</a></li>
             <li><a href="../tutorials/index.html">Tutorials</a></li>
             <li><a href="../installation.html">Installation</a></li>
-            <li><a href="../ams.html">AMS</a></li>
+            <li><a href="../saws.html">SAWs</a></li>
             <li>
               <a href="index.html">Changes</a>
               <ul>
                 <li><span class="current">dev</span></li>
+                <li><a href="35.html">3.5</a></li>
+                <li><a href="34.html">3.4</a></li>
                 <li><a href="33.html">3.3</a></li>
                 <li><a href="32.html">3.2</a></li>
                 <li><a href="31.html">3.1</a></li>
@@ -63,7 +65,7 @@
             <li><a href="../bugreporting.html">Bug Reporting</a></li>
             <li><a href="../codemanagement.html">Code Management</a></li>
             <li><a href="../faq.html">FAQ</a></li>
-            <li><a href="../copyright.html">License</a></li>
+            <li><a href="../license.html">License</a></li>
             <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
           </ul>
         </li>
@@ -95,156 +97,61 @@
 
       <h4>General:</h4>
       <ul>
-        <li>PetscGetTime() is replaced with PetscTime(), in C you must include petsctime.h to use</li>
-        <li>PetscViewerBinaryMatlabOpen() and friends are all removed, simply use PetscViewerBinaryOpen() followed by PetscViewerSetFormat(viewer,PETSC_FORMAT_BINARY_MATLAB)</li>
-        <li>Added <tt>Users should use PetscFunctionBeginUser in there code instead of PetscFunctionBegin.</li>
-        <li>Replaced the hodge-podge of -xxx_view -xxx_view_yyy with a single consistent scheme: -xxx_view [ascii,binary,draw,socket,matlab,vtk][:filename][:ascii_info,ascii_info_detail,ascii_matlab,draw_contour,etc].</li>
-        <li>In PETSc options files, the comment characters <tt>!</tt> and <tt>%</tt> are no longer supported, use <tt>#</tt>.</li>
-        <li>
-          <tt>PetscFList</tt> and <tt>PetscOList</tt> have been changed to <tt>PetscFunctionList</tt> and <tt>PetscObjectList</tt>.
-          <tt>PetscFunctionListFind()</tt> no longer takes the path to a shared library or the string name of the function.
-          Plugins distributed as shared libraries should register their implementations by calling suitable <tt>XXRegister()</tt> functions from within their <tt>PetscDLLibraryRegister_basename()</tt>, see documentation for PetscDLLibraryOpen().
-        </li>
-        <li>
-          MatRegisterDynamic(), PCRegisterDynamic(), KSPRegisterDynamic(), etc., have been simplified to drop the string function name argument, and are simply named MatRegister(), PCRegister(), KSPRegister(), etc.
-          PetscObjectComposeFunctionDynamic() also drops the string function name argument and is called PetscObjectComposeFunction().
-        </li>
-        <li>
-          The configure options <tt>--with-c-support</tt> and <tt>--with-c++-support</tt> have been removed. A PETSc
-          library built using C or C++ can be called from either C or C++. The primary functional reason to
-          use <tt>--with-clanguage=C++</tt> is to use <tt>std::complex</tt> data types. Other users will likely
-          prefer <tt>--with-clanguage=C</tt> (the default) because it compiles somewhat faster. The --with-c-support option is no longer needed 
-          because it is now the default behavior when using --with-clanguage=c++.
-        </li>
+        <li>  PetscOptionsBool() no longer sets the value of the boolean based on the value passed in</li>
+        <li>  Python scripts such as PetscBinaryIO.py are now in bin/petsc-pythonscripts. This is to
+          support proper namespacing for --prefix installs of PETSc</li>
+        <li>  Script for running MPIUni jobs is now bin/petsc-mpiexec.uni </li>
       </ul>
-      <h4>Logging:</h4>
-      <h4>config/configure.py:</h4>
-      <h4>PetscSF:</h4>
+      <h4>Configure/Build:</h4>
       <ul>
-        <li>
-          PetscSF was split into interface and impls.
-          The internal interfaces PetscSFGetDataTypes(), PetscSFGetWindow(), PetscSFFindWindow(), andd PetscSFRestoreWindow() were made private.
-          (It is unlikely that any users were calling these routines.)
-          PetscSFSetSynchronizationType() and the enum PetscSFSynchronizationType were renamed to PetscSFWindowSetSyncType() and PetscSFWindowSyncType respectively.
-        </li>
-        <li>
-          The location arguments to <tt>PetscSFGetRanks()</tt> were changed from <tt>PetscMPIInt</tt> (aka <tt>int</tt>) to <tt>PetscInt</tt> to (eventually) support very large local memory.
-          The "window" implementation will not support such large sizes due to technical limitations of MPI one sided and "basic" does not currently due to PetscGatherMessageLengths().
-        </li>
+        <li>Add toplevel makefile targets <em>clean</em> and <em>distclean</em>. Target <em>clean</em>
+          deletes petsc libraries built by makefile target <em>all</em>. Target <em>distclean</em> deletes
+          all build files created by <em>configure</em> and [<em>make all</em>]. Target <em>clean</em> in
+          example directories continues to work as before [deletes object files and executables]</li>
       </ul>
       <h4>IS:</h4>
-      <ul>
-        <li>
-          PetscSection was moved to IS and has become a PetscObject, thus reference counting works as usual, with functions like DMSetDefaultSection() taking a reference to the PetscSection.
-          The caller is thus obliged to release their reference using PetscSectionDestroy().
-        </li>
-      </ul>
       <h4>PF:</h4>
       <h4>Vec:</h4>
-      <ul>
-        <li>The options -vec_view,  -vec_view_matlab, -vec_view_socket, -vec_view_binary, -vec_view_draw, -vec_view_lg have been replace by a more general systematic scheme of -vec_view [ascii,binary,draw, or socket][:filename][:format], for these cases they are exactly:  -vec_view  -vec_view ::ascii_matlab -vec_view socket -vec_view binary -vec_view draw -vec_view draw::draw_lg</li>
-        <li>VecDotNorm2() now returns the square of the norm in a real number (PetscReal) rather than the real part of a complex number (PetscScalar)</li>
-        <li>Added VecDotRealPart()</li>
-        <li>
-          The private header <tt>petsc-private/vecimpl.h</tt> is no longer included by <tt>petscvec.h</tt>.
-          Users requiring direct access to internal members of Vec may need to include the private header, but may want to explain their use case to <tt>petsc-maint@mcs.anl.gov</tt> so that we can provide a stable API.
-        </li>
-        <li>
-          VecGetArray()/VecRestoreArray() and VecGhostGetLocalForm()/VecGhostRestoreLocalForm() are logically collective operations because their use invalidates norms, which must be known collectively.
-          This is not a change in behavior, but prior documentation did not mark them as collective.
-          Users should not rely on use such as lazy access occurring inside loops that could have length zero on some processors because it could lead to deadlock in a subsequent norm computation.
-          VecGetArrayRead() and VecRestoreArrayRead() are not collective.
-        </li>
-      </ul>
       <h4>VecScatter:</h4>
+      <h4>PetscSection:</h4>
       <h4>Mat:</h4>
       <ul>
-        <li>The options -mat_view, -mat_view_info, -mat_view_info_detailed -mat_view_matlab, -mat_view_socket, -mat_view_binary, -mat_view_draw, -mat_view_contour have been replace by a more general systematic scheme of -mat_view [ascii,binary,draw, or socket][:filename][:format], for these cases they are exactly:  -mat_view -mat_view ::ascii_info  -mat_view ::ascii_info_detail -mat_view ::ascii_matlab -mat_view socket -mat_view binary -mat_view draw -mat_view draw::draw_contour </li>
-        <li><tt>MatGetArray()/MatRestoreArray()</tt> have been remove d. Use <tt>MatDenseGetArray()/MatDenseRestoreArray()</tt> or <tt>MatSeqAIJGetArray()/MatSeqAIJRestoreArray()</tt></li>
-        <li>PLAPACK interface has been removed.</li>
-        <li>MatGetRowIJ() and MatGetColumnIJ() have been made const-correct; the index arrays have always been read-only.</li>
-        <li>MatPermute() can now be used for MPIAIJ, but contrary to prior documentation, the column IS should be parallel and contain only owned columns.</li>
+         <li>MatGetVecs() replaced with MatCreateVecs() because it actually does create the Vecs that need to be destroyed</li>
+         <li>MatCreateMPIAIJConcatenateSeqAIJ and MatCreateMPIBAIJConcatenateSeqBAIJ replaced with MatCreateMPIMatConcatenateSeqMat</li>
+         <li>MatGetRedundantMatrix() replaced with MatCreateRedundantMatrix()</li>
       </ul>
-
       <h4>PC:</h4>
-      <ul>
-        <li>Merged PCBJacobiSetUseTrueLocal(), <tt>-pc_bjacobi_true_local</tt>, PCKSPSetUseTrue(), <tt>-pc_ksp_true</tt>, PCCompositeSetUseTrue() <tt>-pc_composite_true</tt>, PCFieldSplitSetRealDiagonal <tt>-pc_fieldpslit_real_diagonal</tt> to PCSetUseAmat(), <tt>-pc_use_amat</tt>.</li>
-        <li>Added <tt>PCISSetSubdomainDiagonalScaling()</tt> if a user wants to set a custom scaling at the interface.</li>
-        <li>Added initial version of FETI-DP in PCBDDC code.</li>
-        <li>Added <tt>PCBDDCCreateFETIDPOperators()</tt> for creation of FETI-DP mat and the related Dirichlet preconditioner using an already existing PCBDDC object.</li>
-        <li>Added <tt>PCBDDCMatFETIDPGetRHS()</tt> for assembling of right-hand side of FETI-DP linear system.</li>
-        <li>Added <tt>PCBDDCMatFETIDPGetSolution()</tt> for assembling of physical solution from FETI-DP solution.</li>
-        <li>Added support to deal with linear systems with non-trivial kernels via <tt>PCBDDCSetNullSpace()</tt>.</li>
-        <li>Added <tt>PCBDDCSetMaxLevels()</tt> to control the maximum number of levels when doing multilevel.</li>
-        <li>Added <tt>PCBDDCSetCoarseningRatio()</tt> to control the coarsening ratio when doing multilevel.</li>
-        <li>Added <tt>PCISSetUseStiffnessScaling()</tt> to build partition of unity using local matrices' diagonal.</li>
-        <li>Removed PETSc interface to <a href="http://www.columbia.edu/~ma2325/prometheus/">Prometheus</a>. Use "-pc_type gamg -pc_gamg_type agg" as alternative.</li>
-        <li>PC_FIELDSPLIT_SCHUR_PRE_DIAG changed to PC_FIELDSPLIT_SCHUR_PRE_A11.</li>
-      </ul>
+         Removed -pc_hypre_type euclid due to bit-rot
+         Upgraded to SuiteSparse 4.4.1; Cholmod supports using GPUs --with-cuda --download-suitesparse-gpu --with-64-bit-indices -mat_cholmod_useGPU 1 or 0; 1 by default when configured for it
+         Added PCBDDCSetChangeOfBasisMat for user defined change of basis
+         PCJacobiSetUseAbs() now takes a PetscBool argument allowing toggling the option
+         PCJacobiSetUseRowMax() and PCJacobiSetUseRowSum() have been merged into PCJacobiSetType()
+         PCFactorSetUseInplace() now takes a PetscBool argument. Added PCFactorGetUseInplace()
+         PCFactorSetAllowDiagonalFill() now takes a PetscBool argument. Added PCFactorGetAllowDiagonalFill()
+         PCEisenstatNoDiagonalScaling() changed to PCEisenstatSetNoDiagonalScaling() and takes a boolean
       <h4>KSP:</h4>
-      <ul>
-        <li> Replace -ksp_view_binary with either -ksp_view_mat binary - save matrix to the default binary viewer or-ksp_view_pmat binary -
-           save matrix to the default binary viewer followed by -ksp_view_rhs binary - save right hand side vector to the default binary viewer. Also many other
-           combinations are possible.</li>
-      </ul>
+         Removed KSPSPECEST since its functionality is replaced by the esteig functionality within KSPChebyshev
+         Unified KSPChebyshev routines that work with estimating eigenvalues with the prefix name KSPChebyshevEstEig... For example KSPChebyshevSetEstimateEigenvalues() is now KSPChebyshevEstEigSet() and KSPChebyshevSetEstimateEigenvaluesRandom() is now KSPChebyshevEstEigSetRandom() similarly -ksp_chebyshev_estimate_eigenvalues_random is -ksp_chebyshev_esteig_random. The previous for the (GMRES) KSP used to estimate the eigenvalues is now esteig_ not est_
+         KSPGetVecs() replaced with KSPCreateVecs() because it actually does create the Vecs that need to be destroyed
       <h4>SNES:</h4>
-       <ul>
-        <li> Added added -snes_check_jacobian a very powerful way to check if your Jacobian is correct for small problems, see SNESUpdateCheckJacobian()</li>
-        <li> SNESVIRS  "virs" changed to SNESVINEWTONRSLS vinewtonrsls to clarify exactly what they do</li>
-        <li>  SNESVISS  "viss" changed to SNESVINEWTONSSLS vinewtonssls </li>
-        <li>  SNESLS  "ls" changed to SNESNEWTONLS newtonls </li>
-        <li>  SNESTR  "tr" changed to SNESNEWTONTR newtontr </li>
-        <li>  SNESDefaultComputeJacobian(), SNESDefaultComputeJacobianColor(), SNESDefaultObjectiveComputeFunctionFD(), SNESDefaultConverged() changed to SNESComputeJacobianDefault(), SNESComputeJacobianDefaultColor(), SNESConvergedDefault(), SNESObjectiveComputeFunctionDefaultFD() to match more consistent naming standards.</li>
-        <li> Added nonlinear additive Schwarz as SNESNASM "nasm" </li>
-        <li> Added helper SNES type SNESASPIN "aspin" for setting up additive Schwarz preconditioned inexact Newton.</li>
-        <li> Added Anderson Mixing as SNESANDERSON "anderson"</li>
-        </ul>
-
+         Added KSPMonitorSNES() with command line option -ksp_monitor_snes and -ksp_monitor_snes_lg to monitor SNES residual norm at each linear iteration
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
-      <ul>
-        <li>
-          Option <tt>-ts_monitor_solution</tt> changed to <tt>-ts_monitor_draw_solution</tt>.
-          See <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/TS/TSSetFromOptions.html">TSSetFromOptions</a> for additional monitoring options.
-        </li>
-      </ul>
       <h4>DM/DA:</h4>
       <ul>
-        <li>DMDAGetCoordinateDA(), DMDAGet/SetCoordinates(), DMDAGet/SetGhostedCoordinates(), and
-        DMComplexGetCoordinateVec() have been removed in favor of DMGetCoordinateDM(), DMGet/SetCoordinates(), and DMGet/SetCoordinatesLocal()</li>
-        <li>DMDASetLocalFunction() and DMDASetLocalJacobian() have been replaced with DMDASNESSetFunctionLocal() and DMDASNESSetJacobianLocal() -- note
-            that the calling sequences of these functions are different and also the calling sequence of the Jacobian function you provide</li>
-        <li>DMSetFunction() and DMSetJacobian() have been removed use SNESSetFunction() and SNESSetJacobian() instead, note the calling sequences are
-            slightly different</li>
-        <li>DMDACreatePatchIS() for getting the indices of an arbitrary subdomain on a DMDA </li>
-        <li>DMDAGet/SetOverlap(),DMDAGet/SetOffset() for manipulating DMDA subdomains </li>
-        <li>DMCreateDomainDecompositionScatters() gives VecScatter objects for transferring to/from subdomain DMs </li>
-        <li>DMGet/RestoreNamedLocalVector()</li>
+        <li>DMCreateInjection() now returns a Mat, rather than a VecScatter</li>
+        <li>The MatType argument is removed from DMCreateMatrix(), you can use DMSetMatType() to indicate the type you want used with a DM, defaults to MATAIJ</li>
+        <li>You can now use DMDASetAOType() to indicate the type of AO you want used with a DMDA (defaults to AOBASIC)</li>
       </ul>
-      <h4>DMComplex/DMPlex:</h4>
-      <ul>
-        <li>DMComplex was renamed to DMPlex.</li>
-        <li>There is now a manual section on unstructured grids.</li>
       </ul>
-      <h4>DMMesh:</h4>
-      <ul>
-        <li>This is deprecated in favor of DMPlex, and will be removed in 3.5.</li>
-        <li>SectionRealToVecDM() was created to removed overloading.</li>
-      </ul>
-      <h4>DMMG:</h4>
+      <h4>DMPlex:</h4>
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
-      <ul>
-        <li><tt>PetscPClose()</tt> has an additional argument to return a nonzero error code without raising an error.</li>
-        <li>Added <tt>PetscSortMPIInt()</tt> and <tt>PetscSortRemoveDupsMPIInt()</tt>.</li>
-      </ul>
       <h4>AO:</h4>
       <h4>Sieve:</h4>
       <h4>Fortran:</h4>
-      <h4>ExternalPackages:</h4>
-      <ul>
-        <li>Added Elemental interface </li>
-        <li>Remove Spooles interface </li>
+     <ul>
+        <li>Fortran include files are now in include/petsc-finclude instead of include/finclude. Thus replace uses of #include "finclude/xxx.h" with #include "petsc-finclude/xxx.h". Reason for change: to namespace the finclude directory with PETSc for --prefix installs of PETSc and for packaging systems</li>
       </ul>
     </div>
 

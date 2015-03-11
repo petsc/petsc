@@ -1,50 +1,10 @@
-Vector Object: 2 MPI processes
-  type: mpi
-Process [0]
-0
-1
-2
-3
-4
-5
-Process [1]
-100
-101
-102
-103
-104
-105
-Vector Object: 2 MPI processes
-  type: mpi
-Process [0]
--5
--3
-304
--91
-109
--188
-Process [1]
-188
-196
-301
-201
-108
-215
-Matrix Object: 1 MPI processes
+Mat Object: 3 MPI processes
   type: mpiaij
-row 0: (0, 4)  (1, -1)  (4, -1) 
-row 1: (0, -1)  (1, 4)  (2, -1)  (5, -1) 
-row 2: (1, -1)  (2, 4)  (3, -1)  (4, 100)  (6, -1) 
-row 3: (2, -1)  (3, 4)  (7, -1) 
-row 4: (0, -1)  (2, 100)  (4, 4)  (5, -1)  (8, -1) 
-row 5: (1, -1)  (4, -1)  (5, 4)  (6, -1)  (9, -1) 
-row 6: (2, -1)  (5, -1)  (6, 4)  (7, -1)  (10, -1) 
-row 7: (3, -1)  (6, -1)  (7, 4)  (11, -1) 
-row 8: (4, -1)  (8, 4)  (9, -1) 
-row 9: (5, -1)  (8, -1)  (9, 4)  (10, -1) 
-row 10: (6, -1)  (9, -1)  (10, 4)  (11, -1) 
-row 11: (7, -1)  (10, -1)  (11, 4) 
+  rows=18, cols=18
+  total: nonzeros=74, allocated nonzeros=180
+  total number of mallocs used during MatSetValues calls =0
+    not using I-node (on process 0) routines
 matrix information (global sums):
-     nonzeros = 48, allocated nonzeros = 84
+     nonzeros = 74, allocated nonzeros = 180
 matrix information (global max):
-     nonzeros = 25, allocated nonzeros = 42
+     nonzeros = 29, allocated nonzeros = 60

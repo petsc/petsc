@@ -112,6 +112,24 @@ PetscErrorCode PetscDrawString_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawStringVertical_TikZ"
+PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
+{
+  PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
+  PetscErrorCode ierr;
+  size_t         len;
+  PetscReal      width;
+
+  PetscFunctionBegin;
+  win->written = PETSC_TRUE;
+  ierr = PetscStrlen(text,&len);CHKERRQ(ierr);
+  ierr = PetscDrawStringGetSize(draw,&width,NULL);CHKERRQ(ierr);
+  yl   = yl - len*width*(draw->coor_yr - draw->coor_yl)/(draw->coor_xr - draw->coor_xl);
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,"\\node [rotate=90, %s] at (%g,%g) {%s};\n",TikZColorMap(cl),XTRANS(draw,xl),YTRANS(draw,yl),text);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawBoxedString_TikZ"
 /*
     Does not handle multiline strings correctly
@@ -133,6 +151,16 @@ PetscErrorCode PetscDrawBoxedString_TikZ(PetscDraw draw,PetscReal xl,PetscReal y
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawStringGetSize_TikZ"
+PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw,PetscReal *x,PetscReal  *y)
+{
+  PetscFunctionBegin;
+  if (x) *x = .014*(draw->coor_xr - draw->coor_xl)/((draw->port_xr - draw->port_xl));
+  if (y) *y = .05*(draw->coor_yr - draw->coor_yl)/((draw->port_yr - draw->port_yl));
+  PetscFunctionReturn(0);
+}
+
 static struct _PetscDrawOps DvOps = { 0,
                                       0,
                                       PetscDrawLine_TikZ,
@@ -141,9 +169,9 @@ static struct _PetscDrawOps DvOps = { 0,
                                       0,
                                       0,
                                       PetscDrawString_TikZ,
+                                      PetscDrawStringVertical_TikZ,
                                       0,
-                                      0,
-                                      0,
+                                      PetscDrawStringGetSize_TikZ,
                                       0,
                                       PetscDrawClear_TikZ,
                                       0,
@@ -181,8 +209,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw draw)
 
   PetscFunctionBegin;
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  ierr = PetscNew(PetscDraw_TikZ,&win);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_TikZ));CHKERRQ(ierr);
+  ierr = PetscNew(&win);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_TikZ));CHKERRQ(ierr);
 
   draw->data = (void*) win;
 

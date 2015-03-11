@@ -39,22 +39,37 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
 
    Input Parameters:
 +     obj - the PETSc object
-.     viewer - ASCII viewer where the information is printed
--     string - for example "Matrix Object"
+-     viewer - ASCII viewer where the information is printed, function does nothing if the viewer is not PETSCVIEWERASCII type
 
    Level: developer
+
+   Notes: If the viewer format is PETSC_VIEWER_ASCII_MATLAB then the information is printed after a % symbol
+          so that MATLAB will treat it as a comment.
+
+          If the viewer format is PETSC_VIEWER_ASCII_VTK*, PETSC_VIEWER_ASCII_LATEX, or
+          PETSC_VIEWER_ASCII_MATRIXMARKET then don't print header information
+          as these formats can't process it.
 
 .seealso: PetscObjectSetName(), PetscObjectName()
 
 @*/
-PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer viewer,const char string[])
+PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscMPIInt    size;
+  PetscErrorCode    ierr;
+  MPI_Comm          comm;
+  PetscMPIInt       size;
+  PetscViewerFormat format;
+  PetscBool         flg;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(viewer,"%s:",string);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&flg);CHKERRQ(ierr);
+  if (!flg) PetscFunctionReturn(0);
+
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL || format == PETSC_VIEWER_ASCII_VTK_COORDS || format == PETSC_VIEWER_ASCII_MATRIXMARKET || format == PETSC_VIEWER_ASCII_LATEX) PetscFunctionReturn(0);
+
+  if (format == PETSC_VIEWER_ASCII_MATLAB) {ierr = PetscViewerASCIIPrintf(viewer,"%%");CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIPrintf(viewer,"%s Object:",obj->class_name);CHKERRQ(ierr);
   if (obj->name) {
     ierr = PetscViewerASCIIPrintf(viewer,"%s",obj->name);CHKERRQ(ierr);
   }
@@ -64,6 +79,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
   ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer," %d MPI processes\n",size);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_MATLAB) {ierr = PetscViewerASCIIPrintf(viewer,"%%");CHKERRQ(ierr);}
   if (obj->type_name) {
     ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",obj->type_name);CHKERRQ(ierr);
   } else {
@@ -89,7 +105,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
    Concepts: object name^setting default
 
    Notes: This is used in a small number of places when an object NEEDS a name, for example when it is saved to MATLAB with that variable name.
-          Use PetscObjectSetName() to set the name of an object to what you want. The AMS viewer requires that no two published objects
+          Use PetscObjectSetName() to set the name of an object to what you want. The SAWs viewer requires that no two published objects
           share the same name.
 
    Developer Note: this needs to generate the exact same string on all ranks that share the object. The current algorithm may not always work.
@@ -108,12 +124,16 @@ PetscErrorCode  PetscObjectName(PetscObject obj)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (!obj->name) {
-    void *commp = 0;
+    union {MPI_Comm comm; void *ptr; char raw[sizeof(MPI_Comm)]; } ucomm;
     ierr = MPI_Attr_get(obj->comm,Petsc_Counter_keyval,(void*)&counter,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
-    ierr = PetscMemcpy(&commp,&obj->comm,PetscMin(sizeof(commp),sizeof(obj->comm)));CHKERRQ(ierr);
-    ierr = MPI_Bcast((PETSC_UINTPTR_T*)&commp,1,MPIU_SIZE_T,0,obj->comm);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(name,64,"%s_%p_%D",obj->class_name,commp,counter->namecount++);CHKERRQ(ierr);
+    ucomm.ptr = NULL;
+    ucomm.comm = obj->comm;
+    ierr = MPI_Bcast(ucomm.raw,sizeof(MPI_Comm),MPI_BYTE,0,obj->comm);CHKERRQ(ierr);
+    /* If the union has extra bytes, their value is implementation-dependent, but they will normally be what we set last
+     * in 'ucomm.ptr = NULL'.  This output is always implementation-defined (and varies from run to run) so the union
+     * abuse acceptable. */
+    ierr = PetscSNPrintf(name,64,"%s_%p_%D",obj->class_name,ucomm.ptr,counter->namecount++);CHKERRQ(ierr);
     ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

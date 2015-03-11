@@ -37,14 +37,14 @@
 
       module f90module
       type userctx
-#include <finclude/petscsysdef.h>
-#include <finclude/petscvecdef.h>
-#include <finclude/petscdmdef.h>
+#include <petsc-finclude/petscsysdef.h>
+#include <petsc-finclude/petscvecdef.h>
+#include <petsc-finclude/petscdmdef.h>
         PetscInt xs,xe,xm,gxs,gxe,gxm
         PetscInt ys,ye,ym,gys,gye,gym
         PetscInt mx,my
         PetscMPIInt rank
-        double precision lambda
+        PetscReal lambda
       end type userctx
 
       contains
@@ -72,16 +72,17 @@
       subroutine FormFunction(snes,X,F,user,ierr)
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscdmda.h>
-#include <finclude/petscis.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscvec.h90>
-#include <finclude/petscsnes.h90>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
+#include <petsc-finclude/petscis.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscvec.h90>
+#include <petsc-finclude/petscsnes.h90>
 
 !  Input/output variables:
       SNES           snes
@@ -160,16 +161,17 @@
       use f90moduleinterfaces
       implicit none
 !
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscdmda.h>
-#include <finclude/petscis.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
-#include <finclude/petscvec.h90>
-#include <finclude/petscdmda.h90>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
+#include <petsc-finclude/petscis.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
+#include <petsc-finclude/petscvec.h90>
+#include <petsc-finclude/petscdmda.h90>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -190,7 +192,7 @@
       PetscInt         its
       PetscBool        flg,matrix_free
       PetscInt         ione,nfour
-      double precision lambda_max,lambda_min
+      PetscReal lambda_max,lambda_min
       type (userctx)   user
       DM               da
 
@@ -232,7 +234,7 @@
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
       call DMDACreate2d(PETSC_COMM_WORLD,                               &
-     &     DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,                      &
+     &     DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,                          &
      &     DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,          &
      &     ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,user%mx,user%my,           &
@@ -304,7 +306,8 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
      &     matrix_free,ierr)
       if (.not. matrix_free) then
-        call DMCreateMatrix(da,MATAIJ,J,ierr)
+        call DMSetMatType(da,MATAIJ,ierr)
+        call DMCreateMatrix(da,J,ierr)
         call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
       endif
 
@@ -368,15 +371,16 @@
       use f90moduleinterfaces
       implicit none
 
-#include <finclude/petscvec.h90>
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscdmda.h>
-#include <finclude/petscis.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscvec.h90>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
+#include <petsc-finclude/petscis.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES           snes
@@ -387,7 +391,6 @@
 
 !  Declarations for use with local arrays:
       PetscScalar,pointer :: lx_v(:)
-      Vec               localX
 
       ierr = 0
       call SNESGetDM(snes,da,ierr)
@@ -400,19 +403,15 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call DMGetLocalVector(da,localX,ierr)
-      call VecGetArrayF90(localX,lx_v,ierr)
+      call VecGetArrayF90(X,lx_v,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
       call InitialGuessLocal(puser,lx_v,ierr)
 
 !  Restore vector
-      call VecRestoreArrayF90(localX,lx_v,ierr)
+      call VecRestoreArrayF90(X,lx_v,ierr)
 
 !  Insert values into global vector
-      call DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X,ierr)
-      call DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X,ierr)
-      call DMRestoreLocalVector(da,localX,ierr)
 
       return
       end
@@ -436,19 +435,20 @@
       use f90module
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscdmda.h>
-#include <finclude/petscis.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
+#include <petsc-finclude/petscis.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
 !  Input/output variables:
       type (userctx)         user
-      PetscScalar  x(user%gxs:user%gxe,                                 &
-     &              user%gys:user%gye)
+      PetscScalar  x(user%xs:user%xe,                                      &
+     &              user%ys:user%ye)
       PetscErrorCode ierr
 
 !  Local variables:
@@ -567,7 +567,7 @@
 !  Notes:
 !  Due to grid point reordering with DMDAs, we must always work
 !  with the local grid points, and then transform them to the new
-!  global numbering with the "ltog" mapping (via DMDAGetGlobalIndicesF90()).
+!  global numbering with the "ltog" mapping 
 !  We cannot work directly with the global numbers for the original
 !  uniprocessor grid!
 !
@@ -575,39 +575,35 @@
 !  when setting matrix entries:
 !    (A) MatSetValuesLocal(), using the local ordering (including
 !        ghost points!)
-!        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
-!        - Associate this map with the matrix by calling
-!          MatSetLocalToGlobalMapping() once
 !        - Set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
 !    (B) MatSetValues(), using the global ordering
-!        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
-!        - Then apply this map explicitly yourself
+
 !        - Set matrix entries using the global ordering by calling
 !          MatSetValues()
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine FormJacobian(snes,X,jac,jac_prec,flag,user,ierr)
+      subroutine FormJacobian(snes,X,jac,jac_prec,user,ierr)
       use f90module
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscdmda.h>
-#include <finclude/petscis.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
+#include <petsc-finclude/petscis.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
-#include <finclude/petscvec.h90>
+#include <petsc-finclude/petscvec.h90>
 
 !  Input/output variables:
       SNES         snes
       Vec          X
       Mat          jac,jac_prec
-      MatStructure flag
       type(userctx)  user
       PetscErrorCode ierr
       DM             da
@@ -649,24 +645,6 @@
         call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
       endif
 
-!  Set flag to indicate that the Jacobian matrix retains an identical
-!  nonzero structure throughout all nonlinear iterations (although the
-!  values of the entries change). Thus, we can save some work in setting
-!  up the preconditioner (e.g., no need to redo symbolic factorization for
-!  ILU/ICC preconditioners).
-!   - If the nonzero structure of the matrix is different during
-!     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-!     must be used instead.  If you are unsure whether the matrix
-!     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-!   - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-!     believes your assertion and does not check the structure
-!     of the matrix.  If you erroneously claim that the structure
-!     is the same when it actually is not, the new preconditioner
-!     will not function correctly.  Thus, use this optimization
-!     feature with caution!
-
-      flag = SAME_NONZERO_PATTERN
-
 !  Tell the matrix we will never add a new nonzero location to the
 !  matrix. If we do it will generate an error.
 
@@ -694,7 +672,7 @@
 !  Notes:
 !  Due to grid point reordering with DMDAs, we must always work
 !  with the local grid points, and then transform them to the new
-!  global numbering with the "ltog" mapping (via DMDAGetGlobalIndicesF90()).
+!  global numbering with the "ltog" mapping
 !  We cannot work directly with the global numbers for the original
 !  uniprocessor grid!
 !
@@ -702,13 +680,9 @@
 !  when setting matrix entries:
 !    (A) MatSetValuesLocal(), using the local ordering (including
 !        ghost points!)
-!        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
-!        - Associate this map with the matrix by calling
-!          MatSetLocalToGlobalMapping() once
 !        - Set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
 !    (B) MatSetValues(), using the global ordering
-!        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
 !        - Then apply this map explicitly yourself
 !        - Set matrix entries using the global ordering by calling
 !          MatSetValues()
@@ -719,14 +693,15 @@
       use f90module
       implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscdmda.h>
-#include <finclude/petscis.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscsnes.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscdm.h>
+#include <petsc-finclude/petscdmda.h>
+#include <petsc-finclude/petscis.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscsnes.h>
 
 !  Input/output variables:
       type (userctx) user

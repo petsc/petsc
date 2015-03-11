@@ -5,6 +5,10 @@
 #include <petscksp.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool KSPRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
+PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);
+
 typedef struct _KSPOps *KSPOps;
 
 struct _KSPOps {
@@ -16,7 +20,7 @@ struct _KSPOps {
                                                           user-provided area.  */
   PetscErrorCode (*solve)(KSP);                        /* actual solver */
   PetscErrorCode (*setup)(KSP);
-  PetscErrorCode (*setfromoptions)(KSP);
+  PetscErrorCode (*setfromoptions)(PetscOptions*,KSP);
   PetscErrorCode (*publishoptions)(KSP);
   PetscErrorCode (*computeextremesingularvalues)(KSP,PetscReal*,PetscReal*);
   PetscErrorCode (*computeeigenvalues)(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
@@ -57,7 +61,6 @@ struct _p_KSP {
   PetscReal       rnorm0;                   /* initial residual norm (used for divergence testing) */
   PetscReal       rnorm;                    /* current residual norm */
   KSPConvergedReason reason;
-  PetscBool          printreason;     /* prints converged reason after solve */
   PetscBool          errorifnotconverged;    /* create an error if the KSPSolve() does not converge */
 
   Vec vec_sol,vec_rhs;            /* pointer to where user has stashed
@@ -102,6 +105,9 @@ struct _p_KSP {
 
   KSPNormType    normtype;          /* type of norm used for convergence tests */
 
+  PCSide         pc_side_set;   /* PC type set explicitly by user */
+  KSPNormType    normtype_set;  /* Norm type set explicitly by user */
+
   /*   Allow diagonally scaling the matrix before computing the preconditioner or using
        the Krylov method. Note this is NOT just Jacobi preconditioning */
 
@@ -112,6 +118,8 @@ struct _p_KSP {
   Vec          truediagonal;
 
   MatNullSpace nullsp;      /* Null space of the operator, removed from Krylov space */
+
+  PetscBool    skippcsetfromoptions; /* if set then KSPSetFromOptions() does not call PCSetFromOptions() */
 
   PetscViewer  eigviewer;   /* Viewer where computed eigenvalues are displayed */
 
@@ -129,7 +137,7 @@ typedef struct {
   PetscBool  initialrtol;    /* default relative residual decrease is computing from initial residual, not rhs */
   PetscBool  mininitialrtol; /* default relative residual decrease is computing from min of initial residual and rhs */
   Vec        work;
-} KSPDefaultConvergedCtx;
+} KSPConvergedDefaultCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPLogResidualHistory"
@@ -138,11 +146,11 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) {
     ksp->res_hist[ksp->res_hist_len++] = norm;
   }
-  ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -153,7 +161,7 @@ PETSC_INTERN PetscErrorCode KSPPlotEigenContours_Private(KSP,PetscInt,const Pets
 typedef struct _p_DMKSP *DMKSP;
 typedef struct _DMKSPOps *DMKSPOps;
 struct _DMKSPOps {
-  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,MatStructure*,void*);
+  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,void*);
   PetscErrorCode (*computerhs)(KSP,Vec,void*);
   PetscErrorCode (*computeinitialguess)(KSP,Vec,void*);
   PetscErrorCode (*destroy)(DMKSP*);
@@ -191,7 +199,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (ksp->nullsp && ksp->pc_side == PC_LEFT) {ierr = MatNullSpaceRemove(ksp->nullsp,y,NULL);CHKERRQ(ierr);}
+  if (ksp->nullsp && ksp->pc_side == PC_LEFT) {ierr = MatNullSpaceRemove(ksp->nullsp,y);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -279,6 +287,6 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec 
 
 PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
-PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatSchurComplementAinvType,MatReuse,Mat*);
 
 #endif

@@ -1,0 +1,548 @@
+%       BAR.STY --- Style File zum Setzen von Balkendiagrammen
+%       Autor:  J. Bleser, E. Lang
+%       Hochschulrechenzentrum
+%       Technische Hochschule Darmstadt
+%       !!!  Dieses Style-File ist urheberrechtlich geschuetzt  !!!
+%       !!!  Aenderungen nur mit Zustimmung der Autoren         !!!
+\typeout{Option BAR, Version 1.0  Sep. 92, J.Bleser, TH Darmstadt, HRZ}
+\typeout{bug fix for CTAN April 1994 (SPQR, for David Carlisle)}
+\newcount\breite        \newcount\hoehe         \newcount\tiefe
+\newcount\lhoehe        \newcount\anzbar        \newcount\hbarI
+\newcount\xpos          \newcount\lxpos         \newcount\halfbreite
+\newcount\ypos          \newcount\lypos
+\newcount\tmpa          \newcount\tmpb         \newcount\tmpc
+\newcount\tmpd          \newcount\tmpe
+\newcount\xmin          \newcount\xmax          \newcount\xstep
+\newcount\deltax        \newcount\yhoehe        %
+\newcount\ymin          \newcount\ymax          \newcount\ystep
+\newcount\yminII        \newcount\ymaxII        \newcount\deltay
+\newcount\ymove         \newcount\xmove         \newcount\inter
+\newcount\exact         \newcount\xexact
+\newdimen\dtmpa         \newdimen\dtmpb
+\newdimen\dmin          \newdimen\dmax          \newdimen\dstep
+\newdimen\dxmin         \newdimen\dxmax         \newdimen\dxstep
+\newdimen\faktor        \newdimen\dinter
+\newbox\mybox           \newbox\xbox            \newbox\ybox
+\newif\if@xaxis         \newif\if@yaxis
+\newif\if@hlineon
+\newif\iffaktor\faktorfalse
+
+
+\def\setnumberpos#1{\def\my@number{\expandafter\csname my@#1\endcsname}}
+\def\my@number{\my@outside}
+
+
+\def\m@nth{month}\def\d@y{day}
+\def\setxvaluetyp#1{\gdef\x@value{#1}%
+  \ifx\x@value\m@nth\let\myx@value\Monat@%
+  \else\ifx\x@value\d@y\let\myx@value\Tag@%
+  \else\let\myx@value\Zahl@n%
+  \fi%
+  \fi%
+}
+
+
+\def\solid{solid}\gdef\l@style{\relax}
+\def\setlinestyle#1{\gdef\l@style{#1}%
+  \ifx\l@style\solid\let\my@lstyle=\mylinebox%
+  \else\let\my@lstyle=\mydotbox%
+  \fi%
+}
+
+
+\def\setwidth#1{\global\breite=#1%
+  \ifdim\dinter>0pt\inter\dinter\multiply\inter\breite\divide\inter65536\fi%
+  \halfbreite\breite\divide\halfbreite2%
+}
+
+
+\def\setdepth#1{\ifnum#1<10\global\tiefe=0\else\global\tiefe=#1\fi}
+
+
+\def\setstretch#1{\global\faktor=#1pt\faktortrue}
+
+
+\def\setstyle#1{\def\my@style{#1}}
+\def\my@style{\tt}
+
+
+\def\setprecision#1{\global\exact=#1}
+\exact=0
+
+
+\def\sethspace#1{\dinter#1pt\dtmpa#1pt\multiply\dtmpa\breite%
+  \inter\dtmpa\divide\inter65536%
+}
+
+
+\def\setxname{\@ifnextchar [{\isetxname}{\isetxname[]}}
+\def\isetxname[#1]#2{\global\setbox\xbox=\hbox{\makebox(0,0)[#1]{#2}}}
+
+
+\def\setyname{\@ifnextchar [{\isetyname}{\isetyname[l]}}
+\def\isetyname[#1]#2{\global\setbox\ybox=\hbox{\makebox(0,0)[#1]{#2}}}
+
+
+\newcount\vorz       %
+\def\setyaxis{\@ifnextchar [{\i@setyaxis}{\i@setyaxis[0]}}
+\def\i@setyaxis[#1]#2#3#4{%
+ \dmin#2\faktor\ymin\dmin\divide\ymin by65536%
+ \dmax#3\faktor\ymax\dmax\divide\ymax by65536%
+ \ifnum\ymin>\ymax\vorz-1\else\vorz1\fi%
+ \ifnum\ymin>0\ymin-\ymin\fi%
+ \ifnum\ymax<0\ymax-\ymax\fi%
+ \dstep#4\faktor\ystep\dstep\divide\ystep by65536%
+ \ifnum\ystep<0\ystep-\ystep\fi%
+ \@yaxistrue%
+ \setbox0=\hbox{\the\ymax}\setbox1=\hbox{\the\ymin}
+ \ifdim\wd0>\wd1\xmove=\wd0\else\xmove=\wd1\fi%
+ \divide\xmove by65536\advance\xmove by4%
+ \global\xmove=\the\xmove%
+ \deltay\ymax\advance\deltay-\ymin\tmpb\deltay%
+ \divide\deltay\ystep%
+ \advance\deltay by1%
+ \dmin=#2pt\dstep=#4pt%
+ \thicklines%
+ \multiput(0,\ymin)(0,\ystep){\deltay}{\line(-1,0){4}%
+   \put(-6,0){\makebox(0,0)[r]{{\my@style\dimIIreal\dmin}}%
+   \global\advance\dmin by\dstep}}%
+ \dtmpa=#1\faktor\ymove\dtmpa\divide\ymove by65536\ifnum\ymove<0\ymove=0\fi%
+ \tmpa\ymin\advance\tmpa by-\ymove\advance\tmpb by\ymove%
+ \global\yhoehe\tmpb            %
+ \put(0,\tmpa){\line(0,1){\tmpb}}%
+ \thinlines%
+}
+
+
+\def\setxaxis#1#2#3{%
+ \dxmin#1pt\dxmax#2pt\dxstep#3pt\global\xexact\exact%
+ \@xaxistrue\let\mytmp@style=\my@style%
+}
+
+
+\def\hlineon{\global\@hlineontrue}
+
+
+\def\bar#1#2{\@ifnextchar [{\@bar{#1}{#2}}{\@bar{#1}{#2}[]}}
+\def\@bar#1#2[#3]{%
+ \dtmpa#1\faktor\hoehe\dtmpa\divide\hoehe by65536%
+ \multiply\hoehe\vorz%
+ \ypos0\def\@user{#1}%
+ \ifnum\hoehe<\yminII\yminII=\hoehe\fi\ifnum\hoehe>\ymaxII\ymaxII=\hoehe\fi%
+ \ifnum\anzbar=0\hbarI=\hoehe\fi%
+ \ifnum#2>-1%
+   \ifnum\hoehe<0\ypos=\hoehe\tmpa=-\hoehe\else\tmpa=\hoehe\fi%
+   \ifnum #2=1\put(\xpos,\ypos){\framebox(\breite,\tmpa){}}\fi%
+   \ifnum #2=2\put(\xpos,\ypos){\framebox(\breite,\tmpa){}}%
+     \tmpc=\breite\divide\tmpc by3\tmpb=\xpos\advance\tmpb by1%
+     \multiput(\tmpb,\ypos)(3,0){\tmpc}{\line(0,1){\tmpa}}%
+   \fi
+   \ifnum #2=3\put(\xpos,\ypos){\framebox(\breite,\tmpa){}}%
+     \tmpc=\tmpa\divide\tmpc by3\tmpb=\ypos\advance\tmpb by1%
+     \multiput(\xpos,\tmpb)(0,3){\tmpc}{\line(1,0){\breite}}%
+   \fi
+   \ifnum #2=4\put(\xpos,\ypos){\framebox(\breite,\tmpa){}}%
+     \tmpc=\breite\divide\tmpc by3\tmpb=\xpos\advance\tmpb by1%
+     \multiput(\tmpb,\ypos)(3,0){\tmpc}{\line(0,1){\tmpa}}%
+     \tmpc=\tmpa\divide\tmpc by3\tmpb=\ypos\advance\tmpb by1%
+     \multiput(\xpos,\tmpb)(0,3){\tmpc}{\line(1,0){\breite}}%
+   \fi
+   \ifnum #2=5\put(\xpos,\ypos){\framebox(\breite,\tmpa){}}%
+     \tmpc=\breite\divide\tmpc by4\tmpb=\xpos\advance\tmpb by1%
+     \multiput(\tmpb,\ypos)(4,0){\tmpc}{\rule{2pt}{\tmpa pt}}%
+     \tmpc=\tmpa\divide\tmpc by4\tmpb=\ypos\advance\tmpb by1%
+     \multiput(\xpos,\tmpb)(0,4){\tmpc}{\rule{\breite pt}{2pt}}%
+   \fi
+   \ifnum #2=6\put(\xpos,\ypos){\framebox(\breite,\tmpa){}}%
+     \tmpb=\breite\divide\tmpb by-2%
+     \ifnum\hoehe>0\advance\tmpb by\tmpa\fi%
+     \tmpc=\tmpa\divide\tmpc by4%
+     \multiput(\xpos,\ypos)(0,4){\tmpc}{%
+       \ifdim\@ydim<\tmpb pt\line(2,1){\breite}%
+       \else\tmpd=\@ydim\divide\tmpd by65536%
+         \ifnum\tmpd<0\else\advance\tmpd by-\tmpa\fi%
+         \multiply\tmpd by-2\line(2,1){\tmpd}%
+       \fi%
+     }%
+     \tmpb=\breite\divide\tmpb by8\tmpc=\breite\advance\tmpc by-8%
+     \tmpd=\tmpa\multiply\tmpd 2\advance\xpos by 8%
+     \multiput(\xpos,\ypos)(8,0){\tmpb}{%
+       \ifnum\tmpc<\tmpd\line(2,1){\tmpc}\else\line(2,1){\tmpd}\fi%
+       \global\advance\tmpc by-8%
+     }%
+     \advance\xpos by -8%
+   \fi%
+   \ifnum #2=7\put(\xpos,\ypos){\framebox(\breite,\tmpa){}}%
+     \tmpb=\breite\divide\tmpb by2%
+     \ifnum\hoehe>0\ypos=\hoehe\else\ypos=0\advance\tmpb by-\tmpa\fi%
+     \tmpc=\tmpa\divide\tmpc by4%
+     \multiput(\xpos,\ypos)(0,-4){\tmpc}{%
+       \ifdim\@ydim<\tmpb pt\tmpd=\@ydim\divide\tmpd by65536%
+         \ifnum\tmpd<0\advance\tmpd by\tmpa\fi%
+         \multiply\tmpd by2\line(2,-1){\tmpd}%
+       \else\line(2,-1){\breite}%
+       \fi%
+     }%
+     \tmpb=\breite\divide\tmpb by8\advance\tmpb by 1\tmpc=\breite%
+     \tmpd=\tmpa\multiply\tmpd 2%
+     \multiput(\xpos,\ypos)(8,0){\tmpb}{%
+       \ifnum\tmpc>\tmpd\line(2,-1){\tmpd}\else\line(2,-1){\tmpc}\fi%
+       \global\advance\tmpc by-8%
+     }%
+   \fi%
+   \ifnum #2=8\put(\xpos,\ypos){\rule{\breite pt}{\tmpa pt}}\fi
+   \my@number%
+ \fi%
+ \tmpc-\baselineskip\divide\tmpc 65536%
+ \divide\tmpc 2%
+ \put(\xpos,\ypos){\put(0,\tmpc){\makebox(\breite,0){#3}}}%
+ \ifnum\anzbar>0
+  \ifnum\tiefe>0
+    \ifnum\lhoehe<\hoehe
+        \ifnum\lhoehe>0\machDachI(\lxpos,\lhoehe)
+        \else\machDachI(\lxpos,0)
+        \fi
+    \else
+        \ifnum\lhoehe>0\machDachII(\lxpos,\lhoehe)
+        \else\machDachII(\lxpos,0)
+        \fi
+    \fi%
+  \fi%
+  \if@hlineon\machHLines\fi%
+ \fi%
+ \lxpos\xpos\advance\xpos\breite\advance\xpos\inter%
+ \advance\anzbar1\lhoehe\hoehe%
+}
+
+
+\newenvironment{barenv}%
+{\par%
+ \xpos0\breite40\halfbreite20\tiefe0\lhoehe0\anzbar0%
+ \yminII0\ymaxII0\inter0\dinter0pt\vorz1%
+ \exact0\ymove0\xmove0\unitlength1pt\@xaxisfalse\@yaxisfalse\@hlineonfalse%
+ \let\my@lstyle=\mydotbox\let\myx@value=\Zahl@n%
+ \faktor1pt%
+ \def\vline{\my@vline}%
+ \def\hspace{\my@hspace}%
+ \setbox\@tempboxa=\hbox\bgroup%
+   \begin{picture}(0,0)\thinlines%
+}%
+{%
+   \advance\xpos by-\inter%
+   \ifnum\tiefe>0
+     \put(\xpos,0){\line(1,1){\tiefe}}%
+%%%DPC CHANGE
+%     \put(\xpos,\hoehe){\line(1,1){\tiefe}\put(0,\tiefe){\line(0,1){-\hoehe}}}%
+     \put(\xpos,\hoehe){\line(1,1){\tiefe}%
+     \put(0,\tiefe){\ifnum\hoehe<\z@\line(0,1){-\hoehe}\fi}}%
+%%%END DPC CHANGE
+   \fi%
+   \deltax=\lhoehe\bar{0}{-1}\lhoehe=\deltax%
+   \thicklines%
+   \if@yaxis\else\tmpa=\ymaxII\advance\tmpa by-\yminII\advance\tmpa by\tiefe%
+     \put(0,\yminII){\line(0,1){\tmpa}}%
+   \fi%
+   \if@xaxis%
+     \advance\ymin by-\ymove%
+     \tmpe=\exact\global\exact=\xexact%
+     \put(0,\ymin){\line(1,0){\lxpos}}%
+     \xstep=\dxstep\divide\xstep by65536%
+     \dtmpa=\dxmax\advance\dtmpa by-\dxmin%
+     \deltax=\dtmpa\divide\deltax by65536\divide\deltax by\xstep%
+     \advance\deltax by1%
+     \tmpa=\breite\divide\tmpa by2%
+     \tmpb=\breite\advance\tmpb by\inter%
+     \multiput(\tmpa,\ymin)(\tmpb,0){\deltax}{%
+       \line(0,-1){4}\myx@value\dxmin%
+       \global\advance\dxmin by\dxstep}%
+     \global\exact=\tmpe%
+   \fi%
+   \put(0,0){\line(1,0){\lxpos}}%
+   \if@xaxis\tmpa=-20\else\tmpa=-10\fi%
+   \ifvoid\xbox\else\put(\lxpos,\ymin){\put(0,\tmpa){\box\xbox}}\fi%
+   \tmpa=\ymax\advance\tmpa by6\advance\tmpa by\tiefe%
+   \ifvoid\ybox\else\put(\tiefe,\tmpa){\box\ybox}\fi%
+   \if@hlineon%
+     \ifnum\lhoehe<0%
+       \tmpb=-\ymin\advance\tmpb by\lhoehe%
+       \advance\tmpb by\ymove\divide\tmpb by\ystep%
+       \tmpa=\ymin\advance\tmpa by\tiefe\advance\tmpa by\ymove%
+       \multiput(\lxpos,\tmpa)(0,\ystep){\tmpb}{%
+         \ifdim\@ydim<\lhoehe pt%
+         \else\ypos=-\@ydim\divide\ypos by65536%
+              \advance\ypos by\lhoehe\advance\ypos by\tiefe%
+              \tmpe=\tiefe\advance\tmpe by-\ypos%
+              \ifnum\ypos>0\put(\tmpe,0){\thinlines\my@lstyle\ypos}\fi%
+         \fi%
+       }%
+     \fi%
+     \put(0,\ymin){\line(1,0){\lxpos}}%
+     \tmpa=\ymax\advance\tmpa by-\ymin%
+     \ifnum\tiefe>0
+       \put(0,\ymax){\line(1,1){\tiefe}\put(0,\tiefe){\line(1,0){\lxpos}%
+         \line(0,-1){\tmpa}\put(0,-\tmpa){\line(-1,-1){\tiefe}}}}%
+     \else\put(0,\ymax){\line(1,0){\lxpos}\line(0,-1){\tmpa}}%
+     \fi%
+     \thinlines%
+     \ifnum\hbarI<0\tmpa=-\ymin\advance\tmpa by\hbarI\advance\tmpa by-\tiefe%
+       \put(\tiefe,\tiefe){\line(0,1){\ymax}}%
+       \put(\tiefe,\hbarI){\line(0,-1){\tmpa}}%
+     \else\tmpa=\ymax\advance\tmpa by-\hbarI\advance\ymax by\tiefe%
+       \put(\tiefe,\ymax){\line(0,-1){\tmpa}}%
+       \ifnum\ymin<0\tmpa=\ymin%
+         \advance\tmpa by\tiefe\put(\tiefe,\tmpa){\line(0,1){-\tmpa}}%
+       \fi%
+     \fi%
+     \ifnum\hbarI<0\tmpa=\hbarI\tmpb=0\else\tmpa=0\tmpb=\hbarI\fi%
+     \tmpc=-\ymin\advance\tmpc \tmpa%
+     \ifnum\tmpc>\tiefe\tmpc=\tiefe\fi
+     \ifnum\ymove>0\put(0,\ymin){\line(1,1){\tmpc}}\fi%
+     \advance\ymin by\ymove%
+     \multiput(0,\ymin)(0,\ystep){\deltay}{%
+       \ifdim\@ydim<\tmpa pt%
+         \tmpc=-\@ydim\divide\tmpc by65536\advance\tmpc by\tmpa%
+         \ifnum\tmpc>\tiefe\tmpc=\tiefe\fi%
+         \ifx\l@style\solid\line(1,1){\tmpc}%
+         \else\divide\tmpc by 3\multiput(0,0)(3,3){\tmpc}{.}%
+         \fi%
+       \else\ifdim\@ydim>\tmpb pt%
+              \ifx\l@style\solid\line(1,1){\tiefe}%
+              \else\tmpe=\tiefe\divide\tmpe by3\multiput(0,0)(3,3){\tmpe}{.}%
+              \fi%
+            \fi%
+       \fi%
+     }%
+   \fi%
+   \thinlines%
+   \ifnum\ymaxII<\ymax\global\ymaxII=\ymax\else\global\ymaxII=\ymaxII\fi%
+   \ifnum\yminII>\ymin\global\yminII=\ymin\else\global\yminII=\yminII\fi%
+   \global\advance\yminII by-\ymove%
+   \global\xpos=\the\xpos\global\advance\xpos by20%
+   \end{picture}
+ \egroup%
+ \global\advance\ymaxII by\tiefe\advance\ymaxII by-\yminII%
+ \advance\xpos by-\breite%
+ \begin{picture}(\the\xpos,\the\ymaxII)
+  \put(\xmove,-\yminII){\box\@tempboxa}
+ \end{picture}
+ \faktorfalse
+}
+
+
+\def\legend#1#2{%
+ \begin{picture}(20,10)
+   \put(0,0){\framebox(20,10){}}
+   \ifnum #1=2\multiput(1,0)(3,0){7}{\line(0,1){10}}\fi%
+   \ifnum #1=3\multiput(0,1)(0,3){3}{\line(1,0){20}}\fi%
+   \ifnum #1=4\multiput(1,0)(3,0){7}{\line(0,1){10}}%
+     \multiput(0,1)(0,3){3}{\line(1,0){20}}%
+   \fi%
+   \ifnum #1=5\multiput(1,0)(4,0){5}{\rule{2pt}{10pt}}%
+     \multiput(0,2)(0,4){2}{\rule{20pt}{2pt}}%
+   \fi%
+   \ifnum #1=6%
+    \put(0,0){\line(2,1){20}}\put(0,4){\line(2,1){13}}\put(8,0){\line(2,1){12}}%
+   \fi%
+   \ifnum #1=7%
+    \put(0,10){\line(2,-1){20}}\put(0,6){\line(2,-1){12}}%
+    \put(8,10){\line(2,-1){12}}%
+   \fi%
+   \ifnum #1=8\put(0,0){\rule{20\unitlength}{10\unitlength}}\fi%
+ \end{picture}%
+ \quad#2%
+}
+
+
+
+\def\my@vline{%
+  \tmpa\ymin\advance\tmpa-\ymove%
+  \put(\xpos,\tmpa){\line(0,1){\yhoehe}}
+}
+
+
+\def\my@hspace#1{%
+  \dtmpa#1pt\multiply\dtmpa\breite%
+  \tmpa\dtmpa\divide\tmpa65536%
+  \global\advance\xpos\tmpa
+}
+
+
+
+\def\mydotbox#1{\tmpe=#1\advance\tmpe by2\lower0.8pt\hbox to\tmpe pt{\dotfill}}
+
+
+\def\mylinebox#1{\line(1,0){#1}}
+
+
+%  Parameter:  umzuwandelnde Dimension.
+\def\dimIIreal#1{%
+  \dtmpa=#1\tmpa=\dtmpa\divide\tmpa by65536\advance\dtmpa by-\tmpa pt%
+  \the\tmpa\ifnum\exact>0,\fi%
+  \tmpb=\exact%
+  \@whilenum\tmpb>0\do{%
+    \advance\dtmpa by0.05pt\dtmpa=10\dtmpa\advance\dtmpa by-0.5pt%
+    \tmpa=\dtmpa\divide\tmpa by65536\advance\dtmpa by-\tmpa pt%
+    \the\tmpa\advance\tmpb by-1}%
+}
+
+
+\def\machDachI(#1,#2){%
+ \tmpa=\hoehe\advance\tmpa by-#2\tmpd=\tmpa\ifnum\tmpd<0\tmpd=-\tmpd\fi%
+ \ifnum\hoehe<0\machDachII(#1,#2)%
+ \else
+   \tmpb=\breite\advance\tmpb by-\tiefe%
+   \advance\tmpb by\inter%
+   \ifnum\tmpa<\tiefe\advance\tmpa by-\tiefe\advance\tmpb by-\tmpa\fi%
+   \ifnum\tmpb>\breite\tmpb=\breite\fi%
+   \ifnum\breite<\tiefe\put(#1,#2){\line(1,1){\breite}}%
+   \else\put(#1,#2){\line(1,1){\tiefe}\put(0,\tiefe){\line(1,0){\tmpb}}}%
+   \fi%
+ \fi%
+ \tmpa=#1\advance\tmpa by\breite%
+ \ifnum\inter>0%
+   \ifnum\tmpd<\inter\tmpb=\tiefe\else\tmpb=\inter\fi%
+   \put(\tmpa,\lhoehe){\line(1,1){\tmpb}}%
+ \fi%
+ \ifnum\lhoehe<0\put(\tmpa,\lhoehe){%
+   \ifnum\hoehe<0\tmpb=-\lhoehe\advance\tmpb by\hoehe%
+     \ifnum\tmpb>\tiefe\tmpa=\tiefe\else\tmpa=\tmpb\tmpb=0\fi%
+     \line(1,1){\tmpa}\put(0,\tmpa){\advance\tmpb by-\tiefe\line(0,1){\tmpb}}%
+   \else\tmpa=-\lhoehe\advance\tmpa by-\tiefe%
+     \ifnum-\lhoehe<\tiefe\tmpb=-\lhoehe\else\tmpb=\tiefe\fi%
+     \line(1,1){\tmpb}\put(0,\tmpb){\line(0,1){\tmpa}}%
+   \fi%
+  }%
+ \fi
+}
+
+
+\def\machDachII(#1,#2){%
+ \tmpa=#1\advance\tmpa by\breite\tmpb=0%
+ \ifnum\hoehe>0\ifnum\lhoehe<0\tmpb=\lhoehe\fi
+   \put(\tmpa,\tmpb){\line(1,1){\inter}}
+ \else\put(\tmpa,0){\line(1,1){\tiefe}}
+ \fi
+ \ifnum\hoehe<0\tmpa=\lhoehe\else\tmpa=\lhoehe\advance\tmpa by-\hoehe\fi
+ \ifnum\tmpa<0\tmpa=\inter\else\advance\tmpa by\inter\fi%
+ \put(#1,#2){\line(1,1){\tiefe}\put(0,\tiefe){\line(1,0){\breite}%
+   \line(0,-1){\tmpa}\line(-1,-1){\tiefe}}}%
+}
+
+
+\def\machHLinesI{%
+ \tmpc=\breite\advance\tmpc by2%
+ \setbox\mybox=\hbox to\tmpc pt{\dotfill}
+ \multiput(\lxpos,\ymin)(0,\ystep){\deltay}{%
+  \ifdim\@ydim<\tmpa pt\lower0.8pt\copy\mybox\fi%
+  \ifdim\@ydim>\tmpb pt\lower0.8pt\copy\mybox\fi%
+ }
+}
+
+
+\def\machHLinesII{%
+ \multiput(\lxpos,\lypos)(0,\ystep){\deltay}{%
+  \ifdim\@ydim<\tmpa pt%
+    \ifdim\@ydim>\tmpc pt\ypos=\breite\advance\ypos by-\tiefe%
+    \else\ypos=\breite%
+    \fi%
+    \my@lstyle\ypos
+  \else%
+    \ifdim\@ydim>\tmpc pt%
+    \else%
+       \ypos=-\@ydim\divide\ypos by65536%
+       \advance\ypos by\lhoehe\advance\ypos by\tiefe%
+       \tmpe=\breite\advance\tmpe by-\ypos%
+       \ifnum\ypos>0\ifnum\tmpe>0\put(\tmpe,0){\my@lstyle\ypos}\fi\fi%
+    \fi%
+  \fi%
+  \ifdim\@ydim>\tmpb pt%
+   \ypos=\breite\advance\ypos by-\tiefe%
+   \ifdim\@ydim>\tmpd pt\ypos=\breite%
+   \else\ifdim\@ydim<\hoehe pt%
+        \else\tmpe=\@ydim\divide\tmpe by65536\advance\tmpe by-\hoehe%
+          \advance\ypos by\tmpe%
+        \fi%
+   \fi%
+   \my@lstyle\ypos
+  \fi%
+ }%
+\ifnum\ymove>0%
+  \tmpb=\ymin\advance\tmpb by-\ymove\advance\tmpb by\tiefe%
+  \ifnum\lhoehe>\tmpb\ypos=\breite%
+    \ifnum\hoehe<\tmpb\advance\ypos by-\tiefe\fi%
+    \put(\lxpos,\tmpb){\line(1,0){\ypos}}
+  \fi%
+\fi%
+}
+
+
+\def\machHLines{%
+ \tmpe=\baselineskip\divide\tmpe by65536\advance\tmpe by3%
+ \ifnum\lhoehe<0\tmpa=\lhoehe\tmpb=0\else\tmpa=0\tmpb=\lhoehe\fi%
+ \ifnum\hoehe<0\tmpc=\hoehe\tmpd=0\else\tmpc=0\tmpd=\hoehe\fi%
+ \advance\tmpb by\tiefe\advance\tmpd by\tiefe%
+ \advance\lxpos by\tiefe%
+ \lypos=\ymin\advance\lypos by\tiefe%
+ \machHLinesII%
+}
+
+
+\def\@user{}
+\def\my@empty{}
+\def\my@inside{%
+ \ifnum\hoehe<0\put(\xpos,\hoehe){\makebox(\breite,\tmpa){{\my@style\@user}}}%
+ \else\put(\xpos,0){\makebox(\breite,\tmpa){{\my@style\@user}}}%
+ \fi%
+}
+\def\my@outside{%
+  \tmpa=\hoehe%
+  \ifnum\hoehe<0\advance\tmpa by-6\else\advance\tmpa by\tiefe\advance\tmpa by6%
+  \fi%
+  \tmpb=\breite\divide\tmpb by2\advance\tmpb by\xpos%
+  \ifnum\hoehe>0\advance\tmpb by\tiefe\fi%
+  \put(\tmpb,\tmpa){\makebox(0,0){{\my@style\@user}}}%
+}
+\def\my@up{%
+  \ifnum\hoehe>0\tmpa=\hoehe\advance\tmpa by\tiefe\advance\tmpa by8%
+  \else\tmpa=\tiefe\advance\tmpa by8%
+  \fi%
+  \tmpb=\breite\divide\tmpb by2\advance\tmpb by\xpos\advance\tmpb by\tiefe%
+  \put(\tmpb,\tmpa){\makebox(0,0){{\my@style\@user}}}%
+}
+\def\my@down{%
+   \ifnum\hoehe>0\tmpa=-6\else\tmpa=\hoehe\advance\tmpa by-6\fi%
+   \tmpb=\breite\divide\tmpb by2\advance\tmpb by\xpos%
+   \put(\tmpb,\tmpa){\makebox(0,0){{\my@style\@user}}}%
+}
+\def\my@axis{%
+   \ifnum\hoehe>0\tmpa=-6\else\tmpa=6\fi%
+   \tmpb=\breite\divide\tmpb by2\advance\tmpb by\xpos%
+   \put(\tmpb,\tmpa){\makebox(0,0){{\my@style\@user}}}%
+}
+
+
+\def\Monat@#1{%
+ \tmpd=#1\divide\tmpd by65536\tmpd=\the\tmpd%
+ \tmpc=\tmpd\divide\tmpc by12\multiply\tmpc by12\advance\tmpd -\tmpc%
+ \put(0,-10){\makebox(0,0){{\mytmp@style%
+   \ifcase\tmpd Dez\or Jan\or Feb\or M\"ar\or Apr\or Mai\or Jun\or Jul%
+    \or Aug\or Sep\or Okt\or Nov%
+   \fi%
+ }}}%
+}
+
+
+\def\Tag@#1{%
+ \tmpd=#1\divide\tmpd by65536\tmpd=\the\tmpd%
+ \tmpc=\tmpd\divide\tmpc by7\multiply\tmpc by7\advance\tmpd -\tmpc%
+ \put(0,-10){\makebox(0,0){{\mytmp@style%
+   \ifcase\tmpd Son\or Mon\or Die\or Mit\or Don\or Fre\or Sam\fi%
+ }}}%
+}
+
+
+\def\Zahl@n#1{%
+ \dtmpa=#1%
+ \put(0,-10){\makebox(0,0){{\mytmp@style\dimIIreal\dxmin}}}%
+}
+\endinput

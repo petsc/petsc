@@ -5,6 +5,9 @@
 #include <petscsnes.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool SNESRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode SNESRegisterAll(void);
+
 typedef struct _SNESOps *SNESOps;
 
 struct _SNESOps {
@@ -16,14 +19,14 @@ struct _SNESOps {
   PetscErrorCode (*setup)(SNES);                                /* routine to set up the nonlinear solver */
   PetscErrorCode (*solve)(SNES);                                /* actual nonlinear solver */
   PetscErrorCode (*view)(SNES,PetscViewer);
-  PetscErrorCode (*setfromoptions)(SNES);                       /* sets options from database */
+  PetscErrorCode (*setfromoptions)(PetscOptions*,SNES);                       /* sets options from database */
   PetscErrorCode (*destroy)(SNES);
   PetscErrorCode (*reset)(SNES);
   PetscErrorCode (*usercompute)(SNES,void**);
   PetscErrorCode (*userdestroy)(void**);
   PetscErrorCode (*computevariablebounds)(SNES,Vec,Vec);        /* user provided routine to set box constrained variable bounds */
   PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat,Mat,void*);
   PetscErrorCode (*load)(SNES,PetscViewer);
 };
 
@@ -92,18 +95,20 @@ struct _p_SNES {
   PetscReal   abstol;             /* absolute tolerance */
   PetscReal   stol;               /* step length tolerance*/
   PetscReal   deltatol;           /* trust region convergence tolerance */
-  PetscBool   printreason;        /* print reason for convergence/divergence after each solve */
   PetscInt    lagpreconditioner;  /* SNESSetLagPreconditioner() */
   PetscInt    lagjacobian;        /* SNESSetLagJacobian() */
+  PetscInt    jac_iter;           /* The present iteration of the Jacobian lagging */
+  PetscBool   lagjac_persist;     /* The jac_iter persists until reset */
+  PetscInt    pre_iter;           /* The present iteration of the Preconditioner lagging */
+  PetscBool   lagpre_persist;     /* The pre_iter persists until reset */
   PetscInt    gridsequence;       /* number of grid sequence steps to take; defaults to zero */
 
   PetscBool   tolerancesset;      /* SNESSetTolerances() called and tolerances should persist through SNESCreate_XXX()*/
 
-  PetscReal   norm_init;          /* the initial norm value */
-  PetscBool   norm_init_set;      /* the initial norm has been set */
   PetscBool   vec_func_init_set;  /* the initial function has been set */
 
-  SNESNormType normtype;          /* Norm computation type for SNES instance */
+  SNESNormSchedule normschedule;  /* Norm computation type for SNES instance */
+  SNESFunctionType functype;      /* Function type for the SNES instance */
 
   /* ------------------------ Default work-area management ---------------------- */
 
@@ -120,6 +125,8 @@ struct _p_SNES {
   PetscBool   conv_hist_reset;    /* reset counter for each new SNES solve */
   PetscBool   conv_malloc;
 
+  PetscBool    counters_reset;    /* reset counter for each new SNES solve */
+
   /* the next two are used for failures in the line search; they should be put elsewhere */
   PetscInt    numFailures;        /* number of unsuccessful step attempts */
   PetscInt    maxFailures;        /* maximum number of unsuccessful step attempts */
@@ -132,7 +139,8 @@ struct _p_SNES {
   PetscBool   ksp_ewconv;        /* flag indicating use of Eisenstat-Walker KSP convergence criteria */
   void        *kspconvctx;       /* Eisenstat-Walker KSP convergence context */
 
-  PetscReal   ttol;           /* used by default convergence test routine */
+  /* SNESConvergedDefault context: split it off into a separate var/struct to be passed as context to SNESConvergedDefault? */
+  PetscReal   ttol;              /* rtol*initial_residual_norm */
 
   Vec         *vwork;            /* more work vectors for Jacobian approx */
   PetscInt    nvwork;
@@ -144,20 +152,21 @@ struct _p_SNES {
   Vec         xl,xu;             /* upper and lower bounds for box constrained VI problems */
   PetscInt    ntruebounds;       /* number of non-infinite bounds set for VI box constraints */
   PetscBool   usersetbounds;     /* bounds have been set via SNESVISetVariableBounds(), rather than via computevariablebounds() callback. */
+
 };
 
 typedef struct _p_DMSNES *DMSNES;
 typedef struct _DMSNESOps *DMSNESOps;
 struct _DMSNESOps {
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computejacobian)(SNES,Vec,Mat,Mat,void*);
 
   /* objective */
   PetscErrorCode (*computeobjective)(SNES,Vec,PetscReal*,void*);
 
   /* Picard iteration functions */
   PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat,Mat,void*);
 
   /* User-defined smoother */
   PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
@@ -204,6 +213,7 @@ typedef struct {
   PetscReal threshold;           /* threshold for imposing safeguard */
   PetscReal lresid_last;         /* linear residual from last iteration */
   PetscReal norm_last;           /* function norm from last iteration */
+  PetscReal norm_first;          /* function norm from the beginning of the first iteration. */
 } SNESKSPEW;
 
 #undef __FUNCT__
@@ -213,13 +223,13 @@ PETSC_STATIC_INLINE PetscErrorCode SNESLogConvergenceHistory(SNES snes,PetscReal
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   if (snes->conv_hist && snes->conv_hist_max > snes->conv_hist_len) {
     if (snes->conv_hist)     snes->conv_hist[snes->conv_hist_len]     = res;
     if (snes->conv_hist_its) snes->conv_hist_its[snes->conv_hist_len] = its;
     snes->conv_hist_len++;
   }
-  ierr = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -228,7 +238,7 @@ PETSC_INTERN PetscErrorCode SNESVICheckLocalMin_Private(SNES,Mat,Vec,Vec,PetscRe
 PETSC_INTERN PetscErrorCode SNESReset_VI(SNES);
 PETSC_INTERN PetscErrorCode SNESDestroy_VI(SNES);
 PETSC_INTERN PetscErrorCode SNESView_VI(SNES,PetscViewer);
-PETSC_INTERN PetscErrorCode SNESSetFromOptions_VI(SNES);
+PETSC_INTERN PetscErrorCode SNESSetFromOptions_VI(PetscOptions*,SNES);
 PETSC_INTERN PetscErrorCode SNESSetUp_VI(SNES);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESVIComputeVariableBoundsFunction)(SNES,Vec,Vec);
 PETSC_INTERN PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVIComputeVariableBoundsFunction);
@@ -237,6 +247,9 @@ PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES,PetscInt,PetscReal,Pets
 
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
-PETSC_EXTERN PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval, SNES_NPCSolve;
+PETSC_EXTERN PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve;
+
+extern PetscBool SNEScite;
+extern const char SNESCitation[];
 
 #endif

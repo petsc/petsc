@@ -11,84 +11,171 @@ sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'
 
 import logger, script
 
-regressionRequirements = {'src/vec/vec/examples/tests/ex31':  set(['Matlab']),
-                          'src/vec/vec/examples/tests/ex52':  set(['Cuda'])
-                          }
-
-regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
-                                                               {'numProcs': 5}],
-                        'src/vec/vec/examples/tests/ex1_2':    {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex3':      {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex4':      {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex5':      {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex9':      {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex10':     {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex11':     {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex12':     {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex13':     {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex14':     {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex16':     {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex17':     {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex17f':    {'numProcs': 3},
-                        'src/vec/vec/examples/tests/ex21_2':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex22':     {'numProcs': 4},
-                        'src/vec/vec/examples/tests/ex23':     {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex24':     {'numProcs': 3},
-                        'src/vec/vec/examples/tests/ex25':     {'numProcs': 3},
-                        'src/vec/vec/examples/tests/ex26':     {'numProcs': 4},
-                        'src/vec/vec/examples/tests/ex28':     {'numProcs': 3},
-                        'src/vec/vec/examples/tests/ex29':     {'numProcs': 3, 'args': '-n 126'},
-                        'src/vec/vec/examples/tests/ex30f':    {'numProcs': 4},
-                        'src/vec/vec/examples/tests/ex33':     {'numProcs': 4},
-                        'src/vec/vec/examples/tests/ex36':     {'numProcs': 2, 'args': '-set_option_negidx -set_values_negidx -get_values_negidx'},
-                        'src/vec/vec/examples/tutorials/ex10':  [{'numProcs': 1, 'args': '-hdf5'},
-                                                                 {'numProcs': 2, 'args': '-binary'},
-                                                                 {'numProcs': 3, 'args': '-binary'},
-                                                                 {'numProcs': 5, 'args': '-binary'}],
-                        'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1, 'args': '-patch_size 2 -grid_size 6'},
+regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1, 'args': '-patch_size 2 -grid_size 6'},
                                                                   {'numProcs': 4, 'args': '-patch_size 2 -grid_size 4'},
                                                                   {'numProcs': 4, 'args': '-patch_size 2 -grid_size 4 -comm_size 1'},
                                                                   {'numProcs': 4, 'args': '-patch_size 2 -grid_size 4 -comm_size 2'},
                                                                   {'numProcs': 16, 'args': '-patch_size 2 -grid_size 8 -comm_size 2'}],
-                        'src/dm/impls/plex/examples/tests/ex1': [{'numProcs': 1, 'args': '-dim 3 -ctetgen_verbose 4 -dm_view ::ascii_info_detail -info -info_exclude null'},
+                        'src/mat/examples/tests/ex170':          [{'numProcs': 1, 'args': ''},
+                                                                  {'numProcs': 1, 'args': '-testnum 1'},
+                                                                  {'numProcs': 2, 'args': '-testnum 1'},
+                                                                  {'numProcs': 1, 'args': '-testnum 2'},
+                                                                  {'numProcs': 2, 'args': '-testnum 2'}],
+                        'src/dm/impls/plex/examples/tests/ex1': [# CTetGen tests 0-1
+                                                                 {'numProcs': 1, 'args': '-dim 3 -ctetgen_verbose 4 -dm_view ::ascii_info_detail -info -info_exclude null'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ::ascii_info_detail -info -info_exclude null'},
+                                                                 # Test 2D LaTex and ASCII output 2-9
                                                                  {'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_latex'},
-                                                                 {'numProcs': 1, 'args': '-dim 2 -refinement_uniform 1 -interpolate 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -refinement_uniform 1 -interpolate 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -refinement_uniform 1 -interpolate 1 -dm_view ::ascii_latex'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex'},
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -refinement_uniform 1 -interpolate 1 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -refinement_uniform 1 -interpolate 1 -dm_view ::ascii_latex'}],
-                        'src/dm/impls/plex/examples/tests/ex3': [{'numProcs': 1, 'args': '',
-                                                                  'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 identity src/dm/impls/plex/examples/tests/ex3.h'},
-                                                                 {'numProcs': 1, 'args': '-order 1'},
-                                                                 {'numProcs': 1, 'args': '-order 2'},
-                                                                 {'numProcs': 1, 'args': '-dim 3',
-                                                                  'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 3 1 identity src/dm/impls/plex/examples/tests/ex3.h'},
-                                                                 {'numProcs': 1, 'args': '-dim 3 -order 1'},
-                                                                 {'numProcs': 1, 'args': '-dim 3 -order 2'},
-                                                                 {'numProcs': 1, 'args': '-interpolate 1',
-                                                                  'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 identity src/dm/impls/plex/examples/tests/ex3.h'},
-                                                                 {'numProcs': 1, 'args': '-interpolate 1 -order 1'},
-                                                                 {'numProcs': 1, 'args': '-interpolate 1 -order 2'}],
-                        'src/dm/impls/plex/examples/tests/ex4': [{'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 1, 'args': '-dim 2 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -dm_refine 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -dm_refine 1 -interpolate 1 -test_partition -dm_view ::ascii_latex'},
+                                                                 # CGNS tests 10-11 (need to find smaller test meshes)
+                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/tut21.cgns -interpolate 1 -dm_view', 'requires': ['cgns']},
+                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/StaticMixer.cgns -interpolate 1 -dm_view', 'requires': ['cgns']},
+                                                                 # Gmsh test 12
+                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/doublet-tet.msh -interpolate 1 -dm_view'},
+                                                                 # Parallel refinement tests with overlap 13-14
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 8, 'args': '-dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -test_partition -overlap 1 -dm_view ::ascii_info_detail'},
+                                                                 # Gmsh mesh reader tests 15-18
+                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/square.msh -interpolate 1 -dm_view'},
+                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/square_bin.msh -interpolate 1 -dm_view'},
+                                                                 {'numProcs': 3, 'args': '-filename %(meshes)s/square.msh -interpolate 1 -dm_view'},
+                                                                 {'numProcs': 3, 'args': '-filename %(meshes)s/square_bin.msh -interpolate 1 -dm_view'},
+                                                                 # Parallel simple partitioner tests 19-20
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 1 -dm_refine 0 -interpolate 0 -petscpartitioner_type simple -partition_view -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 8, 'args': '-dim 2 -cell_simplex 1 -dm_refine 1 -interpolate 1 -petscpartitioner_type simple -partition_view -dm_view ::ascii_info_detail'},
+                                                                 # Fluent mesh reader tests 21-24
+                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/square.cas -interpolate 1 -dm_view'},
+                                                                 {'numProcs': 3, 'args': '-filename %(meshes)s/square.cas -interpolate 1 -dm_view'},
+                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/cube_5tets_ascii.cas -interpolate 1 -dm_view'},
+                                                                 {'numProcs': 1, 'args': '-filename %(meshes)s/cube_5tets.cas -interpolate 1 -dm_view'},
+                                                                 ],
+                        'src/dm/impls/plex/examples/tests/ex3': [# 0-2 2D P_1 on a triangle
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -porder 2'},
+                                                                 # 3-5 3D P_1 on a tetrahedron
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 2'},
+                                                                 # 6-8 2D P_2 on a triangle
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -qorder 2 -porder 2'},
+                                                                 # 9-11 3D P_2 on a tetrahedron
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 2 -num_comp 3 -qorder 2 -porder 2'},
+                                                                 # 12-14 2D P_1 on a quadrilaterial
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 0 -num_comp 2 -qorder 1', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 0 -num_comp 2 -qorder 1 -porder 1', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 0 -num_comp 2 -qorder 1 -porder 2', 'requires': 'Broken'},
+                                                                 # 15-17 2D Q_1 on a quadrilaterial
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -qorder 1 -porder 2'},
+                                                                 # 18-20 2D Q_2 on a quadrilaterial
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -qorder 2 -porder 2'},
+                                                                 # 21-24 2D P_3 on a triangle
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 3 -num_comp 2 -qorder 3 -convergence', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 3 -num_comp 2 -qorder 3 -porder 1', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 3 -num_comp 2 -qorder 3 -porder 2', 'requires': 'Broken'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 3 -num_comp 2 -qorder 3 -porder 3', 'requires': 'Broken'},
+                                                                 # 25-27 2D P_1disc on a triangle
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 2'},
+                                                                 # 28-30 2D P_1disc on a quadrilateral
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -convergence'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 1'},
+                                                                 {'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscdualspace_lagrange_continuity 0 -num_comp 2 -qorder 1 -porder 2'},
+                                                                 # Test quadrature 2D P_1 on a triangle
+                                                                 {'num': 'p1_quad_2', 'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -porder 1 -qorder 2'},
+                                                                 {'num': 'p1_quad_5', 'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -porder 1 -qorder 5'},
+                                                                 # Test quadrature 2D P_2 on a triangle
+                                                                 {'num': 'p2_quad_3', 'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -porder 2 -qorder 3'},
+                                                                 {'num': 'p2_quad_5', 'numProcs': 1, 'args': '-petscspace_order 2 -num_comp 2 -porder 2 -qorder 5'},
+                                                                 # Test quadrature 2D Q_1 on a quadrilateral
+                                                                 {'num': 'q1_quad_2', 'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -porder 1 -qorder 2'},
+                                                                 {'num': 'q1_quad_5', 'numProcs': 1, 'args': '-simplex 0 -petscspace_order 1 -petscspace_poly_tensor 1 -num_comp 2 -porder 1 -qorder 5'},
+                                                                 # Test quadrature 2D Q_2 on a quadrilateral
+                                                                 {'num': 'q2_quad_3', 'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -porder 1 -qorder 3'},
+                                                                 {'num': 'q2_quad_5', 'numProcs': 1, 'args': '-simplex 0 -petscspace_order 2 -petscspace_poly_tensor 1 -num_comp 2 -porder 1 -qorder 5'},
+                                                                 ],
+                        'src/dm/impls/plex/examples/tests/ex4': [# 2D Simplex 0-3
+                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_hybrid 0 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_hybrid 0 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 # 2D Hybrid Simplex 4-7
+                                                                 {'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -num_refinements 1 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 2 -refinement_uniform 1 -dm_view ::ascii_info_detail'}],
-                        'src/dm/impls/plex/examples/tests/ex5': [{'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 # 3D Simplex 8-11
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_hybrid 0 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_hybrid 0 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 # 2D Quad 12-13
+                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 # 3D Hex 14-15
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 # 3D Hybrid Simplex 16-19
+                                                                 {'numProcs': 1, 'args': '-dim 3 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 # 3D Hybrid Hex 20-23
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 # 2D Hybrid Simplex 24-24
+                                                                 {'numProcs': 1, 'args': '-dim 2 -test_num 1 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 # 3D Multiple Refinement 25-26
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_hybrid 0 -test_num 2 -num_refinements 2 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -test_num 1 -num_refinements 2 -dm_view ::ascii_info_detail'},
+                                                                 # 2D Hybrid Quad 27-28
+                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 # 1D Simplex 29-31
+                                                                 {'numProcs': 1, 'args': '-dim 1 -cell_hybrid 0 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 1 -cell_hybrid 0 -num_refinements 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 1 -cell_hybrid 0 -num_refinements 5 -dm_view ::ascii_info_detail'}],
+                        'src/dm/impls/plex/examples/tests/ex5': [# 2D Simplex 0-1
+                                                                 {'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
+                                                                 # 2D Quads 2-3
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -dm_view ::ascii_info_detail'},
+                                                                 # 3D Simplex 4-5
                                                                  {'numProcs': 1, 'args': '-dim 3 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 3 -dm_view ::ascii_info_detail'},
+                                                                 # 3D Hex 6-7
                                                                  {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -dm_view ::ascii_info_detail'}],
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -dm_view ::ascii_info_detail'},
+                                                                 # Examples from PyLith 8-12
+                                                                 {'numProcs': 1, 'args': '-dim 2 -test_num 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -test_num 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -test_num 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -test_num 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -test_num 2 -dm_view ::ascii_info_detail'},],
                         'src/dm/impls/plex/examples/tests/ex6': [{'numProcs': 1, 'args': '-malloc_dump'},
                                                                  {'numProcs': 1, 'args': '-malloc_dump -pend 10000'},
                                                                  {'numProcs': 1, 'args': '-malloc_dump -pend 10000 -fill 0.05'},
                                                                  {'numProcs': 1, 'args': '-malloc_dump -pend 10000 -fill 0.25'}],
-                        'src/dm/impls/plex/examples/tests/ex7': [{'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
+                        'src/dm/impls/plex/examples/tests/ex7': [# Two cell test meshes 0-7
+                                                                 {'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -dm_view ::ascii_info_detail'},
@@ -96,270 +183,449 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                  {'numProcs': 2, 'args': '-dim 3 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -testnum 1 -dm_view ::ascii_info_detail'}],
-                        'src/dm/impls/plex/examples/tests/ex8': [{'numProcs': 1, 'args': '-dm_view ::ascii_info_detail'}],
+                                                                 # 2D Hybrid Mesh 8
+                                                                 {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -testnum 1 -dm_view ::ascii_info_detail'},
+                                                                 # TetGen meshes 9-10
+                                                                 {'numProcs': 1, 'args': '-dim 2 -use_generator -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -use_generator -dm_view ::ascii_info_detail'},
+                                                                 # Cubit meshes 11
+                                                                 {'numProcs': 1, 'args': '-dim 3 -filename %(meshes)s/blockcylinder-50.exo -dm_view ::ascii_info_detail'},
+                                                                 #{'numProcs': 1, 'args': '-dim 3 -filename /PETSc3/petsc/blockcylinder-50.exo -dm_view ::ascii_info_detail'},
+                                                                 #{'numProcs': 1, 'args': '-dim 3 -filename /PETSc3/petsc/blockcylinder-20.exo'},
+                                                                 ],
+                        'src/dm/impls/plex/examples/tests/ex8': [{'numProcs': 1, 'args': '-dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-transform'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -transform'},
+                                                                 {'numProcs': 1, 'args': '-run_type file -filename %(meshes)s/simpleblock-100.exo -dm_view ::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125', 'requires': ['exodusii']},
+                                                                 {'numProcs': 1, 'args': '-interpolate -run_type file -filename %(meshes)s/simpleblock-100.exo -dm_view ::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125 -centroid -1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0 -normal 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 -vol 1.0,1.0,1.0', 'requires': ['exodusii']}],
+                        'src/dm/impls/plex/examples/tests/ex9': [# 2D Simplex P_1 scalar tests
+                                                                 {'numProcs': 1, 'args': '-num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 3.6e-7'},
+                                                                 {'numProcs': 1, 'args': '-refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 2 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 3.6e-7'},
+                                                                 {'numProcs': 1, 'args': '-num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 4.5e-7'},
+                                                                 {'numProcs': 1, 'args': '-refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 2 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 4.7e-7'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -refinement_limit 1.0e-4 -num_dof 1,0,0 -iterations 2 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.1e-6'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -refinement_limit 1.0e-4 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 2 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.2e-6'},
+                                                                 # 2D Simplex P_1 vector tests
+                                                                 # 2D Simplex P_2 scalar tests
+                                                                 # 2D Simplex P_2 vector tests
+                                                                 # 2D Simplex P_2/P_1 vector/scalar tests
+                                                                 # 2D Quad P_1 scalar tests
+                                                                 # 2D Quad P_1 vector tests
+                                                                 # 2D Quad P_2 scalar tests
+                                                                 # 2D Quad P_2 vector tests
+                                                                 # 3D Simplex P_1 scalar tests
+                                                                 # 3D Simplex P_1 vector tests
+                                                                 # 3D Simplex P_2 scalar tests
+                                                                 # 3D Simplex P_2 vector tests
+                                                                 # 3D Hex P_1 scalar tests
+                                                                 # 3D Hex P_1 vector tests
+                                                                 # 3D Hex P_2 scalar tests
+                                                                 # 3D Hex P_2 vector tests
+                                                                 ],
+                        'src/dm/impls/plex/examples/tests/ex10': [# Two cell tests
+                                                                  {'numProcs': 1, 'args': '-dim 2 -interpolate 1 -cell_simplex 1 -num_dof 1,0,0 -mat_view'},
+                                                                  {'numProcs': 1, 'args': '-dim 2 -interpolate 1 -cell_simplex 0 -num_dof 1,0,0 -mat_view'},
+                                                                  {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -cell_simplex 1 -num_dof 1,0,0,0 -mat_view'},
+                                                                  {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -cell_simplex 0 -num_dof 1,0,0,0 -mat_view'},
+                                                                  # Refined tests
+                                                                  {'numProcs': 1, 'args': '-dim 2 -interpolate 1 -cell_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0'},
+                                                                  {'numProcs': 1, 'args': '-dim 2 -interpolate 1 -cell_simplex 0 -refinement_uniform       -num_dof 1,0,0'},
+                                                                  {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -cell_simplex 1 -refinement_limit 0.00625 -num_dof 1,0,0,0'},
+                                                                  {'numProcs': 1, 'args': '-dim 3 -interpolate 1 -cell_simplex 0 -refinement_uniform       -num_dof 1,0,0,0'},
+                                                                  # Parallel tests
+                                                                  ],
+                        'src/dm/impls/plex/examples/tests/ex11': [{'numProcs': 1, 'args': ''}],
+                        'src/dm/impls/plex/examples/tests/ex12': [{'numProcs': 1, 'args': '-dm_view ascii:mesh.tex:ascii_latex'},
+                                                                  # Parallel, no overlap tests 1-2
+                                                                  {'numProcs': 3, 'args': '-test_partition -dm_view ::ascii_info_detail'},
+                                                                  {'numProcs': 8, 'args': '-test_partition -dm_view ::ascii_info_detail'},
+                                                                  # Parallel, level-1 overlap tests 3-4
+                                                                  {'numProcs': 3, 'args': '-test_partition -overlap 1 -dm_view ::ascii_info_detail'},
+                                                                  {'numProcs': 8, 'args': '-test_partition -overlap 1 -dm_view ::ascii_info_detail'},
+                                                                  # Parallel, level-2 overlap test 5
+                                                                  {'numProcs': 8, 'args': '-test_partition -overlap 2 -dm_view ::ascii_info_detail'},
+                                                                  # Parallel load balancing, test 6-7
+                                                                  {'numProcs': 2, 'args': '-test_partition -overlap 1 -dm_view ::ascii_info_detail'},
+                                                                  {'numProcs': 2, 'args': '-test_partition -overlap 1 -load_balance -dm_view ::ascii_info_detail'}],
+                        'src/dm/impls/plex/examples/tests/ex13': [{'numProcs': 1, 'args': '-test_partition 0 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view'},
+                                                                  {'numProcs': 2, 'args': '-dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view'},
+                                                                  {'numProcs': 2, 'args': '-test_num 1 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view'},
+                                                                  {'numProcs': 3, 'args': '-dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view'},
+                                                                  ],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tutorials/ex1': [{'numProcs': 1, 'args': ''},
                                                                      {'numProcs': 1, 'args': '-dim 3'},],
                         'src/dm/impls/plex/examples/tutorials/ex1f90': [{'numProcs': 1, 'args': ''},
                                                                         {'numProcs': 1, 'args': '-dim 3'},],
-                        'src/dm/impls/mesh/examples/tests/ex1': [{'numProcs': 1, 'args': '-dim 2 -dm_view'},
-                                                                 {'numProcs': 1, 'args': '-dim 2 -dm_view -interpolate'},
-                                                                 {'numProcs': 1, 'args': '-dim 3 -dm_view'},
-                                                                 {'numProcs': 1, 'args': '-dim 3 -dm_view -interpolate'},
-                                                                 {'numProcs': 3, 'args': '-dim 2 -dm_view'},
-                                                                 {'numProcs': 3, 'args': '-dim 2 -dm_view -interpolate'},
-                                                                 {'numProcs': 8, 'args': '-dim 2 -dm_view'},
-                                                                 {'numProcs': 8, 'args': '-dim 2 -dm_view -interpolate'},
-                                                                 {'numProcs': 6, 'args': '-dim 3 -dm_view'},
-                                                                 {'numProcs': 6, 'args': '-dim 3 -dm_view -interpolate'},
-                                                                 {'numProcs': 10, 'args': '-dim 2 -dm_view -refinement_limit 7.63e-6'},
-                                                                 {'numProcs': 10, 'args': '-dim 3 -dm_view -refinement_limit 1.00e-7'},
-                                                                 {'numProcs': 50, 'args': '-dim 2 -dm_view -refinement_limit 7.63e-6'},
-                                                                 {'numProcs': 50, 'args': '-dim 3 -dm_view -refinement_limit 1.00e-7'}],
-                        'src/dm/impls/mesh/examples/tutorials/ex1': [{'numProcs': 1},
-                                                                     {'numProcs': 2, 'args': '-base_file src/dm/impls/mesh/examples/tutorials/data/ex1_3d_big -dim 3'}],
-                        'src/dm/impls/mesh/examples/tests/ex3': [{'numProcs': 1, 'args': '-malloc_dump -dm_mesh_view -dm_mesh_new_impl'},
-                                                                 {'numProcs': 2, 'args': '-malloc_dump -dm_mesh_view -dm_mesh_new_impl'},
-                                                                 {'numProcs': 3, 'args': '-malloc_dump -dm_mesh_view -dm_mesh_new_impl'},
-                                                                 {'numProcs': 5, 'args': '-malloc_dump -dm_mesh_view -dm_mesh_new_impl'}],
-                        'src/dm/impls/mesh/examples/tests/ex4': [{'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'},
-                                                                 {'numProcs': 2, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'}],
-                        'src/dm/impls/mesh/examples/tests/ex5f90': [{'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'},
-                                                                    {'numProcs': 2, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'}],
-                        'src/dm/impls/mesh/examples/tests/ex6': [{'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'},
-                                                                 {'numProcs': 2, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'}],
-                        'src/dm/impls/mesh/examples/tests/ex7f90': [{'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'},
-                                                                    {'numProcs': 2, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'}],
-                        'src/dm/impls/mesh/examples/tests/ex8': [{'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'},
-                                                                 {'numProcs': 2, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'}],
-                        'src/dm/impls/mesh/examples/tests/ex9f90': [{'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'},
-                                                                    {'numProcs': 2, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'}],
-                        'src/dm/impls/mesh/examples/tests/ex10': [{'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'},
-                                                                  {'numProcs': 2, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'}],
-                        'src/dm/impls/mesh/examples/tests/ex11f90': [{'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'},
-                                                                     {'numProcs': 2, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'}],
-                        'src/dm/impls/mesh/examples/tests/TestMeshExodus': [{'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri.gen'},
-                                                                            {'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-tri2.gen'},
-                                                                            {'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-quad.gen'},
-                                                                           #{'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Square-mixed.gen'},
-                                                                            {'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Tet.gen'},
-                                                                            {'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Hex.gen'},
-                                                                            {'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Tet.gen -interpolate'},
-                                                                            {'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Hex.gen -interpolate'}],
-                        'src/ksp/ksp/examples/tests/ex10':    [{'numProcs': 1, 'args': '-m 3 -matconvert_type seqaij -ksp_monitor_short'}],
-                        'src/ksp/ksp/examples/tutorials/ex4': [{'numProcs': 1, 'args': '-info -info_exclude null,vec'},
-                                                               {'numProcs': 1, 'args': '-da_grid_x 10 -da_grid_y 10 -solve -ksp_monitor'},
-                                                               {'numProcs': 2, 'args': '-da_grid_x 10 -da_grid_y 10'}],
-                                                               #{'numProcs': 1, 'args': '-info'}],
-                        'src/ksp/ksp/examples/tutorials/ex12': {'numProcs': 2, 'args': '-ksp_gmres_cgs_refinement_type refine_always'},
-                        'src/ksp/ksp/examples/tutorials/ex40': {'numProcs': 1, 'args': '-mat_no_inode -ksp_monitor_short'},
-                        'src/ksp/ksp/examples/tutorials/ex54':[{'numProcs': 4, 'args': '-ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned'},
-                                                               {'numProcs': 4, 'args': '-ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa'}],
-                        'src/ksp/ksp/examples/tutorials/ex55':[{'numProcs': 4, 'args': '-ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned'},
-                                                               {'numProcs': 4, 'args': '-ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa'}],
-                        'src/ksp/ksp/examples/tutorials/ex56':[{'numProcs': 8, 'args': '-ne 11 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa'}],
-                        'src/snes/examples/tutorials/ex12':   [# 2D serial P1 test
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -show_initial -dm_plex_print_fem 1',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian src/snes/examples/tutorials/ex12.h'},
-                                                               # 3D serial P1 test
-                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -show_initial -dm_plex_print_fem 1 -dm_view',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 1 1 laplacian src/snes/examples/tutorials/ex12.h'},                                                                                    {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 0 -show_initial -dm_plex_print_fem 1 -dm_view'},
-                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type neumann   -interpolate 0 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view'},
-                                                               # Using ExodusII mesh  ::ascii_info_detail
+                        'src/dm/impls/plex/examples/tutorials/ex2': [# CGNS meshes 0-1
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/tut21.cgns -interpolate 1', 'requires': ['cgns', 'Broken']},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/grid_c.cgns -interpolate 1', 'requires': ['cgns']},
+                                                                     # Gmsh meshes 2-4
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/doublet-tet.msh -interpolate 1'},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/square.msh -interpolate 1'},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/square_bin.msh -interpolate 1 -binary 1'},
+                                                                     # Exodus meshes 5-9
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/sevenside-quad.exo -interpolate 1', 'requires': ['exodusii']},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/sevenside-quad-15.exo -interpolate 1', 'requires': ['exodusii']},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/squaremotor-30.exo -interpolate 1', 'requires': ['exodusii']},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/blockcylinder-50.exo -interpolate 1', 'requires': ['exodusii']},
+                                                                     {'numProcs': 1, 'args': '-filename %(meshes)s/simpleblock-100.exo -interpolate 1', 'requires': ['exodusii']},
+                                                                     ],
+                        'src/snes/examples/tutorials/ex12':   [# 2D serial P1 test 0-4
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 1 -bd_petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_order 1 -bd_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               # 2D serial P2 test 5-8
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 2 -bd_petscspace_order 2 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -petscspace_order 2 -bd_petscspace_order 2 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail'},
+                                                               # 3D serial P1 test 9-12
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 1 -bd_petscspace_order 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view'},
+                                                               # Analytic variable coefficient 13-20
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient analytic -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1'},
+                                                               # P1 variable coefficient 21-28
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -mat_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               # P0 variable coefficient 29-36
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1'},
+                                                               # Using ExodusII mesh 37-38 BROKEN
                                                                {'numProcs': 1, 'args': '-run_type test -f %(meshes)s/sevenside.exo -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian src/snes/examples/tutorials/ex12.h'},
+                                                                'requires': ['exodusii', 'Broken']},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -f /Users/knepley/Downloads/kis_modell_tet2.exo -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 1 1 laplacian src/snes/examples/tutorials/ex12.h'},                     ],
-                        'src/snes/examples/tutorials/ex31':   [# Decoupled field Dirichlet tests 0-6
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0     -forcing_type constant -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient 2 1 1 1 identity src/snes/examples/tutorials/ex31.h'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0     -forcing_type constant -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type additive -fieldsplit_0_ksp_type fgmres -fieldsplit_0_pc_type fieldsplit -fieldsplit_0_pc_fieldsplit_type schur -fieldsplit_0_pc_fieldsplit_schur_factorization_type full -fieldsplit_0_fieldsplit_velocity_ksp_type preonly -fieldsplit_0_fieldsplit_velocity_pc_type lu -fieldsplit_0_fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_0_fieldsplit_pressure_pc_type jacobi -fieldsplit_temperature_ksp_type preonly -fieldsplit_temperature_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -forcing_type constant -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type additive -fieldsplit_0_ksp_type fgmres -fieldsplit_0_pc_type fieldsplit -fieldsplit_0_pc_fieldsplit_type schur -fieldsplit_0_pc_fieldsplit_schur_factorization_type full -fieldsplit_0_fieldsplit_velocity_ksp_type preonly -fieldsplit_0_fieldsplit_velocity_pc_type lu -fieldsplit_0_fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_0_fieldsplit_pressure_pc_type jacobi -fieldsplit_temperature_ksp_type preonly -fieldsplit_temperature_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0     -forcing_type linear   -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type additive -fieldsplit_0_ksp_type fgmres -fieldsplit_0_pc_type fieldsplit -fieldsplit_0_pc_fieldsplit_type schur -fieldsplit_0_pc_fieldsplit_schur_factorization_type full -fieldsplit_0_fieldsplit_velocity_ksp_type preonly -fieldsplit_0_fieldsplit_velocity_pc_type lu -fieldsplit_0_fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_0_fieldsplit_pressure_pc_type jacobi -fieldsplit_temperature_ksp_type preonly -fieldsplit_temperature_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -forcing_type linear   -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type additive -fieldsplit_0_ksp_type fgmres -fieldsplit_0_pc_type fieldsplit -fieldsplit_0_pc_fieldsplit_type schur -fieldsplit_0_pc_fieldsplit_schur_factorization_type full -fieldsplit_0_fieldsplit_velocity_ksp_type preonly -fieldsplit_0_fieldsplit_velocity_pc_type lu -fieldsplit_0_fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_0_fieldsplit_pressure_pc_type jacobi -fieldsplit_temperature_ksp_type preonly -fieldsplit_temperature_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0     -forcing_type cubic    -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type additive -fieldsplit_0_ksp_type fgmres -fieldsplit_0_pc_type fieldsplit -fieldsplit_0_pc_fieldsplit_type schur -fieldsplit_0_pc_fieldsplit_schur_factorization_type full -fieldsplit_0_fieldsplit_velocity_ksp_type preonly -fieldsplit_0_fieldsplit_velocity_pc_type lu -fieldsplit_0_fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_0_fieldsplit_pressure_pc_type jacobi -fieldsplit_temperature_ksp_type preonly -fieldsplit_temperature_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -forcing_type cubic    -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type additive -fieldsplit_0_ksp_type fgmres -fieldsplit_0_pc_type fieldsplit -fieldsplit_0_pc_fieldsplit_type schur -fieldsplit_0_pc_fieldsplit_schur_factorization_type full -fieldsplit_0_fieldsplit_velocity_ksp_type preonly -fieldsplit_0_fieldsplit_velocity_pc_type lu -fieldsplit_0_fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_0_fieldsplit_pressure_pc_type jacobi -fieldsplit_temperature_ksp_type preonly -fieldsplit_temperature_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
-                                                               # 2D serial freeslip tests 7-9
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0     -forcing_type cubic    -bc_type freeslip  -interpolate 1 -show_initial -dm_plex_print_fem 1',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient 2 1 1 1 identity src/snes/examples/tutorials/ex31.h'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0     -forcing_type cubic    -bc_type freeslip  -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type additive -fieldsplit_0_ksp_type fgmres -fieldsplit_0_pc_type fieldsplit -fieldsplit_0_pc_fieldsplit_type schur -fieldsplit_0_pc_fieldsplit_schur_factorization_type full -fieldsplit_0_fieldsplit_velocity_ksp_type preonly -fieldsplit_0_fieldsplit_velocity_pc_type lu -fieldsplit_0_fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_0_fieldsplit_pressure_pc_type jacobi -fieldsplit_temperature_ksp_type preonly -fieldsplit_temperature_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -forcing_type cubic    -bc_type freeslip  -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type additive -fieldsplit_0_ksp_type fgmres -fieldsplit_0_pc_type fieldsplit -fieldsplit_0_pc_fieldsplit_type schur -fieldsplit_0_pc_fieldsplit_schur_factorization_type full -fieldsplit_0_fieldsplit_velocity_ksp_type preonly -fieldsplit_0_fieldsplit_velocity_pc_type lu -fieldsplit_0_fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_0_fieldsplit_pressure_pc_type jacobi -fieldsplit_temperature_ksp_type preonly -fieldsplit_temperature_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'}],
+                                                                'requires': ['exodusii', 'Broken']},
+                                                               # Full solve 39-42
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.015625 -interpolate 1 -petscspace_order 2 -pc_type gamg -ksp_rtol 1.0e-10 -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.015625 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 2 -pc_type svd -ksp_rtol 1.0e-10 -snes_monitor_short -snes_converged_reason'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.03125 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 3 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 2 -dm_plex_print_fem 0 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short -fas_levels_2_snes_type newtonls -fas_levels_2_pc_type svd -fas_levels_2_ksp_rtol 1.0e-10 -fas_levels_2_snes_monitor_short'},
+                                                               # Restarting 0-1
+                                                               {'num': 'restart_0', 'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -dm_view hdf5:sol.h5 -vec_view hdf5:sol.h5::append'},
+                                                               {'num': 'restart_1', 'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -f sol.h5 -restart'},
+                                                               # Periodicity 0
+                                                               {'num': 'periodic_0', 'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1'},
+                                                               # FAS
+                                                               {'num': 'fas_newton_0', 'numProcs': 1, 'args': '-run_type full -dm_refinement_limit 0.03125 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type newtonls -fas_levels_1_pc_type svd -fas_levels_1_ksp_rtol 1.0e-10 -fas_levels_1_snes_monitor_short'},
+                                                               {'num': 'fas_ngs_0', 'numProcs': 1, 'args': '-run_type full -dm_refinement_limit 0.03125 -variable_coefficient nonlinear -interpolate 1 -petscspace_order 1 -snes_type fas -snes_fas_levels 2 -pc_type svd -ksp_rtol 1.0e-10 -fas_coarse_pc_type svd -fas_coarse_ksp_rtol 1.0e-10 -fas_coarse_snes_monitor_short -snes_monitor_short -snes_linesearch_type basic -fas_coarse_snes_linesearch_type basic -snes_converged_reason -dm_refine_hierarchy 1 -snes_view -fas_levels_1_snes_type ngs -fas_levels_1_snes_monitor_short'},
+],
                         'src/snes/examples/tutorials/ex33':   [{'numProcs': 1, 'args': '-snes_converged_reason -snes_monitor_short'}],
+                        'src/snes/examples/tutorials/ex36':   [# 2D serial P2/P1 tests 0-1
+                                                               {'numProcs': 1, 'args': ''}],
                         'src/snes/examples/tutorials/ex52':   [# 2D Laplacian 0-3
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian src/snes/examples/tutorials/ex52.h',
-                                                                'source': ['src/snes/examples/tutorials/ex52_integrateElement.cu']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch -gpu'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch -gpu -gpu_batches 2'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
                                                                # 2D Laplacian refined 4-8
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu -gpu_batches 2'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu -gpu_batches 4'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -batch -gpu -gpu_batches 4', 'requires': ['cuda']},
                                                                # 2D Elasticity 9-12
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 elasticity src/snes/examples/tutorials/ex52.h'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch -gpu'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
                                                                # 2D Elasticity refined 13-17
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2'},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu -gpu_batches 4'},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -op_type elasticity', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -op_type elasticity -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu -gpu_batches 4', 'requires': ['cuda']},
                                                                # 3D Laplacian 18-20
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 1 1 laplacian src/snes/examples/tutorials/ex52.h'},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -batch'},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -batch -gpu'},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -batch -gpu', 'requires': ['cuda']},
                                                                # 3D Laplacian refined 21-24
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function'},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -batch'},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -batch -gpu'},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -batch -gpu -gpu_batches 2'},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
                                                                # 3D Elasticity 25-27
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -op_type elasticity',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 3 1 elasticity src/snes/examples/tutorials/ex52.h'},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch'},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch -gpu'},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity',
+                                                                'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
                                                                # 3D Elasticity refined 28-31
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity'},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity -batch'},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity -batch -gpu'},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2'},
-                                                               # 'source': ['src/snes/examples/tutorials/ex52_integrateElement.cu']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -op_type elasticity', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -op_type elasticity -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -petscspace_order 1 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
+                                                               # 2D Laplacian OpenCL 32-35
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -petscspace_order 1 -petscfe_type basic -dm_plex_print_fem 1',
+                                                                'requires': ['opencl']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -petscspace_order 1 -petscfe_type opencl -dm_plex_print_fem 1 -dm_plex_print_tol 1.0e-06',
+                                                                'requires': ['opencl']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -petscspace_order 1 -petscfe_type opencl -petscfe_num_blocks 2 -dm_plex_print_fem 1 -dm_plex_print_tol 1.0e-06',
+                                                                'requires': ['opencl']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -petscspace_order 1 -petscfe_type opencl -petscfe_num_blocks 2 -petscfe_num_batches 2 -dm_plex_print_fem 1 -dm_plex_print_tol 1.0e-06',
+                                                                'requires': ['opencl']},
+                                                               # 2D Laplacian Parallel Refinement 36-37
+                                                               {'numProcs': 2, 'args': '-dm_view -interpolate -refinement_limit 0.0625 -petscspace_order 1 -refinement_uniform -compute_function -batch -gpu -gpu_batches 2', 'requires': ['opencl']},
+                                                               {'numProcs': 2, 'args': '-dm_view -interpolate -refinement_limit 0.0625 -petscspace_order 1 -refinement_uniform -refinement_rounds 3 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['opencl']},
                                                                ],
                         'src/snes/examples/tutorials/ex62':   [# 2D serial P1 tests 0-3
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -show_initial -dm_plex_print_fem 1',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1'},
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -show_initial -dm_plex_print_fem 1'},
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                # 2D serial P2 tests 4-5
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
 
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                # Parallel tests 6-17
-                                                               {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -dm_plex_print_fem 1',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
-                                                               {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -dm_plex_print_fem 1'},
-                                                               {'numProcs': 5, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -dm_plex_print_fem 1'},
-                                                               {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -dm_plex_print_fem 1'},
-                                                               {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -dm_plex_print_fem 1'},
-                                                               {'numProcs': 5, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -dm_plex_print_fem 1'},
-                                                               {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -dm_plex_print_fem 1'},
-                                                               {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -dm_plex_print_fem 1'},
-                                                               {'numProcs': 5, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -dm_plex_print_fem 1'},
-                                                               {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -dm_plex_print_fem 1'},
-                                                               {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -dm_plex_print_fem 1'},
-                                                               {'numProcs': 5, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -dm_plex_print_fem 1'},
+                                                               {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
+                                                               {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
+                                                               {'numProcs': 5, 'args': '-run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
+                                                               {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
+                                                               {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
+                                                               {'numProcs': 5, 'args': '-run_type test -refinement_limit 0.0    -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
+                                                               {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
+                                                               {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
+                                                               {'numProcs': 5, 'args': '-run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
+                                                               {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
+                                                               {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
+                                                               {'numProcs': 5, 'args': '-run_type test -refinement_limit 0.0625 -test_partition -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -dm_plex_print_fem 1'},
                                                                # Full solutions 18-29
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -pc_type jacobi -ksp_rtol 1.0e-10 -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
-                                                               {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
-                                                               {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -snes_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-10 -snes_monitor_short -snes_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -snes_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -snes_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
+                                                               {'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view', 'parser': 'Solver'},
                                                                # Stokes preconditioners 30-36
                                                                #   Jacobi
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -ksp_gmres_restart 100 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_gmres_restart 100 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
                                                                #  Block diagonal \begin{pmatrix} A & 0 \\ 0 & I \end{pmatrix}
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
                                                                #  Block triangular \begin{pmatrix} A & B \\ 0 & I \end{pmatrix}
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
                                                                #  Diagonal Schur complement \begin{pmatrix} A & 0 \\ 0 & S \end{pmatrix}
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type diag -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type diag -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
                                                                #  Upper triangular Schur complement \begin{pmatrix} A & B \\ 0 & S \end{pmatrix}
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
                                                                #  Lower triangular Schur complement \begin{pmatrix} A & B \\ 0 & S \end{pmatrix}
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type lower -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type lower -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
                                                                #  Full Schur complement \begin{pmatrix} I & 0 \\ B^T A^{-1} & I \end{pmatrix} \begin{pmatrix} A & 0 \\ 0 & S \end{pmatrix} \begin{pmatrix} I & A^{-1} B \\ 0 & I \end{pmatrix}
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
                                                                #  SIMPLE \begin{pmatrix} I & 0 \\ B^T A^{-1} & I \end{pmatrix} \begin{pmatrix} A & 0 \\ 0 & B^T diag(A)^{-1} B \end{pmatrix} \begin{pmatrix} I & diag(A)^{-1} B \\ 0 & I \end{pmatrix}
-                                                               #{'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               #{'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
                                                                #  SIMPLEC \begin{pmatrix} I & 0 \\ B^T A^{-1} & I \end{pmatrix} \begin{pmatrix} A & 0 \\ 0 & B^T rowsum(A)^{-1} B \end{pmatrix} \begin{pmatrix} I & rowsum(A)^{-1} B \\ 0 & I \end{pmatrix}
-                                                               #{'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_inner_pc_jacobi_rowsum -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi -fieldsplit_pressure_upper_pc_jacobi_rowsum -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               #{'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_inner_pc_jacobi_type rowsum -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi -fieldsplit_pressure_upper_pc_jacobi_type rowsum -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
                                                                # Stokes preconditioners with MF Jacobian action 37-42
                                                                #   Jacobi
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -jacobian_mf -ksp_gmres_restart 100 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -jacobian_mf -ksp_gmres_restart 100 -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver', 'requires': 'Broken'},
                                                                #  Block diagonal \begin{pmatrix} A & 0 \\ 0 & I \end{pmatrix}
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver', 'requires': 'Broken'},
                                                                #  Block triangular \begin{pmatrix} A & B \\ 0 & I \end{pmatrix}
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver', 'requires': 'Broken'},
                                                                #  Diagonal Schur complement \begin{pmatrix} A & 0 \\ 0 & S \end{pmatrix}
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type diag -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type diag -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver', 'requires': 'Broken'},
                                                                #  Upper triangular Schur complement \begin{pmatrix} A & B \\ 0 & S \end{pmatrix}
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver', 'requires': 'Broken'},
                                                                #  Lower triangular Schur complement \begin{pmatrix} A & B \\ 0 & S \end{pmatrix}
-                                                               #{'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type lower -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               #{'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type lower -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver', 'requires': 'Broken'},
                                                                #  Full Schur complement \begin{pmatrix} A & B \\ B^T & S \end{pmatrix}
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
-                                                               # 3D serial P1 tests 43-45
-                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -show_initial -dm_plex_print_fem 1',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 3 1 laplacian 3 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
-                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1'},
-                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 0 -show_initial -dm_plex_print_fem 1'},
-                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -jacobian_mf -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver', 'requires': 'Broken'},
+                                                               # 3D serial P1 tests 43-46
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
+                                                               # Full runs with quads
+                                                               #   FULL Schur with LU/Jacobi
+                                                               {'num': 'quad_q2q1_full', 'numProcs': 1, 'args': '-run_type full -simplex 0 -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscspace_poly_tensor -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
+                                                               {'num': 'quad_q2p1_full', 'numProcs': 1, 'args': '-run_type full -simplex 0 -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -vel_petscspace_poly_tensor -pres_petscspace_order 1 -pres_petscdualspace_lagrange_continuity 0 -ksp_type fgmres -ksp_gmres_restart 10 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_ksp_type gmres -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -ksp_converged_reason -snes_view -show_solution 0', 'parser': 'Solver'},
                                                                ],
-
-                        'src/snes/examples/tutorials/ex67':   [{'numProcs': 1, 'args': '-dm_view -snes_monitor -ksp_monitor -snes_view',
-                                                                'setup': 'bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 2 1 2 1 laplacian 2 0 1 1 gradient src/snes/examples/tutorials/ex67.h'},
-                                                               {'numProcs': 2, 'args': '-dm_view -snes_monitor -ksp_monitor -snes_view'}],
-                        'src/snes/examples/tutorials/ex72':   [# 2D serial P1 tests 0-1
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -show_initial -dm_plex_print_fem 1 -show_jacobian',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex72.h'},
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -show_initial -dm_plex_print_fem 1 -show_jacobian'},
-                                                               # 2D serial P2 tests 2-3
-                                                               #{'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -show_initial -dm_plex_print_fem 1 -show_jacobian',
-                                                               # 'setup': './bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
-
-                                                               #{'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -show_initial -dm_plex_print_fem 1 -show_jacobian'},
-                                                               # Parallel tests 4-9
-                                                               {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -show_jacobian',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex72.h'},
-                                                               {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -show_jacobian'},
-                                                               {'numProcs': 2, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -show_jacobian'},
-                                                               {'numProcs': 3, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -show_jacobian'},
-                                                               {'numProcs': 5, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -show_jacobian'},
-                                                               # Full solutions 10-17
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0    -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               #{'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               #{'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               #{'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
-                                                               #{'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
-                                                               #{'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view',
-                                                               # 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
-                                                               #{'numProcs': 2, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view'},
-                                                               #{'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
-                                                               #{'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'}
-],
-                        'src/ts/examples/tutorials/ex11':      [{'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo'},
+                        'src/ts/examples/tutorials/ex11':      [# 2D Advection 0-10
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo'},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo'},
                                                                 {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo'},
                                                                 {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo'},
                                                                 {'numProcs': 8, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad.exo'},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo -ts_type rosw'},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/squaremotor-30.exo -ufv_split_faces'},
-                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/blockcylinder-50.exo'}],
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo -dm_refine 1'},
+                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo -dm_refine 2'},
+                                                                {'numProcs': 8, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo -dm_refine 2'},
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad.exo'},
+                                                                # 2D Shallow water 11
+                                                                {'num': 'sw_0', 'numProcs': 1, 'args': ' -ufv_vtk_interval 0 -f %(meshes)s/annulus-20.exo -bc_wall 100,101 -physics sw -ufv_cfl 5 -petscfv_type leastsquares -petsclimiter_type sin -ts_final_time 1 -ts_ssp_type rks2 -ts_ssp_nstages 10 -monitor height,energy'},
+                                                                # 3D Advection 12
+                                                                {'num': 'adv_0', 'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/blockcylinder-50.exo -bc_inflow 100,101,200 -bc_outflow 201', 'requires': 'Broken'},
+                                                                ],
+                        'src/ts/examples/tutorials/ex18':      [# 2D harmonic velocity 0-7
+                                                                {'num': 'p1p1', 'numProcs': 1, 'args': '-x_bd_type none -y_bd_type none -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_factor_shift_type nonzero -ts_monitor -snes_monitor -ksp_monitor -dmts_check'},
+                                                                {'num': 'p2p1', 'numProcs': 1, 'args': '-x_bd_type none -y_bd_type none -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ts_monitor -snes_monitor -ksp_monitor -dmts_check'},
+                                                                {'num': 'p1p1_xper', 'numProcs': 1, 'args': '-dm_refine 1 -y_bd_type none -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor -ksp_monitor -dmts_check'},
+                                                                {'num': 'p1p1_xper_ref', 'numProcs': 1, 'args': '-dm_refine 3 -y_bd_type none -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor -ksp_monitor -dmts_check'},
+                                                                {'num': 'p1p1_xyper', 'numProcs': 1, 'args': '-dm_refine 1 -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor -ksp_monitor -dmts_check'},
+                                                                {'num': 'p1p1_xyper_ref', 'numProcs': 1, 'args': '-dm_refine 3 -velocity_petscspace_order 1 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor -ksp_monitor -dmts_check'},
+                                                                {'num': 'p2p1_xyper', 'numProcs': 1, 'args': '-dm_refine 1 -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor -ksp_monitor -dmts_check'},
+                                                                {'num': 'p2p1_xyper_ref', 'numProcs': 1, 'args': '-dm_refine 3 -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -porosity_petscspace_order 1 -porosity_petscspace_poly_tensor -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -pc_type lu -pc_factor_shift_type nonzero -ksp_rtol 1.0e-8 -ts_monitor -snes_monitor -ksp_monitor -dmts_check'},
+                                                                # 2D Advection to match ex11 8-10
+                                                                #   Must check that FV BCs propagate to coarse meshes
+                                                                #   Must check that FV BC ids propagate to coarse meshes
+                                                                #   Must check that FE+FV BCs work at the same time
+                                                                {'num': 'adv_0', 'numProcs': 1, 'args': '-f %(meshes)s/sevenside-quad.exo -x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -ts_view -dm_view'},
+                                                                {'num': 'adv_1', 'numProcs': 1, 'args': '-x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type ssp -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 1,2,4 -bc_outflow 3 -ts_view -dm_view'},
+                                                                {'num': 'adv_2', 'numProcs': 1, 'args': '-x_bd_type none -y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 3,4 -bc_outflow 1,2 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason -ksp_converged_reason'},
+                                                                {'num': 'adv_3', 'numProcs': 1, 'args': '-y_bd_type none -use_fv -velocity_dist zero -porosity_dist tilted -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 3 -bc_outflow 1 -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason -ksp_converged_reason'},
+                                                                # 2D Advection+Harmonic 11-
+                                                                {'num': 'adv_harm_0', 'numProcs': 1, 'args': '-x_bd_type none -y_bd_type none -velocity_petscspace_order 2 -velocity_petscspace_poly_tensor -use_fv -velocity_dist harmonic -porosity_dist gaussian -ts_type beuler -ts_final_time 2.0 -ts_max_steps 1000 -ts_dt 0.993392 -bc_inflow 1,2,4 -bc_outflow 3 -use_implicit -snes_fd_color -snes_fd_color_use_mat -mat_coloring_type greedy -ksp_max_it 100 -ts_view -dm_view -snes_converged_reason -ksp_converged_reason -snes_monitor -dmts_check'},
+                                                                ],
+                        'src/tao/examples/tutorials/ex1':      [# 2D 0-
+                                                                {'numProcs': 1, 'args': '-run_type test -potential_petscspace_order 2 -conductivity_petscspace_order 1 -multiplier_petscspace_order 2'},
+                                                                {'numProcs': 1, 'args': '-run_type full -potential_petscspace_order 2 -conductivity_petscspace_order 1 -multiplier_petscspace_order 2 -snes_monitor -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition selfp -fieldsplit_0_pc_type lu -fieldsplit_1_ksp_rtol 1.0e-10 -fieldsplit_1_pc_type lu -sol_vec_view'}
+                                                                ],
                         }
 
 def noCheckCommand(command, status, output, error):
   ''' Do no check result'''
   return
+
+class IdentityParser(object):
+  def __init__(self):
+    return
+
+  def parse(self, text):
+    return text, ''
+
+class KSP(object):
+  def __init__(self, atol = 1.0e-12, rtol = 1.0e-8):
+    self.res  = []
+    self.atol = atol
+    self.rtol = rtol
+    return
+
+  def addResidual(self, n, res):
+    if not len(self.res) == n: raise RuntimeError('Invalid KSP residual '+str(res)+' at iterate '+str(n))
+    self.res.append(res)
+    return
+
+  def __eq__(self, s):
+    return all([abs(a-b) < self.atol or abs((a-b)/a) < self.rtol for a, b in zip(self.res, s.res)])
+
+  def __str__(self):
+    return 'SNES:\n'+str(self.res)
+
+class SNES(object):
+  def __init__(self, atol = 1.0e-12, rtol = 1.0e-8):
+    self.res = []
+    self.atol = atol
+    self.rtol = rtol
+    return
+
+  def addResidual(self, n, res):
+    if not len(self.res) == n: raise RuntimeError('Invalid SNES residual at iterate '+str(n))
+    self.res.append(res)
+    return
+
+  def __eq__(self, s):
+    return all([abs(a-b) < self.atol or abs((a-b)/a) < self.rtol for a, b in zip(self.res, s.res)])
+
+  def __str__(self):
+    return 'SNES:\n'+str(self.res)
+
+class Error(object):
+  def __init__(self, atol = 1.0e-12, rtol = 1.0e-8):
+    self.res  = 0.0
+    self.atol = atol
+    self.rtol = rtol
+    return
+
+  def setNorm(self, res):
+    self.res = res
+    return
+
+  def __eq__(self, s):
+    return all([abs(a-b) < self.atol or abs((a-b)/a) < self.rtol for a, b in [(self.res, s.res)]])
+
+  def __str__(self):
+    return 'L_2 Error:\n'+str(self.res)
+
+class SolverParser(object):
+  def __init__(self, atol = 1.0e-12):
+    import re
+
+    self.atol    = atol
+    self.reSNES  = re.compile(r'\s*(?P<it>\d+) SNES Function norm (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
+    self.reKSP   = re.compile(r'\s*(?P<it>\d+) KSP Residual norm (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
+    self.reError = re.compile(r'L_2 Error: (?P<norm>\d+\.\d+(e(\+|-)\d+)?)')
+    return
+
+  def parse(self, text):
+    lines  = text.split('\n')
+    objs   = []
+    stack  = []
+    excess = []
+    for line in lines:
+      mSNES  = self.reSNES.match(line)
+      mKSP   = self.reKSP.match(line)
+      mError = self.reError.match(line)
+      if mSNES:
+        it = int(mSNES.group('it'))
+        if it == 0: stack.append(SNES(atol = self.atol))
+        stack[-1].addResidual(it, float(mSNES.group('norm')))
+      elif mKSP:
+        it = int(mKSP.group('it'))
+        if it == 0: stack.append(KSP(atol = self.atol))
+        stack[-1].addResidual(it, float(mKSP.group('norm')))
+      elif mError:
+        o = Error(atol = self.atol)
+        o.setNorm(float(mError.group('norm')))
+        objs.append(o)
+      elif line.strip().startswith('Nonlinear solve converged'):
+        objs.append(stack.pop())
+      elif line.strip().startswith('Linear solve converged'):
+        objs.append(stack.pop())
+      else:
+        excess.append(line)
+    return objs, '\n'.join(excess)
 
 class MakeParser(object):
   def __init__(self, maker):
@@ -394,7 +660,7 @@ class MakeParser(object):
     '''Parses a PETSc action
     - Return a dictionary for the portions of a run'''
     import re
-    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+)(?P<args>[-.,\w ]+)>', lines[0])
+    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+)(?P<args>[\'%-.,\w ]+)>', lines[0])
     if not m:
       raise RuntimeError('Could not parse launch sequence:\n'+lines[0])
     comparison = 'Not present'
@@ -667,6 +933,7 @@ class DirectoryTreeWalker(logger.Logger):
     self.defines = {}
     self.defines.update(self.configInfo.base.defines)
     self.defines.update(self.configInfo.compilers.defines)
+    self.defines.update(self.configInfo.indexType.defines)
     self.defines.update(self.configInfo.libraryOptions.defines)
     for p in self.configInfo.framework.packages:
       self.defines.update(p.defines)
@@ -817,12 +1084,13 @@ class DependencyBuilder(logger.Logger):
     '''
     with file(depFile) as f:
       try:
-        target, deps = f.read().split(':')
+        target, deps = f.read().split(':', 1)
       except ValueError as e:
         self.logPrint('ERROR in dependency file %s: %s' % (depFile, str(e)))
     target = target.split()[0]
     if (target != self.sourceManager.getObjectName(source)): print target, self.sourceManager.getObjectName(source)
     assert(target == self.sourceManager.getObjectName(source))
+    deps = deps.split('\n\n')[0]
     deps = [d for d in deps.replace('\\','').split() if not os.path.splitext(d)[1] == '.mod']
     if not os.path.basename(deps[0]) == source:
       raise RuntimeError('ERROR: first dependency %s should be %s' % (deps[0], source))
@@ -876,25 +1144,23 @@ class PETScConfigureInfo(object):
     self.mpi             = self.framework.require('config.packages.MPI',         None)
     self.base            = self.framework.require('config.base',                 None)
     self.setCompilers    = self.framework.require('config.setCompilers',         None)
-    self.arch            = self.framework.require('PETSc.utilities.arch',        None)
-    self.petscdir        = self.framework.require('PETSc.utilities.petscdir',    None)
-    self.languages       = self.framework.require('PETSc.utilities.languages',   None)
-    self.debugging       = self.framework.require('PETSc.utilities.debugging',   None)
-    self.debuggers       = self.framework.require('PETSc.utilities.debuggers',   None)
-    self.make            = self.framework.require('config.programs',        None)
-    self.CHUD            = self.framework.require('PETSc.utilities.CHUD',        None)
+    self.arch            = self.framework.require('PETSc.options.arch',        None)
+    self.petscdir        = self.framework.require('PETSc.options.petscdir',    None)
+    self.languages       = self.framework.require('PETSc.options.languages',   None)
+    self.debugging       = self.framework.require('PETSc.options.debugging',   None)
+    self.debuggers       = self.framework.require('config.utilities.debuggers',   None)
     self.compilers       = self.framework.require('config.compilers',            None)
     self.types           = self.framework.require('config.types',                None)
     self.headers         = self.framework.require('config.headers',              None)
     self.functions       = self.framework.require('config.functions',            None)
     self.libraries       = self.framework.require('config.libraries',            None)
-    self.scalarType      = self.framework.require('PETSc.utilities.scalarTypes', None)
-    self.memAlign        = self.framework.require('PETSc.utilities.memAlign',    None)
-    self.libraryOptions  = self.framework.require('PETSc.utilities.libraryOptions', None)
-    self.fortrancpp      = self.framework.require('PETSc.utilities.fortranCPP', None)
-    self.debuggers       = self.framework.require('PETSc.utilities.debuggers', None)
-    self.sharedLibraries = self.framework.require('PETSc.utilities.sharedLibraries', None)
-    self.sowing          = self.framework.require('PETSc.packages.sowing', None)
+    self.scalarType      = self.framework.require('PETSc.options.scalarTypes', None)
+    self.indexType       = self.framework.require('PETSc.options.indexTypes', None)
+    self.memAlign        = self.framework.require('PETSc.options.memAlign',    None)
+    self.libraryOptions  = self.framework.require('PETSc.options.libraryOptions', None)
+    self.fortrancpp      = self.framework.require('PETSc.options.fortranCPP', None)
+    self.sharedLibraries = self.framework.require('PETSc.options.sharedLibraries', None)
+    self.sowing          = self.framework.require('config.packages.sowing', None)
     return
 
 class PETScMaker(script.Script):
@@ -907,17 +1173,17 @@ class PETScMaker(script.Script):
      raise RuntimeError('You must provide a valid PETSC_ARCH')
    return arch
 
- def __init__(self):
+ def __init__(self, logname = 'make.log'):
    import RDict
    import os
 
    argDB = RDict.RDict(None, None, 0, 0, readonly = True)
    self.petscDir = os.environ['PETSC_DIR']
    arch  = self.findArch()
-   argDB.saveFilename = os.path.join(self.petscDir, arch, 'conf', 'RDict.db')
+   argDB.saveFilename = os.path.join(self.petscDir, arch, 'lib','petsc-conf', 'RDict.db')
    argDB.load()
    script.Script.__init__(self, argDB = argDB)
-   self.logName = 'make.log'
+   self.logName = logname
    #self.log = sys.stdout
    return
 
@@ -956,7 +1222,7 @@ class PETScMaker(script.Script):
    # Setup directories
    self.petscDir     = self.configInfo.petscdir.dir
    self.petscArch    = self.configInfo.arch.arch
-   self.petscConfDir = os.path.join(self.petscDir, self.petscArch, 'conf')
+   self.petscConfDir = os.path.join(self.petscDir, self.petscArch, 'lib','petsc-conf')
    self.petscLibDir  = os.path.join(self.petscDir, self.petscArch, 'lib')
    # Setup source database
    self.sourceDBFilename = os.path.join(self.petscConfDir, 'source.db')
@@ -1065,11 +1331,9 @@ class PETScMaker(script.Script):
    includes = ['-I'+inc for inc in [os.path.join(self.petscDir, self.petscArch, 'include'), os.path.join(self.petscDir, 'include')]]
    flags    = []
    flags.append(self.configInfo.setCompilers.getCompilerFlags())                        # Add PCC_FLAGS
-   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
+   flags.extend([self.configInfo.setCompilers.CPPFLAGS]) # Add CPP_FLAGS
    if self.configInfo.compilers.generateDependencies[language]:
      flags.append(self.configInfo.compilers.dependenciesGenerationFlag[language])
-   if not language == 'FC':
-     flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscDir, ''))               # Define __INSDIR__
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
    if not self.dryRun:
@@ -1123,11 +1387,9 @@ class PETScMaker(script.Script):
    includes = ['-I'+inc for inc in [os.path.join(self.petscDir, self.petscArch, 'include'), os.path.join(self.petscDir, 'include')]]
    flags    = []
    flags.append(self.configInfo.setCompilers.getCompilerFlags())                        # Add PCC_FLAGS
-   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
+   flags.extend([self.configInfo.setCompilers.CPPFLAGS]) # Add CPP_FLAGS
    if self.configInfo.compilers.generateDependencies[language]:
      flags.append(self.configInfo.compilers.dependenciesGenerationFlag[language])
-   if not language == 'FC':
-     flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscDir, ''))               # Define __INSDIR__
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    if not self.dryRun:
      pipe = self.runShellCommandParallel(cmd)
@@ -1203,11 +1465,12 @@ class PETScMaker(script.Script):
 
  def linkShared(self, sharedLib, libDir, tmpDir):
    osName = sys.platform
+   self.logPrint('Making shared libraries for OS %s using language %s' % (osName, self.configInfo.setCompilers.language[-1]))
    # PCC_LINKER PCC_LINKER_FLAGS
-   linker      = self.configInfo.setCompilers.getLinker()
+   linker      = self.configInfo.setCompilers.getSharedLinker()
    linkerFlags = self.configInfo.setCompilers.getLinkerFlags()
    packageIncludes, packageLibs = self.getPackageInfo()
-   extraLibs = self.configInfo.libraries.toStringNoDupes(self.configInfo.compilers.flibs+self.configInfo.compilers.cxxlibs+self.configInfo.compilers.LIBS.split(' '))+self.configInfo.CHUD.LIBS
+   extraLibs = self.configInfo.libraries.toStringNoDupes(self.configInfo.compilers.flibs+self.configInfo.compilers.cxxlibs+self.configInfo.compilers.LIBS.split(' '))
    sysLib      = ''
    sysLib.replace('-Wl,-rpath', '-L')
    externalLib = packageLibs+' '+extraLibs
@@ -1235,11 +1498,11 @@ class PETScMaker(script.Script):
          cmd += 'MACOSX_DEPLOYMENT_TARGET=10.5 '
        if self.configInfo.setCompilers.getLinkerFlags().find('-Wl,-commons,use_dylibs') > -1:
          flags += '-Wl,-commons,use_dylibs'
-       cmd += self.configInfo.setCompilers.getSharedLinker()+' -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup '+flags+' -o '+sharedLib+' *.o -L'+libDir+' '+packageLibs+' '+sysLib+' '+extraLibs+' -lm -lc'
+       cmd += linker+' -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup '+flags+' -o '+sharedLib+' *.o -L'+libDir+' '+packageLibs+' '+sysLib+' '+extraLibs+' -lm -lc'
      elif osName == 'cygwin':
        cmd = linker+' '+linkerFlags+' -shared -o '+sharedLib+' *.o '+externalLib
      else:
-       raise RuntimeError('Do not know how to make shared library for your crappy '+osName+' OS')
+       raise RuntimeError('Do not know how to make shared library for your '+osName+' OS')
      oldDir = os.getcwd()
      os.chdir(tmpDir)
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
@@ -1296,7 +1559,7 @@ class PETScMaker(script.Script):
      if status:
        self.logPrint("ERROR IN LINK ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
-     # TODO: Move dsymutil stuff from PETSc.utilities.debuggers to config.compilers
+     # TODO: Move dsymutil stuff from PETSc.options.debuggers to config.compilers
      if hasattr(self.configInfo.debuggers, 'dsymutil'):
        (output, error, status) = self.executeShellCommand(self.configInfo.debuggers.dsymutil+' '+executable, checkCommand = noCheckCommand, log=self.log)
        if status:
@@ -1453,57 +1716,70 @@ class PETScMaker(script.Script):
        os.remove(fname)
    return
 
- def checkTestOutput(self, testDir, executable, cmd, output, testNum, replace = False):
+ def checkTestOutputGeneric(self, parser, testDir, executable, cmd, output, testNum):
    from difflib import unified_diff
    outputName = os.path.join(testDir, 'output', os.path.basename(executable)+'_'+testNum+'.out')
    ret        = 0
-   if not os.path.isfile(outputName):
-     if replace:
-       with file(outputName, 'w') as f:
-         f.write(output)
-       self.logPrint("REPLACED: Regression output file %s (test %s) was stored" % (outputName, testNum), debugSection='screen')
+   with file(outputName) as f:
+     output                  = output.strip()
+     parse, excess           = parser.parse(output)
+     validOutput             = f.read().strip().replace('\r', '') # Jed is now stripping output it appears
+     validParse, validExcess = parser.parse(validOutput)
+     if not validParse == parse or not validExcess == excess:
+       self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match\n" % (executable, testNum), debugSection = 'screen')
+       for linum,line in enumerate(unified_diff(validOutput.split('\n'), output.split('\n'), fromfile=outputName, tofile=cmd)):
+         end = '' if linum < 3 else '\n' # Control lines have their own end-lines
+         self.logWrite(line+end, debugSection = 'screen', forceScroll = True)
+       self.logPrint('Reference output from %s\n' % outputName)
+       self.logPrint(validOutput, indent = 0)
+       self.logPrint('Current output from %s' % cmd)
+       self.logPrint(output, indent = 0)
+       ret = -1
      else:
-       self.logPrint("MISCONFIGURATION: Regression output file %s (test %s) is missing" % (outputName, testNum), debugSection='screen')
-   else:
-     with file(outputName) as f:
-       validOutput = f.read()
-       if not validOutput == output:
-         if replace:
-           with file(outputName, 'w') as f:
-             f.write(output)
-           self.logPrint("REPLACED: Regression output file %s (test %s) was stored" % (outputName, testNum), debugSection='screen')
-         else:
-           self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match\n" % (executable, testNum), debugSection = 'screen')
-           for linum,line in enumerate(unified_diff(validOutput.split('\n'), output.split('\n'), fromfile=outputName, tofile=cmd)):
-               end = '' if linum < 3 else '\n' # Control lines have their own end-lines
-               self.logWrite(line+end, debugSection = 'screen', forceScroll = True)
-           self.logPrint('Reference output from %s\n' % outputName)
-           self.logPrint(validOutput, indent = 0)
-           self.logPrint('Current output from %s' % cmd)
-           self.logPrint(output, indent = 0)
-           ret = -1
-       else:
-         self.logPrint("TEST SUCCESS: Regression output for %s (test %s) matches" % (executable, testNum))
+       self.logPrint("TEST SUCCESS: Regression output for %s (test %s) matches" % (executable, testNum))
    return ret
+
+ def checkTestOutput(self, numProcs, testDir, executable, cmd, output, testNum):
+   return self.checkTestOutputGeneric(IdentityParser(), testDir, executable, cmd, output, testNum)
+
+ def checkTestOutputSolver(self, numProcs, testDir, executable, cmd, output, testNum):
+   if numProcs > 1: parser = SolverParser(atol = 1.0e-9)
+   else:            parser = SolverParser()
+   return self.checkTestOutputGeneric(parser, testDir, executable, cmd, output, testNum)
 
  def getTestCommand(self, executable, **params):
    numProcs = params.get('numProcs', 1)
-   args     = params.get('args', '') % dict(meshes=os.path.join(self.petscDir,'share','petsc','datafiles','meshes'))
+   try:
+     args   = params.get('args', '') % dict(meshes=os.path.join(self.petscDir,'share','petsc','datafiles','meshes'))
+   except ValueError:
+     args   = params.get('args', '')
    hosts    = ','.join(['localhost']*int(numProcs))
-   return ' '.join([self.configInfo.mpi.mpiexec, '-hosts', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
+   return ' '.join([self.configInfo.mpi.mpiexec, '-host', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
 
  def runTest(self, testDir, executable, testNum, replace, **params):
    '''testNum can be any string'''
+   num = str(testNum)
    cmd = self.getTestCommand(executable, **params)
-   self.logPrint('Running #%s: %s' % (str(testNum), cmd), debugSection='screen')
+   numProcs = params.get('numProcs', 1)
+   self.logPrint('Running #%s: %s' % (num, cmd), debugSection='screen')
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
+     outputName = os.path.join(testDir, 'output', os.path.basename(executable)+'_'+num+'.out')
      if status:
        self.logPrint("TEST ERROR: Failed to execute %s\n" % executable, debugSection='screen')
        self.logPrint(output+error, indent = 0, debugSection='screen')
        ret = -2
+     elif replace:
+       outputName = os.path.join(testDir, 'output', os.path.basename(executable)+'_'+str(testNum)+'.out')
+       with file(outputName, 'w') as f:
+         f.write(output+error)
+       self.logPrint("REPLACED: Regression output file %s (test %s) was stored" % (outputName, str(testNum)), debugSection='screen')
+       ret = 0
+     elif not os.path.isfile(outputName):
+       self.logPrint("MISCONFIGURATION: Regression output file %s (test %s) is missing" % (outputName, testNum), debugSection='screen')
+       ret = 0
      else:
-       ret = self.checkTestOutput(testDir, executable, cmd, output+error, str(testNum), replace)
+       ret = getattr(self, 'checkTestOutput'+params.get('parser', ''))(numProcs, testDir, executable, cmd, output+error, num)
    return ret
 
  def regressionTestsDir(self, dirname, dummy):
@@ -1577,12 +1853,12 @@ class PETScMaker(script.Script):
    oldPath = sys.path
    sys.path.append(os.path.join(self.petscDir, 'bin', 'maint'))
    from generatefortranstubs import main, processf90interfaces
-   for d in os.listdir(os.path.join(self.petscDir, 'include', 'finclude', 'ftn-auto')):
-     if d.endswith('-tmpdir'): shutil.rmtree(os.path.join(self.petscDir, 'include', 'finclude', 'ftn-auto', d))
+   for d in os.listdir(os.path.join(self.petscDir, 'include', 'petsc-finclude', 'ftn-auto')):
+     if d.endswith('-tmpdir'): shutil.rmtree(os.path.join(self.petscDir, 'include', 'petsc-finclude', 'ftn-auto', d))
    main(self.petscDir, self.configInfo.sowing.bfort, os.getcwd(),0)
    processf90interfaces(self.petscDir,0)
-   for d in os.listdir(os.path.join(self.petscDir, 'include', 'finclude', 'ftn-auto')):
-     if d.endswith('-tmpdir'): shutil.rmtree(os.path.join(self.petscDir, 'include', 'finclude', 'ftn-auto', d))
+   for d in os.listdir(os.path.join(self.petscDir, 'include', 'petsc-finclude', 'ftn-auto')):
+     if d.endswith('-tmpdir'): shutil.rmtree(os.path.join(self.petscDir, 'include', 'petsc-finclude', 'ftn-auto', d))
    sys.path = oldPath
    return
 

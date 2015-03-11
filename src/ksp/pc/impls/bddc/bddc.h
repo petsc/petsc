@@ -1,169 +1,105 @@
-
 #if !defined(__pcbddc_h)
 #define __pcbddc_h
 
 #include <../src/ksp/pc/impls/is/pcis.h>
+#include <../src/ksp/pc/impls/bddc/bddcstructs.h>
 
-/* BDDC requires metis 5.0.1 for multilevel */
-#include "metis.h"
-#define MetisInt    idx_t
-#define MetisScalar real_t
-
-
-/* Structure for graph partitioning (adapted from Metis) */
-struct _PCBDDCGraph {
-  PetscInt    nvtxs;
-  PetscInt    ncmps;
-  PetscInt    *xadj;
-  PetscInt    *adjncy;
-  PetscInt    **neighbours_set;
-  PetscInt    *where;
-  PetscInt    *which_dof;
-  PetscInt    *cptr;
-  PetscInt    *queue;
-  PetscInt    *count;
-  PetscMPIInt *where_ncmps;
-  PetscBool   *touched;
-};
-
-typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType;
-typedef struct _PCBDDCGraph *PCBDDCGraph;
+/* typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType; */
 
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
   /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */
-  PC_IS pcis;
-
+  PC_IS         pcis;
   /* Coarse stuffs needed by BDDC application in KSP */
-  PetscInt    coarse_size;
-  Mat         coarse_mat;
-  Vec         coarse_vec;
-  Vec         coarse_rhs;
-  KSP         coarse_ksp;
-  Mat         coarse_phi_B;
-  Mat         coarse_phi_D;
-  PetscInt    local_primal_size;
-  PetscInt    *local_primal_indices;
-  PetscMPIInt *local_primal_displacements;
-  PetscMPIInt *local_primal_sizes;
-  PetscMPIInt replicated_primal_size;
-  PetscMPIInt *replicated_local_primal_indices;
-  PetscScalar *replicated_local_primal_values;
-  VecScatter  coarse_loc_to_glob;
-
+  Vec           coarse_vec;
+  Vec           coarse_rhs;
+  KSP           coarse_ksp;
+  Mat           coarse_phi_B;
+  Mat           coarse_phi_D;
+  Mat           coarse_psi_B;
+  Mat           coarse_psi_D;
+  PetscInt      local_primal_size;
+  PetscInt      coarse_size;
+  PetscInt*     global_primal_indices;
+  VecScatter    coarse_loc_to_glob;
   /* Local stuffs needed by BDDC application in KSP */
-  Vec        vec1_P;
-  Vec        vec1_C;
-  Mat        local_auxmat1;
-  Mat        local_auxmat2;
-  Vec        vec1_R;
-  Vec        vec2_R;
-  VecScatter R_to_B;
-  VecScatter R_to_D;
-  KSP        ksp_R;
-  KSP        ksp_D;
-  Vec        vec4_D;
-
+  Vec           vec1_P;
+  Vec           vec1_C;
+  Mat           local_auxmat1;
+  Mat           local_auxmat2;
+  Vec           vec1_R;
+  Vec           vec2_R;
+  IS            is_R_local;
+  VecScatter    R_to_B;
+  VecScatter    R_to_D;
+  KSP           ksp_R;
+  KSP           ksp_D;
+  PetscBool     issym;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
-  IS        *ISForFaces;
-  IS        *ISForEdges;
-  IS        ISForVertices;
-  PetscInt  n_ISForFaces;
-  PetscInt  n_ISForEdges;
-  PetscInt  n_constraints;
-  PetscInt  n_vertices;
-  Mat       ConstraintMatrix;
-  PetscBool usechangeofbasis;
-  PetscBool usechangeonfaces;
-  Mat       ChangeOfBasisMatrix;
-  Vec       original_rhs;
-  Vec       temp_solution;
-  Mat       local_mat;
-  PetscBool use_exact_dirichlet;
-
+  ISLocalToGlobalMapping BtoNmap;
+  PetscInt      n_constraints;
+  PetscInt      n_vertices;
+  PetscInt      n_actual_vertices;
+  Mat           ConstraintMatrix;
+  PetscBool     new_primal_space;
+  PetscBool     new_primal_space_local;
+  PetscInt      *primal_indices_local_idxs;
+  PetscBool     use_change_of_basis;
+  PetscBool     use_change_on_faces;
+  Mat           ChangeOfBasisMatrix;
+  Mat           user_ChangeOfBasisMatrix;
+  Mat           new_global_mat;
+  Vec           original_rhs;
+  Vec           temp_solution;
+  Mat           local_mat;
+  PetscBool     use_exact_dirichlet_trick;
+  PetscBool     ksp_guess_nonzero;
+  PetscBool     rhs_change;
   /* Some defaults on selecting vertices and constraints*/
-  PetscBool vertices_flag;
-  PetscBool constraints_flag;
-  PetscBool faces_flag;
-  PetscBool edges_flag;
-
+  PetscBool     use_local_adj;
+  PetscBool     use_vertices;
+  PetscBool     use_faces;
+  PetscBool     use_edges;
   /* Some customization is possible */
-  PCBDDCGraph              mat_graph;
-  MatNullSpace             NullSpace;
-  MatNullSpace             CoarseNullSpace;
-  PetscBool                use_nnsp_true;
-  PetscInt                 n_ISForDofs;
-  IS                       *ISForDofs;
-  IS                       NeumannBoundaries;
-  IS                       DirichletBoundaries;
-  PetscBool                inexact_prec_type;
-  CoarseProblemType        coarse_problem_type;
-  CoarseCommunicationsType coarse_communications_type;
-  PetscInt                 coarsening_ratio;
-  PetscInt                 current_level;
-  PetscInt                 max_levels;
-
+  PetscBool                  recompute_topography;
+  PCBDDCGraph                mat_graph;
+  MatNullSpace               onearnullspace;
+  PetscObjectState           *onearnullvecs_state;
+  MatNullSpace               NullSpace;
+  IS                         user_primal_vertices;
+  PetscBool                  use_nnsp_true;
+  PetscBool                  use_qr_single;
+  PetscBool                  user_provided_isfordofs;
+  PetscInt                   n_ISForDofs;
+  PetscInt                   n_ISForDofsLocal;
+  IS                         *ISForDofs;
+  IS                         *ISForDofsLocal;
+  IS                         NeumannBoundaries;
+  IS                         NeumannBoundariesLocal;
+  IS                         DirichletBoundaries;
+  IS                         DirichletBoundariesLocal;
+  PetscBool                  switch_static;
+  PetscInt                   coarsening_ratio;
+  PetscInt                   current_level;
+  PetscInt                   max_levels;
+  PetscInt                   redistribute_coarse;
+  IS                         coarse_subassembling;
+  IS                         coarse_subassembling_init;
+  PetscBool                  use_coarse_estimates;
+  /* scaling */
+  Vec                        work_scaling;
+  PetscBool                  use_deluxe_scaling;
+  PCBDDCDeluxeScaling        deluxe_ctx;
+  PetscInt                   deluxe_threshold;
+  PetscBool                  deluxe_rebuild;
+  PetscInt                   deluxe_layers;
+  PetscBool                  deluxe_compute_rowadj;
+  PetscBool                  deluxe_use_useradj;
   /* For verbose output of some bddc data structures */
-  PetscBool   dbg_flag;
-  PetscViewer dbg_viewer;
+  PetscInt                   dbg_flag;
+  PetscViewer                dbg_viewer;
 } PC_BDDC;
 
-/* prototypes for functions contained in bddc.c */
-static PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
-static PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
-static PetscErrorCode PCBDDCAdaptNullSpace(PC);
-static PetscErrorCode PCBDDCCoarseSetUp(PC);
-static PetscErrorCode PCBDDCFindConnectedComponents(PCBDDCGraph,PetscInt);
-static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC,PetscScalar*);
-static PetscErrorCode PCBDDCManageLocalBoundaries(PC);
-static PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC);
-static PetscErrorCode PCBDDCSolveSaddlePoint(PC);
-static PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,Vec,Vec,InsertMode,ScatterMode);
-static PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,Vec,Vec,InsertMode,ScatterMode);
-static PetscErrorCode PCBDDCCreateConstraintMatrix(PC);
-
-/* feti-dp */
-typedef struct {
-  PetscInt   n_lambda;
-  Vec        lambda_local;
-  Vec        temp_solution_B;
-  Vec        temp_solution_D;
-  Mat        B_delta;
-  Mat        B_Ddelta;
-  VecScatter l2g_lambda;
-  PC         pc;
-} FETIDPMat_ctx;
-
-typedef struct {
-  Vec        lambda_local;
-  Mat        B_Ddelta;
-  VecScatter l2g_lambda;
-  PC         pc;
-} FETIDPPC_ctx;
-
-/* inexact solvers with nullspace correction */
-typedef struct {
-  Mat basis_mat;
-  Mat Kbasis_mat;
-  Mat Lbasis_mat;
-  PC  local_pc;
-  Vec work_small_1;
-  Vec work_small_2;
-  Vec work_full_1;
-  Vec work_full_2;
-} NullSpaceCorrection_ctx;
-
-static PetscErrorCode PCBDDCAdaptLocalProblem(PC,IS);
-static PetscErrorCode PCBDDCDestroyNullSpaceCorrectionPC(PC);
-static PetscErrorCode PCBDDCApplyNullSpaceCorrectionPC(PC,Vec,Vec);
-static PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx**);
-static PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
-static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx*);
-static PetscErrorCode PCBDDCCreateFETIDPPCContext(PC,FETIDPPC_ctx**);
-static PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
-static PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat,FETIDPPC_ctx*);
-static PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
-static PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
 
 #endif /* __pcbddc_h */

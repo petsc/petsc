@@ -10,6 +10,7 @@ static char help[] = ".\n";
       ex9.c is the 2d version of this code
 */
 
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
 
@@ -24,7 +25,7 @@ typedef struct {
 
 extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 extern PetscErrorCode InitialConditions(DM,Vec);
-extern PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat,Mat,void*);
 
 
 #undef __FUNCT__
@@ -51,7 +52,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,user.N,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_MIRROR,-8,user.N,1,NULL,&da);CHKERRQ(ierr);
 
   for (i=0; i<user.N; i++) {
     ierr = PetscSNPrintf(Name,16,"Void size %d",(int)(i+1));
@@ -63,7 +64,8 @@ int main(int argc,char **argv)
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&U);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -197,7 +199,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian"
-PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat *Jpre,MatStructure *str,void *ctx)
+PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat J,Mat Jpre,void *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       i,c,Mx,xs,xm,nc;
@@ -217,7 +219,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
 
   ierr = DMDAVecGetArrayDOF(da,U,&u);CHKERRQ(ierr);
 
-  ierr = MatZeroEntries(*Jpre);CHKERRQ(ierr);
+  ierr = MatZeroEntries(Jpre);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     for (c=0; c<N; c++) {
       nc        = 0;
@@ -225,7 +227,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
       col[nc].c = c; col[nc].i = i-1; vals[nc++] = -sx;
       col[nc].c = c; col[nc].i = i;   vals[nc++] = 2.0*sx + a;
       col[nc].c = c; col[nc].i = i+1; vals[nc++] = -sx;
-      ierr      = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr      = MatSetValuesStencil(Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
     }
 
     for (c=0; c<N/3; c++) {
@@ -233,27 +235,27 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
       row.c     = c;   row.i = i;
       col[nc].c = c;   col[nc].i = i; vals[nc++] = 1000*u[i][c] + 500*u[i][c+1];
       col[nc].c = c+1; col[nc].i = i; vals[nc++] =  500*u[i][c];
-      ierr      = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr      = MatSetValuesStencil(Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
 
       nc        = 0;
       row.c     = c+1; row.i = i;
       col[nc].c = c;   col[nc].i = i; vals[nc++] = -1000*u[i][c] + 500*u[i][c+1];
       col[nc].c = c+1; col[nc].i = i; vals[nc++] =   500*u[i][c];
-      ierr      = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr      = MatSetValuesStencil(Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
 
       nc        = 0;
       row.c     = c+2; row.i = i;
       col[nc].c = c;   col[nc].i = i; vals[nc++] =  -500*u[i][c+1];
       col[nc].c = c+1; col[nc].i = i; vals[nc++] =  -500*u[i][c];
-      ierr      = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr      = MatSetValuesStencil(Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
 
     }
   }
-  ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *Jpre) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (J != Jpre) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   ierr = DMDAVecRestoreArrayDOF(da,U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);

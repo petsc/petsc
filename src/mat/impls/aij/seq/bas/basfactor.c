@@ -29,13 +29,13 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
 
   /* ICC(0) without matrix ordering: simply copies fill pattern */
   if (!levels && perm_identity) {
-    ierr  = PetscMalloc((am+1)*sizeof(PetscInt),&ui);CHKERRQ(ierr);
+    ierr  = PetscMalloc1(am+1,&ui);CHKERRQ(ierr);
     ui[0] = 0;
 
     for (i=0; i<am; i++) {
       ui[i+1] = ui[i] + ai[i+1] - a->diag[i];
     }
-    ierr = PetscMalloc((ui[am]+1)*sizeof(PetscInt),&uj);CHKERRQ(ierr);
+    ierr = PetscMalloc1(ui[am]+1,&uj);CHKERRQ(ierr);
     cols = uj;
     for (i=0; i<am; i++) {
       aj    = a->j + a->diag[i];
@@ -69,7 +69,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
   b               = (Mat_SeqSBAIJ*)(fact)->data;
   b->singlemalloc = PETSC_FALSE;
 
-  ierr = PetscMalloc((ui[am]+1)*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ui[am]+1,&b->a);CHKERRQ(ierr);
 
   b->j    = uj;
   b->i    = ui;
@@ -84,8 +84,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact,Mat A,IS perm,const MatF
 
   b->icol          = iperm;
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
-  ierr             = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  ierr             = PetscLogObjectMemory((fact),(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
+  ierr             = PetscMalloc1(am+1,&b->solve_work);CHKERRQ(ierr);
+  ierr             = PetscLogObjectMemory((PetscObject)(fact),(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz         = b->nz = ui[am];
   b->free_a        = PETSC_TRUE;
   b->free_ij       = PETSC_TRUE;
@@ -128,7 +128,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
   ierr = PetscFree(bi);CHKERRQ(ierr);
   ierr = PetscFree(bj);CHKERRQ(ierr);
 
-  ierr = PetscInfo1(NULL,"    compression rate for spbas_compress_pattern %G \n",mem_reduction);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"    compression rate for spbas_compress_pattern %g \n",(double)mem_reduction);CHKERRQ(ierr);
 
   /* Make Cholesky decompositions with larger Manteuffel shifts until no more    negative diagonals are found. */
   ierr = ISGetIndices(ip,&rip);CHKERRQ(ierr);
@@ -143,12 +143,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B,Mat A,const MatFactorIn
     if (ierr == NEGATIVE_DIAGONAL) {
       shiftnz *= 1.5;
       if (shiftnz < 1e-5) shiftnz=1e-5;
-      ierr = PetscInfo1(NULL,"spbas_incomplete_cholesky found a negative diagonal. Trying again with Manteuffel shift=%G\n",shiftnz);CHKERRQ(ierr);
+      ierr = PetscInfo1(NULL,"spbas_incomplete_cholesky found a negative diagonal. Trying again with Manteuffel shift=%g\n",(double)shiftnz);CHKERRQ(ierr);
     }
   }
   ierr = spbas_delete(Pattern);CHKERRQ(ierr);
 
-  ierr = PetscInfo1(NULL,"    memory_usage for  spbas_incomplete_cholesky  %G bytes per row\n", (PetscReal) spbas_memory_requirement(matrix_LT)/ (PetscReal) mbs);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"    memory_usage for  spbas_incomplete_cholesky  %g bytes per row\n", (double)(PetscReal) (spbas_memory_requirement(matrix_LT)/ (PetscReal) mbs));CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iip,&riip);CHKERRQ(ierr);

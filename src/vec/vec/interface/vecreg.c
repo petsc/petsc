@@ -79,10 +79,8 @@ PetscErrorCode  VecGetType(Vec vec, VecType *type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID,1);
-  PetscValidCharPointer(type,2);
-  if (!VecRegisterAllCalled) {
-    ierr = VecRegisterAll();CHKERRQ(ierr);
-  }
+  PetscValidPointer(type,2);
+  ierr = VecRegisterAll();CHKERRQ(ierr);
   *type = ((PetscObject)vec)->type_name;
   PetscFunctionReturn(0);
 }

@@ -73,7 +73,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   PetscFunctionBegin;
   if (!ksp->vec_rhs->petscnative) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only coded for PETSc vectors");
 
-  ierr = PCGetOperators(ksp->pc,&A,NULL,NULL);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&A,NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ksp->vec_sol,&N);CHKERRQ(ierr);
   Xn   = ksp->vec_sol; ierr = VecGetArray(Xn_1,(PetscScalar**)&xn_1);CHKERRQ(ierr); ierr = VecRestoreArray(Xn_1,NULL);CHKERRQ(ierr);
   B    = ksp->vec_rhs; ierr = VecGetArrayRead(B,(const PetscScalar**)&b);CHKERRQ(ierr); ierr = VecRestoreArrayRead(B,NULL);CHKERRQ(ierr);
@@ -104,11 +104,11 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   /* f0   = A'*rn_1; */
   if (ksp->pc_side == PC_RIGHT) { /* B' A' */
-    ierr = MatMultTranspose(A,R0,Tn);CHKERRQ(ierr);
-    ierr = PCApplyTranspose(ksp->pc,Tn,F0);CHKERRQ(ierr);
+    ierr = KSP_MatMultTranspose(ksp,A,R0,Tn);CHKERRQ(ierr);
+    ierr = KSP_PCApplyTranspose(ksp,Tn,F0);CHKERRQ(ierr);
   } else if (ksp->pc_side == PC_LEFT) { /* A' B' */
-    ierr = PCApplyTranspose(ksp->pc,R0,Tn);CHKERRQ(ierr);
-    ierr = MatMultTranspose(A,Tn,F0);CHKERRQ(ierr);
+    ierr = KSP_PCApplyTranspose(ksp,R0,Tn);CHKERRQ(ierr);
+    ierr = KSP_MatMultTranspose(ksp,A,Tn,F0);CHKERRQ(ierr);
   }
 
   /*qn_1 = vn_1 = zn_1 = 0.0; */
@@ -324,8 +324,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
   PetscFunctionBegin;
   ksp->data = (void*)0;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
 
   ksp->ops->setup          = KSPSetUp_IBCGS;
   ksp->ops->solve          = KSPSolve_IBCGS;

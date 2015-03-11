@@ -22,9 +22,8 @@ EXAMPLESC        = flow.c user.h
 EXAMPLESF        = user.F userJac.F
 FLOW_OBJSF       = $(EXAMPLESF:.F=.o)
 #
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include $(PETSC_DIR)/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
 
 flow: flow.o $(FLOW_OBJSF) chkopts
 	-$(CLINKER) -o flow flow.o $(FLOW_OBJSF) $(PETSC_SNES_LIB)
@@ -36,19 +35,15 @@ puns3d: puns3d.a.o
 runflow1:
 	-@${MPIEXEC} -n 1 ./flow -options_file ${DATAFILESPATH}/fun3dgrid/petsc.opt -mesh ${DATAFILESPATH}/fun3dgrid/uns3d.msh -partition ${DATAFILESPATH}/fun3dgrid/part_vec.part.1 | grep clift | tail -1 > runflow1.tmp 2>&1;   \
 	   if (${DIFF} ${DATAFILESPATH}/fun3dgrid/coef.dat runflow1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with runflow1, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with runflow1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f runflow1.tmp
 runflow4:
 	-@${MPIEXEC} -n 4 ./flow -options_file ${DATAFILESPATH}/fun3dgrid/petsc.opt -mesh ${DATAFILESPATH}/fun3dgrid/uns3d.msh -partition ${DATAFILESPATH}/fun3dgrid/part_vec.part.4 | grep clift | tail -1 > runflow4.tmp 2>&1;   \
 	   if (${DIFF} ${DATAFILESPATH}/fun3dgrid/coef.dat runflow4.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with runflow4, diffs above \n========================================="; fi; \
+	   else printf "${PWD}\nPossible problem with runflow4, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f runflow4.tmp
 runflow64:
 	-@${MPIEXEC} -n 64 ./flow -options_file 1Grid/petsc.opt -mesh 1Grid/uns3d.msh -partition 1Grid/Pmetis/part_vec.part.64
-
-TESTEXAMPLES_DATAFILESPATH = flow.PETSc runflow1 runflow4 flow.rm
-
-DATAFILESPATH    = /homes/kaushik/FUN3DGrids/BigSample
 
 runbm1:
 	-@echo "Using datafiles from" ${DATAFILESPATH}
@@ -60,3 +55,10 @@ runbm2:
 
 runbm4:
 	-@${MPIEXEC} -n 4 ./flow -options_file ${DATAFILESPATH}/petsc.opt -mesh ${DATAFILESPATH}/uns3d.msh -partition ${DATAFILESPATH}/part_vec.part.4 > out.4.${HOST}
+
+
+TESTEXAMPLES_DATAFILESPATH = flow.PETSc runflow1 runflow4 flow.rm
+
+include $(PETSC_DIR)/lib/petsc-conf/test
+
+

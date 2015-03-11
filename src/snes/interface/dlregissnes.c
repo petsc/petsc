@@ -24,6 +24,7 @@ PetscErrorCode  SNESFinalizePackage(void)
   ierr = PetscFunctionListDestroy(&SNESLineSearchList);CHKERRQ(ierr);
   SNESPackageInitialized = PETSC_FALSE;
   SNESRegisterAllCalled  = PETSC_FALSE;
+  SNESLineSearchRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -61,7 +62,8 @@ PetscErrorCode  SNESInitializePackage(void)
   /* Register Events */
   ierr = PetscLogEventRegister("SNESSolve",            SNES_CLASSID,&SNES_Solve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESFunctionEval",     SNES_CLASSID,&SNES_FunctionEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SNESGSEval",           SNES_CLASSID,&SNES_GSEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESNGSEval",          SNES_CLASSID,&SNES_NGSEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESNGSFuncEval",      SNES_CLASSID,&SNES_NGSFuncEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESJacobianEval",     SNES_CLASSID,&SNES_JacobianEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESLineSearch",       SNESLINESEARCH_CLASSID,&SNESLineSearch_Apply);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESNPCSolve",         SNES_CLASSID,&SNES_NPCSolve);CHKERRQ(ierr);
@@ -85,7 +87,7 @@ PetscErrorCode  SNESInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscsnes"
 /*
@@ -103,4 +105,4 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(void)
   PetscFunctionReturn(0);
 }
 
-#endif /* PETSC_USE_DYNAMIC_LIBRARIES */
+#endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

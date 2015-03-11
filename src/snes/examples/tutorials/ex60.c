@@ -27,8 +27,8 @@ Runtime options include:\n\
 
  */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */
@@ -48,7 +48,7 @@ PetscErrorCode SetVariableBounds(DM,Vec,Vec);
 PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode UpdateMatrices(AppCtx*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
 PetscErrorCode Update_q(AppCtx*);
 PetscErrorCode Update_u(Vec,AppCtx*);
@@ -76,10 +76,10 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 1D DA with dof = 5; the whole thing */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 5, 1,NULL,NULL,&user.da1);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 5, 1,NULL,NULL,&user.da1);CHKERRQ(ierr);
 
   /* Create a 1D DA with dof = 1; for individual componentes */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,&user.da2);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,&user.da2);CHKERRQ(ierr);
 
 
   /* Set Element type (triangular) */
@@ -120,9 +120,11 @@ int main(int argc, char **argv)
 
 
   /* Get Jacobian matrix structure from the da for the entire thing, da1 */
-  ierr = DMCreateMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.da1,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da1,&user.M);CHKERRQ(ierr);
   /* Get the (usual) mass matrix structure from da2 */
-  ierr = DMCreateMatrix(user.da2,MATAIJ,&user.M_0);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.da2,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da2,&user.M_0);CHKERRQ(ierr);
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
   /* Form the jacobian matrix and M_0 */
   ierr = SetUpMatrices(&user);CHKERRQ(ierr);
@@ -220,13 +222,14 @@ int main(int argc, char **argv)
 #define __FUNCT__ "Update_u"
 PetscErrorCode Update_u(Vec X,AppCtx *user)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,n;
-  PetscScalar    *xx,*wv_p,*cv_p,*wi_p,*ci_p,*eta_p;
+  PetscErrorCode    ierr;
+  PetscInt          i,n;
+  PetscScalar       *wv_p,*cv_p,*wi_p,*ci_p,*eta_p;
+  const PetscScalar *xx;
 
   PetscFunctionBeginUser;
   ierr = VecGetLocalSize(user->wv,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->wi,&wi_p);CHKERRQ(ierr);
@@ -241,7 +244,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
     ci_p[i]  = xx[5*i+3];
     eta_p[i] = xx[5*i+4];
   }
-  ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wi,&wi_p);CHKERRQ(ierr);
@@ -359,18 +362,21 @@ PetscErrorCode DPsi(AppCtx *user)
 #define __FUNCT__ "Llog"
 PetscErrorCode Llog(Vec X, Vec Y)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *x,*y;
-  PetscInt       n,i;
+  PetscErrorCode    ierr;
+  PetscScalar       *y;
+  const PetscScalar *x;
+  PetscInt          n,i;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (x[i] < 1.0e-12) y[i] = log(1.0e-12);
     else y[i] = log(x[i]);
   }
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -475,16 +481,15 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ctx)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
   PetscFunctionBeginUser;
-  *flg = SAME_NONZERO_PATTERN;
-  ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatCopy(user->M,J,*flg);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -504,14 +509,14 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i < xs+xm; i++) {
-      l[j][i][0] = -SNES_VI_INF;
+      l[j][i][0] = -PETSC_INFINITY;
       l[j][i][1] = 0.0;
-      l[j][i][2] = -SNES_VI_INF;
+      l[j][i][2] = -PETSC_INFINITY;
       l[j][i][3] = 0.0;
       l[j][i][4] = 0.0;
-      u[j][i][0] = SNES_VI_INF;
+      u[j][i][0] = PETSC_INFINITY;
       u[j][i][1] = 1.0;
-      u[j][i][2] = SNES_VI_INF;
+      u[j][i][2] = PETSC_INFINITY;
       u[j][i][3] = 1.0;
       u[j][i][4] = 1.0;
     }
@@ -581,8 +586,8 @@ PetscErrorCode SetUpMatrices(AppCtx *user)
   ierr = MatGetLocalSize(M,&n,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((Mda+1)*(Nda+1)*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
-  ierr = PetscMalloc(Mda*Nda*2*3*sizeof(PetscInt),&connect);CHKERRQ(ierr);
+  ierr = PetscMalloc1((Mda+1)*(Nda+1),&nodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Mda*Nda*2*3,&connect);CHKERRQ(ierr);
   hx   = (user->xmax-user->xmin)/Mda;
   hy   = (user->ymax-user->ymin)/Nda;
   for (j=0; j < Nda; j++) {
@@ -809,8 +814,8 @@ PetscErrorCode UpdateMatrices(AppCtx *user)
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,NULL,&Mda,&Nda,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((Mda+1)*(Nda+1)*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
-  ierr = PetscMalloc(Mda*Nda*2*3*sizeof(PetscInt),&connect);CHKERRQ(ierr);
+  ierr = PetscMalloc1((Mda+1)*(Nda+1),&nodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Mda*Nda*2*3,&connect);CHKERRQ(ierr);
 
   h = 100.0/Mda;
 

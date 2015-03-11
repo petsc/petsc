@@ -38,51 +38,15 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   indices = to->indices;
   sstarts = to->starts;
 #if defined(PETSC_HAVE_CUSP)
-
-#if defined(PETSC_HAVE_TXPETSCGPU)
-
-#if 0
-  /* This branch messages the entire vector */
-  ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
-#else
-  /*
-   This branch messages only the parts that are necessary.
-   ... this seems to perform about the same due to the necessity of calling
-       a separate kernel before the SpMV for gathering data into
-       a contiguous buffer. We leaves both branches in for the time being.
-       I expect that ultimately this branch will be the right choice, however
-       the just is still out.
-   */
+  VecCUSPAllocateCheckHost(xin);
   if (xin->valid_GPU_array == PETSC_CUSP_GPU) {
     if (xin->spptr && ctx->spptr) {
       ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+    } else {
+      ierr = VecCUSPCopyFromGPU(xin);CHKERRQ(ierr);
     }
   }
-#endif
-  xv = *(PetscScalar**)xin->data;
-
-#else
-  if (!xin->map->n || ((xin->map->n > 10000) && (sstarts[nsends]*bs < 0.05*xin->map->n) && (xin->valid_GPU_array == PETSC_CUSP_GPU) && !(to->local.n))) {
-    if (!ctx->spptr) {
-      PetscInt k,*tindices,n = sstarts[nsends],*sindices;
-      ierr = PetscMalloc(n*sizeof(PetscInt),&tindices);CHKERRQ(ierr);
-      ierr = PetscMemcpy(tindices,to->indices,n*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscSortRemoveDupsInt(&n,tindices);CHKERRQ(ierr);
-      ierr = PetscMalloc(bs*n*sizeof(PetscInt),&sindices);CHKERRQ(ierr);
-      for (i=0; i<n; i++) {
-        for (k=0; k<bs; k++) sindices[i*bs+k] = tindices[i]+k;
-      }
-      ierr = PetscFree(tindices);CHKERRQ(ierr);
-      ierr = PetscCUSPIndicesCreate(n*bs,sindices,n*bs,sindices,(PetscCUSPIndices*)&ctx->spptr);CHKERRQ(ierr);
-      ierr = PetscFree(sindices);CHKERRQ(ierr);
-    }
-    ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
-    xv   = *(PetscScalar**)xin->data;
-  } else {
-    ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
-  }
-#endif
-
+  xv = *((PetscScalar**)xin->data);
 #else
   ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
 #endif
@@ -103,7 +67,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 #endif
     if (ctx->packtogether || to->use_alltoallv || to->use_window) {
       /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
-      PETSCMAP1(Pack)(sstarts[nsends],indices,xv,svalues);
+      PETSCMAP1(Pack)(sstarts[nsends],indices,xv,svalues,bs);
       if (to->use_alltoallv) {
         ierr = MPI_Alltoallv(to->values,to->counts,to->displs,MPIU_SCALAR,from->values,from->counts,from->displs,MPIU_SCALAR,PetscObjectComm((PetscObject)ctx));CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
@@ -122,7 +86,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
     } else {
       /* this version packs and sends one at a time */
       for (i=0; i<nsends; i++) {
-        PETSCMAP1(Pack)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,svalues + bs*sstarts[i]);
+        PETSCMAP1(Pack)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,svalues + bs*sstarts[i],bs);
         ierr = MPI_Start_isend(sstarts[i+1]-sstarts[i],swaits+i);CHKERRQ(ierr);
       }
     }
@@ -138,7 +102,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
     if (to->local.is_copy && addv == INSERT_VALUES) {
       ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
     } else {
-      ierr = PETSCMAP1(Scatter)(to->local.n,to->local.vslots,xv,from->local.vslots,yv,addv);CHKERRQ(ierr);
+      ierr = PETSCMAP1(Scatter)(to->local.n,to->local.vslots,xv,from->local.vslots,yv,addv,bs);CHKERRQ(ierr);
     }
   }
 #if defined(PETSC_HAVE_CUSP)
@@ -197,7 +161,7 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
     else
 #endif
     if (nrecvs && !to->use_alltoallv) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
-    ierr = PETSCMAP1(UnPack)(from->starts[from->n],from->values,indices,yv,addv);CHKERRQ(ierr);
+    ierr = PETSCMAP1(UnPack)(from->starts[from->n],from->values,indices,yv,addv,bs);CHKERRQ(ierr);
   } else if (!to->use_alltoallw) {
     /* unpack one at a time */
     count = nrecvs;
@@ -209,7 +173,7 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
         ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
       }
       /* unpack receives into our local space */
-      ierr = PETSCMAP1(UnPack)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv);CHKERRQ(ierr);
+      ierr = PETSCMAP1(UnPack)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv,bs);CHKERRQ(ierr);
       count--;
     }
   }
@@ -221,13 +185,6 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
   /* wait on sends */
   if (nsends  && !to->use_alltoallv  && !to->use_window) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
   ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_TXPETSCGPU)
-  if (yin->valid_GPU_array == PETSC_CUSP_CPU) {
-    if (yin->spptr && ctx->spptr) {
-      ierr = VecCUSPCopyToGPUSome_Public(yin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
-    }
-  }
-#endif
   PetscFunctionReturn(0);
 }
 

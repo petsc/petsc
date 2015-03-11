@@ -20,7 +20,7 @@ PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B)
 
   PetscFunctionBegin;
   mat  = mxCreateSparse(B->cmap->n,B->rmap->n,aij->nz,mxREAL);
-  ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));
+  ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));if (ierr) return NULL;
   /* MATLAB stores by column, not row so we pass in the transpose of the matrix */
   jj = mxGetIr(mat);
   for (i=0; i<aij->nz; i++) jj[i] = aij->j[i];
@@ -52,7 +52,7 @@ PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine
 
    Input Parameters:
 +     mmat - a MATLAB sparse matris
--     mat - a already created MATSEQAIJ
+-     mat - an already created MATSEQAIJ
 
   Level: intermediate
 
@@ -86,7 +86,7 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
     /* number of nonzeros in matrix has changed, so need new data structure */
     ierr    = MatSeqXAIJFreeAIJ(mat,&aij->a,&aij->j,&aij->i);CHKERRQ(ierr);
     aij->nz = nz;
-    ierr    = PetscMalloc3(aij->nz,PetscScalar,&aij->a,aij->nz,PetscInt,&aij->j,mat->rmap->n+1,PetscInt,&aij->i);CHKERRQ(ierr);
+    ierr    = PetscMalloc3(aij->nz,&aij->a,aij->nz,&aij->j,mat->rmap->n+1,&aij->i);CHKERRQ(ierr);
 
     aij->singlemalloc = PETSC_TRUE;
   }
@@ -107,7 +107,7 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatlabEngineGet_SeqAIJ"
-PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
+PETSC_EXTERN PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   Mat            mat = (Mat)obj;
@@ -164,7 +164,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)),"%s = 0;",_A);CHKERRQ(ierr);
 
     ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
-    ierr = PetscMalloc((len+2)*sizeof(char),&name);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len+2,&name);CHKERRQ(ierr);
     sprintf(name,"_%s",_A);
     ierr = PetscObjectSetName((PetscObject)F,name);CHKERRQ(ierr);
     ierr = PetscFree(name);CHKERRQ(ierr);
@@ -174,7 +174,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F,Mat A,const MatFactorInfo *info)
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)),"[l_%s,u_%s,p_%s] = lu(%s',%g);",_A,_A,_A,_A,dtcol);CHKERRQ(ierr);
     ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)),"%s = 0;",_A);CHKERRQ(ierr);
     ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
-    ierr = PetscMalloc((len+2)*sizeof(char),&name);CHKERRQ(ierr);
+    ierr = PetscMalloc1(len+2,&name);CHKERRQ(ierr);
     sprintf(name,"_%s",_A);
     ierr = PetscObjectSetName((PetscObject)F,name);CHKERRQ(ierr);
     ierr = PetscFree(name);CHKERRQ(ierr);
@@ -225,6 +225,18 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolverPackageRegister_Matlab"
+PETSC_EXTERN PetscErrorCode MatSolverPackageRegister_Matlab(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolverPackageRegister(MATSOLVERMATLAB,MATSEQAIJ,        MAT_FACTOR_LU,MatGetFactor_seqaij_matlab);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* --------------------------------------------------------------------------------*/
 
 #undef __FUNCT__
@@ -267,7 +279,7 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
   Works with MATSEQAIJ matrices.
 
   Options Database Keys:
-. -pc_factor_mat_solver_type matlab - selects MATLAB to do the sparse factorization
+. -pc_factor_mat_solver_package matlab - selects MATLAB to do the sparse factorization
 
 
   Level: beginner

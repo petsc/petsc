@@ -10,6 +10,7 @@
 #  define LAPACKgeqrf_ sgeqrf_
 #  define LAPACKungqr_ sorgqr_
 #  define LAPACKgetrf_ sgetrf_
+#  define LAPACKgetri_ sgetri_
 #  define BLASdot_     sdot_
 #  define BLASdotu_    sdot_
 #  define BLASnrm2_    snrm2_
@@ -52,6 +53,7 @@
 #  define LAPACKgeqrf_ dgeqrf_
 #  define LAPACKungqr_ dorgqr_
 #  define LAPACKgetrf_ dgetrf_
+#  define LAPACKgetri_ dgetri_
 #  define BLASdot_     ddot_
 #  define BLASdotu_    ddot_
 #  define BLASnrm2_    dnrm2_
@@ -94,6 +96,7 @@
 #  define LAPACKgeqrf_ qgeqrf_
 #  define LAPACKungqr_ qorgqr_
 #  define LAPACKgetrf_ qgetrf_
+#  define LAPACKgetri_ qgetri_
 #  define BLASdot_     qdot_
 #  define BLASdotu_    qdot_
 #  define BLASnrm2_    qnrm2_
@@ -138,6 +141,7 @@
 #  define LAPACKgeqrf_ cgeqrf_
 #  define LAPACKungqr_ cungqr_
 #  define LAPACKgetrf_ cgetrf_
+#  define LAPACKgetri_ cgetri_
 /* #  define BLASdot_     cdotc_ */
 /* #  define BLASdotu_    cdotu_ */
 #  define BLASnrm2_    scnrm2_
@@ -180,6 +184,7 @@
 #  define LAPACKgeqrf_ zgeqrf_
 #  define LAPACKungqr_ zungqr_
 #  define LAPACKgetrf_ zgetrf_
+#  define LAPACKgetri_ zgetri_
 /* #  define BLASdot_     zdotc_ */
 /* #  define BLASdotu_    zdotu_ */
 #  define BLASnrm2_    dznrm2_
@@ -222,6 +227,7 @@
 #  define LAPACKgeqrf_ wgeqrf_
 #  define LAPACKungqr_ wungqr_
 #  define LAPACKgetrf_ wgetrf_
+#  define LAPACKgetri_ wgetri_
 /* #  define BLASdot_     wdotc_ */
 /* #  define BLASdotu_    wdotu_ */
 #  define BLASnrm2_    qwnrm2_

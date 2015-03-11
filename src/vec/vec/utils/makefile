@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   = ${PNETCDF_INCLUDE}
 FFLAGS   =
-SOURCEC  = vinv.c vscat.c vpscat.c cmesh.c vecio.c comb.c vecstash.c vecmpitoseq.c vecs.c vsection.c
+SOURCEC  = vinv.c vscat.c vpscat.c cmesh.c vecio.c comb.c vecstash.c vecmpitoseq.c vecs.c vsection.c projection.c
 SOURCEF  =
 SOURCEH  = vpscat.h
 DIRS     = matlab veccusp
@@ -11,7 +11,7 @@ LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/vec/utils/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test
 

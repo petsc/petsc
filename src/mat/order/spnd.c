@@ -1,6 +1,6 @@
 
 #include <petscmat.h>
-#include <../src/mat/order/order.h>
+#include <petsc-private/matorderimpl.h>
 
 /*
     MatGetOrdering_ND - Find the nested dissection ordering of a given matrix.
@@ -18,9 +18,9 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_ND(Mat mat,MatOrderingType type,IS *r
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get rows for matrix type %s",((PetscObject)mat)->type_name);
 
-  ierr = PetscMalloc4(nrow,PetscInt,&mask,nrow,PetscInt,&perm,nrow+1,PetscInt,&xls,nrow,PetscInt,&ls);CHKERRQ(ierr);
+  ierr = PetscMalloc4(nrow,&mask,nrow,&perm,nrow+1,&xls,nrow,&ls);CHKERRQ(ierr);
   SPARSEPACKgennd(&nrow,ia,ja,mask,perm,xls,ls);
-  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);
 
   /* shift because Sparsepack indices start at one */
   for (i=0; i<nrow; i++) perm[i]--;

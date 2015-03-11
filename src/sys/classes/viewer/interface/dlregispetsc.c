@@ -71,7 +71,7 @@ PetscErrorCode  PetscSysInitializePackage(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
 
 #if defined(PETSC_USE_SINGLE_LIBRARY)
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(void);
@@ -121,6 +121,4 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsys(void)
 #endif
   PetscFunctionReturn(0);
 }
-#endif
-
-
+#endif  /* PETSC_HAVE_DYNAMIC_LIBRARIES */

@@ -8,6 +8,9 @@
 #include <petscdraw.h>
 #include <petsc-private/petscimpl.h>
 
+PETSC_EXTERN PetscBool PetscDrawRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode PetscDrawRegisterAll(void);
+
 struct _PetscDrawOps {
   PetscErrorCode (*setdoublebuffer)(PetscDraw);
   PetscErrorCode (*flush)(PetscDraw);
@@ -65,6 +68,8 @@ struct _p_PetscDraw {
   PetscInt        savefilecount;
   PetscBool       savefilemovie;
   PetscBool       saveonflush;       /* save a new image for every PetscDrawFlush() called */
+  PetscBool       savesinglefile;
+  char            *savefinalfilename;
   void            *data;
 };
 

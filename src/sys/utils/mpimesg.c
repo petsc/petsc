@@ -42,7 +42,7 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ierr = PetscMalloc2(size,PetscMPIInt,&recv_buf,size,PetscMPIInt,&iflags_localm);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,&recv_buf,size,&iflags_localm);CHKERRQ(ierr);
 
   /* If iflags not provided, compute iflags from ilengths */
   if (!iflags) {
@@ -109,11 +109,11 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
   ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
 
   /* cannot use PetscMalloc3() here because in the call to MPI_Waitall() they MUST be contiguous */
-  ierr    = PetscMalloc2(nrecvs+nsends,MPI_Request,&r_waits,nrecvs+nsends,MPI_Status,&w_status);CHKERRQ(ierr);
+  ierr    = PetscMalloc2(nrecvs+nsends,&r_waits,nrecvs+nsends,&w_status);CHKERRQ(ierr);
   s_waits = r_waits+nrecvs;
 
   /* Post the Irecv to get the message length-info */
-  ierr = PetscMalloc(nrecvs*sizeof(PetscMPIInt),olengths);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs,olengths);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) {
     ierr = MPI_Irecv((*olengths)+i,1,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits+i);CHKERRQ(ierr);
   }
@@ -130,7 +130,7 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
   if (nrecvs+nsends) {ierr = MPI_Waitall(nrecvs+nsends,r_waits,w_status);CHKERRQ(ierr);}
 
   /* Pack up the received data */
-  ierr = PetscMalloc(nrecvs*sizeof(PetscMPIInt),onodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs,onodes);CHKERRQ(ierr);
   for (i=0; i<nrecvs; ++i) (*onodes)[i] = w_status[i].MPI_SOURCE;
   ierr = PetscFree2(r_waits,w_status);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -182,12 +182,12 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
   ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
 
   /* cannot use PetscMalloc5() because r_waits and s_waits must be contiquous for the call to MPI_Waitall() */
-  ierr = PetscMalloc4(nrecvs+nsends,MPI_Request,&r_waits,2*nrecvs,PetscMPIInt,&buf_r,2*nsends,PetscMPIInt,&buf_s,nrecvs+nsends,MPI_Status,&w_status);CHKERRQ(ierr);
+  ierr = PetscMalloc4(nrecvs+nsends,&r_waits,2*nrecvs,&buf_r,2*nsends,&buf_s,nrecvs+nsends,&w_status);CHKERRQ(ierr);
   s_waits = r_waits + nrecvs;
 
   /* Post the Irecv to get the message length-info */
-  ierr = PetscMalloc((nrecvs+1)*sizeof(PetscMPIInt),olengths1);CHKERRQ(ierr);
-  ierr = PetscMalloc((nrecvs+1)*sizeof(PetscMPIInt),olengths2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs+1,olengths1);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs+1,olengths2);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) {
     buf_j = buf_r + (2*i);
     ierr  = MPI_Irecv(buf_j,2,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits+i);CHKERRQ(ierr);
@@ -209,7 +209,7 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
 
 
   /* Pack up the received data */
-  ierr = PetscMalloc((nrecvs+1)*sizeof(PetscMPIInt),onodes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs+1,onodes);CHKERRQ(ierr);
   for (i=0; i<nrecvs; ++i) {
     (*onodes)[i]    = w_status[i].MPI_SOURCE;
     buf_j           = buf_r + (2*i);
@@ -240,12 +240,12 @@ PetscErrorCode  PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrec
   for (i=0; i<nrecvs; i++) len += olengths[i];  /* each message length */
 
   /* allocate memory for recv buffers */
-  ierr = PetscMalloc((nrecvs+1)*sizeof(PetscInt*),&rbuf_t);CHKERRQ(ierr);
-  ierr = PetscMalloc(len*sizeof(PetscInt),&rbuf_t[0]);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs+1,&rbuf_t);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len,&rbuf_t[0]);CHKERRQ(ierr);
   for (i=1; i<nrecvs; ++i) rbuf_t[i] = rbuf_t[i-1] + olengths[i-1];
 
   /* Post the receives */
-  ierr = PetscMalloc(nrecvs*sizeof(MPI_Request),&r_waits_t);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs,&r_waits_t);CHKERRQ(ierr);
   for (i=0; i<nrecvs; ++i) {
     ierr = MPI_Irecv(rbuf_t[i],olengths[i],MPIU_INT,onodes[i],tag,comm,r_waits_t+i);CHKERRQ(ierr);
   }
@@ -270,12 +270,12 @@ PetscErrorCode  PetscPostIrecvScalar(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt n
   for (i=0; i<nrecvs; i++) len += olengths[i];  /* each message length */
 
   /* allocate memory for recv buffers */
-  ierr = PetscMalloc((nrecvs+1)*sizeof(PetscScalar*),&rbuf_t);CHKERRQ(ierr);
-  ierr = PetscMalloc(len*sizeof(PetscScalar),&rbuf_t[0]);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs+1,&rbuf_t);CHKERRQ(ierr);
+  ierr = PetscMalloc1(len,&rbuf_t[0]);CHKERRQ(ierr);
   for (i=1; i<nrecvs; ++i) rbuf_t[i] = rbuf_t[i-1] + olengths[i-1];
 
   /* Post the receives */
-  ierr = PetscMalloc(nrecvs*sizeof(MPI_Request),&r_waits_t);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrecvs,&r_waits_t);CHKERRQ(ierr);
   for (i=0; i<nrecvs; ++i) {
     ierr = MPI_Irecv(rbuf_t[i],olengths[i],MPIU_SCALAR,onodes[i],tag,comm,r_waits_t+i);CHKERRQ(ierr);
   }

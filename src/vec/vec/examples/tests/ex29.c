@@ -35,7 +35,7 @@ int main(int argc,char **argv)
 
   /* Now do the blocksetvalues */
   ierr = VecSet(x,zero);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs,&vals);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     for (j=0; j<bs; j++) vals[j] = (i*bs+j)*1.0;
     ierr = VecSetValuesBlocked(x,1,&i,vals,INSERT_VALUES);CHKERRQ(ierr);

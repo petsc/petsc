@@ -126,14 +126,14 @@ static PetscErrorCode MatMFFDView_WP(MatMFFD ctx,PetscViewer viewer)
 .  ctx - the matrix free context
 
 */
-static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx)
+static PetscErrorCode MatMFFDSetFromOptions_WP(PetscOptions *PetscOptionsObject,MatMFFD ctx)
 {
   PetscErrorCode ierr;
   MatMFFD_WP     *hctx = (MatMFFD_WP*)ctx->hctx;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Walker-Pernice options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_mffd_compute_normu","Compute the norm of u","MatMFFDWPSetComputeNormU", hctx->computenormU,&hctx->computenormU,0);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Walker-Pernice options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-mat_mffd_compute_normu","Compute the norm of u","MatMFFDWPSetComputeNormU", hctx->computenormU,&hctx->computenormU,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -222,7 +222,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx)
 
   PetscFunctionBegin;
   /* allocate my own private data structure */
-  ierr               = PetscNewLog(ctx,MatMFFD_WP,&hctx);CHKERRQ(ierr);
+  ierr               = PetscNewLog(ctx,&hctx);CHKERRQ(ierr);
   ctx->hctx          = (void*)hctx;
   hctx->computenormU = PETSC_FALSE;
 

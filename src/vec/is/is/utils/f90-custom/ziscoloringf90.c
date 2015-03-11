@@ -17,7 +17,7 @@ PETSC_EXTERN void PETSC_STDCALL iscoloringgetisf90_(ISColoring *iscoloring,Petsc
   int              i;
 
   *__ierr = ISColoringGetIS(*iscoloring,n,&lis); if (*__ierr) return;
-  *__ierr = PetscMalloc((*n)*sizeof(PetscFortranAddr),&newisint); if (*__ierr) return;
+  *__ierr = PetscMalloc1(*n,&newisint); if (*__ierr) return;
   for (i=0; i<*n; i++) newisint[i] = (PetscFortranAddr)lis[i];
   *__ierr = F90Array1dCreate(newisint,PETSC_FORTRANADDR,1,*n,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }

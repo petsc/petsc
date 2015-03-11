@@ -75,7 +75,7 @@ typedef struct {
 /*
   User-defined routines
 */
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(AppCtx*,Vec);
 
@@ -176,7 +176,7 @@ int main(int argc,char **argv)
   sprintf(part_name,"output.%d",rank);
   fptr1 = fopen(part_name,"w");
   if (!fptr1) SETERRQ(PETSC_COMM_SELF,0,"Could no open output file");
-  ierr = PetscMalloc(user.Nvglobal*sizeof(PetscInt),&user.gloInd);
+  ierr = PetscMalloc1(user.Nvglobal,&user.gloInd);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Rank is %D\n",rank);CHKERRQ(ierr);
   for (inode = 0; inode < user.Nvglobal; inode++) {
     if (!fgets(str,256,fptr)) SETERRQ(PETSC_COMM_SELF,1,"fgets read failed");
@@ -221,7 +221,7 @@ int main(int argc,char **argv)
   */
   ierr    = MPI_Scan(&user.Nvlocal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   rstart -= user.Nvlocal;
-  ierr    = PetscMalloc(user.Nvlocal*sizeof(PetscInt),&pordering);CHKERRQ(ierr);
+  ierr    = PetscMalloc1(user.Nvlocal,&pordering);CHKERRQ(ierr);
 
   for (i=0; i < user.Nvlocal; i++) pordering[i] = rstart + i;
 
@@ -234,8 +234,8 @@ int main(int argc,char **argv)
   /*
     Keep the global indices for later use
   */
-  ierr = PetscMalloc(user.Nvlocal*sizeof(PetscInt),&user.locInd);CHKERRQ(ierr);
-  ierr = PetscMalloc(Nvneighborstotal*sizeof(PetscInt),&tmp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(user.Nvlocal,&user.locInd);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Nvneighborstotal,&tmp);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Demonstrate the use of AO functionality
@@ -304,8 +304,8 @@ int main(int argc,char **argv)
     number of processors. Importantly, it allows us to use NO SEARCHING
     in setting up the data structures.
   */
-  ierr      = PetscMalloc(user.Nvglobal*sizeof(PetscInt),&vertices);CHKERRQ(ierr);
-  ierr      = PetscMalloc(user.Nvglobal*sizeof(PetscInt),&verticesmask);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(user.Nvglobal,&vertices);CHKERRQ(ierr);
+  ierr      = PetscMalloc1(user.Nvglobal,&verticesmask);CHKERRQ(ierr);
   ierr      = PetscMemzero(verticesmask,user.Nvglobal*sizeof(PetscInt));CHKERRQ(ierr);
   nvertices = 0;
 
@@ -393,7 +393,7 @@ int main(int argc,char **argv)
   /*
     The following routine allows us to set the matrix values in local ordering
   */
-  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,vertices,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs,nvertices,vertices,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(Jac,isl2g,isl2g);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -413,14 +413,20 @@ int main(int argc,char **argv)
     ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void*)&user);CHKERRQ(ierr);
   } else {  /* Use matfdcoloring */
     ISColoring   iscoloring;
-    MatStructure flag;
+    MatColoring  mc;
+
     /* Get the data structure of Jac */
-    ierr = FormJacobian(snes,x,&Jac,&Jac,&flag,&user);CHKERRQ(ierr);
+    ierr = FormJacobian(snes,x,Jac,Jac,&user);CHKERRQ(ierr);
     /* Create coloring context */
-    ierr = MatGetColoring(Jac,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringCreate(Jac,&mc);CHKERRQ(ierr);
+    ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
+    ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+    ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(Jac,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetUp(Jac,iscoloring,matfdcoloring);CHKERRQ(ierr);
     /* ierr = MatFDColoringView(matfdcoloring,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     ierr = SNESSetJacobian(snes,Jac,Jac,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
@@ -649,10 +655,9 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 .  flag - flag indicating matrix structure
 
 */
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
 {
   AppCtx      *user = (AppCtx*)ptr;
-  Mat         jac   = *B;
   PetscInt    i,j,Nvlocal,col[50],ierr;
   PetscScalar alpha,lambda,value[50];
   Vec         localX = user->localX;
@@ -716,25 +721,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all nonlinear iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
-  */
-  *flag = SAME_NONZERO_PATTERN;
 
   /*
      Tell the matrix we will never add a new nonzero location to the

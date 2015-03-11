@@ -87,9 +87,9 @@ PetscErrorCode  PetscDrawUtilitySetCmapHue(unsigned char *red,unsigned char *gre
   saturation = 100;       /* in 0:100 */
   for (i = 0; i < mapsize; i++) {
     ierr     = PetscDrawUtilityHlsToRgb(hue,lightness,saturation,red + i,green + i,blue + i);CHKERRQ(ierr);
-    red[i]   = (int)floor(255.999 * PetscPowReal(((PetscReal) red[i])/(PetscReal)255.0,igamma));
-    blue[i]  = (int)floor(255.999 * PetscPowReal(((PetscReal)blue[i])/(PetscReal)255.0,igamma));
-    green[i] = (int)floor(255.999 * PetscPowReal(((PetscReal)green[i])/(PetscReal)255.0,igamma));
+    red[i]   = (int)PetscFloorReal(255.999 * PetscPowReal(((PetscReal) red[i])/(PetscReal)255.0,igamma));
+    blue[i]  = (int)PetscFloorReal(255.999 * PetscPowReal(((PetscReal)blue[i])/(PetscReal)255.0,igamma));
+    green[i] = (int)PetscFloorReal(255.999 * PetscPowReal(((PetscReal)green[i])/(PetscReal)255.0,igamma));
     hue     += (359/(mapsize-2));
   }
   PetscFunctionReturn(0);

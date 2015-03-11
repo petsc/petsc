@@ -15,7 +15,7 @@ PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
 PETSC_EXTERN PetscFunctionList PCList;
 
 /*S
-     PC - Abstract PETSc object that manages all preconditioners
+     PC - Abstract PETSc object that manages all preconditioners including direct solvers such as PCLU
 
    Level: beginner
 
@@ -26,15 +26,15 @@ S*/
 typedef struct _p_PC* PC;
 
 /*J
-    PCType - String with the name of a PETSc preconditioner method or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mypccreate()
+    PCType - String with the name of a PETSc preconditioner method.
 
    Level: beginner
 
    Notes: Click on the links below to see details on a particular solver
 
-.seealso: PCSetType(), PC, PCCreate()
+          PCRegister() is used to register preconditioners that are then accessible via PCSetType()
+
+.seealso: PCSetType(), PC, PCCreate(), PCRegister(), PCSetFromOptions()
 J*/
 typedef const char* PCType;
 #define PCNONE            "none"
@@ -64,9 +64,6 @@ typedef const char* PCType;
 #define PCML              "ml"
 #define PCGALERKIN        "galerkin"
 #define PCEXOTIC          "exotic"
-#define PCHMPI            "hmpi"
-#define PCSUPPORTGRAPH    "supportgraph"
-#define PCASA             "asa"
 #define PCCP              "cp"
 #define PCBFBT            "bfbt"
 #define PCLSC             "lsc"
@@ -81,6 +78,7 @@ typedef const char* PCType;
 #define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCAINVCUSP        "ainvcusp"
 #define PCBDDC            "bddc"
+#define PCKACZMARZ        "kaczmarz"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId PC_CLASSID;
@@ -99,6 +97,7 @@ PETSC_EXTERN const char *const *const PCSides;
 
 PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm,PC*);
 PETSC_EXTERN PetscErrorCode PCSetType(PC,PCType);
+PETSC_EXTERN PetscErrorCode PCGetType(PC,PCType*);
 PETSC_EXTERN PetscErrorCode PCSetUp(PC);
 PETSC_EXTERN PetscErrorCode PCSetUpOnBlocks(PC);
 PETSC_EXTERN PetscErrorCode PCApply(PC,Vec,Vec);
@@ -108,6 +107,8 @@ PETSC_EXTERN PetscErrorCode PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplyTranspose(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplyTransposeExists(PC,PetscBool *);
 PETSC_EXTERN PetscErrorCode PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCSetReusePreconditioner(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGetReusePreconditioner(PC,PetscBool*);
 
 #define PC_FILE_CLASSID 1211222
 
@@ -116,7 +117,7 @@ PETSC_EXTERN PetscErrorCode PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
 
    Level: advanced
 
-   Notes: this must match finclude/petscpc.h and the KSPConvergedReason values in petscksp.h
+   Notes: this must match petsc-finclude/petscpc.h and the KSPConvergedReason values in petscksp.h
 
 .seealso: PCApplyRichardson()
 E*/
@@ -128,30 +129,29 @@ typedef enum {
 
 PETSC_EXTERN PetscErrorCode PCApplyRichardson(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*);
 PETSC_EXTERN PetscErrorCode PCApplyRichardsonExists(PC,PetscBool *);
-PETSC_EXTERN PetscErrorCode PCSetInitialGuessNonzero(PC,PetscBool );
+PETSC_EXTERN PetscErrorCode PCSetInitialGuessNonzero(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGetInitialGuessNonzero(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCSetUseAmat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGetUseAmat(PC,PetscBool*);
 
-PETSC_EXTERN PetscErrorCode PCRegisterAll(void);
-PETSC_EXTERN PetscBool PCRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode PCRegister(const char[],PetscErrorCode(*)(PC));
 
 PETSC_EXTERN PetscErrorCode PCReset(PC);
 PETSC_EXTERN PetscErrorCode PCDestroy(PC*);
 PETSC_EXTERN PetscErrorCode PCSetFromOptions(PC);
-PETSC_EXTERN PetscErrorCode PCGetType(PC,PCType*);
 
 PETSC_EXTERN PetscErrorCode PCFactorGetMatrix(PC,Mat*);
 PETSC_EXTERN PetscErrorCode PCSetModifySubMatrices(PC,PetscErrorCode(*)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void*);
 PETSC_EXTERN PetscErrorCode PCModifySubMatrices(PC,PetscInt,const IS[],const IS[],Mat[],void*);
 
-PETSC_EXTERN PetscErrorCode PCSetOperators(PC,Mat,Mat,MatStructure);
-PETSC_EXTERN PetscErrorCode PCGetOperators(PC,Mat*,Mat*,MatStructure*);
+PETSC_EXTERN PetscErrorCode PCSetOperators(PC,Mat,Mat);
+PETSC_EXTERN PetscErrorCode PCGetOperators(PC,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode PCGetOperatorsSet(PC,PetscBool *,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PCView(PC,PetscViewer);
 PETSC_EXTERN PetscErrorCode PCLoad(PC,PetscViewer);
+PETSC_STATIC_INLINE PetscErrorCode PCViewFromOptions(PC A,const char prefix[],const char name[]) {return PetscObjectViewFromOptions((PetscObject)A,prefix,name);}
 
 PETSC_EXTERN PetscErrorCode PCSetOptionsPrefix(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCAppendOptionsPrefix(PC,const char[]);
@@ -170,18 +170,36 @@ PETSC_EXTERN PetscErrorCode PCSetDiagonalScale(PC,Vec);
 
 /* ------------- options specific to particular preconditioners --------- */
 
-PETSC_EXTERN PetscErrorCode PCJacobiSetUseRowMax(PC);
-PETSC_EXTERN PetscErrorCode PCJacobiSetUseRowSum(PC);
-PETSC_EXTERN PetscErrorCode PCJacobiSetUseAbs(PC);
+/*E
+    PCJacobiType - What elements are used to form the Jacobi preconditioner
+
+   Level: intermediate
+
+.seealso:
+E*/
+typedef enum { PC_JACOBI_DIAGONAL,PC_JACOBI_ROWMAX,PC_JACOBI_ROWSUM} PCJacobiType;
+PETSC_EXTERN const char *const PCJacobiTypes[];
+
+PETSC_EXTERN PetscErrorCode PCJacobiSetType(PC,PCJacobiType);
+PETSC_EXTERN PetscErrorCode PCJacobiGetType(PC,PCJacobiType*);
+PETSC_EXTERN PetscErrorCode PCJacobiSetUseAbs(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCJacobiGetUseAbs(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCSORSetSymmetric(PC,MatSORType);
+PETSC_EXTERN PetscErrorCode PCSORGetSymmetric(PC,MatSORType*);
 PETSC_EXTERN PetscErrorCode PCSORSetOmega(PC,PetscReal);
+PETSC_EXTERN PetscErrorCode PCSORGetOmega(PC,PetscReal*);
 PETSC_EXTERN PetscErrorCode PCSORSetIterations(PC,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode PCSORGetIterations(PC,PetscInt*,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode PCEisenstatSetOmega(PC,PetscReal);
-PETSC_EXTERN PetscErrorCode PCEisenstatNoDiagonalScaling(PC);
+PETSC_EXTERN PetscErrorCode PCEisenstatGetOmega(PC,PetscReal*);
+PETSC_EXTERN PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCEisenstatGetNoDiagonalScaling(PC,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode PCBJacobiSetTotalBlocks(PC,PetscInt,const PetscInt[]);
+PETSC_EXTERN PetscErrorCode PCBJacobiGetTotalBlocks(PC,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode PCBJacobiSetLocalBlocks(PC,PetscInt,const PetscInt[]);
+PETSC_EXTERN PetscErrorCode PCBJacobiGetLocalBlocks(PC,PetscInt*,const PetscInt*[]);
 
 PETSC_EXTERN PetscErrorCode PCShellSetApply(PC,PetscErrorCode (*)(PC,Vec,Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyBA(PC,PetscErrorCode (*)(PC,PCSide,Vec,Vec,Vec));
@@ -190,8 +208,8 @@ PETSC_EXTERN PetscErrorCode PCShellSetSetUp(PC,PetscErrorCode (*)(PC));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyRichardson(PC,PetscErrorCode (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*));
 PETSC_EXTERN PetscErrorCode PCShellSetView(PC,PetscErrorCode (*)(PC,PetscViewer));
 PETSC_EXTERN PetscErrorCode PCShellSetDestroy(PC,PetscErrorCode (*)(PC));
-PETSC_EXTERN PetscErrorCode PCShellGetContext(PC,void**);
 PETSC_EXTERN PetscErrorCode PCShellSetContext(PC,void*);
+PETSC_EXTERN PetscErrorCode PCShellGetContext(PC,void**);
 PETSC_EXTERN PetscErrorCode PCShellSetName(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCShellGetName(PC,const char*[]);
 
@@ -211,11 +229,14 @@ PETSC_EXTERN PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorSetMatOrderingType(PC,MatOrderingType);
 PETSC_EXTERN PetscErrorCode PCFactorSetReuseOrdering(PC,PetscBool );
 PETSC_EXTERN PetscErrorCode PCFactorSetReuseFill(PC,PetscBool );
-PETSC_EXTERN PetscErrorCode PCFactorSetUseInPlace(PC);
-PETSC_EXTERN PetscErrorCode PCFactorSetAllowDiagonalFill(PC);
-PETSC_EXTERN PetscErrorCode PCFactorSetPivotInBlocks(PC,PetscBool );
+PETSC_EXTERN PetscErrorCode PCFactorSetUseInPlace(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCFactorGetUseInPlace(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCFactorSetAllowDiagonalFill(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCFactorGetAllowDiagonalFill(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCFactorSetPivotInBlocks(PC,PetscBool);
 
 PETSC_EXTERN PetscErrorCode PCFactorSetLevels(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCFactorGetLevels(PC,PetscInt*);
 PETSC_EXTERN PetscErrorCode PCFactorSetDropTolerance(PC,PetscReal,PetscReal,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCASMSetLocalSubdomains(PC,PetscInt,IS[],IS[]);
@@ -223,7 +244,7 @@ PETSC_EXTERN PetscErrorCode PCASMSetTotalSubdomains(PC,PetscInt,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode PCASMSetOverlap(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCASMSetDMSubdomains(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCASMGetDMSubdomains(PC,PetscBool*);
-PETSC_EXTERN PetscErrorCode PCASMSetSortIndices(PC,PetscBool );
+PETSC_EXTERN PetscErrorCode PCASMSetSortIndices(PC,PetscBool);
 
 /*E
     PCASMType - Type of additive Schwarz method to use
@@ -248,6 +269,7 @@ typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM
 PETSC_EXTERN const char *const PCASMTypes[];
 
 PETSC_EXTERN PetscErrorCode PCASMSetType(PC,PCASMType);
+PETSC_EXTERN PetscErrorCode PCASMGetType(PC,PCASMType*);
 PETSC_EXTERN PetscErrorCode PCASMCreateSubdomains(Mat,PetscInt,IS*[]);
 PETSC_EXTERN PetscErrorCode PCASMDestroySubdomains(PetscInt,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode PCASMCreateSubdomains2D(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS**,IS**);
@@ -319,6 +341,7 @@ typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SYM
 PETSC_EXTERN const char *const PCCompositeTypes[];
 
 PETSC_EXTERN PetscErrorCode PCCompositeSetType(PC,PCCompositeType);
+PETSC_EXTERN PetscErrorCode PCCompositeGetType(PC,PCCompositeType*);
 PETSC_EXTERN PetscErrorCode PCCompositeAddPC(PC,PCType);
 PETSC_EXTERN PetscErrorCode PCCompositeGetPC(PC,PetscInt,PC *);
 PETSC_EXTERN PetscErrorCode PCCompositeSpecialSetAlpha(PC,PetscScalar);
@@ -338,26 +361,35 @@ PETSC_EXTERN PetscErrorCode PCSPAISetSp(PC,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCHYPRESetType(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCHYPREGetType(PC,const char*[]);
+PETSC_EXTERN PetscErrorCode PCHYPRESetDiscreteGradient(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCHYPRESetEdgeConstantVectors(PC,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCHYPRESetBetaPoissonMatrix(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCBJacobiGetLocalBlocks(PC,PetscInt*,const PetscInt*[]);
 PETSC_EXTERN PetscErrorCode PCBJacobiGetTotalBlocks(PC,PetscInt*,const PetscInt*[]);
 
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetFields(PC,const char[],PetscInt,const PetscInt*,const PetscInt*);
-PETSC_EXTERN PetscErrorCode PCFieldSplitGetType(PC,PCCompositeType*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetType(PC,PCCompositeType);
+PETSC_EXTERN PetscErrorCode PCFieldSplitGetType(PC,PCCompositeType*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetBlockSize(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetIS(PC,const char[],IS);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetIS(PC,const char[],IS*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetDMSplits(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetDMSplits(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSetDiagUseAmat(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCFieldSplitGetDiagUseAmat(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSetOffDiagUseAmat(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCFieldSplitGetOffDiagUseAmat(PC,PetscBool*);
+
 
 /*E
     PCFieldSplitSchurPreType - Determines how to precondition Schur complement
 
     Level: intermediate
 
-.seealso: PCFieldSplitSchurPrecondition()
+.seealso: PCFieldSplitSetSchurPre()
 E*/
-typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_A11,PC_FIELDSPLIT_SCHUR_PRE_USER} PCFieldSplitSchurPreType;
+typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_SELFP,PC_FIELDSPLIT_SCHUR_PRE_A11,PC_FIELDSPLIT_SCHUR_PRE_USER,PC_FIELDSPLIT_SCHUR_PRE_FULL} PCFieldSplitSchurPreType;
 PETSC_EXTERN const char *const PCFieldSplitSchurPreTypes[];
 
 /*E
@@ -375,15 +407,18 @@ typedef enum {
 } PCFieldSplitSchurFactType;
 PETSC_EXTERN const char *const PCFieldSplitSchurFactTypes[];
 
-PETSC_EXTERN PetscErrorCode PCFieldSplitSchurPrecondition(PC,PCFieldSplitSchurPreType,Mat);
+PETSC_EXTERN PETSC_DEPRECATED("Use PCFieldSplitSetSchurPre") PetscErrorCode PCFieldSplitSchurPrecondition(PC,PCFieldSplitSchurPreType,Mat);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSetSchurPre(PC,PCFieldSplitSchurPreType,Mat);
+PETSC_EXTERN PetscErrorCode PCFieldSplitGetSchurPre(PC,PCFieldSplitSchurPreType*,Mat*);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSetSchurFactType(PC,PCFieldSplitSchurFactType);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetSchurBlocks(PC,Mat*,Mat*,Mat*,Mat*);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSchurGetS(PC,Mat *S);
+PETSC_EXTERN PetscErrorCode PCFieldSplitSchurRestoreS(PC,Mat *S);
 
 PETSC_EXTERN PetscErrorCode PCGalerkinSetRestriction(PC,Mat);
 PETSC_EXTERN PetscErrorCode PCGalerkinSetInterpolation(PC,Mat);
 
 PETSC_EXTERN PetscErrorCode PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*);
-PETSC_EXTERN PetscErrorCode PCSASetVectors(PC,PetscInt,PetscReal *);
 
 PETSC_EXTERN PetscErrorCode PCPythonSetType(PC,const char[]);
 
@@ -420,16 +455,27 @@ E*/
 typedef enum {PC_PARMS_LOCAL_ILU0,PC_PARMS_LOCAL_ILUK,PC_PARMS_LOCAL_ILUT,PC_PARMS_LOCAL_ARMS} PCPARMSLocalType;
 PETSC_EXTERN const char *const PCPARMSLocalTypes[];
 
-PETSC_EXTERN PetscErrorCode PCPARMSSetGlobal(PC pc,PCPARMSGlobalType type);
-PETSC_EXTERN PetscErrorCode PCPARMSSetLocal(PC pc,PCPARMSLocalType type);
-PETSC_EXTERN PetscErrorCode PCPARMSSetSolveTolerances(PC pc,PetscReal tol,PetscInt maxits);
-PETSC_EXTERN PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart);
-PETSC_EXTERN PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym);
-PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2);
+PETSC_EXTERN PetscErrorCode PCPARMSSetGlobal(PC,PCPARMSGlobalType);
+PETSC_EXTERN PetscErrorCode PCPARMSSetLocal(PC,PCPARMSLocalType);
+PETSC_EXTERN PetscErrorCode PCPARMSSetSolveTolerances(PC,PetscReal,PetscInt);
+PETSC_EXTERN PetscErrorCode PCPARMSSetSolveRestart(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCPARMSSetNonsymPerm(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC,PetscInt,PetscInt,PetscInt);
 
+/*E
+    PCGAMGType - type of generalized algebraic multigrid (PCGAMG) method
+
+    Level: intermediate
+
+.seealso: PCMG, PCSetType(), PCGAMGSetThreshold(), PCGAMGSetThreshold(), PCGAMGSetReuseInterpolation()
+E*/
 typedef const char *PCGAMGType;
 #define PCGAMGAGG         "agg"
 #define PCGAMGGEO         "geo"
+#define PCGAMGCLASSICAL   "classical"
+
+PETSC_EXTERN PetscErrorCode PCGAMGSetType( PC,PCGAMGType);
+PETSC_EXTERN PetscErrorCode PCGAMGGetType( PC,PCGAMGType*);
 PETSC_EXTERN PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetRepartitioning(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseASMAggs(PC,PetscBool);
@@ -437,31 +483,39 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetThreshold(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCGAMGSetType( PC,PCGAMGType );
-PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n);
-PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n);
+PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGSetReuseInterpolation(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
+PETSC_EXTERN PetscErrorCode PCGAMGRegister(PCGAMGType,PetscErrorCode (*)(PC));
 
-#if defined(PETSC_HAVE_PCBDDC)
-/* Enum defining how to treat the coarse problem */
-typedef enum {SEQUENTIAL_BDDC,REPLICATED_BDDC,PARALLEL_BDDC,MULTILEVEL_BDDC} CoarseProblemType;
+typedef const char *PCGAMGClassicalType;
+#define PCGAMGCLASSICALDIRECT   "direct"
+#define PCGAMGCLASSICALSTANDARD "standard"
+PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC,PCGAMGClassicalType);
+PETSC_EXTERN PetscErrorCode PCGAMGClassicalGetType(PC,PCGAMGClassicalType*);
+
+PETSC_EXTERN PetscErrorCode PCBDDCSetChangeOfBasisMat(PC,Mat);
+PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCBDDCSetMaxLevels(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCBDDCSetLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNullSpace(PC,MatNullSpace);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundaries(PC,IS);
+PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundaries(PC,IS*);
+PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundariesLocal(PC,IS*);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNeumannBoundaries(PC,IS);
+PETSC_EXTERN PetscErrorCode PCBDDCSetNeumannBoundariesLocal(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetNeumannBoundaries(PC,IS*);
-PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseProblemType(PC,CoarseProblemType);
+PETSC_EXTERN PetscErrorCode PCBDDCGetNeumannBoundariesLocal(PC,IS*);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDofsSplitting(PC,PetscInt,IS[]);
+PETSC_EXTERN PetscErrorCode PCBDDCSetDofsSplittingLocal(PC,PetscInt,IS[]);
 PETSC_EXTERN PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC,PetscInt,const PetscInt[],const PetscInt[],PetscCopyMode);
 PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPOperators(PC,Mat*,PC*);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat,Vec,Vec);
-#endif
 
 PETSC_EXTERN PetscErrorCode PCISSetUseStiffnessScaling(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainScalingFactor(PC,PetscScalar);
@@ -508,6 +562,7 @@ typedef enum { PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2 } PCMGCycleType;
 PETSC_EXTERN const char *const PCMGCycleTypes[];
 
 PETSC_EXTERN PetscErrorCode PCMGSetType(PC,PCMGType);
+PETSC_EXTERN PetscErrorCode PCMGGetType(PC,PCMGType*);
 PETSC_EXTERN PetscErrorCode PCMGSetLevels(PC,PetscInt,MPI_Comm*);
 PETSC_EXTERN PetscErrorCode PCMGGetLevels(PC,PetscInt*);
 
@@ -520,7 +575,6 @@ PETSC_EXTERN PetscErrorCode PCMGMultiplicativeSetCycles(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetGalerkin(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCMGGetGalerkin(PC,PetscBool*);
 
-
 PETSC_EXTERN PetscErrorCode PCMGSetRhs(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGSetX(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGSetR(PC,PetscInt,Vec);
@@ -532,6 +586,7 @@ PETSC_EXTERN PetscErrorCode PCMGGetInterpolation(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetRScale(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
+PETSC_EXTERN PetscErrorCode PCMGResidualDefault(Mat,Vec,Vec,Vec);
 
 /*E
     PCExoticType - Face based or wirebasket based coarse grid space

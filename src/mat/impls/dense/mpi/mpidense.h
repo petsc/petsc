@@ -17,11 +17,11 @@ typedef struct {
   PetscInt    rmax;                     /* maximum message length */
 
   /* The following variables are used for matrix-vector products */
-
   Vec        lvec;                      /* local vector */
   VecScatter Mvctx;                     /* scatter context for vector */
-
   PetscBool roworiented;                /* if true, row oriented input (default) */
+
+  Mat_MatTransMatMult *atb;             /* used by MatTransposeMatMult_MPIAIJ_MPIDense */
 } Mat_MPIDense;
 
 PETSC_INTERN PetscErrorCode MatLoad_MPIDense(Mat,PetscViewer);
@@ -32,6 +32,3 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscRe
 PETSC_INTERN PetscErrorCode MatMatMult_MPIAIJ_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
-PETSC_INTERN PetscErrorCode MatGetFactor_mpidense_petsc(Mat,MatFactorType,Mat*);
-
-

@@ -29,12 +29,12 @@
             <li><a href="referencing.html">Citing PETSc</a></li>
             <li><a href="tutorials/index.html">Tutorials</a></li>
             <li><span class="current">Installation</span></li>
-            <li><a href="ams.html">AMS</a></li>
+            <li><a href="saws.html">SAWs</a></li>
             <li><a href="changes/index.html">Changes</a></li>
             <li><a href="bugreporting.html">Bug Reporting</a></li>
             <li><a href="codemanagement.html">Code Management</a></li>
             <li><a href="faq.html">FAQ</a></li>
-            <li><a href="copyright.html">License</a></li>
+            <li><a href="license.html">License</a></li>
             <li><a href="linearsolvertable.html">Linear Solver Table</a></li>
           </ul>
         </li>
@@ -76,7 +76,7 @@
 
       Invoke the following commands from the top level PETSc directory: <br>
       <ul class="code">
-        <li>./configure --with-cc=gcc --with-fc=gfortran --download-f-blas-lapack --download-mpich</li>
+        <li>./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-fblaslapack --download-mpich</li>
         <li>make all test</li>
       </ul>
 
@@ -100,7 +100,7 @@
       <ul>
         <li>Please <a href="../download/index.html">download</a> the <b>latest</b> patched tarball
         <li>For most users we recommend installing PETSc as a <b>regular/non-root user</b>, perhaps in <b>/home/username/soft</b></li>
-        <li>To extract the sources use: <code>gunzip -c petsc-3.3-p0.tar.gz | tar -xof -</code></li>
+        <li>To extract the sources use: <code>gunzip -c petsc-3.5.0.tar.gz | tar -xof -</code></li>
         <li>Please check: <code>./configure --help</code></li>
         <li>Please check <a href="#exampleusage">example usages</a></li>
         <li>To install in <a href="#root">system directories</a> and for <a href="#packagemanagers">package managers.</a></li> 
@@ -130,14 +130,14 @@
             installed <code>./configure</code> will download &amp; install BLAS,
             LAPACK, MPICH if they are not already installed on the system):
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=gfortran --download-f-blas-lapack --download-mpich</li>
+              <li>./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-fblaslapack --download-mpich</li>
             </ul>
           </li>
 
           <li>
-            Same as above - but do not have a fortran compiler [and want to use PETSc from C].
+            Same as above - but do not have a fortran compiler [and want to use PETSc from C only].
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=0 --download-f2cblaslapack --download-mpich</li>
+              <li>./configure --with-cc=gcc --with-cxx=0 --with-fc=0 --download-f2cblaslapack --download-mpich</li>
             </ul>
           </li>
 
@@ -167,16 +167,16 @@
             (add the option <code>--with-fortran-kernels=generic</code> to get
             possibly faster complex number performance on some systems):
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --download-f-blas-lapack --download-mpich --with-scalar-type=complex --with-clanguage=cxx</li>
+              <li>./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --with-clanguage=cxx --download-fblaslapack --download-mpich --with-scalar-type=complex</li>
             </ul>
           </li>
 
           <li>
             Install 2 variants of PETSc, one with gnu, the other with intel compilers. Specify different PETSC_ARCH for each build.
             <ul>
-              <li>./configure PETSC_ARCH=linux-gnu --with-cc=gcc --with-fc=gfortran --download-mpich</li>
+              <li>./configure PETSC_ARCH=linux-gnu --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich</li>
               <li>make PETSC_ARCH=linux-gnu all test</li>
-              <li>./configure PETSC_ARCH=linux-gnu-intel --with-cc=icc --with-fc=ifort --download-mpich --with-blas-lapack-dir=/usr/local/mkl</li>
+              <li>./configure PETSC_ARCH=linux-gnu-intel --with-cc=icc --with-cxx=icpc --with-fc=ifort --download-mpich --with-blas-lapack-dir=/usr/local/mkl</li>
               <li>make PETSC_ARCH=linux-gnu-intel all test</li>
             </ul>
           </li>
@@ -196,7 +196,7 @@
           <li>
             specify enviornment variable for csh/tcsh [can be specified in ~/.cshrc]
             <ul>
-              <li>setenv PETSC_DIR /home/balay/petsc-3.3-p0</li>
+              <li>setenv PETSC_DIR /home/balay/petsc-3.5.0</li>
               <li>setenv PETSC_ARCH linux-gnu-c-debug</li>
             </ul>
           </li>
@@ -204,7 +204,7 @@
           <li>
             specify enviornment variable for bash [can be specified in ~/.bashrc]
             <ul>
-              <li>export PETSC_DIR=/home/balay/petsc-3.3-p0</li>
+              <li>export PETSC_DIR=/home/balay/petsc-3.5.0</li>
               <li>export PETSC_ARCH=linux-gnu-c-debug</li>
             </ul>
           </li>
@@ -212,14 +212,14 @@
           <li>
             specify variable on commandline to configure
             <ul>
-              <li>./configure PETSC_DIR=/home/balay/petsc-3.3-p0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
+              <li>./configure PETSC_DIR=/home/balay/petsc-3.5.0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
             </ul>
           </li>
 
           <li>
             specify variables on command line to make
             <ul>
-              <li>make PETSC_DIR=/home/balay/petsc-3.3-p0 PETSC_ARCH=linux-gnu-c-debug [other make options]</li>
+              <li>make PETSC_DIR=/home/balay/petsc-3.5.0 PETSC_ARCH=linux-gnu-c-debug [other make options]</li>
             </ul>
           </li>
         </ul>
@@ -272,18 +272,26 @@
 
         <ul>
           <li>
-            Specify compilers using the options <code>--with-cc --with-fc --with-cxx</code> for c, c++, and fortran compilers
+            Specify compilers using the options <code>--with-cc --with-cxx --with-fc</code> for c, c++, and fortran compilers
             <ul>
-              <li>--with-cc=mpicc --with-fc=mpif90</li>
-              <li>--with-cc=gcc --with-fc=gfortran</li>
+              <li>--with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90</li>
+              <li>--with-cc=gcc --with-cxx=g++ --with-fc=gfortran</li>
               <li>--with-cc=gcc --with-cxx=g++ --with-fc=gfortran --with-clanguage=cxx</li>
+            </ul>
+            Note that --with-clanguage=cxx means that the PETSc source code is compiled with the C++ compiler. This is not normally needed and we don't recommend it. One can use 'c' build of PETSc from both C and C++. One can also have a complex build with C99.
+          </li>
+
+          <li>
+            If fortran compiler is not available or not needed - then disabling using fortran
+            <ul>
+              <li>--with-fc=0</li>
             </ul>
           </li>
 
           <li>
-            If fortran compiler is not available - then disabling using fortran
+            If a C++ compiler is not available or not needed - disable configuring with it
             <ul>
-              <li>--with-fc=0</li>
+              <li>--with-cxx=0</li>
             </ul>
           </li>
 
@@ -299,7 +307,7 @@
           </li>
 
           <li>
-            It's best to use <a href="MPICompilers">MPI compilers</a>
+            It's best to use MPI compilers
             as this will avoid the situation where MPI is compiled
             with one set of compilers [like gcc/g77] and user
             specified incompatible compilers to PETSc [perhaps
@@ -307,7 +315,7 @@
             --with-cc=mpicc or --with-mpi-dir [and not
             --with-cc=gcc]
             <ul>
-              <li>--with-cc=mpicc --with-fc=mpif90</li>
+              <li>--with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90</li>
               <li>--with-mpi-dir=/opt/mpich2-1.1 [but <b>*no*</b> --with-cc=gcc]</li>
             </ul>
           </li>
@@ -318,9 +326,10 @@
             option --with-debugging [defaults to debug enabled].
             Additionally one can specify more suitable optimization
             flags with the options COPTFLAGS, FOPTFLAGS,
-            CXXOPTFLAGS.
+            CXXOPTFLAGS. For ex: when using gnu compilers with corresponding
+            optimization flags:
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=gfortran --with-debugging=0 COPTFLAGS='-O3 -march=p4 -mtune=p4' FOPTFLAGS='-O3 -qarch=p4 -qtune=p4'</li>
+              <li>./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --with-debugging=0 COPTFLAGS='-O3 -march=native -mtune=native' CXXOPTFLAGS='-O3 -march=native -mtune=native' FOPTFLAGS='-O3 -march=native -mtune=native' --download-mpich</li>
             </ul>
           </li>
 
@@ -361,7 +370,7 @@
             <span class="def">--download-PACKAGENAME</span>: Download specified
             package and install it. Then configure PETSc to use this package.
             <ul>
-              <li>--download-f-blas-lapack --download-mpich</li>
+              <li>--download-fblaslapack --download-mpich</li>
               <li>--download-scalapack --download-mumps</li>
             </ul>
           </li>
@@ -392,6 +401,7 @@
             <ul>
               <li>--with-mpi-dir=/home/petsc/software/mpich2-1.0.4p1</li>
             </ul>
+            Note that except for MPI we hightly recommend you have PETSc download and install the external packages rather than you installing them separately first.
           </li>
 
           <li>
@@ -402,7 +412,7 @@
 
             <ul>
               <li>
-                --with-superlu-include=/home/petsc/software/suerplu/include
+                --with-superlu-include=/home/petsc/software/superlu/include
                 --with-superlu-lib=/home/petsc/software/superlu/lib/libsuperlu.a
               </li>
 
@@ -477,7 +487,7 @@
             If you want to download a compatible external package manually, then
             the URL for this package is listed in configure source for this
             package. For example, check
-            <code>config/PETSc/packages/SuperLU.py</code> for the url for
+            <code>config/config.packages/SuperLU.py</code> for the url for
             download this package.
           </li>
         </ul>
@@ -512,7 +522,7 @@
           <li>
             One can use the following options to let configure download/install blas/lapack automatically.
             <ul>
-              <li>--download-f-blas-lapack [when fortran compiler is present]</li>
+              <li>--download-fblaslapack [when fortran compiler is present]</li>
               <li>--download-f2cblaslapack [when configuring without a fortran compiler - i.e --with-fc=0]</li>
             </ul>
           </li>
@@ -543,7 +553,7 @@
             Sadly, IBM's ESSL does not have all the routines of BLAS and LAPACK
             that some packages, such as SuperLU expect; in particular slamch,
             dlamch and xerbla. In this case instead of using ESSL we suggest
-            <code>--download-f-blas-lapack</code>. If you really want to use ESSL,
+            <code>--download-fblaslapack</code>. If you really want to use ESSL,
             see <a href="http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBLAS-build">http://www.pdc.kth.se/resources/computers/bluegene/LAPACK-CBLAS/LAPACK-CBLAS-build</a>.
           </li>
         </ul>
@@ -666,8 +676,29 @@
       <hr>
 
       <div>
-        <h3><a name="windows">Microsoft Windows Installation With MS/Intel/Compaq Compilers:</a></h3>
+        <h3><a name="windows">Microsoft Windows Installation:</a></h3>
 
+        <ul>
+          <li>
+            Are you sure you want to use MS/Windows? We recommend using linux
+            if possible [and minimize troubleshooting windows related issues].
+            And most externalpackages will not work on windows.
+          </li>
+          <li>
+            If you have access to only a windows machine and not a linux machine,
+            consider using linux virtual machine via <a href="https://www.virtualbox.org/">VirtualBox</a>.
+            One sample tutorial is at <a href="http://www.psychocats.net/ubuntu/virtualbox">http://www.psychocats.net/ubuntu/virtualbox</a>.
+            Google can provide more tutorials.
+          </li>
+          <li>
+            You can consider using GNU compilers from <a href="http://www.cygwin.com">cygwin</a>.
+            Our regular [linux] instructions would work with cygwin/gnu compilers.
+            And most externalpackages will also work.
+          </li>
+        </ul>
+
+
+        <h4>Installation With MS/Intel/Compaq Compilers:</h4>
         <p>
           Microsoft Windows OS does not provide the same unix shell enviornment
           as the other OSes. Also the default MS/Intel/Compaq compilers behave
@@ -692,7 +723,7 @@
         <p>
           <span class="def">Remove Cygwin link.exe: </span>Cygwin link.exe can
           conflict with Intel ifort and Comapq F90 compilers. If you are using
-          these compilers - please do [from cygwin/bash shell]:
+          these compilers - please do [from cygwin terminal/bash-shell]:
         </p>
 
         <ul>
@@ -700,7 +731,7 @@
         </ul>
 
         <p>
-          <span class="def">Setup cygwin bash shell with Working Compilers:
+          <span class="def">Setup cygwin terminal/bash-shell with Working Compilers:
           </span>We require the compilers to be setup properly in a cygwin bash
           command shell, so that "<code>cl foo.c</code>" or "<code>ifort
             foo.f</code>" works from this shell. For example - if using VS2005
@@ -716,11 +747,11 @@
           </li>
 
           <li>
-            Within this shell - run cygwin bash.exe as:
-            <code>c:\cygwin\bin\bash.exe --login</code>
+            Within this shell - run cygwin terminal/bash-shell mintty.exe as:
+            <code>c:\cygwin\bin\mintty.exe</code>
           </li>
 
-          <li>verify if the compilers are useable [by running cl, ifort in this shell]</li>
+          <li>verify if the compilers are useable [by running cl, ifort in this cygwin terminal/bash-shell]</li>
 
           <li>Now run configure with win32fe and then build the libraries with make [as per the usual instructions]</li>
         </ul>
@@ -732,7 +763,7 @@
         </p>
 
         <ul>
-          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe ifort' --with-cxx='win32fe cl' --download-f-blas-lapack</code></li>
+          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe ifort' --with-cxx='win32fe cl' --download-fblaslapack</code></li>
         </ul>
 
         <p>If fortran usage is not required, use:</p>
@@ -746,7 +777,7 @@
         <p>Using Microsoft C/C++ 6.0 &amp; Compaq Fortran 6.0 with MPICH2 configure command to use:</p>
 
         <ul>
-          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe f90' --download-f-blas-lapack</code></li>
+          <li><code>./configure --with-cc='win32fe cl' --with-fc='win32fe f90' --download-fblaslapack</code></li>
         </ul>
 
         <p>
@@ -840,8 +871,8 @@
           <li>sudo mkdir /opt/petsc</li>
           <li>sudo chown user:group /opt/petsc</li>
           <li>cd /opt/petsc</li>
-          <li>tar -xzf petsc-3.3-p0.tar.gz</li>
-          <li>cd petsc-3.3-p0</li>
+          <li>tar -xzf petsc-3.5.0.tar.gz</li>
+          <li>cd petsc-3.5.0</li>
           <li>./configure</li>
           <li>make</li>
         </ul>
@@ -850,14 +881,14 @@
         <p>One can also use the GNU <b>--prefix</b> install mode.</p>
 
         <ul class="code">
-          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0  [other configure options]</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.5.0  [other configure options]</li>
           <li>make</li>
           <li>[sudo] make install</li>
-          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.3-p0 ex1</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.5.0 ex1</li>
         </ul>
 
         <p>
-          Note: one has to switch to using <code>PETSC_DIR=/opt/petsc/petsc-3.3-p0</code> after
+          Note: one has to switch to using <code>PETSC_DIR=/opt/petsc/petsc-3.5.0</code> after
           install is done - and <b>NOT</b> use PETSC_ARCH anymore.
         </p>
 
@@ -869,11 +900,11 @@
         </p>
 
         <ul class="code">
-          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.5.0</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
-          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.3-p0]</li>
-          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.3-p0 ex1</li>
+          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.5.0]</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.5.0 ex1</li>
         </ul>
 
         <h4>Multiple installs using --prefix and DESTDIR:</h4>
@@ -882,11 +913,11 @@
 
         <ul class="code">
           <li>untar petsc tar ball</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0-mpich --with-mpi-dir=/opt/mpich</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.5.0-mpich --with-mpi-dir=/opt/mpich</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
           <li>untar petsc tar ball</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0-openmpi --with-mpi-dir=/opt/openmpi</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.5.0-openmpi --with-mpi-dir=/opt/openmpi</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
         </ul>
@@ -976,7 +1007,7 @@
             Thrust has been included in CUDA since the 4.0 release - so a separate install is not needed.
           </li>
 
-          <li>Currently using CUDA-4.1 or CUDA-4.2 with Cusp-v0.3.1</li>
+          <li>Currently using CUDA-4.1 or CUDA-4.2 with Cusp-v0.3.1 or CUDA-5 with Cusp-v0.4.0.</li>
 
           <li>
             On Linux - make sure you have  compatible <a href="http://developer.nvidia.com/cuda-downloads"> NVidia driver</a>
@@ -995,10 +1026,36 @@
 
       <hr>
 
+      <div>
+        <h3><a name="cuda">Installing PETSc to use GPUs and accelerators via OpenCL (NVIDIA, AMD, Intel MIC)</a></h3>
+
+        <ul>
+          <li>
+            Requires <a href="http://viennacl.sourceforge.net/">ViennaCL</a> and the OpenCL shared library, which is shipped in the vendor graphics driver.
+            Make sure the OpenCL headers are available on your system by e.g. downloading them from the <a href="https://www.khronos.org/opencl/">Khronos Group</a> directly.
+            Package managers on Linux provide these headers through a package named 'opencl-headers' or similar.
+          </li>
+
+          <li>
+            Always make sure you have the latest GPU driver installed. There are several known issues with older driver versions.
+          </li>
+
+          <li>check <code>config/examples/arch-viennacl.py</code> for example usage.</li>
+        </ul>
+
+        <p>
+          OpenCL/ViennaCL builds of PETSc currently work on Apple OSX, Linux, and Microsoft Windows. OpenCL is less a burden on the build system than CUDA, so installation is often easier and works with any host compiler.
+        </p>
+
+        <a href="#" target="_top">Return to Installation Instructions</a>
+      </div> <!-- #opencl -->
+
+      <hr>
+
       <div id="threads">
         <h3><a name="threads">Installing PETSc to use Threads</a></h3>
 	<p>
-	  <b>petsc-dev</b>
+	  <b>petsc master (git branch)</b>
 	</p>
         <ul>
           <li>

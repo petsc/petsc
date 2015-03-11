@@ -17,17 +17,23 @@
 +    comm - the MPI communicator
 -    map - pointer to the map
 
-   Level: developer
+   Level: advanced
 
-    Notes: Typical calling sequence
+    Notes:
+    Typical calling sequence
+.vb
        PetscLayoutCreate(MPI_Comm,PetscLayout *);
        PetscLayoutSetBlockSize(PetscLayout,1);
-       PetscLayoutSetSize(PetscLayout,n) or PetscLayoutSetLocalSize(PetscLayout,N);
+       PetscLayoutSetSize(PetscLayout,N) // or PetscLayoutSetLocalSize(PetscLayout,n);
        PetscLayoutSetUp(PetscLayout);
-       Optionally use any of the following:
-          PetscLayoutGetSize(PetscLayout,PetscInt *); or PetscLayoutGetLocalSize(PetscLayout,PetscInt *;)
-          PetscLayoutGetRange(PetscLayout,PetscInt *rstart,PetscInt *rend); or PetscLayoutGetRanges(PetscLayout,const PetscInt *range[])
-       PetscLayoutDestroy(PetscLayout);
+.ve
+    Optionally use any of the following:
+
++      PetscLayoutGetSize(PetscLayout,PetscInt *);
+.      PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
+.      PetscLayoutGetRange(PetscLayout,PetscInt *rstart,PetscInt *rend);
+.      PetscLayoutGetRanges(PetscLayout,const PetscInt *range[]);
+-      PetscLayoutDestroy(PetscLayout*);
 
       The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is often not needed in
       user codes unless you really gain something in their use.
@@ -44,7 +50,7 @@ PetscErrorCode  PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_PetscLayout,map);CHKERRQ(ierr);
+  ierr = PetscNew(map);CHKERRQ(ierr);
 
   (*map)->comm   = comm;
   (*map)->bs     = -1;
@@ -88,7 +94,6 @@ PetscErrorCode  PetscLayoutDestroy(PetscLayout *map)
   if (!(*map)->refcnt--) {
     ierr = PetscFree((*map)->range);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&(*map)->mapping);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&(*map)->bmapping);CHKERRQ(ierr);
 #if defined(PETSC_THREADCOMM_ACTIVE)
     ierr = PetscFree((*map)->trstarts);CHKERRQ(ierr);
 #endif
@@ -136,18 +141,17 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (map->bs <= 0) map->bs = 1;
   if ((map->n >= 0) && (map->N >= 0) && (map->range)) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(map->comm, &rank);CHKERRQ(ierr);
-  if (map->n > 0) map->n = map->n/map->bs;
-  if (map->N > 0) map->N = map->N/map->bs;
+  if (map->n > 0) map->n = map->n/PetscAbs(map->bs);
+  if (map->N > 0) map->N = map->N/PetscAbs(map->bs);
   ierr = PetscSplitOwnership(map->comm,&map->n,&map->N);CHKERRQ(ierr);
-  map->n = map->n*map->bs;
-  map->N = map->N*map->bs;
+  map->n = map->n*PetscAbs(map->bs);
+  map->N = map->N*PetscAbs(map->bs);
   if (!map->range) {
-    ierr = PetscMalloc((size+1)*sizeof(PetscInt), &map->range);CHKERRQ(ierr);
+    ierr = PetscMalloc1(size+1, &map->range);CHKERRQ(ierr);
   }
   ierr = MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, map->comm);CHKERRQ(ierr);
 
@@ -195,7 +199,7 @@ PetscErrorCode  PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
   ierr = PetscLayoutCreate(comm,out);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout));CHKERRQ(ierr);
-  ierr = PetscMalloc((size+1)*sizeof(PetscInt),&(*out)->range);CHKERRQ(ierr);
+  ierr = PetscMalloc1(size+1,&(*out)->range);CHKERRQ(ierr);
   ierr = PetscMemcpy((*out)->range,in->range,(size+1)*sizeof(PetscInt));CHKERRQ(ierr);
 
   (*out)->refcnt = 0;
@@ -255,52 +259,20 @@ PetscErrorCode  PetscLayoutReference(PetscLayout in,PetscLayout *out)
 
     If the ltog location already contains a PetscLayout it is destroyed
 
-.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutDuplicate(), PetscLayoutSetLocalToGlobalMappingBlock()
+.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutDuplicate()
 
 @*/
 PetscErrorCode  PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlobalMapping ltog)
 {
   PetscErrorCode ierr;
+  PetscInt       bs;
 
   PetscFunctionBegin;
+  ierr = ISLocalToGlobalMappingGetBlockSize(ltog,&bs);CHKERRQ(ierr);
+  if (in->bs > 0 && in->bs != bs) SETERRQ2(in->comm,PETSC_ERR_PLIB,"Blocksize of layout %D must match that of mapping %D",in->bs,bs);
   ierr = PetscObjectReference((PetscObject)ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&in->mapping);CHKERRQ(ierr);
-
   in->mapping = ltog;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscLayoutSetISLocalToGlobalMappingBlock"
-/*@C
-
-    PetscLayoutSetISLocalToGlobalMappingBlock - sets a ISLocalGlobalMapping into a PetscLayout
-
-     Collective on PetscLayout
-
-    Input Parameter:
-+     in - input PetscLayout
--     ltog - the local to global block mapping
-
-
-   Level: developer
-
-    Notes: PetscLayoutSetUp() does not need to be called on the resulting PetscLayout
-
-    If the ltog location already contains a PetscLayout it is destroyed
-
-.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutDuplicate(), PetscLayoutSetLocalToGlobalMappingBlock()
-
-@*/
-PetscErrorCode  PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout in,ISLocalToGlobalMapping ltog)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)ltog);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&in->bmapping);CHKERRQ(ierr);
-
-  in->bmapping = ltog;
   PetscFunctionReturn(0);
 }
 
@@ -455,8 +427,16 @@ PetscErrorCode  PetscLayoutGetSize(PetscLayout map,PetscInt *n)
 PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
 {
   PetscFunctionBegin;
+  if (bs < 0) PetscFunctionReturn(0);
   if (map->n > 0 && map->n % bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Local size %D not compatible with block size %D",map->n,bs);
-  if (map->bs > 0 && map->bs != bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Cannot change block size %D to %D",map->bs,bs);
+  if (map->range && map->bs > 0 && map->bs != bs) SETERRQ2(map->comm,PETSC_ERR_ARG_INCOMP,"Cannot change block size %D to %D",map->bs,bs);
+  if (map->mapping) {
+    PetscInt       lbs;
+    PetscErrorCode ierr;
+
+    ierr = ISLocalToGlobalMappingGetBlockSize(map->mapping,&lbs);CHKERRQ(ierr);
+    if (lbs != bs) SETERRQ2(map->comm,PETSC_ERR_PLIB,"Blocksize of localtoglobalmapping %D must match that of layout %D",lbs,bs);
+  }
   map->bs = bs;
   PetscFunctionReturn(0);
 }
@@ -489,7 +469,7 @@ PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
 PetscErrorCode  PetscLayoutGetBlockSize(PetscLayout map,PetscInt *bs)
 {
   PetscFunctionBegin;
-  *bs = map->bs;
+  *bs = PetscAbs(map->bs);
   PetscFunctionReturn(0);
 }
 
@@ -587,7 +567,7 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nlea
 
   PetscFunctionBegin;
   ierr = PetscLayoutGetLocalSize(layout,&nroots);CHKERRQ(ierr);
-  ierr = PetscMalloc(nleaves*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
   for (i=0; i<nleaves; i++) {
     PetscInt owner = -1;
     ierr = PetscLayoutFindOwner(layout,iremote[i],&owner);CHKERRQ(ierr);

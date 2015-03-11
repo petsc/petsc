@@ -1,0 +1,11 @@
+lid velocity = 0.0016, prandtl # = 1, grashof # = 1
+  0 SNES Function norm 0.0406612 
+MatColoring Object: 2 MPI processes
+  type: greedy
+  Weight type: LF
+  Distance 2, Max. Colors 65535
+  Number of colors 32
+  Number of total columns 2500
+  1 SNES Function norm 3.57258e-06 
+  2 SNES Function norm 4.711e-11 
+Number of SNES iterations = 2

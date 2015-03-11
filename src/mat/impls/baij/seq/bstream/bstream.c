@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/mat/impls/baij/seq/bstream/bstream.h"
+#include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/impls/baij/seq/bstream/bstream.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqBSTRM"
@@ -55,9 +55,9 @@ PetscErrorCode MatSeqBSTRM_convert_bstrm(Mat A)
   slen = blen*cbs;
 
   ierr = PetscFree(bstrm->as);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs2*blen*sizeof(MatScalar), &bstrm->as);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs2*blen, &bstrm->as);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(rbs*sizeof(MatScalar*), &asp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rbs, &asp);CHKERRQ(ierr);
 
   for (i=0; i<rbs; i++) asp[i] = bstrm->as + i*slen;
 
@@ -112,7 +112,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBSTRM(Mat A,MatType type,MatRe
   }
 
 
-  ierr     = PetscNewLog(B,Mat_SeqBSTRM,&bstrm);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,&bstrm);CHKERRQ(ierr);
   B->spptr = (void*) bstrm;
 
   /* Set function pointers for methods that we inherit from BAIJ but override. */
@@ -861,9 +861,9 @@ PetscErrorCode MatSeqBSTRM_create_bstrm(Mat A)
   blen = ai[MROW]-ai[0];
   slen = blen*cbs;
 
-  ierr = PetscMalloc(bs2*blen*sizeof(PetscScalar), &bstrm->as);CHKERRQ(ierr);
+  ierr = PetscMalloc1(bs2*blen, &bstrm->as);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(rbs*sizeof(PetscScalar*), &asp);CHKERRQ(ierr);
+  ierr = PetscMalloc1(rbs, &asp);CHKERRQ(ierr);
 
   for (i=0; i<rbs; i++) asp[i] = bstrm->as + i*slen;
 

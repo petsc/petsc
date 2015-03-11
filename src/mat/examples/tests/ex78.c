@@ -79,6 +79,7 @@ int main(int argc,char **args)
     ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(A,nz/m,NULL);CHKERRQ(ierr);
+    ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
     for (i=0; i<nz; i++) {
       fscanf(Afile,"%d %d %le\n",&row,&col,(double*)&val);

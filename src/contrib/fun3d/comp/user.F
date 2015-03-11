@@ -82,13 +82,13 @@
 !     data vkar,cmu,ce1,ce2/0.41,0.09,1.2,2.0 /
 !     data aplus1,aplus2,turbinf/26.0,10.0,0.1 /
 !     data cb1,sig,cb2,cw2,cw3/0.1355,0.66667,0.622,0.3,2.0/
-c
+!
 ! Comment out old coefficients
 !      data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.1,2.0/
-c
+!
 !      data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.2,0.5/
-c
-c
+!
+!
 #if defined(INTERLACING)
        real qvec(5,nnodes)
 #define qnode(i,j) qvec(i,j)
@@ -108,7 +108,7 @@ c
 !
       res0 = 1.0
       resc = 1.0
-c
+!
       gamma = 1.4
       gm1   = gamma - 1.0
       gp1   = gamma + 1.0
@@ -250,11 +250,11 @@ c
       end
 
 
-c================================ READR1 ====================================
-c
+!================================ READR1 ====================================
+!
 !  Reads input parameters
-c
-c============================================================================
+!
+!============================================================================
       subroutine READR1(ileast, irank)
 
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
@@ -310,12 +310,12 @@ c============================================================================
       end
 
 
-c================================ RDGPAR =============================72
-c
+!================================ RDGPAR =============================72
+!
 ! Reads grid parameters
 ! I am using this subroutine in modified form - DKK (1/8/97)
-c
-c=====================================================================72
+!
+!=====================================================================72
       subroutine RDGPAR(nnodes,ncell,nedge,
      &                  ncolort,ncolore,
      &                  nnbound,nvbound,nfbound,
@@ -336,9 +336,9 @@ c=====================================================================72
       nsface = 0
       nvface = 0
       nfface = 0
-c
+!
 !  end DEBUG: to check things out
-c
+!
 
       unit =  20
 
@@ -365,11 +365,11 @@ c
       end
 
 
-c================================ README =============================72
-c
+!================================ README =============================72
+!
 ! Read grid
-c
-c=====================================================================72
+!
+!=====================================================================72
       subroutine README(nnodes,ncell,nedge,
      &                  ncolor,nccolor,
      &                  nnbound,nvbound,nfbound,
@@ -398,9 +398,9 @@ c=====================================================================72
       real vol(nnodes),slen(nnodes)
       real x(nnodes),y(nnodes),z(nnodes)
       real xn(nedge),yn(nedge),zn(nedge),ra(nedge)
-c
+!
 !  Garbage variables
-c
+!
       integer c2n(ncell,4), c2e(ncell,6)
       integer nntet(nnbound), nnpts(nnbound)
       integer nvtet(nvbound), nvpts(nvbound)
@@ -410,9 +410,9 @@ c
       integer idum, jdum
 
       unit = 20
-c
+!
 !  Read Cell to Node indices
-c
+!
       if (ivisc.ne.0) then
          read (unit) (c2n(j,1),j=1,ncell),(c2n(j,2),j=1,ncell),
      &               (c2n(j,3),j=1,ncell),(c2n(j,4),j=1,ncell)
@@ -421,9 +421,9 @@ c
      &               (idum,j=1,ncell),(idum,j=1,ncell)
       end if
 
-c
+!
 !  Read Cell to Edge indices
-c
+!
       if (ivisc.ne.0) then
          read (unit) (c2e(j,1),j=1,ncell),(c2e(j,2),j=1,ncell),
      &               (c2e(j,3),j=1,ncell),(c2e(j,4),j=1,ncell),
@@ -433,111 +433,111 @@ c
      &               (idum,j=1,ncell),(idum,j=1,ncell),
      &               (idum,j=1,ncell),(idum,j=1,ncell)
       end if
-c
+!
 !  Read coordinates of grid points
-c
+!
       read (unit) (x(i),i=1,nnodes)
       read (unit) (y(i),i=1,nnodes)
       read (unit) (z(i),i=1,nnodes)
-c
+!
 !  Read median dual volume surrounding each node
-c
+!
       read (unit) (vol(i),i=1,nnodes)
-c
+!
 !  Read node indices for each edge
-c
+!
       read (unit) (evec(k,1),k=1,nedge),(evec(k,2),k=1,nedge)
-c
+!
 !  Read in unit normals of dual mesh face (from node 1 to node 2)
 !  and the area of the dual mesh face
-c
+!
       read (unit) (xn(k),k=1,nedge),(yn(k),k=1,nedge),
      &            (zn(k),k=1,nedge),(ra(k),k=1,nedge)
-c
+!
 !  Read Cell colors
-c
+!
       read (unit) (idum,i=1,nccolor)
-c
+!
 !  Read edge colors
-c
+!
       read (unit) (idum,i=1,ncolor)
-c
+!
 !  Read solid boundary face colors
-c
+!
       do i=1, nnbound
          read (unit) idum,(jdum,j=1,idum)
       end do
-c
+!
 !  Read viscous boundary face colors
-c
+!
       do i=1, nvbound
          read (unit) idum,(jdum,j=1,idum)
       end do
-c
+!
 !  Read boundary face colors
-c
+!
       do i=1, nfbound
          read (unit) idum,(jdum,j=1,idum)
       end do
-c
+!
 !  Read inviscid surface info
-c
+!
       read (unit) (nntet(i),i=1,nnbound)
       read (unit) (nnpts(i),i=1,nnbound)
-c
+!
 !  Read viscous surface info
-c
+!
       read (unit) (nvtet(i),i=1,nvbound)
       read (unit) (nvpts(i),i=1,nvbound)
-c
+!
 !  Read far field info
-c
+!
       read (unit) (nftet(i),i=1,nfbound)
       read (unit) (nfpts(i),i=1,nfbound)
-c
+!
 !  Read list of faces on inviscid boundaries
-c
+!
       read (unit) (f2ntn(i,1),i=1,nnfacet),(f2ntn(i,2),i=1,nnfacet),
      &            (f2ntn(i,3),i=1,nnfacet),(f2ntn(i,4),i=1,nnfacet)
-c
+!
 !  Read list of faces on viscous boundaries
-c
+!
       read (unit) (f2ntv(i,1),i=1,nvfacet),(f2ntv(i,2),i=1,nvfacet),
      &            (f2ntv(i,3),i=1,nvfacet),(f2ntv(i,4),i=1,nvfacet)
-c
+!
 !  Read list of faces on far field boundaries
-c
+!
       read (unit) (f2ntf(i,1),i=1,nffacet),(f2ntf(i,2),i=1,nffacet),
      &            (f2ntf(i,3),i=1,nffacet),(f2ntf(i,4),i=1,nffacet)
-c
+!
 !  Read list of info associated with nodes on each inviscid boundary
-c
+!
       read (unit) (isnode(i),i=1,nsnode)
       read (unit) (sxn(i),i=1,nsnode),(syn(i),i=1,nsnode),
      &            (szn(i),i=1,nsnode)
-c
+!
 !  Read list of info associated with nodes on each viscous boundary
-c
+!
       read (unit) (ivnode(i),i=1,nvnode)
       read (unit) (vxn(i),i=1,nvnode),(vyn(i),i=1,nvnode),
      &            (vzn(i),i=1,nvnode)
-c
+!
 !  Read list of info associated with nodes on each far field boundary
-c
+!
       read (unit) (ifnode(i),i=1,nfnode)
       read (unit) (fxn(i),i=1,nfnode),(fyn(i),i=1,nfnode),
      &            (fzn(i),i=1,nfnode)
-c
+!
 ! Read in the distance function
-c
+!
       if (ivisc.gt.3) then
          read(unit)(slen(i),i=1,nnodes)
       end if
 
       close (unit)
-c
+!
 !  End of subroutine README
-c
+!
       return
       end
 
@@ -575,17 +575,17 @@ c
       end if
 
       return
-c
+!
 ! End of subroutine RREST
-c
+!
       end
 
 
-c================================ WREST ==============================72
-c
+!================================ WREST ==============================72
+!
 ! Writes output flowfield for restarts
-c
-c=====================================================================72
+!
+!=====================================================================72
       subroutine WREST(nnodes, qvec, turbre, amut)
 
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
@@ -606,17 +606,17 @@ c=====================================================================72
       close(11)
 
       return
-c
+!
 ! End of subroutine WREST
-c
+!
       end
 
 
-c================================ PLLAN ====================================
-c
+!================================ PLLAN ====================================
+!
 !  Writes output for plotting
-c
-c============================================================================
+!
+!============================================================================
       subroutine PLLAN(nnodes,irank)
 
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
@@ -701,7 +701,7 @@ c============================================================================
 !
 !     write(99,'(a)') 'TITLE= "',title,'"'
 !
-c================================== INIT =============================72
+!================================== INIT =============================72
        write(99,'(a)') 'VARIABLES="X     ","Y     ","Z     ","RHO   ",',&
      &      '"U     ","V     ","W     ","P/Pinf","S     ","Mach  "'
 !
@@ -827,7 +827,7 @@ c================================== INIT =============================72
 !
 !=====================================================================72
       subroutine ETOH(nvertices, qvec)
-#include <finclude/petscsys.h>
+#include <petsc-finclude/petscsys.h>
 
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       integer ierr
@@ -856,9 +856,9 @@ c================================== INIT =============================72
  1000 continue
       flops = flops + nvertices*14
       call PetscLogFlops(flops,ierr)
-c
+!
 ! End of subroutine ETOH
-c
+!
       return
       end
 
@@ -898,19 +898,19 @@ c
  1000 continue
       flops = flops + nvertices*13.0
       call PetscLogFlops(flops,ierr)
-c
+!
 ! End of subroutine HTOE
-c
+!
       return
       end
 
 
-c================================ ETOP ===============================72
-c
+!================================ ETOP ===============================72
+!
 !  Converts total energy to pressure
 !  Also converts rhou and rhov to u and v
-c
-c=====================================================================72
+!
+!=====================================================================72
       subroutine ETOP(nvertices, qvec)
       integer ierr
       PetscLogDouble flops
@@ -940,19 +940,19 @@ c=====================================================================72
  1000 continue
       flops = flops + nvertices*12.0
       call PetscLogFlops(flops,ierr)
-c
+!
 ! End of subroutine ETOP
-c
+!
       return
       end
 
 
-c================================ PTOE ===============================72
-c
+!================================ PTOE ===============================72
+!
 !  Converts pressure to total energy
 !  Also converts u and v back to rhou and rhov
-c
-c=====================================================================72
+!
+!=====================================================================72
       subroutine PTOE(nvertices, qvec)
       integer ierr
       PetscLogDouble flops
@@ -981,19 +981,19 @@ c=====================================================================72
  1000 continue
       flops = flops + nvertices*12.0
       call PetscLogFlops(flops,ierr)
-c
+!
 ! End of subroutine PTOE
-c
+!
       return
       end
 
-c================================ L2NORM =============================72
-c
+!================================ L2NORM =============================72
+!
 !  calculates the L2 norm of the residual
 !  I have eliminated dq - D. K. Kaushik (1/23/97)
-c=====================================================================72
+!=====================================================================72
       subroutine L2NORM(res,nnodes,nnode_glo,x,y,z,vol,irank)
-#include <finclude/petscsys.h>
+#include <petsc-finclude/petscsys.h>
 
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -1010,20 +1010,20 @@ c=====================================================================72
       integer irank, icount
       real sum, sumglo
 
-c
+!
 ! Set the flag to monitor which type of residual you want
 ! iflag=0 "normal" residual
 ! iflag=1 residual/volume
 ! iflag=2 dq
-c
+!
       iflag = 0
 
       t1 = float(nnode_glo)
       sum = 0.0
       rmax = 0.0
-c
+!
 ! iflag=0
-c
+!
       if (iflag.eq.0) then
          do 1010 i = 1,nnodes
             sum = sum + res(1,i)*res(1,i)
@@ -1036,9 +1036,9 @@ c
             end if
  1010    continue
       end if
-c
+!
 ! iflag=1
-c
+!
       if (iflag.eq.1) then
          do 1020 i = 1,nnodes
             sum = sum + res(1,i)*res(1,i)/vol(i)/vol(i)
@@ -1051,9 +1051,9 @@ c
             end if
  1020    continue
       end if
-c
+!
 ! iflag=2
-c
+!
 !     if (iflag.eq.2)then
 !        do 1030 i = 1,nnodes
 !           sum = sum + dq(i,1)*dq(i,1)
@@ -1061,10 +1061,10 @@ c
 !           if (test.ge.rmax)then
 !              rmax = test
 !              xloc = x(i)
-c              yloc = y(i)
+!              yloc = y(i)
 !              zloc = z(i)
 !           end if
-c1030    continue
+!1030    continue
 !     end if
 
 !     rms(ntt) = sqrt(sum/t1)
@@ -1076,10 +1076,10 @@ c1030    continue
      >                   MPIU_SCALAR, MPI_SUM,
      >                   MPI_COMM_WORLD,ierr)
 !     write(*,*) 'In L2NORM - residual norm is', sqrt(sumglo)
-      rms(ntt) = PetscSqrtReal(sumglo/t1)
-c
+      rms(ntt) = sqrt(sumglo/t1)
+!
 ! If we are ramping the cfl with SER save res0 and resc
-c
+!
       if (ntt.eq.1) res0 = rms(ntt)
       resc = rms(ntt)
       compare = res0*cfl1/cfl2
@@ -1092,10 +1092,9 @@ c
 
   100 format(1h ,'Iteration',i6,' rms rmax xloc yloc zloc rat = ',
      &       6(1e14.7,1x))
-  202 format(1h ,2x,e14.7,2x,e14.7,2x,i6)
-c
+!
 ! End of subroutine L2NORM
-c
+!
       return
       end
 
@@ -1139,7 +1138,7 @@ c
      &                 amut,
      &                 sface_bit,vface_bit,
      &                 clift, cdrag, cmom,irank,nvertices)
-#include <finclude/petscsys.h>
+#include <petsc-finclude/petscsys.h>
 
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -1164,7 +1163,7 @@ c
       real cl_glo,cd_glo,cx_glo,cy_glo,cz_glo,cmx_glo,cmy_glo,cmz_glo
       real coef_loc(8), coef_glo(8)
       PetscSizeT sizeofscalar
-c
+!
 #if defined(INTERLACING)
       real qvec(5,nvertices)
       integer evec(2,nedge)
@@ -1176,16 +1175,16 @@ c
 #define qnode(i,j) qvec(j,i)
 #define eptr(i,j) evec(i,j)
 #endif
-c
+!
       pi = 4.*atan(1.)
       conv = 180./pi
       csa=cos(alpha/conv)
       sna=sin(alpha/conv)
       csy=cos(yaw/conv)
       sny=sin(yaw/conv)
-c
-c  initialize forces to zero
-c
+!
+!  initialize forces to zero
+!
       cl_loc = 0.0
       cd_loc = 0.0
       cx_loc = 0.0
@@ -1198,13 +1197,13 @@ c
          coef_glo(i) = 0.0
       enddo
 
-c
-c     if (ntt.eq.ncyc) then
-c       if (nnbound.gt.0) then
-c         write(16,*) 'Inviscid bodies:'
-c       endif
-c     endif
-c
+!
+!     if (ntt.eq.ncyc) then
+!       if (nnbound.gt.0) then
+!         write(16,*) 'Inviscid bodies:'
+!       endif
+!     endif
+!
       do n = 1, nnfacet
         if (sface_bit(n) .eq. 1) then
                node1 = isnode(f2ntn(n,1))
@@ -1259,7 +1258,7 @@ c
 
                press = (p1 + p2 + p3)/3.0
                cp    = 2.*(press/p0-1.)/(gamma*xmach*xmach)
-c
+!
                dcx = cp*xnorm
                dcy = cp*ynorm
                dcz = cp*znorm
@@ -1268,30 +1267,30 @@ c
                ymid = (y1 + y2 + y3)/3.0
                zmid = (z1 + z2 + z3)/3.0
 
-c
-c  In the following force and moment summations, the lines that
-c  are commented out are the original FUN3D summations.  The new
-c  ones are from CFL3D.
-c
-c              clw(ntt) = clw(ntt) - dcx*sna + dcy*csa
-c              cdw(ntt) = cdw(ntt) + dcx*csa + dcy*sna
-c
-c              cmxw(ntt) = cmxw(ntt)
-c    &                   + (ymid - yr)*dcz - (zmid - zr)*dcy
-c              cmyw(ntt) = cmyw(ntt)
-c    &                   - (xmid - xr)*dcz + (zmid - zr)*dcx
-c              cmzw(ntt) = cmzw(ntt)
-c    &                   + (xmid - xr)*dcy - (ymid - yr)*dcx
-c
+!
+!  In the following force and moment summations, the lines that
+!  are commented out are the original FUN3D summations.  The new
+!  ones are from CFL3D.
+!
+!              clw(ntt) = clw(ntt) - dcx*sna + dcy*csa
+!              cdw(ntt) = cdw(ntt) + dcx*csa + dcy*sna
+!
+!              cmxw(ntt) = cmxw(ntt)
+!    &                   + (ymid - yr)*dcz - (zmid - zr)*dcy
+!              cmyw(ntt) = cmyw(ntt)
+!    &                   - (xmid - xr)*dcz + (zmid - zr)*dcx
+!              cmzw(ntt) = cmzw(ntt)
+!    &                   + (xmid - xr)*dcy - (ymid - yr)*dcx
+!
 #if defined(CFL3D_AXIS)
                 cl_loc = cl_loc - dcx*sna     + dcz*csa
                 cd_loc = cd_loc + dcx*csa*csy - dcy*sny
      &                          + dcz*sna*csy
-c
+!
                 cx_loc = cx_loc + dcx
                 cy_loc = cy_loc + dcy
                 cz_loc = cz_loc + dcz
-c
+!
                 cmx_loc = cmx_loc + dcz*(ymid-ymc)
      &                            - dcy*(zmid-zmc)
                 cmy_loc = cmy_loc - dcz*(xmid-xmc)
@@ -1301,11 +1300,11 @@ c
 #else
                 cl_loc = cl_loc - dcx*sna + dcy*csa
                 cd_loc = cd_loc + dcx*csa + dcy*sna
-c
+!
                 cx_loc = cx_loc + dcx
                 cy_loc = cy_loc + dcy
                 cz_loc = cz_loc + dcz
-c
+!
                 cmx_loc = cmx_loc + dcz*(ymid-ymc)
      &                            - dcy*(zmid-zmc)
                 cmy_loc = cmy_loc - dcz*(xmid-xmc)
@@ -1313,44 +1312,44 @@ c
                 cmz_loc = cmz_loc + dcy*(xmid-xmc)
      &                            - dcx*(ymid-ymc)
 #endif
-c
+!
          endif
 
        enddo
-c
-c Viscous boundary
-c
-c     nstart=1
-c
-c     if (ntt.eq.ncyc) then
-c       if (nvbound.gt.0) then
-c         write(16,*) 'Viscous bodies:'
-c       endif
-c     endif
-c
-c     do 40 i=1,nvbound
-c
-c Initialize temporary sums for this body:
-c Pressure components for both Cl and Cd
-c Viscous components for both Cl and Cd
-c
-c       clp   = 0.
-c       cdp   = 0.
+!
+! Viscous boundary
+!
+!     nstart=1
+!
+!     if (ntt.eq.ncyc) then
+!       if (nvbound.gt.0) then
+!         write(16,*) 'Viscous bodies:'
+!       endif
+!     endif
+!
+!     do 40 i=1,nvbound
+!
+! Initialize temporary sums for this body:
+! Pressure components for both Cl and Cd
+! Viscous components for both Cl and Cd
+!
+!       clp   = 0.
+!       cdp   = 0.
         clv   = 0.
         cdv   = 0.
-c
-c  First compute the lift and drag due to viscous forces
-c  for this boundary and add to the total lift and drag
-c
-c       call SKINFRIC(ivnode,f2ntv,c2n,nnodes,
-c    &                x,y,z,qvec,amut,nvbound,nvnode,nvfacet,ncell,
-c    &                clv,cdv,vface_bit,irank,nvertices)
-c
-c  Add it
-c
+!
+!  First compute the lift and drag due to viscous forces
+!  for this boundary and add to the total lift and drag
+!
+!       call SKINFRIC(ivnode,f2ntv,c2n,nnodes,
+!    &                x,y,z,qvec,amut,nvbound,nvnode,nvfacet,ncell,
+!    &                clv,cdv,vface_bit,irank,nvertices)
+!
+!  Add it
+!
         cl_loc = cl_loc + clv
         cd_loc = cd_loc + cdv
-c
+!
        do n = 1, nvfacet
          if (vface_bit(n) .eq. 1) then
                node1 = ivnode(f2ntv(n,1))
@@ -1376,10 +1375,10 @@ c
                bx = x3 - x1
                by = y3 - y1
                bz = z3 - z1
-c
-c  norm points outward, away from grid interior.
-c  norm magnitude is area of surface triangle.
-c
+!
+!  norm points outward, away from grid interior.
+!  norm magnitude is area of surface triangle.
+!
                xnorm =-0.5*(ay*bz - az*by)
                ynorm = 0.5*(ax*bz - az*bx)
                znorm =-0.5*(ax*by - ay*bx)
@@ -1405,38 +1404,38 @@ c
 
                press = (p1 + p2 + p3)/3.0
                cp    = 2.*(press/p0-1.)/(gamma*xmach*xmach)
-c
+!
                dcx = cp*xnorm
                dcy = cp*ynorm
                dcz = cp*znorm
-c
+!
                xmid = (x1 + x2 + x3)/3.
                ymid = (y1 + y2 + y3)/3.
                zmid = (z1 + z2 + z3)/3.
-c
-c  In the following force and moment summations, the lines that
-c  are commented out are the original FUN3D summations.  The new
-c  ones are from CFL3D.
-c
-c               clw(ntt) = clw(ntt) - dcx*sna + dcy*csa
-c               cdw(ntt) = cdw(ntt) + dcx*csa + dcy*sna
-c
-c               cmxw(ntt) = cmxw(ntt)
-c    &                    + (ymid - yr)*dcz - (zmid - zr)*dcy
-c               cmyw(ntt) = cmyw(ntt)
-c    &                    - (xmid - xr)*dcz + (zmid - zr)*dcx
-c               cmzw(ntt) = cmzw(ntt)
-c    &                    + (xmid - xr)*dcy - (ymid - yr)*dcx
-c
+!
+!  In the following force and moment summations, the lines that
+!  are commented out are the original FUN3D summations.  The new
+!  ones are from CFL3D.
+!
+!               clw(ntt) = clw(ntt) - dcx*sna + dcy*csa
+!               cdw(ntt) = cdw(ntt) + dcx*csa + dcy*sna
+!
+!               cmxw(ntt) = cmxw(ntt)
+!    &                    + (ymid - yr)*dcz - (zmid - zr)*dcy
+!               cmyw(ntt) = cmyw(ntt)
+!    &                    - (xmid - xr)*dcz + (zmid - zr)*dcx
+!               cmzw(ntt) = cmzw(ntt)
+!    &                    + (xmid - xr)*dcy - (ymid - yr)*dcx
+!
 #if defined(CFL3D_AXIS)
                 cl_loc = cl_loc - dcx*sna     + dcz*csa
                 cd_loc = cd_loc + dcx*csa*csy - dcy*sny
      &                          + dcz*sna*csy
-c
+!
                 cx_loc = cx_loc + dcx
                 cy_loc = cy_loc + dcy
                 cz_loc = cz_loc + dcz
-c
+!
                 cmx_loc = cmx_loc + dcz*(ymid-ymc)
      &                            - dcy*(zmid-zmc)
                 cmy_loc = cmy_loc - dcz*(xmid-xmc)
@@ -1446,11 +1445,11 @@ c
 #else
                 cl_loc = cl_loc - dcx*sna + dcy*csa
                 cd_loc = cd_loc + dcx*csa + dcy*sna
-c
+!
                 cx_loc = cx_loc + dcx
                 cy_loc = cy_loc + dcy
                 cz_loc = cz_loc + dcz
-c
+!
                 cmx_loc = cmx_loc + dcz*(ymid-ymc)
      &                            - dcy*(zmid-zmc)
                 cmy_loc = cmy_loc - dcz*(xmid-xmc)
@@ -1458,11 +1457,11 @@ c
                 cmz_loc = cmz_loc + dcy*(xmid-xmc)
      &                            - dcx*(ymid-ymc)
 #endif
-c
+!
          endif
 
        enddo
-c
+!
       icount = 8
       coef_loc(1) = cl_loc
       coef_loc(2) = cd_loc
@@ -1500,11 +1499,11 @@ c
 #else
        cmom  = cmyw(ntt)
 #endif
-c
-c Update the timing information - Added by D. K. Kaushik (1/17/97)
+!
+! Update the timing information - Added by D. K. Kaushik (1/17/97)
       xres(ntt) = tot
-c End of subroutine FORCE
-c
+! End of subroutine FORCE
+!
       return
       end
 !
@@ -1753,7 +1752,7 @@ c
       integer isnode(1),ivnode(1),ifnode(1)
 
       dimension cdt(1)
-c
+!
 #if defined(INTERLACING)
       real qvec(5,nvertices)
       integer evec(2,nedge)
@@ -1766,37 +1765,37 @@ c
 #define eptr(i,j) evec(i,j)
 #endif
 
-c  If local time steping, loop over faces
-c  and calculate time step as cdt = V/(sum(|u.n| +c.area)
-c  This is time step for cfl=1. We will multiply by cfl number later
-c
-c First loop over nodes and zero out cdt
-c
+!  If local time steping, loop over faces
+!  and calculate time step as cdt = V/(sum(|u.n| +c.area)
+!  This is time step for cfl=1. We will multiply by cfl number later
+!
+! First loop over nodes and zero out cdt
+!
       flops = 0.0
       if (dt.lt.0.0) then
          do 1000 i = 1,nvertices
             cdt(i) = 0.0
  1000    continue
-c
+!
          do 1020 n = 1, nedge
                node1 = eptr(n,1)
                node2 = eptr(n,2)
-c
-c Get normal to face
-c
+!
+! Get normal to face
+!
                xnorm = xn(n)
                ynorm = yn(n)
                znorm = zn(n)
                area  = rl(n)
-c
+!
                xnorm = xnorm*area
                ynorm = ynorm*area
                znorm = znorm*area
-c
-c xnorm = x-normal x area of face
-c ynorm = y-normal x area of face
-c znorm = z-normal x area of face
-c
+!
+! xnorm = x-normal x area of face
+! ynorm = y-normal x area of face
+! znorm = z-normal x area of face
+!
                rho1 = qnode(1,node1)
                u1   = qnode(2,node1)/rho1
                v1   = qnode(3,node1)/rho1
@@ -1804,7 +1803,7 @@ c
                e1   = qnode(5,node1)
                p1   = gm1*(e1 - 0.5*rho1*(u1*u1 + v1*v1 + w1*w1))
                c1   = sqrt(gamma*p1/rho1)
-c
+!
                rho2 = qnode(1,node2)
                u2   = qnode(2,node2)/rho2
                v2   = qnode(3,node2)/rho2
@@ -1812,34 +1811,34 @@ c
                e2   = qnode(5,node2)
                p2   = gm1*(e2 - 0.5*rho2*(u2*u2 + v2*v2 + w2*w2))
                c2   = sqrt(gamma*p2/rho2)
-c
-c Get average values on face
-c
+!
+! Get average values on face
+!
                u    = 0.5*(u1 + u2)
                v    = 0.5*(v1 + v2)
                w    = 0.5*(w1 + w2)
                c    = 0.5*(c1 + c2)
-c
+!
                term = abs(u*xnorm + v*ynorm + w*znorm) + c*area
                cdt(node1) = cdt(node1) + term
                cdt(node2) = cdt(node2) + term
-c
+!
  1020    continue
-c
+!
          flops = flops + 51.0*nedge
-c
-c Now loop over boundaries and close the contours
-c
+!
+! Now loop over boundaries and close the contours
+!
          do 1030 i = 1,nsnode
             inode = isnode(i)
-c
-c Get the normal
-c
+!
+! Get the normal
+!
             xnorm = sxn(i)
             ynorm = syn(i)
             znorm = szn(i)
             area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
-c
+!
             rho = qnode(1,inode)
             u   = qnode(2,inode)/rho
             v   = qnode(3,inode)/rho
@@ -1847,27 +1846,27 @@ c
             e   = qnode(5,inode)
             p   = gm1*(e - 0.5*rho*(u*u + v*v + w*w))
             c   = sqrt(gamma*p/rho)
-c
+!
             Vn = abs(xnorm*u + ynorm*v + znorm*w) + c*area
             cdt(inode) = cdt(inode) + Vn
-c
+!
  1030    continue
-c
+!
          flops = flops + 30.0*nsnode
-c
-c Now viscous faces
-c
-c
+!
+! Now viscous faces
+!
+!
          do 1040 i = 1,nvnode
             inode = ivnode(i)
-c
-c Get the normal
-c
+!
+! Get the normal
+!
             xnorm = vxn(i)
             ynorm = vyn(i)
             znorm = vzn(i)
             area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
-c
+!
             rho = qnode(1,inode)
             u   = qnode(2,inode)/rho
             v   = qnode(3,inode)/rho
@@ -1875,26 +1874,26 @@ c
             e   = qnode(5,inode)
             p   = gm1*(e - 0.5*rho*(u*u + v*v + w*w))
             c   = sqrt(gamma*p/rho)
-c
+!
             Vn = abs(xnorm*u + ynorm*v + znorm*w) + c*area
             cdt(inode) = cdt(inode) + Vn
-c
+!
  1040    continue
-c
+!
          flops = flops + 30.0*nvnode
-c
-c Now far field
-c
+!
+! Now far field
+!
          do 1050 i = 1,nfnode
             inode = ifnode(i)
-c
-c Get the normal
-c
+!
+! Get the normal
+!
             xnorm = fxn(i)
             ynorm = fyn(i)
             znorm = fzn(i)
             area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
-c
+!
             rho = qnode(1,inode)
             u   = qnode(2,inode)/rho
             v   = qnode(3,inode)/rho
@@ -1902,56 +1901,56 @@ c
             e   = qnode(5,inode)
             p   = gm1*(e - 0.5*rho*(u*u + v*v + w*w))
             c   = sqrt(gamma*p/rho)
-c
+!
             Vn = abs(xnorm*u + ynorm*v + znorm*w) + c*area
             cdt(inode) = cdt(inode) + Vn
  1050    continue
-c
+!
          flops = flops + 30.0*nfnode
 
-c
-c Now cdt has sum(|u.n| + c*area)
-c
+!
+! Now cdt has sum(|u.n| + c*area)
+!
          do 1060 n = 1,nvertices
-c           if (cdt(n) .eq. 0.0) then
-c              write(*,*) 'cdt is zero for vertex # ',n
-c              stop
-c           endif
+!           if (cdt(n) .eq. 0.0) then
+!              write(*,*) 'cdt is zero for vertex # ',n
+!              stop
+!           endif
             cdt(n) = vol(n)/cdt(n)
  1060    continue
          flops = flops + nvertices
       else
-c
-c If not doing local time stepping just set cdt=1
-c
+!
+! If not doing local time stepping just set cdt=1
+!
          do 1070 n = 1,nvertices
             cdt(n) = 1.0
  1070    continue
       end if
       call PetscLogFlops(flops,ierr)
-c     timeNorm = 0.0
-c     qNorm = 0.0
-c     do i = 1, nvertices
-c        timeNorm = timeNorm + cdt(i)*cdt(i)
-c        do j = 1, 5
-c           qnorm = qnorm + qnode(j,i)*qnode(j,i)
-c        enddo
-c     enddo
-c     print *, 'time norm is ', sqrt(timeNorm)
-c     print *, 'qnorm is ', sqrt(qNorm)
-c
-c End of subroutine DELTAT2
-c
+!     timeNorm = 0.0
+!     qNorm = 0.0
+!     do i = 1, nvertices
+!        timeNorm = timeNorm + cdt(i)*cdt(i)
+!        do j = 1, 5
+!           qnorm = qnorm + qnode(j,i)*qnode(j,i)
+!        enddo
+!     enddo
+!     print *, 'time norm is ', sqrt(timeNorm)
+!     print *, 'qnorm is ', sqrt(qNorm)
+!
+! End of subroutine DELTAT2
+!
       return
       end
 
 
-c================================= SPLIT =============================72
-c
-c Calculates the fluxes on the face and performs the flux balance
-c Note that this subroutine uses primative variables
-c
-c=====================================================================72
+!================================= SPLIT =============================72
+!
+! Calculates the fluxes on the face and performs the flux balance
+! Note that this subroutine uses primative variables
+!
+!=====================================================================72
       subroutine SPLIT(nnodes, ncell, nedge,
      &                nsface, nvface, nfface, isface, ivface, ifface,
      &                nsnode, nvnode, nfnode, isnode, ivnode, ifnode,
@@ -1967,7 +1966,7 @@ c=====================================================================72
      &                vxn, vyn, vzn,
      &                fxn, fyn, fzn, phiv, irank,nvertices)
 
-c
+!
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
@@ -1986,7 +1985,7 @@ c
       real vxn(1),vyn(1),vzn(1)
       real fxn(1),fyn(1),fzn(1)
       real x(nvertices), y(nvertices), z(nvertices)
-c     real phi(nvertices,5)
+!     real phi(nvertices,5)
       real xn(nedge), yn(nedge), zn(nedge), ra(nedge)
 
 
@@ -2018,40 +2017,40 @@ c     real phi(nvertices,5)
 #define eptr(i,j) evec(i,j)
 #endif
 
-c Loop over all the faces and calculate a flux
-c
+! Loop over all the faces and calculate a flux
+!
        flops = 0.0
        second = 1.0
        if (ntt.le.nitfo) second = 0.0
-c      print *, 'Second is' , second
+!      print *, 'Second is' , second
        do 1010 n = 1, nedge
         node1 = eptr(n,1)
         node2 = eptr(n,2)
         if ((node1 .le. nnodes).or.(node2 .le. nnodes)) then
-c
-c Get fluxes on "left" side of face
-c
+!
+! Get fluxes on "left" side of face
+!
           xmean = .5*(x(node1) + x(node2))
           ymean = .5*(y(node1) + y(node2))
           zmean = .5*(z(node1) + z(node2))
-c
+!
           xnorm  = xn(n)
           ynorm  = yn(n)
           znorm  = zn(n)
           area   = ra(n)
-c
+!
           rx = second*(xmean - x(node1))
           ry = second*(ymean - y(node1))
           rz = second*(zmean - z(node1))
-c
+!
           rho   = qnode(1,node1) + phi(1,node1)*gradx(1,node1)*rx
      1                           + phi(1,node1)*grady(1,node1)*ry
      2                           + phi(1,node1)*gradz(1,node1)*rz
-c
+!
           u     = qnode(2,node1) + phi(2,node1)*gradx(2,node1)*rx
      1                           + phi(2,node1)*grady(2,node1)*ry
      2                           + phi(2,node1)*gradz(2,node1)*rz
-c
+!
           v     = qnode(3,node1) + phi(3,node1)*gradx(3,node1)*rx
      1                           + phi(3,node1)*grady(3,node1)*ry
      2                           + phi(3,node1)*gradz(3,node1)*rz
@@ -2063,7 +2062,7 @@ c
           press = qnode(5,node1) + phi(5,node1)*gradx(5,node1)*rx
      1                           + phi(5,node1)*grady(5,node1)*ry
      2                           + phi(5,node1)*gradz(5,node1)*rz
-c
+!
           q2    = u*u + v*v + w*w
           enrgy = press/gm1 + 0.5*rho*q2
           c     = sqrt(gamma*press/rho)
@@ -2071,7 +2070,7 @@ c
           fmach = ubar/c
           ubp2a = -ubar + 2.*c
           flops = flops + 61.0
-c
+!
           if (abs(fmach).lt.1.0) then
            fluxp1 = area*0.25*rho*c*(fmach + 1)**2
            fluxp2 = fluxp1*(xnorm*ubp2a/gamma + u)
@@ -2095,21 +2094,21 @@ c
            fluxp4 = 0.0
            fluxp5 = 0.0
           end if
-c
-c Get fluxes on "right" side of face
-c
+!
+! Get fluxes on "right" side of face
+!
           rx = second*(xmean - x(node2))
           ry = second*(ymean - y(node2))
           rz = second*(zmean - z(node2))
-c
+!
           rho   = qnode(1,node2) + phi(1,node2)*gradx(1,node2)*rx
      1                           + phi(1,node2)*grady(1,node2)*ry
      2                           + phi(1,node2)*gradz(1,node2)*rz
-c
+!
           u     = qnode(2,node2) + phi(2,node2)*gradx(2,node2)*rx
      1                           + phi(2,node2)*grady(2,node2)*ry
      2                           + phi(2,node2)*gradz(2,node2)*rz
-c
+!
           v     = qnode(3,node2) + phi(3,node2)*gradx(3,node2)*rx
      1                           + phi(3,node2)*grady(3,node2)*ry
      2                           + phi(3,node2)*gradz(3,node2)*rz
@@ -2121,7 +2120,7 @@ c
           press = qnode(5,node2) + phi(5,node2)*gradx(5,node2)*rx
      1                           + phi(5,node2)*grady(5,node2)*ry
      2                           + phi(5,node2)*gradz(5,node2)*rz
-c
+!
           q2    = u*u + v*v + w*w
           enrgy = press/gm1 + 0.5*rho*q2
           c     = sqrt(gamma*press/rho)
@@ -2129,7 +2128,7 @@ c
           fmach = ubar/c
           ubm2a = -ubar - 2.*c
           flops = flops + 55.0
-c
+!
           if (abs(fmach).lt.1.0) then
            fluxm1 = -area*0.25*rho*c*(fmach - 1)**2
            fluxm2 = fluxm1*(xnorm*ubm2a/gamma + u)
@@ -2139,7 +2138,7 @@ c
      &                  - 2.*gm1*ubar*c + 2.*c*c)/(gamma*gamma - 1)
      &                  + 0.5*q2)
            flops = flops + 35.0
-c
+!
           else if (fmach.le.-1.0) then
            fluxm1 = area*rho*ubar
            fluxm2 = area*(rho*u*ubar + xnorm*press)
@@ -2154,7 +2153,7 @@ c
            fluxm4 = 0.0
            fluxm5 = 0.0
           end if
-c
+!
           if (node1 .le. nnodes) then
            res(1,node1) = res(1,node1) + (fluxp1 + fluxm1)
            res(2,node1) = res(2,node1) + (fluxp2 + fluxm2)
@@ -2163,7 +2162,7 @@ c
            res(5,node1) = res(5,node1) + (fluxp5 + fluxm5)
            flops = flops + 5.0
           endif
-c
+!
           if (node2 .le. nnodes) then
            res(1,node2) = res(1,node2) - (fluxp1 + fluxm1)
            res(2,node2) = res(2,node2) - (fluxp2 + fluxm2)
@@ -2173,17 +2172,17 @@ c
            flops = flops + 5.0
           endif
         endif
-c
+!
  1010 continue
 
-c     c68 = 6./8.
-c     c18 = 1./8.
+!     c68 = 6./8.
+!     c18 = 1./8.
       c68 = 0.75
       c18 = 0.125
-c
-c Loop over the boundaries
-c First do inviscid faces
-c
+!
+! Loop over the boundaries
+! First do inviscid faces
+!
       do 2020 n = 1, nnfacet
                node1 = isnode(f2ntn(n,1))
                node2 = isnode(f2ntn(n,2))
@@ -2211,10 +2210,10 @@ c
                bx = x3 - x1
                by = y3 - y1
                bz = z3 - z1
-c
-c Normal points away from grid interior.
-c Magnitude is 1/3 area of surface triangle.
-c
+!
+! Normal points away from grid interior.
+! Magnitude is 1/3 area of surface triangle.
+!
                xnorm =-0.5*(ay*bz - az*by)/3.
                ynorm = 0.5*(ax*bz - az*bx)/3.
                znorm =-0.5*(ax*by - ay*bx)/3.
@@ -2222,7 +2221,7 @@ c
                pa = c68*p1 + c18*(p2 + p3)
                pb = c68*p2 + c18*(p3 + p1)
                pc = c68*p3 + c18*(p1 + p2)
-c
+!
                flops = flops + 35.0
                if (node1 .le. nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa
@@ -2246,9 +2245,9 @@ c
                endif
 
  2020 continue
-c
-c Now viscous faces
-c
+!
+! Now viscous faces
+!
       do 3020 n = 1, nvfacet
                node1 = ivnode(f2ntv(n,1))
                node2 = ivnode(f2ntv(n,2))
@@ -2276,10 +2275,10 @@ c
                bx = x3 - x1
                by = y3 - y1
                bz = z3 - z1
-c
-c norm point away from grid interior.
-c norm magnitude is 1/3 area of surface triangle.
-c
+!
+! norm point away from grid interior.
+! norm magnitude is 1/3 area of surface triangle.
+!
                xnorm =-0.5*(ay*bz - az*by)/3.
                ynorm = 0.5*(ax*bz - az*bx)/3.
                znorm =-0.5*(ax*by - ay*bx)/3.
@@ -2287,9 +2286,9 @@ c
                pa = c68*p1 + c18*(p2 + p3)
                pb = c68*p2 + c18*(p3 + p1)
                pc = c68*p3 + c18*(p1 + p2)
-c
+!
                flops = flops + 35.0
-c
+!
                if (node1 .le. nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
@@ -2313,58 +2312,58 @@ c
                endif
 
  3020 continue
-c
-c The next section of code is for when you dont care about
-c preserving linear data on boundary. Also, doing this
-c matches the left hand side when not doing Newton-Krylov
-c Usually just go around unless you are just experimenting
-c
+!
+! The next section of code is for when you dont care about
+! preserving linear data on boundary. Also, doing this
+! matches the left hand side when not doing Newton-Krylov
+! Usually just go around unless you are just experimenting
+!
       goto 1025
-c
-c Loop over the boundaries
-c First do inviscid nodes
-c
-c     do 1020 i = 1,nsnode
-c       inode = isnode(i)
-c
-c       xnorm = sxn(i)
-c       ynorm = syn(i)
-c       znorm = szn(i)
-c
-c       p = qnode(5,inode)
-c
-c       if (inode .le. nnodes) then
-c        res(2,inode) = res(2,inode) + xnorm*p
-c        res(3,inode) = res(3,inode) + ynorm*p
-c        res(4,inode) = res(4,inode) + znorm*p
-c       endif
-c
-c1020 continue
-c
-c Now viscous nodes
-c
-c     do 1030 i = 1,nvnode
-c       inode = ivnode(i)
-c
-c       xnorm = vxn(i)
-c       ynorm = vyn(i)
-c       znorm = vzn(i)
-c
-c       p = qnode(5,inode)
-c
-c       if (inode .le. nnodes) then
-c        res(2,inode) = res(2,inode) + xnorm*p
-c        res(3,inode) = res(3,inode) + ynorm*p
-c        res(4,inode) = res(4,inode) + znorm*p
-c       endif
-c
-c1030 continue
-c
+!
+! Loop over the boundaries
+! First do inviscid nodes
+!
+!     do 1020 i = 1,nsnode
+!       inode = isnode(i)
+!
+!       xnorm = sxn(i)
+!       ynorm = syn(i)
+!       znorm = szn(i)
+!
+!       p = qnode(5,inode)
+!
+!       if (inode .le. nnodes) then
+!        res(2,inode) = res(2,inode) + xnorm*p
+!        res(3,inode) = res(3,inode) + ynorm*p
+!        res(4,inode) = res(4,inode) + znorm*p
+!       endif
+!
+!1020 continue
+!
+! Now viscous nodes
+!
+!     do 1030 i = 1,nvnode
+!       inode = ivnode(i)
+!
+!       xnorm = vxn(i)
+!       ynorm = vyn(i)
+!       znorm = vzn(i)
+!
+!       p = qnode(5,inode)
+!
+!       if (inode .le. nnodes) then
+!        res(2,inode) = res(2,inode) + xnorm*p
+!        res(3,inode) = res(3,inode) + ynorm*p
+!        res(4,inode) = res(4,inode) + znorm*p
+!       endif
+!
+!1030 continue
+!
  1025 continue
-c
-c
-c Now do far-field
-c
+!
+!
+! Now do far-field
+!
       s0 = c0*c0/(gamma*rho0**gm1)
       xgm1 = 1.0/gm1
       uout = u0
@@ -2374,11 +2373,11 @@ c
       flops = flops + 5.0
        do 1040 i = 1,nfnode
          inode   = ifnode(i)
-c
-c Calculate R+ and R-
-c Then get the normal velocity and the
-c speed of sound on the boundary
-c
+!
+! Calculate R+ and R-
+! Then get the normal velocity and the
+! speed of sound on the boundary
+!
          xnorm   = fxn(i)
          ynorm   = fyn(i)
          znorm   = fzn(i)
@@ -2410,10 +2409,10 @@ c
          unorm   = 0.5*(rplus + rminus)
          a       = 0.25*gm1*(rplus - rminus)
          flops   = flops + 5.0
-c
-c If unorm > 0 this is outflow: take variables from inside
-c If unorm < 0 this is inflow:  take variables from outside
-c
+!
+! If unorm > 0 this is outflow: take variables from inside
+! If unorm < 0 this is inflow:  take variables from outside
+!
          if (unorm.gt.0.0) then
           u = qnode(2,inode) + xnorm*(unorm - unormi)
           v = qnode(3,inode) + ynorm*(unorm - unormi)
@@ -2432,7 +2431,7 @@ c
           e    = p/gm1 + 0.5*rho*(u*u + v*v + w*w)
           ubar = xnorm*u + ynorm*v + znorm*w
           flops = flops + 21.0
-c
+!
          if (inode .le. nnodes) then
           res(1,inode) = res(1,inode)+area*rho*ubar
           res(2,inode) = res(2,inode)+area*(rho*u*ubar+xnorm*p)
@@ -2441,12 +2440,12 @@ c
           res(5,inode) = res(5,inode)+area*(e + p)*ubar
           flops = flops + 25.0
          endif
-c
+!
  1040  continue
        call PetscLogFlops(flops,ierr)
-c
-c End of subroutine SPLIT
-c
+!
+! End of subroutine SPLIT
+!
       return
       end
 
@@ -2472,7 +2471,7 @@ c
      &                vxn, vyn, vzn,
      &                fxn, fyn, fzn, phiv,irank,nvertices)
 
-c
+!
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
@@ -2521,23 +2520,23 @@ c
 #define phi(i,j) phiv(j,i)
 #define eptr(i,j) evec(i,j)
 #endif
-c
-c Loop over all the faces and calculate a flux
-c
+!
+! Loop over all the faces and calculate a flux
+!
        flops = 0.0
        if (ntt.le.nitfo) then
         second = 0.0
        else
         second = 1.0
        endif
-c      print *, 'Second is' , second
+!      print *, 'Second is' , second
        do 1010 n = 1, nedge
         node1 = eptr(n,1)
         node2 = eptr(n,2)
         if ((node1 .le. nnodes).or.(node2 .le. nnodes)) then
-c
-c Calculate unit normal to face and length of face
-c
+!
+! Calculate unit normal to face and length of face
+!
           xmean = .5*(x(node1) + x(node2))
           ymean = .5*(y(node1) + y(node2))
           zmean = .5*(z(node1) + z(node2))
@@ -2546,9 +2545,9 @@ c
           znorm  = zn(n)
           area   = ra(n)
           flops = flops + 6.0
-c
-c Get variables on "left" side of face
-c
+!
+! Get variables on "left" side of face
+!
           if (second .eq. 0) then
             rhol   = qnode(1,node1)
             ul     = qnode(2,node1)
@@ -2560,9 +2559,9 @@ c
             Hl     = (enrgyl + pressl)/rhol
             cl     = sqrt(gamma*pressl/rhol)
             ubarl  = xnorm*ul + ynorm*vl + znorm*wl
-c
-c Get variables on "right" side of face
-c
+!
+! Get variables on "right" side of face
+!
             rhor   = qnode(1,node2)
             ur     = qnode(2,node2)
             vr     = qnode(3,node2)
@@ -2598,9 +2597,9 @@ c
             Hl     = (enrgyl + pressl)/rhol
             cl     = sqrt(gamma*pressl/rhol)
             ubarl  = xnorm*ul + ynorm*vl + znorm*wl
-c
-c Get variables on "right" side of face
-c
+!
+! Get variables on "right" side of face
+!
             rx     = xmean - x(node2)
             ry     = ymean - y(node2)
             rz     = zmean - z(node2)
@@ -2626,11 +2625,11 @@ c
             ubarr  = xnorm*ur + ynorm*vr + znorm*wr
             flops  = flops + 134.0
           endif
-c
-c Compute rho averages
-c
+!
+! Compute rho averages
+!
             rho = sqrt(rhol*rhor)
-c           wat = sqrt(rhol)/(sqrt(rhol) + sqrt(rhor))
+!           wat = sqrt(rhol)/(sqrt(rhol) + sqrt(rhor))
             wat = rho/(rho + rhor)
             u   = ul*wat + ur*(1. - wat)
             v   = vl*wat + vr*(1. - wat)
@@ -2639,9 +2638,9 @@ c           wat = sqrt(rhol)/(sqrt(rhol) + sqrt(rhor))
             q2  = u*u + v*v + w*w
             c   = sqrt(gm1*(H - 0.5*q2))
             ubar = xnorm*u + ynorm*v + znorm*w
-c
-c Now compute eigenvalues, eigenvectors, and strengths
-c
+!
+! Now compute eigenvalues, eigenvectors, and strengths
+!
             eig1 = abs(ubar + c)
             eig2 = abs(ubar - c)
             eig3 = abs(ubar)
@@ -2654,9 +2653,9 @@ c
             dubar  = ubarr - ubarl
 
             c2 = c*c
-c
-c jumps have units of density
-c
+!
+! jumps have units of density
+!
             dv1 = 0.5*(dpress + rho*c*dubar)/c2
             dv2 = 0.5*(dpress - rho*c*dubar)/c2
             dv3 = rho
@@ -2692,17 +2691,17 @@ c
      &         + eig3*r43*dv3 + eig3*r44*dv4
             t5 = eig1*r51*dv1 + eig2*r52*dv2
      &         + eig3*r53*dv3 + eig3*r54*dv4
-c
-c Compute flux using variables from left side of face
-c
+!
+! Compute flux using variables from left side of face
+!
             fluxp1 = area*rhol*ubarl
             fluxp2 = area*(rhol*ul*ubarl + xnorm*pressl)
             fluxp3 = area*(rhol*vl*ubarl + ynorm*pressl)
             fluxp4 = area*(rhol*wl*ubarl + znorm*pressl)
             fluxp5 = area*(enrgyl + pressl)*ubarl
-c
-c Now the right side
-c
+!
+! Now the right side
+!
             fluxm1 = area*rhor*ubarr
             fluxm2 = area*(rhor*ur*ubarr + xnorm*pressr)
             fluxm3 = area*(rhor*vr*ubarr + ynorm*pressr)
@@ -2723,7 +2722,7 @@ c
              res(5,node1) = res(5,node1) + res5
              flops = flops + 5.0
             endif
-c
+!
             if (node2 .le. nnodes) then
              res(1,node2) = res(1,node2) - res1
              res(2,node2) = res(2,node2) - res2
@@ -2733,21 +2732,21 @@ c
              flops = flops + 5.0
             endif
           endif
-c
+!
  1010 continue
-c     c68 = 6./8.
-c     c18 = 1./8.
+!     c68 = 6./8.
+!     c18 = 1./8.
       c68 = 0.75
       c18 = 0.125
-c
-c Loop over the boundaries
-c First do inviscid faces
-c
-c  Switch the constants for now
-c
+!
+! Loop over the boundaries
+! First do inviscid faces
+!
+!  Switch the constants for now
+!
       c68 = 1.
       c18 = 0.
-c
+!
       do 2020 n = 1, nnfacet
                node1 = isnode(f2ntn(n,1))
                node2 = isnode(f2ntn(n,2))
@@ -2775,10 +2774,10 @@ c
                bx = x3 - x1
                by = y3 - y1
                bz = z3 - z1
-c
-c Normal points away from grid interior.
-c Magnitude is 1/3 area of surface triangle.
-c
+!
+! Normal points away from grid interior.
+! Magnitude is 1/3 area of surface triangle.
+!
                xnorm =-0.5*(ay*bz - az*by)/3.
                ynorm = 0.5*(ax*bz - az*bx)/3.
                znorm =-0.5*(ax*by - ay*bx)/3.
@@ -2786,7 +2785,7 @@ c
                pa = c68*p1 + c18*(p2 + p3)
                pb = c68*p2 + c18*(p1 + p3)
                pc = c68*p3 + c18*(p1 + p2)
-c
+!
                flops = flops + 35.0
                if (node1 .le. nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa
@@ -2811,9 +2810,9 @@ c
 
  2020 continue
 
-c
-c Now viscous faces
-c
+!
+! Now viscous faces
+!
       do 3020 n = 1, nvfacet
                node1 = ivnode(f2ntv(n,1))
                node2 = ivnode(f2ntv(n,2))
@@ -2841,10 +2840,10 @@ c
                bx = x3 - x1
                by = y3 - y1
                bz = z3 - z1
-c
-c norm point away from grid interior.
-c norm magnitude is 1/3 area of surface triangle.
-c
+!
+! norm point away from grid interior.
+! norm magnitude is 1/3 area of surface triangle.
+!
                xnorm =-0.5*(ay*bz - az*by)/3.
                ynorm = 0.5*(ax*bz - az*bx)/3.
                znorm =-0.5*(ax*by - ay*bx)/3.
@@ -2852,9 +2851,9 @@ c
                pa = c68*p1 + c18*(p2 + p3)
                pb = c68*p2 + c18*(p1 + p3)
                pc = c68*p3 + c18*(p1 + p2)
-c
+!
                flops = flops + 35.0
-c
+!
                if (node1 .le. nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
@@ -2878,58 +2877,58 @@ c
                endif
 
  3020 continue
-c
-c The next section of code is for when you dont care about
-c preserving linear data on boundary. Also, doing this
-c matches the left hand side when not doing Newton-Krylov
-c Usually just go around unless you are just experimenting
-c
-c      goto 1025
-c
-c Loop over the boundaries
-c First do inviscid nodes
-c
-c     do 1020 i = 1,nsnode
-c       inode = isnode(i)
-c
-c       xnorm = sxn(i)
-c       ynorm = syn(i)
-c       znorm = szn(i)
-c
-c       p = qnode(5,inode)
-c
-c       if (inode .le. nnodes) then
-c        res(2,inode) = res(2,inode) + xnorm*p
-c        res(3,inode) = res(3,inode) + ynorm*p
-c        res(4,inode) = res(4,inode) + znorm*p
-c       endif
-c
-c1020 continue
-c
-c Now viscous nodes
-c
-c     do 1030 i = 1,nvnode
-c       inode = ivnode(i)
-c
-c       xnorm = vxn(i)
-c       ynorm = vyn(i)
-c       znorm = vzn(i)
-c
-c       p = qnode(5,inode)
-c
-c       if (inode .le. nnodes) then
-c        res(2,inode) = res(2,inode) + xnorm*p
-c        res(3,inode) = res(3,inode) + ynorm*p
-c        res(4,inode) = res(4,inode) + znorm*p
-c       endif
-c
-c1030 continue
-c
-c 1025 continue
-c
-c
-c Now do far-field
-c
+!
+! The next section of code is for when you dont care about
+! preserving linear data on boundary. Also, doing this
+! matches the left hand side when not doing Newton-Krylov
+! Usually just go around unless you are just experimenting
+!
+!      goto 1025
+!
+! Loop over the boundaries
+! First do inviscid nodes
+!
+!     do 1020 i = 1,nsnode
+!       inode = isnode(i)
+!
+!       xnorm = sxn(i)
+!       ynorm = syn(i)
+!       znorm = szn(i)
+!
+!       p = qnode(5,inode)
+!
+!       if (inode .le. nnodes) then
+!        res(2,inode) = res(2,inode) + xnorm*p
+!        res(3,inode) = res(3,inode) + ynorm*p
+!        res(4,inode) = res(4,inode) + znorm*p
+!       endif
+!
+!1020 continue
+!
+! Now viscous nodes
+!
+!     do 1030 i = 1,nvnode
+!       inode = ivnode(i)
+!
+!       xnorm = vxn(i)
+!       ynorm = vyn(i)
+!       znorm = vzn(i)
+!
+!       p = qnode(5,inode)
+!
+!       if (inode .le. nnodes) then
+!        res(2,inode) = res(2,inode) + xnorm*p
+!        res(3,inode) = res(3,inode) + ynorm*p
+!        res(4,inode) = res(4,inode) + znorm*p
+!       endif
+!
+!1030 continue
+!
+! 1025 continue
+!
+!
+! Now do far-field
+!
       s0 = c0*c0/(gamma*rho0**gm1)
       xgm1 = 1.0/gm1
       uout = u0
@@ -2939,11 +2938,11 @@ c
       flops = flops + 5.0
       do 1040 i = 1,nfnode
          inode   = ifnode(i)
-c
-c Calculate R+ and R-
-c Then get the normal velocity and the
-c speed of sound on the boundary
-c
+!
+! Calculate R+ and R-
+! Then get the normal velocity and the
+! speed of sound on the boundary
+!
          xnorm   = fxn(i)
          ynorm   = fyn(i)
          znorm   = fzn(i)
@@ -2975,10 +2974,10 @@ c
          unorm   = 0.5*(rplus + rminus)
          a       = 0.25*gm1*(rplus - rminus)
          flops   = flops + 5.0
-c
-c If unorm > 0 this is outflow: take variables from inside
-c If unorm < 0 this is inflow:  take variables from outside
-c
+!
+! If unorm > 0 this is outflow: take variables from inside
+! If unorm < 0 this is inflow:  take variables from outside
+!
          if (unorm.gt.0.0) then
           u = qnode(2,inode) + xnorm*(unorm - unormi)
           v = qnode(3,inode) + ynorm*(unorm - unormi)
@@ -2997,7 +2996,7 @@ c
          e    = p/gm1 + 0.5*rho*(u*u + v*v + w*w)
          ubar = xnorm*u + ynorm*v + znorm*w
          flops = flops + 21.0
-c
+!
          if (inode .le. nnodes) then
           res(1,inode) = res(1,inode)+area*rho*ubar
           res(2,inode) = res(2,inode)+area*(rho*u*ubar+xnorm*p)
@@ -3006,33 +3005,33 @@ c
           res(5,inode) = res(5,inode)+area*(e + p)*ubar
           flops = flops + 25.0
          endif
-c
+!
  1040  continue
        call PetscLogFlops(flops,ierr)
-c
-c End of subroutine ROE
-c
+!
+! End of subroutine ROE
+!
       return
       end
-c
-c---------------------------------------------------------------
-c The following subroutines are from node3t.f in the original
-c code - D. K. Kaushik (1/17/97)
-c---------------------------------------------------------------
-c
-c=============================== SUMGS ===============================72
-c
-c Gets the weights for calculating gradients using least squares
-c
-c=====================================================================72
+!
+!---------------------------------------------------------------
+! The following subroutines are from node3t.f in the original
+! code - D. K. Kaushik (1/17/97)
+!---------------------------------------------------------------
+!
+!=============================== SUMGS ===============================72
+!
+! Gets the weights for calculating gradients using least squares
+!
+!=====================================================================72
       subroutine SUMGS(nnodes,nedge,evec,x,y,z,
      1                 rxy,
      2                 irank,nvertices)
 
       real x(nvertices),y(nvertices),z(nvertices)
       integer ierr
-c      real rxy(7,nnodes)
-c
+!      real rxy(7,nnodes)
+!
 #if defined(INTERLACING)
       real rxy(7,nnodes)
       integer evec(2,nedge)
@@ -3129,7 +3128,7 @@ c
           x2 = x(node2)
           y2 = y(node2)
           z2 = z(node2)
-c
+!
           dx = x2 - x1
           dy = y2 - y1
           dz = z2 - z1
@@ -3140,14 +3139,14 @@ c
           dy = weight*dy
           dz = weight*dz
           w2 = weight*weight
-c
+!
           if (node1 .le. nnodes) then
            r22(node1) = r22(node1) +
      1                  (dy-dx*r12(node1)/r11(node1))**2
            r23(node1) = r23(node1) + dz*
      1                  (dy-dx*r12(node1)/r11(node1))
           endif
-c
+!
           if (node2 .le. nnodes) then
            r22(node2) = r22(node2) +
      1                  (-dy + dx*r12(node2)/r11(node2))**2
@@ -3155,28 +3154,28 @@ c
      1                  (-dy+dx*r12(node2)/r11(node2))
           endif
  1050 continue
-c /*
-c 'Now finish getting r22 and r23'
-c */
+! /*
+! 'Now finish getting r22 and r23'
+! */
       do 1060 i = 1,nnodes
         r22(i) = sqrt(r22(i))
         r23(i) = r23(i)/r22(i)
  1060 continue
-c /*
-c 'Now all we have to do is get r33'
-c */
+! /*
+! 'Now all we have to do is get r33'
+! */
       do 1080 n = 1, nedge
-c
+!
           node1 = eptr(n,1)
           node2 = eptr(n,2)
-c
+!
           x1 = x(node1)
           y1 = y(node1)
           z1 = z(node1)
           x2 = x(node2)
           y2 = y(node2)
           z2 = z(node2)
-c
+!
           dx = x2 - x1
           dy = y2 - y1
           dz = z2 - z1
@@ -3187,7 +3186,7 @@ c
           dy = weight*dy
           dz = weight*dz
           w2 = weight*weight
-c
+!
           if (node1 .le. nnodes) then
            r33(node1) = r33(node1) +
      1                  (dz-dx*r13(node1)/r11(node1)-
@@ -3195,7 +3194,7 @@ c
      3                  (dy - dx*r12(node1)/
      4                   r11(node1)))**2
           endif
-c
+!
           if (node2 .le. nnodes) then
            r33(node2) = r33(node2) +
      1                  (-dz+dx*r13(node2)/r11(node2)-
@@ -3203,28 +3202,28 @@ c
      3                  (-dy + dx*r12(node2)/
      4                  r11(node2)))**2
           endif
-c
+!
  1080 continue
-c
-c /*
-c 'Now just get the magnitude of r33'
-c */
+!
+! /*
+! 'Now just get the magnitude of r33'
+! */
       do 1090 i = 1,nnodes
         r33(i) = sqrt(r33(i))
  1090 continue
-c
-c Added by Dinesh Kaushik (6/27/97)
-c /*'The following addition changes the meaning of r11 .. r33. r44
-c is the new parameter introduced by me. The new definitions
-c are taken from LSTGS (where these parameters
-c are used finally).
-c r11->w11
-c r22->w22
-c r33->w33
-c r12->r12r11
-c r13->r13r11
-c r23->r23r22
-c r44->rmess' */
+!
+! Added by Dinesh Kaushik (6/27/97)
+! /*'The following addition changes the meaning of r11 .. r33. r44
+! is the new parameter introduced by me. The new definitions
+! are taken from LSTGS (where these parameters
+! are used finally).
+! r11->w11
+! r22->w22
+! r33->w33
+! r12->r12r11
+! r13->r13r11
+! r23->r23r22
+! r44->rmess' */
 
       do i = 1,nnodes
            w11 = 1./(r11(i)*r11(i))
@@ -3246,31 +3245,31 @@ c r44->rmess' */
            r23(i) = r23r22
            r44(i) = rmess
       enddo
-c
-c Finished with SUMGS
-c
+!
+! Finished with SUMGS
+!
       return
       end
 
 
-c================================= LSTGS =============================72
-c
-c Calculates the Gradients at the nodes using weighted least squares
-c This subroutine solves using Gram-Schmidt
-c
-c=====================================================================72
+!================================= LSTGS =============================72
+!
+! Calculates the Gradients at the nodes using weighted least squares
+! This subroutine solves using Gram-Schmidt
+!
+!=====================================================================72
       subroutine LSTGS(nnodes,nedge,evec,
      1                 qvec,grad,x,y,z,
      2                 rxy,irank,nvertices)
-c
-c      real rxy(7,nnodes)
-c      real grad(3,4,nnodes)
-c      real qnode(4,nvertices)
+!
+!      real rxy(7,nnodes)
+!      real grad(3,4,nnodes)
+!      real qnode(4,nvertices)
       real x(nvertices),y(nvertices),z(nvertices)
-c
+!
       integer ierr
       PetscLogDouble flops
-C     logging variables
+!     logging variables
       integer grad_event, flag
       integer node1_event, node2_event
       character * 16 grad_label, node1_label, node2_label
@@ -3281,12 +3280,12 @@ C     logging variables
       save node1_event,node2_event,node1_label, node2_label
 
 
-c
+!
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo,ncyc
-c
+!
 #if defined(INTERLACING)
       real qvec(5,nvertices)
       real rxy(7,nnodes)
@@ -3324,31 +3323,31 @@ c
 #endif
       PetscSizeT sizeofscalar
 
-c     if (flag .eq. -1) then
-c        call PLogEventRegister(grad_event,grad_label,'blue:',ierr)
-c        call PLogEventRegister(node1_event,node1_label,'red:',ierr)
-c        call PLogEventRegister(node2_event,node2_label,'green:',ierr)
-c        flag = 1
-c     endif
-c     call PLogEventBegin(grad_event,0,0,0,0,ierr)
+!     if (flag .eq. -1) then
+!        call PLogEventRegister(grad_event,grad_label,'blue:',ierr)
+!        call PLogEventRegister(node1_event,node1_label,'red:',ierr)
+!        call PLogEventRegister(node2_event,node2_label,'green:',ierr)
+!        flag = 1
+!     endif
+!     call PLogEventBegin(grad_event,0,0,0,0,ierr)
 
       flops = 0.0
-c For checking out the code input a linear distribution
-c
-c     write(6,700)nnodes,nedge
-c 700 format(1h ,'nnodes=',i5,' nedge=',i5)
-c     do 1001 i = 1,nnodes
-c     write(6,800)i,x(i),y(i),z(i)
-c 800 format(1h ,'i x y z=',i5,3(f10.5,1x))
-c       qnode(1,i) = 1.0*x(i) +  2.0*y(i) + 3.0*z(i)
-c       qnode(2,i) = 3.0*x(i) +  4.0*y(i) + 6.0*z(i)
-c       qnode(3,i) = 5.0*x(i) +  6.0*y(i) + 9.0*z(i)
-c       qnode(4,i) = 7.0*x(i) +  8.0*y(i) + 12.0*z(i)
-c       qnode(i,5) = 9.0*x(i) + 10.0*y(i) + 15.0*z(i)
-c1001 continue
-c
-c Zero out the gradients
-c
+! For checking out the code input a linear distribution
+!
+!     write(6,700)nnodes,nedge
+! 700 format(1h ,'nnodes=',i5,' nedge=',i5)
+!     do 1001 i = 1,nnodes
+!     write(6,800)i,x(i),y(i),z(i)
+! 800 format(1h ,'i x y z=',i5,3(f10.5,1x))
+!       qnode(1,i) = 1.0*x(i) +  2.0*y(i) + 3.0*z(i)
+!       qnode(2,i) = 3.0*x(i) +  4.0*y(i) + 6.0*z(i)
+!       qnode(3,i) = 5.0*x(i) +  6.0*y(i) + 9.0*z(i)
+!       qnode(4,i) = 7.0*x(i) +  8.0*y(i) + 12.0*z(i)
+!       qnode(i,5) = 9.0*x(i) + 10.0*y(i) + 15.0*z(i)
+!1001 continue
+!
+! Zero out the gradients
+!
       do 1000 i = 1,nnodes
          gradx(1,i) = 0.0
          grady(1,i) = 0.0
@@ -3366,56 +3365,56 @@ c
          grady(4,i) = 0.0
          gradz(4,i) = 0.0
  1000 continue
-c
-c Convert the energy to total enthalpy or pressure
-c
+!
+! Convert the energy to total enthalpy or pressure
+!
       if (ihane.eq.1) then
          call ETOH(nvertices,qvec)
       else
          call ETOP(nvertices,qvec)
       end if
-c
-c If second order, loop over all the faces accumulate sums
-c
-c     nitfo = 0
-c     if (ntt.gt.nitfo.or.ivisc.gt.0) then
-c     if (1 .gt. 0) then
+!
+! If second order, loop over all the faces accumulate sums
+!
+!     nitfo = 0
+!     if (ntt.gt.nitfo.or.ivisc.gt.0) then
+!     if (1 .gt. 0) then
        do 1020 n = 1, nedge
          node1 = eptr(n,1)
          node2 = eptr(n,2)
-c        if ((node1 .le. nnodes).or.(node2 .le. nnodes)) then
+!        if ((node1 .le. nnodes).or.(node2 .le. nnodes)) then
            dx1 = x(node2) - x(node1)
            dy1 = y(node2) - y(node1)
            dz1 = z(node2) - z(node1)
-c
-c          dist = sqrt(dx1*dx1 + dy1*dy1 + dz1*dz1)
-c          weight = 1.0/dist
+!
+!          dist = sqrt(dx1*dx1 + dy1*dy1 + dz1*dz1)
+!          weight = 1.0/dist
            weight = 1.0
-c          w2 = weight*weight
-c
+!          w2 = weight*weight
+!
            dx1 = weight*dx1
            dy1 = weight*dy1
            dz1 = weight*dz1
 
            flops = flops + 6.0
-c
-c         call PLogEventBegin(node1_event,0,0,0,0,ierr)
+!
+!         call PLogEventBegin(node1_event,0,0,0,0,ierr)
           if (node1 .le. nnodes) then
            dq1 = weight*(qnode(1,node2) - qnode(1,node1))
            dq2 = weight*(qnode(2,node2) - qnode(2,node1))
            dq3 = weight*(qnode(3,node2) - qnode(3,node1))
            dq4 = weight*(qnode(4,node2) - qnode(4,node1))
            dq5 = weight*(qnode(5,node2) - qnode(5,node1))
-c
-c          w11 = 1./(r11(node1)*r11(node1))
-c          w22 = 1./(r22(node1)*r22(node1))
-c          w33 = 1./(r33(node1)*r33(node1))
-c          r12r11 = r12(node1)/r11(node1)
-c          r13r11 = r13(node1)/r11(node1)
-c          r23r22 = r23(node1)/r22(node1)
-c          rmess  = (r12(node1)*r23(node1) - r13(node1)*r22(node1))/
-c    1              (r11(node1)*r22(node1)*r33(node1)*r33(node1))
-c
+!
+!          w11 = 1./(r11(node1)*r11(node1))
+!          w22 = 1./(r22(node1)*r22(node1))
+!          w33 = 1./(r33(node1)*r33(node1))
+!          r12r11 = r12(node1)/r11(node1)
+!          r13r11 = r13(node1)/r11(node1)
+!          r23r22 = r23(node1)/r22(node1)
+!          rmess  = (r12(node1)*r23(node1) - r13(node1)*r22(node1))/
+!    1              (r11(node1)*r22(node1)*r33(node1)*r33(node1))
+!
            w11 = r11(node1)
            r12r11 = r12(node1)
            r13r11 = r13(node1)
@@ -3423,59 +3422,59 @@ c
            r23r22 = r23(node1)
            w33 = r33(node1)
            rmess  = r44(node1)
-c
+!
            coef1  = dy1 - dx1*r12r11
            coef2  = dz1 - dx1*r13r11 - r23r22*coef1
            termx = dx1*w11 - w22*r12r11*coef1 + rmess*coef2
            termy = w22*coef1 - r23r22*w33*coef2
            termz = w33*coef2
-c
+!
            gradx(1,node1) = gradx(1,node1) + termx*dq1
            grady(1,node1) = grady(1,node1) + termy*dq1
            gradz(1,node1) = gradz(1,node1) + termz*dq1
-c
+!
            gradx(2,node1) = gradx(2,node1) + termx*dq2
            grady(2,node1) = grady(2,node1) + termy*dq2
            gradz(2,node1) = gradz(2,node1) + termz*dq2
-c
+!
            gradx(3,node1) = gradx(3,node1) + termx*dq3
            grady(3,node1) = grady(3,node1) + termy*dq3
            gradz(3,node1) = gradz(3,node1) + termz*dq3
-c
+!
            gradx(4,node1) = gradx(4,node1) + termx*dq4
            grady(4,node1) = grady(4,node1) + termy*dq4
            gradz(4,node1) = gradz(4,node1) + termz*dq4
-c
+!
            gradx(5,node1) = gradx(5,node1) + termx*dq5
            grady(5,node1) = grady(5,node1) + termy*dq5
            gradz(5,node1) = gradz(5,node1) + termz*dq5
-c
+!
            flops = flops + 49.0
           endif
-c         call PLogEventEnd(node1_event,0,0,0,0,ierr)
-c
-c Now do the other node
-c
-c         call PLogEventBegin(node2_event,0,0,0,0,ierr)
+!         call PLogEventEnd(node1_event,0,0,0,0,ierr)
+!
+! Now do the other node
+!
+!         call PLogEventBegin(node2_event,0,0,0,0,ierr)
           if (node2 .le. nnodes) then
            dx2 = -dx1
            dy2 = -dy1
            dz2 = -dz1
-c
+!
            dq1 = weight*(qnode(1,node1) - qnode(1,node2))
            dq2 = weight*(qnode(2,node1) - qnode(2,node2))
            dq3 = weight*(qnode(3,node1) - qnode(3,node2))
            dq4 = weight*(qnode(4,node1) - qnode(4,node2))
            dq5 = weight*(qnode(5,node1) - qnode(5,node2))
-c
-c          w11 = 1./(r11(node2)*r11(node2))
-c          w22 = 1./(r22(node2)*r22(node2))
-c          w33 = 1./(r33(node2)*r33(node2))
-c          r12r11 = r12(node2)/r11(node2)
-c          r13r11 = r13(node2)/r11(node2)
-c          r23r22 = r23(node2)/r22(node2)
-c          rmess  = (r12(node2)*r23(node2) - r13(node2)*r22(node2))/
-c    1              (r11(node2)*r22(node2)*r33(node2)*r33(node2))
+!
+!          w11 = 1./(r11(node2)*r11(node2))
+!          w22 = 1./(r22(node2)*r22(node2))
+!          w33 = 1./(r33(node2)*r33(node2))
+!          r12r11 = r12(node2)/r11(node2)
+!          r13r11 = r13(node2)/r11(node2)
+!          r23r22 = r23(node2)/r22(node2)
+!          rmess  = (r12(node2)*r23(node2) - r13(node2)*r22(node2))/
+!    1              (r11(node2)*r22(node2)*r33(node2)*r33(node2))
 
            w11 = r11(node2)
            r12r11 = r12(node2)
@@ -3484,65 +3483,65 @@ c    1              (r11(node2)*r22(node2)*r33(node2)*r33(node2))
            r23r22 = r23(node2)
            w33 = r33(node2)
            rmess  = r44(node2)
-c
+!
            coef1  = dy2 - dx2*r12r11
            coef2  = dz2 - dx2*r13r11 - r23r22*coef1
            termx = dx2*w11 - w22*r12r11*coef1 + rmess*coef2
            termy = w22*coef1 - r23r22*w33*coef2
            termz = w33*coef2
-c
+!
            gradx(1,node2) = gradx(1,node2) + termx*dq1
            grady(1,node2) = grady(1,node2) + termy*dq1
            gradz(1,node2) = gradz(1,node2) + termz*dq1
-c
+!
            gradx(2,node2) = gradx(2,node2) + termx*dq2
            grady(2,node2) = grady(2,node2) + termy*dq2
            gradz(2,node2) = gradz(2,node2) + termz*dq2
-c
+!
            gradx(3,node2) = gradx(3,node2) + termx*dq3
            grady(3,node2) = grady(3,node2) + termy*dq3
            gradz(3,node2) = gradz(3,node2) + termz*dq3
-c
+!
            gradx(4,node2) = gradx(4,node2) + termx*dq4
            grady(4,node2) = grady(4,node2) + termy*dq4
            gradz(4,node2) = gradz(4,node2) + termz*dq4
-c
+!
            gradx(5,node2) = gradx(5,node2) + termx*dq5
            grady(5,node2) = grady(5,node2) + termy*dq5
            gradz(5,node2) = gradz(5,node2) + termz*dq5
-c
+!
            flops = flops + 52.0
           endif
-c         call PLogEventEnd(node2_event,0,0,0,0,ierr)
-c       endif
-c
+!         call PLogEventEnd(node2_event,0,0,0,0,ierr)
+!       endif
+!
  1020  continue
-c
-c Convert total enthalpy or pressure to energy
-c
+!
+! Convert total enthalpy or pressure to energy
+!
       if (ihane.eq.1) then
          call HTOE(nvertices,qvec)
       else
          call PTOE(nvertices,qvec)
       end if
-c     end if
+!     end if
       call PetscLogFlops(flops,ierr)
-c     call PLogEventEnd(grad_event,0,0,0,0,ierr)
-c
-c End of LSTGS
-c
+!     call PLogEventEnd(grad_event,0,0,0,0,ierr)
+!
+! End of LSTGS
+!
       return
       end
 
 
-c=================================== GETRES ==========================72
-c
-c Calculates the residual
-c Last Modified - D. K. Kaushik 1/23/97
-c I have eliminated the input variables which were not needed -
-c dq, A, B, iupdate
-c
-c=====================================================================72
+!=================================== GETRES ==========================72
+!
+! Calculates the residual
+! Last Modified - D. K. Kaushik 1/23/97
+! I have eliminated the input variables which were not needed -
+! dq, A, B, iupdate
+!
+!=====================================================================72
       subroutine GETRES(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,
      1                  nsnode,nvnode,nfnode,isface,ivface,ifface,
      2                  ileast,isnode,ivnode,ifnode,
@@ -3558,7 +3557,7 @@ c=====================================================================72
      7                  us,vs,as,phiv,
      &                  amut,ires,
      &                  irank, nvertices)
-c
+!
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo,ncyc
       common/history/rms(3000),clw(3000),cdw(3000),cmxw(3000),
@@ -3566,7 +3565,7 @@ c
      3               czw(3000),xres(3000)
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-c
+!
       integer evec(nedge,2)
       integer isface(1),ivface(1),ifface(1)
       integer isnode(1),ivnode(1),ifnode(1)
@@ -3574,7 +3573,7 @@ c
       integer f2ntn(nnfacet,4)
       integer f2ntv(nvfacet,4)
       integer f2ntf(nffacet,4)
-c
+!
       real us(nbface,3,5),vs(nbface,3,5),as(nbface,3,5)
       real sxn(1),syn(1),szn(1)
       real vxn(1),vyn(1),vzn(1)
@@ -3585,18 +3584,18 @@ c
       real qvec(5,nvertices)
       real cdt(nvertices)
       real grad(3,5,nvertices)
-c     real dq(nnodes,4)
-c     real r11(nvertices),r12(nvertices),r13(nvertices)
-c     real r22(nvertices),r23(nvertices),r33(nvertices)
+!     real dq(nnodes,4)
+!     real r11(nvertices),r12(nvertices),r13(nvertices)
+!     real r22(nvertices),r23(nvertices),r33(nvertices)
       real amut(nnodes)
-c
-C     logging variable
+!
+!     logging variable
       integer flux_event, delta2_event, flag
       character * 16 flux_label, delta2_label
       data flag/-1/,flux_label/'FLUX            '/
       data delta2_label/'DELTA2          '/
       save flux_event,delta2_event,flag, flux_label,delta2_label
-c
+!
 #if defined(INTERLACING)
        real resvec(5,nnodes)
        real phiv(5,nvertices)
@@ -3608,71 +3607,71 @@ c
 #define res(i,j) resvec(j,i)
 #define phi(i,j) phiv(j,i)
 #endif
-c
+!
 
-c     if (flag .eq. -1) then
-c        call PLogEventRegister(delta2_event,delta2_label,'red:',ierr)
-c        call PLogEventRegister(flux_event,flux_label,'blue:',ierr)
-c        flag = 1
-c     endif
-c
-c  /*'Set boundary conditions
-c
-c---------------------------
-c Dont call boundary conditions so we just have weak enforcement
-c Actually all this does is to zero the velocity for viscous walls
-c since this wasn't done in INIT
-c
-c     call BC(nnodes,nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
-c    1        qnode,sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn)
-c
-c     if (ivisc.eq.2.or.ivisc.eq.4.or.ivisc.eq.6)then
-c        write (6,*) "BTERMS not implemented yet"
-c        stop
-c        call BTERMS(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,
-c    1               isface,ivface,ifface,qnode,evec,us,vs,as,x,y,c2n)
-c     end if
-c--------------------------
-c'*/
-c Calculate the time step
-c
+!     if (flag .eq. -1) then
+!        call PLogEventRegister(delta2_event,delta2_label,'red:',ierr)
+!        call PLogEventRegister(flux_event,flux_label,'blue:',ierr)
+!        flag = 1
+!     endif
+!
+!  /*'Set boundary conditions
+!
+!---------------------------
+! Dont call boundary conditions so we just have weak enforcement
+! Actually all this does is to zero the velocity for viscous walls
+! since this wasn't done in INIT
+!
+!     call BC(nnodes,nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
+!    1        qnode,sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn)
+!
+!     if (ivisc.eq.2.or.ivisc.eq.4.or.ivisc.eq.6)then
+!        write (6,*) "BTERMS not implemented yet"
+!        stop
+!        call BTERMS(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,
+!    1               isface,ivface,ifface,qnode,evec,us,vs,as,x,y,c2n)
+!     end if
+!--------------------------
+!'*/
+! Calculate the time step
+!
       if (ires.eq.1) goto 888
-c     call PLogEventBegin(delta2_event,0,0,0,0,ierr)
+!     call PLogEventBegin(delta2_event,0,0,0,0,ierr)
       call DELTAT2(nnodes,nedge,qvec,cdt,
      &             x,y,z,area,xn,yn,zn,rl,evec,
      &             sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
      &             nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
      &             irank,nvertices)
-c     call PLogEventEnd(delta2_event,0,0,0,0,ierr)
+!     call PLogEventEnd(delta2_event,0,0,0,0,ierr)
   888 continue
-c
-c Convert the energy to total enthalpy or pressure
-c
+!
+! Convert the energy to total enthalpy or pressure
+!
       if (ihane.eq.1) then
          call ETOH(nvertices,qvec)
       else
          call ETOP(nvertices,qvec)
       end if
-c /*'
-c   Calculate the gradients
-c   ----Kyle seems to recommend only LSTGS for gradients,
-c   so I have commented the GETGRAD call - DKK (1/17/97)
-c
-c     if (ileast.eq.0) then
-c        call GETGRAD(nnodes,ncell,nedge,nsface,nvface,nfface,
-c    &                isface,ivface,ifface,evec,ncolor,ncount,
-c    &                qnode,gradx,grady,x,y,
-c    &                area,wx,wy,xn,yn,rl)
-c
-c     else if (ileast.eq.4) then
-c     if (ileast.eq.4) then
-c        call LSTGS(nnodes,nedge,evec,
-c    1              qnode,gradx,grady,gradz,x,y,z,
-c    2              r11,r12,r13,r22,r23,r33,irank,nvertices)
-c     end if
-c
-c zero out residuals (viscous residuals are zeroed in vfluxnew)
-c '*/
+! /*'
+!   Calculate the gradients
+!   ----Kyle seems to recommend only LSTGS for gradients,
+!   so I have commented the GETGRAD call - DKK (1/17/97)
+!
+!     if (ileast.eq.0) then
+!        call GETGRAD(nnodes,ncell,nedge,nsface,nvface,nfface,
+!    &                isface,ivface,ifface,evec,ncolor,ncount,
+!    &                qnode,gradx,grady,x,y,
+!    &                area,wx,wy,xn,yn,rl)
+!
+!     else if (ileast.eq.4) then
+!     if (ileast.eq.4) then
+!        call LSTGS(nnodes,nedge,evec,
+!    1              qnode,gradx,grady,gradz,x,y,z,
+!    2              r11,r12,r13,r22,r23,r33,irank,nvertices)
+!     end if
+!
+! zero out residuals (viscous residuals are zeroed in vfluxnew)
+! '*/
       do 1002 i = 1,nnodes
           res(1,i)=0.0
           res(2,i)=0.0
@@ -3687,53 +3686,53 @@ c '*/
           phi(4,i)=1.0
           phi(5,i)=1.0
       enddo
-c
-c /*'
-c If not doing Newton-Krylov and iflim=1 call the Flux Limiter
-c
-c     if (iflim.eq.1.and.ifcn.ne.1) then
-c     if (iflim.ne.2) then
-c      call TIMLIM(nnodes,nedge,qnode,res,dq,phiv,ncolor,ncount,
-c    &             gradx,grady,gradz,x,y,z,eptr)
-c
-c If we used the limiter we need to zero out the residual again
-c since we used it for scratch space
-c
-c     do 1003 i = 1,nnodes
-c         res(1,i)=0.0
-c         res(2,i)=0.0
-c         res(3,i)=0.0
-c         res(4,i)=0.0
-c         res(5,i)=0.0
-c1003   continue
-c
-c     end if
-c
-c   Split the fluxes and perform the flux balance
-c
-c       call PLogEventBegin(flux_event,0,0,0,0,ierr)
+!
+! /*'
+! If not doing Newton-Krylov and iflim=1 call the Flux Limiter
+!
+!     if (iflim.eq.1.and.ifcn.ne.1) then
+!     if (iflim.ne.2) then
+!      call TIMLIM(nnodes,nedge,qnode,res,dq,phiv,ncolor,ncount,
+!    &             gradx,grady,gradz,x,y,z,eptr)
+!
+! If we used the limiter we need to zero out the residual again
+! since we used it for scratch space
+!
+!     do 1003 i = 1,nnodes
+!         res(1,i)=0.0
+!         res(2,i)=0.0
+!         res(3,i)=0.0
+!         res(4,i)=0.0
+!         res(5,i)=0.0
+!1003   continue
+!
+!     end if
+!
+!   Split the fluxes and perform the flux balance
+!
+!       call PLogEventBegin(flux_event,0,0,0,0,ierr)
 
-c        call FLUX(nnodes,ncell,nedge,
-c    &            nsface,nvface,nfface,isface,ivface,ifface,
-c    &            nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
-c    &            nnfacet,f2ntn,nnbound,
-c    &            nvfacet,f2ntv,nvbound,
-c    &            nffacet,f2ntf,nfbound,
-c    &            grad,evec,qvec,
-c    &            x,y,z,resvec,xn,yn,zn,rl,sxn,syn,szn,vxn,vyn,vzn,
-c    &            fxn,fyn,fzn,phiv,irank,nvertices)
-c '*/
+!        call FLUX(nnodes,ncell,nedge,
+!    &            nsface,nvface,nfface,isface,ivface,ifface,
+!    &            nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
+!    &            nnfacet,f2ntn,nnbound,
+!    &            nvfacet,f2ntv,nvbound,
+!    &            nffacet,f2ntf,nfbound,
+!    &            grad,evec,qvec,
+!    &            x,y,z,resvec,xn,yn,zn,rl,sxn,syn,szn,vxn,vyn,vzn,
+!    &            fxn,fyn,fzn,phiv,irank,nvertices)
+! '*/
       if (ihane.eq.1)then
          write (6,*) "SPLITH not implemented"
          stop
-c
-c /*'
-c        call splith(nnodes,ncell,nedge,nsface,nvface,nfface,
-c    &               isface,ivface,ifface,grad,evec,ncolor,
-c    &               ncount,qvec,x,y,resvec,xn,yn,rl,
-c    &               nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
-c    &               sxn,syn,vxn,vyn,fxn,fyn,phiv)
-c '*/
+!
+! /*'
+!        call splith(nnodes,ncell,nedge,nsface,nvface,nfface,
+!    &               isface,ivface,ifface,grad,evec,ncolor,
+!    &               ncount,qvec,x,y,resvec,xn,yn,rl,
+!    &               nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
+!    &               sxn,syn,vxn,vyn,fxn,fyn,phiv)
+! '*/
       else if (ihane.eq.0) then
          call SPLIT(nnodes,ncell,nedge,nsface,nvface,nfface,
      &             isface,ivface,ifface,nsnode,nvnode,nfnode,
@@ -3751,25 +3750,25 @@ c '*/
       else if (ihane.eq.3) then
          write (6,*) "SPLITS not implemented"
          stop
-c
-c /*'
-c        call splits(nnodes,ncell,nedge,nsface,nvface,nfface,
-c    &              isface,ivface,ifface,grad,evec,ncolor,
-c    &              ncount,qvec,x,y,resvec,xn,yn,rl,
-c    &              nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
-c    &              sxn,syn,vxn,vyn,fxn,fyn,phiv)
-c '*/
+!
+! /*'
+!        call splits(nnodes,ncell,nedge,nsface,nvface,nfface,
+!    &              isface,ivface,ifface,grad,evec,ncolor,
+!    &              ncount,qvec,x,y,resvec,xn,yn,rl,
+!    &              nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
+!    &              sxn,syn,vxn,vyn,fxn,fyn,phiv)
+! '*/
       else if (ihane.eq.4) then
          write (6,*) "AUSM not implemented"
          stop
-c
-c /*'
-c        call ausm(nnodes,ncell,nedge,nsface,nvface,nfface,
-c    &             isface,ivface,ifface,grad,evec,ncolor,
-c    &             ncount,qvec,x,y,resvec,xn,yn,rl,
-c    &             nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
-c    &             sxn,syn,vxn,vyn,fxn,fyn,phiv)
-c '*/
+!
+! /*'
+!        call ausm(nnodes,ncell,nedge,nsface,nvface,nfface,
+!    &             isface,ivface,ifface,grad,evec,ncolor,
+!    &             ncount,qvec,x,y,resvec,xn,yn,rl,
+!    &             nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
+!    &             sxn,syn,vxn,vyn,fxn,fyn,phiv)
+! '*/
       else
          call ROE(nnodes,ncell,nedge,
      &            nsface,nvface,nfface,isface,ivface,ifface,
@@ -3785,111 +3784,111 @@ c '*/
      &            sxn,syn,szn,
      &            vxn,vyn,vzn,
      &            fxn,fyn,fzn,phiv,irank,nvertices)
-c
-c /*'
-c Use ROEIO for internal flows
-c
-c        call ROEIO(nnodes,ncell,nedge,
-c    &              nsface,nvface,nfface,isface,ivface,ifface,
-c    &              nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
-c    &              nnfacet,f2ntn,nnbound,
-c    &              nvfacet,f2ntv,nvbound,
-c    &              nffacet,f2ntf,nfbound,
-c    &              grad,evec,ncolor,ncount,qvec,
-c    &              x,y,z,resvec,xn,yn,zn,rl,sxn,syn,szn,vxn,vyn,vzn,
-c    &              fxn,fyn,fzn,phiv,irank,nvertices)
-c '*/
+!
+! /*'
+! Use ROEIO for internal flows
+!
+!        call ROEIO(nnodes,ncell,nedge,
+!    &              nsface,nvface,nfface,isface,ivface,ifface,
+!    &              nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
+!    &              nnfacet,f2ntn,nnbound,
+!    &              nvfacet,f2ntv,nvbound,
+!    &              nffacet,f2ntf,nfbound,
+!    &              grad,evec,ncolor,ncount,qvec,
+!    &              x,y,z,resvec,xn,yn,zn,rl,sxn,syn,szn,vxn,vyn,vzn,
+!    &              fxn,fyn,fzn,phiv,irank,nvertices)
+! '*/
       end if
-c
-c /*'
-c        call PLogEventEnd(flux_event,0,0,0,0,ierr)
-c
-c calculate viscous fluxes
-c
-c     if (ivisc.gt.0) then
-c        if (ihane.eq.1) then
-c           write (6,*) "VFLUXPH2 not implemented"
-c           stop
-c        else
-c           call VISRHS (nnodes,ncell,nedge,
-c           call EDGEVIS(nnodes,ncell,nedge,
-c    &                  nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
-c    &                  nsface,nvface,nfface,isface,ivface,ifface,
-c    &                  nnfacet,f2ntn,nnbound,ncolorn,countn,
-c    &                  nvfacet,f2ntv,nvbound,ncolorv,countv,
-c    &                  nffacet,f2ntf,nfbound,ncolorf,countf,
-c    &                  nccolor,nccount,
-c    &                  evec,c2n,c2e,
-c    &                  sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
-c    &                  x,y,z,gradx,grady,gradz,
-c    &                  qnode,amut,res,phiv)
-c     end if
-c '*/
-c Convert total enthalpy or pressure to energy
-c
+!
+! /*'
+!        call PLogEventEnd(flux_event,0,0,0,0,ierr)
+!
+! calculate viscous fluxes
+!
+!     if (ivisc.gt.0) then
+!        if (ihane.eq.1) then
+!           write (6,*) "VFLUXPH2 not implemented"
+!           stop
+!        else
+!           call VISRHS (nnodes,ncell,nedge,
+!           call EDGEVIS(nnodes,ncell,nedge,
+!    &                  nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
+!    &                  nsface,nvface,nfface,isface,ivface,ifface,
+!    &                  nnfacet,f2ntn,nnbound,ncolorn,countn,
+!    &                  nvfacet,f2ntv,nvbound,ncolorv,countv,
+!    &                  nffacet,f2ntf,nfbound,ncolorf,countf,
+!    &                  nccolor,nccount,
+!    &                  evec,c2n,c2e,
+!    &                  sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
+!    &                  x,y,z,gradx,grady,gradz,
+!    &                  qnode,amut,res,phiv)
+!     end if
+! '*/
+! Convert total enthalpy or pressure to energy
+!
       if (ihane.eq.1) then
          call HTOE(nvertices,qvec)
       else
          call PTOE(nvertices,qvec)
       end if
-c
-c End of subroutine GETRES
-c
+!
+! End of subroutine GETRES
+!
       return
       end
-c
-c---------------------------------------------------------------
-c The following subroutine is from node4t.f in the original
-c code - D. K. Kaushik (1/17/97)
-c---------------------------------------------------------------
-c
-c=============================================================================
-c
-c  Opens files for I/O
-c
-c=============================================================================
+!
+!---------------------------------------------------------------
+! The following subroutine is from node4t.f in the original
+! code - D. K. Kaushik (1/17/97)
+!---------------------------------------------------------------
+!
+!=============================================================================
+!
+!  Opens files for I/O
+!
+!=============================================================================
       SUBROUTINE OPENM(irank)
-c
-c  TAPE7  -- input:  mach number, angle of attack etc..
-c  TAPE9  -- input:  reads restart file
-c  TAPE10 -- output: residual history
-c  TAPE11 -- output: writes restart file
-c  TAPE12 -- output: writes residual and lift for plotting
-c  TAPE13 -- output: writes flowfield for contour plotting
-c
+!
+!  TAPE7  -- input:  mach number, angle of attack etc..
+!  TAPE9  -- input:  reads restart file
+!  TAPE10 -- output: residual history
+!  TAPE11 -- output: writes restart file
+!  TAPE12 -- output: writes residual and lift for plotting
+!  TAPE13 -- output: writes flowfield for contour plotting
+!
       OPEN(UNIT= 7,FILE='ginput.faces',
      +form='formatted',STATUS='OLD')
 
-c     OPEN(UNIT=9,FILE='framer.bin',
-c    +form='unformatted',STATUS='old')
+!     OPEN(UNIT=9,FILE='framer.bin',
+!    +form='unformatted',STATUS='old')
 
       if (irank .eq. 0) OPEN(UNIT= 10,FILE='frame.out3',
      +form='formatted',STATUS='unknown')
 
-c     OPEN(UNIT= 11,FILE='frame.bin',
-c    +form='unformatted',STATUS='unknown')
+!     OPEN(UNIT= 11,FILE='frame.bin',
+!    +form='unformatted',STATUS='unknown')
 
-c     OPEN(UNIT= 12,FILE='frame.plt',
-c    +form='formatted',STATUS='unknown')
+!     OPEN(UNIT= 12,FILE='frame.plt',
+!    +form='formatted',STATUS='unknown')
 
-c     OPEN(UNIT= 13,FILE='frame.tec',
-c    +form='formatted',STATUS='unknown')
+!     OPEN(UNIT= 13,FILE='frame.tec',
+!    +form='formatted',STATUS='unknown')
 
-c     OPEN(UNIT= 14,FILE='frame.fast.g',
-c    +form='unformatted',STATUS='unknown')
+!     OPEN(UNIT= 14,FILE='frame.fast.g',
+!    +form='unformatted',STATUS='unknown')
 
-c     OPEN(UNIT= 15,FILE='frame.fast.q',
-c    +form='unformatted',STATUS='unknown')
+!     OPEN(UNIT= 15,FILE='frame.fast.q',
+!    +form='unformatted',STATUS='unknown')
 
       return
       end
-c
-c
-c===================================================================
-c
-c Get the IA, JA, and IAU arrays
-c
-c===================================================================
+!
+!
+!===================================================================
+!
+! Get the IA, JA, and IAU arrays
+!
+!===================================================================
       subroutine GETIA(nnodes,nedge,evec,ia,ideg,irank)
       integer ia(1),ideg(1)
 #if defined(INTERLACING)
@@ -3899,39 +3898,39 @@ c===================================================================
        integer evec(nedge,2)
 #define eptr(i,j) evec(i,j)
 #endif
-c
-c First get the degree of each node using ideg as a dummy array
-c
+!
+! First get the degree of each node using ideg as a dummy array
+!
       do 1000 i = 1,nnodes
         ideg(i) = 0
  1000 continue
-c
+!
       do 1010 i = 1,nedge
         node1 = eptr(i,1)
         node2 = eptr(i,2)
         if (node1 .le. nnodes) ideg(node1) = ideg(node1) + 1
         if (node2 .le. nnodes) ideg(node2) = ideg(node2) + 1
  1010 continue
-c
-c Now we can fill the ia array fairly easily
-c
+!
+! Now we can fill the ia array fairly easily
+!
       ia(1) = 1
       do 1020 i = 1,nnodes
         ia(i+1) = ia(i) + ideg(i) + 1
-c       write(9,100)i,ideg(i)
-c 100   format(1h ,'deg(',i6,')=',i6)
+!       write(9,100)i,ideg(i)
+! 100   format(1h ,'deg(',i6,')=',i6)
  1020 continue
-c
+!
       return
       end
-c
-c===================================================================
-c
-c Get the IA, JA, and IAU arrays
-c
-c===================================================================
+!
+!===================================================================
+!
+! Get the IA, JA, and IAU arrays
+!
+!===================================================================
       subroutine GETJA(nnodes,nedge,evec,ia,ja,iwork,irank)
-c     integer ia(1),ja(1),iau(1),iwork(1)
+!     integer ia(1),ja(1),iau(1),iwork(1)
       integer ia(1),ja(1),iwork(1)
 #if defined(INTERLACING)
        integer evec(2,nedge)
@@ -3940,21 +3939,21 @@ c     integer ia(1),ja(1),iau(1),iwork(1)
        integer evec(nedge,2)
 #define eptr(i,j) evec(i,j)
 #endif
-c     open(unit=90,file='map.out',status='UNKNOWN')
-c
-c Now we need to get the JA array
-c First fill the diagonal places
-c
+!     open(unit=90,file='map.out',status='UNKNOWN')
+!
+! Now we need to get the JA array
+! First fill the diagonal places
+!
       do 1040 i = 1,nnodes
         index = ia(i)
         ja(index) = i
         iwork(i) = 1
  1040 continue
-c
+!
       do 1030 i = 1,nedge
         node1 = eptr(i,1)
         node2 = eptr(i,2)
-c
+!
         if (node1 .le. nnodes) then
           index1 = ia(node1) + iwork(node1)
           iwork(node1) = iwork(node1) + 1
@@ -3966,78 +3965,78 @@ c
           ja(index2) = node1
         endif
  1030 continue
-c
-c Now lets sort all our "bins" and get the correct one on the diagonal
-c
+!
+! Now lets sort all our "bins" and get the correct one on the diagonal
+!
       do 1050 i = 1,nnodes
         istart = ia(i)
         iend   = ia(i+1) - 1
-c       write(9,200)i,istart,iend
-c 200   format(1h ,'Sorting ',i6,' istart iend = ',i6,1x,i6)
+!       write(9,200)i,istart,iend
+! 200   format(1h ,'Sorting ',i6,' istart iend = ',i6,1x,i6)
         call SORTER(istart,iend,ja,i)
  1050 continue
-c
-c Now get the "fhelp" array which will assist in assembling
-c the flux Jacobians into the correct location in the alu array
-c
-c     write(90,*) 'fhelp array'
-c     do 1060 i = 1,nedge
-c       node1 = eptr(i,1)
-c       node2 = eptr(i,2)
-c
-c First take care of node1
-c
-c       idiag = iau(node1)
-c
-c If the offdiagonal term is ordered later in the ja array
-c
-c       if (node2.gt.node1) then
-c        jstart = idiag + 1
-c        jend   = ia(node1+1) - 1
-c       else
-c        jstart = ia(node1)
-c        jend   = idiag -1
-c       end if
-c
-c        do 1070 j = jstart,jend
-c          if (ja(j).eq.node2) fhelp(i,1) = j
-c1070    continue
-c
-c
-c Now take care of node2
-c
-c       idiag = iau(node2)
-c
-c If the offdiagonal term is ordered later in the ja array
-c
-c       if (node1.gt.node2) then
-c        jstart = idiag + 1
-c        jend   = ia(node2+1) - 1
-c       else
-c        jstart = ia(node2)
-c        jend   = idiag -1
-c       end if
-c
-c       do 1080 j = jstart,jend
-c         if (ja(j).eq.node1) fhelp(i,2) = j
-c1080   continue
-c       write(90,*) i,fhelp(i,1),fhelp(i,2)
-c1060 continue
+!
+! Now get the "fhelp" array which will assist in assembling
+! the flux Jacobians into the correct location in the alu array
+!
+!     write(90,*) 'fhelp array'
+!     do 1060 i = 1,nedge
+!       node1 = eptr(i,1)
+!       node2 = eptr(i,2)
+!
+! First take care of node1
+!
+!       idiag = iau(node1)
+!
+! If the offdiagonal term is ordered later in the ja array
+!
+!       if (node2.gt.node1) then
+!        jstart = idiag + 1
+!        jend   = ia(node1+1) - 1
+!       else
+!        jstart = ia(node1)
+!        jend   = idiag -1
+!       end if
+!
+!        do 1070 j = jstart,jend
+!          if (ja(j).eq.node2) fhelp(i,1) = j
+!1070    continue
+!
+!
+! Now take care of node2
+!
+!       idiag = iau(node2)
+!
+! If the offdiagonal term is ordered later in the ja array
+!
+!       if (node1.gt.node2) then
+!        jstart = idiag + 1
+!        jend   = ia(node2+1) - 1
+!       else
+!        jstart = ia(node2)
+!        jend   = idiag -1
+!       end if
+!
+!       do 1080 j = jstart,jend
+!         if (ja(j).eq.node1) fhelp(i,2) = j
+!1080   continue
+!       write(90,*) i,fhelp(i,1),fhelp(i,2)
+!1060 continue
       close(90)
-c
+!
       return
       end
-c
-c
-c===================================================================
-c
-c Sort each of our bins
-c
-c===================================================================
+!
+!
+!===================================================================
+!
+! Sort each of our bins
+!
+!===================================================================
       subroutine SORTER(istart,iend,ja,inode)
-c     integer ja(1),iau(1)
+!     integer ja(1),iau(1)
       integer ja(1)
-c
+!
       do 1000 i = istart,iend
         min = ja(i)
         minsave = ja(i)
@@ -4050,16 +4049,16 @@ c
  1010   continue
         ja(i) = min
         ja(jsave) = minsave
-c       if (ja(i).eq.inode) iau(inode) = i
+!       if (ja(i).eq.inode) iau(inode) = i
  1000 continue
-c
+!
       return
       end
-c
-c===================================================================
+!
+!===================================================================
       subroutine IREAD(unit,n,iper,arr)
-c
-c===================================================================
+!
+!===================================================================
       integer unit, n, iper
       integer arr(n,iper)
       if (iper .eq. 1) then
@@ -4075,11 +4074,11 @@ c===================================================================
       endif
       return
       end
-c
-c===================================================================
+!
+!===================================================================
       subroutine RREAD(unit,n,iper,arr)
-c
-c===================================================================
+!
+!===================================================================
       integer unit, n, iper
       real arr(n,iper)
       if (iper .eq. 1) then

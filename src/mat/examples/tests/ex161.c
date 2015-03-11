@@ -11,6 +11,7 @@ int main(int argc,char **argv)
   PetscInt             row,col,m,n;
   PetscErrorCode       ierr;
   MatScalar            one         =1.0,val;
+  MatColoring          mc;
   MatTransposeColoring matcoloring = 0;
   ISColoring           iscoloring;
   PetscBool            equal;
@@ -61,7 +62,12 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
 
   /* Create MatTransposeColoring from symbolic C=A*R^T */
-  ierr = MatGetColoring(C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+  ierr = MatColoringCreate(C,&mc);CHKERRQ(ierr);
+  ierr = MatColoringSetDistance(mc,2);CHKERRQ(ierr);
+  /* ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr); */
+  ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
+  ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
+  ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
   ierr = MatTransposeColoringCreate(C,iscoloring,&matcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
 
@@ -73,7 +79,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(Rt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Rt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatGetLocalSize(Rt_dense,&m,&n);CHKERRQ(ierr);
-  printf("Rt_dense: %d,%d\n",m,n);
+  printf("Rt_dense: %d,%d\n",(int)m,(int)n);
 
   /* Get Rt_dense by Apply MatTransposeColoring to R */
   ierr = MatTransColoringApplySpToDen(matcoloring,R,Rt_dense);CHKERRQ(ierr);
@@ -106,6 +112,7 @@ int main(int argc,char **argv)
 
   /* Test C = RARt */
   ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&C);CHKERRQ(ierr);
+  ierr = MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&C);CHKERRQ(ierr);
   ierr = MatEqual(C,PtAP,&equal);CHKERRQ(ierr);
   if (!equal) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: PtAP != RARt");CHKERRQ(ierr);

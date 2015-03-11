@@ -22,7 +22,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMAIJGetAIJ"
-/*@C
+/*@
    MatMAIJGetAIJ - Get the AIJ matrix describing the blockwise action of the MAIJ matrix
 
    Not Collective, but if the MAIJ matrix is parallel, the AIJ matrix is also parallel
@@ -188,7 +188,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(A,Mat_MPIMAIJ,&b);CHKERRQ(ierr);
+  ierr     = PetscNewLog(A,&b);CHKERRQ(ierr);
   A->data  = (void*)b;
 
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
@@ -3009,11 +3009,11 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   cn = pn*ppdof;
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
-  ierr  = PetscMalloc((cn+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
+  ierr  = PetscMalloc1(cn+1,&ci);CHKERRQ(ierr);
   ci[0] = 0;
 
   /* Work arrays for rows of P^T*A */
-  ierr = PetscMalloc4(an,PetscInt,&ptadenserow,an,PetscInt,&ptasparserow,cn,PetscInt,&denserow,cn,PetscInt,&sparserow);CHKERRQ(ierr);
+  ierr = PetscMalloc4(an,&ptadenserow,an,&ptasparserow,cn,&denserow,cn,&sparserow);CHKERRQ(ierr);
   ierr = PetscMemzero(ptadenserow,an*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(denserow,cn*sizeof(PetscInt));CHKERRQ(ierr);
 
@@ -3091,16 +3091,16 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   /* nnz is now stored in ci[ptm], column indices are in the list of free space */
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc((ci[cn]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ci[cn]+1,&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscFree4(ptadenserow,ptasparserow,denserow,sparserow);CHKERRQ(ierr);
 
   /* Allocate space for ca */
-  ierr = PetscMalloc((ci[cn]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
-  ierr = PetscMemzero(ca,(ci[cn]+1)*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscCalloc1(ci[cn]+1,&ca);CHKERRQ(ierr);
 
   /* put together the new matrix */
   ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),cn,cn,ci,cj,ca,C);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(*C,pp->dof);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* Since these are PETSc arrays, change flags to free them as necessary. */
@@ -3136,10 +3136,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
 
   PetscFunctionBegin;
   /* Allocate temporary array for storage of one row of A*P */
-  ierr = PetscMalloc3(cn,MatScalar,&apa,cn,PetscInt,&apj,cn,PetscInt,&apjdense);CHKERRQ(ierr);
-  ierr = PetscMemzero(apa,cn*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(apj,cn*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(apjdense,cn*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscCalloc3(cn,&apa,cn,&apj,cn,&apjdense);CHKERRQ(ierr);
 
   /* Clear old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
@@ -3215,9 +3212,13 @@ PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     ierr = MatPtAPSymbolic_SeqAIJ_SeqMAIJ(A,P,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = MatPtAPNumeric_SeqAIJ_SeqMAIJ(A,P,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3251,9 +3252,13 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     ierr = MatPtAPSymbolic_MPIAIJ_MPIMAIJ(A,P,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   ierr = ((*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3271,14 +3276,14 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,Mat
 
   PetscFunctionBegin;
   ierr = MatGetSize(a,&m,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc(dof*m*sizeof(PetscInt),&ilen);CHKERRQ(ierr);
+  ierr = PetscMalloc1(dof*m,&ilen);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     nmax = PetscMax(nmax,aij->ilen[i]);
     for (j=0; j<dof; j++) ilen[dof*i+j] = aij->ilen[i];
   }
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,dof*m,dof*n,0,ilen,&B);CHKERRQ(ierr);
   ierr = PetscFree(ilen);CHKERRQ(ierr);
-  ierr = PetscMalloc(nmax*sizeof(PetscInt),&icols);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nmax,&icols);CHKERRQ(ierr);
   ii   = 0;
   for (i=0; i<m; i++) {
     ierr = MatGetRow_SeqAIJ(a,i,&ncols,&cols,&vals);CHKERRQ(ierr);
@@ -3320,7 +3325,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,Mat
   PetscScalar    *vals,*ovals;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc2(A->rmap->n,PetscInt,&dnz,A->rmap->n,PetscInt,&onz);CHKERRQ(ierr);
+  ierr = PetscMalloc2(A->rmap->n,&dnz,A->rmap->n,&onz);CHKERRQ(ierr);
   for (i=0; i<A->rmap->n/dof; i++) {
     nmax  = PetscMax(nmax,AIJ->ilen[i]);
     onmax = PetscMax(onmax,OAIJ->ilen[i]);
@@ -3330,9 +3335,10 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,Mat
     }
   }
   ierr = MatCreateAIJ(PetscObjectComm((PetscObject)A),A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N,0,dnz,0,onz,&B);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(B,dof);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
 
-  ierr   = PetscMalloc2(nmax,PetscInt,&icols,onmax,PetscInt,&oicols);CHKERRQ(ierr);
+  ierr   = PetscMalloc2(nmax,&icols,onmax,&oicols);CHKERRQ(ierr);
   rstart = dof*maij->A->rmap->rstart;
   cstart = dof*maij->A->cmap->rstart;
   garray = mpiaij->garray;
@@ -3568,7 +3574,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
     B->ops->getsubmatrix = MatGetSubMatrix_MAIJ;
     ierr  = MatSetUp(B);CHKERRQ(ierr);
     *maij = B;
-    ierr  = MatViewFromOptions(B,"-mat_view");CHKERRQ(ierr);
+    ierr  = MatViewFromOptions(B,NULL,"-mat_view");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = schurm.c
+SOURCEC  = schurm.c dmproject.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscksp
@@ -11,6 +11,6 @@ DIRS     =
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/utils/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test

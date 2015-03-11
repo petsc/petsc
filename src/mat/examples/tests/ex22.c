@@ -100,9 +100,9 @@ PetscErrorCode MatGetOrdering_myordering(Mat mat,MatOrderingType type,IS *irow,I
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,NULL,NULL,NULL,&done);CHKERRQ(ierr);
   if (done) { /* matrix may be "compressed" in symbolic factorization, due to i-nodes or block storage */
-    ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[i] = n-i-1; /* replace your index here */
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_COPY_VALUES,irow);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,PETSC_OWN_POINTER,icol);CHKERRQ(ierr);

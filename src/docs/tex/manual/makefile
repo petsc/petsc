@@ -5,9 +5,9 @@ ALL: clean manual.pdf
 GONULL    = > /dev/null 2>&1
 LOCDIR    = src/docs/tex/manual/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test
 
 # Build the entire manual as well as the intro part
 
@@ -44,6 +44,8 @@ manual.pdf: chk_loc intro.tex abstract.tex acknowl.tex manual.tex part1.tex part
 developers.pdf: chk_loc developers.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat developers.tex | \
 	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > developerstmp.tex
+	${PDFLATEX} developerstmp.tex
+	bibtex developerstmp ${GONULL}
 	${PDFLATEX} developerstmp.tex
 	${PDFLATEX} developerstmp.tex
 	${MV} developerstmp.pdf ${LOC}/docs/developers.pdf

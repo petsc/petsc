@@ -13,7 +13,7 @@ Input parameters include:\n";
        y' = -z = f(y,z)        (1)
        0  = y-(z^3/3 - z) = g(y,z)
    on the domain 0 <= x <= 1, with the boundary conditions
-       y(0) = -2, y'(0) = −2.355301397608119909925287735864250951918
+       y(0) = -2, y'(0) = -2.355301397608119909925287735864250951918
    This is a nonlinear equation.
 
    Notes:
@@ -78,43 +78,44 @@ struct _n_User {
 #define __FUNCT__ "IFunction"
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *x,*xdot,*f;
+  PetscErrorCode    ierr;
+  PetscScalar       *f;
+  const PetscScalar *x,*xdot;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = xdot[0] + x[1];
-  f[1] = (x[1]*x[1]*x[1]/3 - x[1])-x[0];
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
+  f[1] = (x[1]*x[1]*x[1]/3.0 - x[1])-x[0];
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian"
-static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
+static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscInt       rowcol[] = {0,1};
-  PetscScalar    *x,J[2][2];
+  PetscErrorCode    ierr;
+  PetscInt          rowcol[] = {0,1};
+  PetscScalar       J[2][2];
+  const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   J[0][0] = a;    J[0][1] = -1.;
   J[1][0] = 1.;   J[1][1] = -1. + x[1]*x[1];
-  ierr    = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr    = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
-    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -205,7 +206,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -238,7 +239,7 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D, ftime %G\n",steps,ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D, ftime %g\n",steps,(double)ftime);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

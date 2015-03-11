@@ -1,10 +1,11 @@
 /*
-  This file deals with STDCALL Fortran 77 naming conventions.  This also
-  assumes PETSC_HAVE_FORTRAN_CAPS is also defined, which is the case on certain Windows
-  FORTRAN compilers which use STDCALL.
+  This file deals with
+     1) STDCALL BLAS/LAPACK calling conventions
+     2) capitalization of BLAS/LAPACK names
+     3) character strings passing conventions where the string length is passed in the stack immediately after the string
+        as opposed to at the end of the function arguements.
 
-  Another problem is character strings are represented differently on
-  on some machines in C and Fortran 77. This problem comes up on some Windows compilers.
+  This issue only comes up on some Microsoft Windows compilers.
 */
 #if !defined(_BLASLAPACK_STDCALL_H)
 #define _BLASLAPACK_STDCALL_H
@@ -15,11 +16,12 @@
 #endif
 
 #if !defined(PETSC_USE_COMPLEX)
-# if defined(PETSC_USES_FORTRAN_SINGLE) || defined(PETSC_USE_REAL_SINGLE)
+# if defined(PETSC_BLASLAPACK_SINGLEISDOUBLE) || defined(PETSC_USE_REAL_SINGLE)
 /* Real single precision without character string arguments. */
 #  define LAPACKgeqrf_ SGEQRF
 #  define LAPACKungqr_ SORGQR
 #  define LAPACKgetrf_ SGETRF
+#  define LAPACKgetri_ SGETRI
 #  define BLASdot_     SDOT
 #  define BLASdotu_    SDOT
 #  define BLASnrm2_    SNRM2
@@ -82,6 +84,7 @@ PETSC_EXTERN void PETSC_STDCALL SHSEQR(const char*,int,const char*,int,PetscBLAS
 #  define LAPACKgeqrf_ DGEQRF
 #  define LAPACKungqr_ DORGQR
 #  define LAPACKgetrf_ DGETRF
+#  define LAPACKgetri_ DGETRI
 #  define BLASdot_     DDOT
 #  define BLASdotu_    DDOT
 #  define BLASnrm2_    DNRM2
@@ -139,11 +142,12 @@ PETSC_EXTERN void PETSC_STDCALL DGGES(const char*,int,const char*,int,const char
 PETSC_EXTERN void PETSC_STDCALL DHSEQR(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 # endif
 #else
-# if defined(PETSC_USES_FORTRAN_SINGLE) || defined(PETSC_USE_REAL_SINGLE)
+# if defined(PETSC_BLASLAPACK_SINGLEISDOUBLE) || defined(PETSC_USE_REAL_SINGLE)
 /* Complex single precision without character string arguments. */
 #  define LAPACKgeqrf_ CGEQRF
 #  define LAPACKungqr_ CUNGQR
 #  define LAPACKgetrf_ CGETRF
+#  define LAPACKgetri_ CGETRI
 /* #  define BLASdot_     CDOTC */
 /* #  define BLASdotu_    CDOTU */
 #  define BLASnrm2_    SCNRM2
@@ -202,6 +206,7 @@ PETSC_EXTERN void PETSC_STDCALL CHSEQR(const char*,int,const char*,int,PetscBLAS
 #  define LAPACKgeqrf_ ZGEQRF
 #  define LAPACKungqr_ ZUNGQR
 #  define LAPACKgetrf_ ZGETRF
+#  define LAPACKgetri_ ZGETRI
 /* #  define BLASdot_     ZDOTC */
 /* #  define BLASdotu_    ZDOTU */
 #  define BLASnrm2_    DZNRM2
@@ -259,6 +264,7 @@ PETSC_EXTERN void PETSC_STDCALL ZHSEQR(const char*,int,const char*,int,PetscBLAS
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+PETSC_EXTERN void PETSC_STDCALL LAPACKgetri_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL LAPACKungqr_(PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL LAPACKpttrf_(PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*);

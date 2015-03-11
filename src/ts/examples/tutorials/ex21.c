@@ -44,6 +44,7 @@ timestepping.  Runtime options include:\n\
    structures to manage the parallel grid.
 */
 #include <petscts.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdraw.h>
 
@@ -67,7 +68,7 @@ typedef struct {
 */
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 extern PetscErrorCode SetBounds(Vec,Vec,PetscScalar,PetscScalar,AppCtx*);
@@ -115,7 +116,7 @@ int main(int argc,char **argv)
      and to set up the ghost point communication pattern.  There are M
      total grid values spread equally among all the processors.
   */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,appctx.m,1,1,NULL,
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,appctx.m,1,1,NULL,
                       &appctx.da);CHKERRQ(ierr);
 
   /*
@@ -167,6 +168,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,appctx.m,appctx.m);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -308,31 +310,30 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
  */
 PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx *appctx)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *l,*u;
-  PetscMPIInt    rank,size;
-  PetscInt       localsize;
+  PetscErrorCode    ierr;
+  const PetscScalar *l,*u;
+  PetscMPIInt       rank,size;
+  PetscInt          localsize;
 
   PetscFunctionBeginUser;
   ierr = VecSet(xl,ul);CHKERRQ(ierr);
   ierr = VecSet(xu,uh);CHKERRQ(ierr);
   ierr = VecGetLocalSize(xl,&localsize);CHKERRQ(ierr);
-  ierr = VecGetArray(xl,&l);CHKERRQ(ierr);
-  ierr = VecGetArray(xu,&u);CHKERRQ(ierr);
-
+  ierr = VecGetArrayRead(xl,&l);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xu,&u);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(appctx->comm,&size);CHKERRQ(ierr);
   if (!rank) {
-    l[0] = -SNES_VI_INF;
-    u[0] =  SNES_VI_INF;
+    l[0] = -PETSC_INFINITY;
+    u[0] =  PETSC_INFINITY;
   }
   if (rank == size-1) {
-    l[localsize-1] = -SNES_VI_INF;
-    u[localsize-1] = SNES_VI_INF;
+    l[localsize-1] = -PETSC_INFINITY;
+    u[localsize-1] = PETSC_INFINITY;
   }
-  ierr = VecRestoreArray(xl,&l);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xu,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xl,&l);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xu,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -450,8 +451,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      PetscPrintf() causes only the first processor in this
      communicator to print the timestep information.
   */
-  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %G,2-norm error = %G, max norm error = %G\n",
-                     step,time,en2s,enmax);CHKERRQ(ierr);
+  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %g,2-norm error = %g, max norm error = %g\n",step,(double)time,(double)en2s,(double)enmax);CHKERRQ(ierr);
 
   /*
      Print debugging information if desired
@@ -483,14 +483,15 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 */
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *ctx)
 {
-  AppCtx         *appctx   = (AppCtx*) ctx;     /* user-defined application context */
-  DM             da        = appctx->da;        /* distributed array */
-  Vec            local_in  = appctx->u_local;   /* local ghosted input vector */
-  Vec            localwork = appctx->localwork; /* local ghosted work vector */
-  PetscErrorCode ierr;
-  PetscInt       i,localsize;
-  PetscMPIInt    rank,size;
-  PetscScalar    *copyptr,*localptr,sc;
+  AppCtx            *appctx   = (AppCtx*) ctx;     /* user-defined application context */
+  DM                da        = appctx->da;        /* distributed array */
+  Vec               local_in  = appctx->u_local;   /* local ghosted input vector */
+  Vec               localwork = appctx->localwork; /* local ghosted work vector */
+  PetscErrorCode    ierr;
+  PetscInt          i,localsize;
+  PetscMPIInt       rank,size;
+  PetscScalar       *copyptr,sc;
+  const PetscScalar *localptr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Get ready for local function computations
@@ -507,7 +508,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   /*
       Access directly the values in our local INPUT work array
   */
-  ierr = VecGetArray(local_in,&localptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(local_in,&localptr);CHKERRQ(ierr);
 
   /*
       Access directly the values in our local OUTPUT work array
@@ -548,7 +549,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(local_in,&localptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(local_in,&localptr);CHKERRQ(ierr);
   ierr = VecRestoreArray(localwork,&copyptr);CHKERRQ(ierr);
 
   /*
@@ -597,15 +598,15 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat B,void *ctx)
 {
-  Mat            B        = *BB;               /* Jacobian matrix */
-  AppCtx         *appctx  = (AppCtx*)ctx;    /* user-defined application context */
-  Vec            local_in = appctx->u_local;   /* local ghosted input vector */
-  DM             da       = appctx->da;        /* distributed array */
-  PetscScalar    v[3],*localptr,sc;
-  PetscErrorCode ierr;
-  PetscInt       i,mstart,mend,mstarts,mends,idx[3],is;
+  AppCtx            *appctx  = (AppCtx*)ctx;    /* user-defined application context */
+  Vec               local_in = appctx->u_local;   /* local ghosted input vector */
+  DM                da       = appctx->da;        /* distributed array */
+  PetscScalar       v[3],sc;
+  const PetscScalar *localptr;
+  PetscErrorCode    ierr;
+  PetscInt          i,mstart,mend,mstarts,mends,idx[3],is;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Get ready for local Jacobian computations
@@ -622,7 +623,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArray(local_in,&localptr);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(local_in,&localptr);CHKERRQ(ierr);
 
   /*
      Get starting and ending locally owned rows of the matrix
@@ -673,7 +674,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(local_in,&localptr);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(local_in,&localptr);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Complete the matrix assembly process and set some options
@@ -686,25 +687,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat *AA,Mat *BB,MatSt
   */
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  /*
-     Set flag to indicate that the Jacobian matrix retains an identical
-     nonzero structure throughout all timestepping iterations (although the
-     values of the entries change). Thus, we can save some work in setting
-     up the preconditioner (e.g., no need to redo symbolic factorization for
-     ILU/ICC preconditioners).
-      - If the nonzero structure of the matrix is different during
-        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the matrix
-        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-        believes your assertion and does not check the structure
-        of the matrix.  If you erroneously claim that the structure
-        is the same when it actually is not, the new preconditioner
-        will not function correctly.  Thus, use this optimization
-        feature with caution!
-  */
-  *str = SAME_NONZERO_PATTERN;
 
   /*
      Set and option to indicate that we will never add a new nonzero location

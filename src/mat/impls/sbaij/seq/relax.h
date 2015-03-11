@@ -161,14 +161,14 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 
   if (!a->idiagvalid) {
     if (!a->idiag) {
-      ierr = PetscMalloc(m*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
+      ierr = PetscMalloc1(m,&a->idiag);CHKERRQ(ierr);
     }
     for (i=0; i<a->mbs; i++) a->idiag[i] = 1.0/a->a[a->i[i]];
     a->idiagvalid = PETSC_TRUE;
   }
 
   if (!a->sor_work) {
-    ierr = PetscMalloc(m*sizeof(PetscScalar),&a->sor_work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(m,&a->sor_work);CHKERRQ(ierr);
   }
   t = a->sor_work;
 
@@ -221,7 +221,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         nz = 0;
         for (i=m-1; i>=0; i--) {
           sum = b[i];
-          nz2 = ai[i] - ai[i-1] - 1;
+          nz2 = ai[i] - ai[PetscMax(i-1,0)] - 1; /* avoid referencing ai[-1], nonsense nz2 is okay on last iteration */
           PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
           PETSC_Prefetch(vj-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
           PetscSparseDenseMinusDot(sum,x,v,vj,nz);
@@ -238,7 +238,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         nz = 0;
         for (i=m-1; i>=0; i--) {
           sum = t[i];
-          nz2 = ai[i] - ai[i-1] - 1;
+          nz2 = ai[i] - ai[PetscMax(i-1,0)] - 1; /* avoid referencing ai[-1], nonsense nz2 is okay on last iteration */
           PETSC_Prefetch(v-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
           PETSC_Prefetch(vj-nz2-1,0,PETSC_PREFETCH_HINT_NTA);
           PetscSparseDenseMinusDot(sum,x,v,vj,nz);
@@ -270,11 +270,11 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         vj   = aj + ai[i] + 1; vj1=vj;
         nz   = ai[i+1] - ai[i] - 1; nz1=nz;
         sum  = t[i];
-        ierr = PetscLogFlops(4.0*nz-2);CHKERRQ(ierr);
         while (nz1--) sum -= (*v1++)*x[*vj1++];
         x[i] = (1-omega)*x[i] + omega*sum*aidiag[i];
         while (nz--) t[*vj++] -= x[i]*(*v++);
       }
+      ierr = PetscLogFlops(4.0*a->nz);CHKERRQ(ierr);
     }
 
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
@@ -292,18 +292,18 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
         v    = aa + ai[i] + 1;
         vj   = aj + ai[i] + 1;
         nz   = ai[i+1] - ai[i] - 1;
-        ierr = PetscLogFlops(2.0*nz-1);CHKERRQ(ierr);
         while (nz--) t[*vj++] -= x[i]*(*v++);
       }
+      ierr = PetscLogFlops(2.0*(a->nz - m));CHKERRQ(ierr);
       for (i=m-1; i>=0; i--) {
         v    = aa + ai[i] + 1;
         vj   = aj + ai[i] + 1;
         nz   = ai[i+1] - ai[i] - 1;
-        ierr = PetscLogFlops(2.0*nz-1);CHKERRQ(ierr);
         sum  = t[i];
         while (nz--) sum -= x[*vj++]*(*v++);
         x[i] =   (1-omega)*x[i] + omega*sum*aidiag[i];
       }
+      ierr = PetscLogFlops(2.0*(a->nz + m));CHKERRQ(ierr);
     }
   }
 

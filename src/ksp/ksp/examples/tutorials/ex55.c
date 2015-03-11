@@ -163,7 +163,7 @@ int main(int argc,char **args)
   }
   {
     PetscReal *coords;
-    ierr = PetscMalloc(m*sizeof(PetscReal),&coords);
+    ierr = PetscMalloc1(m,&coords);
     /* forms the element stiffness and coordinates */
     for (Ii = Istart/2, ix = 0; Ii < Iend/2; Ii++, ix++) {
       j = Ii/(ne+1); i = Ii%(ne+1);
@@ -173,7 +173,7 @@ int main(int argc,char **args)
       if (i<ne && j<ne) {
         PetscInt jj,ii,idx[4] = {Ii, Ii+1, Ii + (ne+1) + 1, Ii + (ne+1)};
         /* radius */
-        PetscReal radius = PetscSqrtScalar((x-.5+h/2)*(x-.5+h/2) + (y-.5+h/2)*(y-.5+h/2));
+        PetscReal radius = PetscSqrtReal((x-.5+h/2)*(x-.5+h/2) + (y-.5+h/2)*(y-.5+h/2));
         PetscReal alpha  = 1.0;
         if (radius < 0.25) alpha = soft_alpha;
 
@@ -212,7 +212,7 @@ int main(int argc,char **args)
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
     /* finish KSP/PC setup */
-    ierr = KSPSetOperators(ksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
     if (use_coords) {
       ierr = PCSetCoordinates(pc, 2, m/2, coords);CHKERRQ(ierr);
     }

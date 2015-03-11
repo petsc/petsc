@@ -20,44 +20,54 @@ class Configure(config.base.Configure):
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.compilers = self.framework.require('config.compilers', self)
-    self.headers = self.framework.require('config.headers', self)
+    self.libraries = self.framework.require('config.libraries', self) # setCompilers.LIBS is setup here
+    self.headers   = self.framework.require('config.headers', self)
     return
 
   def haveFunction(self, function):
     return self.getDefineName(function) in self.defines
 
-  def check(self, funcName, libraries = None):
+  def check(self, funcs, libraries = None, examineOutput=lambda ret,out,err:None):
     '''Checks for the function "funcName", and if found defines HAVE_"funcName"'''
-    self.framework.log.write('Checking for function '+funcName+'\n')
+    if isinstance(funcs, set): funcs = list(funcs)
+    if isinstance(funcs, str): funcs = [funcs]
+    self.log.write('Checking for functions ['+' '.join(funcs)+']\n')
+    def genIncludes(funcName):
+      return 'char %s();\n' % funcName
+    def genBody(funcName):
+      # The GNU C library defines __stub_* for functions that it implements
+      # to always fail with ENOSYS.  Some functions are actually named
+      # something starting with __ and the normal name is an alias.
+      return '''
+#if defined (__stub_%(func)s) || defined (__stub___%(func)s)
+%(func)s_will_always_fail_with_ENOSYS();
+#else
+%(func)s();
+#endif
+''' % dict(func=funcName)
+
     # Don't include <ctype.h> because on OSF/1 3.0 it includes <sys/types.h>
     # which includes <sys/select.h> which contains a prototype for
     # select.  Similarly for bzero.
-    includes  = '/* System header to define __stub macros and hopefully few prototypes, which can conflict with char '+funcName+'(); below. */\n'
-    includes += '''
-    #include <assert.h>
-    /* Override any gcc2 internal prototype to avoid an error. */
-    '''
-    if self.language[-1] == 'Cxx':
-      includes += '''
+    includes = '''
+/* System header to define __stub macros and hopefully no other prototypes since they would conflict with our 'char funcname()' declaration below. */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error. */
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
 '''
     includes += '''
 /* We use char because int might match the return type of a gcc2
 builtin and then its argument prototype would still apply. */
 '''
-    includes += 'char '+funcName+'();\n'
-    body = '''
-/* The GNU C library defines this for functions which it implements
-to always fail with ENOSYS.  Some functions are actually named
-something starting with __ and the normal name is an alias.  */
-#if defined (__stub_'''+funcName+''') || defined (__stub___'''+funcName+''')
-choke me
-#else
-'''+funcName+'''();
+    includes += ''.join(map(genIncludes,funcs))
+    includes += '''
+#ifdef __cplusplus
+}
 #endif
 '''
+    body = ''.join(map(genBody,funcs))
     if libraries:
       oldLibs = self.compilers.LIBS
       if not isinstance(libraries, list):
@@ -68,21 +78,44 @@ choke me
           self.compilers.LIBS += ' '+library
         else:
           self.compilers.LIBS += ' -l'+library
-    found = self.checkLink(includes, body)
+    found = self.checkLink(includes, body, examineOutput=examineOutput)
     if libraries:
       self.compilers.LIBS = oldLibs
     if found:
-      self.addDefine(self.getDefineName(funcName), 1)
+      for funcName in funcs:
+        self.addDefine(self.getDefineName(funcName), 1)
     return found
+
+  def checkClassify(self, funcs, libraries = None):
+    '''Recursive decompose to rapidly classify functions as found or missing
+    To confirm that a function is missing, we require a compile/link
+    failure with only that function in a compilation unit.  In contrast,
+    we can confirm that many functions are present by compiling them all
+    together in a large compilation unit.  We optimistically compile
+    everything together, then trim all functions that were named in the
+    error message and bisect the result.  The trimming is only an
+    optimization to increase the likelihood of a big-batch compile
+    succeeding; we do not rely on the compiler naming missing functions.
+    '''
+    def functional(funcs):
+      named = config.NamedInStderr(funcs)
+      if self.check(funcs, libraries, named.examineStderr):
+        return True
+      else:
+        return named.named
+    import config
+    found, missing = config.classify(funcs, functional)
+    return found, missing
 
   def checkMemcmp(self):
     '''Check for 8-bit clean memcmp'''
-    if 'known-memcmp-ok' in self.framework.argDB:
-      if self.framework.argDB['known-memcmp-ok'] == 0:
-        raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed')
+    if 'known-memcmp-ok' in self.argDB:
+      if self.argDB['known-memcmp-ok'] == 0:
+        raise RuntimeError('No 8-bit clean memcmp() exists. Cannot proceed')
       else:
         return
-    if not self.framework.argDB['with-batch']:
+    if not self.argDB['with-batch']:
+      self.logPrint('Making executable to test memcmp()')
       if not self.checkRun('#include <string.h>\nvoid exit(int);\n\n', 'char c0 = 0x40;\nchar c1 = (char) 0x80;\nchar c2 = (char) 0x81;\nexit(memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1);\n'):
         raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed.')
     else:
@@ -197,5 +230,5 @@ choke me
       self.executeTest(self.checkSignalHandlerType)
     self.executeTest(self.checkFreeReturnType)
     self.executeTest(self.checkVariableArgumentLists)
-    map(lambda function: self.executeTest(self.check, function), self.functions)
+    self.executeTest(self.checkClassify, set(self.functions))
     return

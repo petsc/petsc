@@ -52,6 +52,9 @@ PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(M
 
    Level: developer
 
+   Notes:
+      These vectors and the array are owned by the MatNullSpace and should not be destroyed or freeded by the caller
+
 .seealso: MatNullSpaceCreate(), MatGetNullSpace(), MatGetNearNullSpace()
 @*/
 PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp,PetscBool *has_const,PetscInt *n,const Vec **vecs)
@@ -86,7 +89,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
 {
   PetscErrorCode    ierr;
   const PetscScalar *x;
-  PetscScalar       *v[6],dots[3];
+  PetscScalar       *v[6],dots[5];
   Vec               vec[6];
   PetscInt          n,N,dim,nmodes,i,j;
 
@@ -144,7 +147,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
     for (i=0; i<nmodes; i++) {ierr = VecRestoreArray(vec[i],&v[i]);CHKERRQ(ierr);}
     ierr = VecRestoreArrayRead(coords,&x);CHKERRQ(ierr);
     for (i=dim; i<nmodes; i++) {
-      /* Orthonormalize vec[i] against vec[0:dim] */
+      /* Orthonormalize vec[i] against vec[0:i-1] */
       ierr = VecMDot(vec[i],i,vec,dots);CHKERRQ(ierr);
       for (j=0; j<i; j++) dots[j] *= -1.;
       ierr = VecMAXPY(vec[i],i,dots,vec);CHKERRQ(ierr);
@@ -190,7 +193,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
     PetscViewerFormat format;
     PetscInt          i;
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,viewer,"MatNullSpace Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Contains %D vector%s%s\n",sp->n,sp->n==1 ? "" : "s",sp->has_cnst ? " and the constant" : "");CHKERRQ(ierr);
     if (sp->remove) {ierr = PetscViewerASCIIPrintf(viewer,"Has user-provided removal function\n");CHKERRQ(ierr);}
@@ -251,9 +254,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   PetscValidPointer(SP,5);
 
   *SP = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,"MatNullSpace","Null space","Mat",comm,MatNullSpaceDestroy,MatNullSpaceView);CHKERRQ(ierr);
 
@@ -261,14 +262,13 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   sp->n        = n;
   sp->vecs     = 0;
   sp->alpha    = 0;
-  sp->vec      = 0;
   sp->remove   = 0;
   sp->rmctx    = 0;
 
   if (n) {
-    ierr = PetscMalloc(n*sizeof(Vec),&sp->vecs);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(PetscScalar),&sp->alpha);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(sp,n*(sizeof(Vec)+sizeof(PetscScalar)));CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&sp->vecs);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n,&sp->alpha);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)sp,n*(sizeof(Vec)+sizeof(PetscScalar)));CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ierr        = PetscObjectReference((PetscObject)vecs[i]);CHKERRQ(ierr);
       sp->vecs[i] = vecs[i];
@@ -305,7 +305,6 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
   PetscValidHeaderSpecific((*sp),MAT_NULLSPACE_CLASSID,1);
   if (--((PetscObject)(*sp))->refct > 0) {*sp = 0; PetscFunctionReturn(0);}
 
-  ierr = VecDestroy(&(*sp)->vec);CHKERRQ(ierr);
   ierr = VecDestroyVecs((*sp)->n,&(*sp)->vecs);CHKERRQ(ierr);
   ierr = PetscFree((*sp)->alpha);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
@@ -321,11 +320,7 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
 
    Input Parameters:
 +  sp - the null space context
-.  vec - the vector from which the null space is to be removed
--  out - if this is requested (not NULL) then this is a vector with the null space removed otherwise
-         the removal is done in-place (in vec)
-
-   Note: The user is not responsible for the vector returned and should not destroy it.
+-  vec - the vector from which the null space is to be removed
 
    Level: advanced
 
@@ -333,7 +328,7 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
 
 .seealso: MatNullSpaceCreate(), MatNullSpaceDestroy(), MatNullSpaceSetFunction()
 @*/
-PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
+PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec)
 {
   PetscScalar    sum;
   PetscInt       i,N;
@@ -342,16 +337,6 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-
-  if (out) {
-    PetscValidPointer(out,3);
-    if (!sp->vec) {
-      ierr = VecDuplicate(vec,&sp->vec);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(sp,sp->vec);CHKERRQ(ierr);
-    }
-    ierr = VecCopy(vec,sp->vec);CHKERRQ(ierr);
-    vec  = *out = sp->vec;
-  }
 
   if (sp->has_cnst) {
     ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
@@ -412,14 +397,11 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   ierr = PetscOptionsGetBool(NULL,"-mat_null_space_test_view",&flg1,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-mat_null_space_test_view_draw",&flg2,NULL);CHKERRQ(ierr);
 
-  if (!sp->vec) {
-    if (n) {
-      ierr = VecDuplicate(sp->vecs[0],&sp->vec);CHKERRQ(ierr);
-    } else {
-      ierr = MatGetVecs(mat,&sp->vec,NULL);CHKERRQ(ierr);
-    }
+  if (n) {
+    ierr = VecDuplicate(sp->vecs[0],&l);CHKERRQ(ierr);
+  } else {
+    ierr = MatCreateVecs(mat,&l,NULL);CHKERRQ(ierr);
   }
-  l = sp->vec;
 
   ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp),&viewer);CHKERRQ(ierr);
   if (sp->has_cnst) {
@@ -436,7 +418,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
       } else {
         ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"Constants are unlikely null vector ");CHKERRQ(ierr);
       }
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * 1/N || = %G\n",nrm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * 1/N || = %g\n",(double)nrm);CHKERRQ(ierr);
     }
     if (!consistent && flg1) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
     if (!consistent && flg2) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
@@ -454,13 +436,14 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
         ierr       = PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);
         consistent = PETSC_FALSE;
       }
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * v[%D] || = %G\n",j,nrm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * v[%D] || = %g\n",j,(double)nrm);CHKERRQ(ierr);
     }
     if (!consistent && flg1) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
     if (!consistent && flg2) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
   }
 
   if (sp->remove) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
+  ierr = VecDestroy(&l);CHKERRQ(ierr);
   if (isNull) *isNull = consistent;
   PetscFunctionReturn(0);
 }

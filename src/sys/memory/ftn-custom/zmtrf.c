@@ -44,7 +44,7 @@ PETSC_EXTERN void PETSC_STDCALL petscmallocdumplog_(PetscErrorCode *ierr)
 
 PETSC_EXTERN void PETSC_STDCALL petscmallocvalidate_(PetscErrorCode *ierr)
 {
-  *ierr = PetscMallocValidate(0,"Unknown Fortran",0,0);
+  *ierr = PetscMallocValidate(0,"Unknown Fortran",0);
 }
 
 PETSC_EXTERN void PETSC_STDCALL petscmemorysetgetmaximumusage_(PetscErrorCode *ierr)

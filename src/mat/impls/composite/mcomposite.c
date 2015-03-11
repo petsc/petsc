@@ -65,7 +65,7 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
   }
   while (next->next) {
     if (!next->work) { /* should reuse previous work if the same size */
-      ierr = MatGetVecs(next->mat,NULL,&next->work);CHKERRQ(ierr);
+      ierr = MatCreateVecs(next->mat,NULL,&next->work);CHKERRQ(ierr);
     }
     out  = next->work;
     ierr = MatMult(next->mat,in,out);CHKERRQ(ierr);
@@ -101,7 +101,7 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
   }
   while (tail->prev) {
     if (!tail->prev->work) { /* should reuse previous work if the same size */
-      ierr = MatGetVecs(tail->mat,NULL,&tail->prev->work);CHKERRQ(ierr);
+      ierr = MatCreateVecs(tail->mat,NULL,&tail->prev->work);CHKERRQ(ierr);
     }
     out  = tail->prev->work;
     ierr = MatMultTranspose(tail->mat,in,out);CHKERRQ(ierr);
@@ -393,6 +393,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                /*139*/ 0,
+                                       0,
                                        0
 };
 
@@ -414,7 +415,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr    = PetscNewLog(A,Mat_Composite,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
   A->data = (void*)b;
   ierr    = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
@@ -508,7 +509,7 @@ PetscErrorCode  MatCompositeAddMat(Mat mat,Mat smat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(smat,MAT_CLASSID,2);
-  ierr        = PetscNewLog(mat,struct _Mat_CompositeLink,&ilink);CHKERRQ(ierr);
+  ierr        = PetscNewLog(mat,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr        = PetscObjectReference((PetscObject)smat);CHKERRQ(ierr);
   ilink->mat  = smat;

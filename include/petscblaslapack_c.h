@@ -1,5 +1,5 @@
 /*
-      This file deals with unmangled Fortran 77 naming convention on systems that do not modify Fortran systems by
+      This file deals with unmangled BLAS/LAPACK naming convention on systems that do not modify BLAS/LAPACK function names
       adding an underscore at the end or changing to CAPS. IBM is one such compiler.
 */
 #if !defined(_BLASLAPACK_C_H)
@@ -11,6 +11,7 @@
 #  define LAPACKgeqrf_ sgeqrf
 #  define LAPACKungqr_ sorgqr
 #  define LAPACKgetrf_ sgetrf
+#  define LAPACKgetri_ sgetri
 #  define BLASdot_     sdot
 #  define BLASdotu_    sdot
 #  define BLASnrm2_    snrm2
@@ -53,6 +54,7 @@
 #  define LAPACKgeqrf_ dgeqrf
 #  define LAPACKungqr_ dorgqr
 #  define LAPACKgetrf_ dgetrf
+#  define LAPACKgetri_ dgetri
 #  define BLASdot_     ddot
 #  define BLASdotu_    ddot
 #  define BLASnrm2_    dnrm2
@@ -97,6 +99,7 @@
 #  define LAPACKgeqrf_ cgeqrf
 #  define LAPACKungqr_ cungqr
 #  define LAPACKgetrf_ cgetrf
+#  define LAPACKgetri_ cgetri
 /* #  define BLASdot_     cdotc */
 /* #  define BLASdotu_    cdotu */
 #  define BLASnrm2_    scnrm2
@@ -139,6 +142,7 @@
 #  define LAPACKgeqrf_ zgeqrf
 #  define LAPACKungqr_ zungqr
 #  define LAPACKgetrf_ zgetrf
+#  define LAPACKgetri_ zgetri
 /* #  define BLASdot_     zdotc */
 /* #  define BLASdotu_    zdotu */
 #  define BLASnrm2_    dznrm2

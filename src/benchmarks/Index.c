@@ -34,11 +34,11 @@ int test1(void)
 
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-  ierr = PetscMalloc(20000*sizeof(PetscScalar),&x);CHKERRQ(ierr);
-  ierr = PetscMalloc(20000*sizeof(PetscScalar),&y);CHKERRQ(ierr);
+  ierr = PetscMalloc1(20000,&x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(20000,&y);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(2000*sizeof(int),&z);CHKERRQ(ierr);
-  ierr = PetscMalloc(2000*sizeof(int),&zi);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2000,&z);CHKERRQ(ierr);
+  ierr = PetscMalloc1(2000,&zi);CHKERRQ(ierr);
 
 
 
@@ -197,7 +197,7 @@ int BlastCache(void)
   int         i,ierr,n = 1000000;
   PetscScalar *x,*y,*z,*a,*b;
 
-  ierr = PetscMalloc(5*n*sizeof(PetscScalar),&x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(5*n,&x);CHKERRQ(ierr);
   y    = x + n;
   z    = y + n;
   a    = z + n;

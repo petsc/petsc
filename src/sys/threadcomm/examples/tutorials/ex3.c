@@ -121,7 +121,7 @@ int main(int argc,char **argv)
   ierr = PetscThreadCommView(PETSC_COMM_WORLD,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(PetscScalar),&a);CHKERRQ(ierr);
+  ierr = PetscMalloc1(N,&a);CHKERRQ(ierr);
 
   /* Set thread ownership ranges for the array */
   ierr = PetscThreadCommGetOwnershipRanges(PETSC_COMM_WORLD,N,&trstarts);CHKERRQ(ierr);

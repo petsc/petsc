@@ -2,12 +2,12 @@ ALL: lib
 
 SOURCEH	 =
 SOURCEC  =
-LIBBASE	 = libpetscsys
+LIBBASE	 = libpetscvec
 DIRS	 = window basic
 LOCDIR   = src/vec/is/sf/impls/
 MANSEC   = PetscSF
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test
 

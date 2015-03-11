@@ -43,14 +43,14 @@
 !  in them
 !
       module petsc_kkt_solver_module
-#include <finclude/petscdmdef.h>
+#include <petsc-finclude/petscdmdef.h>
       use petscdmdef
       type petsc_kkt_solver
         type(DM) da
 !     temp A block stuff 
         PetscInt mx,my
         PetscMPIInt rank
-        double precision lambda
+        PetscReal lambda
 !     Mats
         type(Mat) Amat,AmatLin,Bmat,CMat,Dmat
         type(IS)  isPhi,isLambda
@@ -63,7 +63,7 @@
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
         use petscsnes
         use petsc_kkt_solver_module
           type(SNES)    snesIn
@@ -74,7 +74,7 @@
 
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
         use petscsnes
         use petsc_kkt_solver_module
           type(SNES)     snesIn
@@ -85,8 +85,8 @@
       end module petsc_kkt_solver_moduleinterfaces
 
       program main
-#include <finclude/petscdmdef.h>
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscdmdef.h>
+#include <petsc-finclude/petscsnesdef.h>
       use petscdm
       use petscdmda
       use petscsnes
@@ -113,7 +113,7 @@
       PetscInt         its,N1,N2,i,j,row,low,high,lamlow,lamhigh
       PetscBool        flg
       PetscInt         ione,nfour,itwo,nloc,nloclam
-      double precision lambda_max,lambda_min
+      PetscReal lambda_max,lambda_min
       type(petsc_kkt_solver)  solver
       PetscScalar      bval,cval,one
 
@@ -146,7 +146,7 @@
 
 !     just get size
       call DMDACreate2d(PETSC_COMM_WORLD, &
-           DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, &
+           DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, &
            DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE, &
            ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,daphi,ierr)
       call DMDAGetInfo(daphi,PETSC_NULL_INTEGER,solver%mx,solver%my,   &
@@ -300,7 +300,7 @@
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
 !     vectors that are the same types
-      call MatGetVecs(KKTmat,x,PETSC_NULL_OBJECT,ierr)
+      call MatCreateVecs(KKTmat,x,PETSC_NULL_OBJECT,ierr)
       call VecDuplicate(x,r,ierr)
 
       call SNESCreate(PETSC_COMM_WORLD,mysnes,ierr)
@@ -386,7 +386,7 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(mysnes,Xnest,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver_module
       use petsc_kkt_solver_moduleinterfaces
@@ -436,7 +436,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(solver,X1,ierr)
-#include <finclude/petscsysdef.h>
+#include <petsc-finclude/petscsysdef.h>
       use petscsys
       use petsc_kkt_solver_module
       implicit none
@@ -490,8 +490,8 @@
 !  jac_prec - optionally different preconditioning matrix (not used here)
 !  flag     - flag indicating matrix structure
 !
-      subroutine FormJacobian(dummy,X,jac,jac_prec,flag,solver,ierr)
-#include <finclude/petscsnesdef.h>
+      subroutine FormJacobian(dummy,X,jac,jac_prec,solver,ierr)
+#include <petsc-finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver_module
       implicit none
@@ -499,7 +499,6 @@
       type(SNES)     dummy
       type(Vec)      X
       type(Mat)      jac,jac_prec
-      MatStructure   flag
       type(petsc_kkt_solver)  solver
       PetscErrorCode ierr
 
@@ -528,11 +527,6 @@
          call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       end if
 
-!     Set flag to indicate that the Jacobian matrix retains an identical
-!     nonzero structure throughout all nonlinear iterations 
-      
-      flag = SAME_NONZERO_PATTERN
-
 !     Tell the matrix we will never add a new nonzero location to the
 !     matrix. If we do it will generate an error.
       call MatSetOption(jac_prec,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr)
@@ -556,7 +550,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormJacobianLocal(X1,jac,solver,add_nl_term,ierr)
-#include <finclude/petscmatdef.h>
+#include <petsc-finclude/petscmatdef.h>
       use petscmat
       use petsc_kkt_solver_module
       implicit none
@@ -639,7 +633,7 @@
 !  F - function vector
 !
       subroutine FormFunction(snesIn,X,F,solver,ierr)
-#include <finclude/petscsnesdef.h>
+#include <petsc-finclude/petscsnesdef.h>
       use petscsnes
       use petsc_kkt_solver_module
       implicit none
@@ -694,7 +688,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormFunctionNLTerm(X1,F1,solver,ierr)
-#include <finclude/petscvecdef.h>
+#include <petsc-finclude/petscvecdef.h>
       use petscvec
       use petsc_kkt_solver_module
       implicit none

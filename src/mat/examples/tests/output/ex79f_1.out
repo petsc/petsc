@@ -1,5 +1,5 @@
-Matrix Object: 1 MPI processes
-  type: seqaij
+Mat Object: 1 MPI processes
+  type: mpiaij
 row 0: (0, -1)  (1, 4)  (3, -1) 
 row 1: (0, -1)  (1, 4)  (2, -1)  (4, -1) 
 row 2: (1, -1)  (2, 4)  (5, -1) 
@@ -12,8 +12,8 @@ row 8: (5, -1)  (7, -1)  (8, 4)  (11, -1)
 row 9: (6, -1)  (9, 4)  (10, -1) 
 row 10: (7, -1)  (9, -1)  (10, 4)  (11, -1) 
 row 11: (8, -1)  (10, -1)  (11, 4) 
-Matrix Object: 1 MPI processes
-  type: seqaij
+Mat Object: 1 MPI processes
+  type: mpiaij
 row 0: (0, -1)  (1, 4)  (3, -1) 
 row 1: (0, -1)  (1, 4)  (2, -1)  (4, -1) 
 row 2: (1, -1)  (2, 4)  (5, -1) 

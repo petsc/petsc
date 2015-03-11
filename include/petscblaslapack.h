@@ -5,9 +5,28 @@
   This is not included automatically by petscsys.h because some external packages include their own prototypes for
   certain BLAS/LAPACK functions that conflict with the ones given here. Hence this should only be included when needed.
 
+  The BLAS/LAPACK name mangling is almost (but not always) the same as the Fortran mangling; and exists even if there is
+  not Fortran compiler.
+
+  PETSC_BLASLAPACK_STDCALL  is for Microsoft Windows compiles, it also implicitly has capitalized function names
+  PETSC_BLASLAPACK_UNDERSCORE BLAS/LAPACK function have an underscore at the end of each function name
+  PETSC_BLASLAPACK_CAPS BLAS/LAPACK function names are all in capital letters
+  PETSC_BLASLAPACK_C BLAS/LAPACK function names have no mangling
+
+  PETSC_BLASLAPACK_SINGLEISDOUBLE - for Cray systems where the BLAS/LAPACK single precision (i.e. Fortran single precision is actually 64 bits)
+                                    old Cray vector machines used to be this way, it is is not clear if any exist now.
+
+  PetscBLASInt is almost always 32 bit integers but can be 64 bit integers for certain usages of MKL BLAS/LAPACK libraries
+
 */
 #if !defined(_BLASLAPACK_H)
 #define _BLASLAPACK_H
+
+#define PetscStackCallBLAS(name,routine) do {                   \
+    PetscStackPushNoCheck(name,PETSC_FALSE,PETSC_TRUE);         \
+    routine;                                                    \
+    PetscStackPop;                                              \
+  } while(0)
 
 #if defined(PETSC_BLASLAPACK_STDCALL)
 #include <petscblaslapack_stdcall.h>
@@ -22,9 +41,14 @@
 #endif
 
 PETSC_EXTERN void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+PETSC_EXTERN void LAPACKgetri_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void LAPACKungqr_(PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+#if defined(PETSC_USE_REAL_SINGLE) && defined(PETSC_BLASLAPACK_SNRM2_RETURNS_DOUBLE)
+PETSC_EXTERN double BLASnrm2_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+#else
 PETSC_EXTERN PetscReal BLASnrm2_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+#endif
 PETSC_EXTERN void BLASscal_(const PetscBLASInt*,const PetscScalar*,PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN void BLAScopy_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN void BLASswap_(const PetscBLASInt*,PetscScalar*,const PetscBLASInt*,PetscScalar*,const PetscBLASInt*);
@@ -71,8 +95,13 @@ PETSC_STATIC_INLINE PetscScalar BLASdotu_(const PetscBLASInt *n,const PetscScala
   return sum;
 }
 #else
+#if defined(PETSC_USE_REAL_SINGLE) && defined(PETSC_BLASLAPACK_SDOT_RETURNS_DOUBLE)
+PETSC_EXTERN double BLASdot_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+PETSC_EXTERN double BLASdotu_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+#else
 PETSC_EXTERN PetscScalar BLASdot_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 PETSC_EXTERN PetscScalar BLASdotu_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+#endif
 #endif
 
 /* Some functions prototypes differ between real and complex */

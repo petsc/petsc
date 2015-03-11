@@ -1,4 +1,4 @@
-  0 SNES Function norm 13.3457 
+0 SNES Function norm 13.3457 
     0 KSP Residual norm 2.61037 
     1 KSP Residual norm 1.1058 
     2 KSP Residual norm 0.694597 
@@ -25,18 +25,18 @@
    23 KSP Residual norm 0.00228274 
    24 KSP Residual norm 0.000332991 
    25 KSP Residual norm 0.000118315 
-   26 KSP Residual norm 3.5615e-05 
-   27 KSP Residual norm 2.75633e-05 
-   28 KSP Residual norm 2.68435e-05 
-   29 KSP Residual norm 4.38338e-07 
-   30 KSP Residual norm 6.732e-10 
-  1 SNES Function norm 2.64971e-09 
+   26 KSP Residual norm 2.77384e-05 
+   27 KSP Residual norm 2.74666e-05 
+   28 KSP Residual norm 2.67869e-05 
+   29 KSP Residual norm 3.387e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 29
+  1 SNES Function norm 1.65105e-09 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 2 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=30
+  total number of linear solver iterations=29
   total number of function evaluations=2
   SNESLineSearch Object:   2 MPI processes
     type: bt
@@ -57,16 +57,17 @@ SNES Object: 2 MPI processes
   PC Object:   2 MPI processes
     type: jacobi
     linear system matrix = precond matrix:
-    Matrix Object:     2 MPI processes
+    Mat Object:     2 MPI processes
       type: mpiaij
       rows=63, cols=63
       total: nonzeros=1213, allocated nonzeros=1213
       total number of mallocs used during MatSetValues calls =0
+        has attached null space
         using I-node (on process 0) routines: found 14 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 7.46e-10
+L_2 Error: 5.52e-11 [1.94e-11, 5.17e-11]
 Solution
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
 Process [0]
 -1

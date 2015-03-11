@@ -1,20 +1,20 @@
-#requirespackage  'PETSC_HAVE_AMS'
+#requirespackage  'PETSC_HAVE_SAWS'
 
 ALL: lib
 
-CFLAGS   = -DAMS_HOME='"${AMS_HOME}"'
+CFLAGS   = -DSAWS_HOME='"${SAWS_HOME}"'
 FFLAGS   =
 SOURCEC  = ams.c amsopen.c
 SOURCEF  =
-SOURCEH  = ../../../../../../include/petscviewerams.h
+SOURCEH  = ../../../../../../include/petscviewersaws.h
 MANSEC   = Viewer
 LIBBASE  = libpetscsys
 DIRS     =
 LOCDIR   = src/sys/classes/viewer/impls/ams/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test
 
 
 

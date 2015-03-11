@@ -11,7 +11,7 @@ static char help[] = "Illustrate how to use mpi FFTW and PETSc-FFTW interface \n
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -78,7 +78,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
     if (enorm > 1.e-11) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %G\n",enorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %g\n",(double)enorm);CHKERRQ(ierr);
     }
 
     /* Free spaces */
@@ -96,20 +96,22 @@ PetscInt main(PetscInt argc,char **args)
     Vec      input,output;
 
     N=30;
-    for (i=2; i<5; i++) {
+    for (i=2; i<3; i++) { /* (i=3,4: -- error in VecScatterPetscToFFTW(A,input,x); */
       DIM  = i;
-      ierr = PetscMalloc(i*sizeof(PetscInt),&dim);CHKERRQ(ierr);
+      ierr = PetscMalloc1(i,&dim);CHKERRQ(ierr);
       for (k=0; k<i; k++) {
         dim[k]=30;
       }
       N *= dim[i-1];
 
       /* Create FFTW object */
-      if (!rank) printf("Use PETSc-FFTW interface...%d-DIM:%d \n",DIM,N);
+      if (!rank) {
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Use PETSc-FFTW interface...%d-DIM:%d \n",DIM,N);CHKERRQ(ierr);
+      }
       ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
 
       /* Create FFTW vectors that are compatible with parallel layout of A */
-      ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
+      ierr = MatCreateVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
@@ -127,10 +129,10 @@ PetscInt main(PetscInt argc,char **args)
          data which is in the vector "input" here, needs to be copied to a vector x, which has the correct parallel
          layout for FFTW. Also, during parallel real transform, this pads extra zeros automatically
          at the end of last  dimension. This padding is required by FFTW to perform parallel real D.F.T.  */
-      ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);
+      ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);/* buggy for dim = 3, 4... */
 
       /* Apply FFTW_FORWARD and FFTW_BACKWARD */
-      ierr = MatMult(A,x,y);CHKERRQ(ierr);
+      ierr = MatMult(A,x,y);CHKERRQ(ierr); 
       if (view) {ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
 

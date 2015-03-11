@@ -1,9 +1,42 @@
+0 SNES Function norm 13.3457 
+    0 KSP Residual norm 2.61037 
+    1 KSP Residual norm 1.1058 
+    2 KSP Residual norm 0.694597 
+    3 KSP Residual norm 0.421115 
+    4 KSP Residual norm 0.283943 
+    5 KSP Residual norm 0.200007 
+    6 KSP Residual norm 0.132885 
+    7 KSP Residual norm 0.0938276 
+    8 KSP Residual norm 0.0783396 
+    9 KSP Residual norm 0.075 
+   10 KSP Residual norm 0.0689161 
+   11 KSP Residual norm 0.0441371 
+   12 KSP Residual norm 0.0193091 
+   13 KSP Residual norm 0.0129113 
+   14 KSP Residual norm 0.0104855 
+   15 KSP Residual norm 0.010151 
+   16 KSP Residual norm 0.00952533 
+   17 KSP Residual norm 0.00835051 
+   18 KSP Residual norm 0.00705831 
+   19 KSP Residual norm 0.00525371 
+   20 KSP Residual norm 0.00517801 
+   21 KSP Residual norm 0.00439643 
+   22 KSP Residual norm 0.00258432 
+   23 KSP Residual norm 0.00228274 
+   24 KSP Residual norm 0.000332991 
+   25 KSP Residual norm 0.000118315 
+   26 KSP Residual norm 2.77106e-05 
+   27 KSP Residual norm 2.73117e-05 
+   28 KSP Residual norm 2.5595e-05 
+   29 KSP Residual norm 4.152e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 29
+  1 SNES Function norm 2.02233e-09 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 3 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=30
+  total number of linear solver iterations=29
   total number of function evaluations=2
   SNESLineSearch Object:   3 MPI processes
     type: bt
@@ -24,16 +57,17 @@ SNES Object: 3 MPI processes
   PC Object:   3 MPI processes
     type: jacobi
     linear system matrix = precond matrix:
-    Matrix Object:     3 MPI processes
+    Mat Object:     3 MPI processes
       type: mpiaij
       rows=63, cols=63
       total: nonzeros=1213, allocated nonzeros=1213
       total number of mallocs used during MatSetValues calls =0
+        has attached null space
         using I-node (on process 0) routines: found 7 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 7.48e-10
+L_2 Error: 7.36e-11 [2.38e-11, 6.97e-11]
 Solution
-Vector Object: 3 MPI processes
+Vec Object: 3 MPI processes
   type: mpi
 Process [0]
 -1

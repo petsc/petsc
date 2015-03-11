@@ -143,11 +143,11 @@ PetscErrorCode PetscThreadCommCreate(PetscThreadComm *tcomm)
 
   *tcomm = NULL;
 
-  ierr                   = PetscNew(struct _p_PetscThreadComm,&tcommout);CHKERRQ(ierr);
+  ierr                   = PetscNew(&tcommout);CHKERRQ(ierr);
   tcommout->refct        = 0;
   tcommout->nworkThreads =  -1;
   tcommout->affinities   = NULL;
-  ierr                   = PetscNew(struct _PetscThreadCommOps,&tcommout->ops);CHKERRQ(ierr);
+  ierr                   = PetscNew(&tcommout->ops);CHKERRQ(ierr);
   tcommout->leader       = 0;
   *tcomm                 = tcommout;
 
@@ -156,14 +156,14 @@ PetscErrorCode PetscThreadCommCreate(PetscThreadComm *tcomm)
 
 #if defined(PETSC_USE_DEBUG)
 
-PetscErrorCode PetscThreadCommStackCreate_kernel(PetscInt trank)
+static PetscErrorCode PetscThreadCommStackCreate_kernel(PetscInt trank)
 {
-  PetscStack *petscstack_in;
-  if (!trank && PetscStackActive()) return 0;
-
-  petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
-  petscstack_in->currentsize = 0;
-  PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
+  if (trank && !PetscStackActive()) {
+    PetscStack *petscstack_in;
+    petscstack_in = (PetscStack*)malloc(sizeof(PetscStack));
+    petscstack_in->currentsize = 0;
+    PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
+  }
   return 0;
 }
 
@@ -173,13 +173,12 @@ PetscErrorCode PetscThreadCommStackCreate_kernel(PetscInt trank)
 PetscErrorCode  PetscThreadCommStackCreate(void)
 {
   PetscErrorCode ierr;
-
   ierr = PetscThreadCommRunKernel0(PETSC_COMM_SELF,(PetscThreadKernel)PetscThreadCommStackCreate_kernel);CHKERRQ(ierr);
   ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
   return 0;
 }
 
-PetscErrorCode PetscThreadCommStackDestroy_kernel(PetscInt trank)
+static PetscErrorCode PetscThreadCommStackDestroy_kernel(PetscInt trank)
 {
   if (trank && PetscStackActive()) {
     PetscStack *petscstack_in;
@@ -220,6 +219,7 @@ PetscErrorCode  PetscThreadCommStackCreate(void)
 PetscErrorCode  PetscThreadCommStackDestroy(void)
 {
   PetscFunctionBegin;
+  PETSC_THREAD_COMM_WORLD = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -330,14 +330,12 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
 {
   PetscErrorCode ierr;
   PetscBool      flg;
-  PetscInt       nthr;
+  PetscInt       nthr = 1;
 
   PetscFunctionBegin;
   if (nthreads == PETSC_DECIDE) {
     tcomm->nworkThreads = 1;
-    ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting number of threads",NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-threadcomm_nthreads","number of threads to use in the thread communicator","PetscThreadCommSetNThreads",1,&nthr,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-threadcomm_nthreads",&nthr,&flg);CHKERRQ(ierr);
     if (flg) {
       if (nthr == PETSC_DECIDE) tcomm->nworkThreads = N_CORES;
       else tcomm->nworkThreads = nthr;
@@ -420,13 +418,11 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
   PetscFunctionBegin;
   /* Free if affinities set already */
   ierr = PetscFree(tcomm->affinities);CHKERRQ(ierr);
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&tcomm->affinities);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tcomm->nworkThreads,&tcomm->affinities);CHKERRQ(ierr);
 
   if (!affinities) {
     /* Check if option is present in the options database */
-    ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting thread affinities",NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsIntArray("-threadcomm_affinities","Set core affinities of threads","PetscThreadCommSetAffinities",tcomm->affinities,&nmax,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscOptionsGetIntArray(NULL,"-threadcomm_affinities",tcomm->affinities,&nmax,&flg);CHKERRQ(ierr);
     if (flg) {
       if (nmax != tcomm->nworkThreads) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, Threads = %D, Core affinities set = %D",tcomm->nworkThreads,nmax);
     } else {
@@ -500,11 +496,9 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,PetscThreadCommType 
 
   PetscFunctionBegin;
   PetscValidCharPointer(type,2);
-  if (!PetscThreadCommRegisterAllCalled) { ierr = PetscThreadCommRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscThreadCommRegisterAll();CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting threading model",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-threadcomm_type","Thread communicator model","PetscThreadCommSetType",PetscThreadCommList,type,ttype,256,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-threadcomm_type",ttype,256,&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscStrcpy(ttype,type);CHKERRQ(ierr);
   }
@@ -1216,7 +1210,7 @@ PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
 /*
   PetscThreadCommWorldInitialize - Initializes the global thread communicator object
 
-  PetscThreadCommWorldInitialize() defaults to using the nonthreaded communicator.
+    Defaults to using the nonthreaded communicator.
 */
 PetscErrorCode PetscThreadCommWorldInitialize(void)
 {
@@ -1229,16 +1223,14 @@ PetscErrorCode PetscThreadCommWorldInitialize(void)
   tcomm = PETSC_THREAD_COMM_WORLD;
   ierr = PetscThreadCommSetNThreads(tcomm,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscThreadCommSetAffinities(tcomm,NULL);CHKERRQ(ierr);
-  ierr = PetscNew(struct _p_PetscThreadCommJobQueue,&PetscJobQueue);CHKERRQ(ierr);
+  ierr = PetscNew(&PetscJobQueue);CHKERRQ(ierr);
 
   tcomm->nkernels = 16;
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting number of kernels",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-threadcomm_nkernels","number of kernels that can be launched simultaneously","",16,&tcomm->nkernels,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-threadcomm_nkernels",&tcomm->nkernels,NULL);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(tcomm->nkernels*sizeof(struct _p_PetscThreadCommJobCtx),&PetscJobQueue->jobs);CHKERRQ(ierr);
-  ierr = PetscMalloc(tcomm->nworkThreads*tcomm->nkernels*sizeof(PetscInt),&PetscJobQueue->jobs[0].job_status);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tcomm->nkernels,&PetscJobQueue->jobs);CHKERRQ(ierr);
+  ierr = PetscMalloc1(tcomm->nworkThreads*tcomm->nkernels,&PetscJobQueue->jobs[0].job_status);CHKERRQ(ierr);
   for (i=0; i<tcomm->nkernels; i++) {
     PetscJobQueue->jobs[i].job_status = PetscJobQueue->jobs[0].job_status + i*tcomm->nworkThreads;
     for (j=0; j<tcomm->nworkThreads; j++) PetscJobQueue->jobs[i].job_status[j] = THREAD_JOB_NONE;
@@ -1281,7 +1273,7 @@ PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm comm,PetscInt N,PetscI
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
 
-  ierr            = PetscMalloc((tcomm->nworkThreads+1)*sizeof(PetscInt),&trstarts_out);CHKERRQ(ierr);
+  ierr            = PetscMalloc1(tcomm->nworkThreads+1,&trstarts_out);CHKERRQ(ierr);
   trstarts_out[0] = 0;
   Q               = N/tcomm->nworkThreads;
   R               = N - Q*tcomm->nworkThreads;

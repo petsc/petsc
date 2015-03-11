@@ -133,14 +133,14 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
 #if defined(PETSC_MISSING_LAPACK_HGEQZ)
     SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"HGEQZ - Lapack routine is unavailable.");
 #else
-    PetscStackCall("LAPACKhgeqz",LAPACKhgeqz_("S", "I", "I", &KspSize, &ilo, &ihi, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, work, &lwork, &info));
+    PetscStackCallBLAS("LAPACKhgeqz",LAPACKhgeqz_("S", "I", "I", &KspSize, &ilo, &ihi, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, work, &lwork, &info));
     if (info) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xhgeqz_");
 #endif
   } else {
 #if defined(PETSC_MISSING_LAPACK_GGES)
     SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GGES - Lapack routine is unavailable.");
 #else
-    PetscStackCall("LAPACKgges",LAPACKgges_("V", "V", "N", NULL, &KspSize, A, &ldA, B, &ldB, &sdim, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
+    PetscStackCallBLAS("LAPACKgges",LAPACKgges_("V", "V", "N", NULL, &KspSize, A, &ldA, B, &ldB, &sdim, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
     if (info) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xgges_");
 #endif
   }
@@ -172,7 +172,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
 #if defined(PETSC_MISSING_LAPACK_TGSEN)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GGES - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, &r, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
+  PetscStackCallBLAS("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, &r, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
   if (info == 1) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
 #endif
   /*Extract the Schur vectors associated to the r smallest eigenvalues */
@@ -225,7 +225,7 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   /* Explicitly form MatEigL = H^T*H, It can also be formed as H^T+h_{N+1,N}H^-1e^T */
   alpha = 1.0;
   beta  = 0.0;
-  PetscStackCall("BLASgemm",BLASgemm_("T", "N", &KspSize, &KspSize, &lC, &alpha, agmres->hes_origin, &lC, agmres->hes_origin, &lC, &beta, MatEigL, &N));
+  PetscStackCallBLAS("BLASgemm",BLASgemm_("T", "N", &KspSize, &KspSize, &lC, &alpha, agmres->hes_origin, &lC, agmres->hes_origin, &lC, &beta, MatEigL, &N));
   if (!agmres->ritz) {
     /* Form TmpU = V*H where V is the Newton basis orthogonalized  with roddec*/
     for (j = 0; j < KspSize; j++) {

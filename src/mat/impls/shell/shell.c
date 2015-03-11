@@ -256,7 +256,7 @@ PetscErrorCode MatMultAdd_Shell(Mat A,Vec x,Vec y,Vec z)
   if (y == z) {
     if (!shell->right_add_work) {ierr = VecDuplicate(z,&shell->right_add_work);CHKERRQ(ierr);}
     ierr = MatMult(A,x,shell->right_add_work);CHKERRQ(ierr);
-    ierr = VecWAXPY(z,1.0,shell->right_add_work,y);CHKERRQ(ierr);
+    ierr = VecAXPY(z,1.0,shell->right_add_work);CHKERRQ(ierr);
   } else {
     ierr = MatMult(A,x,z);CHKERRQ(ierr);
     ierr = VecAXPY(z,1.0,y);CHKERRQ(ierr);
@@ -558,6 +558,7 @@ static struct _MatOps MatOps_Values = {0,
                                        0,
                                        0,
                                /*139*/ 0,
+                                       0,
                                        0
 };
 
@@ -579,7 +580,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
   PetscFunctionBegin;
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
-  ierr    = PetscNewLog(A,Mat_Shell,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
   A->data = (void*)b;
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
@@ -749,7 +750,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
     MatShellGetContext() to obtain the user-defined context that was
     set by MatCreateShell().
 
-    Fortran Notes: For MatGetVecs() the user code should check if the input left or right matrix is -1 and in that case not
+    Fortran Notes: For MatCreateVecs() the user code should check if the input left or right matrix is -1 and in that case not
        generate a matrix. See src/mat/examples/tests/ex120f.F
 
 .keywords: matrix, shell, set, operation

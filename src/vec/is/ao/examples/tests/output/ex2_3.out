@@ -1,3 +1,5 @@
+AO Object: 3 MPI processes
+  type: basic
 Number of elements in ordering 9
 PETSc->App  App->PETSc
   0    8      0    8

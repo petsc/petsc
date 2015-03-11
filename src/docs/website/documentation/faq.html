@@ -29,12 +29,12 @@
             <li><a href="referencing.html">Citing PETSc</a></li>
             <li><a href="tutorials/index.html">Tutorials</a></li>
             <li><a href="installation.html">Installation</a> </li>
-            <li><a href="ams.html">AMS</a></li>
+            <li><a href="saws.html">SAWs</a></li>
             <li><a href="changes/index.html">Changes</a></li>
             <li><a href="bugreporting.html">Bug Reporting</a></li>
             <li><a href="codemanagement.html">Code Management</a></li>
             <li><span class="current">FAQ</span></li>
-            <li><a href="copyright.html">License</a></li>
+            <li><a href="license.html">License</a></li>
             <li><a href="linearsolvertable.html">Linear Solver Table</a></li>
           </ul>
         </li>
@@ -65,7 +65,7 @@
       <ul>
         <li><a href="#petsc-mailing-list">How can I subscribe to the PETSc mailing lists?</a></li>
         <li><a href="#book">Any useful books on numerical computing?</a></li>
-        <li><a href="#computers">What kind of parallel computers or clusters are needed to use PETSc?</a></li>
+        <li><a href="#computers">What kind of parallel computers or clusters are needed to use PETSc? Or why do I get little speedup?</a></li>
         <li><a href="#license">What kind of license is PETSc released under?</a></li>
         <li><a href="#why-c">Why is PETSc programmed in C, instead of Fortran or C++?</a> </li>
         <li><a href="#logging-overhead">Does all the PETSc error checking and logging reduce PETSc's efficiency?</a></li>
@@ -89,6 +89,7 @@
         <li><a href="#with-64-bit-indices">When should/can I use the ./configure option --with-64-bit-indices</a>?</li>
         <li><a href="#install-petsc4py-dev">How do I install petsc4py with the development PETSc</a>?</li>
         <li><a href="#gfortran">What Fortran compiler do you recommend for the Apple Mac OS X?</a></li>
+        <li><a href="#packagelocations">How can I find the URL locations of the packages you install using --download-PACKAGE?</a></li>
       </ul>
 
       <h4><a href="#usage">Usage</a></h4>
@@ -109,6 +110,7 @@
         <li><a href="#carriagereturns">How can I put carriage returns in PetscPrintf() statements from Fortran?</a></li>
         <li><a href="#cxxmethod">How can I implement callbacks using C++ class methods?</a></li>
         <li><a href="#functionjacobian">Everyone knows that when you code Newton's method you should compute the function and its Jacobian at the same time. How can one do this in PETSc?</a></li>
+        <li><a href="#jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided with SNESSetFunction()?</a></li>
         <li><a href="#conditionnumber">How can I determine the condition number of a matrix?</a></li>
         <li><a href="#invertmatrix">How can I compute the inverse of a PETSc matrix?</a></li>
         <li><a href="#schurcomplement">How can I compute a Schur complement: Kbb - Kba *inverse(Kaa)*Kab?</a></li>
@@ -117,6 +119,7 @@
         <li><a href="#redistribute">When solving a system with Dirichlet boundary conditions I can use MatZeroRows() to eliminate the Dirichlet rows but this results in a non-symmetric system. How can I apply Dirichlet boundary conditions and yet keep the matrix symmetric?</a></li>
         <li><a href="#matlab">How can I use PETSc with MATLAB? How can I get PETSc Vecs and Mats to MATLAB or vice versa?</a></li>
         <li><a href="#cython">How do I get started with Cython so that I can extend petsc4py?</a></li>
+        <li><a href="#customnormforksp">I would like to compute a custom norm for KSP to use as a convergence test or for monitoring?</a></li>
       </ul>
 
       <h4><a href="#Execution">Execution</a></h4>
@@ -132,6 +135,7 @@
         <li><a href="#datafiles">Where do I get the input matrices for the examples?</a></li>
         <li><a href="#info">When I dump some matrices and vectors to binary, I seem to be generating some empty files with .info extensions. What's the deal with these?</a></li>
         <li><a href="#slowerparallel">Why is my parallel <b>solver slower</b> than the sequential solver, or I have poor speed-up?</a></li>
+        <li><a href="#pipelined">What steps are necessary to make the pipelined solvers execute efficiently?</a></li>
         <li><a href="#singleprecision">When using PETSc in single precision mode (--with-precision=single when running ./configure) are the operations done in single or double precision?</a></li>
         <li><a href="#newton">Why is Newton's method (SNES) not converging, or converges slowly?</a></li>
         <li><a href="#kspdiverged">Why is the linear solver (KSP) not converging, or converges slowly?</a></li>
@@ -167,7 +171,6 @@
         <li><a href="#link-shared">How do I link to the PETSc shared libraries?</a></li>
         <li><a href="#link-regular-lib">What if I want to link to the regular .a library files?</a></li>
         <li><a href="#move-shared-exec">What do I do if I want to move my executable to a different machine?</a></li>
-        <li><a href="#dynamic-shared">What is the deal with dynamic libraries (and difference with shared libraries)?</a></li>
       </ul>
 
     </div>
@@ -186,7 +189,7 @@
 
       <a href="http://ebooks.cambridge.org/ebook.jsf?bid=CBO9780511617973">Writing Scientific Software: A Guide to Good Style</a>
 
-      <h3><a name="computers">What kind of parallel computers or clusters are needed to use PETSc?</a></h3>
+      <h3><a name="computers">What kind of parallel computers or clusters are needed to use PETSc? Or why do I get little speedup?</a></h3>
 
       PETSc can be used with any kind of parallel system that supports MPI
       <b>BUT</b> for any decent performance one needs
@@ -197,34 +200,62 @@
           simply cannot provide the needed performance.
         </li>
         <li>
-          <b>high per-CPU memory performance</b>. Each CPU (core in multi-core
-          systems) needs to have its <b>own</b> memory bandwith of roughly 2 or
+          <b>high per-CPU MEMORY performance</b>. Each CPU (core in multi-core
+          systems) needs to have its <b>own</b> memory bandwith of at least 2 or
           more gigabytes/second. For example, standard dual processor "PC's" will
           <b>not</b> provide better performance when the second processor is
           used, that is, you will not see speed-up when you using the second
           processor. This is because the speed of sparse matrix computations is
           almost totally determined by the speed of the memory, not the speed of
-          the CPU.  Smart process to core/socket binding may help you. For
-          example, consider using fewer processes than cores and binding
-          processes to separate sockets so that each process uses a different
-          memory bus:
+          the CPU.
+        </li>
+     </ul>
 
-          <dl>
+
+    To obtain good performance it is important that you know your
+    machine, how many nodes, how many memory sockets per node and how
+    many cores per memory socket and how much memory bandwidth you
+    obtain per core, memory socket, and node. If you do not know this
+    and can run MPI programs with mpiexec (that is, you don't have
+    batch system) in ${PETSC_DIR} run </p>
+
+   make streams NPMAX=maximum number of mpi processes you plan to use</p>
+
+   then it will provide a summary of the bandwidth received with different number of MPI processes and potential speedups. If you have a batch system
+     <ul>
+      <li> cd src/benchmarks/steams</li>
+      <li> make MPIVersion</li>
+      <li> submit MPIVersion to the batch system a number of times with 1, 2, 3, etc MPI processes collecting all of the output from the runs into the single file scaling.log.</li>
+      <li> copy scaling.log into the src/benchmarks/steams directory</li>
+      <li> ./process.py createfile ; process.py </li>
+     </ul>
+
+
+           Even if you have enough memory bandwidth if the OS switches
+          processes between cores performance can degrade. Smart
+          process to core/socket binding (this just means locking a
+          process to a particular core or memory socket) may help
+          you. For example, consider using fewer processes than cores
+          and binding processes to separate sockets so that each
+          process uses a different memory bus:
+
+      <ul>
+      <li>
             <dt><a href="http://wiki.mcs.anl.gov/mpich2/index.php/Using_the_Hydra_Process_Manager#Process-core_Binding">MPICH2 binding with the Hydra process manager</a></dt>
             <dd><code>mpiexec.hydra -n 4 --binding cpu:sockets</code></dd>
-
+      </li>
+      <li>
             <dt><a href="http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8">Open MPI binding</a></dt>
             <dd><code>mpiexec -n 4 --bysocket --bind-to-socket --report-bindings</code></dd>
-          </dl>
-
-          Other tools to manage affinity include
-          <dl>
+      </li>
+      <li>
             <dt><tt>taskset</tt>, part of the <tt>util-linux</tt> package</dt>
             <dd>
               <tt>Usage: taskset [options] [mask | cpu-list] [pid|cmd [args...]]</tt>, type <tt>man taskset</tt> for details.
               Make sure to set affinity for your program, not for the <tt>mpiexec</tt> program.
             </dd>
-
+      </li>
+      <li>
             <dt><tt>numactl</tt></dt>
             <dd>In addition to task affinity, this tool also allows changing the default memory affinity policy.
               On Linux, the default policy is to attempt to find memory on the same memory bus that serves the core that a thread is running on at whatever time the memory is faulted (<em>not</em> when <tt>malloc()</tt> is called).
@@ -235,30 +266,24 @@
               With Open MPI, you can use knowledge of the NUMA hierarchy and core numbering on your machine to calculate the correct NUMA node or processor number given the environment variable <tt>OMPI_COMM_WORLD_LOCAL_RANK</tt>.
               In most cases, it is easier to make <tt>mpiexec</tt> or a resource manager set affinities.
             </dd>
-          </dl>
-        </li>
+      </li>
+     </ul>
+        </p>
 
-        <li>
+
           The software <a href="http://open-mx.org">http://open-mx.org</a>
           provides faster speed for ethernet systems, we have not tried it but it
           claims it can dramatically reduce latency and increase bandwidth on
           Linux system. You must first install this software and then install
           MPICH or Open MPI to use it.
-        </li>
+        </p>
 
-        <li>
-          In ${PETSC_DIR} run make streams and when requested enter the number of
-          cores your system has. The more the achieved memory bandwidth increases
-          the more performance you can expect across your multiple cores. If the
-          bandwidth does not increase significently then you cannot expect to get
-          any improvement in parallel performance.
-        </li>
 
-      </ul>
+
 
       <h3><a name="license">What kind of license is PETSc released under?</a></h3>
 
-      See the <a href="copyright.html">licensing notice.</a>
+      See the <a href="license.html">licensing notice.</a>
 
       <h3><a name="why-c">Why is PETSc programmed in C, instead of Fortran or C++?</a></h3>
 
@@ -315,7 +340,7 @@
 
         <li>
           We constantly seek out and experiment with new design
-          ideas; we retain the the useful ones and discard the rest.
+          ideas; we retain the useful ones and discard the rest.
           All of these decisions are based on <u>practicality</u>.
         </li>
 
@@ -402,16 +427,16 @@
 
       <h3><a name="gpus">Can PETSc use GPUs to speedup computations?</a></h3>
 
-      PETSc-dev has some support for running portions of the computation on
-      Nvidia GPUs. See <a href="http://www.mcs.anl.gov/petsc/features/gpus.html">PETSc GPUs</a> for
-      more information. PETSc has a Vec class VECCUSP that performs almost all
-      the vector operations on the GPU. The Mat class MATCUSP performs
-      matrix-vector products on the GPU but does not have matrix assembly on the
+      The <a href="https://bitbucket.org/petsc/petsc">PETSc developer repository</a> has some support for running portions of the computation on
+      GPUs. See <a href="http://www.mcs.anl.gov/petsc/features/gpus.html">PETSc GPUs</a> for
+      more information. PETSc has Vec classes VECCUSP and VECVIENNACL which perform almost all
+      the vector operations on the GPU. The Mat classes AIJCUSP and AIJVIENNACL perform
+      matrix-vector products on the GPU but do not have matrix assembly on the
       GPU yet. Both of these classes run in parallel with MPI. All KSP methods,
       except KSPIBCGS, run all their vector operations on the GPU thus, for
       example Jacobi preconditioned Krylov methods run completely on the GPU.
       Preconditioners are a problem, we could do with some help for these. The
-      example <a href="http://www.mcs.anl.gov/petsc/petsc-dev/src/snes/examples/tutorials/ex47cu.cu.html">src/snes/examples/tutorials/ex47cu.cu</a>
+      example <a href="http://www.mcs.anl.gov/petsc/petsc-master/src/snes/examples/tutorials/ex47cu.cu.html">src/snes/examples/tutorials/ex47cu.cu</a>
       demonstates how the nonlinear function evaluation can be done on the
       GPU.
 
@@ -420,8 +445,7 @@
       Yes, with gcc 4.6 and later (and gfortran 4.6 and later)
       <code>./configure</code> PETSc using the options
       <code>--with-precision=__float128 --download-f2cblaslapack</code>.
-      External packages cannot be used in this mode and some print statements in
-      PETSc (those that use the %G format) will not print correctly.
+      External packages cannot be used in this mode
 
       <h3><a name="qd">Why doesn't PETSc use QD to implement support for exended precision?</a></h3>
 
@@ -571,16 +595,19 @@
       <h3><a name="gfortran">What Fortran compiler do you recommend for the Apple Mac OS X?</a></h3>
 
       <p>
-        (as of 11/6/2010) We recommend installing gfortran from <a
-          href="http://hpc.sourceforge.net/">http://hpc.sourceforge.net</a>.  They
-        have gfortran-4.6.0 (experimental) for Snow Leopard (10.6) and gfortran
-        4.4.1 (prerelease) for Leopard (10.5).
-      </p>
+        (as of 04/29/2013) We recommend installing gfortran from <a
+          href="http://hpc.sourceforge.net/">http://hpc.sourceforge.net</a>. They have gfortran-4.7.0 for Lion (10.7) and gfortran 4.8 for Mountain Lion (10.8). </p>
 
       <p>
         Please contact Apple at <a
           href="http://www.apple.com/feedback">http://www.apple.com/feedback</a>
         and urge them to bundle gfortran with future versions of Xcode.
+      </p>
+
+      <h3><a name="packagelocations">How can I find the URL locations of the packages you install using --download-PACKAGE??</a></h3>
+
+      <p>
+        grep "self.download "  config/BuildSystem/config/packages/*.py
       </p>
 
       <hr>
@@ -697,7 +724,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <h3><a name="nosaij">You have AIJ and BAIJ matrix formats, and SBAIJ for symmetric storage, how come no SAIJ?</a></h3>
 
-      Just for historical reasons, the SBAIJ format with blocksize one is just as
+        Just for historical reasons; the SBAIJ format with blocksize one is just as
       efficient as an SAIJ would be.
 
       <h3><a name="domaindecomposition">How do I use PETSc for Domain Decomposition?</a></h3>
@@ -711,7 +738,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
         and several others. You may see the available ASM options by using
         <code>-pc_type asm -help</code> Also, see the procedural interfaces in the
         manual pages, with names <code>PCASMxxxx()</code> and check the index of the
-        <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manual.pdf">users manual</a>
+        <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf">users manual</a>
         for <code>PCASMxxx</code>().
       </p>
 
@@ -725,10 +752,9 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       </p>
 
       <p>
-        PETSc also contains a balancing Neumann-Neumann preconditioner, see the
-        manual page for PCNN. This requires matrices be constructed with
-        <code>MatCreateIS()</code> via the finite element method. There are currently
-        no examples that demonstrate its use.
+        PETSc also contains a balancing Neumann-Neumann type preconditioner, see the
+        manual page for PCBDDC. This requires matrices be constructed with
+        <code>MatCreateIS()</code> via the finite element method. See src/ksp/ksp/examples/tests/ex59.c
       </p>
 
       <h3><a name="blocks">Can I create BAIJ matrices with different size blocks for different block rows?</a></h3>
@@ -914,6 +940,32 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
         function.
       </p>
 
+      <h3><a name="jacobianfree">How can I use Newton's method Jacobian free? Can I difference a different function than provided
+             with <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESSetFunction.html">SNESSetFunction()?</a></h3>
+
+      <p>
+         The simplest way is with the option -snes_mf, this will use finite differencing of the function provided to SNESComputeFunction() to approximate the action of Jacobian. Since no matrix-representation of the
+         Jacobian is provided the -pc_type used with this option must be -pc_type none.  You can provide a custom preconditioner with SNESGetKSP(), KSPGetPC(),
+         PCSetType(pc,<a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCSHELL.html">PCSHELL</a>).
+      </p>
+
+      <p>
+        The option -snes_mf_operator will use Jacobian free to apply the Jacobian (in the Krylov solvers) but will use whatever matrix you provided with SNESSetJacobian() (assuming you set one) to compute the preconditioner.
+      </p>
+
+      <p>
+       To write the code (rather than use the options above) use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/MatCreateSNESMF.html">MatCreateSNESMF()</a> and pass the resulting matrix object to
+       SNESSetJacobian(). For purely matrix-free (like -snes_mf) pass the matrix object for both matrix arguments and pass the function MatMFFDComputeJacobian(). To provide your own approximate Jacobian matrix to compute
+       the preconditioner (like -snes_mf_operator), pass this other matrix as the second matrix argument to SNESSetJacobian(). Make sure your provided computejacobian() function calls MatAssemblyBegin/End() seperately on BOTH
+       matrix arguments to this function. See <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c</a>
+      </p>
+
+      <p>
+       To difference a different function than that passed to SNESSetJacobian() to compute the matrix-free Jacobian multiply call
+       <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatMFFDSetFunction.html">MatMFFDSetFunction()</a> to set that other function. 
+       See <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tests/ex7.c.html">src/snes/examples/tests/ex7.c.h</a>
+      </p>
+
       <h3><a name="conditionnumber">How can I determine the condition number of a matrix?</a></h3>
 
       For small matrices, the condition number can be reliably computed using
@@ -994,11 +1046,9 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <ol>
         <li>
-          use the Sieve construct in PETSc, this is a high
-          level approach that uses a small number of
-          abstractions to help you manage distributing the
-          grid data structures and computing the elements into
-          the matrices.
+          use DMPlex, which is a high level approach to manage your mesh and
+          discretization. <a href="http://www.mcs.anl.gov/petsc/petsc-current/src/snes/examples/tutorials/ex62.c.html">SNES
+          ex62</a> solves the Stokes equation using this approach.
         </li>
         <li>
           manage the grid data structure yourself and use
@@ -1047,23 +1097,23 @@ MPI_COMM_WORLD as default)
 PETSC_COMM_WORLD = NewComm;
     </pre>
 
-      <h3><a name="redistribute">The When solving a system with Dirichlet boundary conditions I can use MatZeroRows() to eliminate the Dirichlet rows but this results in a non-symmetric system. How can I apply Dirichlet boundary conditions but keep the matrix symmetric?</a></h3>
+      <h3><a name="redistribute">When solving a system with Dirichlet boundary conditions I can use MatZeroRows() to eliminate the Dirichlet rows but this results in a non-symmetric system. How can I apply Dirichlet boundary conditions but keep the matrix symmetric?</a></h3>
 
       <p>
         For nonsymmetric systems put the appropriate boundary solutions in the
-        x vector and use MatZeroRows() followed by KSPSetOperators(). For symmetric
-        problems use MatZeroRowsColumns() instead.  If you have many Dirichlet
+        x vector and use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatZeroRows.html">MatZeroRows()</a> followed by <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetOperators.html">KSPSetOperators()</a>. For symmetric
+        problems use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatZeroRowsColumns.html">MatZeroRowsColumns()</a> instead.  If you have many Dirichlet
         locations you can use MatZeroRows() (not MatZeroRowsColumns()) and
-        -ksp_type preonly -pc_type redistribute, see the manual page for
-        PCREDISTRIBUTE) and PETSc will repartition the parallel matrix for load
+        -ksp_type preonly -pc_type redistribute; see <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCREDISTRIBUTE.html">
+        PCREDISTRIBUTE</a>) and PETSc will repartition the parallel matrix for load
         balancing; in this case the new matrix solved remains symmetric even though
         MatZeroRows() is used.
       </p>
 
       <p>
-        An alternative approach is when assemblying the matrix, (generating values
-        and passing them to the matrix), never include locations for the Dirichlet
-        grid points in the vector and matrix, instead take them into account as you
+        An alternative approach is, when assemblying the matrix (generating values
+        and passing them to the matrix), never to include locations for the Dirichlet
+        grid points in the vector and matrix, instead taking them into account as you
         put the other values into the load.
       </p>
 
@@ -1073,18 +1123,18 @@ PETSC_COMM_WORLD = NewComm;
 
       <ol>
         <li>
-          Using the MATLAB Engine, this allows PETSc to automatically call MATLAB
-          to perform some specific computations. It does not allow MATLAB to be
+          Using the MATLAB Engine, allowing PETSc to automatically call MATLAB
+          to perform some specific computations. This does not allow MATLAB to be
           used interactively by the user. See the <a
-            href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Sys/PetscMatlabEngine.html">PetscMatlabEngine</a>.
+            href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Sys/PetscMatlabEngine.html">PetscMatlabEngine</a>.
         </li>
 
         <li>
-          To save PETSc Mat and Vecs to files that can be read from MATLAB use <a
-            href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Viewer/PetscViewerBinaryOpen.html">PetscViewerBinaryOpen()</a>
+          To save PETSc Mats and Vecs to files that can be read from MATLAB use <a
+            href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/PetscViewerBinaryOpen.html">PetscViewerBinaryOpen()</a>
           viewer and VecView() or MatView() to save objects for MATLAB and
           VecLoad() and MatLoad() to get the objects that MATLAB has saved. See
-          PetscBinaryRead.m and PetscBinaryWrite.m in bin/matlab for loading and
+          PetscBinaryRead.m and PetscBinaryWrite.m in share/petsc/matlab for loading and
           saving the objects in MATLAB.
         </li>
 
@@ -1092,21 +1142,21 @@ PETSC_COMM_WORLD = NewComm;
           You can open a socket connection between MATLAB and PETSc to allow
           sending objects back and forth between an interactive MATLAB session
           and a running PETSc program. See
-          <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Viewer/PetscViewerSocketOpen.html">PetscViewerSocketOpen</a>()
-          for access from the PETSc side and PetscOpenSocket in bin/matlab for
+          <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/PetscViewerSocketOpen.html">PetscViewerSocketOpen</a>()
+          for access from the PETSc side and PetscReadBinary.m in share/petsc/matlab for
           access from the MATLAB side.
         </li>
 
         <li>
           You can save PETSc Vecs (not Mats) with the <a
-            href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
+            href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
           viewer that saves .mat files can then be loaded into MATLAB.
         </li>
         <li>
-          We are just being to develop in <a
-            href="../developers/index.html">petsc-dev</a> an API to call most of
+          We are just beginning to develop in <a
+            href="../developers/index.html">petsc master (branch in git)</a> an API to call most of
           the PETSc function directly from MATLAB; we could use help in
-          developing this. See bin/matlab/classes/PetscInitialize.m
+          developing this. See share/petsc/matlab/classes/PetscInitialize.m
         </li>
       </ol>
 
@@ -1129,6 +1179,14 @@ PETSC_COMM_WORLD = NewComm;
           Have a look at the petsc4py <a href="http://code.google.com/p/petsc4py/source/browse/src/PETSc/arraynpy.pxi">array source</a>
         </li>
       </ol>
+
+     <h3><a name="customnormforksp">I would like to compute a custom norm for KSP to use as a convergence test or for monitoring?</a></h3>
+
+     You need to call <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPBuildResidual.html">KSPBuildResidual</a>() on your KSP object and then
+      compute the     appropriate norm on the resulting residual. Note that depending on the 
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetNormType.html">KSPSetNormType</a>() of the method you may not return the same
+      norm as provided by the method. See also
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetPCSide.html">KSPSetPCSide</a>()
 
       <hr>
 
@@ -1162,7 +1220,7 @@ PETSC_COMM_WORLD = NewComm;
 
       <h3><a name="efficient-assembly">Assembling large sparse matrices takes a long time. What can I do make this process faster? or MatSetValues() is so slow, what can I do to speed it up?</a></h3>
 
-      See the <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a> for many tips on this.
+      See the <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a> for many tips on this.
 
       <ol>
         <li>
@@ -1202,7 +1260,7 @@ PETSC_COMM_WORLD = NewComm;
 
       <h3><a name="log-summary">How can I generate performance summaries with PETSc?</a></h3>
 
-      Use these options at runtime: -log_summary. See the <a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a>
+      Use these options at runtime: -log_summary. See the <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manual.pdf#nameddest=ch_performance">Performance chapter of the users manual</a>
       for information on interpreting the summary data. If using the PETSc
       (non)linear solvers, one can also specify -snes_view or -ksp_view for
       a printout of solver info. Only the highest level PETSc object used needs
@@ -1271,6 +1329,29 @@ PETSC_COMM_WORLD = NewComm;
           or BoomerAMG in <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.
         </li>
       </ul>
+
+      <h3><a name="pipelined">What steps are necessary to make the pipelined solvers execute efficiently?</a></h3>
+
+      Pipelined solvers like
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPGMRES.html">KSPPGMRES</a>,
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECG.html">KSPPIPECG</a>,
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECR.html">KSPPIPECR</a>, and
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPGROPPCG.html">KSPGROPPCG</a>
+      may require special MPI configuration to effectively overlap reductions with computation.
+      In general, this requires an MPI-3 implementation, an implementation that supports multiple threads, and use of a "progress thread".
+      Consult the documentation from your vendor or computing facility for more.
+
+      <dl>
+        <dt>MPICH</dt>
+        <dd>
+          MPICH version 3.0 and later implements the MPI-3 standard and the default configuration supports use of threads.
+          Use of a progress thread is configured by setting the environment variable <tt>MPICH_ASYNC_PROGRESS=1</tt>.
+        </dd>
+        <dt>Cray MPI</dt>
+        <dd>
+          Cray MPT-5.6 supports MPI-3, but requires the environment variable <tt>MPICH_MAX_THREAD_SAFETY=multiple</tt> for threads, plus either <tt>MPICH_ASYNC_PROGRESS=1</tt> or <tt>MPICH_NEMESIS_ASYNC_PROGRESS=1</tt>.
+        </dd>
+      </dl>
 
       <h3><a name="singleprecision">When using PETSc in single precision mode (--with-precision=single when running ./configure) are the operations done in single or double precision?</a></h3>
 
@@ -1351,9 +1432,10 @@ PETSC_COMM_WORLD = NewComm;
         <li>Run on one processor to see if the problem is only in parallel.</li>
 
         <li>
-          Run with <code>-snes_ls_monitor</code> to see if the line search is failing
-          (this is usually a sign of a bad Jacobian) use -info in PETSc 3.1 and
-          older versions and <code>-snes_linesearch_monitor</code> in PETSc-dev.
+          Run with <code>-snes_linesearch_monitor</code> to see if the line search
+          is failing (this is usually a sign of a bad Jacobian). Use -info in PETSc 3.1
+          and older versions, <code>-snes_ls_monitor</code> in PETSc 3.2
+          and <code>-snes_linesearch_monitor</code> in PETSc 3.3 and later.
         </li>
 
         <li>
@@ -1777,7 +1859,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         matrix-vector product via differencing, the residual norms computed by
         GMRES start to "drift" from the correct values. At the restart, we compute
         the residual norm directly, hence the "strange stuff," the difference
-        printed. The drifting, if it remains small, is harmless (doesn't effect the
+        printed. The drifting, if it remains small, is harmless (doesn't affect the
         accuracy of the solution that GMRES computes).
       </p>
 
@@ -1808,11 +1890,14 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
 
       <h3><a name="dylib">Unable to locate PETSc dynamic library /home/balay/spetsc/lib/libg/linux/libpetsc</a></h3>
 
-      When using DYNAMIC libraries - the libraries cannot be moved after they are
-      installed. This could also happen on clusters - where the paths are
-      different on the (run) nodes - than on the (compile) front-end. Do not use
-      dynamic libraries &amp; shared libraries. Run ./configure with
-      <code>--with-shared-libraries=0 --with-dynamic-loading=0</code>
+      <p>
+        When using DYNAMIC libraries - the libraries cannot be moved after they are
+        installed. This could also happen on clusters - where the paths are
+        different on the (run) nodes - than on the (compile) front-end. Do not use
+        dynamic libraries &amp; shared libraries. Run ./configure with
+        <code>--with-shared-libraries=0 --with-dynamic-loading=0</code>.
+        This option has been removed in petsc-3.5.
+      </p>
 
       <h3><a name="bisect">How do I determine what update to PETSc broke my code?</a></h3>
 
@@ -1833,7 +1918,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       This process can be as follows:
 
       <ul>
-        <li>get petsc-dev sources:
+        <li>get petsc development (master branch in git) sources:
           <ul>
             <li><code>git clone https://bitbucket.org/petsc/petsc</code></li>
           </ul>
@@ -1909,22 +1994,6 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         machine. The other alternative is to build the exeutable without shared
         libraries by first deleting the shared libraries, and then creating the
         executable.
-      </p>
-
-      <h3><a name="dynamic-shared">What is the deal with dynamic libraries (and difference between shared libraries)?</a></h3>
-
-      <p>
-        PETSc libraries are installed as dynamic libraries when the ./configure
-        flag --with-dynamic-loading is used. The difference with this - from
-        shared libraries - is the way the libraries are used. From the program
-        the library is loaded using dlopen() - and the functions are searched
-        using dlsymm(). This separates the resolution of function names from
-        link-time to run-time - i.e when dlopen()/dlsymm() are called.
-      </p>
-
-      <p>
-        When using Dynamic libraries - PETSc libraries cannot be moved to
-        a different location after they are built.
       </p>
 
     </div>

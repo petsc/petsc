@@ -5,11 +5,11 @@ CFLAGS    =
 FFLAGS    =
 SOURCEC  = aomapping.c
 SOURCEH  =
-LIBBASE  = libpetscdm
+LIBBASE  = libpetscvec
 DIRS     =
 MANSEC   = AO
 LOCDIR   = src/vec/is/ao/impls/mapping/
 
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/lib/petsc-conf/variables
+include ${PETSC_DIR}/lib/petsc-conf/rules
+include ${PETSC_DIR}/lib/petsc-conf/test

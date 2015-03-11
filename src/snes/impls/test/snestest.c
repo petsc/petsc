@@ -14,7 +14,6 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   Vec            x = snes->vec_sol,f = snes->vec_func,f1 = snes->vec_sol_update;
   PetscErrorCode ierr;
   PetscInt       i;
-  MatStructure   flg;
   PetscReal      nrm,gnorm;
   SNES_Test      *neP = (SNES_Test*)snes->data;
   PetscErrorCode (*objective)(SNES,Vec,PetscReal*,void*);
@@ -34,6 +33,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   for (i=0; i<3; i++) {
     void                     *functx;
     static const char *const loc[] = {"user-defined state","constant state -1.0","constant state 1.0"};
+    PetscInt                 m,n,M,N;
 
     if (i == 1) {
       ierr = VecSet(x,-1.0);CHKERRQ(ierr);
@@ -50,18 +50,18 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     }
 
     /* compute both versions of Jacobian */
-    ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
-    if (!i) {
-      PetscInt m,n,M,N;
-      ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
-      ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-      ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-      ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
-      ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-      ierr = MatSetUp(B);CHKERRQ(ierr);
-    }
+    ierr = SNESComputeJacobian(snes,x,A,A);CHKERRQ(ierr);
+
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
+    ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
+    ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatSetUp(B);CHKERRQ(ierr);
+    ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+
     ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
-    ierr = SNESComputeJacobianDefault(snes,x,&B,&B,&flg,functx);CHKERRQ(ierr);
+    ierr = SNESComputeJacobianDefault(snes,x,B,B,functx);CHKERRQ(ierr);
     if (neP->complete_print) {
       MPI_Comm    comm;
       PetscViewer viewer;
@@ -117,9 +117,9 @@ PetscErrorCode SNESSolve_Test(SNES snes)
         ierr = VecView(f,viewer);CHKERRQ(ierr);
       }
     }
-
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+
   /*
    Abort after the first iteration due to the jacobian not being valid.
   */
@@ -143,13 +143,13 @@ PetscErrorCode SNESDestroy_Test(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Test"
-static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
+static PetscErrorCode SNESSetFromOptions_Test(PetscOptions *PetscOptionsObject,SNES snes)
 {
   SNES_Test      *ls = (SNES_Test*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Hand-coded Jacobian tester options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"Hand-coded Jacobian tester options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_test_display","Display difference between hand-coded and finite difference Jacobians","None",ls->complete_print,&ls->complete_print,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -171,9 +171,14 @@ PetscErrorCode SNESSetUp_Test(SNES snes)
       SNESTEST - Test hand-coded Jacobian against finite difference Jacobian
 
    Options Database:
-.    -snes_test_display  Display difference between approximate and hand-coded Jacobian
+.    -snes_test_display - Display difference between approximate and hand-coded Jacobian
 
    Level: intermediate
+
+   Notes: This solver is not a solver and does not converge to a solution.  SNESTEST checks the Jacobian at three
+   points: the 0, 1, and -1 solution vectors.  After doing these three tests, it always aborts with the error message
+   "SNESTest aborts after Jacobian test".  No other behavior is to be expected.  It may be similarly used to check if a
+   SNES function is the gradient of an objective function set with SNESSetObjective().
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR
 
@@ -195,7 +200,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Test(SNES snes)
 
   snes->usesksp = PETSC_FALSE;
 
-  ierr                = PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);
+  ierr                = PetscNewLog(snes,&neP);CHKERRQ(ierr);
   snes->data          = (void*)neP;
   neP->complete_print = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -220,7 +225,6 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   Mat            A = snes->jacobian,B;
   Vec            x = snes->vec_sol,f = snes->vec_func,f1 = snes->vec_sol_update;
   PetscErrorCode ierr;
-  MatStructure   flg;
   PetscReal      nrm,gnorm;
   PetscErrorCode (*objective)(SNES,Vec,PetscReal*,void*);
   void           *ctx;
@@ -241,7 +245,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   }
 
   /* compute both versions of Jacobian */
-  ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
+  ierr = SNESComputeJacobian(snes,x,A,A);CHKERRQ(ierr);
 
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
@@ -249,12 +253,13 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   ierr = MatSetSizes(B,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
-  ierr = SNESComputeJacobianDefault(snes,x,&B,&B,&flg,functx);CHKERRQ(ierr);
+  ierr = SNESComputeJacobianDefault(snes,x,B,B,functx);CHKERRQ(ierr);
 
   if (complete_print) {
     ierr = PetscViewerASCIIPrintf(viewer,"    Finite difference Jacobian\n");CHKERRQ(ierr);
-    ierr = MatViewFromOptions(B,"-snes_check_jacobian_view");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,((PetscObject)snes)->prefix,"-snes_check_jacobian_view");CHKERRQ(ierr);
   }
   /* compare */
   ierr = MatAYPX(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -262,9 +267,9 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
   if (complete_print) {
     ierr = PetscViewerASCIIPrintf(viewer,"    Hand-coded Jacobian\n");CHKERRQ(ierr);
-    ierr = MatViewFromOptions(A,"-snes_check_jacobian_view");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(A,((PetscObject)snes)->prefix,"-snes_check_jacobian_view");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    Hand-coded minus finite difference Jacobian\n");CHKERRQ(ierr);
-    ierr = MatViewFromOptions(B,"-snes_check_jacobian_view");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,((PetscObject)snes)->prefix,"-snes_check_jacobian_view");CHKERRQ(ierr);
   }
   if (!gnorm) gnorm = 1; /* just in case */
   ierr = PetscViewerASCIIPrintf(viewer,"    %g = ||J - Jfd||//J|| %g  = ||J - Jfd||\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);

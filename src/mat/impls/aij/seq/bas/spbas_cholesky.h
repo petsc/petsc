@@ -141,8 +141,8 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   }
 
   /* Allocate rescue arrays */
-  ierr = PetscMalloc(n_rescue * sizeof(int), &icol_rescue);CHKERRQ(ierr);
-  ierr = PetscMalloc(n_rescue * sizeof(PetscScalar), &val_rescue);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_rescue, &icol_rescue);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n_rescue, &val_rescue);CHKERRQ(ierr);
 
   /* Rescue the arrays which need rescuing */
   n_row_rescue = 0; n_rescue = 0;
@@ -178,7 +178,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
     /* PETSC knows no REALLOC, so we'll REALLOC ourselves.
 
         Allocate new icol-data, copy old contents */
-    ierr = PetscMalloc(n_alloc * sizeof(int), &result->alloc_icol);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n_alloc, &result->alloc_icol);CHKERRQ(ierr);
     ierr = PetscMemcpy(result->alloc_icol, alloc_icol_old, n_copy*sizeof(int));CHKERRQ(ierr);
 
     /* Update administration, Reset pointers to new arrays  */
@@ -192,7 +192,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
     ierr = PetscFree(alloc_icol_old);CHKERRQ(ierr);
 
     /* Allocate new value-data, copy old contents */
-    ierr = PetscMalloc(n_alloc * sizeof(PetscScalar), &result->alloc_val);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n_alloc, &result->alloc_val);CHKERRQ(ierr);
     ierr = PetscMemcpy(result->alloc_val, alloc_val_old, n_copy*sizeof(PetscScalar));CHKERRQ(ierr);
 
     /* Update administration, Reset pointers to new arrays  */
@@ -297,7 +297,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
 
   epsdiag *= epsdiag_in / nrows;
 
-  ierr = PetscInfo2(NULL,"   Dimensioned Manteuffel shift %G Drop tolerance %G\n", PetscRealPart(epsdiag),droptol);CHKERRQ(ierr);
+  ierr = PetscInfo2(NULL,"   Dimensioned Manteuffel shift %g Drop tolerance %g\n", (double)PetscRealPart(epsdiag),(double)droptol);CHKERRQ(ierr);
 
   if (droptol<1e-10) droptol=1e-10;
 
@@ -314,10 +314,10 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
   ierr       = spbas_allocate_data(&retval);CHKERRQ(ierr);
   retval.nnz = 0;
 
-  ierr = PetscMalloc(nrows*sizeof(PetscScalar), &diag);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrows*sizeof(PetscScalar), &val);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrows*sizeof(PetscScalar), &lvec);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrows*sizeof(int), &max_row_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows, &diag);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows, &val);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows, &lvec);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nrows, &max_row_nnz);CHKERRQ(ierr);
   if (!(diag && val && lvec && max_row_nnz)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "Allocation error in spbas_incomplete_cholesky\n");
 
   ierr = PetscMemzero((void*) val, nrows*sizeof(PetscScalar));CHKERRQ(ierr);

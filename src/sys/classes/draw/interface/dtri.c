@@ -32,6 +32,7 @@ PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Pets
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
+  if (!draw->ops->triangle) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No triangles with this PetscDrawType");
   ierr = (*draw->ops->triangle)(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -65,6 +66,7 @@ PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
 
   PetscFunctionBegin;
   ierr = PetscDrawCheckResizedWindow(popup);CHKERRQ(ierr);
+  ierr = PetscDrawSynchronizedClear(popup);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)popup,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
@@ -183,7 +185,7 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
   /* fill up x and y coordinates */
   if (!xi) {
     xin      = 0;
-    ierr     = PetscMalloc(ctx.m*sizeof(PetscReal),&ctx.x);CHKERRQ(ierr);
+    ierr     = PetscMalloc1(ctx.m,&ctx.x);CHKERRQ(ierr);
     h        = 1.0/(ctx.m-1);
     ctx.x[0] = 0.0;
     for (i=1; i<ctx.m; i++) ctx.x[i] = ctx.x[i-1] + h;
@@ -191,7 +193,7 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
 
   if (!yi) {
     yin      = 0;
-    ierr     = PetscMalloc(ctx.n*sizeof(PetscReal),&ctx.y);CHKERRQ(ierr);
+    ierr     = PetscMalloc1(ctx.n,&ctx.y);CHKERRQ(ierr);
     h        = 1.0/(ctx.n-1);
     ctx.y[0] = 0.0;
     for (i=1; i<ctx.n; i++) ctx.y[i] = ctx.y[i-1] + h;

@@ -2,12 +2,12 @@
       program main
        implicit none
 
-#include <finclude/petscsys.h>
-#include <finclude/petscvec.h>
-#include <finclude/petscmat.h>
-#include <finclude/petscpc.h>
-#include <finclude/petscksp.h>
-#include <finclude/petscviewer.h>
+#include <petsc-finclude/petscsys.h>
+#include <petsc-finclude/petscvec.h>
+#include <petsc-finclude/petscmat.h>
+#include <petsc-finclude/petscpc.h>
+#include <petsc-finclude/petscksp.h>
+#include <petsc-finclude/petscviewer.h>
 !
 !  This example is the Fortran version of ex6.c.  The program reads a PETSc matrix
 !  and vector from a file and solves a linear system.  Input arguments are:
@@ -60,7 +60,7 @@
 
 ! Solve system
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
-      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
+      call KSPSetOperators(ksp,A,A,ierr)
       call KSPSetFromOptions(ksp,ierr)
       call KSPSolve(ksp,b,x,ierr)
 

@@ -29,6 +29,8 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype *mty
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
   else if (ptype == PETSC_COMPLEX)     *mtype = MPIU_C_COMPLEX;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+  else if (ptype == PETSC_COMPLEX)     *mtype = MPIU___COMPLEX128;
 #else
   else if (ptype == PETSC_COMPLEX)     *mtype = MPIU_C_DOUBLE_COMPLEX;
 #endif
@@ -40,7 +42,9 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype *mty
   else if (ptype == PETSC_FLOAT)       *mtype = MPI_FLOAT;
   else if (ptype == PETSC_CHAR)        *mtype = MPI_CHAR;
   else if (ptype == PETSC_BIT_LOGICAL) *mtype = MPI_BYTE;
-  else if (ptype == PETSC___FLOAT128)  *mtype = MPI_LONG_DOUBLE;
+#if defined(PETSC_USE_REAL___FLOAT128)
+  else if (ptype == PETSC___FLOAT128)  *mtype = MPIU___FLOAT128;
+#endif
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   PetscFunctionReturn(0);
 }
@@ -71,6 +75,8 @@ PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
   else if (mtype == MPIU_C_COMPLEX)  *ptype = PETSC_COMPLEX;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+  else if (mtype == MPIU___COMPLEX128) *ptype = PETSC_COMPLEX;
 #else
   else if (mtype == MPIU_C_DOUBLE_COMPLEX) *ptype = PETSC_COMPLEX;
 #endif
@@ -79,7 +85,9 @@ PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType
   else if (mtype == MPI_SHORT)       *ptype = PETSC_SHORT;
   else if (mtype == MPI_FLOAT)       *ptype = PETSC_FLOAT;
   else if (mtype == MPI_CHAR)        *ptype = PETSC_CHAR;
-  else if (mtype == MPI_LONG_DOUBLE) *ptype = PETSC___FLOAT128;
+#if defined(PETSC_USE_REAL___FLOAT128)
+  else if (mtype == MPIU___FLOAT128) *ptype = PETSC___FLOAT128;
+#endif
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled MPI datatype");
   PetscFunctionReturn(0);
 }
@@ -136,5 +144,47 @@ PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
   else if (ptype == PETSC_BOOL)        *size = PETSC_BOOL_SIZE;
   else if (ptype == PETSC___FLOAT128)  *size = PETSC___FLOAT128_SIZE;
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDataTypeFromString"
+/*@
+     PetscDataTypeFromString - Gets the enum value of a PETSc datatype represented as a string
+
+   Not collective
+
+    Input Parameter:
+.     name - the PETSc datatype name (for example, DOUBLE or real or Scalar)
+
+    Output Parameter:
++    ptype - the enum value
+-    found - the string matches one of the data types
+
+    Level: advanced
+
+.seealso: PetscDataType, PetscDataTypeToMPIDataType(), PetscDataTypeGetSize()
+@*/
+PetscErrorCode  PetscDataTypeFromString(const char*name, PetscDataType *ptype,PetscBool *found)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscEnumFind(PetscDataTypes,name,(PetscEnum*)ptype,found);CHKERRQ(ierr);
+  if (!*found) {
+    char formatted[16];
+
+    ierr = PetscStrncpy(formatted,name,16);CHKERRQ(ierr);
+    ierr = PetscStrtolower(formatted);CHKERRQ(ierr);
+    ierr = PetscStrcmp(formatted,"scalar",found);CHKERRQ(ierr);
+    if (*found) {
+      *ptype = PETSC_SCALAR;
+    } else {
+      ierr = PetscStrcmp(formatted,"real",found);CHKERRQ(ierr);
+      if (*found) {
+        *ptype = PETSC_REAL;
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }

@@ -15,8 +15,8 @@ Runtime options include:\n\
 /* Void grow case only */
 /* cv, eta two variables, i.e. one Cahn-Hillard and one Allen-Cahn with constant mobility */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 typedef struct {
   PetscReal   dt,T; /* Time step and end time */
@@ -35,7 +35,7 @@ PetscErrorCode GetParams(AppCtx*);
 PetscErrorCode SetVariableBounds(DM,Vec,Vec);
 PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormJacobian(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
 PetscErrorCode Update_q(AppCtx*);
 PetscErrorCode Update_u(Vec,AppCtx*);
@@ -65,15 +65,15 @@ int main(int argc, char **argv)
   ierr = GetParams(&user);CHKERRQ(ierr);
 
   if (user.periodic) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,NULL,NULL,NULL,&user.da1);CHKERRQ(ierr);
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,NULL,NULL,NULL,&user.da1_clone);CHKERRQ(ierr);
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,NULL,&user.da2);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,NULL,NULL,NULL,&user.da1);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,NULL,NULL,NULL,&user.da1_clone);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,NULL,&user.da2);CHKERRQ(ierr);
   } else {
     /* Create a 1D DA with dof = 3; the whole thing */
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,NULL,NULL,NULL,&user.da1);CHKERRQ(ierr);
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,NULL,NULL,NULL,&user.da1_clone);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,NULL,NULL,NULL,&user.da1);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3, 1,NULL,NULL,NULL,&user.da1_clone);CHKERRQ(ierr);
     /* Create a 1D DA with dof = 1; for individual componentes */
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,NULL,&user.da2);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1, 1,NULL,NULL,NULL,&user.da2);CHKERRQ(ierr);
   }
 
 
@@ -105,9 +105,11 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(user.wv,&user.work2);CHKERRQ(ierr);
 
   /* Get Jacobian matrix structure from the da for the entire thing, da1 */
-  ierr = DMCreateMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.da1,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da1,&user.M);CHKERRQ(ierr);
   /* Get the (usual) mass matrix structure from da2 */
-  ierr = DMCreateMatrix(user.da2,MATAIJ,&user.M_0);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.da2,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.da2,&user.M_0);CHKERRQ(ierr);
   /* Form the jacobian matrix and M_0 */
 
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
@@ -232,14 +234,15 @@ int main(int argc, char **argv)
 #define __FUNCT__ "Update_u"
 PetscErrorCode Update_u(Vec X,AppCtx *user)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,n;
-  PetscScalar    *xx,*wv_p,*cv_p,*eta_p;
+  PetscErrorCode    ierr;
+  PetscInt          i,n;
+  PetscScalar       *wv_p,*cv_p,*eta_p;
+  const PetscScalar *xx;
 
   PetscFunctionBeginUser;
   ierr = VecGetLocalSize(user->wv,&n);CHKERRQ(ierr);
 
-  ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->eta,&eta_p);CHKERRQ(ierr);
@@ -250,7 +253,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
     cv_p[i]  = xx[3*i+1];
     eta_p[i] = xx[3*i+2];
   }
-  ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->eta,&eta_p);CHKERRQ(ierr);
@@ -337,18 +340,21 @@ PetscErrorCode DPsi(AppCtx *user)
 #define __FUNCT__ "Llog"
 PetscErrorCode Llog(Vec X, Vec Y)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *x,*y;
-  PetscInt       n,i;
+  PetscErrorCode   ierr;
+  PetscScalar      *y;
+  const PetscSclar *x;
+  PetscInt         n,i;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (x[i] < 1.0e-12) y[i] = log(1.0e-12);
     else y[i] = log(x[i]);
   }
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -480,16 +486,15 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ctx)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
   PetscFunctionBeginUser;
-  *flg = SAME_NONZERO_PATTERN;
-  ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatCopy(user->M,J,*flg);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -512,10 +517,10 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
     for (j=ys; j< ys+ym; j++) {
       for (i=xs; i < xs+xm; i++)
       {
-        l[k][j][i][0] = -SNES_VI_INF;
+        l[k][j][i][0] = -PETSC_INFINITY;
         l[k][j][i][1] = 0.0;
         l[k][j][i][2] = 0.0;
-        u[k][j][i][0] = SNES_VI_INF;
+        u[k][j][i][0] = PETSC_INFINITY;
         u[k][j][i][1] = 1.0;
         u[k][j][i][2] = 1.0;
       }

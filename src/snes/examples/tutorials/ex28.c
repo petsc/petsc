@@ -24,6 +24,7 @@ static const char help[] = "1D multiphysics prototype with analytic Jacobians to
  */
 
 #include <petscsnes.h>
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 
@@ -229,7 +230,7 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian_All"
-static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *mstr,void *ctx)
+static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat J,Mat B,void *ctx)
 {
   User           user = (User)ctx;
   DM             dau,dak;
@@ -249,7 +250,7 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
     ierr = DMGlobalToLocalEnd  (dau,X,INSERT_VALUES,Uloc);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dau,Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dak,user->Kloc,&k);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_U(user,&infou,u,k,*B);CHKERRQ(ierr);
+    ierr = FormJacobianLocal_U(user,&infou,u,k,B);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dau,Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dak,user->Kloc,&k);CHKERRQ(ierr);
     break;
@@ -258,7 +259,7 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
     ierr = DMGlobalToLocalEnd  (dak,X,INSERT_VALUES,Kloc);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dau,user->Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dak,Kloc,&k);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_K(user,&infok,u,k,*B);CHKERRQ(ierr);
+    ierr = FormJacobianLocal_K(user,&infok,u,k,B);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dau,user->Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dak,Kloc,&k);CHKERRQ(ierr);
     break;
@@ -269,18 +270,18 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
     ierr = DMDAVecGetArray(dau,Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dak,Kloc,&k);CHKERRQ(ierr);
     ierr = DMCompositeGetLocalISs(user->pack,&is);CHKERRQ(ierr);
-    ierr = MatGetLocalSubMatrix(*B,is[0],is[0],&Buu);CHKERRQ(ierr);
-    ierr = MatGetLocalSubMatrix(*B,is[0],is[1],&Buk);CHKERRQ(ierr);
-    ierr = MatGetLocalSubMatrix(*B,is[1],is[0],&Bku);CHKERRQ(ierr);
-    ierr = MatGetLocalSubMatrix(*B,is[1],is[1],&Bkk);CHKERRQ(ierr);
+    ierr = MatGetLocalSubMatrix(B,is[0],is[0],&Buu);CHKERRQ(ierr);
+    ierr = MatGetLocalSubMatrix(B,is[0],is[1],&Buk);CHKERRQ(ierr);
+    ierr = MatGetLocalSubMatrix(B,is[1],is[0],&Bku);CHKERRQ(ierr);
+    ierr = MatGetLocalSubMatrix(B,is[1],is[1],&Bkk);CHKERRQ(ierr);
     ierr = FormJacobianLocal_U(user,&infou,u,k,Buu);CHKERRQ(ierr);
     ierr = FormJacobianLocal_UK(user,&infou,&infok,u,k,Buk);CHKERRQ(ierr);
     ierr = FormJacobianLocal_KU(user,&infou,&infok,u,k,Bku);CHKERRQ(ierr);
     ierr = FormJacobianLocal_K(user,&infok,u,k,Bkk);CHKERRQ(ierr);
-    ierr = MatRestoreLocalSubMatrix(*B,is[0],is[0],&Buu);CHKERRQ(ierr);
-    ierr = MatRestoreLocalSubMatrix(*B,is[0],is[1],&Buk);CHKERRQ(ierr);
-    ierr = MatRestoreLocalSubMatrix(*B,is[1],is[0],&Bku);CHKERRQ(ierr);
-    ierr = MatRestoreLocalSubMatrix(*B,is[1],is[1],&Bkk);CHKERRQ(ierr);
+    ierr = MatRestoreLocalSubMatrix(B,is[0],is[0],&Buu);CHKERRQ(ierr);
+    ierr = MatRestoreLocalSubMatrix(B,is[0],is[1],&Buk);CHKERRQ(ierr);
+    ierr = MatRestoreLocalSubMatrix(B,is[1],is[0],&Bku);CHKERRQ(ierr);
+    ierr = MatRestoreLocalSubMatrix(B,is[1],is[1],&Bkk);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dau,Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dak,Kloc,&k);CHKERRQ(ierr);
 
@@ -290,13 +291,12 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
   } break;
   }
   ierr = DMCompositeRestoreLocalVectors(user->pack,&Uloc,&Kloc);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *B) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd  (*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (J != B) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd  (J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  *mstr = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -320,7 +320,7 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   ierr = DMDAGetLocalInfo(dak,&infok);CHKERRQ(ierr);
   hx   = 1./(infok.mx);
   for (i=infou.xs; i<infou.xs+infou.xm; i++) u[i] = (PetscScalar)i*hx * (1.-(PetscScalar)i*hx);
-  for (i=infok.xs; i<infok.xs+infok.xm; i++) k[i] = 1.0 + 0.5*(PetscScalar)sin((double)2*PETSC_PI*i*hx);
+  for (i=infok.xs; i<infok.xs+infok.xm; i++) k[i] = 1.0 + 0.5*PetscSinScalar(2*PETSC_PI*i*hx);
   ierr = DMDAVecRestoreArray(dau,Xu,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dak,Xk,&k);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(user->pack,X,&Xu,&Xk);CHKERRQ(ierr);
@@ -335,7 +335,7 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
   DM             dau,dak,pack;
   const PetscInt *lxu;
-  PetscInt       *lxk,m,nprocs;
+  PetscInt       *lxk,m,sizes;
   User           user;
   SNES           snes;
   Vec            X,F,Xu,Xk,Fu,Fk;
@@ -344,15 +344,15 @@ int main(int argc, char *argv[])
   PetscBool      view_draw,pass_dm;
 
   PetscInitialize(&argc,&argv,0,help);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-10,1,1,NULL,&dau);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-10,1,1,NULL,&dau);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dau,"u_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(dau,&lxu,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(dau,0, &m,0,0, &nprocs,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscMalloc(nprocs*sizeof(*lxk),&lxk);CHKERRQ(ierr);
-  ierr = PetscMemcpy(lxk,lxu,nprocs*sizeof(*lxk));CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dau,0, &m,0,0, &sizes,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscMalloc1(sizes,&lxk);CHKERRQ(ierr);
+  ierr = PetscMemcpy(lxk,lxu,sizes*sizeof(*lxk));CHKERRQ(ierr);
   lxk[0]--;
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m-1,1,1,lxk,&dak);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m-1,1,1,lxk,&dak);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dak,"k_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
   ierr = PetscFree(lxk);CHKERRQ(ierr);
@@ -368,7 +368,7 @@ int main(int argc, char *argv[])
   ierr = DMCreateGlobalVector(pack,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
-  ierr = PetscNew(struct _UserCtx,&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
 
   user->pack = pack;
 
@@ -380,9 +380,9 @@ int main(int argc, char *argv[])
   {
     user->ptype = 0; view_draw = PETSC_FALSE; pass_dm = PETSC_TRUE;
 
-    ierr = PetscOptionsInt("-problem_type","0: solve for u only, 1: solve for k only, 2: solve for both",0,user->ptype,&user->ptype,0);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-view_draw","Draw the final coupled solution regardless of whether only one physics was solved",0,view_draw,&view_draw,0);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-pass_dm","Pass the packed DM to SNES to use when determining splits and forward into splits",0,pass_dm,&pass_dm,0);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-problem_type","0: solve for u only, 1: solve for k only, 2: solve for both",0,user->ptype,&user->ptype,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-view_draw","Draw the final coupled solution regardless of whether only one physics was solved",0,view_draw,&view_draw,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pass_dm","Pass the packed DM to SNES to use when determining splits and forward into splits",0,pass_dm,&pass_dm,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -393,7 +393,7 @@ int main(int argc, char *argv[])
   case 0:
     ierr = DMCompositeGetAccess(pack,X,&Xu,0);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,&Fu,0);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dau,NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dau,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fu,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -405,7 +405,7 @@ int main(int argc, char *argv[])
   case 1:
     ierr = DMCompositeGetAccess(pack,X,0,&Xk);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,0,&Fk);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dak,NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dak,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fk,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -415,7 +415,7 @@ int main(int argc, char *argv[])
     ierr = DMCompositeRestoreAccess(pack,F,0,&Fk);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = DMCreateMatrix(pack,NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(pack,&B);CHKERRQ(ierr);
     /* This example does not correctly allocate off-diagonal blocks. These options allows new nonzeros (slow). */
     ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);

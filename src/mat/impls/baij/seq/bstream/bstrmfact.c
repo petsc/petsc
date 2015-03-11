@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/mat/impls/baij/seq/bstream/bstream.h"
+#include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/impls/baij/seq/bstream/bstream.h>
 
 extern PetscErrorCode MatDestroy_SeqBSTRM(Mat A);
 extern PetscErrorCode MatSeqBSTRM_convert_bstrm(Mat A);
@@ -208,7 +208,7 @@ PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,const MatFactorInfo *info)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D",bs);
   }
 
-  ierr     = PetscNewLog(F,Mat_SeqBSTRM,&bstrm);CHKERRQ(ierr);
+  ierr     = PetscNewLog(F,&bstrm);CHKERRQ(ierr);
   F->spptr = (void*) bstrm;
   ierr     = MatSeqBSTRM_convert_bstrm(F);CHKERRQ(ierr);
 /*.........................................................
@@ -265,7 +265,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat A,MatFactorType ftype
   (*B)->assembled              = PETSC_TRUE;  /* required by -ksp_view */
   (*B)->preallocated           = PETSC_TRUE;
 
-  ierr        = PetscNewLog(*B,Mat_SeqBSTRM,&bstrm);CHKERRQ(ierr);
+  ierr        = PetscNewLog(*B,&bstrm);CHKERRQ(ierr);
   (*B)->spptr = (void*) bstrm;
   ierr        = PetscObjectComposeFunction((PetscObject)*B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_bstrm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

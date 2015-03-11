@@ -1,4 +1,5 @@
 static char help[] = "Multiphase flow in a porous medium in 1d.\n\n";
+#include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsnes.h>
 
@@ -93,10 +94,10 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
       f[i].p = u[i].p - user->pl;
     } else {
       PetscScalar K          = 2*dx/(dx/Kappa[i] + dx/Kappa[i-1]);
-      PetscReal   lambdaWet  = kappaWet*pow(u[i].s, alpha);
-      PetscReal   lambda     = lambdaWet + kappaNoWet*pow(1-u[i].s, beta);
-      PetscReal   lambdaWetL = kappaWet*pow(u[i-1].s, alpha);
-      PetscReal   lambdaL    = lambdaWetL + kappaNoWet*pow(1-u[i-1].s, beta);
+      PetscReal   lambdaWet  = kappaWet*PetscPowScalar(u[i].s, alpha);
+      PetscReal   lambda     = lambdaWet + kappaNoWet*PetscPowScalar(1-u[i].s, beta);
+      PetscReal   lambdaWetL = kappaWet*PetscPowScalar(u[i-1].s, alpha);
+      PetscReal   lambdaL    = lambdaWetL + kappaNoWet*PetscPowScalar(1-u[i-1].s, beta);
 
       f[i].s = phi*(u[i].s - uold[i].s) + (dt/dx)*((lambdaWet/lambda)*u[i].v - (lambdaWetL/lambdaL)*u[i-1].v);
 
@@ -130,11 +131,11 @@ int main(int argc, char **argv)
   /* Create solver */
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   /* Create mesh */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-4,3,1,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-4,3,1,NULL,&da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da, &user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, da);CHKERRQ(ierr);
   /* Create coefficient */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-4,1,1,NULL,&user.cda);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,-4,1,1,NULL,&user.cda);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(user.cda, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(user.cda, &user.Kappa);CHKERRQ(ierr);
   ierr = FormPermeability(user.cda, user.Kappa, &user);CHKERRQ(ierr);

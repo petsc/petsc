@@ -3,6 +3,9 @@
 #include <petsc-private/kernels/blockinvert.h>
 #include <petscbt.h>
 #include <petscblaslapack.h>
+#if defined(PETSC_THREADCOMM_ACTIVE)
+#include <petscthreadcomm.h>
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatIncreaseOverlap_SeqBAIJ"
@@ -24,8 +27,8 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt
   if (ov < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
 
   ierr = PetscBTCreate(m,&table);CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
-  ierr = PetscMalloc((A->rmap->N+1)*sizeof(PetscInt),&nidx2);CHKERRQ(ierr);
+  ierr = PetscMalloc1(m+1,&nidx);CHKERRQ(ierr);
+  ierr = PetscMalloc1(A->rmap->N+1,&nidx2);CHKERRQ(ierr);
 
   for (i=0; i<is_max; i++) {
     /* Initialise the two local arrays */
@@ -94,10 +97,9 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReuse 
   ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc((1+oldcols)*sizeof(PetscInt),&smap);CHKERRQ(ierr);
+  ierr  = PetscCalloc1(1+oldcols,&smap);CHKERRQ(ierr);
   ssmap = smap;
-  ierr  = PetscMalloc((1+nrows)*sizeof(PetscInt),&lens);CHKERRQ(ierr);
-  ierr  = PetscMemzero(smap,oldcols*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscMalloc1(1+nrows,&lens);CHKERRQ(ierr);
   for (i=0; i<ncols; i++) smap[icol[i]] = i+1;
   /* determine lens of each row */
   for (i=0; i<nrows; i++) {
@@ -172,7 +174,7 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
 
   /* Verify if the indices corespond to each element in a block
    and form the IS with compressed IS */
-  ierr = PetscMalloc2(a->mbs,PetscInt,&vary,a->mbs,PetscInt,&iary);CHKERRQ(ierr);
+  ierr = PetscMalloc2(a->mbs,&vary,a->mbs,&iary);CHKERRQ(ierr);
   ierr = PetscMemzero(vary,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
   count = 0;
@@ -209,7 +211,7 @@ PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat A,PetscInt n,const IS irow[],const 
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscMalloc((n+1)*sizeof(Mat),B);CHKERRQ(ierr);
+    ierr = PetscMalloc1(n+1,B);CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {
@@ -223,6 +225,37 @@ PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat A,PetscInt n,const IS irow[],const 
 /* Should check that shapes of vectors and matrices match */
 /* -------------------------------------------------------*/
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode MatMult_SeqBAIJ_1_Kernel(PetscInt thread_id,Mat A,Vec xx,Vec zz)
+{
+  PetscErrorCode    ierr;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z;
+  const PetscScalar *x;
+  const MatScalar   *aa;
+  PetscInt          *trstarts=A->rmap->trstarts;
+  PetscInt          n,start,end,i;
+  const PetscInt    *aj,*ai;
+  PetscScalar       sum;
+
+  ierr  = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr  = VecGetArray(zz,&z);CHKERRQ(ierr);
+  start = trstarts[thread_id];
+  end   = trstarts[thread_id+1];
+  ai    = a->i;
+  for (i=start; i<end; i++) {
+    n   = ai[i+1] - ai[i];
+    aj  = a->j + ai[i];
+    aa  = a->a + ai[i];
+    sum = 0.0;
+    PetscSparseDensePlusDot(sum,x,aa,aj,n);
+    z[i] = sum;
+  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  return 0;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqBAIJ_1"
 PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
@@ -232,7 +265,48 @@ PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
   const PetscScalar *x;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,n,nonzerorow=0;
+  PetscInt          mbs,i,n;
+  const PetscInt    *idx,*ii,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+
+  if (usecprow) {
+    ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    ierr = PetscMemzero(z,mbs*sizeof(PetscScalar));CHKERRQ(ierr);
+    for (i=0; i<mbs; i++) {
+      n   = ii[i+1] - ii[i];
+      v   = a->a + ii[i];
+      idx = a->j + ii[i];
+      PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+      PetscPrefetchBlock(v+1*n,1*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+      sum = 0.0;
+      PetscSparseDensePlusDot(sum,x,v,idx,n);
+      z[ridx[i]] = sum;
+    }
+    ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  } else {
+    ierr = PetscThreadCommRunKernel(PetscObjectComm((PetscObject)A),(PetscThreadKernel)MatMult_SeqBAIJ_1_Kernel,3,A,xx,zz);CHKERRQ(ierr);
+  }
+  ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
+#undef __FUNCT__
+#define __FUNCT__ "MatMult_SeqBAIJ_1"
+PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z,sum;
+  const PetscScalar *x;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs,i,n;
   const PetscInt    *idx,*ii,*ridx=NULL;
   PetscBool         usecprow=a->compressedrow.use;
 
@@ -262,16 +336,93 @@ PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
     if (usecprow) {
       z[ridx[i]] = sum;
     } else {
-      nonzerorow += (n>0);
       z[i]        = sum;
     }
   }
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz - a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode MatMult_SeqBAIJ_2_Kernel(PetscInt thread_id,Mat A,Vec xx,Vec zz)
+{
+  PetscErrorCode    ierr;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z,x1,x2,sum1,sum2;
+  const PetscScalar *x,*xb;
+  const MatScalar   *aa;
+  PetscInt          *trstarts=A->rmap->trstarts;
+  PetscInt          n,start,end,i,j;
+  const PetscInt    *aj,*ai;
+
+  ierr   = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr   = VecGetArray(zz,&z);CHKERRQ(ierr);
+  start  = trstarts[thread_id] / 2;
+  end    = trstarts[thread_id+1] / 2;
+  ai     = a->i;
+  for (i=start; i<end; i++) {
+    n    = ai[i+1] - ai[i];
+    aj   = a->j + ai[i];
+    aa   = a->a + ai[i]*4;
+    sum1 = 0.0; sum2 = 0.0;
+    for (j=0; j<n; j++) {
+      xb = x + 2*aj[j]; x1 = xb[0]; x2 = xb[1];
+      sum1 += aa[4*j]*x1   + aa[4*j+2]*x2;
+      sum2 += aa[4*j+1]*x1 + aa[4*j+3]*x2;
+    }
+    z[2*i] = sum1; z[2*i+1] = sum2;
+  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMult_SeqBAIJ_2"
+PetscErrorCode MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z,x1,x2,sum1,sum2;
+  const PetscScalar *x,*xb;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+
+  if (usecprow) {
+    ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    for (i=0; i<mbs; i++) {
+      n    = ii[i+1] - ii[i];
+      idx  = a->j + ii[i];
+      v    = a->a + ii[i]*4;
+      sum1 = 0.0; sum2 = 0.0;
+      PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+      PetscPrefetchBlock(v+4*n,4*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+      for (j=0; j<n; j++) {
+	xb = x + 2*idx[j]; x1 = xb[0]; x2 = xb[1];
+	sum1 += v[4*j]*x1   + v[4*j+2]*x2;
+	sum2 += v[4*j+1]*x1 + v[4*j+3]*x2;
+      }
+      z[2*ridx[i]] = sum1; z[2*ridx[i]+1] = sum2;
+    }
+    ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  } else {
+    ierr = PetscThreadCommRunKernel(PetscObjectComm((PetscObject)A),(PetscThreadKernel)MatMult_SeqBAIJ_2_Kernel,3,A,xx,zz);CHKERRQ(ierr);
+  }
+  ierr = PetscLogFlops(8.0*a->nz - 2.0*a->nonzerorowcnt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqBAIJ_2"
 PetscErrorCode MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
@@ -282,7 +433,7 @@ PetscErrorCode MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
   PetscScalar       x1,x2;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -304,7 +455,6 @@ PetscErrorCode MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
   for (i=0; i<mbs; i++) {
     n           = ii[1] - ii[0]; ii++;
     sum1        = 0.0; sum2 = 0.0;
-    nonzerorow += (n>0);
     PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+4*n,4*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
@@ -319,10 +469,95 @@ PetscErrorCode MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  ierr = PetscLogFlops(8.0*a->nz - 2.0*nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(8.0*a->nz - 2.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode MatMult_SeqBAIJ_3_Kernel(PetscInt thread_id,Mat A,Vec xx,Vec zz)
+{
+  PetscErrorCode    ierr;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z,x1,x2,x3,sum1,sum2,sum3;
+  const PetscScalar *x,*xb;
+  const MatScalar   *aa;
+  PetscInt          *trstarts=A->rmap->trstarts;
+  PetscInt          n,start,end,i,j;
+  const PetscInt    *aj,*ai;
+
+  ierr   = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr   = VecGetArray(zz,&z);CHKERRQ(ierr);
+  start  = trstarts[thread_id] / 3;
+  end    = trstarts[thread_id+1] / 3;
+  ai     = a->i;
+  for (i=start; i<end; i++) {
+    n    = ai[i+1] - ai[i];
+    aj   = a->j + ai[i];
+    aa   = a->a + ai[i]*9;
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
+    for (j=0; j<n; j++) {
+      xb = x + 3*aj[j]; x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
+      sum1 += aa[9*j]*x1   + aa[9*j+3]*x2 + aa[9*j+6]*x3;
+      sum2 += aa[9*j+1]*x1 + aa[9*j+4]*x2 + aa[9*j+7]*x3;
+      sum3 += aa[9*j+2]*x1 + aa[9*j+5]*x2 + aa[9*j+8]*x3;
+    }
+    z[3*i] = sum1; z[3*i+1] = sum2; z[3*i+2] = sum3;
+  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMult_SeqBAIJ_3"
+PetscErrorCode MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z,sum1,sum2,sum3,x1,x2,x3;
+  const PetscScalar *x,*xb;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
+
+
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#pragma disjoint(*v,*z,*xb)
+#endif
+
+  PetscFunctionBegin;
+
+  if (usecprow) {
+    ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    for (i=0; i<mbs; i++) {
+      n    = ii[i+1] - ii[i];
+      idx  = a->j + ii[i];
+      v    = a->a + ii[i]*9;
+      sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
+      PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
+      PetscPrefetchBlock(v+9*n,9*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+      for (j=0; j<n; j++) {
+	xb = x + 3*idx[j]; x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
+	sum1 += v[9*j]*x1   + v[9*j+3]*x2 + v[9*j+6]*x3;
+	sum2 += v[9*j+1]*x1 + v[9*j+4]*x2 + v[9*j+7]*x3;
+	sum3 += v[9*j+2]*x1 + v[9*j+5]*x2 + v[9*j+8]*x3;
+      }
+      z[3*ridx[i]] = sum1; z[3*ridx[i]+1] = sum2; z[3*ridx[i]+2] = sum3;
+    }
+    ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  } else {
+    ierr = PetscThreadCommRunKernel(PetscObjectComm((PetscObject)A),(PetscThreadKernel)MatMult_SeqBAIJ_3_Kernel,3,A,xx,zz);CHKERRQ(ierr);
+  }
+  ierr = PetscLogFlops(18.0*a->nz - 3.0*a->nonzerorowcnt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqBAIJ_3"
 PetscErrorCode MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
@@ -332,9 +567,8 @@ PetscErrorCode MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
   const PetscScalar *x,*xb;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool         usecprow=a->compressedrow.use;
-
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*v,*z,*xb)
@@ -359,7 +593,6 @@ PetscErrorCode MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
   for (i=0; i<mbs; i++) {
     n           = ii[1] - ii[0]; ii++;
     sum1        = 0.0; sum2 = 0.0; sum3 = 0.0;
-    nonzerorow += (n>0);
     PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);   /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+9*n,9*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
@@ -379,10 +612,94 @@ PetscErrorCode MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  ierr = PetscLogFlops(18.0*a->nz - 3.0*nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(18.0*a->nz - 3.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode MatMult_SeqBAIJ_4_Kernel(PetscInt thread_id,Mat A,Vec xx,Vec zz)
+{
+  PetscErrorCode    ierr;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z,x1,x2,x3,x4,sum1,sum2,sum3,sum4;
+  const PetscScalar *x,*xb;
+  const MatScalar   *aa;
+  PetscInt          *trstarts=A->rmap->trstarts;
+  PetscInt          n,start,end,i,j;
+  const PetscInt    *aj,*ai;
+
+  ierr   = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr   = VecGetArray(zz,&z);CHKERRQ(ierr);
+  start  = trstarts[thread_id] / 4;
+  end    = trstarts[thread_id+1] / 4;
+  ai     = a->i;
+  for (i=start; i<end; i++) {
+    n    = ai[i+1] - ai[i];
+    aj   = a->j + ai[i];
+    aa   = a->a + ai[i]*16;
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0;
+    for (j=0; j<n; j++) {
+      xb = x + 4*aj[j]; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
+      sum1 += aa[16*j]*x1   + aa[16*j+4]*x2 + aa[16*j+8]*x3  + aa[16*j+12]*x4;
+      sum2 += aa[16*j+1]*x1 + aa[16*j+5]*x2 + aa[16*j+9]*x3  + aa[16*j+13]*x4;
+      sum3 += aa[16*j+2]*x1 + aa[16*j+6]*x2 + aa[16*j+10]*x3 + aa[16*j+14]*x4;
+      sum4 += aa[16*j+3]*x1 + aa[16*j+7]*x2 + aa[16*j+11]*x3 + aa[16*j+15]*x4;
+    }
+    z[4*i]   = sum1; z[4*i+1] = sum2;
+    z[4*i+2] = sum3; z[4*i+3] = sum4;
+  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMult_SeqBAIJ_4"
+PetscErrorCode MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z,x1,x2,x3,x4,sum1,sum2,sum3,sum4;
+  const PetscScalar *x,*xb;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+
+  if (usecprow) {
+    ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    for (i=0; i<mbs; i++) {
+      n = ii[i+1] - ii[1];
+      idx  = a->j + ii[i];
+      v    = a->a + ii[i]*16;
+      sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0;
+      PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
+      PetscPrefetchBlock(v+16*n,16*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+      for (j=0; j<n; j++) {
+	xb = x + 4*idx[j]; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
+	sum1 += v[16*j]*x1   + v[16*j+4]*x2 + v[16*j+8]*x3  + v[16*j+12]*x4;
+	sum2 += v[16*j+1]*x1 + v[16*j+5]*x2 + v[16*j+9]*x3  + v[16*j+13]*x4;
+	sum3 += v[16*j+2]*x1 + v[16*j+6]*x2 + v[16*j+10]*x3 + v[16*j+14]*x4;
+	sum4 += v[16*j+3]*x1 + v[16*j+7]*x2 + v[16*j+11]*x3 + v[16*j+15]*x4;
+      }
+      z[4*ridx[i]]   = sum1; z[4*ridx[i]+1] = sum2;
+      z[4*ridx[i]+2] = sum3; z[4*ridx[i]+3] = sum4;
+    }
+    ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  } else {
+    ierr = PetscThreadCommRunKernel(PetscObjectComm((PetscObject)A),(PetscThreadKernel)MatMult_SeqBAIJ_4_Kernel,3,A,xx,zz);CHKERRQ(ierr);
+  }
+  ierr = PetscLogFlops(32.0*a->nz - 4.0*a->nonzerorowcnt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqBAIJ_4"
 PetscErrorCode MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
@@ -392,7 +709,7 @@ PetscErrorCode MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
   const PetscScalar *x,*xb;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -419,7 +736,6 @@ PetscErrorCode MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
     sum3 = 0.0;
     sum4 = 0.0;
 
-    nonzerorow += (n>0);
     PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+16*n,16*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
@@ -437,10 +753,97 @@ PetscErrorCode MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  ierr = PetscLogFlops(32.0*a->nz - 4.0*nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(32.0*a->nz - 4.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode MatMult_SeqBAIJ_5_Kernel(PetscInt thread_id,Mat A,Vec xx,Vec zz)
+{
+  PetscErrorCode    ierr;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z,x1,x2,x3,x4,x5,sum1,sum2,sum3,sum4,sum5;
+  const PetscScalar *x,*xb;
+  const MatScalar   *aa;
+  PetscInt          *trstarts=A->rmap->trstarts;
+  PetscInt          n,start,end,i,j;
+  const PetscInt    *aj,*ai;
+
+  ierr   = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr   = VecGetArray(zz,&z);CHKERRQ(ierr);
+  start  = trstarts[thread_id] / 5;
+  end    = trstarts[thread_id+1] / 5;
+  ai     = a->i;
+  for (i=start; i<end; i++) {
+    n    = ai[i+1] - ai[i];
+    aj   = a->j + ai[i];
+    aa   = a->a + ai[i]*25;
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0;
+    for (j=0; j<n; j++) {
+      xb = x + 5*aj[j]; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4];
+      sum1 += aa[25*j]*x1   + aa[25*j+5]*x2 + aa[25*j+10]*x3 + aa[25*j+15]*x4 + aa[25*j+20]*x5;
+      sum2 += aa[25*j+1]*x1 + aa[25*j+6]*x2 + aa[25*j+11]*x3 + aa[25*j+16]*x4 + aa[25*j+21]*x5;
+      sum3 += aa[25*j+2]*x1 + aa[25*j+7]*x2 + aa[25*j+12]*x3 + aa[25*j+17]*x4 + aa[25*j+22]*x5;
+      sum4 += aa[25*j+3]*x1 + aa[25*j+8]*x2 + aa[25*j+13]*x3 + aa[25*j+18]*x4 + aa[25*j+23]*x5;
+      sum5 += aa[25*j+4]*x1 + aa[25*j+9]*x2 + aa[25*j+14]*x3 + aa[25*j+19]*x4 + aa[25*j+24]*x5;
+    }
+    z[5*i]   = sum1; z[5*i+1] = sum2; z[5*i+2] = sum3;
+    z[5*i+3] = sum4; z[5*i+4] = sum5;
+  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMult_SeqBAIJ_5"
+PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z,x1,x2,x3,x4,x5,sum1,sum2,sum3,sum4,sum5;
+  const PetscScalar *xb,*x;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  const PetscInt    *idx,*ii,*ridx=NULL;
+  PetscInt          mbs,i,j,n;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+
+  if (usecprow) {
+    ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    for (i=0; i<mbs; i++) {
+      n    = ii[i+1] - ii[i];
+      idx  = a->j + ii[i];
+      v    = a->a + ii[i]*25;
+      sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0;
+      PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
+      PetscPrefetchBlock(v+25*n,25*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+      for (j=0; j<n; j++) {
+	xb = x + 5*idx[j]; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4];
+	sum1 += v[25*j]*x1   + v[25*j+5]*x2 + v[25*j+10]*x3 + v[25*j+15]*x4 + v[25*j+20]*x5;
+	sum2 += v[25*j+1]*x1 + v[25*j+6]*x2 + v[25*j+11]*x3 + v[25*j+16]*x4 + v[25*j+21]*x5;
+	sum3 += v[25*j+2]*x1 + v[25*j+7]*x2 + v[25*j+12]*x3 + v[25*j+17]*x4 + v[25*j+22]*x5;
+	sum4 += v[25*j+3]*x1 + v[25*j+8]*x2 + v[25*j+13]*x3 + v[25*j+18]*x4 + v[25*j+23]*x5;
+	sum5 += v[25*j+4]*x1 + v[25*j+9]*x2 + v[25*j+14]*x3 + v[25*j+19]*x4 + v[25*j+24]*x5;
+      }
+      z[5*ridx[i]]   = sum1; z[5*ridx[i]+1] = sum2; z[5*ridx[i]+2] = sum3;
+      z[5*ridx[i]+3] = sum4; z[5*ridx[i]+4] = sum5;
+    }
+    ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  } else {
+    ierr = PetscThreadCommRunKernel(PetscObjectComm((PetscObject)A),(PetscThreadKernel)MatMult_SeqBAIJ_5_Kernel,3,A,xx,zz);CHKERRQ(ierr);
+  }
+  ierr = PetscLogFlops(50.0*a->nz - 5.0*a->nonzerorowcnt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqBAIJ_5"
 PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
@@ -451,7 +854,7 @@ PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
   const MatScalar   *v;
   PetscErrorCode    ierr;
   const PetscInt    *idx,*ii,*ridx=NULL;
-  PetscInt          mbs,i,j,n,nonzerorow=0;
+  PetscInt          mbs,i,j,n;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -473,7 +876,6 @@ PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
   for (i=0; i<mbs; i++) {
     n           = ii[1] - ii[0]; ii++;
     sum1        = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0;
-    nonzerorow += (n>0);
     PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+25*n,25*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
@@ -492,11 +894,99 @@ PetscErrorCode MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  ierr = PetscLogFlops(50.0*a->nz - 5.0*nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(50.0*a->nz - 5.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode MatMult_SeqBAIJ_6_Kernel(PetscInt thread_id,Mat A,Vec xx,Vec zz)
+{
+  PetscErrorCode    ierr;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z,x1,x2,x3,x4,x5,x6,sum1,sum2,sum3,sum4,sum5,sum6;
+  const PetscScalar *x,*xb;
+  const MatScalar   *aa;
+  PetscInt          *trstarts=A->rmap->trstarts;
+  PetscInt          n,start,end,i,j;
+  const PetscInt    *aj,*ai;
+
+  ierr   = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr   = VecGetArray(zz,&z);CHKERRQ(ierr);
+  start  = trstarts[thread_id] / 6;
+  end    = trstarts[thread_id+1] / 6;
+  ai     = a->i;
+  for (i=start; i<end; i++) {
+    n    = ai[i+1] - ai[i];
+    aj   = a->j + ai[i];
+    aa   = a->a + ai[i]*36;
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0; sum6 = 0.0;
+    for (j=0; j<n; j++) {
+      xb = x + 6*aj[j]; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5];
+      sum1 += aa[36*j]*x1   + aa[36*j+6]*x2  + aa[36*j+12]*x3 + aa[36*j+18]*x4 + aa[36*j+24]*x5 + aa[36*j+30]*x6;
+      sum2 += aa[36*j+1]*x1 + aa[36*j+7]*x2  + aa[36*j+13]*x3 + aa[36*j+19]*x4 + aa[36*j+25]*x5 + aa[36*j+31]*x6;
+      sum3 += aa[36*j+2]*x1 + aa[36*j+8]*x2  + aa[36*j+14]*x3 + aa[36*j+20]*x4 + aa[36*j+26]*x5 + aa[36*j+32]*x6;
+      sum4 += aa[36*j+3]*x1 + aa[36*j+9]*x2  + aa[36*j+15]*x3 + aa[36*j+21]*x4 + aa[36*j+27]*x5 + aa[36*j+33]*x6;
+      sum5 += aa[36*j+4]*x1 + aa[36*j+10]*x2 + aa[36*j+16]*x3 + aa[36*j+22]*x4 + aa[36*j+28]*x5 + aa[36*j+34]*x6;
+      sum6 += aa[36*j+5]*x1 + aa[36*j+11]*x2 + aa[36*j+17]*x3 + aa[36*j+23]*x4 + aa[36*j+29]*x5 + aa[36*j+35]*x6;
+    }
+    z[6*i]   = sum1; z[6*i+1] = sum2; z[6*i+2] = sum3;
+    z[6*i+3] = sum4; z[6*i+4] = sum5; z[6*i+5] = sum6;
+  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMult_SeqBAIJ_6"
+PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z,x1,x2,x3,x4,x5,x6,sum1,sum2,sum3,sum4,sum5,sum6;
+  const PetscScalar *x,*xb;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+
+  if (usecprow) {
+    ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    for (i=0; i<mbs; i++) {
+      n  = ii[i+1] - ii[i];
+      idx  = a->j + ii[i];
+      v    = a->a + ii[i]*36;
+      sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0; sum6 = 0.0;
+      PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
+      PetscPrefetchBlock(v+36*n,36*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+      for (j=0; j<n; j++) {
+	xb = x + 6*idx[j]; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5];
+	sum1 += v[36*j]*x1   + v[36*j+6]*x2  + v[36*j+12]*x3 + v[36*j+18]*x4 + v[36*j+24]*x5 + v[36*j+30]*x6;
+	sum2 += v[36*j+1]*x1 + v[36*j+7]*x2  + v[36*j+13]*x3 + v[36*j+19]*x4 + v[36*j+25]*x5 + v[36*j+31]*x6;
+	sum3 += v[36*j+2]*x1 + v[36*j+8]*x2  + v[36*j+14]*x3 + v[36*j+20]*x4 + v[36*j+26]*x5 + v[36*j+32]*x6;
+	sum4 += v[36*j+3]*x1 + v[36*j+9]*x2  + v[36*j+15]*x3 + v[36*j+21]*x4 + v[36*j+27]*x5 + v[36*j+33]*x6;
+	sum5 += v[36*j+4]*x1 + v[36*j+10]*x2 + v[36*j+16]*x3 + v[36*j+22]*x4 + v[36*j+28]*x5 + v[36*j+34]*x6;
+	sum6 += v[36*j+5]*x1 + v[36*j+11]*x2 + v[36*j+17]*x3 + v[36*j+23]*x4 + v[36*j+29]*x5 + v[36*j+35]*x6;
+      }
+      z[6*ridx[i]]   = sum1; z[6*ridx[i]+1] = sum2; z[6*ridx[i]+2] = sum3;
+      z[6*ridx[i]+3] = sum4; z[6*ridx[i]+4] = sum5; z[6*ridx[i]+5] = sum6;
+    }
+    ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  } else {
+    ierr = PetscThreadCommRunKernel(PetscObjectComm((PetscObject)A),(PetscThreadKernel)MatMult_SeqBAIJ_6_Kernel,3,A,xx,zz);CHKERRQ(ierr);
+  }
+  ierr = PetscLogFlops(72.0*a->nz - 6.0*a->nonzerorowcnt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqBAIJ_6"
 PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
@@ -507,7 +997,7 @@ PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
   PetscScalar       x1,x2,x3,x4,x5,x6,*zarray;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -536,7 +1026,6 @@ PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
     sum5 = 0.0;
     sum6 = 0.0;
 
-    nonzerorow += (n>0);
     PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+36*n,36*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
@@ -557,8 +1046,49 @@ PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  ierr = PetscLogFlops(72.0*a->nz - 6.0*nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(72.0*a->nz - 6.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+#endif
+
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode MatMult_SeqBAIJ_7_Kernel(PetscInt thread_id,Mat A,Vec xx,Vec zz)
+{
+  PetscErrorCode    ierr;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z,x1,x2,x3,x4,x5,x6,x7,sum1,sum2,sum3,sum4,sum5,sum6,sum7;
+  const PetscScalar *x,*xb;
+  const MatScalar   *aa;
+  PetscInt          *trstarts=A->rmap->trstarts;
+  PetscInt          n,start,end,i,j;
+  const PetscInt    *aj,*ai;
+
+  ierr   = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr   = VecGetArray(zz,&z);CHKERRQ(ierr);
+  start  = trstarts[thread_id] / 7;
+  end    = trstarts[thread_id+1] / 7;
+  ai     = a->i;
+  for (i=start; i<end; i++) {
+    n    = ai[i+1] - ai[i];
+    aj   = a->j + ai[i];
+    aa   = a->a + ai[i]*49;
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0; sum6 = 0.0; sum7 = 0.0;
+    for (j=0; j<n; j++) {
+      xb = x + 7*aj[j]; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5]; x7 = xb[6];
+      sum1 += aa[49*j]*x1   + aa[49*j+7]*x2  + aa[49*j+14]*x3 + aa[49*j+21]*x4 + aa[49*j+28]*x5 + aa[49*j+35]*x6 + aa[49*j+42]*x7;
+      sum2 += aa[49*j+1]*x1 + aa[49*j+8]*x2  + aa[49*j+15]*x3 + aa[49*j+22]*x4 + aa[49*j+29]*x5 + aa[49*j+36]*x6 + aa[49*j+43]*x7;
+      sum3 += aa[49*j+2]*x1 + aa[49*j+9]*x2  + aa[49*j+16]*x3 + aa[49*j+23]*x4 + aa[49*j+30]*x5 + aa[49*j+37]*x6 + aa[49*j+44]*x7;
+      sum4 += aa[49*j+3]*x1 + aa[49*j+10]*x2 + aa[49*j+17]*x3 + aa[49*j+24]*x4 + aa[49*j+31]*x5 + aa[49*j+38]*x6 + aa[49*j+45]*x7;
+      sum5 += aa[49*j+4]*x1 + aa[49*j+11]*x2 + aa[49*j+18]*x3 + aa[49*j+25]*x4 + aa[49*j+32]*x5 + aa[49*j+39]*x6 + aa[49*j+46]*x7;
+      sum6 += aa[49*j+5]*x1 + aa[49*j+12]*x2 + aa[49*j+19]*x3 + aa[49*j+26]*x4 + aa[49*j+33]*x5 + aa[49*j+40]*x6 + aa[49*j+47]*x7;
+      sum7 += aa[49*j+6]*x1 + aa[49*j+13]*x2 + aa[49*j+20]*x3 + aa[49*j+27]*x4 + aa[49*j+34]*x5 + aa[49*j+41]*x6 + aa[49*j+48]*x7;
+    }
+    z[7*i]   = sum1; z[7*i+1] = sum2; z[7*i+2] = sum3; z[7*i+3] = sum4;
+    z[7*i+4] = sum5; z[7*i+5] = sum6; z[7*i+6] = sum7;
+  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  return 0;
 }
 
 #undef __FUNCT__
@@ -571,7 +1101,57 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
   PetscScalar       x1,x2,x3,x4,x5,x6,x7,*zarray;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+
+  if (usecprow) {
+    ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
+    mbs  = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    for (i=0; i<mbs; i++) {
+      n    = ii[i+1] - ii[i];
+      idx  = a->j + ii[i];
+      v    = a->a + ii[i]*49;
+      sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0; sum6 = 0.0; sum7 = 0.0;
+      PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
+      PetscPrefetchBlock(v+49*n,49*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
+      for (j=0; j<n; j++) {
+	xb = x + 7*idx[j]; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5]; x7 = xb[6];
+	sum1 += v[49*j]*x1   + v[49*j+7]*x2  + v[49*j+14]*x3 + v[49*j+21]*x4 + v[49*j+28]*x5 + v[49*j+35]*x6 + v[49*j+42]*x7;
+	sum2 += v[49*j+1]*x1 + v[49*j+8]*x2  + v[49*j+15]*x3 + v[49*j+22]*x4 + v[49*j+29]*x5 + v[49*j+36]*x6 + v[49*j+43]*x7;
+	sum3 += v[49*j+2]*x1 + v[49*j+9]*x2  + v[49*j+16]*x3 + v[49*j+23]*x4 + v[49*j+30]*x5 + v[49*j+37]*x6 + v[49*j+44]*x7;
+	sum4 += v[49*j+3]*x1 + v[49*j+10]*x2 + v[49*j+17]*x3 + v[49*j+24]*x4 + v[49*j+31]*x5 + v[49*j+38]*x6 + v[49*j+45]*x7;
+	sum5 += v[49*j+4]*x1 + v[49*j+11]*x2 + v[49*j+18]*x3 + v[49*j+25]*x4 + v[49*j+32]*x5 + v[49*j+39]*x6 + v[49*j+46]*x7;
+	sum6 += v[49*j+5]*x1 + v[49*j+12]*x2 + v[49*j+19]*x3 + v[49*j+26]*x4 + v[49*j+33]*x5 + v[49*j+40]*x6 + v[49*j+47]*x7;
+	sum7 += v[49*j+6]*x1 + v[49*j+13]*x2 + v[49*j+20]*x3 + v[49*j+27]*x4 + v[49*j+34]*x5 + v[49*j+41]*x6 + v[49*j+48]*x7;
+      }
+      z[7*ridx[i]]   = sum1; z[7*ridx[i]+1] = sum2; z[7*ridx[i]+2] = sum3; z[7*ridx[i]+3] = sum4;
+      z[7*ridx[i]+4] = sum5; z[7*ridx[i]+5] = sum6; z[7*ridx[i]+6] = sum7;
+    }
+    ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
+  } else {
+    ierr = PetscThreadCommRunKernel(PetscObjectComm((PetscObject)A),(PetscThreadKernel)MatMult_SeqBAIJ_7_Kernel,3,A,xx,zz);CHKERRQ(ierr);
+  }
+  ierr = PetscLogFlops(98.0*a->nz - 7.0*a->nonzerorowcnt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
+#undef __FUNCT__
+#define __FUNCT__ "MatMult_SeqBAIJ_7"
+PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
+{
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z = 0,sum1,sum2,sum3,sum4,sum5,sum6,sum7;
+  const PetscScalar *x,*xb;
+  PetscScalar       x1,x2,x3,x4,x5,x6,x7,*zarray;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=NULL;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -601,7 +1181,6 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
     sum6 = 0.0;
     sum7 = 0.0;
 
-    nonzerorow += (n>0);
     PetscPrefetchBlock(idx+n,n,0,PETSC_PREFETCH_HINT_NTA);     /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v+49*n,49*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j=0; j<n; j++) {
@@ -623,9 +1202,10 @@ PetscErrorCode MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  ierr = PetscLogFlops(98.0*a->nz - 7.0*nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(98.0*a->nz - 7.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 /* MatMult_SeqBAIJ_15 version 1: Columns in the block are accessed one at a time */
 /* Default MatMult for block size 15 */
@@ -641,7 +1221,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat A,Vec xx,Vec zz)
   const MatScalar   *v;
   PetscErrorCode    ierr;
   const PetscInt    *ii,*ij=a->j,*idx;
-  PetscInt          mbs,i,j,k,n,*ridx=NULL,nonzerorow=0;
+  PetscInt          mbs,i,j,k,n,*ridx=NULL;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -665,7 +1245,6 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat A,Vec xx,Vec zz)
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0; sum6 = 0.0; sum7 = 0.0;
     sum8 = 0.0; sum9 = 0.0; sum10 = 0.0; sum11 = 0.0; sum12 = 0.0; sum13 = 0.0; sum14 = 0.0;sum15 = 0.0;
 
-    nonzerorow += (n>0);
     for (j=0; j<n; j++) {
       xb = x + 15*(idx[j]);
 
@@ -698,7 +1277,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  ierr = PetscLogFlops(450.0*a->nz - 15.0*nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(450.0*a->nz - 15.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -714,7 +1293,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat A,Vec xx,Vec zz)
   const MatScalar   *v;
   PetscErrorCode    ierr;
   const PetscInt    *ii,*ij=a->j,*idx;
-  PetscInt          mbs,i,j,n,*ridx=NULL,nonzerorow=0;
+  PetscInt          mbs,i,j,n,*ridx=NULL;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -738,7 +1317,6 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat A,Vec xx,Vec zz)
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0; sum6 = 0.0; sum7 = 0.0;
     sum8 = 0.0; sum9 = 0.0; sum10 = 0.0; sum11 = 0.0; sum12 = 0.0; sum13 = 0.0; sum14 = 0.0;sum15 = 0.0;
 
-    nonzerorow += (n>0);
     for (j=0; j<n; j++) {
       xb = x + 15*(idx[j]);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
@@ -825,7 +1403,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  ierr = PetscLogFlops(450.0*a->nz - 15.0*nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(450.0*a->nz - 15.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -841,7 +1419,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver3(Mat A,Vec xx,Vec zz)
   const MatScalar   *v;
   PetscErrorCode    ierr;
   const PetscInt    *ii,*ij=a->j,*idx;
-  PetscInt          mbs,i,j,n,*ridx=NULL,nonzerorow=0;
+  PetscInt          mbs,i,j,n,*ridx=NULL;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -865,7 +1443,6 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver3(Mat A,Vec xx,Vec zz)
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0; sum6 = 0.0; sum7 = 0.0;
     sum8 = 0.0; sum9 = 0.0; sum10 = 0.0; sum11 = 0.0; sum12 = 0.0; sum13 = 0.0; sum14 = 0.0;sum15 = 0.0;
 
-    nonzerorow += (n>0);
     for (j=0; j<n; j++) {
       xb = x + 15*(idx[j]);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5]; x7 = xb[6];
@@ -916,7 +1493,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver3(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  ierr = PetscLogFlops(450.0*a->nz - 15.0*nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(450.0*a->nz - 15.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -933,7 +1510,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver4(Mat A,Vec xx,Vec zz)
   const MatScalar   *v;
   PetscErrorCode    ierr;
   const PetscInt    *ii,*ij=a->j,*idx;
-  PetscInt          mbs,i,j,n,*ridx=NULL,nonzerorow=0;
+  PetscInt          mbs,i,j,n,*ridx=NULL;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -957,7 +1534,6 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver4(Mat A,Vec xx,Vec zz)
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0; sum6 = 0.0; sum7 = 0.0;
     sum8 = 0.0; sum9 = 0.0; sum10 = 0.0; sum11 = 0.0; sum12 = 0.0; sum13 = 0.0; sum14 = 0.0;sum15 = 0.0;
 
-    nonzerorow += (n>0);
     for (j=0; j<n; j++) {
       xb = x + 15*(idx[j]);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5]; x7 = xb[6];
@@ -989,7 +1565,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver4(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  ierr = PetscLogFlops(450.0*a->nz - 15.0*nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(450.0*a->nz - 15.0*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1001,16 +1577,18 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver4(Mat A,Vec xx,Vec zz)
 #define __FUNCT__ "MatMult_SeqBAIJ_N"
 PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*z = 0,*xb,*work,*workt,*zarray;
-  MatScalar      *v;
-  PetscErrorCode ierr;
-  PetscInt       mbs,i,*idx,*ii,bs=A->rmap->bs,j,n,bs2=a->bs2;
-  PetscInt       ncols,k,*ridx=NULL,nonzerorow=0;
-  PetscBool      usecprow=a->compressedrow.use;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z = 0,*work,*workt,*zarray;
+  const PetscScalar *x,*xb;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs,i,bs=A->rmap->bs,j,n,bs2=a->bs2;
+  const PetscInt    *idx,*ii,*ridx=NULL;
+  PetscInt          ncols,k;
+  PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
 
   idx = a->j;
@@ -1027,14 +1605,13 @@ PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 
   if (!a->mult_work) {
     k    = PetscMax(A->rmap->n,A->cmap->n);
-    ierr = PetscMalloc((k+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(k+1,&a->mult_work);CHKERRQ(ierr);
   }
   work = a->mult_work;
   for (i=0; i<mbs; i++) {
     n           = ii[1] - ii[0]; ii++;
     ncols       = n*bs;
     workt       = work;
-    nonzerorow += (n>0);
     for (j=0; j<n; j++) {
       xb = x + bs*(*idx++);
       for (k=0; k<bs; k++) workt[k] = xb[k];
@@ -1046,9 +1623,9 @@ PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
     v += n*bs2;
     if (!usecprow) z += bs;
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*a->nz*bs2 - bs*nonzerorow);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz*bs2 - bs*a->nonzerorowcnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1061,18 +1638,13 @@ PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar       *y,*z,sum;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs=a->mbs,i,n,*ridx=NULL,nonzerorow=0;
+  PetscInt          mbs=a->mbs,i,n,*ridx=NULL;
   const PetscInt    *idx,*ii;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
-  } else {
-    z = y;
-  }
+  ierr = VecGetArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
 
   idx = a->j;
   v   = a->a;
@@ -1091,7 +1663,6 @@ PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
     n = ii[1] - ii[0];
     ii++;
     if (!usecprow) {
-      nonzerorow += (n>0);
       sum         = y[i];
     } else {
       sum = y[ridx[i]];
@@ -1108,11 +1679,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
     }
   }
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  }
-  ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPair(yy,zz,&y,&z);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1120,22 +1688,19 @@ PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_2"
 PetscErrorCode MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2;
-  PetscScalar    x1,x2,*yarray,*zarray;
-  MatScalar      *v;
-  PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
-  PetscBool      usecprow=a->compressedrow.use;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *y = 0,*z = 0,sum1,sum2;
+  const PetscScalar *x,*xb;
+  PetscScalar       x1,x2,*yarray,*zarray;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs = a->mbs,i,n,j;
+  const PetscInt    *idx,*ii,*ridx = NULL;
+  PetscBool         usecprow = a->compressedrow.use;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&yarray);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
-  } else {
-    zarray = yarray;
-  }
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayPair(yy,zz,&yarray,&zarray);CHKERRQ(ierr);
 
   idx = a->j;
   v   = a->a;
@@ -1178,11 +1743,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
       z += 2; y += 2;
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&yarray);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPair(yy,zz,&yarray,&zarray);CHKERRQ(ierr);
   ierr = PetscLogFlops(4.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1191,21 +1753,18 @@ PetscErrorCode MatMultAdd_SeqBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_3"
 PetscErrorCode MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,x1,x2,x3,*yarray,*zarray;
-  MatScalar      *v;
-  PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
-  PetscBool      usecprow=a->compressedrow.use;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *y = 0,*z = 0,sum1,sum2,sum3,x1,x2,x3,*yarray,*zarray;
+  const PetscScalar *x,*xb;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs = a->mbs,i,j,n;
+  const PetscInt    *idx,*ii,*ridx = NULL;
+  PetscBool         usecprow = a->compressedrow.use;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&yarray);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
-  } else {
-    zarray = yarray;
-  }
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayPair(yy,zz,&yarray,&zarray);CHKERRQ(ierr);
 
   idx = a->j;
   v   = a->a;
@@ -1243,11 +1802,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
       z += 3; y += 3;
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&yarray);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPair(yy,zz,&yarray,&zarray);CHKERRQ(ierr);
   ierr = PetscLogFlops(18.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1256,21 +1812,18 @@ PetscErrorCode MatMultAdd_SeqBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_4"
 PetscErrorCode MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,sum4,x1,x2,x3,x4,*yarray,*zarray;
-  MatScalar      *v;
-  PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
-  PetscBool      usecprow=a->compressedrow.use;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *y = 0,*z = 0,sum1,sum2,sum3,sum4,x1,x2,x3,x4,*yarray,*zarray;
+  const PetscScalar *x,*xb;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs = a->mbs,i,j,n;
+  const PetscInt    *idx,*ii,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&yarray);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
-  } else {
-    zarray = yarray;
-  }
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayPair(yy,zz,&yarray,&zarray);CHKERRQ(ierr);
 
   idx = a->j;
   v   = a->a;
@@ -1310,11 +1863,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
       z += 4; y += 4;
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&yarray);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPair(yy,zz,&yarray,&zarray);CHKERRQ(ierr);
   ierr = PetscLogFlops(32.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1323,22 +1873,19 @@ PetscErrorCode MatMultAdd_SeqBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_5"
 PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
-  PetscScalar    *yarray,*zarray;
-  MatScalar      *v;
-  PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
-  PetscBool      usecprow=a->compressedrow.use;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *y = 0,*z = 0,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
+  const PetscScalar *x,*xb;
+  PetscScalar       *yarray,*zarray;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs = a->mbs,i,j,n;
+  const PetscInt    *idx,*ii,*ridx = NULL;
+  PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&yarray);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
-  } else {
-    zarray = yarray;
-  }
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayPair(yy,zz,&yarray,&zarray);CHKERRQ(ierr);
 
   idx = a->j;
   v   = a->a;
@@ -1379,11 +1926,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
       z += 5; y += 5;
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&yarray);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPair(yy,zz,&yarray,&zarray);CHKERRQ(ierr);
   ierr = PetscLogFlops(50.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1391,22 +1935,19 @@ PetscErrorCode MatMultAdd_SeqBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_6"
 PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,sum4,sum5,sum6;
-  PetscScalar    x1,x2,x3,x4,x5,x6,*yarray,*zarray;
-  MatScalar      *v;
-  PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
-  PetscBool      usecprow=a->compressedrow.use;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *y = 0,*z = 0,sum1,sum2,sum3,sum4,sum5,sum6;
+  const PetscScalar *x,*xb;
+  PetscScalar       x1,x2,x3,x4,x5,x6,*yarray,*zarray;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs = a->mbs,i,j,n;
+  const PetscInt    *idx,*ii,*ridx=NULL;
+  PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&yarray);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
-  } else {
-    zarray = yarray;
-  }
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayPair(yy,zz,&yarray,&zarray);CHKERRQ(ierr);
 
   idx = a->j;
   v   = a->a;
@@ -1448,11 +1989,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
       z += 6; y += 6;
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&yarray);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPair(yy,zz,&yarray,&zarray);CHKERRQ(ierr);
   ierr = PetscLogFlops(72.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1461,22 +1999,19 @@ PetscErrorCode MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_7"
 PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*y = 0,*z = 0,*xb,sum1,sum2,sum3,sum4,sum5,sum6,sum7;
-  PetscScalar    x1,x2,x3,x4,x5,x6,x7,*yarray,*zarray;
-  MatScalar      *v;
-  PetscErrorCode ierr;
-  PetscInt       mbs     =a->mbs,i,*idx,*ii,j,n,*ridx=NULL;
-  PetscBool      usecprow=a->compressedrow.use;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *y = 0,*z = 0,sum1,sum2,sum3,sum4,sum5,sum6,sum7;
+  const PetscScalar *x,*xb;
+  PetscScalar       x1,x2,x3,x4,x5,x6,x7,*yarray,*zarray;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs = a->mbs,i,j,n;
+  const PetscInt    *idx,*ii,*ridx = NULL;
+  PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&yarray);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
-  } else {
-    zarray = yarray;
-  }
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayPair(yy,zz,&yarray,&zarray);CHKERRQ(ierr);
 
   idx = a->j;
   v   = a->a;
@@ -1519,11 +2054,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
       z += 7; y += 7;
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&yarray);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
-  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayPair(yy,zz,&yarray,&zarray);CHKERRQ(ierr);
   ierr = PetscLogFlops(98.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1532,17 +2064,19 @@ PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_N"
 PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*z = 0,*xb,*work,*workt,*zarray;
-  MatScalar      *v;
-  PetscErrorCode ierr;
-  PetscInt       mbs,i,*idx,*ii,bs=A->rmap->bs,j,n,bs2=a->bs2;
-  PetscInt       ncols,k,*ridx=NULL;
-  PetscBool      usecprow=a->compressedrow.use;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *z = 0,*work,*workt,*zarray;
+  const PetscScalar *x,*xb;
+  const MatScalar   *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs,i,bs=A->rmap->bs,j,n,bs2=a->bs2;
+  PetscInt          ncols,k;
+  const PetscInt    *ridx = NULL,*idx,*ii;
+  PetscBool         usecprow = a->compressedrow.use;
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
 
   idx = a->j;
@@ -1559,7 +2093,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
   if (!a->mult_work) {
     k    = PetscMax(A->rmap->n,A->cmap->n);
-    ierr = PetscMalloc((k+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
+    ierr = PetscMalloc1(k+1,&a->mult_work);CHKERRQ(ierr);
   }
   work = a->mult_work;
   for (i=0; i<mbs; i++) {
@@ -1577,7 +2111,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
     v += n*bs2;
     if (!usecprow) z += bs;
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zarray);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz*bs2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1614,16 +2148,18 @@ PetscErrorCode MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar       *zb,*x,*z,*xb = 0,x1,x2,x3,x4,x5;
-  MatScalar         *v;
+  PetscScalar       *zb,*z,x1,x2,x3,x4,x5;
+  const PetscScalar *x,*xb = NULL;
+  const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,rval,bs=A->rmap->bs,j,n,bs2=a->bs2,*ib,*ridx=NULL;
-  Mat_CompressedRow cprow   = a->compressedrow;
-  PetscBool         usecprow=cprow.use;
+  PetscInt          mbs,i,rval,bs=A->rmap->bs,j,n,bs2=a->bs2;
+  const PetscInt    *idx,*ii,*ib,*ridx = NULL;
+  Mat_CompressedRow cprow = a->compressedrow;
+  PetscBool         usecprow = cprow.use;
 
   PetscFunctionBegin;
   if (yy != zz) { ierr = VecCopy(yy,zz);CHKERRQ(ierr); }
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   idx = a->j;
@@ -1721,13 +2257,14 @@ PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
     }
     break;
   default: {      /* block sizes larger than 5 by 5 are handled by BLAS */
-    PetscInt    ncols,k;
-    PetscScalar *work,*workt,*xtmp;
+    PetscInt          ncols,k;
+    PetscScalar       *work,*workt;
+    const PetscScalar *xtmp;
 
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"block size larger than 5 is not supported yet");
     if (!a->mult_work) {
       k    = PetscMax(A->rmap->n,A->cmap->n);
-      ierr = PetscMalloc((k+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
+      ierr = PetscMalloc1(k+1,&a->mult_work);CHKERRQ(ierr);
     }
     work = a->mult_work;
     xtmp = x;
@@ -1749,7 +2286,7 @@ PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
     }
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz*a->bs2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1760,16 +2297,18 @@ PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar       *zb,*x,*z,*xb = 0,x1,x2,x3,x4,x5;
-  MatScalar         *v;
+  PetscScalar       *zb,*z,x1,x2,x3,x4,x5;
+  const PetscScalar *x,*xb = 0;
+  const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs,i,*idx,*ii,rval,bs=A->rmap->bs,j,n,bs2=a->bs2,*ib,*ridx=NULL;
+  PetscInt          mbs,i,rval,bs=A->rmap->bs,j,n,bs2=a->bs2;
+  const PetscInt    *idx,*ii,*ib,*ridx = NULL;
   Mat_CompressedRow cprow   = a->compressedrow;
   PetscBool         usecprow=cprow.use;
 
   PetscFunctionBegin;
   if (yy != zz) { ierr = VecCopy(yy,zz);CHKERRQ(ierr); }
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   idx = a->j;
@@ -1867,12 +2406,12 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
     }
     break;
   default: {      /* block sizes larger then 5 by 5 are handled by BLAS */
-    PetscInt    ncols,k;
-    PetscScalar *work,*workt,*xtmp;
-
+    PetscInt          ncols,k;
+    PetscScalar       *work,*workt;
+    const PetscScalar *xtmp;
     if (!a->mult_work) {
       k    = PetscMax(A->rmap->n,A->cmap->n);
-      ierr = PetscMalloc((k+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
+      ierr = PetscMalloc1(k+1,&a->mult_work);CHKERRQ(ierr);
     }
     work = a->mult_work;
     xtmp = x;
@@ -1894,7 +2433,7 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
     }
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*a->nz*a->bs2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1912,7 +2451,7 @@ PetscErrorCode MatScale_SeqBAIJ(Mat inA,PetscScalar alpha)
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(totalnz,&tnz);CHKERRQ(ierr);
-  PetscStackCall("BLASscal",BLASscal_(&tnz,&oalpha,a->a,&one));
+  PetscStackCallBLAS("BLASscal",BLASscal_(&tnz,&oalpha,a->a,&one));
   ierr = PetscLogFlops(totalnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1936,8 +2475,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
   } else if (type == NORM_1) { /* maximum column sum */
     PetscReal *tmp;
     PetscInt  *bcol = a->j;
-    ierr = PetscMalloc((A->cmap->n+1)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
-    ierr = PetscMemzero(tmp,A->cmap->n*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscCalloc1(A->cmap->n+1,&tmp);CHKERRQ(ierr);
     for (i=0; i<nz; i++) {
       for (j=0; j<bs; j++) {
         k1 = bs*(*bcol) + j; /* column index */
@@ -2127,6 +2665,33 @@ PetscErrorCode MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 }
 
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode MatZeroEntries_SeqBAIJ_Kernel(PetscInt thread_id,Mat A)
+{
+  PetscErrorCode ierr;
+  PetscInt       *trstarts=A->rmap->trstarts;
+  PetscInt       n,start,end;
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
+
+  start = trstarts[thread_id]/A->rmap->bs;
+  end   = trstarts[thread_id+1]/A->rmap->bs;
+  n     = a->i[end] - a->i[start];
+  ierr  = PetscMemzero(a->a+a->bs2*a->i[start],a->bs2*n*sizeof(MatScalar));CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatZeroEntries_SeqBAIJ"
+PetscErrorCode MatZeroEntries_SeqBAIJ(Mat A)
+{
+  PetscErrorCode ierr;
+
+ 
+  PetscFunctionBegin;
+  ierr = PetscThreadCommRunKernel(PetscObjectComm((PetscObject)A),(PetscThreadKernel)MatZeroEntries_SeqBAIJ_Kernel,1,A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "MatZeroEntries_SeqBAIJ"
 PetscErrorCode MatZeroEntries_SeqBAIJ(Mat A)
@@ -2138,3 +2703,4 @@ PetscErrorCode MatZeroEntries_SeqBAIJ(Mat A)
   ierr = PetscMemzero(a->a,a->bs2*a->i[a->mbs]*sizeof(MatScalar));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif

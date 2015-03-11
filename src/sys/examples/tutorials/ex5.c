@@ -39,6 +39,7 @@ typedef struct {
   PetscInt      iarray[3];
   PetscReal     rarray[2];
   PetscBool     T;
+  PetscBool     Tarray[3];
   PetscDataType dt;
   char          filename[PETSC_MAX_PATH_LEN];
   YourChoice    which;
@@ -90,6 +91,7 @@ int main(int argc,char **argv)
 
   ierr = PetscBagRegisterRealArray(bag,&params->rarray, 2,"real_array","Real array with 2 locations");CHKERRQ(ierr);
   ierr = PetscBagRegisterBool (bag,&params->T,  PETSC_FALSE,"do_output","Write output file (yes/no)");CHKERRQ(ierr);
+  ierr = PetscBagRegisterBoolArray(bag,&params->Tarray, 3,"bool_array","Bool array with 3 locations");CHKERRQ(ierr);
   ierr = PetscBagRegisterEnum  (bag,&params->dt, PetscDataTypes,(PetscEnum)PETSC_INT,"dt","meaningless datatype");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal  (bag,&params->pos.x1,1.0,"x1","x position");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal  (bag,&params->pos.x2,1.9,"x2","y position");CHKERRQ(ierr);

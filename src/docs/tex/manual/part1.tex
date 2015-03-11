@@ -16,8 +16,7 @@ paradigms can ease the development of large-scale scientific
 application codes in Fortran, C, C++, and Python.  Begun several years ago,
 the software has evolved into a powerful set of tools for the
 numerical solution of partial differential equations and related problems
-on high-performance computers. PETSc is also callable directly from MATLAB (sequential) to
-allow ``trying out'' PETSc's solvers from prototype MATLAB code.
+on high-performance computers. 
 
 PETSc consists of a variety of libraries (similar to classes in C++),
 which are discussed in detail in Parts II and III of the users manual.
@@ -157,8 +156,12 @@ routines that support direct use of Fortran90 pointers.
 Lisandro Dalcin. This can be done by configuring PETSc with the option \trl{--download-petsc4py}. See the PETSc installation guide
 for more details \href{http://www.mcs.anl.gov/petsc/documentation/installation.html}{http://www.mcs.anl.gov/petsc/documentation/installation.html}.
 
-\noindent{\bf Note to MATLAB Programmers}: To program with PETSc in MATLAB read the information in bin/matlab/classes/PetscInitialize.m. Numerous examples
-are given in bin/matlab/classes/examples/tutorials. Run the program demo in that directory.
+\noindent{\bf Note to MATLAB Programmers}: The code that allows PETSc to be called from MATLAB is not currently supported due to the lack of interest and use.
+If you are very interested in using and and taking over its
+maintenance please contact us. To program with PETSc in MATLAB read the information in
+share/petsc/matlab/classes/PetscInitialize.m. Numerous examples are
+given in share/petsc/matlab/classes/examples/tutorials. Run the
+program demo in that directory.
 
 %-----------------------------------------------------------------------------
 \section{Running PETSc Programs}
@@ -193,7 +196,7 @@ PETSc also comes with a script
 \begin{tabbing}
    \${PETSC\_DIR}/bin/petscmpiexec -np 8 ./petsc\_program\_name petsc\_options
 \end{tabbing}
-that uses the information set in \trl{${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables} to
+that uses the information set in \trl{${PETSC_DIR}/${PETSC_ARCH}/lib/petsc-conf/petscvariables} to
 automatically use the correct \trl{mpiexec} for your configuration.
 
 All PETSc-compliant programs support the use of the \trl{-h}
@@ -317,7 +320,7 @@ parts of this example.
 The C/C++ include files for PETSc should be used via statements such as
 \begin{tabbing}
 {\footnotesize
-   \#include "petscksp.h"
+   \#include <petscksp.h>
 }
 \end{tabbing}
 where \trl{petscksp.h} is the include file for the linear solver library.
@@ -419,7 +422,7 @@ After creating the matrix and vectors that define a linear system,
 with the following sequence of commands:
 \begin{tabbing}
   KSPCreate(MPI\_Comm comm,KSP *ksp); \\
-  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag);\\
+  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat);\\
   KSPSetFromOptions(KSP ksp);\\
   KSPSolve(KSP ksp,Vec b,Vec x);\\
   KSPDestroy(KSP ksp);
@@ -687,21 +690,23 @@ When citing PETSc in a publication please cite the following:
 \begin{tabbing}
 
 @Mi\=sc\{petsc-web-page,\\
-   \>Author = \= "Satish Balay and Jed Brown and Kris Buschelman and Victor Eijkhout \\
-\> \> and William~D. Gropp and Dinesh Kaushik and Matthew~G. Knepley and \\
-\> \> Lois Curfman McInnes and Barry~F. Smith and Hong Zhang",\\
+   \>Author = \= "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown and Peter Brune \\
+\> \> and Kris Buschelman and Victor Eijkhout and William~D. Gropp \\
+\> \> and Dinesh Kaushik and Matthew~G. Knepley and Lois Curfman McInnes \\
+\> \> and Karl Rupp and Barry~F. Smith and Hong Zhang",\\
    \>Title  = "{PETS}c {W}eb page",\\
    \>Note   = "http://www.mcs.anl.gov/petsc",\\
-   \>Year   = "2012"\}\\
+   \>Year   = "2014"\}\\
 
 @TechReport\{petsc-user-ref,\\
-   \>Author      = "Satish Balay and Jed Brown and Kris Buschelman and Victor Eijkhout \\
-\> \> and William~D. Gropp and Dinesh Kaushik and Matthew~G. Knepley and \\
-\> \> Lois Curfman McInnes and Barry~F. Smith and Hong Zhang",\\
+   \>Author = \= "Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Jed Brown and Peter Brune \\
+\> \> and Kris Buschelman and Victor Eijkhout and William~D. Gropp \\
+\> \> and Dinesh Kaushik and Matthew~G. Knepley and Lois Curfman McInnes \\
+\> \> and Karl Rupp and Barry~F. Smith and Hong Zhang",\\
    \>Title       = "PETSc Users Manual",\\
-   \>Number      = "ANL-95/11 - Revision 3.3",\\
+   \>Number      = "ANL-95/11 - Revision 3.5",\\
    \>Institution = "Argonne National Laboratory",\\
-   \>Year        = "2012"\}\\
+   \>Year        = "2014"\}\\
 
 @InProceedings\{petsc-efficient,\\
    \>Author    = "Satish Balay and William D. Gropp and Lois C. McInnes and Barry F. Smith",\\
@@ -735,7 +740,7 @@ The root directory of PETSc contains the following directories:
 
 \item \trl{conf} - Base PETSc makefile that defines the standard make variables and rules used by PETSc
 \item \trl{include} - All include files for PETSc that are visible to the user.
-\item \trl{include/finclude}    - PETSc include files for Fortran programmers using
+\item \trl{include/petsc-finclude}    - PETSc include files for Fortran programmers using
                                   the .F suffix (recommended).
 \item \trl{include/private}    - Private PETSc include files that should {\em not}
                                   be used by application programmers.

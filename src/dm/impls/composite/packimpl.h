@@ -31,6 +31,6 @@ typedef struct {
   PetscErrorCode (*FormCoupleLocations)(DM,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
 } DM_Composite;
 
-PETSC_INTERN PetscErrorCode DMCreateMatrix_Composite(DM,MatType,Mat*);
+PETSC_INTERN PetscErrorCode DMCreateMatrix_Composite(DM,Mat*);
 
 #endif
