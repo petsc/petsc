@@ -80,7 +80,7 @@ SNES Object: 4 MPI processes
         type: chebyshev
           Chebyshev: eigenvalue estimates:  min = 0.133812, max = 1.47193
           Chebyshev: eigenvalues estimated using gmres with translations  [0 0.1; 0 1.1]
-          KSP Object:          (mg_levels_1_est_)           4 MPI processes
+          KSP Object:          (mg_levels_1_esteig_)           4 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
