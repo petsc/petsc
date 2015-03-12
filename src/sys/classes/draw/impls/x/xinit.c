@@ -308,20 +308,18 @@ const char *PetscAfterImageFormats[] = {
 	".Xpm.gz",
 	".Png",
 	".Jpeg",
-	".Xcf",
+	".Xcf", /* Gimp format */
 	".Ppm",
 	".Pnm",
-	".Bmp",
-	".Ico",
-	".Cur",
+	"MS Windows Bitmap",
+	"MS Windows Icon",
+	"MS Windows Cursor",
 	".Gif",
 	".Tiff",
-	"XMLScript",
-	".SVG",
-	"Reserved",
+	"Afterstep XMLScript",
+	"Scalable Vector Graphics (SVG)",
 	".Xbm",
 	"Targa",
-	"Targa?",
 	".Pcx",
 	".HTML",
 	"XML",
@@ -337,6 +335,8 @@ static PetscErrorCode PetscAfterimageStringToFormat(const char *ext,ASImageFileT
   PetscBool      flg;
 
   PetscFunctionBegin;
+  ierr = PetscStrcasecmp(".Jpg",ext,&flg);CHKERRQ(ierr);
+  if (flg) ext = ".Jpeg";
   for (i=0; i<sizeof(PetscAfterImageFormats)/sizeof(char**); i++) {
     ierr = PetscStrcasecmp(PetscAfterImageFormats[i],ext,&flg);CHKERRQ(ierr);
     if (flg) {
