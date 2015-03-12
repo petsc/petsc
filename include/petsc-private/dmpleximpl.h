@@ -401,7 +401,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalFieldOffset_Private(DM dm, Pet
       ierr = PetscSectionGetFieldConstraintDof(dm->defaultSection, point, f, &ffcdof);CHKERRQ(ierr);
       *start -= ffcdof;
     }
-    *end = *start + fdof-fcdof;
+    *end = *start < 0 ? *start - (fdof-fcdof) : *start + fdof-fcdof;
   }
 #else
   {
@@ -419,7 +419,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMPlexGetGlobalFieldOffset_Private(DM dm, Pet
       ffcdof += ffs->bc ? ffs->bc->atlasDof[point - ffs->bc->pStart] : 0;
     }
     *start = gs->atlasOff[point - s->pStart] + lfoff - loff - ffcdof;
-    *end   = *start + fdof-fcdof;
+    *end = *start < 0 ? *start - (fdof-fcdof) : *start + fdof-fcdof;
   }
 #endif
   PetscFunctionReturn(0);
