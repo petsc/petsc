@@ -2,6 +2,7 @@
 #include <petscdmplex.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define dmlabelview_               DMLABELVIEW
 #define dmplexcreatelabel_         DMPLEXCREATELABEL
 #define dmplexhaslabel_            DMPLEXHASLABEL
 #define dmplexgetlabelvalue_       DMPLEXGETLABELVALUE
@@ -12,6 +13,7 @@
 #define dmplexgetstratumis_        DMPLEXGETSTRATUMIS
 #define dmplexgetlabel_            DMPLEXGETLABEL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define dmlabelview_               dmlabelview
 #define dmplexcreatelabel_         dmplexcreatelabel
 #define dmplexhaslabel_            dmplexhaslabel
 #define dmplexgetlabelvalue_       dmplexgetlabelvalue
@@ -24,6 +26,13 @@
 #endif
 
 /* Definitions of Fortran Wrapper routines */
+
+PETSC_EXTERN void PETSC_STDCALL dmlabelview_(DMLabel *label, PetscViewer *vin, PetscErrorCode *ierr)
+{
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(vin, v);
+  *ierr = DMLabelView(*label, v);
+}
 
 PETSC_EXTERN void PETSC_STDCALL dmplexcreatelabel_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), int *ierr PETSC_END_LEN(lenN))
 {

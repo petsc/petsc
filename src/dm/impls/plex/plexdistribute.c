@@ -1438,7 +1438,7 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexDistribute"
-/*@
+/*@C
   DMPlexDistribute - Distributes the mesh and any associated sections.
 
   Not Collective
