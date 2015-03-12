@@ -686,11 +686,11 @@ PetscErrorCode  PetscInitializeSAWs(const char help[])
 $       call PetscInitialize(file,ierr)
 
 +   ierr - error return code
--  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use NULL_CHARACTER to not check for
+-  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_NULL_CHARACTER to not check for
           code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
 
    Important Fortran Note:
-   In Fortran, you MUST use NULL_CHARACTER to indicate a
+   In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
    null character string; you CANNOT just use NULL as
    in the C version. See Users-Manual: ch_fortran for details.
 
