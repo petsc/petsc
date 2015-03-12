@@ -72,12 +72,8 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(xx);CHKERRQ(ierr);
   ierr = VecDuplicate(xx,&bb);CHKERRQ(ierr);
   ierr = VecSet(bb,.0);CHKERRQ(ierr);
-  /* generate element matrices */
+  /* generate element matrices -- see ex56.c on how to use different data set */
   {
-    FILE *file;
-    char fname[] = "data/elem_2d_pln_strn_v_25.txt";
-    file = fopen(fname, "r");
-    if (file == 0) {
       DD[0][0] =  0.53333333333333321;
       DD[0][1] =  0.20000000000000001;
       DD[0][2] = -0.33333333333333331;
@@ -142,15 +138,7 @@ int main(int argc,char **args)
       DD[7][5] =  6.66666666666666519E-002;
       DD[7][6] = -0.20000000000000001;
       DD[7][7] =  0.53333333333333321;
-    } else {
-      for (i=0; i<8; i++) {
-        for (j=0; j<8; j++) {
-          double val;
-          fscanf(file, "%le", &val);
-          DD1[i][j] = val;
-        }
-      }
-    }
+    
     /* BC version of element */
     for (i=0; i<8; i++) {
       for (j=0; j<8; j++) {
