@@ -6846,7 +6846,7 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 #define __FUNCT__ "DMPlexGetCellRefiner_Internal"
 PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
 {
-  PetscInt       dim, cStart, cEnd, coneSize, cMax;
+  PetscInt       dim, cStart, cEnd, coneSize, cMax, fMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
