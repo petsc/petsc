@@ -108,6 +108,8 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
         maker.logPrint('Test %s requires packages %s\n' % (testnum, param['requires']), debugSection='screen', forceScroll=True)
         continue
     if 'num' in param: testnum = param['num']
+    if args.numProcs is not None:
+      param['numProcs'] = args.numProcs
     if not args.testnum is None and not testnum in validTestnum: continue
     if 'setup' in param:
       print(param['setup'])
@@ -321,6 +323,7 @@ if __name__ == '__main__':
   parser_check.add_argument('--retain', action='store_true', default=False, help='Retain the executable after testing')
   parser_check.add_argument('--testnum', help='The test to execute')
   parser_check.add_argument('--replace', action='store_true', default=False, help='Replace stored output with test output')
+  parser_check.add_argument('--numProcs', help='The number of processes to use')
   parser_check.set_defaults(func=check)
   parser_regression = subparsers.add_parser('regression', help='Execute regression tests')
   parser_regression.add_argument('dirs', nargs='*', help='Directories for regression tests')
