@@ -546,7 +546,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PetscErrorCode ierr;
   PetscInt       i,n = mglevels[0]->levels;
   PC             cpc;
-  PetscBool      preonly,lu,redundant,cholesky,svd,dump = PETSC_FALSE,opsset,use_amat;
+  PetscBool      preonly,lu,redundant,cholesky,svd,dump = PETSC_FALSE,opsset,use_amat,missinginterpolate = PETSC_FALSE;
   Mat            dA,dB;
   Vec            tvec;
   DM             *dms;
@@ -590,8 +590,17 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
   }
 
-  /* Skipping this for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. Wrap ML/GAMG as DMs? */
-  if (pc->dm && mg->galerkin != 2 && !pc->setupcalled) {
+  for (i=n-1; i>0; i--) {
+    if (!(mglevels[i]->interpolate || mglevels[i]->restrct)) {
+      missinginterpolate = PETSC_TRUE;
+      continue;
+    }
+  }
+  /*
+   Skipping if user has provided all interpolation/restriction needed (since DM might not be able to produce them (when coming from SNES/TS)
+   Skipping for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. Wrap ML/GAMG as DMs?
+  */
+  if (missinginterpolate && pc->dm && mg->galerkin != 2 && !pc->setupcalled) {
     /* construct the interpolation from the DMs */
     Mat p;
     Vec rscale;
