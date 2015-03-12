@@ -5371,7 +5371,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFECompositeGetMapping"
-/*@
+/*@C
   PetscFECompositeGetMapping - Returns the mappings from the reference element to each subelement
 
   Not collective
