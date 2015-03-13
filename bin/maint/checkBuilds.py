@@ -352,8 +352,8 @@ examples_(branch)_(PETSC_ARCH)_(machine).log.
 Thanks,
   The PETSc development team
 
-[1] http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/
-''')
+[1] http://ftp.mcs.anl.gov/pub/petsc/nightlylogs/%s
+''' % self.logurl)
 
       allwarnings = self.blameDict[author]
       allwarnings = sorted(allwarnings)
@@ -374,6 +374,10 @@ Thanks,
   def run(self):
     self.setup()
     self.isLocal = os.path.isdir(self.argDB['logDirectory'])
+    if self.argDB['logDirectory'].startswith('/mcs/ftp/pub/petsc/nightlylogs/'):
+      self.logurl = self.argDB['logDirectory'].replace('/mcs/ftp/pub/petsc/nightlylogs/','')
+    else:
+      self.logurl=''
     print self.isLocal
     map(lambda f: self.checkFile(os.path.join(self.argDB['logDirectory'], f)), self.getBuildFileNames())
     if self.argDB['blameMail']:
