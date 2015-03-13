@@ -2209,7 +2209,7 @@ runex174_2_sbaij:
 	   ${RM} -f ex174.tmp
 
 runex181:
-	-@${MPIEXEC} -n 2 ./ex181 > ex181.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex181 |grep -v "Mat Object" > ex181.tmp 2>&1; \
 	   ${DIFF} output/ex181.out ex181.tmp || printf "${PWD}\nPossible problem with ex181, diffs above\n=========================================\n"; \
 	   ${RM} -f ex181.tmp
 
@@ -2218,7 +2218,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex9.PETSc runex9 runex9_2 runex9_3 runex9_3_baij runex9_3_sbaij runex9_4_baij runex9_4_sbaij ex9.rm \
                                  ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
                                  runex14 ex14.rm ex15.PETSc runex15 ex15.rm \
-                                 ex18.PETSc runex18 runex18_1 runex18_2 runex18_3 runex18_4 runex18_5 runex18_6 runex18_7 runex18_8 runex18_9 runex18_10 runex18_11 runex18_12 runex18_13 runex18_14 ex18.rm \
+                                 ex18.PETSc runex18 runex18_1 runex18_2 runex18_3 runex18_4 runex18_5 runex18_6 runex18_7 runex18_8 \
+                                 runex18_9 runex18_10 runex18_11 runex18_12 runex18_13 runex18_14 ex18.rm \
                                  ex19.PETSc ex19.rm ex20.PETSc runex20 \
                                  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm ex16.PETSc runex16 ex16.rm \
                                  ex29.PETSc runex29 ex29.rm \
@@ -2241,7 +2242,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex159.PETSc runex159 runex159_nest ex159.rm \
                                  ex160.PETSc runex160 ex160.rm ex161.PETSc runex161 runex161_2 runex161_3 runex161_4 runex161_5 ex161.rm \
                                  ex164.PETSc runex164 ex164.rm ex172.PETSc runex172 runex172_2 runex172_3 runex172_4 \
-                                 runex172_baij runex172_mpibaij runex172_sbaij runex172_mpisbaij ex172.rm
+                                 runex172_baij runex172_mpibaij runex172_sbaij runex172_mpisbaij ex172.rm ex181.PETSc runex181 ex181.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \
