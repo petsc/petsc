@@ -293,7 +293,7 @@ class BuildChecker(script.Script):
       pairs = [ln+','+ln for ln in sorted(self.commitfileDict[key])]
       output=''
       try:
-        (output, error, status) = self.executeShellCommand('git blame --line-porcelain --show-email -L '+' -L '.join(pairs)+' '+key[0]+' -- '+key[1])
+        (output, error, status) = self.executeShellCommand('git blame -w -M --line-porcelain --show-email -L '+' -L '.join(pairs)+' '+key[0]+' -- '+key[1])
       except: pass
       if output:
         blamelines = output.split('\n')
@@ -373,6 +373,7 @@ Thanks,
   def run(self):
     self.setup()
     self.isLocal = os.path.isdir(self.argDB['logDirectory'])
+    print self.isLocal
     map(lambda f: self.checkFile(os.path.join(self.argDB['logDirectory'], f)), self.getBuildFileNames())
     if self.argDB['blameMail']:
       self.blameMail()
