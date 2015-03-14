@@ -34,7 +34,6 @@ class KSPType(object):
     LCD        = S_(KSPLCD)
     PYTHON     = S_(KSPPYTHON)
     GCR        = S_(KSPGCR)
-    SPECEST    = S_(KSPSPECEST)
 
 class KSPNormType(object):
     # native
