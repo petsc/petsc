@@ -337,7 +337,16 @@ static PetscErrorCode TSSetFromOptions_Mimex(PetscOptions *PetscOptionsObject, T
 #define __FUNCT__ "TSView_Mimex"
 static PetscErrorCode TSView_Mimex(TS ts,PetscViewer viewer)
 {
+  TS_Mimex      *mimex = (TS_Mimex *) ts->data;
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer, "  Version = %D\n", mimex->version);CHKERRQ(ierr);
+  }
+  if (ts->snes) {ierr = SNESView(ts->snes, viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
