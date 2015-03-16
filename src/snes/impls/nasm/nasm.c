@@ -661,6 +661,17 @@ PetscErrorCode SNESNASMGetDamping_NASM(SNES snes,PetscReal *dmp)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNASMSolveLocal_Private"
+/*
+  Input Parameters:
++ snes - The solver
+. B - The RHS vector
+- X - The initial guess
+
+  Output Parameters:
+. Y - The solution update
+
+  TODO: All scatters should be packed into one
+*/
 PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
 {
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
@@ -710,6 +721,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
       ierr = VecScatterEnd(oscat,B,Bl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     } else Bl = NULL;
     ierr = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
+    /* Could scatter directly from X */
     ierr = DMLocalToGlobalBegin(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = VecCopy(Xl,Yl);CHKERRQ(ierr);
