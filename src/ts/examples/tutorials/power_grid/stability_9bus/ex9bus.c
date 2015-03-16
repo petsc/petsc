@@ -120,6 +120,7 @@ typedef struct {
   PetscReal   t;
   IS          is_diff; /* indices for differential equations */
   IS          is_alg; /* indices for algebraic equations */
+  PetscBool   setisdiff; /* TS computes truncation error based only on the differential variables */
 } Userctx;
 
 
@@ -837,6 +838,7 @@ int main(int argc,char **argv)
     user.tfaulton  = 1.0;
     user.tfaultoff = 1.2;
     user.Rfault    = 0.0001;
+    user.setisdiff = PETSC_FALSE;
     user.faultbus  = 8;
     ierr           = PetscOptionsReal("-tfaulton","","",user.tfaulton,&user.tfaulton,NULL);CHKERRQ(ierr);
     ierr           = PetscOptionsReal("-tfaultoff","","",user.tfaultoff,&user.tfaultoff,NULL);CHKERRQ(ierr);
@@ -845,6 +847,7 @@ int main(int argc,char **argv)
     user.tmax      = 5.0;
     ierr           = PetscOptionsReal("-t0","","",user.t0,&user.t0,NULL);CHKERRQ(ierr);
     ierr           = PetscOptionsReal("-tmax","","",user.tmax,&user.tmax,NULL);CHKERRQ(ierr);
+    ierr           = PetscOptionsBool("-setisdiff","","",user.setisdiff,&user.setisdiff,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -912,6 +915,10 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr);
 
+  if(user.setisdiff) {
+    ierr = TSSetDifferentialEquationsIS(ts,user.is_diff);CHKERRQ(ierr);
+  }
+  
   user.alg_flg = PETSC_FALSE;
   /* Prefault period */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
