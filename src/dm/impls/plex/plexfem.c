@@ -1260,7 +1260,7 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat In, void *user)
   for (f = 0; f < Nf; ++f) {
     PetscObject  obj;
     PetscClassId id;
-    PetscInt     rNb, Nc;
+    PetscInt     rNb = 0, Nc = 0;
 
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
@@ -1316,7 +1316,7 @@ PetscErrorCode DMPlexComputeInterpolatorFEM(DM dmc, DM dmf, Mat In, void *user)
       PetscObject  obj;
       PetscClassId id;
       PetscReal   *B;
-      PetscInt     NcJ, cpdim, j;
+      PetscInt     NcJ = 0, cpdim = 0, j;
 
       ierr = PetscDSGetDiscretization(prob, fieldJ, &obj);CHKERRQ(ierr);
       ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
@@ -1457,7 +1457,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   for (f = 0; f < Nf; ++f) {
     PetscObject  obj;
     PetscClassId id;
-    PetscInt     fNb, Nc;
+    PetscInt     fNb = 0, Nc = 0;
 
     ierr = PetscDSGetDiscretization(prob, f, &obj);CHKERRQ(ierr);
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
