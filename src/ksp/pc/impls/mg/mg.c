@@ -1006,6 +1006,17 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCMGSetGalerkin_MG"
+PetscErrorCode PCMGSetGalerkin_MG(PC pc,PetscBool use)
+{
+  PC_MG *mg = (PC_MG*)pc->data;
+
+  PetscFunctionBegin;
+  mg->galerkin = use ? 1 : 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCMGSetGalerkin"
 /*@
    PCMGSetGalerkin - Causes the coarser grid matrices to be computed from the
@@ -1032,11 +1043,11 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 @*/
 PetscErrorCode PCMGSetGalerkin(PC pc,PetscBool use)
 {
-  PC_MG *mg = (PC_MG*)pc->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  mg->galerkin = use ? 1 : 0;
+  ierr = PetscTryMethod(pc,"PCGMSetGalerkin_C",(PC,PetscBool),(pc,use));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1223,5 +1234,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   pc->ops->destroy        = PCDestroy_MG;
   pc->ops->setfromoptions = PCSetFromOptions_MG;
   pc->ops->view           = PCView_MG;
+
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCMGSetGalerkin_C",PCMGSetGalerkin_MG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
