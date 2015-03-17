@@ -595,6 +595,7 @@ MPIUni_PETSC_EXTERN double MPI_Wtime(void);
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buffer),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (datatype),\
+     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (root),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
      MPI_SUCCESS)
 #define MPI_Gather(sendbuf,sendcount, sendtype,\
