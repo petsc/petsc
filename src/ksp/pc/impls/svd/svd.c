@@ -371,6 +371,10 @@ static PetscErrorCode PCSetFromOptions_SVD(PetscOptions *PetscOptionsObject,PC p
 -  -pc_svd_zero_sing <rtol> Singular values smaller than this are treated as zero
 +  -pc_svd_monitor  Print information on the extreme singular values of the operator
 
+  Developer Note: This implementation automatically creates a redundant copy of the
+   matrix on each process and uses a sequential SVD solve. Why does it do this instead
+   of using the composable PCREDUNDANT object?
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
 
