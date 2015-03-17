@@ -139,7 +139,7 @@ PC Object:(stokes_) 4 MPI processes
           linear system matrix = precond matrix:
           Mat Object:          (stokes_mg_levels_1_fieldsplit_0_)           4 MPI processes
             type: mpiaij
-            rows=2178, cols=2178
+            rows=2178, cols=2178, bs=2
             total: nonzeros=37636, allocated nonzeros=37636
             total number of mallocs used during MatSetValues calls =0
               using I-node (on process 0) routines: found 289 nodes, limit used is 5
@@ -203,7 +203,7 @@ PC Object:(stokes_) 4 MPI processes
           linear system matrix = precond matrix:
           Mat Object:          (stokes_mg_levels_2_fieldsplit_0_)           4 MPI processes
             type: mpiaij
-            rows=8450, cols=8450
+            rows=8450, cols=8450, bs=2
             total: nonzeros=148996, allocated nonzeros=148996
             total number of mallocs used during MatSetValues calls =0
               using I-node (on process 0) routines: found 1089 nodes, limit used is 5
@@ -267,7 +267,7 @@ PC Object:(stokes_) 4 MPI processes
           linear system matrix = precond matrix:
           Mat Object:          (stokes_mg_levels_3_fieldsplit_0_)           4 MPI processes
             type: mpiaij
-            rows=33282, cols=33282
+            rows=33282, cols=33282, bs=2
             total: nonzeros=592900, allocated nonzeros=592900
             total number of mallocs used during MatSetValues calls =0
               using I-node (on process 0) routines: found 4225 nodes, limit used is 5

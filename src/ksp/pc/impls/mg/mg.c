@@ -1047,7 +1047,7 @@ PetscErrorCode PCMGSetGalerkin(PC pc,PetscBool use)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCGMSetGalerkin_C",(PC,PetscBool),(pc,use));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCMGSetGalerkin_C",(PC,PetscBool),(pc,use));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
