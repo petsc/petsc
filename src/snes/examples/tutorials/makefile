@@ -210,7 +210,7 @@ ex60: ex60.o  chkopts
 	-${CLINKER} -o ex60 ex60.o ${PETSC_SNES_LIB}
 	${RM} ex60.o
 ex61: ex61.o  chkopts
-	-${CLINKER} -o ex61 ex61.o ${PETSC_SNES_LIB}
+	-${CLINKER} -o ex61 ex61.o ${PETSC_SNES_LIB}!
 	${RM} ex61.o
 ex61gen: ex61gen.o  chkopts
 	-${CLINKER} -o ex61gen ex61gen.o ${PETSC_SNES_LIB}

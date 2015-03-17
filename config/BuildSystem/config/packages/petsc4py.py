@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.giturls           = ['git@bitbucket.org:petsc/petsc4py.git']
-    self.gitcommit         = 'cde2915'
+    self.gitcommit         = 'master'
     self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-418f86b7e1b8.tar.gz']
     self.functions         = []
     self.includes          = []
