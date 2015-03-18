@@ -284,8 +284,7 @@ runex8:
 	   else printf "${PWD}\nPossible problem with ex8_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex8_1.tmp
 runex8_2:
-	-@${MPIEXEC} -n 1 ./ex8 -sameA \
-	   -ksp_rtol .000001 > ex8_2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex8 -sameA > ex8_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex8_2.out ex8_2.tmp) then true; \
 	   else printf "${PWD}\nPossible problem with ex8_2, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex8_2.tmp
