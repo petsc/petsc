@@ -114,7 +114,7 @@ runex1:
 runex1f:
 	-@${MPIEXEC} -n 1 ./ex1f  > ex1f.tmp1 2>&1; egrep "(PETSC ERROR)" ex1f.tmp1  > ex1f.tmp;\
 	if (${DIFF} output/ex1f_1.out ex1f.tmp) then true; \
-	   else printf "${PWD}\nPossible problem with ex1_1, diffs above\n=========================================\n"; fi; \
+	   else printf "${PWD}\nPossible problem with ex1f_1, diffs above\n=========================================\n"; fi; \
 	   ${RM} -f ex1f.tmp1 ex1f.tmp
 
 runex2:
