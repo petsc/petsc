@@ -98,15 +98,15 @@ PetscErrorCode  SNESVIMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,vo
   PetscFunctionBegin;
   ierr = SNESGetFunction(snes,&F,0,0);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
-  //  ierr = SNESVIGetActiveSetIS(snes,X,F,&isactive);CHKERRQ(ierr);
+  ierr = SNESVIGetActiveSetIS(snes,X,F,&isactive);CHKERRQ(ierr);
   ierr = VecDuplicate(F,&Finactive);CHKERRQ(ierr);
   ierr = VecCopy(F,Finactive);CHKERRQ(ierr);
-  //ierr = VecISSet(Finactive,isactive,0.0);CHKERRQ(ierr);
+  ierr = VecISSet(Finactive,isactive,0.0);CHKERRQ(ierr);
 
   if (!viewer) {
     viewer = PETSC_VIEWER_DRAW_(PetscObjectComm((PetscObject)snes));
   }
-  ierr = VecView(F,viewer);CHKERRQ(ierr);
+  ierr = VecView(Finactive,viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&Finactive);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
