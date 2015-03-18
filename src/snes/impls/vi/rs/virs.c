@@ -623,6 +623,8 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
   }
+  /* make sure that the VI information attached to the DM is removed if the for loop above was broken early due to some exceptional conditional */
+  ierr = DMDestroyVI(snes->dm);CHKERRQ(ierr);
   if (i == maxits) {
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
