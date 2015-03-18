@@ -104,3 +104,11 @@ class Configure(config.package.Package):
     self.addMakeRule('petsc4py-build','')
     self.addMakeRule('petsc4py-install','')
 
+  def gitPreReqCheck(self):
+    ''' petsc4py git download requires Cython'''
+    flg = True
+    try:
+      import Cython
+    except:
+      flg = False
+    return flg
