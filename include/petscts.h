@@ -339,6 +339,8 @@ PETSC_EXTERN PetscErrorCode TSInterpolate(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSSetTolerances(TS,PetscReal,Vec,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSGetTolerances(TS,PetscReal*,Vec*,PetscReal*,Vec*);
 PETSC_EXTERN PetscErrorCode TSSetDifferentialEquationsIS(TS,IS);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNormInfinity(TS,Vec,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm2(TS,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSErrorWeightedNorm(TS,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetCFLTimeLocal(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetCFLTime(TS,PetscReal*);

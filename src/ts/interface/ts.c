@@ -4978,7 +4978,7 @@ PetscErrorCode TSSetDifferentialEquationsIS(TS ts, IS is_diff)
 
    Level: developer
 
-.seealso: TSSetTolerances()
+.seealso: TSErrorWeightedNorm(), TSErrorWeightedNormInfinity()
 @*/
 PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec Y,PetscReal *norm)
 {
@@ -5112,7 +5112,7 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec Y,PetscReal *norm)
 
    Level: developer
 
-.seealso: TSSetTolerances()
+.seealso: TSErrorWeightedNorm(), TSErrorWeightedNorm2()
 @*/
 PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec Y,PetscReal *norm)
 {
@@ -5273,7 +5273,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec Y,PetscReal *norm)
 
    Level: developer
 
-.seealso: TSSetTolerances()
+.seealso: TSErrorWeightedNormInfinity(), TSErrorWeightedNorm2()
 @*/
 PetscErrorCode TSErrorWeightedNorm(TS ts,Vec Y,PetscReal *norm)
 {
