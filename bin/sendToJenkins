@@ -1,11 +1,13 @@
 #!/bin/bash
 
 OPTIND=1
-httpsserver=https://jenkins-ci.mcs.anl.gov/   # Jenkins server URL
+httpprotocol=https
+jenkinsserver=jenkins-ci.mcs.anl.gov
+httpsserver=${httpprotocol}://${jenkinsserver}
 sshserver=login.mcs.anl.gov                   # machine from which you can access the Jenkins server
 username=$JENKINS_USERNAME                    # your user name on the sshserver machine
 email=$JENKINS_EMAIL
-branch=`git symbolic-ref -q --short HEAD`
+branch=`git symbolic-ref -q --short HEAD 2>/dev/null`
 architecture="default"
 configoptions=""
 silent="yes"
@@ -15,6 +17,7 @@ results=""
 cancel=""
 wait="false"
 testall="\&testall=false"
+buildlist=""
 
 while getopts "h?a:b:d:m:o:qr:stu:vw" opt; do
   case "$opt" in
@@ -81,6 +84,13 @@ while getopts "h?a:b:d:m:o:qr:stu:vw" opt; do
   esac
 done
 
+if [ "${branch}x" == "x" ]; then
+  branch="next"
+  echo "No current git branch detected, testing 'next'"
+else
+  echo "Testing git branch ${branch}. Use -b option to change."
+fi
+
 
 if [ -z ${username} ]; then
   url=${sshserver}
@@ -113,20 +123,34 @@ if [ "x${status}" != "x" ]; then
   exit 0
 fi
 
-
+#TODO Check actual jobnumber or queueitem (use tag)
 # Options for results:
 #   -- get os specific or all or master info
 #   -- still in queue?
 #   -- currently running
 #   -- wait until finished
-
+#   -- give web page + instructions to access from off site
+# https://jenkins-ci.mcs.anl.gov/job/petsc-branch/slave_label=mcs/190/api/xml?depth=1
 if [ "x${results}" != "x" ]; then
-  for slave in mcs  macos; do
-      echo
-      echo "******** ${slave} *************"
-      ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/slave_label=${slave}/${results}/consoleText
-      echo
-  done
+    slave="mcs"
+    echo
+    echo "******** ${slave} *************"
+    named_test=`ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/slave_label=${slave}/${results}/api/json?depth=1 | python -c 'import sys,json; print json.load(sys.stdin)["actions"][0]["parameters"][3]["value"]'`
+    if [[ "${named_test}" =~ .*linux.* ]]; then
+        ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/slave_label=${slave}/${results}/consoleText
+    else
+        echo "results not applicable for ${named_test}"
+    fi
+
+    slave="macos"
+    echo
+    echo "******** ${slave} *************"
+    named_test=`ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/slave_label=${slave}/${results}/api/json?depth=1 | python -c 'import sys,json; print json.load(sys.stdin)["actions"][0]["parameters"][3]["value"]'`
+    if [[ "${named_test}" =~ .*osx.* ]]; then
+        ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/slave_label=${slave}/${results}/consoleText
+    else
+        echo "results not applicable for ${named_test}"
+    fi
   exit 0
 fi
 
@@ -135,6 +159,7 @@ if [ "x${email}" == "x" ]; then
 else
   mailto="\&mailto=${email}"
 fi
+echo
 
 if [ ${architecture} == "default" ]; then
   bn=`ssh -S jenkins-proxy ${sshserver} curl -s ${httpsserver}/job/petsc-branch/api/json | python -c 'import sys,json; print json.load(sys.stdin)["nextBuildNumber"]'`
@@ -147,8 +172,10 @@ if [ ${architecture} == "default" ]; then
 	echo "${command}"
     fi
     ${command}
+    buildlist="${buildlist} ${bn}"
     let "bn += 1"
   done
+  let "bn -= 1"
 else
   command="ssh -S jenkins-proxy ${url} curl -s -X POST ${httpsserver}/job/petsc-branch/buildWithParameters?branch='${branch}'${mailto}\&named_test=${architecture}${configoptions}${testall}"
   if [ ${silent} == "no" ]; then
@@ -159,10 +186,6 @@ else
 
   echo buildnumber=$bn
   ${command}
-  buildurl=${httpsserver}/job/petsc-branch/
-  echo buildpage=$buildurl$bn
-  echo "for build status, visit above url or enter command:"
-  echo $buildurl$bn/api/json?pretty=true
 fi
 
 
@@ -176,10 +199,27 @@ else
     ${command} 2> /dev/null
 fi
 
+echo
+echo "Submission to Jenkis complete."
 if [ "x${email}" == "x" ]; then
   echo "Note: No email address give. Use -m <email> or set JENKINS_EMAIL"
 else
-  echo "Jenkins will email results to ${mailto}"
+  echo "Jenkins will email results to ${email}"
 fi
 
+echo
 echo "Results can be viewed using ./sendToJenkins -r <buildnumber>"
+echo "or at given web page (may only be accessible inside network): "
+buildurl=${httpsserver}/job/petsc-branch/
+echo $buildurl$bn
+echo
+echo "for build status, visit above url or enter command:"
+echo $buildurl$bn/api/json?pretty=true
+echo "It may be necessary to tunnel through to web page, you can either"
+echo "set up a SOCKS proxy (and the configure browser) with"
+echo "ssh -N -D 10800 ${username}@${sshserver}   (10800 can be any open port number)"
+echo
+echo "Or directly forward https traffic from localhost to jenkins host with"
+echo "ssh -N -L 10800:${jenkinsserver}:443 ${username}@${sshserver}"
+echo "and use https://localhost:10800/job/petsc-branch"
+
