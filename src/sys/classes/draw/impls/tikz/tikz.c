@@ -130,11 +130,11 @@ PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw,PetscReal xl,PetscRea
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawBoxedString_TikZ"
+#define __FUNCT__ "PetscDrawStringBoxed_TikZ"
 /*
     Does not handle multiline strings correctly
 */
-PetscErrorCode PetscDrawBoxedString_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,int ct,const char text[],PetscReal *w,PetscReal *h)
+PetscErrorCode PetscDrawStringBoxed_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,int ct,const char text[],PetscReal *w,PetscReal *h)
 {
   PetscDraw_TikZ *win = (PetscDraw_TikZ*)draw->data;
   PetscErrorCode ierr;
@@ -198,7 +198,7 @@ static struct _PetscDrawOps DvOps = { 0,
                                       0,
                                       0,
                                       0,
-                                      PetscDrawBoxedString_TikZ};
+                                      PetscDrawStringBoxed_TikZ};
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_TikZ"

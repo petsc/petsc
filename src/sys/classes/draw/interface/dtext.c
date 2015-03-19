@@ -5,6 +5,49 @@
 #include <petsc-private/drawimpl.h>  /*I "petscdraw.h" I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawStringCentered"
+/*@C
+   PetscDrawStringCentered - PetscDraws text onto a drawable centered at a point
+
+   Not Collective
+
+   Input Parameters:
++  draw - the drawing context
+.  xc - the coordinates of right-left center of text
+.  yl - the coordinates of lower edge of text
+.  cl - the color of the text
+-  text - the text to draw
+
+   Level: beginner
+
+   Concepts: drawing^string
+   Concepts: string^drawing
+
+.seealso: PetscDrawStringVertical(), PetscDrawString(), PetscDrawStringBoxed()
+
+@*/
+PetscErrorCode  PetscDrawStringCentered(PetscDraw draw,PetscReal xc,PetscReal yl,int cl,const char text[])
+{
+  PetscErrorCode ierr;
+  PetscBool      isnull;
+  size_t         len;
+  PetscReal      tw,th;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  PetscValidCharPointer(text,5);
+  ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+
+  ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
+  ierr =  PetscStrlen(text,&len);CHKERRQ(ierr);
+  xc   = xc - .5*len*tw;
+  ierr = PetscDrawString(draw,xc,yl,cl,text);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawString"
 /*@C
    PetscDrawString - PetscDraws text onto a drawable.
@@ -23,7 +66,7 @@
    Concepts: drawing^string
    Concepts: string^drawing
 
-.seealso: PetscDrawStringVertical()
+.seealso: PetscDrawStringVertical(), PetscDrawStringCentered(), PetscDrawStringBoxed()
 
 @*/
 PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
@@ -41,9 +84,9 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawBoxedString"
+#define __FUNCT__ "PetscDrawStringBoxed"
 /*@C
-   PetscDrawBoxedString - Draws a string with a box around it
+   PetscDrawStringBoxed - Draws a string with a box around it
 
    Not Collective
 
@@ -63,10 +106,10 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
    Concepts: drawing^string
    Concepts: string^drawing
 
-.seealso: PetscDrawStringVertical(), PetscDrawBoxedStringSize()
+.seealso: PetscDrawStringVertical(), PetscDrawStringBoxedSize(), PetscDrawString(), PetscDrawStringCentered()
 
 @*/
-PetscErrorCode  PetscDrawBoxedString(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *w,PetscReal *h)
+PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *w,PetscReal *h)
 {
   PetscErrorCode ierr;
   PetscBool      isnull;

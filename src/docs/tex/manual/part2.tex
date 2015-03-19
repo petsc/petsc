@@ -7395,17 +7395,19 @@ to pause \trl{n} seconds at each PetscDrawPause(). A time of \trl{-1}
 indicates that the application should pause until receiving mouse
 input from the user.
 
-Text can be drawn with either of the two
+Text can be drawn with 
 commands \sindex{text, drawing}
 \begin{tabbing}
-  PetscDrawString(PetscDraw win,double x,double y,int color,char *text);\\
-  PetscDrawStringVertical(PetscDraw win,double x,double y,int color,char *text);
+  PetscDrawString(PetscDraw win,PetscReal x,PetscReal y,int color,char *text);\\
+  PetscDrawStringVertical(PetscDraw win,PetscReal x,PetscReal y,int color,const char *text);
+  PetscDrawStringCentered(PetscDraw win,PetscReal x,PetscReal y,int color,const char *text);
+  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *w,PetscReal *h);
 \end{tabbing}
 The user can set the text font size or determine it with the
 commands
 \begin{tabbing}
-  PetscDrawStringSetSize(PetscDraw win,double width,double height);\\
-  PetscDrawStringGetSize(PetscDraw win,double *width,double *height);
+  PetscDrawStringSetSize(PetscDraw win,PetscReal width,PetscReal height);\\
+  PetscDrawStringGetSize(PetscDraw win,PetscReal *width,PetscReal *height);
 \end{tabbing}
 
 \subsection{Line Graphs}
@@ -7422,13 +7424,13 @@ The argument \trl{ncurves} indicates how many curves are to be drawn.
 Points can be added to each of the curves with the
 command
 \begin{tabbing}
-  PetscDrawLGAddPoint(PetscDrawLG ctx,double *x,double *y);
+  PetscDrawLGAddPoint(PetscDrawLG ctx,PetscReal *x,PetscReal *y);
 \end{tabbing}
 The arguments \trl{x} and \trl{y} are arrays containing the next
 point value for each curve.
 Several points for each curve may be added with
 \begin{tabbing}
-  PetscDrawLGAddPoints(PetscDrawLG ctx,int n,double **x,double **y);
+  PetscDrawLGAddPoints(PetscDrawLG ctx,int n,PetscReal **x,PetscReal **y);
 \end{tabbing}
 
 The line graph is drawn (or redrawn) with the command
@@ -7449,7 +7451,7 @@ The line graph automatically determines the range of values to
 display on the two axes.  The user can change these defaults with the
 command
 \begin{tabbing}
-  PetscDrawLGSetLimits(PetscDrawLG ctx,double xmin,double xmax,double ymin,double ymax);
+  PetscDrawLGSetLimits(PetscDrawLG ctx,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax);
 \end{tabbing}
 
 It is also possible to change the display of the axes and to label

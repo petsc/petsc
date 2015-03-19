@@ -223,10 +223,8 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   ierr = PetscDrawLine(draw,axis->xlow,axis->ylow,axis->xlow,axis->yhigh,ac);CHKERRQ(ierr);
 
   if (axis->toplabel) {
-    ierr =  PetscStrlen(axis->toplabel,&len);CHKERRQ(ierr);
-    w    = xl + .5*(xr - xl) - .5*len*tw;
     h    = axis->yhigh;
-    ierr = PetscDrawString(draw,w,h,cc,axis->toplabel);CHKERRQ(ierr);
+    ierr = PetscDrawStringCentered(draw,.5*(xl+xr),axis->yhigh,cc,axis->toplabel);CHKERRQ(ierr);
   }
 
   /* PetscDraw the ticks and labels */
@@ -243,17 +241,13 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
         else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
         else               sep = 0.0;
         ierr = (*axis->xlabelstr)(tickloc[i],sep,&p);CHKERRQ(ierr);
-        ierr = PetscStrlen(p,&len);CHKERRQ(ierr);
-        w    = .5*len*tw;
-        ierr = PetscDrawString(draw,tickloc[i]-w,axis->ylow-1.2*th,cc,p);CHKERRQ(ierr);
+        ierr = PetscDrawStringCentered(draw,tickloc[i],axis->ylow-1.2*th,cc,p);CHKERRQ(ierr);
       }
     }
   }
   if (axis->xlabel) {
-    ierr = PetscStrlen(axis->xlabel,&len);CHKERRQ(ierr);
-    w    = xl + .5*(xr - xl) - .5*len*tw;
     h    = axis->ylow - 2.5*th;
-    ierr = PetscDrawString(draw,w,h,cc,axis->xlabel);CHKERRQ(ierr);
+    ierr = PetscDrawStringCentered(draw,.5*(xl + xr),h,cc,axis->xlabel);CHKERRQ(ierr);
   }
   if (axis->yticks) {
     ierr = (*axis->yticks)(axis->ylow,axis->yhigh,numy,&ntick,tickloc,MAXSEGS);CHKERRQ(ierr);
