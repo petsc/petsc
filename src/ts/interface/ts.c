@@ -1977,6 +1977,8 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
+  ierr = ISDestroy(&ts->is_diff);CHKERRQ(ierr);
+
   ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdy);CHKERRQ(ierr);
   if (ts->vecs_drdp){
     ierr = VecDestroyVecs(ts->numcost,&ts->vecs_drdp);CHKERRQ(ierr);
@@ -4933,9 +4935,37 @@ PetscErrorCode TSGetTolerances(TS ts,PetscReal *atol,Vec *vatol,PetscReal *rtol,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSErrorNormWRMS"
+#define __FUNCT__ "TSSetDifferentialEquationsIS"
 /*@
-   TSErrorNormWRMS - compute a weighted norm of the difference between a vector and the current state
+   TSSetDifferentialEquationsIS - Sets an IS containing locations of differential equations in a DAE
+
+   Not Collective
+
+   Input Arguments:
++  ts - time stepping context
+-  is_diff - Index set for differential equations
+
+   Level: advanced
+
+@*/
+PetscErrorCode TSSetDifferentialEquationsIS(TS ts, IS is_diff)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(is_diff,IS_CLASSID,2);
+  PetscCheckSameComm(ts,1,is_diff,2);
+  ierr = PetscObjectReference((PetscObject)is_diff);CHKERRQ(ierr);
+  ierr = ISDestroy(&ts->is_diff);CHKERRQ(ierr);
+  ts->is_diff = is_diff;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSErrorWeightedNorm2"
+/*@
+   TSErrorWeightedNorm2 - compute a weighted 2-norm of the difference between a vector and the current state
 
    Collective on TS
 
@@ -4948,15 +4978,16 @@ PetscErrorCode TSGetTolerances(TS ts,PetscReal *atol,Vec *vatol,PetscReal *rtol,
 
    Level: developer
 
-.seealso: TSSetTolerances()
+.seealso: TSErrorWeightedNorm(), TSErrorWeightedNormInfinity()
 @*/
-PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
+PetscErrorCode TSErrorWeightedNorm2(TS ts,Vec Y,PetscReal *norm)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,n,N;
+  PetscInt          i,n,N,rstart;
   const PetscScalar *u,*y;
   Vec               U;
   PetscReal         sum,gsum;
+  PetscReal         tol;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -4968,6 +4999,7 @@ PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
 
   ierr = VecGetSize(U,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(U,&rstart,NULL);CHKERRQ(ierr);
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
   sum  = 0.;
@@ -4975,32 +5007,83 @@ PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
     const PetscScalar *atol,*rtol;
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      PetscReal tol = PetscRealPart(atol[i]) + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
+    if(ts->is_diff) {
+      const PetscInt *idx;
+      PetscInt k;
+      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
+      for(i=0; i < n; i++) {
+	k = idx[i] - rstart;
+	tol = PetscRealPart(atol[k]) + PetscRealPart(rtol[k])*PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+	sum += PetscSqr(PetscAbsScalar(y[k] - u[k]) / tol);
+      }
+      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+    } else {
+      for (i=0; i<n; i++) {
+	tol = PetscRealPart(atol[i]) + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+	sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
+      }
     }
     ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
   } else if (ts->vatol) {       /* vector atol, scalar rtol */
     const PetscScalar *atol;
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      PetscReal tol = PetscRealPart(atol[i]) + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
+    if(ts->is_diff) {
+      const PetscInt *idx;
+      PetscInt k;
+      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
+      for(i=0; i < n; i++) {
+	k = idx[i] - rstart;
+	tol = PetscRealPart(atol[k]) + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+	sum += PetscSqr(PetscAbsScalar(y[k] - u[k]) / tol);
+      }
+      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+    } else {
+      for (i=0; i<n; i++) {
+	tol = PetscRealPart(atol[i]) + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+	sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
+      }
     }
     ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
   } else if (ts->vrtol) {       /* scalar atol, vector rtol */
     const PetscScalar *rtol;
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      PetscReal tol = ts->atol + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
+    if(ts->is_diff) {
+      const PetscInt *idx;
+      PetscInt k;
+      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
+      for(i=0; i < n; i++) {
+	k = idx[i] - rstart;
+	tol = ts->atol + PetscRealPart(rtol[k]) * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+	sum += PetscSqr(PetscAbsScalar(y[k] - u[k]) / tol);
+      }
+      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+    } else {
+      for (i=0; i<n; i++) {
+	tol = ts->atol + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+	sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
+      }
     }
     ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
   } else {                      /* scalar atol, scalar rtol */
-    for (i=0; i<n; i++) {
-      PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
+    if (ts->is_diff) {
+      const PetscInt *idx;
+      PetscInt k;
+      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
+      for (i=0; i<n; i++) {
+	k = idx[i] - rstart;
+	tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+	sum += PetscSqr(PetscAbsScalar(y[k] - u[k]) / tol);
+      }
+    } else {
+      for (i=0; i<n; i++) {
+	tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+	sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
+      }
     }
   }
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
@@ -5008,9 +5091,205 @@ PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
 
   ierr  = MPI_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
   *norm = PetscSqrtReal(gsum / N);
-  if (PetscIsInfOrNanReal(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+
+  if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "TSErrorWeightedNormInfinity"
+/*@
+   TSErrorWeightedNormInfinity - compute a weighted infinity-norm of the difference between a vector and the current state
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+-  Y - state vector to be compared to ts->vec_sol
+
+   Output Arguments:
+.  norm - weighted norm, a value of 1.0 is considered small
+
+   Level: developer
+
+.seealso: TSErrorWeightedNorm(), TSErrorWeightedNorm2()
+@*/
+PetscErrorCode TSErrorWeightedNormInfinity(TS ts,Vec Y,PetscReal *norm)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,n,N,rstart,k;
+  const PetscScalar *u,*y;
+  Vec               U;
+  PetscReal         max,gmax;
+  PetscReal         tol;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(Y,VEC_CLASSID,2);
+  PetscValidPointer(norm,3);
+  U = ts->vec_sol;
+  PetscCheckSameTypeAndComm(U,1,Y,2);
+  if (U == Y) SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_ARG_IDN,"Y cannot be the TS solution vector");
+
+  ierr = VecGetSize(U,&N);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(U,&rstart,NULL);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
+  if (ts->vatol && ts->vrtol) {
+    const PetscScalar *atol,*rtol;
+    ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+    if(ts->is_diff) {
+      const PetscInt *idx;
+      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
+
+      k = idx[0];
+      tol = PetscRealPart(atol[k]) + PetscRealPart(rtol[k]) * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+      max = PetscAbsScalar(y[k] - u[k]) / tol;
+      for(i=1; i < n; i++) {
+	k = idx[i] - rstart;
+	tol = PetscRealPart(atol[k]) + PetscRealPart(rtol[k])*PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+	max = PetscMax(max,PetscAbsScalar(y[k] - u[k]) / tol);
+      }
+      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+    } else {
+      k = 0;
+      tol = PetscRealPart(atol[k]) + PetscRealPart(rtol[k]) * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+      max = PetscAbsScalar(y[k] - u[k]) / tol;
+      for (i=1; i<n; i++) {
+	tol = PetscRealPart(atol[i]) + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+	max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
+      }
+    }
+    ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+  } else if (ts->vatol) {       /* vector atol, scalar rtol */
+    const PetscScalar *atol;
+    ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    if(ts->is_diff) {
+      const PetscInt *idx;
+      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
+
+      k = idx[0];
+      tol = PetscRealPart(atol[k]) + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+      max = PetscAbsScalar(y[k] - u[k]) / tol;
+      for(i=1; i < n; i++) {
+	k = idx[i] - rstart;
+	tol = PetscRealPart(atol[k]) + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+	max = PetscMax(max,PetscAbsScalar(y[k] - u[k]) / tol);
+      }
+      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+    } else {
+      k = 0;
+      tol = PetscRealPart(atol[k]) + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+      max = PetscAbsScalar(y[k] - u[k]) / tol;
+      for (i=1; i<n; i++) {
+	tol = PetscRealPart(atol[i]) + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+        max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
+      }
+    }
+    ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+  } else if (ts->vrtol) {       /* scalar atol, vector rtol */
+    const PetscScalar *rtol;
+    ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+    if(ts->is_diff) {
+      const PetscInt *idx;
+      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
+
+      k = idx[0];
+      tol = ts->atol + PetscRealPart(rtol[k])*PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+      max = PetscAbsScalar(y[k] - u[k]) / tol;
+      for(i=1; i < n; i++) {
+	k = idx[i] - rstart;
+	tol = ts->atol + PetscRealPart(rtol[k]) * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+	max = PetscMax(max,PetscAbsScalar(y[k] - u[k]) / tol);
+      }
+      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+    } else {
+      k = 0;
+      tol = ts->atol + PetscRealPart(rtol[k]) * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+      max = PetscAbsScalar(y[k] - u[k]) / tol;
+      for (i=1; i<n; i++) {
+	tol = ts->atol + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+	max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
+      }
+    }
+    ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+  } else {                      /* scalar atol, scalar rtol */
+    if (ts->is_diff) {
+      const PetscInt *idx;
+      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
+
+      k = idx[0];
+      tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+      max = PetscAbsScalar(y[k] - u[k]) / tol;
+      for (i=1; i<n; i++) {
+	k = idx[i] - rstart;
+	tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+	max = PetscMax(max,PetscAbsScalar(y[k] - u[k]) / tol);
+      }
+      ierr = ISRestoreIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+    } else {
+      k = 0;
+      tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+      max = PetscAbsScalar(y[k] - u[k]) / tol;
+      for (i=1; i<n; i++) {
+	tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+	max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
+      }
+    }
+  }
+  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
+
+  ierr  = MPI_Allreduce(&max,&gmax,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  *norm = gmax;
+
+  if (PetscIsInfOrNanScalar(*norm)) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSErrorWeightedNorm"
+/*@
+   TSErrorWeightedNorm - compute a weighted norm of the difference between a vector and the current state
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+-  Y - state vector to be compared to ts->vec_sol
+
+   Options Database Keys:
+.  -ts_adapt_wnormtype <wnormtype> - 2, INFINITY
+
+   Output Arguments:
+.  norm - weighted norm, a value of 1.0 is considered small
+
+   Level: developer
+
+.seealso: TSErrorWeightedNormInfinity(), TSErrorWeightedNorm2()
+@*/
+PetscErrorCode TSErrorWeightedNorm(TS ts,Vec Y,PetscReal *norm)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+
+  if(ts->adapt->wnormtype == NORM_2) {
+    ierr = TSErrorWeightedNorm2(ts,Y,norm);
+  } else if(ts->adapt->wnormtype == NORM_INFINITY) {
+    ierr = TSErrorWeightedNormInfinity(ts,Y,norm);
+  }
+
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetCFLTimeLocal"

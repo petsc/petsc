@@ -150,45 +150,44 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
     }
   }
 
-  ierr = TSEvaluateStep(ts,ns,ts->vec_sol,NULL);CHKERRQ(ierr);/* update ts solution */
+  ierr = TSEvaluateStep(ts,ns,ts->vec_sol,NULL);CHKERRQ(ierr);/*update ts solution */
 
-  if (ext->ord_adapt && ext->nstages < ext->max_rows){
-    accept = PETSC_FALSE;
-    while(!accept && ext->nstages < ext->max_rows){
-      ierr = TSErrorNormWRMS(ts,T[Map(ext->nstages-1,ext->nstages-2,ext->nstages)],&local_error);CHKERRQ(ierr);
-      accept = (local_error < 1.0)? PETSC_TRUE : PETSC_FALSE;
+  if(ext->ord_adapt && ext->nstages < ext->max_rows){
+	accept = PETSC_FALSE;
+	while(!accept && ext->nstages < ext->max_rows){
+	  ierr = TSErrorWeightedNorm(ts,T[Map(ext->nstages-1,ext->nstages-2,ext->nstages)],&local_error);CHKERRQ(ierr);
+	  accept = (local_error < 1.0)? PETSC_TRUE : PETSC_FALSE;
 
-      if (!accept){/* add one more stage */
-        ierr = TSStage_EIMEX(ts,ext->nstages);CHKERRQ(ierr);
-        ext->nstages++; ext->row_ind++; ext->col_ind++;
-        /* T table need to be recycled */
-        ierr = VecDuplicateVecs(ts->vec_sol,(1+ext->nstages)*ext->nstages/2,&ext->T);CHKERRQ(ierr);
-        for(i=0; i<ext->nstages-1; i++){
-          for(j=0; j<=i; j++){
-            ierr = VecCopy(T[Map(i,j,ext->nstages-1)],ext->T[Map(i,j,ext->nstages)]);CHKERRQ(ierr);
-          }
-        }
-        ierr = VecDestroyVecs(ext->nstages*(ext->nstages-1)/2,&T);CHKERRQ(ierr);
-        T = ext->T; /* reset the pointer */
-        /* recycling finished, store the new solution */
-        ierr = VecCopy(Y,T[ext->nstages-1]); CHKERRQ(ierr);
-        /* extrapolation for the newly added stage */
-        for(i=1;i<ext->nstages;i++){
-          alpha = -(PetscReal)ext->N[ext->nstages-1]/ext->N[ext->nstages-1-i];
-          ierr  = VecAXPBYPCZ(T[Map(ext->nstages-1,i,ext->nstages)],alpha,1.0,0,T[Map(ext->nstages-1,i-1,ext->nstages)],T[Map(ext->nstages-1-1,i-1,ext->nstages)]);/* T[ext->nstages-1][i]=alpha*T[ext->nstages-1][i-1]+T[ext->nstages-1-1][i-1] */
-          alpha = 1.0/(1.0 + alpha);
-          ierr  = VecScale(T[Map(ext->nstages-1,i,ext->nstages)],alpha);CHKERRQ(ierr);
-        }
-        /* update ts solution */
-        ierr = TSEvaluateStep(ts,ext->nstages,ts->vec_sol,NULL);CHKERRQ(ierr);
-      }/* end if !accept */
-    }/* end while */
+	  if(!accept){/* add one more stage*/
+	    ierr = TSStage_EIMEX(ts,ext->nstages);CHKERRQ(ierr);
+	    ext->nstages++; ext->row_ind++; ext->col_ind++;
+	    /*T table need to be recycled*/
+	    ierr = VecDuplicateVecs(ts->vec_sol,(1+ext->nstages)*ext->nstages/2,&ext->T);CHKERRQ(ierr);
+	    for(i=0; i<ext->nstages-1; i++){
+	      for(j=0; j<=i; j++){
+	        ierr = VecCopy(T[Map(i,j,ext->nstages-1)],ext->T[Map(i,j,ext->nstages)]);CHKERRQ(ierr);
+	      }
+	    }
+	    ierr = VecDestroyVecs(ext->nstages*(ext->nstages-1)/2,&T);CHKERRQ(ierr);
+	    T = ext->T; /*reset the pointer*/
+	    /*recycling finished, store the new solution*/
+	    ierr = VecCopy(Y,T[ext->nstages-1]); CHKERRQ(ierr);
+	    /*extrapolation for the newly added stage*/
+	    for(i=1;i<ext->nstages;i++){
+	      alpha = -(PetscReal)ext->N[ext->nstages-1]/ext->N[ext->nstages-1-i];
+	      ierr  = VecAXPBYPCZ(T[Map(ext->nstages-1,i,ext->nstages)],alpha,1.0,0,T[Map(ext->nstages-1,i-1,ext->nstages)],T[Map(ext->nstages-1-1,i-1,ext->nstages)]);/*T[ext->nstages-1][i]=alpha*T[ext->nstages-1][i-1]+T[ext->nstages-1-1][i-1]*/
+	      alpha = 1.0/(1.0 + alpha);
+	      ierr  = VecScale(T[Map(ext->nstages-1,i,ext->nstages)],alpha);CHKERRQ(ierr);
+	    }
+	    /*update ts solution */
+	    ierr = TSEvaluateStep(ts,ext->nstages,ts->vec_sol,NULL);CHKERRQ(ierr);
+	  }/*end if !accept*/
+	}/*end while*/
 
-    if (ext->nstages == ext->max_rows){
-      ierr = PetscInfo(ts,"Max number of rows has been used\n");CHKERRQ(ierr);
-    }
-  }/* end if ext->ord_adapt */
-
+	if(ext->nstages == ext->max_rows){
+		ierr = PetscInfo(ts,"Max number of rows has been used\n");CHKERRQ(ierr);
+	}
+  }/*end if ext->ord_adapt*/
   ts->ptime += ts->time_step;
   ts->steps++;
   ext->status = TS_STEP_COMPLETE;
